@@ -1,5 +1,9 @@
 # Hedera CLI
 
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/hiero-ledger/hiero-cli/badge)](https://scorecard.dev/viewer/?uri=github.com/hiero-ledger/hiero-cli)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/10697/badge)](https://bestpractices.coreinfrastructure.org/projects/10697)
+[![License](https://img.shields.io/badge/license-apache2-blue.svg)](LICENSE)
+
 Welcome to the Hedera CLI Tool, a powerful and intuitive command-line interface designed to streamline your interactions with the Hedera network. Whether you're a developer needing to set up test environments, automate network-related tasks, or explore the extensive capabilities of the Hedera mainnet and testnet, this tool is your one-stop solution.
 
 The Hedera CLI Tool elegantly addresses the complexities associated with distributed ledger technologies. It simplifies the process of executing actions such as creating new accounts, sending transactions, managing tokens, and associating with existing tokens directly from the CLI. This high level of functionality and ease of use significantly reduces the barrier to entry for developers working on Hedera-based projects.
@@ -1374,7 +1378,8 @@ Delete the file or run `hcli state clear` (optionally skipping sections) to rein
 
 ## Contributing
 
-Contributions are welcome. Please see the [contributing guide](https://github.com/hashgraph/.github/blob/main/CONTRIBUTING.md) to see how you can get involved in the Hedera Hashgraph repositories. Below you can find some tips specific for this repository.
+Whether you’re fixing bugs, enhancing features, or improving documentation, your contributions are important — let’s build something great together!
+Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
 
 ### Development Mode
 
@@ -1674,20 +1679,16 @@ Debug mode provides detailed error information including HTTP status codes and e
 
 ### Getting Help
 
-If you encounter issues not covered here, please:
-
-1. Enable debug mode to gather detailed information
-2. Check the [GitHub issues](https://github.com/hashgraph/hedera-cli/issues) for similar problems
-3. Create a new issue with debug output included
+- Join our [community discussions](https://discord.lfdecentralizedtrust.org/) on discord.
+- Attend our [community calls](https://zoom-lfx.platform.linuxfoundation.org/meetings/hiero?view=week). 
 
 ## Support
 
-If you have a question on how to use the product, please see our [support guide](https://github.com/hashgraph/.github/blob/main/SUPPORT.md).
+If you have a question please refer to [our Hiero docs site](https://docs.hiero.org/).
 
 ## Code of Conduct
 
-This project is governed by the [Contributor Covenant Code of Conduct](https://github.com/hashgraph/.github/blob/main/CODE_OF_CONDUCT.md). By participating, you are
-expected to uphold this code of conduct.
+Hiero uses the Linux Foundation Decentralised Trust [Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct).
 
 ## License
 
