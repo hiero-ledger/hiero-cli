@@ -75,6 +75,11 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       // Execute the transaction
       const response: TransactionResponse = await transaction.execute(client);
       const receipt: TransactionReceipt = await response.getReceipt(client);
+      const record = await response.getRecord(client);
+
+      const consensusTimestamp = record.consensusTimestamp
+        .toDate()
+        .toISOString();
 
       this.logger.debug(
         `[TX-EXECUTION] Transaction executed successfully: ${response.transactionId.toString()}`,
@@ -106,6 +111,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       return {
         transactionId: response.transactionId.toString(),
         success: receipt.status === Status.Success,
+        consensusTimestamp,
         accountId,
         tokenId,
         topicId,
@@ -128,6 +134,9 @@ export class TxExecutionServiceImpl implements TxExecutionService {
     transaction: HederaTransaction,
     signer: SignerRef,
   ): Promise<TransactionResult> {
+    // @TODO Extract common logic with signAndExecute()
+    // @TODO Unification error handling strategy (try-catch vs none)
+
     // Get fresh client for current network
     const client = this.getClient();
     const keyRefId = this.resolveSignerRef(signer);
@@ -142,6 +151,9 @@ export class TxExecutionServiceImpl implements TxExecutionService {
     // Execute the transaction
     const response: TransactionResponse = await transaction.execute(client);
     const receipt: TransactionReceipt = await response.getReceipt(client);
+    const record = await response.getRecord(client);
+
+    const consensusTimestamp = record.consensusTimestamp.toDate().toISOString();
 
     // Extract IDs from receipt based on transaction type
     let accountId: string | undefined;
@@ -171,6 +183,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       accountId,
       tokenId,
       topicId,
+      consensusTimestamp,
       topicSequenceNumber,
       receipt: {
         status: {
