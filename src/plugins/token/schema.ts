@@ -4,6 +4,7 @@
  */
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
+import { validateSupplyTypeAndMaxSupply } from '../../core/shared/validation/validate-supply.zod';
 
 // Zod schema for token keys
 export const TokenKeysSchema = z.object({
@@ -176,27 +177,7 @@ export const TokenCreateCommandSchema = z
 
     name: z.string().min(1, 'Name must be at least 1 character').optional(),
   })
-  // @TODO Move this validation into shared file in core for reuse
-  .superRefine((val, ctx) => {
-    const isFinite = val.supplyType === 'FINITE';
-
-    if (isFinite && !val.maxSupply) {
-      ctx.addIssue({
-        message: 'Max supply is required when supply type is FINITE',
-        code: z.ZodIssueCode.custom,
-        path: ['maxSupply', 'supplyType'],
-      });
-    }
-
-    if (!isFinite && val.maxSupply) {
-      ctx.addIssue({
-        message:
-          'Max supply should not be provided when supply type is INFINITE, set supply type to FINITE to specify max supply',
-        code: z.ZodIssueCode.custom,
-        path: ['supplyType', 'maxSupply'],
-      });
-    }
-  });
+  .superRefine(validateSupplyTypeAndMaxSupply);
 
 export type TokenCreateCommandParams = z.infer<typeof TokenCreateCommandSchema>;
 
