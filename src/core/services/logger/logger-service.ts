@@ -1,22 +1,25 @@
 /**
  * Mock implementation of Logger Service
  * This is a placeholder implementation for testing the architecture
+ * All logs are written to stderr to keep stdout clean for command output
  */
 import { Logger } from './logger-service.interface';
 
 export class MockLoggerService implements Logger {
   /**
    * Log a message (mock implementation)
+   * Writes to stderr to keep stdout clean for command output
    */
   log(message: string): void {
-    console.log(`[MOCK LOG] ${message}`);
+    console.error(`[MOCK LOG] ${message}`);
   }
 
   /**
    * Log a verbose message (debug level) (mock implementation)
+   * Writes to stderr to keep stdout clean for command output
    */
   verbose(message: string): void {
-    console.log(`[MOCK VERBOSE] ${message}`);
+    console.error(`[MOCK VERBOSE] ${message}`);
   }
 
   /**
@@ -35,8 +38,9 @@ export class MockLoggerService implements Logger {
 
   /**
    * Log a debug message (mock implementation)
+   * Writes to stderr to keep stdout clean for command output
    */
   debug(message: string): void {
-    console.log(`[MOCK DEBUG] ${message}`);
+    console.error(`[MOCK DEBUG] ${message}`);
   }
 }

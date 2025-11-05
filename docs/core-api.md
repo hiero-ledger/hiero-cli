@@ -118,7 +118,7 @@ Provides comprehensive access to Hedera Mirror Node API.
 interface HederaMirrornodeService {
   // Account operations
   getAccount(accountId: string): Promise<AccountResponse>;
-  getAccountHBarBalance(accountId: string): Promise<BigNumber>;
+  getAccountHBarBalance(accountId: string): Promise<bigint>;
   getAccountTokenBalances(
     accountId: string,
     tokenId?: string,

@@ -14,6 +14,7 @@ import { HbarService } from '../services/hbar/hbar-service.interface';
 import { AliasService } from '../services/alias/alias-service.interface';
 import { KmsService } from '../services/kms/kms-service.interface';
 import { TokenService } from '../services/token/token-service.interface';
+import { OutputService } from '../services/output/output-service.interface';
 
 export interface CoreApi {
   /**
@@ -74,5 +75,10 @@ export interface CoreApi {
   /**
    * HBAR operations
    */
-  hbar?: HbarService;
+  hbar: HbarService;
+
+  /**
+   * Output handling and formatting
+   */
+  output: OutputService;
 }

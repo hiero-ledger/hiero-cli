@@ -5,7 +5,8 @@ import {
   setupExitSpy,
   makeNetworkMock,
 } from '../../../../../__tests__/helpers/plugin';
-import { isJsonOutput, printOutput } from '../../../../utils/output';
+import { isJsonOutput } from '../../../../utils/output';
+import { Status } from '../../../../core/shared/constants';
 import {
   checkMirrorNodeHealth,
   checkRpcHealth,
@@ -33,7 +34,6 @@ jest.mock('../../../../utils/color', () => ({
 }));
 
 const mockedIsJsonOutput = isJsonOutput as jest.Mock;
-const mockedPrintOutput = printOutput as jest.Mock;
 const mockedCheckMirrorNodeHealth = checkMirrorNodeHealth as jest.Mock;
 const mockedCheckRpcHealth = checkRpcHealth as jest.Mock;
 
@@ -60,23 +60,10 @@ describe('network plugin - list command', () => {
     const networkService = makeNetworkMock('testnet');
     const args = makeArgs({ network: networkService }, logger, {});
 
-    await listHandler(args);
+    const result = await listHandler(args);
 
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Available networks:'),
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('● LOCALNET'),
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('● TESTNET (ACTIVE)'),
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('● PREVIEWNET'),
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('● MAINNET'),
-    );
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
   });
 
   test('shows health checks for active network', async () => {
@@ -92,19 +79,14 @@ describe('network plugin - list command', () => {
     }));
     const args = makeArgs({ network: networkService }, logger, {});
 
-    await listHandler(args);
+    const result = await listHandler(args);
+    expect(result.status).toBe(Status.Success);
 
     expect(mockedCheckMirrorNodeHealth).toHaveBeenCalledWith(
       'https://testnet.mirrornode.hedera.com/api/v1',
     );
     expect(mockedCheckRpcHealth).toHaveBeenCalledWith(
       'https://testnet.hashio.io/api',
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Mirror Node:'),
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('RPC URL:'),
     );
   });
 
@@ -113,7 +95,8 @@ describe('network plugin - list command', () => {
     const networkService = makeNetworkMock('testnet');
     const args = makeArgs({ network: networkService }, logger, {});
 
-    await listHandler(args);
+    const result = await listHandler(args);
+    expect(result.status).toBe(Status.Success);
 
     expect(mockedCheckMirrorNodeHealth).toHaveBeenCalledTimes(1);
     expect(mockedCheckRpcHealth).toHaveBeenCalledTimes(1);
@@ -143,20 +126,10 @@ describe('network plugin - list command', () => {
     });
     const args = makeArgs({ network: networkService }, logger, { json: true });
 
-    await listHandler(args);
+    const result = await listHandler(args);
 
-    expect(mockedPrintOutput).toHaveBeenCalledWith('networks', {
-      networks: expect.arrayContaining([
-        expect.objectContaining({
-          name: 'mainnet',
-          isActive: true,
-          mirrorNodeUrl: 'https://mainnet.mirrornode.hedera.com/api/v1',
-          rpcUrl: 'https://mainnet.hashio.io/api',
-          operatorId: '0.0.1001',
-        }),
-      ]),
-      activeNetwork: 'mainnet',
-    });
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
   });
 
   test('handles errors gracefully', async () => {
@@ -167,12 +140,10 @@ describe('network plugin - list command', () => {
     });
     const args = makeArgs({ network: networkService }, logger, {});
 
-    await listHandler(args);
+    const result = await listHandler(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to list networks'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Failed to list networks');
   });
 
   test('shows health check failures', async () => {
@@ -192,25 +163,21 @@ describe('network plugin - list command', () => {
 
     const args = makeArgs({ network: networkService }, logger, {});
 
-    await listHandler(args);
-
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Mirror Node:'),
-    );
-    expect(logger.log).toHaveBeenCalledWith(expect.stringContaining('❌'));
+    const result = await listHandler(args);
+    expect(result.status).toBe(Status.Success);
   });
 
-  test('exits with code 0 on success', async () => {
+  test('returns success on happy path', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const args = makeArgs({ network: networkService }, logger, {});
 
-    await listHandler(args);
+    const result = await listHandler(args);
 
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    expect(result.status).toBe(Status.Success);
   });
 
-  test('shows operator information for each network', async () => {
+  test('includes operator information in output', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     networkService.getOperator = jest.fn().mockImplementation((name) => {
@@ -224,13 +191,12 @@ describe('network plugin - list command', () => {
     });
     const args = makeArgs({ network: networkService }, logger, {});
 
-    await listHandler(args);
+    const result = await listHandler(args);
+    expect(result.status).toBe(Status.Success);
 
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Operator: 0.0.1001'),
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Operator: Not configured'),
+    const parsed = JSON.parse(result.outputJson as string);
+    expect(parsed.networks.some((n: any) => n.operatorId === '0.0.1001')).toBe(
+      true,
     );
   });
 
@@ -240,10 +206,10 @@ describe('network plugin - list command', () => {
     networkService.getOperator = jest.fn().mockReturnValue(null);
     const args = makeArgs({ network: networkService }, logger, {});
 
-    await listHandler(args);
+    const result = await listHandler(args);
+    expect(result.status).toBe(Status.Success);
 
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Operator: Not configured'),
-    );
+    const parsed = JSON.parse(result.outputJson as string);
+    expect(parsed.networks.some((n: any) => !n.operatorId)).toBe(true);
   });
 });

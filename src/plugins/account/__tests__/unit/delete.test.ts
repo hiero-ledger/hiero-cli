@@ -1,7 +1,8 @@
-import { deleteAccountHandler } from '../../commands/delete';
+import { deleteAccount } from '../../commands/delete/handler';
+import type { DeleteAccountOutput } from '../../commands/delete';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import type { CoreApi } from '../../../../core/core-api/core-api.interface';
-import { setupExitSpy } from '../../../../../__tests__/helpers/plugin';
+import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeAccountData,
@@ -12,23 +13,13 @@ import {
 import { mockAliasLists } from './helpers/fixtures';
 import { AliasType } from '../../../../core/services/alias/alias-service.interface';
 
-let exitSpy: jest.SpyInstance;
-
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),
 }));
 
 const MockedHelper = ZustandAccountStateHelper as jest.Mock;
 
-beforeAll(() => {
-  exitSpy = setupExitSpy();
-});
-
-afterAll(() => {
-  exitSpy.mockRestore();
-});
-
-describe('account plugin - delete command', () => {
+describe('account plugin - delete command (ADR-003)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -50,13 +41,15 @@ describe('account plugin - delete command', () => {
     const api: Partial<CoreApi> = { state: {} as any, logger, alias, network };
     const args = makeArgs(api, logger, { name: 'acc1' });
 
-    deleteAccountHandler(args);
+    const result = await deleteAccount(args);
 
     expect(deleteAccountMock).toHaveBeenCalledWith('acc1');
-    expect(logger.log).toHaveBeenCalledWith(
-      '✅ Account deleted successfully: acc1 (0.0.1111)',
-    );
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: DeleteAccountOutput = JSON.parse(result.outputJson!);
+    expect(output.deletedAccount.name).toBe('acc1');
+    expect(output.deletedAccount.accountId).toBe('0.0.1111');
   });
 
   test('deletes account successfully by id', async () => {
@@ -76,16 +69,18 @@ describe('account plugin - delete command', () => {
     const api: Partial<CoreApi> = { state: {} as any, logger, alias, network };
     const args = makeArgs(api, logger, { id: '0.0.2222' });
 
-    deleteAccountHandler(args);
+    const result = await deleteAccount(args);
 
     expect(deleteAccountMock).toHaveBeenCalledWith('acc2');
-    expect(logger.log).toHaveBeenCalledWith(
-      '✅ Account deleted successfully: acc2 (0.0.2222)',
-    );
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: DeleteAccountOutput = JSON.parse(result.outputJson!);
+    expect(output.deletedAccount.name).toBe('acc2');
+    expect(output.deletedAccount.accountId).toBe('0.0.2222');
   });
 
-  test('logs error when no name or id provided', async () => {
+  test('returns failure when no name or id provided', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -94,18 +89,25 @@ describe('account plugin - delete command', () => {
       deleteAccount: jest.fn(),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const alias = makeAliasServiceMock();
+    const network = makeNetworkServiceMock('testnet');
+
+    const api: Partial<CoreApi> = {
+      state: {} as any,
+      logger,
+      alias,
+      network,
+    };
     const args = makeArgs(api, logger, {});
 
-    deleteAccountHandler(args);
+    const result = await deleteAccount(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Failed to delete account'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toBeDefined();
+    expect(result.errorMessage).toContain('Either name or id must be provided');
   });
 
-  test('logs error when account with given name not found', async () => {
+  test('returns failure when account with given name not found', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -114,18 +116,27 @@ describe('account plugin - delete command', () => {
       deleteAccount: jest.fn(),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const alias = makeAliasServiceMock();
+    const network = makeNetworkServiceMock('testnet');
+
+    const api: Partial<CoreApi> = {
+      state: {} as any,
+      logger,
+      alias,
+      network,
+    };
     const args = makeArgs(api, logger, { name: 'missingAcc' });
 
-    deleteAccountHandler(args);
+    const result = await deleteAccount(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Failed to delete account'),
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toBeDefined();
+    expect(result.errorMessage).toContain(
+      "Account with name 'missingAcc' not found",
     );
-    expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
-  test('logs error when account with given id not found', async () => {
+  test('returns failure when account with given id not found', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -136,18 +147,27 @@ describe('account plugin - delete command', () => {
       deleteAccount: jest.fn(),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const alias = makeAliasServiceMock();
+    const network = makeNetworkServiceMock('testnet');
+
+    const api: Partial<CoreApi> = {
+      state: {} as any,
+      logger,
+      alias,
+      network,
+    };
     const args = makeArgs(api, logger, { id: '0.0.4444' });
 
-    deleteAccountHandler(args);
+    const result = await deleteAccount(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Failed to delete account'),
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toBeDefined();
+    expect(result.errorMessage).toContain(
+      "Account with ID '0.0.4444' not found",
     );
-    expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
-  test('logs error when deleteAccount throws', async () => {
+  test('returns failure when deleteAccount throws', async () => {
     const logger = makeLogger();
     const account = makeAccountData({ name: 'acc5', accountId: '0.0.5555' });
 
@@ -159,15 +179,23 @@ describe('account plugin - delete command', () => {
       }),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const alias = makeAliasServiceMock();
+    const network = makeNetworkServiceMock('testnet');
+
+    const api: Partial<CoreApi> = {
+      state: {} as any,
+      logger,
+      alias,
+      network,
+    };
     const args = makeArgs(api, logger, { name: 'acc5' });
 
-    deleteAccountHandler(args);
+    const result = await deleteAccount(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Failed to delete account'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toBeDefined();
+    expect(result.errorMessage).toContain('Failed to delete account');
+    expect(result.errorMessage).toContain('db error');
   });
 
   test('removes aliases of the account only for current network and type', async () => {
@@ -193,7 +221,7 @@ describe('account plugin - delete command', () => {
     const api: Partial<CoreApi> = { state: {} as any, logger, alias, network };
     const args = makeArgs(api, logger, { name: 'acc-alias' });
 
-    deleteAccountHandler(args);
+    const result = await deleteAccount(args);
 
     // Ensure list was requested with the correct filters
     expect(alias.list).toHaveBeenCalledWith({
@@ -218,5 +246,16 @@ describe('account plugin - delete command', () => {
       'other-acc-testnet',
       'testnet',
     );
+
+    // Verify ADR-003 result
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: DeleteAccountOutput = JSON.parse(result.outputJson!);
+    expect(output.deletedAccount.name).toBe('acc-alias');
+    expect(output.deletedAccount.accountId).toBe('0.0.7777');
+    expect(output.removedAliases).toBeDefined();
+    expect(output.removedAliases).toHaveLength(1);
+    expect(output.removedAliases![0]).toBe('acc-alias-testnet (testnet)');
   });
 });

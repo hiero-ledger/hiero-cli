@@ -1,13 +1,24 @@
 /**
  * State Management Plugin Manifest
  * A plugin for managing state data across all plugins
+ * Compliant with ADR-003: Result-Oriented Command Handler Contract
  */
-import { PluginManifest } from '../../core';
-import { listHandler } from './commands/list';
-import { clearHandler } from './commands/clear';
-import { infoHandler } from './commands/info';
+import { PluginManifest } from '../../core/plugins/plugin.interface';
+import { ListStateOutputSchema, LIST_STATE_TEMPLATE } from './commands/list';
+import { ClearStateOutputSchema, CLEAR_STATE_TEMPLATE } from './commands/clear';
+import { StateInfoOutputSchema, STATE_INFO_TEMPLATE } from './commands/info';
+import {
+  StateBackupOutputSchema,
+  STATE_BACKUP_TEMPLATE,
+} from './commands/backup';
+import { StateStatsOutputSchema, STATE_STATS_TEMPLATE } from './commands/stats';
+import { listState } from './commands/list/handler';
+import { clearState } from './commands/clear/handler';
+import { stateInfo } from './commands/info/handler';
+import { stateBackup } from './commands/backup/handler';
+import { stateStats } from './commands/stats/handler';
 
-const stateManagementManifest: PluginManifest = {
+export const stateManagementManifest: PluginManifest = {
   name: 'state-management',
   version: '1.0.0',
   displayName: 'State Management',
@@ -26,7 +37,11 @@ const stateManagementManifest: PluginManifest = {
       options: [
         { name: 'namespace', short: 'n', type: 'string', required: false },
       ],
-      handler: listHandler,
+      handler: listState,
+      output: {
+        schema: ListStateOutputSchema,
+        humanTemplate: LIST_STATE_TEMPLATE,
+      },
     },
     {
       name: 'clear',
@@ -36,13 +51,50 @@ const stateManagementManifest: PluginManifest = {
         { name: 'namespace', short: 'n', type: 'string', required: false },
         { name: 'confirm', short: 'c', type: 'boolean', required: false },
       ],
-      handler: clearHandler,
+      handler: clearState,
+      output: {
+        schema: ClearStateOutputSchema,
+        humanTemplate: CLEAR_STATE_TEMPLATE,
+      },
     },
     {
       name: 'info',
       summary: 'Show state information',
       description: 'Display information about stored state data',
-      handler: infoHandler,
+      handler: stateInfo,
+      output: {
+        schema: StateInfoOutputSchema,
+        humanTemplate: STATE_INFO_TEMPLATE,
+      },
+    },
+    {
+      name: 'backup',
+      summary: 'Create state backup',
+      description: 'Create a backup of all state data',
+      options: [
+        {
+          name: 'dest',
+          short: 'd',
+          type: 'string',
+          required: false,
+          description: 'Destination file path for the backup file',
+        },
+      ],
+      handler: stateBackup,
+      output: {
+        schema: StateBackupOutputSchema,
+        humanTemplate: STATE_BACKUP_TEMPLATE,
+      },
+    },
+    {
+      name: 'stats',
+      summary: 'Show state statistics',
+      description: 'Display detailed statistics about stored state data',
+      handler: stateStats,
+      output: {
+        schema: StateStatsOutputSchema,
+        humanTemplate: STATE_STATS_TEMPLATE,
+      },
     },
   ],
 };

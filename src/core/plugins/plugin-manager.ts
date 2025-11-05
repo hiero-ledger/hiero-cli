@@ -10,6 +10,8 @@ import { CommandHandlerArgs, PluginManifest } from './plugin.interface';
 import { CommandSpec } from './plugin.types';
 import { formatError } from '../../utils/errors';
 import { logger } from '../../utils/logger';
+import { Status } from '../shared/constants';
+import { filterReservedOptions } from '../utils/filter-reserved-options';
 
 interface LoadedPlugin {
   manifest: PluginManifest;
@@ -46,6 +48,12 @@ export class PluginManager {
       } catch {
         logger.log(`ℹ️  Plugin not available: ${pluginPath}`);
       }
+    }
+
+    // Register all namespaces with the state service
+    const namespaces = this.getAllNamespaces();
+    if (namespaces.length > 0) {
+      this.coreApi.state.registerNamespaces(namespaces);
     }
 
     logger.log(`✅ Plugin system ready`);
@@ -87,6 +95,23 @@ export class PluginManager {
       path: plugin.path,
       status: plugin.status,
     }));
+  }
+
+  /**
+   * Get all namespaces from loaded plugins
+   */
+  getAllNamespaces(): string[] {
+    const namespaces = new Set<string>();
+
+    for (const plugin of this.loadedPlugins.values()) {
+      if (plugin.status === 'loaded' && plugin.manifest.stateSchemas) {
+        for (const schema of plugin.manifest.stateSchemas) {
+          namespaces.add(schema.namespace);
+        }
+      }
+    }
+
+    return Array.from(namespaces);
   }
 
   /**
@@ -151,7 +176,6 @@ export class PluginManager {
     commandSpec: CommandSpec,
   ): void {
     const commandName = String(commandSpec.name);
-
     const command = pluginCommand
       .command(commandName)
       .description(
@@ -164,7 +188,17 @@ export class PluginManager {
 
     // Add options
     if (commandSpec.options) {
-      for (const option of commandSpec.options) {
+      const { allowed, filtered } = filterReservedOptions(commandSpec.options);
+
+      if (filtered.length > 0) {
+        logger.log(
+          `⚠️  Plugin ${plugin.manifest.name} command ${commandName}: filtered reserved option(s) ${filtered
+            .map((n) => `--${n}`)
+            .join(', ')} (reserved by core CLI)`,
+        );
+      }
+
+      for (const option of allowed) {
         const optionName = String(option.name);
         const short = option.short ? `-${String(option.short)}` : '';
         const long = `--${optionName}`;
@@ -224,15 +258,7 @@ export class PluginManager {
 
     // Set up action handler
     command.action(async (...args: unknown[]) => {
-      try {
-        await this.executePluginCommand(plugin, commandSpec, args);
-      } catch (error) {
-        console.error(
-          `Error executing ${plugin.manifest.name} ${commandName}:`,
-          error,
-        );
-        process.exit(1);
-      }
+      await this.executePluginCommand(plugin, commandSpec, args);
     });
   }
 
@@ -240,7 +266,7 @@ export class PluginManager {
    * Execute a plugin command
    */
   private async executePluginCommand(
-    _plugin: LoadedPlugin,
+    plugin: LoadedPlugin,
     commandSpec: CommandSpec,
     args: unknown[],
   ): Promise<void> {
@@ -259,6 +285,47 @@ export class PluginManager {
       logger: this.coreApi.logger,
     };
 
-    await commandSpec.handler(handlerArgs);
+    const result = await commandSpec.handler(handlerArgs);
+
+    // Validate that output spec is present (required per CommandSpec type)
+    if (!commandSpec.output) {
+      throw new Error(
+        `Command ${commandSpec.name} must define an output specification`,
+      );
+    }
+
+    // ADR-003: If command has output spec, expect handler to return result
+    if (!result) {
+      throw new Error(
+        `Handler for ${commandSpec.name} must return CommandExecutionResult when output spec is defined`,
+      );
+    }
+
+    const executionResult = result;
+
+    // Handle non-success statuses
+    if (executionResult.status !== Status.Success) {
+      throw new Error(
+        executionResult.errorMessage ||
+          `Command ${commandSpec.name} failed with status: ${executionResult.status}`,
+      );
+    }
+
+    // Handle successful execution with output
+    if (executionResult.outputJson) {
+      try {
+        // Use OutputHandlerService to format and display output
+        this.coreApi.output.handleCommandOutput({
+          outputJson: executionResult.outputJson,
+          schema: commandSpec.output.schema,
+          template: commandSpec.output.humanTemplate,
+          format: this.coreApi.output.getFormat(),
+        });
+      } catch (error) {
+        throw new Error(
+          `Failed to handle output from ${commandSpec.name}: ${formatError('', error)}`,
+        );
+      }
+    }
   }
 }

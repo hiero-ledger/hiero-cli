@@ -1,14 +1,13 @@
-import { listAccountsHandler } from '../../commands/list';
+import { listAccounts } from '../../commands/list/handler';
+import type { ListAccountsOutput } from '../../commands/list';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import type { CoreApi } from '../../../../core/core-api/core-api.interface';
+import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeAccountData,
   makeArgs,
-  setupExitSpy,
 } from '../../../../../__tests__/helpers/plugin';
-
-let exitSpy: jest.SpyInstance;
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),
@@ -16,20 +15,12 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandAccountStateHelper as jest.Mock;
 
-beforeAll(() => {
-  exitSpy = setupExitSpy();
-});
-
-afterAll(() => {
-  exitSpy.mockRestore();
-});
-
-describe('account plugin - list command', () => {
+describe('account plugin - list command (ADR-003)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('logs message when no accounts exist', async () => {
+  test('returns success with empty accounts list when no accounts exist', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -39,15 +30,17 @@ describe('account plugin - list command', () => {
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, {});
 
-    listAccountsHandler(args);
+    const result = await listAccounts(args);
 
-    expect(logger.log).toHaveBeenCalledWith(
-      '📝 No accounts found in the address book',
-    );
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: ListAccountsOutput = JSON.parse(result.outputJson!);
+    expect(output.totalCount).toBe(0);
+    expect(output.accounts).toEqual([]);
   });
 
-  test('lists accounts without private keys', async () => {
+  test('returns success with accounts list without private keys', async () => {
     const logger = makeLogger();
     const accounts = [
       makeAccountData({ name: 'acc1', accountId: '0.0.1111' }),
@@ -61,18 +54,23 @@ describe('account plugin - list command', () => {
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, {});
 
-    listAccountsHandler(args);
+    const result = await listAccounts(args);
 
-    expect(logger.log).toHaveBeenCalledWith('📝 Found 2 account(s):');
-    expect(logger.log).toHaveBeenCalledWith('1. Name: acc1');
-    expect(logger.log).toHaveBeenCalledWith('   Account ID: 0.0.1111');
-    expect(logger.log).not.toHaveBeenCalledWith(
-      expect.stringContaining('Private Key'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: ListAccountsOutput = JSON.parse(result.outputJson!);
+    expect(output.totalCount).toBe(2);
+    expect(output.accounts).toHaveLength(2);
+    expect(output.accounts[0].name).toBe('acc1');
+    expect(output.accounts[0].accountId).toBe('0.0.1111');
+    expect(output.accounts[0].keyRefId).toBeUndefined();
+    expect(output.accounts[1].name).toBe('acc2');
+    expect(output.accounts[1].accountId).toBe('0.0.2222');
+    expect(output.accounts[1].keyRefId).toBeUndefined();
   });
 
-  test('lists accounts with private keys when flag is set', async () => {
+  test('returns success with accounts including keyRefId when --private flag is set', async () => {
     const logger = makeLogger();
     const accounts = [makeAccountData({ name: 'acc3', accountId: '0.0.3333' })];
 
@@ -83,14 +81,21 @@ describe('account plugin - list command', () => {
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, { private: true });
 
-    listAccountsHandler(args);
+    const result = await listAccounts(args);
 
-    expect(logger.log).toHaveBeenCalledWith('1. Name: acc3');
-    expect(logger.log).toHaveBeenCalledWith('   Key Reference ID: kr_test123');
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: ListAccountsOutput = JSON.parse(result.outputJson!);
+    expect(output.totalCount).toBe(1);
+    expect(output.accounts).toHaveLength(1);
+    expect(output.accounts[0].name).toBe('acc3');
+    expect(output.accounts[0].accountId).toBe('0.0.3333');
+    expect(output.accounts[0].keyRefId).toBeDefined();
+    expect(output.accounts[0].keyRefId).toBe('kr_test123');
   });
 
-  test('logs error and exits when listAccounts throws', async () => {
+  test('returns failure when listAccounts throws', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -102,11 +107,11 @@ describe('account plugin - list command', () => {
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, {});
 
-    listAccountsHandler(args);
+    const result = await listAccounts(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Failed to list accounts'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toBeDefined();
+    expect(result.errorMessage).toContain('Failed to list accounts');
+    expect(result.errorMessage).toContain('db error');
   });
 });

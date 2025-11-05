@@ -37,11 +37,11 @@ Introduce a result-oriented contract for command handlers and shift output, vali
 ### Command Handler Result Type
 
 ```ts
-export type CommandStatus = 'success' | 'failure' | 'partial';
+import { Status } from '../shared/constants';
 
 export interface CommandExecutionResult {
-  status: CommandStatus;
-  /** Optional, present when status !== 'success'; intended for humans */
+  status: Status;
+  /** Optional, present when status !== Status.Success; intended for humans */
   errorMessage?: string;
   /** JSON string conforming to the manifest-declared output schema */
   outputJson?: string;
@@ -50,7 +50,7 @@ export interface CommandExecutionResult {
 
 Notes:
 
-- `partial` allows handlers to indicate that some work was completed but not all; the CLI will map this to a distinct exit code.
+- The `status` field uses the `Status` enum from `src/core/shared/constants.ts` for type safety and consistency.
 - `outputJson` must be a JSON string; the CLI is the sole owner of parsing/validation/formatting.
 
 ### Plugin Manifest Additions
@@ -108,8 +108,8 @@ Plugins may throw these as-is. The CLI will map them to exit codes and user-frie
 
 ### Exit Code Policy
 
-- 0 – Success (`status: 'success'`)
-- 1 – Handler-declared failure (`status: 'failure'` or Core exception)
+- 0 – Success (`status: Status.Success`)
+- 1 – Handler-declared failure (`status: Status.Failure` or Core exception)
 
 Exit codes within ranges may be refined later; the mapping lives centrally in Core/CLI.
 
@@ -128,7 +128,7 @@ Exit codes within ranges may be refined later; the mapping lives centrally in Co
 
 ## Implementation Notes
 
-- Add types to `src/core/types` (or equivalent) for `CommandExecutionResult` and `CommandStatus`.
+- Add types to `src/core/types` (or equivalent) for `CommandExecutionResult` using the `Status` enum.
 - Extend plugin manifest types to include `CommandOutputSpec`.
 - Update `src/hedera-cli.ts` execution path to:
   - Configure logging and script mode suppression

@@ -1,8 +1,10 @@
-import { createAccountHandler } from '../../commands/create';
+import { createAccount } from '../../commands/create/handler';
+import type { CreateAccountOutput } from '../../commands/create';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import type { CoreApi } from '../../../../core/core-api/core-api.interface';
 import type { AccountService } from '../../../../core/services/account/account-transaction-service.interface';
 import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
+import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeArgs,
@@ -10,10 +12,7 @@ import {
   makeKmsMock,
   makeAliasMock,
   makeSigningMock,
-  setupExitSpy,
 } from '../../../../../__tests__/helpers/plugin';
-
-let exitSpy: jest.SpyInstance;
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),
@@ -51,15 +50,7 @@ const makeApiMocks = ({
   return { account, signing, networkMock, kms, alias };
 };
 
-beforeAll(() => {
-  exitSpy = setupExitSpy();
-});
-
-afterAll(() => {
-  exitSpy.mockRestore();
-});
-
-describe('account plugin - create command (unit)', () => {
+describe('account plugin - create command (ADR-003)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -98,7 +89,7 @@ describe('account plugin - create command (unit)', () => {
       name: 'myAccount',
     });
 
-    await createAccountHandler(args);
+    const result = await createAccount(args);
 
     expect(kms.createLocalPrivateKey).toHaveBeenCalled();
     expect(account.createAccount).toHaveBeenCalledWith({
@@ -128,17 +119,28 @@ describe('account plugin - create command (unit)', () => {
         keyRefId: 'kr_test123',
       }),
     );
-    expect(logger.log).toHaveBeenCalledWith(
-      '✅ Account created successfully: 0.0.9999',
+
+    // Verify ADR-003 result
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: CreateAccountOutput = JSON.parse(result.outputJson!);
+    expect(output.accountId).toBe('0.0.9999');
+    expect(output.name).toBe('myAccount');
+    expect(output.type).toBe('ECDSA');
+    expect(output.network).toBe('testnet');
+    expect(output.transactionId).toBe('tx-123');
+    expect(output.evmAddress).toBe(
+      '0x000000000000000000000000000000000000abcd',
     );
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    expect(output.publicKey).toBe('pub-key-test');
   });
 
-  test('logs error and exits when signAndExecute returns failure', async () => {
+  test('returns failure when signAndExecute returns failure', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({ saveAccount: jest.fn() }));
 
-    const { account, signing, networkMock } = makeApiMocks({
+    const { account, signing, networkMock, kms, alias } = makeApiMocks({
       createAccountImpl: jest.fn().mockResolvedValue({
         transaction: {},
         privateKey: 'priv',
@@ -156,24 +158,24 @@ describe('account plugin - create command (unit)', () => {
       account,
       txExecution: signing,
       network: networkMock,
+      kms,
+      alias,
       logger,
     };
 
     const args = makeArgs(api, logger, { name: 'failAccount' });
 
-    await createAccountHandler(args);
+    const result = await createAccount(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Failed to create account'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Invalid balance parameter');
   });
 
-  test('logs error and exits when createAccount throws', async () => {
+  test('returns failure when createAccount throws', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({ saveAccount: jest.fn() }));
 
-    const { account, signing, networkMock } = makeApiMocks({
+    const { account, signing, networkMock, kms, alias } = makeApiMocks({
       createAccountImpl: jest
         .fn()
         .mockRejectedValue(new Error('network error')),
@@ -183,16 +185,17 @@ describe('account plugin - create command (unit)', () => {
       account,
       txExecution: signing,
       network: networkMock,
+      kms,
+      alias,
       logger,
     };
 
     const args = makeArgs(api, logger, { name: 'errorAccount' });
 
-    await createAccountHandler(args);
+    const result = await createAccount(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Failed to create account'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toBeDefined();
+    expect(result.errorMessage).toContain('Invalid balance parameter');
   });
 });

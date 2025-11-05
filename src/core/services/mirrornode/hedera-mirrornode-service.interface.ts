@@ -26,7 +26,7 @@ export interface HederaMirrornodeService {
   /**
    * Get account HBAR balance
    */
-  getAccountHBarBalance(accountId: string): Promise<BigNumber>;
+  getAccountHBarBalance(accountId: string): Promise<bigint>;
 
   /**
    * Get account token balances

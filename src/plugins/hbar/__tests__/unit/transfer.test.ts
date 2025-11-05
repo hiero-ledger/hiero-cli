@@ -1,101 +1,22 @@
-import { hbarTransferHandler as transferHandler } from '../../commands/transfer';
-import { ZustandAccountStateHelper } from '../../../account/zustand-state-helper';
-import type { CoreApi } from '../../../../core/core-api/core-api.interface';
-import type { HbarService } from '../../../../core/services/hbar/hbar-service.interface';
-import type { AccountData } from '../../../account/schema';
+import { transferHandler } from '../../commands/transfer';
+import { Status } from '../../../../core/shared/constants';
+import { makeArgs } from '../../../../../__tests__/helpers/plugin';
+import { setupTransferTest } from './helpers/mocks';
 import {
-  makeLogger,
-  makeAccountData,
-  makeArgs,
-  makeNetworkMock,
-  makeKmsMock,
-  makeAliasMock,
-  makeSigningMock,
-  makeStateMock,
-} from '../../../../../__tests__/helpers/plugin';
-import { StateService } from '../../../../core/services/state/state-service.interface';
+  mockAccounts,
+  mockAccountIdKeyPairs,
+  mockAccountIds,
+  mockTransactionResults,
+  mockTransferTransactionResults,
+  mockDefaultCredentials,
+  mockBalances,
+  mockAmounts,
+  mockParsedBalances,
+} from './helpers/fixtures';
 
 jest.mock('../../../account/zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),
 }));
-
-const MockedHelper = ZustandAccountStateHelper as jest.Mock;
-
-const makeApiMocks = ({
-  transferImpl,
-  signAndExecuteImpl,
-  network = 'testnet',
-  accounts = [],
-}: {
-  transferImpl?: jest.Mock;
-  signAndExecuteImpl?: jest.Mock;
-  network?: 'testnet' | 'mainnet' | 'previewnet';
-  accounts?: AccountData[];
-}) => {
-  const hbar: jest.Mocked<HbarService> = {
-    transferTinybar: transferImpl || jest.fn(),
-  };
-
-  const signing = makeSigningMock({ signAndExecuteImpl });
-  const networkMock = makeNetworkMock(network);
-  const kms = makeKmsMock();
-  const alias = makeAliasMock();
-
-  MockedHelper.mockImplementation(() => ({
-    getAccountsByNetwork: jest.fn().mockReturnValue(accounts),
-  }));
-
-  return { hbar, signing, networkMock, kms, alias };
-};
-
-// Common test accounts
-const SENDER_ACCOUNT = makeAccountData({
-  name: 'sender',
-  accountId: '0.0.1001',
-  network: 'testnet',
-});
-
-const RECEIVER_ACCOUNT = makeAccountData({
-  name: 'receiver',
-  accountId: '0.0.2002',
-  network: 'testnet',
-});
-
-const setupTransferTest = (options: {
-  transferImpl?: jest.Mock;
-  signAndExecuteImpl?: jest.Mock;
-  accounts?: AccountData[];
-  defaultCredentials?: any;
-}) => {
-  const logger = makeLogger();
-  const { hbar, signing, networkMock, kms, alias } = makeApiMocks({
-    transferImpl: options.transferImpl,
-    signAndExecuteImpl: options.signAndExecuteImpl,
-    accounts: options.accounts || [],
-  });
-
-  const stateMock = makeStateMock({
-    listData: options.accounts || [],
-  });
-
-  const api: Partial<CoreApi> = {
-    hbar,
-    txExecution: signing,
-    network: networkMock,
-    kms,
-    alias,
-    logger,
-    state: stateMock as StateService,
-  };
-
-  if (options.defaultCredentials && api.network) {
-    (api.network.getOperator as jest.Mock).mockReturnValue(
-      options.defaultCredentials,
-    );
-  }
-
-  return { api, logger, hbar, signing, kms, alias, stateMock };
-};
 
 describe('hbar plugin - transfer command (unit)', () => {
   beforeEach(() => {
@@ -104,190 +25,185 @@ describe('hbar plugin - transfer command (unit)', () => {
 
   test('transfers HBAR successfully when all params provided', async () => {
     const { api, logger, hbar, signing } = setupTransferTest({
-      transferImpl: jest.fn().mockResolvedValue({
-        transaction: {},
-      }),
-      signAndExecuteImpl: jest.fn().mockResolvedValue({
-        success: true,
-        transactionId: '0.0.1001@1234567890.123456789',
-        receipt: {} as any,
-      }),
-      accounts: [SENDER_ACCOUNT, RECEIVER_ACCOUNT],
+      transferImpl: jest
+        .fn()
+        .mockResolvedValue(mockTransferTransactionResults.empty),
+      signAndExecuteImpl: jest
+        .fn()
+        .mockResolvedValue(mockTransactionResults.success),
+      accounts: [mockAccounts.sender, mockAccounts.receiver],
     });
 
     const args = makeArgs(api, logger, {
-      balance: 1,
-      from: 'sender',
-      to: 'receiver',
+      balance: mockBalances.valid,
+      from: mockAccountIdKeyPairs.sender,
+      to: mockAccountIds.receiver,
       memo: 'test-transfer',
     });
 
-    await transferHandler(args);
+    const result = await transferHandler(args);
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
 
     expect(hbar.transferTinybar).toHaveBeenCalledWith({
-      amount: 100000000,
-      from: 'sender',
-      to: 'receiver',
+      amount: mockParsedBalances.valid,
+      from: mockAccountIds.sender,
+      to: mockAccountIds.receiver,
       memo: 'test-transfer',
     });
     expect(signing.signAndExecute).toHaveBeenCalled();
     expect(logger.log).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
     expect(logger.log).toHaveBeenCalledWith(
-      '[HBAR] Transfer submitted successfully, txId=0.0.1001@1234567890.123456789',
+      `[HBAR] Transfer submitted successfully, txId=${mockTransactionResults.success.transactionId}`,
     );
   });
 
-  test('throws error when balance is invalid', async () => {
+  test('returns failure when balance is invalid', async () => {
     const { api, logger } = setupTransferTest({ accounts: [] });
 
     const args = makeArgs(api, logger, {
-      balance: NaN,
-      from: '0.0.1001',
-      to: '0.0.2002',
+      balance: mockBalances.invalid,
+      from: mockAccountIdKeyPairs.sender,
+      to: mockAccountIds.receiver,
     });
 
-    await expect(transferHandler(args)).rejects.toThrow(
-      'Invalid balance parameter: Unable to parse balance: "NaN", balance after parsing is Not a Number.',
-    );
+    const result = await transferHandler(args);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Invalid balance value');
   });
 
-  test('throws error when balance is negative', async () => {
+  test('returns failure when balance is negative', async () => {
     const { api, logger } = setupTransferTest({ accounts: [] });
 
     const args = makeArgs(api, logger, {
-      balance: -100,
-      from: '0.0.1001',
-      to: '0.0.2002',
+      balance: mockBalances.negative,
+      from: mockAccountIdKeyPairs.sender,
+      to: mockAccountIds.receiver,
     });
 
-    await expect(transferHandler(args)).rejects.toThrow(
-      'Invalid balance parameter: Invalid balance: "-100". Balance cannot be negative.',
-    );
+    const result = await transferHandler(args);
+    expect(result.status).toBe(Status.Failure);
   });
 
-  test('throws error when balance is zero', async () => {
+  test('returns failure when balance is zero', async () => {
+    const { api, logger } = setupTransferTest({ accounts: [] });
+
+    const args = makeArgs(api, logger, {
+      balance: mockBalances.zero,
+      from: mockAccountIdKeyPairs.sender,
+      to: mockAccountIds.receiver,
+    });
+
+    const result = await transferHandler(args);
+    expect(result.status).toBe(Status.Failure);
+  });
+
+  test('succeeds when valid params provided (no default accounts check)', async () => {
     const { api, logger } = setupTransferTest({
-      transferImpl: jest.fn().mockResolvedValue({
-        transaction: {},
-      }),
-      signAndExecuteImpl: jest.fn().mockResolvedValue({
-        success: true,
-        transactionId: 'test-tx',
-        receipt: {} as any,
-      }),
       accounts: [],
+      transferImpl: jest
+        .fn()
+        .mockResolvedValue(mockTransferTransactionResults.empty),
+      signAndExecuteImpl: jest
+        .fn()
+        .mockResolvedValue(mockTransactionResults.successGeneric),
     });
 
     const args = makeArgs(api, logger, {
-      balance: 0,
-      from: '0.0.1001',
-      to: '0.0.2002',
+      balance: mockAmounts.small,
+      from: mockAccountIdKeyPairs.sender,
+      to: mockAccountIds.receiver,
     });
 
-    await expect(transferHandler(args)).rejects.toThrow('Invalid balance');
-  });
-
-  test('throws error when no accounts available and from/to missing', async () => {
-    const { api, logger } = setupTransferTest({
-      accounts: [],
-      transferImpl: jest.fn().mockResolvedValue({
-        transaction: {},
-      }),
-      signAndExecuteImpl: jest.fn().mockResolvedValue({
-        success: true,
-        transactionId: 'test-tx',
-        receipt: {} as any,
-      }),
-    });
-
-    const args = makeArgs(api, logger, {
-      balance: 100,
-      from: '0.0.1001',
-      to: '0.0.2002',
-    });
-
-    await transferHandler(args);
+    const result = await transferHandler(args);
+    expect(result.status).toBe(Status.Success);
 
     // This test should actually succeed now since we're providing valid parameters
     expect(logger.log).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
   });
 
-  test('throws error when from equals to', async () => {
-    const sameAccount = makeAccountData({
-      name: 'same-account',
-      accountId: '0.0.1001',
-      network: 'testnet',
+  test('returns failure when from equals to', async () => {
+    const { api, logger } = setupTransferTest({
+      accounts: [mockAccounts.sameAccount],
     });
 
-    const { api, logger } = setupTransferTest({ accounts: [sameAccount] });
-
     const args = makeArgs(api, logger, {
-      balance: 100,
+      balance: mockAmounts.small,
       from: 'same-account',
       to: 'same-account',
     });
 
-    await expect(transferHandler(args)).rejects.toThrow(
-      'Cannot transfer to the same account',
-    );
+    const result = await transferHandler(args);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Cannot transfer');
   });
 
-  test('throws error when transferTinybar fails', async () => {
+  test('returns failure when transferTinybar fails', async () => {
     const { api, logger } = setupTransferTest({
       transferImpl: jest
         .fn()
         .mockRejectedValue(new Error('Network connection failed')),
-      accounts: [SENDER_ACCOUNT, RECEIVER_ACCOUNT],
+      accounts: [mockAccounts.sender, mockAccounts.receiver],
     });
 
     const args = makeArgs(api, logger, {
-      balance: 100000000,
-      from: 'sender',
-      to: 'receiver',
+      balance: mockBalances.valid,
+      from: mockAccountIdKeyPairs.sender,
+      to: mockAccountIds.receiver,
       memo: 'test-transfer',
     });
 
-    await expect(transferHandler(args)).rejects.toThrow(
-      'Network connection failed',
+    const result = await transferHandler(args);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Network connection failed');
+  });
+
+  test('returns failure when from is just account ID without private key', async () => {
+    const { api, logger } = setupTransferTest({ accounts: [] });
+
+    const args = makeArgs(api, logger, {
+      balance: mockAmounts.small,
+      from: mockAccountIds.sender, // Just account ID, no private key
+      to: mockAccountIds.receiver,
+    });
+
+    const result = await transferHandler(args);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      `Invalid from account: ${mockAccountIds.sender} is neither a valid account-id:private-key pair, nor a known account name`,
     );
   });
 
   test('uses default credentials as from when not provided', async () => {
     const { api, logger, hbar } = setupTransferTest({
-      transferImpl: jest.fn().mockResolvedValue({
-        transaction: {},
-      }),
-      signAndExecuteImpl: jest.fn().mockResolvedValue({
-        success: true,
-        transactionId: '0.0.3000@1234567890.987654321',
-        receipt: {} as any,
-      }),
-      accounts: [RECEIVER_ACCOUNT],
-      defaultCredentials: {
-        accountId: '0.0.3000',
-        privateKey: 'default-key',
-        network: 'testnet',
-        isDefault: true,
-      },
+      transferImpl: jest
+        .fn()
+        .mockResolvedValue(mockTransferTransactionResults.empty),
+      signAndExecuteImpl: jest
+        .fn()
+        .mockResolvedValue(mockTransactionResults.successDefault),
+      accounts: [mockAccounts.receiver],
+      defaultCredentials: mockDefaultCredentials.testnet,
     });
 
     const args = makeArgs(api, logger, {
-      balance: 0.5,
-      from: '0.0.3000',
-      to: 'receiver',
+      balance: mockAmounts.medium,
+      from: mockAccountIdKeyPairs.default,
+      to: mockAccountIds.receiver,
     });
 
-    await transferHandler(args);
+    const result = await transferHandler(args);
+    expect(result.status).toBe(Status.Success);
 
     // The transfer command uses the default operator from the signing service
     expect(hbar.transferTinybar).toHaveBeenCalledWith({
-      amount: 50000000,
-      from: '0.0.3000',
-      to: 'receiver',
-      memo: '',
+      amount: mockParsedBalances.medium,
+      from: mockAccountIds.default,
+      to: mockAccountIds.receiver,
+      memo: undefined,
     });
     expect(logger.log).toHaveBeenCalledWith(
-      '[HBAR] Transfer submitted successfully, txId=0.0.3000@1234567890.987654321',
+      `[HBAR] Transfer submitted successfully, txId=${mockTransactionResults.successDefault.transactionId}`,
     );
   });
 });

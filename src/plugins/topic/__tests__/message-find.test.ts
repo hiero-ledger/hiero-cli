@@ -1,24 +1,21 @@
-import { findMessageHandler } from '../commands/message-find';
+import { findMessage } from '../commands/find-message/handler';
 import type { CoreApi } from '../../../core/core-api/core-api.interface';
 import type { HederaMirrornodeService } from '../../../core/services/mirrornode/hedera-mirrornode-service.interface';
+import type { FindMessagesOutput } from '../commands/find-message/output';
+import { Status } from '../../../core/shared/constants';
 import {
   makeLogger,
   makeArgs,
   makeNetworkMock,
   makeAliasMock,
-  setupExitSpy,
 } from '../../../../__tests__/helpers/plugin';
-
-let exitSpy: jest.SpyInstance;
 
 const makeTopicMessage = (sequenceNumber: number, message: string) => ({
   consensus_timestamp: '1234567890.123456789',
   message: Buffer.from(message).toString('base64'),
   sequence_number: sequenceNumber,
-  payer_account_id: '0.0.1234',
   topic_id: '0.0.5678',
   running_hash: 'hash',
-  running_hash_version: 3,
 });
 
 const makeApiMocks = ({
@@ -51,14 +48,6 @@ const makeApiMocks = ({
   return { mirror, networkMock, alias };
 };
 
-beforeAll(() => {
-  exitSpy = setupExitSpy();
-});
-
-afterAll(() => {
-  exitSpy.mockRestore();
-});
-
 describe('topic plugin - message-find command', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -84,17 +73,22 @@ describe('topic plugin - message-find command', () => {
       sequenceNumber: 5,
     });
 
-    await findMessageHandler(args);
+    const result = await findMessage(args);
+
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    expect(output.topicId).toBe('0.0.5678');
+    expect(output.totalCount).toBe(1);
+    expect(output.messages).toHaveLength(1);
+    expect(output.messages[0].sequenceNumber).toBe(5);
+    expect(output.messages[0].message).toBe('Hello, World!');
 
     expect(mirror.getTopicMessage).toHaveBeenCalledWith({
       topicId: '0.0.5678',
       sequenceNumber: 5,
     });
-    expect(logger.log).toHaveBeenCalledWith('   Message: "Hello, World!"');
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Timestamp:'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
   test('finds messages with greater than filter', async () => {
@@ -124,7 +118,20 @@ describe('topic plugin - message-find command', () => {
       sequenceNumberGt: 5,
     });
 
-    await findMessageHandler(args);
+    const result = await findMessage(args);
+
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    expect(output.totalCount).toBe(3);
+    expect(output.messages).toHaveLength(3);
+
+    // Check that all expected messages are present (order may vary)
+    const sequenceNumbers = output.messages.map((m) => m.sequenceNumber);
+    expect(sequenceNumbers).toContain(6);
+    expect(sequenceNumbers).toContain(7);
+    expect(sequenceNumbers).toContain(8);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
       topicId: '0.0.5678',
@@ -134,13 +141,6 @@ describe('topic plugin - message-find command', () => {
         value: 5,
       },
     });
-    expect(logger.log).toHaveBeenCalledWith('1. Sequence #6');
-    expect(logger.log).toHaveBeenCalledWith('   Message: "Message 6"');
-    expect(logger.log).toHaveBeenCalledWith('2. Sequence #7');
-    expect(logger.log).toHaveBeenCalledWith('   Message: "Message 7"');
-    expect(logger.log).toHaveBeenCalledWith('3. Sequence #8');
-    expect(logger.log).toHaveBeenCalledWith('   Message: "Message 8"');
-    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
   test('finds messages with greater than or equal filter', async () => {
@@ -169,7 +169,17 @@ describe('topic plugin - message-find command', () => {
       sequenceNumberGte: 5,
     });
 
-    await findMessageHandler(args);
+    const result = await findMessage(args);
+
+    expect(result.status).toBe(Status.Success);
+    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    expect(output.totalCount).toBe(2);
+    expect(output.messages).toHaveLength(2);
+
+    // Check that expected messages are present (order may vary)
+    const sequenceNumbers = output.messages.map((m) => m.sequenceNumber);
+    expect(sequenceNumbers).toContain(5);
+    expect(sequenceNumbers).toContain(6);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
       topicId: '0.0.5678',
@@ -179,9 +189,6 @@ describe('topic plugin - message-find command', () => {
         value: 5,
       },
     });
-    expect(logger.log).toHaveBeenCalledWith('1. Sequence #5');
-    expect(logger.log).toHaveBeenCalledWith('   Message: "Message 5"');
-    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
   test('finds messages with less than filter', async () => {
@@ -210,7 +217,11 @@ describe('topic plugin - message-find command', () => {
       sequenceNumberLt: 3,
     });
 
-    await findMessageHandler(args);
+    const result = await findMessage(args);
+
+    expect(result.status).toBe(Status.Success);
+    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    expect(output.totalCount).toBe(2);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
       topicId: '0.0.5678',
@@ -220,7 +231,6 @@ describe('topic plugin - message-find command', () => {
         value: 3,
       },
     });
-    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
   test('finds messages with less than or equal filter', async () => {
@@ -246,7 +256,11 @@ describe('topic plugin - message-find command', () => {
       sequenceNumberLte: 3,
     });
 
-    await findMessageHandler(args);
+    const result = await findMessage(args);
+
+    expect(result.status).toBe(Status.Success);
+    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    expect(output.totalCount).toBe(1);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
       topicId: '0.0.5678',
@@ -256,7 +270,6 @@ describe('topic plugin - message-find command', () => {
         value: 3,
       },
     });
-    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
   test('finds messages with equal filter', async () => {
@@ -282,7 +295,11 @@ describe('topic plugin - message-find command', () => {
       sequenceNumberEq: 5,
     });
 
-    await findMessageHandler(args);
+    const result = await findMessage(args);
+
+    expect(result.status).toBe(Status.Success);
+    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    expect(output.totalCount).toBe(1);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
       topicId: '0.0.5678',
@@ -292,7 +309,6 @@ describe('topic plugin - message-find command', () => {
         value: 5,
       },
     });
-    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
   test('finds messages with not equal filter', async () => {
@@ -321,7 +337,11 @@ describe('topic plugin - message-find command', () => {
       sequenceNumberNe: 2,
     });
 
-    await findMessageHandler(args);
+    const result = await findMessage(args);
+
+    expect(result.status).toBe(Status.Success);
+    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    expect(output.totalCount).toBe(2);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
       topicId: '0.0.5678',
@@ -331,10 +351,9 @@ describe('topic plugin - message-find command', () => {
         value: 2,
       },
     });
-    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
-  test('logs error when no sequence number or filter provided', async () => {
+  test('returns failure when no sequence number or filter provided', async () => {
     const logger = makeLogger();
 
     const { mirror, networkMock, alias } = makeApiMocks({});
@@ -350,15 +369,15 @@ describe('topic plugin - message-find command', () => {
       topicId: '0.0.5678',
     });
 
-    await findMessageHandler(args);
+    const result = await findMessage(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      'No sequence number or filter provided.',
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      'No sequence number or filter provided',
     );
-    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
-  test('logs error and exits when getTopicMessage throws', async () => {
+  test('returns failure when getTopicMessage throws', async () => {
     const logger = makeLogger();
 
     const { mirror, networkMock, alias } = makeApiMocks({
@@ -379,15 +398,14 @@ describe('topic plugin - message-find command', () => {
       sequenceNumber: 5,
     });
 
-    await findMessageHandler(args);
+    const result = await findMessage(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Failed to find messages'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Failed to find messages');
+    expect(result.errorMessage).toContain('network error');
   });
 
-  test('logs error and exits when getTopicMessages throws', async () => {
+  test('returns failure when getTopicMessages throws', async () => {
     const logger = makeLogger();
 
     const { mirror, networkMock, alias } = makeApiMocks({
@@ -408,12 +426,11 @@ describe('topic plugin - message-find command', () => {
       sequenceNumberGte: 5,
     });
 
-    await findMessageHandler(args);
+    const result = await findMessage(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Failed to find messages'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Failed to find messages');
+    expect(result.errorMessage).toContain('network error');
   });
 
   test('handles empty message list', async () => {
@@ -438,11 +455,12 @@ describe('topic plugin - message-find command', () => {
       sequenceNumberGte: 1000,
     });
 
-    await findMessageHandler(args);
+    const result = await findMessage(args);
 
-    // Should exit successfully even with empty messages since filter was provided
-    expect(logger.error).not.toHaveBeenCalled();
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    expect(result.status).toBe(Status.Success);
+    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    expect(output.totalCount).toBe(0);
+    expect(output.messages).toEqual([]);
   });
 
   test('uses first filter when multiple filters are provided', async () => {
@@ -469,7 +487,9 @@ describe('topic plugin - message-find command', () => {
       sequenceNumberLt: 10,
     });
 
-    await findMessageHandler(args);
+    const result = await findMessage(args);
+
+    expect(result.status).toBe(Status.Success);
 
     // Should use the first non-empty filter (gt)
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
@@ -480,6 +500,5 @@ describe('topic plugin - message-find command', () => {
         value: 5,
       },
     });
-    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 });

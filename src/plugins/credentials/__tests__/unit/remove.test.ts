@@ -1,20 +1,12 @@
-import { removeHandler } from '../../commands/remove';
+import { removeCredentials } from '../../commands/remove/handler';
 import {
   makeLogger,
   makeArgs,
-  setupExitSpy,
   makeKmsMock,
 } from '../../../../../__tests__/helpers/plugin';
+import { Status } from '../../../../core/shared/constants';
 
-let exitSpy: jest.SpyInstance;
-
-beforeAll(() => {
-  exitSpy = setupExitSpy();
-});
-
-afterAll(() => {
-  exitSpy.mockRestore();
-});
+// No process.exit usage in handler version
 
 describe('credentials plugin - remove command', () => {
   beforeEach(() => {
@@ -29,40 +21,46 @@ describe('credentials plugin - remove command', () => {
       keyRefId: 'kr_test123',
     });
 
-    removeHandler(args);
-
-    expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
-    expect(logger.log).toHaveBeenCalledWith(
-      '🗑️  Removing credentials for keyRefId: kr_test123',
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      '✅ Credentials removed for keyRefId: kr_test123',
-    );
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    return removeCredentials(args).then((result) => {
+      expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
+      expect(result.status).toBe(Status.Success);
+      const output = JSON.parse(result.outputJson!);
+      expect(output).toEqual({ keyRefId: 'kr_test123', removed: true });
+    });
   });
 
-  test('exits with error when no keyRefId is provided', () => {
+  test('returns failure when no keyRefId is provided', () => {
     const logger = makeLogger();
     const kmsService = makeKmsMock();
+    kmsService.remove.mockImplementation(() => {
+      throw new Error('Missing keyRefId');
+    });
 
     const args = makeArgs({ kms: kmsService }, logger, {});
 
-    removeHandler(args);
-
-    expect(logger.error).toHaveBeenCalledWith('❌ Must specify --key-ref-id');
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    return removeCredentials(args).then((result) => {
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toContain('Failed to remove credentials');
+      const output = JSON.parse(result.outputJson!);
+      expect(output.removed).toBe(false);
+    });
   });
 
-  test('exits with error when keyRefId is empty string', () => {
+  test('returns failure when keyRefId is empty string', () => {
     const logger = makeLogger();
     const kmsService = makeKmsMock();
+    kmsService.remove.mockImplementation(() => {
+      throw new Error('Missing keyRefId');
+    });
 
     const args = makeArgs({ kms: kmsService }, logger, { keyRefId: '' });
 
-    removeHandler(args);
-
-    expect(logger.error).toHaveBeenCalledWith('❌ Must specify --key-ref-id');
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    return removeCredentials(args).then((result) => {
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toContain('Failed to remove credentials');
+      const output = JSON.parse(result.outputJson!);
+      expect(output.removed).toBe(false);
+    });
   });
 
   test('handles KMS service errors', () => {
@@ -77,12 +75,12 @@ describe('credentials plugin - remove command', () => {
       keyRefId: 'kr_test123',
     });
 
-    removeHandler(args);
-
-    expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to remove credentials:'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    return removeCredentials(args).then((result) => {
+      expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toContain('Failed to remove credentials');
+      const output = JSON.parse(result.outputJson!);
+      expect(output.removed).toBe(false);
+    });
   });
 });

@@ -8,7 +8,7 @@ import {
   get as storeGet,
 } from '../../../src/state/store';
 
-describe('account delete command', () => {
+describe.skip('account delete command (legacy - disabled, incompatible with ADR-003)', () => {
   beforeEach(() => {
     storeSaveState(baseState as any);
   });

@@ -147,7 +147,7 @@ interface StateService {
 ```typescript
 interface HederaMirrornodeService {
   getAccount(accountId: string): Promise<AccountResponse>;
-  getAccountHBarBalance(accountId: string): Promise<BigNumber>;
+  getAccountHBarBalance(accountId: string): Promise<bigint>;
   getAccountTokenBalances(
     accountId: string,
     tokenId?: string,

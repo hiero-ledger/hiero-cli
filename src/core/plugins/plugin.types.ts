@@ -7,6 +7,7 @@ import { StateService } from '../services/state/state-service.interface';
 import { ConfigService } from '../services/config/config-service.interface';
 import { Logger } from '../services/logger/logger-service.interface';
 import { CommandHandlerArgs } from './plugin.interface';
+import { Status } from '../shared/constants';
 
 /**
  * Plugin manifest structure
@@ -29,6 +30,19 @@ export interface PluginManifest {
 }
 
 /**
+ * Command output specification
+ * Defines the schema and optional human-readable template for command output
+ */
+import { z } from 'zod';
+
+export interface CommandOutputSpec {
+  /** Zod schema for the command's output */
+  schema: z.ZodTypeAny;
+  /** Optional human-readable Handlebars template string */
+  humanTemplate?: string;
+}
+
+/**
  * Command specification
  */
 export interface CommandSpec {
@@ -37,6 +51,7 @@ export interface CommandSpec {
   description: string;
   options?: CommandOption[];
   handler: CommandHandler;
+  output: CommandOutputSpec;
 }
 
 /**
@@ -62,9 +77,25 @@ export interface PluginContext {
 }
 
 /**
- * Command handler function type
+ * Command execution result
+ * Returned by handlers that follow ADR-003 contract
  */
-export type CommandHandler = (args: CommandHandlerArgs) => void | Promise<void>;
+export interface CommandExecutionResult {
+  status: Status;
+  /** Optional, present when status !== 'success'; intended for humans */
+  errorMessage?: string;
+  /** JSON string conforming to the manifest-declared output schema */
+  outputJson?: string;
+}
+
+/**
+ * Command handler function type
+ * - All handlers are asynchronous and must return Promise<CommandExecutionResult>
+ * - Enforces ADR-003 contract (structured status/error/output handling)
+ */
+export type CommandHandler = (
+  args: CommandHandlerArgs,
+) => Promise<CommandExecutionResult>;
 
 /**
  * Plugin state schema

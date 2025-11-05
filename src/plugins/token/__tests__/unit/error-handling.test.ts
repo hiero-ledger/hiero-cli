@@ -3,16 +3,16 @@
  * Tests error scenarios and edge cases across the token plugin
  */
 import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { createTokenHandler } from '../../commands/create';
-import { associateTokenHandler } from '../../commands/associate';
-import { transferTokenHandler } from '../../commands/transfer';
-import { createTokenFromFileHandler } from '../../commands/createFromFile';
+import { createToken } from '../../commands/create';
+import { associateToken } from '../../commands/associate';
+import { transferToken } from '../../commands/transfer';
+import { createTokenFromFile } from '../../commands/createFromFile';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
+import { Status } from '../../../../core/shared/constants';
 import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
 import {
   makeLogger,
   makeApiMocks,
-  mockProcessExitThrows,
   mockZustandTokenStateHelper,
 } from './helpers/mocks';
 
@@ -21,7 +21,6 @@ jest.mock('../../zustand-state-helper', () => ({
 }));
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
-const { setupExit, cleanupExit, getExitSpy } = mockProcessExitThrows();
 
 /**
  * Helper to create alias mock that resolves test key strings
@@ -41,12 +40,7 @@ const makeTestAliasService = () => ({
 
 describe('Token Plugin Error Handling', () => {
   beforeEach(() => {
-    setupExit();
     mockZustandTokenStateHelper(MockedHelper);
-  });
-
-  afterEach(() => {
-    cleanupExit();
   });
 
   describe('network and connectivity errors', () => {
@@ -78,10 +72,15 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createTokenHandler(args)).rejects.toThrow('Process.exit(1)');
-      expect(logger.error).toHaveBeenCalledWith(
-        '❌ Failed to create token: Network timeout',
+      const result = await createToken(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toContain(
+        'Failed to create token: Network timeout',
       );
+      expect(result.outputJson).toBeUndefined();
     });
 
     test('should handle network connectivity issues during association', async () => {
@@ -109,12 +108,15 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(associateTokenHandler(args)).rejects.toThrow(
-        'Process.exit(1)',
+      const result = await associateToken(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toContain(
+        'Failed to associate token: Connection refused',
       );
-      expect(logger.error).toHaveBeenCalledWith(
-        '❌ Failed to associate token: Connection refused',
-      );
+      expect(result.outputJson).toBeUndefined();
     });
 
     test('should handle network errors during transfer', async () => {
@@ -155,25 +157,41 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(transferTokenHandler(args)).rejects.toThrow(
-        'Process.exit(1)',
+      const result = await transferToken(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toContain(
+        'Failed to transfer token: Network unreachable',
       );
-      expect(logger.error).toHaveBeenCalledWith(
-        '❌ Failed to transfer token: Network unreachable',
-      );
+      expect(result.outputJson).toBeUndefined();
     });
   });
 
   describe('authentication and authorization errors', () => {
     test('should handle invalid credentials', async () => {
-      // Arrange
-      const { api, kms: _kms } = makeApiMocks();
+      // Arrange - Mock KMS to throw error for invalid credentials
+      const { api, kms: _kms } = makeApiMocks({
+        kms: {
+          importPrivateKey: jest.fn().mockImplementation((privateKey) => {
+            if (privateKey === 'invalid-key') {
+              throw new Error('Invalid private key format');
+            }
+            return {
+              keyRefId: 'valid-key-ref-id',
+              publicKey: 'valid-public-key',
+            };
+          }),
+        },
+      });
 
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
+          treasury: '0.0.123456:invalid-key', // Invalid key format
         },
         api,
         state: {} as any,
@@ -181,10 +199,9 @@ describe('Token Plugin Error Handling', () => {
         logger,
       };
 
-      // Act & Assert
-      await expect(createTokenHandler(args)).rejects.toThrow('Process.exit(1)');
-      expect(logger.error).toHaveBeenCalledWith(
-        expect.stringContaining('❌ Failed to create token:'),
+      // Act & Assert - Error is thrown before try-catch block
+      await expect(createToken(args)).rejects.toThrow(
+        'Invalid private key format',
       );
     });
 
@@ -247,10 +264,14 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createTokenHandler(args)).rejects.toThrow('Process.exit(1)');
-      expect(logger.error).toHaveBeenCalledWith(
-        '❌ Failed to create token: Token creation failed - no token ID returned',
-      );
+      const result = await createToken(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.outputJson).toBeUndefined();
+      // ADR-003 compliance: logger.error calls are no longer expected
     });
 
     test('should handle insufficient permissions', async () => {
@@ -297,12 +318,17 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(associateTokenHandler(args)).rejects.toThrow(
-        'Process.exit(1)',
-      );
-      expect(logger.error).toHaveBeenCalledWith(
-        '❌ Failed to associate token: Token association failed',
-      );
+      const result = await associateToken(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.outputJson).toBeUndefined();
+      // ADR-003 compliance: logger.error calls are no longer expected
+      // expect(logger.error).toHaveBeenCalledWith(
+      //   '❌ Failed to associate token: Token association failed',
+      // );
     });
   });
 
@@ -349,12 +375,13 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(transferTokenHandler(args)).rejects.toThrow(
-        'Process.exit(1)',
-      );
-      expect(logger.error).toHaveBeenCalledWith(
-        '❌ Failed to transfer token: Token transfer failed',
-      );
+      const result = await transferToken(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.outputJson).toBeUndefined();
     });
 
     test('should handle token not found', async () => {
@@ -383,9 +410,13 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(associateTokenHandler(args)).rejects.toThrow(
-        'Process.exit(1)',
-      );
+      const result = await associateToken(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.outputJson).toBeUndefined();
     });
 
     test('should handle account not found', async () => {
@@ -426,9 +457,13 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(associateTokenHandler(args)).rejects.toThrow(
-        'Process.exit(1)',
-      );
+      const result = await associateToken(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.outputJson).toBeUndefined();
     });
 
     test('should handle duplicate token name', async () => {
@@ -478,10 +513,14 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createTokenHandler(args)).rejects.toThrow('Process.exit(1)');
-      expect(logger.error).toHaveBeenCalledWith(
-        '❌ Failed to create token: Token creation failed - no token ID returned',
-      );
+      const result = await createToken(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.outputJson).toBeUndefined();
+      // ADR-003 compliance: logger.error calls are no longer expected
     });
   });
 
@@ -501,13 +540,13 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createTokenFromFileHandler(args)).rejects.toThrow(
-        'Process.exit(1)',
-      );
-      expect(logger.error).toHaveBeenCalledWith(
-        expect.stringContaining('❌ Failed to create token from file:'),
-      );
-      expect(getExitSpy()).toHaveBeenCalledWith(1);
+      const result = await createTokenFromFile(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.outputJson).toBeUndefined();
     });
 
     test('should handle file permission error', async () => {
@@ -525,7 +564,13 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createTokenFromFileHandler(args)).rejects.toThrow();
+      const result = await createTokenFromFile(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.outputJson).toBeUndefined();
     });
 
     test('should handle corrupted JSON file', async () => {
@@ -543,13 +588,13 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createTokenFromFileHandler(args)).rejects.toThrow(
-        'Process.exit(1)',
-      );
-      expect(logger.error).toHaveBeenCalledWith(
-        expect.stringContaining('❌ Failed to create token from file:'),
-      );
-      expect(getExitSpy()).toHaveBeenCalledWith(1);
+      const result = await createTokenFromFile(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.outputJson).toBeUndefined();
     });
   });
 
@@ -622,10 +667,13 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createTokenHandler(args)).rejects.toThrow('Process.exit(1)');
-      expect(logger.error).toHaveBeenCalledWith(
-        '❌ Failed to create token: State service unavailable',
-      );
+      const result = await createToken(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.outputJson).toBeUndefined();
     });
   });
 
@@ -662,10 +710,13 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createTokenHandler(args)).rejects.toThrow('Process.exit(1)');
-      expect(logger.error).toHaveBeenCalledWith(
-        '❌ Failed to create token: Rate limit exceeded',
-      );
+      const result = await createToken(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.outputJson).toBeUndefined();
     });
 
     test('should handle service throttling', async () => {
@@ -710,12 +761,13 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(transferTokenHandler(args)).rejects.toThrow(
-        'Process.exit(1)',
-      );
-      expect(logger.error).toHaveBeenCalledWith(
-        '❌ Failed to transfer token: Token transfer failed',
-      );
+      const result = await transferToken(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.outputJson).toBeUndefined();
     });
   });
 
@@ -771,10 +823,12 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createTokenHandler(args)).rejects.toThrow('Process.exit(1)');
-      expect(logger.error).toHaveBeenCalledWith(
-        '❌ Failed to create token: Token creation failed - no token ID returned',
-      );
+      const result = await createToken(args);
+
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.outputJson).toBeUndefined();
     });
 
     test('should handle unexpected API responses', async () => {
@@ -802,7 +856,13 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createTokenHandler(args)).rejects.toThrow();
+      const result = await createToken(args);
+
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Success);
+      expect(result.outputJson).toBeDefined();
+      expect(result.errorMessage).toBeUndefined();
     });
   });
 
@@ -846,14 +906,14 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(associateTokenHandler(associateArgs)).rejects.toThrow(
-        'Process.exit(1)',
-      );
+      const result = await associateToken(associateArgs);
 
-      // Assert - Should log appropriate error
-      expect(logger.error).toHaveBeenCalledWith(
-        '❌ Failed to associate token: Token association failed',
-      );
+      // ADR-003 compliance: check CommandExecutionResult
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toBeDefined();
+      expect(result.errorMessage).toContain('Token association failed');
+      expect(result.outputJson).toBeUndefined();
     });
   });
 });

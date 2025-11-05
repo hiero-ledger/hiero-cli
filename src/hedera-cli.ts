@@ -11,6 +11,7 @@ import { Logger } from './utils/logger';
 import { setGlobalOutputMode } from './utils/output';
 import { PluginManager } from './core/plugins/plugin-manager';
 import { createCoreApi } from './core/core-api';
+import { CoreApiConfig } from './core/core-api/core-api-config';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../package.json') as { version?: string };
@@ -22,10 +23,16 @@ program
   .option('-v, --verbose', 'Enable verbose logging')
   .option('-q, --quiet', 'Quiet mode (only errors)')
   .option('--debug', 'Enable debug logging')
-  .option('--json', 'Machine-readable JSON output')
+  .option(
+    '--json',
+    'Machine-readable JSON output (deprecated, use --format json)',
+  )
+  .option('--format <type>', 'Output format: human (default) or json')
   .option('--no-color', 'Disable ANSI colors');
 
-// Apply logging options
+// Apply logging options and store format preference
+let globalFormat: 'human' | 'json' = 'human';
+
 program.hook('preAction', () => {
   const opts = program.opts();
 
@@ -34,17 +41,36 @@ program.hook('preAction', () => {
   if (opts.quiet) logger.setLevel('quiet');
 
   setColorEnabled(opts.color !== false);
-  setGlobalOutputMode({ json: Boolean(opts.json) });
+
+  // Set global output mode based on already parsed format
+  setGlobalOutputMode({ json: globalFormat === 'json' });
 });
 
 // Initialize the simplified plugin system
 async function initializeCLI() {
   try {
-    console.log('🚀 Starting Hedera CLI...');
+    console.error('🚀 Starting Hedera CLI...');
+
+    // Pre-parse arguments to get format before creating core API
+    program.parseOptions(process.argv.slice(2));
+    const opts = program.opts();
+
+    const formatOption = opts.format as string | undefined;
+    const format: string = formatOption || (opts.json ? 'json' : 'human');
+    const initialFormat = format as 'human' | 'json';
+
+    // Update global format
+    globalFormat = initialFormat;
+
+    // Create core API config
+    const coreApiConfig: CoreApiConfig = {
+      format: initialFormat,
+    };
 
     // Create plugin manager
-    const coreAPI = createCoreApi();
-    const pluginManager = new PluginManager(coreAPI);
+    const coreApi = createCoreApi(coreApiConfig);
+
+    const pluginManager = new PluginManager(coreApi);
 
     // Set default plugins
     pluginManager.setDefaultPlugins([
@@ -64,14 +90,19 @@ async function initializeCLI() {
     // Register plugin commands
     pluginManager.registerCommands(program);
 
-    console.log('✅ CLI ready');
+    console.error('✅ CLI ready');
+  } catch (error) {
+    console.error('❌ CLI initialization failed:', error);
+    process.exit(1);
+  }
 
+  try {
     // Parse arguments and execute command
     installGlobalErrorHandlers();
     await program.parseAsync(process.argv);
     process.exit(0);
   } catch (error) {
-    console.error('❌ CLI initialization failed:', error);
+    console.error('❌ CLI execution failed:', error);
     process.exit(1);
   }
 }

@@ -1,21 +1,13 @@
-import { listHandler } from '../../commands/list';
+import { listCredentials } from '../../commands/list/handler';
 import {
   makeLogger,
   makeArgs,
-  setupExitSpy,
   makeKmsMock,
 } from '../../../../../__tests__/helpers/plugin';
 import { CredentialType } from '../../../../core/services/kms/kms-types.interface';
+import { Status } from '../../../../core/shared/constants';
 
-let exitSpy: jest.SpyInstance;
-
-beforeAll(() => {
-  exitSpy = setupExitSpy();
-});
-
-afterAll(() => {
-  exitSpy.mockRestore();
-});
+// No process.exit usage in handler version
 
 describe('credentials plugin - list command', () => {
   beforeEach(() => {
@@ -30,14 +22,13 @@ describe('credentials plugin - list command', () => {
 
     const args = makeArgs({ kms: kmsService }, logger, {});
 
-    listHandler(args);
-
-    expect(logger.log).toHaveBeenCalledWith('🔐 Stored Credentials:');
-    expect(logger.log).toHaveBeenCalledWith('   No credentials stored');
-    expect(logger.log).toHaveBeenCalledWith(
-      '   Use "credentials set" to add credentials',
-    );
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    return listCredentials(args).then((result) => {
+      expect(result.status).toBe(Status.Success);
+      expect(result.outputJson).toBeDefined();
+      const output = JSON.parse(result.outputJson!);
+      expect(output.credentials).toHaveLength(0);
+      expect(output.totalCount).toBe(0);
+    });
   });
 
   test('displays credentials when available', () => {
@@ -62,23 +53,25 @@ describe('credentials plugin - list command', () => {
 
     const args = makeArgs({ kms: kmsService }, logger, {});
 
-    listHandler(args);
-
-    expect(logger.log).toHaveBeenCalledWith('🔐 Stored Credentials:');
-    expect(logger.log).toHaveBeenCalledWith(
-      '   1. Key Reference ID: kr_test123',
-    );
-    expect(logger.log).toHaveBeenCalledWith('      Type: localPrivateKey');
-    expect(logger.log).toHaveBeenCalledWith('      Public Key: pub-key-123');
-    expect(logger.log).toHaveBeenCalledWith('      Labels: test, dev');
-    expect(logger.log).toHaveBeenCalledWith('');
-    expect(logger.log).toHaveBeenCalledWith(
-      '   2. Key Reference ID: kr_test456',
-    );
-    expect(logger.log).toHaveBeenCalledWith('      Type: kms');
-    expect(logger.log).toHaveBeenCalledWith('      Public Key: pub-key-456');
-    expect(logger.log).toHaveBeenCalledWith('');
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    return listCredentials(args).then((result) => {
+      expect(result.status).toBe(Status.Success);
+      expect(result.outputJson).toBeDefined();
+      const output = JSON.parse(result.outputJson!);
+      expect(output.totalCount).toBe(2);
+      expect(output.credentials).toHaveLength(2);
+      expect(output.credentials[0]).toEqual(
+        expect.objectContaining({
+          keyRefId: 'kr_test123',
+          publicKey: 'pub-key-123',
+        }),
+      );
+      expect(output.credentials[1]).toEqual(
+        expect.objectContaining({
+          keyRefId: 'kr_test456',
+          publicKey: 'pub-key-456',
+        }),
+      );
+    });
   });
 
   test('handles KMS service errors', () => {
@@ -91,11 +84,9 @@ describe('credentials plugin - list command', () => {
 
     const args = makeArgs({ kms: kmsService }, logger, {});
 
-    expect(() => listHandler(args)).toThrow('KMS service error');
-
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Failed to list credentials:'),
-    );
-    expect(exitSpy).not.toHaveBeenCalled();
+    return listCredentials(args).then((result) => {
+      expect(result.status).toBe(Status.Failure);
+      expect(result.errorMessage).toContain('Failed to list credentials');
+    });
   });
 });

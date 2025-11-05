@@ -185,6 +185,72 @@ export class ZustandGenericStateServiceImpl implements StateService {
     this.storageDir =
       storageDir || path.join(process.cwd(), '.hedera-cli', 'state');
     this.ensureStorageDir();
+
+    // Discover existing namespaces from storage files
+    this.discoverExistingNamespaces();
+  }
+
+  /**
+   * Discover existing namespaces from storage files
+   */
+  private discoverExistingNamespaces(): void {
+    if (!fs.existsSync(this.storageDir)) {
+      return;
+    }
+
+    try {
+      const files = fs.readdirSync(this.storageDir);
+      const namespaces = new Set<string>();
+
+      // Extract namespace names from storage filenames
+      files.forEach((file) => {
+        if (file.endsWith('-storage.json')) {
+          const namespace = file.replace(/-storage\.json$/, '');
+          namespaces.add(namespace);
+        }
+      });
+
+      // Pre-initialize discovered namespaces
+      for (const namespace of namespaces) {
+        this.getOrCreateStore(namespace);
+      }
+
+      if (namespaces.size > 0) {
+        this.logger.debug(
+          `[ZUSTAND STATE] Discovered ${namespaces.size} existing namespaces: ${Array.from(namespaces).join(', ')}`,
+        );
+      }
+    } catch (error) {
+      this.logger.debug(
+        `[ZUSTAND STATE] Failed to discover existing namespaces: ${String(error)}`,
+      );
+    }
+  }
+
+  /**
+   * Register namespaces from loaded plugins
+   */
+  registerNamespaces(namespaces: string[]): void {
+    for (const namespace of namespaces) {
+      this.getOrCreateStore(namespace);
+    }
+    this.logger.debug(
+      `[ZUSTAND STATE] Registered ${namespaces.length} namespaces: ${namespaces.join(', ')}`,
+    );
+  }
+
+  /**
+   * Get the storage directory path
+   */
+  getStorageDirectory(): string {
+    return this.storageDir;
+  }
+
+  /**
+   * Check if the state storage is initialized
+   */
+  isInitialized(): boolean {
+    return fs.existsSync(this.storageDir);
   }
 
   get<T>(namespace: string, key: string): T | undefined {

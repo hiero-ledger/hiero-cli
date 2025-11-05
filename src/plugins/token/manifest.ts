@@ -1,14 +1,32 @@
 /**
  * Token Plugin Manifest
  * Defines the token plugin according to ADR-001
+ * Updated for ADR-003 compliance with output specifications
  */
 import { PluginManifest } from '../../core/plugins/plugin.interface';
 import { TOKEN_JSON_SCHEMA, TOKEN_NAMESPACE } from './schema';
-import { transferTokenHandler } from './commands/transfer';
-import { createTokenHandler } from './commands/create';
-import { associateTokenHandler } from './commands/associate';
-import { createTokenFromFileHandler } from './commands/createFromFile';
-import { listTokensHandler } from './commands/list';
+import {
+  CreateTokenOutputSchema,
+  CREATE_TOKEN_TEMPLATE,
+} from './commands/create';
+import {
+  TransferTokenOutputSchema,
+  TRANSFER_TOKEN_TEMPLATE,
+} from './commands/transfer';
+import {
+  AssociateTokenOutputSchema,
+  ASSOCIATE_TOKEN_TEMPLATE,
+} from './commands/associate';
+import { ListTokensOutputSchema, LIST_TOKENS_TEMPLATE } from './commands/list';
+import {
+  CreateTokenFromFileOutputSchema,
+  CREATE_TOKEN_FROM_FILE_TEMPLATE,
+} from './commands/createFromFile';
+import { transferToken } from './commands/transfer/handler';
+import { createToken } from './commands/create/handler';
+import { associateToken } from './commands/associate/handler';
+import { createTokenFromFile } from './commands/createFromFile/handler';
+import { listTokens } from './commands/list/handler';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
@@ -63,7 +81,11 @@ export const tokenPluginManifest: PluginManifest = {
             'Amount to transfer. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "100t")',
         },
       ],
-      handler: transferTokenHandler,
+      handler: transferToken,
+      output: {
+        schema: TransferTokenOutputSchema,
+        humanTemplate: TRANSFER_TOKEN_TEMPLATE,
+      },
     },
     {
       name: 'create',
@@ -114,7 +136,11 @@ export const tokenPluginManifest: PluginManifest = {
           description: 'Optional name to register for the token',
         },
       ],
-      handler: createTokenHandler,
+      handler: createToken,
+      output: {
+        schema: CreateTokenOutputSchema,
+        humanTemplate: CREATE_TOKEN_TEMPLATE,
+      },
     },
     {
       name: 'associate',
@@ -137,7 +163,11 @@ export const tokenPluginManifest: PluginManifest = {
             'Account: either an alias or account-id:account-key pair',
         },
       ],
-      handler: associateTokenHandler,
+      handler: associateToken,
+      output: {
+        schema: AssociateTokenOutputSchema,
+        humanTemplate: ASSOCIATE_TOKEN_TEMPLATE,
+      },
     },
     {
       name: 'create-from-file',
@@ -148,7 +178,11 @@ export const tokenPluginManifest: PluginManifest = {
         { name: 'file', short: 'f', type: 'string', required: true },
         { name: 'args', short: 'a', type: 'string', required: false },
       ],
-      handler: createTokenFromFileHandler,
+      handler: createTokenFromFile,
+      output: {
+        schema: CreateTokenFromFileOutputSchema,
+        humanTemplate: CREATE_TOKEN_FROM_FILE_TEMPLATE,
+      },
     },
     {
       name: 'list',
@@ -173,7 +207,11 @@ export const tokenPluginManifest: PluginManifest = {
             'Filter tokens by network (defaults to current active network)',
         },
       ],
-      handler: listTokensHandler,
+      handler: listTokens,
+      output: {
+        schema: ListTokensOutputSchema,
+        humanTemplate: LIST_TOKENS_TEMPLATE,
+      },
     },
   ],
   stateSchemas: [

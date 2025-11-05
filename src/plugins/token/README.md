@@ -1,6 +1,6 @@
 # Token Plugin
 
-Complete token management plugin for the Hedera CLI following the plugin architecture (ADR-001).
+Complete token management plugin for the Hedera CLI following the plugin architecture (ADR-001) and result-oriented command handler contract (ADR-003).
 
 ## 🏗️ Architecture
 
@@ -8,21 +8,38 @@ This plugin follows the plugin architecture principles:
 
 - **Stateless**: Plugin is functionally stateless
 - **Dependency Injection**: Services are injected into command handlers
-- **Manifest-Driven**: Capabilities declared via manifest
+- **Manifest-Driven**: Capabilities declared via manifest with output specifications
 - **Namespace Isolation**: Own state namespace (`token-tokens`)
 - **Type Safety**: Full TypeScript support
+- **ADR-003 Compliance**: All command handlers return `CommandExecutionResult` with structured output
 
 ## 📁 Structure
 
 ```
 src/plugins/token/
-├── manifest.ts              # Plugin manifest with command definitions
+├── manifest.ts              # Plugin manifest with command definitions and output specs
 ├── schema.ts                # Token data schema with Zod validation
 ├── commands/
-│   ├── create.ts           # Token creation handler
-│   ├── associate.ts        # Token association handler
-│   └── transfer.ts         # Token transfer handler
+│   ├── create/
+│   │   ├── handler.ts       # Token creation handler (ADR-003 compliant)
+│   │   └── output.ts        # Output schema and template
+│   ├── transfer/
+│   │   ├── handler.ts       # Token transfer handler (ADR-003 compliant)
+│   │   └── output.ts        # Output schema and template
+│   ├── associate/
+│   │   ├── handler.ts       # Token association handler (ADR-003 compliant)
+│   │   └── output.ts        # Output schema and template
+│   ├── list/
+│   │   ├── handler.ts       # Token list handler (ADR-003 compliant)
+│   │   └── output.ts        # Output schema and template
+│   └── createFromFile/
+│       ├── handler.ts       # Token from file handler (ADR-003 compliant)
+│       └── output.ts        # Output schema and template
 ├── zustand-state-helper.ts  # State management helper
+├── __tests__/               # Comprehensive test suite
+│   └── unit/
+│       ├── adr003-compliance.test.ts  # ADR-003 compliance tests
+│       └── [other test files...]
 └── index.ts                # Plugin exports
 ```
 
@@ -127,26 +144,76 @@ This plugin migrates the following commands from the old architecture:
 
 ## 🧪 Testing
 
-The plugin can be tested using the existing test patterns:
+The plugin includes comprehensive tests following ADR-003 patterns:
 
 ```typescript
-// Example test structure
-describe('Token Plugin', () => {
-  test('token create command', async () => {
-    const handler = createTokenHandler;
-    const mockArgs = {
-      /* CommandHandlerArgs */
-    };
-    await handler(mockArgs);
-    // Assertions
+import { Status } from '../../../core/shared/constants';
+
+// Example ADR-003 compliant test
+describe('Token Plugin ADR-003 Compliance', () => {
+  test('token create command returns CommandExecutionResult', async () => {
+    const result = await createTokenHandler(mockArgs);
+
+    // Assert structure
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    // Assert output format
+    const output = JSON.parse(result.outputJson) as CreateTokenOutput;
+    expect(output.tokenId).toBe('0.0.12345');
+    expect(output.name).toBe('TestToken');
   });
 });
 ```
 
+### Test Structure
+
+- **ADR-003 Compliance**: `adr003-compliance.test.ts` - Tests all handlers return proper `CommandExecutionResult`
+- **Unit Tests**: Individual command handler tests with mocks and fixtures
+- **Integration Tests**: End-to-end token lifecycle tests
+- **Schema Tests**: Validation of input/output schemas
+
+## 📊 Output Formats
+
+All commands support multiple output formats through ADR-003:
+
+### Human-Readable (Default)
+
+```
+✅ Token created successfully: 0.0.12345
+   Name: MyToken (MTK)
+   Treasury: 0.0.111
+   Decimals: 2
+   Initial Supply: 1000000
+   Supply Type: INFINITE
+   Network: testnet
+   Transaction ID: 0.0.123@1700000000.123456789
+```
+
+### JSON Output
+
+```json
+{
+  "tokenId": "0.0.12345",
+  "name": "MyToken",
+  "symbol": "MTK",
+  "treasuryId": "0.0.111",
+  "decimals": 2,
+  "initialSupply": "1000000",
+  "supplyType": "INFINITE",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "network": "testnet"
+}
+```
+
 ## 🔮 Future Enhancements
 
-- Add `createFromFile` command
+- ✅ `createFromFile` command (implemented)
+- ✅ Token listing with filtering (implemented)
 - Implement token balance queries
 - Add token update operations
-- Support custom fees
+- Support for more custom fee types
 - Add token deletion/wipe operations
+- Add script mode support (`--script` flag)
+- Add output format control (`--format json|yaml|xml`)
+- Add output file redirection (`--output file.json`)

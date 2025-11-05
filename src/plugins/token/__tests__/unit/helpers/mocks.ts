@@ -12,6 +12,8 @@ import type { AliasService } from '../../../../../core/services/alias/alias-serv
 import type { AccountService } from '../../../../../core/services/account/account-transaction-service.interface';
 import type { NetworkService } from '../../../../../core/services/network/network-service.interface';
 import type { ConfigService } from '../../../../../core/services/config/config-service.interface';
+import type { HbarService } from '../../../../../core/services/hbar/hbar-service.interface';
+import type { OutputService } from '../../../../../core/services/output/output-service.interface';
 import { mockTransactionResults } from './fixtures';
 
 /**
@@ -129,6 +131,9 @@ export const makeStateServiceMock = (
   subscribe: jest.fn(),
   getActions: jest.fn(),
   getState: jest.fn(),
+  registerNamespaces: jest.fn(),
+  getStorageDirectory: jest.fn().mockReturnValue('/mock/storage/dir'),
+  isInitialized: jest.fn().mockReturnValue(true),
   ...overrides,
 });
 
@@ -181,7 +186,10 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     kms,
     alias,
     state,
-    mirror: (config?.mirror || {}) as unknown as any,
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({ decimals: 6 }),
+      ...(config?.mirror || {}),
+    } as unknown as any,
     network: {
       getCurrentNetwork: jest
         .fn()
@@ -200,6 +208,13 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       verbose: jest.fn(),
       warn: jest.fn(),
     } as jest.Mocked<Logger>,
+    hbar: {
+      transferTinybar: jest.fn(),
+    } as jest.Mocked<HbarService>,
+    output: {
+      handleCommandOutput: jest.fn(),
+      getFormat: jest.fn().mockReturnValue('human'),
+    } as jest.Mocked<OutputService>,
   };
 
   return {

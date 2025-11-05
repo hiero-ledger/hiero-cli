@@ -81,8 +81,6 @@ export const myPluginManifest: PluginManifest = {
     console.log('[MY PLUGIN] Cleaning up...');
   },
 };
-
-export default myPluginManifest;
 ```
 
 ### 2. Command Handlers
@@ -123,8 +121,6 @@ export async function createHandler(args: CommandHandlerArgs): Promise<void> {
     process.exit(1);
   }
 }
-
-export default createHandler;
 ```
 
 ### 3. State Management
@@ -542,6 +538,23 @@ Define clear, descriptive command options:
   ],
 }
 ```
+
+#### Reserved Options
+
+The following CLI options are reserved by the core CLI and cannot be used in plugin commands. If your plugin attempts to define any of these options, they will be automatically filtered out and a warning will be displayed:
+
+- `--format` - Output format control
+- `--json` - Legacy JSON output flag
+- `--output` - Output file destination
+- `--script` - Script mode flag
+- `--color` / `--no-color` - ANSI color control
+- `--verbose` / `-v` - Verbose logging
+- `--quiet` / `-q` - Quiet mode
+- `--debug` - Debug logging
+- `--help` / `-h` - Help display
+- `--version` / `-V` - Version display
+
+**Important:** If your plugin defines a reserved option, it will be silently filtered during command registration. You will see a warning message indicating which options were filtered. Use alternative option names for your plugin-specific functionality.
 
 ### 4. Documentation
 

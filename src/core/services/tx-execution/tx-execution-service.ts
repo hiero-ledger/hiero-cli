@@ -80,9 +80,12 @@ export class TxExecutionServiceImpl implements TxExecutionService {
         `[TX-EXECUTION] Transaction executed successfully: ${response.transactionId.toString()}`,
       );
 
+      // @TODO Extract logic to parse receipt to reuse in method below
       // Extract IDs from receipt based on transaction type
       let accountId: string | undefined;
       let tokenId: string | undefined;
+      let topicId: string | undefined;
+      let topicSequenceNumber: number | undefined;
 
       if (receipt.accountId) {
         accountId = receipt.accountId.toString();
@@ -92,10 +95,12 @@ export class TxExecutionServiceImpl implements TxExecutionService {
         tokenId = receipt.tokenId.toString();
       }
 
-      // Extract topic ID for topic creation transactions
-      let topicId: string | undefined;
       if (receipt.topicId) {
         topicId = receipt.topicId.toString();
+      }
+
+      if (receipt.topicSequenceNumber) {
+        topicSequenceNumber = Number(receipt.topicSequenceNumber);
       }
 
       return {
@@ -104,6 +109,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
         accountId,
         tokenId,
         topicId,
+        topicSequenceNumber,
         receipt: {
           status: {
             status: receipt.status === Status.Success ? 'success' : 'failed',
@@ -137,15 +143,11 @@ export class TxExecutionServiceImpl implements TxExecutionService {
     const response: TransactionResponse = await transaction.execute(client);
     const receipt: TransactionReceipt = await response.getReceipt(client);
 
-    // Extract topic ID for topic creation transactions
-    let topicId: string | undefined;
-    if (receipt.topicId) {
-      topicId = receipt.topicId.toString();
-    }
-
     // Extract IDs from receipt based on transaction type
     let accountId: string | undefined;
     let tokenId: string | undefined;
+    let topicId: string | undefined;
+    let topicSequenceNumber: number | undefined;
 
     if (receipt.accountId) {
       accountId = receipt.accountId.toString();
@@ -155,12 +157,21 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       tokenId = receipt.tokenId.toString();
     }
 
+    if (receipt.topicId) {
+      topicId = receipt.topicId.toString();
+    }
+
+    if (receipt.topicSequenceNumber) {
+      topicSequenceNumber = Number(receipt.topicSequenceNumber);
+    }
+
     return {
       transactionId: response.transactionId.toString(),
       success: receipt.status === Status.Success,
       accountId,
       tokenId,
       topicId,
+      topicSequenceNumber,
       receipt: {
         status: {
           status: receipt.status === Status.Success ? 'success' : 'failed',

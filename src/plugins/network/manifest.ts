@@ -3,10 +3,23 @@
  * Defines the network plugin
  */
 import { PluginManifest } from '../../core/plugins/plugin.interface';
-import { listHandler } from './commands/list';
-import { useHandler } from './commands/use';
-import { setOperatorHandler } from './commands/set-operator';
-import { getOperatorHandler } from './commands/get-operator';
+import {
+  ListNetworksOutputSchema,
+  LIST_NETWORKS_TEMPLATE,
+} from './commands/list';
+import { UseNetworkOutputSchema, USE_NETWORK_TEMPLATE } from './commands/use';
+import { listHandler } from './commands/list/handler';
+import { useHandler } from './commands/use/handler';
+import {
+  GetOperatorOutputSchema,
+  GET_OPERATOR_TEMPLATE,
+} from './commands/get-operator/index';
+import { getOperatorHandler } from './commands/get-operator/handler';
+import {
+  SetOperatorOutputSchema,
+  SET_OPERATOR_TEMPLATE,
+} from './commands/set-operator/index';
+import { setOperatorHandler } from './commands/set-operator/handler';
 
 export const networkPluginManifest: PluginManifest = {
   name: 'network',
@@ -27,6 +40,10 @@ export const networkPluginManifest: PluginManifest = {
         'List all available networks with their configuration and health status',
       options: [],
       handler: listHandler,
+      output: {
+        schema: ListNetworksOutputSchema,
+        humanTemplate: LIST_NETWORKS_TEMPLATE,
+      },
     },
     {
       name: 'use',
@@ -42,6 +59,29 @@ export const networkPluginManifest: PluginManifest = {
         },
       ],
       handler: useHandler,
+      output: {
+        schema: UseNetworkOutputSchema,
+        humanTemplate: USE_NETWORK_TEMPLATE,
+      },
+    },
+    {
+      name: 'get-operator',
+      summary: 'Get operator for a network',
+      description: 'Get operator credentials for a specific network',
+      options: [
+        {
+          name: 'network',
+          short: 'N',
+          type: 'string',
+          required: false,
+          description: 'Target network (defaults to current network)',
+        },
+      ],
+      handler: getOperatorHandler,
+      output: {
+        schema: GetOperatorOutputSchema,
+        humanTemplate: GET_OPERATOR_TEMPLATE,
+      },
     },
     {
       name: 'set-operator',
@@ -51,7 +91,6 @@ export const networkPluginManifest: PluginManifest = {
       options: [
         {
           name: 'operator',
-          short: 'o',
           type: 'string',
           required: true,
           description:
@@ -59,28 +98,17 @@ export const networkPluginManifest: PluginManifest = {
         },
         {
           name: 'network',
-          short: 'n',
+          short: 'N',
           type: 'string',
           required: false,
           description: 'Target network (defaults to current network)',
         },
       ],
       handler: setOperatorHandler,
-    },
-    {
-      name: 'get-operator',
-      summary: 'Get operator for a network',
-      description: 'Get operator credentials for a specific network',
-      options: [
-        {
-          name: 'network',
-          short: 'n',
-          type: 'string',
-          required: false,
-          description: 'Target network (defaults to current network)',
-        },
-      ],
-      handler: getOperatorHandler,
+      output: {
+        schema: SetOperatorOutputSchema,
+        humanTemplate: SET_OPERATOR_TEMPLATE,
+      },
     },
   ],
 };

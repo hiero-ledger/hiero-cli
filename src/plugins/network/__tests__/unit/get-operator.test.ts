@@ -1,4 +1,5 @@
 import { getOperatorHandler } from '../../commands/get-operator';
+import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeArgs,
@@ -22,7 +23,7 @@ describe('network plugin - get-operator command', () => {
     jest.clearAllMocks();
   });
 
-  test('gets operator for current network when no network specified', () => {
+  test('gets operator for current network when no network specified', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -40,23 +41,22 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    getOperatorHandler(args);
+    const result = await getOperatorHandler(args);
 
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+    const output = JSON.parse(result.outputJson!);
+    expect(output.network).toBe('testnet');
+    expect(output.operator).toEqual({
+      accountId: '0.0.123456',
+      keyRefId: 'kr_test123',
+      publicKey: 'pub-key-test',
+    });
     expect(networkService.getOperator).toHaveBeenCalledWith('testnet');
     expect(kmsService.getPublicKey).toHaveBeenCalledWith('kr_test123');
-    expect(logger.log).toHaveBeenCalledWith(
-      '🔍 Getting operator for network: testnet',
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      '✅ Operator found for network: testnet',
-    );
-    expect(logger.log).toHaveBeenCalledWith('   Account ID: 0.0.123456');
-    expect(logger.log).toHaveBeenCalledWith('   Key Reference ID: kr_test123');
-    expect(logger.log).toHaveBeenCalledWith('   Public Key: pub-key-test');
-    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
-  test('gets operator for specified network', () => {
+  test('gets operator for specified network', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -74,23 +74,22 @@ describe('network plugin - get-operator command', () => {
       { network: 'mainnet' },
     );
 
-    getOperatorHandler(args);
+    const result = await getOperatorHandler(args);
 
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+    const output = JSON.parse(result.outputJson!);
+    expect(output.network).toBe('mainnet');
+    expect(output.operator).toEqual({
+      accountId: '0.0.789012',
+      keyRefId: 'kr_mainnet',
+      publicKey: 'pub-key-mainnet',
+    });
     expect(networkService.getOperator).toHaveBeenCalledWith('mainnet');
     expect(kmsService.getPublicKey).toHaveBeenCalledWith('kr_mainnet');
-    expect(logger.log).toHaveBeenCalledWith(
-      '🔍 Getting operator for network: mainnet',
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      '✅ Operator found for network: mainnet',
-    );
-    expect(logger.log).toHaveBeenCalledWith('   Account ID: 0.0.789012');
-    expect(logger.log).toHaveBeenCalledWith('   Key Reference ID: kr_mainnet');
-    expect(logger.log).toHaveBeenCalledWith('   Public Key: pub-key-mainnet');
-    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
-  test('shows warning when no operator is configured', () => {
+  test('shows warning when no operator is configured', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -104,20 +103,18 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    getOperatorHandler(args);
+    const result = await getOperatorHandler(args);
 
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+    const output = JSON.parse(result.outputJson!);
+    expect(output.network).toBe('testnet');
+    expect(output.operator).toBeUndefined();
     expect(networkService.getOperator).toHaveBeenCalledWith('testnet');
     expect(kmsService.getPublicKey).not.toHaveBeenCalled();
-    expect(logger.log).toHaveBeenCalledWith(
-      '🔍 Getting operator for network: testnet',
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      '⚠️  No operator configured for network: testnet',
-    );
-    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
-  test('shows error when public key not found', () => {
+  test('handles missing public key gracefully', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -135,20 +132,22 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    getOperatorHandler(args);
+    const result = await getOperatorHandler(args);
 
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+    const output = JSON.parse(result.outputJson!);
+    expect(output.network).toBe('testnet');
+    expect(output.operator).toEqual({
+      accountId: '0.0.123456',
+      keyRefId: 'kr_test123',
+      publicKey: undefined,
+    });
     expect(networkService.getOperator).toHaveBeenCalledWith('testnet');
     expect(kmsService.getPublicKey).toHaveBeenCalledWith('kr_test123');
-    expect(logger.log).toHaveBeenCalledWith(
-      '🔍 Getting operator for network: testnet',
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      '❌ Public key not found for keyRefId: kr_test123',
-    );
-    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
-  test('exits with error when network is not available', () => {
+  test('returns failure when network is not available', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -167,21 +166,19 @@ describe('network plugin - get-operator command', () => {
       { network: 'invalid-network' },
     );
 
-    getOperatorHandler(args);
+    const result = await getOperatorHandler(args);
 
     expect(networkService.isNetworkAvailable).toHaveBeenCalledWith(
       'invalid-network',
     );
-    expect(logger.error).toHaveBeenCalledWith(
-      "❌ Network 'invalid-network' is not available",
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      "Network 'invalid-network' is not available",
     );
-    expect(logger.log).toHaveBeenCalledWith(
-      '   Available networks: testnet, mainnet, previewnet',
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.errorMessage).toContain('Available networks:');
   });
 
-  test('handles network service errors', () => {
+  test('handles network service errors', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -197,15 +194,13 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    getOperatorHandler(args);
+    const result = await getOperatorHandler(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to get operator:'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Failed to get operator');
   });
 
-  test('handles KMS service errors', () => {
+  test('handles KMS service errors', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -225,15 +220,13 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    getOperatorHandler(args);
+    const result = await getOperatorHandler(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to get operator:'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Failed to get operator');
   });
 
-  test('validates network before getting operator', () => {
+  test('validates network before getting operator', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -252,19 +245,18 @@ describe('network plugin - get-operator command', () => {
       { network: 'previewnet' },
     );
 
-    getOperatorHandler(args);
+    const result = await getOperatorHandler(args);
 
+    expect(result.status).toBe(Status.Success);
+    const output = JSON.parse(result.outputJson!);
     expect(networkService.isNetworkAvailable).toHaveBeenCalledWith(
       'previewnet',
     );
     expect(networkService.getOperator).toHaveBeenCalledWith('previewnet');
-    expect(logger.log).toHaveBeenCalledWith(
-      '🔍 Getting operator for network: previewnet',
-    );
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    expect(output.network).toBe('previewnet');
   });
 
-  test('displays all operator information when found', () => {
+  test('displays all operator information when found', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -282,13 +274,15 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    getOperatorHandler(args);
+    const result = await getOperatorHandler(args);
 
-    expect(logger.log).toHaveBeenCalledWith(
-      '✅ Operator found for network: testnet',
-    );
-    expect(logger.log).toHaveBeenCalledWith('   Account ID: 0.0.999999');
-    expect(logger.log).toHaveBeenCalledWith('   Key Reference ID: kr_special');
-    expect(logger.log).toHaveBeenCalledWith('   Public Key: pub-key-special');
+    expect(result.status).toBe(Status.Success);
+    const output = JSON.parse(result.outputJson!);
+    expect(output.network).toBe('testnet');
+    expect(output.operator).toEqual({
+      accountId: '0.0.999999',
+      keyRefId: 'kr_special',
+      publicKey: 'pub-key-special',
+    });
   });
 });

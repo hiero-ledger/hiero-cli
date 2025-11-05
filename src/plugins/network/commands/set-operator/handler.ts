@@ -1,0 +1,118 @@
+import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
+import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { formatError } from '../../../../utils/errors';
+import { SupportedNetwork } from '../../../../core/types/shared.types';
+import { validateAccountId } from '../../../../core/utils/account-id-validator';
+import { AliasService } from '../../../../core/services/alias/alias-service.interface';
+import { KmsService } from '../../../../core/services/kms/kms-service.interface';
+import { parseIdKeyPair } from '../../../../core/utils/id-key-parser';
+import { Status } from '../../../../core/shared/constants';
+import { SetOperatorOutput } from './output';
+
+function resolveOperatorFromAlias(
+  alias: string,
+  targetNetwork: SupportedNetwork,
+  aliasService: AliasService,
+): { accountId: string; keyRefId: string; publicKey?: string } {
+  const aliasRecord = aliasService.resolve(alias, 'account', targetNetwork);
+
+  if (!aliasRecord) {
+    throw new Error(`Alias '${alias}' not found for network ${targetNetwork}`);
+  }
+
+  if (!aliasRecord.keyRefId) {
+    throw new Error(`No key found for account ${aliasRecord.entityId}`);
+  }
+
+  return {
+    accountId: aliasRecord.entityId!,
+    keyRefId: aliasRecord.keyRefId,
+    publicKey: aliasRecord.publicKey || undefined,
+  };
+}
+
+function resolveOperatorFromIdKey(
+  idKeyPair: string,
+  kmsService: KmsService,
+): { accountId: string; keyRefId: string; publicKey?: string } {
+  const { accountId, privateKey } = parseIdKeyPair(idKeyPair);
+  validateAccountId(accountId);
+  const imported = kmsService.importPrivateKey(privateKey);
+  return {
+    accountId,
+    keyRefId: imported.keyRefId,
+    publicKey: imported.publicKey,
+  };
+}
+
+export async function setOperatorHandler(
+  args: CommandHandlerArgs,
+): Promise<CommandExecutionResult> {
+  const { logger, api } = args;
+  const operatorArg = (args.args as { operator?: string }).operator;
+  const networkArg = (args.args as { network?: string }).network;
+
+  if (!operatorArg) {
+    return {
+      status: Status.Failure,
+      errorMessage:
+        'Must specify --operator (name or account-id:private-key format)',
+    };
+  }
+
+  try {
+    const targetNetwork =
+      (networkArg as SupportedNetwork) || api.network.getCurrentNetwork();
+
+    if (networkArg && !api.network.isNetworkAvailable(networkArg)) {
+      const available = api.network.getAvailableNetworks().join(', ');
+      return {
+        status: Status.Failure,
+        errorMessage: `Network '${networkArg}' is not available. Available networks: ${available}`,
+      };
+    }
+
+    const {
+      accountId: resolvedAccountId,
+      keyRefId: resolvedKeyRefId,
+      publicKey: resolvedPublicKey,
+    } = operatorArg.includes(':')
+      ? resolveOperatorFromIdKey(operatorArg, api.kms)
+      : resolveOperatorFromAlias(operatorArg, targetNetwork, api.alias);
+
+    const existingOperator = api.network.getOperator(targetNetwork);
+    if (existingOperator) {
+      logger.verbose(
+        `Overwriting existing operator for ${targetNetwork}: ${existingOperator.accountId} -> ${resolvedAccountId}`,
+      );
+    } else {
+      logger.verbose(`Setting new operator for network ${targetNetwork}`);
+    }
+
+    api.network.setOperator(targetNetwork, {
+      accountId: resolvedAccountId,
+      keyRefId: resolvedKeyRefId,
+    });
+
+    const output: SetOperatorOutput = {
+      network: targetNetwork,
+      operator: {
+        accountId: resolvedAccountId,
+        keyRefId: resolvedKeyRefId,
+        publicKey: resolvedPublicKey || undefined,
+      },
+    };
+
+    return {
+      status: Status.Success,
+      outputJson: JSON.stringify(output),
+    };
+  } catch (error) {
+    return {
+      status: Status.Failure,
+      errorMessage: formatError('Failed to set operator', error),
+    };
+  }
+}
+
+export default setOperatorHandler;

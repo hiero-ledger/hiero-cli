@@ -1,7 +1,9 @@
-import { importAccountHandler } from '../../commands/import';
+import { importAccount } from '../../commands/import/handler';
+import type { ImportAccountOutput } from '../../commands/import';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import type { CoreApi } from '../../../../core/core-api/core-api.interface';
 import type { HederaMirrornodeService } from '../../../../core/services/mirrornode/hedera-mirrornode-service.interface';
+import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeArgs,
@@ -9,11 +11,8 @@ import {
   makeKmsMock,
   makeAliasMock,
   makeMirrorMock,
-  setupExitSpy,
 } from '../../../../../__tests__/helpers/plugin';
 import { NetworkService } from '../../../../core/services/network/network-service.interface';
-
-let exitSpy: jest.SpyInstance;
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),
@@ -21,15 +20,7 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandAccountStateHelper as jest.Mock;
 
-beforeAll(() => {
-  exitSpy = setupExitSpy();
-});
-
-afterAll(() => {
-  exitSpy.mockRestore();
-});
-
-describe('account plugin - import command', () => {
+describe('account plugin - import command (ADR-003)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -62,7 +53,7 @@ describe('account plugin - import command', () => {
       name: 'imported',
     });
 
-    await importAccountHandler(args);
+    const result = await importAccount(args);
 
     expect(kms.importPrivateKey).toHaveBeenCalledWith('privKey', [
       'account:imported',
@@ -87,13 +78,19 @@ describe('account plugin - import command', () => {
         keyRefId: 'kr_test123',
       }),
     );
-    expect(logger.log).toHaveBeenCalledWith(
-      '✅ Account imported successfully: 0.0.9999',
-    );
-    expect(exitSpy).toHaveBeenCalledWith(0);
+
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: ImportAccountOutput = JSON.parse(result.outputJson!);
+    expect(output.accountId).toBe('0.0.9999');
+    expect(output.name).toBe('imported');
+    expect(output.type).toBe('ECDSA');
+    expect(output.alias).toBe('imported');
+    expect(output.network).toBe('testnet');
   });
 
-  test('fails if account already exists', async () => {
+  test('returns failure if account already exists', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -103,28 +100,34 @@ describe('account plugin - import command', () => {
 
     const mirrorMock = makeMirrorMock();
     const networkMock = makeNetworkMock();
+    const kms = makeKmsMock();
+    const alias = makeAliasMock();
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       network: networkMock as NetworkService,
+      kms,
+      alias,
       logger,
+      state: {} as any,
     };
 
     const args = makeArgs(api, logger, {
-      name: 'test',
       id: '0.0.1111',
       key: 'key',
+      alias: 'test',
     });
 
-    await importAccountHandler(args);
+    const result = await importAccount(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Failed to import account'),
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toBeDefined();
+    expect(result.errorMessage).toContain(
+      "Account with name 'imported-0-0-1111' already exists",
     );
-    expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
-  test('logs error and exits when mirror.getAccount throws', async () => {
+  test('returns failure when mirror.getAccount throws', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -136,24 +139,28 @@ describe('account plugin - import command', () => {
       getAccountImpl: jest.fn().mockRejectedValue(new Error('mirror down')),
     });
     const networkMock = makeNetworkMock();
+    const kms = makeKmsMock();
+    const alias = makeAliasMock();
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       network: networkMock as NetworkService,
+      kms,
+      alias,
       logger,
+      state: {} as any,
     };
 
     const args = makeArgs(api, logger, {
-      name: 'err',
       id: '0.0.2222',
       key: 'key',
     });
 
-    await importAccountHandler(args);
+    const result = await importAccount(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Failed to import account'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toBeDefined();
+    expect(result.errorMessage).toContain('Failed to import account');
+    expect(result.errorMessage).toContain('mirror down');
   });
 });

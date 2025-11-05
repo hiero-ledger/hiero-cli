@@ -1,12 +1,22 @@
 /**
  * Credentials Management Plugin Manifest
  * A plugin for managing operator credentials
+ * Updated for ADR-003 compliance
  */
 import { PluginManifest } from '../../core/plugins/plugin.interface';
-import { listHandler } from './commands/list';
-import { removeHandler } from './commands/remove';
+import {
+  ListCredentialsOutputSchema,
+  LIST_CREDENTIALS_TEMPLATE,
+} from './commands/list/output';
+import {
+  RemoveCredentialsOutputSchema,
+  REMOVE_CREDENTIALS_TEMPLATE,
+} from './commands/remove/output';
+import { CREDENTIALS_JSON_SCHEMA, CREDENTIALS_NAMESPACE } from './schema';
+import { listCredentials } from './commands/list/handler';
+import { removeCredentials } from './commands/remove/handler';
 
-const credentialsManifest: PluginManifest = {
+export const credentialsManifest: PluginManifest = {
   name: 'credentials',
   version: '1.0.0',
   displayName: 'Credentials Management',
@@ -16,29 +26,12 @@ const credentialsManifest: PluginManifest = {
     core: '>=1.0.0',
     api: '>=1.0.0',
   },
-  capabilities: ['credentials:manage', 'credentials:set', 'credentials:list'],
+  capabilities: ['credentials:manage', 'credentials:list'],
   stateSchemas: [
     {
-      namespace: 'credentials',
+      namespace: CREDENTIALS_NAMESPACE,
       version: 1,
-      jsonSchema: {
-        type: 'object',
-        properties: {
-          accountId: { type: 'string' },
-          privateKey: { type: 'string' },
-          network: { type: 'string' },
-          isDefault: { type: 'boolean' },
-          createdAt: { type: 'string' },
-        },
-        required: [
-          'accountId',
-          'privateKey',
-          'network',
-          'isDefault',
-          'createdAt',
-        ],
-        additionalProperties: false,
-      },
+      jsonSchema: CREDENTIALS_JSON_SCHEMA,
       scope: 'profile',
     },
   ],
@@ -47,7 +40,11 @@ const credentialsManifest: PluginManifest = {
       name: 'list',
       summary: 'List all credentials',
       description: 'Show all stored credentials',
-      handler: listHandler,
+      handler: listCredentials,
+      output: {
+        schema: ListCredentialsOutputSchema,
+        humanTemplate: LIST_CREDENTIALS_TEMPLATE,
+      },
     },
     {
       name: 'remove',
@@ -56,7 +53,11 @@ const credentialsManifest: PluginManifest = {
       options: [
         { name: 'key-ref-id', short: 'k', type: 'string', required: true },
       ],
-      handler: removeHandler,
+      handler: removeCredentials,
+      output: {
+        schema: RemoveCredentialsOutputSchema,
+        humanTemplate: REMOVE_CREDENTIALS_TEMPLATE,
+      },
     },
   ],
 };

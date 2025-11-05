@@ -17,7 +17,8 @@ interface LoggerTransport {
 
 class ConsoleTransport implements LoggerTransport {
   log(msg: string): void {
-    console.log(msg); // eslint-disable-line no-console
+    // Write to stderr to keep stdout clean for command output
+    console.error(msg); // eslint-disable-line no-console
   }
 
   error(msg: string, error?: unknown): void {
@@ -37,7 +38,8 @@ class SilentTransport implements LoggerTransport {
     );
   }
   log(msg: string): void {
-    if (this.isJestMock(console.log)) console.log(msg); // eslint-disable-line no-console
+    // Write to stderr even in silent mode if Jest is mocking
+    if (this.isJestMock(console.error)) console.error(msg); // eslint-disable-line no-console
   }
 
   error(msg: string, error?: unknown): void {
@@ -122,7 +124,8 @@ export class Logger {
 
   public debug(message: string, ...args: unknown[]): void {
     if (this.isDebugEnabled()) {
-      console.log(chalk.blue(`🔍 DEBUG: ${message}`), ...args);
+      // Write to stderr to keep stdout clean for command output
+      console.error(chalk.blue(`🔍 DEBUG: ${message}`), ...args);
     }
   }
 

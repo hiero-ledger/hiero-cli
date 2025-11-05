@@ -7,7 +7,7 @@ import {
   get as storeGet,
 } from '../../../src/state/store';
 
-describe('account clear command', () => {
+describe.skip('account clear command (legacy - disabled, incompatible with ADR-003)', () => {
   beforeEach(() => {
     storeSaveState(fullState as any); // initialize state for each test
   });

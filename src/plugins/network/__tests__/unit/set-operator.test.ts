@@ -1,4 +1,5 @@
 import { setOperatorHandler } from '../../commands/set-operator';
+import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeArgs,
@@ -23,7 +24,7 @@ describe('network plugin - set-operator command', () => {
     jest.clearAllMocks();
   });
 
-  test('sets operator using account-id:private-key format', () => {
+  test('sets operator using account-id:private-key format', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -35,8 +36,17 @@ describe('network plugin - set-operator command', () => {
       { operator: '0.0.123456:3030020100300706052b8104000a04220420...' },
     );
 
-    setOperatorHandler(args);
+    const result = await setOperatorHandler(args);
 
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+    const output = JSON.parse(result.outputJson!);
+    expect(output.network).toBe('testnet');
+    expect(output.operator).toEqual({
+      accountId: '0.0.123456',
+      keyRefId: 'kr_test123',
+      publicKey: 'pub-key-test',
+    });
     expect(kmsService.importPrivateKey).toHaveBeenCalledWith(
       '3030020100300706052b8104000a04220420...',
     );
@@ -44,20 +54,9 @@ describe('network plugin - set-operator command', () => {
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
     });
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'Setting operator using account-id:private-key format: 0.0.123456',
-      ),
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'Operator set successfully for account: 0.0.123456',
-      ),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(0);
   });
 
-  test('sets operator using alias', () => {
+  test('sets operator using alias', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -80,7 +79,7 @@ describe('network plugin - set-operator command', () => {
       { operator: 'testnet1' },
     );
 
-    setOperatorHandler(args);
+    const result = await setOperatorHandler(args);
 
     expect(aliasService.resolve).toHaveBeenCalledWith(
       'testnet1',
@@ -91,20 +90,17 @@ describe('network plugin - set-operator command', () => {
       accountId: '0.0.789012',
       keyRefId: 'kr_alias123',
     });
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'Setting operator using alias: testnet1 → 0.0.789012',
-      ),
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'Operator set successfully for account: 0.0.789012',
-      ),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(0);
+    expect(result.status).toBe(Status.Success);
+    const output = JSON.parse(result.outputJson!);
+    expect(output.network).toBe('testnet');
+    expect(output.operator).toEqual({
+      accountId: '0.0.789012',
+      keyRefId: 'kr_alias123',
+      publicKey: 'pub-key-alias',
+    });
   });
 
-  test('sets operator for specific network when --network is provided', () => {
+  test('sets operator for specific network when --network is provided', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -116,18 +112,18 @@ describe('network plugin - set-operator command', () => {
       { operator: '0.0.123456:key', network: 'mainnet' },
     );
 
-    setOperatorHandler(args);
+    const result = await setOperatorHandler(args);
 
     expect(networkService.setOperator).toHaveBeenCalledWith('mainnet', {
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
     });
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Setting new operator for network mainnet'),
-    );
+    expect(result.status).toBe(Status.Success);
+    const output = JSON.parse(result.outputJson!);
+    expect(output.network).toBe('mainnet');
   });
 
-  test('shows overwrite message when operator already exists', () => {
+  test('shows overwrite message when operator already exists', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -145,23 +141,16 @@ describe('network plugin - set-operator command', () => {
       { operator: '0.0.123456:key' },
     );
 
-    setOperatorHandler(args);
+    const result = await setOperatorHandler(args);
 
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Operator already exists for network testnet'),
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Previous: 0.0.999999 (kr_old123)'),
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('New: 0.0.123456 (kr_test123)'),
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Overwriting operator for network testnet'),
-    );
+    expect(result.status).toBe(Status.Success);
+    expect(networkService.setOperator).toHaveBeenCalledWith('testnet', {
+      accountId: '0.0.123456',
+      keyRefId: 'kr_test123',
+    });
   });
 
-  test('shows new operator message when no existing operator', () => {
+  test('shows new operator message when no existing operator', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -176,14 +165,16 @@ describe('network plugin - set-operator command', () => {
       { operator: '0.0.123456:key' },
     );
 
-    setOperatorHandler(args);
+    const result = await setOperatorHandler(args);
 
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Setting new operator for network testnet'),
-    );
+    expect(result.status).toBe(Status.Success);
+    expect(networkService.setOperator).toHaveBeenCalledWith('testnet', {
+      accountId: '0.0.123456',
+      keyRefId: 'kr_test123',
+    });
   });
 
-  test('exits with error when no operator is provided', () => {
+  test('returns failure when no operator is provided', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -195,15 +186,15 @@ describe('network plugin - set-operator command', () => {
       {},
     );
 
-    setOperatorHandler(args);
+    const result = await setOperatorHandler(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      '❌ Must specify --operator (name or account-id:private-key format)',
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toBe(
+      'Must specify --operator (name or account-id:private-key format)',
     );
-    expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
-  test('exits with error when alias is not found', () => {
+  test('returns failure when alias is not found', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -218,15 +209,15 @@ describe('network plugin - set-operator command', () => {
       { operator: 'nonexistent' },
     );
 
-    setOperatorHandler(args);
+    const result = await setOperatorHandler(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      "❌ Alias 'nonexistent' not found for network testnet",
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      "Alias 'nonexistent' not found for network testnet",
     );
-    expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
-  test('exits with error when alias has no key', () => {
+  test('returns failure when alias has no key', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -249,15 +240,15 @@ describe('network plugin - set-operator command', () => {
       { operator: 'testnet1' },
     );
 
-    setOperatorHandler(args);
+    const result = await setOperatorHandler(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      '❌ No key found for account 0.0.789012',
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      'No key found for account 0.0.789012',
     );
-    expect(exitSpy).toHaveBeenCalledWith(1);
   });
 
-  test('handles KMS importPrivateKey errors', () => {
+  test('handles KMS importPrivateKey errors', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -274,15 +265,13 @@ describe('network plugin - set-operator command', () => {
       { operator: 'invalid:format' },
     );
 
-    setOperatorHandler(args);
+    const result = await setOperatorHandler(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to set operator:'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Failed to set operator');
   });
 
-  test('handles network service errors', () => {
+  test('handles network service errors', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -299,15 +288,13 @@ describe('network plugin - set-operator command', () => {
       { operator: '0.0.123456:key' },
     );
 
-    setOperatorHandler(args);
+    const result = await setOperatorHandler(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to set operator:'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Failed to set operator');
   });
 
-  test('displays all operator information after successful set', () => {
+  test('displays all operator information after successful set', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -319,21 +306,15 @@ describe('network plugin - set-operator command', () => {
       { operator: '0.0.123456:key' },
     );
 
-    setOperatorHandler(args);
+    const result = await setOperatorHandler(args);
 
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining(
-        'Operator set successfully for account: 0.0.123456',
-      ),
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Network: testnet'),
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Key Reference ID: kr_test123'),
-    );
-    expect(logger.log).toHaveBeenCalledWith(
-      expect.stringContaining('Public Key: pub-key-test'),
-    );
+    expect(result.status).toBe(Status.Success);
+    const output = JSON.parse(result.outputJson!);
+    expect(output.network).toBe('testnet');
+    expect(output.operator).toEqual({
+      accountId: '0.0.123456',
+      keyRefId: 'kr_test123',
+      publicKey: 'pub-key-test',
+    });
   });
 });

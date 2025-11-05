@@ -1,16 +1,16 @@
-import { viewAccountHandler } from '../../commands/view';
+import { viewAccount } from '../../commands/view/handler';
+import type { ViewAccountOutput } from '../../commands/view';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import type { CoreApi } from '../../../../core/core-api/core-api.interface';
 import type { HederaMirrornodeService } from '../../../../core/services/mirrornode/hedera-mirrornode-service.interface';
+import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeAccountData,
   makeArgs,
   makeMirrorMock,
-  setupExitSpy,
+  makeAliasMock,
 } from '../../../../../__tests__/helpers/plugin';
-
-let exitSpy: jest.SpyInstance;
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),
@@ -18,20 +18,12 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandAccountStateHelper as jest.Mock;
 
-beforeAll(() => {
-  exitSpy = setupExitSpy();
-});
-
-afterAll(() => {
-  exitSpy.mockRestore();
-});
-
-describe('account plugin - view command', () => {
+describe('account plugin - view command (ADR-003)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('views account details when found in state', async () => {
+  test('returns account details when found in state', async () => {
     const logger = makeLogger();
     const account = makeAccountData({ name: 'acc1', accountId: '0.0.1111' });
 
@@ -39,47 +31,79 @@ describe('account plugin - view command', () => {
       loadAccount: jest.fn().mockReturnValue(account),
     }));
 
-    const mirrorMock = makeMirrorMock();
+    const mirrorMock = makeMirrorMock({
+      accountInfo: {
+        accountId: '0.0.1111',
+        balance: { balance: 1000n, timestamp: '1234567890' },
+        evmAddress: '0xabc',
+        accountPublicKey: 'pubKey',
+      },
+    });
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
+      state: {} as any,
     };
-    const args = makeArgs(api, logger, { account: 'acc1' });
+    const args = makeArgs(api, logger, { accountIdOrNameOrAlias: 'acc1' });
 
-    await viewAccountHandler(args);
+    const result = await viewAccount(args);
 
     expect(logger.log).toHaveBeenCalledWith('Viewing account details: acc1');
     expect(logger.log).toHaveBeenCalledWith('Found account in state: acc1');
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.1111');
-    expect(logger.log).toHaveBeenCalledWith('📋 Account Details:');
-    expect(exitSpy).toHaveBeenCalledWith(0);
+
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: ViewAccountOutput = JSON.parse(result.outputJson!);
+    expect(output.accountId).toBe('0.0.1111');
+    expect(output.balance).toBe('1000');
   });
 
-  test('views account details when not found in state', async () => {
+  test('returns account details when resolved via alias (not in state)', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
       loadAccount: jest.fn().mockReturnValue(null),
     }));
 
-    const mirrorMock = makeMirrorMock();
+    const mirrorMock = makeMirrorMock({
+      accountInfo: {
+        accountId: '0.0.2222',
+        balance: { balance: 2000n, timestamp: '1234567890' },
+        evmAddress: '0xdef',
+        accountPublicKey: 'pubKey2',
+      },
+    });
+    const alias = makeAliasMock();
+    (alias.resolve as jest.Mock).mockReturnValue({
+      alias: 'acc2',
+      type: 'account',
+      network: 'testnet',
+      entityId: '0.0.2222',
+      createdAt: new Date().toISOString(),
+    });
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
+      state: {} as any,
+      alias,
     };
-    const args = makeArgs(api, logger, { account: '0.0.2222' });
+    const args = makeArgs(api, logger, { accountIdOrNameOrAlias: 'acc2' });
 
-    await viewAccountHandler(args);
+    const result = await viewAccount(args);
 
-    expect(logger.log).toHaveBeenCalledWith(
-      'Viewing account details: 0.0.2222',
-    );
+    expect(logger.log).toHaveBeenCalledWith('Viewing account details: acc2');
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.2222');
-    expect(logger.log).toHaveBeenCalledWith('📋 Account Details:');
-    expect(exitSpy).toHaveBeenCalledWith(0);
+
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: ViewAccountOutput = JSON.parse(result.outputJson!);
+    expect(output.accountId).toBe('0.0.2222');
   });
 
-  test('logs error and exits when mirror.getAccount throws', async () => {
+  test('returns failure when mirror.getAccount throws', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -92,18 +116,19 @@ describe('account plugin - view command', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
+      state: {} as any,
     };
-    const args = makeArgs(api, logger, { accountIdOrName: '0.0.3333' });
+    const args = makeArgs(api, logger, { accountIdOrNameOrAlias: '0.0.3333' });
 
-    await viewAccountHandler(args);
+    const result = await viewAccount(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Failed to view account'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toBeDefined();
+    expect(result.errorMessage).toContain('Failed to view account');
+    expect(result.errorMessage).toContain('mirror down');
   });
 
-  test('logs error and exits when loadAccount throws', async () => {
+  test('returns failure when loadAccount throws', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -116,14 +141,15 @@ describe('account plugin - view command', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
+      state: {} as any,
     };
-    const args = makeArgs(api, logger, { accountIdOrName: 'broken' });
+    const args = makeArgs(api, logger, { accountIdOrNameOrAlias: 'broken' });
 
-    await viewAccountHandler(args);
+    const result = await viewAccount(args);
 
-    expect(logger.error).toHaveBeenCalledWith(
-      expect.stringContaining('❌ Failed to view account'),
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toBeDefined();
+    expect(result.errorMessage).toContain('Failed to view account');
+    expect(result.errorMessage).toContain('state error');
   });
 });
