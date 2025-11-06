@@ -3,24 +3,21 @@
  * Handles viewing account details using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../utils/errors';
-import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import { ViewAccountOutput } from './output';
 import { AliasType } from '../../../../core/services/alias/alias-service.interface';
+import { EntityIdSchema } from '../../../../core/schemas';
 
 export async function viewAccount(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  // Initialize Zustand state helper
-  const accountState = new ZustandAccountStateHelper(api.state, logger);
-
   // Extract command arguments
-  const accountIdOrNameOrAlias = args.args['accountIdOrNameOrAlias'] as string;
+  const accountIdOrNameOrAlias = args.args.account as string;
 
   logger.log(`Viewing account details: ${accountIdOrNameOrAlias}`);
 
@@ -29,26 +26,28 @@ export async function viewAccount(
     let accountId = accountIdOrNameOrAlias;
 
     // First check if it's a stored account name
-    const account = accountState.loadAccount(accountIdOrNameOrAlias);
-    if (account) {
-      accountId = account.accountId;
-      logger.log(`Found account in state: ${account.name}`);
+    const network = args.api.network.getCurrentNetwork();
+    const account = args.api.alias.resolve(
+      accountIdOrNameOrAlias,
+      AliasType.Account,
+      network,
+    );
+    if (account && account.entityId) {
+      accountId = account.entityId;
+      logger.log(`Found account in state: ${account.alias}`);
     } else {
-      const currentNetwork = args.api.network.getCurrentNetwork();
-      const resolved = args.api.alias.resolve(
+      const accountIdParseResult = EntityIdSchema.safeParse(
         accountIdOrNameOrAlias,
-        AliasType.Account,
-        currentNetwork,
       );
 
-      if (!resolved?.entityId) {
+      if (!accountIdParseResult.success) {
         return {
           status: Status.Failure,
           errorMessage: `Account not found with ID or alias: ${accountIdOrNameOrAlias}`,
         };
       }
 
-      accountId = resolved.entityId;
+      accountId = accountIdParseResult.data;
     }
 
     // Get account info from mirror node

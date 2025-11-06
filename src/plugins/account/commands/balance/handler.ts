@@ -9,8 +9,8 @@ import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { CoreApi } from '../../../../core';
 import { formatError } from '../../../../utils/errors';
-import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import { AccountBalanceOutput } from './output';
+import { EntityIdSchema } from '../../../../core/schemas';
 import { AliasType } from '../../../../core/services/alias/alias-service.interface';
 
 /**
@@ -45,9 +45,6 @@ export async function getAccountBalance(
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  // Initialize Zustand state helper
-  const accountState = new ZustandAccountStateHelper(api.state, logger);
-
   // Extract command arguments
   const accountIdOrNameOrAlias = args.args.account as string;
   const onlyHbar = (args.args.onlyHbar as boolean) || false;
@@ -61,27 +58,29 @@ export async function getAccountBalance(
     // Resolve account identifier (could be name, account ID, or alias)
     let accountId = accountIdOrNameOrAlias;
 
-    // First check if it's a stored account name
-    const account = accountState.loadAccount(accountIdOrNameOrAlias);
-    if (account) {
-      accountId = account.accountId;
-      logger.log(`Found account in state: ${account.name} -> ${accountId}`);
+    // First check if it's a stored account name (alias)
+    const network = args.api.network.getCurrentNetwork();
+    const account = args.api.alias.resolve(
+      accountIdOrNameOrAlias,
+      AliasType.Account,
+      network,
+    );
+    if (account && account.entityId) {
+      accountId = account.entityId;
+      logger.log(`Found account in state: ${account.alias} -> ${accountId}`);
     } else {
-      const currentNetwork = api.network.getCurrentNetwork();
-      const resolved = api.alias.resolve(
+      const accountIdParseResult = EntityIdSchema.safeParse(
         accountIdOrNameOrAlias,
-        AliasType.Account,
-        currentNetwork,
       );
 
-      if (!resolved?.entityId) {
+      if (!accountIdParseResult.success) {
         return {
           status: Status.Failure,
           errorMessage: `Account not found with ID or alias: ${accountIdOrNameOrAlias}`,
         };
       }
 
-      accountId = resolved.entityId;
+      accountId = accountIdParseResult.data;
     }
 
     // Get HBAR balance from mirror node

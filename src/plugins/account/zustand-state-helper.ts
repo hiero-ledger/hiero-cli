@@ -2,8 +2,8 @@
  * Zustand-based Account State Helper
  * Provides rich state management with subscriptions and actions
  */
-import { StateService } from '../../core/services/state/state-service.interface';
-import { Logger } from '../../core/services/logger/logger-service.interface';
+import { StateService } from '../../core';
+import { Logger } from '../../core';
 import { AccountData, ACCOUNT_NAMESPACE, safeParseAccountData } from './schema';
 
 export class ZustandAccountStateHelper {

@@ -6,11 +6,11 @@ import type { HederaMirrornodeService } from '../../../../core/services/mirrorno
 import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
-  makeAccountData,
   makeArgs,
   makeMirrorMock,
   makeAliasMock,
 } from '../../../../../__tests__/helpers/plugin';
+import { AliasService } from 'core';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),
@@ -25,11 +25,6 @@ describe('account plugin - view command (ADR-003)', () => {
 
   test('returns account details when found in state', async () => {
     const logger = makeLogger();
-    const account = makeAccountData({ name: 'acc1', accountId: '0.0.1111' });
-
-    MockedHelper.mockImplementation(() => ({
-      loadAccount: jest.fn().mockReturnValue(account),
-    }));
 
     const mirrorMock = makeMirrorMock({
       accountInfo: {
@@ -43,13 +38,20 @@ describe('account plugin - view command (ADR-003)', () => {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
       state: {} as any,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'acc1',
+          type: 'account',
+          network: 'testnet',
+          entityId: '0.0.1111',
+        }),
+      } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, { accountIdOrNameOrAlias: 'acc1' });
+    const args = makeArgs(api, logger, { account: 'acc1' });
 
     const result = await viewAccount(args);
 
     expect(logger.log).toHaveBeenCalledWith('Viewing account details: acc1');
-    expect(logger.log).toHaveBeenCalledWith('Found account in state: acc1');
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.1111');
 
     expect(result.status).toBe(Status.Success);
@@ -89,7 +91,7 @@ describe('account plugin - view command (ADR-003)', () => {
       state: {} as any,
       alias,
     };
-    const args = makeArgs(api, logger, { accountIdOrNameOrAlias: 'acc2' });
+    const args = makeArgs(api, logger, { account: 'acc2' });
 
     const result = await viewAccount(args);
 
@@ -118,7 +120,7 @@ describe('account plugin - view command (ADR-003)', () => {
       logger,
       state: {} as any,
     };
-    const args = makeArgs(api, logger, { accountIdOrNameOrAlias: '0.0.3333' });
+    const args = makeArgs(api, logger, { account: '0.0.3333' });
 
     const result = await viewAccount(args);
 
@@ -131,25 +133,20 @@ describe('account plugin - view command (ADR-003)', () => {
   test('returns failure when loadAccount throws', async () => {
     const logger = makeLogger();
 
-    MockedHelper.mockImplementation(() => ({
-      loadAccount: jest.fn().mockImplementation(() => {
-        throw new Error('state error');
-      }),
-    }));
-
     const mirrorMock = makeMirrorMock();
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
       state: {} as any,
     };
-    const args = makeArgs(api, logger, { accountIdOrNameOrAlias: 'broken' });
+    const account = 'broken';
+    const args = makeArgs(api, logger, { account });
 
     const result = await viewAccount(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Failed to view account');
-    expect(result.errorMessage).toContain('state error');
+    expect(result.errorMessage).toContain('Account not found with ID or alias');
+    expect(result.errorMessage).toContain(account);
   });
 });

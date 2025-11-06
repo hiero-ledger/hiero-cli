@@ -6,11 +6,11 @@ import type { HederaMirrornodeService } from '../../../../core/services/mirrorno
 import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
-  makeAccountData,
   makeArgs,
   makeMirrorMock,
   makeAliasMock,
 } from '../../../../../__tests__/helpers/plugin';
+import { AliasService } from 'core';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),
@@ -26,23 +26,23 @@ describe('account plugin - balance command (ADR-003)', () => {
   test('returns HBAR balance only when only-hbar flag is set', async () => {
     const logger = makeLogger();
 
-    MockedHelper.mockImplementation(() => ({
-      loadAccount: jest
-        .fn()
-        .mockReturnValue(
-          makeAccountData({ accountId: '0.0.1001', name: 'test-account' }),
-        ),
-    }));
-
     const mirrorMock = makeMirrorMock({ hbarBalance: 123456n });
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
       state: {} as any,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'test-account',
+          type: 'account',
+          network: 'testnet',
+          entityId: '0.0.1001',
+        }),
+      } as unknown as AliasService,
     };
     const args = makeArgs(api, logger, {
-      accountIdOrNameOrAlias: 'test-account',
+      account: 'test-account',
       'only-hbar': true,
     });
 
@@ -61,14 +61,6 @@ describe('account plugin - balance command (ADR-003)', () => {
   test('returns HBAR and token balances', async () => {
     const logger = makeLogger();
 
-    MockedHelper.mockImplementation(() => ({
-      loadAccount: jest
-        .fn()
-        .mockReturnValue(
-          makeAccountData({ accountId: '0.0.2002', name: 'acc2' }),
-        ),
-    }));
-
     const mirrorMock = makeMirrorMock({
       hbarBalance: 5000n,
       tokenBalances: [
@@ -81,8 +73,16 @@ describe('account plugin - balance command (ADR-003)', () => {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
       state: {} as any,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'acc2',
+          type: 'account',
+          network: 'testnet',
+          entityId: '0.0.2002',
+        }),
+      } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, { accountIdOrNameOrAlias: 'acc2' });
+    const args = makeArgs(api, logger, { account: 'acc2' });
 
     const result = await getAccountBalance(args);
 
@@ -129,7 +129,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       state: {} as any,
       alias,
     };
-    const args = makeArgs(api, logger, { accountIdOrNameOrAlias: 'acc777' });
+    const args = makeArgs(api, logger, { account: 'acc777' });
 
     const result = await getAccountBalance(args);
 
@@ -146,24 +146,22 @@ describe('account plugin - balance command (ADR-003)', () => {
   test('returns HBAR balance without token balances when none found', async () => {
     const logger = makeLogger();
 
-    MockedHelper.mockImplementation(() => ({
-      loadAccount: jest.fn().mockReturnValue(
-        makeAccountData({
-          accountId: '0.0.5005',
-          name: 'acc3',
-          type: 'ED25519',
-        }),
-      ),
-    }));
-
     const mirrorMock = makeMirrorMock({ hbarBalance: 42n, tokenBalances: [] });
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
       state: {} as any,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'acc3',
+          type: 'account',
+          network: 'testnet',
+          entityId: '0.0.5005',
+        }),
+      } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, { accountIdOrNameOrAlias: 'acc3' });
+    const args = makeArgs(api, logger, { account: 'acc3' });
 
     const result = await getAccountBalance(args);
 
@@ -179,14 +177,6 @@ describe('account plugin - balance command (ADR-003)', () => {
   test('returns failure when token balances fetch fails', async () => {
     const logger = makeLogger();
 
-    MockedHelper.mockImplementation(() => ({
-      loadAccount: jest
-        .fn()
-        .mockReturnValue(
-          makeAccountData({ accountId: '0.0.6006', name: 'acc4' }),
-        ),
-    }));
-
     const mirrorMock = makeMirrorMock({
       hbarBalance: 77n,
       tokenError: new Error('mirror error'),
@@ -196,8 +186,16 @@ describe('account plugin - balance command (ADR-003)', () => {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
       state: {} as any,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'acc4',
+          type: 'account',
+          network: 'testnet',
+          entityId: '0.0.6006',
+        }),
+      } as unknown as AliasService,
     };
-    const args = makeArgs(api, logger, { accountIdOrNameOrAlias: 'acc4' });
+    const args = makeArgs(api, logger, { account: 'acc4' });
 
     const result = await getAccountBalance(args);
 
@@ -225,13 +223,16 @@ describe('account plugin - balance command (ADR-003)', () => {
       logger,
       state: {} as any,
     };
-    const args = makeArgs(api, logger, { accountIdOrNameOrAlias: 'broken' });
+    const account = 'broken';
+    const args = makeArgs(api, logger, { account });
 
     const result = await getAccountBalance(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Failed to get account balance');
-    expect(result.errorMessage).toContain('state failure');
+    expect(result.errorMessage).toContain(
+      'Account not found with ID or alias:',
+    );
+    expect(result.errorMessage).toContain(account);
   });
 });
