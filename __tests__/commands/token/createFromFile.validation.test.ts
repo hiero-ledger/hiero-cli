@@ -83,7 +83,7 @@ describe('token create-from-file validation', () => {
       'token',
       'create-from-file',
       '-f',
-      fileName,
+      filePath,
     ]);
   });
 
@@ -131,7 +131,7 @@ describe('token create-from-file validation', () => {
       'token',
       'create-from-file',
       '-f',
-      fileName,
+      filePath,
     ]);
     // exitOnError swallows DomainError but sets exitCode
     expect(process.exitCode === 1 || process.exitCode === prevExit).toBe(true);

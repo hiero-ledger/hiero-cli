@@ -63,12 +63,12 @@ async function createAccountForToken(
   return { key, account };
 }
 
-function resolveTokenFilePath(filename: string): string {
-  const overrideDir = process.env.HCLI_TOKEN_INPUT_DIR;
-  if (overrideDir && overrideDir.trim() !== '') {
-    return path.join(overrideDir, `token.${filename}.json`);
+function resolveTokenFilePath(filePath: string): string {
+  if (path.isAbsolute(filePath)) {
+    return filePath;
   }
-  return path.join(__dirname, '../..', 'input', `token.${filename}.json`);
+
+  return path.resolve(filePath);
 }
 
 function initializeToken(tokenInput: TokenInput): Token {

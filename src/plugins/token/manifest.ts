@@ -175,7 +175,14 @@ export const tokenPluginManifest: PluginManifest = {
       description:
         'Create a new token from a JSON file definition with advanced features',
       options: [
-        { name: 'file', short: 'f', type: 'string', required: true },
+        {
+          name: 'file',
+          short: 'f',
+          type: 'string',
+          required: true,
+          description:
+            'Token definition file path (absolute or relative) to a JSON file',
+        },
         { name: 'args', short: 'a', type: 'string', required: false },
       ],
       handler: createTokenFromFile,

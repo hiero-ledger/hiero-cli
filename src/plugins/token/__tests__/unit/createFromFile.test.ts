@@ -6,7 +6,6 @@ import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interfa
 import { createTokenFromFile } from '../../commands/createFromFile';
 import type { CreateTokenFromFileOutput } from '../../commands/createFromFile';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
 import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
@@ -15,13 +14,14 @@ import {
 } from './helpers/mocks';
 import {
   validTokenFile,
-  infiniteSupplyTokenFile as _infiniteSupplyTokenFile,
+  infiniteSupplyTokenFile,
   invalidTokenFileMissingName as _invalidTokenFileMissingName,
   invalidTokenFileInvalidAccountId as _invalidTokenFileInvalidAccountId,
   invalidTokenFileInvalidSupplyType as _invalidTokenFileInvalidSupplyType,
   invalidTokenFileNegativeSupply as _invalidTokenFileNegativeSupply,
   mockFilePaths as _mockFilePaths,
-  mockTransactions as _mockTransactions,
+  mockTransactions,
+  mockTransactionResults,
   expectedTokenTransactionParamsFromFile,
 } from './helpers/fixtures';
 import * as fs from 'fs/promises';
@@ -50,6 +50,26 @@ const mockFs = fs as jest.Mocked<typeof fs>;
 const mockPath = path as jest.Mocked<typeof path>;
 
 describe('createTokenFromFileHandler', () => {
+  const mockTokenTransaction = mockTransactions.token;
+  const mockSignResult = mockTransactionResults.success;
+
+  const createMockApi = () => {
+    return makeApiMocks({
+      tokenTransactions: {
+        createTokenTransaction: jest.fn().mockReturnValue(mockTokenTransaction),
+        createTokenAssociationTransaction: jest.fn(),
+      },
+      signing: {
+        signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+      },
+      kms: {
+        importPrivateKey: jest.fn().mockReturnValue({
+          keyRefId: 'treasury-key-ref-id',
+          publicKey: 'treasury-key',
+        }),
+      },
+    });
+  };
   beforeEach(() => {
     MockedHelper.mockClear();
     MockedHelper.mockImplementation(() => ({
@@ -65,39 +85,17 @@ describe('createTokenFromFileHandler', () => {
     test('should create token from valid file', async () => {
       // Arrange
       const mockAddToken = jest.fn();
-      const mockTokenTransaction = { test: 'token-transaction' };
-      const mockSignResult: TransactionResult = {
-        success: true,
-        transactionId: '0.0.123@1234567890.123456789',
-        tokenId: '0.0.123456',
-        receipt: {
-          status: {
-            status: 'success',
-            transactionId: '0.0.123@1234567890.123456789',
-          },
-        },
-      };
-
       MockedHelper.mockImplementation(() => ({
         saveToken: mockAddToken,
       }));
 
       mockFs.readFile.mockResolvedValue(JSON.stringify(validTokenFile));
       mockFs.access.mockResolvedValue(undefined); // File exists
-      mockPath.join.mockReturnValue('/path/to/token.test.json');
-      mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
+      mockPath.resolve.mockReturnValue('/resolved/path/to/test.json');
 
-      const mockAssociationTransaction = { test: 'association-transaction' };
-      const mockAssociationResult = {
-        success: true,
-        transactionId: '0.0.123@1234567890.123456790',
-        receipt: {
-          status: {
-            status: 'success',
-            transactionId: '0.0.123@1234567890.123456790',
-          },
-        },
-      };
+      const mockAssociationTransaction = mockTransactions.association;
+      const mockAssociationResult =
+        mockTransactionResults.successWithAssociation;
 
       const { api, tokenTransactions, signing } = makeApiMocks({
         tokenTransactions: {
@@ -116,11 +114,7 @@ describe('createTokenFromFileHandler', () => {
             if (transaction === mockAssociationTransaction) {
               return Promise.resolve(mockAssociationResult);
             }
-            return Promise.resolve({
-              success: false,
-              transactionId: '',
-              receipt: { status: { status: 'failed', transactionId: '' } },
-            });
+            return Promise.resolve(mockTransactionResults.failure);
           }),
         },
         kms: {
@@ -163,9 +157,10 @@ describe('createTokenFromFileHandler', () => {
       expect(output.network).toBe('testnet');
 
       expect(mockFs.readFile).toHaveBeenCalledWith(
-        '/path/to/token.test.json',
+        '/resolved/path/to/test.json',
         'utf-8',
       );
+      expect(mockPath.join).not.toHaveBeenCalled();
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
         expectedTokenTransactionParamsFromFile,
       );
@@ -176,36 +171,97 @@ describe('createTokenFromFileHandler', () => {
       expect(mockAddToken).toHaveBeenCalled();
     });
 
+    test('should create token from file using full path', async () => {
+      const mockAddToken = jest.fn();
+      MockedHelper.mockImplementation(() => ({
+        saveToken: mockAddToken,
+      }));
+
+      const fullPath = './custom/path/token.json';
+      mockFs.readFile.mockResolvedValue(JSON.stringify(validTokenFile));
+      mockFs.access.mockResolvedValue(undefined);
+
+      const { api } = createMockApi();
+
+      const logger = makeLogger();
+      const args: CommandHandlerArgs = {
+        args: {
+          file: fullPath,
+        },
+        api,
+        state: {} as any,
+        config: {} as any,
+        logger,
+      };
+
+      const result = await createTokenFromFile(args);
+
+      expect(result.status).toBe(Status.Success);
+      expect(result.outputJson).toBeDefined();
+      expect(result.errorMessage).toBeUndefined();
+
+      const output: CreateTokenFromFileOutput = JSON.parse(result.outputJson!);
+      expect(output.tokenId).toBe('0.0.123456');
+      expect(output.name).toBe('TestToken');
+      expect(output.symbol).toBe('TEST');
+
+      expect(mockFs.readFile).toHaveBeenCalledWith(fullPath, 'utf-8');
+      expect(mockAddToken).toHaveBeenCalled();
+    });
+
+    test('should create token from file using absolute path', async () => {
+      const mockAddToken = jest.fn();
+      MockedHelper.mockImplementation(() => ({
+        saveToken: mockAddToken,
+      }));
+
+      const absolutePath = '/absolute/path/to/token.json';
+      mockFs.readFile.mockResolvedValue(JSON.stringify(validTokenFile));
+      mockFs.access.mockResolvedValue(undefined);
+
+      const { api } = createMockApi();
+
+      const logger = makeLogger();
+      const args: CommandHandlerArgs = {
+        args: {
+          file: absolutePath,
+        },
+        api,
+        state: {} as any,
+        config: {} as any,
+        logger,
+      };
+
+      const result = await createTokenFromFile(args);
+
+      expect(result.status).toBe(Status.Success);
+      expect(result.outputJson).toBeDefined();
+      expect(result.errorMessage).toBeUndefined();
+
+      const output: CreateTokenFromFileOutput = JSON.parse(result.outputJson!);
+      expect(output.tokenId).toBe('0.0.123456');
+      expect(output.name).toBe('TestToken');
+      expect(output.symbol).toBe('TEST');
+
+      expect(mockFs.readFile).toHaveBeenCalledWith(absolutePath, 'utf-8');
+      expect(mockAddToken).toHaveBeenCalled();
+    });
+
     test('should handle infinite supply type', async () => {
       // Arrange
       const mockAddToken = jest.fn();
-      const mockTokenTransaction = { test: 'token-transaction' };
-      const mockSignResult: TransactionResult = {
-        success: true,
-        transactionId: '0.0.123@1234567890.123456789',
-        tokenId: '0.0.123456',
-        receipt: {
-          status: {
-            status: 'success',
-            transactionId: '0.0.123@1234567890.123456789',
-          },
-        },
-      };
+      const mockTokenTransaction = mockTransactions.token;
+      const mockSignResult = mockTransactionResults.success;
 
       MockedHelper.mockImplementation(() => ({
         saveToken: mockAddToken,
       }));
 
-      const infiniteSupplyFile = {
-        ...validTokenFile,
-        supplyType: 'infinite' as const,
-        maxSupply: 0,
-      };
-
-      mockFs.readFile.mockResolvedValue(JSON.stringify(infiniteSupplyFile));
+      mockFs.readFile.mockResolvedValue(
+        JSON.stringify(infiniteSupplyTokenFile),
+      );
       mockFs.access.mockResolvedValue(undefined);
-      mockPath.join.mockReturnValue('/path/to/token.test.json');
-      mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
+      mockPath.resolve.mockReturnValue('/resolved/path/to/test.json');
 
       const {
         api,
@@ -280,19 +336,9 @@ describe('createTokenFromFileHandler', () => {
     test('should process associations after token creation', async () => {
       // Arrange
       const mockAddToken = jest.fn();
-      const mockTokenTransaction = { test: 'token-transaction' };
-      const _mockAssociationTransaction = { test: 'association-transaction' };
-      const mockSignResult: TransactionResult = {
-        success: true,
-        transactionId: '0.0.123@1234567890.123456789',
-        tokenId: '0.0.123456',
-        receipt: {
-          status: {
-            status: 'success',
-            transactionId: '0.0.123@1234567890.123456789',
-          },
-        },
-      };
+      const mockTokenTransaction = mockTransactions.token;
+      const _mockAssociationTransaction = mockTransactions.association;
+      const mockSignResult = mockTransactionResults.success;
 
       MockedHelper.mockImplementation(() => ({
         saveToken: mockAddToken,
@@ -300,8 +346,7 @@ describe('createTokenFromFileHandler', () => {
 
       mockFs.readFile.mockResolvedValue(JSON.stringify(validTokenFile));
       mockFs.access.mockResolvedValue(undefined);
-      mockPath.join.mockReturnValue('/path/to/token.test.json');
-      mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
+      mockPath.resolve.mockReturnValue('/resolved/path/to/test.json');
 
       const {
         api,
@@ -365,7 +410,6 @@ describe('createTokenFromFileHandler', () => {
     test('should handle file not found', async () => {
       // Arrange
       mockFs.readFile.mockRejectedValue(new Error('File not found'));
-      mockPath.join.mockReturnValue('/path/to/token.test.json');
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
       const { api } = makeApiMocks({});
@@ -399,7 +443,6 @@ describe('createTokenFromFileHandler', () => {
       // Arrange
       mockFs.access.mockResolvedValue(undefined);
       mockFs.readFile.mockRejectedValue(new Error('Permission denied'));
-      mockPath.join.mockReturnValue('/path/to/token.test.json');
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
       const { api } = makeApiMocks({});
@@ -433,7 +476,6 @@ describe('createTokenFromFileHandler', () => {
       // Arrange
       mockFs.readFile.mockResolvedValue('invalid json content');
       mockFs.access.mockResolvedValue(undefined);
-      mockPath.join.mockReturnValue('/path/to/token.test.json');
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
       const { api } = makeApiMocks({});
@@ -484,7 +526,6 @@ describe('createTokenFromFileHandler', () => {
 
       mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
       mockFs.access.mockResolvedValue(undefined);
-      mockPath.join.mockReturnValue('/path/to/token.test.json');
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
       const { api } = makeApiMocks({});
@@ -524,7 +565,6 @@ describe('createTokenFromFileHandler', () => {
 
       mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
       mockFs.access.mockResolvedValue(undefined);
-      mockPath.join.mockReturnValue('/path/to/token.test.json');
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
       const { api } = makeApiMocks({});
@@ -561,7 +601,6 @@ describe('createTokenFromFileHandler', () => {
 
       mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
       mockFs.access.mockResolvedValue(undefined);
-      mockPath.join.mockReturnValue('/path/to/token.test.json');
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
       const { api } = makeApiMocks({});
@@ -598,7 +637,6 @@ describe('createTokenFromFileHandler', () => {
 
       mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
       mockFs.access.mockResolvedValue(undefined);
-      mockPath.join.mockReturnValue('/path/to/token.test.json');
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
       const { api } = makeApiMocks({});
@@ -631,12 +669,8 @@ describe('createTokenFromFileHandler', () => {
     test('should handle token creation failure', async () => {
       // Arrange
       const mockAddToken = jest.fn();
-      const mockTokenTransaction = { test: 'token-transaction' };
-      const mockSignResult: TransactionResult = {
-        success: false,
-        transactionId: '',
-        receipt: { status: { status: 'failed', transactionId: '' } },
-      };
+      const mockTokenTransaction = mockTransactions.token;
+      const mockSignResult = mockTransactionResults.failure;
 
       MockedHelper.mockImplementation(() => ({
         saveToken: mockAddToken,
@@ -644,8 +678,7 @@ describe('createTokenFromFileHandler', () => {
 
       mockFs.readFile.mockResolvedValue(JSON.stringify(validTokenFile));
       mockFs.access.mockResolvedValue(undefined);
-      mockPath.join.mockReturnValue('/path/to/token.test.json');
-      mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
+      mockPath.resolve.mockReturnValue('/resolved/path/to/test.json');
 
       const {
         api,
@@ -697,19 +730,8 @@ describe('createTokenFromFileHandler', () => {
     test('should handle association failure gracefully', async () => {
       // Arrange
       const mockAddToken = jest.fn();
-      const mockTokenTransaction = { test: 'token-transaction' };
-      const _mockAssociationTransaction = { test: 'association-transaction' };
-      const mockSignResult: TransactionResult = {
-        success: true,
-        transactionId: '0.0.123@1234567890.123456789',
-        tokenId: '0.0.123456',
-        receipt: {
-          status: {
-            status: 'success',
-            transactionId: '0.0.123@1234567890.123456789',
-          },
-        },
-      };
+      const mockTokenTransaction = mockTransactions.token;
+      const mockSignResult = mockTransactionResults.success;
 
       MockedHelper.mockImplementation(() => ({
         saveToken: mockAddToken,
@@ -717,8 +739,7 @@ describe('createTokenFromFileHandler', () => {
 
       mockFs.readFile.mockResolvedValue(JSON.stringify(validTokenFile));
       mockFs.access.mockResolvedValue(undefined);
-      mockPath.join.mockReturnValue('/path/to/token.test.json');
-      mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
+      mockPath.resolve.mockReturnValue('/resolved/path/to/test.json');
 
       const {
         api,
@@ -781,18 +802,8 @@ describe('createTokenFromFileHandler', () => {
     test('should log file processing details', async () => {
       // Arrange
       const mockAddToken = jest.fn();
-      const mockTokenTransaction = { test: 'token-transaction' };
-      const mockSignResult: TransactionResult = {
-        success: true,
-        transactionId: '0.0.123@1234567890.123456789',
-        tokenId: '0.0.123456',
-        receipt: {
-          status: {
-            status: 'success',
-            transactionId: '0.0.123@1234567890.123456789',
-          },
-        },
-      };
+      const mockTokenTransaction = mockTransactions.token;
+      const mockSignResult = mockTransactionResults.success;
 
       MockedHelper.mockImplementation(() => ({
         saveToken: mockAddToken,
@@ -800,8 +811,7 @@ describe('createTokenFromFileHandler', () => {
 
       mockFs.readFile.mockResolvedValue(JSON.stringify(validTokenFile));
       mockFs.access.mockResolvedValue(undefined);
-      mockPath.join.mockReturnValue('/path/to/token.test.json');
-      mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
+      mockPath.resolve.mockReturnValue('/resolved/path/to/test.json');
 
       const {
         api,
