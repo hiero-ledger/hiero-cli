@@ -30,6 +30,7 @@ export interface TransactionResult {
   tokenId?: string;
   topicId?: string;
   topicSequenceNumber?: number;
+  consensusTimestamp: string;
 }
 
 export interface TransactionStatus {

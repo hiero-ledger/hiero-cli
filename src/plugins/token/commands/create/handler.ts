@@ -327,8 +327,7 @@ export async function createToken(
         type: 'token',
         network: api.network.getCurrentNetwork(),
         entityId: result.tokenId,
-        // @TODO take createdAt from transaction timestamp
-        createdAt: new Date().toISOString(),
+        createdAt: result.consensusTimestamp,
       });
       logger.log(`   Name registered: ${alias}`);
     }
