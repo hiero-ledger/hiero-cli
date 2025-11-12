@@ -13,6 +13,12 @@ import {
   makeApiMocks,
   mockZustandTokenStateHelper,
 } from './helpers/mocks';
+import {
+  tokenAssociatedWithAccountFixture,
+  tokenAssociatedWithAliasFixture,
+  tokenWithoutAssociationsFixture,
+} from './helpers/fixtures';
+import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
@@ -26,6 +32,141 @@ describe('associateTokenHandler', () => {
   });
 
   describe('success scenarios', () => {
+    test('should return success when token is already associated on chain (token exists in local state)', async () => {
+      const tokenId = '0.0.123456';
+      const accountId = '0.0.789012';
+      const mockGetToken = jest
+        .fn()
+        .mockReturnValue(tokenAssociatedWithAccountFixture);
+
+      mockZustandTokenStateHelper(MockedHelper, {
+        getToken: mockGetToken,
+      });
+
+      const mockAssociationTransaction = { test: 'association-transaction' };
+      const receiptStatusError = new ReceiptStatusError({
+        status: HederaStatus.TokenAlreadyAssociatedToAccount,
+        transactionId: '0.0.123@1234567890.123456789',
+      } as any);
+
+      const { api } = makeApiMocks({
+        alias: {
+          resolve: jest.fn().mockReturnValue({
+            entityId: tokenId,
+          }),
+        },
+        tokenTransactions: {
+          createTokenAssociationTransaction: jest
+            .fn()
+            .mockReturnValue(mockAssociationTransaction),
+        },
+        signing: {
+          signAndExecuteWith: jest.fn().mockRejectedValue(receiptStatusError),
+        },
+        kms: {
+          importPrivateKey: jest.fn().mockReturnValue({
+            keyRefId: 'imported-key-ref-id',
+            publicKey: 'imported-public-key',
+          }),
+        },
+      });
+
+      const logger = makeLogger();
+      const args: CommandHandlerArgs = {
+        args: {
+          token: tokenId,
+          account: `${accountId}:test-account-key`,
+        },
+        api,
+        state: {} as any,
+        config: {} as any,
+        logger,
+      };
+
+      const result = await associateToken(args);
+
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Success);
+      expect(result.outputJson).toBeDefined();
+
+      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      expect(output.tokenId).toBe(tokenId);
+      expect(output.accountId).toBe(accountId);
+      expect(output.associated).toBe(true);
+      expect(output.alreadyAssociated).toBe(true);
+      expect(output.transactionId).toBeUndefined();
+      expect(api.token.createTokenAssociationTransaction).toHaveBeenCalled();
+    });
+
+    test('should return success when token is already associated on chain (not in local state)', async () => {
+      const tokenId = '0.0.123456';
+      const accountId = '0.0.789012';
+
+      const mockGetToken = jest.fn().mockReturnValue(null); // Token not in local state
+      const mockAddTokenAssociation = jest.fn();
+
+      mockZustandTokenStateHelper(MockedHelper, {
+        getToken: mockGetToken,
+        addTokenAssociation: mockAddTokenAssociation,
+      });
+
+      const mockAssociationTransaction = { test: 'association-transaction' };
+      const receiptStatusError = new ReceiptStatusError({
+        status: HederaStatus.TokenAlreadyAssociatedToAccount,
+        transactionId: '0.0.123@1234567890.123456789',
+      } as any);
+
+      const { api } = makeApiMocks({
+        alias: {
+          resolve: jest.fn().mockReturnValue({
+            entityId: tokenId,
+          }),
+        },
+        tokenTransactions: {
+          createTokenAssociationTransaction: jest
+            .fn()
+            .mockReturnValue(mockAssociationTransaction),
+        },
+        signing: {
+          signAndExecuteWith: jest.fn().mockRejectedValue(receiptStatusError),
+        },
+        kms: {
+          importPrivateKey: jest.fn().mockReturnValue({
+            keyRefId: 'imported-key-ref-id',
+            publicKey: 'imported-public-key',
+          }),
+        },
+      });
+
+      const logger = makeLogger();
+      const args: CommandHandlerArgs = {
+        args: {
+          token: tokenId,
+          account: `${accountId}:test-account-key`,
+        },
+        api,
+        state: {} as any,
+        config: {} as any,
+        logger,
+      };
+
+      const result = await associateToken(args);
+
+      expect(result).toBeDefined();
+      expect(result.status).toBe(Status.Success);
+      expect(result.outputJson).toBeDefined();
+
+      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      expect(output.tokenId).toBe(tokenId);
+      expect(output.accountId).toBe(accountId);
+      expect(output.associated).toBe(true);
+      expect(output.alreadyAssociated).toBe(true);
+      expect(output.transactionId).toBeUndefined();
+
+      // Verify that addTokenAssociation was NOT called since token doesn't exist in state
+      expect(mockAddTokenAssociation).not.toHaveBeenCalled();
+    });
+
     test('should associate token with account using account-id:account-key format', async () => {
       // Arrange
       const mockAddAssociation = jest.fn();
@@ -449,6 +590,9 @@ describe('associateTokenHandler', () => {
     test('should initialize token state helper and save association', async () => {
       // Arrange
       const mockAddTokenAssociation = jest.fn();
+      const mockGetToken = jest
+        .fn()
+        .mockReturnValue(tokenWithoutAssociationsFixture);
       const mockAssociationTransaction = { test: 'association-transaction' };
       const mockSignResult: TransactionResult = {
         success: true,
@@ -457,6 +601,7 @@ describe('associateTokenHandler', () => {
       };
 
       mockZustandTokenStateHelper(MockedHelper, {
+        getToken: mockGetToken,
         addTokenAssociation: mockAddTokenAssociation,
       });
 
@@ -530,6 +675,9 @@ describe('associateTokenHandler', () => {
     test('should use alias name for state when using alias', async () => {
       // Arrange
       const mockAddTokenAssociation = jest.fn();
+      const mockGetToken = jest
+        .fn()
+        .mockReturnValue(tokenAssociatedWithAliasFixture);
       const mockAssociationTransaction = { test: 'association-transaction' };
       const mockSignResult: TransactionResult = {
         success: true,
@@ -538,6 +686,7 @@ describe('associateTokenHandler', () => {
       };
 
       mockZustandTokenStateHelper(MockedHelper, {
+        getToken: mockGetToken,
         addTokenAssociation: mockAddTokenAssociation,
       });
 

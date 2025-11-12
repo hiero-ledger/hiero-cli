@@ -32,6 +32,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
     MockedHelper.mockImplementation(() => ({
       saveToken: jest.fn(),
       addTokenAssociation: jest.fn(),
+      getToken: jest.fn().mockReturnValue(null),
       listTokens: jest.fn().mockReturnValue([]),
       getTokensWithStats: jest.fn().mockReturnValue({
         total: 0,

@@ -584,6 +584,37 @@ export const makeTokenData = (
   ...overrides,
 });
 
+export const tokenAssociatedWithAccountFixture = makeTokenData({
+  tokenId: '0.0.123456',
+  name: 'TestToken',
+  symbol: 'TEST',
+  associations: [
+    {
+      name: '0.0.789012',
+      accountId: '0.0.789012',
+    },
+  ],
+});
+
+export const tokenAssociatedWithAliasFixture = makeTokenData({
+  tokenId: '0.0.123456',
+  name: 'TestToken',
+  symbol: 'TEST',
+  associations: [
+    {
+      name: 'my-account-alias',
+      accountId: '0.0.789012',
+    },
+  ],
+});
+
+export const tokenWithoutAssociationsFixture = makeTokenData({
+  tokenId: '0.0.123456',
+  name: 'TestToken',
+  symbol: 'TEST',
+  associations: [],
+});
+
 /**
  * Factory function to create token statistics for list tests
  */

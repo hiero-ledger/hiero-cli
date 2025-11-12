@@ -521,6 +521,7 @@ describe('Token Lifecycle Integration', () => {
       const stateHelper = {
         addToken: mockAddToken,
         addAssociation: mockAddAssociation,
+        getToken: jest.fn().mockReturnValue(null),
       };
 
       MockedHelper.mockImplementation(() => stateHelper);
@@ -583,9 +584,9 @@ describe('Token Lifecycle Integration', () => {
 
       // ADR-003 compliance: check CommandExecutionResult
       expect(associateResult).toBeDefined();
-      expect(associateResult.status).toBe(Status.Failure);
-      expect(associateResult.errorMessage).toBeDefined();
-      expect(associateResult.outputJson).toBeUndefined();
+      expect(associateResult.status).toBe(Status.Success);
+      expect(associateResult.outputJson).toBeDefined();
+      expect(associateResult.errorMessage).toBeUndefined();
 
       // Assert - Verify state helper was initialized consistently
       expect(MockedHelper).toHaveBeenCalledTimes(2);
