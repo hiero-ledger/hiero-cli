@@ -16,6 +16,11 @@ export type SupportedNetwork =
   | 'localnet';
 
 /**
+ * Default key manager options for KMS
+ */
+export type DefaultKeyManagerType = 'local' | 'encrypted_local';
+
+/**
  * Account data structure
  */
 export interface Account {

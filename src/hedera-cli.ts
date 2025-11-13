@@ -20,7 +20,7 @@ const logger = Logger.getInstance();
 program
   .version(pkg.version || '0.0.0')
   .description('A CLI tool for managing Hedera environments')
-  .option('-v, --verbose', 'Enable verbose logging')
+  //.option('-v, --verbose', 'Enable verbose logging')
   .option('-q, --quiet', 'Quiet mode (only errors)')
   .option('--debug', 'Enable debug logging')
   .option(
@@ -82,6 +82,7 @@ async function initializeCLI() {
       './dist/plugins/state-management', // State management plugin
       './dist/plugins/topic', // Topic management plugin
       './dist/plugins/hbar', // HBAR plugin
+      './dist/plugins/config', // global config plugin
     ]);
 
     // Initialize plugins

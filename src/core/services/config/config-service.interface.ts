@@ -1,32 +1,37 @@
-import { NetworkConfig } from '../network/network-service.interface';
-
 /**
- * Interface for configuration access
- * Provides read-only access to CLI configuration
+ * Configuration service
+ * Generic accessors so new options are easy to add and discover
  */
+
+export const CONFIG_OPTION_TYPES = [
+  'boolean',
+  'number',
+  'string',
+  'enum',
+] as const;
+
+export type ConfigOptionType = (typeof CONFIG_OPTION_TYPES)[number];
+
+export interface ConfigOptionDescriptor {
+  name: string;
+  type: ConfigOptionType;
+  value: boolean | number | string;
+  allowedValues?: string[]; // present when type === 'enum'
+}
+
 export interface ConfigService {
   /**
-   * Get the current active network
+   * List all available configuration options with their current value
    */
-  getCurrentNetwork(): string;
+  listOptions(): ConfigOptionDescriptor[];
 
   /**
-   * Get network configuration
+   * Get a configuration option by name
    */
-  getNetworkConfig(network: string): NetworkConfig;
+  getOption<T = boolean | number | string>(name: string): T;
 
   /**
-   * Get all available networks
+   * Set a configuration option by name (with type validation)
    */
-  getAvailableNetworks(): string[];
-
-  /**
-   * Get operator account ID for current network
-   */
-  getOperatorId(): string;
-
-  /**
-   * Get operator private key for current network
-   */
-  getOperatorKey(): string;
+  setOption(name: string, value: boolean | number | string): void;
 }

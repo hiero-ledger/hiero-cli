@@ -18,7 +18,7 @@ import { ZustandGenericStateServiceImpl } from '../services/state/state-service'
 import { HederaMirrornodeServiceDefaultImpl } from '../services/mirrornode/hedera-mirrornode-service';
 import { LedgerId } from '@hashgraph/sdk';
 import { NetworkServiceImpl } from '../services/network/network-service';
-import { MockConfigService } from '../services/config/config-service';
+import { ConfigServiceImpl } from '../services/config/config-service';
 import { MockLoggerService } from '../services/logger/logger-service';
 import { HbarService } from '../services/hbar/hbar-service.interface';
 import { HbarServiceImpl } from '../services/hbar/hbar-service';
@@ -85,7 +85,7 @@ export class CoreApiImplementation implements CoreApi {
     }
 
     this.mirror = new HederaMirrornodeServiceDefaultImpl(ledgerId);
-    this.config = new MockConfigService();
+    this.config = new ConfigServiceImpl(this.state);
 
     this.hbar = new HbarServiceImpl(this.logger);
     this.output = new OutputServiceImpl(config.format);
