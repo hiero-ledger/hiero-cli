@@ -143,7 +143,7 @@ describe('createTokenHandler', () => {
         name: 'TestToken',
         symbol: 'TEST',
         decimals: 0,
-        initialSupplyRaw: 1000000,
+        initialSupplyRaw: 1000000n,
         supplyType: 'INFINITE',
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',

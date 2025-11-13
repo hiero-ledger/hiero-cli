@@ -1,3 +1,4 @@
+import '../../../../core/utils/json-serialize';
 import { importAccount } from '../../commands/import/handler';
 import type { ImportAccountOutput } from '../../commands/import';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';

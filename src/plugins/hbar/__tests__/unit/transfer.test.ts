@@ -13,6 +13,7 @@ import {
   mockAmounts,
   mockParsedBalances,
 } from './helpers/fixtures';
+import '../../../../core/utils/json-serialize';
 
 jest.mock('../../../account/zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),

@@ -11,6 +11,7 @@ import {
   makeAliasMock,
 } from '../../../../../__tests__/helpers/plugin';
 import { AliasService } from 'core';
+import '../../../../core/utils/json-serialize';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),

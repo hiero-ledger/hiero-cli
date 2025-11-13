@@ -109,10 +109,7 @@ export async function getAccountBalance(
 
     return {
       status: Status.Success,
-      // @TODO Remove all of these, in future PR comes serialization for bigint
-      outputJson: JSON.stringify(outputData, (_key, value): unknown =>
-        typeof value === 'bigint' ? value.toString() : value,
-      ),
+      outputJson: JSON.stringify(outputData),
     };
   } catch (error: unknown) {
     return {

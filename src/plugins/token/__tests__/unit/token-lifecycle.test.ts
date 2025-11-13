@@ -13,6 +13,7 @@ import {
   makeApiMocks,
   mockZustandTokenStateHelper,
 } from './helpers/mocks';
+import '../../../../core/utils/json-serialize';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
@@ -203,9 +204,9 @@ describe('Token Lifecycle Integration', () => {
         name: 'TestToken',
         symbol: 'TEST',
         decimals: 2,
-        initialSupplyRaw: 100000,
+        initialSupplyRaw: 100000n,
         supplyType: 'FINITE',
-        maxSupplyRaw: 100000,
+        maxSupplyRaw: 100000n,
         treasuryId: _treasuryAccountId,
         adminKey: 'admin-key',
       });
@@ -221,7 +222,7 @@ describe('Token Lifecycle Integration', () => {
         tokenId: token,
         fromAccountId: _treasuryAccountId,
         toAccountId: userAccountId,
-        amount: 10000,
+        amount: 10000n,
       });
 
       // These operations will not succeed due to process.exit(1), so we can't verify the success calls

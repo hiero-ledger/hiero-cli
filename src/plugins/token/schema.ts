@@ -67,9 +67,8 @@ export const TokenDataSchema = z.object({
     .max(255, 'Decimals must be 255 or less'),
 
   initialSupply: z
-    .number()
-    .int('Initial supply must be an integer')
-    .min(0, 'Initial supply must be non-negative'),
+    .bigint({ message: 'Initial supply must be an integer', coerce: true })
+    .min(0n, 'Initial supply must be non-negative'),
 
   supplyType: z.enum(['FINITE', 'INFINITE'], {
     errorMap: () => ({
@@ -78,9 +77,8 @@ export const TokenDataSchema = z.object({
   }),
 
   maxSupply: z
-    .number()
-    .int('Max supply must be an integer')
-    .min(0, 'Max supply must be non-negative'),
+    .bigint({ message: 'Max supply must be an integer', coerce: true })
+    .min(0n, 'Max supply must be non-negative'),
 
   keys: TokenKeysSchema,
 

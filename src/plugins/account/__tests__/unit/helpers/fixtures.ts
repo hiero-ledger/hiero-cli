@@ -172,3 +172,13 @@ export const mockAliasLists = {
     mockAliasRecords.otherAccountTestnet,
   ],
 };
+
+/**
+ * Balance constants for testing (in Tinybars)
+ * These represent realistic Hbar amounts:
+ * - OPERATOR_SUFFICIENT_BALANCE: 100000 Hbar (100000 * 10^8 tinybars)
+ * - ACCOUNT_REQUEST_BALANCE: 10 Hbar (typical account creation)
+ */
+export const OPERATOR_SUFFICIENT_BALANCE = 10_000_000_000_000n; // 100000 Hbar in tinybars
+export const OPERATOR_ACCOUNT_ID = '0.0.123';
+export const OPERATOR_KEY_REF_ID = 'kr_operator_test';

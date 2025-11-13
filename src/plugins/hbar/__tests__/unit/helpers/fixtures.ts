@@ -149,7 +149,7 @@ export const mockBalances = {
  * Parsed Balance Values
  */
 export const mockParsedBalances = {
-  valid: 10000000000000000,
-  medium: 5000000000000000,
-  small: 10000000000,
+  valid: 10000000000000000n,
+  medium: 5000000000000000n,
+  small: 10000000000n,
 };

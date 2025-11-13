@@ -149,7 +149,7 @@ export async function transferToken(
       tokenId,
       fromAccountId,
       toAccountId,
-      amount: rawAmount.toNumber(),
+      amount: rawAmount,
     });
 
     // 2. Sign and execute transaction using the from account key
@@ -176,9 +176,7 @@ export async function transferToken(
 
       return {
         status: Status.Success,
-        outputJson: JSON.stringify(outputData, (key, value): unknown =>
-          typeof value === 'bigint' ? value.toString() : value,
-        ),
+        outputJson: JSON.stringify(outputData),
       };
     } else {
       return {

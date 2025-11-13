@@ -12,10 +12,20 @@ import type { TxExecutionService } from '../../../../../core/services/tx-executi
 import type { NetworkService } from '../../../../../core/services/network/network-service.interface';
 import type { AliasService } from '../../../../../core/services/alias/alias-service.interface';
 import {
+  makeNetworkMock as makeGlobalNetworkMock,
+  makeKmsMock as makeGlobalKmsMock,
+  makeAliasMock as makeGlobalAliasMock,
+  makeSigningMock as makeGlobalSigningMock,
+  makeMirrorMock as makeGlobalMirrorMock,
+} from '../../../../../../__tests__/helpers/plugin';
+import {
   mockAccountData,
   mockTransactionResults,
   mockMirrorAccountData,
   mockAliasLists,
+  OPERATOR_SUFFICIENT_BALANCE,
+  OPERATOR_ACCOUNT_ID,
+  OPERATOR_KEY_REF_ID,
 } from './fixtures';
 
 /**
@@ -166,6 +176,8 @@ export const makeAliasServiceMock = (options?: {
         });
       }),
     remove: jest.fn(),
+    exists: jest.fn().mockReturnValue(false),
+    availableOrThrow: jest.fn(),
   };
 };
 
@@ -183,3 +195,60 @@ export const makeArgs = (
   config: {} as any,
   args,
 });
+
+/**
+ * Configuration options for makeApiMocksForAccountCreate
+ */
+export interface ApiMocksConfig {
+  createAccountImpl?: jest.Mock;
+  signAndExecuteImpl?: jest.Mock;
+  network?: 'testnet' | 'mainnet' | 'previewnet';
+  operatorBalance?: bigint;
+}
+
+/**
+ * Factory function to create consistent API mocks for account creation tests
+ * Follows Web3 testing best practices:
+ * - Centralizes mock configuration
+ * - Uses realistic balance values
+ * - Provides sensible defaults
+ * - Ensures all required dependencies are mocked
+ */
+export const makeApiMocksForAccountCreate = ({
+  createAccountImpl,
+  signAndExecuteImpl,
+  network = 'testnet',
+  operatorBalance = OPERATOR_SUFFICIENT_BALANCE,
+}: ApiMocksConfig) => {
+  const account: jest.Mocked<AccountService> = {
+    createAccount: createAccountImpl || jest.fn(),
+    getAccountInfo: jest.fn(),
+    getAccountBalance: jest.fn(),
+  };
+
+  const signing = makeGlobalSigningMock({ signAndExecuteImpl });
+  const networkMock = makeGlobalNetworkMock(network);
+
+  // Configure network mock to return a valid operator for balance checks
+  networkMock.getOperator = jest.fn().mockReturnValue({
+    accountId: OPERATOR_ACCOUNT_ID,
+    keyRefId: OPERATOR_KEY_REF_ID,
+  });
+
+  const kms = makeGlobalKmsMock();
+
+  // Override createLocalPrivateKey for account creation tests
+  kms.createLocalPrivateKey = jest.fn().mockReturnValue({
+    keyRefId: 'kr_test123',
+    publicKey: 'pub-key-test',
+  });
+
+  // Configure mirror node mock with sufficient operator balance
+  const mirror = makeGlobalMirrorMock({
+    hbarBalance: operatorBalance,
+  });
+
+  const alias = makeGlobalAliasMock();
+
+  return { account, signing, networkMock, kms, alias, mirror };
+};

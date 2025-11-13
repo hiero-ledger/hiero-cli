@@ -46,9 +46,12 @@ export interface NetworkService {
   /**
    * Get operator for a specific network
    */
-  getOperator(
-    network: SupportedNetwork,
-  ): { accountId: string; keyRefId: string } | null;
+  getOperator(network: SupportedNetwork): NetworkOperator | null;
+}
+
+export interface NetworkOperator {
+  accountId: string;
+  keyRefId: string;
 }
 
 // Network configuration types

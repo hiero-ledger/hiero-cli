@@ -96,9 +96,7 @@ export async function importAccount(
 
     return {
       status: Status.Success,
-      outputJson: JSON.stringify(outputData, (key, value): unknown =>
-        typeof value === 'bigint' ? value.toString() : value,
-      ),
+      outputJson: JSON.stringify(outputData),
     };
   } catch (error: unknown) {
     return {

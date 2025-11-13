@@ -10,7 +10,7 @@ export interface TokenTransferParams {
   tokenId: string;
   fromAccountId: string;
   toAccountId: string;
-  amount: number;
+  amount: bigint;
 }
 
 /**
@@ -32,9 +32,9 @@ export interface TokenCreateParams {
   symbol: string;
   treasuryId: string;
   decimals: number;
-  initialSupplyRaw: number;
+  initialSupplyRaw: bigint;
   supplyType: 'FINITE' | 'INFINITE';
-  maxSupplyRaw?: number; // Required for FINITE supply type
+  maxSupplyRaw?: bigint; // Required for FINITE supply type
   adminKey: string;
   customFees?: CustomFee[];
 }

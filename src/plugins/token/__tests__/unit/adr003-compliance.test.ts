@@ -19,6 +19,7 @@ import {
   makeTransactionResult,
 } from './helpers/mocks';
 import { Status } from '../../../../core/shared/constants';
+import '../../../../core/utils/json-serialize';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),

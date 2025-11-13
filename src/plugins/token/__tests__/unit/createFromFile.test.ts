@@ -7,11 +7,7 @@ import { createTokenFromFile } from '../../commands/createFromFile';
 import type { CreateTokenFromFileOutput } from '../../commands/createFromFile';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
 import { Status } from '../../../../core/shared/constants';
-import {
-  makeLogger,
-  makeApiMocks,
-  makeTransactionResult as _makeTransactionResult,
-} from './helpers/mocks';
+import { makeLogger, makeApiMocks } from './helpers/mocks';
 import {
   validTokenFile,
   infiniteSupplyTokenFile,
@@ -26,6 +22,7 @@ import {
 } from './helpers/fixtures';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import '../../../../core/utils/json-serialize';
 
 // ADR-003 compliance: handlers now return CommandExecutionResult instead of calling process.exit()
 
@@ -317,9 +314,9 @@ describe('createTokenFromFileHandler', () => {
         symbol: 'TEST',
         treasuryId: '0.0.123456',
         decimals: 2,
-        initialSupplyRaw: 1000,
+        initialSupplyRaw: 1000n,
         supplyType: 'INFINITE',
-        maxSupplyRaw: 0,
+        maxSupplyRaw: 0n,
         adminKey: 'admin-key',
         customFees: [
           {

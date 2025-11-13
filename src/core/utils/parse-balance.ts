@@ -16,7 +16,7 @@ import BigNumber from 'bignumber.js';
 export function parseBalance(
   balance: string | number | bigint,
   decimals: number = 8,
-): BigNumber {
+): bigint {
   // Validate decimals
   if (decimals < 0) {
     throw new Error(
@@ -72,5 +72,5 @@ export function parseBalance(
   // This replaces string concatenation with pure BigNumber arithmetic
   const result = bn.shiftedBy(decimals);
 
-  return result;
+  return BigInt(result.toString());
 }

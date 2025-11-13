@@ -74,8 +74,15 @@ const tokenFileSchema = z
     symbol: z.string().min(1).max(20),
     decimals: z.number().int().min(0).max(18),
     supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
-    initialSupply: z.number().int().nonnegative(),
-    maxSupply: z.number().int().nonnegative().default(0),
+    initialSupply: z
+      .union([z.number(), z.bigint()])
+      .transform((val) => BigInt(val))
+      .pipe(z.bigint().nonnegative()),
+    maxSupply: z
+      .union([z.number(), z.bigint()])
+      .transform((val) => BigInt(val))
+      .pipe(z.bigint().nonnegative())
+      .default(0n),
     treasury: treasurySchema,
     keys: keysSchema,
     associations: z.array(accountSchema).default([]),

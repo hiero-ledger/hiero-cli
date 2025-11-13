@@ -12,6 +12,36 @@ import { formatError } from '../../../../utils/errors';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import { processBalanceInput } from '../../../../core/utils/process-balance-input';
 import { CreateAccountOutput } from './output';
+import { Hbar } from '@hashgraph/sdk';
+
+/**
+ * Validates that an account has sufficient balance for an operation.
+ * This is a pure validation function with no external dependencies.
+ *
+ * @param availableBalance - Available balance in tinybars
+ * @param requiredBalance - Required balance in tinybars
+ * @param accountId - Context for error message
+ * @throws Error if balance is insufficient
+ */
+function validateSufficientBalance(
+  availableBalance: bigint,
+  requiredBalance: bigint,
+  accountId: string,
+): void {
+  const isBalanceSufficient = availableBalance > requiredBalance;
+
+  if (!isBalanceSufficient) {
+    // Convert to HBAR only for display purposes
+    const requiredHbar = Hbar.fromTinybars(requiredBalance).toString();
+    const availableHbar = Hbar.fromTinybars(availableBalance).toString();
+
+    throw new Error(
+      `Insufficient balance in account ${accountId}.\n` +
+        `   Required balance:  ${requiredHbar}\n` +
+        `   Available balance: ${availableHbar}`,
+    );
+  }
+}
 
 export async function createAccount(
   args: CommandHandlerArgs,
@@ -22,14 +52,14 @@ export async function createAccount(
   const accountState = new ZustandAccountStateHelper(api.state, logger);
 
   // Extract command arguments
-  const rawBalance = args.args.balance as number;
-  let balance: number;
+  const rawBalance = args.args.balance as string;
+  let balance: bigint;
 
   try {
     // Convert balance input: display units (default) or base units (with 't' suffix)
     // HBAR uses 8 decimals
     // @TODO Ensure every balance variable is typeof bigint
-    balance = processBalanceInput(rawBalance, 8).toNumber();
+    balance = processBalanceInput(rawBalance, 8);
   } catch (error) {
     return {
       status: Status.Failure,
@@ -43,6 +73,22 @@ export async function createAccount(
   // Check if alias already exists on the current network
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(alias, network);
+
+  // Check operator account and fetch balance
+  const operator = api.network.getOperator(network);
+  if (!operator) {
+    throw new Error(
+      'No operator account configured. ' +
+        'Please configure operator credentials before creating accounts.',
+    );
+  }
+
+  const operatorBalance = await api.mirror.getAccountHBarBalance(
+    operator.accountId,
+  );
+
+  // Validate operator has sufficient balance to create the account
+  validateSufficientBalance(operatorBalance, balance, operator.accountId);
 
   const name = alias || `account-${Date.now()}`;
 

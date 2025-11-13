@@ -161,7 +161,7 @@ export async function transferHandler(
     const fromInput = validatedInput.from;
     const memo = validatedInput.memo;
 
-    let amount: BigNumber;
+    let amount: bigint;
 
     try {
       // Convert balance input: display units (default) or base units (with 't' suffix)
@@ -173,7 +173,7 @@ export async function transferHandler(
       };
     }
 
-    if (amount.lte(0)) {
+    if (amount <= 0n) {
       return {
         status: Status.Failure,
         // @TODO Include that validation in future zod schema for inputs
@@ -223,8 +223,7 @@ export async function transferHandler(
     );
 
     const transferResult = await api.hbar.transferTinybar({
-      //@TODO After merge BigNumber -> bigint migration pass as bigint
-      amount: amount.toNumber(),
+      amount: amount,
       from: fromAccountId,
       to: toAccountId,
       memo,
@@ -261,9 +260,7 @@ export async function transferHandler(
 
     return {
       status: Status.Success,
-      outputJson: JSON.stringify(outputData, (_key: string, value: unknown) =>
-        typeof value === 'bigint' ? value.toString() : value,
-      ),
+      outputJson: JSON.stringify(outputData),
     };
   } catch (error) {
     return {

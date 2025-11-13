@@ -11,7 +11,7 @@ export interface HbarService {
 }
 
 export interface TransferTinybarParams {
-  amount: number;
+  amount: bigint;
   from: string;
   to: string;
   memo?: string;

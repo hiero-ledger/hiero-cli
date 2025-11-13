@@ -1,4 +1,3 @@
-import BigNumber from 'bignumber.js';
 import { parseBalance } from './parse-balance';
 
 /**
@@ -39,7 +38,7 @@ import { parseBalance } from './parse-balance';
 export function processBalanceInput(
   input: string | number,
   decimals: number = 8,
-): BigNumber {
+): bigint {
   const inputStr = String(input).trim();
 
   // Check if input ends with lowercase 't' (raw units indicator)
@@ -57,7 +56,7 @@ export function processBalanceInput(
     }
 
     // Return raw value as BigNumber (already in base units, no decimals applied)
-    return new BigNumber(rawValue);
+    return BigInt(rawValue);
   }
 
   return parseBalance(inputStr, decimals);
