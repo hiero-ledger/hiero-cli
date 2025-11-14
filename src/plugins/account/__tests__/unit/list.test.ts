@@ -5,9 +5,9 @@ import type { CoreApi } from '../../../../core/core-api/core-api.interface';
 import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
-  makeAccountData,
   makeArgs,
-} from '../../../../../__tests__/helpers/plugin';
+} from '../../../../core/shared/__tests__/helpers/mocks';
+import { makeAccountData } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),

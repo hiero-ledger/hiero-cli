@@ -8,8 +8,9 @@ import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeArgs,
-  makeApiMocksForAccountCreate,
-} from './helpers/mocks';
+} from '../../../../core/shared/__tests__/helpers/mocks';
+import { makeApiMocksForAccountCreate } from './helpers/mocks';
+import '../../../../core/utils/json-serialize';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),

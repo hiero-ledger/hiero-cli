@@ -27,7 +27,10 @@ export function parsePrivateKey(privateKeyString: string): PrivateKey {
   }
 
   throw new Error(
-    `Invalid private key format. Key must be in ED25519, ECDSA, or DER format: ${privateKeyString.substring(0, 10)}...`,
+    `Invalid private key format. Key must be in ED25519, ECDSA, or DER format: ${privateKeyString.substring(
+      0,
+      10,
+    )}...`,
   );
 }
 

@@ -4,36 +4,17 @@ import {
   makeArgs,
   setupExitSpy,
   makeNetworkMock,
-} from '../../../../../__tests__/helpers/plugin';
-import { isJsonOutput } from '../../../../utils/output';
+} from '../../../../core/shared/__tests__/helpers/mocks';
 import { Status } from '../../../../core/shared/constants';
 import {
   checkMirrorNodeHealth,
   checkRpcHealth,
 } from '../../utils/networkHealth';
 
-jest.mock('../../../../utils/output', () => ({
-  isJsonOutput: jest.fn(),
-  printOutput: jest.fn(),
-}));
-
 jest.mock('../../utils/networkHealth', () => ({
   checkMirrorNodeHealth: jest.fn(),
   checkRpcHealth: jest.fn(),
 }));
-
-jest.mock('../../../../utils/color', () => ({
-  color: {
-    green: (str: string) => str,
-    magenta: (str: string) => str,
-    yellow: (str: string) => str,
-    cyan: (str: string) => str,
-    dim: (str: string) => str,
-  },
-  heading: (str: string) => str,
-}));
-
-const mockedIsJsonOutput = isJsonOutput as jest.Mock;
 const mockedCheckMirrorNodeHealth = checkMirrorNodeHealth as jest.Mock;
 const mockedCheckRpcHealth = checkRpcHealth as jest.Mock;
 
@@ -50,7 +31,6 @@ afterAll(() => {
 describe('network plugin - list command', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedIsJsonOutput.mockReturnValue(false);
     mockedCheckMirrorNodeHealth.mockResolvedValue({ status: '✅', code: 200 });
     mockedCheckRpcHealth.mockResolvedValue({ status: '✅', code: 200 });
   });
@@ -103,8 +83,6 @@ describe('network plugin - list command', () => {
   });
 
   test('outputs JSON format when --json flag is set', async () => {
-    mockedIsJsonOutput.mockReturnValue(true);
-
     const logger = makeLogger();
     const networkService = makeNetworkMock('mainnet');
     networkService.getAvailableNetworks = jest

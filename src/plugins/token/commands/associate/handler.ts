@@ -12,7 +12,7 @@ import {
   resolveAccountParameter,
   resolveTokenParameter,
 } from '../../resolver-helper';
-import { formatError } from '../../../../utils/errors';
+import { formatError } from '../../../../core/utils/errors';
 import { AssociateTokenOutput } from './output';
 import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
 

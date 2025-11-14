@@ -2,7 +2,7 @@ import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interfa
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import { clearAccounts } from '../../commands/clear/handler';
 import type { ClearAccountsOutput } from '../../commands/clear';
-import { makeLogger } from '../../../../../__tests__/helpers/plugin';
+import { makeLogger } from '../../../../core/shared/__tests__/helpers/mocks';
 import { Status } from '../../../../core/shared/constants';
 
 jest.mock('../../zustand-state-helper', () => ({

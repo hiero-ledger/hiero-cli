@@ -17,7 +17,7 @@ import {
   resolveTreasuryParameter,
   resolveKeyParameter,
 } from '../../resolver-helper';
-import { formatError } from '../../../../utils/errors';
+import { formatError } from '../../../../core/utils/errors';
 import { CreateTokenOutput } from './output';
 import { processBalanceInput } from '../../../../core/utils/process-balance-input';
 import type { TokenCreateParams } from '../../../../core/types/token.types';

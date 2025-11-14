@@ -8,7 +8,7 @@ import {
   makeArgs,
   makeNetworkMock,
   makeAliasMock,
-} from '../../../../__tests__/helpers/plugin';
+} from '../../../core/shared/__tests__/helpers/mocks';
 
 const makeTopicMessage = (sequenceNumber: number, message: string) => ({
   consensus_timestamp: '1234567890.123456789',

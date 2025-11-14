@@ -8,7 +8,7 @@ import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
 import { Status } from '../../../../core/shared/constants';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
 import { TokenData } from '../../schema';
-import { formatError } from '../../../../utils/errors';
+import { formatError } from '../../../../core/utils/errors';
 import { SupportedNetwork } from '../../../../core/types/shared.types';
 import { CoreApi } from '../../../../core';
 import { ListTokensOutput } from './output';

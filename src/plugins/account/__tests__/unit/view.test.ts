@@ -9,8 +9,8 @@ import {
   makeArgs,
   makeMirrorMock,
   makeAliasMock,
-} from '../../../../../__tests__/helpers/plugin';
-import { AliasService } from 'core';
+} from '../../../../core/shared/__tests__/helpers/mocks';
+import type { AliasService } from '../../../../core/services/alias/alias-service.interface';
 import '../../../../core/utils/json-serialize';
 
 jest.mock('../../zustand-state-helper', () => ({

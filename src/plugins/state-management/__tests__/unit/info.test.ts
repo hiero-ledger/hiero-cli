@@ -111,7 +111,7 @@ describe('State Info Command', () => {
   });
 
   describe('error handling', () => {
-    it.skip('should return failure on state service error', async () => {
+    it('should return failure on state service error', async () => {
       const errorStateService = {
         ...makeEmptyStateServiceMock(),
         getNamespaces: jest.fn().mockImplementation(() => {

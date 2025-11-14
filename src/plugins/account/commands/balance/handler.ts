@@ -3,12 +3,12 @@
  * Handles account balance retrieval using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { TokenBalance } from '../../../../../types';
+import { TokenBalanceInfo } from '../../../../core/services/mirrornode/types';
 import { CommandHandlerArgs } from '../../../../core';
 import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { CoreApi } from '../../../../core';
-import { formatError } from '../../../../utils/errors';
+import { formatError } from '../../../../core/utils/errors';
 import { AccountBalanceOutput } from './output';
 import { EntityIdSchema } from '../../../../core/schemas';
 import { AliasType } from '../../../../core/services/alias/alias-service.interface';
@@ -32,7 +32,7 @@ async function fetchAccountTokenBalances(
 > {
   const tokenBalances = await api.mirror.getAccountTokenBalances(accountId);
   if (tokenBalances.tokens && tokenBalances.tokens.length > 0) {
-    return tokenBalances.tokens.map((token: TokenBalance) => ({
+    return tokenBalances.tokens.map((token: TokenBalanceInfo) => ({
       tokenId: token.token_id,
       balance: BigInt(token.balance.toString()),
     }));

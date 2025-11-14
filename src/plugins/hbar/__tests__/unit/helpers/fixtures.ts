@@ -2,7 +2,7 @@
  * Test Fixtures for HBAR Transfer Tests
  * Reusable test data and constants
  */
-import { makeAccountData } from '../../../../../../__tests__/helpers/plugin';
+import { makeAccountData } from '../../../../account/__tests__/unit/helpers/mocks';
 import type { AccountData } from '../../../../account/schema';
 
 /**

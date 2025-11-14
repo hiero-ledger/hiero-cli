@@ -1,19 +1,19 @@
 /**
- * Shared test helpers and fixtures for plugin unit tests
+ * Core Test Helpers and Mocks
+ * Shared mocks for core services and utilities used across all plugin tests
  */
-import type { CommandHandlerArgs } from '../../src/core/plugins/plugin.interface';
-import type { CoreApi } from '../../src/core/core-api/core-api.interface';
-import type { Logger } from '../../src/core/services/logger/logger-service.interface';
-import type { StateService } from '../../src/core/services/state/state-service.interface';
-import type { ConfigService } from '../../src/core/services/config/config-service.interface';
-import type { NetworkService } from '../../src/core/services/network/network-service.interface';
-import type { KmsService } from '../../src/core/services/kms/kms-service.interface';
-import type { AliasService } from '../../src/core/services/alias/alias-service.interface';
-import type { TxExecutionService } from '../../src/core/services/tx-execution/tx-execution-service.interface';
-import type { HederaMirrornodeService } from '../../src/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { OutputService } from '../../src/core/services/output/output-service.interface';
-import type { HbarService } from '../../src/core/services/hbar/hbar-service.interface';
-import type { AccountData } from '../../src/plugins/account/schema';
+import type { CommandHandlerArgs } from '../../../plugins/plugin.interface';
+import type { CoreApi } from '../../../core-api/core-api.interface';
+import type { Logger } from '../../../services/logger/logger-service.interface';
+import type { StateService } from '../../../services/state/state-service.interface';
+import type { ConfigService } from '../../../services/config/config-service.interface';
+import type { NetworkService } from '../../../services/network/network-service.interface';
+import type { KmsService } from '../../../services/kms/kms-service.interface';
+import type { AliasService } from '../../../services/alias/alias-service.interface';
+import type { TxExecutionService } from '../../../services/tx-execution/tx-execution-service.interface';
+import type { HederaMirrornodeService } from '../../../services/mirrornode/hedera-mirrornode-service.interface';
+import type { OutputService } from '../../../services/output/output-service.interface';
+import type { HbarService } from '../../../services/hbar/hbar-service.interface';
 
 /**
  * Create a mocked Logger instance
@@ -24,57 +24,6 @@ export const makeLogger = (): jest.Mocked<Logger> => ({
   debug: jest.fn(),
   verbose: jest.fn(),
   warn: jest.fn(),
-});
-
-/**
- * Create a test AccountData object with defaults
- */
-export const makeAccountData = (
-  overrides: Partial<AccountData> = {},
-): AccountData => ({
-  keyRefId: 'kr_test123',
-  name: 'default',
-  accountId: '0.0.1234',
-  type: 'ECDSA',
-  publicKey: 'pk',
-  evmAddress: '0x0000000000000000000000000000000000000000',
-  solidityAddress: 'sa',
-  solidityAddressFull: 'safull',
-  network: 'testnet',
-  ...overrides,
-});
-
-/**
- * Create CommandHandlerArgs for testing
- */
-export const makeArgs = (
-  api: Partial<CoreApi>,
-  logger: jest.Mocked<Logger>,
-  args: Record<string, unknown>,
-): CommandHandlerArgs => ({
-  api: {
-    account: {} as any,
-    token: {} as any,
-    txExecution: makeSigningMock(),
-    topic: {
-      createTopic: jest.fn(),
-      submitMessage: jest.fn(),
-    } as any,
-    state: {} as any,
-    mirror: {} as any,
-    network: makeNetworkMock('testnet'),
-    config: {} as any,
-    logger,
-    alias: makeAliasMock(),
-    kms: makeKmsMock(),
-    hbar: makeHbarMock(),
-    output: makeOutputMock(),
-    ...api,
-  },
-  logger,
-  state: {} as StateService,
-  config: {} as ConfigService,
-  args,
 });
 
 /**
@@ -213,16 +162,49 @@ export const makeMirrorMock = (
 /**
  * Create a mocked HbarService
  */
-export const makeHbarMock = (): jest.Mocked<HbarService> => ({
+const makeHbarMock = (): jest.Mocked<HbarService> => ({
   transferTinybar: jest.fn(),
 });
 
 /**
  * Create a mocked OutputService
  */
-export const makeOutputMock = (): jest.Mocked<OutputService> => ({
+const makeOutputMock = (): jest.Mocked<OutputService> => ({
   handleCommandOutput: jest.fn(),
   getFormat: jest.fn().mockReturnValue('human'),
+});
+
+/**
+ * Create CommandHandlerArgs for testing
+ */
+export const makeArgs = (
+  api: Partial<CoreApi>,
+  logger: jest.Mocked<Logger>,
+  args: Record<string, unknown>,
+): CommandHandlerArgs => ({
+  api: {
+    account: {} as any,
+    token: {} as any,
+    txExecution: makeSigningMock(),
+    topic: {
+      createTopic: jest.fn(),
+      submitMessage: jest.fn(),
+    } as any,
+    state: {} as any,
+    mirror: {} as any,
+    network: makeNetworkMock('testnet'),
+    config: {} as any,
+    logger,
+    alias: makeAliasMock(),
+    kms: makeKmsMock(),
+    hbar: makeHbarMock(),
+    output: makeOutputMock(),
+    ...api,
+  },
+  logger,
+  state: {} as StateService,
+  config: {} as ConfigService,
+  args,
 });
 
 /**

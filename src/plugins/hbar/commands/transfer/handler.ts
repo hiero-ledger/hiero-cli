@@ -5,7 +5,7 @@
  */
 import { CommandHandlerArgs } from '../../../../core';
 import { CommandExecutionResult } from '../../../../core';
-import { formatError } from '../../../../utils/errors';
+import { formatError } from '../../../../core/utils/errors';
 import {
   AccountIdKeyPairSchema,
   EntityIdSchema,

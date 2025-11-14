@@ -6,7 +6,7 @@ import {
   setupExitSpy,
   makeNetworkMock,
   makeKmsMock,
-} from '../../../../../__tests__/helpers/plugin';
+} from '../../../../core/shared/__tests__/helpers/mocks';
 
 let exitSpy: jest.SpyInstance;
 

@@ -4,24 +4,8 @@ import {
   makeArgs,
   setupExitSpy,
   makeNetworkMock,
-} from '../../../../../__tests__/helpers/plugin';
-import { isJsonOutput } from '../../../../utils/output';
+} from '../../../../core/shared/__tests__/helpers/mocks';
 import { Status } from '../../../../core/shared/constants';
-
-jest.mock('../../../../utils/output', () => ({
-  isJsonOutput: jest.fn(),
-  printOutput: jest.fn(),
-}));
-
-jest.mock('../../../../utils/color', () => ({
-  color: {
-    green: (str: string) => str,
-  },
-  heading: (str: string) => str,
-  success: (str: string) => str,
-}));
-
-const mockedIsJsonOutput = isJsonOutput as jest.Mock;
 
 let exitSpy: jest.SpyInstance;
 
@@ -36,7 +20,6 @@ afterAll(() => {
 describe('network plugin - use command', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedIsJsonOutput.mockReturnValue(false);
   });
 
   test('switches to a valid network', async () => {
@@ -73,8 +56,6 @@ describe('network plugin - use command', () => {
   });
 
   test('returns JSON output when requested', async () => {
-    mockedIsJsonOutput.mockReturnValue(true);
-
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     networkService.switchNetwork = jest.fn();

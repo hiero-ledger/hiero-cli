@@ -6,7 +6,7 @@ import { CommandHandlerArgs } from '../../../../core';
 import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import type { TransactionResult } from '../../../../core';
-import { formatError } from '../../../../utils/errors';
+import { formatError } from '../../../../core/utils/errors';
 import { ZustandTopicStateHelper } from '../../zustand-state-helper';
 import { SubmitMessageOutput } from './output';
 

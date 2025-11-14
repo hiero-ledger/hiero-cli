@@ -1,4 +1,4 @@
-import { Filter } from '../../../types';
+import { Filter } from '../services/mirrornode/types';
 
 export function constructQueryFromFilters(
   baseUrl: string,

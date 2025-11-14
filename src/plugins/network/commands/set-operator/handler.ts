@@ -1,6 +1,6 @@
 import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
 import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
-import { formatError } from '../../../../utils/errors';
+import { formatError } from '../../../../core/utils/errors';
 import { SupportedNetwork } from '../../../../core/types/shared.types';
 import { validateAccountId } from '../../../../core/utils/account-id-validator';
 import { AliasService } from '../../../../core/services/alias/alias-service.interface';

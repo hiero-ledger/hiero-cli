@@ -13,7 +13,7 @@ import {
 import { Logger } from '../logger/logger-service.interface';
 import * as fs from 'fs';
 import * as path from 'path';
-import { formatError } from '../../../utils/errors';
+import { formatError } from '../../utils/errors';
 
 /**
  * Namespace Store Interface

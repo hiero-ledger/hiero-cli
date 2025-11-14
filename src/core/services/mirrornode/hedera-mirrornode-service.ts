@@ -21,7 +21,7 @@ import {
   ExchangeRateResponse,
   TopicMessageQueryParams,
 } from './types';
-import { formatError } from '../../../utils/errors';
+import { formatError } from '../../utils/errors';
 
 export class HederaMirrornodeServiceDefaultImpl
   implements HederaMirrornodeService

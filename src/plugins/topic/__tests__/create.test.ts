@@ -9,7 +9,7 @@ import {
   makeNetworkMock,
   makeKmsMock,
   makeAliasMock,
-} from '../../../../__tests__/helpers/plugin';
+} from '../../../core/shared/__tests__/helpers/mocks';
 import { Status } from '../../../core/shared/constants';
 
 jest.mock('../zustand-state-helper', () => ({

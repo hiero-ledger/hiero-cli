@@ -22,7 +22,7 @@ import type {
   TokenAssociationParams,
   CustomFee as CustomFeeParams,
 } from '../../types/token.types';
-import { parsePrivateKey } from '../../../utils/keys';
+import { parsePrivateKey } from '../../utils/keys';
 
 export class TokenServiceImpl implements TokenService {
   private logger: Logger;

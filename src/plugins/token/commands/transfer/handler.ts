@@ -12,7 +12,7 @@ import {
   resolveDestinationAccountParameter,
   resolveTokenParameter,
 } from '../../resolver-helper';
-import { formatError } from '../../../../utils/errors';
+import { formatError } from '../../../../core/utils/errors';
 import { processBalanceInput } from '../../../../core/utils/process-balance-input';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
 import { TransferTokenOutput } from './output';

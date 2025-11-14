@@ -3,7 +3,7 @@ import {
   makeLogger,
   makeArgs,
   makeKmsMock,
-} from '../../../../../__tests__/helpers/plugin';
+} from '../../../../core/shared/__tests__/helpers/mocks';
 import { Status } from '../../../../core/shared/constants';
 
 // No process.exit usage in handler version

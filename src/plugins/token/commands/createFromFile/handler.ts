@@ -16,7 +16,7 @@ import { resolveTreasuryParameter } from '../../resolver-helper';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { z } from 'zod';
-import { formatError, toErrorMessage } from '../../../../utils/errors';
+import { formatError, toErrorMessage } from '../../../../core/utils/errors';
 import { CreateTokenFromFileOutput } from './output';
 
 // Import the token file schema from the original commands

@@ -17,7 +17,7 @@ import {
   makeAliasMock as makeGlobalAliasMock,
   makeSigningMock as makeGlobalSigningMock,
   makeMirrorMock as makeGlobalMirrorMock,
-} from '../../../../../../__tests__/helpers/plugin';
+} from '../../../../../core/shared/__tests__/helpers/mocks';
 import {
   mockAccountData,
   mockTransactionResults,
@@ -164,6 +164,8 @@ export const makeAliasServiceMock = (options?: {
   const records = options?.records ?? mockAliasLists.empty;
 
   return {
+    exists: jest.fn().mockReturnValue(false),
+    availableOrThrow: jest.fn().mockReturnValue(null),
     register: jest.fn(),
     resolve: jest.fn().mockReturnValue(null),
     list: jest
@@ -176,8 +178,6 @@ export const makeAliasServiceMock = (options?: {
         });
       }),
     remove: jest.fn(),
-    exists: jest.fn().mockReturnValue(false),
-    availableOrThrow: jest.fn(),
   };
 };
 

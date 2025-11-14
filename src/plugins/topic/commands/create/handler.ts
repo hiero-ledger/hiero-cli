@@ -5,7 +5,7 @@
 import { CommandHandlerArgs } from '../../../../core';
 import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../utils/errors';
+import { formatError } from '../../../../core/utils/errors';
 import { ZustandTopicStateHelper } from '../../zustand-state-helper';
 import { AliasRecord } from '../../../../core/services/alias/alias-service.interface';
 import { CreateTopicOutput } from './output';

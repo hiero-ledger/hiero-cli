@@ -6,7 +6,7 @@
 import { CommandHandlerArgs } from '../../../../core';
 import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../utils/errors';
+import { formatError } from '../../../../core/utils/errors';
 import { ViewAccountOutput } from './output';
 import { AliasType } from '../../../../core/services/alias/alias-service.interface';
 import { EntityIdSchema } from '../../../../core/schemas';

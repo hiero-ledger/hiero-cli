@@ -3,7 +3,7 @@ import {
   makeLogger,
   makeArgs,
   makeKmsMock,
-} from '../../../../../__tests__/helpers/plugin';
+} from '../../../../core/shared/__tests__/helpers/mocks';
 import { CredentialType } from '../../../../core/services/kms/kms-types.interface';
 import { Status } from '../../../../core/shared/constants';
 

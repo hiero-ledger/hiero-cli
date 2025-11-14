@@ -5,7 +5,7 @@
 import { StateService } from '../../core/services/state/state-service.interface';
 import { Logger } from '../../core/services/logger/logger-service.interface';
 import { TokenData, TOKEN_NAMESPACE } from './schema';
-import { toErrorMessage } from '../../utils/errors';
+import { toErrorMessage } from '../../core/utils/errors';
 
 export class ZustandTokenStateHelper {
   private state: StateService;

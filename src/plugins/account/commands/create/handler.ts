@@ -8,7 +8,7 @@ import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import type { AccountData } from '../../schema';
 import { AliasType } from '../../../../core/services/alias/alias-service.interface';
-import { formatError } from '../../../../utils/errors';
+import { formatError } from '../../../../core/utils/errors';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import { processBalanceInput } from '../../../../core/utils/process-balance-input';
 import { CreateAccountOutput } from './output';

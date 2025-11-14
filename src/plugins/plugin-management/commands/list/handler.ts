@@ -6,7 +6,7 @@
 import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
 import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
 import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../utils/errors';
+import { formatError } from '../../../../core/utils/errors';
 import { ListPluginsOutput } from './output';
 
 export async function getPluginList(
