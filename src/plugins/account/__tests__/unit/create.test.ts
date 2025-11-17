@@ -4,7 +4,7 @@ import type { CreateAccountOutput } from '../../commands/create';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import type { CoreApi } from '../../../../core/core-api/core-api.interface';
 import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
-import { Status } from '../../../../core/shared/constants';
+import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeArgs,
@@ -61,12 +61,12 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const result = await createAccount(args);
 
-    expect(kms.createLocalPrivateKey).toHaveBeenCalled();
+    expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(KeyAlgorithm.ECDSA);
     expect(account.createAccount).toHaveBeenCalledWith({
       balanceRaw: 500000000000n,
       maxAutoAssociations: 3,
       publicKey: 'pub-key-test',
-      keyType: 'ECDSA',
+      keyType: KeyAlgorithm.ECDSA,
     });
     expect(signing.signAndExecute).toHaveBeenCalled();
     expect(alias.register).toHaveBeenCalledWith(
@@ -84,7 +84,7 @@ describe('account plugin - create command (ADR-003)', () => {
       expect.objectContaining({
         name: 'myAccount',
         accountId: '0.0.9999',
-        type: 'ECDSA',
+        type: KeyAlgorithm.ECDSA,
         network: 'testnet',
         keyRefId: 'kr_test123',
       }),
@@ -97,7 +97,7 @@ describe('account plugin - create command (ADR-003)', () => {
     const output: CreateAccountOutput = JSON.parse(result.outputJson!);
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('myAccount');
-    expect(output.type).toBe('ECDSA');
+    expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.network).toBe('testnet');
     expect(output.transactionId).toBe('tx-123');
     expect(output.evmAddress).toBe(
@@ -171,5 +171,107 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toBeDefined();
     expect(result.errorMessage).toContain('Failed to create account');
+  });
+
+  test('creates account with ECDSA key type', async () => {
+    const logger = makeLogger();
+    const saveAccountMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
+
+    const { account, signing, networkMock, kms, alias, mirror } =
+      makeApiMocksForAccountCreate({
+        createAccountImpl: jest.fn().mockResolvedValue({
+          transaction: {},
+          publicKey: 'pub-key-ecdsa',
+          evmAddress: '0x000000000000000000000000000000000000ecds',
+        }),
+        signAndExecuteImpl: jest.fn().mockResolvedValue({
+          transactionId: 'tx-ecdsa',
+          success: true,
+          accountId: '0.0.8888',
+          receipt: {} as any,
+        } as TransactionResult),
+      });
+
+    const api: Partial<CoreApi> = {
+      account,
+      txExecution: signing,
+      network: networkMock,
+      kms,
+      alias,
+      mirror: mirror as any,
+      logger,
+    };
+
+    const args = makeArgs(api, logger, {
+      balance: 1000,
+      'key-type': KeyAlgorithm.ECDSA,
+      name: 'ecdsaAccount',
+    });
+
+    const result = await createAccount(args);
+
+    expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(KeyAlgorithm.ECDSA);
+    expect(account.createAccount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        keyType: KeyAlgorithm.ECDSA,
+      }),
+    );
+
+    expect(result.status).toBe(Status.Success);
+    const output: CreateAccountOutput = JSON.parse(result.outputJson!);
+    expect(output.type).toBe(KeyAlgorithm.ECDSA);
+  });
+
+  test('creates account with ED25519 key type', async () => {
+    const logger = makeLogger();
+    const saveAccountMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
+
+    const { account, signing, networkMock, kms, alias, mirror } =
+      makeApiMocksForAccountCreate({
+        createAccountImpl: jest.fn().mockResolvedValue({
+          transaction: {},
+          publicKey: 'pub-key-ed25519',
+          evmAddress: '0x000000000000000000000000000000000000ed25',
+        }),
+        signAndExecuteImpl: jest.fn().mockResolvedValue({
+          transactionId: 'tx-ed25519',
+          success: true,
+          accountId: '0.0.7777',
+          receipt: {} as any,
+        } as TransactionResult),
+      });
+
+    const api: Partial<CoreApi> = {
+      account,
+      txExecution: signing,
+      network: networkMock,
+      kms,
+      alias,
+      mirror: mirror as any,
+      logger,
+    };
+
+    const args = makeArgs(api, logger, {
+      balance: 1000,
+      keyType: KeyAlgorithm.ED25519,
+      name: 'ed25519Account',
+    });
+
+    const result = await createAccount(args);
+
+    expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
+      KeyAlgorithm.ED25519,
+    );
+    expect(account.createAccount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        keyType: KeyAlgorithm.ED25519,
+      }),
+    );
+
+    expect(result.status).toBe(Status.Success);
+    const output: CreateAccountOutput = JSON.parse(result.outputJson!);
+    expect(output.type).toBe(KeyAlgorithm.ED25519);
   });
 });

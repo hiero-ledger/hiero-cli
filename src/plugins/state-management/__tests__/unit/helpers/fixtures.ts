@@ -3,6 +3,7 @@
  * Reusable test data and constants
  */
 import type { NamespaceInfo, StateEntry, BackupData } from '../../../schema';
+import { KeyAlgorithm } from '../../../../../core/shared/constants';
 
 /**
  * Mock Namespace Names
@@ -24,7 +25,7 @@ export const mockStateEntries = {
     value: {
       name: 'test-account',
       accountId: '0.0.1234',
-      type: 'ECDSA',
+      type: KeyAlgorithm.ECDSA,
       network: 'testnet',
     },
     namespace: mockNamespaces.accounts,
@@ -109,7 +110,7 @@ export const mockStateData = {
     {
       name: 'account-2',
       accountId: '0.0.5678',
-      type: 'ED25519',
+      type: KeyAlgorithm.ED25519,
       network: 'testnet',
     },
   ],

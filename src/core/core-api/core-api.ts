@@ -53,9 +53,17 @@ export class CoreApiImplementation implements CoreApi {
 
     this.network = new NetworkServiceImpl(this.state, this.logger);
 
+    // Initialize config service first (needed by KMS)
+    this.config = new ConfigServiceImpl(this.state);
+
     // Initialize new services
     this.alias = new AliasServiceImpl(this.state, this.logger);
-    this.kms = new KmsServiceImpl(this.logger, this.state, this.network);
+    this.kms = new KmsServiceImpl(
+      this.logger,
+      this.state,
+      this.network,
+      this.config,
+    );
     this.txExecution = new TxExecutionServiceImpl(
       this.logger,
       this.kms,
@@ -85,7 +93,6 @@ export class CoreApiImplementation implements CoreApi {
     }
 
     this.mirror = new HederaMirrornodeServiceDefaultImpl(ledgerId);
-    this.config = new ConfigServiceImpl(this.state);
 
     this.hbar = new HbarServiceImpl(this.logger);
     this.output = new OutputServiceImpl(config.format);

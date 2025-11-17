@@ -1,5 +1,5 @@
 import { setOperatorHandler } from '../../commands/set-operator';
-import { Status } from '../../../../core/shared/constants';
+import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeArgs,
@@ -48,6 +48,7 @@ describe('network plugin - set-operator command', () => {
       publicKey: 'pub-key-test',
     });
     expect(kmsService.importPrivateKey).toHaveBeenCalledWith(
+      KeyAlgorithm.ECDSA,
       '3030020100300706052b8104000a04220420...',
     );
     expect(networkService.setOperator).toHaveBeenCalledWith('testnet', {
@@ -255,7 +256,7 @@ describe('network plugin - set-operator command', () => {
     const aliasService = makeAliasMock();
 
     // Mock KMS error
-    kmsService.importPrivateKey.mockImplementation(() => {
+    kmsService.importPrivateKey.mockImplementation((_keyType, _privateKey) => {
       throw new Error('Invalid private key format');
     });
 

@@ -3,6 +3,7 @@
  * Uses Hedera SDK to create actual transactions and queries
  */
 import { createHash } from 'crypto';
+import { KeyAlgorithm } from '../../shared/constants';
 import {
   AccountCreateTransaction,
   AccountInfoQuery,
@@ -35,9 +36,18 @@ export class AccountServiceImpl implements AccountService {
     const balance = Hbar.fromTinybars(params.balanceRaw);
 
     // Create the account creation transaction
-    const transaction = new AccountCreateTransaction()
-      .setECDSAKeyWithAlias(PublicKey.fromString(params.publicKey))
-      .setInitialBalance(balance || 0);
+    const publicKey = PublicKey.fromString(params.publicKey);
+    const transaction = new AccountCreateTransaction().setInitialBalance(
+      balance || 0,
+    );
+
+    // Set the key based on the keyType parameter (defaults to ecdsa if not specified)
+    const keyType = params.keyType || KeyAlgorithm.ECDSA;
+    if (keyType === KeyAlgorithm.ECDSA) {
+      transaction.setECDSAKeyWithAlias(publicKey);
+    } else {
+      transaction.setKeyWithoutAlias(publicKey);
+    }
 
     // Set max automatic token associations if specified
     if (params.maxAutoAssociations && params.maxAutoAssociations > 0) {

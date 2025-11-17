@@ -27,7 +27,7 @@ hedera credentials list
   "credentials": [
     {
       "keyRefId": "key-ref-123",
-      "type": "ECDSA",
+      "type": "ecdsa",
       "publicKey": "02a1b2c3...",
       "labels": ["default-operator"]
     }

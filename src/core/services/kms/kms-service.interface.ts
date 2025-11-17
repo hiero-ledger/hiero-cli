@@ -1,18 +1,25 @@
-import type { CredentialType } from './kms-types.interface';
+import type { CredentialType, KeyAlgorithm } from './kms-types.interface';
 import { KmsSignerService } from './kms-signer-service.interface';
 import { Client, Transaction as HederaTransaction } from '@hashgraph/sdk';
 import { SupportedNetwork } from '../../types/shared.types';
 
 export interface KmsService {
-  createLocalPrivateKey(labels?: string[]): {
+  createLocalPrivateKey(
+    keyType: KeyAlgorithm,
+    labels?: string[],
+  ): {
     keyRefId: string;
     publicKey: string;
   };
+
   importPrivateKey(
+    keyType: KeyAlgorithm,
     privateKey: string,
     labels?: string[],
   ): { keyRefId: string; publicKey: string };
+
   getPublicKey(keyRefId: string): string | null;
+
   getSignerHandle(keyRefId: string): KmsSignerService;
 
   // Find key by publicKey (for commands that resolve aliases to publicKeys)

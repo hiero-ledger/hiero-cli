@@ -4,6 +4,7 @@
  */
 import { z } from 'zod';
 import type { SupportedNetwork } from '../../core/types/shared.types';
+import { KeyAlgorithm } from '../../core/shared/constants';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 
 // Supported networks aligned with core SupportedNetwork type
@@ -30,8 +31,8 @@ export const AccountDataSchema = z.object({
     .string()
     .regex(/^0\.0\.[0-9]+$/, 'Account ID must be in format 0.0.123456'),
 
-  type: z.enum(['ECDSA', 'ED25519'], {
-    errorMap: () => ({ message: 'Type must be either ECDSA or ED25519' }),
+  type: z.enum([KeyAlgorithm.ECDSA, KeyAlgorithm.ED25519], {
+    errorMap: () => ({ message: 'Type must be either ecdsa or ed25519' }),
   }),
 
   publicKey: z.string().min(1, 'Public key is required'),

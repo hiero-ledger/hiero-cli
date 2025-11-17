@@ -1,3 +1,5 @@
+import { KeyAlgorithm } from '../kms/kms-types.interface';
+
 /**
  * Interface for Account-related operations
  * All account services must implement this interface
@@ -33,7 +35,7 @@ export interface CreateAccountParams {
   balanceRaw: bigint;
   maxAutoAssociations?: number;
   publicKey: string;
-  keyType?: 'ECDSA' | 'ED25519';
+  keyType?: KeyAlgorithm;
 }
 
 // Import Hedera SDK types

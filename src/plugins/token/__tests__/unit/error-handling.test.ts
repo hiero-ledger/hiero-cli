@@ -174,15 +174,17 @@ describe('Token Plugin Error Handling', () => {
       // Arrange - Mock KMS to throw error for invalid credentials
       const { api, kms: _kms } = makeApiMocks({
         kms: {
-          importPrivateKey: jest.fn().mockImplementation((privateKey) => {
-            if (privateKey === 'invalid-key') {
-              throw new Error('Invalid private key format');
-            }
-            return {
-              keyRefId: 'valid-key-ref-id',
-              publicKey: 'valid-public-key',
-            };
-          }),
+          importPrivateKey: jest
+            .fn()
+            .mockImplementation((_keyType, privateKey) => {
+              if (privateKey === 'invalid-key') {
+                throw new Error('Invalid private key format');
+              }
+              return {
+                keyRefId: 'valid-key-ref-id',
+                publicKey: 'valid-public-key',
+              };
+            }),
         },
       });
 

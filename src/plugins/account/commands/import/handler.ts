@@ -9,6 +9,7 @@ import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import { ImportAccountOutput } from './output';
+import { parseKeyWithType } from '../../../../core/utils/keys';
 
 export async function importAccount(
   args: CommandHandlerArgs,
@@ -20,32 +21,36 @@ export async function importAccount(
 
   // Extract command arguments
   const accountId = args.args.id as string;
-  const privateKey = args.args.key as string;
+  const privateKeyInput = args.args.key as string;
   const alias = (args.args.name as string) || '';
 
   // Check if name already exists on the current network
   const network = api.network.getCurrentNetwork();
-  api.alias.availableOrThrow(alias, network);
-
-  // Generate a unique name for the account
-  const name = alias || `imported-${accountId.replace(/\./g, '-')}`;
-  logger.log(`Importing account: ${name} (${accountId})`);
 
   try {
+    // Parse private key with type
+    const { keyType, privateKey } = parseKeyWithType(privateKeyInput);
     // Check if account name already exists
+    api.alias.availableOrThrow(alias, network);
+    // Generate a unique name for the account
+    const name = alias || `imported-${accountId.replace(/\./g, '-')}`;
+    logger.log(`Importing account: ${name} (${accountId})`);
     if (accountState.hasAccount(name)) {
-      throw new Error(`Account with name '${name}' already exists`);
+      return {
+        status: Status.Failure,
+        errorMessage: `Account with name '${name}' already exists`,
+      };
     }
-
-    // No name resolution needed for import
 
     // Get account info from mirror node
     const accountInfo = await api.mirror.getAccount(accountId);
 
     // Securely store the private key in credentials storage
-    const { keyRefId, publicKey } = api.kms.importPrivateKey(privateKey, [
-      `account:${name}`,
-    ]);
+    const { keyRefId, publicKey } = api.kms.importPrivateKey(
+      keyType,
+      privateKey,
+      [`account:${name}`],
+    );
 
     // Register name if provided
     if (alias) {
@@ -67,7 +72,7 @@ export async function importAccount(
     const account = {
       name,
       accountId,
-      type: 'ECDSA' as 'ECDSA' | 'ED25519', // Default type since key info not available in new API
+      type: keyType,
       publicKey: publicKey,
       evmAddress:
         accountInfo.evmAddress || '0x0000000000000000000000000000000000000000',

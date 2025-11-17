@@ -7,7 +7,7 @@ import { associateToken } from '../../commands/associate';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
 import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
 import type { AssociateTokenOutput } from '../../commands/associate';
-import { Status } from '../../../../core/shared/constants';
+import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeApiMocks,
@@ -234,7 +234,10 @@ describe('associateTokenHandler', () => {
         mockAssociationTransaction,
         { keyRefId: 'imported-key-ref-id' },
       );
-      expect(kms.importPrivateKey).toHaveBeenCalledWith('test-account-key');
+      expect(kms.importPrivateKey).toHaveBeenCalledWith(
+        KeyAlgorithm.ECDSA,
+        'test-account-key',
+      );
     });
 
     test('should associate token with account using alias', async () => {
@@ -669,7 +672,10 @@ describe('associateTokenHandler', () => {
         mockAssociationTransaction,
         { keyRefId: 'imported-key-ref-id' },
       );
-      expect(kms.importPrivateKey).toHaveBeenCalledWith('test-account-key');
+      expect(kms.importPrivateKey).toHaveBeenCalledWith(
+        KeyAlgorithm.ECDSA,
+        'test-account-key',
+      );
     });
 
     test('should use alias name for state when using alias', async () => {

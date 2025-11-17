@@ -7,7 +7,7 @@ import { transferToken } from '../../commands/transfer';
 import type { TransferTokenOutput } from '../../commands/transfer';
 import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
 import { makeLogger, makeApiMocks } from './helpers/mocks';
-import { Status } from '../../../../core/shared/constants';
+import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
 import '../../../../core/utils/json-serialize';
 
 describe('transferTokenHandler', () => {
@@ -89,7 +89,10 @@ describe('transferTokenHandler', () => {
         mockTransferTransaction,
         { keyRefId: 'imported-key-ref-id' },
       );
-      expect(kms.importPrivateKey).toHaveBeenCalledWith('test-from-key');
+      expect(kms.importPrivateKey).toHaveBeenCalledWith(
+        KeyAlgorithm.ECDSA,
+        'test-from-key',
+      );
     });
 
     test('should transfer tokens using alias for from account', async () => {

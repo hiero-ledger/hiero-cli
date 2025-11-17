@@ -105,7 +105,7 @@ interface AccountData {
   keyRefId: string; // Reference to private key in secure storage
   name: string; // Unique account name
   accountId: string; // Hedera account ID (0.0.xxxxx)
-  type: 'ECDSA' | 'ED25519'; // Key algorithm
+  type: KeyAlgorithm; // Key algorithm (ecdsa or ed25519)
   publicKey: string; // Public key
   evmAddress: string; // EVM address
   solidityAddress: string; // Solidity address (short)

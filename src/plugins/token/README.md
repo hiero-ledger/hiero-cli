@@ -93,13 +93,66 @@ hedera token create-from-file \
   --args additional-args
 ```
 
+**Token File Format:**
+
+The token file supports treasury and association keys with optional key type prefixes:
+
+```json
+{
+  "name": "My Token",
+  "symbol": "MTK",
+  "treasury": "0.0.123456:ed25519:private-key",
+  "associations": [
+    {
+      "accountId": "0.0.789012",
+      "key": "ecdsa:private-key"
+    }
+  ]
+}
+```
+
+Or using legacy format:
+
+```json
+{
+  "treasury": {
+    "accountId": "0.0.123456",
+    "key": "ed25519:private-key"
+  },
+  "associations": [
+    {
+      "accountId": "0.0.789012",
+      "key": "private-key"
+    }
+  ]
+}
+```
+
+**Note**: If no key type prefix is provided, the key defaults to `ecdsa`.
+
 ## 📝 Parameter Formats
 
 The plugin supports flexible account parameter formats:
 
 - **Account ID only**: `0.0.123456` (for destination accounts)
 - **Account ID with key**: `0.0.123456:private-key` (for source accounts that need signing)
+- **Account ID with key type**: `0.0.123456:keyType:private-key` (e.g., `0.0.123456:ed25519:...` or `0.0.123456:ecdsa:...`)
+  - Key type can be `ecdsa` or `ed25519`
+  - If key type is not specified, defaults to `ecdsa`
 - **Account name**: `alice` (resolved via alias service)
+
+### Private Key Format
+
+Private keys can optionally be prefixed with their key type:
+
+- **With prefix**: `ed25519:12345676543212345` or `ecdsa:12345676543212345`
+- **Without prefix**: `12345676543212345` (defaults to `ecdsa`)
+
+This applies to:
+
+- Treasury keys in `create-from-file` command (both string format and legacy object format)
+- Association keys in `create-from-file` command
+- Account keys in `treasury-id:key` format
 
 ## 🔧 Core API Integration
 

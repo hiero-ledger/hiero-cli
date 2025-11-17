@@ -60,7 +60,7 @@ export const topicPluginManifest: PluginManifest = {
           required: false,
           default: false,
           description:
-            'Pass an admin key as name or private key (ECDSA) for the topic',
+            'Pass an admin key as name or private key for the topic. Private key can be optionally prefixed with key type (e.g., "ed25519:..." or "ecdsa:..."). Defaults to ecdsa if no prefix.',
           short: 'a',
         },
         {
@@ -69,7 +69,7 @@ export const topicPluginManifest: PluginManifest = {
           required: false,
           default: false,
           description:
-            'Pass a submit key as name or private key (ECDSA) for the topic',
+            'Pass a submit key as name or private key for the topic. Private key can be optionally prefixed with key type (e.g., "ed25519:..." or "ecdsa:..."). Defaults to ecdsa if no prefix.',
           short: 's',
         },
         {

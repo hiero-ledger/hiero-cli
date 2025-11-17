@@ -4,6 +4,7 @@
  */
 
 import { CustomFee } from '@hashgraph/sdk';
+import { KeyAlgorithm } from '../services/kms/kms-types.interface';
 
 /**
  * Supported Hedera networks
@@ -26,7 +27,7 @@ export type DefaultKeyManagerType = 'local' | 'encrypted_local';
 export interface Account {
   name: string;
   accountId: string;
-  type: 'ECDSA' | 'ED25519';
+  type: KeyAlgorithm;
   publicKey: string;
   evmAddress: string;
   solidityAddress: string;

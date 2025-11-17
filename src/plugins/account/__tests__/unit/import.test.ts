@@ -4,7 +4,7 @@ import type { ImportAccountOutput } from '../../commands/import';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import type { CoreApi } from '../../../../core/core-api/core-api.interface';
 import type { HederaMirrornodeService } from '../../../../core/services/mirrornode/hedera-mirrornode-service.interface';
-import { Status } from '../../../../core/shared/constants';
+import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeArgs,
@@ -56,9 +56,11 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const result = await importAccount(args);
 
-    expect(kms.importPrivateKey).toHaveBeenCalledWith('privKey', [
-      'account:imported',
-    ]);
+    expect(kms.importPrivateKey).toHaveBeenCalledWith(
+      KeyAlgorithm.ECDSA,
+      'privKey',
+      ['account:imported'],
+    );
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.9999');
     expect(alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -86,7 +88,7 @@ describe('account plugin - import command (ADR-003)', () => {
     const output: ImportAccountOutput = JSON.parse(result.outputJson!);
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('imported');
-    expect(output.type).toBe('ECDSA');
+    expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.alias).toBe('imported');
     expect(output.network).toBe('testnet');
   });
@@ -163,5 +165,87 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(result.errorMessage).toBeDefined();
     expect(result.errorMessage).toContain('Failed to import account');
     expect(result.errorMessage).toContain('mirror down');
+  });
+
+  test('imports account with ECDSA key type prefix', async () => {
+    const logger = makeLogger();
+    const saveAccountMock = jest.fn().mockReturnValue(undefined);
+
+    MockedHelper.mockImplementation(() => ({
+      hasAccount: jest.fn().mockReturnValue(false),
+      saveAccount: saveAccountMock,
+    }));
+
+    const mirrorMock = makeMirrorMock();
+    const networkMock = makeNetworkMock();
+    const kms = makeKmsMock();
+    const alias = makeAliasMock();
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      network: networkMock as NetworkService,
+      kms,
+      alias,
+      logger,
+    };
+
+    const args = makeArgs(api, logger, {
+      id: '0.0.8888',
+      key: 'ecdsa:privKeyECDSA',
+      name: 'imported-ecdsa',
+    });
+
+    const result = await importAccount(args);
+
+    expect(kms.importPrivateKey).toHaveBeenCalledWith(
+      KeyAlgorithm.ECDSA,
+      'privKeyECDSA',
+      ['account:imported-ecdsa'],
+    );
+    expect(result.status).toBe(Status.Success);
+
+    const output: ImportAccountOutput = JSON.parse(result.outputJson!);
+    expect(output.type).toBe(KeyAlgorithm.ECDSA);
+  });
+
+  test('imports account with ED25519 key type prefix', async () => {
+    const logger = makeLogger();
+    const saveAccountMock = jest.fn().mockReturnValue(undefined);
+
+    MockedHelper.mockImplementation(() => ({
+      hasAccount: jest.fn().mockReturnValue(false),
+      saveAccount: saveAccountMock,
+    }));
+
+    const mirrorMock = makeMirrorMock();
+    const networkMock = makeNetworkMock();
+    const kms = makeKmsMock();
+    const alias = makeAliasMock();
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      network: networkMock as NetworkService,
+      kms,
+      alias,
+      logger,
+    };
+
+    const args = makeArgs(api, logger, {
+      id: '0.0.7777',
+      key: 'ed25519:privKeyED25519',
+      name: 'imported-ed25519',
+    });
+
+    const result = await importAccount(args);
+
+    expect(kms.importPrivateKey).toHaveBeenCalledWith(
+      KeyAlgorithm.ED25519,
+      'privKeyED25519',
+      ['account:imported-ed25519'],
+    );
+    expect(result.status).toBe(Status.Success);
+
+    const output: ImportAccountOutput = JSON.parse(result.outputJson!);
+    expect(output.type).toBe(KeyAlgorithm.ED25519);
   });
 });

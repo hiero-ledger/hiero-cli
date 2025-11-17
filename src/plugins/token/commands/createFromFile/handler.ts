@@ -18,6 +18,7 @@ import * as path from 'path';
 import { z } from 'zod';
 import { formatError, toErrorMessage } from '../../../../core/utils/errors';
 import { CreateTokenFromFileOutput } from './output';
+import { parseKeyWithType } from '../../../../core/utils/keys';
 
 // Import the token file schema from the original commands
 const accountIdRegex = /^\d+\.\d+\.\d+$/;
@@ -194,7 +195,9 @@ function resolveTreasuryFromDefinition(
   }
 
   // Legacy format: object with accountId and key
-  const imported = api.kms.importPrivateKey(treasuryDef.key);
+  // Parse private key - check if it has a key type prefix (e.g., "ed25519:...")
+  const { keyType, privateKey } = parseKeyWithType(treasuryDef.key);
+  const imported = api.kms.importPrivateKey(keyType, privateKey);
   logger.log(`🏦 Using treasury (legacy format): ${treasuryDef.accountId}`);
 
   return {
@@ -281,7 +284,9 @@ async function processTokenAssociations(
       });
 
       // Sign and execute with the account's key
-      const associationImported = api.kms.importPrivateKey(association.key);
+      // Parse private key - check if it has a key type prefix (e.g., "ed25519:...")
+      const { keyType, privateKey } = parseKeyWithType(association.key);
+      const associationImported = api.kms.importPrivateKey(keyType, privateKey);
       const associateResult = await api.txExecution.signAndExecuteWith(
         associateTransaction,
         { keyRefId: associationImported.keyRefId },

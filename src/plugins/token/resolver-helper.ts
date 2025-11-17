@@ -6,7 +6,9 @@
 import { CoreApi } from '../../core';
 import { SupportedNetwork } from '../../core/types/shared.types';
 import { validateAccountId } from '../../core/utils/account-id-validator';
-import { parseIdKeyPair } from '../../core/utils/id-key-parser';
+import { parseIdKeyPair } from '../../core/utils/keys';
+import type { KeyAlgorithm as KeyAlgorithmType } from '../../core/services/kms/kms-types.interface';
+import { KeyAlgorithm } from '../../core/shared/constants';
 
 /**
  * Resolved treasury information
@@ -39,9 +41,11 @@ export function resolveTreasuryParameter(
 
   // Check if it's a treasury-id:treasury-key pair
   if (treasury.includes(':')) {
-    const { accountId, privateKey } = parseIdKeyPair(treasury);
+    const { accountId, privateKey, keyType } = parseIdKeyPair(treasury);
     validateAccountId(accountId);
-    const imported = api.kms.importPrivateKey(privateKey);
+    // Default to ecdsa if keyType is not provided
+    const keyTypeToUse: KeyAlgorithmType = keyType || KeyAlgorithm.ECDSA;
+    const imported = api.kms.importPrivateKey(keyTypeToUse, privateKey);
     return {
       treasuryId: accountId,
       treasuryKeyRefId: imported.keyRefId,
@@ -117,9 +121,11 @@ export function resolveAccountParameter(
 
   // Check if it's an account-id:account-key pair
   if (account.includes(':')) {
-    const { accountId, privateKey } = parseIdKeyPair(account);
+    const { accountId, privateKey, keyType } = parseIdKeyPair(account);
     validateAccountId(accountId);
-    const imported = api.kms.importPrivateKey(privateKey);
+    // Default to ecdsa if keyType is not provided
+    const keyTypeToUse: KeyAlgorithmType = keyType || KeyAlgorithm.ECDSA;
+    const imported = api.kms.importPrivateKey(keyTypeToUse, privateKey);
     return {
       accountId: accountId,
       accountKeyRefId: imported.keyRefId,

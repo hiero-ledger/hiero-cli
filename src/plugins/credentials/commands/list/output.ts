@@ -2,17 +2,23 @@
  * List Credentials Command Output Schema and Template
  */
 import { z } from 'zod';
-import {
-  KeyTypeSchema,
-  PublicKeySchema,
-} from '../../../../core/schemas/common-schemas';
+import { PublicKeySchema } from '../../../../core/schemas/common-schemas';
+import { CREDENTIAL_TYPE_VALUES } from '../../../../core/services/kms/kms-types.interface';
+
+/**
+ * Credential Type Schema
+ * Represents the type of credential storage (localPrivateKey, mnemonic, hardware, kms)
+ */
+const CredentialTypeSchema = z.enum(CREDENTIAL_TYPE_VALUES);
 
 /**
  * Credential entry schema
  */
 const CredentialEntrySchema = z.object({
   keyRefId: z.string().describe('Key reference ID'),
-  type: KeyTypeSchema.describe('Key type (ECDSA or ED25519)'),
+  type: CredentialTypeSchema.describe(
+    'Credential type (localPrivateKey, mnemonic, hardware, or kms)',
+  ),
   publicKey: PublicKeySchema,
   labels: z.array(z.string()).describe('Associated labels').optional(),
 });

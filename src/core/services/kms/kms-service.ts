@@ -1,9 +1,10 @@
 import { KmsService } from './kms-service.interface';
 import {
-  CredentialType,
   KmsCredentialRecord,
-  KeyAlgorithm,
+  KeyAlgorithm as KeyAlgorithmType,
+  CredentialType,
 } from './kms-types.interface';
+import { KeyAlgorithm } from '../../shared/constants';
 import { SupportedNetwork } from '../../types/shared.types';
 import { randomBytes } from 'crypto';
 import {
@@ -18,6 +19,7 @@ import { KmsSignerService } from './kms-signer-service.interface';
 import { Logger } from '../logger/logger-service.interface';
 import { StateService } from '../state/state-service.interface';
 import { NetworkService } from '../network/network-service.interface';
+import { ConfigService } from '../config/config-service.interface';
 import { KmsStorageServiceInterface } from './kms-storage-service.interface';
 import { KmsStorageService } from './kms-storage.service';
 
@@ -35,27 +37,48 @@ export class KmsServiceImpl implements KmsService {
   private readonly logger: Logger;
   private readonly storage: KmsStorageServiceInterface;
   private readonly networkService: NetworkService;
+  private readonly configService: ConfigService;
 
   constructor(
     logger: Logger,
     state: StateService,
     networkService: NetworkService,
+    configService: ConfigService,
   ) {
     this.logger = logger;
     this.networkService = networkService;
+    this.configService = configService;
     this.storage = new KmsStorageService(state);
   }
 
-  createLocalPrivateKey(labels?: string[]): {
+  createLocalPrivateKey(
+    keyType: KeyAlgorithmType,
+    labels?: string[],
+  ): {
     keyRefId: string;
     publicKey: string;
   } {
+    // Check if ED25519 support is enabled when using ED25519 key type
+    if (keyType === KeyAlgorithm.ED25519) {
+      const ed25519SupportEnabled = this.configService.getOption<boolean>(
+        'ed25519_support_enabled',
+      );
+      if (!ed25519SupportEnabled) {
+        throw new Error(
+          'ED25519 key type is not enabled. Please enable it by setting the config option ed25519_support_enabled to true.',
+        );
+      }
+    }
+
     const keyRefId = this.generateId('kr');
-    // Generate a real Hedera Ed25519 keypair
-    const privateKey = PrivateKey.generateECDSA();
+    // Generate a real Hedera keypair based on the specified type
+    const privateKey =
+      keyType === KeyAlgorithm.ECDSA
+        ? PrivateKey.generateECDSA()
+        : PrivateKey.generateED25519();
     const publicKey = privateKey.publicKey.toStringRaw();
     this.storage.writeSecret(keyRefId, {
-      keyAlgorithm: 'ecdsa',
+      keyAlgorithm: keyType,
       privateKey: privateKey.toStringRaw(),
       createdAt: new Date().toISOString(),
     });
@@ -64,19 +87,35 @@ export class KmsServiceImpl implements KmsService {
       type: 'localPrivateKey',
       publicKey,
       labels,
-      keyAlgorithm: 'ecdsa',
+      keyAlgorithm: keyType,
     });
     return { keyRefId, publicKey };
   }
 
   importPrivateKey(
+    keyType: KeyAlgorithmType,
     privateKey: string,
     labels?: string[],
   ): { keyRefId: string; publicKey: string } {
+    // Check if ED25519 support is enabled when using ED25519 key type
+    if (keyType === KeyAlgorithm.ED25519) {
+      const ed25519SupportEnabled = this.configService.getOption<boolean>(
+        'ed25519_support_enabled',
+      );
+      if (!ed25519SupportEnabled) {
+        throw new Error(
+          'ED25519 key type is not enabled. Please enable it by setting the config option ed25519_support_enabled to true.',
+        );
+      }
+    }
+
     const keyRefId = this.generateId('kr');
-    // TODO: Try to parse either ED25519 or ECDSA
-    const pk: PrivateKey = PrivateKey.fromStringECDSA(privateKey);
-    const algo: KeyAlgorithm = 'ecdsa';
+    // Parse the key based on the specified type
+    const pk: PrivateKey =
+      keyType === KeyAlgorithm.ECDSA
+        ? PrivateKey.fromStringECDSA(privateKey)
+        : PrivateKey.fromStringED25519(privateKey);
+    const keyAlgorithm: KeyAlgorithm = keyType;
     const publicKey = pk.publicKey.toStringRaw();
 
     const existingKeyRefId = this.findByPublicKey(publicKey);
@@ -92,10 +131,10 @@ export class KmsServiceImpl implements KmsService {
       type: 'localPrivateKey',
       publicKey,
       labels,
-      keyAlgorithm: algo,
+      keyAlgorithm: keyAlgorithm,
     });
     this.storage.writeSecret(keyRefId, {
-      keyAlgorithm: algo,
+      keyAlgorithm,
       privateKey,
       createdAt: new Date().toISOString(),
     });
@@ -114,7 +153,7 @@ export class KmsServiceImpl implements KmsService {
     return new LocalKmsSignerService(rec.publicKey, {
       keyRefId,
       storage: this.storage,
-      keyAlgorithm: rec.keyAlgorithm || 'ed25519',
+      keyAlgorithm: rec.keyAlgorithm,
     });
   }
 
@@ -201,9 +240,9 @@ export class KmsServiceImpl implements KmsService {
 
     // Use the correct PrivateKey.fromString method based on algorithm
     const privateKey =
-      record.keyAlgorithm === 'ecdsa'
-        ? PrivateKey.fromStringECDSA(privateKeyString)
-        : PrivateKey.fromStringED25519(privateKeyString); // Default to ED25519
+      record.keyAlgorithm === KeyAlgorithm.ED25519
+        ? PrivateKey.fromStringED25519(privateKeyString)
+        : PrivateKey.fromStringECDSA(privateKeyString);
 
     // Set the operator on the client
     client.setOperator(accountIdObj, privateKey);

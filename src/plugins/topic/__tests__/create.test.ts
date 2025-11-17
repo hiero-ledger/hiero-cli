@@ -10,7 +10,7 @@ import {
   makeKmsMock,
   makeAliasMock,
 } from '../../../core/shared/__tests__/helpers/mocks';
-import { Status } from '../../../core/shared/constants';
+import { Status, KeyAlgorithm } from '../../../core/shared/constants';
 
 jest.mock('../zustand-state-helper', () => ({
   ZustandTopicStateHelper: jest.fn(),
@@ -46,7 +46,7 @@ const makeApiMocks = ({
 
   const networkMock = makeNetworkMock(network);
   const kms = makeKmsMock();
-  kms.importPrivateKey.mockImplementation((key: string) => ({
+  kms.importPrivateKey.mockImplementation((keyType: string, key: string) => ({
     keyRefId: `kr_${key.slice(-5)}`,
     publicKey: 'mock-public-key',
   }));
@@ -171,8 +171,14 @@ describe('topic plugin - create command', () => {
       adminKey,
       submitKey,
     });
-    expect(kms.importPrivateKey).toHaveBeenCalledWith(adminKey);
-    expect(kms.importPrivateKey).toHaveBeenCalledWith(submitKey);
+    expect(kms.importPrivateKey).toHaveBeenCalledWith(
+      KeyAlgorithm.ECDSA,
+      adminKey,
+    );
+    expect(kms.importPrivateKey).toHaveBeenCalledWith(
+      KeyAlgorithm.ECDSA,
+      submitKey,
+    );
     expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
       {},
       {
@@ -307,5 +313,99 @@ describe('topic plugin - create command', () => {
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain('Failed to create topic');
     expect(result.errorMessage).toContain('network error');
+  });
+
+  test('creates topic with ECDSA admin key prefix', async () => {
+    const logger = makeLogger();
+    const saveTopicMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
+
+    const adminKey = 'ecdsa:302e020100300506032b657004220420admin';
+
+    const { topicTransactions, signing, networkMock, kms, alias } =
+      makeApiMocks({
+        createTopicImpl: jest.fn().mockReturnValue({
+          transaction: {},
+        }),
+        signAndExecuteWithImpl: jest.fn().mockResolvedValue({
+          transactionId: 'tx-ecdsa',
+          success: true,
+          topicId: '0.0.6666',
+          receipt: {} as any,
+        } as TransactionResult),
+      });
+
+    const api: Partial<CoreApi> = {
+      topic: topicTransactions,
+      txExecution: signing,
+      network: networkMock,
+      kms,
+      alias: alias as any,
+      state: {} as any,
+      logger,
+    };
+
+    const args = makeArgs(api, logger, {
+      memo: 'ECDSA topic',
+      adminKey,
+    });
+
+    const result = await createTopic(args);
+
+    expect(result.status).toBe(Status.Success);
+    expect(kms.importPrivateKey).toHaveBeenCalledWith(
+      KeyAlgorithm.ECDSA,
+      '302e020100300506032b657004220420admin',
+    );
+  });
+
+  test('creates topic with ED25519 admin and submit keys', async () => {
+    const logger = makeLogger();
+    const saveTopicMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
+
+    const adminKey = 'ed25519:302e020100300506032b657004220420admin';
+    const submitKey = 'ed25519:302e020100300506032b657004220420submit';
+
+    const { topicTransactions, signing, networkMock, kms, alias } =
+      makeApiMocks({
+        createTopicImpl: jest.fn().mockReturnValue({
+          transaction: {},
+        }),
+        signAndExecuteWithImpl: jest.fn().mockResolvedValue({
+          transactionId: 'tx-ed25519',
+          success: true,
+          topicId: '0.0.5555',
+          receipt: {} as any,
+        } as TransactionResult),
+      });
+
+    const api: Partial<CoreApi> = {
+      topic: topicTransactions,
+      txExecution: signing,
+      network: networkMock,
+      kms,
+      alias: alias as any,
+      state: {} as any,
+      logger,
+    };
+
+    const args = makeArgs(api, logger, {
+      memo: 'ED25519 topic',
+      adminKey,
+      submitKey,
+    });
+
+    const result = await createTopic(args);
+
+    expect(result.status).toBe(Status.Success);
+    expect(kms.importPrivateKey).toHaveBeenCalledWith(
+      KeyAlgorithm.ED25519,
+      '302e020100300506032b657004220420admin',
+    );
+    expect(kms.importPrivateKey).toHaveBeenCalledWith(
+      KeyAlgorithm.ED25519,
+      '302e020100300506032b657004220420submit',
+    );
   });
 });

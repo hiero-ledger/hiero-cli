@@ -1,25 +1,27 @@
 import { KmsSignerService } from './kms-signer-service.interface';
 import { KmsStorageServiceInterface } from './kms-storage-service.interface';
+import { KeyAlgorithm } from '../../shared/constants';
 import { PrivateKey } from '@hashgraph/sdk';
+import type { KeyAlgorithm as KeyAlgorithmType } from './kms-types.interface';
 
 export class LocalKmsSignerService implements KmsSignerService {
   private readonly pub: string;
   private readonly keyRefId?: string;
   private readonly storage?: KmsStorageServiceInterface;
-  private readonly keyAlgorithm: 'ed25519' | 'ecdsa';
+  private readonly keyAlgorithm: KeyAlgorithm;
 
   constructor(
     publicKey: string,
     deps?: {
       keyRefId?: string;
       storage?: KmsStorageServiceInterface;
-      keyAlgorithm?: 'ed25519' | 'ecdsa';
+      keyAlgorithm?: KeyAlgorithmType;
     },
   ) {
     this.pub = publicKey;
     this.keyRefId = deps?.keyRefId;
     this.storage = deps?.storage;
-    this.keyAlgorithm = deps?.keyAlgorithm || 'ed25519';
+    this.keyAlgorithm = deps?.keyAlgorithm || KeyAlgorithm.ED25519;
   }
 
   sign(bytes: Uint8Array): Promise<Uint8Array> {
@@ -31,7 +33,7 @@ export class LocalKmsSignerService implements KmsSignerService {
       throw new Error('Missing private key for signer');
     }
     const pk =
-      this.keyAlgorithm === 'ecdsa'
+      this.keyAlgorithm === KeyAlgorithm.ECDSA
         ? PrivateKey.fromStringECDSA(secret.privateKey)
         : PrivateKey.fromStringED25519(secret.privateKey);
     const sig = pk.sign(bytes);

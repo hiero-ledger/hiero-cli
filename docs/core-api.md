@@ -335,7 +335,7 @@ const client = api.kms.createClient('testnet');
 interface Account {
   name: string;
   accountId: string;
-  type: 'ECDSA' | 'ED25519';
+  type: KeyAlgorithm; // 'ecdsa' | 'ed25519'
   publicKey: string;
   evmAddress: string;
   solidityAddress: string;

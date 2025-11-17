@@ -110,6 +110,7 @@ export const makeCoreApiMock = (
   config: {} as any,
   mirror: {} as any,
   kms: {} as any,
+  hbar: {} as any,
   output: {} as any,
 });
 

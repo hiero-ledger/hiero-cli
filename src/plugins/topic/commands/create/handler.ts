@@ -9,6 +9,7 @@ import { formatError } from '../../../../core/utils/errors';
 import { ZustandTopicStateHelper } from '../../zustand-state-helper';
 import { AliasRecord } from '../../../../core/services/alias/alias-service.interface';
 import { CreateTopicOutput } from './output';
+import { parseKeyWithType } from '../../../../core/utils/keys';
 
 /**
  * Default export handler function for topic creation
@@ -84,12 +85,16 @@ export async function createTopic(
     let submitKeyRefId: string | undefined = topicSubmitKeyAlias?.keyRefId;
 
     if (adminKey && !topicAdminKeyAlias) {
-      const { keyRefId } = api.kms.importPrivateKey(adminKey);
+      // Parse private key - check if it has a key type prefix (e.g., "ed25519:...")
+      const { keyType, privateKey } = parseKeyWithType(adminKey);
+      const { keyRefId } = api.kms.importPrivateKey(keyType, privateKey);
       adminKeyRefId = keyRefId;
     }
 
     if (submitKey && !topicSubmitKeyAlias) {
-      const { keyRefId } = api.kms.importPrivateKey(submitKey);
+      // Parse private key - check if it has a key type prefix (e.g., "ed25519:...")
+      const { keyType, privateKey } = parseKeyWithType(submitKey);
+      const { keyRefId } = api.kms.importPrivateKey(keyType, privateKey);
       submitKeyRefId = keyRefId;
     }
 

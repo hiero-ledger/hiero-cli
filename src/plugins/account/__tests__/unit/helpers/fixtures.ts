@@ -5,6 +5,7 @@
 import type { AccountData } from '../../../schema';
 import type { AliasRecord } from '../../../../../core/services/alias/alias-service.interface';
 import { AliasType } from '../../../../../core/services/alias/alias-service.interface';
+import { KeyAlgorithm } from '../../../../../core/shared/constants';
 
 /**
  * Mock Account IDs
@@ -25,7 +26,7 @@ export const mockAccountData = {
     keyRefId: 'kr_test123',
     name: 'default',
     accountId: mockAccountIds.default,
-    type: 'ECDSA' as const,
+    type: KeyAlgorithm.ECDSA,
     publicKey: 'pk',
     evmAddress: '0x0000000000000000000000000000000000000000',
     solidityAddress: 'sa',
@@ -36,7 +37,7 @@ export const mockAccountData = {
     keyRefId: 'kr_test456',
     name: 'test-account',
     accountId: mockAccountIds.testAccount,
-    type: 'ECDSA' as const,
+    type: KeyAlgorithm.ECDSA,
     publicKey: 'pk',
     evmAddress: '0x0000000000000000000000000000000000000000',
     solidityAddress: 'sa',
@@ -47,7 +48,7 @@ export const mockAccountData = {
     keyRefId: 'kr_test789',
     name: 'acc3',
     accountId: mockAccountIds.account3,
-    type: 'ED25519' as const,
+    type: KeyAlgorithm.ED25519,
     publicKey: 'pk',
     evmAddress: '0x0000000000000000000000000000000000000000',
     solidityAddress: 'sa',
