@@ -15,10 +15,10 @@ npm install
 npx ts-node src/hedera-cli.ts --help
 
 # Plugin commands help
-npx ts-node src/hedera-cli.ts plugin --help
+npx ts-node src/hedera-cli.ts plugin-management --help
 
 # List plugins
-npx ts-node src/hedera-cli.ts plugin list
+npx ts-node src/hedera-cli.ts plugin-management list
 ```
 
 ## 🧪 Testing the Plugin Architecture
@@ -30,23 +30,23 @@ npx ts-node src/hedera-cli.ts plugin list
 npx ts-node src/hedera-cli.ts --help
 
 # Test plugin commands
-npx ts-node src/hedera-cli.ts plugin --help
+npx ts-node src/hedera-cli.ts plugin-management --help
 ```
 
 ### Test 2: Plugin Management
 
 ```bash
 # List loaded plugins
-npx ts-node src/hedera-cli.ts plugin list
+npx ts-node src/hedera-cli.ts plugin-management list
 
 # Add a plugin (if you have one)
-npx ts-node src/hedera-cli.ts plugin add ./src/plugins/account
+npx ts-node src/hedera-cli.ts plugin-management add ./src/plugins/account
 
 # Get plugin info
-npx ts-node src/hedera-cli.ts plugin info account
+npx ts-node src/hedera-cli.ts plugin-management info account
 
 # Check plugin health
-npx ts-node src/hedera-cli.ts plugin health
+npx ts-node src/hedera-cli.ts plugin-management health
 ```
 
 ### Test 3: Account Plugin Commands (if loaded)
@@ -111,12 +111,12 @@ src/
 
 #### 2. Plugin Commands (`src/commands/plugin/`)
 
-- `plugin list` - List loaded plugins
-- `plugin add <path>` - Add a plugin
-- `plugin remove <name>` - Remove a plugin
-- `plugin info <name>` - Show plugin information
-- `plugin health [name]` - Check plugin health
-- `plugin commands [name]` - List plugin commands
+- `plugin-management list` - List loaded plugins
+- `plugin-management add <path>` - Add a plugin
+- `plugin-management remove <name>` - Remove a plugin
+- `plugin-management info <name>` - Show plugin information
+- `plugin-management health [name]` - Check plugin health
+- `plugin-management commands [name]` - List plugin commands
 
 #### 3. Account Plugin (`src/plugins/account/`)
 
@@ -143,11 +143,11 @@ hedera-cli account balance --account-id 0.0.123456
 
 ```bash
 # Plugin management commands
-hedera-cli plugin list
-hedera-cli plugin add ./my-plugin
-hedera-cli plugin remove my-plugin
-hedera-cli plugin info my-plugin
-hedera-cli plugin health
+hedera-cli plugin-management list
+hedera-cli plugin-management add ./my-plugin
+hedera-cli plugin-management remove my-plugin
+hedera-cli plugin-management info my-plugin
+hedera-cli plugin-management health
 ```
 
 ## 🔍 Troubleshooting
@@ -198,8 +198,8 @@ npx ts-node src/hedera-cli.ts --debug plugin list
 When everything is working correctly, you should see:
 
 1. **CLI Help**: `npx ts-node src/hedera-cli.ts --help` shows all commands
-2. **Plugin Commands**: `npx ts-node src/hedera-cli.ts plugin --help` shows plugin management
-3. **Plugin List**: `npx ts-node src/hedera-cli.ts plugin list` shows loaded plugins
+2. **Plugin Commands**: `npx ts-node src/hedera-cli.ts plugin-management --help` shows plugin management
+3. **Plugin List**: `npx ts-node src/hedera-cli.ts plugin-management list` shows loaded plugins
 4. **Account Commands**: `npx ts-node src/hedera-cli.ts account --help` shows account operations
 
 ## 🚀 Next Steps

@@ -70,7 +70,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: 'string',
           required: false,
           description:
-            'Source account: either a name or account-id:private-key pair',
+            'Source account: either a stored alias or account-id:private-key or account-id:key-type:private-key pair',
         },
         {
           name: 'balance',

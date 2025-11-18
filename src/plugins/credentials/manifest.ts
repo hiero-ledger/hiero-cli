@@ -27,19 +27,12 @@ export const credentialsManifest: PluginManifest = {
     api: '>=1.0.0',
   },
   capabilities: ['credentials:manage', 'credentials:list'],
-  stateSchemas: [
-    {
-      namespace: CREDENTIALS_NAMESPACE,
-      version: 1,
-      jsonSchema: CREDENTIALS_JSON_SCHEMA,
-      scope: 'profile',
-    },
-  ],
   commands: [
     {
       name: 'list',
       summary: 'List all credentials',
       description: 'Show all stored credentials',
+      options: [],
       handler: listCredentials,
       output: {
         schema: ListCredentialsOutputSchema,
@@ -58,6 +51,14 @@ export const credentialsManifest: PluginManifest = {
         schema: RemoveCredentialsOutputSchema,
         humanTemplate: REMOVE_CREDENTIALS_TEMPLATE,
       },
+    },
+  ],
+  stateSchemas: [
+    {
+      namespace: CREDENTIALS_NAMESPACE,
+      version: 1,
+      jsonSchema: CREDENTIALS_JSON_SCHEMA,
+      scope: 'profile',
     },
   ],
 };

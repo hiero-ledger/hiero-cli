@@ -62,6 +62,7 @@ export const pluginManagementManifest: PluginManifest = {
       name: 'list',
       summary: 'List all plugins',
       description: 'Show all loaded plugins',
+      options: [],
       handler: getPluginList,
       output: {
         schema: ListPluginsOutputSchema,
@@ -80,6 +81,7 @@ export const pluginManagementManifest: PluginManifest = {
       },
     },
   ],
+  stateSchemas: [],
 };
 
 export default pluginManagementManifest;
