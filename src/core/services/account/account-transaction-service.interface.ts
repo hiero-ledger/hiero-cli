@@ -1,4 +1,4 @@
-import { KeyAlgorithm } from '../kms/kms-types.interface';
+import { KeyAlgorithmType } from '../kms/kms-types.interface';
 
 /**
  * Interface for Account-related operations
@@ -35,7 +35,7 @@ export interface CreateAccountParams {
   balanceRaw: bigint;
   maxAutoAssociations?: number;
   publicKey: string;
-  keyType?: KeyAlgorithm;
+  keyType?: KeyAlgorithmType;
 }
 
 // Import Hedera SDK types

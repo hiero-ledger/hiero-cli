@@ -21,6 +21,7 @@ import { formatError } from '../../../../core/utils/errors';
 import { CreateTokenOutput } from './output';
 import { processBalanceInput } from '../../../../core/utils/process-balance-input';
 import type { TokenCreateParams } from '../../../../core/types/token.types';
+import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 
 /**
  * Determines the final max supply value for FINITE supply tokens
@@ -193,6 +194,12 @@ export async function createToken(
   const validatedParams = validationResult.data;
   const name = validatedParams.tokenName;
   const symbol = validatedParams.symbol;
+  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
+
+  // Get keyManager from args or fallback to config
+  const keyManager =
+    keyManagerArg ||
+    api.config.getOption<KeyManagerName>('default_key_manager');
   const decimals = validatedParams.decimals || 0;
   const rawInitialSupply = validatedParams.initialSupply || 1000000;
   // Convert display units to raw token units
@@ -218,6 +225,7 @@ export async function createToken(
       validatedParams.treasury,
       api,
       network,
+      keyManager,
     );
 
     // Treasury was explicitly provided - it MUST resolve or fail

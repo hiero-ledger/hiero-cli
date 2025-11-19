@@ -61,7 +61,11 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const result = await createAccount(args);
 
-    expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(KeyAlgorithm.ECDSA);
+    expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
+      KeyAlgorithm.ECDSA,
+      'local',
+      ['account:create', 'account:myAccount'],
+    );
     expect(account.createAccount).toHaveBeenCalledWith({
       balanceRaw: 500000000000n,
       maxAutoAssociations: 3,
@@ -211,7 +215,11 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const result = await createAccount(args);
 
-    expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(KeyAlgorithm.ECDSA);
+    expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
+      KeyAlgorithm.ECDSA,
+      'local',
+      ['account:create', 'account:ecdsaAccount'],
+    );
     expect(account.createAccount).toHaveBeenCalledWith(
       expect.objectContaining({
         keyType: KeyAlgorithm.ECDSA,
@@ -263,6 +271,8 @@ describe('account plugin - create command (ADR-003)', () => {
 
     expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ED25519,
+      'local',
+      ['account:create', 'account:ed25519Account'],
     );
     expect(account.createAccount).toHaveBeenCalledWith(
       expect.objectContaining({

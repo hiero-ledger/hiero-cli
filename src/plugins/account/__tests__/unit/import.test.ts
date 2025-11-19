@@ -59,7 +59,8 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
       'privKey',
-      ['account:imported'],
+      'local',
+      ['account:import', 'account:imported'],
     );
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.9999');
     expect(alias.register).toHaveBeenCalledWith(
@@ -200,7 +201,8 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
       'privKeyECDSA',
-      ['account:imported-ecdsa'],
+      'local',
+      ['account:import', 'account:imported-ecdsa'],
     );
     expect(result.status).toBe(Status.Success);
 
@@ -241,7 +243,8 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ED25519,
       'privKeyED25519',
-      ['account:imported-ed25519'],
+      'local',
+      ['account:import', 'account:imported-ed25519'],
     );
     expect(result.status).toBe(Status.Success);
 

@@ -79,6 +79,14 @@ export const topicPluginManifest: PluginManifest = {
           required: false,
           description: 'Define the name for this topic',
         },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
       ],
       handler: createTopic,
       output: {

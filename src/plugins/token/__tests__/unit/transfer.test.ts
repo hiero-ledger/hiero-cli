@@ -92,6 +92,8 @@ describe('transferTokenHandler', () => {
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
         'test-from-key',
+        'local',
+        ['token:account', 'temporary'],
       );
     });
 

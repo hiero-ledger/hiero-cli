@@ -184,6 +184,14 @@ export const tokenPluginManifest: PluginManifest = {
             'Token definition file path (absolute or relative) to a JSON file',
         },
         { name: 'args', short: 'a', type: 'string', required: false },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
       ],
       handler: createTokenFromFile,
       output: {

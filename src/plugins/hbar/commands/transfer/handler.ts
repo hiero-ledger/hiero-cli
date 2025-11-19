@@ -18,8 +18,9 @@ import { Logger } from '../../../../core';
 import { SupportedNetwork } from '../../../../core/types/shared.types';
 import { processBalanceInput } from '../../../../core/utils/process-balance-input';
 import { parseIdKeyPair } from '../../../../core/utils/keys';
-import type { KeyAlgorithm as KeyAlgorithmType } from '../../../../core/services/kms/kms-types.interface';
+import type { KeyAlgorithmType as KeyAlgorithmType } from '../../../../core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '../../../../core/shared/constants';
+import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 
 /**
  * Maps validation error paths to user-friendly error messages
@@ -74,6 +75,7 @@ function resolveFromAccount(
   api: CoreApi,
   logger: Logger,
   currentNetwork: SupportedNetwork,
+  keyManager: KeyManagerName,
 ):
   | { success: true; fromAccountId: string; fromKeyRefId: string }
   | { success: false; error: CommandExecutionResult } {
@@ -100,7 +102,12 @@ function resolveFromAccount(
       // Default to ecdsa if keyType is not provided
       const keyTypeToUse: KeyAlgorithmType = keyType || KeyAlgorithm.ECDSA;
 
-      const imported = api.kms.importPrivateKey(keyTypeToUse, privateKey);
+      const imported = api.kms.importPrivateKey(
+        keyTypeToUse,
+        privateKey,
+        keyManager,
+        ['hbar:transfer', 'temporary'],
+      );
 
       logger.log(
         `[HBAR] Using from as account ID with private key: ${accountId} (keyType: ${keyTypeToUse})`,
@@ -149,6 +156,12 @@ export async function transferHandler(
   const { api, logger } = args;
 
   logger.log('[HBAR] Transfer command invoked');
+
+  // Get keyManager from args or fallback to config
+  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
+  const keyManager =
+    keyManagerArg ||
+    api.config.getOption<KeyManagerName>('default_key_manager');
 
   try {
     const validationResult = TransferInputSchema.safeParse(args.args);
@@ -200,6 +213,7 @@ export async function transferHandler(
       api,
       logger,
       currentNetwork,
+      keyManager,
     );
     if (!fromResult.success) {
       return fromResult.error;

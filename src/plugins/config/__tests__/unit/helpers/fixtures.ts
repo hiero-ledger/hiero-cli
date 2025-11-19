@@ -6,7 +6,7 @@ export const enumOption = {
   name: 'default_key_manager',
   type: 'enum' as const,
   value: 'local',
-  allowedValues: ['local', 'encrypted_local'],
+  allowedValues: ['local', 'local_encrypted'],
 };
 
 export const booleanOption = {

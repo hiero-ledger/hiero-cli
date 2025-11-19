@@ -21,7 +21,7 @@ export async function listCredentials(
     // Map the credentials to match our output schema
     const mappedCredentials = credentials.map((cred) => ({
       keyRefId: cred.keyRefId,
-      type: cred.type,
+      keyManager: cred.keyManager,
       publicKey: cred.publicKey,
       labels: cred.labels || [],
     }));

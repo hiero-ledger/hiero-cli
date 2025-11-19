@@ -53,6 +53,14 @@ export const hbarPluginManifest: PluginManifest = {
           required: false,
           description: 'Memo for the transfer',
         },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
       ],
       handler: transferHandler,
       output: {

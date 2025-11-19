@@ -200,7 +200,11 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       }),
       setOperator: jest.fn(),
     } as unknown as NetworkService,
-    config: {} as unknown as ConfigService,
+    config: {
+      getOption: jest.fn().mockReturnValue('local'),
+      setOption: jest.fn(),
+      listOptions: jest.fn().mockReturnValue([]),
+    } as unknown as ConfigService,
     logger: {
       log: jest.fn(),
       error: jest.fn(),

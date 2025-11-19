@@ -9,6 +9,7 @@ import { formatError } from '../../../../core/utils/errors';
 import { ZustandTopicStateHelper } from '../../zustand-state-helper';
 import { AliasRecord } from '../../../../core/services/alias/alias-service.interface';
 import { CreateTopicOutput } from './output';
+import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { parseKeyWithType } from '../../../../core/utils/keys';
 
 /**
@@ -29,10 +30,16 @@ export async function createTopic(
   const adminKey = args.args.adminKey as string | undefined;
   const submitKey = args.args.submitKey as string | undefined;
   const alias = args.args.alias as string | undefined;
+  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
 
   // Check if alias already exists on the current network
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(alias, network);
+
+  // Get keyManager from args or fallback to config
+  const keyManager =
+    keyManagerArg ||
+    api.config.getOption<KeyManagerName>('default_key_manager');
 
   // Generate default name if alias not provided
   const name = alias || `topic-${Date.now()}`;
@@ -87,14 +94,24 @@ export async function createTopic(
     if (adminKey && !topicAdminKeyAlias) {
       // Parse private key - check if it has a key type prefix (e.g., "ed25519:...")
       const { keyType, privateKey } = parseKeyWithType(adminKey);
-      const { keyRefId } = api.kms.importPrivateKey(keyType, privateKey);
+      const { keyRefId } = api.kms.importPrivateKey(
+        keyType,
+        privateKey,
+        keyManager,
+        ['topic:admin', `topic:${name}`],
+      );
       adminKeyRefId = keyRefId;
     }
 
     if (submitKey && !topicSubmitKeyAlias) {
       // Parse private key - check if it has a key type prefix (e.g., "ed25519:...")
       const { keyType, privateKey } = parseKeyWithType(submitKey);
-      const { keyRefId } = api.kms.importPrivateKey(keyType, privateKey);
+      const { keyRefId } = api.kms.importPrivateKey(
+        keyType,
+        privateKey,
+        keyManager,
+        ['topic:submit', `topic:${name}`],
+      );
       submitKeyRefId = keyRefId;
     }
 
