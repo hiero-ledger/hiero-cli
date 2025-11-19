@@ -44,7 +44,13 @@ export const credentialsManifest: PluginManifest = {
       summary: 'Remove credentials',
       description: 'Remove credentials by keyRefId from KMS storage',
       options: [
-        { name: 'key-ref-id', short: 'k', type: 'string', required: true },
+        {
+          name: 'key-ref-id',
+          short: 'k',
+          type: 'string',
+          required: true,
+          description: 'Key ID in the store that needs to be deleted',
+        },
       ],
       handler: removeCredentials,
       output: {

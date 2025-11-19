@@ -92,8 +92,20 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Create a new fungible token',
       description: 'Create a new fungible token with specified properties',
       options: [
-        { name: 'token-name', short: 'N', type: 'string', required: true },
-        { name: 'symbol', short: 's', type: 'string', required: true },
+        {
+          name: 'token-name',
+          short: 'N',
+          type: 'string',
+          required: true,
+          description: 'Token name. Option required.',
+        },
+        {
+          name: 'symbol',
+          short: 's',
+          type: 'string',
+          required: true,
+          description: 'Token symbol. Option required.',
+        },
         {
           name: 'treasury',
           short: 't',
@@ -108,6 +120,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: 'number',
           required: false,
           default: 0,
+          description: 'Decimals for the token. Default: 0',
         },
         {
           name: 'initial-supply',
@@ -126,8 +139,21 @@ export const tokenPluginManifest: PluginManifest = {
           default: 'INFINITE',
           description: 'Set supply type: INFINITE(default) or FINITE',
         },
-        { name: 'max-supply', short: 'm', type: 'string', required: false },
-        { name: 'admin-key', short: 'a', type: 'string', required: false },
+        {
+          name: 'max-supply',
+          short: 'm',
+          type: 'string',
+          required: false,
+          description: 'Maximum supply of the token to bet set upon creation',
+        },
+        {
+          name: 'admin-key',
+          short: 'a',
+          type: 'string',
+          required: false,
+          description:
+            'Admin key to be set for the token upon. If option not set then the operator key is passed as admin key',
+        },
         {
           name: 'name',
           short: 'n',

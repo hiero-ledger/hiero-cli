@@ -51,7 +51,7 @@ Create a new fungible token with specified properties.
 
 ```bash
 hedera token create \
-  --name "My Token" \
+  --token-name "My Token" \
   --symbol "MTK" \
   --treasury 0.0.123456:treasury-key \
   --decimals 2 \
