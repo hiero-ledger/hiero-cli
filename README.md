@@ -74,36 +74,7 @@ Compile the package to ensure all components are ready for use.
 npm run build
 ```
 
-### 4. Set Up Operator Credentials
-
-Make a copy of the `.env.sample` file to create your own `.env` file. This file will store your operator credentials securely.
-
-```sh
-cp .env.sample .env
-```
-
-Add your operator ID and key for previewnet, testnet, and mainnet. It's **not mandatory** to set keys for all networks. If you only want to use one network, you can leave the other credentials blank. Make sure that each operator account **contains at least 1 Hbar**. We've added the default account for the [Hiero Local Node](https://github.com/hashgraph/hedera-local-node).
-
-```text
-PREVIEWNET_OPERATOR_KEY=
-PREVIEWNET_OPERATOR_ID=
-TESTNET_OPERATOR_KEY=
-TESTNET_OPERATOR_ID=
-MAINNET_OPERATOR_KEY=
-MAINNET_OPERATOR_ID=
-LOCALNET_OPERATOR_ID=0.0.2
-LOCALNET_OPERATOR_KEY=302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137
-```
-
-Next, set up the CLI tool with the command. **The `--telemetry` flag is optional and enables telemetry. By default, telemetry is disabled. Hedera collects anonymous data to improve the CLI tool. For example, it records the command name, not the parameters or any other sensitive information. If you don't want us to collect telemetry data, run the command without the `--telemetry` flag.**
-
-```sh
-node dist/hedera-cli.js setup init --telemetry
-```
-
-The `setup init` command will also create the different operator accounts in your address book (persisted state file) so you can use them in your commands.
-
-### 5. Verify Installation
+### 4. Verify Installation
 
 You can verify the installation by listing all accounts in your address book. When you first run this command, you'll see the operator keys you've defined.
 
@@ -114,12 +85,20 @@ preview-operator, 0.0.1110, ECDSA
 [...]
 ```
 
-### 6. Set Network
+### 5. Set Network
 
 When first using the network, the CLI tool will use the `testnet` network. You can switch to the `mainnet` or other networks like `previewnet` or `localnet` using the following command:
 
 ```sh
 node dist/hedera-cli.js network use mainnet
+```
+
+### 6. Set Up Operator Credentials
+
+After setting network for the first time (also this step needs to be done for default `testnet` network) you also need to set up operator credentials. To do this please use the following command
+
+```sh
+node dist/hedera-cli.js network set-operator --operator your-account-id:your-account-private-key
 ```
 
 ### 7. Optional: Setting Up an Alias
