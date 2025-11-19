@@ -52,14 +52,14 @@ export const tokenPluginManifest: PluginManifest = {
       options: [
         {
           name: 'token',
-          short: 't',
+          short: 'T',
           type: 'string',
           required: true,
           description: 'Token: either a token alias or token-id',
         },
         {
           name: 'to',
-          short: 'T',
+          short: 't',
           type: 'string',
           required: true,
           description: 'Destination account: either an alias or account-id',
@@ -149,7 +149,7 @@ export const tokenPluginManifest: PluginManifest = {
       options: [
         {
           name: 'token',
-          short: 't',
+          short: 'T',
           type: 'string',
           required: true,
           description: 'Token: either a token alias or token-id',
