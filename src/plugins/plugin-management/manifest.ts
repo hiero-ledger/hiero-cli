@@ -81,7 +81,6 @@ export const pluginManagementManifest: PluginManifest = {
       },
     },
   ],
-  stateSchemas: [],
 };
 
 export default pluginManagementManifest;

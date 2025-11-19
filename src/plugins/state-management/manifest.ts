@@ -97,7 +97,6 @@ export const stateManagementManifest: PluginManifest = {
       },
     },
   ],
-  stateSchemas: [],
 };
 
 export default stateManagementManifest;
