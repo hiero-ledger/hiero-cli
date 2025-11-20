@@ -105,7 +105,7 @@ describe('topic plugin - message-submit command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.1234',
+      topic: '0.0.1234',
       message: 'Hello, World!',
     });
 
@@ -160,7 +160,7 @@ describe('topic plugin - message-submit command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.5678',
+      topic: '0.0.5678',
       message: 'Signed message',
     });
 
@@ -195,7 +195,7 @@ describe('topic plugin - message-submit command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.9999',
+      topic: '0.0.9999',
       message: 'Test message',
     });
 
@@ -234,7 +234,7 @@ describe('topic plugin - message-submit command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.1234',
+      topic: '0.0.1234',
       message: 'Failed message',
     });
 
@@ -268,7 +268,7 @@ describe('topic plugin - message-submit command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.1234',
+      topic: '0.0.1234',
       message: 'Error message',
     });
 

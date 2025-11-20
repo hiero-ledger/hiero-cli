@@ -24,7 +24,7 @@ export async function submitMessage(
   const topicState = new ZustandTopicStateHelper(api.state, logger);
 
   // Extract and validate command arguments
-  const topicIdOrAlias = args.args.topicId as string;
+  const topicIdOrAlias = args.args.topic as string;
   const message = args.args.message as string;
 
   const currentNetwork = api.network.getCurrentNetwork();

@@ -117,13 +117,20 @@ export const accountPluginManifest: PluginManifest = {
           required: true,
         },
         {
-          name: 'only-hbar',
+          name: 'hbar-only',
           short: 'H',
           type: 'boolean',
           required: false,
           default: false,
+          description: 'Show only HBAR balance',
         },
-        { name: 'token-id', short: 't', type: 'string', required: false },
+        {
+          name: 'token',
+          short: 't',
+          type: 'string',
+          required: false,
+          description: 'Token ID or token name',
+        },
       ],
       handler: getAccountBalance,
       output: {

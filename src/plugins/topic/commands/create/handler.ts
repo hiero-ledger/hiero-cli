@@ -29,7 +29,7 @@ export async function createTopic(
   const memo = args.args.memo as string | undefined;
   const adminKey = args.args.adminKey as string | undefined;
   const submitKey = args.args.submitKey as string | undefined;
-  const alias = args.args.alias as string | undefined;
+  const alias = args.args.name as string | undefined;
   const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
 
   // Check if alias already exists on the current network

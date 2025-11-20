@@ -24,7 +24,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     jest.clearAllMocks();
   });
 
-  test('returns HBAR balance only when only-hbar flag is set', async () => {
+  test('returns HBAR balance only when hbar-only flag is set', async () => {
     const logger = makeLogger();
 
     const mirrorMock = makeMirrorMock({ hbarBalance: 123456n });
@@ -44,7 +44,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, {
       account: 'test-account',
-      'only-hbar': true,
+      'hbar-only': true,
     });
 
     const result = await getAccountBalance(args);

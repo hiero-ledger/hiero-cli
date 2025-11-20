@@ -42,12 +42,12 @@ Remove credentials for a specific key reference ID.
 
 **Options:**
 
-- `--key-ref-id, -k` (required): Key reference ID to remove
+- `--id, -i` (required): Key reference ID to remove
 
 **Example:**
 
 ```bash
-hedera credentials remove --key-ref-id key-ref-123
+hedera credentials remove --id key-ref-123
 ```
 
 **Output:**

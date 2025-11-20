@@ -67,7 +67,7 @@ Associate a token with an account to enable transfers.
 
 ```bash
 hedera token associate \
-  --token-id 0.0.123456 \
+  --token 0.0.123456 \
   --account 0.0.789012:account-key
 ```
 
@@ -77,10 +77,10 @@ Transfer a fungible token from one account to another.
 
 ```bash
 hedera token transfer \
-  --token-id 0.0.123456 \
+  --token 0.0.123456 \
   --from 0.0.111111:from-key \
   --to 0.0.222222 \
-  --balance 100
+  --amount 100
 ```
 
 ### Token Create From File

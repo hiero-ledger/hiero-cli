@@ -32,22 +32,22 @@ Transfer HBAR (tinybars) between accounts with support for names and account IDs
 
 ```bash
 # Using short flags
-hcli hbar transfer -b 100000000 -f sender -t receiver -m "Payment"
+hcli hbar transfer -a 100000000 -f sender -t receiver -m "Payment"
 
 # Using long flags
 hcli hbar transfer \
-  --balance 100000000 \
+  --amount 100000000 \
   --from myaccount \
   --to 0.0.123456 \
   --memo "Test transfer"
 
 # Using default operator (from env) as sender
-hcli hbar transfer -b 50000000 -t receiver
+hcli hbar transfer -a 50000000 -t receiver
 ```
 
 **Options:**
 
-- `-b, --balance <number>` - Amount in tinybars (required)
+- `-a, --amount <number>` - Amount in tinybars (required)
 - `-t, --to <string>` - Recipient account (required)
 - `-f, --from <string>` - Sender account (optional, defaults to operator from env)
 - `-m, --memo <string>` - Transfer memo (optional)
@@ -56,13 +56,13 @@ hcli hbar transfer -b 50000000 -t receiver
 
 ```bash
 # Transfer using names
-hcli hbar transfer -b 1000000 -f alice -t bob
+hcli hbar transfer -a 1000000 -f alice -t bob
 
 # Transfer using account IDs
-hcli hbar transfer -b 5000000 -f 0.0.123456 -t 0.0.789012
+hcli hbar transfer -a 5000000 -f 0.0.123456 -t 0.0.789012
 
 # Transfer from operator account
-hcli hbar transfer -b 100000 -t myaccount
+hcli hbar transfer -a 100000 -t myaccount
 ```
 
 ## 🔧 Core API Integration

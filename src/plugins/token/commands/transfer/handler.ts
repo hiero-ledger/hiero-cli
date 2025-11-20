@@ -63,12 +63,12 @@ export async function transferToken(
 
   const tokenId = resolvedToken.tokenId;
 
-  // Get token decimals from API (needed for balance conversion)
+  // Get token decimals from API (needed for amount conversion)
   let tokenDecimals = 0;
-  const userBalanceInput = validatedParams.balance;
+  const userAmountInput = validatedParams.amount;
 
   // Only fetch decimals if user input doesn't have 't' suffix (raw units)
-  const isRawUnits = String(userBalanceInput).trim().endsWith('t');
+  const isRawUnits = String(userAmountInput).trim().endsWith('t');
   if (!isRawUnits) {
     try {
       const tokenInfoStorage = tokenState.getToken(tokenId);
@@ -88,8 +88,8 @@ export async function transferToken(
     }
   }
 
-  // Convert balance input: display units (default) or raw units (with 't' suffix)
-  const rawAmount = processBalanceInput(userBalanceInput, tokenDecimals);
+  // Convert amount input: display units (default) or raw units (with 't' suffix)
+  const rawAmount = processBalanceInput(userAmountInput, tokenDecimals);
 
   // Resolve from parameter (name or account-id:private-key) if provided
 

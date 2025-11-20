@@ -73,8 +73,8 @@ export const tokenPluginManifest: PluginManifest = {
             'Source account: either a name or account-id:private-key pair',
         },
         {
-          name: 'balance',
-          short: 'b',
+          name: 'amount',
+          short: 'a',
           type: 'string',
           required: true,
           description:

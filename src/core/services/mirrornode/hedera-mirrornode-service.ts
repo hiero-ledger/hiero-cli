@@ -105,7 +105,8 @@ export class HederaMirrornodeServiceDefaultImpl
   ): Promise<TopicMessagesResponse> {
     const { filter } = queryParams;
 
-    const queryWithFilter = `&${filter?.field}=${filter?.operation}:${filter?.value}`;
+    const queryWithFilter = `${filter?.field}=${filter?.operation}:${filter?.value}`;
+
     const baseParams = `&order=desc&limit=100`;
     let url: string | null =
       `${this.baseUrl}/topics/${queryParams.topicId}/messages?${queryWithFilter}${baseParams}`;

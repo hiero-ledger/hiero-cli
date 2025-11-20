@@ -29,7 +29,7 @@ function getValidationErrorMessage(
   errorPath: string | number | undefined,
 ): string {
   const pathMap: Record<string, string> = {
-    balance: 'Invalid balance value',
+    amount: 'Invalid amount value',
     to: 'Invalid or missing "to" field',
   };
   return pathMap[String(errorPath)] || 'Invalid input';
@@ -182,12 +182,12 @@ export async function transferHandler(
     let amount: bigint;
 
     try {
-      // Convert balance input: display units (default) or base units (with 't' suffix)
-      amount = processBalanceInput(validatedInput.balance, HBAR_DECIMALS);
+      // Convert amount input: display units (default) or base units (with 't' suffix)
+      amount = processBalanceInput(validatedInput.amount, HBAR_DECIMALS);
     } catch {
       return {
         status: Status.Failure,
-        errorMessage: 'Invalid balance input',
+        errorMessage: 'Invalid amount input',
       };
     }
 

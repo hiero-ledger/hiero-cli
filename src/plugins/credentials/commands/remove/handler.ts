@@ -12,17 +12,17 @@ export async function removeCredentials(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { logger, api } = args;
-  const { keyRefId } = args.args as { keyRefId: string };
+  const { id } = args.args as { id: string };
 
-  logger.log(`🗑️  Removing credentials for keyRefId: ${keyRefId}`);
+  logger.log(`🗑️  Removing credentials for id: ${id}`);
 
   try {
     // Remove the credentials
-    api.kms.remove(keyRefId);
+    api.kms.remove(id);
 
     // Prepare output data
     const outputData: RemoveCredentialsOutput = {
-      keyRefId,
+      keyRefId: id,
       removed: true,
     };
 
@@ -33,7 +33,7 @@ export async function removeCredentials(
   } catch (error: unknown) {
     // Even if removal fails, we still want to return a structured response
     const outputData: RemoveCredentialsOutput = {
-      keyRefId,
+      keyRefId: id,
       removed: false,
     };
 

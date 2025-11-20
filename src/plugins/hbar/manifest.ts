@@ -24,12 +24,12 @@ export const hbarPluginManifest: PluginManifest = {
       description: 'Transfer HBAR (tinybars) from one account to another',
       options: [
         {
-          name: 'balance',
-          short: 'b',
+          name: 'amount',
+          short: 'a',
           type: 'string',
           required: true,
           description:
-            'Amount in HBAR (display units by default, add "t" for tinybar). Default: display units. Example: "1" = 1 HBAR, "100t" = 100 tinybar',
+            'Amount to transfer. Default: display units. Add "t" for base units. Example: "1" = 1 HBAR, "100t" = 100 tinybar',
         },
         {
           name: 'to',

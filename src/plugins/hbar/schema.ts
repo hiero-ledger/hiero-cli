@@ -7,7 +7,7 @@ import { AccountIdKeyPairSchema } from '../../core/schemas';
 
 // Input schema for HBAR transfer command
 export const TransferInputSchema = z.object({
-  balance: z.string().describe('Amount to transfer'),
+  amount: z.string().describe('Amount to transfer'),
   to: z.string().min(1).describe('Account ID or name to transfer to'),
   from: z
     .union([AccountIdKeyPairSchema, z.string().min(1)])
