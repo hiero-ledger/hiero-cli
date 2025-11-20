@@ -149,7 +149,7 @@ export async function createAccount(
           entityId: result.accountId,
           publicKey,
           keyRefId,
-          createdAt: new Date().toISOString(),
+          createdAt: result.consensusTimestamp,
         });
       }
 

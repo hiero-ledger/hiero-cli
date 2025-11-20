@@ -139,8 +139,8 @@ export async function createTopic(
         adminKeyRefId,
         submitKeyRefId,
         network: api.network.getCurrentNetwork(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: result.consensusTimestamp,
+        updatedAt: result.consensusTimestamp,
       };
 
       // Step 6: Register alias if provided
@@ -150,7 +150,7 @@ export async function createTopic(
           type: 'topic',
           network: api.network.getCurrentNetwork(),
           entityId: result.topicId,
-          createdAt: new Date().toISOString(),
+          createdAt: result.consensusTimestamp,
         });
       }
 
