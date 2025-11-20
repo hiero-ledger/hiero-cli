@@ -1,6 +1,6 @@
 # Output Schemas Guide
 
-This document describes the output schema system implemented according to ADR-003: Result-Oriented Command Handler Contract and CLI Output Control.
+This document describes the output schema system for command handlers and CLI output control.
 
 ## Overview
 
@@ -536,23 +536,23 @@ Balance: {{balance.amount}} {{balance.unit}}
 
 ## Usage in CLI (Future Implementation)
 
-When the CLI implements ADR-003, commands will support:
+Commands support multiple output formats:
 
 ```bash
 # Human-readable output (default)
-hedera account create --alias my-account
+hedera account create --name my-account
 
 # JSON output
-hedera account create --alias my-account --format json
+hedera account create --name my-account --format json
 
 # YAML output
-hedera account create --alias my-account --format yaml
+hedera account create --name my-account --format yaml
 
 # Save to file
 hedera account list --output accounts.json --format json
 
 # Script mode (suppress handler logs)
-hedera account create --alias my-account --script
+hedera account create --name my-account --script
 ```
 
 ## Adding New Output Schemas
@@ -728,8 +728,6 @@ try {
 }
 ```
 
-## Migration Guide
-
 ### For Plugin Developers
 
 #### Migrating to Zod Schemas (Recommended)
@@ -803,7 +801,7 @@ export const MY_OUTPUT_SCHEMA = zodToJsonSchema(MyOutputSchema);
 
 ## References
 
-- [ADR-003: Result-Oriented Command Handler Contract](./adr/ADR-003-command-handler-result-contract.md)
+- [Architecture Decision Records](./adr/) - ADRs for interested developers
 - [Zod Documentation](https://zod.dev/)
 - [JSON Schema Documentation](https://json-schema.org/)
 - [Handlebars Template Guide](https://handlebarsjs.com/guide/)
