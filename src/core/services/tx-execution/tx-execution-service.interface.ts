@@ -5,20 +5,14 @@ import type { Transaction as HederaTransaction } from '@hashgraph/sdk';
  * All transaction services must implement this interface
  */
 export interface TxExecutionService {
-  /**
-   * Sign and execute a transaction in one operation
-   */
+  /** Sign and execute transaction with operator key (fast path for simple signing) */
   signAndExecute(transaction: HederaTransaction): Promise<TransactionResult>;
 
-  /**
-   * Sign and execute a transaction with specific signer
-   */
+  /** Sign and execute with multiple keys (validates, deduplicates, preserves order) */
   signAndExecuteWith(
-    tx: HederaTransaction,
-    signer: SignerRef,
+    transaction: HederaTransaction,
+    keyRefIds: string[],
   ): Promise<TransactionResult>;
-
-  freezeTx(transaction: HederaTransaction): HederaTransaction;
 }
 
 // Result types
@@ -46,8 +40,3 @@ export interface TransactionReceipt {
   topicId?: string;
   topicSequenceNumber?: number;
 }
-
-export type SignerRef = {
-  keyRefId?: string;
-  publicKey?: string;
-};

@@ -164,13 +164,11 @@ export async function transferToken(
       amount: rawAmount,
     });
 
-    // 2. Sign and execute transaction using the from account key
+    // Sign and execute using the from account key
     logger.debug(`Using key ${signerKeyRefId} for signing transaction`);
     const result = await api.txExecution.signAndExecuteWith(
       transferTransaction,
-      {
-        keyRefId: signerKeyRefId,
-      },
+      [signerKeyRefId],
     );
 
     if (result.success) {

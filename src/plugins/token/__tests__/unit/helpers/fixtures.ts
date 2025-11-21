@@ -165,6 +165,7 @@ export const mockTransactionResults = {
   success: {
     success: true,
     transactionId: '0.0.123@1234567890.123456789',
+    consensusTimestamp: '2024-01-01T00:00:00.000Z',
     tokenId: '0.0.123456',
     receipt: {
       status: {
@@ -176,6 +177,7 @@ export const mockTransactionResults = {
   successWithAssociation: {
     success: true,
     transactionId: '0.0.123@1234567890.123456790',
+    consensusTimestamp: '2024-01-01T00:00:00.000Z',
     receipt: {
       status: {
         status: 'success',
@@ -186,6 +188,7 @@ export const mockTransactionResults = {
   failure: {
     success: false,
     transactionId: '',
+    consensusTimestamp: '2024-01-01T00:00:00.000Z',
     receipt: {
       status: {
         status: 'failed',

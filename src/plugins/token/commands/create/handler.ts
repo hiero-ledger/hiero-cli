@@ -107,21 +107,30 @@ async function executeTokenCreation(
   logger: Logger,
   adminKeyRefId?: string,
 ): Promise<TransactionResult> {
+  const keyRefIds: string[] = [];
+
+  // Admin key must sign first for token creation
   if (adminKeyRefId) {
-    const tx = api.txExecution.freezeTx(transaction);
-    // @TODO - Migrate from signTransaction to keep consistent with other usages
-    await api.kms.signTransaction(tx, adminKeyRefId);
+    logger.debug(`Token admin key: ${adminKeyRefId}`);
+    keyRefIds.push(adminKeyRefId);
   }
 
+  // Treasury key required to receive initial supply
   if (treasury.useCustom && treasury.keyRefId) {
-    logger.debug(`Signing with custom treasury key`);
-    return await api.txExecution.signAndExecuteWith(transaction, {
-      keyRefId: treasury.keyRefId,
-    });
+    logger.debug(`Custom treasury key: ${treasury.keyRefId}`);
+    keyRefIds.push(treasury.keyRefId);
+  } else {
+    const currentNetwork = api.network.getCurrentNetwork();
+    const operator = api.network.getOperator(currentNetwork);
+    if (!operator) {
+      throw new Error('[TOKEN-CREATE] No operator configured');
+    }
+    logger.debug(`Using operator as treasury: ${operator.keyRefId}`);
+    keyRefIds.push(operator.keyRefId);
   }
 
-  logger.debug(`Signing with operator key`);
-  return await api.txExecution.signAndExecute(transaction);
+  logger.debug(`Signing token creation with ${keyRefIds.length} key(s)`);
+  return api.txExecution.signAndExecuteWith(transaction, keyRefIds);
 }
 
 /**

@@ -82,7 +82,7 @@ describe('transferTokenHandler', () => {
       });
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTransferTransaction,
-        { keyRefId: 'imported-key-ref-id' },
+        ['imported-key-ref-id'],
       );
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
@@ -163,7 +163,7 @@ describe('transferTokenHandler', () => {
       });
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTransferTransaction,
-        { keyRefId: 'alias-key-ref-id' },
+        ['alias-key-ref-id'],
       );
     });
 

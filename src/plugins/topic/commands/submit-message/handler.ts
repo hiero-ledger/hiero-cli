@@ -67,9 +67,7 @@ export async function submitMessage(
     if (topicData.submitKeyRefId) {
       txResult = await api.txExecution.signAndExecuteWith(
         messageSubmitTx.transaction,
-        {
-          keyRefId: topicData.submitKeyRefId,
-        },
+        [topicData.submitKeyRefId],
       );
     } else {
       txResult = await api.txExecution.signAndExecute(

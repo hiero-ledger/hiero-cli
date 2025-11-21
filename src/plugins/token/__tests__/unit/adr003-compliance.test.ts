@@ -59,7 +59,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
           createTokenTransaction: jest.fn().mockReturnValue({}),
         },
         signing: {
-          signAndExecute: jest.fn().mockResolvedValue(mockSignResult),
+          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           getPublicKey: jest.fn().mockReturnValue('test-public-key'),

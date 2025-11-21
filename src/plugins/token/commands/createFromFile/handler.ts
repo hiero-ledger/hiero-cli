@@ -302,7 +302,7 @@ async function processTokenAssociations(
       );
       const associateResult = await api.txExecution.signAndExecuteWith(
         associateTransaction,
-        { keyRefId: associationImported.keyRefId },
+        [associationImported.keyRefId],
       );
 
       if (associateResult.success) {
@@ -387,7 +387,7 @@ export async function createTokenFromFile(
     logger.log(`🔑 Using treasury key for signing transaction`);
     const result = await api.txExecution.signAndExecuteWith(
       tokenCreateTransaction,
-      { keyRefId: treasury.treasuryKeyRefId },
+      [treasury.treasuryKeyRefId],
     );
 
     // 4. Verify success

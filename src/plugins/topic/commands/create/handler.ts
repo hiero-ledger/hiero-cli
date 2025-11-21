@@ -118,11 +118,14 @@ export async function createTopic(
     // Step 4: Sign and execute transaction (with admin key if present)
     let result;
     if (topicAdminKeyAlias?.publicKey || adminKey) {
+      if (!adminKeyRefId) {
+        throw new Error(
+          '[TOPIC-CREATE] Admin key was provided but keyRefId is undefined',
+        );
+      }
       result = await api.txExecution.signAndExecuteWith(
         topicCreateResult.transaction,
-        {
-          keyRefId: adminKeyRefId,
-        },
+        [adminKeyRefId],
       );
     } else {
       result = await api.txExecution.signAndExecute(

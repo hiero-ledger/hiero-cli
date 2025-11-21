@@ -60,7 +60,6 @@ const makeApiMocks = ({
     getStatus: jest.fn(),
     freezeTransaction:
       freezeTransactionImpl || jest.fn().mockReturnValue(mockTransaction),
-    freezeTx: jest.fn().mockImplementation((transaction) => transaction),
   };
 
   const networkMock = makeNetworkMock(network);
@@ -172,10 +171,9 @@ describe('topic plugin - message-submit command', () => {
     const output: SubmitMessageOutput = JSON.parse(result.outputJson!);
     expect(output.sequenceNumber).toBe(10);
 
-    expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
-      {},
-      { keyRefId: submitKeyRefId },
-    );
+    expect(signing.signAndExecuteWith).toHaveBeenCalledWith({}, [
+      submitKeyRefId,
+    ]);
   });
 
   test('returns failure when topic not found', async () => {

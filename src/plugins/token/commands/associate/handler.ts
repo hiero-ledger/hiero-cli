@@ -136,13 +136,11 @@ export async function associateToken(
         accountId,
       });
 
-      // 2. Sign and execute transaction using the account key
+      // Sign and execute using the account key
       logger.debug(`Using key ${accountKeyRefId} for signing transaction`);
       const result = await api.txExecution.signAndExecuteWith(
         associateTransaction,
-        {
-          keyRefId: accountKeyRefId,
-        },
+        [accountKeyRefId],
       );
 
       if (result.success) {

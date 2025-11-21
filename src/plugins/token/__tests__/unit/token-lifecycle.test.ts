@@ -395,6 +395,11 @@ describe('Token Lifecycle Integration', () => {
               return Promise.resolve({
                 success: true,
                 transactionId: '0.0.123@1234567890.123456789',
+                tokenId:
+                  transaction === mockTokenTransaction
+                    ? '0.0.123456'
+                    : undefined,
+                consensusTimestamp: '2024-01-01T00:00:00.000Z',
                 receipt: {},
               });
             }

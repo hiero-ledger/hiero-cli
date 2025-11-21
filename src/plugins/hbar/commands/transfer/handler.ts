@@ -249,9 +249,9 @@ export async function transferHandler(
     });
 
     const result = fromKeyRefId
-      ? await api.txExecution.signAndExecuteWith(transferResult.transaction, {
-          keyRefId: fromKeyRefId,
-        })
+      ? await api.txExecution.signAndExecuteWith(transferResult.transaction, [
+          fromKeyRefId,
+        ])
       : await api.txExecution.signAndExecute(transferResult.transaction);
 
     if (!result.success) {

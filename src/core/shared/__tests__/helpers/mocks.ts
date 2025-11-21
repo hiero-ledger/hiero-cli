@@ -108,7 +108,6 @@ export const makeSigningMock = (
       transactionId: 'mock-tx-id',
       receipt: { status: { status: 'success' } },
     }),
-  freezeTx: jest.fn().mockImplementation((transaction) => transaction),
 });
 
 /**
