@@ -35,7 +35,13 @@ export const stateManagementManifest: PluginManifest = {
       summary: 'List all state data',
       description: 'Show all stored state data across plugins',
       options: [
-        { name: 'namespace', short: 'n', type: 'string', required: false },
+        {
+          name: 'namespace',
+          short: 'n',
+          type: 'string',
+          required: false,
+          description: 'Namespace name for lookup.',
+        },
       ],
       handler: listState,
       output: {
@@ -46,10 +52,26 @@ export const stateManagementManifest: PluginManifest = {
     {
       name: 'clear',
       summary: 'Clear state data',
-      description: 'Clear state data for a specific namespace or all data',
+      description:
+        'Clear state data for a specific namespace or all data. To confirm you need to set confirm option to true',
       options: [
-        { name: 'namespace', short: 'n', type: 'string', required: false },
-        { name: 'confirm', short: 'c', type: 'boolean', required: false },
+        {
+          name: 'namespace',
+          short: 'n',
+          type: 'string',
+          required: false,
+          description:
+            'State namespace to be cleared. Not specifying this option clears ALL data',
+        },
+        {
+          name: 'confirm',
+          short: 'c',
+          type: 'boolean',
+          required: false,
+          default: false,
+          description:
+            'Confirmation flag, setting it up to true enables clearing states.',
+        },
       ],
       handler: clearState,
       output: {

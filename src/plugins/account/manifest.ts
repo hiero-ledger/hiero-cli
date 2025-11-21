@@ -78,9 +78,17 @@ export const accountPluginManifest: PluginManifest = {
           type: 'number',
           required: false,
           default: 0,
+          description:
+            'The maximum number of automatic association tokens allowed. Default value set to 0',
         },
-        { name: 'name', short: 'n', type: 'string', required: false },
-        { name: 'payer', short: 'p', type: 'string', required: false },
+        {
+          name: 'name',
+          short: 'n',
+          type: 'string',
+          required: false,
+          description: 'Alias of the created account to be used',
+        },
+        { name: 'payer', short: 'p', type: 'string', required: false }, //TODO: I do not see see any usage of the payer option. Should we delete that?
         {
           name: 'key-manager',
           short: 'k',
@@ -115,6 +123,8 @@ export const accountPluginManifest: PluginManifest = {
           short: 'a',
           type: 'string',
           required: true,
+          description:
+            'Account ID, alias or name of the account present in state',
         },
         {
           name: 'hbar-only',
@@ -149,6 +159,7 @@ export const accountPluginManifest: PluginManifest = {
           type: 'boolean',
           required: false,
           default: false,
+          description: 'Include private keys reference ID in listing',
         },
       ],
       handler: listAccounts,
@@ -163,7 +174,13 @@ export const accountPluginManifest: PluginManifest = {
       description:
         'Import an existing account into the CLI tool. Private key can be optionally prefixed with key type (e.g., "ed25519:..." or "ecdsa:..."). If no prefix is provided, defaults to ecdsa.',
       options: [
-        { name: 'id', short: 'i', type: 'string', required: true },
+        {
+          name: 'id',
+          short: 'i',
+          type: 'string',
+          required: true,
+          description: 'Account ID.',
+        },
         {
           name: 'key',
           short: 'K',
@@ -172,7 +189,13 @@ export const accountPluginManifest: PluginManifest = {
           description:
             'Private key. Can be prefixed with key type (e.g., "ed25519:..." or "ecdsa:..."). Defaults to ecdsa if no prefix.',
         },
-        { name: 'name', short: 'n', type: 'string', required: false },
+        {
+          name: 'name',
+          short: 'n',
+          type: 'string',
+          required: false,
+          description: 'Name of the account to be used',
+        },
         {
           name: 'key-manager',
           short: 'k',
@@ -202,10 +225,23 @@ export const accountPluginManifest: PluginManifest = {
     {
       name: 'delete',
       summary: 'Delete an account',
-      description: 'Delete an account from the address book',
+      description:
+        'Delete an account from the address book. You need to specify name or id to delete the account',
       options: [
-        { name: 'name', short: 'n', type: 'string', required: false },
-        { name: 'id', short: 'i', type: 'string', required: false },
+        {
+          name: 'name',
+          short: 'n',
+          type: 'string',
+          required: false,
+          description: 'Account name to be deleted from the store',
+        },
+        {
+          name: 'id',
+          short: 'i',
+          type: 'string',
+          required: false,
+          description: 'Account ID to be deleted from the store',
+        },
       ],
       handler: deleteAccount,
       output: {
@@ -223,6 +259,8 @@ export const accountPluginManifest: PluginManifest = {
           short: 'a',
           type: 'string',
           required: true,
+          description:
+            'Account ID, alias or name of the account present in state',
         },
       ],
       handler: viewAccount,

@@ -40,7 +40,16 @@ export const pluginManagementManifest: PluginManifest = {
       name: 'add',
       summary: 'Add a plugin from path',
       description: 'Add a new plugin to the system from a file path',
-      options: [{ name: 'path', short: 'p', type: 'string', required: true }],
+      options: [
+        {
+          name: 'path',
+          short: 'p',
+          type: 'string',
+          required: true,
+          description:
+            'Path to the plugin. File name of the added plugin is put as name of the plugin in the store. Option required',
+        },
+      ],
       handler: addPlugin,
       output: {
         schema: AddPluginOutputSchema,
@@ -51,7 +60,15 @@ export const pluginManagementManifest: PluginManifest = {
       name: 'remove',
       summary: 'Remove a plugin',
       description: 'Remove a plugin from the system',
-      options: [{ name: 'name', short: 'n', type: 'string', required: true }],
+      options: [
+        {
+          name: 'name',
+          short: 'n',
+          type: 'string',
+          required: true,
+          description: 'Name of the plugin to be removed. Option required.',
+        },
+      ],
       handler: removePlugin,
       output: {
         schema: RemovePluginOutputSchema,
@@ -62,6 +79,7 @@ export const pluginManagementManifest: PluginManifest = {
       name: 'list',
       summary: 'List all plugins',
       description: 'Show all loaded plugins',
+      options: [],
       handler: getPluginList,
       output: {
         schema: ListPluginsOutputSchema,
@@ -72,7 +90,16 @@ export const pluginManagementManifest: PluginManifest = {
       name: 'info',
       summary: 'Get plugin information',
       description: 'Show detailed information about a specific plugin',
-      options: [{ name: 'name', short: 'n', type: 'string', required: true }],
+      options: [
+        {
+          name: 'name',
+          short: 'n',
+          type: 'string',
+          required: true,
+          description:
+            'Name of the plugin for information display. Option required.',
+        },
+      ],
       handler: getPluginInfo,
       output: {
         schema: PluginInfoOutputSchema,

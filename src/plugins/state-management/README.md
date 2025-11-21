@@ -25,7 +25,7 @@ The `outputJson` field contains a JSON string that conforms to the Zod schema de
 
 ## Commands
 
-### `state list`
+### `state-management list`
 
 List all state data across plugins or filter by namespace.
 
@@ -54,13 +54,13 @@ List all state data across plugins or filter by namespace.
 
 ```bash
 # List all state data
-hedera state list
+hedera state-management list
 
 # List specific namespace
-hedera state list --namespace accounts
+hedera state-management list --namespace accounts
 ```
 
-### `state clear`
+### `state-management clear`
 
 Clear state data for a specific namespace or all data.
 
@@ -85,13 +85,13 @@ Clear state data for a specific namespace or all data.
 
 ```bash
 # Clear all state data
-hedera state clear --confirm
+hedera state-management clear --confirm
 
 # Clear specific namespace
-hedera state clear --namespace accounts --confirm
+hedera state-management clear --namespace accounts --confirm
 ```
 
-### `state info`
+### `state-management info`
 
 Display information about stored state data.
 
@@ -115,10 +115,10 @@ Display information about stored state data.
 **Example:**
 
 ```bash
-hedera state info
+hedera state-management info
 ```
 
-### `state backup`
+### `state-management backup`
 
 Create a backup of all state data.
 
@@ -143,13 +143,13 @@ Create a backup of all state data.
 
 ```bash
 # Create backup with auto-generated filename
-hedera state backup
+hedera state-management backup
 
 # Create backup with custom filename
-hedera state backup --output my-backup.json
+hedera state-management backup --output my-backup.json
 ```
 
-### `state stats`
+### `state-management stats`
 
 Display detailed statistics about stored state data.
 
@@ -172,7 +172,7 @@ Display detailed statistics about stored state data.
 **Example:**
 
 ```bash
-hedera state stats
+hedera state-management stats
 ```
 
 ## Output Formats
@@ -181,16 +181,16 @@ All commands support multiple output formats:
 
 ```bash
 # Human-readable output (default)
-hedera state list
+hedera state-management list
 
 # JSON output
-hedera state list --format json
+hedera state-management list --format json
 
 # YAML output
-hedera state list --format yaml
+hedera state-management list --format yaml
 
 # Save to file
-hedera state list --output state-data.json --format json
+hedera state-management list --output state-data.json --format json
 ```
 
 ## Schema Validation
