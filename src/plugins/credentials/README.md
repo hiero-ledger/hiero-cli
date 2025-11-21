@@ -142,10 +142,14 @@ The plugin uses the Core API services:
 
 ## 🔐 Security Notes
 
-- Private keys are stored securely via the KMS service
+- Private keys are stored securely via the KMS service using one of two storage modes:
+  - **`local`**: Plain text storage (development/testing)
+  - **`local_encrypted`**: AES-256-GCM encrypted storage (production)
+- Default storage mode configured via `hcli config set -o default_key_manager local|local_encrypted`
+- Per-operation override available using `--key-manager` flag on commands that import or create keys
 - Only key reference IDs and public keys are exposed in outputs
 - Network-specific operator configuration prevents key reuse across environments
-- Credentials are encrypted at rest and never logged in plaintext
+- Private keys never logged in plaintext
 
 ## 🧪 Testing
 

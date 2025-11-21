@@ -244,15 +244,17 @@ Configuration options include:
 - Structured output
 - Plugin-specific logging
 
-### 8. Credentials Service
+### 8. KMS Service (Key Management Service)
 
-**Purpose**: Manages operator credentials securely.
+**Purpose**: Manages operator credentials and cryptographic keys securely.
 
 **Key Features**:
 
-- Credential storage and retrieval
-- Environment variable fallback
-- Secure key management
+- Dual storage modes: `local` (plain text) and `local_encrypted` (AES-256-GCM encrypted)
+- Per-operation key manager override via `--key-manager` flag
+- Secure key generation and import
+- Private key isolation (keys never exposed outside KMS)
+- Transaction signing with key references
 
 ## 🔄 Data Flow
 
@@ -328,7 +330,11 @@ Core API
 
 - Credentials are stored securely in state using namespaced storage
 - Operator credentials are managed per-network through the Network Service
-- Keys are stored in the KMS (Key Management Service) with encrypted storage
+- Keys are stored in the KMS (Key Management Service) with two storage options:
+  - **`local`**: Plain text storage (development/testing environments)
+  - **`local_encrypted`**: AES-256-GCM encrypted storage (production environments)
+- Default key manager configurable via `hcli config set -o default_key_manager local|local_encrypted`
+- Per-operation override available using `--key-manager` flag on commands that store keys
 - No hardcoded credentials in code
 
 ### 2. Plugin Isolation

@@ -312,6 +312,15 @@ api.logger.debug('Debug information...');
 
 Manages operator credentials and key management securely. **Private keys are never exposed to other services** - all signing operations are handled internally by the KMS using key references (`keyRefId`). This ensures that sensitive key material stays isolated within the KMS service.
 
+**Storage Options:**
+
+The KMS supports two storage modes for private keys:
+
+- **`local`** - Keys stored as plain text (suitable for development and testing)
+- **`local_encrypted`** - Keys encrypted using AES-256-GCM (recommended for production)
+
+The default storage mode is configured via `hcli config set -o default_key_manager local|local_encrypted`. Individual operations can override this using the `--key-manager` flag when available.
+
 ```typescript
 interface KmsService {
   createLocalPrivateKey(

@@ -223,6 +223,39 @@ By default, the CLI stores plugin state in a directory relative to the current w
 
 Each plugin (or state namespace) uses its own JSON file inside this directory. These files are managed by the CLI; you typically should not edit them manually.
 
+## Key Management
+
+The CLI supports two storage methods for private keys:
+
+- **`local`** - Keys are stored as plain text in the state directory (suitable for development and testing)
+- **`local_encrypted`** - Keys are encrypted using AES-256-GCM before storage (recommended for production use)
+
+### Setting the Default Key Manager
+
+Configure the default key storage method using the config command:
+
+```bash
+# Set to plain text storage (development/testing)
+hcli config set -o default_key_manager local
+
+# Set to encrypted storage (production)
+hcli config set -o default_key_manager local_encrypted
+```
+
+### Per-Operation Override
+
+You can override the default key manager for specific operations by providing the `--key-manager` flag:
+
+```bash
+# Import account with encrypted key storage
+hcli account import --id 0.0.123456 --key <private-key> --name myaccount --key-manager local_encrypted
+
+# Set operator with plain text storage
+hcli network set-operator --operator 0.0.123456:302e... --network testnet --key-manager local
+```
+
+This allows you to use different storage methods for different keys based on your security requirements.
+
 ### Getting Help
 
 If you encounter issues not covered here, please:
