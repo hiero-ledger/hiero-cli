@@ -258,7 +258,7 @@ describe('network plugin - set-operator command', () => {
     const aliasService = makeAliasMock();
 
     // Mock KMS error
-    kmsService.importPrivateKey.mockImplementation((_keyType, _privateKey) => {
+    kmsService.importPrivateKey.mockImplementation(() => {
       throw new Error('Invalid private key format');
     });
 

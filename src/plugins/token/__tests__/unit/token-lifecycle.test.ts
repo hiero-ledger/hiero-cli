@@ -46,12 +46,7 @@ describe('Token Lifecycle Integration', () => {
       const mockAssociationTransaction = { type: 'association' };
       const mockTransferTransaction = { type: 'transfer' };
 
-      const {
-        api,
-        tokenTransactions: tokenTransactions,
-        signing: _signing,
-        kms: _credentials,
-      } = makeApiMocks({
+      const { api, tokenTransactions: tokenTransactions } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -64,53 +59,51 @@ describe('Token Lifecycle Integration', () => {
             .mockReturnValue(mockTransferTransaction),
         },
         signing: {
-          signAndExecuteWith: jest
-            .fn()
-            .mockImplementation((transaction, _key) => {
-              // Mock different responses based on transaction type
-              if (transaction === mockTokenTransaction) {
-                return Promise.resolve({
-                  success: true,
-                  transactionId: `${token}@1234567890.123456789`,
-                  tokenId: token,
-                  receipt: {
-                    status: {
-                      status: 'success',
-                      transactionId: `${token}@1234567890.123456789`,
-                    },
-                  },
-                });
-              }
-              if (transaction === mockAssociationTransaction) {
-                return Promise.resolve({
-                  success: true,
-                  transactionId: '0.0.123@1234567890.123456790',
-                  receipt: {
-                    status: {
-                      status: 'success',
-                      transactionId: '0.0.123@1234567890.123456790',
-                    },
-                  },
-                });
-              }
-              if (transaction === mockTransferTransaction) {
-                return Promise.resolve({
-                  success: true,
-                  transactionId: '0.0.123@1234567890.123456791',
-                  receipt: {
-                    status: {
-                      status: 'success',
-                      transactionId: '0.0.123@1234567890.123456791',
-                    },
-                  },
-                });
-              }
+          signAndExecuteWith: jest.fn().mockImplementation((transaction) => {
+            // Mock different responses based on transaction type
+            if (transaction === mockTokenTransaction) {
               return Promise.resolve({
-                success: false,
-                transactionId: '',
-                receipt: { status: { status: 'failed', transactionId: '' } },
+                success: true,
+                transactionId: `${token}@1234567890.123456789`,
+                tokenId: token,
+                receipt: {
+                  status: {
+                    status: 'success',
+                    transactionId: `${token}@1234567890.123456789`,
+                  },
+                },
               });
-            }),
+            }
+            if (transaction === mockAssociationTransaction) {
+              return Promise.resolve({
+                success: true,
+                transactionId: '0.0.123@1234567890.123456790',
+                receipt: {
+                  status: {
+                    status: 'success',
+                    transactionId: '0.0.123@1234567890.123456790',
+                  },
+                },
+              });
+            }
+            if (transaction === mockTransferTransaction) {
+              return Promise.resolve({
+                success: true,
+                transactionId: '0.0.123@1234567890.123456791',
+                receipt: {
+                  status: {
+                    status: 'success',
+                    transactionId: '0.0.123@1234567890.123456791',
+                  },
+                },
+              });
+            }
+            return Promise.resolve({
+              success: false,
+              transactionId: '',
+              receipt: { status: { status: 'failed', transactionId: '' } },
+            });
+          }),
         },
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({ decimals: 2 }),
@@ -250,12 +243,7 @@ describe('Token Lifecycle Integration', () => {
       const mockTokenTransaction = { type: 'token-create' };
       const mockAssociationTransaction = { type: 'association' };
 
-      const {
-        api,
-        tokenTransactions: tokenTransactions,
-        signing: _signing,
-        kms: _credentials,
-      } = makeApiMocks({
+      const { api, tokenTransactions: tokenTransactions } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -265,40 +253,38 @@ describe('Token Lifecycle Integration', () => {
             .mockReturnValue(mockAssociationTransaction),
         },
         signing: {
-          signAndExecuteWith: jest
-            .fn()
-            .mockImplementation((transaction, _key) => {
-              if (transaction === mockTokenTransaction) {
-                return Promise.resolve({
-                  success: true,
-                  transactionId: `${token}@1234567890.123456789`,
-                  tokenId: token,
-                  receipt: {
-                    status: {
-                      status: 'success',
-                      transactionId: `${token}@1234567890.123456789`,
-                    },
-                  },
-                });
-              }
-              if (transaction === mockAssociationTransaction) {
-                return Promise.resolve({
-                  success: true,
-                  transactionId: '0.0.123@1234567890.123456790',
-                  receipt: {
-                    status: {
-                      status: 'success',
-                      transactionId: '0.0.123@1234567890.123456790',
-                    },
-                  },
-                });
-              }
+          signAndExecuteWith: jest.fn().mockImplementation((transaction) => {
+            if (transaction === mockTokenTransaction) {
               return Promise.resolve({
-                success: false,
-                transactionId: '',
-                receipt: { status: { status: 'failed', transactionId: '' } },
+                success: true,
+                transactionId: `${token}@1234567890.123456789`,
+                tokenId: token,
+                receipt: {
+                  status: {
+                    status: 'success',
+                    transactionId: `${token}@1234567890.123456789`,
+                  },
+                },
               });
-            }),
+            }
+            if (transaction === mockAssociationTransaction) {
+              return Promise.resolve({
+                success: true,
+                transactionId: '0.0.123@1234567890.123456790',
+                receipt: {
+                  status: {
+                    status: 'success',
+                    transactionId: '0.0.123@1234567890.123456790',
+                  },
+                },
+              });
+            }
+            return Promise.resolve({
+              success: false,
+              transactionId: '',
+              receipt: { status: { status: 'failed', transactionId: '' } },
+            });
+          }),
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
@@ -385,12 +371,7 @@ describe('Token Lifecycle Integration', () => {
       const mockAssociationTransaction1 = { type: 'association-1' };
       const mockAssociationTransaction2 = { type: 'association-2' };
 
-      const {
-        api,
-        tokenTransactions: tokenTransactions,
-        signing: _signing,
-        kms: _credentials,
-      } = makeApiMocks({
+      const { api, tokenTransactions: tokenTransactions } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -527,12 +508,7 @@ describe('Token Lifecycle Integration', () => {
 
       MockedHelper.mockImplementation(() => stateHelper);
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _credentials,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest.fn().mockReturnValue({}),
           createTokenAssociationTransaction: jest.fn().mockReturnValue({}),

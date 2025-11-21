@@ -141,26 +141,24 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         alias: {
           resolve: jest
             .fn()
-            .mockImplementation(
-              (alias: string, type: string, _network: string) => {
-                if (
-                  type === 'account' &&
-                  (alias === '0.0.111' || alias === '0.0.222')
-                ) {
-                  return {
-                    entityId: alias,
-                    keyRefId: `key-ref-${alias}`,
-                    alias: alias,
-                  };
-                }
-                if (type === 'token' && alias === '0.0.12345') {
-                  return {
-                    entityId: alias,
-                  };
-                }
-                return null;
-              },
-            ),
+            .mockImplementation((alias: string, type: string) => {
+              if (
+                type === 'account' &&
+                (alias === '0.0.111' || alias === '0.0.222')
+              ) {
+                return {
+                  entityId: alias,
+                  keyRefId: `key-ref-${alias}`,
+                  alias,
+                };
+              }
+              if (type === 'token' && alias === '0.0.12345') {
+                return {
+                  entityId: alias,
+                };
+              }
+              return null;
+            }),
         },
         kms: {
           getPublicKey: jest.fn().mockReturnValue('mock-public-key'),

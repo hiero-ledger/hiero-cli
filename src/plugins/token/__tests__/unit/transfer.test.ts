@@ -19,15 +19,10 @@ describe('transferTokenHandler', () => {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
         receipt: {} as any,
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokens,
-        signing,
-        alias: _alias,
-        kms,
-      } = makeApiMocks({
+      const { api, tokens, signing, kms } = makeApiMocks({
         tokens: {
           createTransferTransaction: jest
             .fn()
@@ -104,15 +99,10 @@ describe('transferTokenHandler', () => {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
         receipt: {} as any,
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokens,
-        signing,
-        alias,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api, tokens, signing, alias } = makeApiMocks({
         tokens: {
           createTransferTransaction: jest
             .fn()
@@ -184,15 +174,10 @@ describe('transferTokenHandler', () => {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
         receipt: {} as any,
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokens,
-        signing: _signing,
-        alias,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api, tokens, alias } = makeApiMocks({
         tokens: {
           createTransferTransaction: jest
             .fn()
@@ -202,7 +187,7 @@ describe('transferTokenHandler', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         alias: {
-          resolve: jest.fn().mockImplementation((alias, _type, _network) => {
+          resolve: jest.fn().mockImplementation((alias) => {
             if (alias === 'bob') {
               return {
                 entityId: '0.0.789012',
@@ -302,14 +287,10 @@ describe('transferTokenHandler', () => {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
         receipt: {} as any,
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTransferTransaction: jest
             .fn()
@@ -445,14 +426,10 @@ describe('transferTokenHandler', () => {
         success: false,
         transactionId: '',
         receipt: { status: { status: 'failed', transactionId: '' } },
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTransferTransaction: jest
             .fn()
@@ -495,11 +472,7 @@ describe('transferTokenHandler', () => {
 
     test('should handle token transaction service error', async () => {
       // Arrange
-      const {
-        api,
-        tokens: _tokens,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokens: {
           createTransferTransaction: jest.fn().mockImplementation(() => {
             throw new Error('Network error');
@@ -542,12 +515,7 @@ describe('transferTokenHandler', () => {
       // Arrange
       const mockTransferTransaction = { test: 'transfer-transaction' };
 
-      const {
-        api,
-        tokens: _tokens,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokens: {
           createTransferTransaction: jest
             .fn()
@@ -601,14 +569,10 @@ describe('transferTokenHandler', () => {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
         receipt: {} as any,
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api, tokenTransactions: _tokenTransactions } = makeApiMocks({
         tokenTransactions: {
           createTransferTransaction: jest
             .fn()
@@ -675,14 +639,10 @@ describe('transferTokenHandler', () => {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
         receipt: {} as any,
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTransferTransaction: jest
             .fn()
@@ -740,14 +700,10 @@ describe('transferTokenHandler', () => {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
         receipt: {} as any,
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api, tokenTransactions: _tokenTransactions } = makeApiMocks({
         tokenTransactions: {
           createTransferTransaction: jest
             .fn()

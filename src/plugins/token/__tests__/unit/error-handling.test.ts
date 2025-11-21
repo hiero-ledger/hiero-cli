@@ -46,7 +46,7 @@ describe('Token Plugin Error Handling', () => {
   describe('network and connectivity errors', () => {
     test('should handle network timeout during token creation', async () => {
       // Arrange
-      const { api, tokenTransactions: _tokenTransactions } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest.fn().mockImplementation(() => {
             throw new Error('Network timeout');
@@ -85,7 +85,7 @@ describe('Token Plugin Error Handling', () => {
 
     test('should handle network connectivity issues during association', async () => {
       // Arrange
-      const { api, tokenTransactions: _tokenTransactions } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenAssociationTransaction: jest
             .fn()
@@ -121,11 +121,7 @@ describe('Token Plugin Error Handling', () => {
 
     test('should handle network errors during transfer', async () => {
       // Arrange
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTransferTransaction: jest.fn().mockImplementation(() => {
             throw new Error('Network unreachable');
@@ -172,7 +168,7 @@ describe('Token Plugin Error Handling', () => {
   describe('authentication and authorization errors', () => {
     test('should handle invalid credentials', async () => {
       // Arrange - Mock KMS to throw error for invalid credentials
-      const { api, kms: _kms } = makeApiMocks({
+      const { api } = makeApiMocks({
         kms: {
           importPrivateKey: jest
             .fn()
@@ -211,12 +207,7 @@ describe('Token Plugin Error Handling', () => {
       // Arrange
       const mockTokenTransaction = { test: 'transaction' };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -282,15 +273,11 @@ describe('Token Plugin Error Handling', () => {
       const _mockSignResult: TransactionResult = {
         success: false,
         transactionId: '',
+        consensusTimestamp: '',
         receipt: { status: { status: 'failed', transactionId: '' } },
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenAssociationTransaction: jest
             .fn()
@@ -341,14 +328,11 @@ describe('Token Plugin Error Handling', () => {
       const _mockSignResult: TransactionResult = {
         success: false,
         transactionId: '',
+        consensusTimestamp: '',
         receipt: { status: { status: 'failed', transactionId: '' } },
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTransferTransaction: jest
             .fn()
@@ -388,7 +372,7 @@ describe('Token Plugin Error Handling', () => {
 
     test('should handle token not found', async () => {
       // Arrange
-      const { api, tokenTransactions: _tokenTransactions } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenAssociationTransaction: jest
             .fn()
@@ -427,14 +411,11 @@ describe('Token Plugin Error Handling', () => {
       const _mockSignResult: TransactionResult = {
         success: false,
         transactionId: '',
+        consensusTimestamp: '',
         receipt: { status: { status: 'failed', transactionId: '' } },
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenAssociationTransaction: jest
             .fn()
@@ -472,12 +453,7 @@ describe('Token Plugin Error Handling', () => {
       // Arrange
       const mockTokenTransaction = { test: 'transaction' };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -613,12 +589,7 @@ describe('Token Plugin Error Handling', () => {
 
       const mockTokenTransaction = { test: 'transaction' };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -682,11 +653,7 @@ describe('Token Plugin Error Handling', () => {
   describe('rate limiting and throttling', () => {
     test('should handle rate limiting errors', async () => {
       // Arrange
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest.fn().mockImplementation(() => {
             throw new Error('Rate limit exceeded');
@@ -727,14 +694,11 @@ describe('Token Plugin Error Handling', () => {
       const _mockSignResult: TransactionResult = {
         success: false,
         transactionId: '',
+        consensusTimestamp: '',
         receipt: { status: { status: 'failed', transactionId: '' } },
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTransferTransaction: jest
             .fn()
@@ -789,12 +753,7 @@ describe('Token Plugin Error Handling', () => {
         },
       } as any;
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -835,7 +794,7 @@ describe('Token Plugin Error Handling', () => {
 
     test('should handle unexpected API responses', async () => {
       // Arrange
-      const { api, tokenTransactions: _tokenTransactions } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -875,14 +834,11 @@ describe('Token Plugin Error Handling', () => {
       const mockFailureResult: TransactionResult = {
         success: false,
         transactionId: '',
+        consensusTimestamp: '',
         receipt: { status: { status: 'failed', transactionId: '' } },
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenAssociationTransaction: jest
             .fn()
