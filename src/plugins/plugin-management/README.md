@@ -10,16 +10,16 @@ This plugin provides functionality to add, remove, list, and get information abo
 
 ### `add`
 
-Add a new plugin to the system from a file path.
+Add a new plugin to the system from a plugin directory path.
 
 **Options:**
 
-- `--path, -p` (required): Path to the plugin file
+- `--path, -p` (required): Filesystem path to the plugin directory containing `manifest.js`
 
 **Example:**
 
 ```bash
-hedera plugin-management add --path ./my-plugin.js
+hcli plugin-management add --path ./dist/plugins/my-plugin
 ```
 
 ### `remove`
@@ -58,6 +58,34 @@ Get detailed information about a specific plugin.
 
 ```bash
 hedera plugin-management info --name account
+```
+
+### `enable`
+
+Enable a plugin that exists in the plugin-management state.
+
+**Options:**
+
+- `--name, -n` (required): Name of the plugin to enable
+
+**Example:**
+
+```bash
+hedera plugin-management enable --name account
+```
+
+### `disable`
+
+Disable a plugin that exists in the plugin-management state.
+
+**Options:**
+
+- `--name, -n` (required): Name of the plugin to disable
+
+**Example:**
+
+```bash
+hcli plugin-management disable --name account
 ```
 
 ## Output Formats

@@ -206,7 +206,7 @@ The Hedera CLI is built on a plugin architecture. The following default plugins 
 - **[HBAR Plugin](src/plugins/hbar/README.md)** - Transfer HBAR between accounts
 - **[Credentials Plugin](src/plugins/credentials/README.md)** - Manage operator credentials and keys
 - **[State Management Plugin](src/plugins/state-management/README.md)** - Manage state data, create backups, and view statistics
-- **[Plugin Management Plugin](src/plugins/plugin-management/README.md)** - Add, remove, and manage plugins
+- **[Plugin Management Plugin](src/plugins/plugin-management/README.md)** - Add, remove, enable/disable, and inspect plugins
 - **[Topic Plugin](src/plugins/topic/README.md)** - Create topics and manage topic messages
 
 Each plugin has its own README with detailed documentation about available commands, usage examples, and architecture details. Click on the plugin name above to learn more.

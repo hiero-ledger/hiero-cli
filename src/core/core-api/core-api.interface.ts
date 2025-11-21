@@ -15,6 +15,7 @@ import { AliasService } from '../services/alias/alias-service.interface';
 import { KmsService } from '../services/kms/kms-service.interface';
 import { TokenService } from '../services/token/token-service.interface';
 import { OutputService } from '../services/output/output-service.interface';
+import type { PluginManagementService } from '../services/plugin-management/plugin-management-service.interface';
 
 export interface CoreApi {
   /**
@@ -81,4 +82,9 @@ export interface CoreApi {
    * Output handling and formatting
    */
   output: OutputService;
+
+  /**
+   * Plugin management state service
+   */
+  pluginManagement: PluginManagementService;
 }

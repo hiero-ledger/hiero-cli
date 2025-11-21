@@ -10,17 +10,15 @@ export const PluginInfoSchema = z.object({
   version: z.string().describe('Plugin version'),
   displayName: z.string().describe('Plugin display name'),
   description: z.string().describe('Plugin description'),
-  status: z.enum(['loaded', 'unloaded', 'error']).describe('Plugin status'),
   commands: z.array(z.string()).describe('Available commands'),
   capabilities: z.array(z.string()).describe('Plugin capabilities'),
+  enabled: z.boolean().describe('Whether plugin is enabled'),
 });
 
 // Plugin list item schema
 export const PluginListItemSchema = z.object({
   name: z.string().describe('Plugin name'),
-  displayName: z.string().describe('Plugin display name'),
-  version: z.string().describe('Plugin version'),
-  status: z.enum(['loaded', 'unloaded', 'error']).describe('Plugin status'),
+  enabled: z.boolean().describe('Whether plugin is enabled'),
 });
 
 // Add plugin output schema

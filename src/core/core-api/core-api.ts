@@ -31,6 +31,8 @@ import { TokenServiceImpl } from '../services/token/token-service';
 import { OutputService } from '../services/output/output-service.interface';
 import { OutputServiceImpl } from '../services/output/output-service';
 import { CoreApiConfig } from './core-api-config';
+import { PluginManagementService } from '../services/plugin-management/plugin-management-service.interface';
+import { PluginManagementServiceImpl } from '../services/plugin-management/plugin-management-service';
 
 export class CoreApiImplementation implements CoreApi {
   public account: AccountService;
@@ -46,6 +48,7 @@ export class CoreApiImplementation implements CoreApi {
   public kms: KmsService;
   public hbar: HbarService;
   public output: OutputService;
+  public pluginManagement: PluginManagementService;
 
   constructor(config: CoreApiConfig) {
     this.logger = new MockLoggerService();
@@ -96,6 +99,8 @@ export class CoreApiImplementation implements CoreApi {
 
     this.hbar = new HbarServiceImpl(this.logger);
     this.output = new OutputServiceImpl(config.format);
+
+    this.pluginManagement = new PluginManagementServiceImpl(this.state);
   }
 }
 

@@ -14,6 +14,7 @@ import type { NetworkService } from '../../../../../core/services/network/networ
 import type { ConfigService } from '../../../../../core/services/config/config-service.interface';
 import type { HbarService } from '../../../../../core/services/hbar/hbar-service.interface';
 import type { OutputService } from '../../../../../core/services/output/output-service.interface';
+import type { PluginManagementService } from '../../../../../core/services/plugin-management/plugin-management-service.interface';
 import { mockTransactionResults } from './fixtures';
 
 /**
@@ -219,6 +220,15 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       handleCommandOutput: jest.fn(),
       getFormat: jest.fn().mockReturnValue('human'),
     } as jest.Mocked<OutputService>,
+    pluginManagement: {
+      listPlugins: jest.fn().mockReturnValue([]),
+      getPlugin: jest.fn(),
+      addPlugin: jest.fn(),
+      removePlugin: jest.fn(),
+      enablePlugin: jest.fn(),
+      disablePlugin: jest.fn(),
+      savePluginState: jest.fn(),
+    } as PluginManagementService,
   };
 
   return {
