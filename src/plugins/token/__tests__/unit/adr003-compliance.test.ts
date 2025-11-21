@@ -171,7 +171,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         token: '0.0.12345',
         from: '0.0.111',
         to: '0.0.222',
-        balance: '100t',
+        amount: '100t',
       };
 
       // Act
@@ -201,7 +201,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       const args = {
         // Missing required token parameter
         to: '0.0.222',
-        balance: 100,
+        amount: 100,
       };
 
       // Act

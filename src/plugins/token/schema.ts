@@ -242,7 +242,7 @@ export const TokenTransferCommandSchema = z.object({
   to: z.string().min(1, 'To account is required (either name or account-id)'),
 
   // @TODO Add validation to allow only int(1), float(2.25) or base units(1000t)
-  balance: z.union([z.number().positive(), z.string().min(1)]),
+  amount: z.union([z.number().positive(), z.string().min(1)]),
 });
 
 export type TokenTransferCommandParams = z.infer<

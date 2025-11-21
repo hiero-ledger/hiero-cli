@@ -2,7 +2,7 @@ import {
   ConfigOptionDescriptor,
   ConfigService,
 } from './config-service.interface';
-import type { DefaultKeyManagerType } from '../../types/shared.types';
+import { KEY_MANAGER_VALUES } from '../kms/kms-types.interface';
 import { StateService } from '../state/state-service.interface';
 
 const CONFIG_NAMESPACE = 'config';
@@ -34,10 +34,7 @@ const CONFIG_OPTIONS: Record<string, OptionSpec> = {
   default_key_manager: {
     type: 'enum',
     default: 'local',
-    allowedValues: [
-      'local',
-      'encrypted_local',
-    ] as readonly DefaultKeyManagerType[],
+    allowedValues: KEY_MANAGER_VALUES,
   },
 } as const;
 

@@ -183,7 +183,7 @@ describe('Token Lifecycle Integration', () => {
           token,
           from: `${_treasuryAccountId}:${treasuryKey}`,
           to: userAccountId,
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,

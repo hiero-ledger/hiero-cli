@@ -90,6 +90,14 @@ export const accountPluginManifest: PluginManifest = {
         },
         { name: 'payer', short: 'p', type: 'string', required: false }, //TODO: I do not see see any usage of the payer option. Should we delete that?
         {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+        {
           name: 'key-type',
           short: 't',
           type: 'string',
@@ -119,20 +127,19 @@ export const accountPluginManifest: PluginManifest = {
             'Account ID, alias or name of the account present in state',
         },
         {
-          name: 'only-hbar',
+          name: 'hbar-only',
           short: 'H',
           type: 'boolean',
           required: false,
           default: false,
-          description:
-            "Only account's HBAR balance allowed for show. Defaults to false",
+          description: 'Show only HBAR balance',
         },
         {
-          name: 'token-id',
+          name: 'token',
           short: 't',
           type: 'string',
           required: false,
-          description: 'Token balance by given ID',
+          description: 'Token ID or token name',
         },
       ],
       handler: getAccountBalance,
@@ -176,7 +183,7 @@ export const accountPluginManifest: PluginManifest = {
         },
         {
           name: 'key',
-          short: 'k',
+          short: 'K',
           type: 'string',
           required: false,
           description:
@@ -188,6 +195,14 @@ export const accountPluginManifest: PluginManifest = {
           type: 'string',
           required: false,
           description: 'Name of the account to be used',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
       handler: importAccount,

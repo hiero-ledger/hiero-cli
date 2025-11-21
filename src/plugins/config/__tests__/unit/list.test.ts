@@ -26,7 +26,7 @@ describe('config plugin - list', () => {
           name: 'default_key_manager',
           type: 'enum',
           value: 'local',
-          allowedValues: ['local', 'encrypted_local'],
+          allowedValues: ['local', 'local_encrypted'],
         }),
         expect.objectContaining({
           name: 'ed25519_support_enabled',

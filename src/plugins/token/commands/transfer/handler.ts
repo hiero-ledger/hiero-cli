@@ -16,6 +16,7 @@ import { formatError } from '../../../../core/utils/errors';
 import { processBalanceInput } from '../../../../core/utils/process-balance-input';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
 import { TransferTokenOutput } from './output';
+import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 
 export async function transferToken(
   args: CommandHandlerArgs,
@@ -41,6 +42,12 @@ export async function transferToken(
   const tokenIdOrAlias = validatedParams.token;
   const from = validatedParams.from;
   const to = validatedParams.to;
+  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
+
+  // Get keyManager from args or fallback to config
+  const keyManager =
+    keyManagerArg ||
+    api.config.getOption<KeyManagerName>('default_key_manager');
 
   const network = api.network.getCurrentNetwork();
 
@@ -56,12 +63,12 @@ export async function transferToken(
 
   const tokenId = resolvedToken.tokenId;
 
-  // Get token decimals from API (needed for balance conversion)
+  // Get token decimals from API (needed for amount conversion)
   let tokenDecimals = 0;
-  const userBalanceInput = validatedParams.balance;
+  const userAmountInput = validatedParams.amount;
 
   // Only fetch decimals if user input doesn't have 't' suffix (raw units)
-  const isRawUnits = String(userBalanceInput).trim().endsWith('t');
+  const isRawUnits = String(userAmountInput).trim().endsWith('t');
   if (!isRawUnits) {
     try {
       const tokenInfoStorage = tokenState.getToken(tokenId);
@@ -81,12 +88,17 @@ export async function transferToken(
     }
   }
 
-  // Convert balance input: display units (default) or raw units (with 't' suffix)
-  const rawAmount = processBalanceInput(userBalanceInput, tokenDecimals);
+  // Convert amount input: display units (default) or raw units (with 't' suffix)
+  const rawAmount = processBalanceInput(userAmountInput, tokenDecimals);
 
   // Resolve from parameter (name or account-id:private-key) if provided
 
-  let resolvedFromAccount = resolveAccountParameter(from, api, network);
+  let resolvedFromAccount = resolveAccountParameter(
+    from,
+    api,
+    network,
+    keyManager,
+  );
 
   // If from account wasn't provided, use operator as default
   if (!resolvedFromAccount) {

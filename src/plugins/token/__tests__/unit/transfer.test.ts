@@ -56,7 +56,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -92,6 +92,8 @@ describe('transferTokenHandler', () => {
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
         'test-from-key',
+        'local',
+        ['token:account', 'temporary'],
       );
     });
 
@@ -139,7 +141,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: 'alice',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -227,7 +229,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: 'bob',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -272,7 +274,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 0, // Zero amount - should fail validation
+          amount: 0, // Zero amount - should fail validation
         },
         api,
         state: {} as any,
@@ -329,7 +331,7 @@ describe('transferTokenHandler', () => {
         args: {
           token: '0.0.123456',
           to: '0.0.789012',
-          balance: 100,
+          amount: 100,
           // from missing - should use default operator
         },
         api,
@@ -361,7 +363,7 @@ describe('transferTokenHandler', () => {
         args: {
           token: '0.0.123456',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
           // to missing
         },
         api,
@@ -389,7 +391,7 @@ describe('transferTokenHandler', () => {
           // tokenId missing
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -416,7 +418,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: -50, // Negative amount
+          amount: -50, // Negative amount
         },
         api,
         state: {} as any,
@@ -473,7 +475,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -517,7 +519,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -573,7 +575,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -632,7 +634,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 999999999, // Large amount
+          amount: 999999999, // Large amount
         },
         api,
         state: {} as any,
@@ -706,7 +708,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -771,7 +773,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.345678', // Same as from
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -812,7 +814,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 100.5, // Decimal amount - should be rejected
+          amount: 100.5, // Decimal amount - should be rejected
         },
         api,
         state: {} as any,

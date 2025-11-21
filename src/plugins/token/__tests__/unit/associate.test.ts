@@ -237,6 +237,8 @@ describe('associateTokenHandler', () => {
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
         'test-account-key',
+        'local',
+        ['token:account', 'temporary'],
       );
     });
 
@@ -675,6 +677,8 @@ describe('associateTokenHandler', () => {
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
         'test-account-key',
+        'local',
+        ['token:account', 'temporary'],
       );
     });
 

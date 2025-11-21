@@ -15,6 +15,7 @@ import {
 import { formatError } from '../../../../core/utils/errors';
 import { AssociateTokenOutput } from './output';
 import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
+import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 
 export async function associateToken(
   args: CommandHandlerArgs,
@@ -40,6 +41,12 @@ export async function associateToken(
   const validatedParams = validationResult.data;
   const tokenIdOrAlias = validatedParams.token;
   const accountIdOrAlias = validatedParams.account;
+  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
+
+  // Get keyManager from args or fallback to config
+  const keyManager =
+    keyManagerArg ||
+    api.config.getOption<KeyManagerName>('default_key_manager');
 
   const network = api.network.getCurrentNetwork();
 
@@ -61,6 +68,7 @@ export async function associateToken(
     accountIdOrAlias,
     api,
     network,
+    keyManager,
   );
 
   // Account was explicitly provided - it MUST resolve or fail

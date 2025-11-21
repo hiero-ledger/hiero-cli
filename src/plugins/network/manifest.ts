@@ -9,7 +9,7 @@ import {
 } from './commands/list';
 import { UseNetworkOutputSchema, USE_NETWORK_TEMPLATE } from './commands/use';
 import { listHandler } from './commands/list/handler';
-import { useHandler } from './commands/use/handler';
+import { useHandler } from './commands/use';
 import {
   GetOperatorOutputSchema,
   GET_OPERATOR_TEMPLATE,
@@ -102,6 +102,14 @@ export const networkPluginManifest: PluginManifest = {
           type: 'string',
           required: false,
           description: 'Target network (defaults to current network)',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
       handler: setOperatorHandler,

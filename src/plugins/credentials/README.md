@@ -2,22 +2,51 @@
 
 A plugin for managing operator credentials and keys in the Hedera CLI.
 
-## Features
+## 🏗️ Architecture
 
-- **List Credentials**: View all stored credentials and their metadata
-- **Remove Credentials**: Delete stored credentials by key reference ID
-- **ADR-003 Compliant**: Structured outputs with human-readable templates and machine-readable formats
+This plugin follows the plugin architecture principles:
 
-## Commands
+- **Stateless**: Plugin is functionally stateless
+- **Dependency Injection**: Services are injected into command handlers
+- **Manifest-Driven**: Capabilities declared via manifest with output specifications
+- **Structured Output**: All command handlers return `CommandExecutionResult` with standardized output
+- **Type Safety**: Full TypeScript support
 
-### `hedera credentials list`
+## 📁 Structure
+
+```
+src/plugins/credentials/
+├── manifest.ts              # Plugin manifest with command definitions
+├── schema.ts                # Credentials data schema with Zod validation
+├── commands/
+│   ├── list/
+│   │   ├── handler.ts      # List credentials handler
+│   │   ├── output.ts       # Output schema and template
+│   │   └── index.ts        # Command exports
+│   └── remove/
+│       ├── handler.ts      # Remove credentials handler
+│       ├── output.ts       # Output schema and template
+│       └── index.ts        # Command exports
+├── __tests__/unit/         # Unit tests
+└── index.ts                # Plugin exports
+```
+
+## 🚀 Commands
+
+All commands return `CommandExecutionResult` with structured output that includes:
+
+- `status`: Success or failure status
+- `errorMessage`: Optional error message (present when status is not 'success')
+- `outputJson`: JSON string conforming to the output schema defined in `output.ts`
+
+Each command defines a Zod schema for output validation and a Handlebars template for human-readable formatting.
+
+### List Credentials
 
 Show all stored credentials and their metadata.
 
-**Example:**
-
 ```bash
-hedera credentials list
+hcli credentials list
 ```
 
 **Output:**
@@ -40,14 +69,18 @@ hedera credentials list
 
 Remove credentials for a specific key reference ID.
 
+```bash
+hcli credentials remove --key-ref-id key-ref-123
+```
+
 **Options:**
 
-- `--key-ref-id, -k` (required): Key reference ID to remove
+- `--id, -i` (required): Key reference ID to remove
 
-**Example:**
+## 📊 State Management
 
 ```bash
-hedera credentials remove --key-ref-id key-ref-123
+hedera credentials remove --id key-ref-123
 ```
 
 **Output:**
@@ -75,33 +108,56 @@ The plugin stores credentials metadata using the following schema:
 }
 ```
 
-### Output Schemas
+The schema is validated using Zod (`CredentialsDataSchema`) and stored as JSON Schema in the plugin manifest for runtime validation.
 
-All commands follow ADR-003 with:
+## 📤 Output Formatting
 
-- **Zod schemas** for runtime validation
-- **Human-readable templates** using Handlebars
-- **Machine-readable outputs** (JSON/YAML/XML support)
-- **Type-safe interfaces** auto-generated from schemas
+All commands return structured output through the `CommandExecutionResult` interface:
 
-### Error Handling
+```typescript
+interface CommandExecutionResult {
+  status: 'success' | 'failure';
+  errorMessage?: string; // Present when status !== 'success'
+  outputJson?: string; // JSON string conforming to the output schema
+}
+```
 
-- Structured error responses with `CommandExecutionResult`
-- Consistent error messages via `formatError()` utility
-- Graceful handling of missing credentials or invalid inputs
+**Output Structure:**
 
-## Integration
+- **Output Schemas**: Each command defines a Zod schema in `output.ts` for type-safe output validation
+- **Human Templates**: Handlebars templates provide human-readable output formatting
+- **Error Handling**: All errors are returned in the result structure, ensuring consistent error handling
+- **Format Selection**: Output format is controlled by the CLI's `--format` option (default: `human`, or `json` for machine-readable output)
 
-The credentials plugin integrates with:
+The `outputJson` field contains a JSON string that conforms to the Zod schema defined in each command's `output.ts` file, ensuring type safety and consistent output structure.
 
-- **KMS Service**: Secure key storage and management
-- **Network Service**: Operator configuration per network
-- **State Service**: Persistent credential metadata storage
-- **Core API**: Transaction signing and execution
+## 🔧 Core API Integration
 
-## Security Notes
+The plugin uses the Core API services:
+
+- `api.kms` - Secure key storage and management
+- `api.network` - Operator configuration per network
+- `api.state` - Persistent credential metadata storage
+- `api.logger` - Logging
+
+## 🔐 Security Notes
 
 - Private keys are stored securely via the KMS service
 - Only key reference IDs and public keys are exposed in outputs
 - Network-specific operator configuration prevents key reuse across environments
 - Credentials are encrypted at rest and never logged in plaintext
+
+## 🧪 Testing
+
+Unit tests located in `__tests__/unit/`:
+
+```bash
+npm test -- src/plugins/credentials/__tests__/unit
+```
+
+Test coverage includes:
+
+- Listing credentials
+- Removing credentials by key reference ID
+- Error handling for invalid inputs
+- Missing credentials handling

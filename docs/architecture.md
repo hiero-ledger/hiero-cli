@@ -4,33 +4,43 @@ This document provides a comprehensive overview of the Hedera CLI architecture, 
 
 ## 🏗️ High-Level Architecture
 
-The Hedera CLI is built on a plugin-based architecture that follows the ADR-001 specification. The system is designed to be extensible, maintainable, and secure.
+The Hedera CLI is built on a plugin-based architecture designed to be extensible, maintainable, and secure.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    Hedera CLI Architecture                  │
 ├─────────────────────────────────────────────────────────────┤
-│  CLI Entry Point (hedera-cli.ts)                           │
-│  ├── Plugin Manager                                        │
-│  ├── Core API                                              │
-│  └── Command Router                                        │
+│  CLI Entry Point (hedera-cli.ts)                            │
+│  ├── Plugin Manager                                         │
+│  ├── Core API                                               │
+│  └── Command Router                                         │
 ├─────────────────────────────────────────────────────────────┤
-│  Core Services Layer                                       │
-│  ├── Account Transaction Service                           │
-│  ├── TxExecutionService                                   │
-│  ├── State Service (Zustand)                               │
-│  ├── Mirror Node Service                                   │
-│  ├── Network Service                                       │
-│  ├── Config Service                                        │
-│  ├── Logger Service                                        │
-│  └── Credentials Service                                   │
+│  Core Services Layer                                        │
+│  ├── Account Transaction Service                            │
+│  ├── Token Service                                          │
+│  ├── Topic Service                                          │
+│  ├── TxExecutionService                                     │
+│  ├── State Service (Zustand)                                │
+│  ├── Mirror Node Service                                    │
+│  ├── Network Service                                        │
+│  ├── Config Service                                         │
+│  ├── Logger Service                                         │
+│  ├── KMS Service                                            │
+│  ├── Alias Service                                          │
+│  ├── HBAR Service                                           │
+│  └── Output Service                                         │
 ├─────────────────────────────────────────────────────────────┤
-│  Plugin Layer                                              │
-│  ├── Account Plugin                                        │
-│  ├── Credentials Plugin                                    │
-│  ├── Plugin Management Plugin                              │
-│  ├── State Management Plugin                               │
-│  └── [Custom Plugins]                                      │
+│  Plugin Layer                                               │
+│  ├── Account Plugin                                         │
+│  ├── Token Plugin                                           │
+│  ├── Network Plugin                                         │
+│  ├── Topic Plugin                                           │
+│  ├── HBAR Plugin                                            │
+│  ├── Credentials Plugin                                     │
+│  ├── Config Plugin                                          │
+│  ├── Plugin Management Plugin                               │
+│  ├── State Management Plugin                                │
+│  └── [Custom Plugins]                                       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -38,7 +48,7 @@ The Hedera CLI is built on a plugin-based architecture that follows the ADR-001 
 
 ### Core Principles
 
-The plugin architecture is based on ADR-001 and follows these key principles:
+The plugin architecture follows these key principles:
 
 1. **Stateless Plugins**: Plugins are functionally stateless
 2. **Dependency Injection**: Services are injected into command handlers
@@ -56,20 +66,32 @@ Command Execution ← Command Routing ← User Input ← CLI Interface
 
 ### Plugin Structure
 
+Plugins are regular TypeScript modules located under `src/plugins/<plugin-name>/` and follow a consistent folder layout:
+
 ```
 plugin/
-├── manifest.ts              # Plugin manifest
-├── commands/                # Command handlers
-│   ├── create.ts
-│   ├── list.ts
-│   └── ...
-├── schema.ts                # State schema (optional)
-└── index.ts                 # Plugin entry point
+├── manifest.ts              # Plugin manifest (name, capabilities, commands, output specs)
+├── schema.ts                # State/output schemas (Zod + JSON Schema)
+├── commands/                # One folder per command
+│   ├── create/
+│   │   ├── handler.ts       # Command handler
+│   │   ├── output.ts        # Output schema & template
+│   │   └── index.ts         # Command exports
+│   ├── list/
+│   │   ├── handler.ts
+│   │   ├── output.ts
+│   │   └── index.ts
+│   └── ...                  # Other commands
+├── README.md                # Plugin-specific documentation
+└── __tests__/
+    └── unit/                # Unit tests for handlers/schemas
 ```
+
+For a detailed, step‑by‑step plugin development guide, see [`PLUGIN_ARCHITECTURE_GUIDE.md`](../PLUGIN_ARCHITECTURE_GUIDE.md) in the repository root.
 
 ## 🛠️ Core Services
 
-### 1. Account Transaction Service
+### 1. Account Service
 
 **Purpose**: Handles Hedera account creation and management operations.
 
@@ -82,7 +104,7 @@ plugin/
 **Interface**:
 
 ```typescript
-interface AccountTransactionService {
+interface AccountService {
   createAccount(params: CreateAccountParams): Promise<AccountCreationResult>;
   // ... other methods
 }
@@ -171,13 +193,46 @@ interface HederaMirrornodeService {
 
 ### 6. Config Service
 
-**Purpose**: Provides read-only access to CLI configuration.
+**Purpose**: Manages configuration options for the CLI with type-safe accessors.
 
 **Key Features**:
 
-- Configuration validation
-- Environment variable support
-- Profile management
+- Generic configuration option accessors
+- Type validation (boolean, number, string, enum)
+- Default value support for all options
+- State-based persistent storage
+- Options discovery and listing
+
+**Interface**:
+
+```typescript
+interface ConfigService {
+  listOptions(): ConfigOptionDescriptor[];
+  getOption<T = boolean | number | string>(name: string): T;
+  setOption(name: string, value: boolean | number | string): void;
+}
+```
+
+**Configuration Options**:
+
+The service supports the following option types:
+
+- `boolean`: Boolean values
+- `number`: Numeric values
+- `string`: String values
+- `enum`: String values restricted to predefined allowed values
+
+Configuration options include:
+
+- `ed25519_support_enabled` (boolean, default: false)
+- `default_key_manager` (enum: 'local' | 'encrypted_local', default: 'local')
+
+**Implementation Details**:
+
+- Uses State Service with `'config'` namespace for persistent storage
+- Validates types on both read and write operations
+- Returns default values if options are not explicitly set
+- Throws descriptive errors for invalid option names or values
 
 ### 7. Logger Service
 
@@ -243,14 +298,27 @@ interface HederaMirrornodeService {
 
 ```
 Core API
-├── Account Transaction Service
-├── TxExecutionService
-│   └── Credentials Service
 ├── State Service (Zustand)
+├── Network Service
+│   └── State Service
+├── Config Service
+│   └── State Service
+├── KMS Service
+│   ├── State Service
+│   ├── Network Service
+│   └── Config Service
+├── TxExecutionService
+│   ├── KMS Service
+│   └── Network Service
+├── Account Transaction Service
+├── Token Service
+├── Topic Service
 ├── Mirror Node Service
 │   └── Network Service
-├── Network Service
-├── Config Service
+├── Alias Service
+│   └── State Service
+├── HBAR Service
+├── Output Service
 └── Logger Service
 ```
 
@@ -258,8 +326,9 @@ Core API
 
 ### 1. Credential Management
 
-- Credentials are stored securely in state
-- Environment variable fallback for CI/CD
+- Credentials are stored securely in state using namespaced storage
+- Operator credentials are managed per-network through the Network Service
+- Keys are stored in the KMS (Key Management Service) with encrypted storage
 - No hardcoded credentials in code
 
 ### 2. Plugin Isolation
@@ -391,7 +460,7 @@ Core API
 
 ## 📚 Related Documentation
 
-- [Plugin Development Guide](./plugin-development.md)
+- [Plugin Development Guide](../PLUGIN_ARCHITECTURE_GUIDE.md)
 - [Core API Reference](./core-api.md)
-- [Contributing Guide](./contributing.md)
-- [ADR-001 Plugin Architecture](./adr/ADR-001-plugin-architecture.md)
+- [Contributing Guide](../CONTRIBUTING.md)
+- [Architecture Decision Records](./adr/) - ADRs for interested developers

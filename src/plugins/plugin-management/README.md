@@ -4,7 +4,7 @@ A plugin for managing other plugins in the Hedera CLI system.
 
 ## Overview
 
-This plugin provides functionality to add, remove, list, and get information about plugins in the system. It follows the ADR-003 command handler contract and provides structured output with both JSON and human-readable formats.
+This plugin provides functionality to add, remove, list, and get information about plugins in the system. All commands return structured `CommandExecutionResult` with both JSON and human-readable output formats.
 
 ## Commands
 
@@ -69,12 +69,24 @@ All commands support both JSON and human-readable output formats:
 
 ## Architecture
 
-This plugin follows the ADR-003 command handler contract:
+All commands return structured output through the `CommandExecutionResult` interface:
+
+```typescript
+interface CommandExecutionResult {
+  status: 'success' | 'failure';
+  errorMessage?: string; // Present when status !== 'success'
+  outputJson?: string; // JSON string conforming to the output schema
+}
+```
+
+**Output Structure:**
 
 - **Command Handlers**: Return `CommandExecutionResult` objects
 - **Output Schemas**: Defined using Zod for validation and type safety
 - **Templates**: Handlebars templates for human-readable output
 - **Error Handling**: Consistent error handling across all commands
+
+The `outputJson` field contains a JSON string that conforms to the Zod schema defined in each command's `output.ts` file, ensuring type safety and consistent output structure.
 
 ## Directory Structure
 

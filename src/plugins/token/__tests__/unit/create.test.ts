@@ -87,6 +87,8 @@ describe('createTokenHandler', () => {
       expect(api.kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
         'test-private-key',
+        'local',
+        ['token:treasury', 'temporary'],
       );
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
         expectedTokenTransactionParams,

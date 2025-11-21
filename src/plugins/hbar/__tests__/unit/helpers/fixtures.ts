@@ -122,6 +122,7 @@ export const mockAmounts = {
   large: '100000000',
   zero: '0',
   negative: '-100',
+  invalid: 'invalid',
 };
 
 /**
@@ -150,6 +151,7 @@ export const mockBalances = {
  */
 export const mockParsedBalances = {
   valid: 10000000000000000n,
+  large: 10000000000000000n,
   medium: 5000000000000000n,
   small: 10000000000n,
 };

@@ -18,6 +18,7 @@ import * as path from 'path';
 import { z } from 'zod';
 import { formatError, toErrorMessage } from '../../../../core/utils/errors';
 import { CreateTokenFromFileOutput } from './output';
+import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { parseKeyWithType } from '../../../../core/utils/keys';
 
 // Import the token file schema from the original commands
@@ -172,6 +173,8 @@ function resolveTreasuryFromDefinition(
   api: CoreApi,
   network: SupportedNetwork,
   logger: Logger,
+  keyManager: KeyManagerName,
+  tokenName: string,
 ): TreasuryFromFileResolution {
   if (typeof treasuryDef === 'string') {
     // New format: alias or treasury-id:treasury-key
@@ -179,6 +182,7 @@ function resolveTreasuryFromDefinition(
       treasuryDef,
       api,
       network,
+      keyManager,
     );
 
     if (!resolvedTreasury) {
@@ -197,7 +201,10 @@ function resolveTreasuryFromDefinition(
   // Legacy format: object with accountId and key
   // Parse private key - check if it has a key type prefix (e.g., "ed25519:...")
   const { keyType, privateKey } = parseKeyWithType(treasuryDef.key);
-  const imported = api.kms.importPrivateKey(keyType, privateKey);
+  const imported = api.kms.importPrivateKey(keyType, privateKey, keyManager, [
+    'token:treasury',
+    `token:${tokenName}`,
+  ]);
   logger.log(`🏦 Using treasury (legacy format): ${treasuryDef.accountId}`);
 
   return {
@@ -267,6 +274,7 @@ async function processTokenAssociations(
   associations: Array<{ accountId: string; key: string }>,
   api: CoreApi,
   logger: Logger,
+  keyManager: KeyManagerName,
 ): Promise<Array<{ name: string; accountId: string }>> {
   if (associations.length === 0) {
     return [];
@@ -286,7 +294,12 @@ async function processTokenAssociations(
       // Sign and execute with the account's key
       // Parse private key - check if it has a key type prefix (e.g., "ed25519:...")
       const { keyType, privateKey } = parseKeyWithType(association.key);
-      const associationImported = api.kms.importPrivateKey(keyType, privateKey);
+      const associationImported = api.kms.importPrivateKey(
+        keyType,
+        privateKey,
+        keyManager,
+        ['token:association', `account:${association.accountId}`],
+      );
       const associateResult = await api.txExecution.signAndExecuteWith(
         associateTransaction,
         { keyRefId: associationImported.keyRefId },
@@ -326,6 +339,12 @@ export async function createTokenFromFile(
   // Extract command arguments
   const filename = args.args['file'] as string;
   const scriptArgs = (args.args['args'] as string[]) || [];
+  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
+
+  // Get keyManager from args or fallback to config
+  const keyManager =
+    keyManagerArg ||
+    api.config.getOption<KeyManagerName>('default_key_manager');
 
   logger.log(`Creating token from file: ${filename}`);
 
@@ -340,6 +359,8 @@ export async function createTokenFromFile(
       api,
       network,
       logger,
+      keyManager,
+      tokenDefinition.name,
     );
 
     // 3. Create and execute token transaction
@@ -388,6 +409,7 @@ export async function createTokenFromFile(
       tokenDefinition.associations,
       api,
       logger,
+      keyManager,
     );
     tokenData.associations = successfulAssociations;
 

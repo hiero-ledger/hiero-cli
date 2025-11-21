@@ -2,14 +2,26 @@
 
 A plugin for managing state data across all plugins in the Hedera CLI. This plugin provides commands for listing, clearing, backing up, and getting information about stored state data.
 
-## ADR-003 Compliance
+## Output Structure
 
-This plugin is fully compliant with [ADR-003: Result-Oriented Command Handler Contract](../docs/adr/ADR-003-command-handler-result-contract.md). All commands return structured `CommandExecutionResult` objects with:
+All commands return structured output through the `CommandExecutionResult` interface:
+
+```typescript
+interface CommandExecutionResult {
+  status: 'success' | 'failure';
+  errorMessage?: string; // Present when status !== 'success'
+  outputJson?: string; // JSON string conforming to the output schema
+}
+```
+
+**Output Structure:**
 
 - **Status**: Uses `Status` enum from `src/core/shared/constants.ts` (`Status.Success` or `Status.Failure`)
-- **Output JSON**: Validated against Zod schemas
-- **Human Templates**: Handlebars templates for user-friendly output
+- **Output JSON**: Validated against Zod schemas defined in each command's `output.ts`
+- **Human Templates**: Handlebars templates for user-friendly output formatting
 - **Error Messages**: Detailed error information when operations fail
+
+The `outputJson` field contains a JSON string that conforms to the Zod schema defined in each command's `output.ts` file, ensuring type safety and consistent output structure.
 
 ## Commands
 
@@ -192,7 +204,7 @@ All command outputs are validated against Zod schemas defined in `schema.ts`. Th
 
 ## Error Handling
 
-The plugin follows ADR-003 error handling patterns:
+The plugin follows structured error handling:
 
 - **Core exceptions** are caught and converted to user-friendly messages
 - **Validation errors** provide detailed information about what went wrong
@@ -248,7 +260,7 @@ src/plugins/state-management/
 ### Key Components
 
 - **Schema Definitions**: Zod schemas for all data types
-- **Command Handlers**: ADR-003 compliant handlers
+- **Command Handlers**: All handlers return `CommandExecutionResult` with structured output
 - **Output Templates**: Handlebars templates for human-readable output
 - **Test Utilities**: Comprehensive test helpers and mocks
 - **Type Safety**: Full TypeScript support with inferred types
