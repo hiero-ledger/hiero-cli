@@ -140,3 +140,4 @@ hedera-cli.config.*.local.json
 .hedera-clirc.yaml
 .hedera-clirc.yml
 .hedera-cli
+.hedera-cli-test
