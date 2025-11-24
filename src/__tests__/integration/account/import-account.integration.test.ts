@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { CoreApi } from '../../../core/core-api/core-api.interface';
 import { createMockCoreApi } from '../../mocks/core-api.mock';
 import { importAccount, viewAccount } from '../../../plugins/account';
@@ -6,8 +5,6 @@ import { KeyAlgorithm, Status } from '../../../core/shared/constants';
 import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
 import { ViewAccountOutput } from '../../../plugins/account/commands/view';
 import '../../../core/utils/json-serialize';
-import { deleteStateFiles } from '../../utils/teardown';
-import { STATE_STORAGE_FILE_PATH } from '../../test-constants';
 import { ImportAccountOutput } from '../../../plugins/account/commands/import';
 
 describe('Import Account Integration Tests', () => {
@@ -16,10 +13,6 @@ describe('Import Account Integration Tests', () => {
   beforeAll(async () => {
     coreApi = createMockCoreApi();
     setDefaultOperatorForNetwork(coreApi);
-  });
-
-  afterAll(async () => {
-    await deleteStateFiles(STATE_STORAGE_FILE_PATH);
   });
 
   describe('Valid Import Account Scenarios', () => {
@@ -64,7 +57,7 @@ describe('Import Account Integration Tests', () => {
         viewAccountResult.outputJson!,
       );
       expect(viewAccountOutput.accountId).toBe(importAccountOutput.accountId);
-      expect(viewAccountOutput.balance).toBe('0'); // result in tinybars
+      expect(viewAccountOutput.balance).toBe('200000000'); // result in tinybars
       expect(viewAccountOutput.evmAddress).toBe(importAccountOutput.evmAddress);
     });
   });

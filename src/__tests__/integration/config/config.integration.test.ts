@@ -1,10 +1,7 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { CoreApi } from '../../../core/core-api/core-api.interface';
 import { createMockCoreApi } from '../../mocks/core-api.mock';
 import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
 import '../../../core/utils/json-serialize';
-import { deleteStateFiles } from '../../utils/teardown';
-import { STATE_STORAGE_FILE_PATH } from '../../test-constants';
 import { listConfigOptions } from '../../../plugins/config/commands/list/handler';
 import { ListConfigOutput } from '../../../plugins/config/commands/list';
 import { Status } from '../../../core/shared/constants';
@@ -21,9 +18,6 @@ describe('Config Integration Tests', () => {
     setDefaultOperatorForNetwork(coreApi);
   });
 
-  afterAll(async () => {
-    await deleteStateFiles(STATE_STORAGE_FILE_PATH);
-  });
   it('should list config options', async () => {
     const listConfigResult = await listConfigOptions({
       args: {},
@@ -50,7 +44,7 @@ describe('Config Integration Tests', () => {
   it('should set config option and then verify it with with get method', async () => {
     const setConfigArgs: Record<string, unknown> = {
       option: 'ed25519_support_enabled',
-      value: true,
+      value: 'true',
     };
     const setConfigResult = await setConfigOption({
       args: setConfigArgs,
@@ -59,7 +53,6 @@ describe('Config Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-
     expect(setConfigResult.status).toBe(Status.Success);
     const setConfigOutput: SetConfigOutput = JSON.parse(
       setConfigResult.outputJson!,

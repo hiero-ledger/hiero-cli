@@ -5,4 +5,5 @@ node_modules/
 hardhat.config.js
 jest.config.js
 jest.*.config.js
-vitest.config.ts
+jest.integration.setup.js
+jest.integration.global.teardown.ts

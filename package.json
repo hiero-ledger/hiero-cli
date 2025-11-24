@@ -32,8 +32,8 @@
     "format:check": "prettier --check .",
     "prepare": "husky install",
     "test:unit": "cross-env JEST_SUITE_NAME=\"Unit Tests\" JEST_JUNIT_OUTPUT_NAME=\"junit.xml\" jest -c jest.unit.config.js --coverage --coverageDirectory=coverage/unit",
+    "test:integration": "cross-env JEST_SUITE_NAME=\"Integration Tests\" jest -c jest.integration.config.js --runInBand --detectOpenHandles",
     "test": "npm run test:unit",
-    "test:integration": "vitest run",
     "single-test": "jest",
     "dev": "ts-node src/hedera-cli.ts",
     "dev:watch": "nodemon --exec ts-node src/hedera-cli.ts",
@@ -77,8 +77,7 @@
     "prettier": "^3.5.3",
     "rimraf": "^5.0.5",
     "ts-jest": "^29.3.2",
-    "typescript": "^5.8.3",
-    "vitest": "^4.0.12"
+    "typescript": "^5.8.3"
   },
   "lint-staged": {
     "**/*.{js,ts,tsx}": [

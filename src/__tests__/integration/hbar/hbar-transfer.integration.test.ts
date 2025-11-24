@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { CoreApi } from '../../../core/core-api/core-api.interface';
 import { createMockCoreApi } from '../../mocks/core-api.mock';
 import { createAccount, viewAccount } from '../../../plugins/account';
@@ -7,8 +6,6 @@ import { CreateAccountOutput } from '../../../plugins/account/commands/create';
 import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
 import { ViewAccountOutput } from '../../../plugins/account/commands/view';
 import '../../../core/utils/json-serialize';
-import { deleteStateFiles } from '../../utils/teardown';
-import { STATE_STORAGE_FILE_PATH } from '../../test-constants';
 import { delay } from '../../utils/common-utils';
 import {
   transferHandler,
@@ -23,9 +20,6 @@ describe('HBAR Transfer Account Integration Tests', () => {
     setDefaultOperatorForNetwork(coreApi);
   });
 
-  afterAll(async () => {
-    await deleteStateFiles(STATE_STORAGE_FILE_PATH);
-  });
   it('should transfer HBAR from operator to account and then verify it with account view method', async () => {
     const createAccountArgs: Record<string, unknown> = {
       name: 'account-transfer',

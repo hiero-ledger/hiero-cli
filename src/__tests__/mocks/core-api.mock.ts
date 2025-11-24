@@ -17,7 +17,6 @@ import { TokenService } from '../../core/services/token/token-service.interface'
 import { TopicService } from '../../core/services/topic/topic-transaction-service.interface';
 import { TxExecutionService } from '../../core/services/tx-execution/tx-execution-service.interface';
 import { CoreApiConfig } from '../../core/core-api/core-api-config';
-import { MockLoggerService } from '../../core/services/logger/logger-service';
 import { ZustandGenericStateServiceImpl } from '../../core/services/state/state-service';
 import { ConfigServiceImpl } from '../../core/services/config/config-service';
 import { NetworkServiceImpl } from '../../core/services/network/network-service';
@@ -32,6 +31,7 @@ import { HbarServiceImpl } from '../../core/services/hbar/hbar-service';
 import { OutputServiceImpl } from '../../core/services/output/output-service';
 import { LedgerId } from '@hashgraph/sdk';
 import { STATE_STORAGE_FILE_PATH } from '../test-constants';
+import { MockTestLoggerService } from './mock-test-logger-service';
 
 export class CoreApiMockImplementation implements CoreApi {
   public account: AccountService;
@@ -49,7 +49,7 @@ export class CoreApiMockImplementation implements CoreApi {
   public output: OutputService;
 
   constructor(config: CoreApiConfig) {
-    this.logger = new MockLoggerService();
+    this.logger = new MockTestLoggerService();
     this.state = new ZustandGenericStateServiceImpl(
       this.logger,
       STATE_STORAGE_FILE_PATH,

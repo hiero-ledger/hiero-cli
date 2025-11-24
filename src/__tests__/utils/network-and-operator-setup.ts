@@ -2,6 +2,11 @@ import { z } from 'zod';
 import { CoreApi } from '../../core/core-api/core-api.interface';
 import { setOperatorHandler } from '../../plugins/network/commands/set-operator';
 import { useHandler } from '../../plugins/network/commands/use';
+import {
+  getOperatorHandler,
+  GetOperatorOutput,
+} from '../../plugins/network/commands/get-operator';
+import { Status } from '../../core/shared/constants';
 
 const envSchema = z.object({
   ACCOUNT_ID: z
@@ -16,29 +21,6 @@ const envSchema = z.object({
   }),
 });
 
-/**
- * Creates a Hedera client for testing purposes using environment variables.
- *
- * This function reads operator credentials from environment variables and creates
- * a pre-configured Hedera testnet client. The environment variables should be
- * defined in a `.env.test` file.
- *
- * Required environment variables:
- * - ACCOUNT_ID: The operator account ID in format "0.0.12345"
- * - PRIVATE_KEY: The operator private key in DER string format
- *
- * @throws {z.ZodError} When environment variables are missing or invalid
- * @returns {Client} A Hedera testnet client configured with the operator account and private key
- *
- * @example
- * ```typescript
- * // Ensure .env.test contains:
- * // ACCOUNT_ID=0.0.12345
- * // PRIVATE_KEY=302e020100300506032b657004220420...
- *
- * const client = getOperatorClientForTests();
- * ```
- */
 export const setDefaultOperatorForNetwork = async (
   coreApi: CoreApi,
 ): Promise<void> => {
@@ -60,14 +42,28 @@ export const setDefaultOperatorForNetwork = async (
     config: coreApi.config,
   });
 
-  const setOperatorArgs: Record<string, unknown> = {
-    operator: `${env.ACCOUNT_ID}:${env.PRIVATE_KEY}`,
-  };
-  await setOperatorHandler({
-    args: setOperatorArgs,
+  const getOperatorResult = await getOperatorHandler({
+    args: {},
     api: coreApi,
     state: coreApi.state,
     logger: coreApi.logger,
     config: coreApi.config,
   });
+  if (getOperatorResult.status == Status.Success) {
+    const getOperatorOutput: GetOperatorOutput = JSON.parse(
+      getOperatorResult.outputJson!,
+    );
+    if (getOperatorOutput.operator?.accountId != env.ACCOUNT_ID) {
+      const setOperatorArgs: Record<string, unknown> = {
+        operator: `${env.ACCOUNT_ID}:${env.PRIVATE_KEY}`,
+      };
+      await setOperatorHandler({
+        args: setOperatorArgs,
+        api: coreApi,
+        state: coreApi.state,
+        logger: coreApi.logger,
+        config: coreApi.config,
+      });
+    }
+  }
 };

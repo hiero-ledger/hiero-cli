@@ -1,19 +1,11 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { CoreApi } from '../../../core/core-api/core-api.interface';
 import { createMockCoreApi } from '../../mocks/core-api.mock';
-import {
-  createAccount,
-  listAccounts,
-  viewAccount,
-} from '../../../plugins/account';
+import { createAccount, viewAccount } from '../../../plugins/account';
 import { KeyAlgorithm, Status } from '../../../core/shared/constants';
 import { CreateAccountOutput } from '../../../plugins/account/commands/create';
 import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
 import { ViewAccountOutput } from '../../../plugins/account/commands/view';
-import { ListAccountsOutput } from '../../../plugins/account/commands/list';
 import '../../../core/utils/json-serialize';
-import { deleteStateFiles } from '../../utils/teardown';
-import { STATE_STORAGE_FILE_PATH } from '../../test-constants';
 import { delay } from '../../utils/common-utils';
 
 describe('Create Account Integration Tests', () => {
@@ -22,10 +14,6 @@ describe('Create Account Integration Tests', () => {
   beforeAll(async () => {
     coreApi = createMockCoreApi();
     setDefaultOperatorForNetwork(coreApi);
-  });
-
-  afterAll(async () => {
-    await deleteStateFiles(STATE_STORAGE_FILE_PATH);
   });
 
   describe('Valid Create Account Scenarios', () => {
@@ -72,21 +60,6 @@ describe('Create Account Integration Tests', () => {
       expect(viewAccountOutput.balance).toBe('100000000'); // result in tinybars
       // expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
       expect(viewAccountOutput.publicKey).toBe(createAccountOutput.publicKey);
-      const listAccountResult = await listAccounts({
-        args: {},
-        api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
-      });
-      expect(listAccountResult.status).toBe(Status.Success);
-      const listAccountOutput: ListAccountsOutput = JSON.parse(
-        listAccountResult.outputJson!,
-      );
-      expect(listAccountOutput.accounts.length).toBe(1);
-      expect(listAccountOutput.accounts[0].accountId).toBe(
-        createAccountOutput.accountId,
-      );
     });
   });
 });

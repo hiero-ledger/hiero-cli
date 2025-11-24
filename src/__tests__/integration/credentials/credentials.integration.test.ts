@@ -1,9 +1,6 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { CoreApi } from '../../../core/core-api/core-api.interface';
 import { createMockCoreApi } from '../../mocks/core-api.mock';
 import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
-import { deleteStateFiles } from '../../utils/teardown';
-import { STATE_STORAGE_FILE_PATH } from '../../test-constants';
 import { KeyAlgorithm, Status } from '../../../core/shared/constants';
 import { KmsCredentialRecord } from '../../../core/services/kms/kms-types.interface';
 import {
@@ -21,9 +18,6 @@ describe('Credentials Integration Tests', () => {
     setDefaultOperatorForNetwork(coreApi);
   });
 
-  afterAll(async () => {
-    await deleteStateFiles(STATE_STORAGE_FILE_PATH);
-  });
   it('should remove credential and then verify it with list', async () => {
     const record: KmsCredentialRecord = {
       keyRefId: 'test-key',
