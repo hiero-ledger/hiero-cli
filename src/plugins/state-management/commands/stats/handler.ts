@@ -15,7 +15,7 @@ export async function stateStats(
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  logger.log('📊 Getting state statistics...');
+  logger.info('📊 Getting state statistics...');
 
   try {
     // Get statistics from all namespaces

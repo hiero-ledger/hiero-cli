@@ -18,7 +18,7 @@ export async function clearAccounts(
   // Initialize Zustand state helper
   const accountState = new ZustandAccountStateHelper(api.state, logger);
 
-  logger.log('Clearing all accounts...');
+  logger.info('Clearing all accounts...');
 
   try {
     const accounts = accountState.listAccounts();

@@ -52,8 +52,8 @@ describe('hbar plugin - transfer command (unit)', () => {
       memo: 'test-transfer',
     });
     expect(signing.signAndExecute).toHaveBeenCalled();
-    expect(logger.log).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
-    expect(logger.log).toHaveBeenCalledWith(
+    expect(logger.info).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
+    expect(logger.info).toHaveBeenCalledWith(
       `[HBAR] Transfer submitted successfully, txId=${mockTransactionResults.success.transactionId}`,
     );
   });
@@ -119,7 +119,7 @@ describe('hbar plugin - transfer command (unit)', () => {
     expect(result.status).toBe(Status.Success);
 
     // This test should actually succeed now since we're providing valid parameters
-    expect(logger.log).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
+    expect(logger.info).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
   });
 
   test('returns failure when from equals to', async () => {
@@ -202,7 +202,7 @@ describe('hbar plugin - transfer command (unit)', () => {
       to: mockAccountIds.receiver,
       memo: undefined,
     });
-    expect(logger.log).toHaveBeenCalledWith(
+    expect(logger.info).toHaveBeenCalledWith(
       `[HBAR] Transfer submitted successfully, txId=${mockTransactionResults.successDefault.transactionId}`,
     );
   });

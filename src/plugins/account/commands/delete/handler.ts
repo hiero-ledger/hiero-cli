@@ -23,7 +23,7 @@ export async function deleteAccount(
   const name = args.args.name as string;
   const accountId = args.args.id as string;
 
-  logger.log(`Deleting account...`);
+  logger.info(`Deleting account...`);
 
   try {
     let accountToDelete;
@@ -54,7 +54,7 @@ export async function deleteAccount(
     for (const rec of aliasesForAccount) {
       api.alias.remove(rec.alias, currentNetwork);
       removedAliases.push(`${rec.alias} (${currentNetwork})`);
-      logger.log(`🧹 Removed alias '${rec.alias}' on ${currentNetwork}`);
+      logger.info(`🧹 Removed alias '${rec.alias}' on ${currentNetwork}`);
     }
 
     // Delete account from state

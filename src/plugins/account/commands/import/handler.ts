@@ -44,7 +44,7 @@ export async function importAccount(
 
     // Generate a unique name for the account
     const name = alias || `imported-${accountId.replace(/\./g, '-')}`;
-    logger.log(`Importing account: ${name} (${accountId})`);
+    logger.info(`Importing account: ${name} (${accountId})`);
 
     // Check if account name already exists
     if (accountState.hasAccount(name)) {

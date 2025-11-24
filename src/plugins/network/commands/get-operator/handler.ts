@@ -23,7 +23,7 @@ export async function getOperatorHandler(
       };
     }
 
-    logger.verbose(`Getting operator for network: ${targetNetwork}`);
+    logger.info(`Getting operator for network: ${targetNetwork}`);
 
     const operator = api.network.getOperator(targetNetwork);
 

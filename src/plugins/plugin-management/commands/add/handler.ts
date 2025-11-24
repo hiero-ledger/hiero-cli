@@ -27,7 +27,7 @@ export async function addPlugin(
   const { api, logger } = args;
   const { path: pluginPath } = args.args as { path: string };
 
-  logger.log('➕ Adding plugin from path...');
+  logger.info('➕ Adding plugin from path...');
 
   try {
     // @TODO: Normalize plugin paths (relative vs absolute) once CLI packaging
@@ -36,7 +36,7 @@ export async function addPlugin(
     const resolvedPath = path.resolve(String(pluginPath));
     const manifestPath = path.resolve(resolvedPath, 'manifest.js');
 
-    logger.log(`🔍 Loading plugin manifest from: ${manifestPath}`);
+    logger.info(`🔍 Loading plugin manifest from: ${manifestPath}`);
 
     const manifestModule = (await import(manifestPath)) as {
       default: PluginManifest;

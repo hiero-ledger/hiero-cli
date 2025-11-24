@@ -20,7 +20,7 @@ export async function getPluginInfo(
   const { api, logger } = args;
   const { name } = args.args as { name: string };
 
-  logger.log(`ℹ️  Getting plugin information: ${name}`);
+  logger.info(`ℹ️  Getting plugin information: ${name}`);
 
   try {
     const pluginManagement = api.pluginManagement;
@@ -40,7 +40,7 @@ export async function getPluginInfo(
     const basePath = entry.path ?? path.resolve('./dist/plugins', entry.name);
     const manifestPath = path.resolve(basePath, 'manifest.js');
 
-    logger.log(`🔍 Loading plugin manifest for info from: ${manifestPath}`);
+    logger.info(`🔍 Loading plugin manifest for info from: ${manifestPath}`);
 
     const manifestModule = (await import(manifestPath)) as {
       default: PluginManifest;

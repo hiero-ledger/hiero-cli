@@ -40,7 +40,7 @@ describe('account plugin - clear command (ADR-003)', () => {
     expect(MockedHelper).toHaveBeenCalledWith(args.api!.state, logger);
     expect(listAccountsMock).toHaveBeenCalledTimes(1);
     expect(clearAccountsMock).toHaveBeenCalledTimes(1);
-    expect(logger.log).toHaveBeenCalledWith('Clearing all accounts...');
+    expect(logger.info).toHaveBeenCalledWith('Clearing all accounts...');
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();

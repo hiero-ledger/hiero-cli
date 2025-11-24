@@ -15,7 +15,7 @@ export async function stateInfo(
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  logger.log('ℹ️  Getting state information...');
+  logger.info('ℹ️  Getting state information...');
 
   try {
     const namespaces = api.state.getNamespaces();

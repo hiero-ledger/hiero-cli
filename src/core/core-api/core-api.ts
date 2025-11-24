@@ -10,7 +10,7 @@ import { StateService } from '../services/state/state-service.interface';
 import { HederaMirrornodeService } from '../services/mirrornode/hedera-mirrornode-service.interface';
 import { NetworkService } from '../services/network/network-service.interface';
 import { ConfigService } from '../services/config/config-service.interface';
-import { Logger } from '../services/logger/logger-service.interface';
+import { Logger, LogLevel } from '../services/logger/logger-service.interface';
 import { AccountServiceImpl } from '../services/account/account-transaction-service';
 import { TxExecutionServiceImpl } from '../services/tx-execution/tx-execution-service';
 import { TopicServiceImpl } from '../services/topic/topic-transaction-service';
@@ -19,7 +19,7 @@ import { HederaMirrornodeServiceDefaultImpl } from '../services/mirrornode/heder
 import { LedgerId } from '@hashgraph/sdk';
 import { NetworkServiceImpl } from '../services/network/network-service';
 import { ConfigServiceImpl } from '../services/config/config-service';
-import { MockLoggerService } from '../services/logger/logger-service';
+import { LoggerService } from '../services/logger/logger-service';
 import { HbarService } from '../services/hbar/hbar-service.interface';
 import { HbarServiceImpl } from '../services/hbar/hbar-service';
 import { AliasService } from '../services/alias/alias-service.interface';
@@ -51,13 +51,19 @@ export class CoreApiImplementation implements CoreApi {
   public pluginManagement: PluginManagementService;
 
   constructor(config: CoreApiConfig) {
-    this.logger = new MockLoggerService();
+    this.logger = new LoggerService();
     this.state = new ZustandGenericStateServiceImpl(this.logger);
 
     this.network = new NetworkServiceImpl(this.state, this.logger);
 
     // Initialize config service first (needed by KMS)
     this.config = new ConfigServiceImpl(this.state);
+
+    // Configure logger level from config service
+    const configuredLogLevel = this.config.getOption<LogLevel>('log_level');
+    this.logger.setLevel(configuredLogLevel);
+
+    this.logger.info('🚀 Starting Hedera CLI...');
 
     // Initialize new services
     this.alias = new AliasServiceImpl(this.state, this.logger);

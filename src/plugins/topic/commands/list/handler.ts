@@ -26,7 +26,7 @@ export async function listTopics(
   const networkFilter = args.args.network as string | undefined;
 
   // Log progress indicator (not final output)
-  logger.log('Listing topics...');
+  logger.info('Listing topics...');
 
   try {
     // Step 1: Get all topics from state

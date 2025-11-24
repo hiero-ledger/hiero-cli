@@ -46,7 +46,7 @@ export async function createTopic(
 
   // Log progress indicator (not final output)
   if (memo) {
-    logger.log(`Creating topic with memo: ${memo}`);
+    logger.info(`Creating topic with memo: ${memo}`);
   }
 
   try {

@@ -89,15 +89,15 @@ export async function associateToken(
     ? accountId
     : accountIdOrAlias;
 
-  logger.log(`🔑 Using account: ${accountId}`);
-  logger.log(`🔑 Will sign with account key`);
-  logger.log(`Associating token ${tokenId} with account ${accountId}`);
+  logger.info(`🔑 Using account: ${accountId}`);
+  logger.info(`🔑 Will sign with account key`);
+  logger.info(`Associating token ${tokenId} with account ${accountId}`);
 
   const saveAssociationToState = () => {
     const tokenData = tokenState.getToken(tokenId);
     if (tokenData) {
       tokenState.addTokenAssociation(tokenId, accountId, accountName);
-      logger.log(`   Association saved to token state`);
+      logger.info(`   Association saved to token state`);
     }
   };
 
@@ -115,7 +115,7 @@ export async function associateToken(
     );
 
     if (isAssociated) {
-      logger.log(
+      logger.info(
         `Token ${tokenId} is already associated with account ${accountId}`,
       );
 
@@ -157,7 +157,7 @@ export async function associateToken(
         error instanceof ReceiptStatusError &&
         error.status === HederaStatus.TokenAlreadyAssociatedToAccount
       ) {
-        logger.log(
+        logger.info(
           `Token ${tokenId} is already associated with account ${accountId}`,
         );
         saveAssociationToState();

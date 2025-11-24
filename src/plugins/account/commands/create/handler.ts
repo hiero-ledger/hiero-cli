@@ -116,7 +116,7 @@ export async function createAccount(
   const name = alias || `account-${Date.now()}`;
 
   // Generate a unique name for the account
-  logger.log(`Creating account with name: ${alias}`);
+  logger.info(`Creating account with name: ${alias}`);
 
   try {
     // 1. Generate a new key pair for the account

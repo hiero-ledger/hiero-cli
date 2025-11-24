@@ -160,7 +160,7 @@ export async function findMessage(
   }
 
   // Log progress indicator (not final output)
-  logger.log(`Finding messages in topic: ${topicId}`);
+  logger.info(`Finding messages in topic: ${topicId}`);
 
   if (sequence !== undefined && sequence <= 0) {
     return {

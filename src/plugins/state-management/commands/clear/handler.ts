@@ -18,7 +18,7 @@ export async function clearState(
   const namespace = args.args.namespace as string | undefined;
   const confirm = args.args.confirm as boolean | undefined;
 
-  logger.log('🗑️ Clearing state data...');
+  logger.info('🗑️ Clearing state data...');
 
   try {
     if (!confirm) {

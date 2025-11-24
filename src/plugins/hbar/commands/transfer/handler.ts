@@ -51,7 +51,7 @@ function getDefaultFromAccount(
   if (operator) {
     const { accountId, keyRefId } = operator;
 
-    logger.log(`[HBAR] Using default operator as from: ${accountId}`);
+    logger.info(`[HBAR] Using default operator as from: ${accountId}`);
     return { success: true, accountId, keyRefId };
   }
 
@@ -109,7 +109,7 @@ function resolveFromAccount(
         ['hbar:transfer', 'temporary'],
       );
 
-      logger.log(
+      logger.info(
         `[HBAR] Using from as account ID with private key: ${accountId} (keyType: ${keyTypeToUse})`,
       );
       return {
@@ -142,7 +142,7 @@ function resolveFromAccount(
     };
   }
 
-  logger.log(`[HBAR] Resolved from alias: ${from} -> ${fromAccountId}`);
+  logger.info(`[HBAR] Resolved from alias: ${from} -> ${fromAccountId}`);
   return {
     success: true,
     fromAccountId,
@@ -155,7 +155,7 @@ export async function transferHandler(
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  logger.log('[HBAR] Transfer command invoked');
+  logger.info('[HBAR] Transfer command invoked');
 
   // Get keyManager from args or fallback to config
   const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
@@ -223,12 +223,12 @@ export async function transferHandler(
 
     if (EntityIdSchema.safeParse(to).success) {
       toAccountId = to;
-      logger.log(`[HBAR] Using to as account ID: ${to}`);
+      logger.info(`[HBAR] Using to as account ID: ${to}`);
     } else {
       const toAlias = api.alias.resolve(to, 'account', currentNetwork);
       if (toAlias) {
         toAccountId = toAlias.entityId || to;
-        logger.log(`[HBAR] Resolved to alias: ${to} -> ${toAccountId}`);
+        logger.info(`[HBAR] Resolved to alias: ${to} -> ${toAccountId}`);
       } else {
         return {
           status: Status.Failure,
@@ -237,7 +237,7 @@ export async function transferHandler(
       }
     }
 
-    logger.log(
+    logger.info(
       `[HBAR] Transferring ${amount.toString()} tinybars from ${fromAccountId} to ${toAccountId}`,
     );
 
@@ -261,7 +261,7 @@ export async function transferHandler(
       };
     }
 
-    logger.log(
+    logger.info(
       `[HBAR] Transfer submitted successfully, txId=${result.transactionId}`,
     );
 

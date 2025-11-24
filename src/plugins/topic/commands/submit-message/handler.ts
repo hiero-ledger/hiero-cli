@@ -42,7 +42,7 @@ export async function submitMessage(
   }
 
   // Log progress indicator (not final output)
-  logger.log(`Submitting message to topic: ${topicId}`);
+  logger.info(`Submitting message to topic: ${topicId}`);
 
   try {
     // Step 2: Load topic data from state

@@ -20,7 +20,7 @@ export async function stateBackup(
   // Extract command arguments
   const outputPath = args.args.dest as string | undefined;
 
-  logger.log('💾 Creating state backup...');
+  logger.info('💾 Creating state backup...');
 
   try {
     // Create backup data from all namespaces

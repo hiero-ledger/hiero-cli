@@ -52,7 +52,7 @@ describe('account plugin - view command (ADR-003)', () => {
 
     const result = await viewAccount(args);
 
-    expect(logger.log).toHaveBeenCalledWith('Viewing account details: acc1');
+    expect(logger.info).toHaveBeenCalledWith('Viewing account details: acc1');
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.1111');
 
     expect(result.status).toBe(Status.Success);
@@ -96,7 +96,7 @@ describe('account plugin - view command (ADR-003)', () => {
 
     const result = await viewAccount(args);
 
-    expect(logger.log).toHaveBeenCalledWith('Viewing account details: acc2');
+    expect(logger.info).toHaveBeenCalledWith('Viewing account details: acc2');
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.2222');
 
     expect(result.status).toBe(Status.Success);

@@ -19,7 +19,7 @@ export async function viewAccount(
   // Extract command arguments
   const accountIdOrNameOrAlias = args.args.account as string;
 
-  logger.log(`Viewing account details: ${accountIdOrNameOrAlias}`);
+  logger.info(`Viewing account details: ${accountIdOrNameOrAlias}`);
 
   try {
     // Resolve account identifier (could be name, account ID, or alias)
@@ -34,7 +34,7 @@ export async function viewAccount(
     );
     if (account && account.entityId) {
       accountId = account.entityId;
-      logger.log(`Found account in state: ${account.alias}`);
+      logger.info(`Found account in state: ${account.alias}`);
     } else {
       const accountIdParseResult = EntityIdSchema.safeParse(
         accountIdOrNameOrAlias,

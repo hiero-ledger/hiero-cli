@@ -13,7 +13,7 @@ export async function listCredentials(
 ): Promise<CommandExecutionResult> {
   const { logger, api } = args;
 
-  logger.log('🔐 Retrieving stored credentials...');
+  logger.info('🔐 Retrieving stored credentials...');
 
   try {
     const credentials = api.kms.list();

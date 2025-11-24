@@ -160,7 +160,7 @@ export async function createHandler(
     };
   }
 
-  logger.log(`Creating item: ${name}`);
+  logger.info(`Creating item: ${name}`);
 
   try {
     const result = await api.account.createAccount({
@@ -316,7 +316,6 @@ describe('Create Command', () => {
         getValue: jest.fn(),
       },
       logger: {
-        log: jest.fn(),
         error: jest.fn(),
         warn: jest.fn(),
       },

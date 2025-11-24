@@ -15,7 +15,7 @@ export async function enablePlugin(
   const { api, logger } = args;
   const { name } = args.args as { name: string };
 
-  logger.log('✅ Enabling plugin...');
+  logger.info('✅ Enabling plugin...');
 
   try {
     const result = api.pluginManagement.enablePlugin(name);

@@ -3,6 +3,7 @@ import {
   ConfigService,
 } from './config-service.interface';
 import { KEY_MANAGER_VALUES } from '../kms/kms-types.interface';
+import { LOG_LEVEL_VALUES } from '../logger/logger-service.interface';
 import { StateService } from '../state/state-service.interface';
 
 const CONFIG_NAMESPACE = 'config';
@@ -30,6 +31,11 @@ const CONFIG_OPTIONS: Record<string, OptionSpec> = {
   ed25519_support_enabled: {
     type: 'boolean',
     default: false,
+  },
+  log_level: {
+    type: 'enum',
+    default: 'info',
+    allowedValues: LOG_LEVEL_VALUES,
   },
   default_key_manager: {
     type: 'enum',

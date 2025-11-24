@@ -117,7 +117,7 @@ export async function transferToken(
       );
     }
 
-    logger.log("No 'from' account provided, using default operator account.");
+    logger.info("No 'from' account provided, using default operator account.");
 
     resolvedFromAccount = {
       accountId: operator.accountId,
@@ -130,8 +130,8 @@ export async function transferToken(
   const fromAccountId = resolvedFromAccount.accountId;
   const signerKeyRefId = resolvedFromAccount.accountKeyRefId;
 
-  logger.log(`🔑 Using from account: ${fromAccountId}`);
-  logger.log(`🔑 Will sign with from account key`);
+  logger.info(`🔑 Using from account: ${fromAccountId}`);
+  logger.info(`🔑 Will sign with from account key`);
 
   // Resolve to parameter (alias or account-id)
   const resolvedToAccount = resolveDestinationAccountParameter(
@@ -150,7 +150,7 @@ export async function transferToken(
 
   const toAccountId = resolvedToAccount.accountId;
 
-  logger.log(
+  logger.info(
     `Transferring ${rawAmount.toString()} tokens of ${tokenId} from ${fromAccountId} to ${toAccountId}`,
   );
 

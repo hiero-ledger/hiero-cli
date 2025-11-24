@@ -18,7 +18,7 @@ export async function listState(
   // Extract command arguments
   const namespace = args.args.namespace as string | undefined;
 
-  logger.log('📋 Listing state data...');
+  logger.info('📋 Listing state data...');
 
   try {
     const namespaces = api.state.getNamespaces();

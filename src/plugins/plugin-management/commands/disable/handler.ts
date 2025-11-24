@@ -16,7 +16,7 @@ export async function disablePlugin(
   const { api, logger } = args;
   const { name } = args.args as { name: string };
 
-  logger.log('➖ Disabling plugin...');
+  logger.info('➖ Disabling plugin...');
 
   try {
     const result = api.pluginManagement.disablePlugin(name);

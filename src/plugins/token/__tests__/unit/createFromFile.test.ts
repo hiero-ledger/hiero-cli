@@ -830,8 +830,10 @@ describe('createTokenFromFileHandler', () => {
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
 
-      expect(logger.log).toHaveBeenCalledWith('Creating token from file: test');
-      expect(logger.log).toHaveBeenCalledWith(
+      expect(logger.info).toHaveBeenCalledWith(
+        'Creating token from file: test',
+      );
+      expect(logger.info).toHaveBeenCalledWith(
         '🔑 Using treasury key for signing transaction',
       );
     });

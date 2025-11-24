@@ -105,11 +105,11 @@ export async function setOperatorHandler(
 
     const existingOperator = api.network.getOperator(targetNetwork);
     if (existingOperator) {
-      logger.verbose(
+      logger.info(
         `Overwriting existing operator for ${targetNetwork}: ${existingOperator.accountId} -> ${resolvedAccountId}`,
       );
     } else {
-      logger.verbose(`Setting new operator for network ${targetNetwork}`);
+      logger.info(`Setting new operator for network ${targetNetwork}`);
     }
 
     api.network.setOperator(targetNetwork, {

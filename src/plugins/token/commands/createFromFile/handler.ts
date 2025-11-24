@@ -189,7 +189,7 @@ function resolveTreasuryFromDefinition(
       throw new Error('Treasury parameter is required');
     }
 
-    logger.log(`🏦 Using treasury: ${resolvedTreasury.treasuryId}`);
+    logger.info(`🏦 Using treasury: ${resolvedTreasury.treasuryId}`);
 
     return {
       treasuryId: resolvedTreasury.treasuryId,
@@ -205,7 +205,7 @@ function resolveTreasuryFromDefinition(
     'token:treasury',
     `token:${tokenName}`,
   ]);
-  logger.log(`🏦 Using treasury (legacy format): ${treasuryDef.accountId}`);
+  logger.info(`🏦 Using treasury (legacy format): ${treasuryDef.accountId}`);
 
   return {
     treasuryId: treasuryDef.accountId,
@@ -280,7 +280,7 @@ async function processTokenAssociations(
     return [];
   }
 
-  logger.log(`   Creating ${associations.length} token associations...`);
+  logger.info(`   Creating ${associations.length} token associations...`);
   const successfulAssociations: Array<{ name: string; accountId: string }> = [];
 
   for (const association of associations) {
@@ -306,7 +306,7 @@ async function processTokenAssociations(
       );
 
       if (associateResult.success) {
-        logger.log(
+        logger.info(
           `   ✅ Associated account ${association.accountId} with token`,
         );
         successfulAssociations.push({
@@ -346,7 +346,7 @@ export async function createTokenFromFile(
     keyManagerArg ||
     api.config.getOption<KeyManagerName>('default_key_manager');
 
-  logger.log(`Creating token from file: ${filename}`);
+  logger.info(`Creating token from file: ${filename}`);
 
   try {
     // 1. Read and validate token file
@@ -384,7 +384,7 @@ export async function createTokenFromFile(
       })),
     });
 
-    logger.log(`🔑 Using treasury key for signing transaction`);
+    logger.info(`🔑 Using treasury key for signing transaction`);
     const result = await api.txExecution.signAndExecuteWith(
       tokenCreateTransaction,
       [treasury.treasuryKeyRefId],
@@ -415,7 +415,7 @@ export async function createTokenFromFile(
 
     // 8. Save token to state
     tokenState.saveToken(result.tokenId, tokenData);
-    logger.log(`   Token data saved to state`);
+    logger.info(`   Token data saved to state`);
 
     // 9. Store script arguments if provided
     if (scriptArgs.length > 0) {

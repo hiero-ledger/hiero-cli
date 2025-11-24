@@ -14,7 +14,7 @@ export async function removeCredentials(
   const { logger, api } = args;
   const { id } = args.args as { id: string };
 
-  logger.log(`🗑️  Removing credentials for id: ${id}`);
+  logger.info(`🗑️  Removing credentials for id: ${id}`);
 
   try {
     // Remove the credentials

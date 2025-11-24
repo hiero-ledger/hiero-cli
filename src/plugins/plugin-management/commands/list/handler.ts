@@ -13,7 +13,7 @@ export async function getPluginList(
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  logger.log('📋 Getting plugin list...');
+  logger.info('📋 Getting plugin list...');
 
   try {
     const entries = api.pluginManagement.listPlugins();

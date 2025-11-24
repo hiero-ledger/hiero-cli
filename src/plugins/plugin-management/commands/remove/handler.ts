@@ -16,7 +16,7 @@ export async function removePlugin(
   const { api, logger } = args;
   const { name } = args.args as { name: string };
 
-  logger.log('🗑️ Removing plugin from state...');
+  logger.info('🗑️ Removing plugin from state...');
 
   try {
     const result = api.pluginManagement.removePlugin(name);
