@@ -1,16 +1,16 @@
-import { submitMessage } from '../commands/submit-message/handler';
-import { ZustandTopicStateHelper } from '../zustand-state-helper';
-import type { CoreApi } from '../../../core/core-api/core-api.interface';
-import type { TransactionResult } from '../../../core/services/tx-execution/tx-execution-service.interface';
-import type { TopicData } from '../schema';
-import type { SubmitMessageOutput } from '../commands/submit-message/output';
-import { Status } from '../../../core/shared/constants';
+import { submitMessage } from '../../commands/submit-message/handler';
+import { ZustandTopicStateHelper } from '../../zustand-state-helper';
+import type { CoreApi } from '../../../../core/core-api/core-api.interface';
+import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
+import type { TopicData } from '../../schema';
+import type { SubmitMessageOutput } from '../../commands/submit-message/output';
+import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeArgs,
   makeNetworkMock,
   makeAliasMock,
-} from '../../../core/shared/__tests__/helpers/mocks';
+} from '../../../../core/shared/__tests__/helpers/mocks';
 
 jest.mock('../zustand-state-helper', () => ({
   ZustandTopicStateHelper: jest.fn(),
