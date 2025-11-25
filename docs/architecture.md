@@ -39,7 +39,6 @@ The Hedera CLI is built on a plugin-based architecture designed to be extensible
 │  ├── Credentials Plugin                                     │
 │  ├── Config Plugin                                          │
 │  ├── Plugin Management Plugin                               │
-│  ├── State Management Plugin                                │
 │  └── [Custom Plugins]                                       │
 └─────────────────────────────────────────────────────────────┘
 ```

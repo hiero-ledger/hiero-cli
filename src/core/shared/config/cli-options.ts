@@ -4,7 +4,6 @@ import tokenPluginManifest from '../../../plugins/token/manifest';
 import networkPluginManifest from '../../../plugins/network/manifest';
 import pluginManagementManifest from '../../../plugins/plugin-management/manifest';
 import credentialsPluginManifest from '../../../plugins/credentials/manifest';
-import stateManagementPluginManifest from '../../../plugins/state-management/manifest';
 import topicPluginManifest from '../../../plugins/topic/manifest';
 import hbarPluginManifest from '../../../plugins/hbar/manifest';
 import configPluginManifest from '../../../plugins/config/manifest';
@@ -29,7 +28,6 @@ export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
   networkPluginManifest,
   pluginManagementManifest,
   credentialsPluginManifest,
-  stateManagementPluginManifest,
   topicPluginManifest,
   hbarPluginManifest,
   configPluginManifest,

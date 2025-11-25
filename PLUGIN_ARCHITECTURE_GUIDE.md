@@ -689,8 +689,13 @@ node dist/hedera-cli.js my-plugin create --name test
 ### 3. State Inspection
 
 ```bash
-# View plugin state
-node dist/hedera-cli.js state-management list --namespace my-plugin-data
+# View plugin state stored under .hedera-cli/state
+
+# macOS / Linux
+cat .hedera-cli/state/my-plugin-data-storage.json | jq '.'
+
+# Windows PowerShell
+Get-Content .hedera-cli/state/my-plugin-data-storage.json | ConvertFrom-Json | ConvertTo-Json -Depth 10
 ```
 
 ## 📖 Related Documentation

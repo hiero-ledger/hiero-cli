@@ -69,7 +69,7 @@ npm run build
 
 ### 4. CLI Initialization
 
-The Hedera CLI initializes automatically when you run any command. The CLI loads default plugins (account, token, network, plugin-management, credentials, state-management, topic, and hbar) and registers their commands. No manual setup is required.
+The Hedera CLI initializes automatically when you run any command. The CLI loads default plugins (account, token, network, plugin-management, credentials, topic, hbar, and config) and registers their commands. No manual setup is required.
 
 When you first run the CLI, it will:
 
@@ -205,9 +205,9 @@ The Hedera CLI is built on a plugin architecture. The following default plugins 
 - **[Network Plugin](src/plugins/network/README.md)** - Switch networks, manage operator credentials, and check network health
 - **[HBAR Plugin](src/plugins/hbar/README.md)** - Transfer HBAR between accounts
 - **[Credentials Plugin](src/plugins/credentials/README.md)** - Manage operator credentials and keys
-- **[State Management Plugin](src/plugins/state-management/README.md)** - Manage state data, create backups, and view statistics
 - **[Plugin Management Plugin](src/plugins/plugin-management/README.md)** - Add, remove, enable/disable, and inspect plugins
 - **[Topic Plugin](src/plugins/topic/README.md)** - Create topics and manage topic messages
+- **[Config Plugin](src/plugins/config/README.md)** - Inspect and update CLI configuration values
 
 Each plugin has its own README with detailed documentation about available commands, usage examples, and architecture details. Click on the plugin name above to learn more.
 

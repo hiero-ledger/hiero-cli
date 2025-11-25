@@ -27,8 +27,8 @@ hedera-cli/
 │   │   ├── network/            # Network selection and operator management
 │   │   ├── hbar/               # HBAR transfer plugin
 │   │   ├── credentials/        # Credentials plugin
+│   │   ├── config/             # CLI configuration plugin
 │   │   ├── plugin-management/  # Plugin management plugin
-│   │   ├── state-management/   # State management plugin
 │   │   └── topic/              # Topic management plugin
 │   └── hedera-cli.ts           # Main CLI entry point
 ├── docs/                       # Technical documentation
