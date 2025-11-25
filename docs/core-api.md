@@ -52,7 +52,6 @@ interface CreateAccountParams {
 interface AccountCreateResult {
   transaction: AccountCreateTransaction;
   publicKey: string;
-  evmAddress: string;
 }
 ```
 

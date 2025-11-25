@@ -18,6 +18,12 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandAccountStateHelper as jest.Mock;
 
+const MOCK_ECDSA_PUBLIC_KEY =
+  '026e876ad28d7d8f79013ed83272b9bc89162d657f6cd912ef047e651407144c1c';
+const MOCK_ED25519_PUBLIC_KEY =
+  '4cd05bfda79692efc30a8011e81b48da825a3a5eedcbdf73c3f6e341a0303978';
+const MOCK_ECDSA_EVM_ADDRESS = '0xee48e473011fb564a4afbd19bc9db9ab46187c11';
+
 describe('account plugin - create command (ADR-003)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -32,8 +38,7 @@ describe('account plugin - create command (ADR-003)', () => {
       makeApiMocksForAccountCreate({
         createAccountImpl: jest.fn().mockResolvedValue({
           transaction: {},
-          publicKey: 'pub-key-test',
-          evmAddress: '0x000000000000000000000000000000000000abcd',
+          publicKey: MOCK_ECDSA_PUBLIC_KEY,
         }),
         signAndExecuteImpl: jest.fn().mockResolvedValue({
           transactionId: 'tx-123',
@@ -91,6 +96,7 @@ describe('account plugin - create command (ADR-003)', () => {
         type: KeyAlgorithm.ECDSA,
         network: 'testnet',
         keyRefId: 'kr_test123',
+        evmAddress: MOCK_ECDSA_EVM_ADDRESS,
       }),
     );
 
@@ -104,10 +110,8 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.network).toBe('testnet');
     expect(output.transactionId).toBe('tx-123');
-    expect(output.evmAddress).toBe(
-      '0x000000000000000000000000000000000000abcd',
-    );
-    expect(output.publicKey).toBe('pub-key-test');
+    expect(output.evmAddress).toBe(MOCK_ECDSA_EVM_ADDRESS);
+    expect(output.publicKey).toBe(MOCK_ECDSA_PUBLIC_KEY);
   });
 
   test('returns failure when signAndExecute returns failure', async () => {
@@ -119,8 +123,7 @@ describe('account plugin - create command (ADR-003)', () => {
         createAccountImpl: jest.fn().mockResolvedValue({
           transaction: {},
           privateKey: 'priv',
-          publicKey: 'pub',
-          evmAddress: '0x000000000000000000000000000000000000abcd',
+          publicKey: MOCK_ECDSA_PUBLIC_KEY,
         }),
         signAndExecuteImpl: jest.fn().mockResolvedValue({
           transactionId: 'tx-123',
@@ -186,8 +189,7 @@ describe('account plugin - create command (ADR-003)', () => {
       makeApiMocksForAccountCreate({
         createAccountImpl: jest.fn().mockResolvedValue({
           transaction: {},
-          publicKey: 'pub-key-ecdsa',
-          evmAddress: '0x000000000000000000000000000000000000ecds',
+          publicKey: MOCK_ECDSA_PUBLIC_KEY,
         }),
         signAndExecuteImpl: jest.fn().mockResolvedValue({
           transactionId: 'tx-ecdsa',
@@ -229,6 +231,8 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     const output: CreateAccountOutput = JSON.parse(result.outputJson!);
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
+    expect(output.evmAddress).toBe(MOCK_ECDSA_EVM_ADDRESS);
+    expect(output.publicKey).toBe(MOCK_ECDSA_PUBLIC_KEY);
   });
 
   test('creates account with ED25519 key type', async () => {
@@ -240,8 +244,7 @@ describe('account plugin - create command (ADR-003)', () => {
       makeApiMocksForAccountCreate({
         createAccountImpl: jest.fn().mockResolvedValue({
           transaction: {},
-          publicKey: 'pub-key-ed25519',
-          evmAddress: '0x000000000000000000000000000000000000ed25',
+          publicKey: MOCK_ED25519_PUBLIC_KEY,
         }),
         signAndExecuteImpl: jest.fn().mockResolvedValue({
           transactionId: 'tx-ed25519',
@@ -283,5 +286,9 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     const output: CreateAccountOutput = JSON.parse(result.outputJson!);
     expect(output.type).toBe(KeyAlgorithm.ED25519);
+    expect(output.evmAddress).toBe(
+      '0x0000000000000000000000000000000000001e61',
+    );
+    expect(output.publicKey).toBe(MOCK_ED25519_PUBLIC_KEY);
   });
 });

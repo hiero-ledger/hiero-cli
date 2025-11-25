@@ -27,7 +27,6 @@ export interface AccountService {
 export interface AccountCreateResult {
   transaction: AccountCreateTransaction;
   publicKey: string;
-  evmAddress: string;
 }
 
 // Parameter types for account operations

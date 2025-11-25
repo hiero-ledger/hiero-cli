@@ -2,7 +2,6 @@
  * Real implementation of Account Transaction Service
  * Uses Hedera SDK to create actual transactions and queries
  */
-import { createHash } from 'crypto';
 import { KeyAlgorithm } from '../../shared/constants';
 import {
   AccountCreateTransaction,
@@ -54,9 +53,6 @@ export class AccountServiceImpl implements AccountService {
       transaction.setMaxAutomaticTokenAssociations(params.maxAutoAssociations);
     }
 
-    // Generate EVM address from the public key
-    const evmAddress = this.generateEvmAddress(params.publicKey);
-
     this.logger.debug(
       `[ACCOUNT TX] Created transaction for account with key: ${params.publicKey}`,
     );
@@ -64,15 +60,7 @@ export class AccountServiceImpl implements AccountService {
     return Promise.resolve({
       transaction,
       publicKey: params.publicKey,
-      evmAddress,
     });
-  }
-
-  private generateEvmAddress(publicKeyString: string): string {
-    // This is a simplified EVM address generation
-    // In a real implementation, you'd use proper cryptographic methods
-    const hash = createHash('sha256').update(publicKeyString).digest('hex');
-    return '0x' + hash.substring(0, 40);
   }
 
   /**

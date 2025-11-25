@@ -16,6 +16,7 @@ import { Hbar } from '@hashgraph/sdk';
 import type { KeyAlgorithmType as KeyAlgorithmType } from '../../../../core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '../../../../core/shared/constants';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
+import { buildAccountEvmAddress } from '../../utils/account-address';
 
 /**
  * Validates that an account has sufficient balance for an operation.
@@ -153,15 +154,25 @@ export async function createAccount(
         });
       }
 
+      if (!result.accountId) {
+        throw new Error(
+          'Transaction completed but did not return an account ID, unable to derive addresses',
+        );
+      }
+
+      const evmAddress = buildAccountEvmAddress({
+        accountId: result.accountId,
+        publicKey: accountCreateResult.publicKey,
+        keyType,
+      });
+
       // 5. Store account metadata in plugin state (no private key)
       const accountData: AccountData = {
         name,
-        accountId: result.accountId || '0.0.123456',
+        accountId: result.accountId,
         type: keyType as KeyAlgorithm,
         publicKey: accountCreateResult.publicKey,
-        evmAddress: accountCreateResult.evmAddress,
-        solidityAddress: accountCreateResult.evmAddress,
-        solidityAddressFull: accountCreateResult.evmAddress,
+        evmAddress,
         keyRefId,
         network: api.network.getCurrentNetwork() as AccountData['network'],
       };
@@ -176,7 +187,7 @@ export async function createAccount(
         ...(alias && { alias }),
         network: accountData.network,
         transactionId: result.transactionId || '',
-        evmAddress: accountData.evmAddress,
+        evmAddress,
         publicKey: accountData.publicKey,
       };
 

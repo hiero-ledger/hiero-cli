@@ -25,8 +25,6 @@ export interface Account {
   type: KeyAlgorithmType;
   publicKey: string;
   evmAddress: string;
-  solidityAddress: string;
-  solidityAddressFull: string;
   privateKey: string;
   network: 'mainnet' | 'testnet' | 'previewnet';
 }

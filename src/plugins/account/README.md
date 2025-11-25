@@ -174,8 +174,6 @@ interface AccountData {
   type: KeyAlgorithm; // Key algorithm (ecdsa or ed25519)
   publicKey: string; // Public key
   evmAddress: string; // EVM address
-  solidityAddress: string; // Solidity address (short)
-  solidityAddressFull: string; // Solidity address (full)
   network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
 }
 ```

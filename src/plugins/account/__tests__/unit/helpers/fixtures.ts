@@ -29,8 +29,6 @@ export const mockAccountData = {
     type: KeyAlgorithm.ECDSA,
     publicKey: 'pk',
     evmAddress: '0x0000000000000000000000000000000000000000',
-    solidityAddress: 'sa',
-    solidityAddressFull: 'safull',
     network: 'testnet',
   } satisfies AccountData,
   testAccount: {
@@ -40,8 +38,6 @@ export const mockAccountData = {
     type: KeyAlgorithm.ECDSA,
     publicKey: 'pk',
     evmAddress: '0x0000000000000000000000000000000000000000',
-    solidityAddress: 'sa',
-    solidityAddressFull: 'safull',
     network: 'testnet',
   } satisfies AccountData,
   ed25519Account: {
@@ -51,8 +47,6 @@ export const mockAccountData = {
     type: KeyAlgorithm.ED25519,
     publicKey: 'pk',
     evmAddress: '0x0000000000000000000000000000000000000000',
-    solidityAddress: 'sa',
-    solidityAddressFull: 'safull',
     network: 'testnet',
   } satisfies AccountData,
 };

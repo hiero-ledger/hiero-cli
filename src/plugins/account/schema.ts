@@ -44,10 +44,6 @@ export const AccountDataSchema = z.object({
       'EVM address must be 40 hex characters starting with 0x',
     ),
 
-  solidityAddress: z.string().min(1, 'Solidity address is required'),
-
-  solidityAddressFull: z.string().min(1, 'Solidity address full is required'),
-
   network: z.enum(SUPPORTED_NETWORKS, {
     errorMap: () => ({
       message: 'Network must be one of: mainnet, testnet, previewnet, localnet',
