@@ -10,7 +10,7 @@ import {
   makeArgs,
   makeNetworkMock,
   makeAliasMock,
-} from '../../../../core/shared/__tests__/helpers/mocks';
+} from '../../../../__tests__/mocks/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTopicStateHelper: jest.fn(),

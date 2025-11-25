@@ -13,7 +13,7 @@ import {
   mockListTokens,
   mockTokenStats,
 } from './helpers/fixtures';
-import { makeArgs } from '../../../../core/shared/__tests__/helpers/mocks';
+import { makeArgs } from '../../../../__tests__/mocks/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),

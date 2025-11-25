@@ -14,7 +14,7 @@ import {
   makeAliasMock,
   makeSigningMock,
   makeStateMock,
-} from '../../../../../core/shared/__tests__/helpers/mocks';
+} from '../../../../../__tests__/mocks/mocks';
 import { mockTransferTransactionResults } from './fixtures';
 
 /**

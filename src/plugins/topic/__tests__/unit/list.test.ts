@@ -3,10 +3,7 @@ import { ZustandTopicStateHelper } from '../../zustand-state-helper';
 import type { CoreApi } from '../../../../core';
 import type { TopicData } from '../../schema';
 import type { ListTopicsOutput } from '../../commands/list';
-import {
-  makeLogger,
-  makeArgs,
-} from '../../../../core/shared/__tests__/helpers/mocks';
+import { makeLogger, makeArgs } from '../../../../__tests__/mocks/mocks';
 import { Status } from '../../../../core/shared/constants';
 
 jest.mock('../../zustand-state-helper', () => ({

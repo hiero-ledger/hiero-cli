@@ -3,10 +3,7 @@ import type { ListAccountsOutput } from '../../commands/list';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import type { CoreApi } from '../../../../core/core-api/core-api.interface';
 import { Status } from '../../../../core/shared/constants';
-import {
-  makeLogger,
-  makeArgs,
-} from '../../../../core/shared/__tests__/helpers/mocks';
+import { makeLogger, makeArgs } from '../../../../__tests__/mocks/mocks';
 import { makeAccountData } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({

@@ -12,7 +12,7 @@ import {
   makeKmsMock,
   makeAliasMock,
   makeMirrorMock,
-} from '../../../../core/shared/__tests__/helpers/mocks';
+} from '../../../../__tests__/mocks/mocks';
 import { NetworkService } from '../../../../core/services/network/network-service.interface';
 
 jest.mock('../../zustand-state-helper', () => ({
