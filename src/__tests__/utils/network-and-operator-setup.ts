@@ -12,8 +12,29 @@ const envSchema = z.object({
   ACCOUNT_ID: z
     .string()
     .min(1, 'ACCOUNT_ID is required')
-    .regex(/^0\.0\.\d+$/, 'ACCOUNT_ID must be in format 0.0.12345'),
-  PRIVATE_KEY: z.string().min(1, 'PRIVATE_KEY is required'),
+    .trim()
+    .regex(
+      /^0\.0\.[1-9][0-9]*$/,
+      'Hedera entity ID must be in format 0.0.{number}',
+    )
+    .describe('Hedera entity ID in format 0.0.{number}'),
+  PRIVATE_KEY: z
+    .string()
+    .min(1, 'PRIVATE_KEY is required')
+    .trim()
+    .refine(
+      (value) => {
+        const ed25519Regex =
+          /^(?:(?:0x)?[0-9a-fA-F]{64}|(?:0x)?[0-9a-fA-F]{128}|(?:0x)?30[0-9a-fA-F]{80,160})$/;
+        const ecdsaRegex =
+          /^(?:(?:0x)?[0-9a-fA-F]{64}|(?:0x)?30[0-9a-fA-F]{100,180})$/;
+        return ed25519Regex.test(value) || ecdsaRegex.test(value);
+      },
+      {
+        message:
+          'PRIVATE_KEY must be a valid ED25519 or ECDSA key in hex (with optional 0x prefix)',
+      },
+    ),
   NETWORK: z.enum(['testnet', 'localnet'], {
     errorMap: () => ({
       message: 'Network must be testnet or localnet',
