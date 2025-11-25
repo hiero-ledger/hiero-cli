@@ -1,6 +1,6 @@
 import { transferHandler } from '../../commands/transfer';
 import { Status } from '../../../../core/shared/constants';
-import { makeArgs } from '../../../../core/shared/__tests__/helpers/mocks';
+import { makeArgs } from '../../../../__tests__/mocks/mocks';
 import { setupTransferTest } from './helpers/mocks';
 import {
   mockAccounts,

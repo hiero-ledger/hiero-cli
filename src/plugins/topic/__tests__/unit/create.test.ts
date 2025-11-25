@@ -1,18 +1,18 @@
-import { createTopic } from '../commands/create/handler';
-import { ZustandTopicStateHelper } from '../zustand-state-helper';
-import type { CoreApi } from '../../../core';
-import type { TransactionResult } from '../../../core';
-import type { CreateTopicOutput } from '../commands/create';
+import { createTopic } from '../../commands/create/handler';
+import { ZustandTopicStateHelper } from '../../zustand-state-helper';
+import type { CoreApi } from '../../../../core';
+import type { TransactionResult } from '../../../../core';
+import type { CreateTopicOutput } from '../../commands/create';
 import {
   makeLogger,
   makeArgs,
   makeNetworkMock,
   makeKmsMock,
   makeAliasMock,
-} from '../../../core/shared/__tests__/helpers/mocks';
-import { Status, KeyAlgorithm } from '../../../core/shared/constants';
+} from '../../../../__tests__/mocks/mocks';
+import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
 
-jest.mock('../zustand-state-helper', () => ({
+jest.mock('../../zustand-state-helper', () => ({
   ZustandTopicStateHelper: jest.fn(),
 }));
 

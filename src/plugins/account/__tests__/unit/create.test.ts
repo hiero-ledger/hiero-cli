@@ -5,10 +5,7 @@ import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import type { CoreApi } from '../../../../core/core-api/core-api.interface';
 import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
 import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
-import {
-  makeLogger,
-  makeArgs,
-} from '../../../../core/shared/__tests__/helpers/mocks';
+import { makeLogger, makeArgs } from '../../../../__tests__/mocks/mocks';
 import { makeApiMocksForAccountCreate } from './helpers/mocks';
 import '../../../../core/utils/json-serialize';
 

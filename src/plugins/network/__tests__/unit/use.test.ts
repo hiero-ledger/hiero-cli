@@ -4,7 +4,7 @@ import {
   makeArgs,
   setupExitSpy,
   makeNetworkMock,
-} from '../../../../core/shared/__tests__/helpers/mocks';
+} from '../../../../__tests__/mocks/mocks';
 import { Status } from '../../../../core/shared/constants';
 
 let exitSpy: jest.SpyInstance;

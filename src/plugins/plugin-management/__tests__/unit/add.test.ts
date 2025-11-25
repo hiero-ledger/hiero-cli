@@ -3,10 +3,7 @@
  */
 import { Status } from '../../../../core/shared/constants';
 import { addPlugin } from '../../commands/add/handler';
-import {
-  makeArgs,
-  makeLogger,
-} from '../../../../core/shared/__tests__/helpers/mocks';
+import { makeArgs, makeLogger } from '../../../../__tests__/mocks/mocks';
 import type { PluginStateEntry } from '../../../../core/plugins/plugin.interface';
 import { CUSTOM_PLUGIN_ENTRY } from './helpers/fixtures';
 import type { PluginManagementService } from '../../../../core/services/plugin-management/plugin-management-service.interface';

@@ -1,14 +1,14 @@
-import { findMessage } from '../commands/find-message/handler';
-import type { CoreApi } from '../../../core/core-api/core-api.interface';
-import type { HederaMirrornodeService } from '../../../core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { FindMessagesOutput } from '../commands/find-message/output';
-import { Status } from '../../../core/shared/constants';
+import { findMessage } from '../../commands/find-message/handler';
+import type { CoreApi } from '../../../../core/core-api/core-api.interface';
+import type { HederaMirrornodeService } from '../../../../core/services/mirrornode/hedera-mirrornode-service.interface';
+import type { FindMessagesOutput } from '../../commands/find-message/output';
+import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeArgs,
   makeNetworkMock,
   makeAliasMock,
-} from '../../../core/shared/__tests__/helpers/mocks';
+} from '../../../../__tests__/mocks/mocks';
 
 const makeTopicMessage = (sequenceNumber: number, message: string) => ({
   consensus_timestamp: '1234567890.123456789',
