@@ -12,7 +12,7 @@ import {
 } from '../../../../core/shared/__tests__/helpers/mocks';
 import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
 
-jest.mock('../zustand-state-helper', () => ({
+jest.mock('../../zustand-state-helper', () => ({
   ZustandTopicStateHelper: jest.fn(),
 }));
 

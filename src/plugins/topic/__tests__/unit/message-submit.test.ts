@@ -12,7 +12,7 @@ import {
   makeAliasMock,
 } from '../../../../core/shared/__tests__/helpers/mocks';
 
-jest.mock('../zustand-state-helper', () => ({
+jest.mock('../../zustand-state-helper', () => ({
   ZustandTopicStateHelper: jest.fn(),
 }));
 
