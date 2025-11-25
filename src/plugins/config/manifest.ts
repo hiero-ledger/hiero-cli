@@ -62,7 +62,8 @@ export const configPluginManifest: PluginManifest = {
           short: 'o',
           type: 'string',
           required: true,
-          description: 'Option name to set',
+          description:
+            'Option name to set. Use `list` command to check what options could be set',
         },
         {
           name: 'value',

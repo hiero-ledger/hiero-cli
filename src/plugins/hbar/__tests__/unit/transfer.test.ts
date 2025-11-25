@@ -9,7 +9,6 @@ import {
   mockTransactionResults,
   mockTransferTransactionResults,
   mockDefaultCredentials,
-  mockBalances,
   mockAmounts,
   mockParsedBalances,
 } from './helpers/fixtures';
@@ -36,7 +35,7 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const args = makeArgs(api, logger, {
-      balance: mockBalances.valid,
+      amount: mockAmounts.large,
       from: mockAccountIdKeyPairs.sender,
       to: mockAccountIds.receiver,
       memo: 'test-transfer',
@@ -47,14 +46,14 @@ describe('hbar plugin - transfer command (unit)', () => {
     expect(result.outputJson).toBeDefined();
 
     expect(hbar.transferTinybar).toHaveBeenCalledWith({
-      amount: mockParsedBalances.valid,
+      amount: mockParsedBalances.large,
       from: mockAccountIds.sender,
       to: mockAccountIds.receiver,
       memo: 'test-transfer',
     });
     expect(signing.signAndExecute).toHaveBeenCalled();
-    expect(logger.log).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
-    expect(logger.log).toHaveBeenCalledWith(
+    expect(logger.info).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
+    expect(logger.info).toHaveBeenCalledWith(
       `[HBAR] Transfer submitted successfully, txId=${mockTransactionResults.success.transactionId}`,
     );
   });
@@ -63,21 +62,21 @@ describe('hbar plugin - transfer command (unit)', () => {
     const { api, logger } = setupTransferTest({ accounts: [] });
 
     const args = makeArgs(api, logger, {
-      balance: mockBalances.invalid,
+      amount: mockAmounts.invalid,
       from: mockAccountIdKeyPairs.sender,
       to: mockAccountIds.receiver,
     });
 
     const result = await transferHandler(args);
     expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Invalid balance value');
+    expect(result.errorMessage).toContain('Invalid amount input');
   });
 
   test('returns failure when balance is negative', async () => {
     const { api, logger } = setupTransferTest({ accounts: [] });
 
     const args = makeArgs(api, logger, {
-      balance: mockBalances.negative,
+      amount: mockAmounts.negative,
       from: mockAccountIdKeyPairs.sender,
       to: mockAccountIds.receiver,
     });
@@ -90,7 +89,7 @@ describe('hbar plugin - transfer command (unit)', () => {
     const { api, logger } = setupTransferTest({ accounts: [] });
 
     const args = makeArgs(api, logger, {
-      balance: mockBalances.zero,
+      amount: mockAmounts.zero,
       from: mockAccountIdKeyPairs.sender,
       to: mockAccountIds.receiver,
     });
@@ -111,7 +110,7 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const args = makeArgs(api, logger, {
-      balance: mockAmounts.small,
+      amount: mockAmounts.small,
       from: mockAccountIdKeyPairs.sender,
       to: mockAccountIds.receiver,
     });
@@ -120,7 +119,7 @@ describe('hbar plugin - transfer command (unit)', () => {
     expect(result.status).toBe(Status.Success);
 
     // This test should actually succeed now since we're providing valid parameters
-    expect(logger.log).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
+    expect(logger.info).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
   });
 
   test('returns failure when from equals to', async () => {
@@ -129,7 +128,7 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const args = makeArgs(api, logger, {
-      balance: mockAmounts.small,
+      amount: mockAmounts.small,
       from: 'same-account',
       to: 'same-account',
     });
@@ -148,7 +147,7 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const args = makeArgs(api, logger, {
-      balance: mockBalances.valid,
+      amount: mockAmounts.large,
       from: mockAccountIdKeyPairs.sender,
       to: mockAccountIds.receiver,
       memo: 'test-transfer',
@@ -163,7 +162,7 @@ describe('hbar plugin - transfer command (unit)', () => {
     const { api, logger } = setupTransferTest({ accounts: [] });
 
     const args = makeArgs(api, logger, {
-      balance: mockAmounts.small,
+      amount: mockAmounts.small,
       from: mockAccountIds.sender, // Just account ID, no private key
       to: mockAccountIds.receiver,
     });
@@ -188,7 +187,7 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const args = makeArgs(api, logger, {
-      balance: mockAmounts.medium,
+      amount: mockAmounts.medium,
       from: mockAccountIdKeyPairs.default,
       to: mockAccountIds.receiver,
     });
@@ -203,7 +202,7 @@ describe('hbar plugin - transfer command (unit)', () => {
       to: mockAccountIds.receiver,
       memo: undefined,
     });
-    expect(logger.log).toHaveBeenCalledWith(
+    expect(logger.info).toHaveBeenCalledWith(
       `[HBAR] Transfer submitted successfully, txId=${mockTransactionResults.successDefault.transactionId}`,
     );
   });

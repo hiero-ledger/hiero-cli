@@ -14,16 +14,17 @@ import type { TxExecutionService } from '../../../services/tx-execution/tx-execu
 import type { HederaMirrornodeService } from '../../../services/mirrornode/hedera-mirrornode-service.interface';
 import type { OutputService } from '../../../services/output/output-service.interface';
 import type { HbarService } from '../../../services/hbar/hbar-service.interface';
+import type { PluginManagementService } from '../../../services/plugin-management/plugin-management-service.interface';
 
 /**
  * Create a mocked Logger instance
  */
 export const makeLogger = (): jest.Mocked<Logger> => ({
-  log: jest.fn(),
+  info: jest.fn(),
   error: jest.fn(),
   debug: jest.fn(),
-  verbose: jest.fn(),
   warn: jest.fn(),
+  setLevel: jest.fn(),
 });
 
 /**
@@ -107,7 +108,6 @@ export const makeSigningMock = (
       transactionId: 'mock-tx-id',
       receipt: { status: { status: 'success' } },
     }),
-  freezeTx: jest.fn().mockImplementation((transaction) => transaction),
 });
 
 /**
@@ -174,6 +174,26 @@ const makeOutputMock = (): jest.Mocked<OutputService> => ({
   getFormat: jest.fn().mockReturnValue('human'),
 });
 
+const makePluginManagementServiceMock = (): PluginManagementService =>
+  ({
+    listPlugins: jest.fn().mockReturnValue([]),
+    getPlugin: jest.fn(),
+    addPlugin: jest.fn(),
+    removePlugin: jest.fn(),
+    enablePlugin: jest.fn(),
+    disablePlugin: jest.fn(),
+    savePluginState: jest.fn(),
+  }) as unknown as PluginManagementService;
+
+/**
+ * Create a mocked ConfigService
+ */
+export const makeConfigMock = (): jest.Mocked<ConfigService> => ({
+  listOptions: jest.fn().mockReturnValue([]),
+  getOption: jest.fn().mockReturnValue('local'), // Default key manager
+  setOption: jest.fn(),
+});
+
 /**
  * Create CommandHandlerArgs for testing
  */
@@ -193,17 +213,18 @@ export const makeArgs = (
     state: {} as any,
     mirror: {} as any,
     network: makeNetworkMock('testnet'),
-    config: {} as any,
+    config: makeConfigMock(),
     logger,
     alias: makeAliasMock(),
     kms: makeKmsMock(),
     hbar: makeHbarMock(),
     output: makeOutputMock(),
+    pluginManagement: makePluginManagementServiceMock(),
     ...api,
   },
   logger,
   state: {} as StateService,
-  config: {} as ConfigService,
+  config: makeConfigMock(),
   args,
 });
 

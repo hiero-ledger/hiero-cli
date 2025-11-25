@@ -2,23 +2,15 @@
  * List Credentials Command Output Schema and Template
  */
 import { z } from 'zod';
-import { PublicKeySchema } from '../../../../core/schemas/common-schemas';
-import { CREDENTIAL_TYPE_VALUES } from '../../../../core/services/kms/kms-types.interface';
-
-/**
- * Credential Type Schema
- * Represents the type of credential storage (localPrivateKey, mnemonic, hardware, kms)
- */
-const CredentialTypeSchema = z.enum(CREDENTIAL_TYPE_VALUES);
+import { PublicKeySchema } from '../../../../core/schemas';
+import { keyManagerNameSchema } from '../../../../core/services/kms/kms-types.interface';
 
 /**
  * Credential entry schema
  */
 const CredentialEntrySchema = z.object({
   keyRefId: z.string().describe('Key reference ID'),
-  type: CredentialTypeSchema.describe(
-    'Credential type (localPrivateKey, mnemonic, hardware, or kms)',
-  ),
+  keyManager: keyManagerNameSchema,
   publicKey: PublicKeySchema,
   labels: z.array(z.string()).describe('Associated labels').optional(),
 });
@@ -44,7 +36,7 @@ export const LIST_CREDENTIALS_TEMPLATE = `
 
 {{#each credentials}}
 {{add1 @index}}. Key Reference ID: {{keyRefId}}
-   Type: {{type}}
+   Key Manager: {{keyManager}}
    Public Key: {{publicKey}}
 {{#if labels}}
    Labels: {{#each labels}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}

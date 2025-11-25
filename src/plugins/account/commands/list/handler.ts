@@ -21,7 +21,7 @@ export async function listAccounts(
   // Extract command arguments
   const showPrivateKeys = (args.args.private as boolean) || false;
 
-  logger.log('Listing all accounts...');
+  logger.info('Listing all accounts...');
 
   try {
     const accounts = accountState.listAccounts();

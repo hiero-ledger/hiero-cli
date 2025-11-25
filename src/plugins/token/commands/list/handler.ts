@@ -55,17 +55,17 @@ function displayToken(
   if (alias) {
     header += ` - alias: ${alias}`;
   }
-  logger.log(header);
+  logger.info(header);
 
   // Show max supply for FINITE tokens
   if (token.supplyType === 'FINITE' && token.maxSupply > 0) {
-    logger.log(`   Max Supply: ${token.maxSupply}`);
+    logger.info(`   Max Supply: ${token.maxSupply}`);
   }
 
   // Show associations count if present
   const associationCount = token.associations?.length || 0;
   if (associationCount > 0) {
-    logger.log(`   Associations: ${associationCount}`);
+    logger.info(`   Associations: ${associationCount}`);
   }
 
   // Optionally show key information
@@ -83,7 +83,7 @@ function displayToken(
 
     keyMapping.forEach(({ key, label }) => {
       if (token.keys[key]) {
-        logger.log(`   ${label}: ✅ Present`);
+        logger.info(`   ${label}: ✅ Present`);
       }
     });
   }
@@ -137,29 +137,29 @@ function displayStatistics(
   },
   logger: CommandHandlerArgs['logger'],
 ): void {
-  logger.log('\n──────────────────────────────────────');
-  logger.log(`Total Tokens: ${stats.total}`);
+  logger.info('\n──────────────────────────────────────');
+  logger.info(`Total Tokens: ${stats.total}`);
 
   // Show supply type breakdown
   if (Object.keys(stats.bySupplyType).length > 0) {
-    logger.log('\nSupply Types:');
+    logger.info('\nSupply Types:');
     Object.entries(stats.bySupplyType).forEach(([supplyType, count]) => {
-      logger.log(`  ${supplyType}: ${count}`);
+      logger.info(`  ${supplyType}: ${count}`);
     });
   }
 
   // Show associations statistics
   if (stats.withAssociations > 0) {
-    logger.log(
+    logger.info(
       `\nWith Associations: ${stats.withAssociations} (${stats.totalAssociations} total associations)`,
     );
   }
 
   // Show network breakdown if multiple networks
   if (Object.keys(stats.byNetwork).length > 1) {
-    logger.log('\nBy Network:');
+    logger.info('\nBy Network:');
     Object.entries(stats.byNetwork).forEach(([network, count]) => {
-      logger.log(`  ${network}: ${count}`);
+      logger.info(`  ${network}: ${count}`);
     });
   }
 }
@@ -180,7 +180,7 @@ export async function listTokens(
   const currentNetwork = api.network.getCurrentNetwork();
   const targetNetwork = networkFilter || currentNetwork;
 
-  logger.log('Listing tokens...');
+  logger.info('Listing tokens...');
   logger.debug(`[TOKEN LIST] Current network: ${currentNetwork}`);
   logger.debug(`[TOKEN LIST] Target network: ${targetNetwork}`);
   logger.debug(
@@ -212,17 +212,17 @@ export async function listTokens(
     if (tokens.length === 0) {
       if (tokensBeforeFilter > 0) {
         // Tokens exist but none match the current network
-        logger.log(`\n⚠️  No tokens found for network: ${targetNetwork}`);
-        logger.log(
+        logger.info(`\n⚠️  No tokens found for network: ${targetNetwork}`);
+        logger.info(
           `\n💡 You have ${tokensBeforeFilter} token(s) on other networks.`,
         );
-        logger.log(
+        logger.info(
           `   Use --network <network-name> to view tokens on a specific network.`,
         );
       } else if (networkFilter) {
-        logger.log(`\nNo tokens found for network: ${networkFilter}`);
+        logger.info(`\nNo tokens found for network: ${networkFilter}`);
       } else {
-        logger.log(`\nNo tokens found for current network: ${currentNetwork}`);
+        logger.info(`\nNo tokens found for current network: ${currentNetwork}`);
       }
 
       const outputData: ListTokensOutput = {
@@ -246,15 +246,15 @@ export async function listTokens(
     }
 
     // Display header
-    logger.log(
+    logger.info(
       `\nFound ${tokens.length} token(s) for network ${targetNetwork}:`,
     );
     if (tokensBeforeFilter > tokens.length) {
-      logger.log(
+      logger.info(
         `(${tokensBeforeFilter - tokens.length} token(s) filtered out from other networks)`,
       );
     }
-    logger.log('──────────────────────────────────────');
+    logger.info('──────────────────────────────────────');
 
     // Display each token and prepare output data
     const tokensList = tokens.map((token, index) => {
@@ -266,7 +266,7 @@ export async function listTokens(
 
       // Add separator between tokens (except for the last one)
       if (index < tokens.length - 1) {
-        logger.log('');
+        logger.info('');
       }
 
       // Prepare token data for output

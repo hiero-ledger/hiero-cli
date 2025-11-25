@@ -13,7 +13,7 @@ export async function listCredentials(
 ): Promise<CommandExecutionResult> {
   const { logger, api } = args;
 
-  logger.log('🔐 Retrieving stored credentials...');
+  logger.info('🔐 Retrieving stored credentials...');
 
   try {
     const credentials = api.kms.list();
@@ -21,7 +21,7 @@ export async function listCredentials(
     // Map the credentials to match our output schema
     const mappedCredentials = credentials.map((cred) => ({
       keyRefId: cred.keyRefId,
-      type: cred.type,
+      keyManager: cred.keyManager,
       publicKey: cred.publicKey,
       labels: cred.labels || [],
     }));

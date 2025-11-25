@@ -2,8 +2,7 @@
  * Topic Message Find Command Handler
  * Handles finding messages in topics using mirror node
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
+import { CommandExecutionResult, CommandHandlerArgs } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { Filter } from '../../../../core/services/mirrornode/types';
@@ -20,27 +19,23 @@ function buildSequenceNumberFilter(
   const sequenceFilters = [
     {
       operation: 'gt',
-      value: args.sequenceNumberGt,
+      value: args.sequenceGt,
     },
     {
       operation: 'gte',
-      value: args.sequenceNumberGte,
+      value: args.sequenceGte,
     },
     {
       operation: 'lt',
-      value: args.sequenceNumberLt,
+      value: args.sequenceLt,
     },
     {
       operation: 'lte',
-      value: args.sequenceNumberLte,
+      value: args.sequenceLte,
     },
     {
       operation: 'eq',
-      value: args.sequenceNumberEq,
-    },
-    {
-      operation: 'ne',
-      value: args.sequenceNumberNe,
+      value: args.sequenceEq,
     },
   ];
 
@@ -147,8 +142,8 @@ export async function findMessage(
   const { api, logger } = args;
 
   // Extract command arguments
-  const topicIdOrAlias = args.args.topicId as string;
-  const sequenceNumber = args.args.sequenceNumber as number | undefined;
+  const topicIdOrAlias = args.args.topic as string;
+  const sequence = args.args.sequence as number | undefined;
 
   const currentNetwork = api.network.getCurrentNetwork();
 
@@ -165,15 +160,23 @@ export async function findMessage(
   }
 
   // Log progress indicator (not final output)
-  logger.log(`Finding messages in topic: ${topicId}`);
+  logger.info(`Finding messages in topic: ${topicId}`);
+
+  if (sequence !== undefined && sequence <= 0) {
+    return {
+      status: Status.Failure,
+      errorMessage:
+        'Sequence number starts from 1. Please provide a valid sequence number.',
+    };
+  }
 
   try {
     let messages: FindMessagesOutput['messages'];
 
     // Step 2: Query messages based on provided parameters
-    if (sequenceNumber) {
+    if (sequence) {
       // Fetch single message by sequence number
-      messages = await fetchSingleMessage(api, topicId, sequenceNumber);
+      messages = await fetchSingleMessage(api, topicId, sequence);
     } else {
       // Try to build filter from other sequence number parameters
       const filter = buildSequenceNumberFilter(args.args);
@@ -183,7 +186,7 @@ export async function findMessage(
         return {
           status: Status.Failure,
           errorMessage:
-            'No sequence number or filter provided. Use --sequence-number or filter options (--sequence-number-gt, --sequence-number-gte, etc.)',
+            'No sequence number or filter provided. Use --sequence or filter options (--sequence-gt, --sequence-gte, etc.)',
         };
       }
 

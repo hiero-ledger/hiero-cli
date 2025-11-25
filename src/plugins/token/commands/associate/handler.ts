@@ -15,6 +15,7 @@ import {
 import { formatError } from '../../../../core/utils/errors';
 import { AssociateTokenOutput } from './output';
 import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
+import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 
 export async function associateToken(
   args: CommandHandlerArgs,
@@ -40,6 +41,12 @@ export async function associateToken(
   const validatedParams = validationResult.data;
   const tokenIdOrAlias = validatedParams.token;
   const accountIdOrAlias = validatedParams.account;
+  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
+
+  // Get keyManager from args or fallback to config
+  const keyManager =
+    keyManagerArg ||
+    api.config.getOption<KeyManagerName>('default_key_manager');
 
   const network = api.network.getCurrentNetwork();
 
@@ -61,6 +68,7 @@ export async function associateToken(
     accountIdOrAlias,
     api,
     network,
+    keyManager,
   );
 
   // Account was explicitly provided - it MUST resolve or fail
@@ -81,15 +89,15 @@ export async function associateToken(
     ? accountId
     : accountIdOrAlias;
 
-  logger.log(`🔑 Using account: ${accountId}`);
-  logger.log(`🔑 Will sign with account key`);
-  logger.log(`Associating token ${tokenId} with account ${accountId}`);
+  logger.info(`🔑 Using account: ${accountId}`);
+  logger.info(`🔑 Will sign with account key`);
+  logger.info(`Associating token ${tokenId} with account ${accountId}`);
 
   const saveAssociationToState = () => {
     const tokenData = tokenState.getToken(tokenId);
     if (tokenData) {
       tokenState.addTokenAssociation(tokenId, accountId, accountName);
-      logger.log(`   Association saved to token state`);
+      logger.info(`   Association saved to token state`);
     }
   };
 
@@ -107,7 +115,7 @@ export async function associateToken(
     );
 
     if (isAssociated) {
-      logger.log(
+      logger.info(
         `Token ${tokenId} is already associated with account ${accountId}`,
       );
 
@@ -128,13 +136,11 @@ export async function associateToken(
         accountId,
       });
 
-      // 2. Sign and execute transaction using the account key
+      // Sign and execute using the account key
       logger.debug(`Using key ${accountKeyRefId} for signing transaction`);
       const result = await api.txExecution.signAndExecuteWith(
         associateTransaction,
-        {
-          keyRefId: accountKeyRefId,
-        },
+        [accountKeyRefId],
       );
 
       if (result.success) {
@@ -151,7 +157,7 @@ export async function associateToken(
         error instanceof ReceiptStatusError &&
         error.status === HederaStatus.TokenAlreadyAssociatedToAccount
       ) {
-        logger.log(
+        logger.info(
           `Token ${tokenId} is already associated with account ${accountId}`,
         );
         saveAssociationToState();

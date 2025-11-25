@@ -18,7 +18,7 @@ export async function useHandler(
     };
   }
 
-  logger.verbose(`Switching to network: ${network}`);
+  logger.info(`Switching to network: ${network}`);
 
   try {
     api.network.switchNetwork(network);

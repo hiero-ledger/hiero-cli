@@ -41,7 +41,6 @@ const makeApiMocks = ({
     execute: jest.fn(),
     getStatus: jest.fn(),
     freezeTransaction: jest.fn(),
-    freezeTx: jest.fn().mockImplementation((transaction) => transaction),
   };
 
   const networkMock = makeNetworkMock(network);
@@ -174,17 +173,16 @@ describe('topic plugin - create command', () => {
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
       adminKey,
+      'local',
+      ['topic:admin', expect.stringMatching(/^topic:topic-\d+$/)],
     );
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
       submitKey,
+      'local',
+      ['topic:submit', expect.stringMatching(/^topic:topic-\d+$/)],
     );
-    expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
-      {},
-      {
-        keyRefId: 'kr_admin',
-      },
-    );
+    expect(signing.signAndExecuteWith).toHaveBeenCalledWith({}, ['kr_admin']);
     expect(saveTopicMock).toHaveBeenCalledWith(
       '0.0.8888',
       expect.objectContaining({
@@ -356,6 +354,8 @@ describe('topic plugin - create command', () => {
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
       '302e020100300506032b657004220420admin',
+      'local',
+      expect.arrayContaining(['topic:admin']),
     );
   });
 
@@ -402,10 +402,14 @@ describe('topic plugin - create command', () => {
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ED25519,
       '302e020100300506032b657004220420admin',
+      'local',
+      expect.arrayContaining(['topic:admin']),
     );
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ED25519,
       '302e020100300506032b657004220420submit',
+      'local',
+      expect.arrayContaining(['topic:submit']),
     );
   });
 });

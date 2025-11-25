@@ -5,7 +5,7 @@
 import { StateService } from '../../core';
 import { Logger } from '../../core';
 import { AccountData, ACCOUNT_NAMESPACE, safeParseAccountData } from './schema';
-import { KeyAlgorithm } from '../../core/services/kms/kms-types.interface';
+import { KeyAlgorithmType } from '../../core/services/kms/kms-types.interface';
 
 export class ZustandAccountStateHelper {
   private state: StateService;
@@ -111,7 +111,7 @@ export class ZustandAccountStateHelper {
   /**
    * Get accounts by type
    */
-  getAccountsByType(type: KeyAlgorithm): AccountData[] {
+  getAccountsByType(type: KeyAlgorithmType): AccountData[] {
     const accounts = this.listAccounts();
     return accounts.filter((account) => account.type === type);
   }
@@ -196,7 +196,7 @@ export class ZustandAccountStateHelper {
    */
   searchAccounts(criteria: {
     network?: string;
-    type?: KeyAlgorithm;
+    type?: KeyAlgorithmType;
     namePattern?: string;
   }): AccountData[] {
     let accounts = this.listAccounts();

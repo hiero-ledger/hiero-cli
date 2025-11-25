@@ -14,9 +14,7 @@ export const LIST_PLUGINS_TEMPLATE = `📋 Available Plugins ({{count}}):
 {{#each plugins}}
 {{add1 @index}}.
    Name: {{name}}
-   Display Name: {{displayName}}
-   Version: {{version}}
-   Status: {{status}}
+   Enabled: {{enabled}}
 {{/each}}
 
 Use "plugin-management info <name>" for detailed information`;

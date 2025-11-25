@@ -24,7 +24,7 @@ export async function submitMessage(
   const topicState = new ZustandTopicStateHelper(api.state, logger);
 
   // Extract and validate command arguments
-  const topicIdOrAlias = args.args.topicId as string;
+  const topicIdOrAlias = args.args.topic as string;
   const message = args.args.message as string;
 
   const currentNetwork = api.network.getCurrentNetwork();
@@ -42,7 +42,7 @@ export async function submitMessage(
   }
 
   // Log progress indicator (not final output)
-  logger.log(`Submitting message to topic: ${topicId}`);
+  logger.info(`Submitting message to topic: ${topicId}`);
 
   try {
     // Step 2: Load topic data from state
@@ -67,9 +67,7 @@ export async function submitMessage(
     if (topicData.submitKeyRefId) {
       txResult = await api.txExecution.signAndExecuteWith(
         messageSubmitTx.transaction,
-        {
-          keyRefId: topicData.submitKeyRefId,
-        },
+        [topicData.submitKeyRefId],
       );
     } else {
       txResult = await api.txExecution.signAndExecute(

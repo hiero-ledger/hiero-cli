@@ -232,11 +232,13 @@ describe('associateTokenHandler', () => {
       });
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockAssociationTransaction,
-        { keyRefId: 'imported-key-ref-id' },
+        ['imported-key-ref-id'],
       );
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
         'test-account-key',
+        'local',
+        ['token:account', 'temporary'],
       );
     });
 
@@ -309,7 +311,7 @@ describe('associateTokenHandler', () => {
       });
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockAssociationTransaction,
-        { keyRefId: 'alias-key-ref-id' },
+        ['alias-key-ref-id'],
       );
     });
 
@@ -670,11 +672,13 @@ describe('associateTokenHandler', () => {
       });
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockAssociationTransaction,
-        { keyRefId: 'imported-key-ref-id' },
+        ['imported-key-ref-id'],
       );
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
         'test-account-key',
+        'local',
+        ['token:account', 'temporary'],
       );
     });
 
@@ -761,7 +765,7 @@ describe('associateTokenHandler', () => {
       });
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockAssociationTransaction,
-        { keyRefId: 'alias-key-ref-id' },
+        ['alias-key-ref-id'],
       );
     });
   });

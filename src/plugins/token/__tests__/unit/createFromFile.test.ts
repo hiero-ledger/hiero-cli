@@ -11,11 +11,6 @@ import { makeLogger, makeApiMocks } from './helpers/mocks';
 import {
   validTokenFile,
   infiniteSupplyTokenFile,
-  invalidTokenFileMissingName as _invalidTokenFileMissingName,
-  invalidTokenFileInvalidAccountId as _invalidTokenFileInvalidAccountId,
-  invalidTokenFileInvalidSupplyType as _invalidTokenFileInvalidSupplyType,
-  invalidTokenFileNegativeSupply as _invalidTokenFileNegativeSupply,
-  mockFilePaths as _mockFilePaths,
   mockTransactions,
   mockTransactionResults,
   expectedTokenTransactionParamsFromFile,
@@ -163,7 +158,7 @@ describe('createTokenFromFileHandler', () => {
       );
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTokenTransaction,
-        { keyRefId: 'treasury-key-ref-id' },
+        ['treasury-key-ref-id'],
       );
       expect(mockAddToken).toHaveBeenCalled();
     });
@@ -260,11 +255,7 @@ describe('createTokenFromFileHandler', () => {
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/test.json');
 
-      const {
-        api,
-        tokenTransactions,
-        signing: _signing,
-      } = makeApiMocks({
+      const { api, tokenTransactions } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -345,11 +336,7 @@ describe('createTokenFromFileHandler', () => {
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/test.json');
 
-      const {
-        api,
-        tokenTransactions,
-        signing: _signing,
-      } = makeApiMocks({
+      const { api, tokenTransactions } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -677,11 +664,7 @@ describe('createTokenFromFileHandler', () => {
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/test.json');
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -738,11 +721,7 @@ describe('createTokenFromFileHandler', () => {
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/test.json');
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -810,11 +789,7 @@ describe('createTokenFromFileHandler', () => {
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/test.json');
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -855,8 +830,10 @@ describe('createTokenFromFileHandler', () => {
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
 
-      expect(logger.log).toHaveBeenCalledWith('Creating token from file: test');
-      expect(logger.log).toHaveBeenCalledWith(
+      expect(logger.info).toHaveBeenCalledWith(
+        'Creating token from file: test',
+      );
+      expect(logger.info).toHaveBeenCalledWith(
         '🔑 Using treasury key for signing transaction',
       );
     });

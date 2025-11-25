@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import { PluginManager } from './core/plugins/plugin-manager';
 import { createCoreApi } from './core/core-api';
 import { CoreApiConfig } from './core/core-api/core-api-config';
 import './core/utils/json-serialize';
+import { DEFAULT_PLUGIN_STATE } from './core/shared/config/cli-options';
+import { addDisabledPluginsHelp } from './core/utils/add-disabled-plugins-help';
+import { PluginManager } from './core/plugins/plugin-manager';
+import { CoreApi } from './core/core-api/core-api.interface';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../package.json') as { version?: string };
@@ -16,9 +19,8 @@ program
 
 // Initialize the simplified plugin system
 async function initializeCLI() {
+  let coreApi: CoreApi | undefined;
   try {
-    console.error('🚀 Starting Hedera CLI...');
-
     // Pre-parse arguments to get format before creating core API
     program.parseOptions(process.argv.slice(2));
     const opts = program.opts();
@@ -31,37 +33,33 @@ async function initializeCLI() {
       format,
     };
 
-    // Create plugin manager
-    const coreApi = createCoreApi(coreApiConfig);
-
+    // Create core API
+    coreApi = createCoreApi(coreApiConfig);
     const pluginManager = new PluginManager(coreApi);
 
-    // Set default plugins
-    pluginManager.setDefaultPlugins([
-      './dist/plugins/account', // Default account plugin
-      './dist/plugins/token', // Token management plugin
-      './dist/plugins/network', // Network plugin
-      './dist/plugins/plugin-management', // Plugin management plugin
-      './dist/plugins/credentials', // Credentials management plugin
-      './dist/plugins/state-management', // State management plugin
-      './dist/plugins/topic', // Topic management plugin
-      './dist/plugins/hbar', // HBAR plugin
-      './dist/plugins/config', // global config plugin
-    ]);
-
-    // Initialize plugins
-    await pluginManager.initialize();
+    // Initialize plugins, register disabled stubs, and load all manifests
+    const pluginState = await pluginManager.initializePlugins(
+      program,
+      DEFAULT_PLUGIN_STATE,
+    );
 
     // Register plugin commands
     pluginManager.registerCommands(program);
 
-    console.error('✅ CLI ready');
+    // Add disabled plugins section to help output
+    addDisabledPluginsHelp(program, pluginState);
+
+    coreApi.logger.info('✅ CLI ready');
 
     // Parse arguments and execute command
     await program.parseAsync(process.argv);
     process.exit(0);
   } catch (error) {
-    console.error('❌ CLI execution failed:', error);
+    if (coreApi) {
+      coreApi.logger.error(`❌ CLI execution failed: ${String(error)}`);
+    } else {
+      console.error('❌ CLI execution failed:', error);
+    }
     process.exit(1);
   }
 }

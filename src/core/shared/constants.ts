@@ -5,6 +5,8 @@ export enum Status {
   Failure = 'failure',
 }
 
+export const PLUGIN_MANAGEMENT_NAMESPACE = 'plugin-management';
+
 /**
  * Key Algorithm Enum
  * Used throughout the codebase to avoid string literal duplication

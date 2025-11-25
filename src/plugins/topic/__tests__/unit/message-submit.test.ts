@@ -60,7 +60,6 @@ const makeApiMocks = ({
     getStatus: jest.fn(),
     freezeTransaction:
       freezeTransactionImpl || jest.fn().mockReturnValue(mockTransaction),
-    freezeTx: jest.fn().mockImplementation((transaction) => transaction),
   };
 
   const networkMock = makeNetworkMock(network);
@@ -105,7 +104,7 @@ describe('topic plugin - message-submit command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.1234',
+      topic: '0.0.1234',
       message: 'Hello, World!',
     });
 
@@ -160,7 +159,7 @@ describe('topic plugin - message-submit command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.5678',
+      topic: '0.0.5678',
       message: 'Signed message',
     });
 
@@ -172,10 +171,9 @@ describe('topic plugin - message-submit command', () => {
     const output: SubmitMessageOutput = JSON.parse(result.outputJson!);
     expect(output.sequenceNumber).toBe(10);
 
-    expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
-      {},
-      { keyRefId: submitKeyRefId },
-    );
+    expect(signing.signAndExecuteWith).toHaveBeenCalledWith({}, [
+      submitKeyRefId,
+    ]);
   });
 
   test('returns failure when topic not found', async () => {
@@ -195,7 +193,7 @@ describe('topic plugin - message-submit command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.9999',
+      topic: '0.0.9999',
       message: 'Test message',
     });
 
@@ -234,7 +232,7 @@ describe('topic plugin - message-submit command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.1234',
+      topic: '0.0.1234',
       message: 'Failed message',
     });
 
@@ -268,7 +266,7 @@ describe('topic plugin - message-submit command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.1234',
+      topic: '0.0.1234',
       message: 'Error message',
     });
 

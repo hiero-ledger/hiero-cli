@@ -41,8 +41,7 @@ describe('Token State Management', () => {
       info: jest.fn(),
       warn: jest.fn(),
       error: jest.fn(),
-      log: jest.fn(),
-      verbose: jest.fn(),
+      setLevel: jest.fn(),
     } as jest.Mocked<Logger>;
 
     stateHelper = new ZustandTokenStateHelper(mockStateService, mockLogger);

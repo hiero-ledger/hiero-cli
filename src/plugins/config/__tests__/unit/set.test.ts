@@ -62,7 +62,7 @@ describe('config plugin - set', () => {
       getOption: jest.fn().mockReturnValue('local'),
       listOptions: jest.fn().mockReturnValue([enumOption]),
       setOption: jest.fn().mockImplementation((_name, val) => {
-        if (val !== 'local' && val !== 'encrypted_local') {
+        if (val !== 'local' && val !== 'local_encrypted') {
           throw new Error('Invalid value for default_key_manager');
         }
       }),
@@ -78,13 +78,13 @@ describe('config plugin - set', () => {
 
     const argsGood = makeCommandArgs({
       api,
-      args: { option: 'default_key_manager', value: 'encrypted_local' },
+      args: { option: 'default_key_manager', value: 'local_encrypted' },
     });
     const ok = await setConfigOption(argsGood);
     expect(ok.status).toBe(Status.Success);
     expect(configSvc.setOption).toHaveBeenCalledWith(
       'default_key_manager',
-      'encrypted_local',
+      'local_encrypted',
     );
   });
 });

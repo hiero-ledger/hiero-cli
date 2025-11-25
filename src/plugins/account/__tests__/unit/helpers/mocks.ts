@@ -11,6 +11,7 @@ import type { AccountService } from '../../../../../core/services/account/accoun
 import type { TxExecutionService } from '../../../../../core/services/tx-execution/tx-execution-service.interface';
 import type { NetworkService } from '../../../../../core/services/network/network-service.interface';
 import type { AliasService } from '../../../../../core/services/alias/alias-service.interface';
+import type { PluginManagementService } from '../../../../../core/services/plugin-management/plugin-management-service.interface';
 import {
   makeNetworkMock as makeGlobalNetworkMock,
   makeKmsMock as makeGlobalKmsMock,
@@ -32,11 +33,11 @@ import {
  * Create a mocked Logger
  */
 export const makeLogger = (): jest.Mocked<Logger> => ({
-  log: jest.fn(),
+  info: jest.fn(),
   error: jest.fn(),
   debug: jest.fn(),
-  verbose: jest.fn(),
   warn: jest.fn(),
+  setLevel: jest.fn(),
 });
 
 /**
@@ -91,7 +92,6 @@ export const makeTxExecutionServiceMock = (
   signAndExecuteWith: jest
     .fn()
     .mockResolvedValue(mockTransactionResults.success),
-  freezeTx: jest.fn().mockImplementation((transaction) => transaction),
   ...overrides,
 });
 
@@ -189,7 +189,18 @@ export const makeArgs = (
   logger: jest.Mocked<Logger>,
   args: Record<string, unknown>,
 ): CommandHandlerArgs => ({
-  api: api as CoreApi,
+  api: {
+    pluginManagement: {
+      listPlugins: jest.fn().mockReturnValue([]),
+      getPlugin: jest.fn(),
+      addPlugin: jest.fn(),
+      removePlugin: jest.fn(),
+      enablePlugin: jest.fn(),
+      disablePlugin: jest.fn(),
+      savePluginState: jest.fn(),
+    } as PluginManagementService,
+    ...api,
+  } as CoreApi,
   logger,
   state: {} as any,
   config: {} as any,

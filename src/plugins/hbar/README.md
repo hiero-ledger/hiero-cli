@@ -1,6 +1,6 @@
 # HBAR Plugin
 
-Complete HBAR transfer management plugin for the Hedera CLI following the plugin architecture (ADR-001).
+Complete HBAR transfer management plugin for the Hedera CLI following the plugin architecture.
 
 ## 🏗️ Architecture
 
@@ -8,7 +8,8 @@ This plugin follows the plugin architecture principles:
 
 - **Stateless**: Plugin is functionally stateless
 - **Dependency Injection**: Services are injected into command handlers
-- **Manifest-Driven**: Capabilities declared via manifest
+- **Manifest-Driven**: Capabilities declared via manifest with output specifications
+- **Structured Output**: All command handlers return `CommandExecutionResult` with standardized output
 - **SDK Isolation**: All Hedera SDK code in Core API
 - **Type Safety**: Full TypeScript support
 
@@ -17,8 +18,12 @@ This plugin follows the plugin architecture principles:
 ```
 src/plugins/hbar/
 ├── manifest.ts              # Plugin manifest with command definitions
+├── schema.ts                # Transfer input schema with Zod validation
 ├── commands/
-│   └── transfer.ts         # HBAR transfer handler
+│   └── transfer/
+│       ├── handler.ts      # HBAR transfer handler
+│       ├── output.ts       # Output schema and template
+│       └── index.ts        # Command exports
 ├── __tests__/unit/
 │   └── transfer.test.ts    # Unit tests
 └── index.ts                # Plugin exports
@@ -26,28 +31,55 @@ src/plugins/hbar/
 
 ## 🚀 Commands
 
+All commands return `CommandExecutionResult` with structured output that includes:
+
+- `status`: Success or failure status
+- `errorMessage`: Optional error message (present when status is not 'success')
+- `outputJson`: JSON string conforming to the output schema defined in `output.ts`
+
+Each command defines a Zod schema for output validation and a Handlebars template for human-readable formatting.
+
 ### HBAR Transfer
 
-Transfer HBAR (tinybars) between accounts with support for names and account IDs.
+Transfer HBAR between accounts with support for names, account IDs, and account-id:private-key pairs.
 
 ```bash
-# Using short flags
-hcli hbar transfer -b 100000000 -f sender -t receiver -m "Payment"
-
-# Using long flags
+# Using account names
 hcli hbar transfer \
-  --balance 100000000 \
-  --from myaccount \
-  --to 0.0.123456 \
-  --memo "Test transfer"
+  --balance 1 \
+  --from alice \
+  --to bob \
+  --memo "Payment"
 
-# Using default operator (from env) as sender
-hcli hbar transfer -b 50000000 -t receiver
+# Using account-id:private-key pair for sender
+hcli hbar transfer \
+  --balance 100t \
+  --from 0.0.123456:302e020100300506032b657004220420... \
+  --to 0.0.789012
+
+# Using operator from the cli state as sender (when --from is omitted)
+hcli hbar transfer \
+  --balance 0.5 \
+  --to myaccount
 ```
 
 **Options:**
 
-- `-b, --balance <number>` - Amount in tinybars (required)
+<<<<<<< HEAD
+<<<<<<< HEAD
+
+- `-b, --balance <string>` - Amount in HBAR (display units by default, add "t" for tinybar). Example: "1" = 1 HBAR, "100t" = 100 tinybar (required)
+- `-t, --to <string>` - Recipient account ID or name (required)
+- `-f, --from <string>` - Sender account: either an account-id:private-key pair or account name (optional, defaults to operator)
+- `-m, --memo <string>` - Transfer memo (optional)
+
+=======
+
+=======
+
+> > > > > > > origin/main
+
+- `-a, --amount <number>` - Amount in tinybars (required)
 - `-t, --to <string>` - Recipient account (required)
 - `-f, --from <string>` - Sender account (optional, defaults to operator from env)
 - `-m, --memo <string>` - Transfer memo (optional)
@@ -56,14 +88,16 @@ hcli hbar transfer -b 50000000 -t receiver
 
 ```bash
 # Transfer using names
-hcli hbar transfer -b 1000000 -f alice -t bob
+hcli hbar transfer -a 1000000 -f alice -t bob
 
 # Transfer using account IDs
-hcli hbar transfer -b 5000000 -f 0.0.123456 -t 0.0.789012
+hcli hbar transfer -a 5000000 -f 0.0.123456 -t 0.0.789012
 
 # Transfer from operator account
-hcli hbar transfer -b 100000 -t myaccount
+hcli hbar transfer -a 100000 -t myaccount
 ```
+
+> > > > > > > ce42f440 (feat: standarize option names (#73))
 
 ## 🔧 Core API Integration
 
@@ -81,20 +115,32 @@ The plugin uses the Core API services:
 
 The plugin intelligently determines which key to use for signing:
 
-1. **Name with keyRefId** - Uses registered key for the name
-2. **Account in state** - Looks up account by ID or name, uses its keyRefId
-3. **Default operator** - Falls back to operator credentials from env
+1. **Account-id:private-key pair** - Imports the key and uses it for signing
+2. **Name with keyRefId** - Uses registered key for the name via alias service
+3. **Account in state** - Looks up account by ID or name, uses its keyRefId
+4. **Default operator** - Falls back to operator credentials from network configuration
 
 This ensures transfers are signed with the correct key for the sender account.
 
-## 🔄 Migration from Commands
+## 📤 Output Formatting
 
-This plugin migrates the HBAR transfer command from the old architecture:
+All commands return structured output through the `CommandExecutionResult` interface:
 
-- `src/commands/hbar.ts` → `src/plugins/hbar/commands/transfer.ts`
-- `src/utils/hbar.ts` (SDK code) → `src/core/services/hbar/hbar-service.ts`
+```typescript
+interface CommandExecutionResult {
+  status: 'success' | 'failure';
+  errorMessage?: string; // Present when status !== 'success'
+  outputJson?: string; // JSON string conforming to the output schema
+}
+```
 
-All Hedera SDK-related code has been moved to the Core API `HbarService`.
+**Output Structure:**
+
+- **Output Schemas**: Each command defines a Zod schema in `output.ts` for type-safe output validation
+- **Human Templates**: Handlebars templates provide human-readable output formatting
+- **Error Handling**: All errors are returned in the result structure, ensuring consistent error handling
+
+The `outputJson` field contains a JSON string that conforms to the Zod schema defined in each command's `output.ts` file, ensuring type safety and consistent output structure.
 
 ## 🧪 Testing
 
@@ -115,11 +161,12 @@ Test coverage (71%):
 
 ## 🎯 Key Features
 
-- **Multi-format support**: Accepts names or raw account IDs
+- **Multi-format support**: Accepts names, account IDs, or account-id:private-key pairs
 - **Smart key resolution**: Automatically finds correct signing key
-- **Default operator fallback**: Uses env credentials when sender not specified
-- **Name integration**: Works seamlessly with new name system
+- **Default operator fallback**: Uses network operator credentials when sender not specified
+- **Name integration**: Works seamlessly with alias service
 - **Secure signing**: Leverages `keyRefId` system for key management
+- **Flexible balance input**: Supports display units (HBAR) or base units (tinybar with "t" suffix)
 
 ## 📝 Technical Details
 
@@ -127,19 +174,16 @@ Test coverage (71%):
 
 When resolving `--from` or `--to`:
 
-1. Try name lookup via `api.alias.resolve()`
-2. Try account name in `account-accounts` state
-3. Try account ID in `account-accounts` state
-4. Use as raw account ID (operator will sign)
+1. **Account-id:private-key pair** - Parse and import the key
+2. Try name lookup via `api.alias.resolve()`
+3. Try account name in `account-accounts` state
+4. Try account ID in `account-accounts` state
+5. Use as raw account ID (operator will sign if `--from` not provided)
 
 ### Signing Logic
 
-```typescript
-if (fromKeyRefId) {
-  // Use specific key for sender account
-  await api.txExecution.signAndExecuteWith(tx, { keyRefId: fromKeyRefId });
-} else {
-  // Use default operator key
-  await api.txExecution.signAndExecute(tx);
-}
-```
+The handler determines the signing key based on the `--from` parameter:
+
+- If `--from` is an account-id:private-key pair, the key is imported and used
+- If `--from` is a name, the key is resolved via alias service or state lookup
+- If `--from` is omitted, the operator key from network configuration is used

@@ -9,6 +9,7 @@ import { formatError } from '../../../../core/utils/errors';
 import { ZustandTopicStateHelper } from '../../zustand-state-helper';
 import { AliasRecord } from '../../../../core/services/alias/alias-service.interface';
 import { CreateTopicOutput } from './output';
+import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { parseKeyWithType } from '../../../../core/utils/keys';
 
 /**
@@ -28,18 +29,24 @@ export async function createTopic(
   const memo = args.args.memo as string | undefined;
   const adminKey = args.args.adminKey as string | undefined;
   const submitKey = args.args.submitKey as string | undefined;
-  const alias = args.args.alias as string | undefined;
+  const alias = args.args.name as string | undefined;
+  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
 
   // Check if alias already exists on the current network
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(alias, network);
+
+  // Get keyManager from args or fallback to config
+  const keyManager =
+    keyManagerArg ||
+    api.config.getOption<KeyManagerName>('default_key_manager');
 
   // Generate default name if alias not provided
   const name = alias || `topic-${Date.now()}`;
 
   // Log progress indicator (not final output)
   if (memo) {
-    logger.log(`Creating topic with memo: ${memo}`);
+    logger.info(`Creating topic with memo: ${memo}`);
   }
 
   try {
@@ -87,25 +94,38 @@ export async function createTopic(
     if (adminKey && !topicAdminKeyAlias) {
       // Parse private key - check if it has a key type prefix (e.g., "ed25519:...")
       const { keyType, privateKey } = parseKeyWithType(adminKey);
-      const { keyRefId } = api.kms.importPrivateKey(keyType, privateKey);
+      const { keyRefId } = api.kms.importPrivateKey(
+        keyType,
+        privateKey,
+        keyManager,
+        ['topic:admin', `topic:${name}`],
+      );
       adminKeyRefId = keyRefId;
     }
 
     if (submitKey && !topicSubmitKeyAlias) {
       // Parse private key - check if it has a key type prefix (e.g., "ed25519:...")
       const { keyType, privateKey } = parseKeyWithType(submitKey);
-      const { keyRefId } = api.kms.importPrivateKey(keyType, privateKey);
+      const { keyRefId } = api.kms.importPrivateKey(
+        keyType,
+        privateKey,
+        keyManager,
+        ['topic:submit', `topic:${name}`],
+      );
       submitKeyRefId = keyRefId;
     }
 
     // Step 4: Sign and execute transaction (with admin key if present)
     let result;
     if (topicAdminKeyAlias?.publicKey || adminKey) {
+      if (!adminKeyRefId) {
+        throw new Error(
+          '[TOPIC-CREATE] Admin key was provided but keyRefId is undefined',
+        );
+      }
       result = await api.txExecution.signAndExecuteWith(
         topicCreateResult.transaction,
-        {
-          keyRefId: adminKeyRefId,
-        },
+        [adminKeyRefId],
       );
     } else {
       result = await api.txExecution.signAndExecute(
@@ -122,8 +142,8 @@ export async function createTopic(
         adminKeyRefId,
         submitKeyRefId,
         network: api.network.getCurrentNetwork(),
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        createdAt: result.consensusTimestamp,
+        updatedAt: result.consensusTimestamp,
       };
 
       // Step 6: Register alias if provided
@@ -133,7 +153,7 @@ export async function createTopic(
           type: 'topic',
           network: api.network.getCurrentNetwork(),
           entityId: result.topicId,
-          createdAt: new Date().toISOString(),
+          createdAt: result.consensusTimestamp,
         });
       }
 

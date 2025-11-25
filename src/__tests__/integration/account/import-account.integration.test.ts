@@ -12,7 +12,7 @@ describe('Import Account Integration Tests', () => {
 
   beforeAll(async () => {
     coreApi = createMockCoreApi();
-    setDefaultOperatorForNetwork(coreApi);
+    await setDefaultOperatorForNetwork(coreApi);
   });
 
   describe('Valid Import Account Scenarios', () => {

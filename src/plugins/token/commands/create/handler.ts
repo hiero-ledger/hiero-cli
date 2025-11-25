@@ -21,6 +21,7 @@ import { formatError } from '../../../../core/utils/errors';
 import { CreateTokenOutput } from './output';
 import { processBalanceInput } from '../../../../core/utils/process-balance-input';
 import type { TokenCreateParams } from '../../../../core/types/token.types';
+import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 
 /**
  * Determines the final max supply value for FINITE supply tokens
@@ -106,21 +107,30 @@ async function executeTokenCreation(
   logger: Logger,
   adminKeyRefId?: string,
 ): Promise<TransactionResult> {
+  const keyRefIds: string[] = [];
+
+  // Admin key must sign first for token creation
   if (adminKeyRefId) {
-    const tx = api.txExecution.freezeTx(transaction);
-    // @TODO - Migrate from signTransaction to keep consistent with other usages
-    await api.kms.signTransaction(tx, adminKeyRefId);
+    logger.debug(`Token admin key: ${adminKeyRefId}`);
+    keyRefIds.push(adminKeyRefId);
   }
 
+  // Treasury key required to receive initial supply
   if (treasury.useCustom && treasury.keyRefId) {
-    logger.debug(`Signing with custom treasury key`);
-    return await api.txExecution.signAndExecuteWith(transaction, {
-      keyRefId: treasury.keyRefId,
-    });
+    logger.debug(`Custom treasury key: ${treasury.keyRefId}`);
+    keyRefIds.push(treasury.keyRefId);
+  } else {
+    const currentNetwork = api.network.getCurrentNetwork();
+    const operator = api.network.getOperator(currentNetwork);
+    if (!operator) {
+      throw new Error('[TOKEN-CREATE] No operator configured');
+    }
+    logger.debug(`Using operator as treasury: ${operator.keyRefId}`);
+    keyRefIds.push(operator.keyRefId);
   }
 
-  logger.debug(`Signing with operator key`);
-  return await api.txExecution.signAndExecute(transaction);
+  logger.debug(`Signing token creation with ${keyRefIds.length} key(s)`);
+  return api.txExecution.signAndExecuteWith(transaction, keyRefIds);
 }
 
 /**
@@ -193,6 +203,12 @@ export async function createToken(
   const validatedParams = validationResult.data;
   const name = validatedParams.tokenName;
   const symbol = validatedParams.symbol;
+  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
+
+  // Get keyManager from args or fallback to config
+  const keyManager =
+    keyManagerArg ||
+    api.config.getOption<KeyManagerName>('default_key_manager');
   const decimals = validatedParams.decimals || 0;
   const rawInitialSupply = validatedParams.initialSupply || 1000000;
   // Convert display units to raw token units
@@ -218,6 +234,7 @@ export async function createToken(
       validatedParams.treasury,
       api,
       network,
+      keyManager,
     );
 
     // Treasury was explicitly provided - it MUST resolve or fail
@@ -233,8 +250,8 @@ export async function createToken(
     treasuryKeyRefId = resolvedTreasury.treasuryKeyRefId;
     treasuryPublicKey = resolvedTreasury.treasuryPublicKey;
 
-    logger.log(`🏦 Using custom treasury account: ${treasuryId}`);
-    logger.log(`🔑 Will sign with treasury key`);
+    logger.info(`🏦 Using custom treasury account: ${treasuryId}`);
+    logger.info(`🔑 Will sign with treasury key`);
   }
 
   // Validate and determine maxSupply
@@ -247,9 +264,9 @@ export async function createToken(
     );
   }
 
-  logger.log(`Creating token: ${name} (${symbol})`);
+  logger.info(`Creating token: ${name} (${symbol})`);
   if (finalMaxSupply !== undefined) {
-    logger.log(`Max supply: ${finalMaxSupply}`);
+    logger.info(`Max supply: ${finalMaxSupply}`);
   }
 
   try {
@@ -315,7 +332,7 @@ export async function createToken(
     });
 
     tokenState.saveToken(result.tokenId, tokenData);
-    logger.log(`   Token data saved to state`);
+    logger.info(`   Token data saved to state`);
 
     // Register alias if provided
     if (alias) {
@@ -326,7 +343,7 @@ export async function createToken(
         entityId: result.tokenId,
         createdAt: result.consensusTimestamp,
       });
-      logger.log(`   Name registered: ${alias}`);
+      logger.info(`   Name registered: ${alias}`);
     }
 
     // Prepare output data

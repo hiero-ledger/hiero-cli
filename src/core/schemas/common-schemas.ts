@@ -7,7 +7,7 @@
  * Based on ADR-003: Result-Oriented Command Handler Contract
  */
 import { z } from 'zod';
-import type { KeyAlgorithm as KeyAlgorithmType } from '../services/kms/kms-types.interface';
+import type { KeyAlgorithmType as KeyAlgorithmType } from '../services/kms/kms-types.interface';
 import { KeyAlgorithm } from '../shared/constants';
 
 // ======================================================

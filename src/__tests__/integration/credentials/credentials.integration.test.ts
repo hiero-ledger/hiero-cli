@@ -15,16 +15,17 @@ describe('Credentials Integration Tests', () => {
 
   beforeAll(async () => {
     coreApi = createMockCoreApi();
-    setDefaultOperatorForNetwork(coreApi);
+    await setDefaultOperatorForNetwork(coreApi);
   });
 
   it('should remove credential and then verify it with list', async () => {
     const record: KmsCredentialRecord = {
       keyRefId: 'test-key',
-      type: 'localPrivateKey',
+      keyManager: 'local',
       publicKey: 'public-key-test',
       labels: ['label1', 'label2'],
       keyAlgorithm: KeyAlgorithm.ECDSA,
+      createdAt: new Date().toISOString(),
     };
     coreApi.state.set('kms-credentials', record.keyRefId, record);
     const listCredentialsResult = await listCredentials({
@@ -43,7 +44,7 @@ describe('Credentials Integration Tests', () => {
     );
     expect(credentialNames).toContain('test-key');
     const removeCredentialsArgs: Record<string, unknown> = {
-      keyRefId: 'test-key',
+      id: 'test-key',
     };
     const removeCredentialsResult = await removeCredentials({
       args: removeCredentialsArgs,

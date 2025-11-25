@@ -59,7 +59,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
           createTokenTransaction: jest.fn().mockReturnValue({}),
         },
         signing: {
-          signAndExecute: jest.fn().mockResolvedValue(mockSignResult),
+          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           getPublicKey: jest.fn().mockReturnValue('test-public-key'),
@@ -141,26 +141,24 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         alias: {
           resolve: jest
             .fn()
-            .mockImplementation(
-              (alias: string, type: string, _network: string) => {
-                if (
-                  type === 'account' &&
-                  (alias === '0.0.111' || alias === '0.0.222')
-                ) {
-                  return {
-                    entityId: alias,
-                    keyRefId: `key-ref-${alias}`,
-                    alias: alias,
-                  };
-                }
-                if (type === 'token' && alias === '0.0.12345') {
-                  return {
-                    entityId: alias,
-                  };
-                }
-                return null;
-              },
-            ),
+            .mockImplementation((alias: string, type: string) => {
+              if (
+                type === 'account' &&
+                (alias === '0.0.111' || alias === '0.0.222')
+              ) {
+                return {
+                  entityId: alias,
+                  keyRefId: `key-ref-${alias}`,
+                  alias,
+                };
+              }
+              if (type === 'token' && alias === '0.0.12345') {
+                return {
+                  entityId: alias,
+                };
+              }
+              return null;
+            }),
         },
         kms: {
           getPublicKey: jest.fn().mockReturnValue('mock-public-key'),
@@ -171,7 +169,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         token: '0.0.12345',
         from: '0.0.111',
         to: '0.0.222',
-        balance: '100t',
+        amount: '100t',
       };
 
       // Act
@@ -201,7 +199,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       const args = {
         // Missing required token parameter
         to: '0.0.222',
-        balance: 100,
+        amount: 100,
       };
 
       // Act

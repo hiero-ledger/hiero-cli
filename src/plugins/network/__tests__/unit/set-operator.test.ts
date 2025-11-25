@@ -50,6 +50,8 @@ describe('network plugin - set-operator command', () => {
     expect(kmsService.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
       '3030020100300706052b8104000a04220420...',
+      'local',
+      ['network:operator', 'network:testnet'],
     );
     expect(networkService.setOperator).toHaveBeenCalledWith('testnet', {
       accountId: '0.0.123456',
@@ -256,7 +258,7 @@ describe('network plugin - set-operator command', () => {
     const aliasService = makeAliasMock();
 
     // Mock KMS error
-    kmsService.importPrivateKey.mockImplementation((_keyType, _privateKey) => {
+    kmsService.importPrivateKey.mockImplementation(() => {
       throw new Error('Invalid private key format');
     });
 

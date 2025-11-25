@@ -69,8 +69,8 @@ describe('topic plugin - message-find command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.5678',
-      sequenceNumber: 5,
+      topic: '0.0.5678',
+      sequence: 5,
     });
 
     const result = await findMessage(args);
@@ -114,8 +114,8 @@ describe('topic plugin - message-find command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.5678',
-      sequenceNumberGt: 5,
+      topic: '0.0.5678',
+      sequenceGt: 5,
     });
 
     const result = await findMessage(args);
@@ -165,8 +165,8 @@ describe('topic plugin - message-find command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.5678',
-      sequenceNumberGte: 5,
+      topic: '0.0.5678',
+      sequenceGte: 5,
     });
 
     const result = await findMessage(args);
@@ -213,8 +213,8 @@ describe('topic plugin - message-find command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.5678',
-      sequenceNumberLt: 3,
+      topic: '0.0.5678',
+      sequenceLt: 3,
     });
 
     const result = await findMessage(args);
@@ -252,8 +252,8 @@ describe('topic plugin - message-find command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.5678',
-      sequenceNumberLte: 3,
+      topic: '0.0.5678',
+      sequenceLte: 3,
     });
 
     const result = await findMessage(args);
@@ -291,8 +291,8 @@ describe('topic plugin - message-find command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.5678',
-      sequenceNumberEq: 5,
+      topic: '0.0.5678',
+      sequenceEq: 5,
     });
 
     const result = await findMessage(args);
@@ -311,48 +311,6 @@ describe('topic plugin - message-find command', () => {
     });
   });
 
-  test('finds messages with not equal filter', async () => {
-    const logger = makeLogger();
-    const mockMessages = [
-      makeTopicMessage(1, 'Message 1'),
-      makeTopicMessage(3, 'Message 3'),
-    ];
-
-    const { mirror, networkMock, alias } = makeApiMocks({
-      getTopicMessagesImpl: jest.fn().mockResolvedValue({
-        messages: mockMessages,
-        links: { next: null },
-      }),
-    });
-
-    const api: Partial<CoreApi> = {
-      mirror,
-      network: networkMock,
-      alias: alias as any,
-      logger,
-    };
-
-    const args = makeArgs(api, logger, {
-      topicId: '0.0.5678',
-      sequenceNumberNe: 2,
-    });
-
-    const result = await findMessage(args);
-
-    expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
-    expect(output.totalCount).toBe(2);
-
-    expect(mirror.getTopicMessages).toHaveBeenCalledWith({
-      topicId: '0.0.5678',
-      filter: {
-        field: 'sequenceNumber',
-        operation: 'ne',
-        value: 2,
-      },
-    });
-  });
-
   test('returns failure when no sequence number or filter provided', async () => {
     const logger = makeLogger();
 
@@ -366,7 +324,7 @@ describe('topic plugin - message-find command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.5678',
+      topic: '0.0.5678',
     });
 
     const result = await findMessage(args);
@@ -394,8 +352,8 @@ describe('topic plugin - message-find command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.5678',
-      sequenceNumber: 5,
+      topic: '0.0.5678',
+      sequence: 5,
     });
 
     const result = await findMessage(args);
@@ -422,8 +380,8 @@ describe('topic plugin - message-find command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.5678',
-      sequenceNumberGte: 5,
+      topic: '0.0.5678',
+      sequenceGte: 5,
     });
 
     const result = await findMessage(args);
@@ -451,8 +409,8 @@ describe('topic plugin - message-find command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.5678',
-      sequenceNumberGte: 1000,
+      topic: '0.0.5678',
+      sequenceGte: 1000,
     });
 
     const result = await findMessage(args);
@@ -482,9 +440,9 @@ describe('topic plugin - message-find command', () => {
     };
 
     const args = makeArgs(api, logger, {
-      topicId: '0.0.5678',
-      sequenceNumberGt: 5,
-      sequenceNumberLt: 10,
+      topic: '0.0.5678',
+      sequenceGt: 5,
+      sequenceLt: 10,
     });
 
     const result = await findMessage(args);

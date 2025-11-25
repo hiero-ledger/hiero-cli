@@ -18,7 +18,7 @@ describe('Clear Account Integration Tests', () => {
 
   beforeAll(async () => {
     coreApi = createMockCoreApi();
-    setDefaultOperatorForNetwork(coreApi);
+    await setDefaultOperatorForNetwork(coreApi);
   });
 
   describe('Valid Clear Account Scenarios', () => {

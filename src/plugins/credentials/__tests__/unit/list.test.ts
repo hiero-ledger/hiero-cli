@@ -4,7 +4,7 @@ import {
   makeArgs,
   makeKmsMock,
 } from '../../../../core/shared/__tests__/helpers/mocks';
-import { CredentialType } from '../../../../core/services/kms/kms-types.interface';
+import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { Status } from '../../../../core/shared/constants';
 
 // No process.exit usage in handler version
@@ -38,13 +38,13 @@ describe('credentials plugin - list command', () => {
     const mockCredentials = [
       {
         keyRefId: 'kr_test123',
-        type: 'localPrivateKey' as CredentialType,
+        keyManager: 'local' as KeyManagerName,
         publicKey: 'pub-key-123',
         labels: ['test', 'dev'],
       },
       {
         keyRefId: 'kr_test456',
-        type: 'kms' as CredentialType,
+        keyManager: 'local_encrypted' as KeyManagerName,
         publicKey: 'pub-key-456',
       },
     ];

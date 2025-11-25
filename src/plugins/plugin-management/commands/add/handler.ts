@@ -1,32 +1,84 @@
 /**
  * Add Plugin Command Handler
- * Handles adding a plugin to the system
- * Follows ADR-003 contract: returns CommandExecutionResult
+ * Adds a new plugin entry to the plugin-management state and enables it.
+ *
+ * Behavior:
+ * - Reads the plugin manifest from the provided path to determine the plugin name.
+ * - Fails if a plugin with the same name already exists in state.
+ * - On success, creates a new PluginStateEntry with enabled = true.
+ *
+ * Follows ADR-003 contract: returns CommandExecutionResult.
  */
+import * as path from 'path';
 import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
 import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { AddPluginOutput } from './output';
+import {
+  PluginStateEntry,
+  PluginManifest,
+} from '../../../../core/plugins/plugin.interface';
+import { PluginManagementCreateStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
 
 export async function addPlugin(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
-  const { logger } = args;
-  const { path } = args.args as { path: string };
+  const { api, logger } = args;
+  const { path: pluginPath } = args.args as { path: string };
 
-  logger.log('➕ Adding plugin...');
+  logger.info('➕ Adding plugin from path...');
 
   try {
-    // Note: In a real implementation, this would use the plugin manager
-    // For now, we'll just simulate the action
-    const pluginName = path.split('/').pop()?.replace('.js', '') || 'unknown';
+    // @TODO: Normalize plugin paths (relative vs absolute) once CLI packaging
+    // as an npm package is finalized, so built-in and user-added plugins use
+    // a consistent path format.
+    const resolvedPath = path.resolve(String(pluginPath));
+    const manifestPath = path.resolve(resolvedPath, 'manifest.js');
+
+    logger.info(`🔍 Loading plugin manifest from: ${manifestPath}`);
+
+    const manifestModule = (await import(manifestPath)) as {
+      default: PluginManifest;
+    };
+
+    const manifest = manifestModule.default;
+
+    if (!manifest || !manifest.name) {
+      return {
+        status: Status.Failure,
+        errorMessage: `No valid manifest found at ${manifestPath}`,
+      };
+    }
+
+    const pluginName = manifest.name;
+
+    const newEntry: PluginStateEntry = {
+      name: pluginName,
+      path: resolvedPath,
+      enabled: true,
+    };
+    const result = api.pluginManagement.addPlugin(newEntry);
+
+    if (result.status === PluginManagementCreateStatus.Duplicate) {
+      const outputData: AddPluginOutput = {
+        name: pluginName,
+        path: resolvedPath,
+        added: false,
+        message: `Plugin '${pluginName}' already exists in plugin-management state`,
+      };
+
+      return {
+        status: Status.Failure,
+        outputJson: JSON.stringify(outputData),
+      };
+    }
 
     const outputData: AddPluginOutput = {
       name: pluginName,
-      path,
+      path: resolvedPath,
       added: true,
-      message: `Plugin ${pluginName} added successfully`,
+      message: `Plugin '${pluginName}' added and enabled successfully`,
     };
 
     return {

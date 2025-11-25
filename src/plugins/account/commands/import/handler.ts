@@ -3,13 +3,15 @@
  * Handles importing existing accounts using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
-import { Status } from '../../../../core/shared/constants';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
+import { KeyAlgorithm, Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import { ImportAccountOutput } from './output';
 import { parseKeyWithType } from '../../../../core/utils/keys';
+import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
+import { AccountData } from '../../schema';
 
 export async function importAccount(
   args: CommandHandlerArgs,
@@ -23,18 +25,28 @@ export async function importAccount(
   const accountId = args.args.id as string;
   const privateKeyInput = args.args.key as string;
   const alias = (args.args.name as string) || '';
+  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
 
   // Check if name already exists on the current network
   const network = api.network.getCurrentNetwork();
 
+  // Get keyManager from args or fallback to config
+  const keyManager =
+    keyManagerArg ||
+    api.config.getOption<KeyManagerName>('default_key_manager');
+
   try {
     // Parse private key with type
     const { keyType, privateKey } = parseKeyWithType(privateKeyInput);
+
     // Check if account name already exists
     api.alias.availableOrThrow(alias, network);
+
     // Generate a unique name for the account
     const name = alias || `imported-${accountId.replace(/\./g, '-')}`;
-    logger.log(`Importing account: ${name} (${accountId})`);
+    logger.info(`Importing account: ${name} (${accountId})`);
+
+    // Check if account name already exists
     if (accountState.hasAccount(name)) {
       return {
         status: Status.Failure,
@@ -49,7 +61,8 @@ export async function importAccount(
     const { keyRefId, publicKey } = api.kms.importPrivateKey(
       keyType,
       privateKey,
-      [`account:${name}`],
+      keyManager,
+      ['account:import', `account:${name}`],
     );
 
     // Register name if provided
@@ -57,10 +70,7 @@ export async function importAccount(
       api.alias.register({
         alias,
         type: 'account',
-        network: api.network.getCurrentNetwork() as
-          | 'mainnet'
-          | 'testnet'
-          | 'previewnet',
+        network: api.network.getCurrentNetwork(),
         entityId: accountId,
         publicKey,
         keyRefId,
@@ -69,20 +79,17 @@ export async function importAccount(
     }
 
     // Create account object (no private key in plugin state)
-    const account = {
+    const account: AccountData = {
       name,
       accountId,
-      type: keyType,
+      type: keyType as KeyAlgorithm,
       publicKey: publicKey,
       evmAddress:
         accountInfo.evmAddress || '0x0000000000000000000000000000000000000000',
       solidityAddress: accountId, // Simplified for mock
       solidityAddressFull: `0x${accountId}`,
       keyRefId,
-      network: api.network.getCurrentNetwork() as
-        | 'mainnet'
-        | 'testnet'
-        | 'previewnet',
+      network: api.network.getCurrentNetwork(),
     };
 
     // Store account in state using the helper

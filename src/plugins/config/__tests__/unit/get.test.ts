@@ -25,7 +25,7 @@ describe('config plugin - get', () => {
     expect(parsed.name).toBe('default_key_manager');
     expect(parsed.type).toBe('enum');
     expect(parsed.value).toBe('local');
-    expect(parsed.allowedValues).toEqual(['local', 'encrypted_local']);
+    expect(parsed.allowedValues).toEqual(['local', 'local_encrypted']);
   });
 
   test('fails when option param missing', async () => {

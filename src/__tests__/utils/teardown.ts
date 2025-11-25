@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { transferHandler } from '../../plugins/hbar/commands/transfer';
 import { CoreApi } from '../../core/core-api/core-api.interface';
 
-export const deleteStateFiles = async (dir: string): Promise<void> => {
+export const deleteStateFiles = (dir: string): void => {
   fs.rm(dir, { recursive: true, force: true }, (err: any) => {
     if (err) {
       throw err;

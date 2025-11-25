@@ -87,13 +87,15 @@ describe('createTokenHandler', () => {
       expect(api.kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
         'test-private-key',
+        'local',
+        ['token:treasury', 'temporary'],
       );
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
         expectedTokenTransactionParams,
       );
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTransactions.token,
-        { keyRefId: 'treasury-key-ref-id' },
+        ['admin-key-ref-id', 'treasury-key-ref-id'],
       );
       expect(mockSaveToken).toHaveBeenCalled();
       expect(result.status).toBe(Status.Success);
@@ -152,8 +154,9 @@ describe('createTokenHandler', () => {
         treasuryId: '0.0.100000',
         adminKey: 'operator-public-key',
       });
-      expect(signing.signAndExecute).toHaveBeenCalledWith(
+      expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTransactions.token,
+        ['operator-key-ref-id', 'operator-key-ref-id'],
       );
       expect(mockSaveToken).toHaveBeenCalled();
       expect(result.status).toBe(Status.Success);
@@ -243,7 +246,7 @@ describe('createTokenHandler', () => {
             .mockReturnValue(mockTokenTransaction),
         },
         signing: {
-          signAndExecute: jest
+          signAndExecuteWith: jest
             .fn()
             .mockResolvedValue(mockSignResult as TransactionResult),
         },

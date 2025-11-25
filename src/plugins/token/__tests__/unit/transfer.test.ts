@@ -19,15 +19,10 @@ describe('transferTokenHandler', () => {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
         receipt: {} as any,
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokens,
-        signing,
-        alias: _alias,
-        kms,
-      } = makeApiMocks({
+      const { api, tokens, signing, kms } = makeApiMocks({
         tokens: {
           createTransferTransaction: jest
             .fn()
@@ -56,7 +51,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -87,11 +82,13 @@ describe('transferTokenHandler', () => {
       });
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTransferTransaction,
-        { keyRefId: 'imported-key-ref-id' },
+        ['imported-key-ref-id'],
       );
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
         'test-from-key',
+        'local',
+        ['token:account', 'temporary'],
       );
     });
 
@@ -102,15 +99,10 @@ describe('transferTokenHandler', () => {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
         receipt: {} as any,
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokens,
-        signing,
-        alias,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api, tokens, signing, alias } = makeApiMocks({
         tokens: {
           createTransferTransaction: jest
             .fn()
@@ -139,7 +131,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: 'alice',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -171,7 +163,7 @@ describe('transferTokenHandler', () => {
       });
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTransferTransaction,
-        { keyRefId: 'alias-key-ref-id' },
+        ['alias-key-ref-id'],
       );
     });
 
@@ -182,15 +174,10 @@ describe('transferTokenHandler', () => {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
         receipt: {} as any,
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokens,
-        signing: _signing,
-        alias,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api, tokens, alias } = makeApiMocks({
         tokens: {
           createTransferTransaction: jest
             .fn()
@@ -200,7 +187,7 @@ describe('transferTokenHandler', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         alias: {
-          resolve: jest.fn().mockImplementation((alias, _type, _network) => {
+          resolve: jest.fn().mockImplementation((alias) => {
             if (alias === 'bob') {
               return {
                 entityId: '0.0.789012',
@@ -227,7 +214,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: 'bob',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -272,7 +259,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 0, // Zero amount - should fail validation
+          amount: 0, // Zero amount - should fail validation
         },
         api,
         state: {} as any,
@@ -300,14 +287,10 @@ describe('transferTokenHandler', () => {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
         receipt: {} as any,
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTransferTransaction: jest
             .fn()
@@ -329,7 +312,7 @@ describe('transferTokenHandler', () => {
         args: {
           token: '0.0.123456',
           to: '0.0.789012',
-          balance: 100,
+          amount: 100,
           // from missing - should use default operator
         },
         api,
@@ -361,7 +344,7 @@ describe('transferTokenHandler', () => {
         args: {
           token: '0.0.123456',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
           // to missing
         },
         api,
@@ -389,7 +372,7 @@ describe('transferTokenHandler', () => {
           // tokenId missing
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -416,7 +399,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: -50, // Negative amount
+          amount: -50, // Negative amount
         },
         api,
         state: {} as any,
@@ -443,14 +426,10 @@ describe('transferTokenHandler', () => {
         success: false,
         transactionId: '',
         receipt: { status: { status: 'failed', transactionId: '' } },
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTransferTransaction: jest
             .fn()
@@ -473,7 +452,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -493,11 +472,7 @@ describe('transferTokenHandler', () => {
 
     test('should handle token transaction service error', async () => {
       // Arrange
-      const {
-        api,
-        tokens: _tokens,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokens: {
           createTransferTransaction: jest.fn().mockImplementation(() => {
             throw new Error('Network error');
@@ -517,7 +492,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -540,12 +515,7 @@ describe('transferTokenHandler', () => {
       // Arrange
       const mockTransferTransaction = { test: 'transfer-transaction' };
 
-      const {
-        api,
-        tokens: _tokens,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokens: {
           createTransferTransaction: jest
             .fn()
@@ -573,7 +543,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -599,14 +569,10 @@ describe('transferTokenHandler', () => {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
         receipt: {} as any,
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api, tokenTransactions: _tokenTransactions } = makeApiMocks({
         tokenTransactions: {
           createTransferTransaction: jest
             .fn()
@@ -632,7 +598,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 999999999, // Large amount
+          amount: 999999999, // Large amount
         },
         api,
         state: {} as any,
@@ -673,14 +639,10 @@ describe('transferTokenHandler', () => {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
         receipt: {} as any,
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api } = makeApiMocks({
         tokenTransactions: {
           createTransferTransaction: jest
             .fn()
@@ -706,7 +668,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -738,14 +700,10 @@ describe('transferTokenHandler', () => {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
         receipt: {} as any,
+        consensusTimestamp: '1234567890.123456789',
       };
 
-      const {
-        api,
-        tokenTransactions: _tokenTransactions,
-        signing: _signing,
-        kms: _kms,
-      } = makeApiMocks({
+      const { api, tokenTransactions: _tokenTransactions } = makeApiMocks({
         tokenTransactions: {
           createTransferTransaction: jest
             .fn()
@@ -771,7 +729,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.345678', // Same as from
           from: '0.0.345678:test-from-key',
-          balance: 100,
+          amount: 100,
         },
         api,
         state: {} as any,
@@ -812,7 +770,7 @@ describe('transferTokenHandler', () => {
           token: '0.0.123456',
           to: '0.0.789012',
           from: '0.0.345678:test-from-key',
-          balance: 100.5, // Decimal amount - should be rejected
+          amount: 100.5, // Decimal amount - should be rejected
         },
         api,
         state: {} as any,

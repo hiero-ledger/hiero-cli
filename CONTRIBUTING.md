@@ -8,139 +8,67 @@ Install dependencies:
 npm install
 ```
 
-Run unit tests:
+Run a build:
 
 ```
-npm run test:unit
+npm run build
 ```
 
-### Configuration & State Layering
+### Running Tests
 
-The CLI layers state in three tiers (lowest precedence first):
+- Unit tests are executed with:
 
-1. Base defaults (`src/state/config.ts`)
-2. Optional user overrides (cosmiconfig – `hedera-cli.config.*` or `HCLI_CONFIG_FILE`)
-3. Mutable runtime state persisted to JSON (accounts, tokens, scripts, topics, etc.)
+  ```sh
+  npm run test:unit
+  ```
 
-`src/state/store.ts` merges these using a deep merge only for the `networks` map to preserve shipped networks while allowing partial overrides.
+- Jest is configured via `jest.unit.config.js` to run all `*.test.ts` files under `**/__tests__/**`.
+- Each plugin keeps its own test suite under its `__tests__/` directory (for example, `src/plugins/account/__tests__/unit/`).
+- Coverage reports are written to `coverage/unit/`.
 
-### Test Environment Strategy
+### Code Style & Tooling
 
-To keep tests deterministic and isolated while still exercising the real layering logic:
+- Use ESLint to catch common issues:
 
-- A single global Jest setup file (`__tests__/setup/jestSetup.ts`) sets `HCLI_CONFIG_FILE` to the fixture `__tests__/fixtures/hedera-cli.config.test.json` for every worker process.
-- Each Jest worker is assigned a unique temporary state file via `HCLI_STATE_FILE` (per-worker path in the OS temp directory). This prevents cross-test interference when tests run in parallel and mutate runtime state.
-- The store dynamically re-loads user config on hydration, so changes to the user config file appear without restarting the process.
+  ```sh
+  npm run lint
+  ```
 
-### resetStore Helper
+- Automatically fix lint issues where possible:
 
-`resetStore(opts?)` (exported from `src/state/store.ts`) rebuilds the underlying Zustand store and re-layers configuration. Use it when you need to:
+  ```sh
+  npm run lint:fix
+  ```
 
-- Override `HCLI_CONFIG_FILE` within a specific test (e.g. simulate missing / malformed / empty config).
-- Point to a custom temporary state file (`opts.stateFile`) for fine‑grained isolation inside a single test file.
+- Enforce consistent formatting with Prettier:
 
-Example:
+  ```sh
+  npm run format:check
+  npm run format
+  ```
 
-```ts
-import { resetStore, getState } from '../../src/state/store';
-import * as os from 'os';
-import * as path from 'path';
+Please run linting and formatting checks before opening a PR.
 
-test('missing user config falls back to defaults', () => {
-  const tmpConfigPath = path.join(
-    os.tmpdir(),
-    `hcli-missing-${Date.now()}.json`,
-  );
-  process.env.HCLI_CONFIG_FILE = tmpConfigPath; // no file created
-  resetStore({
-    stateFile: path.join(os.tmpdir(), `hcli-state-${Date.now()}.json`),
-  });
-  const state = getState();
-  expect(state.telemetry).toBe(0);
-  expect(state.networks['fixture-extra']).toBeUndefined();
-});
-```
+### Working on Plugins
 
-### Logging & Silencing Strategy in Tests
+Most feature work lives in the built‑in plugins under `src/plugins/` (for example, `src/plugins/account`, `src/plugins/token`, etc.).
 
-The unified setup file also sets `HCLI_LOG_MODE=silent` by default so test output stays clean. Override early in a test (before importing the logger) if you need visible logs.
+- Follow the structure and patterns described in [`PLUGIN_ARCHITECTURE_GUIDE.md`](./PLUGIN_ARCHITECTURE_GUIDE.md).
+- When you change a plugin’s behaviour or commands, update that plugin’s `README.md` to match and other documentation files if needed.
+- Add or update tests under the plugin’s `__tests__/` directory to cover new or changed behaviour.
 
-Per‑test scoped control helpers live in `__tests__/helpers/loggerHelper.ts`:
+### State & Configuration (High Level)
 
-```ts
-import {
-  withSilencedLogs,
-  withVerboseLogs,
-  withNormalLogs,
-} from '../helpers/loggerHelper';
-
-test('quiet block', async () => {
-  await withSilencedLogs(async () => {
-    // code that would normally log
-  });
-});
-
-test('verbose tracing', async () => {
-  await withVerboseLogs(async () => {
-    // code executed with level = verbose
-  });
-});
-```
-
-Prefer these scoped helpers over imperative setters; they automatically restore the previous level.
-
-If you need raw console output in a specific test file, set the mode early (before any logger import):
-
-```ts
-process.env.HCLI_LOG_MODE = 'normal'; // or 'verbose'
-```
-
-### Command Action Wrapping (Required)
-
-All Commander `.action` handlers must be wrapped by either:
-
-- `wrapAction` (preferred) – adds dynamic variable replacement, optional verbose pre-log, and standardized error handling via `exitOnError`.
-- `exitOnError` – if you only need the error mapping behavior.
-
-Why: This enforces consistent DomainError handling (setting `process.exitCode` instead of exiting), guarantees telemetry flushing, and keeps logging noise predictable. A test `wrappingConsistency.test.ts` fails the build if any unwrapped `.action(` is introduced.
-
-When adding a new command:
-
-```ts
-import { wrapAction } from '../shared/wrapAction';
-
-program.command('do-thing').action(
-  wrapAction(
-    async (opts) => {
-      // implement logic
-    },
-    { log: 'Doing the thing' },
-  ),
-);
-```
-
-Throw `new DomainError(message, code?)` for user-facing failures instead of calling `process.exit`.
-
-### Logger Modes
-
-The logger supports modes: `normal`, `verbose`, `quiet`, `silent` (set via `--verbose`, `--quiet`, or `--log-mode <mode>` / `HCLI_LOG_MODE`). Avoid adding bespoke silencing flags; extend the existing mode enum if new behavior is required.
-
-### Adding New Config Edge-Case Tests
-
-Patterns:
-
-- Missing config: point `HCLI_CONFIG_FILE` to a non-existent path then `resetStore()`.
-- Empty config: create a temp file with empty contents.
-- Malformed config: already covered by `invalidConfig.test.ts` (bad JSON falls back gracefully).
-
-Always restore or reassign `HCLI_CONFIG_FILE` if the test file later relies on the standard fixture.
+The CLI stores per‑plugin state as JSON files under the user‑specific `.hedera-cli/state/` directory (see the main `README.md` for details). For an up‑to‑date description of configuration and state behavior, refer to the **Configuration & State Storage** section in the root [`README.md`](./README.md#configuration--state-storage).
 
 ### Commit Guidelines
 
 - Keep patches focused; unrelated formatting churn makes review harder.
 - Prefer small, composable utility helpers when test logic starts repeating (e.g., temp file creation, logger control).
 - Run the full unit suite before opening a PR.
+- When you change behaviour, add or update tests to cover the new logic.
+- Keep documentation in sync with code changes (for example, plugin `README.md` files or relevant docs under `docs/`).
 
 ### Questions / Improvements
 
-Open an issue or PR if you see an opportunity to simplify store layering, reduce I/O in tests, or extend configuration validation.
+Open an issue or PR if you see an opportunity to simplify the test setup, improve state handling, or extend configuration validation.

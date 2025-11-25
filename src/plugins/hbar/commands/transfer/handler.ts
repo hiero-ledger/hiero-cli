@@ -18,8 +18,9 @@ import { Logger } from '../../../../core';
 import { SupportedNetwork } from '../../../../core/types/shared.types';
 import { processBalanceInput } from '../../../../core/utils/process-balance-input';
 import { parseIdKeyPair } from '../../../../core/utils/keys';
-import type { KeyAlgorithm as KeyAlgorithmType } from '../../../../core/services/kms/kms-types.interface';
+import type { KeyAlgorithmType as KeyAlgorithmType } from '../../../../core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '../../../../core/shared/constants';
+import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 
 /**
  * Maps validation error paths to user-friendly error messages
@@ -28,7 +29,7 @@ function getValidationErrorMessage(
   errorPath: string | number | undefined,
 ): string {
   const pathMap: Record<string, string> = {
-    balance: 'Invalid balance value',
+    amount: 'Invalid amount value',
     to: 'Invalid or missing "to" field',
   };
   return pathMap[String(errorPath)] || 'Invalid input';
@@ -50,7 +51,7 @@ function getDefaultFromAccount(
   if (operator) {
     const { accountId, keyRefId } = operator;
 
-    logger.log(`[HBAR] Using default operator as from: ${accountId}`);
+    logger.info(`[HBAR] Using default operator as from: ${accountId}`);
     return { success: true, accountId, keyRefId };
   }
 
@@ -74,6 +75,7 @@ function resolveFromAccount(
   api: CoreApi,
   logger: Logger,
   currentNetwork: SupportedNetwork,
+  keyManager: KeyManagerName,
 ):
   | { success: true; fromAccountId: string; fromKeyRefId: string }
   | { success: false; error: CommandExecutionResult } {
@@ -100,9 +102,14 @@ function resolveFromAccount(
       // Default to ecdsa if keyType is not provided
       const keyTypeToUse: KeyAlgorithmType = keyType || KeyAlgorithm.ECDSA;
 
-      const imported = api.kms.importPrivateKey(keyTypeToUse, privateKey);
+      const imported = api.kms.importPrivateKey(
+        keyTypeToUse,
+        privateKey,
+        keyManager,
+        ['hbar:transfer', 'temporary'],
+      );
 
-      logger.log(
+      logger.info(
         `[HBAR] Using from as account ID with private key: ${accountId} (keyType: ${keyTypeToUse})`,
       );
       return {
@@ -135,7 +142,7 @@ function resolveFromAccount(
     };
   }
 
-  logger.log(`[HBAR] Resolved from alias: ${from} -> ${fromAccountId}`);
+  logger.info(`[HBAR] Resolved from alias: ${from} -> ${fromAccountId}`);
   return {
     success: true,
     fromAccountId,
@@ -148,7 +155,13 @@ export async function transferHandler(
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  logger.log('[HBAR] Transfer command invoked');
+  logger.info('[HBAR] Transfer command invoked');
+
+  // Get keyManager from args or fallback to config
+  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
+  const keyManager =
+    keyManagerArg ||
+    api.config.getOption<KeyManagerName>('default_key_manager');
 
   try {
     const validationResult = TransferInputSchema.safeParse(args.args);
@@ -169,12 +182,12 @@ export async function transferHandler(
     let amount: bigint;
 
     try {
-      // Convert balance input: display units (default) or base units (with 't' suffix)
-      amount = processBalanceInput(validatedInput.balance, HBAR_DECIMALS);
+      // Convert amount input: display units (default) or base units (with 't' suffix)
+      amount = processBalanceInput(validatedInput.amount, HBAR_DECIMALS);
     } catch {
       return {
         status: Status.Failure,
-        errorMessage: 'Invalid balance input',
+        errorMessage: 'Invalid amount input',
       };
     }
 
@@ -200,6 +213,7 @@ export async function transferHandler(
       api,
       logger,
       currentNetwork,
+      keyManager,
     );
     if (!fromResult.success) {
       return fromResult.error;
@@ -209,12 +223,12 @@ export async function transferHandler(
 
     if (EntityIdSchema.safeParse(to).success) {
       toAccountId = to;
-      logger.log(`[HBAR] Using to as account ID: ${to}`);
+      logger.info(`[HBAR] Using to as account ID: ${to}`);
     } else {
       const toAlias = api.alias.resolve(to, 'account', currentNetwork);
       if (toAlias) {
         toAccountId = toAlias.entityId || to;
-        logger.log(`[HBAR] Resolved to alias: ${to} -> ${toAccountId}`);
+        logger.info(`[HBAR] Resolved to alias: ${to} -> ${toAccountId}`);
       } else {
         return {
           status: Status.Failure,
@@ -223,7 +237,7 @@ export async function transferHandler(
       }
     }
 
-    logger.log(
+    logger.info(
       `[HBAR] Transferring ${amount.toString()} tinybars from ${fromAccountId} to ${toAccountId}`,
     );
 
@@ -235,9 +249,9 @@ export async function transferHandler(
     });
 
     const result = fromKeyRefId
-      ? await api.txExecution.signAndExecuteWith(transferResult.transaction, {
-          keyRefId: fromKeyRefId,
-        })
+      ? await api.txExecution.signAndExecuteWith(transferResult.transaction, [
+          fromKeyRefId,
+        ])
       : await api.txExecution.signAndExecute(transferResult.transaction);
 
     if (!result.success) {
@@ -247,7 +261,7 @@ export async function transferHandler(
       };
     }
 
-    logger.log(
+    logger.info(
       `[HBAR] Transfer submitted successfully, txId=${result.transactionId}`,
     );
 

@@ -32,6 +32,8 @@ import { OutputServiceImpl } from '../../core/services/output/output-service';
 import { LedgerId } from '@hashgraph/sdk';
 import { STATE_STORAGE_FILE_PATH } from '../test-constants';
 import { MockTestLoggerService } from './mock-test-logger-service';
+import { PluginManagementService } from '../../core/services/plugin-management/plugin-management-service.interface';
+import { PluginManagementServiceImpl } from '../../core/services/plugin-management/plugin-management-service';
 
 export class CoreApiMockImplementation implements CoreApi {
   public account: AccountService;
@@ -47,6 +49,7 @@ export class CoreApiMockImplementation implements CoreApi {
   public kms: KmsService;
   public hbar: HbarService;
   public output: OutputService;
+  public pluginManagement: PluginManagementService;
 
   constructor(config: CoreApiConfig) {
     this.logger = new MockTestLoggerService();
@@ -100,6 +103,8 @@ export class CoreApiMockImplementation implements CoreApi {
 
     this.hbar = new HbarServiceImpl(this.logger);
     this.output = new OutputServiceImpl(config.format);
+
+    this.pluginManagement = new PluginManagementServiceImpl(this.state);
   }
 }
 

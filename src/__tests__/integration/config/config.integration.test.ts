@@ -15,7 +15,7 @@ describe('Config Integration Tests', () => {
 
   beforeAll(async () => {
     coreApi = createMockCoreApi();
-    setDefaultOperatorForNetwork(coreApi);
+    await setDefaultOperatorForNetwork(coreApi);
   });
 
   it('should list config options', async () => {
@@ -31,11 +31,12 @@ describe('Config Integration Tests', () => {
     const listConfigOutput: ListConfigOutput = JSON.parse(
       listConfigResult.outputJson!,
     );
-    expect(listConfigOutput.totalCount).toBe(2);
+    expect(listConfigOutput.totalCount).toBe(3);
     const optionNames = listConfigOutput.options.map((option) => option.name);
     expect(optionNames).toEqual(
       expect.arrayContaining([
         'ed25519_support_enabled',
+        'log_level',
         'default_key_manager',
       ]),
     );

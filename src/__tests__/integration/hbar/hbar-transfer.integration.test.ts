@@ -17,7 +17,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
 
   beforeAll(async () => {
     coreApi = createMockCoreApi();
-    setDefaultOperatorForNetwork(coreApi);
+    await setDefaultOperatorForNetwork(coreApi);
   });
 
   it('should transfer HBAR from operator to account and then verify it with account view method', async () => {
@@ -46,7 +46,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     await delay(5000);
 
     const transferAccountArgs: Record<string, unknown> = {
-      balance: '1',
+      amount: '1',
       to: 'account-transfer',
       memo: 'Memo test',
     };
@@ -138,7 +138,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     await delay(5000);
 
     const transferAccountArgs: Record<string, unknown> = {
-      balance: '1',
+      amount: '1',
       from: 'account-transfer-from',
       to: 'account-transfer-to',
     };

@@ -72,7 +72,7 @@ describe('network plugin - use command', () => {
     expect(result.outputJson).toBeDefined();
   });
 
-  test('logs verbose message', async () => {
+  test('logs info message', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     networkService.switchNetwork = jest.fn();
@@ -84,9 +84,7 @@ describe('network plugin - use command', () => {
     const result = await useHandler(args);
     expect(result.status).toBe(Status.Success);
 
-    expect(logger.verbose).toHaveBeenCalledWith(
-      'Switching to network: mainnet',
-    );
+    expect(logger.info).toHaveBeenCalledWith('Switching to network: mainnet');
   });
 
   test('handles missing network argument', async () => {

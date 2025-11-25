@@ -18,7 +18,7 @@ describe('credentials plugin - remove command', () => {
     const kmsService = makeKmsMock();
 
     const args = makeArgs({ kms: kmsService }, logger, {
-      keyRefId: 'kr_test123',
+      id: 'kr_test123',
     });
 
     return removeCredentials(args).then((result) => {
@@ -29,7 +29,7 @@ describe('credentials plugin - remove command', () => {
     });
   });
 
-  test('returns failure when no keyRefId is provided', () => {
+  test('returns failure when no id is provided', () => {
     const logger = makeLogger();
     const kmsService = makeKmsMock();
     kmsService.remove.mockImplementation(() => {
@@ -46,14 +46,14 @@ describe('credentials plugin - remove command', () => {
     });
   });
 
-  test('returns failure when keyRefId is empty string', () => {
+  test('returns failure when id is empty string', () => {
     const logger = makeLogger();
     const kmsService = makeKmsMock();
     kmsService.remove.mockImplementation(() => {
       throw new Error('Missing keyRefId');
     });
 
-    const args = makeArgs({ kms: kmsService }, logger, { keyRefId: '' });
+    const args = makeArgs({ kms: kmsService }, logger, { id: '' });
 
     return removeCredentials(args).then((result) => {
       expect(result.status).toBe(Status.Failure);
@@ -72,7 +72,7 @@ describe('credentials plugin - remove command', () => {
     });
 
     const args = makeArgs({ kms: kmsService }, logger, {
-      keyRefId: 'kr_test123',
+      id: 'kr_test123',
     });
 
     return removeCredentials(args).then((result) => {

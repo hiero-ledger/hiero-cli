@@ -6,12 +6,18 @@
 import * as path from 'path';
 import { Command } from 'commander';
 import { CoreApi } from '../core-api/core-api.interface';
-import { CommandHandlerArgs, PluginManifest } from './plugin.interface';
+import {
+  CommandHandlerArgs,
+  PluginManifest,
+  PluginStateEntry,
+} from './plugin.interface';
 import { CommandSpec } from './plugin.types';
 import { formatError } from '../utils/errors';
 import { Status } from '../shared/constants';
 import { filterReservedOptions } from '../utils/filter-reserved-options';
+import { registerDisabledPlugin } from '../utils/register-disabled-plugin';
 import { Logger } from '../services/logger/logger-service.interface';
+import { PluginManagementService } from '../services/plugin-management/plugin-management-service.interface';
 
 interface LoadedPlugin {
   manifest: PluginManifest;
@@ -21,13 +27,15 @@ interface LoadedPlugin {
 
 export class PluginManager {
   private coreApi: CoreApi;
-  private logger: Logger;
   private loadedPlugins: Map<string, LoadedPlugin> = new Map();
   private defaultPlugins: string[] = [];
+  private logger: Logger;
+  private pluginManagement: PluginManagementService;
 
   constructor(coreApi: CoreApi) {
     this.coreApi = coreApi;
     this.logger = coreApi.logger;
+    this.pluginManagement = coreApi.pluginManagement;
   }
 
   /**
@@ -41,14 +49,14 @@ export class PluginManager {
    * Initialize and load default plugins
    */
   async initialize(): Promise<void> {
-    this.logger.log('🔌 Loading plugins...');
+    this.logger.info('🔌 Loading plugins...');
 
     for (const pluginPath of this.defaultPlugins) {
       try {
         await this.loadPluginFromPath(pluginPath);
-        this.logger.log(`✅ Loaded: ${pluginPath}`);
+        this.logger.info(`✅ Loaded: ${pluginPath}`);
       } catch {
-        this.logger.log(`ℹ️  Plugin not available: ${pluginPath}`);
+        this.logger.info(`ℹ️  Plugin not available: ${pluginPath}`);
       }
     }
 
@@ -58,7 +66,76 @@ export class PluginManager {
       this.coreApi.state.registerNamespaces(namespaces);
     }
 
-    this.logger.log(`✅ Plugin system ready`);
+    this.logger.info(`✅ Plugin system ready`);
+  }
+
+  /**
+   * Initialize plugin-management state with default plugins if not present.
+   * Returns the current list of plugin state entries.
+   */
+  initializePluginState(defaultState: PluginManifest[]): PluginStateEntry[] {
+    const existingEntries = this.pluginManagement.listPlugins();
+
+    if (existingEntries.length === 0) {
+      this.logger.info(
+        '[PLUGIN-MANAGEMENT] Initializing default plugin state (first run)...',
+      );
+
+      const initialState: PluginStateEntry[] = defaultState.map((manifest) => {
+        const pluginName = manifest.name;
+
+        return {
+          name: pluginName,
+          enabled: true,
+          description: manifest.description,
+        };
+      });
+
+      for (const plugin of initialState) {
+        this.pluginManagement.savePluginState(plugin);
+      }
+
+      return initialState;
+    }
+
+    return existingEntries;
+  }
+
+  /**
+   * Initialize plugin state and configure default plugin loading.
+   * Returns the current list of plugin state entries.
+   */
+  setupDefaultPlugins(defaultState: PluginManifest[]): PluginStateEntry[] {
+    const pluginState = this.initializePluginState(defaultState);
+
+    const enabledPluginPaths = defaultState
+      .map((manifest) => {
+        const stateEntry = pluginState.find(
+          (entry) => entry.name === manifest.name,
+        );
+        if (!stateEntry || !stateEntry.enabled) {
+          return undefined;
+        }
+        return this.getDefaultPluginPath(manifest.name);
+      })
+      .filter((p): p is string => Boolean(p));
+
+    this.setDefaultPlugins(enabledPluginPaths);
+
+    return pluginState;
+  }
+
+  /**
+   * Fully initialize plugins: seed state, register disabled stubs, load all.
+   */
+  async initializePlugins(
+    program: Command,
+    defaultState: PluginManifest[],
+  ): Promise<PluginStateEntry[]> {
+    const pluginState = this.setupDefaultPlugins(defaultState);
+    registerDisabledPlugin(program, pluginState);
+    await this.initialize();
+    return pluginState;
   }
 
   /**
@@ -74,18 +151,18 @@ export class PluginManager {
    * Add a plugin dynamically
    */
   async addPlugin(pluginPath: string): Promise<void> {
-    this.logger.log(`➕ Adding plugin: ${pluginPath}`);
+    this.logger.info(`➕ Adding plugin: ${pluginPath}`);
     await this.loadPluginFromPath(pluginPath);
-    this.logger.log(`✅ Plugin added: ${pluginPath}`);
+    this.logger.info(`✅ Plugin added: ${pluginPath}`);
   }
 
   /**
    * Remove a plugin
    */
   removePlugin(pluginName: string): void {
-    this.logger.log(`➖ Removing plugin: ${pluginName}`);
+    this.logger.info(`➖ Removing plugin: ${pluginName}`);
     this.loadedPlugins.delete(pluginName);
-    this.logger.log(`✅ Plugin removed: ${pluginName}`);
+    this.logger.info(`✅ Plugin removed: ${pluginName}`);
   }
 
   /**
@@ -138,13 +215,17 @@ export class PluginManager {
         status: 'loaded',
       };
 
-      this.loadedPlugins.set(String(manifest.name), loadedPlugin);
+      this.loadedPlugins.set(manifest.name, loadedPlugin);
       return loadedPlugin;
     } catch (error) {
       throw new Error(
         formatError(`Failed to load plugin from ${pluginPath}: `, error),
       );
     }
+  }
+
+  private getDefaultPluginPath(name: string): string {
+    return `./dist/plugins/${name}`;
   }
 
   /**
@@ -166,7 +247,7 @@ export class PluginManager {
       this.registerSingleCommand(pluginCommand, plugin, commandSpec);
     }
 
-    this.logger.log(`✅ Registered commands for: ${pluginName}`);
+    this.logger.info(`✅ Registered commands for: ${pluginName}`);
   }
 
   /**
@@ -193,7 +274,7 @@ export class PluginManager {
       const { allowed, filtered } = filterReservedOptions(commandSpec.options);
 
       if (filtered.length > 0) {
-        this.logger.log(
+        this.logger.info(
           `⚠️  Plugin ${plugin.manifest.name} command ${commandName}: filtered reserved option(s) ${filtered
             .map((n) => `--${n}`)
             .join(', ')} (reserved by core CLI)`,

@@ -17,7 +17,7 @@ describe('Delete Account Integration Tests', () => {
 
   beforeAll(async () => {
     coreApi = createMockCoreApi();
-    setDefaultOperatorForNetwork(coreApi);
+    await setDefaultOperatorForNetwork(coreApi);
   });
 
   describe('Valid Delete Account Scenarios', () => {

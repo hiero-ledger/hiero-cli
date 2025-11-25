@@ -47,12 +47,12 @@ export async function getAccountBalance(
 
   // Extract command arguments
   const accountIdOrNameOrAlias = args.args.account as string;
-  const onlyHbar = (args.args.onlyHbar as boolean) || false;
-  // @TODO Add handling for specific tokenId if provided, rn missing functionality
-  // @TODO Dont allow both onlyHbar and tokenId at the same time
-  const tokenId = args.args.tokenId as string;
+  const hbarOnly = (args.args.hbarOnly as boolean) || false;
+  // @TODO Add handling for specific token if provided, rn missing functionality
+  // @TODO Dont allow both hbarOnly and token at the same time
+  const token = args.args.token as string;
 
-  logger.log(`Getting balance for account: ${accountIdOrNameOrAlias}`);
+  logger.info(`Getting balance for account: ${accountIdOrNameOrAlias}`);
 
   try {
     // Resolve account identifier (could be name, account ID, or alias)
@@ -67,7 +67,7 @@ export async function getAccountBalance(
     );
     if (account && account.entityId) {
       accountId = account.entityId;
-      logger.log(`Found account in state: ${account.alias} -> ${accountId}`);
+      logger.info(`Found account in state: ${account.alias} -> ${accountId}`);
     } else {
       const accountIdParseResult = EntityIdSchema.safeParse(
         accountIdOrNameOrAlias,
@@ -93,7 +93,7 @@ export async function getAccountBalance(
     };
 
     // Get token balances if not only HBAR
-    if (!onlyHbar && !tokenId) {
+    if (!hbarOnly && !token) {
       try {
         outputData.tokenBalances = await fetchAccountTokenBalances(
           api,

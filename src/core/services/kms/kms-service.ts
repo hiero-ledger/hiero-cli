@@ -1,11 +1,12 @@
-import { KmsService } from './kms-service.interface';
-import {
+import type { KmsService } from './kms-service.interface';
+import type {
   KmsCredentialRecord,
-  KeyAlgorithm as KeyAlgorithmType,
-  CredentialType,
+  KeyAlgorithmType as KeyAlgorithmType,
+  KeyManagerName,
 } from './kms-types.interface';
 import { KeyAlgorithm } from '../../shared/constants';
-import { SupportedNetwork } from '../../types/shared.types';
+import { KEY_MANAGERS } from './kms-types.interface';
+import type { SupportedNetwork } from '../../types/shared.types';
 import { randomBytes } from 'crypto';
 import {
   PrivateKey,
@@ -14,29 +15,32 @@ import {
   AccountId,
   Transaction as HederaTransaction,
 } from '@hashgraph/sdk';
-import { LocalKmsSignerService } from './local-kms-signer.service';
-import { KmsSignerService } from './kms-signer-service.interface';
-import { Logger } from '../logger/logger-service.interface';
-import { StateService } from '../state/state-service.interface';
-import { NetworkService } from '../network/network-service.interface';
+import type { Signer } from './signers/signer.interface';
+import type { Logger } from '../logger/logger-service.interface';
+import type { StateService } from '../state/state-service.interface';
+import type { NetworkService } from '../network/network-service.interface';
+import type { KeyManager } from './key-managers/key-manager.interface';
+import { CredentialStorage } from './credential-storage';
+import { LocalKeyManager } from './key-managers/local-key-manager';
+import { EncryptionServiceImpl } from './encryption/encryption-service-impl';
 import { ConfigService } from '../config/config-service.interface';
-import { KmsStorageServiceInterface } from './kms-storage-service.interface';
-import { KmsStorageService } from './kms-storage.service';
+import { ALGORITHM_CONFIGS } from './encryption/algorithm-config';
+import { EncryptedSecretStorage } from './storage/encrypted-secret-storage';
+import { LocalSecretStorage } from './storage/local-secret-storage';
 
 /**
- * @TODO: Consider reorganizing KMS folder structure
- *
  * Currently, the KMS folder contains more files than typical service folders
  * (which usually have just interface + implementation). This was discussed
- * during review and we decided not to change it now, but we should consider
+ * during review, and we decided not to change it now, but we should consider
  * better organization in the future.
  *
  */
 
 export class KmsServiceImpl implements KmsService {
   private readonly logger: Logger;
-  private readonly storage: KmsStorageServiceInterface;
+  private readonly credentialStorage: CredentialStorage;
   private readonly networkService: NetworkService;
+  private readonly keyManagers: Map<KeyManagerName, KeyManager>;
   private readonly configService: ConfigService;
 
   constructor(
@@ -48,11 +52,34 @@ export class KmsServiceImpl implements KmsService {
     this.logger = logger;
     this.networkService = networkService;
     this.configService = configService;
-    this.storage = new KmsStorageService(state);
+
+    // Initialize metadata storage
+    this.credentialStorage = new CredentialStorage(state);
+
+    // Initialize encryption service for local_encrypted key manager
+    const encryptionService = new EncryptionServiceImpl(
+      ALGORITHM_CONFIGS.AES_256_GCM,
+    );
+
+    const localSecretStorage = new LocalSecretStorage(state);
+    const localEncryptedSecretStorage = new EncryptedSecretStorage(
+      state,
+      encryptionService,
+    );
+
+    // Initialize KeyManagers (each creates its own SecretStorage internally)
+    this.keyManagers = new Map<KeyManagerName, KeyManager>([
+      [KEY_MANAGERS.local, new LocalKeyManager(localSecretStorage)],
+      [
+        KEY_MANAGERS.local_encrypted,
+        new LocalKeyManager(localEncryptedSecretStorage),
+      ],
+    ]);
   }
 
   createLocalPrivateKey(
     keyType: KeyAlgorithmType,
+    keyManager: KeyManagerName = KEY_MANAGERS.local,
     labels?: string[],
   ): {
     keyRefId: string;
@@ -71,30 +98,28 @@ export class KmsServiceImpl implements KmsService {
     }
 
     const keyRefId = this.generateId('kr');
-    // Generate a real Hedera keypair based on the specified type
-    const privateKey =
-      keyType === KeyAlgorithm.ECDSA
-        ? PrivateKey.generateECDSA()
-        : PrivateKey.generateED25519();
-    const publicKey = privateKey.publicKey.toStringRaw();
-    this.storage.writeSecret(keyRefId, {
-      keyAlgorithm: keyType,
-      privateKey: privateKey.toStringRaw(),
-      createdAt: new Date().toISOString(),
-    });
+    const manager = this.getKeyManager(keyManager);
+
+    // 1. Generate key using the specified manager
+    const publicKey = manager.generateKey(keyRefId, keyType);
+
+    // 2. Save metadata record
     this.saveRecord({
       keyRefId,
-      type: 'localPrivateKey',
+      keyManager,
       publicKey,
       labels,
       keyAlgorithm: keyType,
+      createdAt: new Date().toISOString(),
     });
+
     return { keyRefId, publicKey };
   }
 
   importPrivateKey(
-    keyType: KeyAlgorithmType,
+    keyType: KeyAlgorithm,
     privateKey: string,
+    keyManager: KeyManagerName = KEY_MANAGERS.local,
     labels?: string[],
   ): { keyRefId: string; publicKey: string } {
     // Check if ED25519 support is enabled when using ED25519 key type
@@ -115,29 +140,39 @@ export class KmsServiceImpl implements KmsService {
       keyType === KeyAlgorithm.ECDSA
         ? PrivateKey.fromStringECDSA(privateKey)
         : PrivateKey.fromStringED25519(privateKey);
-    const keyAlgorithm: KeyAlgorithm = keyType;
     const publicKey = pk.publicKey.toStringRaw();
 
+    // Check if key already exists
     const existingKeyRefId = this.findByPublicKey(publicKey);
     if (existingKeyRefId) {
       this.logger.debug(
-        `[CRED] Passed key already exist, keyRefId: ${existingKeyRefId}`,
+        `[CRED] Passed key already exists, keyRefId: ${existingKeyRefId}`,
       );
       return { keyRefId: existingKeyRefId, publicKey };
     }
 
-    this.saveRecord({
-      keyRefId,
-      type: 'localPrivateKey',
-      publicKey,
-      labels,
-      keyAlgorithm: keyAlgorithm,
-    });
-    this.storage.writeSecret(keyRefId, {
-      keyAlgorithm,
+    const manager = this.getKeyManager(keyManager);
+
+    // Create secret object
+    const secret = {
+      keyAlgorithm: keyType,
       privateKey,
       createdAt: new Date().toISOString(),
+    };
+
+    // Write using specified manager
+    manager.writeSecret(keyRefId, secret);
+
+    // Save metadata
+    this.saveRecord({
+      keyRefId,
+      keyManager,
+      publicKey,
+      labels,
+      keyAlgorithm: keyType,
+      createdAt: new Date().toISOString(),
     });
+
     return { keyRefId, publicKey };
   }
 
@@ -145,42 +180,59 @@ export class KmsServiceImpl implements KmsService {
     return this.getRecord(keyRefId)?.publicKey || null;
   }
 
-  getSignerHandle(keyRefId: string): KmsSignerService {
-    const rec = this.getRecord(keyRefId);
-    if (!rec) throw new Error(`Unknown keyRefId: ${keyRefId}`);
+  getSignerHandle(keyRefId: string): Signer {
+    // 1. Get metadata to know which manager owns this key
+    const record = this.getRecord(keyRefId);
+    if (!record) {
+      throw new Error(`Credential not found: ${keyRefId}`);
+    }
 
-    // Directly create signer service - no provider needed
-    return new LocalKmsSignerService(rec.publicKey, {
+    // 2. Get the appropriate manager
+    const manager = this.getKeyManager(record.keyManager);
+
+    // 3. Create signer (manager reads & decrypts secret internally)
+    return manager.createSigner(
       keyRefId,
-      storage: this.storage,
-      keyAlgorithm: rec.keyAlgorithm,
-    });
+      record.publicKey,
+      record.keyAlgorithm,
+    );
   }
 
   findByPublicKey(publicKey: string): string | null {
-    const records = this.storage.list();
+    const records = this.credentialStorage.list();
     const record = records.find((r) => r.publicKey === publicKey);
     return record?.keyRefId || null;
   }
 
-  // Plugin compatibility methods
   list(): Array<{
     keyRefId: string;
-    type: CredentialType;
+    keyManager: KeyManagerName;
     publicKey: string;
     labels?: string[];
   }> {
-    const records = this.storage.list();
-    return records.map(({ keyRefId, type, publicKey, labels }) => ({
+    const records = this.credentialStorage.list();
+    return records.map(({ keyRefId, keyManager, publicKey, labels }) => ({
       keyRefId,
-      type,
+      keyManager,
       publicKey,
       labels,
     }));
   }
 
   remove(keyRefId: string): void {
-    this.storage.remove(keyRefId);
+    const record = this.getRecord(keyRefId);
+    if (!record) {
+      this.logger.debug(`[CRED] KeyRefId not found: ${keyRefId}`);
+      return;
+    }
+
+    // Remove secret using appropriate manager
+    const manager = this.getKeyManager(record.keyManager);
+    manager.removeSecret(keyRefId);
+
+    // Remove metadata
+    this.credentialStorage.remove(keyRefId);
+
     this.logger.debug(`[CRED] Removed keyRefId=${keyRefId}`);
   }
 
@@ -240,9 +292,9 @@ export class KmsServiceImpl implements KmsService {
 
     // Use the correct PrivateKey.fromString method based on algorithm
     const privateKey =
-      record.keyAlgorithm === KeyAlgorithm.ED25519
-        ? PrivateKey.fromStringED25519(privateKeyString)
-        : PrivateKey.fromStringECDSA(privateKeyString);
+      record.keyAlgorithm === KeyAlgorithm.ECDSA
+        ? PrivateKey.fromStringECDSA(privateKeyString)
+        : PrivateKey.fromStringED25519(privateKeyString);
 
     // Set the operator on the client
     client.setOperator(accountIdObj, privateKey);
@@ -258,13 +310,18 @@ export class KmsServiceImpl implements KmsService {
     const publicKey = PublicKey.fromString(handle.getPublicKey());
 
     // Use the opaque signer handle for signing
+    // eslint-disable-next-line @typescript-eslint/require-await
     await transaction.signWith(publicKey, async (message: Uint8Array) =>
       handle.sign(message),
     );
   }
 
   private getPrivateKeyString(keyRefId: string): string | null {
-    const secret = this.storage.readSecret(keyRefId);
+    const record = this.getRecord(keyRefId);
+    if (!record) return null;
+
+    const manager = this.getKeyManager(record.keyManager);
+    const secret = manager.readSecret(keyRefId);
     return secret?.privateKey || null;
   }
 
@@ -273,13 +330,21 @@ export class KmsServiceImpl implements KmsService {
   }
 
   private saveRecord(record: KmsCredentialRecord): void {
-    this.storage.set(record.keyRefId, record);
+    this.credentialStorage.set(record.keyRefId, record);
     this.logger.debug(
-      `[CRED] Saved keyRefId=${record.keyRefId} type=${record.type}`,
+      `[CRED] Saved keyRefId=${record.keyRefId} keyManager=${record.keyManager}`,
     );
   }
 
   private getRecord(keyRefId: string): KmsCredentialRecord | undefined {
-    return this.storage.get(keyRefId);
+    return this.credentialStorage.get(keyRefId);
+  }
+
+  private getKeyManager(name: KeyManagerName): KeyManager {
+    const manager = this.keyManagers.get(name);
+    if (!manager) {
+      throw new Error(`Key manager not registered: ${name}`);
+    }
+    return manager;
   }
 }
