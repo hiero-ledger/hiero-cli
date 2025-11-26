@@ -9,6 +9,12 @@ import * as dotenv from 'dotenv';
 dotenv.config({ path: '.env.test' });
 
 export default async () => {
-  await returnFundsFromCreatedAccountsToMainAccount(createMockCoreApi());
-  deleteStateFiles(STATE_STORAGE_FILE_PATH);
+  try {
+    await returnFundsFromCreatedAccountsToMainAccount(createMockCoreApi());
+    deleteStateFiles(STATE_STORAGE_FILE_PATH);
+  } catch (e) {
+    throw e;
+  } finally {
+    process.exit();
+  }
 };

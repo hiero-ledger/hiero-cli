@@ -12,13 +12,7 @@ import { ViewAccountOutput } from '../../plugins/account/commands/view';
 import { delay } from './common-utils';
 
 export const deleteStateFiles = (dir: string): void => {
-  fs.rm(dir, { recursive: true, force: true }, (err: any) => {
-    if (err) {
-      throw err;
-    }
-
-    console.log(`${dir} is deleted!`);
-  });
+  fs.rmSync(dir, { recursive: true, force: true });
 };
 
 export const returnFundsFromCreatedAccountsToMainAccount = async (
