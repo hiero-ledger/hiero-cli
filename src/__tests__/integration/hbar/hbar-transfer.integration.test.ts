@@ -86,7 +86,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     );
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
     expect(viewAccountOutput.balance).toBe('200000000'); // result in tinybars
-    // expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
+    expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
     expect(viewAccountOutput.publicKey).toBe(createAccountOutput.publicKey);
   });
 
