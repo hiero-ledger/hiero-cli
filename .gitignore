@@ -145,3 +145,5 @@ hedera-cli.config.*.local.json
 #AI agents
 .claude
 CLAUDE.md
+
+src/plugins/test
