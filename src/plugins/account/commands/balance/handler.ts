@@ -17,12 +17,14 @@ import { AliasType } from '../../../../core/services/alias/alias-service.interfa
  * Fetches and maps token balances for an account
  * @param api - The Core API instance
  * @param accountId - The account ID to fetch token balances for
+ * @param tokenId - Optional specific token ID to filter by
  * @returns An array of token balances or undefined if no tokens found
  * @throws Error if token balances could not be fetched
  */
 async function fetchAccountTokenBalances(
   api: CoreApi,
   accountId: string,
+  tokenId?: string,
 ): Promise<
   | Array<{
       tokenId: string;
@@ -30,7 +32,10 @@ async function fetchAccountTokenBalances(
     }>
   | undefined
 > {
-  const tokenBalances = await api.mirror.getAccountTokenBalances(accountId);
+  const tokenBalances = await api.mirror.getAccountTokenBalances(
+    accountId,
+    tokenId,
+  );
   if (tokenBalances.tokens && tokenBalances.tokens.length > 0) {
     return tokenBalances.tokens.map((token: TokenBalanceInfo) => ({
       tokenId: token.token_id,
@@ -48,9 +53,16 @@ export async function getAccountBalance(
   // Extract command arguments
   const accountIdOrNameOrAlias = args.args.account as string;
   const hbarOnly = (args.args.hbarOnly as boolean) || false;
-  // @TODO Add handling for specific token if provided, rn missing functionality
-  // @TODO Dont allow both hbarOnly and token at the same time
-  const token = args.args.token as string;
+  const token = args.args.token as string | undefined;
+  const tokenOnly = !!token;
+
+  if (hbarOnly && tokenOnly) {
+    return {
+      status: Status.Failure,
+      errorMessage:
+        'Cannot use both --hbar-only (-H) and --token (-t) flags together. Use one or the other.',
+    };
+  }
 
   logger.info(`Getting balance for account: ${accountIdOrNameOrAlias}`);
 
@@ -83,21 +95,23 @@ export async function getAccountBalance(
       accountId = accountIdParseResult.data;
     }
 
-    // Get HBAR balance from mirror node
-    const hbarBalance = await api.mirror.getAccountHBarBalance(accountId);
-
-    // Prepare output data
     const outputData: AccountBalanceOutput = {
       accountId,
-      hbarBalance: hbarBalance,
+      hbarOnly,
+      tokenOnly,
     };
 
-    // Get token balances if not only HBAR
-    if (!hbarOnly && !token) {
+    if (!tokenOnly) {
+      outputData.hbarBalance =
+        await api.mirror.getAccountHBarBalance(accountId);
+    }
+
+    if (!hbarOnly) {
       try {
         outputData.tokenBalances = await fetchAccountTokenBalances(
           api,
           accountId,
+          token,
         );
       } catch (error: unknown) {
         return {

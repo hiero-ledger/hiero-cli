@@ -24,6 +24,53 @@ describe('account plugin - balance command (ADR-003)', () => {
     jest.clearAllMocks();
   });
 
+  test('returns specific token balance only when token flag is set', async () => {
+    const logger = makeLogger();
+
+    const mirrorMock = makeMirrorMock({
+      hbarBalance: 100000n,
+      tokenBalances: [{ token_id: '0.0.7777', balance: 500 }],
+    });
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      logger,
+      state: {} as any,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'token-account',
+          type: 'account',
+          network: 'testnet',
+          entityId: '0.0.1234',
+        }),
+      } as unknown as AliasService,
+    };
+    const args = makeArgs(api, logger, {
+      account: 'token-account',
+      token: '0.0.7777',
+    });
+
+    const result = await getAccountBalance(args);
+
+    expect(mirrorMock.getAccountHBarBalance).not.toHaveBeenCalled();
+    expect(mirrorMock.getAccountTokenBalances).toHaveBeenCalledWith(
+      '0.0.1234',
+      '0.0.7777',
+    );
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
+    expect(output.accountId).toBe('0.0.1234');
+    expect(output.hbarBalance).toBeUndefined();
+    expect(output.tokenOnly).toBe(true);
+    expect(output.tokenBalances).toHaveLength(1);
+    expect(output.tokenBalances![0]).toEqual({
+      tokenId: '0.0.7777',
+      balance: '500',
+    });
+  });
+
   test('returns HBAR balance only when hbar-only flag is set', async () => {
     const logger = makeLogger();
 
@@ -44,7 +91,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, {
       account: 'test-account',
-      'hbar-only': true,
+      hbarOnly: true,
     });
 
     const result = await getAccountBalance(args);
@@ -56,6 +103,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
     expect(output.accountId).toBe('0.0.1001');
     expect(output.hbarBalance).toBe('123456');
+    expect(output.hbarOnly).toBe(true);
     expect(output.tokenBalances).toBeUndefined();
   });
 
@@ -88,7 +136,10 @@ describe('account plugin - balance command (ADR-003)', () => {
     const result = await getAccountBalance(args);
 
     expect(mirrorMock.getAccountHBarBalance).toHaveBeenCalledWith('0.0.2002');
-    expect(mirrorMock.getAccountTokenBalances).toHaveBeenCalledWith('0.0.2002');
+    expect(mirrorMock.getAccountTokenBalances).toHaveBeenCalledWith(
+      '0.0.2002',
+      undefined,
+    );
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
@@ -235,5 +286,40 @@ describe('account plugin - balance command (ADR-003)', () => {
       'Account not found with ID or alias:',
     );
     expect(result.errorMessage).toContain(account);
+  });
+
+  test('returns failure when both hbar-only and token flags are used', async () => {
+    const logger = makeLogger();
+
+    const mirrorMock = makeMirrorMock({ hbarBalance: 100n });
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      logger,
+      state: {} as any,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'test-acc',
+          type: 'account',
+          network: 'testnet',
+          entityId: '0.0.1111',
+        }),
+      } as unknown as AliasService,
+    };
+    const args = makeArgs(api, logger, {
+      account: 'test-acc',
+      hbarOnly: true,
+      token: '0.0.5555',
+    });
+
+    const result = await getAccountBalance(args);
+
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toBeDefined();
+    expect(result.errorMessage).toContain(
+      'Cannot use both --hbar-only (-H) and --token (-t) flags together',
+    );
+    expect(mirrorMock.getAccountHBarBalance).not.toHaveBeenCalled();
+    expect(mirrorMock.getAccountTokenBalances).not.toHaveBeenCalled();
   });
 });
