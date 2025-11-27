@@ -5,14 +5,14 @@
  */
 import * as path from 'path';
 import { Command } from 'commander';
-import { CoreApi } from '../core-api/core-api.interface';
+import { CoreApi } from '../core-api';
 import {
   CommandHandlerArgs,
   PluginManifest,
   PluginStateEntry,
 } from './plugin.interface';
 import { CommandSpec } from './plugin.types';
-import { formatError } from '../utils/errors';
+import { formatAndExitWithError } from '../utils/error-handler';
 import { Status } from '../shared/constants';
 import { filterReservedOptions } from '../utils/filter-reserved-options';
 import { registerDisabledPlugin } from '../utils/register-disabled-plugin';
@@ -52,18 +52,23 @@ export class PluginManager {
     this.logger.info('🔌 Loading plugins...');
 
     for (const pluginPath of this.defaultPlugins) {
-      try {
-        await this.loadPluginFromPath(pluginPath);
-        this.logger.info(`✅ Loaded: ${pluginPath}`);
-      } catch {
-        this.logger.info(`ℹ️  Plugin not available: ${pluginPath}`);
-      }
+      await this.loadPluginFromPath(pluginPath);
+      this.logger.info(`✅ Loaded: ${pluginPath}`);
     }
 
     // Register all namespaces with the state service
     const namespaces = this.getAllNamespaces();
     if (namespaces.length > 0) {
-      this.coreApi.state.registerNamespaces(namespaces);
+      try {
+        this.coreApi.state.registerNamespaces(namespaces);
+      } catch (error) {
+        // Use centralized error handler for consistent error formatting
+        this.exitWithError(
+          this.logger,
+          'Failed to register plugin namespaces',
+          error,
+        );
+      }
     }
 
     this.logger.info(`✅ Plugin system ready`);
@@ -131,9 +136,10 @@ export class PluginManager {
   async initializePlugins(
     program: Command,
     defaultState: PluginManifest[],
+    logger: Logger,
   ): Promise<PluginStateEntry[]> {
     const pluginState = this.setupDefaultPlugins(defaultState);
-    registerDisabledPlugin(program, pluginState);
+    registerDisabledPlugin(program, pluginState, logger);
     await this.initialize();
     return pluginState;
   }
@@ -194,6 +200,23 @@ export class PluginManager {
   }
 
   /**
+   * Exit with formatted error using the current output format
+   * Wrapper for formatAndExitWithError with automatic format detection
+   */
+  private exitWithError(
+    logger: Logger,
+    context: string,
+    error: unknown,
+  ): never {
+    return formatAndExitWithError(
+      context,
+      error,
+      logger,
+      this.coreApi.output.getFormat(),
+    );
+  }
+
+  /**
    * Load a plugin from path
    */
   private async loadPluginFromPath(pluginPath: string): Promise<LoadedPlugin> {
@@ -206,7 +229,12 @@ export class PluginManager {
       const manifest = manifestModule.default;
 
       if (!manifest) {
-        throw new Error(`No manifest found in ${pluginPath}`);
+        // Use centralized error handler for consistent error formatting
+        return this.exitWithError(
+          this.logger,
+          'Plugin initialization failed',
+          new Error(`No manifest found in ${pluginPath}`),
+        );
       }
 
       const loadedPlugin: LoadedPlugin = {
@@ -218,8 +246,11 @@ export class PluginManager {
       this.loadedPlugins.set(manifest.name, loadedPlugin);
       return loadedPlugin;
     } catch (error) {
-      throw new Error(
-        formatError(`Failed to load plugin from ${pluginPath}: `, error),
+      // Use centralized error handler for consistent error formatting
+      return this.exitWithError(
+        this.logger,
+        `Failed to load plugin from ${pluginPath}`,
+        error,
       );
     }
   }
@@ -252,97 +283,109 @@ export class PluginManager {
 
   /**
    * Register a single command
+   * Uses centralized error handler on failure to ensure consistent error formatting
    */
   private registerSingleCommand(
     pluginCommand: Command,
     plugin: LoadedPlugin,
     commandSpec: CommandSpec,
   ): void {
-    const commandName = String(commandSpec.name);
-    const command = pluginCommand
-      .command(commandName)
-      .description(
-        String(
-          commandSpec.description ||
-            commandSpec.summary ||
-            `Execute ${commandName}`,
-        ),
-      );
-
-    // Add options
-    if (commandSpec.options) {
-      const { allowed, filtered } = filterReservedOptions(commandSpec.options);
-
-      if (filtered.length > 0) {
-        this.logger.info(
-          `⚠️  Plugin ${plugin.manifest.name} command ${commandName}: filtered reserved option(s) ${filtered
-            .map((n) => `--${n}`)
-            .join(', ')} (reserved by core CLI)`,
+    try {
+      const commandName = String(commandSpec.name);
+      const command = pluginCommand
+        .command(commandName)
+        .description(
+          String(
+            commandSpec.description ||
+              commandSpec.summary ||
+              `Execute ${commandName}`,
+          ),
         );
-      }
 
-      for (const option of allowed) {
-        const optionName = String(option.name);
-        const short = option.short ? `-${String(option.short)}` : '';
-        const long = `--${optionName}`;
-        const combined = short ? `${short}, ${long}` : long;
+      // Add options
+      if (commandSpec.options) {
+        const { allowed, filtered } = filterReservedOptions(
+          commandSpec.options,
+        );
 
-        if (option.type === 'boolean') {
-          command.option(
-            combined,
-            String(option.description || `Set ${optionName}`),
+        if (filtered.length > 0) {
+          this.logger.info(
+            `⚠️  Plugin ${plugin.manifest.name} command ${commandName}: filtered reserved option(s) ${filtered
+              .map((n) => `--${n}`)
+              .join(', ')} (reserved by core CLI)`,
           );
-        } else if (option.type === 'number') {
-          const flags = `${combined} <value>`;
-          if (option.required) {
-            command.requiredOption(
-              flags,
-              String(option.description || `Set ${optionName}`),
-              parseFloat,
-            );
-          } else {
+        }
+
+        for (const option of allowed) {
+          const optionName = String(option.name);
+          const short = option.short ? `-${String(option.short)}` : '';
+          const long = `--${optionName}`;
+          const combined = short ? `${short}, ${long}` : long;
+
+          if (option.type === 'boolean') {
             command.option(
-              flags,
+              combined,
               String(option.description || `Set ${optionName}`),
-              parseFloat,
             );
-          }
-        } else if (option.type === 'array') {
-          const flags = `${combined} <values>`;
-          if (option.required) {
-            command.requiredOption(
-              flags,
-              String(option.description || `Set ${optionName}`),
-              (value: unknown) => String(value).split(','),
-            );
+          } else if (option.type === 'number') {
+            const flags = `${combined} <value>`;
+            if (option.required) {
+              command.requiredOption(
+                flags,
+                String(option.description || `Set ${optionName}`),
+                parseFloat,
+              );
+            } else {
+              command.option(
+                flags,
+                String(option.description || `Set ${optionName}`),
+                parseFloat,
+              );
+            }
+          } else if (option.type === 'array') {
+            const flags = `${combined} <values>`;
+            if (option.required) {
+              command.requiredOption(
+                flags,
+                String(option.description || `Set ${optionName}`),
+                (value: unknown) => String(value).split(','),
+              );
+            } else {
+              command.option(
+                flags,
+                String(option.description || `Set ${optionName}`),
+                (value: unknown) => String(value).split(','),
+              );
+            }
           } else {
-            command.option(
-              flags,
-              String(option.description || `Set ${optionName}`),
-              (value: unknown) => String(value).split(','),
-            );
-          }
-        } else {
-          const flags = `${combined} <value>`;
-          if (option.required) {
-            command.requiredOption(
-              flags,
-              String(option.description || `Set ${optionName}`),
-            );
-          } else {
-            command.option(
-              flags,
-              String(option.description || `Set ${optionName}`),
-            );
+            const flags = `${combined} <value>`;
+            if (option.required) {
+              command.requiredOption(
+                flags,
+                String(option.description || `Set ${optionName}`),
+              );
+            } else {
+              command.option(
+                flags,
+                String(option.description || `Set ${optionName}`),
+              );
+            }
           }
         }
       }
-    }
 
-    // Set up action handler
-    command.action(async (...args: unknown[]) => {
-      await this.executePluginCommand(plugin, commandSpec, args);
-    });
+      // Set up action handler
+      command.action(async (...args: unknown[]) => {
+        await this.executePluginCommand(plugin, commandSpec, args);
+      });
+    } catch (error) {
+      // Use centralized error handler for consistent error formatting
+      this.exitWithError(
+        this.logger,
+        `Failed to register command ${commandSpec.name} from plugin ${plugin.manifest.name}`,
+        error,
+      );
+    }
   }
 
   /**
@@ -368,19 +411,35 @@ export class PluginManager {
       logger: this.logger,
     };
 
-    const result = await commandSpec.handler(handlerArgs);
-
     // Validate that output spec is present (required per CommandSpec type)
     if (!commandSpec.output) {
-      throw new Error(
-        `Command ${commandSpec.name} must define an output specification`,
+      this.exitWithError(
+        this.logger,
+        `Command ${commandSpec.name} configuration error`,
+        new Error('Command must define an output specification'),
+      );
+    }
+
+    // Execute command handler with error handling
+    let result;
+    try {
+      result = await commandSpec.handler(handlerArgs);
+    } catch (error) {
+      this.exitWithError(
+        this.logger,
+        `Command ${commandSpec.name} execution failed`,
+        error,
       );
     }
 
     // ADR-003: If command has output spec, expect handler to return result
     if (!result) {
-      throw new Error(
-        `Handler for ${commandSpec.name} must return CommandExecutionResult when output spec is defined`,
+      this.exitWithError(
+        this.logger,
+        `Command ${commandSpec.name} handler error`,
+        new Error(
+          'Handler must return CommandExecutionResult when output spec is defined',
+        ),
       );
     }
 
@@ -388,9 +447,12 @@ export class PluginManager {
 
     // Handle non-success statuses
     if (executionResult.status !== Status.Success) {
-      throw new Error(
-        executionResult.errorMessage ||
-          `Command ${commandSpec.name} failed with status: ${executionResult.status}`,
+      this.exitWithError(
+        this.logger,
+        `Command ${commandSpec.name} failed`,
+        new Error(
+          executionResult.errorMessage || `Status: ${executionResult.status}`,
+        ),
       );
     }
 
@@ -405,8 +467,10 @@ export class PluginManager {
           format: this.coreApi.output.getFormat(),
         });
       } catch (error) {
-        throw new Error(
-          `Failed to handle output from ${commandSpec.name}: ${formatError('', error)}`,
+        this.exitWithError(
+          this.logger,
+          `Failed to format output for ${commandSpec.name}`,
+          error,
         );
       }
     }

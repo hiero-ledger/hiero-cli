@@ -1,13 +1,17 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import { createCoreApi } from './core/core-api';
-import { CoreApiConfig } from './core/core-api/core-api-config';
+import { createCoreApi } from './core';
 import './core/utils/json-serialize';
 import { DEFAULT_PLUGIN_STATE } from './core/shared/config/cli-options';
 import { addDisabledPluginsHelp } from './core/utils/add-disabled-plugins-help';
 import { PluginManager } from './core/plugins/plugin-manager';
-import { CoreApi } from './core/core-api/core-api.interface';
+import {
+  setupGlobalErrorHandlers,
+  setGlobalOutputFormat,
+  formatAndExitWithError,
+} from './core/utils/error-handler';
+import { validateOutputFormat } from './core/shared/validation/validate-output-format.zod';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../package.json') as { version?: string };
@@ -19,28 +23,26 @@ program
 
 // Initialize the simplified plugin system
 async function initializeCLI() {
-  let coreApi: CoreApi | undefined;
+  const coreApi = createCoreApi();
+
   try {
-    // Pre-parse arguments to get format before creating core API
     program.parseOptions(process.argv.slice(2));
     const opts = program.opts();
+    const format = validateOutputFormat(coreApi.logger, opts.format);
 
-    const formatOption = opts.format as string | undefined;
-    const format = formatOption === 'json' ? 'json' : 'human';
+    coreApi.output.setFormat(format);
 
-    // Create core API config
-    const coreApiConfig: CoreApiConfig = {
-      format,
-    };
+    // Setup global error handlers with validated format
+    setGlobalOutputFormat(format);
+    setupGlobalErrorHandlers(coreApi.logger);
 
-    // Create core API
-    coreApi = createCoreApi(coreApiConfig);
     const pluginManager = new PluginManager(coreApi);
 
     // Initialize plugins, register disabled stubs, and load all manifests
     const pluginState = await pluginManager.initializePlugins(
       program,
       DEFAULT_PLUGIN_STATE,
+      coreApi.logger,
     );
 
     // Register plugin commands
@@ -55,14 +57,9 @@ async function initializeCLI() {
     await program.parseAsync(process.argv);
     process.exit(0);
   } catch (error) {
-    if (coreApi) {
-      coreApi.logger.error(`❌ CLI execution failed: ${String(error)}`);
-    } else {
-      console.error('❌ CLI execution failed:', error);
-    }
-    process.exit(1);
+    formatAndExitWithError('CLI initialization failed', error, coreApi.logger);
   }
 }
 
 // Start the CLI
-initializeCLI();
+void initializeCLI();

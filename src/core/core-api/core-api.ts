@@ -30,7 +30,6 @@ import { TokenService } from '../services/token/token-service.interface';
 import { TokenServiceImpl } from '../services/token/token-service';
 import { OutputService } from '../services/output/output-service.interface';
 import { OutputServiceImpl } from '../services/output/output-service';
-import { CoreApiConfig } from './core-api-config';
 import { PluginManagementService } from '../services/plugin-management/plugin-management-service.interface';
 import { PluginManagementServiceImpl } from '../services/plugin-management/plugin-management-service';
 
@@ -50,7 +49,7 @@ export class CoreApiImplementation implements CoreApi {
   public output: OutputService;
   public pluginManagement: PluginManagementService;
 
-  constructor(config: CoreApiConfig) {
+  constructor() {
     this.logger = new LoggerService();
     this.state = new ZustandGenericStateServiceImpl(this.logger);
 
@@ -104,7 +103,7 @@ export class CoreApiImplementation implements CoreApi {
     this.mirror = new HederaMirrornodeServiceDefaultImpl(ledgerId);
 
     this.hbar = new HbarServiceImpl(this.logger);
-    this.output = new OutputServiceImpl(config.format);
+    this.output = new OutputServiceImpl();
 
     this.pluginManagement = new PluginManagementServiceImpl(this.state);
   }
@@ -113,6 +112,6 @@ export class CoreApiImplementation implements CoreApi {
 /**
  * Factory function to create a Core API instance
  */
-export function createCoreApi(config: CoreApiConfig): CoreApi {
-  return new CoreApiImplementation(config);
+export function createCoreApi(): CoreApi {
+  return new CoreApiImplementation();
 }

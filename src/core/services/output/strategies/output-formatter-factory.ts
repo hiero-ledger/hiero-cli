@@ -5,7 +5,7 @@
 import { OutputFormatterStrategy } from './output-formatter-strategy.interface';
 import { JsonOutputStrategy } from './json-output-strategy';
 import { TemplateOutputStrategy } from './template-output-strategy';
-import { OutputFormat } from '../types';
+import { OutputFormat } from '../../../shared/types/output-format';
 
 export class OutputFormatterFactory {
   private static strategies: Map<OutputFormat, OutputFormatterStrategy> =

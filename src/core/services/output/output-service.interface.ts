@@ -3,6 +3,7 @@
  * Handles command output formatting and rendering
  */
 import { OutputHandlerOptions } from './types';
+import { OutputFormat } from '../../shared/types/output-format';
 
 export interface OutputService {
   /**
@@ -13,5 +14,10 @@ export interface OutputService {
   /**
    * Get the current output format
    */
-  getFormat(): 'human' | 'json';
+  getFormat(): OutputFormat;
+
+  /**
+   * Set the current output format
+   */
+  setFormat(format: OutputFormat): void;
 }

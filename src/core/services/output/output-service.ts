@@ -5,13 +5,21 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { OutputService } from './output-service.interface';
-import { OutputHandlerOptions, OutputFormat } from './types';
+import { OutputHandlerOptions } from './types';
+import {
+  OutputFormat,
+  DEFAULT_OUTPUT_FORMAT,
+} from '../../shared/types/output-format';
 import { OutputFormatterFactory, FormatStrategyOptions } from './strategies';
 
 export class OutputServiceImpl implements OutputService {
   private currentFormat: OutputFormat;
 
-  constructor(format: OutputFormat = 'human') {
+  constructor(format: OutputFormat = DEFAULT_OUTPUT_FORMAT) {
+    this.currentFormat = format;
+  }
+
+  setFormat(format: OutputFormat): void {
     this.currentFormat = format;
   }
 

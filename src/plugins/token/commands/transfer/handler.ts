@@ -83,8 +83,13 @@ export async function transferToken(
       const tokenInfo = await api.mirror.getTokenInfo(tokenId);
       tokenDecimals = parseInt(tokenInfo.decimals) || 0;
     } catch (error) {
-      logger.error(`Failed to fetch token decimals for ${tokenId}`);
-      process.exit(1);
+      return {
+        status: Status.Failure,
+        errorMessage: formatError(
+          `Failed to fetch token decimals for ${tokenId}`,
+          error,
+        ),
+      };
     }
   }
 

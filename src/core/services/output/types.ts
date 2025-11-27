@@ -1,8 +1,7 @@
 /**
  * Output Handler Service Types
  */
-
-export type OutputFormat = 'human' | 'json';
+import { OutputFormat } from '../../shared/types/output-format';
 
 export interface FormatOptions {
   format: OutputFormat;
