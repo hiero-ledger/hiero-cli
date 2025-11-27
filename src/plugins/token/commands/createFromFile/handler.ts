@@ -12,105 +12,17 @@ import { TransactionResult } from '../../../../core/services/tx-execution/tx-exe
 import { SupportedNetwork } from '../../../../core/types/shared.types';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
 import { TokenData } from '../../schema';
-import { resolveTreasuryParameter } from '../../resolver-helper';
+import {
+  resolveTreasuryParameter,
+  resolveKeyParameter,
+} from '../../resolver-helper';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { z } from 'zod';
 import { formatError, toErrorMessage } from '../../../../core/utils/errors';
 import { CreateTokenFromFileOutput } from './output';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { parseKeyWithType } from '../../../../core/utils/keys';
-
-// Import the token file schema from the original commands
-const accountIdRegex = /^\d+\.\d+\.\d+$/;
-
-const keysSchema = z
-  .object({
-    adminKey: z.string().min(1, 'adminKey is required'),
-    supplyKey: z.string().min(1).optional(),
-    wipeKey: z.string().min(1).optional(),
-    kycKey: z.string().min(1).optional(),
-    freezeKey: z.string().min(1).optional(),
-    pauseKey: z.string().min(1).optional(),
-    feeScheduleKey: z.string().min(1).optional(),
-  })
-  .strict();
-
-const fixedFeeSchema = z
-  .object({
-    type: z.literal('fixed'),
-    amount: z.number().int().positive('Amount must be positive'),
-    unitType: z.literal('HBAR').optional().default('HBAR'),
-    collectorId: z
-      .string()
-      .regex(accountIdRegex, 'collectorId must be a valid account id')
-      .optional(),
-    exempt: z.boolean().optional(),
-  })
-  .strict();
-
-const customFeeSchema = fixedFeeSchema; // Only fixed fees supported
-
-const accountSchema = z
-  .object({
-    accountId: z
-      .string()
-      .regex(accountIdRegex, 'accountId must be a valid account id'),
-    key: z.string().min(1, 'account key is required'),
-  })
-  .strict();
-
-// Treasury can be either:
-// 1. A string (alias or treasury-id:treasury-key)
-// 2. An object with accountId and key (legacy format)
-const treasurySchema = z.union([
-  z
-    .string()
-    .min(1, 'Treasury is required (either name or treasury-id:treasury-key)'),
-  accountSchema,
-]);
-
-const tokenFileSchema = z
-  .object({
-    name: z.string().min(1).max(100),
-    symbol: z.string().min(1).max(20),
-    decimals: z.number().int().min(0).max(18),
-    supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
-    initialSupply: z
-      .union([z.number(), z.bigint()])
-      .transform((val) => BigInt(val))
-      .pipe(z.bigint().nonnegative()),
-    maxSupply: z
-      .union([z.number(), z.bigint()])
-      .transform((val) => BigInt(val))
-      .pipe(z.bigint().nonnegative())
-      .default(0n),
-    treasury: treasurySchema,
-    keys: keysSchema,
-    associations: z.array(accountSchema).default([]),
-    customFees: z.array(customFeeSchema).default([]),
-    memo: z.string().max(100).optional().default(''),
-  })
-  .strict();
-
-type TokenFileDefinition = z.infer<typeof tokenFileSchema>;
-
-interface TokenValidationResult {
-  valid: boolean;
-  errors?: string[];
-  data?: TokenFileDefinition;
-}
-
-function validateTokenFile(raw: unknown): TokenValidationResult {
-  const parsed = tokenFileSchema.safeParse(raw);
-  if (parsed.success) return { valid: true, data: parsed.data };
-  return {
-    valid: false,
-    errors: parsed.error.issues.map(
-      (i) => `${i.path.join('.') || '<root>'}: ${i.message}`,
-    ),
-  };
-}
+import { TokenFileSchema, TokenFileDefinition } from '../../schema';
 
 function resolveTokenFilePath(filename: string): string {
   const hasPathSeparator = filename.includes('/') || filename.includes('\\');
@@ -147,70 +59,50 @@ async function readAndValidateTokenFile(
   const fileContent = await fs.readFile(filepath, 'utf-8');
   const raw = JSON.parse(fileContent) as unknown;
 
-  const validated = validateTokenFile(raw);
-  if (!validated.valid || !validated.data) {
+  const parsed = TokenFileSchema.safeParse(raw);
+  if (!parsed.success) {
     logger.error('Token file validation failed');
-    if (validated.errors && validated.errors.length) {
-      validated.errors.forEach((e) => logger.error(e));
-    }
+    parsed.error.issues.forEach((issue) => {
+      logger.error(`${issue.path.join('.') || '<root>'}: ${issue.message}`);
+    });
     throw new Error('Invalid token definition file');
   }
 
-  return validated.data;
+  return parsed.data;
 }
 
 /**
  * Resolves treasury from token file definition
- * Handles both string (alias or treasury-id:key) and object (legacy) formats
- * @param treasuryDef - Treasury definition from file
+ * @param treasuryDef - Treasury definition (name or treasury-id:treasury-key)
  * @param api - Core API instance
  * @param network - Current network
  * @param logger - Logger instance
  * @returns Resolved treasury information
  */
 function resolveTreasuryFromDefinition(
-  treasuryDef: string | { accountId: string; key: string },
+  treasuryDef: string,
   api: CoreApi,
   network: SupportedNetwork,
   logger: Logger,
   keyManager: KeyManagerName,
-  tokenName: string,
 ): TreasuryFromFileResolution {
-  if (typeof treasuryDef === 'string') {
-    // New format: alias or treasury-id:treasury-key
-    const resolvedTreasury = resolveTreasuryParameter(
-      treasuryDef,
-      api,
-      network,
-      keyManager,
-    );
+  const resolvedTreasury = resolveTreasuryParameter(
+    treasuryDef,
+    api,
+    network,
+    keyManager,
+  );
 
-    if (!resolvedTreasury) {
-      throw new Error('Treasury parameter is required');
-    }
-
-    logger.info(`🏦 Using treasury: ${resolvedTreasury.treasuryId}`);
-
-    return {
-      treasuryId: resolvedTreasury.treasuryId,
-      treasuryKeyRefId: resolvedTreasury.treasuryKeyRefId,
-      treasuryPublicKey: resolvedTreasury.treasuryPublicKey,
-    };
+  if (!resolvedTreasury) {
+    throw new Error('Treasury parameter is required');
   }
 
-  // Legacy format: object with accountId and key
-  // Parse private key - check if it has a key type prefix (e.g., "ed25519:...")
-  const { keyType, privateKey } = parseKeyWithType(treasuryDef.key);
-  const imported = api.kms.importPrivateKey(keyType, privateKey, keyManager, [
-    'token:treasury',
-    `token:${tokenName}`,
-  ]);
-  logger.info(`🏦 Using treasury (legacy format): ${treasuryDef.accountId}`);
+  logger.info(`🏦 Using treasury: ${resolvedTreasury.treasuryId}`);
 
   return {
-    treasuryId: treasuryDef.accountId,
-    treasuryKeyRefId: imported.keyRefId,
-    treasuryPublicKey: imported.publicKey,
+    treasuryId: resolvedTreasury.treasuryId,
+    treasuryKeyRefId: resolvedTreasury.treasuryKeyRefId,
+    treasuryPublicKey: resolvedTreasury.treasuryPublicKey,
   };
 }
 
@@ -219,6 +111,7 @@ function resolveTreasuryFromDefinition(
  * @param result - Transaction result
  * @param tokenDefinition - Token definition from file
  * @param treasury - Resolved treasury information
+ * @param adminPublicKey - Resolved admin public key
  * @param network - Current network
  * @returns Token data object for state storage
  */
@@ -226,6 +119,7 @@ function buildTokenDataFromFile(
   result: TransactionResult,
   tokenDefinition: TokenFileDefinition,
   treasury: TreasuryFromFileResolution,
+  adminPublicKey: string,
   network: SupportedNetwork,
 ): TokenData {
   return {
@@ -240,7 +134,7 @@ function buildTokenDataFromFile(
       | 'INFINITE',
     maxSupply: tokenDefinition.maxSupply,
     keys: {
-      adminKey: tokenDefinition.keys.adminKey,
+      adminKey: adminPublicKey,
       supplyKey: tokenDefinition.keys.supplyKey || '',
       wipeKey: tokenDefinition.keys.wipeKey || '',
       kycKey: tokenDefinition.keys.kycKey || '',
@@ -258,6 +152,8 @@ function buildTokenDataFromFile(
       collectorId: fee.collectorId,
       exempt: fee.exempt,
     })),
+
+    memo: tokenDefinition.memo,
   };
 }
 
@@ -338,7 +234,6 @@ export async function createTokenFromFile(
 
   // Extract command arguments
   const filename = args.args['file'] as string;
-  const scriptArgs = (args.args['args'] as string[]) || [];
   const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
 
   // Get keyManager from args or fallback to config
@@ -352,18 +247,31 @@ export async function createTokenFromFile(
     // 1. Read and validate token file
     const tokenDefinition = await readAndValidateTokenFile(filename, logger);
 
-    // 2. Resolve treasury (supports both string and object formats)
+    // 2. Check if token name already exists as alias
     const network = api.network.getCurrentNetwork();
+    api.alias.availableOrThrow(tokenDefinition.name, network);
+
+    // 3. Resolve treasury (supports both string and object formats)
     const treasury = resolveTreasuryFromDefinition(
       tokenDefinition.treasury,
       api,
       network,
       logger,
       keyManager,
-      tokenDefinition.name,
     );
 
-    // 3. Create and execute token transaction
+    // 4. Resolve adminKey (supports alias or raw private key)
+    const adminKey = resolveKeyParameter(tokenDefinition.keys.adminKey, api, {
+      keyManager,
+      tags: ['token:admin', `token:${tokenDefinition.name}`],
+    });
+
+    if (!adminKey || !adminKey.keyRefId) {
+      throw new Error('Unable to resolve admin key for the token');
+    }
+    logger.info(`🔑 Resolved admin key for signing`);
+
+    // 5. Create token transaction
     const tokenCreateTransaction = api.token.createTokenTransaction({
       name: tokenDefinition.name,
       symbol: tokenDefinition.symbol,
@@ -374,7 +282,7 @@ export async function createTokenFromFile(
         | 'FINITE'
         | 'INFINITE',
       maxSupplyRaw: tokenDefinition.maxSupply,
-      adminKey: tokenDefinition.keys.adminKey,
+      adminKey: adminKey.publicKey,
       customFees: tokenDefinition.customFees.map((fee) => ({
         type: fee.type,
         amount: fee.amount,
@@ -382,28 +290,34 @@ export async function createTokenFromFile(
         collectorId: fee.collectorId,
         exempt: fee.exempt,
       })),
+      memo: tokenDefinition.memo,
     });
 
-    logger.info(`🔑 Using treasury key for signing transaction`);
+    // 6. Sign with both admin key and treasury key
+    const signingKeys = [adminKey.keyRefId, treasury.treasuryKeyRefId];
+    logger.info(
+      `🔑 Signing transaction with admin key and treasury key (${signingKeys.length} keys)`,
+    );
     const result = await api.txExecution.signAndExecuteWith(
       tokenCreateTransaction,
-      [treasury.treasuryKeyRefId],
+      signingKeys,
     );
 
-    // 4. Verify success
+    // 7. Verify success
     if (!result.success || !result.tokenId) {
       throw new Error('Token creation failed - no token ID returned');
     }
 
-    // 5. Build token data for state
+    // 8. Build token data for state
     const tokenData = buildTokenDataFromFile(
       result,
       tokenDefinition,
       treasury,
+      adminKey.publicKey,
       network,
     );
 
-    // 7. Process associations if specified
+    // 9. Process associations if specified
     const successfulAssociations = await processTokenAssociations(
       result.tokenId,
       tokenDefinition.associations,
@@ -413,15 +327,19 @@ export async function createTokenFromFile(
     );
     tokenData.associations = successfulAssociations;
 
-    // 8. Save token to state
+    // 10. Save token to state
     tokenState.saveToken(result.tokenId, tokenData);
     logger.info(`   Token data saved to state`);
 
-    // 9. Store script arguments if provided
-    if (scriptArgs.length > 0) {
-      logger.debug(`Storing script arguments: ${scriptArgs.join(', ')}`);
-      // Note: In a full implementation, you'd store these in the state or dynamic variables system
-    }
+    // 11. Register token name as alias
+    api.alias.register({
+      alias: tokenDefinition.name,
+      type: 'token',
+      network,
+      entityId: result.tokenId,
+      createdAt: result.consensusTimestamp,
+    });
+    logger.info(`   Name registered: ${tokenDefinition.name}`);
 
     // Prepare output data
     const outputData: CreateTokenFromFileOutput = {

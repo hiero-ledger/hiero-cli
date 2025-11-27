@@ -60,10 +60,7 @@ export const validTokenFile = {
   supplyType: 'finite' as const,
   initialSupply: 1000,
   maxSupply: 10000,
-  treasury: {
-    accountId: mockAccountIds.treasury,
-    key: mockKeys.treasury,
-  },
+  treasury: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
   keys: {
     adminKey: mockKeys.admin,
     supplyKey: mockKeys.supply,
@@ -122,24 +119,18 @@ export const invalidTokenFileMissingName = {
   decimals: 2,
   supplyType: 'finite' as const,
   initialSupply: 1000,
-  treasury: {
-    accountId: mockAccountIds.treasury,
-    key: mockKeys.treasury,
-  },
+  treasury: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
   keys: {
     adminKey: mockKeys.admin,
   },
 };
 
 /**
- * Invalid Token File - Invalid Account ID
+ * Invalid Token File - Invalid Treasury Format
  */
-export const invalidTokenFileInvalidAccountId = {
+export const invalidTokenFileInvalidTreasury = {
   ...validTokenFile,
-  treasury: {
-    accountId: 'invalid-account-id',
-    key: mockKeys.treasury,
-  },
+  treasury: '', // Empty treasury string
 };
 
 /**
@@ -502,6 +493,7 @@ export const expectedTokenTransactionParamsFromFile = {
       exempt: undefined,
     },
   ],
+  memo: 'Test token created from file',
 };
 
 /**

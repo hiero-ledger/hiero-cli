@@ -138,47 +138,56 @@ hcli token list --network testnet  # Filter by network
 Create a new token from a JSON file definition with advanced features.
 
 ```bash
-hcli token create-from-file \
-  --file token-definition.json \
-  --args additional-args
+# Basic usage
+hcli token create-from-file --file token-definition.json
+
+# With specific key manager
+hcli token create-from-file --file token-definition.json --key-manager local_encrypted
 ```
 
 **Token File Format:**
 
-The token file supports treasury and association keys with optional key type prefixes:
+The token file supports aliases and raw keys with optional key type prefixes:
 
 ```json
 {
-  "name": "My Token",
+  "name": "my-token",
   "symbol": "MTK",
-  "treasury": "0.0.123456:ed25519:private-key",
-  "associations": [
-    {
-      "accountId": "0.0.789012",
-      "key": "ecdsa:private-key"
-    }
-  ]
-}
-```
-
-Or using legacy format:
-
-```json
-{
-  "treasury": {
-    "accountId": "0.0.123456",
-    "key": "ed25519:private-key"
+  "decimals": 8,
+  "supplyType": "finite",
+  "initialSupply": 1000000,
+  "maxSupply": 10000000,
+  "treasury": "<alias or accountId:keyType:privateKey>",
+  "memo": "Optional token memo",
+  "keys": {
+    "adminKey": "<alias or keyType:privateKey>",
+    "supplyKey": "<alias or keyType:privateKey>"
   },
   "associations": [
     {
-      "accountId": "0.0.789012",
-      "key": "private-key"
+      "accountId": "<accountId>",
+      "key": "<keyType:privateKey>"
+    }
+  ],
+  "customFees": [
+    {
+      "type": "fixed",
+      "amount": 100,
+      "unitType": "HBAR",
+      "collectorId": "<accountId>",
+      "exempt": false
     }
   ]
 }
 ```
 
-**Note**: If no key type prefix is provided, the key defaults to `ecdsa`.
+**Supported formats for treasury and keys:**
+
+- **Alias**: `"my-account"` - resolved via alias service
+- **Account with key**: `"0.0.123456:ecdsa:privateKey"` or `"0.0.123456:ed25519:privateKey"`
+- **Key only** (for `keys` section): `"ecdsa:privateKey"` or `"ed25519:privateKey"`
+
+**Note**: Token name is automatically registered as an alias after successful creation. Duplicate names are not allowed.
 
 ## 📝 Parameter Formats
 
@@ -203,20 +212,7 @@ Private keys can optionally be prefixed with their key type:
 
 This applies to:
 
-- Treasury keys in `create-from-file` command (both string format and legacy object format)
-- Association keys in `create-from-file` command
-- Account keys in `treasury-id:key` format
-
-### Private Key Format
-
-Private keys can optionally be prefixed with their key type:
-
-- **With prefix**: `ed25519:12345676543212345` or `ecdsa:12345676543212345`
-- **Without prefix**: `12345676543212345` (defaults to `ecdsa`)
-
-This applies to:
-
-- Treasury keys in `create-from-file` command (both string format and legacy object format)
+- Treasury keys in `create-from-file` command
 - Association keys in `create-from-file` command
 - Account keys in `treasury-id:key` format
 
@@ -266,6 +262,7 @@ interface TokenData {
   initialSupply: number;
   supplyType: 'FINITE' | 'INFINITE';
   maxSupply: number;
+  memo?: string;
   keys: TokenKeys;
   network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
   associations: TokenAssociation[];

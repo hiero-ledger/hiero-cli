@@ -7,6 +7,7 @@ import { CoreApi } from '../../core';
 import { SupportedNetwork } from '../../core/types/shared.types';
 import { validateAccountId } from '../../core/utils/account-id-validator';
 import { parseIdKeyPair } from '../../core/utils/keys';
+import { PrivateKeyWithTypeSchema } from '../../core/schemas/common-schemas';
 import type { KeyAlgorithmType as KeyAlgorithmType } from '../../core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '../../core/shared/constants';
 import { KeyManagerName } from '../../core/services/kms/kms-types.interface';
@@ -300,9 +301,28 @@ type ResolvedKey = {
   keyRefId?: string;
 };
 
+export interface ResolveKeyOptions {
+  keyManager: KeyManagerName;
+  tags?: string[];
+}
+
+/**
+ * Parse and resolve key parameter
+ * Can be:
+ * - An account name (resolved via alias service)
+ * - A key name (resolved via alias service)
+ * - A public key already in KMS
+ * - A raw private key (if options.keyManager is provided)
+ *
+ * @param keyOrName - Key parameter (alias, public key, or private key)
+ * @param api - Core API instance
+ * @param options - Optional settings for raw key import
+ * @returns Resolved key information
+ */
 export function resolveKeyParameter(
   keyOrName: string | undefined,
   api: CoreApi,
+  options?: ResolveKeyOptions,
 ): ResolvedKey | null {
   const network = api.network.getCurrentNetwork();
 
@@ -335,12 +355,30 @@ export function resolveKeyParameter(
       };
     }
 
+    // Try to find by public key in KMS
     const publicKeyRefId = api.kms.findByPublicKey(keyOrName);
     if (publicKeyRefId) {
       return {
         keyRefId: publicKeyRefId,
         publicKey: keyOrName,
       };
+    }
+
+    // If keyManager is provided, try to import as raw private key
+    if (options?.keyManager) {
+      const parsed = PrivateKeyWithTypeSchema.safeParse(keyOrName);
+      if (parsed.success) {
+        const imported = api.kms.importPrivateKey(
+          parsed.data.keyType,
+          parsed.data.privateKey,
+          options.keyManager,
+          options.tags || [],
+        );
+        return {
+          keyRefId: imported.keyRefId,
+          publicKey: imported.publicKey,
+        };
+      }
     }
 
     throw new Error(

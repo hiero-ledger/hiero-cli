@@ -156,6 +156,7 @@ export class ZustandTokenStateHelper {
           customFees: Array.isArray(tokenData.customFees)
             ? [...tokenData.customFees]
             : [],
+          memo: tokenData.memo,
         };
 
         this.saveToken(tokenId, updatedTokenData);

@@ -5,6 +5,7 @@
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { validateSupplyTypeAndMaxSupply } from '../../core/shared/validation/validate-supply.zod';
+import { EntityIdSchema } from '../../core/schemas/common-schemas';
 
 // Zod schema for token keys
 export const TokenKeysSchema = z.object({
@@ -91,6 +92,8 @@ export const TokenDataSchema = z.object({
   associations: z.array(TokenAssociationSchema).default([]),
 
   customFees: z.array(CustomFeeSchema).default([]),
+
+  memo: z.string().max(100).optional(),
 });
 
 // TypeScript type inferred from Zod schema
@@ -264,3 +267,54 @@ export function validateTokenTransferParams(
 export function safeValidateTokenTransferParams(data: unknown) {
   return TokenTransferCommandSchema.safeParse(data);
 }
+
+// Treasury is a separate field in the file, so we omit treasuryKey here
+export const TokenFileKeysSchema = TokenKeysSchema.omit({
+  treasuryKey: true,
+}).strict();
+
+export const TokenFileFixedFeeSchema = z
+  .object({
+    type: z.literal('fixed'),
+    amount: z.number().int().positive('Amount must be positive'),
+    unitType: z.literal('HBAR').optional().default('HBAR'),
+    collectorId: EntityIdSchema.optional(),
+    exempt: z.boolean().optional(),
+  })
+  .strict();
+
+export const TokenFileAccountSchema = z
+  .object({
+    accountId: EntityIdSchema,
+    key: z.string().min(1, 'account key is required'),
+  })
+  .strict();
+
+export const TokenFileTreasurySchema = z
+  .string()
+  .min(1, 'Treasury is required (either name or treasury-id:treasury-key)');
+
+export const TokenFileSchema = z
+  .object({
+    name: z.string().min(1).max(100),
+    symbol: z.string().min(1).max(20),
+    decimals: z.number().int().min(0).max(18),
+    supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
+    initialSupply: z
+      .union([z.number(), z.bigint()])
+      .transform((val) => BigInt(val))
+      .pipe(z.bigint().nonnegative()),
+    maxSupply: z
+      .union([z.number(), z.bigint()])
+      .transform((val) => BigInt(val))
+      .pipe(z.bigint().nonnegative())
+      .default(0n),
+    treasury: TokenFileTreasurySchema,
+    keys: TokenFileKeysSchema,
+    associations: z.array(TokenFileAccountSchema).default([]),
+    customFees: z.array(TokenFileFixedFeeSchema).default([]),
+    memo: z.string().max(100).optional().default(''),
+  })
+  .strict();
+
+export type TokenFileDefinition = z.infer<typeof TokenFileSchema>;

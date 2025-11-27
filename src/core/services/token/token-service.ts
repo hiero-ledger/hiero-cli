@@ -79,6 +79,7 @@ export class TokenServiceImpl implements TokenService {
       maxSupplyRaw,
       adminKey,
       customFees,
+      memo,
     } = params;
 
     // Convert supply type string to enum
@@ -112,6 +113,12 @@ export class TokenServiceImpl implements TokenService {
       this.logger.debug(
         `[TOKEN SERVICE] Set ${hederaCustomFees.length} custom fees`,
       );
+    }
+
+    // Set memo if provided
+    if (memo) {
+      tokenCreateTx.setTokenMemo(memo);
+      this.logger.debug(`[TOKEN SERVICE] Set token memo: ${memo}`);
     }
 
     this.logger.debug(

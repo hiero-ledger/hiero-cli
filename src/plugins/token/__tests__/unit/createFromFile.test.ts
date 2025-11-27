@@ -59,6 +59,14 @@ describe('createTokenFromFileHandler', () => {
           keyRefId: 'treasury-key-ref-id',
           publicKey: 'treasury-key',
         }),
+        findByPublicKey: jest.fn().mockImplementation((key) => {
+          if (key === 'admin-key') return 'admin-key-ref-id';
+          return undefined;
+        }),
+        getPublicKey: jest.fn().mockImplementation((keyRefId) => {
+          if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
+          return 'mock-public-key';
+        }),
       },
     });
   };
@@ -114,6 +122,14 @@ describe('createTokenFromFileHandler', () => {
             keyRefId: 'treasury-key-ref-id',
             publicKey: 'treasury-key',
           }),
+          findByPublicKey: jest.fn().mockImplementation((key) => {
+            if (key === 'admin-key') return 'admin-key-ref-id';
+            return undefined;
+          }),
+          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
+            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
+            return 'mock-public-key';
+          }),
         },
       });
 
@@ -158,7 +174,7 @@ describe('createTokenFromFileHandler', () => {
       );
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTokenTransaction,
-        ['treasury-key-ref-id'],
+        ['admin-key-ref-id', 'treasury-key-ref-id'],
       );
       expect(mockAddToken).toHaveBeenCalled();
     });
@@ -269,6 +285,14 @@ describe('createTokenFromFileHandler', () => {
             keyRefId: 'treasury-key-ref-id',
             publicKey: 'treasury-key',
           }),
+          findByPublicKey: jest.fn().mockImplementation((key) => {
+            if (key === 'admin-key') return 'admin-key-ref-id';
+            return undefined;
+          }),
+          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
+            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
+            return 'mock-public-key';
+          }),
         },
       });
 
@@ -318,6 +342,7 @@ describe('createTokenFromFileHandler', () => {
             exempt: undefined,
           },
         ],
+        memo: 'Test token created from file',
       });
     });
 
@@ -352,6 +377,14 @@ describe('createTokenFromFileHandler', () => {
           importPrivateKey: jest.fn().mockReturnValue({
             keyRefId: 'treasury-key-ref-id',
             publicKey: 'treasury-key',
+          }),
+          findByPublicKey: jest.fn().mockImplementation((key) => {
+            if (key === 'admin-key') return 'admin-key-ref-id';
+            return undefined;
+          }),
+          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
+            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
+            return 'mock-public-key';
           }),
         },
       });
@@ -499,10 +532,7 @@ describe('createTokenFromFileHandler', () => {
         decimals: 2,
         supplyType: 'finite',
         initialSupply: 1000,
-        treasury: {
-          accountId: '0.0.123456',
-          key: 'treasury-key',
-        },
+        treasury: '0.0.123456:treasury-key',
         keys: {
           adminKey: 'admin-key',
         },
@@ -537,14 +567,11 @@ describe('createTokenFromFileHandler', () => {
       // expect(logger.error).toHaveBeenCalledWith('Token file validation failed');
     });
 
-    test('should handle invalid account ID format', async () => {
+    test('should handle invalid treasury format', async () => {
       // Arrange
       const invalidFile = {
         ...validTokenFile,
-        treasury: {
-          accountId: 'invalid-account-id',
-          key: 'treasury-key',
-        },
+        treasury: '', // Empty treasury string
       };
 
       mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
@@ -678,6 +705,14 @@ describe('createTokenFromFileHandler', () => {
             keyRefId: 'treasury-key-ref-id',
             publicKey: 'treasury-key',
           }),
+          findByPublicKey: jest.fn().mockImplementation((key) => {
+            if (key === 'admin-key') return 'admin-key-ref-id';
+            return undefined;
+          }),
+          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
+            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
+            return 'mock-public-key';
+          }),
         },
       });
 
@@ -739,6 +774,14 @@ describe('createTokenFromFileHandler', () => {
           importPrivateKey: jest.fn().mockReturnValue({
             keyRefId: 'treasury-key-ref-id',
             publicKey: 'treasury-key',
+          }),
+          findByPublicKey: jest.fn().mockImplementation((key) => {
+            if (key === 'admin-key') return 'admin-key-ref-id';
+            return undefined;
+          }),
+          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
+            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
+            return 'mock-public-key';
           }),
         },
       });
@@ -803,6 +846,14 @@ describe('createTokenFromFileHandler', () => {
             keyRefId: 'treasury-key-ref-id',
             publicKey: 'treasury-key',
           }),
+          findByPublicKey: jest.fn().mockImplementation((key) => {
+            if (key === 'admin-key') return 'admin-key-ref-id';
+            return undefined;
+          }),
+          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
+            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
+            return 'mock-public-key';
+          }),
         },
       });
 
@@ -834,7 +885,7 @@ describe('createTokenFromFileHandler', () => {
         'Creating token from file: test',
       );
       expect(logger.info).toHaveBeenCalledWith(
-        '🔑 Using treasury key for signing transaction',
+        '🔑 Resolved admin key for signing',
       );
     });
   });

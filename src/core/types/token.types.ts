@@ -37,6 +37,7 @@ export interface TokenCreateParams {
   maxSupplyRaw?: bigint; // Required for FINITE supply type
   adminKey: string;
   customFees?: CustomFee[];
+  memo?: string;
 }
 
 /**
