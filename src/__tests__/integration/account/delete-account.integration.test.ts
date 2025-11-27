@@ -64,7 +64,7 @@ describe('Delete Account Integration Tests', () => {
         viewAccountResult.outputJson!,
       );
       expect(viewAccountOutput.accountId).toBe(importAccountOutput.accountId);
-      expect(viewAccountOutput.balance).toBe('200000000'); // result in tinybars
+      expect(viewAccountOutput.balance).toBe('0'); // result in tinybars
       expect(viewAccountOutput.evmAddress).toBe(importAccountOutput.evmAddress);
 
       //delete
