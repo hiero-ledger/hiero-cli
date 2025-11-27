@@ -107,11 +107,11 @@ export class HederaMirrornodeServiceDefaultImpl
 
     const queryWithFilter = filter
       ? `${filter?.field}=${filter?.operation}:${filter?.value}`
-      : null;
+      : '';
 
-    const baseParams = `order=desc&limit=100`;
+    const baseParams = `&order=desc&limit=100`;
     let url: string | null =
-      `${this.baseUrl}/topics/${queryParams.topicId}/messages?${queryWithFilter}&${baseParams}`;
+      `${this.baseUrl}/topics/${queryParams.topicId}/messages?${queryWithFilter}${baseParams}`;
     const arrayOfMessages: TopicMessage[] = [];
     let fetchedMessages = 0;
     try {
