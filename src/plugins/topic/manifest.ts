@@ -152,13 +152,6 @@ export const topicPluginManifest: PluginManifest = {
           short: 't',
         },
         {
-          name: 'sequence',
-          type: 'number',
-          required: false,
-          description: 'The sequence number of the message in topic',
-          short: 's',
-        },
-        {
           name: 'sequence-gt',
           type: 'number',
           required: false,
