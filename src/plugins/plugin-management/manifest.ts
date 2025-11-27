@@ -38,7 +38,7 @@ export const pluginManagementManifest: PluginManifest = {
   name: 'plugin-management',
   version: '1.0.0',
   displayName: 'Plugin Management',
-  description: 'Manage plugins (add, remove, list, info)',
+  description: 'Plugin for managing other CLI plugins',
   compatibility: {
     cli: '>=1.0.0',
     core: '>=1.0.0',

@@ -19,8 +19,7 @@ export const PLUGIN_INFO_TEMPLATE = `{{#if found}}
    Commands: {{plugin.commands}}
    Capabilities: {{plugin.capabilities}}
 {{else}}
-❌ Plugin '{{name}}' not found
-   {{message}}
+❌ {{message}}
 {{/if}}`;
 
 // Type export
