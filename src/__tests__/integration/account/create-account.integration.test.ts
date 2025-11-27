@@ -58,7 +58,7 @@ describe('Create Account Integration Tests', () => {
       );
       expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
       expect(viewAccountOutput.balance).toBe('100000000'); // result in tinybars
-      // expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
+      expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
       expect(viewAccountOutput.publicKey).toBe(createAccountOutput.publicKey);
     });
   });
