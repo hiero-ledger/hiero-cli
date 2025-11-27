@@ -6,7 +6,7 @@ import { CommandExecutionResult, CommandHandlerArgs } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { Filter } from '../../../../core/services/mirrornode/types';
-import { FindMessagesOutput } from './output';
+import { FindMessageOutput, FindMessagesOutput } from './output';
 
 /**
  * Helper function to build sequence number filter from command arguments
@@ -98,7 +98,7 @@ async function fetchFilteredMessages(
   api: CommandHandlerArgs['api'],
   topicId: string,
   filter: Filter | undefined,
-): Promise<FindMessagesOutput['messages']> {
+): Promise<FindMessageOutput[]> {
   const response = await api.mirror.getTopicMessages({
     topicId,
     filter: filter
@@ -148,8 +148,11 @@ export async function findMessage(
     const filter = buildSequenceNumberFilter(args.args);
 
     // Fetch multiple messages with filter
-    const messages: FindMessagesOutput['messages'] =
-      await fetchFilteredMessages(api, topicId, filter);
+    const messages: FindMessageOutput[] = await fetchFilteredMessages(
+      api,
+      topicId,
+      filter,
+    );
 
     // Step 2: Prepare structured output data
     const outputData: FindMessagesOutput = {
