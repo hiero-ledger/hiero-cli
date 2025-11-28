@@ -82,7 +82,7 @@ describe('Topic Messages Integration Tests', () => {
 
     const findMessageEqArgs: Record<string, any> = {
       topic: createTopicOutput.topicId,
-      sequence: 3,
+      sequenceEq: 3,
     };
     const findMessageEqResult = await findMessage({
       args: findMessageEqArgs,

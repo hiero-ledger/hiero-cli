@@ -53,44 +53,6 @@ describe('topic plugin - message-find command', () => {
     jest.clearAllMocks();
   });
 
-  test('finds message by sequence number', async () => {
-    const logger = makeLogger();
-    const mockMessage = makeTopicMessage(5, 'Hello, World!');
-
-    const { mirror, networkMock, alias } = makeApiMocks({
-      getTopicMessageImpl: jest.fn().mockResolvedValue(mockMessage),
-    });
-
-    const api: Partial<CoreApi> = {
-      mirror,
-      network: networkMock,
-      alias: alias as any,
-      logger,
-    };
-
-    const args = makeArgs(api, logger, {
-      topic: '0.0.5678',
-      sequence: 5,
-    });
-
-    const result = await findMessage(args);
-
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
-    expect(output.topicId).toBe('0.0.5678');
-    expect(output.totalCount).toBe(1);
-    expect(output.messages).toHaveLength(1);
-    expect(output.messages[0].sequenceNumber).toBe(5);
-    expect(output.messages[0].message).toBe('Hello, World!');
-
-    expect(mirror.getTopicMessage).toHaveBeenCalledWith({
-      topicId: '0.0.5678',
-      sequenceNumber: 5,
-    });
-  });
-
   test('finds messages with greater than filter', async () => {
     const logger = makeLogger();
     const mockMessages = [
@@ -311,37 +273,19 @@ describe('topic plugin - message-find command', () => {
     });
   });
 
-  test('returns failure when no sequence number or filter provided', async () => {
+  test('find all messages when no filter provided', async () => {
     const logger = makeLogger();
-
-    const { mirror, networkMock, alias } = makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      mirror,
-      network: networkMock,
-      alias: alias as any,
-      logger,
-    };
-
-    const args = makeArgs(api, logger, {
-      topic: '0.0.5678',
-    });
-
-    const result = await findMessage(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'No sequence number or filter provided',
-    );
-  });
-
-  test('returns failure when getTopicMessage throws', async () => {
-    const logger = makeLogger();
+    const mockMessages = [
+      makeTopicMessage(1, 'Message 1'),
+      makeTopicMessage(2, 'Message 2'),
+      makeTopicMessage(3, 'Message 3'),
+    ];
 
     const { mirror, networkMock, alias } = makeApiMocks({
-      getTopicMessageImpl: jest
-        .fn()
-        .mockRejectedValue(new Error('network error')),
+      getTopicMessagesImpl: jest.fn().mockResolvedValue({
+        messages: mockMessages,
+        links: { next: null },
+      }),
     });
 
     const api: Partial<CoreApi> = {
@@ -353,14 +297,18 @@ describe('topic plugin - message-find command', () => {
 
     const args = makeArgs(api, logger, {
       topic: '0.0.5678',
-      sequence: 5,
     });
 
     const result = await findMessage(args);
 
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Failed to find messages');
-    expect(result.errorMessage).toContain('network error');
+    expect(result.status).toBe(Status.Success);
+    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    expect(output.totalCount).toBe(3);
+
+    expect(mirror.getTopicMessages).toHaveBeenCalledWith({
+      topicId: '0.0.5678',
+      filter: undefined,
+    });
   });
 
   test('returns failure when getTopicMessages throws', async () => {

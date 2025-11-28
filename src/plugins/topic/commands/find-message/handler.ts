@@ -6,7 +6,7 @@ import { CommandExecutionResult, CommandHandlerArgs } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { Filter } from '../../../../core/services/mirrornode/types';
-import { FindMessagesOutput } from './output';
+import { FindMessageOutput, FindMessagesOutput } from './output';
 
 /**
  * Helper function to build sequence number filter from command arguments
@@ -88,26 +88,6 @@ function transformMessageToOutput(message: {
 }
 
 /**
- * Fetch a single message by sequence number
- * @param api - API instance
- * @param topicId - The topic ID to query
- * @param sequenceNumber - Specific sequence number to fetch
- * @returns Array containing single formatted message
- */
-async function fetchSingleMessage(
-  api: CommandHandlerArgs['api'],
-  topicId: string,
-  sequenceNumber: number,
-): Promise<FindMessagesOutput['messages']> {
-  const response = await api.mirror.getTopicMessage({
-    topicId,
-    sequenceNumber,
-  });
-
-  return [transformMessageToOutput(response)];
-}
-
-/**
  * Fetch multiple messages using a filter
  * @param api - API instance
  * @param topicId - The topic ID to query
@@ -117,15 +97,17 @@ async function fetchSingleMessage(
 async function fetchFilteredMessages(
   api: CommandHandlerArgs['api'],
   topicId: string,
-  filter: Filter,
-): Promise<FindMessagesOutput['messages']> {
+  filter: Filter | undefined,
+): Promise<FindMessageOutput[]> {
   const response = await api.mirror.getTopicMessages({
     topicId,
-    filter: {
-      field: 'sequenceNumber',
-      operation: filter.operation,
-      value: filter.value,
-    },
+    filter: filter
+      ? {
+          field: 'sequenceNumber',
+          operation: filter.operation,
+          value: filter.value,
+        }
+      : undefined,
   });
 
   return response.messages.map(transformMessageToOutput).reverse();
@@ -143,7 +125,6 @@ export async function findMessage(
 
   // Extract command arguments
   const topicIdOrAlias = args.args.topic as string;
-  const sequence = args.args.sequence as number | undefined;
 
   const currentNetwork = api.network.getCurrentNetwork();
 
@@ -162,39 +143,18 @@ export async function findMessage(
   // Log progress indicator (not final output)
   logger.info(`Finding messages in topic: ${topicId}`);
 
-  if (sequence !== undefined && sequence <= 0) {
-    return {
-      status: Status.Failure,
-      errorMessage:
-        'Sequence number starts from 1. Please provide a valid sequence number.',
-    };
-  }
-
   try {
-    let messages: FindMessagesOutput['messages'];
+    // Try to build filter from other sequence number parameters
+    const filter = buildSequenceNumberFilter(args.args);
 
-    // Step 2: Query messages based on provided parameters
-    if (sequence) {
-      // Fetch single message by sequence number
-      messages = await fetchSingleMessage(api, topicId, sequence);
-    } else {
-      // Try to build filter from other sequence number parameters
-      const filter = buildSequenceNumberFilter(args.args);
+    // Fetch multiple messages with filter
+    const messages: FindMessageOutput[] = await fetchFilteredMessages(
+      api,
+      topicId,
+      filter,
+    );
 
-      if (!filter) {
-        // No sequence number or filter provided - early return
-        return {
-          status: Status.Failure,
-          errorMessage:
-            'No sequence number or filter provided. Use --sequence or filter options (--sequence-gt, --sequence-gte, etc.)',
-        };
-      }
-
-      // Fetch multiple messages with filter
-      messages = await fetchFilteredMessages(api, topicId, filter);
-    }
-
-    // Step 3: Prepare structured output data
+    // Step 2: Prepare structured output data
     const outputData: FindMessagesOutput = {
       topicId,
       messages,

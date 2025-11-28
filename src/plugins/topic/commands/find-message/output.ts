@@ -4,26 +4,25 @@
 import { z } from 'zod';
 import { EntityIdSchema, TimestampSchema } from '../../../../core/schemas';
 
+export const FindMessageOutputSchema = z.object({
+  sequenceNumber: z
+    .number()
+    .int()
+    .positive()
+    .describe('Message sequence number'),
+  message: z.string().describe('Decoded message content'),
+  timestamp: z.string().describe('Human-readable timestamp'),
+  consensusTimestamp: TimestampSchema.describe('Hedera consensus timestamp'),
+});
+
+export type FindMessageOutput = z.infer<typeof FindMessageOutputSchema>;
 /**
  * Find Messages Command Output Schema
  * Defines the structure of message query results with unified array format
  */
 export const FindMessagesOutputSchema = z.object({
   topicId: EntityIdSchema,
-  messages: z.array(
-    z.object({
-      sequenceNumber: z
-        .number()
-        .int()
-        .positive()
-        .describe('Message sequence number'),
-      message: z.string().describe('Decoded message content'),
-      timestamp: z.string().describe('Human-readable timestamp'),
-      consensusTimestamp: TimestampSchema.describe(
-        'Hedera consensus timestamp',
-      ),
-    }),
-  ),
+  messages: z.array(FindMessageOutputSchema).describe('Messages found'),
   totalCount: z.number().describe('Total number of messages found'),
 });
 
