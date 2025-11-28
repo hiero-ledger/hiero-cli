@@ -89,6 +89,7 @@ jobs:
       enable-unit-tests: true
       enable-integration-tests: true
       enable-code-style-check: true
+    secrets:
       integration-tests-network: ${{ secrets.INTEGRATION_TESTS_NETWORK }}
       integration-tests-operator-id: ${{ secrets.INTEGRATION_TESTS_OPERATOR_ID }}
       integration-tests-operator-key: ${{ secrets.INTEGRATION_TESTS_OPERATOR_KEY }}
