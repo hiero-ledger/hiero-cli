@@ -87,7 +87,7 @@ jobs:
     with:
       custom-job-label: 'Safety Checks'
       enable-unit-tests: true
-      enable-e2e-tests: true
+      enable-integration-tests: true
       enable-code-style-check: true
 
   create-github-release:

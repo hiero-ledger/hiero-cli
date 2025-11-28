@@ -38,7 +38,7 @@ describe('List Token Integration Tests', () => {
     expect(createTokenOutput.initialSupply).toBe('10');
     expect(createTokenOutput.name).toBe('Test Token List');
     expect(createTokenOutput.alias).toBe('test-token-list');
-    expect(createTokenOutput.treasuryId).toBe(process.env.ACCOUNT_ID);
+    expect(createTokenOutput.treasuryId).toBe(process.env.OPERATOR_ID);
     expect(createTokenOutput.symbol).toBe('TTL');
     expect(createTokenOutput.supplyType).toBe('INFINITE');
 
