@@ -48,6 +48,21 @@ on:
         type: string
         required: false
         default: 'Compiles'
+      integration-tests-network:
+        description: 'Selected network for integration tests:'
+        type: string
+        required: false
+        default: 'localnet'
+      integration-tests-operator-id:
+        description: 'Operator ID for integration tests:'
+        type: string
+        required: false
+        default: '0.0.2'
+      integration-tests-operator-key:
+        description: 'Operator private key for integration tests:'
+        type: string
+        required: false
+        default: '302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137'
 
 defaults:
   run:
@@ -111,34 +126,34 @@ jobs:
           path: 'coverage/unit'
 
       - name: Install Docker Compose Plugin (if tests are performed on localnet)
-        if: ${{ secrets.INTEGRATION_TEST_NETWORK == 'localnet' && inputs.enable-integration-tests && !cancelled() && !failure() }}
+        if: ${{ inputs.integration-tests-network == 'localnet' && inputs.enable-integration-tests && !cancelled() && !failure() }}
         run: |
           sudo curl -fLo /usr/local/lib/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v2.29.1/docker-compose-linux-x86_64
           sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
       - name: Install Local Node (Integration Tests) (if tests are performed on localnet)
-        if: ${{ secrets.INTEGRATION_TEST_NETWORK == 'localnet' && inputs.enable-integration-tests && !cancelled() && !failure() }}
+        if: ${{ inputs.integration-tests-network == 'localnet' && inputs.enable-integration-tests && !cancelled() && !failure() }}
         run: npm install -g @hashgraph/hedera-local
 
       - name: Setup Local Node (Integration Tests) (if tests are performed on localnet)
         id: setup-local-node
-        if: ${{ secrets.INTEGRATION_TEST_NETWORK == 'localnet' && inputs.enable-integration-tests && !cancelled() && !failure() }}
+        if: ${{ inputs.integration-tests-network == 'localnet' && inputs.enable-integration-tests && !cancelled() && !failure() }}
         run: hedera start --verbose=trace --detached --full
 
       - name: Configure Integration Tests
         if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
         run: |
           cp .env.test.sample .env.test
-          echo "OPERATOR_ID=${{ secrets.INTEGRATION_OPERATOR_ID }}" >> ".env.test"
-          echo "OPERATOR_KEY=${{ secrets.INTEGRATION_OPERATOR_KEY }}" >> ".env.test"
-          echo "NETWORK=${{ secrets.INTEGRATION_TEST_NETWORK }}" >> ".env.test"
+          echo "OPERATOR_ID=${{ inputs.integration-tests-operator-id }}" >> ".env.test"
+          echo "OPERATOR_KEY=${{ inputs.integration-tests-operator-key }}" >> ".env.test"
+          echo "NETWORK=${{ inputs.integration-tests-network }}" >> ".env.test"
 
       - name: Run Integration Tests
         if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
         run: npm run test:integration
 
       - name: Teardown Local Node (Integration Tests) (if tests are performed on localnet)
-        if: ${{ secrets.INTEGRATION_TEST_NETWORK == 'localnet' && inputs.enable-integration-tests && steps.setup-local-node.conclusion == 'success'  }}
+        if: ${{ inputs.integration-tests-network == 'localnet' && inputs.enable-integration-tests && steps.setup-local-node.conclusion == 'success'  }}
         run: hedera stop
 
       - name: Publish Integration Test Report

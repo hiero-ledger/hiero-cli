@@ -89,6 +89,9 @@ jobs:
       enable-unit-tests: true
       enable-integration-tests: true
       enable-code-style-check: true
+      integration-tests-network: ${{ secrets.INTEGRATION_TESTS_NETWORK }}
+      integration-tests-operator-id: ${{ secrets.INTEGRATION_TESTS_OPERATOR_ID }}
+      integration-tests-operator-key: ${{ secrets.INTEGRATION_TESTS_OPERATOR_KEY }}
 
   create-github-release:
     name: Github / Release
