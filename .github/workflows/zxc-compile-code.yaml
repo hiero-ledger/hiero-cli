@@ -123,7 +123,7 @@ jobs:
       - name: Install Docker Compose Plugin (if tests are performed on localnet)
         env:
           INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-        if: ${{ inputs.INTEGRATION_TESTS_NETWORK == 'localnet' && inputs.enable-integration-tests && !cancelled() && !failure() }}
+        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
         run: |
           sudo curl -fLo /usr/local/lib/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v2.29.1/docker-compose-linux-x86_64
           sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
@@ -131,14 +131,14 @@ jobs:
       - name: Install Local Node (Integration Tests) (if tests are performed on localnet)
         env:
           INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-        if: ${{ inputs.INTEGRATION_TESTS_NETWORK == 'localnet' && inputs.enable-integration-tests && !cancelled() && !failure() }}
+        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
         run: npm install -g @hashgraph/hedera-local
 
       - name: Setup Local Node (Integration Tests) (if tests are performed on localnet)
         id: setup-local-node
         env:
           INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-        if: ${{ env.INTEGRATION_TESTS_NETWORK == 'localnet' && inputs.enable-integration-tests && !cancelled() && !failure() }}
+        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
         run: hedera start --verbose=trace --detached --full
 
       - name: Configure Integration Tests
@@ -146,7 +146,7 @@ jobs:
           INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
           INTEGRATION_TESTS_OPERATOR_ID: ${{ secrets.integration-tests-operator-id }}
           INTEGRATION_TESTS_OPERATOR_KEY: ${{ secrets.integration-tests-operator-key }}
-        if: ${{ env.INTEGRATION_TESTS_NETWORK == 'localnet' && inputs.enable-integration-tests && !cancelled() && !failure() }}
+        if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
         run: |
           cp .env.test.sample .env.test
           echo "OPERATOR_ID=${{ env.INTEGRATION_TESTS_OPERATOR_ID }}" >> ".env.test"
@@ -160,23 +160,19 @@ jobs:
       - name: Teardown Local Node (Integration Tests) (if tests are performed on localnet)
         env:
           INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-        if: ${{ env.INTEGRATION_TESTS_NETWORK == 'localnet' && inputs.enable-integration-tests && steps.setup-local-node.conclusion == 'success'  }}
+        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && steps.setup-local-node.conclusion == 'success'  }}
         run: hedera stop
 
       - name: Publish Integration Test Report
         uses: step-security/publish-unit-test-result-action@5d195d4dec0b9fa7b51a3dbc4298362a021247c7 # v2.20.4
-        env:
-          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-        if: ${{ env.INTEGRATION_TESTS_NETWORK == 'localnet' && inputs.enable-integration-tests && steps.npm-deps.conclusion == 'success' && !cancelled() }}
+        if: ${{ inputs.enable-integration-tests && steps.npm-deps.conclusion == 'success' && !cancelled() }}
         with:
           check_name: 'Integration Test Results'
           files: 'junit-integration.xml'
 
       - name: Publish Integration Coverage Report
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        env:
-          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-        if: ${{ env.INTEGRATION_TESTS_NETWORK == 'localnet' &&inputs.enable-integration-tests && !cancelled() }}
+        if: ${{ inputs.enable-integration-tests && !cancelled() }}
         with:
           name: Integration Coverage Report
           path: 'coverage/integration'
