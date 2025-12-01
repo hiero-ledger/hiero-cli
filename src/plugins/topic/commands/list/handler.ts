@@ -8,6 +8,7 @@ import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { ZustandTopicStateHelper } from '../../zustand-state-helper';
 import { ListTopicsOutput } from './output';
+import { ListTopicsInputSchema } from './input';
 
 /**
  * Default export handler function for topic listing
@@ -23,7 +24,9 @@ export async function listTopics(
   const topicState = new ZustandTopicStateHelper(api.state, logger);
 
   // Extract command arguments for filtering
-  const networkFilter = args.args.network as string | undefined;
+  const validArgs = ListTopicsInputSchema.parse(args.args);
+
+  const networkFilter = validArgs.network;
 
   // Log progress indicator (not final output)
   logger.info('Listing topics...');

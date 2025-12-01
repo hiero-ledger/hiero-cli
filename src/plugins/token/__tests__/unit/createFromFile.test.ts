@@ -14,6 +14,7 @@ import {
   mockTransactions,
   mockTransactionResults,
   expectedTokenTransactionParamsFromFile,
+  mockKeys,
 } from './helpers/fixtures';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -118,10 +119,23 @@ describe('createTokenFromFileHandler', () => {
           }),
         },
         kms: {
-          importPrivateKey: jest.fn().mockReturnValue({
-            keyRefId: 'treasury-key-ref-id',
-            publicKey: 'treasury-key',
-          }),
+          importPrivateKey: jest
+            .fn()
+            .mockImplementation((keyType, privateKey) => {
+              if (privateKey === mockKeys.treasury) {
+                return {
+                  keyRefId: 'treasury-key-ref-id',
+                  publicKey: 'treasury-key',
+                };
+              }
+              if (privateKey === mockKeys.admin) {
+                return { keyRefId: 'admin-key-ref-id', publicKey: 'admin-key' };
+              }
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'mock-public-key',
+              };
+            }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
             if (key === 'admin-key') return 'admin-key-ref-id';
             return undefined;
@@ -281,10 +295,23 @@ describe('createTokenFromFileHandler', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
-          importPrivateKey: jest.fn().mockReturnValue({
-            keyRefId: 'treasury-key-ref-id',
-            publicKey: 'treasury-key',
-          }),
+          importPrivateKey: jest
+            .fn()
+            .mockImplementation((keyType, privateKey) => {
+              if (privateKey === mockKeys.treasury) {
+                return {
+                  keyRefId: 'treasury-key-ref-id',
+                  publicKey: 'treasury-key',
+                };
+              }
+              if (privateKey === mockKeys.admin) {
+                return { keyRefId: 'admin-key-ref-id', publicKey: 'admin-key' };
+              }
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'mock-public-key',
+              };
+            }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
             if (key === 'admin-key') return 'admin-key-ref-id';
             return undefined;
@@ -374,10 +401,23 @@ describe('createTokenFromFileHandler', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
-          importPrivateKey: jest.fn().mockReturnValue({
-            keyRefId: 'treasury-key-ref-id',
-            publicKey: 'treasury-key',
-          }),
+          importPrivateKey: jest
+            .fn()
+            .mockImplementation((keyType, privateKey) => {
+              if (privateKey === mockKeys.treasury) {
+                return {
+                  keyRefId: 'treasury-key-ref-id',
+                  publicKey: 'treasury-key',
+                };
+              }
+              if (privateKey === mockKeys.admin) {
+                return { keyRefId: 'admin-key-ref-id', publicKey: 'admin-key' };
+              }
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'mock-public-key',
+              };
+            }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
             if (key === 'admin-key') return 'admin-key-ref-id';
             return undefined;
@@ -701,10 +741,23 @@ describe('createTokenFromFileHandler', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
-          importPrivateKey: jest.fn().mockReturnValue({
-            keyRefId: 'treasury-key-ref-id',
-            publicKey: 'treasury-key',
-          }),
+          importPrivateKey: jest
+            .fn()
+            .mockImplementation((keyType, privateKey) => {
+              if (privateKey === mockKeys.treasury) {
+                return {
+                  keyRefId: 'treasury-key-ref-id',
+                  publicKey: 'treasury-key',
+                };
+              }
+              if (privateKey === mockKeys.admin) {
+                return { keyRefId: 'admin-key-ref-id', publicKey: 'admin-key' };
+              }
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'mock-public-key',
+              };
+            }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
             if (key === 'admin-key') return 'admin-key-ref-id';
             return undefined;
@@ -771,10 +824,23 @@ describe('createTokenFromFileHandler', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
-          importPrivateKey: jest.fn().mockReturnValue({
-            keyRefId: 'treasury-key-ref-id',
-            publicKey: 'treasury-key',
-          }),
+          importPrivateKey: jest
+            .fn()
+            .mockImplementation((keyType, privateKey) => {
+              if (privateKey === mockKeys.treasury) {
+                return {
+                  keyRefId: 'treasury-key-ref-id',
+                  publicKey: 'treasury-key',
+                };
+              }
+              if (privateKey === mockKeys.admin) {
+                return { keyRefId: 'admin-key-ref-id', publicKey: 'admin-key' };
+              }
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'mock-public-key',
+              };
+            }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
             if (key === 'admin-key') return 'admin-key-ref-id';
             return undefined;
@@ -842,10 +908,23 @@ describe('createTokenFromFileHandler', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
-          importPrivateKey: jest.fn().mockReturnValue({
-            keyRefId: 'treasury-key-ref-id',
-            publicKey: 'treasury-key',
-          }),
+          importPrivateKey: jest
+            .fn()
+            .mockImplementation((keyType, privateKey) => {
+              if (privateKey === mockKeys.treasury) {
+                return {
+                  keyRefId: 'treasury-key-ref-id',
+                  publicKey: 'treasury-key',
+                };
+              }
+              if (privateKey === mockKeys.admin) {
+                return { keyRefId: 'admin-key-ref-id', publicKey: 'admin-key' };
+              }
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'mock-public-key',
+              };
+            }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
             if (key === 'admin-key') return 'admin-key-ref-id';
             return undefined;

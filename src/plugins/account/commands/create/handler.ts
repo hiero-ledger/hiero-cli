@@ -17,6 +17,7 @@ import type { KeyAlgorithmType as KeyAlgorithmType } from '../../../../core/serv
 import { KeyAlgorithm } from '../../../../core/shared/constants';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { buildAccountEvmAddress } from '../../utils/account-address';
+import { CreateAccountInputSchema } from './input';
 
 /**
  * Validates that an account has sufficient balance for an operation.
@@ -55,8 +56,10 @@ export async function createAccount(
   // Initialize Zustand state helper
   const accountState = new ZustandAccountStateHelper(api.state, logger);
 
-  // Extract command arguments
-  const rawBalance = args.args.balance as string;
+  // Parse and validate command arguments
+  const validArgs = CreateAccountInputSchema.parse(args.args);
+
+  const rawBalance = validArgs.balance;
   let balance: bigint;
 
   try {
@@ -71,23 +74,23 @@ export async function createAccount(
     };
   }
 
-  const maxAutoAssociations = (args.args['auto-associations'] as number) || 0;
-  const alias = (args.args.name as string) || '';
-  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
-  const keyTypeArg = (args.args.keyType as string) || KeyAlgorithm.ECDSA;
+  const maxAutoAssociations = validArgs.autoAssociations;
+  const alias = validArgs.name;
+  const keyManagerArg = validArgs.keyManager;
+  const keyTypeArg = validArgs.keyType;
 
   // Validate key type
   if (
-    keyTypeArg !== KeyAlgorithm.ECDSA.valueOf() &&
-    keyTypeArg !== KeyAlgorithm.ED25519.valueOf()
+    keyTypeArg !== KeyAlgorithm.ECDSA &&
+    keyTypeArg !== KeyAlgorithm.ED25519
   ) {
     return {
       status: Status.Failure,
-      errorMessage: `Invalid key type: ${keyTypeArg}. Must be '${KeyAlgorithm.ECDSA}' or '${KeyAlgorithm.ED25519}'.`,
+      errorMessage: `Invalid key type: ${String(keyTypeArg)}. Must be '${KeyAlgorithm.ECDSA}' or '${KeyAlgorithm.ED25519}'.`,
     };
   }
 
-  const keyType: KeyAlgorithmType = keyTypeArg as KeyAlgorithmType;
+  const keyType: KeyAlgorithmType = keyTypeArg;
 
   // Check if alias already exists on the current network
   const network = api.network.getCurrentNetwork();

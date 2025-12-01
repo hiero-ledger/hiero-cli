@@ -50,7 +50,7 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const args = makeArgs(api, logger, {
       id: '0.0.9999',
-      key: 'privKey',
+      key: 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
       name: 'imported',
     });
 
@@ -58,7 +58,7 @@ describe('account plugin - import command (ADR-003)', () => {
 
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
-      'privKey',
+      'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
       'local',
       ['account:import', 'account:imported'],
     );
@@ -120,7 +120,7 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const args = makeArgs(api, logger, {
       id: '0.0.1111',
-      key: 'key',
+      key: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
       alias: 'test',
     });
 
@@ -159,7 +159,7 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const args = makeArgs(api, logger, {
       id: '0.0.2222',
-      key: 'key',
+      key: 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
     });
 
     const result = await importAccount(args);
@@ -194,7 +194,7 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const args = makeArgs(api, logger, {
       id: '0.0.8888',
-      key: 'ecdsa:privKeyECDSA',
+      key: 'ecdsa:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
       name: 'imported-ecdsa',
     });
 
@@ -202,7 +202,7 @@ describe('account plugin - import command (ADR-003)', () => {
 
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
-      'privKeyECDSA',
+      'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
       'local',
       ['account:import', 'account:imported-ecdsa'],
     );
@@ -236,7 +236,7 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const args = makeArgs(api, logger, {
       id: '0.0.7777',
-      key: 'ed25519:privKeyED25519',
+      key: 'ed25519:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
       name: 'imported-ed25519',
     });
 
@@ -244,7 +244,7 @@ describe('account plugin - import command (ADR-003)', () => {
 
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ED25519,
-      'privKeyED25519',
+      'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
       'local',
       ['account:import', 'account:imported-ed25519'],
     );

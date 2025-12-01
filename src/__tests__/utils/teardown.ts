@@ -32,9 +32,9 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
     const accounts = accountOutput.accounts;
 
     const importAccountArgs: Record<string, unknown> = {
-      id: process.env.ACCOUNT_ID as string,
+      id: process.env.OPERATOR_ID as string,
       name: 'main-account',
-      key: process.env.PRIVATE_KEY as string,
+      key: process.env.OPERATOR_KEY as string,
     };
     await importAccount({
       args: importAccountArgs,

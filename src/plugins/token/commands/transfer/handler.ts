@@ -3,10 +3,9 @@
  * Handles token transfer operations using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
-import { safeValidateTokenTransferParams } from '../../schema';
 import {
   resolveAccountParameter,
   resolveDestinationAccountParameter,
@@ -17,6 +16,7 @@ import { processBalanceInput } from '../../../../core/utils/process-balance-inpu
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
 import { TransferTokenOutput } from './output';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
+import { TransferTokenInputSchema } from './input';
 
 export async function transferToken(
   args: CommandHandlerArgs,
@@ -26,23 +26,13 @@ export async function transferToken(
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
   // Validate command parameters
-  const validationResult = safeValidateTokenTransferParams(args.args);
-  if (!validationResult.success) {
-    const errorMessages = validationResult.error.errors.map(
-      (error) => `${error.path.join('.')}: ${error.message}`,
-    );
-    return {
-      status: Status.Failure,
-      errorMessage: `Invalid command parameters:\n${errorMessages.join('\n')}`,
-    };
-  }
+  const validArgs = TransferTokenInputSchema.parse(args.args);
 
   // Use validated parameters
-  const validatedParams = validationResult.data;
-  const tokenIdOrAlias = validatedParams.token;
-  const from = validatedParams.from;
-  const to = validatedParams.to;
-  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
+  const tokenIdOrAlias = validArgs.token;
+  const from = validArgs.from;
+  const to = validArgs.to;
+  const keyManagerArg = validArgs.keyManager;
 
   // Get keyManager from args or fallback to config
   const keyManager =
@@ -65,7 +55,7 @@ export async function transferToken(
 
   // Get token decimals from API (needed for amount conversion)
   let tokenDecimals = 0;
-  const userAmountInput = validatedParams.amount;
+  const userAmountInput = validArgs.amount;
 
   // Only fetch decimals if user input doesn't have 't' suffix (raw units)
   const isRawUnits = String(userAmountInput).trim().endsWith('t');

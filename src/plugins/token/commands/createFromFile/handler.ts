@@ -3,12 +3,12 @@
  * Handles token creation from JSON file definitions using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
-import { CoreApi } from '../../../../core/core-api/core-api.interface';
-import { Logger } from '../../../../core/services/logger/logger-service.interface';
-import { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
+import { CoreApi } from '../../../../core';
+import { Logger } from '../../../../core';
+import { TransactionResult } from '../../../../core';
 import { SupportedNetwork } from '../../../../core/types/shared.types';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
 import { TokenData } from '../../schema';
@@ -23,6 +23,7 @@ import { CreateTokenFromFileOutput } from './output';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { parseKeyWithType } from '../../../../core/utils/keys';
 import { TokenFileSchema, TokenFileDefinition } from '../../schema';
+import { CreateTokenFromFileInputSchema } from './input';
 
 function resolveTokenFilePath(filename: string): string {
   const hasPathSeparator = filename.includes('/') || filename.includes('\\');
@@ -77,6 +78,8 @@ async function readAndValidateTokenFile(
  * @param api - Core API instance
  * @param network - Current network
  * @param logger - Logger instance
+ * @param keyManager
+ * @param tokenName
  * @returns Resolved treasury information
  */
 function resolveTreasuryFromDefinition(
@@ -163,6 +166,7 @@ function buildTokenDataFromFile(
  * @param associations - Association definitions from file
  * @param api - Core API instance
  * @param logger - Logger instance
+ * @param keyManager
  * @returns Array of successful associations
  */
 async function processTokenAssociations(
@@ -232,13 +236,16 @@ export async function createTokenFromFile(
   // Initialize token state helper
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
+  // Parse command arguments
+  const validArgs = CreateTokenFromFileInputSchema.parse(args.args);
+
   // Extract command arguments
-  const filename = args.args['file'] as string;
-  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
+  const filename = validArgs.file;
+  const providedKeyManager = validArgs.keyManager;
 
   // Get keyManager from args or fallback to config
   const keyManager =
-    keyManagerArg ||
+    providedKeyManager ??
     api.config.getOption<KeyManagerName>('default_key_manager');
 
   logger.info(`Creating token from file: ${filename}`);

@@ -7,9 +7,9 @@ import {
   TokenKeysSchema,
   TokenAssociationSchema,
   CustomFeeSchema,
-  safeValidateTokenCreateParams,
   validateTokenData,
 } from '../../schema';
+import { CreateTokenInputSchema } from '../../commands/create/input';
 import {
   validTokenDataForSchema,
   validTokenKeys,
@@ -297,22 +297,23 @@ describe('Token Schema Validation', () => {
     });
   });
 
-  describe('safeValidateTokenCreateParams', () => {
+  describe('CreateTokenInputSchema', () => {
     test('should validate valid create parameters', () => {
-      const result = safeValidateTokenCreateParams(validTokenCreateParams);
+      const result = CreateTokenInputSchema.safeParse(validTokenCreateParams);
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data).toEqual(validTokenCreateParams);
+        expect(result.data.tokenName).toBe(validTokenCreateParams.tokenName);
+        expect(result.data.symbol).toBe(validTokenCreateParams.symbol);
       }
     });
 
-    test('should handle missing optional parameters', () => {
-      const result = safeValidateTokenCreateParams(minimalTokenCreateParams);
+    test('should handle missing optional parameters with defaults', () => {
+      const result = CreateTokenInputSchema.safeParse(minimalTokenCreateParams);
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data.decimals).toBeUndefined();
-        expect(result.data.initialSupply).toBeUndefined();
-        expect(result.data.supplyType).toBeUndefined();
+        expect(result.data.decimals).toBe(0); // default value
+        expect(result.data.initialSupply).toBe('1000000'); // default value
+        expect(result.data.supplyType).toBe('INFINITE'); // default value
       }
     });
 
@@ -322,13 +323,11 @@ describe('Token Schema Validation', () => {
         symbol: 'TEST',
       };
 
-      const result = safeValidateTokenCreateParams(invalidParams);
+      const result = CreateTokenInputSchema.safeParse(invalidParams);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.errors.length).toBeGreaterThan(0);
-        expect(result.error.errors[0].message).toContain(
-          'Token name is required',
-        );
+        expect(result.error.errors[0].message).toContain('cannot be empty');
       }
     });
   });

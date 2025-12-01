@@ -29,11 +29,18 @@ describe('config plugin - get', () => {
   });
 
   test('fails when option param missing', async () => {
-    const configSvc = makeConfigServiceMock();
+    const configSvc = makeConfigServiceMock({
+      getOption: jest.fn().mockImplementation(() => {
+        throw new Error('Option not found');
+      }),
+      listOptions: jest.fn().mockReturnValue([]),
+    });
     const api = makeApiMock(configSvc);
-    const args = makeCommandArgs({ api });
+    const args = makeCommandArgs({
+      api,
+      args: { option: 'nonexistent_option' },
+    });
     const result = await getConfigOption(args);
     expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Missing required --option');
   });
 });

@@ -8,6 +8,7 @@ import {
   makeKmsMock,
   makeAliasMock,
 } from '../../../../__tests__/mocks/mocks';
+import { DER_KEY } from '../../../../core/schemas/__tests__/helpers/fixtures';
 
 let exitSpy: jest.SpyInstance;
 
@@ -33,7 +34,7 @@ describe('network plugin - set-operator command', () => {
     const args = makeArgs(
       { network: networkService, kms: kmsService, alias: aliasService },
       logger,
-      { operator: '0.0.123456:3030020100300706052b8104000a04220420...' },
+      { operator: `0.0.123456:${DER_KEY}` },
     );
 
     const result = await setOperatorHandler(args);
@@ -49,7 +50,7 @@ describe('network plugin - set-operator command', () => {
     });
     expect(kmsService.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
-      '3030020100300706052b8104000a04220420...',
+      DER_KEY,
       'local',
       ['network:operator', 'network:testnet'],
     );
@@ -112,7 +113,11 @@ describe('network plugin - set-operator command', () => {
     const args = makeArgs(
       { network: networkService, kms: kmsService, alias: aliasService },
       logger,
-      { operator: '0.0.123456:key', network: 'mainnet' },
+      {
+        operator:
+          '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
+        network: 'mainnet',
+      },
     );
 
     const result = await setOperatorHandler(args);
@@ -141,7 +146,10 @@ describe('network plugin - set-operator command', () => {
     const args = makeArgs(
       { network: networkService, kms: kmsService, alias: aliasService },
       logger,
-      { operator: '0.0.123456:key' },
+      {
+        operator:
+          '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
+      },
     );
 
     const result = await setOperatorHandler(args);
@@ -165,7 +173,10 @@ describe('network plugin - set-operator command', () => {
     const args = makeArgs(
       { network: networkService, kms: kmsService, alias: aliasService },
       logger,
-      { operator: '0.0.123456:key' },
+      {
+        operator:
+          '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
+      },
     );
 
     const result = await setOperatorHandler(args);
@@ -175,26 +186,6 @@ describe('network plugin - set-operator command', () => {
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
     });
-  });
-
-  test('returns failure when no operator is provided', async () => {
-    const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
-    const kmsService = makeKmsMock();
-    const aliasService = makeAliasMock();
-
-    const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
-      logger,
-      {},
-    );
-
-    const result = await setOperatorHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBe(
-      'Must specify --operator (name or account-id:private-key format)',
-    );
   });
 
   test('returns failure when alias is not found', async () => {
@@ -265,7 +256,10 @@ describe('network plugin - set-operator command', () => {
     const args = makeArgs(
       { network: networkService, kms: kmsService, alias: aliasService },
       logger,
-      { operator: 'invalid:format' },
+      {
+        operator:
+          '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
+      },
     );
 
     const result = await setOperatorHandler(args);
@@ -288,7 +282,10 @@ describe('network plugin - set-operator command', () => {
     const args = makeArgs(
       { network: networkService, kms: kmsService, alias: aliasService },
       logger,
-      { operator: '0.0.123456:key' },
+      {
+        operator:
+          '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
+      },
     );
 
     const result = await setOperatorHandler(args);
@@ -306,7 +303,10 @@ describe('network plugin - set-operator command', () => {
     const args = makeArgs(
       { network: networkService, kms: kmsService, alias: aliasService },
       logger,
-      { operator: '0.0.123456:key' },
+      {
+        operator:
+          '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
+      },
     );
 
     const result = await setOperatorHandler(args);

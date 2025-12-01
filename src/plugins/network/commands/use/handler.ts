@@ -1,22 +1,19 @@
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { formatError } from '../../../../core/utils/errors';
 import { UseNetworkOutput } from './output';
-import { SupportedNetwork } from '../../../../core/types/shared.types';
 import { Status } from '../../../../core/shared/constants';
+import { UseNetworkInputSchema } from './input';
 
 export async function useHandler(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { logger, api } = args;
 
-  const network = args.args.network as SupportedNetwork | undefined;
-  if (!network) {
-    return {
-      status: Status.Failure,
-      errorMessage: 'Network name is required. Use --network <name>',
-    };
-  }
+  // Parse and validate args
+  const validArgs = UseNetworkInputSchema.parse(args.args);
+
+  const network = validArgs.network;
 
   logger.info(`Switching to network: ${network}`);
 

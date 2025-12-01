@@ -9,6 +9,7 @@ import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import { ListAccountsOutput } from './output';
+import { ListAccountsInputSchema } from './input';
 
 export async function listAccounts(
   args: CommandHandlerArgs,
@@ -18,8 +19,10 @@ export async function listAccounts(
   // Initialize Zustand state helper
   const accountState = new ZustandAccountStateHelper(api.state, logger);
 
-  // Extract command arguments
-  const showPrivateKeys = (args.args.private as boolean) || false;
+  // Parse and validate command arguments
+  const validArgs = ListAccountsInputSchema.parse(args.args);
+
+  const showPrivateKeys = validArgs.private;
 
   logger.info('Listing all accounts...');
 

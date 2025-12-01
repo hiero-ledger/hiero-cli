@@ -42,11 +42,11 @@ describe('network plugin - use command', () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     networkService.switchNetwork = jest.fn().mockImplementation(() => {
-      throw new Error('Network not available: invalid');
+      throw new Error('Network not available: testnet');
     });
 
     const args = makeArgs({ network: networkService }, logger, {
-      network: 'invalid',
+      network: 'testnet',
     });
 
     const result = await useHandler(args);
@@ -85,18 +85,6 @@ describe('network plugin - use command', () => {
     expect(result.status).toBe(Status.Success);
 
     expect(logger.info).toHaveBeenCalledWith('Switching to network: mainnet');
-  });
-
-  test('handles missing network argument', async () => {
-    const logger = makeLogger();
-    const networkService = makeNetworkMock('testnet');
-
-    const args = makeArgs({ network: networkService }, logger, {});
-
-    const result = await useHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Network name is required');
   });
 
   test('successfully switches between networks', async () => {

@@ -10,7 +10,7 @@ import { ZustandTopicStateHelper } from '../../zustand-state-helper';
 import { AliasRecord } from '../../../../core/services/alias/alias-service.interface';
 import { CreateTopicOutput } from './output';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
-import { parseKeyWithType } from '../../../../core/utils/keys';
+import { CreateTopicInputSchema } from './input';
 
 /**
  * Default export handler function for topic creation
@@ -26,11 +26,13 @@ export async function createTopic(
   const topicState = new ZustandTopicStateHelper(api.state, logger);
 
   // Extract and validate command arguments
-  const memo = args.args.memo as string | undefined;
-  const adminKey = args.args.adminKey as string | undefined;
-  const submitKey = args.args.submitKey as string | undefined;
-  const alias = args.args.name as string | undefined;
-  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
+  const validArgs = CreateTopicInputSchema.parse(args.args);
+
+  const memo = validArgs.memo;
+  const adminKey = validArgs.adminKey;
+  const submitKey = validArgs.submitKey;
+  const alias = validArgs.name;
+  const keyManagerArg = validArgs.keyManager;
 
   // Check if alias already exists on the current network
   const network = api.network.getCurrentNetwork();
@@ -56,7 +58,7 @@ export async function createTopic(
     let topicAdminKeyAlias: AliasRecord | undefined = undefined;
     let topicSubmitKeyAlias: AliasRecord | undefined = undefined;
 
-    if (adminKey) {
+    if (adminKey && typeof adminKey === 'string') {
       const adminKeyAlias = api.alias.resolve(
         adminKey,
         'account',
@@ -68,7 +70,7 @@ export async function createTopic(
       }
     }
 
-    if (submitKey) {
+    if (submitKey && typeof submitKey === 'string') {
       const submitKeyAlias = api.alias.resolve(
         submitKey,
         'account',
@@ -83,17 +85,21 @@ export async function createTopic(
     // Step 2: Create topic transaction using Core API
     const topicCreateResult = api.topic.createTopic({
       memo,
-      adminKey: topicAdminKeyAlias?.publicKey || adminKey,
-      submitKey: topicSubmitKeyAlias?.publicKey || submitKey,
+      adminKey:
+        topicAdminKeyAlias?.publicKey ||
+        (typeof adminKey === 'string' ? adminKey : adminKey?.privateKey),
+      submitKey:
+        topicSubmitKeyAlias?.publicKey ||
+        (typeof submitKey === 'string' ? submitKey : submitKey?.privateKey),
     });
 
     // Step 3: Import keys into KMS if they were provided directly (not via alias)
     let adminKeyRefId: string | undefined = topicAdminKeyAlias?.keyRefId;
     let submitKeyRefId: string | undefined = topicSubmitKeyAlias?.keyRefId;
 
-    if (adminKey && !topicAdminKeyAlias) {
-      // Parse private key - check if it has a key type prefix (e.g., "ed25519:...")
-      const { keyType, privateKey } = parseKeyWithType(adminKey);
+    if (adminKey && !topicAdminKeyAlias && typeof adminKey !== 'string') {
+      // adminKey is already parsed by schema (PrivateKeyWithTypeSchema)
+      const { keyType, privateKey } = adminKey;
       const { keyRefId } = api.kms.importPrivateKey(
         keyType,
         privateKey,
@@ -103,9 +109,9 @@ export async function createTopic(
       adminKeyRefId = keyRefId;
     }
 
-    if (submitKey && !topicSubmitKeyAlias) {
-      // Parse private key - check if it has a key type prefix (e.g., "ed25519:...")
-      const { keyType, privateKey } = parseKeyWithType(submitKey);
+    if (submitKey && !topicSubmitKeyAlias && typeof submitKey !== 'string') {
+      // submitKey is already parsed by schema (PrivateKeyWithTypeSchema)
+      const { keyType, privateKey } = submitKey;
       const { keyRefId } = api.kms.importPrivateKey(
         keyType,
         privateKey,

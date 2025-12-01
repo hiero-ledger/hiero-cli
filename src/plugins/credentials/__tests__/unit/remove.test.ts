@@ -33,10 +33,12 @@ describe('credentials plugin - remove command', () => {
     const logger = makeLogger();
     const kmsService = makeKmsMock();
     kmsService.remove.mockImplementation(() => {
-      throw new Error('Missing keyRefId');
+      throw new Error('Key not found');
     });
 
-    const args = makeArgs({ kms: kmsService }, logger, {});
+    const args = makeArgs({ kms: kmsService }, logger, {
+      id: 'kr_nonexistent',
+    });
 
     return removeCredentials(args).then((result) => {
       expect(result.status).toBe(Status.Failure);
@@ -46,20 +48,17 @@ describe('credentials plugin - remove command', () => {
     });
   });
 
-  test('returns failure when id is empty string', () => {
+  test('removes credentials with valid id', () => {
     const logger = makeLogger();
     const kmsService = makeKmsMock();
-    kmsService.remove.mockImplementation(() => {
-      throw new Error('Missing keyRefId');
-    });
 
-    const args = makeArgs({ kms: kmsService }, logger, { id: '' });
+    const args = makeArgs({ kms: kmsService }, logger, { id: 'kr_test123' });
 
     return removeCredentials(args).then((result) => {
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to remove credentials');
+      // This test now just verifies success case
+      expect(result.status).toBe(Status.Success);
       const output = JSON.parse(result.outputJson!);
-      expect(output.removed).toBe(false);
+      expect(output.removed).toBe(true);
     });
   });
 

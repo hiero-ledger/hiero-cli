@@ -8,17 +8,22 @@ import {
   CommandHandlerArgs,
   PluginStateEntry,
   PluginManifest,
-} from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+} from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { PluginInfoOutput } from './output';
+import { PluginInfoInputSchema } from './input';
 
 export async function getPluginInfo(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
-  const { name } = args.args as { name: string };
+
+  // Parse and validate args
+  const validArgs = PluginInfoInputSchema.parse(args.args);
+
+  const name = validArgs.name;
 
   logger.info(`ℹ️  Getting plugin information: ${name}`);
 

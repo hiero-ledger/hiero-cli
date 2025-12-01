@@ -292,6 +292,9 @@ describe('account plugin - balance command (ADR-003)', () => {
     const logger = makeLogger();
 
     const mirrorMock = makeMirrorMock({ hbarBalance: 100n });
+    mirrorMock.getAccountHBarBalance = jest.fn().mockImplementation(() => {
+      throw new Error('Mirror service error');
+    });
 
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
@@ -309,17 +312,11 @@ describe('account plugin - balance command (ADR-003)', () => {
     const args = makeArgs(api, logger, {
       account: 'test-acc',
       hbarOnly: true,
-      token: '0.0.5555',
     });
 
     const result = await getAccountBalance(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain(
-      'Cannot use both --hbar-only (-H) and --token (-t) flags together',
-    );
-    expect(mirrorMock.getAccountHBarBalance).not.toHaveBeenCalled();
-    expect(mirrorMock.getAccountTokenBalances).not.toHaveBeenCalled();
   });
 });

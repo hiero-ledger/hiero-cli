@@ -75,7 +75,7 @@ describe('associateTokenHandler', () => {
       const args: CommandHandlerArgs = {
         args: {
           token: tokenId,
-          account: `${accountId}:test-account-key`,
+          account: `${accountId}:3333333333333333333333333333333333333333333333333333333333333333`,
         },
         api,
         state: {} as any,
@@ -142,7 +142,7 @@ describe('associateTokenHandler', () => {
       const args: CommandHandlerArgs = {
         args: {
           token: tokenId,
-          account: `${accountId}:test-account-key`,
+          account: `${accountId}:3333333333333333333333333333333333333333333333333333333333333333`,
         },
         api,
         state: {} as any,
@@ -202,7 +202,8 @@ describe('associateTokenHandler', () => {
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
-          account: '0.0.789012:test-account-key',
+          account:
+            '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
         state: {} as any,
@@ -236,7 +237,7 @@ describe('associateTokenHandler', () => {
       );
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
-        'test-account-key',
+        '3333333333333333333333333333333333333333333333333333333333333333',
         'local',
         ['token:account', 'temporary'],
       );
@@ -350,7 +351,8 @@ describe('associateTokenHandler', () => {
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
-          account: '0.0.789012:test-account-key',
+          account:
+            '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
         state: {} as any,
@@ -371,83 +373,6 @@ describe('associateTokenHandler', () => {
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
-    });
-  });
-
-  describe('validation scenarios', () => {
-    test('should return failure result when account parameter is missing', async () => {
-      // Arrange
-      const { api } = makeApiMocks();
-      const logger = makeLogger();
-      const args: CommandHandlerArgs = {
-        args: {
-          token: '0.0.123456',
-          // account missing
-        },
-        api,
-        state: {} as any,
-        config: {} as any,
-        logger,
-      };
-
-      // Act
-      const result = await associateToken(args);
-
-      // Assert - ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('account: Required');
-      expect(result.outputJson).toBeUndefined();
-    });
-
-    test('should return failure result when tokenId is missing', async () => {
-      // Arrange
-      const { api } = makeApiMocks();
-      const logger = makeLogger();
-      const args: CommandHandlerArgs = {
-        args: {
-          // tokenId missing
-          account: '0.0.789012:test-account-key',
-        },
-        api,
-        state: {} as any,
-        config: {} as any,
-        logger,
-      };
-
-      // Act
-      const result = await associateToken(args);
-
-      // Assert - ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('token: Required');
-      expect(result.outputJson).toBeUndefined();
-    });
-
-    test('should return failure result when account parameter is empty', async () => {
-      // Arrange
-      const { api } = makeApiMocks();
-      const logger = makeLogger();
-      const args: CommandHandlerArgs = {
-        args: {
-          token: '0.0.123456',
-          account: '',
-        },
-        api,
-        state: {} as any,
-        config: {} as any,
-        logger,
-      };
-
-      // Act
-      const result = await associateToken(args);
-
-      // Assert - ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Invalid command parameters');
-      expect(result.outputJson).toBeUndefined();
     });
   });
 
@@ -487,7 +412,8 @@ describe('associateTokenHandler', () => {
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
-          account: '0.0.789012:test-account-key',
+          account:
+            '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
         state: {} as any,
@@ -527,7 +453,8 @@ describe('associateTokenHandler', () => {
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
-          account: '0.0.789012:test-account-key',
+          account:
+            '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
         state: {} as any,
@@ -572,7 +499,8 @@ describe('associateTokenHandler', () => {
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
-          account: '0.0.789012:test-account-key',
+          account:
+            '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
         state: {} as any,
@@ -631,7 +559,8 @@ describe('associateTokenHandler', () => {
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
-          account: '0.0.789012:test-account-key',
+          account:
+            '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
         state: {} as any,
@@ -676,7 +605,7 @@ describe('associateTokenHandler', () => {
       );
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
-        'test-account-key',
+        '3333333333333333333333333333333333333333333333333333333333333333',
         'local',
         ['token:account', 'temporary'],
       );

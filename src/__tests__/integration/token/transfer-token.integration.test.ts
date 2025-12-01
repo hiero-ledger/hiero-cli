@@ -95,7 +95,7 @@ describe('Transfer Token Integration Tests', () => {
     expect(createTokenOutput.initialSupply).toBe('10');
     expect(createTokenOutput.name).toBe('Test Token Transfer');
     expect(createTokenOutput.alias).toBe('test-token-transfer');
-    expect(createTokenOutput.treasuryId).toBe(process.env.ACCOUNT_ID);
+    expect(createTokenOutput.treasuryId).toBe(process.env.OPERATOR_ID);
     expect(createTokenOutput.symbol).toBe('TTT');
     expect(createTokenOutput.supplyType).toBe('INFINITE');
 
@@ -125,7 +125,7 @@ describe('Transfer Token Integration Tests', () => {
 
     const transferTokenArgs: Record<string, unknown> = {
       token: createTokenOutput.tokenId,
-      from: `${process.env.ACCOUNT_ID}:${process.env.PRIVATE_KEY}`,
+      from: `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
       to: 'account-transfer-token',
       amount: '5',
     };
@@ -141,7 +141,7 @@ describe('Transfer Token Integration Tests', () => {
       transferTokenResult.outputJson!,
     );
     expect(transferTokenOutput.tokenId).toBe(createTokenOutput.tokenId);
-    expect(transferTokenOutput.from).toBe(process.env.ACCOUNT_ID);
+    expect(transferTokenOutput.from).toBe(process.env.OPERATOR_ID);
     expect(transferTokenOutput.to).toBe(createAccountOutput.accountId);
     expect(transferTokenOutput.amount).toBe('5');
 
