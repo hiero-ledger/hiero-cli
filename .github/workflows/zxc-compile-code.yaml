@@ -75,6 +75,10 @@ jobs:
   compile:
     name: ${{ inputs.custom-job-label || 'Compiles' }}
     runs-on: hiero-cli-linux-medium
+    env:
+      INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
+      INTEGRATION_TESTS_OPERATOR_ID: ${{ secrets.integration-tests-operator-id }}
+      INTEGRATION_TESTS_OPERATOR_KEY: ${{ secrets.integration-tests-operator-key }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
@@ -142,10 +146,6 @@ jobs:
         run: hedera start --verbose=trace --detached --full
 
       - name: Configure Integration Tests
-        env:
-          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
-          INTEGRATION_TESTS_OPERATOR_ID: ${{ secrets.integration-tests-operator-id }}
-          INTEGRATION_TESTS_OPERATOR_KEY: ${{ secrets.integration-tests-operator-key }}
         if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
         run: |
           cp .env.test.sample .env.test
