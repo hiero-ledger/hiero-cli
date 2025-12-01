@@ -1,66 +1,65 @@
 #!/usr/bin/env node
 
 import { program } from 'commander';
-import commands from './commands';
-import { setColorEnabled } from './utils/color';
-import { installGlobalErrorHandlers } from './utils/errors';
-import { Logger } from './utils/logger';
-import { setGlobalOutputMode } from './utils/output';
+import { createCoreApi } from './core';
+import './core/utils/json-serialize';
+import { DEFAULT_PLUGIN_STATE } from './core/shared/config/cli-options';
+import { addDisabledPluginsHelp } from './core/utils/add-disabled-plugins-help';
+import { PluginManager } from './core/plugins/plugin-manager';
+import {
+  setupGlobalErrorHandlers,
+  setGlobalOutputFormat,
+  formatAndExitWithError,
+} from './core/utils/error-handler';
+import { validateOutputFormat } from './core/shared/validation/validate-output-format.zod';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../package.json') as { version?: string };
-const logger = Logger.getInstance();
 
 program
   .version(pkg.version || '0.0.0')
   .description('A CLI tool for managing Hedera environments')
-  .option('-v, --verbose', 'Enable verbose logging')
-  .option('-q, --quiet', 'Quiet mode (only errors)')
-  .option(
-    '--debug',
-    'Enable debug logging (shows API URLs, network info, etc.)',
-  )
-  .option('--json', 'Machine-readable JSON output where supported')
-  .option('--no-color', 'Disable ANSI colors in output')
-  .option(
-    '--log-mode <mode>',
-    'Explicit log mode (normal|verbose|quiet|silent)',
-  );
+  .option('--format <type>', 'Output format: human (default) or json');
 
-// Ensure logging mode is applied before any command action executes.
-program.hook('preAction', () => {
-  const opts = program.opts<{
-    verbose?: boolean;
-    quiet?: boolean;
-    debug?: boolean;
-    logMode?: string;
-    json?: boolean;
-    color?: boolean; // from --no-color inverse boolean option
-  }>();
+// Initialize the simplified plugin system
+async function initializeCLI() {
+  const coreApi = createCoreApi();
 
-  // Handle debug flag (highest priority)
-  if (opts.debug) {
-    process.env.HCLI_DEBUG = 'true';
+  try {
+    program.parseOptions(process.argv.slice(2));
+    const opts = program.opts();
+    const format = validateOutputFormat(coreApi.logger, opts.format);
+
+    coreApi.output.setFormat(format);
+
+    // Setup global error handlers with validated format
+    setGlobalOutputFormat(format);
+    setupGlobalErrorHandlers(coreApi.logger);
+
+    const pluginManager = new PluginManager(coreApi);
+
+    // Initialize plugins, register disabled stubs, and load all manifests
+    const pluginState = await pluginManager.initializePlugins(
+      program,
+      DEFAULT_PLUGIN_STATE,
+      coreApi.logger,
+    );
+
+    // Register plugin commands
+    pluginManager.registerCommands(program);
+
+    // Add disabled plugins section to help output
+    addDisabledPluginsHelp(program, pluginState);
+
+    coreApi.logger.info('✅ CLI ready');
+
+    // Parse arguments and execute command
+    await program.parseAsync(process.argv);
+    process.exit(0);
+  } catch (error) {
+    formatAndExitWithError('CLI initialization failed', error, coreApi.logger);
   }
+}
 
-  if (opts.logMode) {
-    const mode = opts.logMode as 'verbose' | 'quiet' | 'normal' | 'silent';
-    if (mode === 'silent') logger.setMode('silent');
-    else if (mode === 'verbose' || mode === 'quiet' || mode === 'normal')
-      logger.setLevel(mode);
-  } else if (opts.verbose) logger.setLevel('verbose');
-  else if (opts.quiet) logger.setLevel('quiet');
-  setColorEnabled(opts.color !== false);
-  setGlobalOutputMode({ json: Boolean(opts.json) });
-});
-
-// Auto-register all exported command registrar functions
-Object.values(commands).forEach((register) => {
-  if (typeof register === 'function') {
-    register(program);
-  }
-});
-
-installGlobalErrorHandlers();
-
-program.parseAsync(process.argv);
+// Start the CLI
+void initializeCLI();
