@@ -218,6 +218,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     output: {
       handleCommandOutput: jest.fn(),
       getFormat: jest.fn().mockReturnValue('human'),
+      setFormat: jest.fn(),
     } as jest.Mocked<OutputService>,
     pluginManagement: {
       listPlugins: jest.fn().mockReturnValue([]),
@@ -281,6 +282,7 @@ export const makeTransactionResult = (
 ) => ({
   success: overrides?.success ?? true,
   transactionId: overrides?.transactionId ?? '0.0.123@1234567890.123456789',
+  consensusTimestamp: '2024-01-01T00:00:00.000Z',
   tokenId: overrides?.tokenId,
   accountId: overrides?.accountId,
   receipt: {

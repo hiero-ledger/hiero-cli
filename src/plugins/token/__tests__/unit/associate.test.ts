@@ -5,13 +5,13 @@
 import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
 import { associateToken } from '../../commands/associate';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
 import type { AssociateTokenOutput } from '../../commands/associate';
 import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeApiMocks,
   mockZustandTokenStateHelper,
+  makeTransactionResult,
 } from './helpers/mocks';
 import {
   tokenAssociatedWithAccountFixture,
@@ -171,11 +171,7 @@ describe('associateTokenHandler', () => {
       // Arrange
       const mockAddAssociation = jest.fn();
       const mockAssociationTransaction = { test: 'association-transaction' };
-      const mockSignResult: TransactionResult = {
-        success: true,
-        transactionId: '0.0.123@1234567890.123456789',
-        receipt: {} as any,
-      };
+      const mockSignResult = makeTransactionResult();
 
       mockZustandTokenStateHelper(MockedHelper, {
         addAssociation: mockAddAssociation,
@@ -247,11 +243,7 @@ describe('associateTokenHandler', () => {
       // Arrange
       const mockAddAssociation = jest.fn();
       const mockAssociationTransaction = { test: 'association-transaction' };
-      const mockSignResult: TransactionResult = {
-        success: true,
-        transactionId: '0.0.123@1234567890.123456789',
-        receipt: {} as any,
-      };
+      const mockSignResult = makeTransactionResult();
 
       mockZustandTokenStateHelper(MockedHelper, {
         addAssociation: mockAddAssociation,
@@ -320,11 +312,7 @@ describe('associateTokenHandler', () => {
       // Arrange
       const mockAddAssociation = jest.fn();
       const mockAssociationTransaction = { test: 'association-transaction' };
-      const mockSignResult: TransactionResult = {
-        success: true,
-        transactionId: '0.0.123@1234567890.123456789',
-        receipt: {} as any,
-      };
+      const mockSignResult = makeTransactionResult();
 
       mockZustandTokenStateHelper(MockedHelper, {
         addAssociation: mockAddAssociation,
@@ -381,11 +369,10 @@ describe('associateTokenHandler', () => {
       // Arrange
       const mockAddAssociation = jest.fn();
       const mockAssociationTransaction = { test: 'association-transaction' };
-      const mockSignResult: TransactionResult = {
+      const mockSignResult = makeTransactionResult({
         success: false,
         transactionId: '',
-        receipt: { status: { status: 'failed', transactionId: '' } },
-      };
+      });
 
       mockZustandTokenStateHelper(MockedHelper, {
         addAssociation: mockAddAssociation,
@@ -527,11 +514,7 @@ describe('associateTokenHandler', () => {
         .fn()
         .mockReturnValue(tokenWithoutAssociationsFixture);
       const mockAssociationTransaction = { test: 'association-transaction' };
-      const mockSignResult: TransactionResult = {
-        success: true,
-        transactionId: '0.0.123@1234567890.123456789',
-        receipt: {} as any,
-      };
+      const mockSignResult = makeTransactionResult();
 
       mockZustandTokenStateHelper(MockedHelper, {
         getToken: mockGetToken,
@@ -618,11 +601,7 @@ describe('associateTokenHandler', () => {
         .fn()
         .mockReturnValue(tokenAssociatedWithAliasFixture);
       const mockAssociationTransaction = { test: 'association-transaction' };
-      const mockSignResult: TransactionResult = {
-        success: true,
-        transactionId: '0.0.123@1234567890.123456789',
-        receipt: {} as any,
-      };
+      const mockSignResult = makeTransactionResult();
 
       mockZustandTokenStateHelper(MockedHelper, {
         getToken: mockGetToken,

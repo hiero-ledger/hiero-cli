@@ -299,17 +299,7 @@ describe('createTokenHandler', () => {
       // Arrange
       const mockSaveToken = jest.fn();
       const mockTokenTransaction = { test: 'transaction' };
-      const mockSignResult: TransactionResult = {
-        success: true,
-        transactionId: '0.0.123@1234567890.123456789',
-        tokenId: '0.0.123456',
-        receipt: {
-          status: {
-            status: 'success',
-            transactionId: '0.0.123@1234567890.123456789',
-          },
-        },
-      };
+      const mockSignResult = makeTransactionResult({ tokenId: '0.0.123456' });
 
       MockedHelper.mockImplementation(() => ({
         saveToken: mockSaveToken,
