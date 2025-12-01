@@ -12,6 +12,7 @@ import { formatError } from '../../../../core/utils/errors';
 import { AccountBalanceOutput } from './output';
 import { EntityIdSchema } from '../../../../core/schemas';
 import { AliasType } from '../../../../core/services/alias/alias-service.interface';
+import { AccountBalanceInputSchema } from './input';
 
 /**
  * Fetches and maps token balances for an account
@@ -50,19 +51,13 @@ export async function getAccountBalance(
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  // Extract command arguments
-  const accountIdOrNameOrAlias = args.args.account as string;
-  const hbarOnly = (args.args.hbarOnly as boolean) || false;
-  const token = args.args.token as string | undefined;
-  const tokenOnly = !!token;
+  // Parse and validate command arguments
+  const validArgs = AccountBalanceInputSchema.parse(args.args);
 
-  if (hbarOnly && tokenOnly) {
-    return {
-      status: Status.Failure,
-      errorMessage:
-        'Cannot use both --hbar-only (-H) and --token (-t) flags together. Use one or the other.',
-    };
-  }
+  const accountIdOrNameOrAlias = validArgs.account;
+  const hbarOnly = validArgs.hbarOnly;
+  const token = validArgs.token;
+  const tokenOnly = !!token;
 
   logger.info(`Getting balance for account: ${accountIdOrNameOrAlias}`);
 

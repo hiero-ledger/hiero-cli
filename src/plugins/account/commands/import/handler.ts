@@ -5,14 +5,14 @@
  */
 import { CommandHandlerArgs } from '../../../../core';
 import { CommandExecutionResult } from '../../../../core';
-import { KeyAlgorithm, Status } from '../../../../core/shared/constants';
+import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import { ImportAccountOutput } from './output';
-import { parseKeyWithType } from '../../../../core/utils/keys';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { AccountData } from '../../schema';
 import { buildAccountEvmAddress } from '../../utils/account-address';
+import { ImportAccountInputSchema } from './input';
 
 export async function importAccount(
   args: CommandHandlerArgs,
@@ -22,11 +22,13 @@ export async function importAccount(
   // Initialize Zustand state helper
   const accountState = new ZustandAccountStateHelper(api.state, logger);
 
-  // Extract command arguments
-  const accountId = args.args.id as string;
-  const privateKeyInput = args.args.key as string;
-  const alias = (args.args.name as string) || '';
-  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
+  // Parse and validate command arguments
+  const validArgs = ImportAccountInputSchema.parse(args.args);
+
+  const accountId = validArgs.id;
+  const { keyType, privateKey } = validArgs.key;
+  const alias = validArgs.name;
+  const keyManagerArg = validArgs.keyManager;
 
   // Check if name already exists on the current network
   const network = api.network.getCurrentNetwork();
@@ -37,9 +39,6 @@ export async function importAccount(
     api.config.getOption<KeyManagerName>('default_key_manager');
 
   try {
-    // Parse private key with type
-    const { keyType, privateKey } = parseKeyWithType(privateKeyInput);
-
     // Check if account name already exists
     api.alias.availableOrThrow(alias, network);
 
@@ -90,7 +89,7 @@ export async function importAccount(
     const account: AccountData = {
       name,
       accountId,
-      type: keyType as KeyAlgorithm,
+      type: keyType,
       publicKey: publicKey,
       evmAddress,
       keyRefId,

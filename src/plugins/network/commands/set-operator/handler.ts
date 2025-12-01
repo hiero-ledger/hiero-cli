@@ -1,16 +1,17 @@
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { formatError } from '../../../../core/utils/errors';
 import { SupportedNetwork } from '../../../../core/types/shared.types';
 import { validateAccountId } from '../../../../core/utils/account-id-validator';
-import { AliasService } from '../../../../core/services/alias/alias-service.interface';
-import { KmsService } from '../../../../core/services/kms/kms-service.interface';
+import { AliasService } from '../../../../core';
+import { KmsService } from '../../../../core';
 import { parseIdKeyPair } from '../../../../core/utils/keys';
 import { Status } from '../../../../core/shared/constants';
 import { SetOperatorOutput } from './output';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import type { KeyAlgorithmType as KeyAlgorithmType } from '../../../../core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '../../../../core/shared/constants';
+import { SetOperatorInputSchema } from './input';
 
 function resolveOperatorFromAlias(
   alias: string,
@@ -61,17 +62,13 @@ export async function setOperatorHandler(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { logger, api } = args;
-  const operatorArg = (args.args as { operator?: string }).operator;
-  const networkArg = (args.args as { network?: string }).network;
-  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
 
-  if (!operatorArg) {
-    return {
-      status: Status.Failure,
-      errorMessage:
-        'Must specify --operator (name or account-id:private-key format)',
-    };
-  }
+  // Parse and validate args
+  const validArgs = SetOperatorInputSchema.parse(args.args);
+
+  const operatorArg = validArgs.operator;
+  const networkArg = validArgs.network;
+  const keyManagerArg = validArgs.keyManager;
 
   try {
     const targetNetwork =

@@ -84,8 +84,8 @@ describe('account plugin - delete command (ADR-003)', () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
-      loadAccount: jest.fn(),
-      listAccounts: jest.fn(),
+      loadAccount: jest.fn().mockReturnValue(null),
+      listAccounts: jest.fn().mockReturnValue([]),
       deleteAccount: jest.fn(),
     }));
 
@@ -98,13 +98,12 @@ describe('account plugin - delete command (ADR-003)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, {});
+    const args = makeArgs(api, logger, { name: 'nonexistent' });
 
     const result = await deleteAccount(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Either name or id must be provided');
   });
 
   test('returns failure when account with given name not found', async () => {

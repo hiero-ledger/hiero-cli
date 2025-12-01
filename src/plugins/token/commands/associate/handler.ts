@@ -3,11 +3,10 @@
  * Handles token association operations using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { safeValidateTokenAssociateParams } from '../../schema';
 import {
   resolveAccountParameter,
   resolveTokenParameter,
@@ -16,36 +15,26 @@ import { formatError } from '../../../../core/utils/errors';
 import { AssociateTokenOutput } from './output';
 import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
+import { AssociateTokenInputSchema } from './input';
 
 export async function associateToken(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  // Validate command parameters
-  const validationResult = safeValidateTokenAssociateParams(args.args);
-  if (!validationResult.success) {
-    const errorMessages = validationResult.error.errors.map(
-      (error) => `${error.path.join('.')}: ${error.message}`,
-    );
-    return {
-      status: Status.Failure,
-      errorMessage: `Invalid command parameters:\n${errorMessages.join('\n')}`,
-    };
-  }
-
   // Initialize token state helper
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
-  // Use validated parameters
-  const validatedParams = validationResult.data;
-  const tokenIdOrAlias = validatedParams.token;
-  const accountIdOrAlias = validatedParams.account;
-  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
+  // Validate command parameters
+  const validArgs = AssociateTokenInputSchema.parse(args.args);
+
+  const tokenIdOrAlias = validArgs.token;
+  const accountIdOrAlias = validArgs.account;
+  const providedKeyManager = validArgs.keyManager;
 
   // Get keyManager from args or fallback to config
   const keyManager =
-    keyManagerArg ||
+    providedKeyManager ??
     api.config.getOption<KeyManagerName>('default_key_manager');
 
   const network = api.network.getCurrentNetwork();

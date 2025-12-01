@@ -56,8 +56,8 @@ describe('account plugin - create command (ADR-003)', () => {
     };
 
     const args = makeArgs(api, logger, {
-      balance: 5000,
-      'auto-associations': 3,
+      balance: '5000',
+      autoAssociations: 3,
       name: 'myAccount',
     });
 
@@ -139,7 +139,7 @@ describe('account plugin - create command (ADR-003)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, { name: 'failAccount', balance: 100 });
+    const args = makeArgs(api, logger, { name: 'failAccount', balance: '100' });
 
     const result = await createAccount(args);
 
@@ -168,7 +168,10 @@ describe('account plugin - create command (ADR-003)', () => {
       logger,
     };
 
-    const args = makeArgs(api, logger, { name: 'errorAccount', balance: 100 });
+    const args = makeArgs(api, logger, {
+      name: 'errorAccount',
+      balance: '100',
+    });
 
     const result = await createAccount(args);
 
@@ -207,7 +210,7 @@ describe('account plugin - create command (ADR-003)', () => {
     };
 
     const args = makeArgs(api, logger, {
-      balance: 1000,
+      balance: '1000',
       'key-type': KeyAlgorithm.ECDSA,
       name: 'ecdsaAccount',
     });
@@ -262,7 +265,7 @@ describe('account plugin - create command (ADR-003)', () => {
     };
 
     const args = makeArgs(api, logger, {
-      balance: 1000,
+      balance: '1000',
       keyType: KeyAlgorithm.ED25519,
       name: 'ed25519Account',
     });

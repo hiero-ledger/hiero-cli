@@ -28,10 +28,12 @@ my-plugin/
 ├── commands/                # Command handlers
 │   ├── create/
 │   │   ├── handler.ts       # Command handler
+│   │   ├── input.ts         # Input validation schema (Zod)
 │   │   ├── output.ts        # Output schema & template
 │   │   └── index.ts         # Command exports
 │   ├── list/
 │   │   ├── handler.ts
+│   │   ├── input.ts         # Input validation schema (Zod)
 │   │   ├── output.ts
 │   │   └── index.ts
 │   └── ...                  # Other commands
@@ -135,14 +137,51 @@ export const MY_PLUGIN_CREATE_TEMPLATE = `
 `.trim();
 ```
 
-### 2. Command Handlers
+### 2. Input Validation
 
-Command handlers are the core of plugin functionality. Each command handler receives injected services:
+**All commands must validate user input** using Zod schemas defined in `input.ts`. This ensures consistent error handling and prevents invalid data from reaching business logic.
+
+#### Input Schema (commands/create/input.ts)
+
+```typescript
+import { z } from 'zod';
+import {
+  AccountReferenceSchema,
+  EntityReferenceSchema,
+} from '../../../core/schemas/common-schemas';
+
+/**
+ * Input schema for create command
+ * Validates all user-provided arguments
+ */
+export const MyPluginCreateInputSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  value: z.string().optional(),
+  account: AccountReferenceSchema.optional().describe(
+    'Optional account identifier',
+  ),
+});
+
+export type MyPluginCreateInput = z.infer<typeof MyPluginCreateInputSchema>;
+```
+
+**Key principles:**
+
+- Define one schema per command in `input.ts`
+- Use common schemas from `src/core/schemas/common-schemas.ts` for consistency
+- Add descriptive error messages using `.min()`, `.max()`, etc.
+- Use `.describe()` for documentation
+- Export TypeScript type using `z.infer<>`
+
+### 3. Command Handlers
+
+Command handlers validate input **at the beginning**, before business logic. Validation errors are automatically caught by the plugin manager and formatted for the user.
 
 ```typescript
 import { CommandHandlerArgs } from '../../../core/plugins/plugin.interface';
 import { CommandExecutionResult } from '../../../core/plugins/plugin.types';
 import { Status } from '../../../core/shared/constants';
+import { MyPluginCreateInputSchema } from './input';
 import { MyPluginCreateOutputSchema } from './output';
 
 export async function createHandler(
@@ -150,32 +189,27 @@ export async function createHandler(
 ): Promise<CommandExecutionResult> {
   const { api, logger, state } = args;
 
-  const name = args.args['name'] as string | undefined;
-  const value = args.args['value'] as string | undefined;
+  // Validate input FIRST, before try-catch
+  // ZodError is thrown if validation fails and caught by plugin manager
+  const validArgs = MyPluginCreateInputSchema.parse(args.args);
 
-  if (!name) {
-    return {
-      status: Status.Failure,
-      errorMessage: 'Missing required option: --name',
-    };
-  }
-
-  logger.info(`Creating item: ${name}`);
+  logger.info(`Creating item: ${validArgs.name}`);
 
   try {
+    // Business logic with validated data
     const result = await api.account.createAccount({
-      name,
+      name: validArgs.name,
       balance: 1000,
     });
 
     const output = MyPluginCreateOutputSchema.parse({
-      name,
-      value,
+      name: validArgs.name,
+      value: validArgs.value,
       accountId: result.accountId,
       createdAt: new Date().toISOString(),
     });
 
-    state.set('my-plugin-data', name, output);
+    state.set('my-plugin-data', validArgs.name, output);
 
     return {
       status: Status.Success,
@@ -190,7 +224,19 @@ export async function createHandler(
 }
 ```
 
-### 3. State Management
+**Validation flow:**
+
+1. Handler calls `InputSchema.parse(args.args)` **before** business logic
+2. If validation fails, Zod throws `ZodError`
+3. Plugin manager catches `ZodError` in try-catch around handler execution
+4. Error handler formats validation errors:
+   - **Text format**: Bulletpoint list of all validation errors
+   - **JSON format**: `{ status: "failure", errorMessage: "...", errors: [...] }`
+5. CLI exits with error code 1
+
+**Never catch ZodError in handlers** - let it propagate to the plugin manager for consistent error formatting.
+
+### 4. State Management
 
 Plugins can define state schemas for data validation using Zod schemas that are automatically converted to JSON Schema:
 
@@ -235,7 +281,7 @@ export const MyPluginCreateOutputSchema = z.object({
 - **No Duplication**: Eliminates the need to maintain separate JSON Schema definitions
 - **Consistency**: Changes to the Zod schema automatically update the JSON Schema
 
-### 4. Type Definitions
+### 5. Type Definitions
 
 Define plugin-specific types:
 
@@ -549,7 +595,32 @@ api.events.on('account:created', (data) => {
 
 ## 📚 Best Practices
 
-### 1. Error Handling
+### 1. Input Validation
+
+Always validate input using Zod schemas:
+
+```typescript
+export async function myHandler(
+  args: CommandHandlerArgs,
+): Promise<CommandExecutionResult> {
+  // Validate FIRST, before any business logic
+  const validArgs = MyInputSchema.parse(args.args);
+
+  // Now use validated data with full type safety
+  logger.info(`Processing ${validArgs.name}`);
+
+  // ... business logic with validArgs
+}
+```
+
+**Important:**
+
+- Call `.parse()` **before** the try-catch block for business logic
+- Don't catch `ZodError` - let it propagate to plugin manager
+- Use common schemas from `src/core/schemas/common-schemas.ts`
+- Add descriptive validation messages
+
+### 2. Error Handling
 
 Always handle errors gracefully:
 
@@ -559,8 +630,11 @@ export async function myHandler(
 ): Promise<CommandExecutionResult> {
   const { logger } = args;
 
+  // Input validation (outside try-catch)
+  const validArgs = MyInputSchema.parse(args.args);
+
   try {
-    // Plugin logic
+    // Plugin business logic
     return { status: Status.Success };
   } catch (error) {
     logger.error(`❌ Plugin error: ${String(error)}`);
@@ -572,7 +646,7 @@ export async function myHandler(
 }
 ```
 
-### 2. State Management
+### 3. State Management
 
 Use proper namespacing for state:
 
@@ -584,7 +658,7 @@ api.state.set('my-plugin-data', 'key', data);
 api.state.set('data', 'key', data);
 ```
 
-### 3. Command Options
+### 4. Command Options
 
 Define clear, descriptive command options. Each option can have both a long form (`--name`) and a short form (`-n`) for convenience:
 
@@ -650,7 +724,7 @@ The following CLI options are reserved by the core CLI and cannot be used in plu
 
 **Important:** If your plugin defines a reserved option, it will be silently filtered during command registration. You will see a warning message indicating which options were filtered. Use alternative option names for your plugin-specific functionality.
 
-### 4. Documentation
+### 5. Documentation
 
 Document your plugin thoroughly:
 

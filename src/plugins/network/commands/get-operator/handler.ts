@@ -1,15 +1,20 @@
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { formatError } from '../../../../core/utils/errors';
 import { Status } from '../../../../core/shared/constants';
 import { SupportedNetwork } from '../../../../core/types/shared.types';
 import { GetOperatorOutput } from './output';
+import { GetOperatorInputSchema } from './input';
 
 export async function getOperatorHandler(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { logger, api } = args;
-  const networkArg = (args.args as { network?: string }).network;
+
+  // Parse and validate args
+  const validArgs = GetOperatorInputSchema.parse(args.args);
+
+  const networkArg = validArgs.network;
 
   try {
     const targetNetwork =

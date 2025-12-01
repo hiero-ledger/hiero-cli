@@ -9,6 +9,7 @@ import type { TransactionResult } from '../../../../core';
 import { formatError } from '../../../../core/utils/errors';
 import { ZustandTopicStateHelper } from '../../zustand-state-helper';
 import { SubmitMessageOutput } from './output';
+import { SubmitMessageInputSchema } from './input';
 
 /**
  * Default export handler function for message submission
@@ -23,9 +24,11 @@ export async function submitMessage(
   // Initialize Zustand state helper for topic state management
   const topicState = new ZustandTopicStateHelper(api.state, logger);
 
-  // Extract and validate command arguments
-  const topicIdOrAlias = args.args.topic as string;
-  const message = args.args.message as string;
+  // Parse and validate command arguments
+  const validArgs = SubmitMessageInputSchema.parse(args.args);
+
+  const topicIdOrAlias = validArgs.topic;
+  const message = validArgs.message;
 
   const currentNetwork = api.network.getCurrentNetwork();
 

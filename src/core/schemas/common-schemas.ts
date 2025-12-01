@@ -131,8 +131,8 @@ export const TinybarSchema = z
 // 5. HTS Token Balances
 // ======================================================
 
-// HTS decimals: 0–8 allowed (immutable after token creation)
-export const HtsDecimalsSchema = z.number().int().min(0).max(8);
+// HTS decimals(immutable after token creation)
+export const HtsDecimalsSchema = z.number().int().min(0);
 
 // HTS base unit (integer form)
 export const HtsBaseUnitSchema = z
@@ -247,11 +247,11 @@ export const EvmAddressSchema = z
 export const AccountIdKeyPairSchema = z
   .string()
   .regex(
-    /^0\.0\.[1-9][0-9]*:(?:(?:ecdsa|ed25519):)?(?:(?:0x)?[0-9a-fA-F]{64}|(?:0x)?[0-9a-fA-F]{128}|(?:0x)?30[0-9a-fA-F]{100,})$/i,
-    'Account ID with private key must be in format 0.0.{number}:{private_key} or 0.0.{number}:{keyType}:{private_key}',
+    /^0\.0\.[1-9][0-9]*:(?:(?:ecdsa|ed25519):)?(?:(?:0x)?[0-9a-fA-F]{64}|(?:0x)?[0-9a-fA-F]{128}|30[0-9a-fA-F]{80,})$/i,
+    'Account ID with private key must be in format {accountId}:{private_key} or {accountId}:{keyType}:{private_key}',
   )
   .describe(
-    'Account ID with private key in format 0.0.{number}:{private_key} or 0.0.{number}:{keyType}:{private_key}',
+    'Account ID with private key in format {accountId}:{private_key} or {accountId}:{keyType}:{private_key}',
   );
 
 /**
@@ -352,7 +352,245 @@ export const TransactionResultSchema = z
   .describe('Standard transaction execution result');
 
 // ======================================================
-// 9. Legacy Compatibility Exports
+// 9. Input Schemas (Command Arguments - Reusable)
+// ======================================================
+
+/**
+ * Positive Integer Filter Field
+ * Used for numeric comparison operators (gt, gte, lt, lte, eq)
+ * Accepts integers > 0 (Mirror Node API requirement)
+ */
+export const PositiveIntFilterFieldSchema = z
+  .number()
+  .int()
+  .positive('Filter value must be greater than 0')
+  .optional()
+  .describe('Positive integer filter value');
+
+/**
+ * Alias Name Input (Base Schema)
+ * Base schema for all entity aliases (alphanumeric, hyphens, underscores)
+ * Used as foundation for AccountNameSchema, TopicNameSchema, TokenAliasNameSchema
+ */
+export const AliasNameSchema = z
+  .string()
+  .trim()
+  .min(1, 'Alias name cannot be empty')
+  .regex(
+    /^[a-zA-Z0-9_-]+$/,
+    'Alias name must contain only letters, numbers, hyphens, and underscores',
+  )
+  .describe('Entity alias name');
+
+/**
+ * Account Name Input
+ * Account name/alias (alphanumeric, hyphens, underscores)
+ */
+export const AccountNameSchema = AliasNameSchema.describe(
+  'Account name or alias',
+);
+
+/**
+ * Entity Reference Input (ID or Name)
+ * Universal schema for referencing any Hedera entity by ID or name
+ * Used for tokens, topics, contracts, etc.
+ * Accepts: Hedera entity ID (0.0.xxx) or alias name
+ */
+export const EntityReferenceSchema = z
+  .union([EntityIdSchema, AliasNameSchema], {
+    errorMap: () => ({
+      message:
+        'Entity reference must be a valid Hedera ID (0.0.xxx) or alias name',
+    }),
+  })
+  .describe('Entity reference (ID or name)');
+
+/**
+ * Account Reference Input (ID, EVM Address, or Name)
+ * Extended schema for referencing accounts specifically
+ * Supports: Hedera account ID (0.0.xxx), EVM address (0x...), or account name/alias
+ */
+export const AccountReferenceSchema = z
+  .union([EntityIdSchema, EvmAddressSchema, AccountNameSchema], {
+    errorMap: () => ({
+      message:
+        'Account reference must be a valid Hedera ID (0.0.xxx), EVM address (0x...), or alias name',
+    }),
+  })
+  .describe('Account reference (ID, EVM address, or name)');
+
+/**
+ * Amount Input
+ * Accepts amount as string in format:
+ * - "100" (integer amount)
+ * - "100.5" (float amount)
+ * - "100t" (integer in base units / tinybars)
+ * NOTE: Float with "t" suffix (e.g., "100.5t") is NOT allowed
+ * Handler is responsible for parsing and converting to appropriate unit
+ * Used for HBAR, tokens, and other balance inputs
+ */
+export const AmountInputSchema = z.coerce
+  .string()
+  .trim()
+  .regex(
+    /^(?:\d+\.\d+|\d+t|\d+)$/,
+    'Amount must be: integer, float, or integer with "t" for base units (float with "t" is not allowed)',
+  )
+  .describe('Amount input (integer, float, or integer with "t" suffix)');
+
+/**
+ * Key Manager Type
+ * Supported key manager implementations for private key storage
+ */
+export const KeyManagerTypeSchema = z
+  .enum(['local', 'local_encrypted'])
+  .describe('Key manager type for storing private keys');
+
+/**
+ * Topic Name Input
+ * Topic name/alias (alphanumeric, hyphens, underscores)
+ */
+export const TopicNameSchema = AliasNameSchema.describe('Topic name or alias');
+
+/**
+ * Token Alias Name Input
+ * Local alias for a token (alphanumeric, hyphens, underscores)
+ * NOTE: This is different from TokenNameSchema which is the on-chain token name
+ */
+export const TokenAliasNameSchema = AliasNameSchema.describe(
+  'Token alias name (local identifier, not on-chain name)',
+);
+
+/**
+ * Memo Input
+ * Optional memo field for transactions
+ * Max 100 characters as per Hedera specifications
+ */
+export const MemoSchema = z
+  .string()
+  .trim()
+  .max(100, 'Memo must be 100 characters or less')
+  .optional()
+  .describe('Optional memo for the transaction');
+
+/**
+ * Account or Alias Input
+ * Accepts either AccountID:privateKey pair format or account name/alias
+ * Used for fields that can reference accounts with or without explicit keys
+ */
+export const AccountOrAliasSchema = z
+  .union([AccountIdKeyPairSchema, AccountNameSchema])
+  .describe('Account reference (AccountID:privateKey pair or alias)');
+
+/**
+ * Key or Account Input
+ * Accepts either a private key (with optional type prefix) or account name/alias
+ * Used for key fields that can accept either explicit keys or account references
+ * The account's key will be retrieved from state when an alias is provided
+ */
+export const KeyOrAccountSchema = z
+  .union([PrivateKeyWithTypeSchema, AccountNameSchema])
+  .describe(
+    'Private key (with optional type prefix: ed25519: or ecdsa:) or account name/alias',
+  );
+
+/**
+ * Configuration Option Name
+ * Name of a configuration option (alphanumeric, hyphens, underscores)
+ */
+export const ConfigOptionNameSchema = z
+  .string()
+  .trim()
+  .min(1, 'Configuration option name cannot be empty')
+  .regex(
+    /^[a-zA-Z0-9_-]+$/,
+    'Configuration option name must contain only letters, numbers, hyphens, and underscores',
+  )
+  .describe('Configuration option name');
+
+/**
+ * Configuration Option Value
+ * Value for configuration option (can be string, number, or boolean as string)
+ * Handler will parse it to appropriate type (true/false for boolean, numeric strings for numbers, etc.)
+ */
+export const ConfigOptionValueSchema = z
+  .string()
+  .trim()
+  .min(1, 'Configuration option value cannot be empty')
+  .describe('Configuration option value (boolean, number, or string)');
+
+/**
+ * Key Reference ID
+ * Identifier for a key stored in KMS (Key Management System)
+ */
+export const KeyRefIdSchema = z
+  .string()
+  .trim()
+  .min(1, 'Key reference ID cannot be empty')
+  .describe('Key reference ID from KMS storage');
+
+/**
+ * Plugin Name
+ * Name of a plugin (alphanumeric, hyphens, underscores)
+ */
+export const PluginNameSchema = z
+  .string()
+  .trim()
+  .min(1, 'Plugin name cannot be empty')
+  .regex(
+    /^[a-zA-Z0-9_-]+$/,
+    'Plugin name must contain only letters, numbers, hyphens, and underscores',
+  )
+  .describe('Plugin name');
+
+/**
+ * File Path
+ * Filesystem path (absolute or relative)
+ */
+export const FilePathSchema = z
+  .string()
+  .trim()
+  .min(1, 'File path cannot be empty')
+  .describe('Filesystem path (absolute or relative)');
+
+/**
+ * State Namespace Name
+ * Name of a state namespace (alphanumeric, hyphens, underscores)
+ */
+export const StateNamespaceSchema = z
+  .string()
+  .trim()
+  .min(1, 'Namespace name cannot be empty')
+  .regex(
+    /^[a-zA-Z0-9_-]+$/,
+    'Namespace name must contain only letters, numbers, hyphens, and underscores',
+  )
+  .describe('State namespace name');
+
+/**
+ * Token Name
+ * Name of a token (alphanumeric, spaces, hyphens)
+ */
+export const TokenNameSchema = z
+  .string()
+  .trim()
+  .min(1, 'Token name cannot be empty')
+  .max(100, 'Token name must be 100 characters or less')
+  .describe('Token name');
+
+/**
+ * Token Symbol
+ * Symbol/ticker for a token (alphanumeric, uppercase)
+ */
+export const TokenSymbolSchema = z
+  .string()
+  .trim()
+  .min(1, 'Token symbol cannot be empty')
+  .max(20, 'Token symbol must be 20 characters or less')
+  .describe('Token symbol');
+
+// ======================================================
+// 10. Legacy Compatibility Exports
 // ======================================================
 
 // For backward compatibility
@@ -416,6 +654,34 @@ export const COMMON_ZOD_SCHEMAS = {
   tokenData: TokenDataSchema,
   topicData: TopicDataSchema,
   transactionResult: TransactionResultSchema,
+
+  // Input schemas (Command Arguments)
+  entityReference: EntityReferenceSchema,
+  accountReference: AccountReferenceSchema,
+  amountInput: AmountInputSchema,
+  keyManagerType: KeyManagerTypeSchema,
+  accountName: AccountNameSchema,
+  configOptionName: ConfigOptionNameSchema,
+  configOptionValue: ConfigOptionValueSchema,
+  keyRefId: KeyRefIdSchema,
+  pluginName: PluginNameSchema,
+  filePath: FilePathSchema,
+  stateNamespace: StateNamespaceSchema,
+  tokenName: TokenNameSchema,
+  tokenSymbol: TokenSymbolSchema,
+  positiveIntFilterField: PositiveIntFilterFieldSchema,
+
+  // Alias schemas
+  aliasName: AliasNameSchema,
+  topicName: TopicNameSchema,
+  tokenAliasName: TokenAliasNameSchema,
+
+  // Transaction fields
+  memo: MemoSchema,
+
+  // Composite input schemas
+  accountOrAlias: AccountOrAliasSchema,
+  keyOrAccount: KeyOrAccountSchema,
 } as const;
 
 /**
@@ -452,3 +718,22 @@ export type AccountData = z.infer<typeof AccountDataSchema>;
 export type TokenData = z.infer<typeof TokenDataSchema>;
 export type TopicData = z.infer<typeof TopicDataSchema>;
 export type TransactionResult = z.infer<typeof TransactionResultSchema>;
+
+// Input types
+export type AmountInput = z.infer<typeof AmountInputSchema>;
+export type KeyManagerType = z.infer<typeof KeyManagerTypeSchema>;
+export type AccountName = z.infer<typeof AccountNameSchema>;
+export type ConfigOptionName = z.infer<typeof ConfigOptionNameSchema>;
+export type ConfigOptionValue = z.infer<typeof ConfigOptionValueSchema>;
+export type KeyRefId = z.infer<typeof KeyRefIdSchema>;
+export type PluginName = z.infer<typeof PluginNameSchema>;
+export type FilePath = z.infer<typeof FilePathSchema>;
+export type StateNamespace = z.infer<typeof StateNamespaceSchema>;
+export type TokenName = z.infer<typeof TokenNameSchema>;
+export type TokenSymbol = z.infer<typeof TokenSymbolSchema>;
+export type AliasName = z.infer<typeof AliasNameSchema>;
+export type TopicName = z.infer<typeof TopicNameSchema>;
+export type TokenAliasName = z.infer<typeof TokenAliasNameSchema>;
+export type Memo = z.infer<typeof MemoSchema>;
+export type AccountOrAlias = z.infer<typeof AccountOrAliasSchema>;
+export type KeyOrAccount = z.infer<typeof KeyOrAccountSchema>;

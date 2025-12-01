@@ -3,13 +3,14 @@
  * Handles deleting accounts using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import { AliasType } from '../../../../core/services/alias/alias-service.interface';
 import { DeleteAccountOutput } from './output';
+import { DeleteAccountInputSchema } from './input';
 
 export async function deleteAccount(
   args: CommandHandlerArgs,
@@ -19,9 +20,11 @@ export async function deleteAccount(
   // Initialize Zustand state helper
   const accountState = new ZustandAccountStateHelper(api.state, logger);
 
-  // Extract command arguments
-  const name = args.args.name as string;
-  const accountId = args.args.id as string;
+  // Parse and validate command arguments
+  const validArgs = DeleteAccountInputSchema.parse(args.args);
+
+  const name = validArgs.name;
+  const accountId = validArgs.id;
 
   logger.info(`Deleting account...`);
 

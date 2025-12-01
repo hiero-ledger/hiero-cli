@@ -80,6 +80,14 @@ export const tokenPluginManifest: PluginManifest = {
           description:
             'Amount to transfer. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "100t")',
         },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
       ],
       handler: transferToken,
       output: {
@@ -161,6 +169,14 @@ export const tokenPluginManifest: PluginManifest = {
           required: false,
           description: 'Optional name to register for the token',
         },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
       ],
       handler: createToken,
       output: {
@@ -188,6 +204,14 @@ export const tokenPluginManifest: PluginManifest = {
           description:
             'Account: either an alias or account-id:account-key pair',
         },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
       ],
       handler: associateToken,
       output: {
@@ -209,7 +233,6 @@ export const tokenPluginManifest: PluginManifest = {
           description:
             'Token definition file path (absolute or relative) to a JSON file',
         },
-        { name: 'args', short: 'a', type: 'string', required: false },
         {
           name: 'key-manager',
           short: 'k',

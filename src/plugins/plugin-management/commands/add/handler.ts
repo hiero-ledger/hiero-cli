@@ -10,22 +10,24 @@
  * Follows ADR-003 contract: returns CommandExecutionResult.
  */
 import * as path from 'path';
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { AddPluginOutput } from './output';
-import {
-  PluginStateEntry,
-  PluginManifest,
-} from '../../../../core/plugins/plugin.interface';
+import { PluginStateEntry, PluginManifest } from '../../../../core';
 import { PluginManagementCreateStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
+import { AddPluginInputSchema } from './input';
 
 export async function addPlugin(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
-  const { path: pluginPath } = args.args as { path: string };
+
+  // Parse and validate ars
+  const validArgs = AddPluginInputSchema.parse(args.args);
+
+  const pluginPath = validArgs.path;
 
   logger.info('➕ Adding plugin from path...');
 

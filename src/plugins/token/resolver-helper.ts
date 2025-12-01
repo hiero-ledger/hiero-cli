@@ -116,6 +116,7 @@ export interface ResolvedAccount {
  * @param account - Account parameter from command
  * @param api - Core API instance
  * @param network - Current network
+ * @param keyManager - Key Manager config overwrite
  * @returns Resolved account information
  */
 export function resolveAccountParameter(

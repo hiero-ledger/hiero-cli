@@ -163,19 +163,14 @@ describe('network plugin - get-operator command', () => {
     const args = makeArgs(
       { network: networkService, kms: kmsService },
       logger,
-      { network: 'invalid-network' },
+      { network: 'mainnet' },
     );
 
     const result = await getOperatorHandler(args);
 
-    expect(networkService.isNetworkAvailable).toHaveBeenCalledWith(
-      'invalid-network',
-    );
+    expect(networkService.isNetworkAvailable).toHaveBeenCalledWith('mainnet');
     expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      "Network 'invalid-network' is not available",
-    );
-    expect(result.errorMessage).toContain('Available networks:');
+    expect(result.errorMessage).toContain("Network 'mainnet' is not available");
   });
 
   test('handles network service errors', async () => {

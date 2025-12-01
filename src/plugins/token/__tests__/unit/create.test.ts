@@ -7,7 +7,7 @@ import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interfa
 import { createToken } from '../../commands/create';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
 import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
-import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
+import { Status } from '../../../../core/shared/constants';
 import {
   makeLogger,
   makeApiMocks,
@@ -65,6 +65,13 @@ describe('createTokenHandler', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
+            // Mock account alias resolution
+            if (type === 'account' && alias === 'treasury-account') {
+              return {
+                entityId: '0.0.123456',
+                keyRefId: 'treasury-key-ref-id',
+              };
+            }
             // Mock key alias resolution for test keys
             if (type === 'key' && alias === 'test-admin-key') {
               return {
@@ -84,12 +91,7 @@ describe('createTokenHandler', () => {
       const result = await createToken(args);
 
       // Assert
-      expect(api.kms.importPrivateKey).toHaveBeenCalledWith(
-        KeyAlgorithm.ECDSA,
-        'test-private-key',
-        'local',
-        ['token:treasury', 'temporary'],
-      );
+      // Note: importPrivateKey is NOT called because treasury is resolved from alias
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
         expectedTokenTransactionParams,
       );
@@ -165,30 +167,6 @@ describe('createTokenHandler', () => {
   });
 
   describe('validation scenarios', () => {
-    test('should exit with error for invalid parameters', async () => {
-      // Arrange
-      const { api } = makeApiMocks({});
-      const logger = makeLogger();
-      const args: CommandHandlerArgs = {
-        args: {
-          name: '', // Invalid: empty name
-          symbol: 'TEST',
-        },
-        api,
-        state: {} as any,
-        config: {} as any,
-        logger,
-      };
-
-      // Act
-      const result = await createToken(args);
-
-      // Assert
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Invalid command parameters');
-      // This test is now ADR-003 compliant
-    });
-
     test('should exit with error when no credentials found', async () => {
       // Arrange
       const { api } = makeApiMocks();
@@ -351,6 +329,13 @@ describe('createTokenHandler', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
+            // Mock account alias resolution
+            if (type === 'account' && alias === 'treasury-account') {
+              return {
+                entityId: '0.0.123456',
+                keyRefId: 'treasury-key-ref-id',
+              };
+            }
             // Mock key alias resolution for test keys
             if (type === 'key' && alias === 'test-admin-key') {
               return {

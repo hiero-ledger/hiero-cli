@@ -11,6 +11,7 @@ import {
   makeAliasMock,
 } from '../../../../__tests__/mocks/mocks';
 import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
+import { DER_KEY } from '../../../../core/schemas/__tests__/helpers/fixtures';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTopicStateHelper: jest.fn(),
@@ -45,10 +46,28 @@ const makeApiMocks = ({
 
   const networkMock = makeNetworkMock(network);
   const kms = makeKmsMock();
-  kms.importPrivateKey.mockImplementation((keyType: string, key: string) => ({
-    keyRefId: `kr_${key.slice(-5)}`,
-    publicKey: 'mock-public-key',
-  }));
+  kms.importPrivateKey.mockImplementation((keyType: string, key: string) => {
+    // Deterministic mapping for known test keys
+    const keyMap: Record<string, string> = {
+      [DER_KEY]: 'kr_admin',
+      '302e020100300506032b6570042204201111111111111111111111111111111111111111111111111111111111111111':
+        'kr_admin',
+      '302e020100300506032b6570042204202222222222222222222222222222222222222222222222222222222222222222':
+        'kr_submit',
+      '302e020100300506032b6570042204203333333333333333333333333333333333333333333333333333333333333333':
+        'kr_33333',
+      '302e020100300506032b657004220420admin': 'kr_admin',
+      '302e020100300506032b657004220420submit': 'kr_submit',
+      '302e020100300506032b6570042204204444444444444444444444444444444444444444444444444444444444444444':
+        'kr_44444',
+      '302e020100300506032b6570042204205555555555555555555555555555555555555555555555555555555555555555':
+        'kr_55555',
+    };
+    return {
+      keyRefId: keyMap[key] || `kr_${key.slice(-5)}`,
+      publicKey: 'mock-public-key',
+    };
+  });
   const alias = makeAliasMock();
 
   return { topicTransactions, signing, networkMock, kms, alias };
@@ -123,8 +142,9 @@ describe('topic plugin - create command', () => {
     const saveTopicMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
 
-    const adminKey = '302e020100300506032b657004220420admin';
-    const submitKey = '302e020100300506032b657004220420submit';
+    const adminKey = DER_KEY;
+    const submitKey =
+      '302e020100300506032b6570042204202222222222222222222222222222222222222222222222222222222222222222';
 
     const { topicTransactions, signing, networkMock, kms, alias } =
       makeApiMocks({
@@ -189,7 +209,7 @@ describe('topic plugin - create command', () => {
         topicId: '0.0.8888',
         memo: 'Test topic',
         adminKeyRefId: 'kr_admin',
-        submitKeyRefId: 'kr_ubmit',
+        submitKeyRefId: 'kr_submit',
         network: 'testnet',
       }),
     );
@@ -318,7 +338,7 @@ describe('topic plugin - create command', () => {
     const saveTopicMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
 
-    const adminKey = 'ecdsa:302e020100300506032b657004220420admin';
+    const adminKey = `ecdsa:${DER_KEY}`;
 
     const { topicTransactions, signing, networkMock, kms, alias } =
       makeApiMocks({
@@ -353,7 +373,7 @@ describe('topic plugin - create command', () => {
     expect(result.status).toBe(Status.Success);
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
-      '302e020100300506032b657004220420admin',
+      DER_KEY,
       'local',
       expect.arrayContaining(['topic:admin']),
     );
@@ -364,8 +384,8 @@ describe('topic plugin - create command', () => {
     const saveTopicMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
 
-    const adminKey = 'ed25519:302e020100300506032b657004220420admin';
-    const submitKey = 'ed25519:302e020100300506032b657004220420submit';
+    const adminKey = `ed25519:${DER_KEY}`;
+    const submitKey = `ed25519:${DER_KEY}`;
 
     const { topicTransactions, signing, networkMock, kms, alias } =
       makeApiMocks({
@@ -401,13 +421,13 @@ describe('topic plugin - create command', () => {
     expect(result.status).toBe(Status.Success);
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ED25519,
-      '302e020100300506032b657004220420admin',
+      DER_KEY,
       'local',
       expect.arrayContaining(['topic:admin']),
     );
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ED25519,
-      '302e020100300506032b657004220420submit',
+      DER_KEY,
       'local',
       expect.arrayContaining(['topic:submit']),
     );

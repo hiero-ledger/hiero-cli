@@ -15,19 +15,44 @@ export const mockAccountIds = {
 };
 
 /**
- * Mock Keys (private keys for testing)
+ * Mock Keys (private keys for testing - DER format)
+ * Format: 302e020100300506032b6570042204 + unique padding (min 100 hex total)
  */
 export const mockKeys = {
-  treasury: 'treasury-key',
-  admin: 'admin-key',
-  supply: 'supply-key',
-  wipe: 'wipe-key',
-  kyc: 'kyc-key',
-  freeze: 'freeze-key',
-  pause: 'pause-key',
-  feeSchedule: 'fee-schedule-key',
-  association: 'association-key',
-  operator: 'operator-private-key',
+  treasury:
+    '302e020100300506032b65700422042011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111',
+  admin:
+    '302e020100300506032b65700422042022222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222',
+  supply:
+    '302e020100300506032b65700422042033333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333',
+  wipe: '302e020100300506032b65700422042044444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444444',
+  kyc: '302e020100300506032b65700422042055555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555',
+  freeze:
+    '302e020100300506032b65700422042066666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666',
+  pause:
+    '302e020100300506032b65700422042077777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777777',
+  feeSchedule:
+    '302e020100300506032b65700422042088888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888888',
+  association:
+    '302e020100300506032b65700422042099999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999',
+  operator:
+    '302e020100300506032b657004220420aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+};
+
+/**
+ * Mock Account Key Pairs (accountId:privateKey format for new schema validation)
+ */
+export const mockAccountKeyPairs = {
+  treasury: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
+  admin: `${mockAccountIds.operator}:${mockKeys.admin}`,
+  supply: `${mockAccountIds.operator}:${mockKeys.supply}`,
+  wipe: `${mockAccountIds.operator}:${mockKeys.wipe}`,
+  kyc: `${mockAccountIds.operator}:${mockKeys.kyc}`,
+  freeze: `${mockAccountIds.operator}:${mockKeys.freeze}`,
+  pause: `${mockAccountIds.operator}:${mockKeys.pause}`,
+  feeSchedule: `${mockAccountIds.operator}:${mockKeys.feeSchedule}`,
+  association: `${mockAccountIds.association}:${mockKeys.association}`,
+  operator: `${mockAccountIds.operator}:${mockKeys.operator}`,
 };
 
 /**
@@ -323,8 +348,8 @@ export const validTokenCreateParams = {
   decimals: 2,
   initialSupply: '1000',
   supplyType: 'INFINITE' as const,
-  treasury: '0.0.123456:treasury-key',
-  adminKey: 'admin-key',
+  treasury: 'treasury-account', // Use alias
+  adminKey: 'admin-account', // Use alias
 };
 
 /**
@@ -448,8 +473,8 @@ export const makeTokenCreateCommandArgs = (params: {
     decimals: 2,
     initialSupply: '1000',
     supplyType: 'INFINITE',
-    treasury: '0.0.123456:test-private-key',
-    adminKey: 'test-admin-key',
+    treasury: 'treasury-account', // Use alias
+    adminKey: 'test-admin-key', // Use alias
     ...params.args,
   },
   api: params.api,

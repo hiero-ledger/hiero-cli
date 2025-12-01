@@ -273,6 +273,9 @@ describe('topic plugin - message-find command', () => {
     });
   });
 
+  // NOTE: Validation for missing sequence parameters is now handled by Zod schema (FindMessageInputSchema)
+  // This test is no longer needed as the validation happens at the schema level before reaching the handler
+
   test('find all messages when no filter provided', async () => {
     const logger = makeLogger();
     const mockMessages = [

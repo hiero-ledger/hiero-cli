@@ -8,6 +8,8 @@ import {
   OutputFormat,
   DEFAULT_OUTPUT_FORMAT,
 } from '../shared/types/output-format';
+import { Logger } from '../services/logger/logger-service.interface';
+import { ZodError } from 'zod';
 
 // Global output format state for error handlers
 let globalOutputFormat: OutputFormat = DEFAULT_OUTPUT_FORMAT;
@@ -22,8 +24,26 @@ export function setGlobalOutputFormat(format: OutputFormat): void {
 /**
  * Format error message for output
  */
-function formatErrorOutput(errorMessage: string, format: OutputFormat): string {
+function formatErrorOutput(
+  errorMessage: string,
+  format: OutputFormat,
+  error?: unknown,
+): string {
   if (format === 'json') {
+    // Special handling for ZodError in JSON format
+    if (error instanceof ZodError) {
+      return JSON.stringify(
+        {
+          status: Status.Failure,
+          errorMessage: errorMessage,
+          errors: error.issues.map((issue) => issue.message),
+        },
+        null,
+        2,
+      );
+    }
+
+    // Default JSON format for other errors
     return JSON.stringify(
       {
         status: Status.Failure,
@@ -49,7 +69,7 @@ export function formatAndExitWithError(
 ): never {
   const errorMessage = formatError(context, error);
   const outputFormat = format ?? globalOutputFormat;
-  const output = formatErrorOutput(errorMessage, outputFormat);
+  const output = formatErrorOutput(errorMessage, outputFormat, error);
 
   console.log(output);
   process.exit(1);

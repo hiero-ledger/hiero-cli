@@ -12,6 +12,8 @@ import {
   mockAmounts,
   mockParsedBalances,
 } from './helpers/fixtures';
+import { ZodError } from 'zod';
+import { TransferInputSchema } from '../../commands/transfer/input';
 import '../../../../core/utils/json-serialize';
 
 jest.mock('../../../account/zustand-state-helper', () => ({
@@ -58,31 +60,26 @@ describe('hbar plugin - transfer command (unit)', () => {
     );
   });
 
-  test('returns failure when balance is invalid', async () => {
-    const { api, logger } = setupTransferTest({ accounts: [] });
-
-    const args = makeArgs(api, logger, {
-      amount: mockAmounts.invalid,
-      from: mockAccountIdKeyPairs.sender,
-      to: mockAccountIds.receiver,
-    });
-
-    const result = await transferHandler(args);
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Invalid amount input');
+  test('returns failure when balance is invalid', () => {
+    // SIMPLE validation → test schema directly
+    expect(() => {
+      TransferInputSchema.parse({
+        amount: mockAmounts.invalid,
+        from: mockAccountIdKeyPairs.sender,
+        to: mockAccountIds.receiver,
+      });
+    }).toThrow(ZodError);
   });
 
-  test('returns failure when balance is negative', async () => {
-    const { api, logger } = setupTransferTest({ accounts: [] });
-
-    const args = makeArgs(api, logger, {
-      amount: mockAmounts.negative,
-      from: mockAccountIdKeyPairs.sender,
-      to: mockAccountIds.receiver,
-    });
-
-    const result = await transferHandler(args);
-    expect(result.status).toBe(Status.Failure);
+  test('returns failure when balance is negative', () => {
+    // SIMPLE validation → test schema directly
+    expect(() => {
+      TransferInputSchema.parse({
+        amount: mockAmounts.negative,
+        from: mockAccountIdKeyPairs.sender,
+        to: mockAccountIds.receiver,
+      });
+    }).toThrow(ZodError);
   });
 
   test('returns failure when balance is zero', async () => {
@@ -158,20 +155,15 @@ describe('hbar plugin - transfer command (unit)', () => {
     expect(result.errorMessage).toContain('Network connection failed');
   });
 
-  test('returns failure when from is just account ID without private key', async () => {
-    const { api, logger } = setupTransferTest({ accounts: [] });
-
-    const args = makeArgs(api, logger, {
-      amount: mockAmounts.small,
-      from: mockAccountIds.sender, // Just account ID, no private key
-      to: mockAccountIds.receiver,
-    });
-
-    const result = await transferHandler(args);
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      `Invalid from account: ${mockAccountIds.sender} is neither a valid account-id:private-key pair, nor a known account name`,
-    );
+  test('returns failure when from is just account ID without private key', () => {
+    // SIMPLE validation → test schema directly
+    expect(() => {
+      TransferInputSchema.parse({
+        amount: mockAmounts.small,
+        from: mockAccountIds.sender, // Just account ID, no private key
+        to: mockAccountIds.receiver,
+      });
+    }).toThrow(ZodError);
   });
 
   test('uses default credentials as from when not provided', async () => {

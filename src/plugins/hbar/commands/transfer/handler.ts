@@ -11,7 +11,6 @@ import {
   EntityIdSchema,
 } from '../../../../core/schemas';
 import { HBAR_DECIMALS, Status } from '../../../../core/shared/constants';
-import { TransferInputSchema } from '../../schema';
 import { TransferOutput } from './output';
 import { CoreApi } from '../../../../core';
 import { Logger } from '../../../../core';
@@ -21,19 +20,7 @@ import { parseIdKeyPair } from '../../../../core/utils/keys';
 import type { KeyAlgorithmType as KeyAlgorithmType } from '../../../../core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '../../../../core/shared/constants';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
-
-/**
- * Maps validation error paths to user-friendly error messages
- */
-function getValidationErrorMessage(
-  errorPath: string | number | undefined,
-): string {
-  const pathMap: Record<string, string> = {
-    amount: 'Invalid amount value',
-    to: 'Invalid or missing "to" field',
-  };
-  return pathMap[String(errorPath)] || 'Invalid input';
-}
+import { TransferInputSchema } from './input';
 
 /**
  * Attempts to resolve a default "from" account when not provided
@@ -157,33 +144,25 @@ export async function transferHandler(
 
   logger.info('[HBAR] Transfer command invoked');
 
+  // Parse and validate args
+  const validArgs = TransferInputSchema.parse(args.args);
+
+  const to = validArgs.to;
+  const fromInput = validArgs.from;
+  const memo = validArgs.memo;
+
   // Get keyManager from args or fallback to config
-  const keyManagerArg = args.args.keyManager as KeyManagerName | undefined;
+  const providedKeyManager = validArgs.keyManager;
   const keyManager =
-    keyManagerArg ||
+    providedKeyManager ||
     api.config.getOption<KeyManagerName>('default_key_manager');
 
   try {
-    const validationResult = TransferInputSchema.safeParse(args.args);
-    if (!validationResult.success) {
-      const firstError = validationResult.error.issues[0];
-      const errorMessage = getValidationErrorMessage(firstError.path[0]);
-      return {
-        status: Status.Failure,
-        errorMessage,
-      };
-    }
-
-    const validatedInput = validationResult.data;
-    const to = validatedInput.to;
-    const fromInput = validatedInput.from;
-    const memo = validatedInput.memo;
-
     let amount: bigint;
 
     try {
       // Convert amount input: display units (default) or base units (with 't' suffix)
-      amount = processBalanceInput(validatedInput.amount, HBAR_DECIMALS);
+      amount = processBalanceInput(validArgs.amount, HBAR_DECIMALS);
     } catch {
       return {
         status: Status.Failure,

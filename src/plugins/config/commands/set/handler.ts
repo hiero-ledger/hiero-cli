@@ -1,10 +1,11 @@
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { inferConfigOptionType } from '../../schema';
 import { z } from 'zod';
 import { SetConfigOutput } from './output';
+import { SetConfigInputSchema } from './input';
 
 /**
  * Zod schema to validate if a string is a valid number format
@@ -47,8 +48,12 @@ export async function setConfigOption(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { api } = args;
-  const name = args.args.option as string | undefined;
-  const rawValue = args.args.value as string | undefined;
+
+  // Parse and validate arguments
+  const validArgs = SetConfigInputSchema.parse(args.args);
+
+  const name = validArgs.option;
+  const rawValue = validArgs.value;
 
   if (!name) {
     return {

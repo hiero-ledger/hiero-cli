@@ -3,8 +3,8 @@
  * Handles listing tokens from state for the current network
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
 import { TokenData } from '../../schema';
@@ -12,6 +12,7 @@ import { formatError } from '../../../../core/utils/errors';
 import { SupportedNetwork } from '../../../../core/types/shared.types';
 import { CoreApi } from '../../../../core';
 import { ListTokensOutput } from './output';
+import { ListTokenInputSchema } from './input';
 
 /**
  * Resolves the token alias from the alias service
@@ -172,9 +173,11 @@ export async function listTokens(
   // Initialize token state helper
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
-  // Extract command arguments
-  const showKeys = (args.args.keys as boolean) || false;
-  const networkFilter = args.args.network as string | undefined;
+  // Parse command arguments
+  const validArgs = ListTokenInputSchema.parse(args.args);
+
+  const showKeys = validArgs.keys;
+  const networkFilter = validArgs.network;
 
   // Determine which network to show
   const currentNetwork = api.network.getCurrentNetwork();
@@ -228,7 +231,7 @@ export async function listTokens(
       const outputData: ListTokensOutput = {
         tokens: [],
         count: 0,
-        network: targetNetwork as SupportedNetwork,
+        network: targetNetwork,
         stats: {
           total: 0,
           withKeys: 0,
@@ -291,7 +294,7 @@ export async function listTokens(
     const outputData: ListTokensOutput = {
       tokens: tokensList,
       count: tokens.length,
-      network: targetNetwork as SupportedNetwork,
+      network: targetNetwork,
       stats: {
         total: stats.total,
         withKeys: 0, // Will need to calculate this

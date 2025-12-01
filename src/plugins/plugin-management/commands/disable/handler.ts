@@ -3,18 +3,23 @@
  * Marks an existing plugin as disabled in the plugin-management state.
  * Follows ADR-003 contract: returns CommandExecutionResult.
  */
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { RemovePluginOutput } from '../../schema';
 import { PluginManagementDisableStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
+import { DisablePluginInputSchema } from './input';
 
 export async function disablePlugin(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
-  const { name } = args.args as { name: string };
+
+  // Parse and validate args
+  const validArgs = DisablePluginInputSchema.parse(args.args);
+
+  const name = validArgs.name;
 
   logger.info('➖ Disabling plugin...');
 

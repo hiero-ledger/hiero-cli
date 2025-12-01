@@ -10,14 +10,17 @@ import { formatError } from '../../../../core/utils/errors';
 import { ViewAccountOutput } from './output';
 import { AliasType } from '../../../../core/services/alias/alias-service.interface';
 import { EntityIdSchema } from '../../../../core/schemas';
+import { ViewAccountInputSchema } from './input';
 
 export async function viewAccount(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  // Extract command arguments
-  const accountIdOrNameOrAlias = args.args.account as string;
+  // Parse and validate command arguments
+  const validArgs = ViewAccountInputSchema.parse(args.args);
+
+  const accountIdOrNameOrAlias = validArgs.account;
 
   logger.info(`Viewing account details: ${accountIdOrNameOrAlias}`);
 

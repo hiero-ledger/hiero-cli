@@ -13,6 +13,7 @@ import {
   makeApiMocks,
   mockZustandTokenStateHelper,
 } from './helpers/mocks';
+import { mockAccountIds, mockKeys } from './helpers/fixtures';
 import '../../../../core/utils/json-serialize';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -32,10 +33,10 @@ describe('Token Lifecycle Integration', () => {
       const mockAddToken = jest.fn();
       const mockAddAssociation = jest.fn();
       const token = '0.0.123456';
-      const _treasuryAccountId = '0.0.789012';
-      const userAccountId = '0.0.345678';
-      const treasuryKey = 'treasury-key';
-      const userKey = 'user-key';
+      const _treasuryAccountId = mockAccountIds.treasury;
+      const userAccountId = mockAccountIds.association;
+      const treasuryKey = mockKeys.treasury;
+      const userKey = mockKeys.association;
 
       mockZustandTokenStateHelper(MockedHelper, {
         addToken: mockAddToken,
@@ -176,7 +177,7 @@ describe('Token Lifecycle Integration', () => {
           token,
           from: `${_treasuryAccountId}:${treasuryKey}`,
           to: userAccountId,
-          amount: 100,
+          amount: '100',
         },
         api,
         state: {} as any,
@@ -231,9 +232,9 @@ describe('Token Lifecycle Integration', () => {
       // Arrange
       const mockAddToken = jest.fn();
       const token = '0.0.123456';
-      const userAccountId = '0.0.345678';
-      const treasuryKey = 'treasury-key';
-      const userKey = 'user-key';
+      const userAccountId = mockAccountIds.association;
+      const treasuryKey = mockKeys.treasury;
+      const userKey = mockKeys.kyc;
 
       mockZustandTokenStateHelper(MockedHelper, {
         addToken: mockAddToken,
@@ -356,11 +357,11 @@ describe('Token Lifecycle Integration', () => {
       const mockAddToken = jest.fn();
       const mockAddAssociation = jest.fn();
       const token = '0.0.123456';
-      const userAccountId1 = '0.0.345678';
-      const userAccountId2 = '0.0.456789';
-      const treasuryKey = 'treasury-key';
-      const userKey1 = 'user-key-1';
-      const userKey2 = 'user-key-2';
+      const userAccountId1 = mockAccountIds.association;
+      const userAccountId2 = mockAccountIds.receiver;
+      const treasuryKey = mockKeys.treasury;
+      const userKey1 = mockKeys.freeze;
+      const userKey2 = mockKeys.pause;
 
       mockZustandTokenStateHelper(MockedHelper, {
         addToken: mockAddToken,
@@ -554,7 +555,7 @@ describe('Token Lifecycle Integration', () => {
       const associateArgs: CommandHandlerArgs = {
         args: {
           token,
-          account: `${userAccountId}:user-key`,
+          account: `${userAccountId}:5555555555555555555555555555555555555555555555555555555555555555`,
         },
         api,
         state: {} as any,

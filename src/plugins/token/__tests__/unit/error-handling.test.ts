@@ -99,7 +99,8 @@ describe('Token Plugin Error Handling', () => {
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
-          account: '0.0.789012:test-key',
+          account:
+            '0.0.789012:2222222222222222222222222222222222222222222222222222222222222222',
         },
         api,
         state: {} as any,
@@ -142,9 +143,9 @@ describe('Token Plugin Error Handling', () => {
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
-          from: '0.0.345678:test-key',
+          from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
           to: '0.0.789012',
-          amount: 100,
+          amount: '100',
         },
         api,
         state: {} as any,
@@ -173,7 +174,10 @@ describe('Token Plugin Error Handling', () => {
           importPrivateKey: jest
             .fn()
             .mockImplementation((_keyType, privateKey) => {
-              if (privateKey === 'invalid-key') {
+              if (
+                privateKey ===
+                '9999999999999999999999999999999999999999999999999999999999999999'
+              ) {
                 throw new Error('Invalid private key format');
               }
               return {
@@ -189,7 +193,8 @@ describe('Token Plugin Error Handling', () => {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
-          treasury: '0.0.123456:invalid-key', // Invalid key format
+          treasury:
+            '0.0.123456:9999999999999999999999999999999999999999999999999999999999999999',
         },
         api,
         state: {} as any,
@@ -298,7 +303,8 @@ describe('Token Plugin Error Handling', () => {
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
-          account: '0.0.789012:insufficient-permissions-key',
+          account:
+            '0.0.789012:4444444444444444444444444444444444444444444444444444444444444444',
         },
         api,
         state: {} as any,
@@ -350,9 +356,9 @@ describe('Token Plugin Error Handling', () => {
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
-          from: '0.0.345678:test-key',
+          from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
           to: '0.0.789012',
-          amount: 1000000, // Large amount
+          amount: '1000000',
         },
         api,
         state: {} as any,
@@ -385,9 +391,9 @@ describe('Token Plugin Error Handling', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          tokenId: '0.0.999999', // Non-existent token
-          accountId: '0.0.789012',
-          accountKey: 'test-key',
+          token: '0.0.999999',
+          account:
+            '0.0.789012:1111111111111111111111111111111111111111111111111111111111111111',
         },
         api,
         state: {} as any,
@@ -429,9 +435,9 @@ describe('Token Plugin Error Handling', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          tokenId: '0.0.123456',
-          accountId: '0.0.999999', // Non-existent account
-          accountKey: 'test-key',
+          token: '0.0.123456',
+          account:
+            '0.0.999999:1111111111111111111111111111111111111111111111111111111111111111',
         },
         api,
         state: {} as any,
@@ -630,7 +636,8 @@ describe('Token Plugin Error Handling', () => {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
-          treasuryKey: 'test-key',
+          treasuryKey:
+            '1111111111111111111111111111111111111111111111111111111111111111',
           adminKey: 'admin-key',
         },
         api,
@@ -716,9 +723,9 @@ describe('Token Plugin Error Handling', () => {
       const args: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
-          from: '0.0.345678:test-key',
+          from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
           to: '0.0.789012',
-          amount: 100,
+          amount: '100',
         },
         api,
         state: {} as any,
@@ -774,7 +781,8 @@ describe('Token Plugin Error Handling', () => {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
-          treasuryKey: 'test-key',
+          treasuryKey:
+            '1111111111111111111111111111111111111111111111111111111111111111',
           adminKey: 'admin-key',
         },
         api,
@@ -807,7 +815,8 @@ describe('Token Plugin Error Handling', () => {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
-          treasuryKey: 'test-key',
+          treasuryKey:
+            '1111111111111111111111111111111111111111111111111111111111111111',
           adminKey: 'admin-key',
         },
         api,
@@ -855,7 +864,8 @@ describe('Token Plugin Error Handling', () => {
       const associateArgs: CommandHandlerArgs = {
         args: {
           token: '0.0.123456',
-          account: '0.0.345678:user-key',
+          account:
+            '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
         },
         api,
         state: {} as any,

@@ -2,17 +2,20 @@
  * Remove Credentials Command Handler
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { RemoveCredentialsOutput } from './output';
+import { RemoveCredentialsInputSchema } from './input';
 
 export async function removeCredentials(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { logger, api } = args;
-  const { id } = args.args as { id: string };
+
+  // Parse and validate args
+  const { id } = RemoveCredentialsInputSchema.parse(args.args);
 
   logger.info(`🗑️  Removing credentials for id: ${id}`);
 

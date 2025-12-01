@@ -44,3 +44,10 @@ export const SHORT_DER_KEY = '302e02010030050603';
  * Invalid key with non-hex characters
  */
 export const INVALID_HEX_KEY = `${HEX_KEY_128.slice(0, 60)}xyz4`;
+
+/**
+ * Short ECDSA DER key (100 chars total = 30 + 98)
+ * Real-world example that should be valid
+ */
+export const SHORT_ECDSA_DER_KEY =
+  '3030020100300706052b8104000a04220420848eb28356c02059da137e3c3419d4b165f67d02669725f1791b029a77ea5f54';

@@ -1,15 +1,19 @@
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
+import { CommandHandlerArgs } from '../../../../core';
+import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { inferConfigOptionType } from '../../schema';
 import { GetConfigOutput } from './output';
+import { GetConfigInputSchema } from './input';
 
 export async function getConfigOption(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { api } = args;
-  const name = args.args.option as string | undefined;
+
+  // Parse and validate arguments
+  const validArgs = GetConfigInputSchema.parse(args.args);
+  const name = validArgs.option;
 
   if (!name) {
     return {
