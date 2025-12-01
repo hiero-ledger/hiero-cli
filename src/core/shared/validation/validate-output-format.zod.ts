@@ -5,15 +5,11 @@ import {
   OutputFormat,
   DEFAULT_OUTPUT_FORMAT,
 } from '../types/output-format';
-import { Logger } from '../../services/logger/logger-service.interface';
 
 // Zod schema from const array
 const outputFormatSchema = z.enum(OUTPUT_FORMATS);
 
-export function validateOutputFormat(
-  logger: Logger,
-  outputFormat: unknown,
-): OutputFormat {
+export function validateOutputFormat(outputFormat: unknown): OutputFormat {
   // Default to human if not provided
   if (!outputFormat) return DEFAULT_OUTPUT_FORMAT;
 
@@ -27,7 +23,6 @@ export function validateOutputFormat(
       new Error(
         `Format '${String(outputFormat)}' is not supported. Valid formats: ${validFormats}`,
       ),
-      logger,
     );
   }
 }

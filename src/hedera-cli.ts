@@ -28,13 +28,13 @@ async function initializeCLI() {
   try {
     program.parseOptions(process.argv.slice(2));
     const opts = program.opts();
-    const format = validateOutputFormat(coreApi.logger, opts.format);
+    const format = validateOutputFormat(opts.format);
 
     coreApi.output.setFormat(format);
 
     // Setup global error handlers with validated format
     setGlobalOutputFormat(format);
-    setupGlobalErrorHandlers(coreApi.logger);
+    setupGlobalErrorHandlers();
 
     const pluginManager = new PluginManager(coreApi);
 
@@ -42,7 +42,6 @@ async function initializeCLI() {
     const pluginState = await pluginManager.initializePlugins(
       program,
       DEFAULT_PLUGIN_STATE,
-      coreApi.logger,
     );
 
     // Register plugin commands
@@ -57,7 +56,7 @@ async function initializeCLI() {
     await program.parseAsync(process.argv);
     process.exit(0);
   } catch (error) {
-    formatAndExitWithError('CLI initialization failed', error, coreApi.logger);
+    formatAndExitWithError('CLI initialization failed', error);
   }
 }
 
