@@ -2,14 +2,14 @@
 ##### Global Protection Rule ######
 ###################################
 # NOTE: This rule is overriden by the more specific rules below. This is the catch-all rule for all files not covered by the more specific rules below.
-*                                               @hashgraph/developer-relations
+*                                               @hiero-ledger/hiero-cli-maintainers
 
 ############################
 #####  Project Files  ######
 ############################
 
-/src/**                                         @hashgraph/developer-relations
-/__tests__/**                                   @hashgraph/developer-relations
+/src/**                                         @hiero-ledger/hiero-cli-maintainers
+/__tests__/**                                   @hiero-ledger/hiero-cli-maintainers
 
 
 #########################
@@ -19,32 +19,32 @@
 # NOTE: Must be placed last to ensure enforcement over all other rules
 
 # Protection Rules for Github Configuration Files and Actions Workflows
-/.github/                                       @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/release-engineering-managers
-/.github/workflows/                             @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/release-engineering-managers
-/.github/dependabot.yml                         @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/release-engineering-managers @hashgraph/developer-relations
+/.github/                                       @hiero-ledger/github-maintainers
+/.github/workflows/                             @hiero-ledger/github-maintainers
+/.github/dependabot.yml                         @hiero-ledger/github-maintainers @hiero-ledger/hiero-cli-maintainers
 
 # NodeJS project files
-package.json                                    @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-relations
-package-lock.json                               @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-relations
-jest.config.mjs                                 @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-relations
+package.json                                    @hiero-ledger/github-maintainers @hiero-ledger/hiero-cli-maintainers
+package-lock.json                               @hiero-ledger/github-maintainers @hiero-ledger/hiero-cli-maintainers
+jest.config.mjs                                 @hiero-ledger/github-maintainers @hiero-ledger/hiero-cli-maintainers
 
 # Codacy Tool Configurations
-/config/                                        @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-relations
-.remarkrc                                       @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-relations
+/config/                                        @hiero-ledger/github-maintainers @hiero-ledger/hiero-cli-maintainers
+.remarkrc                                       @hiero-ledger/github-maintainers @hiero-ledger/hiero-cli-maintainers
 
 # Semantic Release Configuration
-.releaserc                                      @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-relations
+.releaserc                                      @hiero-ledger/github-maintainers @hiero-ledger/hiero-cli-maintainers
 
 # Self-protection for root CODEOWNERS files (this file should not exist and should definitely require approval)
-/CODEOWNERS                                     @hashgraph/release-engineering-managers
+/CODEOWNERS                                     @hiero-ledger/github-maintainers
 
 # Protect the repository root files
-/README.md                                      @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/release-engineering-managers @hashgraph/developer-relations
-**/LICENSE                                      @hashgraph/release-engineering-managers
+/README.md                                      @hiero-ledger/github-maintainers @hiero-ledger/hiero-cli-maintainers
+**/LICENSE                                      @hiero-ledger/github-maintainers
 
 # CodeCov configuration
-**/codecov.yml                                  @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/developer-relations
+**/codecov.yml                                  @hiero-ledger/github-maintainers @hiero-ledger/hiero-cli-maintainers
 
 # Git Ignore definitions
-**/.gitignore                                   @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/release-engineering-managers @hashgraph/developer-relations
-**/.gitignore.*                                 @hashgraph/platform-ci @hashgraph/platform-ci-committers @hashgraph/release-engineering-managers @hashgraph/developer-relations
+**/.gitignore                                   @hiero-ledger/github-maintainers @hiero-ledger/hiero-cli-maintainers
+**/.gitignore.*                                 @hiero-ledger/github-maintainers @hiero-ledger/hiero-cli-maintainers

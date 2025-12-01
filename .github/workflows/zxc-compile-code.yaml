@@ -64,10 +64,14 @@ permissions:
 jobs:
   compile:
     name: ${{ inputs.custom-job-label || 'Compiles' }}
-    runs-on: transaction-tools-linux-medium
+    runs-on: hiero-cli-linux-medium
+    env:
+      INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
+      INTEGRATION_TESTS_OPERATOR_ID: ${{ secrets.integration-tests-operator-id }}
+      INTEGRATION_TESTS_OPERATOR_KEY: ${{ secrets.integration-tests-operator-key }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        uses: step-security/harden-runner@95d9a5deda9de15063e7595e9719c11c38c90ae2 # v2.13.2
         with:
           egress-policy: audit
 
@@ -97,14 +101,14 @@ jobs:
         run: npm run test:unit
 
       - name: Publish Unit Test Report
-        uses: step-security/publish-unit-test-result-action@5d195d4dec0b9fa7b51a3dbc4298362a021247c7 # v2.20.4
+        uses: step-security/publish-unit-test-result-action@c8537a200a435e2560109a6a8ed9cac838b62656 # v2.20.5
         if: ${{ inputs.enable-unit-tests && steps.npm-deps.conclusion == 'success' && !cancelled() }}
         with:
           check_name: 'Unit Test Results'
           files: 'junit.xml'
 
       - name: Publish Unit Test Coverage Report
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: ${{ inputs.enable-unit-tests && !cancelled() }}
         with:
           name: Unit Test Coverage Report
@@ -147,21 +151,21 @@ jobs:
         run: hedera stop
 
       - name: Publish E2E Test Report
-        uses: step-security/publish-unit-test-result-action@5d195d4dec0b9fa7b51a3dbc4298362a021247c7 # v2.20.4
+        uses: step-security/publish-unit-test-result-action@c8537a200a435e2560109a6a8ed9cac838b62656 # v2.20.5
         if: ${{ inputs.enable-e2e-tests && steps.npm-deps.conclusion == 'success' && !cancelled() }}
         with:
           check_name: 'E2E Test Results'
           files: 'junit-e2e.xml'
 
       - name: Publish E2E Coverage Report
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: ${{ inputs.enable-e2e-tests && !cancelled() }}
         with:
           name: E2E Coverage Report
           path: 'coverage/e2e'
 
       - name: Publish Test Reports
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         if: ${{ inputs.enable-unit-tests && steps.npm-deps.conclusion == 'success' && !cancelled() }}
         with:
           name: Test Reports
