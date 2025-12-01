@@ -8,7 +8,6 @@ import {
   OutputFormat,
   DEFAULT_OUTPUT_FORMAT,
 } from '../shared/types/output-format';
-import { Logger } from '../services/logger/logger-service.interface';
 import { ZodError } from 'zod';
 
 // Global output format state for error handlers
