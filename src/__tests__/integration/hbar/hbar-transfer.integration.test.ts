@@ -62,7 +62,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
       transferHbarResult.outputJson!,
     );
     expect(transferHbarOutput.status).toBe('success');
-    expect(transferHbarOutput.fromAccountId).toBe(process.env.ACCOUNT_ID);
+    expect(transferHbarOutput.fromAccountId).toBe(process.env.OPERATOR_ID);
     expect(transferHbarOutput.toAccountId).toBe(createAccountOutput.accountId);
     expect(transferHbarOutput.memo).toBe('Memo test');
     expect(transferHbarOutput.network).toBe('testnet');

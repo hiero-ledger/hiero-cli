@@ -17,8 +17,8 @@ describe('Create Topic Integration Tests', () => {
   it('should create a topic and verify with list method', async () => {
     const createTopicArgs: Record<string, unknown> = {
       memo: 'Test topic',
-      adminKey: process.env.PRIVATE_KEY,
-      submitKey: process.env.PRIVATE_KEY,
+      adminKey: process.env.OPERATOR_KEY,
+      submitKey: process.env.OPERATOR_KEY,
       name: 'test-topic',
     };
     const createTopicResult = await createTopic({

@@ -33,8 +33,8 @@ on:
         type: boolean
         required: false
         default: false
-      enable-e2e-tests:
-        description: 'E2E Testing Enabled'
+      enable-integration-tests:
+        description: 'Integration Testing Enabled'
         type: boolean
         required: false
         default: false
@@ -48,6 +48,16 @@ on:
         type: string
         required: false
         default: 'Compiles'
+    secrets:
+      integration-tests-network:
+        description: 'Selected network for integration tests:'
+        required: false
+      integration-tests-operator-id:
+        description: 'Operator ID for integration tests:'
+        required: false
+      integration-tests-operator-key:
+        description: 'Operator private key for integration tests:'
+        required: false
 
 defaults:
   run:
@@ -110,55 +120,62 @@ jobs:
           name: Unit Test Coverage Report
           path: 'coverage/unit'
 
-      - name: Install Docker Compose Plugin
-        if: ${{ inputs.enable-e2e-tests && !cancelled() && !failure() }}
+      - name: Install Docker Compose Plugin (if tests are performed on localnet)
+        env:
+          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
+        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
         run: |
           sudo curl -fLo /usr/local/lib/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v2.29.1/docker-compose-linux-x86_64
           sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
-      - name: Install Local Node (E2E Tests)
-        if: ${{ inputs.enable-e2e-tests && !cancelled() && !failure() }}
+      - name: Install Local Node (Integration Tests) (if tests are performed on localnet)
+        env:
+          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
+        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
         run: npm install -g @hashgraph/hedera-local
 
-      - name: Setup Local Node (E2E Tests)
+      - name: Setup Local Node (Integration Tests) (if tests are performed on localnet)
         id: setup-local-node
-        if: ${{ inputs.enable-e2e-tests && !cancelled() && !failure() }}
+        env:
+          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
+        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
         run: hedera start --verbose=trace --detached --full
 
-      - name: Configure E2E Tests
-        if: ${{ inputs.enable-e2e-tests && !cancelled() && !failure() }}
+      - name: Configure Integration Tests
+        env:
+          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
+          INTEGRATION_TESTS_OPERATOR_ID: ${{ secrets.integration-tests-operator-id }}
+          INTEGRATION_TESTS_OPERATOR_KEY: ${{ secrets.integration-tests-operator-key }}
+        if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
         run: |
-          cp .env.sample .env
-          echo "LOCALNET_OPERATOR_ID=0.0.2" >> ".env"
-          echo "LOCALNET_OPERATOR_KEY=302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137" >> ".env"
-          echo "PREVIEWNET_OPERATOR_ID=" >> ".env"
-          echo "PREVIEWNET_OPERATOR_KEY=" >> ".env"
-          echo "TESTNET_OPERATOR_ID=" >> ".env"
-          echo "TESTNET_OPERATOR_KEY=" >> ".env"
-          echo "MAINNET_OPERATOR_ID=" >> ".env"
-          echo "MAINNET_OPERATOR_KEY=" >> ".env"
+          cp .env.test.sample .env.test
+          echo "OPERATOR_ID=${{ env.INTEGRATION_TESTS_OPERATOR_ID }}" >> ".env.test"
+          echo "OPERATOR_KEY=${{ env.INTEGRATION_TESTS_OPERATOR_KEY }}" >> ".env.test"
+          echo "NETWORK=${{ env.INTEGRATION_TESTS_NETWORK }}" >> ".env.test"
 
-      - name: Run E2E Tests
-        if: ${{ inputs.enable-e2e-tests && !cancelled() && !failure() }}
-        run: npm run test:e2e
+      - name: Run Integration Tests
+        if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
+        run: npm run test:integration
 
-      - name: Teardown Local Node (E2E Tests)
-        if: ${{ inputs.enable-e2e-tests && steps.setup-local-node.conclusion == 'success' }}
+      - name: Teardown Local Node (Integration Tests) (if tests are performed on localnet)
+        env:
+          INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
+        if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && steps.setup-local-node.conclusion == 'success'  }}
         run: hedera stop
 
-      - name: Publish E2E Test Report
+      - name: Publish Integration Test Report
         uses: step-security/publish-unit-test-result-action@5d195d4dec0b9fa7b51a3dbc4298362a021247c7 # v2.20.4
-        if: ${{ inputs.enable-e2e-tests && steps.npm-deps.conclusion == 'success' && !cancelled() }}
+        if: ${{ inputs.enable-integration-tests && steps.npm-deps.conclusion == 'success' && !cancelled() }}
         with:
-          check_name: 'E2E Test Results'
-          files: 'junit-e2e.xml'
+          check_name: 'Integration Test Results'
+          files: 'junit-integration.xml'
 
-      - name: Publish E2E Coverage Report
+      - name: Publish Integration Coverage Report
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        if: ${{ inputs.enable-e2e-tests && !cancelled() }}
+        if: ${{ inputs.enable-integration-tests && !cancelled() }}
         with:
-          name: E2E Coverage Report
-          path: 'coverage/e2e'
+          name: Integration Coverage Report
+          path: 'coverage/integration'
 
       - name: Publish Test Reports
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2

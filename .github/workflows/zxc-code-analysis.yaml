@@ -35,8 +35,8 @@ on:
         type: boolean
         required: false
         default: false
-      enable-e2e-coverage-report:
-        description: 'E2E Coverage Report Enabled'
+      enable-integration-coverage-report:
+        description: 'Integration Coverage Report Enabled'
         type: boolean
         required: false
         default: false
@@ -105,12 +105,12 @@ jobs:
           name: Unit Test Coverage Report
           path: 'coverage/unit'
 
-      - name: Download E2E Coverage Report
+      - name: Download Integration Coverage Report
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
-        if: ${{ (inputs.enable-codecov-analysis || inputs.enable-codacy-coverage) && inputs.enable-e2e-coverage-report && !cancelled() && !failure() }}
+        if: ${{ (inputs.enable-codecov-analysis || inputs.enable-codacy-coverage) && inputs.enable-integration-coverage-report && !cancelled() && !failure() }}
         with:
-          name: E2E Coverage Report
-          path: 'coverage/e2e'
+          name: Integration Coverage Report
+          path: 'coverage/integration'
 
       - name: Publish To Codecov
         uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2

@@ -9,18 +9,18 @@ import {
 import { Status } from '../../core/shared/constants';
 
 const envSchema = z.object({
-  ACCOUNT_ID: z
+  OPERATOR_ID: z
     .string()
-    .min(1, 'ACCOUNT_ID is required')
+    .min(1, 'OPERATOR_ID is required')
     .trim()
     .regex(
       /^0\.0\.[1-9][0-9]*$/,
       'Hedera entity ID must be in format 0.0.{number}',
     )
     .describe('Hedera entity ID in format 0.0.{number}'),
-  PRIVATE_KEY: z
+  OPERATOR_KEY: z
     .string()
-    .min(1, 'PRIVATE_KEY is required')
+    .min(1, 'OPERATOR_KEY is required')
     .trim()
     .refine(
       (value) => {
@@ -32,7 +32,7 @@ const envSchema = z.object({
       },
       {
         message:
-          'PRIVATE_KEY must be a valid ED25519 or ECDSA key in hex (with optional 0x prefix)',
+          'OPERATOR_KEY must be a valid ED25519 or ECDSA key in hex (with optional 0x prefix)',
       },
     ),
   NETWORK: z.enum(['testnet', 'localnet'], {
@@ -47,8 +47,8 @@ export const setDefaultOperatorForNetwork = async (
 ): Promise<void> => {
   // Validate environment variables with Zod
   const env = envSchema.parse({
-    ACCOUNT_ID: process.env.ACCOUNT_ID,
-    PRIVATE_KEY: process.env.PRIVATE_KEY,
+    OPERATOR_ID: process.env.OPERATOR_ID,
+    OPERATOR_KEY: process.env.OPERATOR_KEY,
     NETWORK: process.env.NETWORK,
   });
 
@@ -74,9 +74,9 @@ export const setDefaultOperatorForNetwork = async (
     const getOperatorOutput: GetOperatorOutput = JSON.parse(
       getOperatorResult.outputJson!,
     );
-    if (getOperatorOutput.operator?.accountId != env.ACCOUNT_ID) {
+    if (getOperatorOutput.operator?.accountId != env.OPERATOR_ID) {
       const setOperatorArgs: Record<string, unknown> = {
-        operator: `${env.ACCOUNT_ID}:${env.PRIVATE_KEY}`,
+        operator: `${env.OPERATOR_ID}:${env.OPERATOR_KEY}`,
       };
       await setOperatorHandler({
         args: setOperatorArgs,
