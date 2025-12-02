@@ -370,23 +370,30 @@ Core API
 
 ## 🧪 Testing Architecture
 
+The project uses a two-tier testing strategy:
+
 ### 1. Unit Testing
 
-- Each service has comprehensive unit tests
+- **Core Services**: Each core service has comprehensive unit tests located under `src/core/services/*/__tests__/unit/`
+  - Examples: `config-service.test.ts`, `logger-service.test.ts`, `network-service.test.ts`, `kms-service.test.ts`, `state-service.test.ts`, `output-service.test.ts`, `plugin-management-service.test.ts`
+- **Plugin Management**: Unit tests for plugin infrastructure under `src/core/plugins/__tests__/unit/`
+- **Plugin Handlers**: Each plugin command handler has unit tests under `src/plugins/*/__tests__/unit/`
 - Mock implementations for external dependencies
-- Isolated testing of plugin handlers
+- Isolated testing with shared mocks from `src/__tests__/mocks/mocks.ts`
+- Service-specific mocks in `__tests__/unit/mocks.ts` files within each service/plugin directory
 
 ### 2. Integration Testing
 
-- End-to-end plugin testing
+- Plugin interaction testing
 - Service integration testing
-- Network integration testing
+- Tests located under `src/__tests__/integration/`
+- Validates plugin loading, command registration, and service interactions
 
-### 3. Plugin Testing
+### Running Tests
 
-- Plugin isolation testing
-- State management testing
-- Command execution testing
+- Unit tests: `npm run test:unit`
+- Integration tests: `npm run test:integration`
+- All tests: `npm run test`
 
 ## 🔧 Development Workflow
 

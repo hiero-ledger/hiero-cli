@@ -124,7 +124,7 @@ Exit codes within ranges may be refined later; the mapping lives centrally in Co
 
 - Handlers must be updated to return `CommandExecutionResult` instead of printing final results.
 - CLI must implement schema validation, template rendering, multi-format serialization, output redirection, and exit code mapping.
-- Tests will shift: unit tests validate handler results; E2E tests assert CLI formatting and exit behavior.
+- Tests will shift: unit tests validate handler results; integration tests assert CLI formatting and exit behavior.
 
 ## Implementation Notes
 
@@ -147,4 +147,4 @@ Exit codes within ranges may be refined later; the mapping lives centrally in Co
 - Unit: handler returns and error taxonomy mapping.
 - Unit: schema validation success/failure paths.
 - Unit: formatters and serializers.
-- E2E: `--format` variants, `--output` file writes, and `--script` suppression.
+- Integration: `--format` variants, `--output` file writes, and `--script` suppression.
