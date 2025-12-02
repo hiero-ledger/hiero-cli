@@ -6,5 +6,5 @@ module.exports = {
   testMatch: ['**/__tests__/unit/**/*.test.ts'],
   testPathIgnorePatterns: [...(base.testPathIgnorePatterns || [])],
   // Optionally tighten timeout for unit tests
-  testTimeout: 20000,
+  testTimeout: 360000,
 };

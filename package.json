@@ -31,7 +31,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky install",
-    "test:unit": "cross-env JEST_SUITE_NAME=\"Unit Tests\" JEST_JUNIT_OUTPUT_NAME=\"junit.xml\" jest -c jest.unit.config.js --coverage --coverageDirectory=coverage/unit",
+    "test:unit": "cross-env JEST_SUITE_NAME=\"Unit Tests\" JEST_JUNIT_OUTPUT_NAME=\"junit.xml\" jest -c jest.unit.config.js --coverage --coverageDirectory=coverage/unit --detectOpenHandles",
     "test:integration": "cross-env JEST_SUITE_NAME=\"Integration Tests\" jest -c jest.integration.config.js --coverage --coverageDirectory=coverage/integration --detectOpenHandles",
     "test:e2e": "cross-env JEST_SUITE_NAME=\"E2E Tests\" JEST_JUNIT_OUTPUT_NAME=\"junit-e2e.xml\" jest -c jest.e2e.config.js --coverage --coverageDirectory=coverage/e2e --runInBand",
     "test:all": "npm run test:unit && npm run test:e2e",
