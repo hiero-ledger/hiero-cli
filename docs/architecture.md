@@ -1,0 +1,478 @@
+# Architecture Overview
+
+This document provides a comprehensive overview of the Hedera CLI architecture, focusing on the plugin system, core services, and how everything works together.
+
+## 🏗️ High-Level Architecture
+
+The Hedera CLI is built on a plugin-based architecture designed to be extensible, maintainable, and secure.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Hedera CLI Architecture                  │
+├─────────────────────────────────────────────────────────────┤
+│  CLI Entry Point (hedera-cli.ts)                            │
+│  ├── Plugin Manager                                         │
+│  ├── Core API                                               │
+│  └── Command Router                                         │
+├─────────────────────────────────────────────────────────────┤
+│  Core Services Layer                                        │
+│  ├── Account Transaction Service                            │
+│  ├── Token Service                                          │
+│  ├── Topic Service                                          │
+│  ├── TxExecutionService                                     │
+│  ├── State Service (Zustand)                                │
+│  ├── Mirror Node Service                                    │
+│  ├── Network Service                                        │
+│  ├── Config Service                                         │
+│  ├── Logger Service                                         │
+│  ├── KMS Service                                            │
+│  ├── Alias Service                                          │
+│  ├── HBAR Service                                           │
+│  └── Output Service                                         │
+├─────────────────────────────────────────────────────────────┤
+│  Plugin Layer                                               │
+│  ├── Account Plugin                                         │
+│  ├── Token Plugin                                           │
+│  ├── Network Plugin                                         │
+│  ├── Topic Plugin                                           │
+│  ├── HBAR Plugin                                            │
+│  ├── Credentials Plugin                                     │
+│  ├── Config Plugin                                          │
+│  ├── Plugin Management Plugin                               │
+│  └── [Custom Plugins]                                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## 🔌 Plugin Architecture
+
+### Core Principles
+
+The plugin architecture follows these key principles:
+
+1. **Stateless Plugins**: Plugins are functionally stateless
+2. **Dependency Injection**: Services are injected into command handlers
+3. **Manifest-Driven**: Plugins declare their capabilities via manifests
+4. **Namespace Isolation**: Each plugin has its own state namespace
+5. **Type Safety**: Full TypeScript support throughout
+
+### Plugin Lifecycle
+
+```
+Plugin Discovery → Validation → Loading → Initialization → Command Registration
+                                                                    ↓
+Command Execution ← Command Routing ← User Input ← CLI Interface
+```
+
+### Plugin Structure
+
+Plugins are regular TypeScript modules located under `src/plugins/<plugin-name>/` and follow a consistent folder layout:
+
+```
+plugin/
+├── manifest.ts              # Plugin manifest (name, capabilities, commands, output specs)
+├── schema.ts                # State/output schemas (Zod + JSON Schema)
+├── commands/                # One folder per command
+│   ├── create/
+│   │   ├── handler.ts       # Command handler
+│   │   ├── output.ts        # Output schema & template
+│   │   └── index.ts         # Command exports
+│   ├── list/
+│   │   ├── handler.ts
+│   │   ├── output.ts
+│   │   └── index.ts
+│   └── ...                  # Other commands
+├── README.md                # Plugin-specific documentation
+└── __tests__/
+    └── unit/                # Unit tests for handlers/schemas
+```
+
+For a detailed, step‑by‑step plugin development guide, see [`PLUGIN_ARCHITECTURE_GUIDE.md`](../PLUGIN_ARCHITECTURE_GUIDE.md) in the repository root.
+
+## 🛠️ Core Services
+
+### 1. Account Service
+
+**Purpose**: Handles Hedera account creation and management operations.
+
+**Key Features**:
+
+- Account creation with custom parameters
+- Key generation and management
+- Transaction building and validation
+
+**Interface**:
+
+```typescript
+interface AccountService {
+  createAccount(params: CreateAccountParams): Promise<AccountCreationResult>;
+  // ... other methods
+}
+```
+
+### 2. TxExecutionService
+
+**Purpose**: Manages transaction signing and execution.
+
+**Key Features**:
+
+- Transaction signing with operator credentials
+- Transaction broadcasting to Hedera network
+- Credential management integration
+
+**Interface**:
+
+```typescript
+interface TxExecutionService {
+  signAndExecute(transaction: Transaction): Promise<TransactionReceipt>;
+  // ... other methods
+}
+```
+
+### 3. State Service
+
+**Purpose**: Provides namespaced, versioned state management.
+
+**Key Features**:
+
+- Zustand-based state management
+- Namespace isolation
+- Schema validation
+- Persistent storage
+
+**Interface**:
+
+```typescript
+interface StateService {
+  set<T>(namespace: string, key: string, value: T): void;
+  get<T>(namespace: string, key: string): T | undefined;
+  has(namespace: string, key: string): boolean;
+  // ... other methods
+}
+```
+
+### 4. Mirror Node Service
+
+**Purpose**: Provides comprehensive access to Hedera Mirror Node API.
+
+**Key Features**:
+
+- Real-time account information
+- Balance queries
+- Transaction history
+- Token information
+- Topic messages
+- Contract information
+
+**Interface**:
+
+```typescript
+interface HederaMirrornodeService {
+  getAccount(accountId: string): Promise<AccountResponse>;
+  getAccountHBarBalance(accountId: string): Promise<bigint>;
+  getAccountTokenBalances(
+    accountId: string,
+    tokenId?: string,
+  ): Promise<TokenBalancesResponse>;
+  getTopicMessages(
+    queryParams: TopicMessagesQueryParams,
+  ): Promise<TopicMessagesResponse>;
+  // ... other methods
+}
+```
+
+### 5. Network Service
+
+**Purpose**: Manages network configuration and selection.
+
+**Key Features**:
+
+- Network switching
+- Configuration management
+- Health monitoring
+
+### 6. Config Service
+
+**Purpose**: Manages configuration options for the CLI with type-safe accessors.
+
+**Key Features**:
+
+- Generic configuration option accessors
+- Type validation (boolean, number, string, enum)
+- Default value support for all options
+- State-based persistent storage
+- Options discovery and listing
+
+**Interface**:
+
+```typescript
+interface ConfigService {
+  listOptions(): ConfigOptionDescriptor[];
+  getOption<T = boolean | number | string>(name: string): T;
+  setOption(name: string, value: boolean | number | string): void;
+}
+```
+
+**Configuration Options**:
+
+The service supports the following option types:
+
+- `boolean`: Boolean values
+- `number`: Numeric values
+- `string`: String values
+- `enum`: String values restricted to predefined allowed values
+
+Configuration options include:
+
+- `ed25519_support_enabled` (boolean, default: false)
+- `default_key_manager` (enum: 'local' | 'encrypted_local', default: 'local')
+
+**Implementation Details**:
+
+- Uses State Service with `'config'` namespace for persistent storage
+- Validates types on both read and write operations
+- Returns default values if options are not explicitly set
+- Throws descriptive errors for invalid option names or values
+
+### 7. Logger Service
+
+**Purpose**: Provides structured logging capabilities.
+
+**Key Features**:
+
+- Multiple log levels
+- Structured output
+- Plugin-specific logging
+
+### 8. KMS Service (Key Management Service)
+
+**Purpose**: Manages operator credentials and cryptographic keys securely.
+
+**Key Features**:
+
+- Dual storage modes: `local` (plain text) and `local_encrypted` (AES-256-GCM encrypted)
+- Per-operation key manager override via `--key-manager` flag
+- Secure key generation and import
+- Private key isolation (keys never exposed outside KMS)
+- Transaction signing with key references
+
+## 🔄 Data Flow
+
+### Command Execution Flow
+
+```
+1. User Input
+   ↓
+2. Command Router (identifies plugin and command)
+   ↓
+3. Plugin Manager (loads command handler)
+   ↓
+4. Core API Injection (injects services into handler)
+   ↓
+5. Command Handler Execution
+   ↓
+6. Service Calls (Account, Signing, State, etc.)
+   ↓
+7. Response Processing
+   ↓
+8. Output to User
+```
+
+### State Management Flow
+
+```
+1. Plugin Request
+   ↓
+2. State Service
+   ↓
+3. Namespace Validation
+   ↓
+4. Schema Validation (if applicable)
+   ↓
+5. Zustand Store Update
+   ↓
+6. Persistent Storage (JSON files)
+   ↓
+7. Response to Plugin
+```
+
+## 🏛️ Service Dependencies
+
+```
+Core API
+├── State Service (Zustand)
+├── Network Service
+│   └── State Service
+├── Config Service
+│   └── State Service
+├── KMS Service
+│   ├── State Service
+│   ├── Network Service
+│   └── Config Service
+├── TxExecutionService
+│   ├── KMS Service
+│   └── Network Service
+├── Account Transaction Service
+├── Token Service
+├── Topic Service
+├── Mirror Node Service
+│   └── Network Service
+├── Alias Service
+│   └── State Service
+├── HBAR Service
+├── Output Service
+└── Logger Service
+```
+
+## 🔒 Security Considerations
+
+### 1. Credential Management
+
+- Credentials are stored securely in state using namespaced storage
+- Operator credentials are managed per-network through the Network Service
+- Keys are stored in the KMS (Key Management Service) with two storage options:
+  - **`local`**: Plain text storage (development/testing environments)
+  - **`local_encrypted`**: AES-256-GCM encrypted storage (production environments)
+- Default key manager configurable via `hcli config set -o default_key_manager local|local_encrypted`
+- Per-operation override available using `--key-manager` flag on commands that store keys
+- No hardcoded credentials in code
+
+### 2. Plugin Isolation
+
+- Plugins cannot access other plugins' state
+- Namespace-based isolation
+- Capability-based access control
+
+### 3. Network Security
+
+- HTTPS-only communication with Hedera networks
+- Proper certificate validation
+- Secure key handling
+
+## 📊 Performance Considerations
+
+### 1. Lazy Loading
+
+- Plugins are loaded on-demand
+- Services are initialized only when needed
+- Command handlers are loaded per execution
+
+### 2. State Management
+
+- Zustand provides efficient state updates
+- Minimal re-renders and updates
+- Persistent storage with JSON files
+
+### 3. Network Optimization
+
+- Efficient Mirror Node API usage
+- Proper error handling and retries
+- Connection pooling where applicable
+
+## 🧪 Testing Architecture
+
+The project uses a two-tier testing strategy:
+
+### 1. Unit Testing
+
+- **Core Services**: Each core service has comprehensive unit tests located under `src/core/services/*/__tests__/unit/`
+  - Examples: `config-service.test.ts`, `logger-service.test.ts`, `network-service.test.ts`, `kms-service.test.ts`, `state-service.test.ts`, `output-service.test.ts`, `plugin-management-service.test.ts`
+- **Plugin Management**: Unit tests for plugin infrastructure under `src/core/plugins/__tests__/unit/`
+- **Plugin Handlers**: Each plugin command handler has unit tests under `src/plugins/*/__tests__/unit/`
+- Mock implementations for external dependencies
+- Isolated testing with shared mocks from `src/__tests__/mocks/mocks.ts`
+- Service-specific mocks in `__tests__/unit/mocks.ts` files within each service/plugin directory
+
+### 2. Integration Testing
+
+- Plugin interaction testing
+- Service integration testing
+- Tests located under `src/__tests__/integration/`
+- Validates plugin loading, command registration, and service interactions
+
+### Running Tests
+
+- Unit tests: `npm run test:unit`
+- Integration tests: `npm run test:integration`
+- All tests: `npm run test`
+
+## 🔧 Development Workflow
+
+### 1. Plugin Development
+
+```
+1. Create plugin structure
+2. Define manifest
+3. Implement command handlers
+4. Add state schema (if needed)
+5. Test plugin
+6. Register plugin
+```
+
+### 2. Service Development
+
+```
+1. Define interface
+2. Implement service
+3. Add to Core API
+4. Update dependency injection
+5. Test service
+6. Document service
+```
+
+### 3. Core API Changes
+
+```
+1. Update interfaces
+2. Implement changes
+3. Update all services
+4. Update plugin compatibility
+5. Test all plugins
+6. Update documentation
+```
+
+## 📈 Scalability Considerations
+
+### 1. Plugin System
+
+- Easy to add new plugins
+- Plugin isolation prevents conflicts
+- Capability-based access control
+
+### 2. Service Architecture
+
+- Service-oriented design
+- Clear separation of concerns
+- Easy to extend and modify
+
+### 3. State Management
+
+- Namespace isolation
+- Schema validation
+- Efficient storage and retrieval
+
+## 🎯 Future Enhancements
+
+### 1. Plugin Marketplace
+
+- Plugin discovery and installation
+- Version management
+- Dependency resolution
+
+### 2. Enhanced Security
+
+- Plugin sandboxing
+- Capability restrictions
+- Audit logging
+
+### 3. Performance Improvements
+
+- Plugin hot-reloading
+- Service caching
+- Network optimization
+
+## 📚 Related Documentation
+
+- [Plugin Development Guide](../PLUGIN_ARCHITECTURE_GUIDE.md)
+- [Core API Reference](./core-api.md)
+- [Contributing Guide](../CONTRIBUTING.md)
+- [Architecture Decision Records](./adr/) - ADRs for interested developers

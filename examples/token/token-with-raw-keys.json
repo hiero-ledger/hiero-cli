@@ -1,0 +1,11 @@
+{
+  "name": "token-raw-keys-example",
+  "symbol": "TRK",
+  "decimals": 10,
+  "supplyType": "infinite",
+  "initialSupply": 1000,
+  "treasury": "<accountId>:<keyType>:<privateKey>",
+  "keys": {
+    "adminKey": "<keyType>:<privateKey>"
+  }
+}

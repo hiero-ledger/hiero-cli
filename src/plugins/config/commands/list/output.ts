@@ -1,0 +1,34 @@
+/**
+ * List Config Options Output Schema and Template
+ */
+import { ConfigOptionTypeSchema, ConfigValueSchema } from '../../schema';
+import { z } from 'zod';
+
+export const ListConfigOutputSchema = z.object({
+  options: z.array(
+    z.object({
+      name: z.string(),
+      type: ConfigOptionTypeSchema,
+      value: ConfigValueSchema,
+      allowedValues: z.array(z.string()).optional(),
+    }),
+  ),
+  totalCount: z.number(),
+});
+
+export type ListConfigOutput = z.infer<typeof ListConfigOutputSchema>;
+
+export const LIST_CONFIG_TEMPLATE = `
+{{#if (eq totalCount 0)}}
+📝 No configuration options available
+{{else}}
+📝 Found {{totalCount}} configuration option(s):
+
+{{#each options}}
+{{add1 @index}}. {{name}}
+   Type: {{type}}
+   Value: {{value}}{{#if allowedValues}} [{{#each allowedValues}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}]{{/if}}
+
+{{/each}}
+{{/if}}
+`.trim();
