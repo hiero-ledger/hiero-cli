@@ -331,6 +331,8 @@ Command handlers hand off their structured results to the Core API’s output se
 
 ## 🧪 Testing Plugins
 
+The CLI has comprehensive test coverage for both Core services and plugins. Core services have unit tests under `src/core/services/*/__tests__/unit/`, and plugins follow a similar pattern.
+
 ### 1. Unit Testing
 
 Create unit tests for your command handlers:

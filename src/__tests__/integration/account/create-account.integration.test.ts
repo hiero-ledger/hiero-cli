@@ -61,5 +61,113 @@ describe('Create Account Integration Tests', () => {
       expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
       expect(viewAccountOutput.publicKey).toBe(createAccountOutput.publicKey);
     });
+
+    it('should create an account with --key-manager flag set to local', async () => {
+      const createAccountArgs: Record<string, unknown> = {
+        name: 'account-test-key-manager-local',
+        balance: 1,
+        keyType: 'ecdsa',
+        keyManager: 'local',
+        autoAssociations: 10,
+      };
+      const createAccountResult = await createAccount({
+        args: createAccountArgs,
+        api: coreApi,
+        state: coreApi.state,
+        logger: coreApi.logger,
+        config: coreApi.config,
+      });
+
+      expect(createAccountResult.status).toBe(Status.Success);
+      const createAccountOutput: CreateAccountOutput = JSON.parse(
+        createAccountResult.outputJson!,
+      );
+      expect(createAccountOutput.name).toBe('account-test-key-manager-local');
+      expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
+      expect(createAccountOutput.network).toBe('testnet');
+
+      await delay(5000);
+
+      const viewAccountArgs: Record<string, unknown> = {
+        account: 'account-test-key-manager-local',
+      };
+      const viewAccountResult = await viewAccount({
+        args: viewAccountArgs,
+        api: coreApi,
+        state: coreApi.state,
+        logger: coreApi.logger,
+        config: coreApi.config,
+      });
+      expect(viewAccountResult.status).toBe(Status.Success);
+      const viewAccountOutput: ViewAccountOutput = JSON.parse(
+        viewAccountResult.outputJson!,
+      );
+      expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
+      expect(viewAccountOutput.balance).toBe('100000000'); // result in tinybars
+      expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
+      expect(viewAccountOutput.publicKey).toBe(createAccountOutput.publicKey);
+
+      const credentials = coreApi.kms.list();
+      const credential = credentials.find(
+        (c) => c.publicKey === createAccountOutput.publicKey,
+      );
+      expect(credential).toBeDefined();
+      expect(credential?.keyManager).toBe('local');
+    });
+
+    it('should create an account with --key-manager flag set to local_encrypted', async () => {
+      const createAccountArgs: Record<string, unknown> = {
+        name: 'account-test-key-manager-encrypted',
+        balance: 1,
+        keyType: 'ecdsa',
+        keyManager: 'local_encrypted',
+        autoAssociations: 10,
+      };
+      const createAccountResult = await createAccount({
+        args: createAccountArgs,
+        api: coreApi,
+        state: coreApi.state,
+        logger: coreApi.logger,
+        config: coreApi.config,
+      });
+
+      expect(createAccountResult.status).toBe(Status.Success);
+      const createAccountOutput: CreateAccountOutput = JSON.parse(
+        createAccountResult.outputJson!,
+      );
+      expect(createAccountOutput.name).toBe(
+        'account-test-key-manager-encrypted',
+      );
+      expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
+      expect(createAccountOutput.network).toBe('testnet');
+
+      await delay(5000);
+
+      const viewAccountArgs: Record<string, unknown> = {
+        account: 'account-test-key-manager-encrypted',
+      };
+      const viewAccountResult = await viewAccount({
+        args: viewAccountArgs,
+        api: coreApi,
+        state: coreApi.state,
+        logger: coreApi.logger,
+        config: coreApi.config,
+      });
+      expect(viewAccountResult.status).toBe(Status.Success);
+      const viewAccountOutput: ViewAccountOutput = JSON.parse(
+        viewAccountResult.outputJson!,
+      );
+      expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
+      expect(viewAccountOutput.balance).toBe('100000000'); // result in tinybars
+      expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
+      expect(viewAccountOutput.publicKey).toBe(createAccountOutput.publicKey);
+
+      const credentials = coreApi.kms.list();
+      const credential = credentials.find(
+        (c) => c.publicKey === createAccountOutput.publicKey,
+      );
+      expect(credential).toBeDefined();
+      expect(credential?.keyManager).toBe('local_encrypted');
+    });
   });
 });
