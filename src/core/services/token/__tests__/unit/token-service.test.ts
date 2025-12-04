@@ -18,6 +18,10 @@ import {
   PrivateKey,
   Hbar,
 } from '@hashgraph/sdk';
+import {
+  ECDSA_DER_PRIVATE_KEY,
+  ECDSA_HEX_PUBLIC_KEY,
+} from '../../../../../__tests__/mocks/fixtures';
 
 // Reusable test constants
 const ACCOUNT_ID_FROM = '0.0.1111';
@@ -32,11 +36,6 @@ const TOKEN_DECIMALS = 2;
 const INITIAL_SUPPLY = 1000n;
 const MAX_SUPPLY = 10000n;
 
-const ADMIN_PUBLIC_KEY =
-  '026e876ad28d7d8f79013ed83272b9bc89162d657f6cd912ef047e651407144c1c';
-const ADMIN_PRIVATE_KEY =
-  '302e020100300506032b657004220420000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f';
-
 const TRANSFER_AMOUNT = 100n;
 
 // Mock instances
@@ -50,7 +49,7 @@ const mockAccountIdInstance = {
   toString: jest.fn().mockReturnValue(TREASURY_ACCOUNT_ID),
 };
 const mockPublicKeyInstance = {
-  toString: jest.fn().mockReturnValue(ADMIN_PUBLIC_KEY),
+  toString: jest.fn().mockReturnValue(ECDSA_HEX_PUBLIC_KEY),
 };
 const mockPrivateKeyInstance = {
   publicKey: mockPublicKeyInstance,
@@ -236,7 +235,7 @@ describe('TokenServiceImpl', () => {
       decimals: TOKEN_DECIMALS,
       initialSupplyRaw: INITIAL_SUPPLY,
       supplyType: 'INFINITE' as const,
-      adminKey: ADMIN_PUBLIC_KEY,
+      adminKey: ECDSA_HEX_PUBLIC_KEY,
     };
 
     it('should create token with all required parameters', () => {
@@ -331,12 +330,12 @@ describe('TokenServiceImpl', () => {
 
       const params = {
         ...baseParams,
-        adminKey: ADMIN_PUBLIC_KEY,
+        adminKey: ECDSA_HEX_PUBLIC_KEY,
       };
 
       tokenService.createTokenTransaction(params);
 
-      expect(PublicKey.fromString).toHaveBeenCalledWith(ADMIN_PUBLIC_KEY);
+      expect(PublicKey.fromString).toHaveBeenCalledWith(ECDSA_HEX_PUBLIC_KEY);
       expect(mockTokenCreateTransaction.setAdminKey).toHaveBeenCalledWith(
         mockPublicKeyInstance,
       );
@@ -349,7 +348,7 @@ describe('TokenServiceImpl', () => {
 
       const params = {
         ...baseParams,
-        adminKey: ADMIN_PRIVATE_KEY,
+        adminKey: ECDSA_DER_PRIVATE_KEY,
       };
 
       tokenService.createTokenTransaction(params);

@@ -11,7 +11,7 @@ import {
   makeAliasMock,
 } from '../../../../__tests__/mocks/mocks';
 import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
-import { DER_KEY } from '../../../../core/schemas/__tests__/helpers/fixtures';
+import { ED25519_DER_PRIVATE_KEY } from '../../../../__tests__/mocks/fixtures';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTopicStateHelper: jest.fn(),
@@ -49,7 +49,7 @@ const makeApiMocks = ({
   kms.importPrivateKey.mockImplementation((keyType: string, key: string) => {
     // Deterministic mapping for known test keys
     const keyMap: Record<string, string> = {
-      [DER_KEY]: 'kr_admin',
+      [ED25519_DER_PRIVATE_KEY]: 'kr_admin',
       '302e020100300506032b6570042204201111111111111111111111111111111111111111111111111111111111111111':
         'kr_admin',
       '302e020100300506032b6570042204202222222222222222222222222222222222222222222222222222222222222222':
@@ -142,7 +142,7 @@ describe('topic plugin - create command', () => {
     const saveTopicMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
 
-    const adminKey = DER_KEY;
+    const adminKey = ED25519_DER_PRIVATE_KEY;
     const submitKey =
       '302e020100300506032b6570042204202222222222222222222222222222222222222222222222222222222222222222';
 
@@ -338,7 +338,7 @@ describe('topic plugin - create command', () => {
     const saveTopicMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
 
-    const adminKey = `ecdsa:${DER_KEY}`;
+    const adminKey = `ecdsa:${ED25519_DER_PRIVATE_KEY}`;
 
     const { topicTransactions, signing, networkMock, kms, alias } =
       makeApiMocks({
@@ -373,7 +373,7 @@ describe('topic plugin - create command', () => {
     expect(result.status).toBe(Status.Success);
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
-      DER_KEY,
+      ED25519_DER_PRIVATE_KEY,
       'local',
       expect.arrayContaining(['topic:admin']),
     );
@@ -384,8 +384,8 @@ describe('topic plugin - create command', () => {
     const saveTopicMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
 
-    const adminKey = `ed25519:${DER_KEY}`;
-    const submitKey = `ed25519:${DER_KEY}`;
+    const adminKey = `ed25519:${ED25519_DER_PRIVATE_KEY}`;
+    const submitKey = `ed25519:${ED25519_DER_PRIVATE_KEY}`;
 
     const { topicTransactions, signing, networkMock, kms, alias } =
       makeApiMocks({
@@ -421,13 +421,13 @@ describe('topic plugin - create command', () => {
     expect(result.status).toBe(Status.Success);
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ED25519,
-      DER_KEY,
+      ED25519_DER_PRIVATE_KEY,
       'local',
       expect.arrayContaining(['topic:admin']),
     );
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ED25519,
-      DER_KEY,
+      ED25519_DER_PRIVATE_KEY,
       'local',
       expect.arrayContaining(['topic:submit']),
     );

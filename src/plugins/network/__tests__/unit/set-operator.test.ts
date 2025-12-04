@@ -8,7 +8,7 @@ import {
   makeKmsMock,
   makeAliasMock,
 } from '../../../../__tests__/mocks/mocks';
-import { DER_KEY } from '../../../../core/schemas/__tests__/helpers/fixtures';
+import { ECDSA_DER_PRIVATE_KEY } from '../../../../__tests__/mocks/fixtures';
 
 let exitSpy: jest.SpyInstance;
 
@@ -34,7 +34,7 @@ describe('network plugin - set-operator command', () => {
     const args = makeArgs(
       { network: networkService, kms: kmsService, alias: aliasService },
       logger,
-      { operator: `0.0.123456:${DER_KEY}` },
+      { operator: `0.0.123456:${ECDSA_DER_PRIVATE_KEY}` },
     );
 
     const result = await setOperatorHandler(args);
@@ -50,7 +50,7 @@ describe('network plugin - set-operator command', () => {
     });
     expect(kmsService.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
-      DER_KEY,
+      ECDSA_DER_PRIVATE_KEY,
       'local',
       ['network:operator', 'network:testnet'],
     );

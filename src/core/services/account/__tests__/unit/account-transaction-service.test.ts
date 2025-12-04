@@ -13,6 +13,7 @@ import {
 } from './mocks';
 import { AccountServiceImpl } from '../../account-transaction-service';
 import { AccountId, PublicKey, Hbar } from '@hashgraph/sdk';
+import { ECDSA_HEX_PUBLIC_KEY } from '../../../../../__tests__/mocks/fixtures';
 
 const mockTransaction = createMockAccountCreateTransaction();
 const mockInfoQuery = createMockAccountInfoQuery();
@@ -52,20 +53,17 @@ describe('AccountServiceImpl', () => {
   });
 
   describe('createAccount', () => {
-    const TEST_PUBLIC_KEY =
-      '026e876ad28d7d8f79013ed83272b9bc89162d657f6cd912ef047e651407144c1c';
-
     it('should create account with ECDSA key type', async () => {
       const params = {
         balanceRaw: 100_000_000n,
-        publicKey: TEST_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
         keyType: KeyAlgorithm.ECDSA,
       };
 
       const result = await accountService.createAccount(params);
 
       expect(Hbar.fromTinybars).toHaveBeenCalledWith(100_000_000n);
-      expect(PublicKey.fromString).toHaveBeenCalledWith(TEST_PUBLIC_KEY);
+      expect(PublicKey.fromString).toHaveBeenCalledWith(ECDSA_HEX_PUBLIC_KEY);
       expect(mockTransaction.setInitialBalance).toHaveBeenCalledWith(
         mockHbarInstance,
       );
@@ -74,13 +72,13 @@ describe('AccountServiceImpl', () => {
       );
       expect(mockTransaction.setKeyWithoutAlias).not.toHaveBeenCalled();
       expect(result.transaction).toBe(mockTransaction);
-      expect(result.publicKey).toBe(TEST_PUBLIC_KEY);
+      expect(result.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
     });
 
     it('should create account with ED25519 key type', async () => {
       const params = {
         balanceRaw: 50_000_000n,
-        publicKey: TEST_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
         keyType: KeyAlgorithm.ED25519,
       };
 
@@ -91,13 +89,13 @@ describe('AccountServiceImpl', () => {
       );
       expect(mockTransaction.setECDSAKeyWithAlias).not.toHaveBeenCalled();
       expect(result.transaction).toBe(mockTransaction);
-      expect(result.publicKey).toBe(TEST_PUBLIC_KEY);
+      expect(result.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
     });
 
     it('should default to ECDSA when keyType is not specified', async () => {
       const params = {
         balanceRaw: 100_000_000n,
-        publicKey: TEST_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
       };
 
       await accountService.createAccount(params);
@@ -109,7 +107,7 @@ describe('AccountServiceImpl', () => {
     it('should set max auto associations when specified', async () => {
       const params = {
         balanceRaw: 100_000_000n,
-        publicKey: TEST_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
         maxAutoAssociations: 10,
       };
 
@@ -123,7 +121,7 @@ describe('AccountServiceImpl', () => {
     it('should not set max auto associations when not specified', async () => {
       const params = {
         balanceRaw: 100_000_000n,
-        publicKey: TEST_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
       };
 
       await accountService.createAccount(params);
@@ -136,7 +134,7 @@ describe('AccountServiceImpl', () => {
     it('should not set max auto associations when value is 0', async () => {
       const params = {
         balanceRaw: 100_000_000n,
-        publicKey: TEST_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
         maxAutoAssociations: 0,
       };
 
@@ -150,7 +148,7 @@ describe('AccountServiceImpl', () => {
     it('should log debug messages during account creation', async () => {
       const params = {
         balanceRaw: 100_000_000n,
-        publicKey: TEST_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
       };
 
       await accountService.createAccount(params);
@@ -171,7 +169,7 @@ describe('AccountServiceImpl', () => {
 
       const params = {
         balanceRaw: 0n,
-        publicKey: TEST_PUBLIC_KEY,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
       };
 
       await accountService.createAccount(params);

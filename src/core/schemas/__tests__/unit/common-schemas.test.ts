@@ -1,20 +1,21 @@
 import { AccountIdKeyPairSchema } from '../../common-schemas';
 import {
   TEST_ACCOUNT_ID,
-  DER_KEY,
-  HEX_KEY_128,
-  HEX_KEY_128_WITH_0X,
   SHORT_KEY,
   SHORT_DER_KEY,
-  INVALID_HEX_KEY,
   SHORT_ECDSA_DER_KEY,
 } from '../helpers/fixtures';
+import {
+  ED25519_DER_PRIVATE_KEY,
+  ED25519_HEX_PRIVATE_KEY,
+  ED25519_HEX_PRIVATE_KEY_WITH_0X,
+} from '../../../../__tests__/mocks/fixtures';
 
 describe('AccountIdKeyPairSchema', () => {
   const accountId = TEST_ACCOUNT_ID;
-  const derKey = DER_KEY;
-  const hexKey = HEX_KEY_128;
-  const hexKeyWith0x = HEX_KEY_128_WITH_0X;
+  const derKey = ED25519_DER_PRIVATE_KEY;
+  const hexKey = ED25519_HEX_PRIVATE_KEY;
+  const hexKeyWith0x = ED25519_HEX_PRIVATE_KEY_WITH_0X;
 
   describe('no prefix (default)', () => {
     test('validates DER format key', () => {
@@ -138,7 +139,7 @@ describe('AccountIdKeyPairSchema', () => {
     });
 
     test('rejects key with invalid hex characters', () => {
-      const input = `${accountId}:${INVALID_HEX_KEY}`;
+      const input = `${accountId}:${hexKey}zxca`;
       expect(() => AccountIdKeyPairSchema.parse(input)).toThrow();
       expect(AccountIdKeyPairSchema.safeParse(input).success).toBe(false);
     });

@@ -1,17 +1,17 @@
 import { parseKeyWithType } from '../keys';
 import {
-  VALID_ECDSA_HEX_KEY,
-  VALID_ECDSA_DER_KEY,
-  VALID_ED25519_HEX_KEY,
-  VALID_ED25519_DER_KEY,
-} from './helpers/fixtures';
+  ECDSA_HEX_PRIVATE_KEY_WITH_0X,
+  ECDSA_DER_PRIVATE_KEY,
+  ED25519_HEX_PRIVATE_KEY_WITH_0X,
+  ED25519_DER_PRIVATE_KEY,
+} from '__tests__/mocks/fixtures';
 import { KeyAlgorithm } from '../../shared/constants';
 
 describe('parseKeyWithType', () => {
-  const validEcdsaHexKey = VALID_ECDSA_HEX_KEY;
-  const validEcdsaDerKey = VALID_ECDSA_DER_KEY;
-  const validEd25519HexKey = VALID_ED25519_HEX_KEY;
-  const validEd25519DerKey = VALID_ED25519_DER_KEY;
+  const validEcdsaHexKey = ECDSA_HEX_PRIVATE_KEY_WITH_0X;
+  const validEcdsaDerKey = ECDSA_DER_PRIVATE_KEY;
+  const validEd25519HexKey = ED25519_HEX_PRIVATE_KEY_WITH_0X;
+  const validEd25519DerKey = ED25519_DER_PRIVATE_KEY;
 
   test('parses key without prefix and defaults to ecdsa', () => {
     const result = parseKeyWithType(validEcdsaHexKey);
@@ -50,15 +50,15 @@ describe('parseKeyWithType', () => {
   });
 
   test('parses key with 0x prefix', () => {
-    const result = parseKeyWithType(`0x${validEcdsaHexKey}`);
+    const result = parseKeyWithType(`${validEcdsaHexKey}`);
     expect(result.keyType).toBe(KeyAlgorithm.ECDSA);
-    expect(result.privateKey).toBe(`0x${validEcdsaHexKey}`);
+    expect(result.privateKey).toBe(`${validEcdsaHexKey}`);
   });
 
   test('parses ed25519 key with 0x prefix', () => {
-    const result = parseKeyWithType(`ed25519:0x${validEd25519HexKey}`);
+    const result = parseKeyWithType(`ed25519:${validEd25519HexKey}`);
     expect(result.keyType).toBe(KeyAlgorithm.ED25519);
-    expect(result.privateKey).toBe(`0x${validEd25519HexKey}`);
+    expect(result.privateKey).toBe(`${validEd25519HexKey}`);
   });
 
   test('parses DER format key', () => {
