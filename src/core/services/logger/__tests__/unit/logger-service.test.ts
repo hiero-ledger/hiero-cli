@@ -7,17 +7,14 @@ import { LoggerService } from '../../logger-service';
 describe('LoggerService', () => {
   let logger: LoggerService;
   let consoleErrorSpy: jest.SpyInstance;
-  let consoleWarnSpy: jest.SpyInstance;
 
   beforeEach(() => {
     logger = new LoggerService();
     consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-    consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation();
   });
 
   afterEach(() => {
     consoleErrorSpy.mockRestore();
-    consoleWarnSpy.mockRestore();
   });
 
   describe('info', () => {
@@ -96,35 +93,35 @@ describe('LoggerService', () => {
     it('should log warn message with prefix', () => {
       logger.warn('Warning message');
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith('[WARN] Warning message');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Warning message');
     });
 
     it('should not log when level is error', () => {
       logger.setLevel('error');
       logger.warn('Warning message');
 
-      expect(consoleWarnSpy).not.toHaveBeenCalled();
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
 
     it('should log when level is warn', () => {
       logger.setLevel('warn');
       logger.warn('Warning message');
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith('[WARN] Warning message');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Warning message');
     });
 
     it('should log when level is info', () => {
       logger.setLevel('info');
       logger.warn('Warning message');
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith('[WARN] Warning message');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Warning message');
     });
 
     it('should log when level is debug', () => {
       logger.setLevel('debug');
       logger.warn('Warning message');
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith('[WARN] Warning message');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Warning message');
     });
   });
 
@@ -184,7 +181,7 @@ describe('LoggerService', () => {
       logger.warn('Should log');
       logger.error('Should log');
 
-      expect(consoleWarnSpy).toHaveBeenCalledWith('[WARN] Should log');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Should log');
       expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR] Should log');
     });
 
@@ -196,7 +193,7 @@ describe('LoggerService', () => {
       logger.error('Should log');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[INFO] Should log');
-      expect(consoleWarnSpy).toHaveBeenCalledWith('[WARN] Should log');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Should log');
       expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR] Should log');
     });
 
@@ -209,7 +206,7 @@ describe('LoggerService', () => {
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[DEBUG] Should log');
       expect(consoleErrorSpy).toHaveBeenCalledWith('[INFO] Should log');
-      expect(consoleWarnSpy).toHaveBeenCalledWith('[WARN] Should log');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Should log');
       expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR] Should log');
     });
   });
@@ -225,7 +222,7 @@ describe('LoggerService', () => {
         expect.stringContaining('[DEBUG]'),
       );
       expect(consoleErrorSpy).toHaveBeenCalledWith('[INFO] Should log');
-      expect(consoleWarnSpy).toHaveBeenCalledWith('[WARN] Should log');
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Should log');
       expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR] Should log');
     });
   });
