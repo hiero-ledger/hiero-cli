@@ -77,7 +77,7 @@ export class FileKeyProvider implements KeyProvider {
     // Write key to file with restrictive permissions
     fs.writeFileSync(this.secretFilePath, hex, {
       encoding: 'utf8',
-      mode: 0o600,
+      mode: 0o600, // add read/write permissions for file owner
     });
 
     this.cachedKey = key;

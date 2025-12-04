@@ -31,7 +31,6 @@ import { HbarServiceImpl } from '../../core/services/hbar/hbar-service';
 import { OutputServiceImpl } from '../../core/services/output/output-service';
 import { LedgerId } from '@hashgraph/sdk';
 import { STATE_STORAGE_FILE_PATH } from '../test-constants';
-import { MockTestLoggerService } from './mock-test-logger-service';
 import { PluginManagementService } from '../../core/services/plugin-management/plugin-management-service.interface';
 import { PluginManagementServiceImpl } from '../../core/services/plugin-management/plugin-management-service';
 
@@ -52,7 +51,13 @@ export class CoreApiMockImplementation implements CoreApi {
   public pluginManagement: PluginManagementService;
 
   constructor(config: CoreApiConfig) {
-    this.logger = new MockTestLoggerService();
+    this.logger = {
+      info: () => {},
+      error: () => {},
+      warn: () => {},
+      debug: () => {},
+      setLevel: () => {},
+    };
     this.state = new ZustandGenericStateServiceImpl(
       this.logger,
       STATE_STORAGE_FILE_PATH,
@@ -86,14 +91,11 @@ export class CoreApiMockImplementation implements CoreApi {
     const networkString = this.network.getCurrentNetwork();
     let ledgerId: LedgerId;
     switch (networkString) {
-      case 'mainnet':
-        ledgerId = LedgerId.MAINNET;
-        break;
       case 'testnet':
         ledgerId = LedgerId.TESTNET;
         break;
-      case 'previewnet':
-        ledgerId = LedgerId.PREVIEWNET;
+      case 'localnet':
+        ledgerId = LedgerId.LOCAL_NODE;
         break;
       default:
         ledgerId = LedgerId.TESTNET;

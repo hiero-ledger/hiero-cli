@@ -1,48 +1,10 @@
 import {
   ConfigOptionDescriptor,
   ConfigService,
+  CONFIG_OPTIONS,
+  CONFIG_NAMESPACE,
 } from './config-service.interface';
-import { KEY_MANAGER_VALUES } from '../kms/kms-types.interface';
-import { LOG_LEVEL_VALUES } from '../logger/logger-service.interface';
 import { StateService } from '../state/state-service.interface';
-
-const CONFIG_NAMESPACE = 'config';
-
-type OptionSpec =
-  | {
-      type: 'boolean';
-      default: boolean;
-    }
-  | {
-      type: 'number';
-      default: number;
-    }
-  | {
-      type: 'string';
-      default: string;
-    }
-  | {
-      type: 'enum';
-      default: string;
-      allowedValues: readonly string[];
-    };
-
-const CONFIG_OPTIONS: Record<string, OptionSpec> = {
-  ed25519_support_enabled: {
-    type: 'boolean',
-    default: false,
-  },
-  log_level: {
-    type: 'enum',
-    default: 'error',
-    allowedValues: LOG_LEVEL_VALUES,
-  },
-  default_key_manager: {
-    type: 'enum',
-    default: 'local',
-    allowedValues: KEY_MANAGER_VALUES,
-  },
-} as const;
 
 export class ConfigServiceImpl implements ConfigService {
   private state: StateService;

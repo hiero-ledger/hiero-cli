@@ -2,6 +2,46 @@
  * Configuration service
  * Generic accessors so new options are easy to add and discover
  */
+import { KEY_MANAGER_VALUES } from '../kms/kms-types.interface';
+import { LOG_LEVEL_VALUES } from '../logger/logger-service.interface';
+
+export const CONFIG_NAMESPACE = 'config';
+
+type OptionSpec =
+  | {
+      type: 'boolean';
+      default: boolean;
+    }
+  | {
+      type: 'number';
+      default: number;
+    }
+  | {
+      type: 'string';
+      default: string;
+    }
+  | {
+      type: 'enum';
+      default: string;
+      allowedValues: readonly string[];
+    };
+
+export const CONFIG_OPTIONS: Record<string, OptionSpec> = {
+  ed25519_support_enabled: {
+    type: 'boolean',
+    default: false,
+  },
+  log_level: {
+    type: 'enum',
+    default: 'error',
+    allowedValues: LOG_LEVEL_VALUES,
+  },
+  default_key_manager: {
+    type: 'enum',
+    default: 'local',
+    allowedValues: KEY_MANAGER_VALUES,
+  },
+} as const;
 
 export const CONFIG_OPTION_TYPES = [
   'boolean',

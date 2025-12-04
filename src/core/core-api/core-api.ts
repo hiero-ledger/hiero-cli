@@ -96,6 +96,9 @@ export class CoreApiImplementation implements CoreApi {
       case 'previewnet':
         ledgerId = LedgerId.PREVIEWNET;
         break;
+      case 'localnet':
+        ledgerId = LedgerId.LOCAL_NODE;
+        break;
       default:
         ledgerId = LedgerId.TESTNET;
     }

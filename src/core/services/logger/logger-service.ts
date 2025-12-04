@@ -1,32 +1,41 @@
 import { LogLevel, Logger } from './logger-service.interface';
 
-const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {
-  error: 0,
-  warn: 1,
-  info: 2,
-  debug: 3,
+const LOG_LEVEL_INFORMATION: Record<
+  LogLevel,
+  {
+    priority: number;
+    prefix: string;
+  }
+> = {
+  error: {
+    priority: 0,
+    prefix: '[ERROR]',
+  },
+  warn: {
+    priority: 1,
+    prefix: '[WARN]',
+  },
+  info: {
+    priority: 3,
+    prefix: '[INFO]',
+  },
+  debug: {
+    priority: 4,
+    prefix: '[DEBUG]',
+  },
 };
 
 export class LoggerService implements Logger {
   private currentLevel: LogLevel = 'info';
 
   private shouldLog(level: LogLevel): boolean {
-    return LOG_LEVEL_PRIORITY[level] <= LOG_LEVEL_PRIORITY[this.currentLevel];
+    return (
+      LOG_LEVEL_INFORMATION[level] <= LOG_LEVEL_INFORMATION[this.currentLevel]
+    );
   }
 
   private formatPrefix(level: LogLevel): string {
-    switch (level) {
-      case 'error':
-        return '[ERROR]';
-      case 'warn':
-        return '[WARN]';
-      case 'info':
-        return '[INFO]';
-      case 'debug':
-        return '[DEBUG]';
-      default:
-        return '';
-    }
+    return LOG_LEVEL_INFORMATION[level].prefix;
   }
 
   private output(level: LogLevel, message: string): void {
