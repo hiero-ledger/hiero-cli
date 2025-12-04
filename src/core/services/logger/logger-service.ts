@@ -36,21 +36,7 @@ export class LoggerService implements Logger {
 
     const prefix = this.formatPrefix(level);
     const fullMessage = `${prefix} ${message}`;
-
-    switch (level) {
-      case 'error':
-        console.error(fullMessage);
-        break;
-      case 'warn':
-        console.warn(fullMessage);
-        break;
-      case 'info':
-      case 'debug':
-        console.error(fullMessage);
-        break;
-      default:
-        console.error(fullMessage);
-    }
+    console.error(fullMessage);
   }
 
   setLevel(level: LogLevel): void {

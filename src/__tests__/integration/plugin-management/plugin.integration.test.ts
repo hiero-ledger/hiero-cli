@@ -28,7 +28,7 @@ describe('Plugin Management Integration Tests', () => {
 
   it('full test that creates, view, enable disable and removes plugin', async () => {
     const addPluginArgs: Record<string, unknown> = {
-      path: 'src/__tests__/mocks/plugin-mock/test',
+      path: 'dist/plugins/test',
     };
     const addPluginResult = await addPlugin({
       args: addPluginArgs,
@@ -42,9 +42,7 @@ describe('Plugin Management Integration Tests', () => {
     const addPluginOutput: AddPluginOutput = JSON.parse(
       addPluginResult.outputJson!,
     );
-    expect(addPluginOutput.path).toContain(
-      'src/__tests__/mocks/plugin-mock/test',
-    );
+    expect(addPluginOutput.path).toContain('dist/plugins/test');
     expect(addPluginOutput.name).toBe('test');
     expect(addPluginOutput.added).toBe(true);
     expect(addPluginOutput.message).toBe(

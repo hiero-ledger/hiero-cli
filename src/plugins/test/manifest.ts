@@ -1,9 +1,12 @@
-'use strict';
-Object.defineProperty(exports, '__esModule', { value: true });
-exports.testPluginManifest = void 0;
-const foo_1 = require('./commands/foo');
-const handler_1 = require('./commands/foo/handler');
-exports.testPluginManifest = {
+/**
+ * Test Plugin Manifest
+ * Provides commands to list, get and set configuration options
+ */
+import { PluginManifest } from '../../core';
+import { FooTestOutputSchema, FOO_TEST_TEMPLATE } from './commands/foo';
+import { fooTestOptions } from './commands/foo/handler';
+
+export const testPluginManifest: PluginManifest = {
   name: 'test',
   version: '1.0.0',
   displayName: 'Test Plugin',
@@ -21,10 +24,10 @@ exports.testPluginManifest = {
       description:
         'Does nothing, integration test only for plugin registration',
       options: [],
-      handler: handler_1.fooTestOptions,
+      handler: fooTestOptions,
       output: {
-        schema: foo_1.FooTestOutputSchema,
-        humanTemplate: foo_1.FOO_TEST_TEMPLATE,
+        schema: FooTestOutputSchema,
+        humanTemplate: FOO_TEST_TEMPLATE,
       },
     },
   ],
@@ -36,5 +39,5 @@ exports.testPluginManifest = {
     console.log('[TEST PLUGIN] Tearing down foo plugin...');
   },
 };
-exports.default = exports.testPluginManifest;
-//# sourceMappingURL=manifest.js.map
+
+export default testPluginManifest;

@@ -3,10 +3,14 @@ import { createMockCoreApi } from '../../mocks/core-api.mock';
 import { Status } from '../../../core/shared/constants';
 import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
 import '../../../core/utils/json-serialize';
-import { createTopic, findMessage, listTopics } from '../../../plugins/topic';
+import {
+  createTopic,
+  findMessage,
+  listTopics,
+  submitMessage,
+} from '../../../plugins/topic';
 import { CreateTopicOutput } from '../../../plugins/topic/commands/create';
 import { ListTopicsOutput } from '../../../plugins/topic/commands/list';
-import { submitMessageToTopic } from './helpers/topic.helper';
 import { SubmitMessageOutput } from '../../../plugins/topic/commands/submit-message';
 import { delay } from '../../utils/common-utils';
 import { FindMessagesOutput } from '../../../plugins/topic/commands/find-message';
@@ -65,11 +69,17 @@ describe('Topic Messages Integration Tests', () => {
     expect(topic?.topicId).toBe(createTopicOutput.topicId);
 
     for (let i = 0; i < 10; i++) {
-      const submitMessageResult = await submitMessageToTopic(
-        `Test message ${i + 1}`,
-        createTopicOutput.topicId,
-        coreApi,
-      );
+      const topicMessageSubmitArgs: Record<string, unknown> = {
+        topic: createTopicOutput.topicId,
+        message: `Test message ${i + 1}`,
+      };
+      const submitMessageResult = await submitMessage({
+        args: topicMessageSubmitArgs,
+        api: coreApi,
+        state: coreApi.state,
+        logger: coreApi.logger,
+        config: coreApi.config,
+      });
       expect(submitMessageResult.status).toBe(Status.Success);
       const submitMessageOutput: SubmitMessageOutput = JSON.parse(
         submitMessageResult.outputJson!,

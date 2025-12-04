@@ -146,6 +146,4 @@ hedera-cli.config.*.local.json
 .claude
 CLAUDE.md
 
-src/plugins/test
-
 pnpm-lock.yaml
