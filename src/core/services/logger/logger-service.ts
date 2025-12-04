@@ -1,6 +1,6 @@
 import { LogLevel, Logger } from './logger-service.interface';
 
-const LOG_LEVEL_INFORMATION: Record<
+const LOG_LEVEL_DATA: Record<
   LogLevel,
   {
     priority: number;
@@ -16,11 +16,11 @@ const LOG_LEVEL_INFORMATION: Record<
     prefix: '[WARN]',
   },
   info: {
-    priority: 3,
+    priority: 2,
     prefix: '[INFO]',
   },
   debug: {
-    priority: 4,
+    priority: 3,
     prefix: '[DEBUG]',
   },
 };
@@ -30,12 +30,13 @@ export class LoggerService implements Logger {
 
   private shouldLog(level: LogLevel): boolean {
     return (
-      LOG_LEVEL_INFORMATION[level] <= LOG_LEVEL_INFORMATION[this.currentLevel]
+      LOG_LEVEL_DATA[level].priority <=
+      LOG_LEVEL_DATA[this.currentLevel].priority
     );
   }
 
   private formatPrefix(level: LogLevel): string {
-    return LOG_LEVEL_INFORMATION[level].prefix;
+    return LOG_LEVEL_DATA[level].prefix;
   }
 
   private output(level: LogLevel, message: string): void {
