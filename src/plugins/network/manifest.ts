@@ -91,6 +91,7 @@ export const networkPluginManifest: PluginManifest = {
       options: [
         {
           name: 'operator',
+          short: 'o',
           type: 'string',
           required: true,
           description:

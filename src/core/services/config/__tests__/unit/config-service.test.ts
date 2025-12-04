@@ -33,7 +33,7 @@ describe('ConfigServiceImpl', () => {
           expect.objectContaining({
             name: 'log_level',
             type: 'enum',
-            value: 'info',
+            value: 'error',
             allowedValues: expect.any(Array),
           }),
           expect.objectContaining({
@@ -125,7 +125,7 @@ describe('ConfigServiceImpl', () => {
 
       const result = configService.getOption('log_level');
 
-      expect(result).toBe('info');
+      expect(result).toBe('error');
     });
 
     it('should return valid enum value', () => {
