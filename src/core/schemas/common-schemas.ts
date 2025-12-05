@@ -511,12 +511,24 @@ export const ConfigOptionNameSchema = z
 /**
  * Configuration Option Value
  * Value for configuration option (can be string, number, or boolean as string)
- * Handler will parse it to appropriate type (true/false for boolean, numeric strings for numbers, etc.)
+ * Handler will parse it to appropriate type
  */
 export const ConfigOptionValueSchema = z
-  .string()
-  .trim()
-  .min(1, 'Configuration option value cannot be empty')
+  .preprocess(
+    (value) => {
+      if (typeof value !== 'string') return value;
+      const s = value.trim().toLowerCase();
+
+      if (s === 'true') return true;
+      if (s === 'false') return false;
+
+      const n = Number(value);
+      if (!Number.isNaN(n) && Number.isFinite(n)) return n;
+
+      return value;
+    },
+    z.union([z.boolean(), z.number(), z.string()]),
+  )
   .describe('Configuration option value (boolean, number, or string)');
 
 /**
