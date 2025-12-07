@@ -12,7 +12,7 @@ import { formatError } from '../../../../core/utils/errors';
 import { AccountBalanceOutput } from './output';
 import { EntityIdSchema } from '../../../../core/schemas';
 import { AliasType } from '../../../../core/services/alias/alias-service.interface';
-import { AccountBalanceInputSchema } from './input';
+import { AccountBalanceInputSchema, TokenEntityType } from './input';
 
 /**
  * Fetches and maps token balances for an account
@@ -25,7 +25,7 @@ import { AccountBalanceInputSchema } from './input';
 async function fetchAccountTokenBalances(
   api: CoreApi,
   accountId: string,
-  tokenId?: string,
+  tokenId: string | undefined,
 ): Promise<
   | Array<{
       tokenId: string;
@@ -102,11 +102,32 @@ export async function getAccountBalance(
     }
 
     if (!hbarOnly) {
+      /* TODO: move this fetching of token ID to separate function when we will have domain error handling
+      as it will increase readability of this code */
+      let tokenId: string | undefined;
+      if (token) {
+        if (token.type === TokenEntityType.Alias) {
+          const resolved = api.alias.resolve(
+            token.value,
+            AliasType.Token,
+            network,
+          );
+          if (!resolved || !resolved.entityId) {
+            return {
+              status: Status.Failure,
+              errorMessage: `Token not found with ID or alias: ${token.value}`,
+            };
+          }
+          tokenId = resolved.entityId;
+        } else {
+          tokenId = token.value;
+        }
+      }
       try {
         outputData.tokenBalances = await fetchAccountTokenBalances(
           api,
           accountId,
-          token,
+          tokenId,
         );
       } catch (error: unknown) {
         return {
