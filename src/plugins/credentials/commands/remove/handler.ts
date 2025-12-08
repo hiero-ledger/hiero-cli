@@ -20,6 +20,20 @@ export async function removeCredentials(
   logger.info(`🗑️  Removing credentials for id: ${id}`);
 
   try {
+    const publicKey = api.kms.getPublicKey(id);
+    if (!publicKey) {
+      const outputData: RemoveCredentialsOutput = {
+        keyRefId: id,
+        removed: false,
+      };
+
+      return {
+        status: Status.Failure,
+        errorMessage: `Credential with key reference ID '${id}' does not exist`,
+        outputJson: JSON.stringify(outputData),
+      };
+    }
+
     // Remove the credentials
     api.kms.remove(id);
 
