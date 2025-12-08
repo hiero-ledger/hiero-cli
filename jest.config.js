@@ -14,6 +14,6 @@ module.exports = {
   },
   testEnvironment: 'node',
   testTimeout: 40000,
-  testPathIgnorePatterns: ['<rootDir>/__tests__/helpers/'],
+  testPathIgnorePatterns: ['.*/__tests__/helpers/.*'],
   reporters: ['default', 'jest-junit'],
 };

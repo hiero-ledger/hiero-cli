@@ -6,24 +6,24 @@ The general handling of Maintainer rights and all groups in this GitHub org is d
 
 Maintainers are assigned the following scopes in this repository:
 
-| Scope               | Definition                        | GitHub Role | GitHub Team                 |
-| ------------------- | --------------------------------- | ----------- | --------------------------- |
-| project-maintainers | The Maintainers of the project    | Maintain    | `hiero-cli-maintainers`     |
-| tsc                 | The Hiero TSC                     | Maintain    | `tsc`                       |
-| github-maintainers  | The Maintainers of the github org | Maintain    | `github-maintainers`        |
+| Scope               | Definition                        | GitHub Role | GitHub Team             |
+| ------------------- | --------------------------------- | ----------- | ----------------------- |
+| project-maintainers | The Maintainers of the project    | Maintain    | `hiero-cli-maintainers` |
+| tsc                 | The Hiero TSC                     | Maintain    | `tsc`                   |
+| github-maintainers  | The Maintainers of the github org | Maintain    | `github-maintainers`    |
 
 ## Active Maintainers
 
-| Name                   | GitHub ID      | Scope              | LFID | Discord ID | Email | Company Affiliation  |
-|----------------------- | -------------- | ------------------ | ---- | ---------- | ----- | -------------------- |
-| Michiel Mulders        | michielmulders |                    |      |            |       | Hashgraph            |
-| Giuseppe Bertone       | Neurone        |                    |      |            |       | Hashgraph            |
+| Name             | GitHub ID      | Scope | LFID | Discord ID | Email | Company Affiliation |
+| ---------------- | -------------- | ----- | ---- | ---------- | ----- | ------------------- |
+| Michiel Mulders  | michielmulders |       |      |            |       | Hashgraph           |
+| Giuseppe Bertone | Neurone        |       |      |            |       | Hashgraph           |
 
 ## Emeritus Maintainers
 
-| Name             | GitHub ID     | Scope               | LFID | Discord ID | Email | Company Affiliation  |
-|----------------- | ------------- | ------------------- | ---- | ---------- | ----- | -------------------- |
-| George Spasov    | Perseverance  | project-maintainers |      |            |       | Limechain            |
+| Name          | GitHub ID    | Scope               | LFID | Discord ID | Email | Company Affiliation |
+| ------------- | ------------ | ------------------- | ---- | ---------- | ----- | ------------------- |
+| George Spasov | Perseverance | project-maintainers |      |            |       | Limechain           |
 
 ## The Duties of a Maintainer
 

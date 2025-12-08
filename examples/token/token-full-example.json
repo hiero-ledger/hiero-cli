@@ -1,0 +1,34 @@
+{
+  "name": "token-full-example",
+  "symbol": "TFE",
+  "decimals": 8,
+  "supplyType": "finite",
+  "initialSupply": 1000000,
+  "maxSupply": 10000000,
+  "treasury": "<alias or accountId:keyType:privateKey>",
+  "memo": "Full example token with all fields",
+  "keys": {
+    "adminKey": "<alias or keyType:privateKey>",
+    "supplyKey": "<alias or keyType:privateKey>",
+    "wipeKey": "<alias or keyType:privateKey>",
+    "kycKey": "<alias or keyType:privateKey>",
+    "freezeKey": "<alias or keyType:privateKey>",
+    "pauseKey": "<alias or keyType:privateKey>",
+    "feeScheduleKey": "<alias or keyType:privateKey>"
+  },
+  "associations": [
+    {
+      "accountId": "<accountId>",
+      "key": "<keyType:privateKey>"
+    }
+  ],
+  "customFees": [
+    {
+      "type": "fixed",
+      "amount": 100,
+      "unitType": "HBAR",
+      "collectorId": "<accountId>",
+      "exempt": false
+    }
+  ]
+}
