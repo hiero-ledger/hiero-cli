@@ -33,7 +33,7 @@ export const CONFIG_OPTIONS: Record<string, OptionSpec> = {
   },
   log_level: {
     type: 'enum',
-    default: 'error',
+    default: 'silent',
     allowedValues: LOG_LEVEL_VALUES,
   },
   default_key_manager: {

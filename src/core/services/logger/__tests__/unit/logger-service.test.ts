@@ -19,6 +19,7 @@ describe('LoggerService', () => {
 
   describe('info', () => {
     it('should log info message with prefix', () => {
+      logger.setLevel('info');
       logger.info('Test message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[INFO] Test message');
@@ -51,10 +52,18 @@ describe('LoggerService', () => {
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[INFO] Test message');
     });
+
+    it('should not log when level is silent', () => {
+      logger.setLevel('silent');
+      logger.info('Test message');
+
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
   });
 
   describe('error', () => {
     it('should log error message with prefix', () => {
+      logger.setLevel('error');
       logger.error('Error message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR] Error message');
@@ -87,10 +96,18 @@ describe('LoggerService', () => {
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR] Error message');
     });
+
+    it('should not log when level is silent', () => {
+      logger.setLevel('silent');
+      logger.error('Error message');
+
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
   });
 
   describe('warn', () => {
     it('should log warn message with prefix', () => {
+      logger.setLevel('warn');
       logger.warn('Warning message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Warning message');
@@ -122,6 +139,13 @@ describe('LoggerService', () => {
       logger.warn('Warning message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Warning message');
+    });
+
+    it('should not log when level is silent', () => {
+      logger.setLevel('silent');
+      logger.warn('Warning message');
+
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -159,6 +183,13 @@ describe('LoggerService', () => {
       logger.debug('Debug message');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith('[DEBUG] Debug message');
+    });
+
+    it('should not log when level is silent', () => {
+      logger.setLevel('silent');
+      logger.debug('Debug message');
+
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
   });
 
@@ -209,21 +240,26 @@ describe('LoggerService', () => {
       expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Should log');
       expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR] Should log');
     });
+
+    it('should change log level to silent', () => {
+      logger.setLevel('silent');
+      logger.debug('Should not log');
+      logger.info('Should not log');
+      logger.warn('Should not log');
+      logger.error('Should not log');
+
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
   });
 
   describe('default level', () => {
-    it('should default to info level', () => {
+    it('should default to silent level', () => {
       logger.debug('Should not log');
-      logger.info('Should log');
-      logger.warn('Should log');
-      logger.error('Should log');
+      logger.info('Should not log');
+      logger.warn('Should not log');
+      logger.error('Should not log');
 
-      expect(consoleErrorSpy).not.toHaveBeenCalledWith(
-        expect.stringContaining('[DEBUG]'),
-      );
-      expect(consoleErrorSpy).toHaveBeenCalledWith('[INFO] Should log');
-      expect(consoleErrorSpy).toHaveBeenCalledWith('[WARN] Should log');
-      expect(consoleErrorSpy).toHaveBeenCalledWith('[ERROR] Should log');
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
   });
 });

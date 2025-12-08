@@ -3,7 +3,13 @@
  * Provides consistent logging interface for plugins
  */
 
-export const LOG_LEVEL_VALUES = ['error', 'warn', 'info', 'debug'] as const;
+export const LOG_LEVEL_VALUES = [
+  'silent',
+  'error',
+  'warn',
+  'info',
+  'debug',
+] as const;
 
 export type LogLevel = (typeof LOG_LEVEL_VALUES)[number];
 

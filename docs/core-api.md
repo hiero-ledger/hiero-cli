@@ -289,7 +289,7 @@ const hasCustomSetting = api.config.hasValue('custom.setting');
 Provides structured logging capabilities with configurable log levels.
 
 ```typescript
-export type LogLevel = 'error' | 'warn' | 'info' | 'debug';
+export type LogLevel = 'silent' | 'error' | 'warn' | 'info' | 'debug';
 
 interface Logger {
   info(message: string): void;
@@ -307,18 +307,20 @@ interface Logger {
 
 **Log level behaviour:**
 
+- `silent` – no logs (default)
 - `error` – only critical errors
 - `warn` – warnings + errors
-- `info` – normal informational logs + warnings + errors (default)
+- `info` – normal informational logs + warnings + errors
 - `debug` – debug details + info + warn + error
 
 The global log level is controlled by the config option `log_level`:
 
-- allowed values: `error`, `warn`, `info`, `debug`
-- default: `info`
+- allowed values: `silent`, `error`, `warn`, `info`, `debug`
+- default: `silent`
 - configure via CLI, for example:
 
 ```bash
+hcli config set -o log_level -v silent
 hcli config set -o log_level -v error
 hcli config set -o log_level -v debug
 ```

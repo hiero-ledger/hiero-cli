@@ -33,7 +33,7 @@ describe('ConfigServiceImpl', () => {
           expect.objectContaining({
             name: 'log_level',
             type: 'enum',
-            value: 'error',
+            value: 'silent',
             allowedValues: expect.any(Array),
           }),
           expect.objectContaining({
@@ -125,7 +125,7 @@ describe('ConfigServiceImpl', () => {
 
       const result = configService.getOption('log_level');
 
-      expect(result).toBe('error');
+      expect(result).toBe('silent');
     });
 
     it('should return valid enum value', () => {
@@ -172,13 +172,13 @@ describe('ConfigServiceImpl', () => {
 
     it('should throw error for invalid enum value', () => {
       expect(() => configService.setOption('log_level', 'invalid')).toThrow(
-        'Invalid value for log_level: expected one of (error, warn, info, debug)',
+        'Invalid value for log_level: expected one of (silent, error, warn, info, debug)',
       );
     });
 
     it('should throw error when setting non-string for enum option', () => {
       expect(() => configService.setOption('log_level', 123)).toThrow(
-        'Invalid value for log_level: expected one of (error, warn, info, debug)',
+        'Invalid value for log_level: expected one of (silent, error, warn, info, debug)',
       );
     });
 
