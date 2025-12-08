@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   AccountReferenceSchema,
+  EntityIdSchema,
   EntityReferenceSchema,
 } from '../../../../core/schemas';
 
@@ -9,28 +10,20 @@ import {
  * Validates arguments for retrieving account balance
  */
 
-export const TokenEntityType = {
-  Token: 'token',
-  Alias: 'alias',
-} as const;
-
-export type TokenEntityType =
-  (typeof TokenEntityType)[keyof typeof TokenEntityType];
+export enum TokenEntityType {
+  Token = 'token',
+  Alias = 'alias',
+}
 
 const TokenEntityReferenceSchema = EntityReferenceSchema.optional()
   .transform((val) => {
     if (val) {
-      if (val.match(/^0\.0\.[1-9][0-9]*$/)) {
-        return {
-          type: TokenEntityType.Token,
-          value: val,
-        };
-      } else {
-        return {
-          type: TokenEntityType.Alias,
-          value: val,
-        };
-      }
+      return {
+        type: EntityIdSchema.safeParse(val).success
+          ? TokenEntityType.Token
+          : TokenEntityType.Alias,
+        value: val,
+      };
     } else {
       return;
     }
