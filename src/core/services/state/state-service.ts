@@ -5,11 +5,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { devtools } from 'zustand/middleware';
-import {
-  StateService,
-  PluginStateManager,
-  PluginStateSchema,
-} from './state-service.interface';
+import { StateService } from './state-service.interface';
 import { Logger } from '../logger/logger-service.interface';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -331,69 +327,5 @@ export class ZustandGenericStateServiceImpl implements StateService {
       );
     }
     return this.stores.get(namespace)!;
-  }
-}
-
-/**
- * Zustand Plugin State Manager Implementation
- */
-export class ZustandPluginStateManagerImpl implements PluginStateManager {
-  private namespace: string;
-  private stateService: StateService;
-  private logger: Logger;
-  private schema?: PluginStateSchema;
-
-  constructor(pluginName: string, stateService: StateService, logger: Logger) {
-    this.namespace = pluginName;
-    this.stateService = stateService;
-    this.logger = logger;
-  }
-
-  defineSchema(schema: PluginStateSchema): void {
-    this.schema = schema;
-    this.logger.debug(
-      `[${this.namespace}] Defined state schema for namespace: ${schema.namespace}`,
-    );
-  }
-
-  get<T>(key: string): T | undefined {
-    return this.stateService.get<T>(this.namespace, key);
-  }
-
-  set<T>(key: string, value: T): void {
-    this.stateService.set(this.namespace, key, value);
-  }
-
-  delete(key: string): void {
-    this.stateService.delete(this.namespace, key);
-  }
-
-  list<T>(): T[] {
-    return this.stateService.list<T>(this.namespace);
-  }
-
-  clear(): void {
-    this.stateService.clear(this.namespace);
-  }
-
-  has(key: string): boolean {
-    return this.stateService.has(this.namespace, key);
-  }
-
-  getNamespace(): string {
-    return this.namespace;
-  }
-
-  // Zustand-specific methods
-  subscribe<T>(callback: (data: T[]) => void): () => void {
-    return this.stateService.subscribe<T>(this.namespace, callback);
-  }
-
-  getActions(): unknown {
-    return this.stateService.getActions(this.namespace);
-  }
-
-  getState(): unknown {
-    return this.stateService.getState(this.namespace);
   }
 }
