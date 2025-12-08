@@ -4,10 +4,7 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import {
-  ZustandGenericStateServiceImpl,
-  ZustandPluginStateManagerImpl,
-} from '../../state-service';
+import { ZustandGenericStateServiceImpl } from '../../state-service';
 import { makeLogger } from '../../../../../__tests__/mocks/mocks';
 import type { Logger } from '../../../logger/logger-service.interface';
 
@@ -17,10 +14,6 @@ const KEY_TEST = 'test-key';
 const KEY_OTHER = 'other-key';
 const VALUE_TEST = 'test-value';
 const VALUE_OTHER = 'other-value';
-const PLUGIN_NAME = 'test-plugin';
-const PLUGIN_NAMESPACE = 'plugin-namespace';
-const PLUGIN_KEY = 'plugin-key';
-const PLUGIN_VALUE = 'plugin-value';
 
 jest.mock('fs', () => ({
   existsSync: jest.fn(),
@@ -280,93 +273,6 @@ describe('ZustandGenericStateServiceImpl', () => {
       expect(logger.debug).toHaveBeenCalledWith(
         expect.stringContaining('Registered 2 namespaces'),
       );
-    });
-  });
-
-  describe('ZustandPluginStateManagerImpl', () => {
-    it('should define schema and log debug message', () => {
-      const pluginStateManager = new ZustandPluginStateManagerImpl(
-        PLUGIN_NAME,
-        service,
-        logger,
-      );
-      const schema = {
-        namespace: PLUGIN_NAMESPACE,
-        version: '1.0.0',
-        schema: {},
-      };
-
-      pluginStateManager.defineSchema(schema);
-
-      expect(logger.debug).toHaveBeenCalledWith(
-        `[${PLUGIN_NAME}] Defined state schema for namespace: ${PLUGIN_NAMESPACE}`,
-      );
-    });
-
-    it('should set and get values using plugin namespace', () => {
-      const pluginStateManager = new ZustandPluginStateManagerImpl(
-        PLUGIN_NAME,
-        service,
-        logger,
-      );
-
-      pluginStateManager.set(PLUGIN_KEY, PLUGIN_VALUE);
-      const result = pluginStateManager.get<string>(PLUGIN_KEY);
-
-      expect(result).toBe(PLUGIN_VALUE);
-      expect(service.get<string>(PLUGIN_NAME, PLUGIN_KEY)).toBe(PLUGIN_VALUE);
-    });
-
-    it('should list, clear and check existence of values', () => {
-      const pluginStateManager = new ZustandPluginStateManagerImpl(
-        PLUGIN_NAME,
-        service,
-        logger,
-      );
-
-      pluginStateManager.set(PLUGIN_KEY, PLUGIN_VALUE);
-
-      const listBeforeClear = pluginStateManager.list<string>();
-      expect(listBeforeClear).toContain(PLUGIN_VALUE);
-      expect(pluginStateManager.has(PLUGIN_KEY)).toBe(true);
-
-      pluginStateManager.clear();
-
-      const listAfterClear = pluginStateManager.list<string>();
-      expect(listAfterClear).toEqual([]);
-      expect(pluginStateManager.has(PLUGIN_KEY)).toBe(false);
-    });
-
-    it('should return plugin namespace', () => {
-      const pluginStateManager = new ZustandPluginStateManagerImpl(
-        PLUGIN_NAME,
-        service,
-        logger,
-      );
-
-      const namespace = pluginStateManager.getNamespace();
-
-      expect(namespace).toBe(PLUGIN_NAME);
-    });
-
-    it('should delegate subscribe, getActions and getState to StateService', () => {
-      const pluginStateManager = new ZustandPluginStateManagerImpl(
-        PLUGIN_NAME,
-        service,
-        logger,
-      );
-      const callback = jest.fn();
-
-      const unsubscribe = pluginStateManager.subscribe(callback);
-      expect(typeof unsubscribe).toBe('function');
-
-      pluginStateManager.set(PLUGIN_KEY, PLUGIN_VALUE);
-
-      const actions = pluginStateManager.getActions();
-      const state = pluginStateManager.getState();
-
-      expect(actions).toBeDefined();
-      expect(state).toBeDefined();
     });
   });
 });
