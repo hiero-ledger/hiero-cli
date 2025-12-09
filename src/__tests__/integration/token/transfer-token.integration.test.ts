@@ -20,13 +20,16 @@ import { CreateTokenOutput } from '../../../plugins/token/commands/create';
 import { AccountBalanceOutput } from '../../../plugins/account/commands/balance';
 import { AssociateTokenOutput } from '../../../plugins/token/commands/associate';
 import { TransferTokenOutput } from '../../../plugins/token/commands/transfer';
+import { SupportedNetwork } from '../../../core/types/shared.types';
 
 describe('Transfer Token Integration Tests', () => {
   let coreApi: CoreApi;
+  let network: SupportedNetwork;
 
   beforeAll(async () => {
     coreApi = createMockCoreApi();
     await setDefaultOperatorForNetwork(coreApi);
+    network = coreApi.network.getCurrentNetwork();
   });
   it('should create a token associate with account and transfer to it from operator account and verify with account balance method', async () => {
     const createAccountArgs: Record<string, unknown> = {
@@ -49,7 +52,7 @@ describe('Transfer Token Integration Tests', () => {
     );
     expect(createAccountOutput.name).toBe('account-transfer-token');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
-    expect(createAccountOutput.network).toBe('testnet');
+    expect(createAccountOutput.network).toBe(network);
 
     await delay(5000);
 
@@ -90,7 +93,7 @@ describe('Transfer Token Integration Tests', () => {
     const createTokenOutput: CreateTokenOutput = JSON.parse(
       createTokenResult.outputJson!,
     );
-    expect(createTokenOutput.network).toBe('testnet');
+    expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('10');
     expect(createTokenOutput.name).toBe('Test Token Transfer');

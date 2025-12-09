@@ -7,13 +7,16 @@ import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-s
 import { ViewAccountOutput } from '../../../plugins/account/commands/view';
 import '../../../core/utils/json-serialize';
 import { delay } from '../../utils/common-utils';
+import { SupportedNetwork } from '../../../core/types/shared.types';
 
 describe('Create Account Integration Tests', () => {
   let coreApi: CoreApi;
+  let network: SupportedNetwork;
 
   beforeAll(async () => {
     coreApi = createMockCoreApi();
     await setDefaultOperatorForNetwork(coreApi);
+    network = coreApi.network.getCurrentNetwork();
   });
 
   describe('Valid Create Account Scenarios', () => {
@@ -38,7 +41,7 @@ describe('Create Account Integration Tests', () => {
       );
       expect(createAccountOutput.name).toBe('account-test');
       expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
-      expect(createAccountOutput.network).toBe('testnet');
+      expect(createAccountOutput.network).toBe(network);
 
       await delay(5000);
 

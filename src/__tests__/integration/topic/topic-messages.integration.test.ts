@@ -14,13 +14,16 @@ import { ListTopicsOutput } from '../../../plugins/topic/commands/list';
 import { SubmitMessageOutput } from '../../../plugins/topic/commands/submit-message';
 import { delay } from '../../utils/common-utils';
 import { FindMessagesOutput } from '../../../plugins/topic/commands/find-message';
+import { SupportedNetwork } from '../../../core/types/shared.types';
 
 describe('Topic Messages Integration Tests', () => {
   let coreApi: CoreApi;
+  let network: SupportedNetwork;
 
   beforeAll(async () => {
     coreApi = createMockCoreApi();
     await setDefaultOperatorForNetwork(coreApi);
+    network = coreApi.network.getCurrentNetwork();
   });
   it('should create a topic and submit message and then find it', async () => {
     const createTopicArgs: Record<string, unknown> = {
@@ -39,12 +42,12 @@ describe('Topic Messages Integration Tests', () => {
       createTopicResult.outputJson!,
     );
     expect(createTopicOutput.name).toBe('test-topic-submit');
-    expect(createTopicOutput.network).toBe('testnet');
+    expect(createTopicOutput.network).toBe(network);
     expect(createTopicOutput.adminKeyPresent).toBe(false);
     expect(createTopicOutput.submitKeyPresent).toBe(false);
 
     const listTopicArgs: Record<string, unknown> = {
-      network: 'testnet',
+      network: network,
     };
     const listTopicResult = await listTopics({
       args: listTopicArgs,
@@ -62,7 +65,7 @@ describe('Topic Messages Integration Tests', () => {
     );
     expect(topic).not.toBeNull();
     expect(topic?.name).toBe('test-topic-submit');
-    expect(topic?.network).toBe('testnet');
+    expect(topic?.network).toBe(network);
     expect(topic?.adminKeyPresent).toBe(false);
     expect(topic?.submitKeyPresent).toBe(false);
     expect(topic?.createdAt).toBe(createTopicOutput.createdAt);
