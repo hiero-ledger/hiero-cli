@@ -8,7 +8,7 @@ export function processTokenBalanceInput(
   const balance = processBalanceInput(input, decimals);
   if (balance > TOKEN_BALANCE_LIMIT) {
     throw new Error(
-      `Maximum balance for token exceeded. Token balance ${balance} cannot be greater than ${TOKEN_BALANCE_LIMIT}`,
+      `Maximum balance for token exceeded. Token balance cannot be greater than ${TOKEN_BALANCE_LIMIT}`,
     );
   }
   return balance;

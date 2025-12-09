@@ -307,7 +307,7 @@ describe('createTokenHandler', () => {
         logger,
       };
       await expect(createToken(args)).rejects.toThrow(
-        'Maximum balance for token exceeded. Token balance 250000000000000000000000000000 cannot be greater than 9223372036854775807',
+        'Maximum balance for token exceeded. Token balance cannot be greater than 9223372036854775807',
       );
     });
   });
