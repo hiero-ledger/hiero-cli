@@ -40,6 +40,12 @@ export const AccountBalanceInputSchema = z
       .default(false)
       .describe('Show only HBAR balance (exclude tokens)'),
     token: TokenEntityReferenceSchema,
+    raw: z
+      .boolean()
+      .default(false)
+      .describe(
+        'Display balances in raw units (tinybars for HBAR, base units for tokens)',
+      ),
   })
   .refine((data) => !(data.hbarOnly && data.token !== undefined), {
     message: 'Cannot use both hbarOnly and token options at the same time',
