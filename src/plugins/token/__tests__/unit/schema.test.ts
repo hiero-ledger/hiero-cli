@@ -4,7 +4,6 @@
  */
 import {
   TokenDataSchema,
-  TokenKeysSchema,
   TokenAssociationSchema,
   CustomFeeSchema,
   validateTokenData,
@@ -12,7 +11,6 @@ import {
 import { CreateTokenInputSchema } from '../../commands/create/input';
 import {
   validTokenDataForSchema,
-  validTokenKeys,
   validTokenAssociation,
   validCustomFee,
   validTokenCreateParams,
@@ -162,58 +160,6 @@ describe('Token Schema Validation', () => {
     });
   });
 
-  describe('TokenKeysSchema', () => {
-    test('should validate valid token keys', () => {
-      const result = TokenKeysSchema.safeParse(validTokenKeys);
-      expect(result.success).toBe(true);
-    });
-
-    test('should reject empty admin key', () => {
-      const invalidKeys = {
-        ...validTokenKeys,
-        adminKey: '',
-      };
-
-      const result = TokenKeysSchema.safeParse(invalidKeys);
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].message).toContain(
-          'Admin key is required',
-        );
-      }
-    });
-
-    test('should reject empty treasury key', () => {
-      const invalidKeys = {
-        ...validTokenKeys,
-        treasuryKey: '',
-      };
-
-      const result = TokenKeysSchema.safeParse(invalidKeys);
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].message).toContain(
-          'Treasury key is required',
-        );
-      }
-    });
-
-    test('should allow optional keys to be empty', () => {
-      const keysWithEmptyOptional = {
-        ...validTokenKeys,
-        supplyKey: '',
-        wipeKey: '',
-        kycKey: '',
-        freezeKey: '',
-        pauseKey: '',
-        feeScheduleKey: '',
-      };
-
-      const result = TokenKeysSchema.safeParse(keysWithEmptyOptional);
-      expect(result.success).toBe(true);
-    });
-  });
-
   describe('TokenAssociationSchema', () => {
     test('should validate valid association', () => {
       const result = TokenAssociationSchema.safeParse(validTokenAssociation);
@@ -356,10 +302,7 @@ describe('Token Schema Validation', () => {
         maxSupply: 10000,
         treasuryId: '0.0.789012',
         associations: [],
-        keys: {
-          adminKey: 'admin-key',
-          treasuryKey: 'treasury-key',
-        },
+        adminPublicKey: 'admin-key',
         network: 'testnet',
         customFees: [],
       };
@@ -379,10 +322,7 @@ describe('Token Schema Validation', () => {
         maxSupply: 0,
         treasuryId: '0.0.789012',
         associations: [],
-        keys: {
-          adminKey: 'admin-key',
-          treasuryKey: 'treasury-key',
-        },
+        adminPublicKey: 'admin-key',
         network: 'testnet',
         customFees: [],
       };
@@ -403,10 +343,7 @@ describe('Token Schema Validation', () => {
         maxSupply: 10000,
         treasuryId: '0.0.789012',
         associations: [],
-        keys: {
-          adminKey: 'admin-key',
-          treasuryKey: 'treasury-key',
-        },
+        adminPublicKey: 'admin-key',
         network: 'testnet',
         customFees: [],
       };
@@ -427,10 +364,7 @@ describe('Token Schema Validation', () => {
         maxSupply: 10000,
         treasuryId: '0.0.789012',
         associations: [],
-        keys: {
-          adminKey: 'admin-key',
-          treasuryKey: 'treasury-key',
-        },
+        adminPublicKey: 'admin-key',
         network: 'testnet',
         customFees: [],
       };

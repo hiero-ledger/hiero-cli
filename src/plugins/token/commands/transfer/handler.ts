@@ -7,7 +7,6 @@ import { CommandHandlerArgs } from '../../../../core';
 import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import {
-  resolveAccountParameter,
   resolveDestinationAccountParameter,
   resolveTokenParameter,
 } from '../../resolver-helper';
@@ -86,44 +85,14 @@ export async function transferToken(
   // Convert amount input: display units (default) or raw units (with 't' suffix)
   const rawAmount = processBalanceInput(userAmountInput, tokenDecimals);
 
-  // Resolve from parameter (name or account-id:private-key) if provided
-
-  let resolvedFromAccount = resolveAccountParameter(
-    from,
-    api,
-    network,
-    keyManager,
-  );
-
-  // If from account wasn't provided, use operator as default
-  if (!resolvedFromAccount) {
-    const operator = api.network.getOperator(network);
-
-    if (!operator) {
-      throw new Error('No from account provided and no default operator set.');
-    }
-
-    const operatorPublicKey = api.kms.getPublicKey(operator.keyRefId);
-
-    if (!operatorPublicKey) {
-      // This should not happen - credentials state should ensure operator keys exist
-      throw new Error(
-        'No from account provided and cant resolve public key of default operator set.',
-      );
-    }
-
-    logger.info("No 'from' account provided, using default operator account.");
-
-    resolvedFromAccount = {
-      accountId: operator.accountId,
-      accountKeyRefId: operator.keyRefId,
-      accountPublicKey: operatorPublicKey,
-    };
-  }
+  const resolvedFromAccount =
+    await api.keyResolver.resolveKeyOrAliasWithFallback(from, keyManager, [
+      'token:account',
+    ]);
 
   // Use resolved from account from alias or account-id:private-key
   const fromAccountId = resolvedFromAccount.accountId;
-  const signerKeyRefId = resolvedFromAccount.accountKeyRefId;
+  const signerKeyRefId = resolvedFromAccount.keyRefId;
 
   logger.info(`🔑 Using from account: ${fromAccountId}`);
   logger.info(`🔑 Will sign with from account key`);

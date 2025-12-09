@@ -32,6 +32,8 @@ import { OutputService } from '../services/output/output-service.interface';
 import { OutputServiceImpl } from '../services/output/output-service';
 import { PluginManagementService } from '../services/plugin-management/plugin-management-service.interface';
 import { PluginManagementServiceImpl } from '../services/plugin-management/plugin-management-service';
+import { KeyResolverServiceImpl } from '../services/key-resolver/key-resolver-service';
+import { KeyResolverService } from '../services/key-resolver/key-resolver-service.interface';
 
 export class CoreApiImplementation implements CoreApi {
   public account: AccountService;
@@ -48,6 +50,7 @@ export class CoreApiImplementation implements CoreApi {
   public hbar: HbarService;
   public output: OutputService;
   public pluginManagement: PluginManagementService;
+  public keyResolver: KeyResolverService;
 
   constructor() {
     this.logger = new LoggerService();
@@ -104,6 +107,12 @@ export class CoreApiImplementation implements CoreApi {
     }
 
     this.mirror = new HederaMirrornodeServiceDefaultImpl(ledgerId);
+    this.keyResolver = new KeyResolverServiceImpl(
+      this.mirror,
+      this.alias,
+      this.network,
+      this.kms,
+    );
 
     this.hbar = new HbarServiceImpl(this.logger);
     this.output = new OutputServiceImpl();

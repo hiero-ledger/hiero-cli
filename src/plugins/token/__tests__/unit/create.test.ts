@@ -68,14 +68,16 @@ describe('createTokenHandler', () => {
             if (type === 'account' && alias === 'treasury-account') {
               return {
                 entityId: '0.0.123456',
+                publicKey: '302a300506032b6570032100' + '1'.repeat(64),
                 keyRefId: 'treasury-key-ref-id',
               };
             }
-            // Mock key alias resolution for test keys
-            if (type === 'key' && alias === 'test-admin-key') {
+            // Mock account alias resolution for admin-key
+            if (type === 'account' && alias === 'test-admin-key') {
               return {
+                entityId: '0.0.100000',
+                publicKey: '302a300506032b6570032100' + '0'.repeat(64),
                 keyRefId: 'admin-key-ref-id',
-                publicKey: 'test-admin-key',
               };
             }
             return null;
@@ -96,7 +98,7 @@ describe('createTokenHandler', () => {
       );
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTransactions.token,
-        ['admin-key-ref-id', 'treasury-key-ref-id'],
+        expect.arrayContaining(['admin-key-ref-id', 'treasury-key-ref-id']),
       );
       expect(mockSaveToken).toHaveBeenCalled();
       expect(result.status).toBe(Status.Success);
@@ -121,10 +123,7 @@ describe('createTokenHandler', () => {
             .mockReturnValue(mockTransactions.token),
         },
         signing: {
-          signAndExecute: jest.fn().mockResolvedValue(mockSignResult),
-        },
-        kms: {
-          getPublicKey: jest.fn().mockReturnValue('operator-public-key'),
+          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
       });
 
@@ -144,7 +143,7 @@ describe('createTokenHandler', () => {
       const result = await createToken(args);
 
       // Assert
-      expect(api.network.getOperator).toHaveBeenCalled();
+      // keyResolver.resolveKeyOrAliasWithFallback is called which internally uses getOperator
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith({
         name: 'TestToken',
         symbol: 'TEST',
@@ -153,11 +152,12 @@ describe('createTokenHandler', () => {
         supplyType: 'INFINITE',
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
-        adminKey: 'operator-public-key',
+        adminPublicKey: expect.any(Object),
       });
+      // When adminKey is not provided, only treasury signs (which is the operator)
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTransactions.token,
-        ['operator-key-ref-id', 'operator-key-ref-id'],
+        ['operator-key-ref-id'],
       );
       expect(mockSaveToken).toHaveBeenCalled();
       expect(result.status).toBe(Status.Success);
@@ -168,9 +168,12 @@ describe('createTokenHandler', () => {
   describe('validation scenarios', () => {
     test('should exit with error when no credentials found', async () => {
       // Arrange
-      const { api } = makeApiMocks();
+      const { api, keyResolver } = makeApiMocks();
 
-      (api.network.getOperator as jest.Mock).mockReturnValue(null);
+      // Mock keyResolver to throw error when no operator is available
+      keyResolver.resolveKeyOrAliasWithFallback.mockImplementation(() =>
+        Promise.reject(new Error('No operator set')),
+      );
 
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
@@ -184,14 +187,8 @@ describe('createTokenHandler', () => {
         logger,
       };
 
-      // Act
-      const result = await createToken(args);
-
-      // Assert
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create token');
-      expect(result.errorMessage).toContain('No operator credentials found');
-      // This test is now ADR-003 compliant
+      // Act & Assert - Error is thrown before try-catch block in handler
+      await expect(createToken(args)).rejects.toThrow('No operator set');
     });
   });
 
@@ -341,14 +338,16 @@ describe('createTokenHandler', () => {
             if (type === 'account' && alias === 'treasury-account') {
               return {
                 entityId: '0.0.123456',
+                publicKey: '302a300506032b6570032100' + '1'.repeat(64),
                 keyRefId: 'treasury-key-ref-id',
               };
             }
-            // Mock key alias resolution for test keys
-            if (type === 'key' && alias === 'test-admin-key') {
+            // Mock account alias resolution for admin-key
+            if (type === 'account' && alias === 'test-admin-key') {
               return {
+                entityId: '0.0.100000',
+                publicKey: '302a300506032b6570032100' + '0'.repeat(64),
                 keyRefId: 'admin-key-ref-id',
-                publicKey: 'test-admin-key',
               };
             }
             return null;

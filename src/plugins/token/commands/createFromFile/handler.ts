@@ -12,18 +12,14 @@ import { TransactionResult } from '../../../../core';
 import { SupportedNetwork } from '../../../../core/types/shared.types';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
 import { TokenData } from '../../schema';
-import {
-  resolveTreasuryParameter,
-  resolveKeyParameter,
-} from '../../resolver-helper';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 import { formatError, toErrorMessage } from '../../../../core/utils/errors';
 import { CreateTokenFromFileOutput } from './output';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
-import { parseKeyWithType } from '../../../../core/utils/keys';
 import { TokenFileSchema, TokenFileDefinition } from '../../schema';
 import { CreateTokenFromFileInputSchema } from './input';
+import { KeyOrAccountAlias } from '../../../../core/schemas';
 
 function resolveTokenFilePath(filename: string): string {
   const hasPathSeparator = filename.includes('/') || filename.includes('\\');
@@ -33,15 +29,6 @@ function resolveTokenFilePath(filename: string): string {
   }
 
   return path.resolve(filename);
-}
-
-/**
- * Treasury resolution result from file
- */
-interface TreasuryFromFileResolution {
-  treasuryId: string;
-  treasuryKeyRefId: string;
-  treasuryPublicKey: string;
 }
 
 /**
@@ -73,55 +60,18 @@ async function readAndValidateTokenFile(
 }
 
 /**
- * Resolves treasury from token file definition
- * @param treasuryDef - Treasury definition (name or treasury-id:treasury-key)
- * @param api - Core API instance
- * @param network - Current network
- * @param logger - Logger instance
- * @param keyManager
- * @param tokenName
- * @returns Resolved treasury information
- */
-function resolveTreasuryFromDefinition(
-  treasuryDef: string,
-  api: CoreApi,
-  network: SupportedNetwork,
-  logger: Logger,
-  keyManager: KeyManagerName,
-): TreasuryFromFileResolution {
-  const resolvedTreasury = resolveTreasuryParameter(
-    treasuryDef,
-    api,
-    network,
-    keyManager,
-  );
-
-  if (!resolvedTreasury) {
-    throw new Error('Treasury parameter is required');
-  }
-
-  logger.info(`🏦 Using treasury: ${resolvedTreasury.treasuryId}`);
-
-  return {
-    treasuryId: resolvedTreasury.treasuryId,
-    treasuryKeyRefId: resolvedTreasury.treasuryKeyRefId,
-    treasuryPublicKey: resolvedTreasury.treasuryPublicKey,
-  };
-}
-
-/**
  * Builds token data object from file definition and transaction result
  * @param result - Transaction result
  * @param tokenDefinition - Token definition from file
- * @param treasury - Resolved treasury information
- * @param adminPublicKey - Resolved admin public key
+ * @param treasuryId - Treasury Account id
+ * @param adminPublicKey - Admin Account Public Key
  * @param network - Current network
  * @returns Token data object for state storage
  */
 function buildTokenDataFromFile(
   result: TransactionResult,
   tokenDefinition: TokenFileDefinition,
-  treasury: TreasuryFromFileResolution,
+  treasuryId: string,
   adminPublicKey: string,
   network: SupportedNetwork,
 ): TokenData {
@@ -129,23 +79,14 @@ function buildTokenDataFromFile(
     tokenId: result.tokenId!,
     name: tokenDefinition.name,
     symbol: tokenDefinition.symbol,
-    treasuryId: treasury.treasuryId,
+    treasuryId,
+    adminPublicKey,
     decimals: tokenDefinition.decimals,
     initialSupply: tokenDefinition.initialSupply,
     supplyType: tokenDefinition.supplyType.toUpperCase() as
       | 'FINITE'
       | 'INFINITE',
     maxSupply: tokenDefinition.maxSupply,
-    keys: {
-      adminKey: adminPublicKey,
-      supplyKey: tokenDefinition.keys.supplyKey || '',
-      wipeKey: tokenDefinition.keys.wipeKey || '',
-      kycKey: tokenDefinition.keys.kycKey || '',
-      freezeKey: tokenDefinition.keys.freezeKey || '',
-      pauseKey: tokenDefinition.keys.pauseKey || '',
-      feeScheduleKey: tokenDefinition.keys.feeScheduleKey || '',
-      treasuryKey: treasury.treasuryPublicKey,
-    },
     network,
     associations: [],
     customFees: tokenDefinition.customFees.map((fee) => ({
@@ -171,7 +112,7 @@ function buildTokenDataFromFile(
  */
 async function processTokenAssociations(
   tokenId: string,
-  associations: Array<{ accountId: string; key: string }>,
+  associations: KeyOrAccountAlias[],
   api: CoreApi,
   logger: Logger,
   keyManager: KeyManagerName,
@@ -185,42 +126,39 @@ async function processTokenAssociations(
 
   for (const association of associations) {
     try {
+      const account = await api.keyResolver.resolveKeyOrAlias(
+        association,
+        keyManager,
+        ['token:associate'],
+      );
+
       // Create association transaction
       const associateTransaction = api.token.createTokenAssociationTransaction({
         tokenId,
-        accountId: association.accountId,
+        accountId: account.accountId,
       });
 
-      // Sign and execute with the account's key
-      // Parse private key - check if it has a key type prefix (e.g., "ed25519:...")
-      const { keyType, privateKey } = parseKeyWithType(association.key);
-      const associationImported = api.kms.importPrivateKey(
-        keyType,
-        privateKey,
-        keyManager,
-        ['token:association', `account:${association.accountId}`],
-      );
       const associateResult = await api.txExecution.signAndExecuteWith(
         associateTransaction,
-        [associationImported.keyRefId],
+        [account.keyRefId],
       );
 
       if (associateResult.success) {
-        logger.info(
-          `   ✅ Associated account ${association.accountId} with token`,
-        );
+        logger.info(`   ✅ Associated account ${account.accountId} with token`);
         successfulAssociations.push({
-          name: association.accountId, // Using accountId as name for now
-          accountId: association.accountId,
+          name: account.accountId, // Using accountId as name for now
+          accountId: account.accountId,
         });
       } else {
-        logger.warn(
-          `   ⚠️  Failed to associate account ${association.accountId}`,
-        );
+        logger.warn(`   ⚠️  Failed to associate account ${account.accountId}`);
       }
     } catch (error) {
+      const associationIdentifier =
+        association.type === 'keypair'
+          ? association.accountId
+          : association.alias;
       logger.warn(
-        `   ⚠️  Failed to associate account ${association.accountId}: ${toErrorMessage(error)}`,
+        `   ⚠️  Failed to associate account ${associationIdentifier}: ${toErrorMessage(error)}`,
       );
     }
   }
@@ -259,37 +197,31 @@ export async function createTokenFromFile(
     api.alias.availableOrThrow(tokenDefinition.name, network);
 
     // 3. Resolve treasury (supports both string and object formats)
-    const treasury = resolveTreasuryFromDefinition(
-      tokenDefinition.treasury,
-      api,
-      network,
-      logger,
+    const treasury = await api.keyResolver.resolveKeyOrAlias(
+      tokenDefinition.treasuryKey,
       keyManager,
+      ['token:treasury'],
     );
 
-    // 4. Resolve adminKey (supports alias or raw private key)
-    const adminKey = resolveKeyParameter(tokenDefinition.keys.adminKey, api, {
+    const adminKey = await api.keyResolver.resolveKeyOrAlias(
+      tokenDefinition.adminKey,
       keyManager,
-      tags: ['token:admin', `token:${tokenDefinition.name}`],
-    });
-
-    if (!adminKey || !adminKey.keyRefId) {
-      throw new Error('Unable to resolve admin key for the token');
-    }
+      ['token:admin', `token:${tokenDefinition.name}`],
+    );
     logger.info(`🔑 Resolved admin key for signing`);
 
     // 5. Create token transaction
     const tokenCreateTransaction = api.token.createTokenTransaction({
       name: tokenDefinition.name,
       symbol: tokenDefinition.symbol,
-      treasuryId: treasury.treasuryId,
+      treasuryId: treasury.accountId,
       decimals: tokenDefinition.decimals,
       initialSupplyRaw: tokenDefinition.initialSupply,
       supplyType: tokenDefinition.supplyType.toUpperCase() as
         | 'FINITE'
         | 'INFINITE',
       maxSupplyRaw: tokenDefinition.maxSupply,
-      adminKey: adminKey.publicKey,
+      adminPublicKey: adminKey.publicKey,
       customFees: tokenDefinition.customFees.map((fee) => ({
         type: fee.type,
         amount: fee.amount,
@@ -301,7 +233,7 @@ export async function createTokenFromFile(
     });
 
     // 6. Sign with both admin key and treasury key
-    const signingKeys = [adminKey.keyRefId, treasury.treasuryKeyRefId];
+    const signingKeys = [adminKey.keyRefId, treasury.keyRefId];
     logger.info(
       `🔑 Signing transaction with admin key and treasury key (${signingKeys.length} keys)`,
     );
@@ -319,8 +251,8 @@ export async function createTokenFromFile(
     const tokenData = buildTokenDataFromFile(
       result,
       tokenDefinition,
-      treasury,
-      adminKey.publicKey,
+      treasury.accountId,
+      adminKey.publicKey.toStringRaw(),
       network,
     );
 
@@ -353,7 +285,7 @@ export async function createTokenFromFile(
       tokenId: result.tokenId,
       name: tokenDefinition.name,
       symbol: tokenDefinition.symbol,
-      treasuryId: treasury.treasuryId,
+      treasuryId: treasury.accountId,
       decimals: tokenDefinition.decimals,
       initialSupply: tokenDefinition.initialSupply.toString(),
       supplyType: tokenDefinition.supplyType.toUpperCase() as

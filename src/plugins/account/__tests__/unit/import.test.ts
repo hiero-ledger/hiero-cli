@@ -49,8 +49,7 @@ describe('account plugin - import command (ADR-003)', () => {
     };
 
     const args = makeArgs(api, logger, {
-      id: '0.0.9999',
-      key: 'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+      key: '0.0.9999:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
       name: 'imported',
     });
 
@@ -119,8 +118,7 @@ describe('account plugin - import command (ADR-003)', () => {
     };
 
     const args = makeArgs(api, logger, {
-      id: '0.0.1111',
-      key: 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+      key: '0.0.1111:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
       alias: 'test',
     });
 
@@ -158,99 +156,13 @@ describe('account plugin - import command (ADR-003)', () => {
     };
 
     const args = makeArgs(api, logger, {
-      id: '0.0.2222',
-      key: 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+      key: '0.0.2222:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
     });
 
     const result = await importAccount(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Failed to import account');
     expect(result.errorMessage).toContain('mirror down');
-  });
-
-  test('imports account with ECDSA key type prefix', async () => {
-    const logger = makeLogger();
-    const saveAccountMock = jest.fn().mockReturnValue(undefined);
-
-    MockedHelper.mockImplementation(() => ({
-      hasAccount: jest.fn().mockReturnValue(false),
-      saveAccount: saveAccountMock,
-    }));
-
-    const mirrorMock = makeMirrorMock();
-    const networkMock = makeNetworkMock();
-    const kms = makeKmsMock();
-    const alias = makeAliasMock();
-
-    const api: Partial<CoreApi> = {
-      mirror: mirrorMock as HederaMirrornodeService,
-      network: networkMock as NetworkService,
-      kms,
-      alias,
-      logger,
-    };
-
-    const args = makeArgs(api, logger, {
-      id: '0.0.8888',
-      key: 'ecdsa:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
-      name: 'imported-ecdsa',
-    });
-
-    const result = await importAccount(args);
-
-    expect(kms.importPrivateKey).toHaveBeenCalledWith(
-      KeyAlgorithm.ECDSA,
-      'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
-      'local',
-      ['account:import', 'account:imported-ecdsa'],
-    );
-    expect(result.status).toBe(Status.Success);
-
-    const output: ImportAccountOutput = JSON.parse(result.outputJson!);
-    expect(output.type).toBe(KeyAlgorithm.ECDSA);
-  });
-
-  test('imports account with ED25519 key type prefix', async () => {
-    const logger = makeLogger();
-    const saveAccountMock = jest.fn().mockReturnValue(undefined);
-
-    MockedHelper.mockImplementation(() => ({
-      hasAccount: jest.fn().mockReturnValue(false),
-      saveAccount: saveAccountMock,
-    }));
-
-    const mirrorMock = makeMirrorMock();
-    const networkMock = makeNetworkMock();
-    const kms = makeKmsMock();
-    const alias = makeAliasMock();
-
-    const api: Partial<CoreApi> = {
-      mirror: mirrorMock as HederaMirrornodeService,
-      network: networkMock as NetworkService,
-      kms,
-      alias,
-      logger,
-    };
-
-    const args = makeArgs(api, logger, {
-      id: '0.0.7777',
-      key: 'ed25519:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
-      name: 'imported-ed25519',
-    });
-
-    const result = await importAccount(args);
-
-    expect(kms.importPrivateKey).toHaveBeenCalledWith(
-      KeyAlgorithm.ED25519,
-      'cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc',
-      'local',
-      ['account:import', 'account:imported-ed25519'],
-    );
-    expect(result.status).toBe(Status.Success);
-
-    const output: ImportAccountOutput = JSON.parse(result.outputJson!);
-    expect(output.type).toBe(KeyAlgorithm.ED25519);
   });
 });

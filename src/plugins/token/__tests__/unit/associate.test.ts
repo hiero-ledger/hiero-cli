@@ -235,7 +235,7 @@ describe('associateTokenHandler', () => {
         KeyAlgorithm.ECDSA,
         '3333333333333333333333333333333333333333333333333333333333333333',
         'local',
-        ['token:account', 'temporary'],
+        ['token:associate'],
       );
     });
 
@@ -261,6 +261,7 @@ describe('associateTokenHandler', () => {
         alias: {
           resolve: jest.fn().mockReturnValue({
             entityId: '0.0.789012',
+            publicKey: '302a300506032b6570032100' + '0'.repeat(64),
             keyRefId: 'alias-key-ref-id',
           }),
         },
@@ -590,7 +591,7 @@ describe('associateTokenHandler', () => {
         KeyAlgorithm.ECDSA,
         '3333333333333333333333333333333333333333333333333333333333333333',
         'local',
-        ['token:account', 'temporary'],
+        ['token:associate'],
       );
     });
 
@@ -620,6 +621,7 @@ describe('associateTokenHandler', () => {
         alias: {
           resolve: jest.fn().mockReturnValue({
             entityId: '0.0.789012',
+            publicKey: '302a300506032b6570032100' + '0'.repeat(64),
             keyRefId: 'alias-key-ref-id',
           }),
         },
@@ -657,11 +659,11 @@ describe('associateTokenHandler', () => {
       // Assert - Verify state helper was initialized
       expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);
 
-      // Assert - Verify association was saved with alias name
+      // Assert - Verify association was saved with account ID
       expect(mockAddTokenAssociation).toHaveBeenCalledWith(
         '0.0.123456',
         '0.0.789012',
-        'my-account-alias', // accountName = alias when using alias format
+        '0.0.789012', // accountName = accountId (resolved from alias)
       );
 
       // Assert - Verify transaction was created and executed

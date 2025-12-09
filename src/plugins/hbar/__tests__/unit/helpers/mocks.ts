@@ -14,6 +14,7 @@ import {
   makeAliasMock,
   makeSigningMock,
   makeStateMock,
+  makeKeyResolverMock,
 } from '../../../../../__tests__/mocks/mocks';
 import { mockTransferTransactionResults } from './fixtures';
 
@@ -103,6 +104,11 @@ export const setupTransferTest = (options: SetupTransferTestOptions = {}) => {
     alias,
     logger,
     state: stateMock as StateService,
+    keyResolver: makeKeyResolverMock({
+      network: networkMock,
+      alias,
+      kms,
+    }),
   };
 
   if (options.defaultCredentials && api.network) {

@@ -47,6 +47,11 @@ export interface NetworkService {
    * Get operator for a specific network
    */
   getOperator(network: SupportedNetwork): NetworkOperator | null;
+
+  /**
+   * Get operator for current network or throw
+   */
+  getCurrentOperatorOrThrow(): NetworkOperator;
 }
 
 export interface NetworkOperator {

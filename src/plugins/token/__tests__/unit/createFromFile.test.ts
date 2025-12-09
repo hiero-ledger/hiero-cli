@@ -359,7 +359,7 @@ describe('createTokenFromFileHandler', () => {
         initialSupplyRaw: 1000n,
         supplyType: 'INFINITE',
         maxSupplyRaw: 0n,
-        adminKey: 'admin-key',
+        adminPublicKey: expect.any(Object),
         customFees: [
           {
             type: 'fixed',
@@ -611,7 +611,7 @@ describe('createTokenFromFileHandler', () => {
       // Arrange
       const invalidFile = {
         ...validTokenFile,
-        treasury: '', // Empty treasury string
+        treasuryKey: '', // Empty treasury string
       };
 
       mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));

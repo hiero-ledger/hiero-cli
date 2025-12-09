@@ -46,7 +46,8 @@ describe('network plugin - set-operator command', () => {
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
-      publicKey: 'pub-key-test',
+      publicKey:
+        '0000000000000000000000000000000000000000000000000000000000000000',
     });
     expect(kmsService.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
@@ -73,7 +74,8 @@ describe('network plugin - set-operator command', () => {
       network: 'testnet',
       entityId: '0.0.789012',
       keyRefId: 'kr_alias123',
-      publicKey: 'pub-key-alias',
+      publicKey:
+        '302a300506032b65700321000000000000000000000000000000000000000000000000000000000000000000',
       createdAt: '2024-01-01T00:00:00Z',
     });
 
@@ -100,7 +102,8 @@ describe('network plugin - set-operator command', () => {
     expect(output.operator).toEqual({
       accountId: '0.0.789012',
       keyRefId: 'kr_alias123',
-      publicKey: 'pub-key-alias',
+      publicKey:
+        '0000000000000000000000000000000000000000000000000000000000000000',
     });
   });
 
@@ -197,8 +200,25 @@ describe('network plugin - set-operator command', () => {
     // Mock alias not found
     aliasService.resolve.mockReturnValue(null);
 
+    const keyResolver = {
+      resolveKeyOrAlias: jest
+        .fn()
+        .mockImplementation(() =>
+          Promise.reject(
+            new Error("Alias 'nonexistent' not found for network testnet"),
+          ),
+        ),
+      resolveKeyOrAliasWithFallback: jest.fn(),
+      verifyAndResolvePrivateKey: jest.fn(),
+    };
+
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
+      {
+        network: networkService,
+        kms: kmsService,
+        alias: aliasService,
+        keyResolver: keyResolver as any,
+      },
       logger,
       { operator: 'nonexistent' },
     );
@@ -228,8 +248,23 @@ describe('network plugin - set-operator command', () => {
       createdAt: '2024-01-01T00:00:00Z',
     });
 
+    const keyResolver = {
+      resolveKeyOrAlias: jest
+        .fn()
+        .mockImplementation(() =>
+          Promise.reject(new Error('No key found for account 0.0.789012')),
+        ),
+      resolveKeyOrAliasWithFallback: jest.fn(),
+      verifyAndResolvePrivateKey: jest.fn(),
+    };
+
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
+      {
+        network: networkService,
+        kms: kmsService,
+        alias: aliasService,
+        keyResolver: keyResolver as any,
+      },
       logger,
       { operator: 'testnet1' },
     );
@@ -253,8 +288,23 @@ describe('network plugin - set-operator command', () => {
       throw new Error('Invalid private key format');
     });
 
+    const keyResolver = {
+      resolveKeyOrAlias: jest
+        .fn()
+        .mockImplementation(() =>
+          Promise.reject(new Error('Invalid private key format')),
+        ),
+      resolveKeyOrAliasWithFallback: jest.fn(),
+      verifyAndResolvePrivateKey: jest.fn(),
+    };
+
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
+      {
+        network: networkService,
+        kms: kmsService,
+        alias: aliasService,
+        keyResolver: keyResolver as any,
+      },
       logger,
       {
         operator:
@@ -317,7 +367,8 @@ describe('network plugin - set-operator command', () => {
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
-      publicKey: 'pub-key-test',
+      publicKey:
+        '0000000000000000000000000000000000000000000000000000000000000000',
     });
   });
 });

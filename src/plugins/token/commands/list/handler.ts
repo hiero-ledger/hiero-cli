@@ -45,59 +45,6 @@ function displayToken(
   if (associationCount > 0) {
     logger.info(`   Associations: ${associationCount}`);
   }
-
-  // Optionally show key information
-  if (showKeys && token.keys) {
-    const keyMapping = [
-      { key: 'adminKey', label: 'Admin Key' },
-      { key: 'supplyKey', label: 'Supply Key' },
-      { key: 'wipeKey', label: 'Wipe Key' },
-      { key: 'kycKey', label: 'KYC Key' },
-      { key: 'freezeKey', label: 'Freeze Key' },
-      { key: 'pauseKey', label: 'Pause Key' },
-      { key: 'feeScheduleKey', label: 'Fee Schedule Key' },
-      { key: 'treasuryKey', label: 'Treasury Key' },
-    ] as const;
-
-    keyMapping.forEach(({ key, label }) => {
-      if (token.keys[key]) {
-        logger.info(`   ${label}: ✅ Present`);
-      }
-    });
-  }
-}
-
-/**
- * Extracts token keys for output
- * @param tokenKeys - Token keys to extract
- * @returns Keys object with all keys mapped to their values or null, or undefined if tokenKeys is not provided
- */
-function extractTokenKeysForOutput(tokenKeys: TokenData['keys'] | undefined):
-  | {
-      adminKey: string | null;
-      supplyKey: string | null;
-      wipeKey: string | null;
-      kycKey: string | null;
-      freezeKey: string | null;
-      pauseKey: string | null;
-      feeScheduleKey: string | null;
-      treasuryKey: string | null;
-    }
-  | undefined {
-  if (!tokenKeys) {
-    return undefined;
-  }
-
-  return {
-    adminKey: tokenKeys.adminKey || null,
-    supplyKey: tokenKeys.supplyKey || null,
-    wipeKey: tokenKeys.wipeKey || null,
-    kycKey: tokenKeys.kycKey || null,
-    freezeKey: tokenKeys.freezeKey || null,
-    pauseKey: tokenKeys.pauseKey || null,
-    feeScheduleKey: tokenKeys.feeScheduleKey || null,
-    treasuryKey: tokenKeys.treasuryKey || null,
-  };
 }
 
 /**
@@ -259,7 +206,6 @@ export async function listTokens(
         treasuryId: token.treasuryId,
         network: token.network,
         alias,
-        keys: showKeys ? extractTokenKeysForOutput(token.keys) : undefined,
       };
     });
 
