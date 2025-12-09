@@ -7,7 +7,6 @@
  * Based on ADR-003: Result-Oriented Command Handler Contract
  */
 import { z } from 'zod';
-import type { KeyAlgorithmType as KeyAlgorithmType } from '../services/kms/kms-types.interface';
 import { KeyAlgorithm } from '../shared/constants';
 
 // ======================================================
@@ -53,46 +52,6 @@ export const Ed25519PrivateKeySchema = z
     /^(?:(?:0x)?[0-9a-fA-F]{64}|(?:0x)?[0-9a-fA-F]{128}|(?:0x)?30[0-9a-fA-F]{80,160})$/,
     'Invalid Ed25519 private key: must be 32/64-byte hex or DER encoding',
   );
-
-// ======================================================
-// 2a. Private Key with Optional Type Prefix
-// ======================================================
-
-/**
- * Private key with optional key type prefix
- * Format: "ed25519:...", "ecdsa:...", or just "..."
- * Supports hex keys with optional 0x prefix
- *
- * Note: This schema only parses the key type prefix and extracts the key value.
- * Key format validation should happen when the key is actually used (e.g., during import).
- */
-export const PrivateKeyWithTypeSchema: z.ZodType<
-  { keyType: KeyAlgorithmType; privateKey: string },
-  z.ZodTypeDef,
-  string
-> = z
-  .string()
-  .trim()
-  .min(1, 'Private key cannot be empty')
-  .transform((val) => {
-    // Extract key type prefix and key value
-    const match = val.match(/^(ecdsa|ed25519):(.*)$/i); // Note: regex uses lowercase for case-insensitive matching
-    if (match) {
-      const keyType = match[1].toLowerCase() as KeyAlgorithmType;
-      const keyValue = match[2].trim();
-      if (!keyValue) {
-        throw new Error(
-          `Private key cannot be empty. Key type prefix '${match[1]}' provided but no key follows.`,
-        );
-      }
-      // Return parsed values without format validation
-      // Format validation happens later when the key is actually used (e.g., during import)
-      return { keyType, privateKey: keyValue };
-    }
-    // No prefix - default to ecdsa
-    // No format validation here - validation happens when key is actually used
-    return { keyType: KeyAlgorithm.ECDSA, privateKey: val };
-  });
 
 // ======================================================
 // 3. HBAR balances (in HBARs, decimal format)
@@ -239,20 +198,26 @@ export const EvmAddressSchema = z
   .describe('EVM-compatible address');
 
 /**
- * Account ID with Private Key
- * Format: accountId:privateKey or accountId:keyType:privateKey
+ * Account ID with Private Key (without keyType support)
+ * Format: accountId:privateKey
+ * Supports both ECDSA and ED25519 keys in HEX or DER format
  * Example: 0.0.123456:302e020100301006072a8648ce3d020106052b8104000a04220420...
- * Example: 0.0.123456:ed25519:302e020100301006072a8648ce3d020106052b8104000a04220420...
+ * Example: 0.0.123456:1234567890abcdef...
  */
-export const AccountIdKeyPairSchema = z
+export const AccountIdWithPrivateKeySchema = z
   .string()
   .regex(
-    /^0\.0\.[1-9][0-9]*:(?:(?:ecdsa|ed25519):)?(?:(?:0x)?[0-9a-fA-F]{64}|(?:0x)?[0-9a-fA-F]{128}|30[0-9a-fA-F]{80,})$/i,
-    'Account ID with private key must be in format {accountId}:{private_key} or {accountId}:{keyType}:{private_key}',
+    /^0\.0\.[1-9][0-9]*:(?:(?:0x)?[0-9a-fA-F]{64}|(?:0x)?[0-9a-fA-F]{128}|30[0-9a-fA-F]{80,})$/i,
+    'Account ID with private key must be in format {accountId}:{private_key}',
   )
-  .describe(
-    'Account ID with private key in format {accountId}:{private_key} or {accountId}:{keyType}:{private_key}',
-  );
+  .transform((val) => {
+    const [accountId, ...keyParts] = val.split(':');
+    return {
+      accountId,
+      privateKey: keyParts.join(':'),
+    };
+  })
+  .describe('Account ID with private key in format {accountId}:{private_key}');
 
 /**
  * Network name
@@ -406,15 +371,15 @@ export const EntityReferenceSchema = z
   .describe('Entity reference (ID or name)');
 
 /**
- * Account Reference Input (ID, EVM Address, or Name)
+ * Account Reference Input (ID or Name)
  * Extended schema for referencing accounts specifically
  * Supports: Hedera account ID (0.0.xxx), EVM address (0x...), or account name/alias
  */
 export const AccountReferenceSchema = z
-  .union([EntityIdSchema, EvmAddressSchema, AccountNameSchema], {
+  .union([EntityIdSchema, AccountNameSchema], {
     errorMap: () => ({
       message:
-        'Account reference must be a valid Hedera ID (0.0.xxx), EVM address (0x...), or alias name',
+        'Account reference must be a valid Hedera ID (0.0.xxx), , or alias name',
     }),
   })
   .describe('Account reference (ID, EVM address, or name)');
@@ -474,24 +439,22 @@ export const MemoSchema = z
   .describe('Optional memo for the transaction');
 
 /**
- * Account or Alias Input
- * Accepts either AccountID:privateKey pair format or account name/alias
- * Used for fields that can reference accounts with or without explicit keys
+ * Key or Account Alias Input (Normalized)
+ * Accepts AccountID:privateKey pair format or account name/alias
+ * Transforms input into normalized discriminated union for easier handler processing:
+ * - alias input → { type: 'alias', alias: string }
+ * - keypair input → { type: 'keypair', accountId: string, privateKey: string }
+ * The keyType must be fetched from mirror node when keypair is provided
  */
-export const AccountOrAliasSchema = z
-  .union([AccountIdKeyPairSchema, AccountNameSchema])
-  .describe('Account reference (AccountID:privateKey pair or alias)');
-
-/**
- * Key or Account Input
- * Accepts either a private key (with optional type prefix) or account name/alias
- * Used for key fields that can accept either explicit keys or account references
- * The account's key will be retrieved from state when an alias is provided
- */
-export const KeyOrAccountSchema = z
-  .union([PrivateKeyWithTypeSchema, AccountNameSchema])
+export const KeyOrAccountAliasSchema = z
+  .union([AccountIdWithPrivateKeySchema, AccountNameSchema])
+  .transform((val) =>
+    typeof val === 'string'
+      ? { type: 'alias' as const, alias: val }
+      : { type: 'keypair' as const, ...val },
+  )
   .describe(
-    'Private key (with optional type prefix: ed25519: or ecdsa:) or account name/alias',
+    'Account ID with private key in format {accountId}:{private_key} or account name/alias',
   );
 
 /**
@@ -624,79 +587,6 @@ export const PublicKeySchema = z.union([
 ]);
 
 /**
- * Export all Zod schemas as a single object for easy import
- */
-export const COMMON_ZOD_SCHEMAS = {
-  // New cryptographic schemas
-  ecdsaPublicKey: EcdsaPublicKeySchema,
-  ecdsaPrivateKey: EcdsaPrivateKeySchema,
-  ed25519PublicKey: Ed25519PublicKeySchema,
-  ed25519PrivateKey: Ed25519PrivateKeySchema,
-  privateKeyWithType: PrivateKeyWithTypeSchema,
-
-  // HBAR schemas
-  hbarDecimal: HbarDecimalSchema,
-  tinybar: TinybarSchema,
-
-  // HTS schemas
-  htsDecimals: HtsDecimalsSchema,
-  htsBaseUnit: HtsBaseUnitSchema,
-  htsDecimal: HtsDecimalSchema,
-
-  // EVM schemas
-  evmDecimals: EvmDecimalsSchema,
-  evmBaseUnit: EvmBaseUnitSchema,
-  evmDecimal: EvmDecimalSchema,
-
-  // Legacy schemas
-  entityId: EntityIdSchema,
-  timestamp: TimestampSchema,
-  transactionId: TransactionIdSchema,
-  tokenAmount: TokenAmountSchema,
-  tokenBalance: TokenBalanceSchema,
-  tinybarBalance: TinybarBalanceSchema,
-  evmAddress: EvmAddressSchema,
-  accountIdKeyPair: AccountIdKeyPairSchema,
-  publicKey: PublicKeySchema,
-  network: NetworkSchema,
-  keyType: KeyTypeSchema,
-  supplyType: SupplyTypeSchema,
-  isoTimestamp: IsoTimestampSchema,
-  accountData: AccountDataSchema,
-  tokenData: TokenDataSchema,
-  topicData: TopicDataSchema,
-  transactionResult: TransactionResultSchema,
-
-  // Input schemas (Command Arguments)
-  entityReference: EntityReferenceSchema,
-  accountReference: AccountReferenceSchema,
-  amountInput: AmountInputSchema,
-  keyManagerType: KeyManagerTypeSchema,
-  accountName: AccountNameSchema,
-  configOptionName: ConfigOptionNameSchema,
-  configOptionValue: ConfigOptionValueSchema,
-  keyRefId: KeyRefIdSchema,
-  pluginName: PluginNameSchema,
-  filePath: FilePathSchema,
-  stateNamespace: StateNamespaceSchema,
-  tokenName: TokenNameSchema,
-  tokenSymbol: TokenSymbolSchema,
-  positiveIntFilterField: PositiveIntFilterFieldSchema,
-
-  // Alias schemas
-  aliasName: AliasNameSchema,
-  topicName: TopicNameSchema,
-  tokenAliasName: TokenAliasNameSchema,
-
-  // Transaction fields
-  memo: MemoSchema,
-
-  // Composite input schemas
-  accountOrAlias: AccountOrAliasSchema,
-  keyOrAccount: KeyOrAccountSchema,
-} as const;
-
-/**
  * Type exports for TypeScript inference
  */
 export type EcdsaPublicKey = z.infer<typeof EcdsaPublicKeySchema>;
@@ -716,7 +606,9 @@ export type EvmDecimal = z.infer<typeof EvmDecimalSchema>;
 export type EntityId = z.infer<typeof EntityIdSchema>;
 export type Timestamp = z.infer<typeof TimestampSchema>;
 export type TransactionId = z.infer<typeof TransactionIdSchema>;
-export type AccountIdKeyPair = z.infer<typeof AccountIdKeyPairSchema>;
+export type AccountIdWithPrivateKey = z.infer<
+  typeof AccountIdWithPrivateKeySchema
+>;
 export type TokenAmount = z.infer<typeof TokenAmountSchema>;
 export type TokenBalance = z.infer<typeof TokenBalanceSchema>;
 export type TinybarBalance = z.infer<typeof TinybarBalanceSchema>;
@@ -747,5 +639,4 @@ export type AliasName = z.infer<typeof AliasNameSchema>;
 export type TopicName = z.infer<typeof TopicNameSchema>;
 export type TokenAliasName = z.infer<typeof TokenAliasNameSchema>;
 export type Memo = z.infer<typeof MemoSchema>;
-export type AccountOrAlias = z.infer<typeof AccountOrAliasSchema>;
-export type KeyOrAccount = z.infer<typeof KeyOrAccountSchema>;
+export type KeyOrAccountAlias = z.infer<typeof KeyOrAccountAliasSchema>;

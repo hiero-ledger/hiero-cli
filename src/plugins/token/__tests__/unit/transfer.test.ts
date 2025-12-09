@@ -88,7 +88,7 @@ describe('transferTokenHandler', () => {
         KeyAlgorithm.ECDSA,
         '2222222222222222222222222222222222222222222222222222222222222222',
         'local',
-        ['token:account', 'temporary'],
+        ['token:account'],
       );
     });
 
@@ -115,6 +115,7 @@ describe('transferTokenHandler', () => {
           resolve: jest.fn().mockReturnValue({
             entityId: '0.0.345678',
             keyRefId: 'alias-key-ref-id',
+            publicKey: '302a300506032b6570032100' + '0'.repeat(64),
           }),
         },
         mirror: {
@@ -301,8 +302,24 @@ describe('transferTokenHandler', () => {
             keyRefId: 'imported-key-ref-id',
             publicKey: 'imported-public-key',
           }),
+          getPublicKey: jest
+            .fn()
+            .mockReturnValue('302a300506032b6570032100' + '0'.repeat(64)),
         },
       });
+
+      // Setup operator for fallback
+      api.network = {
+        ...api.network,
+        getOperator: jest.fn().mockReturnValue({
+          accountId: '0.0.2',
+          keyRefId: 'operator-key-ref-id',
+        }),
+        getCurrentOperatorOrThrow: jest.fn().mockReturnValue({
+          accountId: '0.0.2',
+          keyRefId: 'operator-key-ref-id',
+        }),
+      } as any;
 
       const logger = makeLogger();
       const args: CommandHandlerArgs = {

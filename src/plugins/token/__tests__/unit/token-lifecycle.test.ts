@@ -111,11 +111,12 @@ describe('Token Lifecycle Integration', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            // Mock key alias resolution for test keys
-            if (type === 'key' && alias === 'admin-key') {
+            // Mock account alias resolution for test keys
+            if (type === 'account' && alias === 'admin-key') {
               return {
+                entityId: '0.0.100000',
+                publicKey: '302a300506032b6570032100' + '0'.repeat(64),
                 keyRefId: 'admin-key-ref-id',
-                publicKey: 'admin-key',
               };
             }
             return null;
@@ -202,7 +203,7 @@ describe('Token Lifecycle Integration', () => {
         supplyType: 'FINITE',
         maxSupplyRaw: 100000n,
         treasuryId: _treasuryAccountId,
-        adminKey: 'admin-key',
+        adminPublicKey: expect.any(Object),
       });
 
       expect(
@@ -289,11 +290,12 @@ describe('Token Lifecycle Integration', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            // Mock key alias resolution for test keys
-            if (type === 'key' && alias === 'admin-key') {
+            // Mock account alias resolution for test keys
+            if (type === 'account' && alias === 'admin-key') {
               return {
+                entityId: '0.0.100000',
+                publicKey: '302a300506032b6570032100' + '0'.repeat(64),
                 keyRefId: 'admin-key-ref-id',
-                publicKey: 'admin-key',
               };
             }
             return null;
@@ -414,11 +416,12 @@ describe('Token Lifecycle Integration', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            // Mock key alias resolution for test keys
-            if (type === 'key' && alias === 'admin-key') {
+            // Mock account alias resolution for test keys
+            if (type === 'account' && alias === 'admin-key') {
               return {
+                entityId: '0.0.100000',
+                publicKey: '302a300506032b6570032100' + '0'.repeat(64),
                 keyRefId: 'admin-key-ref-id',
-                publicKey: 'admin-key',
               };
             }
             return null;

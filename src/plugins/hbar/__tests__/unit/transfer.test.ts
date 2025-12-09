@@ -91,8 +91,12 @@ describe('hbar plugin - transfer command (unit)', () => {
       to: mockAccountIds.receiver,
     });
 
+    // Zod schema validation should reject amount=0
     const result = await transferHandler(args);
     expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      'Transfer amount must be greater than zero',
+    );
   });
 
   test('succeeds when valid params provided (no default accounts check)', async () => {
@@ -117,6 +121,34 @@ describe('hbar plugin - transfer command (unit)', () => {
 
     // This test should actually succeed now since we're providing valid parameters
     expect(logger.info).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
+  });
+
+  test('returns failure when from equals to', async () => {
+    const { api, logger, alias } = setupTransferTest({
+      accounts: [mockAccounts.sameAccount],
+    });
+
+    // Mock alias resolution for 'same-account'
+    (alias.resolve as jest.Mock).mockImplementation((aliasName) => {
+      if (aliasName === 'same-account') {
+        return {
+          entityId: mockAccountIds.sender,
+          keyRefId: 'same-account-key',
+          publicKey: '302a300506032b6570032100' + '0'.repeat(64),
+        };
+      }
+      return null;
+    });
+
+    const args = makeArgs(api, logger, {
+      amount: mockAmounts.small,
+      from: 'same-account',
+      to: 'same-account',
+    });
+
+    const result = await transferHandler(args);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Cannot transfer');
   });
 
   test('returns failure when transferTinybar fails', async () => {

@@ -3,16 +3,15 @@
  * Handles importing existing accounts using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
+import { CommandExecutionResult, CommandHandlerArgs } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
-import { ImportAccountOutput } from './output';
-import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
-import { AccountData } from '../../schema';
-import { buildAccountEvmAddress } from '../../utils/account-address';
 import { ImportAccountInputSchema } from './input';
+import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
+import { buildAccountEvmAddress } from '../../utils/account-address';
+import { AccountData } from '../../schema';
+import { ImportAccountOutput } from './output';
 
 export async function importAccount(
   args: CommandHandlerArgs,
@@ -25,10 +24,13 @@ export async function importAccount(
   // Parse and validate command arguments
   const validArgs = ImportAccountInputSchema.parse(args.args);
 
-  const accountId = validArgs.id;
-  const { keyType, privateKey } = validArgs.key;
+  const key = validArgs.key;
   const alias = validArgs.name;
   const keyManagerArg = validArgs.keyManager;
+
+  const parsedPrivateKey =
+    await api.keyResolver.verifyAndResolvePrivateKey(key);
+  const { accountId, privateKey, keyAlgorithm } = parsedPrivateKey;
 
   // Check if name already exists on the current network
   const network = api.network.getCurrentNetwork();
@@ -59,7 +61,7 @@ export async function importAccount(
 
     // Securely store the private key in credentials storage
     const { keyRefId, publicKey } = api.kms.importPrivateKey(
-      keyType,
+      keyAlgorithm,
       privateKey,
       keyManager,
       ['account:import', `account:${name}`],
@@ -81,7 +83,7 @@ export async function importAccount(
     const evmAddress = buildAccountEvmAddress({
       accountId,
       publicKey,
-      keyType,
+      keyType: keyAlgorithm,
       existingEvmAddress: accountInfo.evmAddress,
     });
 
@@ -89,7 +91,7 @@ export async function importAccount(
     const account: AccountData = {
       name,
       accountId,
-      type: keyType,
+      type: keyAlgorithm,
       publicKey: publicKey,
       evmAddress,
       keyRefId,

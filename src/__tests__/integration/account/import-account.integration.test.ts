@@ -34,9 +34,8 @@ describe('Import Account Integration Tests', () => {
   describe('Valid Import Account Scenarios', () => {
     it('should import an account and verify with view method', async () => {
       const importAccountArgs: Record<string, unknown> = {
-        id: accountId,
         name: 'account-imported',
-        key: accountKey,
+        key: `${accountId}:${accountKey}`,
       };
       const importAccountResult = await importAccount({
         args: importAccountArgs,

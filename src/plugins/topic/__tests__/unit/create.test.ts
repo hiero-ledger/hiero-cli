@@ -142,9 +142,9 @@ describe('topic plugin - create command', () => {
     const saveTopicMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
 
-    const adminKey = ED25519_DER_PRIVATE_KEY;
+    const adminKey = `0.0.123456:${ED25519_DER_PRIVATE_KEY}`;
     const submitKey =
-      '302e020100300506032b6570042204202222222222222222222222222222222222222222222222222222222222222222';
+      '0.0.789012:302e020100300506032b6570042204202222222222222222222222222222222222222222222222222222222222222222';
 
     const { topicTransactions, signing, networkMock, kms, alias } =
       makeApiMocks({
@@ -187,18 +187,18 @@ describe('topic plugin - create command', () => {
 
     expect(topicTransactions.createTopic).toHaveBeenCalledWith({
       memo: 'Test topic',
-      adminKey,
-      submitKey,
+      adminKey: expect.any(Object),
+      submitKey: expect.any(Object),
     });
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
-      adminKey,
+      ED25519_DER_PRIVATE_KEY,
       'local',
       ['topic:admin', expect.stringMatching(/^topic:topic-\d+$/)],
     );
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
-      submitKey,
+      '302e020100300506032b6570042204202222222222222222222222222222222222222222222222222222222222222222',
       'local',
       ['topic:submit', expect.stringMatching(/^topic:topic-\d+$/)],
     );
@@ -331,105 +331,5 @@ describe('topic plugin - create command', () => {
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain('Failed to create topic');
     expect(result.errorMessage).toContain('network error');
-  });
-
-  test('creates topic with ECDSA admin key prefix', async () => {
-    const logger = makeLogger();
-    const saveTopicMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
-
-    const adminKey = `ecdsa:${ED25519_DER_PRIVATE_KEY}`;
-
-    const { topicTransactions, signing, networkMock, kms, alias } =
-      makeApiMocks({
-        createTopicImpl: jest.fn().mockReturnValue({
-          transaction: {},
-        }),
-        signAndExecuteWithImpl: jest.fn().mockResolvedValue({
-          transactionId: 'tx-ecdsa',
-          success: true,
-          topicId: '0.0.6666',
-          receipt: {} as any,
-        } as TransactionResult),
-      });
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txExecution: signing,
-      network: networkMock,
-      kms,
-      alias: alias as any,
-      state: {} as any,
-      logger,
-    };
-
-    const args = makeArgs(api, logger, {
-      memo: 'ECDSA topic',
-      adminKey,
-    });
-
-    const result = await createTopic(args);
-
-    expect(result.status).toBe(Status.Success);
-    expect(kms.importPrivateKey).toHaveBeenCalledWith(
-      KeyAlgorithm.ECDSA,
-      ED25519_DER_PRIVATE_KEY,
-      'local',
-      expect.arrayContaining(['topic:admin']),
-    );
-  });
-
-  test('creates topic with ED25519 admin and submit keys', async () => {
-    const logger = makeLogger();
-    const saveTopicMock = jest.fn();
-    MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
-
-    const adminKey = `ed25519:${ED25519_DER_PRIVATE_KEY}`;
-    const submitKey = `ed25519:${ED25519_DER_PRIVATE_KEY}`;
-
-    const { topicTransactions, signing, networkMock, kms, alias } =
-      makeApiMocks({
-        createTopicImpl: jest.fn().mockReturnValue({
-          transaction: {},
-        }),
-        signAndExecuteWithImpl: jest.fn().mockResolvedValue({
-          transactionId: 'tx-ed25519',
-          success: true,
-          topicId: '0.0.5555',
-          receipt: {} as any,
-        } as TransactionResult),
-      });
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txExecution: signing,
-      network: networkMock,
-      kms,
-      alias: alias as any,
-      state: {} as any,
-      logger,
-    };
-
-    const args = makeArgs(api, logger, {
-      memo: 'ED25519 topic',
-      adminKey,
-      submitKey,
-    });
-
-    const result = await createTopic(args);
-
-    expect(result.status).toBe(Status.Success);
-    expect(kms.importPrivateKey).toHaveBeenCalledWith(
-      KeyAlgorithm.ED25519,
-      ED25519_DER_PRIVATE_KEY,
-      'local',
-      expect.arrayContaining(['topic:admin']),
-    );
-    expect(kms.importPrivateKey).toHaveBeenCalledWith(
-      KeyAlgorithm.ED25519,
-      ED25519_DER_PRIVATE_KEY,
-      'local',
-      expect.arrayContaining(['topic:submit']),
-    );
   });
 });
