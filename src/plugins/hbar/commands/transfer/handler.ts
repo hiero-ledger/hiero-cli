@@ -178,13 +178,6 @@ export async function transferHandler(
       };
     }
 
-    if (fromInput && fromInput === to) {
-      return {
-        status: Status.Failure,
-        errorMessage: 'Cannot transfer to the same account',
-      };
-    }
-
     const currentNetwork = api.network.getCurrentNetwork();
 
     const fromResult = resolveFromAccount(
