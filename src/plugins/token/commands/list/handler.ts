@@ -9,32 +9,9 @@ import { Status } from '../../../../core/shared/constants';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
 import { TokenData } from '../../schema';
 import { formatError } from '../../../../core/utils/errors';
-import { SupportedNetwork } from '../../../../core/types/shared.types';
-import { CoreApi } from '../../../../core';
 import { ListTokensOutput } from './output';
 import { ListTokenInputSchema } from './input';
-
-/**
- * Resolves the token alias from the alias service
- * @param api - Core API instance
- * @param tokenId - Token ID to resolve
- * @param network - Network the token is on
- * @returns The alias if found, null otherwise
- */
-function resolveTokenAlias(
-  api: CoreApi,
-  tokenId: string,
-  network: SupportedNetwork,
-): string | null {
-  try {
-    const aliases = api.alias.list({ network: network, type: 'token' });
-    const aliasRecord = aliases.find((alias) => alias.entityId === tokenId);
-    return aliasRecord ? aliasRecord.alias : null;
-  } catch (error) {
-    // If alias resolution fails, just return null
-    return null;
-  }
-}
+import { findTokenAlias } from '../../../account/utils/balance-helpers';
 
 /**
  * Displays a single token with comprehensive information
@@ -48,7 +25,7 @@ function displayToken(
   token: TokenData,
   index: number,
   showKeys: boolean,
-  alias: string | null,
+  alias: string | undefined,
   logger: CommandHandlerArgs['logger'],
 ): void {
   // Display token name and symbol with alias
@@ -262,7 +239,7 @@ export async function listTokens(
     // Display each token and prepare output data
     const tokensList = tokens.map((token, index) => {
       // Resolve alias for this token
-      const alias = resolveTokenAlias(api, token.tokenId, token.network);
+      const alias = findTokenAlias(api, token.tokenId, token.network);
 
       // Display token information
       displayToken(token, index, showKeys, alias, logger);
@@ -281,7 +258,7 @@ export async function listTokens(
         supplyType: token.supplyType,
         treasuryId: token.treasuryId,
         network: token.network,
-        alias: alias || undefined,
+        alias,
         keys: showKeys ? extractTokenKeysForOutput(token.keys) : undefined,
       };
     });

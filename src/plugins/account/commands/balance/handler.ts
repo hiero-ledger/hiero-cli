@@ -3,48 +3,17 @@
  * Handles account balance retrieval using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { TokenBalanceInfo } from '../../../../core/services/mirrornode/types';
 import { CommandHandlerArgs } from '../../../../core';
 import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { CoreApi } from '../../../../core';
+import { Status, HBAR_DECIMALS } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { AccountBalanceOutput } from './output';
 import { EntityIdSchema } from '../../../../core/schemas';
 import { AliasType } from '../../../../core/services/alias/alias-service.interface';
 import { AccountBalanceInputSchema, TokenEntityType } from './input';
-
-/**
- * Fetches and maps token balances for an account
- * @param api - The Core API instance
- * @param accountId - The account ID to fetch token balances for
- * @param tokenId - Optional specific token ID to filter by
- * @returns An array of token balances or undefined if no tokens found
- * @throws Error if token balances could not be fetched
- */
-async function fetchAccountTokenBalances(
-  api: CoreApi,
-  accountId: string,
-  tokenId: string | undefined,
-): Promise<
-  | Array<{
-      tokenId: string;
-      balance: bigint;
-    }>
-  | undefined
-> {
-  const tokenBalances = await api.mirror.getAccountTokenBalances(
-    accountId,
-    tokenId,
-  );
-  if (tokenBalances.tokens && tokenBalances.tokens.length > 0) {
-    return tokenBalances.tokens.map((token: TokenBalanceInfo) => ({
-      tokenId: token.token_id,
-      balance: BigInt(token.balance.toString()),
-    }));
-  }
-  return undefined;
-}
+import { normalizeBalance } from '../../../../core/utils/normalize-balance';
+import BigNumber from 'bignumber.js';
+import { fetchAccountTokenBalances } from '../../utils/balance-helpers';
 
 export async function getAccountBalance(
   args: CommandHandlerArgs,
@@ -58,6 +27,7 @@ export async function getAccountBalance(
   const hbarOnly = validArgs.hbarOnly;
   const token = validArgs.token;
   const tokenOnly = !!token;
+  const raw = validArgs.raw;
 
   logger.info(`Getting balance for account: ${accountIdOrNameOrAlias}`);
 
@@ -94,11 +64,20 @@ export async function getAccountBalance(
       accountId,
       hbarOnly,
       tokenOnly,
+      raw,
     };
 
     if (!tokenOnly) {
-      outputData.hbarBalance =
-        await api.mirror.getAccountHBarBalance(accountId);
+      const hbarBalanceRaw = await api.mirror.getAccountHBarBalance(accountId);
+      outputData.hbarBalance = hbarBalanceRaw;
+
+      if (!raw) {
+        const hbarBalanceBigNumber = new BigNumber(hbarBalanceRaw);
+        outputData.hbarBalanceDisplay = normalizeBalance(
+          hbarBalanceBigNumber,
+          HBAR_DECIMALS,
+        );
+      }
     }
 
     if (!hbarOnly) {
@@ -128,6 +107,8 @@ export async function getAccountBalance(
           api,
           accountId,
           tokenId,
+          raw,
+          network,
         );
       } catch (error: unknown) {
         return {

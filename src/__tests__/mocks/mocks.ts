@@ -84,6 +84,7 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
   remove: jest.fn(),
   exists: jest.fn().mockReturnValue(false), // Alias doesn't exist by default
   availableOrThrow: jest.fn(),
+  clear: jest.fn(),
 });
 
 /**
@@ -141,6 +142,10 @@ export const makeMirrorMock = (
     tokenError?: Error;
     accountInfo?: any;
     getAccountImpl?: jest.Mock;
+    tokenInfo?: Record<
+      string,
+      { name: string; symbol: string; decimals: string }
+    >;
   } = {},
 ): Partial<HederaMirrornodeService> => ({
   getAccountHBarBalance: jest.fn().mockResolvedValue(options.hbarBalance ?? 0n),
@@ -157,6 +162,38 @@ export const makeMirrorMock = (
         accountPublicKey: 'pubKey',
       },
     ),
+  getTokenInfo: jest.fn().mockImplementation((tokenId: string) => {
+    if (options.tokenInfo && options.tokenInfo[tokenId]) {
+      return Promise.resolve({
+        token_id: tokenId,
+        ...options.tokenInfo[tokenId],
+        total_supply: '1000000',
+        max_supply: '1000000',
+        treasury: '0.0.1234',
+        created_timestamp: '1234567890',
+        deleted: false,
+        default_freeze_status: false,
+        default_kyc_status: false,
+        pause_status: 'NOT_APPLICABLE',
+        memo: '',
+      });
+    }
+    return Promise.resolve({
+      token_id: tokenId,
+      name: `Token ${tokenId}`,
+      symbol: 'TKN',
+      decimals: '8',
+      total_supply: '1000000',
+      max_supply: '1000000',
+      treasury: '0.0.1234',
+      created_timestamp: '1234567890',
+      deleted: false,
+      default_freeze_status: false,
+      default_kyc_status: false,
+      pause_status: 'NOT_APPLICABLE',
+      memo: '',
+    });
+  }),
 });
 
 /**
