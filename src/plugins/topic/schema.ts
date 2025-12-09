@@ -4,20 +4,16 @@
  */
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
+import {
+  EntityIdSchema,
+  AliasNameSchema,
+} from '../../core/schemas/common-schemas';
 
 // Zod schema for runtime validation
 export const TopicDataSchema = z.object({
-  name: z
-    .string()
-    .max(50, 'Alias must be 50 characters or less')
-    .regex(
-      /^[a-zA-Z0-9_-]+$/,
-      'Name can only contain letters, numbers, underscores, and hyphens',
-    ),
+  name: AliasNameSchema.max(50, 'Alias must be 50 characters or less'),
 
-  topicId: z
-    .string()
-    .regex(/^0\.0\.[0-9]+$/, 'Topic ID must be in format 0.0.123456'),
+  topicId: EntityIdSchema,
 
   memo: z.string().max(100, 'Memo must be 100 characters or less').optional(),
 
@@ -25,10 +21,7 @@ export const TopicDataSchema = z.object({
 
   submitKeyRefId: z.string().min(1, 'Key reference ID is required').optional(),
 
-  autoRenewAccount: z
-    .string()
-    .regex(/^0\.0\.[0-9]+$/, 'Auto renew account must be in format 0.0.123456')
-    .optional(),
+  autoRenewAccount: EntityIdSchema.optional(),
 
   autoRenewPeriod: z
     .number()

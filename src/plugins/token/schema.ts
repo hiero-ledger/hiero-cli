@@ -21,9 +21,7 @@ export const TokenKeysSchema = z.object({
 // Zod schema for token association
 export const TokenAssociationSchema = z.object({
   name: z.string().min(1, 'Association name is required'),
-  accountId: z
-    .string()
-    .regex(/^0\.0\.[0-9]+$/, 'Account ID must be in format 0.0.123456'),
+  accountId: EntityIdSchema,
 });
 
 // Zod schema for custom fees
@@ -42,9 +40,7 @@ export const CustomFeeSchema = z.object({
 
 // Main token data schema
 export const TokenDataSchema = z.object({
-  tokenId: z
-    .string()
-    .regex(/^0\.0\.[0-9]+$/, 'Token ID must be in format 0.0.123456'),
+  tokenId: EntityIdSchema,
 
   name: z
     .string()
@@ -56,9 +52,7 @@ export const TokenDataSchema = z.object({
     .min(1, 'Token symbol is required')
     .max(10, 'Token symbol must be 10 characters or less'),
 
-  treasuryId: z
-    .string()
-    .regex(/^0\.0\.[0-9]+$/, 'Treasury ID must be in format 0.0.123456'),
+  treasuryId: EntityIdSchema,
 
   decimals: z
     .number()
