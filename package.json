@@ -1,5 +1,5 @@
 {
-  "name": "@hashgraph/hedera-cli",
+  "name": "@hashgraph/hiero-cli",
   "version": "0.9.0",
   "description": "CLI tool to manage and setup developer environments for Hedera Hashgraph.",
   "main": "hedera-cli.js",

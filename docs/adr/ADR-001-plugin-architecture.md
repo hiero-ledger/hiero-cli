@@ -109,7 +109,7 @@ export interface PluginContext {
 
 ## Distribution & UX
 
-- Plugins are npm packages (e.g., `@hashgraph/hedera-cli-plugin-*`).
+- Plugins are npm packages (e.g., `@hiero-ledger/hiero-cli-plugin-*`).
 - CLI provides `plugin list|add|remove|info|doctor` for management and diagnostics.
 - Versions can be locked in a CLI lock to ensure reproducibility (future enhancement).
 
