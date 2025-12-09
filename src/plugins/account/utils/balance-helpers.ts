@@ -23,25 +23,25 @@ export interface TokenBalanceWithMetadata {
 }
 
 /**
- * Resolves the token alias from the alias service
+ * Finds the token alias for a given token ID from the alias service
  * @param api - Core API instance
- * @param tokenId - Token ID to resolve
+ * @param tokenId - Token ID to find alias for
  * @param network - Network the token is on
- * @returns The alias if found, null otherwise
+ * @returns The alias if found, undefined otherwise
  */
-export function resolveTokenAlias(
+export function findTokenAlias(
   api: CoreApi,
   tokenId: string,
   network: SupportedNetwork,
-): string | null {
+): string | undefined {
   try {
     const aliases = api.alias.list({ network, type: 'token' });
     const aliasRecord = aliases.find(
       (alias: AliasRecord) => alias.entityId === tokenId,
     );
-    return aliasRecord ? aliasRecord.alias : null;
+    return aliasRecord ? aliasRecord.alias : undefined;
   } catch (error: unknown) {
-    return null;
+    return undefined;
   }
 }
 
@@ -74,30 +74,25 @@ export async function fetchAccountTokenBalances(
   return Promise.all(
     tokenBalances.tokens.map(async (token: TokenBalanceInfo) => {
       const balanceRaw = BigInt(token.balance.toString());
-      const alias = resolveTokenAlias(api, token.token_id, network);
+      const alias = findTokenAlias(api, token.token_id, network);
 
-      const {
-        name,
-        symbol,
-        decimals: tokenDecimals,
-      } = await api.mirror.getTokenInfo(token.token_id).then(
-        (tokenInfo) => ({
-          name: tokenInfo.name,
-          symbol: tokenInfo.symbol,
-          decimals: parseInt(tokenInfo.decimals, 10),
-        }),
-        () => ({
-          name: undefined,
-          symbol: undefined,
-          decimals: token.decimals,
-        }),
-      );
+      let name: string | undefined;
+      let symbol: string | undefined;
+      let decimals: number | undefined;
+      try {
+        const tokenInfo = await api.mirror.getTokenInfo(token.token_id);
+        name = tokenInfo.name;
+        symbol = tokenInfo.symbol;
+        decimals = parseInt(tokenInfo.decimals, 10);
+      } catch {
+        decimals = token.decimals;
+      }
 
       let balanceDisplay: string | undefined;
-      if (!raw && tokenDecimals !== undefined) {
+      if (!raw && decimals !== undefined) {
         balanceDisplay = normalizeBalance(
           new BigNumber(balanceRaw.toString()),
-          tokenDecimals,
+          decimals,
         );
       }
 
@@ -105,10 +100,10 @@ export async function fetchAccountTokenBalances(
         tokenId: token.token_id,
         name,
         symbol,
-        alias: alias ?? undefined,
+        alias,
         balance: balanceRaw,
         balanceDisplay,
-        decimals: tokenDecimals,
+        decimals,
       };
     }),
   );

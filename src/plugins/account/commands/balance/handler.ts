@@ -72,7 +72,7 @@ export async function getAccountBalance(
       outputData.hbarBalance = hbarBalanceRaw;
 
       if (!raw) {
-        const hbarBalanceBigNumber = new BigNumber(hbarBalanceRaw.toString());
+        const hbarBalanceBigNumber = new BigNumber(hbarBalanceRaw);
         outputData.hbarBalanceDisplay = normalizeBalance(
           hbarBalanceBigNumber,
           HBAR_DECIMALS,
