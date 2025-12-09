@@ -46,7 +46,6 @@ export const setDefaultOperatorForNetwork = async (
   coreApi: CoreApi,
 ): Promise<void> => {
   // Validate environment variables with Zod
-  console.log(process.env.OPERATOR_ID);
   const env = envSchema.parse({
     OPERATOR_ID: process.env.OPERATOR_ID,
     OPERATOR_KEY: process.env.OPERATOR_KEY,

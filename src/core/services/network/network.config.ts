@@ -20,7 +20,7 @@ export const DEFAULT_NETWORK: SupportedNetwork = 'testnet';
 export const DEFAULT_NETWORKS: Record<string, DefaultNetworkConfig> = {
   localnet: {
     rpcUrl: 'http://localhost:7546',
-    mirrorNodeUrl: 'http://localhost:8081/api/v1',
+    mirrorNodeUrl: 'http://localhost:5551/api/v1',
   },
   testnet: {
     rpcUrl: 'https://testnet.hashio.io/api',

@@ -7,6 +7,7 @@ export const LedgerIdToBaseUrl = new Map<string, string>([
   ['mainnet', 'https://mainnet-public.mirrornode.hedera.com/api/v1'],
   ['testnet', 'https://testnet.mirrornode.hedera.com/api/v1'],
   ['previewnet', 'https://previewnet.mirrornode.hedera.com/api/v1'],
+  ['local-node', 'http://localhost:5551/api/v1'],
 ]);
 
 // Account API Response

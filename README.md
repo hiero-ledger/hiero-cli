@@ -174,7 +174,7 @@ By default, the `src/core/services/network/network.config.ts` file contains the 
   "localNodeAccountId": "0.0.3",
   "localNodeMirrorAddressGRPC": "127.0.0.1:5600",
   "rpcUrl": "http://localhost:7546",
-  "mirrorNodeUrl": "http://localhost:8081/api/v1"
+  "mirrorNodeUrl": "http://localhost:5551/api/v1"
 }
 ```
 
