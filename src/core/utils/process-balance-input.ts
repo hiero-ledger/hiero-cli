@@ -1,4 +1,5 @@
-import { parseBalance } from './parse-balance';
+import BigNumber from 'bignumber.js';
+import { HBAR_DECIMALS } from '../shared/constants';
 
 /**
  * Processes user balance input with intelligent unit detection.
@@ -37,27 +38,81 @@ import { parseBalance } from './parse-balance';
  */
 export function processBalanceInput(
   input: string | number,
-  decimals: number = 8,
+  decimals: number = HBAR_DECIMALS,
 ): bigint {
   const inputStr = String(input).trim();
 
   // Check if input ends with lowercase 't' (raw units indicator)
   const hasRawUnitsSuffix = inputStr.endsWith('t');
+  return hasRawUnitsSuffix
+    ? parseWholeNumber(inputStr)
+    : parseDecimalNumber(inputStr, decimals);
+}
 
-  if (hasRawUnitsSuffix) {
-    // Extract value without 't' suffix
-    const rawValue = inputStr.slice(0, -1).trim();
+function parseWholeNumber(balance: string) {
+  // Extract value without 't' suffix
+  const rawValue = balance.slice(0, -1).trim();
 
-    // Validate it's a valid integer (no decimals allowed for raw units)
-    if (!/^[0-9]+$/.test(rawValue)) {
-      throw new Error(
-        `Invalid raw units: "${input}". Must be an integer without decimals (fractional raw units not allowed).`,
-      );
-    }
+  // Validate it's a valid integer (no decimals allowed for raw units)
+  if (!/^[0-9]+$/.test(rawValue)) {
+    throw new Error(
+      `Invalid raw units: "${balance}". Must be an integer without decimals (fractional raw units not allowed).`,
+    );
+  }
+  return BigInt(rawValue);
+}
 
-    // Return raw value as BigNumber (already in base units, no decimals applied)
-    return BigInt(rawValue);
+function parseDecimalNumber(balance: string, decimals: number): bigint {
+  // Validate decimals
+  if (decimals < 0) {
+    throw new Error(
+      `Invalid decimals: ${decimals}. Must be a non-negative integer.`,
+    );
   }
 
-  return parseBalance(inputStr, decimals);
+  // Check for NaN string
+  if (balance === 'NaN') {
+    throw new Error(
+      `Unable to parse balance: "${balance}", balance after parsing is Not a Number.`,
+    );
+  }
+
+  // Check for negative
+  if (balance.startsWith('-')) {
+    throw new Error(
+      `Invalid balance: "${balance}". Balance cannot be negative.`,
+    );
+  }
+
+  // Check format for valid decimal number
+  if (!/^\d+(\.\d+)?$/.test(balance)) {
+    throw new Error(`Invalid balance: "${balance}".`);
+  }
+
+  // Parse into BigNumber
+  const bn = new BigNumber(balance);
+
+  // Validate using BigNumber methods
+  if (bn.isNaN()) {
+    throw new Error(
+      `Unable to parse balance: "${balance}", balance after parsing is Not a Number.`,
+    );
+  }
+
+  if (bn.isNegative()) {
+    throw new Error(
+      `Invalid balance: "${balance}". Balance cannot be negative.`,
+    );
+  }
+
+  // Check decimal places don't exceed allowed
+  const actualDecimals = bn.decimalPlaces();
+  if (actualDecimals !== null && actualDecimals > decimals) {
+    throw new Error(`Invalid balance: "${balance}". Too many decimal places.`);
+  }
+
+  // Convert to raw units by multiplying by 10^decimals
+  // This replaces string concatenation with pure BigNumber arithmetic
+  const result = bn.shiftedBy(decimals);
+  return BigInt(result.toFixed(0));
 }
