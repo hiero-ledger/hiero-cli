@@ -141,6 +141,34 @@ source ~/.bash_profile
 source ~/.zshrc
 ```
 
+## Connecting the CLI tool with your Local Hedera Network
+
+The Hedera CLI tool can be used to interact with a local Hedera network. This is useful for testing and development purposes. To connect the CLI tool with your local Hedera network, you need to set up a local Hedera network. You can follow the instructions in the [Hedera documentation](https://docs.hedera.com/hedera/tutorials/more-tutorials/how-to-set-up-a-hedera-local-node) to set up a local Hedera network.
+
+By default, the `src/core/services/network/network.config.ts` file contains the default configuration for the localnet. The default configuration is:
+
+```typescript
+{
+  "localNodeAddress": "127.0.0.1:50211",
+  "localNodeAccountId": "0.0.3",
+  "localNodeMirrorAddressGRPC": "127.0.0.1:5600",
+  "rpcUrl": "http://localhost:7546",
+  "mirrorNodeUrl": "http://localhost:8081/api/v1"
+}
+```
+
+To use the localnet, set the operator credentials using the network plugin:
+
+```sh
+hcli network set-operator --operator 0.0.2:302e020100300506032b65700123456789132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137 --network localnet
+```
+
+Then switch to the localnet:
+
+```sh
+hcli network use --network localnet
+```
+
 ## Plugins
 
 The Hedera CLI is built on a plugin architecture. The following default plugins are loaded automatically:
