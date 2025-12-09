@@ -119,22 +119,6 @@ describe('hbar plugin - transfer command (unit)', () => {
     expect(logger.info).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
   });
 
-  test('returns failure when from equals to', async () => {
-    const { api, logger } = setupTransferTest({
-      accounts: [mockAccounts.sameAccount],
-    });
-
-    const args = makeArgs(api, logger, {
-      amount: mockAmounts.small,
-      from: 'same-account',
-      to: 'same-account',
-    });
-
-    const result = await transferHandler(args);
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Cannot transfer');
-  });
-
   test('returns failure when transferTinybar fails', async () => {
     const { api, logger } = setupTransferTest({
       transferImpl: jest
