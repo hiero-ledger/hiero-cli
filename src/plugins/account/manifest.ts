@@ -141,6 +141,15 @@ export const accountPluginManifest: PluginManifest = {
           required: false,
           description: 'Token ID or token name',
         },
+        {
+          name: 'raw',
+          short: 'r',
+          type: 'boolean',
+          required: false,
+          default: false,
+          description:
+            'Display balances in raw units (tinybars for HBAR, base units for tokens)',
+        },
       ],
       handler: getAccountBalance,
       output: {

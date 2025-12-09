@@ -65,10 +65,13 @@ describe('account plugin - balance command (ADR-003)', () => {
     expect(output.hbarBalance).toBeUndefined();
     expect(output.tokenOnly).toBe(true);
     expect(output.tokenBalances).toHaveLength(1);
-    expect(output.tokenBalances![0]).toEqual({
+    expect(output.tokenBalances![0]).toMatchObject({
       tokenId: '0.0.7777',
       balance: '500',
     });
+    expect(output.tokenBalances![0].name).toBeDefined();
+    expect(output.tokenBalances![0].symbol).toBeDefined();
+    expect(output.tokenBalances![0].balanceDisplay).toBeDefined();
   });
 
   test('returns specific token balance only when token flag is set with alias present in state', async () => {
@@ -120,10 +123,13 @@ describe('account plugin - balance command (ADR-003)', () => {
     expect(output.hbarBalance).toBeUndefined();
     expect(output.tokenOnly).toBe(true);
     expect(output.tokenBalances).toHaveLength(1);
-    expect(output.tokenBalances![0]).toEqual({
+    expect(output.tokenBalances![0]).toMatchObject({
       tokenId: '0.0.7777',
       balance: '500',
     });
+    expect(output.tokenBalances![0].name).toBeDefined();
+    expect(output.tokenBalances![0].symbol).toBeDefined();
+    expect(output.tokenBalances![0].balanceDisplay).toBeDefined();
   });
 
   test('returns HBAR balance only when hbar-only flag is set', async () => {
@@ -158,6 +164,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
     expect(output.accountId).toBe('0.0.1001');
     expect(output.hbarBalance).toBe('123456');
+    expect(output.hbarBalanceDisplay).toBeDefined();
     expect(output.hbarOnly).toBe(true);
     expect(output.tokenBalances).toBeUndefined();
   });
@@ -201,15 +208,21 @@ describe('account plugin - balance command (ADR-003)', () => {
     const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
     expect(output.accountId).toBe('0.0.2002');
     expect(output.hbarBalance).toBe('5000');
+    expect(output.hbarBalanceDisplay).toBeDefined();
     expect(output.tokenBalances).toHaveLength(2);
-    expect(output.tokenBalances![0]).toEqual({
+    expect(output.tokenBalances![0]).toMatchObject({
       tokenId: '0.0.3003',
       balance: '100',
     });
-    expect(output.tokenBalances![1]).toEqual({
+    expect(output.tokenBalances![0].name).toBeDefined();
+    expect(output.tokenBalances![0].symbol).toBeDefined();
+    expect(output.tokenBalances![1]).toMatchObject({
       tokenId: '0.0.4004',
       balance: '200',
     });
+    expect(output.tokenBalances![1].name).toBeDefined();
+    expect(output.tokenBalances![1].symbol).toBeDefined();
+    expect(output.tokenBalances![1].balanceDisplay).toBeDefined();
   });
 
   test('returns HBAR balance when resolved via alias (not in state)', async () => {
@@ -247,6 +260,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
     expect(output.accountId).toBe('0.0.7777');
     expect(output.hbarBalance).toBe('999');
+    expect(output.hbarBalanceDisplay).toBeDefined();
     expect(output.tokenBalances).toBeUndefined();
   });
 
@@ -278,6 +292,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
     expect(output.accountId).toBe('0.0.5005');
     expect(output.hbarBalance).toBe('42');
+    expect(output.hbarBalanceDisplay).toBeDefined();
     expect(output.tokenBalances).toBeUndefined();
   });
 
@@ -373,5 +388,110 @@ describe('account plugin - balance command (ADR-003)', () => {
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toBeDefined();
+  });
+
+  test('returns display units by default', async () => {
+    const logger = makeLogger();
+
+    const mirrorMock = makeMirrorMock({
+      hbarBalance: 100000000n,
+      tokenBalances: [{ token_id: '0.0.3003', balance: 100000000 }],
+      tokenInfo: {
+        '0.0.3003': {
+          name: 'Test Token',
+          symbol: 'TEST',
+          decimals: '8',
+        },
+      },
+    });
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      logger,
+      state: {} as any,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'test-acc',
+          type: 'account',
+          network: 'testnet',
+          entityId: '0.0.2002',
+        }),
+      } as unknown as AliasService,
+    };
+    const args = makeArgs(api, logger, {
+      account: 'test-acc',
+    });
+
+    const result = await getAccountBalance(args);
+
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
+    expect(output.accountId).toBe('0.0.2002');
+    expect(output.hbarBalance).toBe('100000000');
+    expect(output.hbarBalanceDisplay).toBe('1');
+    expect(output.raw).toBe(false);
+    expect(output.tokenBalances).toHaveLength(1);
+    expect(output.tokenBalances![0]).toMatchObject({
+      tokenId: '0.0.3003',
+      name: 'Test Token',
+      symbol: 'TEST',
+      balance: '100000000',
+      balanceDisplay: '1',
+    });
+  });
+
+  test('returns raw units when raw flag is set', async () => {
+    const logger = makeLogger();
+
+    const mirrorMock = makeMirrorMock({
+      hbarBalance: 100000000n,
+      tokenBalances: [{ token_id: '0.0.3003', balance: 100000000 }],
+      tokenInfo: {
+        '0.0.3003': {
+          name: 'Test Token',
+          symbol: 'TEST',
+          decimals: '8',
+        },
+      },
+    });
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      logger,
+      state: {} as any,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'test-acc',
+          type: 'account',
+          network: 'testnet',
+          entityId: '0.0.2002',
+        }),
+      } as unknown as AliasService,
+    };
+    const args = makeArgs(api, logger, {
+      account: 'test-acc',
+      raw: true,
+    });
+
+    const result = await getAccountBalance(args);
+
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
+    expect(output.accountId).toBe('0.0.2002');
+    expect(output.hbarBalance).toBe('100000000');
+    expect(output.hbarBalanceDisplay).toBeUndefined();
+    expect(output.raw).toBe(true);
+    expect(output.tokenBalances).toHaveLength(1);
+    expect(output.tokenBalances![0]).toMatchObject({
+      tokenId: '0.0.3003',
+      name: 'Test Token',
+      symbol: 'TEST',
+      balance: '100000000',
+    });
+    expect(output.tokenBalances![0].balanceDisplay).toBeUndefined();
   });
 });
