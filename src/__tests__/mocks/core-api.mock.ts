@@ -88,9 +88,8 @@ export class CoreApiMockImplementation implements CoreApi {
     this.topic = new TopicServiceImpl();
 
     // Convert network string to LedgerId
-    const networkString = this.network.getCurrentNetwork();
     let ledgerId: LedgerId;
-    switch (networkString) {
+    switch (process.env.NETWORK) {
       case 'testnet':
         ledgerId = LedgerId.TESTNET;
         break;

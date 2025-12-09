@@ -6,13 +6,16 @@ import '../../../core/utils/json-serialize';
 import { createTopic, listTopics } from '../../../plugins/topic';
 import { CreateTopicOutput } from '../../../plugins/topic/commands/create';
 import { ListTopicsOutput } from '../../../plugins/topic/commands/list';
+import { SupportedNetwork } from '../../../core/types/shared.types';
 
 describe('Create Topic Integration Tests', () => {
   let coreApi: CoreApi;
+  let network: SupportedNetwork;
 
   beforeAll(async () => {
     coreApi = createMockCoreApi();
     await setDefaultOperatorForNetwork(coreApi);
+    network = coreApi.network.getCurrentNetwork();
   });
   it('should create a topic and verify with list method', async () => {
     const createTopicArgs: Record<string, unknown> = {
@@ -34,13 +37,13 @@ describe('Create Topic Integration Tests', () => {
       createTopicResult.outputJson!,
     );
     expect(createTopicOutput.name).toBe('test-topic');
-    expect(createTopicOutput.network).toBe('testnet');
+    expect(createTopicOutput.network).toBe(network);
     expect(createTopicOutput.memo).toBe('Test topic');
     expect(createTopicOutput.adminKeyPresent).toBe(true);
     expect(createTopicOutput.submitKeyPresent).toBe(true);
 
     const listTopicArgs: Record<string, unknown> = {
-      network: 'testnet',
+      network: network,
     };
     const listTopicResult = await listTopics({
       args: listTopicArgs,
@@ -58,7 +61,7 @@ describe('Create Topic Integration Tests', () => {
     );
     expect(topic).not.toBeNull();
     expect(topic?.name).toBe('test-topic');
-    expect(topic?.network).toBe('testnet');
+    expect(topic?.network).toBe(network);
     expect(topic?.memo).toBe('Test topic');
     expect(topic?.adminKeyPresent).toBe(true);
     expect(topic?.submitKeyPresent).toBe(true);

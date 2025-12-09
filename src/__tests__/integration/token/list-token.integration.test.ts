@@ -6,13 +6,16 @@ import '../../../core/utils/json-serialize';
 import { createToken, listTokens } from '../../../plugins/token';
 import { CreateTokenOutput } from '../../../plugins/token/commands/create';
 import { ListTokensOutput } from '../../../plugins/token/commands/list';
+import { SupportedNetwork } from '../../../core/types/shared.types';
 
 describe('List Token Integration Tests', () => {
   let coreApi: CoreApi;
+  let network: SupportedNetwork;
 
   beforeAll(async () => {
     coreApi = createMockCoreApi();
     await setDefaultOperatorForNetwork(coreApi);
+    network = coreApi.network.getCurrentNetwork();
   });
   it('should create a token and check it with list', async () => {
     const createTokenArgs: Record<string, unknown> = {
@@ -33,7 +36,7 @@ describe('List Token Integration Tests', () => {
     const createTokenOutput: CreateTokenOutput = JSON.parse(
       createTokenResult.outputJson!,
     );
-    expect(createTokenOutput.network).toBe('testnet');
+    expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('10');
     expect(createTokenOutput.name).toBe('Test Token List');
@@ -44,7 +47,7 @@ describe('List Token Integration Tests', () => {
 
     const listTokenArgs: Record<string, unknown> = {
       keys: true,
-      network: 'testnet',
+      network: network,
     };
     const listTokenResult = await listTokens({
       args: listTokenArgs,
@@ -57,7 +60,7 @@ describe('List Token Integration Tests', () => {
     const listTokenOutput: ListTokensOutput = JSON.parse(
       listTokenResult.outputJson!,
     );
-    expect(listTokenOutput.network).toBe('testnet');
+    expect(listTokenOutput.network).toBe(network);
     const tokenNames = listTokenOutput.tokens.map((token) => token.tokenId);
     expect(tokenNames).toContain(createTokenOutput.tokenId);
   });

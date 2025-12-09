@@ -14,13 +14,16 @@ import { delay } from '../../utils/common-utils';
 import { createToken } from '../../../plugins/token';
 import { CreateTokenOutput } from '../../../plugins/token/commands/create';
 import { AccountBalanceOutput } from '../../../plugins/account/commands/balance';
+import { SupportedNetwork } from '../../../core/types/shared.types';
 
 describe('Create Token Integration Tests', () => {
   let coreApi: CoreApi;
+  let network: SupportedNetwork;
 
   beforeAll(async () => {
     coreApi = createMockCoreApi();
     await setDefaultOperatorForNetwork(coreApi);
+    network = coreApi.network.getCurrentNetwork();
   });
   it('should create a token and verify with account balance method', async () => {
     const createAccountArgs: Record<string, unknown> = {
@@ -43,7 +46,7 @@ describe('Create Token Integration Tests', () => {
     );
     expect(createAccountOutput.name).toBe('account-create-token');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
-    expect(createAccountOutput.network).toBe('testnet');
+    expect(createAccountOutput.network).toBe(network);
 
     await delay(5000);
 
@@ -87,7 +90,7 @@ describe('Create Token Integration Tests', () => {
     const createTokenOutput: CreateTokenOutput = JSON.parse(
       createTokenResult.outputJson!,
     );
-    expect(createTokenOutput.network).toBe('testnet');
+    expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('10');
     expect(createTokenOutput.name).toBe('Test Token');
