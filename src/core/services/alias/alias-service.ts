@@ -66,6 +66,20 @@ export class AliasServiceImpl implements AliasService {
     this.logger.debug(`[ALIAS] Removed ${alias} on ${network}`);
   }
 
+  clear(type: AliasType): void {
+    const all = this.state.list<AliasRecord>(NAMESPACE) || [];
+    all
+      .filter((r) => {
+        if (!r) return false;
+        return r.type === type;
+      })
+      .forEach((r) => {
+        this.state.delete(NAMESPACE, this.composeKey(r.network, r.alias));
+        this.logger.debug(`[ALIAS] Removed ${r.alias} on ${r.network}`);
+      });
+    this.logger.debug(`[ALIAS] Cleared aliases for type ${type}`);
+  }
+
   exists(alias: string, network: SupportedNetwork): boolean {
     const key = this.composeKey(network, alias);
     return this.state.has(NAMESPACE, key);

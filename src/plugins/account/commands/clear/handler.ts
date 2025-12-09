@@ -9,6 +9,7 @@ import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { ZustandAccountStateHelper } from '../../zustand-state-helper';
 import { ClearAccountsOutput } from './output';
+import { AliasType } from '../../../../core/services/alias/alias-service.interface';
 
 export async function clearAccounts(
   args: CommandHandlerArgs,
@@ -23,6 +24,9 @@ export async function clearAccounts(
   try {
     const accounts = accountState.listAccounts();
     const count = accounts.length;
+
+    // Clear all aliases for accounts
+    api.alias.clear(AliasType.Account);
 
     // Clear all accounts
     accountState.clearAccounts();
