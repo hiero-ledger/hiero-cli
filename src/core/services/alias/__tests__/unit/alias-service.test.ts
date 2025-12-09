@@ -327,4 +327,42 @@ describe('AliasServiceImpl', () => {
       ).toThrow('Alias "existing" already exists on network "testnet"');
     });
   });
+
+  describe('clear', () => {
+    it('should clear by alias type successfully', () => {
+      const records = [
+        createAliasRecord({
+          alias: 'a1',
+          network: 'testnet',
+          type: AliasType.Account,
+        }),
+        createAliasRecord({
+          alias: 'a2',
+          network: 'testnet',
+          type: AliasType.Token,
+        }),
+        createAliasRecord({
+          alias: 'a3',
+          network: 'mainnet',
+          type: AliasType.Account,
+        }),
+      ];
+      stateMock.list.mockReturnValue(records);
+
+      aliasService.clear(AliasType.Account);
+
+      expect(stateMock.list).toHaveBeenCalledWith('aliases');
+      expect(stateMock.delete).toHaveBeenCalledTimes(2);
+      expect(stateMock.delete).toHaveBeenNthCalledWith(
+        1,
+        'aliases',
+        'testnet:a1',
+      );
+      expect(stateMock.delete).toHaveBeenNthCalledWith(
+        2,
+        'aliases',
+        'mainnet:a3',
+      );
+    });
+  });
 });
