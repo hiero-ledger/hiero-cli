@@ -141,12 +141,6 @@ source ~/.bash_profile
 source ~/.zshrc
 ```
 
-## Video Guide
-
-Learn how to use the Hedera CLI Tool by watching the video below.
-
-> Video coming soon ⚠️
-
 ## Plugins
 
 The Hedera CLI is built on a plugin architecture. The following default plugins are loaded automatically:
