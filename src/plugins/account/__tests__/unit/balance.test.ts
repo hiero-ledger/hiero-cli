@@ -24,7 +24,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     jest.clearAllMocks();
   });
 
-  test('returns specific token balance only when token flag is set', async () => {
+  test('returns specific token balance only when token flag is set for tokenId', async () => {
     const logger = makeLogger();
 
     const mirrorMock = makeMirrorMock({
@@ -48,6 +48,61 @@ describe('account plugin - balance command (ADR-003)', () => {
     const args = makeArgs(api, logger, {
       account: 'token-account',
       token: '0.0.7777',
+    });
+
+    const result = await getAccountBalance(args);
+
+    expect(mirrorMock.getAccountHBarBalance).not.toHaveBeenCalled();
+    expect(mirrorMock.getAccountTokenBalances).toHaveBeenCalledWith(
+      '0.0.1234',
+      '0.0.7777',
+    );
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+
+    const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
+    expect(output.accountId).toBe('0.0.1234');
+    expect(output.hbarBalance).toBeUndefined();
+    expect(output.tokenOnly).toBe(true);
+    expect(output.tokenBalances).toHaveLength(1);
+    expect(output.tokenBalances![0]).toEqual({
+      tokenId: '0.0.7777',
+      balance: '500',
+    });
+  });
+
+  test('returns specific token balance only when token flag is set with alias present in state', async () => {
+    const logger = makeLogger();
+
+    const mirrorMock = makeMirrorMock({
+      hbarBalance: 100000n,
+      tokenBalances: [{ token_id: '0.0.7777', balance: 500 }],
+    });
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      logger,
+      state: {} as any,
+      alias: {
+        resolve: jest
+          .fn()
+          .mockReturnValueOnce({
+            alias: 'token-account',
+            type: 'account',
+            network: 'testnet',
+            entityId: '0.0.1234',
+          })
+          .mockReturnValueOnce({
+            alias: 'token-alias',
+            type: 'token',
+            network: 'testnet',
+            entityId: '0.0.7777',
+          }),
+      } as unknown as AliasService,
+    };
+    const args = makeArgs(api, logger, {
+      account: 'token-account',
+      token: 'token-alias',
     });
 
     const result = await getAccountBalance(args);
