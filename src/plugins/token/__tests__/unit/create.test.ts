@@ -19,7 +19,6 @@ import {
   makeTokenCreateCommandArgs,
   expectedTokenTransactionParams,
 } from './helpers/fixtures';
-// import type { CreateTokenOutput } from '../../commands/create';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
@@ -291,6 +290,25 @@ describe('createTokenHandler', () => {
       expect(result.errorMessage).toContain('Failed to create token');
       expect(result.errorMessage).toContain('Service error');
       // This test is now ADR-003 compliant
+    });
+    test('should handle initial supply limit exceeded', async () => {
+      const { api } = makeApiMocks({});
+      const logger = makeLogger();
+      const args: CommandHandlerArgs = {
+        args: {
+          tokenName: 'TestToken',
+          symbol: 'TEST',
+          adminKey: 'test-admin-key',
+          initialSupply: '250000000000000000000000000000',
+        },
+        api,
+        state: {} as any,
+        config: {} as any,
+        logger,
+      };
+      await expect(createToken(args)).rejects.toThrow(
+        'Maximum balance for token exceeded. Token balance cannot be greater than 9223372036854775807',
+      );
     });
   });
 

@@ -5,7 +5,7 @@
  */
 import { CommandHandlerArgs } from '../../../../core';
 import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
+import { HBAR_DECIMALS, Status } from '../../../../core/shared/constants';
 import type { AccountData } from '../../schema';
 import { AliasType } from '../../../../core/services/alias/alias-service.interface';
 import { formatError } from '../../../../core/utils/errors';
@@ -66,7 +66,7 @@ export async function createAccount(
     // Convert balance input: display units (default) or base units (with 't' suffix)
     // HBAR uses 8 decimals
     // @TODO Ensure every balance variable is typeof bigint
-    balance = processBalanceInput(rawBalance, 8);
+    balance = processBalanceInput(rawBalance, HBAR_DECIMALS);
   } catch (error) {
     return {
       status: Status.Failure,

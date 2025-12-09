@@ -19,7 +19,7 @@ import {
 } from '../../resolver-helper';
 import { formatError } from '../../../../core/utils/errors';
 import { CreateTokenOutput } from './output';
-import { processBalanceInput } from '../../../../core/utils/process-balance-input';
+import { processTokenBalanceInput } from '../../../../core/utils/process-token-balance-input';
 import type { TokenCreateParams } from '../../../../core/types/token.types';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { CreateTokenInputSchema } from './input';
@@ -207,9 +207,9 @@ export async function createToken(
     api.config.getOption<KeyManagerName>('default_key_manager');
 
   // Convert display units to raw token units
-  const initialSupply = processBalanceInput(rawInitialSupply, decimals);
+  const initialSupply = processTokenBalanceInput(rawInitialSupply, decimals);
   const maxSupply = providedMaxSupply
-    ? processBalanceInput(providedMaxSupply, decimals)
+    ? processTokenBalanceInput(providedMaxSupply, decimals)
     : undefined;
 
   // Check if alias already exists on the current network
