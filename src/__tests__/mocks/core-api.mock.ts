@@ -33,6 +33,8 @@ import { LedgerId } from '@hashgraph/sdk';
 import { STATE_STORAGE_FILE_PATH } from '../test-constants';
 import { PluginManagementService } from '../../core/services/plugin-management/plugin-management-service.interface';
 import { PluginManagementServiceImpl } from '../../core/services/plugin-management/plugin-management-service';
+import { KeyResolverService } from '../../core/services/key-resolver/key-resolver-service.interface';
+import { KeyResolverServiceImpl } from '../../core/services/key-resolver/key-resolver-service';
 
 export class CoreApiMockImplementation implements CoreApi {
   public account: AccountService;
@@ -49,6 +51,7 @@ export class CoreApiMockImplementation implements CoreApi {
   public hbar: HbarService;
   public output: OutputService;
   public pluginManagement: PluginManagementService;
+  public keyResolver: KeyResolverService;
 
   constructor(config: CoreApiConfig) {
     this.logger = {
@@ -101,6 +104,12 @@ export class CoreApiMockImplementation implements CoreApi {
     }
 
     this.mirror = new HederaMirrornodeServiceDefaultImpl(ledgerId);
+    this.keyResolver = new KeyResolverServiceImpl(
+      this.mirror,
+      this.alias,
+      this.network,
+      this.kms,
+    );
 
     this.hbar = new HbarServiceImpl(this.logger);
     this.output = new OutputServiceImpl(config.format);

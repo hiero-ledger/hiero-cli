@@ -10,6 +10,7 @@ import {
   ED25519_HEX_PRIVATE_KEY,
   ED25519_HEX_PRIVATE_KEY_WITH_0X,
 } from '../../../../__tests__/mocks/fixtures';
+import { INVALID_KEY } from '../../../../core/services/topic/__tests__/unit/mocks';
 
 describe('AccountIdWithPrivateKeySchema', () => {
   const accountId = TEST_ACCOUNT_ID;
@@ -107,7 +108,7 @@ describe('AccountIdWithPrivateKeySchema', () => {
     });
 
     test('rejects key with invalid hex characters', () => {
-      const input = `${accountId}:${INVALID_HEX_KEY}`;
+      const input = `${accountId}:${INVALID_KEY}`;
       expect(() => AccountIdWithPrivateKeySchema.parse(input)).toThrow();
       expect(AccountIdWithPrivateKeySchema.safeParse(input).success).toBe(
         false,

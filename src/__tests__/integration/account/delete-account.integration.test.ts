@@ -39,9 +39,8 @@ describe('Delete Account Integration Tests', () => {
     it('should delete imported account by name and verify empty result with view method', async () => {
       //import account
       const importAccountArgs: Record<string, unknown> = {
-        id: accountId,
         name: 'account-to-be-deleted',
-        key: accountKey,
+        key: `${accountId}:${accountKey}`,
       };
       const importAccountResult = await importAccount({
         args: importAccountArgs,
