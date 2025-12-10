@@ -1,5 +1,6 @@
 import { CoreApi } from '../../../core/core-api/core-api.interface';
-import { createMockCoreApi } from '../../mocks/core-api.mock';
+import { createCoreApi } from '../../../core/core-api/core-api';
+import { STATE_STORAGE_FILE_PATH } from '../../test-constants';
 import { createAccount, viewAccount } from '../../../plugins/account';
 import { KeyAlgorithm, Status } from '../../../core/shared/constants';
 import { CreateAccountOutput } from '../../../plugins/account/commands/create';
@@ -14,7 +15,7 @@ describe('Create Account Integration Tests', () => {
   let network: SupportedNetwork;
 
   beforeAll(async () => {
-    coreApi = createMockCoreApi();
+    coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
     network = coreApi.network.getCurrentNetwork();
   });
