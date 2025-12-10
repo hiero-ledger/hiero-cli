@@ -134,8 +134,8 @@ export async function findMessage(
 
   // Step 1: Resolve topic ID from alias if it exists
   const resolveResult = resolveTopicId(topicIdOrAlias, api, currentNetwork);
-  if (!resolveResult.success) {
-    return resolveResult.error;
+  if ('status' in resolveResult) {
+    return resolveResult;
   }
 
   const topicId = resolveResult.topicId;
