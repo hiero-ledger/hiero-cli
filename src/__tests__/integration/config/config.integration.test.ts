@@ -1,5 +1,6 @@
 import { CoreApi } from '../../../core/core-api/core-api.interface';
-import { createMockCoreApi } from '../../mocks/core-api.mock';
+import { createCoreApi } from '../../../core/core-api/core-api';
+import { STATE_STORAGE_FILE_PATH } from '../../test-constants';
 import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
 import '../../../core/utils/json-serialize';
 import { listConfigOptions } from '../../../plugins/config/commands/list/handler';
@@ -14,7 +15,7 @@ describe('Config Integration Tests', () => {
   let coreApi: CoreApi;
 
   beforeAll(async () => {
-    coreApi = createMockCoreApi();
+    coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
   });
 

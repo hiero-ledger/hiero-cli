@@ -49,9 +49,9 @@ export class CoreApiImplementation implements CoreApi {
   public output: OutputService;
   public pluginManagement: PluginManagementService;
 
-  constructor() {
+  constructor(storageDir?: string) {
     this.logger = new LoggerService();
-    this.state = new ZustandGenericStateServiceImpl(this.logger);
+    this.state = new ZustandGenericStateServiceImpl(this.logger, storageDir);
 
     this.network = new NetworkServiceImpl(this.state, this.logger);
 
@@ -115,6 +115,6 @@ export class CoreApiImplementation implements CoreApi {
 /**
  * Factory function to create a Core API instance
  */
-export function createCoreApi(): CoreApi {
-  return new CoreApiImplementation();
+export function createCoreApi(storageDir?: string): CoreApi {
+  return new CoreApiImplementation(storageDir);
 }
