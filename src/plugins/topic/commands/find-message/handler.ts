@@ -6,9 +6,9 @@ import { CommandExecutionResult, CommandHandlerArgs } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { Filter } from '../../../../core/services/mirrornode/types';
-import { EntityIdSchema } from '../../../../core/schemas';
 import { FindMessageOutput, FindMessagesOutput } from './output';
 import { FindMessageInputSchema } from './input';
+import { resolveTopicId } from '../../utils/topicResolver';
 
 /**
  * Helper function to build sequence number filter from command arguments
@@ -133,34 +133,12 @@ export async function findMessage(
   const currentNetwork = api.network.getCurrentNetwork();
 
   // Step 1: Resolve topic ID from alias if it exists
-  let topicId: string;
-
-  const topicIdParseResult = EntityIdSchema.safeParse(topicIdOrAlias);
-  if (topicIdParseResult.success) {
-    topicId = topicIdParseResult.data;
-  } else {
-    const topicAliasResult = api.alias.resolve(
-      topicIdOrAlias,
-      'topic',
-      currentNetwork,
-    );
-
-    if (!topicAliasResult) {
-      return {
-        status: Status.Failure,
-        errorMessage: `Topic alias "${topicIdOrAlias}" not found for network ${currentNetwork}. Please provide either a valid topic alias or topic ID.`,
-      };
-    }
-
-    if (!topicAliasResult.entityId) {
-      return {
-        status: Status.Failure,
-        errorMessage: `Topic alias "${topicIdOrAlias}" does not have an associated topic ID.`,
-      };
-    }
-
-    topicId = topicAliasResult.entityId;
+  const resolveResult = resolveTopicId(topicIdOrAlias, api, currentNetwork);
+  if (!resolveResult.success) {
+    return resolveResult.error;
   }
+
+  const topicId = resolveResult.topicId;
 
   // Log progress indicator (not final output)
   logger.info(`Finding messages in topic: ${topicId}`);
