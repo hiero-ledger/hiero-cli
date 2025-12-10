@@ -27,10 +27,7 @@ export async function importAccount(
   const key = validArgs.key;
   const alias = validArgs.name;
   const keyManagerArg = validArgs.keyManager;
-
-  const parsedPrivateKey =
-    await api.keyResolver.verifyAndResolvePrivateKey(key);
-  const { accountId, privateKey, keyAlgorithm } = parsedPrivateKey;
+  const accountId = key.accountId;
 
   // Check if name already exists on the current network
   const network = api.network.getCurrentNetwork();
@@ -44,6 +41,16 @@ export async function importAccount(
     // Check if account name already exists
     api.alias.availableOrThrow(alias, network);
 
+    // Get account info from mirror node
+    const accountInfo = await api.mirror.getAccount(key.accountId);
+
+    const { keyRefId, publicKey } = api.kms.importAndValidatePrivateKey(
+      accountInfo.keyAlgorithm,
+      key.privateKey,
+      accountInfo.accountPublicKey,
+      keyManager,
+    );
+
     // Generate a unique name for the account
     const name = alias || `imported-${accountId.replace(/\./g, '-')}`;
     logger.info(`Importing account: ${name} (${accountId})`);
@@ -55,17 +62,6 @@ export async function importAccount(
         errorMessage: `Account with name '${name}' already exists`,
       };
     }
-
-    // Get account info from mirror node
-    const accountInfo = await api.mirror.getAccount(accountId);
-
-    // Securely store the private key in credentials storage
-    const { keyRefId, publicKey } = api.kms.importPrivateKey(
-      keyAlgorithm,
-      privateKey,
-      keyManager,
-      ['account:import', `account:${name}`],
-    );
 
     // Register name if provided
     if (alias) {
@@ -83,7 +79,7 @@ export async function importAccount(
     const evmAddress = buildAccountEvmAddress({
       accountId,
       publicKey,
-      keyType: keyAlgorithm,
+      keyType: accountInfo.keyAlgorithm,
       existingEvmAddress: accountInfo.evmAddress,
     });
 
@@ -91,7 +87,7 @@ export async function importAccount(
     const account: AccountData = {
       name,
       accountId,
-      type: keyAlgorithm,
+      type: accountInfo.keyAlgorithm,
       publicKey: publicKey,
       evmAddress,
       keyRefId,

@@ -176,6 +176,23 @@ export class KmsServiceImpl implements KmsService {
     return { keyRefId, publicKey };
   }
 
+  importAndValidatePrivateKey(
+    keyType: KeyAlgorithmType,
+    privateKeyRaw: string,
+    mirrorNodePublicKey: string,
+    keyManager?: KeyManagerName,
+    labels?: string[],
+  ): { keyRefId: string; publicKey: string } {
+    const privateKey = this.createPrivateKey(keyType, privateKeyRaw);
+    const publicKeyRaw = privateKey.publicKey.toStringRaw();
+
+    if (mirrorNodePublicKey !== publicKeyRaw) {
+      throw new Error("Given accountId doesn't correspond with private key");
+    }
+
+    return this.importPrivateKey(keyType, privateKeyRaw, keyManager, labels);
+  }
+
   getPublicKey(keyRefId: string): string | null {
     return this.getRecord(keyRefId)?.publicKey || null;
   }
@@ -314,6 +331,14 @@ export class KmsServiceImpl implements KmsService {
     await transaction.signWith(publicKey, async (message: Uint8Array) =>
       handle.sign(message),
     );
+  }
+
+  private createPrivateKey(keyAlgorithm: KeyAlgorithm, privateKey: string) {
+    if (keyAlgorithm === KeyAlgorithm.ECDSA) {
+      return PrivateKey.fromStringECDSA(privateKey);
+    }
+
+    return PrivateKey.fromStringED25519(privateKey);
   }
 
   private getPrivateKeyString(keyRefId: string): string | null {

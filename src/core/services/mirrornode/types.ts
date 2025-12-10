@@ -34,13 +34,13 @@ export interface AccountAPIResponse {
 
 export interface AccountResponse {
   accountId: string;
-  accountPublicKey?: string;
+  accountPublicKey: string;
   balance: {
     balance: number;
     timestamp: string;
   };
   evmAddress?: string;
-  keyAlgorithm?: KeyAlgorithm;
+  keyAlgorithm: KeyAlgorithm;
 }
 
 // Token Balance Response

@@ -1,13 +1,15 @@
 import {
-  InputPrivateKey,
   KeyResolverService,
-  ResolvedKeyOrAlias,
+  ResolvedKey,
 } from './key-resolver-service.interface';
 import { HederaMirrornodeService } from '../mirrornode/hedera-mirrornode-service.interface';
-import { KeyOrAccountAlias } from '../../schemas';
+import {
+  AccountIdWithPrivateKey,
+  AccountName,
+  KeyOrAccountAlias,
+} from '../../schemas';
 import { AliasService, AliasType } from '../alias/alias-service.interface';
-import { PrivateKey, PublicKey } from '@hashgraph/sdk';
-import { KeyAlgorithm } from '../../shared/constants';
+import { PublicKey } from '@hashgraph/sdk';
 import { NetworkService } from '../network/network-service.interface';
 import { KmsService } from '../kms/kms-service.interface';
 import { KeyManagerName } from '../kms/kms-types.interface';
@@ -30,68 +32,49 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     this.kms = kmsService;
   }
 
-  public async verifyAndResolvePrivateKey(key: InputPrivateKey) {
-    const account = await this.mirror.getAccount(key.accountId);
-    const keyAlgorithm = account.keyAlgorithm;
-    const mirrorPublicKey = account.accountPublicKey;
-
-    if (!keyAlgorithm || !mirrorPublicKey) {
-      throw new Error('Invalid accountId');
-    }
-
-    const privateKey = this.createPrivateKey(keyAlgorithm, key.privateKey);
-    const inputPublicKey = privateKey.publicKey.toStringRaw();
-
-    if (mirrorPublicKey !== inputPublicKey) {
-      throw new Error("Given accountId doesn't correspond with private key");
-    }
-
-    const rawPrivateKey = privateKey.toStringRaw();
-
-    return {
-      keyAlgorithm,
-      privateKey: rawPrivateKey,
-      accountId: key.accountId,
-    };
-  }
-
   public async resolveKeyOrAlias(
     keyOrAlias: KeyOrAccountAlias,
     keyManager: KeyManagerName,
     labels?: string[],
-  ): Promise<ResolvedKeyOrAlias> {
+  ): Promise<ResolvedKey> {
     const argType = keyOrAlias.type;
 
     if (argType === 'keypair') {
-      const key = {
-        accountId: keyOrAlias.accountId,
-        privateKey: keyOrAlias.privateKey,
-      };
-      const resolvedKey = await this.verifyAndResolvePrivateKey(key);
+      return this.resolveKeypair(keyOrAlias, keyManager, labels);
+    }
 
-      const { keyRefId } = this.kms.importPrivateKey(
-        resolvedKey.keyAlgorithm,
-        resolvedKey.privateKey,
-        keyManager,
-        labels,
-      );
+    return this.resolveAlias(keyOrAlias.alias);
+  }
 
-      const privateKey = this.createPrivateKey(
-        resolvedKey.keyAlgorithm,
-        resolvedKey.privateKey,
-      );
+  public async resolveKeyOrAliasWithFallback(
+    keyOrAlias: KeyOrAccountAlias | undefined,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<ResolvedKey> {
+    if (!keyOrAlias) {
+      const operator = this.network.getCurrentOperatorOrThrow();
+
+      const operatorPublicKey = this.kms.getPublicKey(operator.keyRefId);
+
+      if (!operatorPublicKey) {
+        throw new Error('Invalid operator in state, missing publicKey');
+      }
 
       return {
-        accountId: keyOrAlias.accountId,
-        publicKey: privateKey.publicKey,
-        keyRefId,
+        publicKey: PublicKey.fromString(operatorPublicKey),
+        keyRefId: operator.keyRefId,
+        accountId: operator.accountId,
       };
     }
 
+    return this.resolveKeyOrAlias(keyOrAlias, keyManager, labels);
+  }
+
+  private resolveAlias(accountAlias: AccountName): ResolvedKey {
     const currentNetwork = this.network.getCurrentNetwork();
 
     const account = this.alias.resolve(
-      keyOrAlias.alias,
+      accountAlias,
       AliasType.Account,
       currentNetwork,
     );
@@ -114,35 +97,37 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     };
   }
 
-  public async resolveKeyOrAliasWithFallback(
-    keyOrAlias: KeyOrAccountAlias | undefined,
+  private async resolveKeypair(
+    keyPair: AccountIdWithPrivateKey,
     keyManager: KeyManagerName,
     labels?: string[],
-  ): Promise<ResolvedKeyOrAlias> {
-    if (!keyOrAlias) {
-      const operator = this.network.getCurrentOperatorOrThrow();
+  ): Promise<ResolvedKey> {
+    const { accountId, privateKey } = keyPair;
 
-      const operatorPublicKey = this.kms.getPublicKey(operator.keyRefId);
+    const { keyAlgorithm, accountPublicKey } =
+      await this.mirror.getAccount(accountId);
 
-      if (!operatorPublicKey) {
-        throw new Error('Invalid operator in state, missing publicKey');
-      }
-
-      return {
-        publicKey: PublicKey.fromString(operatorPublicKey),
-        keyRefId: operator.keyRefId,
-        accountId: operator.accountId,
-      };
+    if (!keyAlgorithm || !accountPublicKey) {
+      throw new Error(
+        'Unable to get keyAlgorithm or publicKey from mirror node',
+      );
     }
 
-    return this.resolveKeyOrAlias(keyOrAlias, keyManager, labels);
-  }
+    const { keyRefId, publicKey: publicKeyRaw } =
+      this.kms.importAndValidatePrivateKey(
+        keyAlgorithm,
+        privateKey,
+        accountPublicKey,
+        keyManager,
+        labels,
+      );
 
-  private createPrivateKey(keyAlgorithm: KeyAlgorithm, privateKey: string) {
-    if (keyAlgorithm === KeyAlgorithm.ECDSA) {
-      return PrivateKey.fromStringECDSA(privateKey);
-    }
+    const publicKey = PublicKey.fromString(publicKeyRaw);
 
-    return PrivateKey.fromStringED25519(privateKey);
+    return {
+      accountId,
+      publicKey,
+      keyRefId,
+    };
   }
 }
