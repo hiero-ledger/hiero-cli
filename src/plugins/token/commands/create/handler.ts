@@ -16,6 +16,7 @@ import { processTokenBalanceInput } from '../../../../core/utils/process-token-b
 import type { TokenCreateParams } from '../../../../core/types/token.types';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { CreateTokenInputSchema } from './input';
+import { PublicKey } from '@hashgraph/sdk';
 
 /**
  * Determines the final max supply value for FINITE supply tokens
@@ -112,13 +113,13 @@ export async function createToken(
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(alias, network);
 
-  const treasury = await api.keyResolver.resolveKeyOrAliasWithFallback(
+  const treasury = await api.keyResolver.getOrInitKeyWithFallback(
     validArgs.treasury,
     keyManager,
     ['token:treasury'],
   );
 
-  const admin = await api.keyResolver.resolveKeyOrAliasWithFallback(
+  const admin = await api.keyResolver.getOrInitKeyWithFallback(
     validArgs.adminKey,
     keyManager,
     ['token:admin'],
@@ -155,7 +156,7 @@ export async function createToken(
       initialSupplyRaw: initialSupply,
       supplyType: supplyType.toUpperCase() as 'FINITE' | 'INFINITE',
       maxSupplyRaw: finalMaxSupply,
-      adminPublicKey: admin.publicKey,
+      adminPublicKey: PublicKey.fromString(admin.publicKey),
     };
 
     const tokenCreateTransaction =
@@ -184,8 +185,8 @@ export async function createToken(
       decimals,
       initialSupply,
       supplyType,
-      adminPublicKey: admin.publicKey.toStringRaw(),
-      treasuryPublicKey: treasury.publicKey.toStringRaw(),
+      adminPublicKey: admin.publicKey,
+      treasuryPublicKey: treasury.publicKey,
       network: api.network.getCurrentNetwork(),
     });
 

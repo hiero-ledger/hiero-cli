@@ -50,7 +50,7 @@ export async function associateToken(
 
   // Resolve account parameter (alias or account-id:account-key) if provided
 
-  const account = await api.keyResolver.resolveKeyOrAlias(
+  const account = await api.keyResolver.getOrInitKey(
     accountIdOrAlias,
     keyManager,
     ['token:associate'],

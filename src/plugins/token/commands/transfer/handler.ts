@@ -85,10 +85,11 @@ export async function transferToken(
   // Convert amount input: display units (default) or raw units (with 't' suffix)
   const rawAmount = processBalanceInput(userAmountInput, tokenDecimals);
 
-  const resolvedFromAccount =
-    await api.keyResolver.resolveKeyOrAliasWithFallback(from, keyManager, [
-      'token:account',
-    ]);
+  const resolvedFromAccount = await api.keyResolver.getOrInitKeyWithFallback(
+    from,
+    keyManager,
+    ['token:account'],
+  );
 
   // Use resolved from account from alias or account-id:private-key
   const fromAccountId = resolvedFromAccount.accountId;

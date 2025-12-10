@@ -369,13 +369,10 @@ export const makeKeyResolverMock = (
     };
   }),
 
-  resolveKeyOrAlias: jest
+  getOrInitKey: jest
     .fn()
     // eslint-disable-next-line @typescript-eslint/require-await
     .mockImplementation(async (keyOrAlias, keyManager, labels) => {
-      // Lazy import to avoid loading @hashgraph/sdk at module level
-      const { PublicKey } = await import('@hashgraph/sdk');
-
       // accountId:privateKey format
       if (keyOrAlias?.type === 'keypair') {
         // Call kms.importPrivateKey if available
@@ -388,17 +385,15 @@ export const makeKeyResolverMock = (
           );
           return {
             accountId: keyOrAlias.accountId,
-            publicKey: PublicKey.fromString(
-              '302a300506032b6570032100' + '0'.repeat(64),
-            ),
+            publicKey:
+              '0000000000000000000000000000000000000000000000000000000000000000',
             keyRefId: importResult.keyRefId,
           };
         }
         return {
           accountId: keyOrAlias.accountId,
-          publicKey: PublicKey.fromString(
-            '302a300506032b6570032100' + '0'.repeat(64),
-          ),
+          publicKey:
+            '0000000000000000000000000000000000000000000000000000000000000000',
           keyRefId: 'imported-key-ref-id',
         };
       }
@@ -420,7 +415,7 @@ export const makeKeyResolverMock = (
         }
         return {
           accountId: resolved.entityId,
-          publicKey: PublicKey.fromString(resolved.publicKey),
+          publicKey: resolved.publicKey,
           keyRefId: resolved.keyRefId,
         };
       }
@@ -428,12 +423,9 @@ export const makeKeyResolverMock = (
       throw new Error('Invalid keyOrAlias');
     }),
 
-  resolveKeyOrAliasWithFallback: jest
+  getOrInitKeyWithFallback: jest
     .fn()
     .mockImplementation(async (keyOrAlias, keyManager, labels) => {
-      // Lazy import to avoid loading @hashgraph/sdk at module level
-      const { PublicKey } = await import('@hashgraph/sdk');
-
       // undefined -> fallback do operatora
       if (!keyOrAlias && options.network) {
         const operator = options.network.getOperator();
@@ -442,13 +434,13 @@ export const makeKeyResolverMock = (
         const publicKey = '302a300506032b6570032100' + '0'.repeat(64);
         return {
           accountId: operator.accountId,
-          publicKey: PublicKey.fromString(publicKey),
+          publicKey,
           keyRefId: operator.keyRefId,
         };
       }
 
       // delegate
       const resolver = makeKeyResolverMock(options);
-      return resolver.resolveKeyOrAlias(keyOrAlias, keyManager, labels || []);
+      return resolver.getOrInitKey(keyOrAlias, keyManager, labels || []);
     }),
 });

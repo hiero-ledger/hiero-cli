@@ -42,7 +42,7 @@ export interface KmsService {
    *
    * @param keyType - Key algorithm type
    * @param privateKey - Private key string to import
-   * @param mirrorNodePublicKey - Expected public key from mirror node for validation
+   * @param validationPublicKey - The public key that should be associated with the given privateKey, used for validation.
    * @param keyManager - KeyManager to use ('local' or 'local_encrypted')
    * @param labels - Optional labels for the key
    * @returns keyRefId and publicKey
@@ -50,7 +50,7 @@ export interface KmsService {
   importAndValidatePrivateKey(
     keyType: KeyAlgorithmType,
     privateKey: string,
-    mirrorNodePublicKey: string,
+    validationPublicKey: string,
     keyManager?: KeyManagerName,
     labels?: string[],
   ): { keyRefId: string; publicKey: string };

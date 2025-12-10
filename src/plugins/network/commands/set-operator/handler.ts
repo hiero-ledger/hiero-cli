@@ -28,7 +28,7 @@ export async function setOperatorHandler(
     (networkArg as SupportedNetwork) || api.network.getCurrentNetwork();
 
   try {
-    const operator = await api.keyResolver.resolveKeyOrAlias(
+    const operator = await api.keyResolver.getOrInitKey(
       operatorArg,
       keyManager,
       ['network:operator', `network:${targetNetwork}`],
@@ -60,7 +60,7 @@ export async function setOperatorHandler(
       operator: {
         accountId: operator.accountId,
         keyRefId: operator.keyRefId,
-        publicKey: operator.publicKey.toStringRaw(),
+        publicKey: operator.publicKey,
       },
     };
 

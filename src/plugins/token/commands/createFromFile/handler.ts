@@ -20,6 +20,7 @@ import { KeyManagerName } from '../../../../core/services/kms/kms-types.interfac
 import { TokenFileSchema, TokenFileDefinition } from '../../schema';
 import { CreateTokenFromFileInputSchema } from './input';
 import { KeyOrAccountAlias } from '../../../../core/schemas';
+import { PublicKey } from '@hashgraph/sdk';
 
 function resolveTokenFilePath(filename: string): string {
   const hasPathSeparator = filename.includes('/') || filename.includes('\\');
@@ -126,7 +127,7 @@ async function processTokenAssociations(
 
   for (const association of associations) {
     try {
-      const account = await api.keyResolver.resolveKeyOrAlias(
+      const account = await api.keyResolver.getOrInitKey(
         association,
         keyManager,
         ['token:associate'],
@@ -197,13 +198,13 @@ export async function createTokenFromFile(
     api.alias.availableOrThrow(tokenDefinition.name, network);
 
     // 3. Resolve treasury (supports both string and object formats)
-    const treasury = await api.keyResolver.resolveKeyOrAlias(
+    const treasury = await api.keyResolver.getOrInitKey(
       tokenDefinition.treasuryKey,
       keyManager,
       ['token:treasury'],
     );
 
-    const adminKey = await api.keyResolver.resolveKeyOrAlias(
+    const adminKey = await api.keyResolver.getOrInitKey(
       tokenDefinition.adminKey,
       keyManager,
       ['token:admin', `token:${tokenDefinition.name}`],
@@ -221,7 +222,7 @@ export async function createTokenFromFile(
         | 'FINITE'
         | 'INFINITE',
       maxSupplyRaw: tokenDefinition.maxSupply,
-      adminPublicKey: adminKey.publicKey,
+      adminPublicKey: PublicKey.fromString(adminKey.publicKey),
       customFees: tokenDefinition.customFees.map((fee) => ({
         type: fee.type,
         amount: fee.amount,
@@ -252,7 +253,7 @@ export async function createTokenFromFile(
       result,
       tokenDefinition,
       treasury.accountId,
-      adminKey.publicKey.toStringRaw(),
+      adminKey.publicKey,
       network,
     );
 

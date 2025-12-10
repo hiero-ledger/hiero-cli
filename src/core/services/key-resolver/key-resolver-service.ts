@@ -3,13 +3,8 @@ import {
   ResolvedKey,
 } from './key-resolver-service.interface';
 import { HederaMirrornodeService } from '../mirrornode/hedera-mirrornode-service.interface';
-import {
-  AccountIdWithPrivateKey,
-  AccountName,
-  KeyOrAccountAlias,
-} from '../../schemas';
+import { AccountIdWithPrivateKey, KeyOrAccountAlias } from '../../schemas';
 import { AliasService, AliasType } from '../alias/alias-service.interface';
-import { PublicKey } from '@hashgraph/sdk';
 import { NetworkService } from '../network/network-service.interface';
 import { KmsService } from '../kms/kms-service.interface';
 import { KeyManagerName } from '../kms/kms-types.interface';
@@ -32,7 +27,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     this.kms = kmsService;
   }
 
-  public async resolveKeyOrAlias(
+  public async getOrInitKey(
     keyOrAlias: KeyOrAccountAlias,
     keyManager: KeyManagerName,
     labels?: string[],
@@ -46,7 +41,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     return this.resolveAlias(keyOrAlias.alias);
   }
 
-  public async resolveKeyOrAliasWithFallback(
+  public async getOrInitKeyWithFallback(
     keyOrAlias: KeyOrAccountAlias | undefined,
     keyManager: KeyManagerName,
     labels?: string[],
@@ -61,16 +56,16 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       }
 
       return {
-        publicKey: PublicKey.fromString(operatorPublicKey),
-        keyRefId: operator.keyRefId,
+        publicKey: operatorPublicKey,
         accountId: operator.accountId,
+        keyRefId: operator.keyRefId,
       };
     }
 
-    return this.resolveKeyOrAlias(keyOrAlias, keyManager, labels);
+    return this.getOrInitKey(keyOrAlias, keyManager, labels);
   }
 
-  private resolveAlias(accountAlias: AccountName): ResolvedKey {
+  private resolveAlias(accountAlias: string): ResolvedKey {
     const currentNetwork = this.network.getCurrentNetwork();
 
     const account = this.alias.resolve(
@@ -89,10 +84,9 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       );
     }
 
-    const publicKey = PublicKey.fromString(account.publicKey);
     return {
       accountId: account.entityId,
-      publicKey: publicKey,
+      publicKey: account.publicKey,
       keyRefId: account.keyRefId,
     };
   }
@@ -113,16 +107,13 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       );
     }
 
-    const { keyRefId, publicKey: publicKeyRaw } =
-      this.kms.importAndValidatePrivateKey(
-        keyAlgorithm,
-        privateKey,
-        accountPublicKey,
-        keyManager,
-        labels,
-      );
-
-    const publicKey = PublicKey.fromString(publicKeyRaw);
+    const { keyRefId, publicKey } = this.kms.importAndValidatePrivateKey(
+      keyAlgorithm,
+      privateKey,
+      accountPublicKey,
+      keyManager,
+      labels,
+    );
 
     return {
       accountId,

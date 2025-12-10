@@ -10,6 +10,7 @@ import { ZustandTopicStateHelper } from '../../zustand-state-helper';
 import { CreateTopicOutput } from './output';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { CreateTopicInputSchema } from './input';
+import { PublicKey } from '@hashgraph/sdk';
 
 /**
  * Default export handler function for topic creation
@@ -52,14 +53,14 @@ export async function createTopic(
 
   const adminKey =
     adminKeyArg &&
-    (await api.keyResolver.resolveKeyOrAlias(adminKeyArg, keyManager, [
+    (await api.keyResolver.getOrInitKey(adminKeyArg, keyManager, [
       'topic:admin',
       `topic:${name}`,
     ]));
 
   const submitKey =
     submitKeyArg &&
-    (await api.keyResolver.resolveKeyOrAlias(submitKeyArg, keyManager, [
+    (await api.keyResolver.getOrInitKey(submitKeyArg, keyManager, [
       'topic:submit',
       `topic:${name}`,
     ]));
@@ -68,8 +69,8 @@ export async function createTopic(
     // Step 2: Create topic transaction using Core API
     const topicCreateResult = api.topic.createTopic({
       memo,
-      adminKey: adminKey?.publicKey,
-      submitKey: submitKey?.publicKey,
+      adminKey: adminKey && PublicKey.fromString(adminKey.publicKey),
+      submitKey: submitKey && PublicKey.fromString(submitKey.publicKey),
     });
 
     let result: TransactionResult;

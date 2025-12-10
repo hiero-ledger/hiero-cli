@@ -1,21 +1,20 @@
 import { KeyOrAccountAlias } from '../../schemas';
-import { PublicKey } from '@hashgraph/sdk';
 import { KeyManagerName } from '../kms/kms-types.interface';
 
 export type ResolvedKey = {
-  publicKey: PublicKey;
-  keyRefId: string;
+  publicKey: string;
   accountId: string;
+  keyRefId: string;
 };
 
 export interface KeyResolverService {
-  resolveKeyOrAlias(
+  getOrInitKey(
     keyOrAlias: KeyOrAccountAlias,
     keyManager: KeyManagerName,
     labels?: string[],
   ): Promise<ResolvedKey>;
 
-  resolveKeyOrAliasWithFallback(
+  getOrInitKeyWithFallback(
     keyOrAlias: KeyOrAccountAlias | undefined,
     keyManager: KeyManagerName,
     labels?: string[],

@@ -35,7 +35,7 @@ export async function transferHandler(
       api.config.getOption<KeyManagerName>('default_key_manager');
 
     // Resolve from arg
-    const from = await api.keyResolver.resolveKeyOrAliasWithFallback(
+    const from = await api.keyResolver.getOrInitKeyWithFallback(
       fromArg,
       keyManager,
       ['hbar:transfer'],

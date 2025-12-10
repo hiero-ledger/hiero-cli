@@ -103,7 +103,7 @@ describe('network plugin - set-operator command', () => {
       accountId: '0.0.789012',
       keyRefId: 'kr_alias123',
       publicKey:
-        '0000000000000000000000000000000000000000000000000000000000000000',
+        '302a300506032b65700321000000000000000000000000000000000000000000000000000000000000000000',
     });
   });
 
@@ -200,24 +200,11 @@ describe('network plugin - set-operator command', () => {
     // Mock alias not found
     aliasService.resolve.mockReturnValue(null);
 
-    const keyResolver = {
-      resolveKeyOrAlias: jest
-        .fn()
-        .mockImplementation(() =>
-          Promise.reject(
-            new Error("Alias 'nonexistent' not found for network testnet"),
-          ),
-        ),
-      resolveKeyOrAliasWithFallback: jest.fn(),
-      verifyAndResolvePrivateKey: jest.fn(),
-    };
-
     const args = makeArgs(
       {
         network: networkService,
         kms: kmsService,
         alias: aliasService,
-        keyResolver: keyResolver as any,
       },
       logger,
       { operator: 'nonexistent' },
@@ -227,7 +214,7 @@ describe('network plugin - set-operator command', () => {
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      "Alias 'nonexistent' not found for network testnet",
+      'No account is associated with the name provided',
     );
   });
 
@@ -248,22 +235,11 @@ describe('network plugin - set-operator command', () => {
       createdAt: '2024-01-01T00:00:00Z',
     });
 
-    const keyResolver = {
-      resolveKeyOrAlias: jest
-        .fn()
-        .mockImplementation(() =>
-          Promise.reject(new Error('No key found for account 0.0.789012')),
-        ),
-      resolveKeyOrAliasWithFallback: jest.fn(),
-      verifyAndResolvePrivateKey: jest.fn(),
-    };
-
     const args = makeArgs(
       {
         network: networkService,
         kms: kmsService,
         alias: aliasService,
-        keyResolver: keyResolver as any,
       },
       logger,
       { operator: 'testnet1' },
@@ -273,7 +249,7 @@ describe('network plugin - set-operator command', () => {
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      'No key found for account 0.0.789012',
+      'does not have an associated private/public key',
     );
   });
 
@@ -288,22 +264,11 @@ describe('network plugin - set-operator command', () => {
       throw new Error('Invalid private key format');
     });
 
-    const keyResolver = {
-      resolveKeyOrAlias: jest
-        .fn()
-        .mockImplementation(() =>
-          Promise.reject(new Error('Invalid private key format')),
-        ),
-      resolveKeyOrAliasWithFallback: jest.fn(),
-      verifyAndResolvePrivateKey: jest.fn(),
-    };
-
     const args = makeArgs(
       {
         network: networkService,
         kms: kmsService,
         alias: aliasService,
-        keyResolver: keyResolver as any,
       },
       logger,
       {
