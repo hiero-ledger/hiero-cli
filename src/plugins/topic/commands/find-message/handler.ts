@@ -132,18 +132,12 @@ export async function findMessage(
 
   const currentNetwork = api.network.getCurrentNetwork();
 
-  // Step 1: Resolve topic ID from alias if it exists
-  const resolveResult = resolveTopicId(topicIdOrAlias, api, currentNetwork);
-  if ('status' in resolveResult) {
-    return resolveResult;
-  }
-
-  const topicId = resolveResult.topicId;
-
-  // Log progress indicator (not final output)
-  logger.info(`Finding messages in topic: ${topicId}`);
-
   try {
+    // Step 1: Resolve topic ID from alias if it exists
+    const topicId = resolveTopicId(topicIdOrAlias, api.alias, currentNetwork);
+
+    // Log progress indicator (not final output)
+    logger.info(`Finding messages in topic: ${topicId}`);
     // Try to build filter from other sequence number parameters
     const filter = buildSequenceNumberFilter(args.args);
 
@@ -167,7 +161,6 @@ export async function findMessage(
       outputJson: JSON.stringify(outputData),
     };
   } catch (error: unknown) {
-    // Catch and format any errors
     return {
       status: Status.Failure,
       errorMessage: formatError('Failed to find messages', error),
