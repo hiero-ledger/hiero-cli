@@ -8,12 +8,20 @@ import type { PluginStateEntry } from '../../../../core/plugins/plugin.interface
 import { CUSTOM_PLUGIN_ENTRY } from './helpers/fixtures';
 import type { PluginManagementService } from '../../../../core/services/plugin-management/plugin-management-service.interface';
 import { PluginManagementCreateStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
+import * as fs from 'fs/promises';
+
+jest.mock('fs/promises', () => ({
+  stat: jest.fn(),
+  access: jest.fn(),
+}));
 
 // Mock path to produce predictable manifest path
 jest.mock('path', () => ({
   resolve: (...segments: string[]) => segments.join('/'),
   join: jest.fn(),
 }));
+
+const mockFs = fs as jest.Mocked<typeof fs>;
 
 // Mock manifest module for a test plugin
 jest.mock(
@@ -27,6 +35,14 @@ jest.mock(
 );
 
 describe('plugin-management add command', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockFs.stat.mockResolvedValue({
+      isDirectory: () => true,
+    } as Awaited<ReturnType<typeof fs.stat>>);
+    mockFs.access.mockResolvedValue(undefined);
+  });
+
   it('should add a new plugin from path and enable it when manifest is valid and name does not exist', async () => {
     const logger = makeLogger();
     const createdEntry: PluginStateEntry = {
@@ -92,5 +108,77 @@ describe('plugin-management add command', () => {
     expect(pluginManagement.addPlugin).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'custom-plugin' }),
     );
+  });
+
+  it('should fail when plugin directory does not exist', async () => {
+    const logger = makeLogger();
+    const pluginManagement = {
+      addPlugin: jest.fn(),
+    } as unknown as PluginManagementService;
+    const api = { pluginManagement };
+
+    const args = makeArgs(api, logger, {
+      path: '/nonexistent/path',
+    });
+
+    const error = new Error('ENOENT');
+    (error as NodeJS.ErrnoException).code = 'ENOENT';
+    mockFs.stat.mockRejectedValue(error);
+
+    const result = await addPlugin(args);
+
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Plugin directory does not exist');
+    expect(result.errorMessage).toContain('/nonexistent/path');
+    expect(pluginManagement.addPlugin).not.toHaveBeenCalled();
+  });
+
+  it('should fail when plugin path is not a directory', async () => {
+    const logger = makeLogger();
+    const pluginManagement = {
+      addPlugin: jest.fn(),
+    } as unknown as PluginManagementService;
+    const api = { pluginManagement };
+
+    const args = makeArgs(api, logger, {
+      path: '/path/to/file.txt',
+    });
+
+    mockFs.stat.mockResolvedValue({
+      isDirectory: () => false,
+    } as Awaited<ReturnType<typeof fs.stat>>);
+
+    const result = await addPlugin(args);
+
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Plugin path is not a directory');
+    expect(result.errorMessage).toContain('/path/to/file.txt');
+    expect(pluginManagement.addPlugin).not.toHaveBeenCalled();
+  });
+
+  it('should fail when manifest.js does not exist', async () => {
+    const logger = makeLogger();
+    const pluginManagement = {
+      addPlugin: jest.fn(),
+    } as unknown as PluginManagementService;
+    const api = { pluginManagement };
+
+    const args = makeArgs(api, logger, {
+      path: 'dist/plugins/custom-plugin',
+    });
+
+    const error = new Error('ENOENT');
+    (error as NodeJS.ErrnoException).code = 'ENOENT';
+    mockFs.access.mockRejectedValue(error);
+
+    const result = await addPlugin(args);
+
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('Plugin manifest not found at');
+    expect(result.errorMessage).toContain('manifest.js');
+    expect(result.errorMessage).toContain(
+      'Make sure the plugin directory contains a manifest.js file',
+    );
+    expect(pluginManagement.addPlugin).not.toHaveBeenCalled();
   });
 });
