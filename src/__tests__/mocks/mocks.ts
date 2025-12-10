@@ -70,6 +70,10 @@ export const makeKmsMock = (): jest.Mocked<KmsService> => ({
     keyRefId: 'kr_test123',
     publicKey: 'pub-key-test',
   }),
+  importAndValidatePrivateKey: jest.fn().mockReturnValue({
+    keyRefId: 'kr_test123',
+    publicKey: 'pub-key-test',
+  }),
   getPublicKey: jest.fn(),
   getSignerHandle: jest.fn(),
   findByPublicKey: jest.fn(),
@@ -218,6 +222,7 @@ export const makeMirrorMock = (
         balance: { balance: 1000, timestamp: '1234567890' },
         evmAddress: '0xabc',
         accountPublicKey: 'pubKey',
+        keyAlgorithm: 'ecdsa',
       },
     ),
   getTokenInfo: jest.fn().mockImplementation((tokenId: string) => {

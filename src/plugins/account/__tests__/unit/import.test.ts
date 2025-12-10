@@ -55,11 +55,11 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const result = await importAccount(args);
 
-    expect(kms.importPrivateKey).toHaveBeenCalledWith(
+    expect(kms.importAndValidatePrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
       'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
+      'pubKey',
       'local',
-      ['account:import', 'account:imported'],
     );
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.9999');
     expect(alias.register).toHaveBeenCalledWith(
