@@ -7,16 +7,18 @@ import {
   GetOperatorOutput,
 } from '../../plugins/network/commands/get-operator';
 import { Status } from '../../core/shared/constants';
+import {
+  EntityIdSchema,
+  Ed25519PrivateKeySchema,
+  EcdsaPrivateKeySchema,
+} from '../../core/schemas/common-schemas';
 
 const envSchema = z.object({
   OPERATOR_ID: z
     .string()
     .min(1, 'OPERATOR_ID is required')
     .trim()
-    .regex(
-      /^0\.0\.[1-9][0-9]*$/,
-      'Hedera entity ID must be in format 0.0.{number}',
-    )
+    .pipe(EntityIdSchema)
     .describe('Hedera entity ID in format 0.0.{number}'),
   OPERATOR_KEY: z
     .string()
@@ -24,11 +26,9 @@ const envSchema = z.object({
     .trim()
     .refine(
       (value) => {
-        const ed25519Regex =
-          /^(?:(?:0x)?[0-9a-fA-F]{64}|(?:0x)?[0-9a-fA-F]{128}|(?:0x)?30[0-9a-fA-F]{80,160})$/;
-        const ecdsaRegex =
-          /^(?:(?:0x)?[0-9a-fA-F]{64}|(?:0x)?30[0-9a-fA-F]{100,180})$/;
-        return ed25519Regex.test(value) || ecdsaRegex.test(value);
+        const ed25519Result = Ed25519PrivateKeySchema.safeParse(value);
+        const ecdsaResult = EcdsaPrivateKeySchema.safeParse(value);
+        return ed25519Result.success || ecdsaResult.success;
       },
       {
         message:

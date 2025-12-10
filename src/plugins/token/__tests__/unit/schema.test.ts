@@ -41,7 +41,7 @@ describe('Token Schema Validation', () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toContain(
-          'Token ID must be in format 0.0.123456',
+          'Hedera entity ID must be in format 0.0.{number}',
         );
       }
     });
@@ -141,7 +141,7 @@ describe('Token Schema Validation', () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toContain(
-          'Treasury ID must be in format 0.0.123456',
+          'Hedera entity ID must be in format 0.0.{number}',
         );
       }
     });
@@ -245,7 +245,7 @@ describe('Token Schema Validation', () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toContain(
-          'Account ID must be in format 0.0.123456',
+          'Hedera entity ID must be in format 0.0.{number}',
         );
       }
     });

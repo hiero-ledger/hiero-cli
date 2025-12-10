@@ -7,7 +7,10 @@ import { CoreApi } from '../../core';
 import { SupportedNetwork } from '../../core/types/shared.types';
 import { validateAccountId } from '../../core/utils/account-id-validator';
 import { parseIdKeyPair } from '../../core/utils/keys';
-import { PrivateKeyWithTypeSchema } from '../../core/schemas/common-schemas';
+import {
+  PrivateKeyWithTypeSchema,
+  EntityIdSchema,
+} from '../../core/schemas/common-schemas';
 import type { KeyAlgorithmType as KeyAlgorithmType } from '../../core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '../../core/shared/constants';
 import { KeyManagerName } from '../../core/services/kms/kms-types.interface';
@@ -213,8 +216,8 @@ export function resolveDestinationAccountParameter(
   }
 
   // Check if it's already an account-id (format: 0.0.123456)
-  const accountIdPattern = /^0\.0\.\d+$/;
-  if (accountIdPattern.test(account)) {
+  const accountIdResult = EntityIdSchema.safeParse(account);
+  if (accountIdResult.success) {
     return {
       accountId: account,
     };
@@ -269,8 +272,8 @@ export function resolveTokenParameter(
   }
 
   // Check if it's already a token-id (format: 0.0.123456)
-  const tokenIdPattern = /^0\.0\.\d+$/;
-  if (tokenIdPattern.test(tokenIdOrName)) {
+  const tokenIdResult = EntityIdSchema.safeParse(tokenIdOrName);
+  if (tokenIdResult.success) {
     return {
       tokenId: tokenIdOrName,
     };

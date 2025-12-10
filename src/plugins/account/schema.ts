@@ -6,6 +6,11 @@ import { z } from 'zod';
 import type { SupportedNetwork } from '../../core/types/shared.types';
 import { KeyAlgorithm } from '../../core/shared/constants';
 import { zodToJsonSchema } from 'zod-to-json-schema';
+import {
+  EntityIdSchema,
+  EvmAddressSchema,
+  AliasNameSchema,
+} from '../../core/schemas/common-schemas';
 
 // Supported networks aligned with core SupportedNetwork type
 export const SUPPORTED_NETWORKS = [
@@ -18,32 +23,13 @@ export const SUPPORTED_NETWORKS = [
 // Zod schema for runtime validation
 export const AccountDataSchema = z.object({
   keyRefId: z.string().min(1, 'Key reference ID is required'),
-
-  name: z
-    .string()
-    .max(50, 'Name must be 50 characters or less')
-    .regex(
-      /^[a-zA-Z0-9_-]+$/,
-      'Name can only contain letters, numbers, underscores, and hyphens',
-    ),
-
-  accountId: z
-    .string()
-    .regex(/^0\.0\.[0-9]+$/, 'Account ID must be in format 0.0.123456'),
-
+  name: AliasNameSchema.max(50, 'Name must be 50 characters or less'),
+  accountId: EntityIdSchema,
   type: z.enum([KeyAlgorithm.ECDSA, KeyAlgorithm.ED25519], {
     errorMap: () => ({ message: 'Type must be either ecdsa or ed25519' }),
   }),
-
   publicKey: z.string().min(1, 'Public key is required'),
-
-  evmAddress: z
-    .string()
-    .regex(
-      /^0x[a-fA-F0-9]{40}$/,
-      'EVM address must be 40 hex characters starting with 0x',
-    ),
-
+  evmAddress: EvmAddressSchema,
   network: z.enum(SUPPORTED_NETWORKS, {
     errorMap: () => ({
       message: 'Network must be one of: mainnet, testnet, previewnet, localnet',
