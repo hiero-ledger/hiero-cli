@@ -6,6 +6,7 @@ import { CommandExecutionResult, CommandHandlerArgs } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { Filter } from '../../../../core/services/mirrornode/types';
+import { EntityIdSchema } from '../../../../core/schemas';
 import { FindMessageOutput, FindMessagesOutput } from './output';
 import { FindMessageInputSchema } from './input';
 
@@ -132,14 +133,32 @@ export async function findMessage(
   const currentNetwork = api.network.getCurrentNetwork();
 
   // Step 1: Resolve topic ID from alias if it exists
-  let topicId = topicIdOrAlias;
-  const topicAliasResult = api.alias.resolve(
-    topicIdOrAlias,
-    'topic',
-    currentNetwork,
-  );
+  let topicId: string;
 
-  if (topicAliasResult?.entityId) {
+  const topicIdParseResult = EntityIdSchema.safeParse(topicIdOrAlias);
+  if (topicIdParseResult.success) {
+    topicId = topicIdParseResult.data;
+  } else {
+    const topicAliasResult = api.alias.resolve(
+      topicIdOrAlias,
+      'topic',
+      currentNetwork,
+    );
+
+    if (!topicAliasResult) {
+      return {
+        status: Status.Failure,
+        errorMessage: `Topic alias "${topicIdOrAlias}" not found for network ${currentNetwork}. Please provide either a valid topic alias or topic ID.`,
+      };
+    }
+
+    if (!topicAliasResult.entityId) {
+      return {
+        status: Status.Failure,
+        errorMessage: `Topic alias "${topicIdOrAlias}" does not have an associated topic ID.`,
+      };
+    }
+
     topicId = topicAliasResult.entityId;
   }
 
