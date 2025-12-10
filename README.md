@@ -40,6 +40,10 @@ You will need an account on the Hedera network to interact with the ledger. Foll
 
 Make sure to securely store your DER encoded private key and account ID, as they are crucial for accessing and managing your Hedera account.
 
+### 3. Git Installation
+
+The Hedera CLI Tool repository is hosted on GitHub. You need to have Git installed to clone the repository. You can check your current version by running `git --version` in your terminal. If you do not have Git installed, you can download it from [Git official website](https://git-scm.com/).
+
 ## Installation
 
 ### 1. Clone the repository
@@ -55,7 +59,8 @@ git clone https://github.com/hiero-ledger/hiero-cli.git
 Navigate to the repository folder and install the necessary packages using `npm`. This sets up everything you need to get started with the Hedera CLI Tool.
 
 ```sh
-cd hiero-cli && npm install
+cd hiero-cli
+npm install
 ```
 
 ### 3. Build the Package
@@ -140,6 +145,34 @@ source ~/.bash_profile
 # For zsh
 source ~/.zshrc
 ```
+
+#### Windows (PowerShell)
+
+Add the following line to your PowerShell profile. First, open PowerShell and check if your profile exists:
+
+```powershell
+# Check if profile exists
+Test-Path $PROFILE
+
+# If it doesn't exist, create it
+New-Item -ItemType File -Path $PROFILE -Force
+```
+
+Then add the following function to your profile:
+
+```powershell
+function hcli {
+    node C:\path\to\hiero-cli\dist\hedera-cli.js @args
+}
+```
+
+Then reload your PowerShell:
+
+```powershell
+. $PROFILE
+```
+
+Now you can use `hcli` with arguments just like on Unix systems.
 
 ## Connecting the CLI tool with your Local Hedera Network
 
