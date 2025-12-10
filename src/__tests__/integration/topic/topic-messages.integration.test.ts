@@ -1,5 +1,6 @@
 import { CoreApi } from '../../../core/core-api/core-api.interface';
-import { createMockCoreApi } from '../../mocks/core-api.mock';
+import { createCoreApi } from '../../../core/core-api/core-api';
+import { STATE_STORAGE_FILE_PATH } from '../../test-constants';
 import { Status } from '../../../core/shared/constants';
 import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
 import '../../../core/utils/json-serialize';
@@ -21,7 +22,7 @@ describe('Topic Messages Integration Tests', () => {
   let network: SupportedNetwork;
 
   beforeAll(async () => {
-    coreApi = createMockCoreApi();
+    coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
     network = coreApi.network.getCurrentNetwork();
   });
