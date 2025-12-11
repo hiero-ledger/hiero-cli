@@ -37,7 +37,7 @@ describe('plugin-management remove command', () => {
     expect(pluginManagement.removePlugin).toHaveBeenCalledWith('custom-plugin');
   });
 
-  it('should return success with message when plugin does not exist', async () => {
+  it('should return failure when plugin does not exist', async () => {
     const logger = makeLogger();
     const pluginManagement = {
       removePlugin: jest.fn().mockReturnValue({
@@ -50,18 +50,14 @@ describe('plugin-management remove command', () => {
 
     const result = await removePlugin(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output = JSON.parse(result.outputJson!);
-    expect(output.name).toBe('unknown-plugin');
-    expect(output.removed).toBe(false);
-    expect(output.message).toContain(
-      'is not registered in plugin-management state',
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      'Plugin unknown-plugin not found in plugin-management state',
     );
+    expect(result.outputJson).toBeUndefined();
   });
 
-  it('should protect plugin-management from being removed', async () => {
+  it('should return failure when trying to remove protected plugin', async () => {
     const logger = makeLogger();
     const pluginManagement = {
       removePlugin: jest.fn().mockReturnValue({
@@ -74,15 +70,11 @@ describe('plugin-management remove command', () => {
 
     const result = await removePlugin(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output = JSON.parse(result.outputJson!);
-    expect(output.name).toBe('plugin-management');
-    expect(output.removed).toBe(false);
-    expect(output.message).toContain(
-      'is a core plugin and cannot be removed from state via CLI',
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      'Plugin plugin-management is a core plugin and cannot be removed from state via CLI',
     );
+    expect(result.outputJson).toBeUndefined();
 
     expect(pluginManagement.removePlugin).toHaveBeenCalledWith(
       'plugin-management',

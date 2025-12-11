@@ -28,18 +28,22 @@ export async function enablePlugin(
     if (result.status === PluginManagementEnableStatus.NotFound) {
       return {
         status: Status.Failure,
-        errorMessage: `Plugin '${name}' not found in plugin-management state`,
+        errorMessage: `Plugin ${name} not found in plugin-management state`,
+      };
+    }
+
+    if (result.status === PluginManagementEnableStatus.AlreadyEnabled) {
+      return {
+        status: Status.Failure,
+        errorMessage: `Plugin ${name} is already enabled`,
       };
     }
 
     const outputData: AddPluginOutput = {
       name,
       path: result.entry?.path ?? 'unknown',
-      added: result.status === PluginManagementEnableStatus.Enabled,
-      message:
-        result.status === PluginManagementEnableStatus.AlreadyEnabled
-          ? `Plugin ${name} is already enabled`
-          : `Plugin ${name} enabled successfully`,
+      added: true,
+      message: `Plugin ${name} enabled successfully`,
     };
 
     return {

@@ -27,42 +27,23 @@ export async function disablePlugin(
     const result = api.pluginManagement.disablePlugin(name);
 
     if (result.status === PluginManagementDisableStatus.NotFound) {
-      const notFound: RemovePluginOutput = {
-        name,
-        removed: false,
-        message: `Plugin ${name} is not registered in state`,
-      };
-
       return {
-        status: Status.Success,
-        outputJson: JSON.stringify(notFound),
+        status: Status.Failure,
+        errorMessage: `Plugin ${name} not found in plugin-management state`,
       };
     }
 
     if (result.status === PluginManagementDisableStatus.Protected) {
-      const protectedResult: RemovePluginOutput = {
-        name,
-        removed: false,
-        message:
-          'Plugin plugin-management is protected and cannot be disabled.',
-      };
-
       return {
-        status: Status.Success,
-        outputJson: JSON.stringify(protectedResult),
+        status: Status.Failure,
+        errorMessage: `Plugin ${name} is protected and cannot be disabled`,
       };
     }
 
     if (result.status === PluginManagementDisableStatus.AlreadyDisabled) {
-      const alreadyDisabled: RemovePluginOutput = {
-        name,
-        removed: false,
-        message: `Plugin ${name} is already disabled`,
-      };
-
       return {
-        status: Status.Success,
-        outputJson: JSON.stringify(alreadyDisabled),
+        status: Status.Failure,
+        errorMessage: `Plugin ${name} is already disabled`,
       };
     }
 

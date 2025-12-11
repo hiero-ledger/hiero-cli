@@ -95,7 +95,7 @@ describe('plugin-management info command', () => {
     expect(output.plugin.capabilities).toEqual([]);
   });
 
-  it('should return not found when plugin does not exist', async () => {
+  it('should return failure when plugin does not exist', async () => {
     const logger = makeLogger();
     const pluginManagement = {
       getPlugin: jest.fn().mockReturnValue(undefined),
@@ -106,10 +106,10 @@ describe('plugin-management info command', () => {
 
     const result = await getPluginInfo(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-    const output = JSON.parse(result.outputJson!);
-    expect(output.found).toBe(false);
-    expect(output.message).toContain('missing-plugin');
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      'Plugin missing-plugin not found in plugin-management state',
+    );
+    expect(result.outputJson).toBeUndefined();
   });
 });

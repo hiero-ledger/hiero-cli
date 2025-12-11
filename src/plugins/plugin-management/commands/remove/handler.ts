@@ -26,30 +26,17 @@ export async function removePlugin(
   try {
     const result = api.pluginManagement.removePlugin(name);
 
-    if (result.status === PluginManagementRemoveStatus.Protected) {
-      const protectedResult: RemovePluginOutput = {
-        name,
-        removed: false,
-        message:
-          'Plugin plugin-management is a core plugin and cannot be removed from state via CLI.',
-      };
-
+    if (result.status === PluginManagementRemoveStatus.NotFound) {
       return {
-        status: Status.Success,
-        outputJson: JSON.stringify(protectedResult),
+        status: Status.Failure,
+        errorMessage: `Plugin ${name} not found in plugin-management state`,
       };
     }
 
-    if (result.status === PluginManagementRemoveStatus.NotFound) {
-      const notFound: RemovePluginOutput = {
-        name,
-        removed: false,
-        message: `Plugin ${name} is not registered in plugin-management state`,
-      };
-
+    if (result.status === PluginManagementRemoveStatus.Protected) {
       return {
-        status: Status.Success,
-        outputJson: JSON.stringify(notFound),
+        status: Status.Failure,
+        errorMessage: `Plugin ${name} is a core plugin and cannot be removed from state via CLI`,
       };
     }
 

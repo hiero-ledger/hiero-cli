@@ -39,7 +39,7 @@ describe('plugin-management disable command', () => {
     expect(output.message).toContain('disabled successfully');
   });
 
-  it('should return success when plugin is already disabled', async () => {
+  it('should return failure when plugin is already disabled', async () => {
     const logger = makeLogger();
     const pluginManagement = {
       disablePlugin: jest.fn().mockReturnValue({
@@ -58,19 +58,17 @@ describe('plugin-management disable command', () => {
 
     const result = await disablePlugin(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      'Plugin custom-plugin is already disabled',
+    );
+    expect(result.outputJson).toBeUndefined();
     expect(pluginManagement.disablePlugin).toHaveBeenCalledWith(
       'custom-plugin',
     );
-
-    const output = JSON.parse(result.outputJson!);
-    expect(output.name).toBe('custom-plugin');
-    expect(output.removed).toBe(false);
-    expect(output.message).toContain('already disabled');
   });
 
-  it('should protect plugin-management from being disabled', async () => {
+  it('should return failure when trying to disable protected plugin', async () => {
     const logger = makeLogger();
     const pluginManagement = {
       disablePlugin: jest
@@ -83,19 +81,17 @@ describe('plugin-management disable command', () => {
 
     const result = await disablePlugin(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      'Plugin plugin-management is protected and cannot be disabled',
+    );
+    expect(result.outputJson).toBeUndefined();
     expect(pluginManagement.disablePlugin).toHaveBeenCalledWith(
       'plugin-management',
     );
-
-    const output = JSON.parse(result.outputJson!);
-    expect(output.name).toBe('plugin-management');
-    expect(output.removed).toBe(false);
-    expect(output.message).toContain('protected and cannot be disabled');
   });
 
-  it('should return success with message when plugin does not exist', async () => {
+  it('should return failure when plugin does not exist', async () => {
     const logger = makeLogger();
     const pluginManagement = {
       disablePlugin: jest
@@ -108,15 +104,13 @@ describe('plugin-management disable command', () => {
 
     const result = await disablePlugin(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      'Plugin unknown-plugin not found in plugin-management state',
+    );
+    expect(result.outputJson).toBeUndefined();
     expect(pluginManagement.disablePlugin).toHaveBeenCalledWith(
       'unknown-plugin',
     );
-
-    const output = JSON.parse(result.outputJson!);
-    expect(output.name).toBe('unknown-plugin');
-    expect(output.removed).toBe(false);
-    expect(output.message).toContain('is not registered in state');
   });
 });

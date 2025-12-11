@@ -32,13 +32,9 @@ export async function getPluginInfo(
     const entry: PluginStateEntry | undefined =
       pluginManagement.getPlugin(name);
     if (!entry) {
-      const notFound: PluginInfoOutput = {
-        found: false,
-        message: `Plugin ${name} not found in plugin-management state`,
-      };
       return {
-        status: Status.Success,
-        outputJson: JSON.stringify(notFound),
+        status: Status.Failure,
+        errorMessage: `Plugin ${name} not found in plugin-management state`,
       };
     }
 

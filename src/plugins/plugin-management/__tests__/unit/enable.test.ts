@@ -36,7 +36,7 @@ describe('plugin-management enable command', () => {
     expect(output.message).toContain('enabled successfully');
   });
 
-  it('should return success with appropriate message when plugin is already enabled', async () => {
+  it('should return failure when plugin is already enabled', async () => {
     const logger = makeLogger();
     const pluginManagement = {
       enablePlugin: jest.fn().mockReturnValue({
@@ -54,14 +54,12 @@ describe('plugin-management enable command', () => {
 
     const result = await enablePlugin(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      'Plugin custom-plugin is already enabled',
+    );
+    expect(result.outputJson).toBeUndefined();
     expect(pluginManagement.enablePlugin).toHaveBeenCalledWith('custom-plugin');
-
-    const output = JSON.parse(result.outputJson!);
-    expect(output.name).toBe('custom-plugin');
-    expect(output.added).toBe(false);
-    expect(output.message).toContain('already enabled');
   });
 
   it('should return failure when plugin does not exist in state', async () => {
@@ -79,7 +77,7 @@ describe('plugin-management enable command', () => {
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      "Plugin 'unknown-plugin' not found in plugin-management state",
+      'Plugin unknown-plugin not found in plugin-management state',
     );
     expect(result.outputJson).toBeUndefined();
     expect(pluginManagement.enablePlugin).toHaveBeenCalledWith(
