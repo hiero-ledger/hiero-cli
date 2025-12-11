@@ -179,14 +179,14 @@ export class KmsServiceImpl implements KmsService {
   importAndValidatePrivateKey(
     keyType: KeyAlgorithmType,
     privateKeyRaw: string,
-    controlPublicKey: string,
+    validationPublicKey: string,
     keyManager?: KeyManagerName,
     labels?: string[],
   ): { keyRefId: string; publicKey: string } {
     const privateKey = this.createPrivateKey(keyType, privateKeyRaw);
     const publicKeyRaw = privateKey.publicKey.toStringRaw();
 
-    if (controlPublicKey !== publicKeyRaw) {
+    if (validationPublicKey !== publicKeyRaw) {
       throw new Error("Given accountId doesn't correspond with private key");
     }
 

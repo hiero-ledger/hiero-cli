@@ -16,6 +16,7 @@ import type { OutputService } from '../../core/services/output/output-service.in
 import type { HbarService } from '../../core/services/hbar/hbar-service.interface';
 import type { PluginManagementService } from '../../core/services/plugin-management/plugin-management-service.interface';
 import type { KeyResolverService } from '../../core/services/key-resolver/key-resolver-service.interface';
+import { MOCK_PUBLIC_KEY } from './fixtures';
 
 /**
  * Create a mocked Logger instance
@@ -385,15 +386,13 @@ export const makeKeyResolverMock = (
           );
           return {
             accountId: keyOrAlias.accountId,
-            publicKey:
-              '0000000000000000000000000000000000000000000000000000000000000000',
+            publicKey: MOCK_PUBLIC_KEY,
             keyRefId: importResult.keyRefId,
           };
         }
         return {
           accountId: keyOrAlias.accountId,
-          publicKey:
-            '0000000000000000000000000000000000000000000000000000000000000000',
+          publicKey: MOCK_PUBLIC_KEY,
           keyRefId: 'imported-key-ref-id',
         };
       }

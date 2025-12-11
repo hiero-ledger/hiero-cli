@@ -8,7 +8,10 @@ import {
   makeKmsMock,
   makeAliasMock,
 } from '../../../../__tests__/mocks/mocks';
-import { ECDSA_DER_PRIVATE_KEY } from '../../../../__tests__/mocks/fixtures';
+import {
+  ECDSA_DER_PRIVATE_KEY,
+  MOCK_PUBLIC_KEY,
+} from '../../../../__tests__/mocks/fixtures';
 
 let exitSpy: jest.SpyInstance;
 
@@ -46,8 +49,7 @@ describe('network plugin - set-operator command', () => {
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
-      publicKey:
-        '0000000000000000000000000000000000000000000000000000000000000000',
+      publicKey: MOCK_PUBLIC_KEY,
     });
     expect(kmsService.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
@@ -332,8 +334,7 @@ describe('network plugin - set-operator command', () => {
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
-      publicKey:
-        '0000000000000000000000000000000000000000000000000000000000000000',
+      publicKey: MOCK_PUBLIC_KEY,
     });
   });
 });
