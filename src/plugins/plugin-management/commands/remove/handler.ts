@@ -10,6 +10,7 @@ import { formatError } from '../../../../core/utils/errors';
 import { RemovePluginOutput } from './output';
 import { PluginManagementRemoveStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
 import { RemovePluginInputSchema } from './input';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 export async function removePlugin(
   args: CommandHandlerArgs,
@@ -29,14 +30,14 @@ export async function removePlugin(
     if (result.status === PluginManagementRemoveStatus.NotFound) {
       return {
         status: Status.Failure,
-        errorMessage: `Plugin ${name} not found in plugin-management state`,
+        errorMessage: ERROR_MESSAGES.pluginNotFound(name),
       };
     }
 
     if (result.status === PluginManagementRemoveStatus.Protected) {
       return {
         status: Status.Failure,
-        errorMessage: `Plugin ${name} is a core plugin and cannot be removed from state via CLI`,
+        errorMessage: ERROR_MESSAGES.pluginProtectedCannotRemove(name),
       };
     }
 

@@ -6,6 +6,7 @@ import { enablePlugin } from '../../commands/enable/handler';
 import { makeArgs, makeLogger } from '../../../../__tests__/mocks/mocks';
 import type { PluginManagementService } from '../../../../core/services/plugin-management/plugin-management-service.interface';
 import { PluginManagementEnableStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 describe('plugin-management enable command', () => {
   it('should enable a disabled plugin', async () => {
@@ -55,8 +56,8 @@ describe('plugin-management enable command', () => {
     const result = await enablePlugin(args);
 
     expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Plugin custom-plugin is already enabled',
+    expect(result.errorMessage).toBe(
+      ERROR_MESSAGES.pluginAlreadyEnabled('custom-plugin'),
     );
     expect(result.outputJson).toBeUndefined();
     expect(pluginManagement.enablePlugin).toHaveBeenCalledWith('custom-plugin');
@@ -76,8 +77,8 @@ describe('plugin-management enable command', () => {
     const result = await enablePlugin(args);
 
     expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Plugin unknown-plugin not found in plugin-management state',
+    expect(result.errorMessage).toBe(
+      ERROR_MESSAGES.pluginNotFound('unknown-plugin'),
     );
     expect(result.outputJson).toBeUndefined();
     expect(pluginManagement.enablePlugin).toHaveBeenCalledWith(

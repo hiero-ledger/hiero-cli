@@ -10,6 +10,7 @@ import { formatError } from '../../../../core/utils/errors';
 import { RemovePluginOutput } from '../../schema';
 import { PluginManagementDisableStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
 import { DisablePluginInputSchema } from './input';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 export async function disablePlugin(
   args: CommandHandlerArgs,
@@ -29,21 +30,21 @@ export async function disablePlugin(
     if (result.status === PluginManagementDisableStatus.NotFound) {
       return {
         status: Status.Failure,
-        errorMessage: `Plugin ${name} not found in plugin-management state`,
+        errorMessage: ERROR_MESSAGES.pluginNotFound(name),
       };
     }
 
     if (result.status === PluginManagementDisableStatus.Protected) {
       return {
         status: Status.Failure,
-        errorMessage: `Plugin ${name} is protected and cannot be disabled`,
+        errorMessage: ERROR_MESSAGES.pluginProtectedCannotDisable(name),
       };
     }
 
     if (result.status === PluginManagementDisableStatus.AlreadyDisabled) {
       return {
         status: Status.Failure,
-        errorMessage: `Plugin ${name} is already disabled`,
+        errorMessage: ERROR_MESSAGES.pluginAlreadyDisabled(name),
       };
     }
 

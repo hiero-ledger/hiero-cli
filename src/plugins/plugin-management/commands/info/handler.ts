@@ -14,6 +14,7 @@ import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { PluginInfoOutput } from './output';
 import { PluginInfoInputSchema } from './input';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 export async function getPluginInfo(
   args: CommandHandlerArgs,
@@ -34,7 +35,7 @@ export async function getPluginInfo(
     if (!entry) {
       return {
         status: Status.Failure,
-        errorMessage: `Plugin ${name} not found in plugin-management state`,
+        errorMessage: ERROR_MESSAGES.pluginNotFound(name),
       };
     }
 

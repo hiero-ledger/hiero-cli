@@ -6,6 +6,7 @@ import { disablePlugin } from '../../commands/disable/handler';
 import { makeArgs, makeLogger } from '../../../../__tests__/mocks/mocks';
 import type { PluginManagementService } from '../../../../core/services/plugin-management/plugin-management-service.interface';
 import { PluginManagementDisableStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 describe('plugin-management disable command', () => {
   it('should disable an enabled plugin', async () => {
@@ -59,8 +60,8 @@ describe('plugin-management disable command', () => {
     const result = await disablePlugin(args);
 
     expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Plugin custom-plugin is already disabled',
+    expect(result.errorMessage).toBe(
+      ERROR_MESSAGES.pluginAlreadyDisabled('custom-plugin'),
     );
     expect(result.outputJson).toBeUndefined();
     expect(pluginManagement.disablePlugin).toHaveBeenCalledWith(
@@ -82,8 +83,8 @@ describe('plugin-management disable command', () => {
     const result = await disablePlugin(args);
 
     expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Plugin plugin-management is protected and cannot be disabled',
+    expect(result.errorMessage).toBe(
+      ERROR_MESSAGES.pluginProtectedCannotDisable('plugin-management'),
     );
     expect(result.outputJson).toBeUndefined();
     expect(pluginManagement.disablePlugin).toHaveBeenCalledWith(
@@ -105,8 +106,8 @@ describe('plugin-management disable command', () => {
     const result = await disablePlugin(args);
 
     expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Plugin unknown-plugin not found in plugin-management state',
+    expect(result.errorMessage).toBe(
+      ERROR_MESSAGES.pluginNotFound('unknown-plugin'),
     );
     expect(result.outputJson).toBeUndefined();
     expect(pluginManagement.disablePlugin).toHaveBeenCalledWith(

@@ -6,6 +6,7 @@ import { getPluginInfo } from '../../commands/info/handler';
 import { makeArgs, makeLogger } from '../../../../__tests__/mocks/mocks';
 import type { PluginManagementService } from '../../../../core/services/plugin-management/plugin-management-service.interface';
 import type { PluginStateEntry } from '../../../../core/plugins/plugin.interface';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 jest.mock('path', () => ({
   resolve: (...segments: string[]) => segments.join('/'),
@@ -107,8 +108,8 @@ describe('plugin-management info command', () => {
     const result = await getPluginInfo(args);
 
     expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Plugin missing-plugin not found in plugin-management state',
+    expect(result.errorMessage).toBe(
+      ERROR_MESSAGES.pluginNotFound('missing-plugin'),
     );
     expect(result.outputJson).toBeUndefined();
   });

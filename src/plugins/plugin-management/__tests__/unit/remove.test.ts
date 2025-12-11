@@ -6,6 +6,7 @@ import { removePlugin } from '../../commands/remove/handler';
 import { makeArgs, makeLogger } from '../../../../__tests__/mocks/mocks';
 import type { PluginManagementService } from '../../../../core/services/plugin-management/plugin-management-service.interface';
 import { PluginManagementRemoveStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 describe('plugin-management remove command', () => {
   it('should remove an existing plugin from state', async () => {
@@ -51,8 +52,8 @@ describe('plugin-management remove command', () => {
     const result = await removePlugin(args);
 
     expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Plugin unknown-plugin not found in plugin-management state',
+    expect(result.errorMessage).toBe(
+      ERROR_MESSAGES.pluginNotFound('unknown-plugin'),
     );
     expect(result.outputJson).toBeUndefined();
   });
@@ -71,8 +72,8 @@ describe('plugin-management remove command', () => {
     const result = await removePlugin(args);
 
     expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Plugin plugin-management is a core plugin and cannot be removed from state via CLI',
+    expect(result.errorMessage).toBe(
+      ERROR_MESSAGES.pluginProtectedCannotRemove('plugin-management'),
     );
     expect(result.outputJson).toBeUndefined();
 
