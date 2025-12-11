@@ -3,6 +3,7 @@ import type { CoreApi } from '../../../../core/core-api/core-api.interface';
 import type { HederaMirrornodeService } from '../../../../core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { FindMessagesOutput } from '../../commands/find-message/output';
 import { Status } from '../../../../core/shared/constants';
+import { ZodError } from 'zod';
 import {
   makeLogger,
   makeArgs,
@@ -372,7 +373,7 @@ describe('topic plugin - message-find command', () => {
     expect(output.messages).toEqual([]);
   });
 
-  test('returns error when multiple filters are provided', async () => {
+  test('throws ZodError when multiple filters are provided', async () => {
     const logger = makeLogger();
 
     const { mirror, networkMock, alias } = makeApiMocks({
@@ -392,12 +393,7 @@ describe('topic plugin - message-find command', () => {
       sequenceLt: 10,
     });
 
-    const result = await findMessage(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Only one sequence number filter can be provided at a time',
-    );
+    await expect(findMessage(args)).rejects.toThrow(ZodError);
     expect(mirror.getTopicMessages).not.toHaveBeenCalled();
   });
 });
