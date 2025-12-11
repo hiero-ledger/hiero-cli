@@ -33,7 +33,7 @@ describe('plugin-management enable command', () => {
 
     const output = JSON.parse(result.outputJson!);
     expect(output.name).toBe('custom-plugin');
-    expect(output.added).toBe(true);
+    expect(output.enabled).toBe(true);
     expect(output.message).toContain('enabled successfully');
   });
 

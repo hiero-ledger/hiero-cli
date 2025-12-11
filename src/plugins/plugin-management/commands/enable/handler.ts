@@ -7,7 +7,7 @@ import { CommandHandlerArgs } from '../../../../core';
 import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
-import { AddPluginOutput } from '../add/output';
+import { EnablePluginOutput } from './output';
 import { PluginManagementEnableStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
 import { EnablePluginInputSchema } from './input';
 import { ERROR_MESSAGES } from '../../error-messages';
@@ -40,10 +40,10 @@ export async function enablePlugin(
       };
     }
 
-    const outputData: AddPluginOutput = {
+    const outputData: EnablePluginOutput = {
       name,
       path: result.entry?.path ?? 'unknown',
-      added: true,
+      enabled: true,
       message: `Plugin ${name} enabled successfully`,
     };
 
