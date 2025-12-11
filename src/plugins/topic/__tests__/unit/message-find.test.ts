@@ -372,15 +372,11 @@ describe('topic plugin - message-find command', () => {
     expect(output.messages).toEqual([]);
   });
 
-  test('uses first filter when multiple filters are provided', async () => {
+  test('returns error when multiple filters are provided', async () => {
     const logger = makeLogger();
-    const mockMessages = [makeTopicMessage(6, 'Message 6')];
 
     const { mirror, networkMock, alias } = makeApiMocks({
-      getTopicMessagesImpl: jest.fn().mockResolvedValue({
-        messages: mockMessages,
-        links: { next: null },
-      }),
+      getTopicMessagesImpl: jest.fn(),
     });
 
     const api: Partial<CoreApi> = {
@@ -398,16 +394,10 @@ describe('topic plugin - message-find command', () => {
 
     const result = await findMessage(args);
 
-    expect(result.status).toBe(Status.Success);
-
-    // Should use the first non-empty filter (gt)
-    expect(mirror.getTopicMessages).toHaveBeenCalledWith({
-      topicId: '0.0.5678',
-      filter: {
-        field: 'sequenceNumber',
-        operation: 'gt',
-        value: 5,
-      },
-    });
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      'Only one sequence number filter can be provided at a time',
+    );
+    expect(mirror.getTopicMessages).not.toHaveBeenCalled();
   });
 });

@@ -125,14 +125,14 @@ export async function findMessage(
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  // Parse and validate command arguments
-  const validParams = FindMessageInputSchema.parse(args.args);
-
-  const topicIdOrAlias = validParams.topic;
-
-  const currentNetwork = api.network.getCurrentNetwork();
-
   try {
+    // Parse and validate command arguments
+    const validParams = FindMessageInputSchema.parse(args.args);
+
+    const topicIdOrAlias = validParams.topic;
+
+    const currentNetwork = api.network.getCurrentNetwork();
+
     // Step 1: Resolve topic ID from alias if it exists
     const topicId = resolveTopicId(topicIdOrAlias, api.alias, currentNetwork);
 
