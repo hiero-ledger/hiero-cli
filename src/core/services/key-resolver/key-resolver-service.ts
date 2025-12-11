@@ -8,6 +8,7 @@ import { AliasService, AliasType } from '../alias/alias-service.interface';
 import { NetworkService } from '../network/network-service.interface';
 import { KmsService } from '../kms/kms-service.interface';
 import { KeyManagerName } from '../kms/kms-types.interface';
+import { ERROR_MESSAGES } from './error-messages';
 
 export class KeyResolverServiceImpl implements KeyResolverService {
   private readonly mirror: HederaMirrornodeService;
@@ -52,7 +53,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       const operatorPublicKey = this.kms.getPublicKey(operator.keyRefId);
 
       if (!operatorPublicKey) {
-        throw new Error('Invalid operator in state, missing publicKey');
+        throw new Error(ERROR_MESSAGES.invalidOperatorInState);
       }
 
       return {
@@ -75,13 +76,11 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     );
 
     if (!account) {
-      throw new Error('No account is associated with the name provided.');
+      throw new Error(ERROR_MESSAGES.noAccountAssociatedWithName);
     }
 
     if (!account.publicKey || !account.keyRefId || !account.entityId) {
-      throw new Error(
-        'The account associated with the alias does not have an associated private/public key or accountId',
-      );
+      throw new Error(ERROR_MESSAGES.accountMissingPrivatePublicKey);
     }
 
     return {
@@ -102,9 +101,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       await this.mirror.getAccount(accountId);
 
     if (!keyAlgorithm || !accountPublicKey) {
-      throw new Error(
-        'Unable to get keyAlgorithm or publicKey from mirror node',
-      );
+      throw new Error(ERROR_MESSAGES.unableToGetKeyAlgorithm);
     }
 
     const { keyRefId, publicKey } = this.kms.importAndValidatePrivateKey(

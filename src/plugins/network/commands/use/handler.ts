@@ -4,6 +4,7 @@ import { formatError } from '../../../../core/utils/errors';
 import { UseNetworkOutput } from './output';
 import { Status } from '../../../../core/shared/constants';
 import { UseNetworkInputSchema } from './input';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 export async function useHandler(
   args: CommandHandlerArgs,
@@ -27,7 +28,7 @@ export async function useHandler(
   } catch (error) {
     return {
       status: Status.Failure,
-      errorMessage: formatError('Failed to switch network', error),
+      errorMessage: formatError(ERROR_MESSAGES.failedToSwitchNetwork, error),
     };
   }
 }

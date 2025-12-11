@@ -12,6 +12,7 @@ import {
   ECDSA_DER_PRIVATE_KEY,
   MOCK_PUBLIC_KEY,
 } from '../../../../__tests__/mocks/fixtures';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 let exitSpy: jest.SpyInstance;
 
@@ -251,7 +252,7 @@ describe('network plugin - set-operator command', () => {
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      'does not have an associated private/public key',
+      ERROR_MESSAGES.accountMissingPrivatePublicKey,
     );
   });
 

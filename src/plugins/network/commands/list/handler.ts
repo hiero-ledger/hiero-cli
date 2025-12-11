@@ -8,6 +8,7 @@ import {
 } from '../../utils/networkHealth';
 import { ListNetworksOutput } from './output';
 import { SupportedNetwork } from '../../../../core/types/shared.types';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 export async function listHandler(
   args: CommandHandlerArgs,
@@ -53,7 +54,10 @@ export async function listHandler(
       outputJson: JSON.stringify(output),
     };
   } catch (error) {
-    const errorMessage = formatError('Failed to list networks', error);
+    const errorMessage = formatError(
+      ERROR_MESSAGES.failedToListNetworks,
+      error,
+    );
     return {
       status: Status.Failure,
       errorMessage,

@@ -6,6 +6,7 @@ import { Status } from '../../../../core/shared/constants';
 import { SetOperatorOutput } from './output';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { SetOperatorInputSchema } from './input';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 export async function setOperatorHandler(
   args: CommandHandlerArgs,
@@ -37,7 +38,7 @@ export async function setOperatorHandler(
       const available = api.network.getAvailableNetworks().join(', ');
       return {
         status: Status.Failure,
-        errorMessage: `Network '${networkArg}' is not available. Available networks: ${available}`,
+        errorMessage: ERROR_MESSAGES.networkNotAvailable(networkArg, available),
       };
     }
 
@@ -71,7 +72,7 @@ export async function setOperatorHandler(
   } catch (error) {
     return {
       status: Status.Failure,
-      errorMessage: formatError('Failed to set operator', error),
+      errorMessage: formatError(ERROR_MESSAGES.failedToSetOperator, error),
     };
   }
 }
