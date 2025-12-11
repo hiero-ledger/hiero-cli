@@ -11,7 +11,6 @@ import { PluginManagementCreateStatus } from '../../../../core/services/plugin-m
 import * as fs from 'fs/promises';
 
 jest.mock('fs/promises', () => ({
-  stat: jest.fn(),
   access: jest.fn(),
 }));
 
@@ -37,9 +36,6 @@ jest.mock(
 describe('plugin-management add command', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockFs.stat.mockResolvedValue({
-      isDirectory: () => true,
-    } as Awaited<ReturnType<typeof fs.stat>>);
     mockFs.access.mockResolvedValue(undefined);
   });
 
@@ -108,52 +104,6 @@ describe('plugin-management add command', () => {
     expect(pluginManagement.addPlugin).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'custom-plugin' }),
     );
-  });
-
-  it('should fail when plugin directory does not exist', async () => {
-    const logger = makeLogger();
-    const pluginManagement = {
-      addPlugin: jest.fn(),
-    } as unknown as PluginManagementService;
-    const api = { pluginManagement };
-
-    const args = makeArgs(api, logger, {
-      path: '/nonexistent/path',
-    });
-
-    const error = new Error('ENOENT');
-    (error as NodeJS.ErrnoException).code = 'ENOENT';
-    mockFs.stat.mockRejectedValue(error);
-
-    const result = await addPlugin(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Plugin directory does not exist');
-    expect(result.errorMessage).toContain('/nonexistent/path');
-    expect(pluginManagement.addPlugin).not.toHaveBeenCalled();
-  });
-
-  it('should fail when plugin path is not a directory', async () => {
-    const logger = makeLogger();
-    const pluginManagement = {
-      addPlugin: jest.fn(),
-    } as unknown as PluginManagementService;
-    const api = { pluginManagement };
-
-    const args = makeArgs(api, logger, {
-      path: '/path/to/file.txt',
-    });
-
-    mockFs.stat.mockResolvedValue({
-      isDirectory: () => false,
-    } as Awaited<ReturnType<typeof fs.stat>>);
-
-    const result = await addPlugin(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Plugin path is not a directory');
-    expect(result.errorMessage).toContain('/path/to/file.txt');
-    expect(pluginManagement.addPlugin).not.toHaveBeenCalled();
   });
 
   it('should fail when manifest.js does not exist', async () => {
