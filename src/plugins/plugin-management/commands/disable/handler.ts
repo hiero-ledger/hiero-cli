@@ -10,6 +10,7 @@ import { formatError } from '../../../../core/utils/errors';
 import { RemovePluginOutput } from '../../schema';
 import { PluginManagementDisableStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
 import { DisablePluginInputSchema } from './input';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 export async function disablePlugin(
   args: CommandHandlerArgs,
@@ -27,42 +28,23 @@ export async function disablePlugin(
     const result = api.pluginManagement.disablePlugin(name);
 
     if (result.status === PluginManagementDisableStatus.NotFound) {
-      const notFound: RemovePluginOutput = {
-        name,
-        removed: false,
-        message: `Plugin ${name} is not registered in state`,
-      };
-
       return {
-        status: Status.Success,
-        outputJson: JSON.stringify(notFound),
+        status: Status.Failure,
+        errorMessage: ERROR_MESSAGES.pluginNotFound(name),
       };
     }
 
     if (result.status === PluginManagementDisableStatus.Protected) {
-      const protectedResult: RemovePluginOutput = {
-        name,
-        removed: false,
-        message:
-          'Plugin plugin-management is protected and cannot be disabled.',
-      };
-
       return {
-        status: Status.Success,
-        outputJson: JSON.stringify(protectedResult),
+        status: Status.Failure,
+        errorMessage: ERROR_MESSAGES.pluginProtectedCannotDisable(name),
       };
     }
 
     if (result.status === PluginManagementDisableStatus.AlreadyDisabled) {
-      const alreadyDisabled: RemovePluginOutput = {
-        name,
-        removed: false,
-        message: `Plugin ${name} is already disabled`,
-      };
-
       return {
-        status: Status.Success,
-        outputJson: JSON.stringify(alreadyDisabled),
+        status: Status.Failure,
+        errorMessage: ERROR_MESSAGES.pluginAlreadyDisabled(name),
       };
     }
 
