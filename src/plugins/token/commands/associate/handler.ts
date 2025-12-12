@@ -13,30 +13,27 @@ import { AssociateTokenOutput } from './output';
 import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { AssociateTokenInputSchema } from './input';
+import { saveAssociationToState } from '../../utils/token-associations';
 
 export async function associateToken(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  // Initialize token state helper
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
-  // Validate command parameters
   const validArgs = AssociateTokenInputSchema.parse(args.args);
 
   const tokenIdOrAlias = validArgs.token;
   const accountIdOrAlias = validArgs.account;
   const providedKeyManager = validArgs.keyManager;
 
-  // Get keyManager from args or fallback to config
   const keyManager =
     providedKeyManager ??
     api.config.getOption<KeyManagerName>('default_key_manager');
 
   const network = api.network.getCurrentNetwork();
 
-  // Resolve token ID from alias if provided
   const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
 
   if (!resolvedToken) {
@@ -48,8 +45,6 @@ export async function associateToken(
 
   const tokenId = resolvedToken.tokenId;
 
-  // Resolve account parameter (alias or account-id:account-key) if provided
-
   const account = await api.keyResolver.getOrInitKey(
     accountIdOrAlias,
     keyManager,
@@ -60,22 +55,9 @@ export async function associateToken(
   logger.info(`🔑 Will sign with account key`);
   logger.info(`Associating token ${tokenId} with account ${account.accountId}`);
 
-  const saveAssociationToState = () => {
-    const tokenData = tokenState.getToken(tokenId);
-    if (tokenData) {
-      tokenState.addTokenAssociation(
-        tokenId,
-        account.accountId,
-        account.accountId,
-      );
-      logger.info(`   Association saved to token state`);
-    }
-  };
-
   let alreadyAssociated = false;
   let transactionId: string | undefined;
 
-  // Check if token is already associated on chain via Mirror Node
   try {
     const tokenBalances = await api.mirror.getAccountTokenBalances(
       account.accountId,
@@ -90,7 +72,7 @@ export async function associateToken(
         `Token ${tokenId} is already associated with account ${account.accountId}`,
       );
 
-      saveAssociationToState();
+      saveAssociationToState(tokenState, tokenId, account.accountId, logger);
       alreadyAssociated = true;
     }
   } catch (mirrorError) {
@@ -101,13 +83,11 @@ export async function associateToken(
 
   if (!alreadyAssociated) {
     try {
-      // 1. Create association transaction using Core API
       const associateTransaction = api.token.createTokenAssociationTransaction({
         tokenId,
         accountId: account.accountId,
       });
 
-      // Sign and execute using the account key
       logger.debug(`Using key ${account.keyRefId} for signing transaction`);
       const result = await api.txExecution.signAndExecuteWith(
         associateTransaction,
@@ -116,7 +96,7 @@ export async function associateToken(
 
       if (result.success) {
         transactionId = result.transactionId;
-        saveAssociationToState();
+        saveAssociationToState(tokenState, tokenId, account.accountId, logger);
       } else {
         return {
           status: Status.Failure,
@@ -131,7 +111,7 @@ export async function associateToken(
         logger.info(
           `Token ${tokenId} is already associated with account ${account.accountId}`,
         );
-        saveAssociationToState();
+        saveAssociationToState(tokenState, tokenId, account.accountId, logger);
         alreadyAssociated = true;
       } else {
         return {
