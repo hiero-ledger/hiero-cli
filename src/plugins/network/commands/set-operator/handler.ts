@@ -76,5 +76,3 @@ export async function setOperatorHandler(
     };
   }
 }
-
-export default setOperatorHandler;
