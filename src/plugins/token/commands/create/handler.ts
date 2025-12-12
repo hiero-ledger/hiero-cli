@@ -6,89 +6,27 @@
 import { CommandHandlerArgs } from '../../../../core';
 import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
-import { TransactionResult } from '../../../../core';
-import { SupportedNetwork } from '../../../../core/types/shared.types';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { TokenData } from '../../schema';
 import { formatError } from '../../../../core/utils/errors';
 import { CreateTokenOutput } from './output';
 import { processTokenBalanceInput } from '../../../../core/utils/process-token-balance-input';
-import type { TokenCreateParams } from '../../../../core/types/token.types';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { CreateTokenInputSchema } from './input';
 import { PublicKey } from '@hashgraph/sdk';
-
-/**
- * Determines the final max supply value for FINITE supply tokens
- * @param maxSupply - The max supply value (if provided)
- * @param initialSupply - The initial supply value
- * @returns The calculated final max supply (defaults to initialSupply if not provided)
- */
-function determineFiniteMaxSupply(
-  maxSupply: bigint | undefined,
-  initialSupply: bigint,
-): bigint {
-  if (maxSupply !== undefined) {
-    if (maxSupply < initialSupply) {
-      throw new Error(
-        `Max supply (${maxSupply}) cannot be less than initial supply (${initialSupply})`,
-      );
-    }
-    return maxSupply;
-  }
-  // Default to initial supply if no max supply specified for finite tokens
-  return initialSupply;
-}
-
-/**
- * Builds the token data object for state storage
- * @param result - Transaction result
- * @param params - Token creation parameters
- * @returns Token data object
- */
-function buildTokenData(
-  result: TransactionResult,
-  params: {
-    name: string;
-    symbol: string;
-    treasuryId: string;
-    decimals: number;
-    initialSupply: bigint;
-    supplyType: string;
-    adminPublicKey: string;
-    treasuryPublicKey?: string;
-    network: SupportedNetwork;
-  },
-): TokenData {
-  return {
-    tokenId: result.tokenId!,
-    name: params.name,
-    symbol: params.symbol,
-    treasuryId: params.treasuryId,
-    decimals: params.decimals,
-    initialSupply: params.initialSupply,
-    supplyType: params.supplyType.toUpperCase() as 'FINITE' | 'INFINITE',
-    maxSupply:
-      params.supplyType.toUpperCase() === 'FINITE' ? params.initialSupply : 0n,
-    adminPublicKey: params.adminPublicKey,
-    network: params.network,
-    associations: [],
-    customFees: [],
-  };
-}
+import {
+  determineFiniteMaxSupply,
+  buildTokenData,
+} from '../../utils/token-data-builders';
 
 export async function createToken(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  // Initialize token state helper
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
-  // Validate command parameters
   const validArgs = CreateTokenInputSchema.parse(args.args);
 
-  // Use validated parameters
   const name = validArgs.tokenName;
   const symbol = validArgs.symbol;
   const decimals = validArgs.decimals;
@@ -99,18 +37,15 @@ export async function createToken(
   const providedKeyManager = validArgs.keyManager;
   const memo = validArgs.memo;
 
-  // Get keyManager from args or fallback to config
   const keyManager =
     providedKeyManager ??
     api.config.getOption<KeyManagerName>('default_key_manager');
 
-  // Convert display units to raw token units
   const initialSupply = processTokenBalanceInput(rawInitialSupply, decimals);
   const maxSupply = providedMaxSupply
     ? processTokenBalanceInput(providedMaxSupply, decimals)
     : undefined;
 
-  // Check if alias already exists on the current network
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(alias, network);
 
@@ -126,7 +61,6 @@ export async function createToken(
     ['token:admin'],
   );
 
-  // Validate and determine maxSupply
   let finalMaxSupply: bigint | undefined = undefined;
   if (supplyType.toUpperCase() === 'FINITE') {
     finalMaxSupply = determineFiniteMaxSupply(maxSupply, initialSupply);
@@ -148,8 +82,7 @@ export async function createToken(
     logger.debug(`Use Custom Treasury: ${String(Boolean(treasury))}`);
     logger.debug('=========================');
 
-    // 2. Create and execute token transaction
-    const tokenCreateParams: TokenCreateParams = {
+    const tokenCreateTransaction = api.token.createTokenTransaction({
       name,
       symbol,
       treasuryId: treasury.accountId,
@@ -159,10 +92,7 @@ export async function createToken(
       maxSupplyRaw: finalMaxSupply,
       adminPublicKey: PublicKey.fromString(admin.publicKey),
       memo,
-    };
-
-    const tokenCreateTransaction =
-      api.token.createTokenTransaction(tokenCreateParams);
+    });
 
     const txSigners = [treasury.keyRefId];
 
@@ -175,7 +105,6 @@ export async function createToken(
       txSigners,
     );
 
-    // 3. Verify success and store token data
     if (!result.success || !result.tokenId) {
       throw new Error('Token creation failed - no token ID returned');
     }
@@ -195,7 +124,6 @@ export async function createToken(
     tokenState.saveToken(result.tokenId, tokenData);
     logger.info(`   Token data saved to state`);
 
-    // Register alias if provided
     if (alias) {
       api.alias.register({
         alias,
@@ -207,7 +135,6 @@ export async function createToken(
       logger.info(`   Name registered: ${alias}`);
     }
 
-    // Prepare output data
     const outputData: CreateTokenOutput = {
       tokenId: result.tokenId,
       name,
