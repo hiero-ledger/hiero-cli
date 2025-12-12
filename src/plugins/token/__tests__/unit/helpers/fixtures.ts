@@ -495,6 +495,7 @@ export const expectedTokenTransactionParams = {
   maxSupplyRaw: undefined,
   treasuryId: '0.0.123456',
   adminKey: 'test-admin-key',
+  memo: undefined,
 };
 
 /**

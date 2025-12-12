@@ -203,6 +203,7 @@ describe('Token Lifecycle Integration', () => {
         maxSupplyRaw: 100000n,
         treasuryId: _treasuryAccountId,
         adminKey: 'admin-key',
+        memo: undefined,
       });
 
       expect(

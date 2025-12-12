@@ -154,6 +154,7 @@ describe('createTokenHandler', () => {
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
         adminKey: 'operator-public-key',
+        memo: undefined,
       });
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTransactions.token,
