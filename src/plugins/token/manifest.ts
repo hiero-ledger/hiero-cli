@@ -177,6 +177,13 @@ export const tokenPluginManifest: PluginManifest = {
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
+        {
+          name: 'memo',
+          short: 'M',
+          type: 'string',
+          required: false,
+          description: 'Optional memo for the token (max 100 characters)',
+        },
       ],
       handler: createToken,
       output: {

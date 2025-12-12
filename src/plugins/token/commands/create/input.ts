@@ -3,6 +3,7 @@ import {
   AmountInputSchema,
   HtsDecimalsSchema,
   KeyManagerTypeSchema,
+  MemoSchema,
   KeyOrAccountAliasSchema,
   SupplyTypeSchema,
   TokenAliasNameSchema,
@@ -42,6 +43,9 @@ export const CreateTokenInputSchema = z
     ),
     keyManager: KeyManagerTypeSchema.optional().describe(
       'Key manager type (defaults to config setting)',
+    ),
+    memo: MemoSchema.describe(
+      'Optional memo for the token (max 100 characters)',
     ),
   })
   .superRefine(validateSupplyTypeAndMaxSupply);
