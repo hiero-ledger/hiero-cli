@@ -66,8 +66,15 @@ export const makeTxExecutionServiceMock = (
 export const makeKmsMock = (
   overrides?: Partial<jest.Mocked<KmsService>>,
 ): jest.Mocked<KmsService> => ({
-  createLocalPrivateKey: jest.fn(),
+  createLocalPrivateKey: jest.fn().mockReturnValue({
+    keyRefId: 'mock-key-ref-id',
+    publicKey: 'mock-public-key',
+  }),
   importPrivateKey: jest.fn().mockReturnValue({
+    keyRefId: 'mock-key-ref-id',
+    publicKey: 'mock-public-key',
+  }),
+  importAndValidatePrivateKey: jest.fn().mockReturnValue({
     keyRefId: 'mock-key-ref-id',
     publicKey: 'mock-public-key',
   }),
