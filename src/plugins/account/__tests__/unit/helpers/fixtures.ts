@@ -2,10 +2,10 @@
  * Test Fixtures for Account Plugin Tests
  * Reusable test data and constants
  */
-import type { AccountData } from '../../../schema';
-import type { AliasRecord } from '../../../../../core/services/alias/alias-service.interface';
-import { AliasType } from '../../../../../core/services/alias/alias-service.interface';
-import { KeyAlgorithm } from '../../../../../core/shared/constants';
+import type { AliasRecord } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { KeyAlgorithm } from '@/core/shared/constants';
+import type { AccountData } from '@/plugins/account/schema';
 
 /**
  * Mock Account IDs

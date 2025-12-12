@@ -3,30 +3,34 @@
  * Defines the token plugin according to ADR-001
  * Updated for ADR-003 compliance with output specifications
  */
-import { PluginManifest } from '../../core/plugins/plugin.interface';
-import { TOKEN_JSON_SCHEMA, TOKEN_NAMESPACE } from './schema';
+import type { PluginManifest } from '@/core/plugins/plugin.interface';
+
 import {
-  CreateTokenOutputSchema,
+  ASSOCIATE_TOKEN_TEMPLATE,
+  associateToken,
+  AssociateTokenOutputSchema,
+} from './commands/associate';
+import {
   CREATE_TOKEN_TEMPLATE,
+  createToken,
+  CreateTokenOutputSchema,
 } from './commands/create';
 import {
-  TransferTokenOutputSchema,
-  TRANSFER_TOKEN_TEMPLATE,
-} from './commands/transfer';
-import {
-  AssociateTokenOutputSchema,
-  ASSOCIATE_TOKEN_TEMPLATE,
-} from './commands/associate';
-import { ListTokensOutputSchema, LIST_TOKENS_TEMPLATE } from './commands/list';
-import {
-  CreateTokenFromFileOutputSchema,
   CREATE_TOKEN_FROM_FILE_TEMPLATE,
+  createTokenFromFile,
+  CreateTokenFromFileOutputSchema,
 } from './commands/createFromFile';
-import { transferToken } from './commands/transfer/handler';
-import { createToken } from './commands/create/handler';
-import { associateToken } from './commands/associate/handler';
-import { createTokenFromFile } from './commands/createFromFile/handler';
-import { listTokens } from './commands/list/handler';
+import {
+  LIST_TOKENS_TEMPLATE,
+  listTokens,
+  ListTokensOutputSchema,
+} from './commands/list';
+import {
+  TRANSFER_TOKEN_TEMPLATE,
+  transferToken,
+  TransferTokenOutputSchema,
+} from './commands/transfer';
+import { TOKEN_JSON_SCHEMA, TOKEN_NAMESPACE } from './schema';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',

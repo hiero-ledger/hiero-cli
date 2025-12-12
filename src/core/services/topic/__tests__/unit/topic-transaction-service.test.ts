@@ -2,12 +2,13 @@
  * Unit tests for TopicServiceImpl
  * Tests topic creation and message submission
  */
-import { TopicServiceImpl } from '../../topic-transaction-service';
+import { TopicServiceImpl } from '@/core/services/topic/topic-transaction-service';
+
 import {
+  createCreateTopicParams,
+  createMockPublicKey,
   createMockTopicCreateTransaction,
   createMockTopicMessageSubmitTransaction,
-  createMockPublicKey,
-  createCreateTopicParams,
   createSubmitMessageParams,
 } from './mocks';
 

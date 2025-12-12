@@ -2,7 +2,7 @@
  * Core API Configuration
  * Configuration options for initializing the Core API
  */
-import { OutputFormat } from '../shared/types/output-format';
+import type { OutputFormat } from '@/core/shared/types/output-format';
 
 export interface CoreApiConfig {
   /**

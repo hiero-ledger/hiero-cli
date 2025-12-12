@@ -2,11 +2,12 @@
  * Transfer Token Command Output Schema and Template
  */
 import { z } from 'zod';
+
 import {
   EntityIdSchema,
-  TransactionIdSchema,
   TokenAmountSchema,
-} from '../../../../core/schemas/common-schemas';
+  TransactionIdSchema,
+} from '@/core/schemas/common-schemas';
 
 /**
  * Transfer Token Command Output Schema

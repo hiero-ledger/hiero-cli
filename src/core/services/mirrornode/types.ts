@@ -1,7 +1,7 @@
 /**
  * Type definitions for Hedera Mirror Node API responses
  */
-import { KeyAlgorithm } from '../../shared/constants';
+import type { KeyAlgorithm } from '@/core/shared/constants';
 
 // Base URL mapping for different networks
 export const LedgerIdToBaseUrl = new Map<string, string>([

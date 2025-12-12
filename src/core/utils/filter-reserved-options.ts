@@ -1,5 +1,5 @@
-import { CommandOption } from '../core-api';
-import { RESERVED_LONG_OPTIONS } from '../shared/config/cli-options';
+import type { CommandOption } from '@/core/core-api';
+import { RESERVED_LONG_OPTIONS } from '@/core/shared/config/cli-options';
 
 export function filterReservedOptions(options: CommandOption[]): {
   allowed: CommandOption[];

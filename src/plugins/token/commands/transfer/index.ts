@@ -4,4 +4,4 @@
  */
 export { transferToken } from './handler';
 export type { TransferTokenOutput } from './output';
-export { TransferTokenOutputSchema, TRANSFER_TOKEN_TEMPLATE } from './output';
+export { TRANSFER_TOKEN_TEMPLATE, TransferTokenOutputSchema } from './output';

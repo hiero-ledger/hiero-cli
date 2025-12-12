@@ -2,21 +2,22 @@
  * Shared Mock Factory Functions for Token Plugin Tests
  * Provides reusable mocks for services, APIs, and common test utilities
  */
-import type { Logger } from '../../../../../core/services/logger/logger-service.interface';
-import type { CoreApi } from '../../../../../core/core-api/core-api.interface';
-import type { TokenService } from '../../../../../core/services/token/token-service.interface';
-import type { TxExecutionService } from '../../../../../core/services/tx-execution/tx-execution-service.interface';
-import type { StateService } from '../../../../../core/services/state/state-service.interface';
-import type { KmsService } from '../../../../../core/services/kms/kms-service.interface';
-import type { AliasService } from '../../../../../core/services/alias/alias-service.interface';
-import type { AccountService } from '../../../../../core/services/account/account-transaction-service.interface';
-import type { NetworkService } from '../../../../../core/services/network/network-service.interface';
-import type { ConfigService } from '../../../../../core/services/config/config-service.interface';
-import type { HbarService } from '../../../../../core/services/hbar/hbar-service.interface';
-import type { OutputService } from '../../../../../core/services/output/output-service.interface';
-import type { PluginManagementService } from '../../../../../core/services/plugin-management/plugin-management-service.interface';
-import type { KeyResolverService } from '../../../../../core/services/key-resolver/key-resolver-service.interface';
-import { makeKeyResolverMock as makeGlobalKeyResolverMock } from '../../../../../__tests__/mocks/mocks';
+import { makeKeyResolverMock as makeGlobalKeyResolverMock } from '@/__tests__/mocks/mocks';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
+import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
+import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
+import type { KmsService } from '@/core/services/kms/kms-service.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { NetworkService } from '@/core/services/network/network-service.interface';
+import type { OutputService } from '@/core/services/output/output-service.interface';
+import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+import type { TokenService } from '@/core/services/token/token-service.interface';
+import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
+
 import { mockTransactionResults } from './fixtures';
 
 /**

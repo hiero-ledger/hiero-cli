@@ -1,10 +1,10 @@
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { inferConfigOptionType } from '../../schema';
-import { SetConfigOutput } from './output';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { inferConfigOptionType } from '@/plugins/config/schema';
+
 import { SetConfigInputSchema } from './input';
+import type { SetConfigOutput } from './output';
 
 export async function setConfigOption(
   args: CommandHandlerArgs,

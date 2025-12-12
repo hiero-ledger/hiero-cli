@@ -3,14 +3,14 @@
  * Marks an existing plugin as enabled in the plugin-management state.
  * Follows ADR-003 contract: returns CommandExecutionResult.
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { EnablePluginOutput } from './output';
-import { PluginManagementEnableStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import { PluginManagementEnableStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
+
 import { EnablePluginInputSchema } from './input';
-import { ERROR_MESSAGES } from '../../error-messages';
+import type { EnablePluginOutput } from './output';
 export async function enablePlugin(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {

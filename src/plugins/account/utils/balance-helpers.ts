@@ -3,11 +3,12 @@
  * Utility functions for account balance operations
  */
 import BigNumber from 'bignumber.js';
-import { TokenBalanceInfo } from '../../../core/services/mirrornode/types';
-import { normalizeBalance } from '../../../core/utils/normalize-balance';
-import type { CoreApi } from '../../../core/core-api/core-api.interface';
-import type { SupportedNetwork } from '../../../core/types/shared.types';
-import type { AliasRecord } from '../../../core/services/alias/alias-service.interface';
+
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { AliasRecord } from '@/core/services/alias/alias-service.interface';
+import type { TokenBalanceInfo } from '@/core/services/mirrornode/types';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import { normalizeBalance } from '@/core/utils/normalize-balance';
 
 /**
  * Token balance with metadata

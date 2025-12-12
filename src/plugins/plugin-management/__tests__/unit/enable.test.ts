@@ -1,12 +1,14 @@
 /**
  * Unit tests for plugin-management enable command
  */
-import { Status } from '../../../../core/shared/constants';
-import { enablePlugin } from '../../commands/enable/handler';
-import { makeArgs, makeLogger } from '../../../../__tests__/mocks/mocks';
-import type { PluginManagementService } from '../../../../core/services/plugin-management/plugin-management-service.interface';
-import { PluginManagementEnableStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
-import { ERROR_MESSAGES } from '../../error-messages';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import {
+  PluginManagementEnableStatus,
+  type PluginManagementService,
+} from '@/core/services/plugin-management/plugin-management-service.interface';
+import { Status } from '@/core/shared/constants';
+import { enablePlugin } from '@/plugins/plugin-management/commands/enable/handler';
+import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 describe('plugin-management enable command', () => {
   it('should enable a disabled plugin', async () => {

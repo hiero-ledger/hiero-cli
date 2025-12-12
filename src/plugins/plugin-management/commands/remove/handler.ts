@@ -3,14 +3,14 @@
  * Removes a plugin entry from the plugin-management state.
  * Follows ADR-003 contract: returns CommandExecutionResult.
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { RemovePluginOutput } from './output';
-import { PluginManagementRemoveStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import { PluginManagementRemoveStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
+
 import { RemovePluginInputSchema } from './input';
-import { ERROR_MESSAGES } from '../../error-messages';
+import type { RemovePluginOutput } from './output';
 
 export async function removePlugin(
   args: CommandHandlerArgs,

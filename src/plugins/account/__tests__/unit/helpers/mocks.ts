@@ -2,31 +2,32 @@
  * Shared Mock Factory Functions for Account Plugin Tests
  * Provides reusable mocks for services, APIs, and common test utilities
  */
-import type { CommandHandlerArgs } from '../../../../../core/plugins/plugin.interface';
-import type { Logger } from '../../../../../core/services/logger/logger-service.interface';
-import type { HederaMirrornodeService } from '../../../../../core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { CoreApi } from '../../../../../core/core-api/core-api.interface';
-import type { AccountData } from '../../../schema';
-import type { AccountService } from '../../../../../core/services/account/account-transaction-service.interface';
-import type { TxExecutionService } from '../../../../../core/services/tx-execution/tx-execution-service.interface';
-import type { NetworkService } from '../../../../../core/services/network/network-service.interface';
-import type { AliasService } from '../../../../../core/services/alias/alias-service.interface';
-import type { PluginManagementService } from '../../../../../core/services/plugin-management/plugin-management-service.interface';
 import {
-  makeNetworkMock as makeGlobalNetworkMock,
-  makeKmsMock as makeGlobalKmsMock,
   makeAliasMock as makeGlobalAliasMock,
-  makeSigningMock as makeGlobalSigningMock,
+  makeKmsMock as makeGlobalKmsMock,
   makeMirrorMock as makeGlobalMirrorMock,
-} from '../../../../../__tests__/mocks/mocks';
+  makeNetworkMock as makeGlobalNetworkMock,
+  makeSigningMock as makeGlobalSigningMock,
+} from '@/__tests__/mocks/mocks';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
+import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
+import type { NetworkService } from '@/core/services/network/network-service.interface';
+import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
+import type { AccountData } from '@/plugins/account/schema';
+
 import {
   mockAccountData,
-  mockTransactionResults,
-  mockMirrorAccountData,
   mockAliasLists,
-  OPERATOR_SUFFICIENT_BALANCE,
+  mockMirrorAccountData,
+  mockTransactionResults,
   OPERATOR_ACCOUNT_ID,
   OPERATOR_KEY_REF_ID,
+  OPERATOR_SUFFICIENT_BALANCE,
 } from './fixtures';
 
 /**

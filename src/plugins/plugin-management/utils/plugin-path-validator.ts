@@ -2,8 +2,8 @@
  * Plugin Path Validation Utilities
  * Utilities for validating plugin directory paths and manifest files
  */
-import * as path from 'path';
 import * as fs from 'fs/promises';
+import * as path from 'path';
 
 export interface PluginPathValidationResult {
   resolvedPath: string;

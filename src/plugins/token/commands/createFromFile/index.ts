@@ -5,6 +5,6 @@
 export { createTokenFromFile } from './handler';
 export type { CreateTokenFromFileOutput } from './output';
 export {
-  CreateTokenFromFileOutputSchema,
   CREATE_TOKEN_FROM_FILE_TEMPLATE,
+  CreateTokenFromFileOutputSchema,
 } from './output';

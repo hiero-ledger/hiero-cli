@@ -3,14 +3,14 @@
  * Handles deleting accounts using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { ZustandAccountStateHelper } from '../../zustand-state-helper';
-import { AliasType } from '../../../../core/services/alias/alias-service.interface';
-import { DeleteAccountOutput } from './output';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+
 import { DeleteAccountInputSchema } from './input';
+import type { DeleteAccountOutput } from './output';
 
 export async function deleteAccount(
   args: CommandHandlerArgs,

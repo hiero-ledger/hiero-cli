@@ -1,17 +1,16 @@
 import { z } from 'zod';
-import { CoreApi } from '../../core/core-api/core-api.interface';
-import { setOperatorHandler } from '../../plugins/network/commands/set-operator';
-import { useHandler } from '../../plugins/network/commands/use';
+
+import type { CoreApi } from '@/core/core-api/core-api.interface';
 import {
-  getOperatorHandler,
-  GetOperatorOutput,
-} from '../../plugins/network/commands/get-operator';
-import { Status } from '../../core/shared/constants';
-import {
-  EntityIdSchema,
-  Ed25519PrivateKeySchema,
   EcdsaPrivateKeySchema,
-} from '../../core/schemas/common-schemas';
+  Ed25519PrivateKeySchema,
+  EntityIdSchema,
+} from '@/core/schemas/common-schemas';
+import { Status } from '@/core/shared/constants';
+import type { GetOperatorOutput } from '@/plugins/network/commands/get-operator';
+import { getOperatorHandler } from '@/plugins/network/commands/get-operator';
+import { setOperatorHandler } from '@/plugins/network/commands/set-operator';
+import { useHandler } from '@/plugins/network/commands/use';
 
 const envSchema = z.object({
   OPERATOR_ID: z

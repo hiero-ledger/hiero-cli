@@ -3,15 +3,16 @@
  * Handles importing existing accounts using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandExecutionResult, CommandHandlerArgs } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { ZustandAccountStateHelper } from '../../zustand-state-helper';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import type { AccountData } from '@/plugins/account/schema';
+import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
+import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+
 import { ImportAccountInputSchema } from './input';
-import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
-import { buildAccountEvmAddress } from '../../utils/account-address';
-import { AccountData } from '../../schema';
-import { ImportAccountOutput } from './output';
+import type { ImportAccountOutput } from './output';
 
 export async function importAccount(
   args: CommandHandlerArgs,

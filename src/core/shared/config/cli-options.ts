@@ -1,12 +1,12 @@
-import type { PluginManifest } from '../../plugins/plugin.types';
-import accountPluginManifest from '../../../plugins/account/manifest';
-import tokenPluginManifest from '../../../plugins/token/manifest';
-import networkPluginManifest from '../../../plugins/network/manifest';
-import pluginManagementManifest from '../../../plugins/plugin-management/manifest';
-import credentialsPluginManifest from '../../../plugins/credentials/manifest';
-import topicPluginManifest from '../../../plugins/topic/manifest';
-import hbarPluginManifest from '../../../plugins/hbar/manifest';
-import configPluginManifest from '../../../plugins/config/manifest';
+import type { PluginManifest } from '@/core/plugins/plugin.types';
+import accountPluginManifest from '@/plugins/account/manifest';
+import configPluginManifest from '@/plugins/config/manifest';
+import credentialsPluginManifest from '@/plugins/credentials/manifest';
+import hbarPluginManifest from '@/plugins/hbar/manifest';
+import networkPluginManifest from '@/plugins/network/manifest';
+import pluginManagementManifest from '@/plugins/plugin-management/manifest';
+import tokenPluginManifest from '@/plugins/token/manifest';
+import topicPluginManifest from '@/plugins/topic/manifest';
 
 export const RESERVED_LONG_OPTIONS = new Set<string>([
   'format',

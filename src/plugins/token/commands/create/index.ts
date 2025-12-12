@@ -4,4 +4,4 @@
  */
 export { createToken } from './handler';
 export type { CreateTokenOutput } from './output';
-export { CreateTokenOutputSchema, CREATE_TOKEN_TEMPLATE } from './output';
+export { CREATE_TOKEN_TEMPLATE, CreateTokenOutputSchema } from './output';

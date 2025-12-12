@@ -1,16 +1,17 @@
 import { z } from 'zod';
+
 import {
   AmountInputSchema,
   HtsDecimalsSchema,
   KeyManagerTypeSchema,
-  MemoSchema,
   KeyOrAccountAliasSchema,
+  MemoSchema,
   SupplyTypeSchema,
   TokenAliasNameSchema,
   TokenNameSchema,
   TokenSymbolSchema,
-} from '../../../../core/schemas';
-import { validateSupplyTypeAndMaxSupply } from '../../../../core/shared/validation/validate-supply.zod';
+} from '@/core/schemas';
+import { validateSupplyTypeAndMaxSupply } from '@/core/shared/validation/validate-supply.zod';
 
 /**
  * Input schema for token create command

@@ -1,13 +1,14 @@
-import { CoreApi } from '../../../core/core-api/core-api.interface';
-import { createCoreApi } from '../../../core/core-api/core-api';
-import { STATE_STORAGE_FILE_PATH } from '../../test-constants';
-import { Status } from '../../../core/shared/constants';
-import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
-import '../../../core/utils/json-serialize';
-import { createToken, listTokens } from '../../../plugins/token';
-import { CreateTokenOutput } from '../../../plugins/token/commands/create';
-import { ListTokensOutput } from '../../../plugins/token/commands/list';
-import { SupportedNetwork } from '../../../core/types/shared.types';
+import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
+import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
+import { createCoreApi } from '@/core/core-api/core-api';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import { Status } from '@/core/shared/constants';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import { createToken, listTokens } from '@/plugins/token';
+import type { CreateTokenOutput } from '@/plugins/token/commands/create';
+import type { ListTokensOutput } from '@/plugins/token/commands/list';
+
+import '@/core/utils/json-serialize';
 
 describe('List Token Integration Tests', () => {
   let coreApi: CoreApi;

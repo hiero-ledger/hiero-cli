@@ -6,8 +6,9 @@ import {
   TopicCreateTransaction,
   TopicMessageSubmitTransaction,
 } from '@hashgraph/sdk';
-import { TopicService } from './topic-transaction-service.interface';
-import {
+
+import type { TopicService } from './topic-transaction-service.interface';
+import type {
   CreateTopicParams,
   MessageSubmitResult,
   SubmitMessageParams,

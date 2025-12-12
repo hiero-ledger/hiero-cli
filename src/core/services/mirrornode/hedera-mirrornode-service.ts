@@ -2,14 +2,17 @@
  * Comprehensive Hedera Mirror Node Service Implementation
  * Makes actual HTTP calls to Hedera Mirror Node API
  */
-import { LedgerId } from '@hashgraph/sdk';
-import { HederaMirrornodeService } from './hedera-mirrornode-service.interface';
-import {
+import type { LedgerId } from '@hashgraph/sdk';
+
+import { KeyAlgorithm } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+
+import type { HederaMirrornodeService } from './hedera-mirrornode-service.interface';
+import type {
   AccountAPIResponse,
   AccountResponse,
   ContractInfo,
   ExchangeRateResponse,
-  LedgerIdToBaseUrl,
   MirrorNodeKeyType,
   TokenAirdropsResponse,
   TokenBalancesResponse,
@@ -22,8 +25,7 @@ import {
   TopicMessagesResponse,
   TransactionDetailsResponse,
 } from './types';
-import { formatError } from '../../utils/errors';
-import { KeyAlgorithm } from '../../shared/constants';
+import { LedgerIdToBaseUrl } from './types';
 
 export class HederaMirrornodeServiceDefaultImpl
   implements HederaMirrornodeService

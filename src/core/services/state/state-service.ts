@@ -2,14 +2,15 @@
  * Zustand Generic State Service Implementation
  * Rich state management with actions, selectors, and subscriptions
  */
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import { devtools } from 'zustand/middleware';
-import { StateService } from './state-service.interface';
-import { Logger } from '../logger/logger-service.interface';
 import * as fs from 'fs';
 import * as path from 'path';
-import { formatError } from '../../utils/errors';
+import { create } from 'zustand';
+import { createJSONStorage, devtools, persist } from 'zustand/middleware';
+
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import { formatError } from '@/core/utils/errors';
+
+import type { StateService } from './state-service.interface';
 
 /**
  * Namespace Store Interface

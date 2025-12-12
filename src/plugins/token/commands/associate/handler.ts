@@ -14,6 +14,7 @@ import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
 import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 import { AssociateTokenInputSchema } from './input';
 import { saveAssociationToState } from '../../utils/token-associations';
+import type { AssociateTokenOutput } from './output';
 
 export async function associateToken(
   args: CommandHandlerArgs,

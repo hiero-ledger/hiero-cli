@@ -1,14 +1,18 @@
 /**
  * Unit tests for plugin-management add command
  */
-import { Status } from '../../../../core/shared/constants';
-import { addPlugin } from '../../commands/add/handler';
-import { makeArgs, makeLogger } from '../../../../__tests__/mocks/mocks';
-import type { PluginStateEntry } from '../../../../core/plugins/plugin.interface';
-import { CUSTOM_PLUGIN_ENTRY } from './helpers/fixtures';
-import type { PluginManagementService } from '../../../../core/services/plugin-management/plugin-management-service.interface';
-import { PluginManagementCreateStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
 import * as fs from 'fs/promises';
+
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
+import {
+  PluginManagementCreateStatus,
+  type PluginManagementService,
+} from '@/core/services/plugin-management/plugin-management-service.interface';
+import { Status } from '@/core/shared/constants';
+import { addPlugin } from '@/plugins/plugin-management/commands/add/handler';
+
+import { CUSTOM_PLUGIN_ENTRY } from './helpers/fixtures';
 
 jest.mock('fs/promises', () => ({
   access: jest.fn(),

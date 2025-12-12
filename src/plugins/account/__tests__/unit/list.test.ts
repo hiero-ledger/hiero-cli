@@ -1,9 +1,10 @@
-import { listAccounts } from '../../commands/list/handler';
-import type { ListAccountsOutput } from '../../commands/list';
-import { ZustandAccountStateHelper } from '../../zustand-state-helper';
-import type { CoreApi } from '../../../../core/core-api/core-api.interface';
-import { Status } from '../../../../core/shared/constants';
-import { makeLogger, makeArgs } from '../../../../__tests__/mocks/mocks';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import { Status } from '@/core/shared/constants';
+import type { ListAccountsOutput } from '@/plugins/account/commands/list';
+import { listAccounts } from '@/plugins/account/commands/list/handler';
+import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+
 import { makeAccountData } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({

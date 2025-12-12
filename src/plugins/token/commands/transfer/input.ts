@@ -1,11 +1,12 @@
 import { z } from 'zod';
+
 import {
   AccountReferenceSchema,
   AmountInputSchema,
   EntityReferenceSchema,
   KeyManagerTypeSchema,
   KeyOrAccountAliasSchema,
-} from '../../../../core/schemas';
+} from '@/core/schemas';
 
 /**
  * Input schema for token transfer command

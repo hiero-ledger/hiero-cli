@@ -3,9 +3,10 @@
  * Formats output data using Handlebars templates with the strategy pattern
  */
 import * as Handlebars from 'handlebars';
-import {
-  OutputFormatterStrategy,
+
+import type {
   FormatStrategyOptions,
+  OutputFormatterStrategy,
 } from './output-formatter-strategy.interface';
 
 export class TemplateOutputStrategy implements OutputFormatterStrategy {

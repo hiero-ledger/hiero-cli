@@ -3,11 +3,11 @@
  * Handles listing all available plugins
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { ListPluginsOutput } from './output';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+
+import type { ListPluginsOutput } from './output';
 export async function getPluginList(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {

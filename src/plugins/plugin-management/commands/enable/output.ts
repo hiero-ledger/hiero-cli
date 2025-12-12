@@ -2,8 +2,9 @@
  * Enable Plugin Command Output
  * Defines output schema and template for the enable plugin command
  */
-import { z } from 'zod';
-import { EnablePluginOutputSchema } from '../../schema';
+import type { z } from 'zod';
+
+import { EnablePluginOutputSchema } from '@/plugins/plugin-management/schema';
 
 // Export the schema
 export { EnablePluginOutputSchema };

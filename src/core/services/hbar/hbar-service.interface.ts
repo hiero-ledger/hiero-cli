@@ -2,7 +2,7 @@
  * HBAR Service Interface
  * Encapsulates HBAR-related operations
  */
-import { TransferTransaction } from '@hashgraph/sdk';
+import type { TransferTransaction } from '@hashgraph/sdk';
 
 export interface HbarService {
   transferTinybar(

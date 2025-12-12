@@ -9,15 +9,19 @@
  *
  * Follows ADR-003 contract: returns CommandExecutionResult.
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { AddPluginOutput } from './output';
-import { PluginStateEntry, PluginManifest } from '../../../../core';
-import { PluginManagementCreateStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
+import type {
+  CommandExecutionResult,
+  CommandHandlerArgs,
+  PluginManifest,
+  PluginStateEntry,
+} from '@/core';
+import { PluginManagementCreateStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { validatePluginPath } from '@/plugins/plugin-management/utils/plugin-path-validator';
+
 import { AddPluginInputSchema } from './input';
-import { validatePluginPath } from '../../utils/plugin-path-validator';
+import type { AddPluginOutput } from './output';
 
 export async function addPlugin(
   args: CommandHandlerArgs,

@@ -2,15 +2,20 @@
  * Topic Create Command Handler
  * Handles topic creation using the Core API
  */
-import { CommandHandlerArgs, TransactionResult } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { ZustandTopicStateHelper } from '../../zustand-state-helper';
-import { CreateTopicOutput } from './output';
-import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
-import { CreateTopicInputSchema } from './input';
 import { PublicKey } from '@hashgraph/sdk';
+
+import type {
+  CommandExecutionResult,
+  CommandHandlerArgs,
+  TransactionResult,
+} from '@/core';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+
+import { CreateTopicInputSchema } from './input';
+import type { CreateTopicOutput } from './output';
 
 /**
  * Default export handler function for topic creation

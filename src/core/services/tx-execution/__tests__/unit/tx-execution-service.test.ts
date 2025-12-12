@@ -2,18 +2,19 @@
  * Unit tests for TxExecutionServiceImpl
  * Tests transaction signing, execution, and result parsing
  */
-import { TxExecutionServiceImpl } from '../../tx-execution-service';
 import {
-  makeLogger,
   makeKmsMock,
+  makeLogger,
   makeNetworkMock,
-} from '../../../../../__tests__/mocks/mocks';
+} from '@/__tests__/mocks/mocks';
+import { TxExecutionServiceImpl } from '@/core/services/tx-execution/tx-execution-service';
+
 import {
+  createMockClient,
   createMockTransaction,
-  createMockTransactionResponse,
   createMockTransactionReceipt,
   createMockTransactionRecord,
-  createMockClient,
+  createMockTransactionResponse,
 } from './mocks';
 // Mock Status enum before imports
 jest.mock('@hashgraph/sdk', () => {
@@ -28,7 +29,8 @@ jest.mock('@hashgraph/sdk', () => {
   };
 });
 
-import { Transaction as HederaTransaction, Status } from '@hashgraph/sdk';
+import type { Transaction as HederaTransaction } from '@hashgraph/sdk';
+import { Status } from '@hashgraph/sdk';
 
 // Mock status for testing non-Success case (not part of real SDK Status enum)
 const NonSuccessStatus = { _code: 1 };

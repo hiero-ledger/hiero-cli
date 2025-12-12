@@ -2,11 +2,12 @@
  * Unit tests for OutputServiceImpl
  * Tests format management, JSON parsing, formatting strategies and file/console output
  */
-import { OutputServiceImpl } from '../../output-service';
-import type { OutputFormat } from '../../../../shared/types/output-format';
-import { DEFAULT_OUTPUT_FORMAT } from '../../../../shared/types/output-format';
-import type { OutputHandlerOptions } from '../../types';
-import { OutputFormatterFactory } from '../../strategies';
+import { OutputServiceImpl } from '@/core/services/output/output-service';
+import { OutputFormatterFactory } from '@/core/services/output/strategies';
+import type { OutputHandlerOptions } from '@/core/services/output/types';
+import type { OutputFormat } from '@/core/shared/types/output-format';
+import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
+
 import { setupFileMocks } from './mocks';
 
 jest.mock('fs', () => ({

@@ -2,20 +2,21 @@
  * Shared Mock Factory Functions for HBAR Transfer Tests
  * Provides reusable mocks for services, APIs, and common test utilities
  */
-import { ZustandAccountStateHelper } from '../../../../account/zustand-state-helper';
-import type { CoreApi } from '../../../../../core/core-api/core-api.interface';
-import type { HbarService } from '../../../../../core/services/hbar/hbar-service.interface';
-import type { StateService } from '../../../../../core/services/state/state-service.interface';
-import type { AccountData } from '../../../../account/schema';
 import {
+  makeAliasMock,
+  makeKeyResolverMock,
+  makeKmsMock,
   makeLogger,
   makeNetworkMock,
-  makeKmsMock,
-  makeAliasMock,
   makeSigningMock,
   makeStateMock,
-  makeKeyResolverMock,
-} from '../../../../../__tests__/mocks/mocks';
+} from '@/__tests__/mocks/mocks';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+import type { AccountData } from '@/plugins/account/schema';
+import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+
 import { mockTransferTransactionResults } from './fixtures';
 
 /**

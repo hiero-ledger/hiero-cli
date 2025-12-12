@@ -3,22 +3,23 @@
  * Tests the token creation functionality of the token plugin
  * Updated for ADR-003 compliance
  */
-import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { createToken } from '../../commands/create';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
-import { Status } from '../../../../core/shared/constants';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
+import { Status } from '@/core/shared/constants';
+import { createToken } from '@/plugins/token/commands/create';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
 import {
-  makeLogger,
-  makeApiMocks,
-  makeTransactionResult,
-} from './helpers/mocks';
-import {
+  expectedTokenTransactionParams,
+  makeTokenCreateCommandArgs,
   mockAccountIds,
   mockTransactions,
-  makeTokenCreateCommandArgs,
-  expectedTokenTransactionParams,
 } from './helpers/fixtures';
+import {
+  makeApiMocks,
+  makeLogger,
+  makeTransactionResult,
+} from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),

@@ -1,12 +1,13 @@
 import { z } from 'zod';
+
 import {
   AccountNameSchema,
   AccountReferenceSchema,
   AmountInputSchema,
   KeyManagerTypeSchema,
   KeyTypeSchema,
-} from '../../../../core/schemas';
-import { KeyAlgorithm } from '../../../../core/shared/constants';
+} from '@/core/schemas';
+import { KeyAlgorithm } from '@/core/shared/constants';
 
 /**
  * Input schema for account create command

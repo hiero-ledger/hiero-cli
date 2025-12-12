@@ -1,11 +1,12 @@
 import { z } from 'zod';
+
 import {
   AccountReferenceSchema,
   AmountInputSchema,
   KeyManagerTypeSchema,
   KeyOrAccountAliasSchema,
   MemoSchema,
-} from '../../../../core/schemas';
+} from '@/core/schemas';
 
 /**
  * Input schema for hbar transfer command

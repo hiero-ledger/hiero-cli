@@ -3,9 +3,10 @@
  * Single source of truth for credentials data structure and validation
  */
 import { z } from 'zod';
-import type { SupportedNetwork } from '../../core/types/shared.types';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { EntityIdSchema } from '../../core/schemas/common-schemas';
+
+import { EntityIdSchema } from '@/core/schemas/common-schemas';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 // Supported networks aligned with core SupportedNetwork type
 export const SUPPORTED_NETWORKS = [

@@ -2,12 +2,12 @@
  * Remove Credentials Command Handler
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { RemoveCredentialsOutput } from './output';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+
 import { RemoveCredentialsInputSchema } from './input';
+import type { RemoveCredentialsOutput } from './output';
 
 export async function removeCredentials(
   args: CommandHandlerArgs,

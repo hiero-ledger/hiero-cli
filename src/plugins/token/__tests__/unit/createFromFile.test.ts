@@ -2,23 +2,28 @@
  * Token Create From File Handler Unit Tests
  * Tests the token creation from file functionality of the token plugin
  */
-import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { createTokenFromFile } from '../../commands/createFromFile';
-import type { CreateTokenFromFileOutput } from '../../commands/createFromFile';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { Status } from '../../../../core/shared/constants';
-import { makeLogger, makeApiMocks } from './helpers/mocks';
-import {
-  validTokenFile,
-  infiniteSupplyTokenFile,
-  mockTransactions,
-  mockTransactionResults,
-  expectedTokenTransactionParamsFromFile,
-  mockKeys,
-} from './helpers/fixtures';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import '../../../../core/utils/json-serialize';
+
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import { Status } from '@/core/shared/constants';
+import {
+  createTokenFromFile,
+  type CreateTokenFromFileOutput,
+} from '@/plugins/token/commands/createFromFile';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
+import {
+  expectedTokenTransactionParamsFromFile,
+  infiniteSupplyTokenFile,
+  mockKeys,
+  mockTransactionResults,
+  mockTransactions,
+  validTokenFile,
+} from './helpers/fixtures';
+import { makeApiMocks, makeLogger } from './helpers/mocks';
+
+import '@/core/utils/json-serialize';
 
 // ADR-003 compliance: handlers now return CommandExecutionResult instead of calling process.exit()
 

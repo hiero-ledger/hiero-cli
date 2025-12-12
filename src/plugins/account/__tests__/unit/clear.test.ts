@@ -1,9 +1,9 @@
-import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { ZustandAccountStateHelper } from '../../zustand-state-helper';
-import { clearAccounts } from '../../commands/clear/handler';
-import type { ClearAccountsOutput } from '../../commands/clear';
-import { makeLogger } from '../../../../__tests__/mocks/mocks';
-import { Status } from '../../../../core/shared/constants';
+import { makeLogger } from '@/__tests__/mocks/mocks';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import { Status } from '@/core/shared/constants';
+import type { ClearAccountsOutput } from '@/plugins/account/commands/clear';
+import { clearAccounts } from '@/plugins/account/commands/clear/handler';
+import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),

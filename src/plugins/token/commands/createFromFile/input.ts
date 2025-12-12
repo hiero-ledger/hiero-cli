@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { FilePathSchema, KeyManagerTypeSchema } from '../../../../core/schemas';
+
+import { FilePathSchema, KeyManagerTypeSchema } from '@/core/schemas';
 
 /**
  * Input schema for token create-from-file command

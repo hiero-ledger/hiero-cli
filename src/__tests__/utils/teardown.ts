@@ -1,14 +1,12 @@
 import * as fs from 'fs';
-import { transferHandler } from '../../plugins/hbar/commands/transfer';
-import { CoreApi } from '../../core/core-api/core-api.interface';
-import {
-  importAccount,
-  listAccounts,
-  viewAccount,
-} from '../../plugins/account';
-import { Status } from '../../core/shared/constants';
-import { ListAccountsOutput } from '../../plugins/account/commands/list';
-import { ViewAccountOutput } from '../../plugins/account/commands/view';
+
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import { Status } from '@/core/shared/constants';
+import { importAccount, listAccounts, viewAccount } from '@/plugins/account';
+import type { ListAccountsOutput } from '@/plugins/account/commands/list';
+import type { ViewAccountOutput } from '@/plugins/account/commands/view';
+import { transferHandler } from '@/plugins/hbar/commands/transfer';
+
 import { delay } from './common-utils';
 
 export const deleteStateFiles = (dir: string): void => {

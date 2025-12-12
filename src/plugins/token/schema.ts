@@ -4,7 +4,8 @@
  */
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { EntityIdSchema, KeyOrAccountAliasSchema } from '../../core/schemas';
+
+import { EntityIdSchema, KeyOrAccountAliasSchema } from '@/core/schemas';
 
 /*
   At that moment, these keys were useless because they were only stored locally, with no trace of them on the network.

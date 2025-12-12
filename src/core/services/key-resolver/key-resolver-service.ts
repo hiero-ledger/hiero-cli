@@ -1,14 +1,19 @@
-import {
+import type {
+  AccountIdWithPrivateKey,
+  KeyOrAccountAlias,
+} from '@/core/schemas';
+import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
+import type { KmsService } from '@/core/services/kms/kms-service.interface';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
+import type { NetworkService } from '@/core/services/network/network-service.interface';
+
+import { ERROR_MESSAGES } from './error-messages';
+import type {
   KeyResolverService,
   ResolvedKey,
 } from './key-resolver-service.interface';
-import { HederaMirrornodeService } from '../mirrornode/hedera-mirrornode-service.interface';
-import { AccountIdWithPrivateKey, KeyOrAccountAlias } from '../../schemas';
-import { AliasService, AliasType } from '../alias/alias-service.interface';
-import { NetworkService } from '../network/network-service.interface';
-import { KmsService } from '../kms/kms-service.interface';
-import { KeyManagerName } from '../kms/kms-types.interface';
-import { ERROR_MESSAGES } from './error-messages';
 
 export class KeyResolverServiceImpl implements KeyResolverService {
   private readonly mirror: HederaMirrornodeService;

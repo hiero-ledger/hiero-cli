@@ -1,4 +1,4 @@
-import type { KmsCredentialSecret } from '../kms-types.interface';
+import type { KmsCredentialSecret } from '@/core/services/kms/kms-types.interface';
 
 /**
  * Abstract storage for secrets (private keys).

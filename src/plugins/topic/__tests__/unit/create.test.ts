@@ -1,17 +1,16 @@
-import { createTopic } from '../../commands/create/handler';
-import { ZustandTopicStateHelper } from '../../zustand-state-helper';
-import type { CoreApi } from '../../../../core';
-import type { TransactionResult } from '../../../../core';
-import type { CreateTopicOutput } from '../../commands/create';
+import { ED25519_DER_PRIVATE_KEY } from '@/__tests__/mocks/fixtures';
 import {
-  makeLogger,
-  makeArgs,
-  makeNetworkMock,
-  makeKmsMock,
   makeAliasMock,
-} from '../../../../__tests__/mocks/mocks';
-import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
-import { ED25519_DER_PRIVATE_KEY } from '../../../../__tests__/mocks/fixtures';
+  makeArgs,
+  makeKmsMock,
+  makeLogger,
+  makeNetworkMock,
+} from '@/__tests__/mocks/mocks';
+import type { CoreApi, TransactionResult } from '@/core';
+import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
+import { createTopic } from '@/plugins/topic/commands/create/handler';
+import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTopicStateHelper: jest.fn(),

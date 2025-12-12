@@ -2,8 +2,9 @@
  * Output Service Interface
  * Handles command output formatting and rendering
  */
-import { OutputHandlerOptions } from './types';
-import { OutputFormat } from '../../shared/types/output-format';
+import type { OutputFormat } from '@/core/shared/types/output-format';
+
+import type { OutputHandlerOptions } from './types';
 
 export interface OutputService {
   /**

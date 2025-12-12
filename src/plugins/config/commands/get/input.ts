@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { ConfigOptionNameSchema } from '../../../../core/schemas';
+
+import { ConfigOptionNameSchema } from '@/core/schemas';
 
 /**
  * Input schema for config get command

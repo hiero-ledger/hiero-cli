@@ -7,7 +7,8 @@
  * Based on ADR-003: Result-Oriented Command Handler Contract
  */
 import { z } from 'zod';
-import { KeyAlgorithm } from '../shared/constants';
+
+import { KeyAlgorithm } from '@/core/shared/constants';
 
 // ======================================================
 // 1. ECDSA (secp256k1) Keys

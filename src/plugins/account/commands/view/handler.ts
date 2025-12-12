@@ -3,14 +3,14 @@
  * Handles viewing account details using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { ViewAccountOutput } from './output';
-import { AliasType } from '../../../../core/services/alias/alias-service.interface';
-import { EntityIdSchema } from '../../../../core/schemas';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import { EntityIdSchema } from '@/core/schemas';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+
 import { ViewAccountInputSchema } from './input';
+import type { ViewAccountOutput } from './output';
 
 export async function viewAccount(
   args: CommandHandlerArgs,

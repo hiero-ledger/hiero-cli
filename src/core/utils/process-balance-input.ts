@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
-import { HBAR_DECIMALS } from '../shared/constants';
+
+import { HBAR_DECIMALS } from '@/core/shared/constants';
 
 /**
  * Processes user balance input with intelligent unit detection.

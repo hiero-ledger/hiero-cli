@@ -2,9 +2,9 @@
  * Unit tests for ConfigServiceImpl
  * Tests configuration options listing, getting, and setting
  */
-import { ConfigServiceImpl } from '../../config-service';
-import { makeStateMock } from '../../../../../__tests__/mocks/mocks';
-import type { StateService } from '../../../state/state-service.interface';
+import { makeStateMock } from '@/__tests__/mocks/mocks';
+import { ConfigServiceImpl } from '@/core/services/config/config-service';
+import type { StateService } from '@/core/services/state/state-service.interface';
 
 describe('ConfigServiceImpl', () => {
   let configService: ConfigServiceImpl;

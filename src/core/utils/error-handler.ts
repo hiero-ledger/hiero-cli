@@ -2,13 +2,13 @@
  * Centralized Error Handler
  * Handles all error formatting, output, and process termination
  */
-import { Status } from '../shared/constants';
-import { formatError } from './errors';
-import {
-  OutputFormat,
-  DEFAULT_OUTPUT_FORMAT,
-} from '../shared/types/output-format';
 import { ZodError } from 'zod';
+
+import { Status } from '@/core/shared/constants';
+import type { OutputFormat } from '@/core/shared/types/output-format';
+import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
+
+import { formatError } from './errors';
 
 // Global output format state for error handlers
 let globalOutputFormat: OutputFormat = DEFAULT_OUTPUT_FORMAT;

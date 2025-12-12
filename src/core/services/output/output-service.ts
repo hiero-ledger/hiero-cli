@@ -4,13 +4,14 @@
  */
 import * as fs from 'fs';
 import * as path from 'path';
-import { OutputService } from './output-service.interface';
-import { OutputHandlerOptions } from './types';
-import {
-  OutputFormat,
-  DEFAULT_OUTPUT_FORMAT,
-} from '../../shared/types/output-format';
-import { OutputFormatterFactory, FormatStrategyOptions } from './strategies';
+
+import type { OutputFormat } from '@/core/shared/types/output-format';
+import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
+
+import type { OutputService } from './output-service.interface';
+import type { FormatStrategyOptions } from './strategies';
+import { OutputFormatterFactory } from './strategies';
+import type { OutputHandlerOptions } from './types';
 
 export class OutputServiceImpl implements OutputService {
   private currentFormat: OutputFormat;

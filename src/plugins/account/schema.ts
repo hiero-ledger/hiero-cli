@@ -3,14 +3,15 @@
  * Single source of truth for account data structure and validation
  */
 import { z } from 'zod';
-import type { SupportedNetwork } from '../../core/types/shared.types';
-import { KeyAlgorithm } from '../../core/shared/constants';
 import { zodToJsonSchema } from 'zod-to-json-schema';
+
 import {
+  AliasNameSchema,
   EntityIdSchema,
   EvmAddressSchema,
-  AliasNameSchema,
-} from '../../core/schemas/common-schemas';
+} from '@/core/schemas/common-schemas';
+import { KeyAlgorithm } from '@/core/shared/constants';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 // Supported networks aligned with core SupportedNetwork type
 export const SUPPORTED_NETWORKS = [

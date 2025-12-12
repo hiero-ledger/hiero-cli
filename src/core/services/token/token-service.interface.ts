@@ -2,16 +2,17 @@
  * Interface for Token-related operations
  * All token services must implement this interface
  */
-import {
-  TransferTransaction,
-  TokenCreateTransaction,
-  TokenAssociateTransaction,
-} from '@hashgraph/sdk';
 import type {
-  TokenTransferParams,
-  TokenCreateParams,
+  TokenAssociateTransaction,
+  TokenCreateTransaction,
+  TransferTransaction,
+} from '@hashgraph/sdk';
+
+import type {
   TokenAssociationParams,
-} from '../../types/token.types';
+  TokenCreateParams,
+  TokenTransferParams,
+} from '@/core/types/token.types';
 
 export interface TokenService {
   /**

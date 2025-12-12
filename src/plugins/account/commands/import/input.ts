@@ -1,9 +1,10 @@
 import { z } from 'zod';
+
 import {
+  AccountIdWithPrivateKeySchema,
   AccountNameSchema,
   KeyManagerTypeSchema,
-  AccountIdWithPrivateKeySchema,
-} from '../../../../core/schemas';
+} from '@/core/schemas';
 
 /**
  * Input schema for account import command

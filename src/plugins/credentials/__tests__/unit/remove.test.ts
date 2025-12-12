@@ -1,10 +1,6 @@
-import { removeCredentials } from '../../commands/remove/handler';
-import {
-  makeLogger,
-  makeArgs,
-  makeKmsMock,
-} from '../../../../__tests__/mocks/mocks';
-import { Status } from '../../../../core/shared/constants';
+import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
+import { Status } from '@/core/shared/constants';
+import { removeCredentials } from '@/plugins/credentials/commands/remove/handler';
 
 // No process.exit usage in handler version
 

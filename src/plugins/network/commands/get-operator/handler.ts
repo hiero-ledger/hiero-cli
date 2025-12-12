@@ -1,11 +1,11 @@
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { formatError } from '../../../../core/utils/errors';
-import { Status } from '../../../../core/shared/constants';
-import { SupportedNetwork } from '../../../../core/types/shared.types';
-import { GetOperatorOutput } from './output';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import { Status } from '@/core/shared/constants';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import { formatError } from '@/core/utils/errors';
+import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
+
 import { GetOperatorInputSchema } from './input';
-import { ERROR_MESSAGES } from '../../error-messages';
+import type { GetOperatorOutput } from './output';
 
 export async function getOperatorHandler(
   args: CommandHandlerArgs,

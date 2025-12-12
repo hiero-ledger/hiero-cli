@@ -1,8 +1,8 @@
-import type { Signer } from '../signers/signer.interface';
 import type {
   KeyAlgorithmType,
   KmsCredentialSecret,
-} from '../kms-types.interface';
+} from '@/core/services/kms/kms-types.interface';
+import type { Signer } from '@/core/services/kms/signers/signer.interface';
 
 /**
  * KeyManager is responsible for:

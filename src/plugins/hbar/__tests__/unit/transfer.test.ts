@@ -1,20 +1,23 @@
-import { transferHandler } from '../../commands/transfer';
-import { Status } from '../../../../core/shared/constants';
-import { makeArgs } from '../../../../__tests__/mocks/mocks';
-import { setupTransferTest } from './helpers/mocks';
+import { ZodError } from 'zod';
+
+import { makeArgs } from '@/__tests__/mocks/mocks';
+import { Status } from '@/core/shared/constants';
+import { transferHandler } from '@/plugins/hbar/commands/transfer';
+import { TransferInputSchema } from '@/plugins/hbar/commands/transfer/input';
+
 import {
-  mockAccounts,
   mockAccountIdKeyPairs,
   mockAccountIds,
+  mockAccounts,
+  mockAmounts,
+  mockDefaultCredentials,
+  mockParsedBalances,
   mockTransactionResults,
   mockTransferTransactionResults,
-  mockDefaultCredentials,
-  mockAmounts,
-  mockParsedBalances,
 } from './helpers/fixtures';
-import { ZodError } from 'zod';
-import { TransferInputSchema } from '../../commands/transfer/input';
-import '../../../../core/utils/json-serialize';
+import { setupTransferTest } from './helpers/mocks';
+
+import '@/core/utils/json-serialize';
 
 jest.mock('../../../account/zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),

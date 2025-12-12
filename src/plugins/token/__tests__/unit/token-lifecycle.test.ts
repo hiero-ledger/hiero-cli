@@ -2,19 +2,21 @@
  * Token Lifecycle Integration Tests
  * Tests the complete token lifecycle: create → associate → transfer
  */
-import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { createToken } from '../../commands/create';
-import { associateToken } from '../../commands/associate';
-import { transferToken } from '../../commands/transfer';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { Status } from '../../../../core/shared/constants';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import { Status } from '@/core/shared/constants';
+import { associateToken } from '@/plugins/token/commands/associate';
+import { createToken } from '@/plugins/token/commands/create';
+import { transferToken } from '@/plugins/token/commands/transfer';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
+import { mockAccountIds, mockKeys } from './helpers/fixtures';
 import {
-  makeLogger,
   makeApiMocks,
+  makeLogger,
   mockZustandTokenStateHelper,
 } from './helpers/mocks';
-import { mockAccountIds, mockKeys } from './helpers/fixtures';
-import '../../../../core/utils/json-serialize';
+
+import '@/core/utils/json-serialize';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),

@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { FilePathSchema } from '../../../../core/schemas';
+
+import { FilePathSchema } from '@/core/schemas';
 
 /**
  * Input schema for plugin-management add command

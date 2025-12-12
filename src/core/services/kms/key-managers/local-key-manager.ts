@@ -1,13 +1,15 @@
-import type { KeyManager } from './key-manager.interface';
-import type { Signer } from '../signers/signer.interface';
+import { PrivateKey } from '@hashgraph/sdk';
+
 import type {
   KeyAlgorithmType,
   KmsCredentialSecret,
-} from '../kms-types.interface';
-import { PrivateKeySigner } from '../signers/private-key-signer';
-import { PrivateKey } from '@hashgraph/sdk';
-import { SecretStorage } from '../storage/secret-storage.interface';
-import { KeyAlgorithm } from '../../../shared/constants';
+} from '@/core/services/kms/kms-types.interface';
+import { PrivateKeySigner } from '@/core/services/kms/signers/private-key-signer';
+import type { Signer } from '@/core/services/kms/signers/signer.interface';
+import type { SecretStorage } from '@/core/services/kms/storage/secret-storage.interface';
+import { KeyAlgorithm } from '@/core/shared/constants';
+
+import type { KeyManager } from './key-manager.interface';
 
 /**
  * KeyManager for plaintext local storage.

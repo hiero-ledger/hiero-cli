@@ -2,10 +2,11 @@
  * Output Formatter Factory
  * Creates and manages output formatting strategies
  */
-import { OutputFormatterStrategy } from './output-formatter-strategy.interface';
+import type { OutputFormat } from '@/core/shared/types/output-format';
+
 import { JsonOutputStrategy } from './json-output-strategy';
+import type { OutputFormatterStrategy } from './output-formatter-strategy.interface';
 import { TemplateOutputStrategy } from './template-output-strategy';
-import { OutputFormat } from '../../../shared/types/output-format';
 
 export class OutputFormatterFactory {
   private static strategies: Map<OutputFormat, OutputFormatterStrategy> =

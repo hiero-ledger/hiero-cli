@@ -3,19 +3,19 @@
  * Handles token transfer operations using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { processBalanceInput } from '@/core/utils/process-balance-input';
 import {
   resolveDestinationAccountParameter,
   resolveTokenParameter,
-} from '../../resolver-helper';
-import { formatError } from '../../../../core/utils/errors';
-import { processBalanceInput } from '../../../../core/utils/process-balance-input';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { TransferTokenOutput } from './output';
-import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
+} from '@/plugins/token/resolver-helper';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
 import { TransferTokenInputSchema } from './input';
+import type { TransferTokenOutput } from './output';
 
 export async function transferToken(
   args: CommandHandlerArgs,

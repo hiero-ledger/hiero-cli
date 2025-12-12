@@ -1,17 +1,18 @@
-import { getAccountBalance } from '../../commands/balance/handler';
-import type { AccountBalanceOutput } from '../../commands/balance';
-import { ZustandAccountStateHelper } from '../../zustand-state-helper';
-import type { CoreApi } from '../../../../core/core-api/core-api.interface';
-import type { HederaMirrornodeService } from '../../../../core/services/mirrornode/hedera-mirrornode-service.interface';
-import { Status } from '../../../../core/shared/constants';
 import {
-  makeLogger,
-  makeArgs,
-  makeMirrorMock,
   makeAliasMock,
-} from '../../../../__tests__/mocks/mocks';
-import type { AliasService } from '../../../../core/services/alias/alias-service.interface';
-import '../../../../core/utils/json-serialize';
+  makeArgs,
+  makeLogger,
+  makeMirrorMock,
+} from '@/__tests__/mocks/mocks';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
+import { Status } from '@/core/shared/constants';
+import type { AccountBalanceOutput } from '@/plugins/account/commands/balance';
+import { getAccountBalance } from '@/plugins/account/commands/balance/handler';
+import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+
+import '@/core/utils/json-serialize';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),
