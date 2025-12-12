@@ -1,10 +1,11 @@
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { GetConfigOutput } from './output';
+
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { inferConfigOptionType } from '@/plugins/config/schema';
 
 import { GetConfigInputSchema } from './input';
-import type { GetConfigOutput } from './output';
 
 export async function getConfigOption(
   args: CommandHandlerArgs,

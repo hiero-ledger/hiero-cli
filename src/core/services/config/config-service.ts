@@ -1,9 +1,9 @@
 import type { StateService } from '@/core/services/state/state-service.interface';
-
 import type {
   ConfigOptionDescriptor,
   ConfigService,
 } from './config-service.interface';
+
 import { CONFIG_NAMESPACE, CONFIG_OPTIONS } from './config-service.interface';
 
 export class ConfigServiceImpl implements ConfigService {

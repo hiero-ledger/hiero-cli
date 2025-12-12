@@ -7,7 +7,6 @@ import type {
   TokenCreateTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
-
 import type {
   TokenAssociationParams,
   TokenCreateParams,

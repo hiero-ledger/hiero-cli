@@ -5,12 +5,13 @@
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { CommandExecutionResult } from '@/core/plugins/plugin.types';
+import type { ListAccountsOutput } from './output';
+
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { ListAccountsInputSchema } from './input';
-import type { ListAccountsOutput } from './output';
 
 export async function listAccounts(
   args: CommandHandlerArgs,

@@ -3,7 +3,6 @@
  * Handles command output formatting and rendering
  */
 import type { OutputFormat } from '@/core/shared/types/output-format';
-
 import type { OutputHandlerOptions } from './types';
 
 export interface OutputService {

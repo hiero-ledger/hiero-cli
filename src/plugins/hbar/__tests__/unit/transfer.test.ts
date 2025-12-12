@@ -1,3 +1,5 @@
+import '@/core/utils/json-serialize';
+
 import { ZodError } from 'zod';
 
 import { makeArgs } from '@/__tests__/mocks/mocks';
@@ -16,8 +18,6 @@ import {
   mockTransferTransactionResults,
 } from './helpers/fixtures';
 import { setupTransferTest } from './helpers/mocks';
-
-import '@/core/utils/json-serialize';
 
 jest.mock('../../../account/zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),

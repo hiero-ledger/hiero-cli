@@ -1,6 +1,7 @@
+import type { OutputFormat } from '@/core/shared/types/output-format';
+
 import { z } from 'zod';
 
-import type { OutputFormat } from '@/core/shared/types/output-format';
 import {
   DEFAULT_OUTPUT_FORMAT,
   OUTPUT_FORMATS,

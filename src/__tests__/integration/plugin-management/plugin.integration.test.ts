@@ -1,7 +1,16 @@
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { AddPluginOutput } from '@/plugins/plugin-management/commands/add/output';
+import type { DisablePluginOutput } from '@/plugins/plugin-management/commands/disable/output';
+import type { EnablePluginOutput } from '@/plugins/plugin-management/commands/enable/output';
+import type { PluginInfoOutput } from '@/plugins/plugin-management/commands/info/output';
+import type { ListPluginsOutput } from '@/plugins/plugin-management/commands/list/output';
+import type { RemovePluginOutput } from '@/plugins/plugin-management/commands/remove/output';
+
+import '@/core/utils/json-serialize';
+
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core/core-api/core-api';
-import type { CoreApi } from '@/core/core-api/core-api.interface';
 import { Status } from '@/core/shared/constants';
 import {
   addPlugin,
@@ -11,14 +20,6 @@ import {
   getPluginList,
   removePlugin,
 } from '@/plugins/plugin-management';
-import type { AddPluginOutput } from '@/plugins/plugin-management/commands/add/output';
-import type { DisablePluginOutput } from '@/plugins/plugin-management/commands/disable/output';
-import type { EnablePluginOutput } from '@/plugins/plugin-management/commands/enable/output';
-import type { PluginInfoOutput } from '@/plugins/plugin-management/commands/info/output';
-import type { ListPluginsOutput } from '@/plugins/plugin-management/commands/list/output';
-import type { RemovePluginOutput } from '@/plugins/plugin-management/commands/remove/output';
-
-import '@/core/utils/json-serialize';
 
 describe('Plugin Management Integration Tests', () => {
   let coreApi: CoreApi;

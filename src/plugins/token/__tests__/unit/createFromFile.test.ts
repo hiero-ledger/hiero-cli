@@ -2,10 +2,13 @@
  * Token Create From File Handler Unit Tests
  * Tests the token creation from file functionality of the token plugin
  */
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+
+import '@/core/utils/json-serialize';
+
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import { Status } from '@/core/shared/constants';
 import {
   createTokenFromFile,
@@ -22,8 +25,6 @@ import {
   validTokenFile,
 } from './helpers/fixtures';
 import { makeApiMocks, makeLogger } from './helpers/mocks';
-
-import '@/core/utils/json-serialize';
 
 // ADR-003 compliance: handlers now return CommandExecutionResult instead of calling process.exit()
 

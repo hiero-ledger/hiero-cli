@@ -5,14 +5,15 @@
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { AccountData } from '@/plugins/account/schema';
+import type { ImportAccountOutput } from './output';
+
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
-import type { AccountData } from '@/plugins/account/schema';
 import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { ImportAccountInputSchema } from './input';
-import type { ImportAccountOutput } from './output';
 
 export async function importAccount(
   args: CommandHandlerArgs,

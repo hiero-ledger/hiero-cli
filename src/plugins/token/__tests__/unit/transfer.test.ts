@@ -4,6 +4,9 @@
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
+
+import '@/core/utils/json-serialize';
+
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import {
   transferToken,
@@ -11,8 +14,6 @@ import {
 } from '@/plugins/token/commands/transfer';
 
 import { makeApiMocks, makeLogger } from './helpers/mocks';
-
-import '@/core/utils/json-serialize';
 
 describe('transferTokenHandler', () => {
   describe('success scenarios', () => {

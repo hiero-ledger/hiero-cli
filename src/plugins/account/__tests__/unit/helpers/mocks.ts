@@ -2,13 +2,6 @@
  * Shared Mock Factory Functions for Account Plugin Tests
  * Provides reusable mocks for services, APIs, and common test utilities
  */
-import {
-  makeAliasMock as makeGlobalAliasMock,
-  makeKmsMock as makeGlobalKmsMock,
-  makeMirrorMock as makeGlobalMirrorMock,
-  makeNetworkMock as makeGlobalNetworkMock,
-  makeSigningMock as makeGlobalSigningMock,
-} from '@/__tests__/mocks/mocks';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
@@ -19,6 +12,14 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
 import type { AccountData } from '@/plugins/account/schema';
+
+import {
+  makeAliasMock as makeGlobalAliasMock,
+  makeKmsMock as makeGlobalKmsMock,
+  makeMirrorMock as makeGlobalMirrorMock,
+  makeNetworkMock as makeGlobalNetworkMock,
+  makeSigningMock as makeGlobalSigningMock,
+} from '@/__tests__/mocks/mocks';
 
 import {
   mockAccountData,

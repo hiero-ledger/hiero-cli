@@ -1,7 +1,6 @@
 import type { EncryptionService } from '@/core/services/kms/encryption/encryption-service.interface';
 import type { KmsCredentialSecret } from '@/core/services/kms/kms-types.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
-
 import type { SecretStorage } from './secret-storage.interface';
 
 /**

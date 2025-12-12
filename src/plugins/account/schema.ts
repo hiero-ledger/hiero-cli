@@ -2,6 +2,8 @@
  * Account Plugin State Schema
  * Single source of truth for account data structure and validation
  */
+import type { SupportedNetwork } from '@/core/types/shared.types';
+
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 
@@ -11,7 +13,6 @@ import {
   EvmAddressSchema,
 } from '@/core/schemas/common-schemas';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 
 // Supported networks aligned with core SupportedNetwork type
 export const SUPPORTED_NETWORKS = [

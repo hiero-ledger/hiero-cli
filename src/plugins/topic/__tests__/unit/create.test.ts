@@ -1,3 +1,6 @@
+import type { CoreApi, TransactionResult } from '@/core';
+import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
+
 import { ED25519_DER_PRIVATE_KEY } from '@/__tests__/mocks/fixtures';
 import {
   makeAliasMock,
@@ -6,9 +9,7 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
-import type { CoreApi, TransactionResult } from '@/core';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
-import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
 import { createTopic } from '@/plugins/topic/commands/create/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 

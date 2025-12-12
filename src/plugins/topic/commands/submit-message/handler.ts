@@ -2,6 +2,8 @@
  * Topic Message Submit Command Handler
  * Handles submitting messages to topics
  */
+import type { SubmitMessageOutput } from './output';
+
 import {
   type CommandExecutionResult,
   type CommandHandlerArgs,
@@ -12,7 +14,6 @@ import { formatError } from '@/core/utils/errors';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { SubmitMessageInputSchema } from './input';
-import type { SubmitMessageOutput } from './output';
 
 /**
  * Default export handler function for message submission

@@ -1,19 +1,20 @@
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
+import type { CreateAccountOutput } from '@/plugins/account/commands/create';
+
+import '@/core/utils/json-serialize';
+
 import {
   ECDSA_EVM_ADDRESS,
   ECDSA_HEX_PUBLIC_KEY,
   ED25519_HEX_PUBLIC_KEY,
 } from '@/__tests__/mocks/fixtures';
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
-import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
-import type { CreateAccountOutput } from '@/plugins/account/commands/create';
 import { createAccount } from '@/plugins/account/commands/create/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { makeApiMocksForAccountCreate } from './helpers/mocks';
-
-import '@/core/utils/json-serialize';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),

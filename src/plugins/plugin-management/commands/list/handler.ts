@@ -4,10 +4,10 @@
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { ListPluginsOutput } from './output';
+
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
-
-import type { ListPluginsOutput } from './output';
 export async function getPluginList(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {

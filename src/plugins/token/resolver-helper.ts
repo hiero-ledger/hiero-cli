@@ -4,8 +4,9 @@
  * using CoreApi services
  */
 import type { CoreApi } from '@/core';
-import { EntityIdSchema } from '@/core/schemas';
 import type { SupportedNetwork } from '@/core/types/shared.types';
+
+import { EntityIdSchema } from '@/core/schemas';
 
 /**
  * Resolved destination account information (no private key needed)

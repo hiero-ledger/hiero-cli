@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+import './core/utils/json-serialize';
+
 import { program } from 'commander';
 
 import { createCoreApi } from './core';
@@ -12,8 +14,6 @@ import {
   setGlobalOutputFormat,
   setupGlobalErrorHandlers,
 } from './core/utils/error-handler';
-
-import './core/utils/json-serialize';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../package.json') as { version?: string };

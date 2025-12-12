@@ -4,10 +4,10 @@
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { CommandExecutionResult } from '@/core/plugins/plugin.types';
+import type { ListCredentialsOutput } from './output';
+
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
-
-import type { ListCredentialsOutput } from './output';
 
 export async function listCredentials(
   args: CommandHandlerArgs,

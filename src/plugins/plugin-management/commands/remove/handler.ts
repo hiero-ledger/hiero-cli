@@ -4,13 +4,14 @@
  * Follows ADR-003 contract: returns CommandExecutionResult.
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { RemovePluginOutput } from './output';
+
 import { PluginManagementRemoveStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 import { RemovePluginInputSchema } from './input';
-import type { RemovePluginOutput } from './output';
 
 export async function removePlugin(
   args: CommandHandlerArgs,

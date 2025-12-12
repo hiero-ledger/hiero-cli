@@ -4,6 +4,7 @@
  */
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
+
 import { toErrorMessage } from '@/core/utils/errors';
 
 import { TOKEN_NAMESPACE, type TokenData } from './schema';

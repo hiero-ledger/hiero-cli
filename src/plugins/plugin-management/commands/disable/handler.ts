@@ -4,11 +4,12 @@
  * Follows ADR-003 contract: returns CommandExecutionResult.
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { RemovePluginOutput } from '@/plugins/plugin-management/schema';
+
 import { PluginManagementDisableStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
-import type { RemovePluginOutput } from '@/plugins/plugin-management/schema';
 
 import { DisablePluginInputSchema } from './input';
 

@@ -2,12 +2,13 @@
  * Unit tests for AliasServiceImpl
  * Tests alias registration, resolution, listing, and removal
  */
-import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
-import { AliasServiceImpl } from '@/core/services/alias/alias-service';
 import type { AliasRecord } from '@/core/services/alias/alias-service.interface';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
+
+import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import { AliasServiceImpl } from '@/core/services/alias/alias-service';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 
 describe('AliasServiceImpl', () => {
   let aliasService: AliasServiceImpl;

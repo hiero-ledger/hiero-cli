@@ -2,12 +2,12 @@
  * Template Output Strategy
  * Formats output data using Handlebars templates with the strategy pattern
  */
-import * as Handlebars from 'handlebars';
-
 import type {
   FormatStrategyOptions,
   OutputFormatterStrategy,
 } from './output-formatter-strategy.interface';
+
+import * as Handlebars from 'handlebars';
 
 export class TemplateOutputStrategy implements OutputFormatterStrategy {
   constructor() {

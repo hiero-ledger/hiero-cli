@@ -1,9 +1,10 @@
 /**
  * Unit tests for plugin-management info command
  */
-import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import { getPluginInfo } from '@/plugins/plugin-management/commands/info/handler';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';

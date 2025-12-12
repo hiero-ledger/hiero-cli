@@ -3,14 +3,17 @@
  * Tests that all command handlers return CommandExecutionResult according to ADR-003
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import { Status } from '@/core/shared/constants';
 import type { AssociateTokenOutput } from '@/plugins/token/commands/associate';
-import { associateToken } from '@/plugins/token/commands/associate/handler';
 import type { CreateTokenOutput } from '@/plugins/token/commands/create';
-import { createToken } from '@/plugins/token/commands/create/handler';
 import type { ListTokensOutput } from '@/plugins/token/commands/list';
-import { listTokens } from '@/plugins/token/commands/list/handler';
 import type { TransferTokenOutput } from '@/plugins/token/commands/transfer';
+
+import '@/core/utils/json-serialize';
+
+import { Status } from '@/core/shared/constants';
+import { associateToken } from '@/plugins/token/commands/associate/handler';
+import { createToken } from '@/plugins/token/commands/create/handler';
+import { listTokens } from '@/plugins/token/commands/list/handler';
 import { transferToken } from '@/plugins/token/commands/transfer/handler';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -19,8 +22,6 @@ import {
   makeLogger,
   makeTransactionResult,
 } from './helpers/mocks';
-
-import '@/core/utils/json-serialize';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),

@@ -1,7 +1,8 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { DeleteAccountOutput } from '@/plugins/account/commands/delete';
+
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
-import type { DeleteAccountOutput } from '@/plugins/account/commands/delete';
 import { deleteAccount } from '@/plugins/account/commands/delete/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 

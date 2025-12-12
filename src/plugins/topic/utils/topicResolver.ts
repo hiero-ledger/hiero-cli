@@ -2,9 +2,10 @@
  * Topic Resolver Utilities
  * Utilities for resolving topic IDs from aliases or validating topic IDs
  */
-import { EntityIdSchema } from '@/core/schemas';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
+
+import { EntityIdSchema } from '@/core/schemas';
 
 /**
  * Resolve topic ID from alias or validate topic ID

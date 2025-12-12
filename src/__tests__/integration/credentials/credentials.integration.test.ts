@@ -1,12 +1,13 @@
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { KmsCredentialRecord } from '@/core/services/kms/kms-types.interface';
+import type { ListCredentialsOutput } from '@/plugins/credentials/commands/list/output';
+import type { RemoveCredentialsOutput } from '@/plugins/credentials/commands/remove/output';
+
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core/core-api/core-api';
-import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { KmsCredentialRecord } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import { listCredentials, removeCredentials } from '@/plugins/credentials';
-import type { ListCredentialsOutput } from '@/plugins/credentials/commands/list/output';
-import type { RemoveCredentialsOutput } from '@/plugins/credentials/commands/remove/output';
 
 describe('Credentials Integration Tests', () => {
   let coreApi: CoreApi;

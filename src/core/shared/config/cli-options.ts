@@ -1,4 +1,5 @@
 import type { PluginManifest } from '@/core/plugins/plugin.types';
+
 import accountPluginManifest from '@/plugins/account/manifest';
 import configPluginManifest from '@/plugins/config/manifest';
 import credentialsPluginManifest from '@/plugins/credentials/manifest';

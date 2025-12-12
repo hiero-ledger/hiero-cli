@@ -4,13 +4,14 @@
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { DeleteAccountOutput } from './output';
+
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { DeleteAccountInputSchema } from './input';
-import type { DeleteAccountOutput } from './output';
 
 export async function deleteAccount(
   args: CommandHandlerArgs,

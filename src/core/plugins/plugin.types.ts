@@ -7,7 +7,6 @@ import type { ConfigService } from '@/core/services/config/config-service.interf
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { Status } from '@/core/shared/constants';
-
 import type { CommandHandlerArgs } from './plugin.interface';
 
 /**

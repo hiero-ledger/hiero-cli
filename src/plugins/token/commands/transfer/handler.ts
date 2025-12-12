@@ -5,6 +5,8 @@
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { TransferTokenOutput } from './output';
+
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
@@ -15,7 +17,6 @@ import {
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TransferTokenInputSchema } from './input';
-import type { TransferTokenOutput } from './output';
 
 export async function transferToken(
   args: CommandHandlerArgs,

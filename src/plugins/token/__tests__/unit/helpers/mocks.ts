@@ -2,7 +2,6 @@
  * Shared Mock Factory Functions for Token Plugin Tests
  * Provides reusable mocks for services, APIs, and common test utilities
  */
-import { makeKeyResolverMock as makeGlobalKeyResolverMock } from '@/__tests__/mocks/mocks';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
@@ -17,6 +16,8 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
+
+import { makeKeyResolverMock as makeGlobalKeyResolverMock } from '@/__tests__/mocks/mocks';
 
 import { mockTransactionResults } from './fixtures';
 

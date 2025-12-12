@@ -15,13 +15,14 @@ import type {
   PluginManifest,
   PluginStateEntry,
 } from '@/core';
+import type { AddPluginOutput } from './output';
+
 import { PluginManagementCreateStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { validatePluginPath } from '@/plugins/plugin-management/utils/plugin-path-validator';
 
 import { AddPluginInputSchema } from './input';
-import type { AddPluginOutput } from './output';
 
 export async function addPlugin(
   args: CommandHandlerArgs,

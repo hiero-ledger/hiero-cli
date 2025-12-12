@@ -1,9 +1,9 @@
+import type { AlgorithmConfig } from './algorithm-config';
+import type { KeyProvider } from './key-provider.interface';
+
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
-
-import type { AlgorithmConfig } from './algorithm-config';
-import type { KeyProvider } from './key-provider.interface';
 
 /**
  * Auto-generates and stores encryption key in .hedera-cli/.secret-{algorithm}

@@ -3,6 +3,7 @@
  * Defines the account plugin according to ADR-001
  */
 import type { PluginManifest } from '@/core';
+
 import { KeyAlgorithm } from '@/core/shared/constants';
 
 import {

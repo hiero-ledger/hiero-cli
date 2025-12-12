@@ -1,10 +1,11 @@
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { SetConfigOutput } from './output';
+
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { inferConfigOptionType } from '@/plugins/config/schema';
 
 import { SetConfigInputSchema } from './input';
-import type { SetConfigOutput } from './output';
 
 export async function setConfigOption(
   args: CommandHandlerArgs,

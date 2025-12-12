@@ -2,10 +2,11 @@
  * Unit tests for OutputServiceImpl
  * Tests format management, JSON parsing, formatting strategies and file/console output
  */
-import { OutputServiceImpl } from '@/core/services/output/output-service';
-import { OutputFormatterFactory } from '@/core/services/output/strategies';
 import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { OutputFormat } from '@/core/shared/types/output-format';
+
+import { OutputServiceImpl } from '@/core/services/output/output-service';
+import { OutputFormatterFactory } from '@/core/services/output/strategies';
 import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
 
 import { setupFileMocks } from './mocks';

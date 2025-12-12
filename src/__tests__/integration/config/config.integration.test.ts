@@ -1,16 +1,17 @@
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { GetConfigOutput } from '@/plugins/config/commands/get';
+import type { ListConfigOutput } from '@/plugins/config/commands/list';
+import type { SetConfigOutput } from '@/plugins/config/commands/set';
+
+import '@/core/utils/json-serialize';
+
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core/core-api/core-api';
-import type { CoreApi } from '@/core/core-api/core-api.interface';
 import { Status } from '@/core/shared/constants';
-import type { GetConfigOutput } from '@/plugins/config/commands/get';
 import { getConfigOption } from '@/plugins/config/commands/get/handler';
-import type { ListConfigOutput } from '@/plugins/config/commands/list';
 import { listConfigOptions } from '@/plugins/config/commands/list/handler';
-import type { SetConfigOutput } from '@/plugins/config/commands/set';
 import { setConfigOption } from '@/plugins/config/commands/set/handler';
-
-import '@/core/utils/json-serialize';
 
 describe('Config Integration Tests', () => {
   let coreApi: CoreApi;

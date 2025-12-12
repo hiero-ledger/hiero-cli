@@ -2,11 +2,6 @@
  * Implementation of Topic Transaction Service
  * Handles topic creation and message submission
  */
-import {
-  TopicCreateTransaction,
-  TopicMessageSubmitTransaction,
-} from '@hashgraph/sdk';
-
 import type { TopicService } from './topic-transaction-service.interface';
 import type {
   CreateTopicParams,
@@ -14,6 +9,11 @@ import type {
   SubmitMessageParams,
   TopicCreateResult,
 } from './types';
+
+import {
+  TopicCreateTransaction,
+  TopicMessageSubmitTransaction,
+} from '@hashgraph/sdk';
 
 export class TopicServiceImpl implements TopicService {
   createTopic(params: CreateTopicParams): TopicCreateResult {

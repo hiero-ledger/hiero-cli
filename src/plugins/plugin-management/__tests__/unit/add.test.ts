@@ -1,10 +1,11 @@
 /**
  * Unit tests for plugin-management add command
  */
+import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
+
 import * as fs from 'fs/promises';
 
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
-import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
 import {
   PluginManagementCreateStatus,
   type PluginManagementService,

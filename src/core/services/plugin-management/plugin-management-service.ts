@@ -1,7 +1,5 @@
 import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
-import { PLUGIN_MANAGEMENT_NAMESPACE } from '@/core/shared/constants';
-
 import type {
   PluginManagementCreateResult,
   PluginManagementDisableResult,
@@ -9,6 +7,9 @@ import type {
   PluginManagementRemoveResult,
   PluginManagementService,
 } from './plugin-management-service.interface';
+
+import { PLUGIN_MANAGEMENT_NAMESPACE } from '@/core/shared/constants';
+
 import {
   PluginManagementCreateStatus,
   PluginManagementDisableStatus,

@@ -4,14 +4,15 @@
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
-import { EntityIdSchema } from '@/core/schemas';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { TransferOutput } from './output';
+
+import { EntityIdSchema } from '@/core/schemas';
 import { HBAR_DECIMALS, Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 
 import { TransferInputSchema } from './input';
-import type { TransferOutput } from './output';
 
 export async function transferHandler(
   args: CommandHandlerArgs,

@@ -1,15 +1,16 @@
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
+import type { SubmitMessageOutput } from '@/plugins/topic/commands/submit-message/output';
+import type { TopicData } from '@/plugins/topic/schema';
+
 import {
   makeAliasMock,
   makeArgs,
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
-import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 import { Status } from '@/core/shared/constants';
 import { submitMessage } from '@/plugins/topic/commands/submit-message/handler';
-import type { SubmitMessageOutput } from '@/plugins/topic/commands/submit-message/output';
-import type { TopicData } from '@/plugins/topic/schema';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({

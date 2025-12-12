@@ -3,11 +3,12 @@
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { RemoveCredentialsOutput } from './output';
+
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 
 import { RemoveCredentialsInputSchema } from './input';
-import type { RemoveCredentialsOutput } from './output';
 
 export async function removeCredentials(
   args: CommandHandlerArgs,

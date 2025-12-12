@@ -1,3 +1,10 @@
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
+import type { NetworkService } from '@/core/services/network/network-service.interface';
+import type { ImportAccountOutput } from '@/plugins/account/commands/import';
+
+import '@/core/utils/json-serialize';
+
 import {
   makeAliasMock,
   makeArgs,
@@ -6,15 +13,9 @@ import {
   makeMirrorMock,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
-import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { NetworkService } from '@/core/services/network/network-service.interface';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
-import type { ImportAccountOutput } from '@/plugins/account/commands/import';
 import { importAccount } from '@/plugins/account/commands/import/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
-
-import '@/core/utils/json-serialize';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),

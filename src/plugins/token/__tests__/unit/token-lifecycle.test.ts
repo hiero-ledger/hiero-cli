@@ -3,6 +3,9 @@
  * Tests the complete token lifecycle: create → associate → transfer
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+
+import '@/core/utils/json-serialize';
+
 import { Status } from '@/core/shared/constants';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createToken } from '@/plugins/token/commands/create';
@@ -15,8 +18,6 @@ import {
   makeLogger,
   mockZustandTokenStateHelper,
 } from './helpers/mocks';
-
-import '@/core/utils/json-serialize';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),

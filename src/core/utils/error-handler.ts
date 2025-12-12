@@ -2,10 +2,11 @@
  * Centralized Error Handler
  * Handles all error formatting, output, and process termination
  */
+import type { OutputFormat } from '@/core/shared/types/output-format';
+
 import { ZodError } from 'zod';
 
 import { Status } from '@/core/shared/constants';
-import type { OutputFormat } from '@/core/shared/types/output-format';
 import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
 
 import { formatError } from './errors';

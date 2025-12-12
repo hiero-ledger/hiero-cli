@@ -1,22 +1,23 @@
-import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay } from '@/__tests__/utils/common-utils';
-import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
-import { createCoreApi } from '@/core/core-api/core-api';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import { Status } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import {
-  createTopic,
-  findMessage,
-  listTopics,
-  submitMessage,
-} from '@/plugins/topic';
 import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
 import type { FindMessagesOutput } from '@/plugins/topic/commands/find-message';
 import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
 import type { SubmitMessageOutput } from '@/plugins/topic/commands/submit-message';
 
 import '@/core/utils/json-serialize';
+
+import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
+import { delay } from '@/__tests__/utils/common-utils';
+import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
+import { createCoreApi } from '@/core/core-api/core-api';
+import { Status } from '@/core/shared/constants';
+import {
+  createTopic,
+  findMessage,
+  listTopics,
+  submitMessage,
+} from '@/plugins/topic';
 
 describe('Topic Messages Integration Tests', () => {
   let coreApi: CoreApi;

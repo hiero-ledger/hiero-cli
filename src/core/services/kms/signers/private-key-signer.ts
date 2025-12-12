@@ -1,12 +1,12 @@
-import { PrivateKey } from '@hashgraph/sdk';
-
 import type {
   KeyAlgorithmType,
   KmsCredentialSecret,
 } from '@/core/services/kms/kms-types.interface';
-import { KeyAlgorithm } from '@/core/shared/constants';
-
 import type { Signer } from './signer.interface';
+
+import { PrivateKey } from '@hashgraph/sdk';
+
+import { KeyAlgorithm } from '@/core/shared/constants';
 
 /**
  * Signer for local keys.

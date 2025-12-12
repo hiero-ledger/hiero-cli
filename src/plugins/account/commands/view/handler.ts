@@ -4,13 +4,14 @@
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { ViewAccountOutput } from './output';
+
 import { EntityIdSchema } from '@/core/schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 
 import { ViewAccountInputSchema } from './input';
-import type { ViewAccountOutput } from './output';
 
 export async function viewAccount(
   args: CommandHandlerArgs,

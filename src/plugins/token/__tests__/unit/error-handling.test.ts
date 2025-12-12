@@ -4,6 +4,7 @@
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
+
 import { Status } from '@/core/shared/constants';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createToken } from '@/plugins/token/commands/create';

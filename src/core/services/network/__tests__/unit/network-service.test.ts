@@ -2,11 +2,12 @@
  * Unit tests for NetworkServiceImpl
  * Tests network switching, configuration, and operator management
  */
-import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+
+import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { DEFAULT_NETWORK } from '@/core/services/network/network.config';
 import { NetworkServiceImpl } from '@/core/services/network/network-service';
-import type { StateService } from '@/core/services/state/state-service.interface';
 
 const NAMESPACE = 'network-config';
 const CURRENT_KEY = 'current';

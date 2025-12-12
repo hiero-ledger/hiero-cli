@@ -1,5 +1,4 @@
 import type { StateService } from '@/core/services/state/state-service.interface';
-
 import type { CredentialStorageInterface } from './credential-storage.interface';
 import type { KmsCredentialRecord } from './kms-types.interface';
 

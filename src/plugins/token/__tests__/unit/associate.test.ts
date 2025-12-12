@@ -2,9 +2,10 @@
  * Token Associate Handler Unit Tests
  * Tests the token association functionality of the token plugin
  */
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+
 import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
 
-import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import {
   associateToken,

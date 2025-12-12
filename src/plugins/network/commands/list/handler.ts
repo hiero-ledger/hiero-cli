@@ -1,15 +1,15 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { CommandExecutionResult } from '@/core/plugins/plugin.types';
-import { Status } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { ListNetworksOutput } from './output';
+
+import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 import {
   checkMirrorNodeHealth,
   checkRpcHealth,
 } from '@/plugins/network/utils/networkHealth';
-
-import type { ListNetworksOutput } from './output';
 
 export async function listHandler(
   args: CommandHandlerArgs,

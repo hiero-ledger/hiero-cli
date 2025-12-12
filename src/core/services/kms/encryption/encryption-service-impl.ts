@@ -1,7 +1,8 @@
-import * as crypto from 'crypto';
-
 import type { AlgorithmConfig } from './algorithm-config';
 import type { EncryptionService } from './encryption-service.interface';
+
+import * as crypto from 'crypto';
+
 import { FileKeyProvider } from './file-key-provider';
 
 /**

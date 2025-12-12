@@ -5,6 +5,7 @@
 
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
+
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { mockMultipleTokens, mockStateTokenData } from './helpers/fixtures';

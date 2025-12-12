@@ -3,9 +3,9 @@
  * Creates and manages output formatting strategies
  */
 import type { OutputFormat } from '@/core/shared/types/output-format';
+import type { OutputFormatterStrategy } from './output-formatter-strategy.interface';
 
 import { JsonOutputStrategy } from './json-output-strategy';
-import type { OutputFormatterStrategy } from './output-formatter-strategy.interface';
 import { TemplateOutputStrategy } from './template-output-strategy';
 
 export class OutputFormatterFactory {

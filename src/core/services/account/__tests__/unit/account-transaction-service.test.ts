@@ -2,12 +2,15 @@
  * Unit tests for AccountServiceImpl
  * Tests account creation, info queries, and balance queries
  */
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+
+import '@/core/utils/json-serialize';
+
 import { AccountId, Hbar, PublicKey } from '@hashgraph/sdk';
 
 import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
-import type { Logger } from '@/core/services/logger/logger-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 
 import {
@@ -15,8 +18,6 @@ import {
   createMockAccountCreateTransaction,
   createMockAccountInfoQuery,
 } from './mocks';
-
-import '@/core/utils/json-serialize';
 
 const mockTransaction = createMockAccountCreateTransaction();
 const mockInfoQuery = createMockAccountInfoQuery();

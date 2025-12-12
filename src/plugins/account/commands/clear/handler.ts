@@ -5,12 +5,12 @@
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { CommandExecutionResult } from '@/core/plugins/plugin.types';
+import type { ClearAccountsOutput } from './output';
+
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
-
-import type { ClearAccountsOutput } from './output';
 
 export async function clearAccounts(
   args: CommandHandlerArgs,
