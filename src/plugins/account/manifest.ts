@@ -187,7 +187,7 @@ export const accountPluginManifest: PluginManifest = {
           name: 'key',
           short: 'K',
           type: 'string',
-          required: false,
+          required: true,
           description:
             'Private key in accountId:privateKey format (e.g., "0.0.123456:abc123...")',
         },
