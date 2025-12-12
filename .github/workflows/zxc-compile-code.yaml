@@ -148,7 +148,7 @@ jobs:
           INTEGRATION_TESTS_OPERATOR_KEY: ${{ secrets.integration-tests-operator-key }}
         if: ${{ inputs.enable-integration-tests && !cancelled() && !failure() }}
         run: |
-          cp .env.test.sample .env.test
+          touch .env.test
           echo "OPERATOR_ID=${{ env.INTEGRATION_TESTS_OPERATOR_ID }}" >> ".env.test"
           echo "OPERATOR_KEY=${{ env.INTEGRATION_TESTS_OPERATOR_KEY }}" >> ".env.test"
           echo "NETWORK=${{ env.INTEGRATION_TESTS_NETWORK }}" >> ".env.test"
