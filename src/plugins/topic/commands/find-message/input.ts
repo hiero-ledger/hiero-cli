@@ -8,8 +8,10 @@ import {
  * Input schema for topic find-message command
  * Validates arguments for finding messages in a topic
  *
- * Only one sequence number filter can be provided at a time:
+ * Multiple sequence number filters can be provided, but they must not be contradictory:
  * - sequenceGt, sequenceGte, sequenceLt, sequenceLte, sequenceEq: filter operations
+ * - sequenceEq cannot be combined with other filters
+ * - Lower bound filters (gt/gte) must be less than upper bound filters (lt/lte)
  */
 export const FindMessageInputSchema = z
   .object({
@@ -32,19 +34,44 @@ export const FindMessageInputSchema = z
   })
   .refine(
     (data) => {
-      const filters = [
-        data.sequenceGt,
-        data.sequenceGte,
-        data.sequenceLt,
-        data.sequenceLte,
-        data.sequenceEq,
-      ];
-      const providedFilters = filters.filter((filter) => filter !== undefined);
-      return providedFilters.length <= 1;
+      if (data.sequenceEq !== undefined) {
+        const otherFilters = [
+          data.sequenceGt,
+          data.sequenceGte,
+          data.sequenceLt,
+          data.sequenceLte,
+        ];
+        const hasOtherFilters = otherFilters.some(
+          (filter) => filter !== undefined,
+        );
+        if (hasOtherFilters) {
+          return false;
+        }
+      }
+
+      const lowerBound = data.sequenceGte ?? data.sequenceGt;
+      const upperBound = data.sequenceLte ?? data.sequenceLt;
+
+      if (lowerBound !== undefined && upperBound !== undefined) {
+        // For gt/lt: lowerBound must be strictly less than upperBound
+        // For gte/lte: lowerBound can be equal to upperBound
+        const isStrictLower = data.sequenceGt !== undefined;
+        const isStrictUpper = data.sequenceLt !== undefined;
+
+        if (isStrictLower || isStrictUpper) {
+          // At least one is strict, so lowerBound must be strictly less
+          return lowerBound < upperBound;
+        } else {
+          // Both are inclusive, so lowerBound can be less than or equal
+          return lowerBound <= upperBound;
+        }
+      }
+
+      return true;
     },
     {
       message:
-        'Only one sequence number filter can be provided at a time. Please specify only one of: -g (--sequence-gt), -G (--sequence-gte), -l (--sequence-lt), -L (--sequence-lte), or -e (--sequence-eq)',
+        'Sequence number filters are contradictory. sequenceEq cannot be combined with other filters, and lower bound filters (gt/gte) must be less than upper bound filters (lt/lte).',
     },
   );
 

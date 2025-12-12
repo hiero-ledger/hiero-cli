@@ -148,7 +148,7 @@ export interface TopicMessageQueryParams {
 
 export interface TopicMessagesQueryParams {
   topicId: string;
-  filter?: Filter;
+  filters?: Filter[];
 }
 
 export interface TopicMessageResponse {

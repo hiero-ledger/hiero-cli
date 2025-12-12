@@ -9,45 +9,7 @@ import { Filter } from '../../../../core/services/mirrornode/types';
 import { FindMessageOutput, FindMessagesOutput } from './output';
 import { FindMessageInputSchema } from './input';
 import { resolveTopicId } from '../../utils/topicResolver';
-
-/**
- * Helper function to build sequence number filter from command arguments
- * @param args - Command arguments containing filter parameters
- * @returns Filter object or undefined if no filter parameters provided
- */
-function buildSequenceNumberFilter(
-  args: CommandHandlerArgs['args'],
-): Filter | undefined {
-  const sequenceFilters = [
-    {
-      operation: 'gt',
-      value: args.sequenceGt,
-    },
-    {
-      operation: 'gte',
-      value: args.sequenceGte,
-    },
-    {
-      operation: 'lt',
-      value: args.sequenceLt,
-    },
-    {
-      operation: 'lte',
-      value: args.sequenceLte,
-    },
-    {
-      operation: 'eq',
-      value: args.sequenceEq,
-    },
-  ];
-
-  // Find first non-empty filter
-  const nonEmptyFilters = sequenceFilters.filter(
-    (f) => f.value !== undefined,
-  ) as Filter[];
-
-  return nonEmptyFilters.length > 0 ? nonEmptyFilters[0] : undefined;
-}
+import { buildApiFilters } from '../../utils/messageFilters';
 
 /**
  * Helper function to decode message and format timestamp
@@ -90,26 +52,20 @@ function transformMessageToOutput(message: {
 }
 
 /**
- * Fetch multiple messages using a filter
+ * Fetch multiple messages using filters
  * @param api - API instance
  * @param topicId - The topic ID to query
- * @param filter - Filter criteria for sequence numbers
+ * @param filters - Array of filter criteria for sequence numbers
  * @returns Array of formatted messages in reverse order
  */
 async function fetchFilteredMessages(
   api: CommandHandlerArgs['api'],
   topicId: string,
-  filter: Filter | undefined,
+  filters: Filter[] | undefined,
 ): Promise<FindMessageOutput[]> {
   const response = await api.mirror.getTopicMessages({
     topicId,
-    filter: filter
-      ? {
-          field: 'sequenceNumber',
-          operation: filter.operation,
-          value: filter.value,
-        }
-      : undefined,
+    filters,
   });
 
   return response.messages.map(transformMessageToOutput).reverse();
@@ -138,14 +94,15 @@ export async function findMessage(
 
     // Log progress indicator (not final output)
     logger.info(`Finding messages in topic: ${topicId}`);
-    // Try to build filter from other sequence number parameters
-    const filter = buildSequenceNumberFilter(args.args);
 
-    // Fetch multiple messages with filter
+    // Build all filters for API query (Mirror Node API supports multiple filters)
+    const apiFilters = buildApiFilters(validParams);
+
+    // Fetch messages using all filters
     const messages: FindMessageOutput[] = await fetchFilteredMessages(
       api,
       topicId,
-      filter,
+      apiFilters.length > 0 ? apiFilters : undefined,
     );
 
     // Step 2: Prepare structured output data
