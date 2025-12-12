@@ -2,9 +2,9 @@
  * Token Data Builders
  * Utility functions for building token data objects for state storage
  */
-import { TransactionResult } from '../../../core';
-import { SupportedNetwork } from '../../../core/types/shared.types';
-import { TokenData, TokenFileDefinition } from '../schema';
+import type { TransactionResult } from '@/core';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { TokenData, TokenFileDefinition } from '@/plugins/token/schema';
 
 export function buildTokenData(
   result: TransactionResult,

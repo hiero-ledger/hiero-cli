@@ -3,20 +3,22 @@
  * Handles token creation operations using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { formatError } from '../../../../core/utils/errors';
-import { CreateTokenOutput } from './output';
-import { processTokenBalanceInput } from '../../../../core/utils/process-token-balance-input';
-import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
-import { CreateTokenInputSchema } from './input';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { CreateTokenOutput } from './output';
+
 import { PublicKey } from '@hashgraph/sdk';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import {
-  determineFiniteMaxSupply,
   buildTokenData,
-} from '../../utils/token-data-builders';
+  determineFiniteMaxSupply,
+} from '@/plugins/token/utils/token-data-builders';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
+import { CreateTokenInputSchema } from './input';
 
 export async function createToken(
   args: CommandHandlerArgs,

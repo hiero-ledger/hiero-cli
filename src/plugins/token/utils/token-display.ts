@@ -2,8 +2,8 @@
  * Token Display Helpers
  * Utility functions for displaying token information
  */
-import { CommandHandlerArgs } from '../../../core';
-import { TokenData } from '../schema';
+import type { CommandHandlerArgs } from '@/core';
+import type { TokenData } from '@/plugins/token/schema';
 
 export function displayToken(
   token: TokenData,

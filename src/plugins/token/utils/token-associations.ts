@@ -2,11 +2,12 @@
  * Token Associations
  * Utility functions for processing token associations
  */
-import { CoreApi, Logger } from '../../../core';
-import { toErrorMessage } from '../../../core/utils/errors';
-import { KeyManagerName } from '../../../core/services/kms/kms-types.interface';
-import { KeyOrAccountAlias } from '../../../core/schemas';
-import { ZustandTokenStateHelper } from '../zustand-state-helper';
+import type { CoreApi, Logger } from '@/core';
+import type { KeyOrAccountAlias } from '@/core/schemas';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
+import { toErrorMessage } from '@/core/utils/errors';
 
 export function saveAssociationToState(
   tokenState: ZustandTokenStateHelper,
