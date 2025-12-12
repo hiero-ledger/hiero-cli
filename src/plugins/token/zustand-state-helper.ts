@@ -2,10 +2,12 @@
  * Token State Helper for Zustand State Management
  * Provides convenient methods for token state operations
  */
-import { StateService } from '../../core/services/state/state-service.interface';
-import { Logger } from '../../core/services/logger/logger-service.interface';
-import { TokenData, TOKEN_NAMESPACE } from './schema';
-import { toErrorMessage } from '../../core/utils/errors';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+
+import { toErrorMessage } from '@/core/utils/errors';
+
+import { TOKEN_NAMESPACE, type TokenData } from './schema';
 
 export class ZustandTokenStateHelper {
   private state: StateService;

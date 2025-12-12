@@ -1,12 +1,13 @@
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { formatError } from '../../../../core/utils/errors';
-import { SupportedNetwork } from '../../../../core/types/shared.types';
-import { Status } from '../../../../core/shared/constants';
-import { SetOperatorOutput } from './output';
-import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { SetOperatorOutput } from './output';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
+
 import { SetOperatorInputSchema } from './input';
-import { ERROR_MESSAGES } from '../../error-messages';
 
 export async function setOperatorHandler(
   args: CommandHandlerArgs,

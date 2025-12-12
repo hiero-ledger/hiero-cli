@@ -2,19 +2,20 @@
  * Network Service Implementation
  * Manages network configuration using StateService with namespace
  */
-import {
-  NetworkService,
-  NetworkConfig,
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import type {
   LocalnetConfig,
+  NetworkConfig,
   NetworkOperator,
+  NetworkService,
 } from './network-service.interface';
-import { StateService } from '../state/state-service.interface';
-import { Logger } from '../logger/logger-service.interface';
-import { SupportedNetwork } from '../../types/shared.types';
+
 import {
+  DEFAULT_LOCALNET_NODE,
   DEFAULT_NETWORK,
   DEFAULT_NETWORKS,
-  DEFAULT_LOCALNET_NODE,
 } from './network.config';
 
 const NAMESPACE = 'network-config';

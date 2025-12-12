@@ -1,18 +1,20 @@
-import '../../../../core/utils/json-serialize';
-import { createAccount } from '../../commands/create/handler';
-import type { CreateAccountOutput } from '../../commands/create';
-import { ZustandAccountStateHelper } from '../../zustand-state-helper';
-import type { CoreApi } from '../../../../core/core-api/core-api.interface';
-import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
-import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
-import { makeLogger, makeArgs } from '../../../../__tests__/mocks/mocks';
-import { makeApiMocksForAccountCreate } from './helpers/mocks';
-import '../../../../core/utils/json-serialize';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
+import type { CreateAccountOutput } from '@/plugins/account/commands/create';
+
+import '@/core/utils/json-serialize';
+
 import {
   ECDSA_EVM_ADDRESS,
   ECDSA_HEX_PUBLIC_KEY,
   ED25519_HEX_PUBLIC_KEY,
-} from '../../../../__tests__/mocks/fixtures';
+} from '@/__tests__/mocks/fixtures';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { createAccount } from '@/plugins/account/commands/create/handler';
+import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+
+import { makeApiMocksForAccountCreate } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),

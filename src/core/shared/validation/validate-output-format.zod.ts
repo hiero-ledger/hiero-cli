@@ -1,10 +1,12 @@
+import type { OutputFormat } from '@/core/shared/types/output-format';
+
 import { z } from 'zod';
-import { formatAndExitWithError } from '../../utils/error-handler';
+
 import {
-  OUTPUT_FORMATS,
-  OutputFormat,
   DEFAULT_OUTPUT_FORMAT,
-} from '../types/output-format';
+  OUTPUT_FORMATS,
+} from '@/core/shared/types/output-format';
+import { formatAndExitWithError } from '@/core/utils/error-handler';
 
 // Zod schema from const array
 const outputFormatSchema = z.enum(OUTPUT_FORMATS);
@@ -28,4 +30,5 @@ export function validateOutputFormat(outputFormat: unknown): OutputFormat {
 }
 
 // Re-export for convenience
-export { OutputFormat, OUTPUT_FORMATS };
+export type { OutputFormat };
+export { OUTPUT_FORMATS };

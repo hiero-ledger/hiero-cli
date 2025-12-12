@@ -2,8 +2,8 @@
  * Message Filter Utilities
  * Utilities for filtering topic messages by sequence number
  */
-import { Filter } from '../../../core/services/mirrornode/types';
-import type { FindMessageInput } from '../commands/find-message/input';
+import type { Filter } from '@/core/services/mirrornode/types';
+import type { FindMessageInput } from '@/plugins/topic/commands/find-message/input';
 
 /**
  * Helper function to build all filters for API query

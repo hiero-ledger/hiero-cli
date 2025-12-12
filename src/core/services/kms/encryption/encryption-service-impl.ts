@@ -1,7 +1,9 @@
-import type { EncryptionService } from './encryption-service.interface';
 import type { AlgorithmConfig } from './algorithm-config';
-import { FileKeyProvider } from './file-key-provider';
+import type { EncryptionService } from './encryption-service.interface';
+
 import * as crypto from 'crypto';
+
+import { FileKeyProvider } from './file-key-provider';
 
 /**
  * Configurable encryption implementation using AES-GCM.

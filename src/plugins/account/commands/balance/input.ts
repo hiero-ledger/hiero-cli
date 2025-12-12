@@ -1,9 +1,10 @@
 import { z } from 'zod';
+
 import {
   AccountReferenceSchema,
   EntityIdSchema,
   EntityReferenceSchema,
-} from '../../../../core/schemas';
+} from '@/core/schemas';
 
 /**
  * Input schema for account balance command

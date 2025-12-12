@@ -2,37 +2,38 @@
  * Plugin Management Plugin Manifest
  * A plugin for managing other plugins
  */
-import { PluginManifest } from '../../core/plugins/plugin.interface';
+import type { PluginManifest } from '@/core/plugins/plugin.interface';
+
 import {
-  AddPluginOutputSchema,
   ADD_PLUGIN_TEMPLATE,
-} from './commands/add/output';
+  addPlugin,
+  AddPluginOutputSchema,
+} from './commands/add';
 import {
-  RemovePluginOutputSchema,
-  REMOVE_PLUGIN_TEMPLATE,
-} from './commands/remove/output';
-import {
-  EnablePluginOutputSchema,
-  ENABLE_PLUGIN_TEMPLATE,
-} from './commands/enable/output';
-import {
-  DisablePluginOutputSchema,
   DISABLE_PLUGIN_TEMPLATE,
-} from './commands/disable/output';
+  disablePlugin,
+  DisablePluginOutputSchema,
+} from './commands/disable';
 import {
-  ListPluginsOutputSchema,
-  LIST_PLUGINS_TEMPLATE,
-} from './commands/list/output';
+  ENABLE_PLUGIN_TEMPLATE,
+  enablePlugin,
+  EnablePluginOutputSchema,
+} from './commands/enable';
 import {
-  PluginInfoOutputSchema,
+  getPluginInfo,
   PLUGIN_INFO_TEMPLATE,
-} from './commands/info/output';
-import { addPlugin } from './commands/add/handler';
-import { removePlugin } from './commands/remove/handler';
-import { enablePlugin } from './commands/enable/handler';
-import { disablePlugin } from './commands/disable/handler';
-import { getPluginList } from './commands/list/handler';
-import { getPluginInfo } from './commands/info/handler';
+  PluginInfoOutputSchema,
+} from './commands/info';
+import {
+  getPluginList,
+  LIST_PLUGINS_TEMPLATE,
+  ListPluginsOutputSchema,
+} from './commands/list';
+import {
+  REMOVE_PLUGIN_TEMPLATE,
+  removePlugin,
+  RemovePluginOutputSchema,
+} from './commands/remove';
 
 export const pluginManagementManifest: PluginManifest = {
   name: 'plugin-management',

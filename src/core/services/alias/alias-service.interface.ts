@@ -1,4 +1,4 @@
-import { SupportedNetwork } from '../../types/shared.types';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export const AliasType = {
   Account: 'account',

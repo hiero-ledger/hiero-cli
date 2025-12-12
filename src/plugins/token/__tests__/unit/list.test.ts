@@ -1,19 +1,22 @@
-import { listTokens } from '../../commands/list';
-import type { ListTokensOutput } from '../../commands/list';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { Status } from '../../../../core/shared/constants';
+import { makeArgs } from '@/__tests__/mocks/mocks';
+import { Status } from '@/core/shared/constants';
 import {
-  makeLogger,
-  makeApiMocks,
-  setupZustandHelperMock,
-} from './helpers/mocks';
+  listTokens,
+  type ListTokensOutput,
+} from '@/plugins/token/commands/list';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
 import {
   makeTokenData,
   makeTokenStats,
   mockListTokens,
   mockTokenStats,
 } from './helpers/fixtures';
-import { makeArgs } from '../../../../__tests__/mocks/mocks';
+import {
+  makeApiMocks,
+  makeLogger,
+  setupZustandHelperMock,
+} from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),

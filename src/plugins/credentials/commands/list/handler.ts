@@ -2,11 +2,12 @@
  * List Credentials Command Handler
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { ListCredentialsOutput } from './output';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { CommandExecutionResult } from '@/core/plugins/plugin.types';
+import type { ListCredentialsOutput } from './output';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
 
 export async function listCredentials(
   args: CommandHandlerArgs,

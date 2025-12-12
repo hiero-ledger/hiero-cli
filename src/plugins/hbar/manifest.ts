@@ -2,9 +2,13 @@
  * HBAR Plugin Manifest
  * Defines the hbar plugin and its commands
  */
-import { PluginManifest } from '../../core/plugins/plugin.interface';
-import { TransferOutputSchema, TRANSFER_TEMPLATE } from './commands/transfer';
-import { transferHandler } from './commands/transfer/handler';
+import type { PluginManifest } from '@/core/plugins/plugin.interface';
+
+import {
+  TRANSFER_TEMPLATE,
+  transferHandler,
+  TransferOutputSchema,
+} from './commands/transfer';
 
 export const hbarPluginManifest: PluginManifest = {
   name: 'hbar',

@@ -3,18 +3,21 @@
  * Returns plugin information based on the latest manifest.
  * Follows ADR-003 contract: returns CommandExecutionResult.
  */
-import * as path from 'path';
-import {
+import type {
+  CommandExecutionResult,
   CommandHandlerArgs,
-  PluginStateEntry,
   PluginManifest,
-} from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { PluginInfoOutput } from './output';
+  PluginStateEntry,
+} from '@/core';
+import type { PluginInfoOutput } from './output';
+
+import * as path from 'path';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
+
 import { PluginInfoInputSchema } from './input';
-import { ERROR_MESSAGES } from '../../error-messages';
 
 export async function getPluginInfo(
   args: CommandHandlerArgs,

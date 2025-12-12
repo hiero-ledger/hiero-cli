@@ -1,10 +1,10 @@
 /**
  * Shared Mock Factory Functions for Config Plugin Tests
  */
-import type { Logger } from '../../../../../core/services/logger/logger-service.interface';
-import type { CoreApi } from '../../../../../core/core-api/core-api.interface';
-import type { ConfigService } from '../../../../../core/services/config/config-service.interface';
-import type { CommandHandlerArgs } from '../../../../../core/plugins/plugin.interface';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
 
 export const makeLogger = (): jest.Mocked<Logger> => ({
   info: jest.fn(),

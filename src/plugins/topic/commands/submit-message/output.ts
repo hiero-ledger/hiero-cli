@@ -2,11 +2,12 @@
  * Submit Message Command Output Schema and Template
  */
 import { z } from 'zod';
+
 import {
   EntityIdSchema,
-  TransactionIdSchema,
   IsoTimestampSchema,
-} from '../../../../core/schemas';
+  TransactionIdSchema,
+} from '@/core/schemas';
 
 /**
  * Submit Message Command Output Schema

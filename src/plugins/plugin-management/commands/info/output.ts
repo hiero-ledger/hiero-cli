@@ -2,8 +2,9 @@
  * Plugin Info Command Output
  * Defines output schema and template for the plugin info command
  */
-import { z } from 'zod';
-import { PluginInfoOutputSchema } from '../../schema';
+import type { z } from 'zod';
+
+import { PluginInfoOutputSchema } from '@/plugins/plugin-management/schema';
 
 // Export the schema
 export { PluginInfoOutputSchema };

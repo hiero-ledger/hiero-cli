@@ -1,5 +1,5 @@
-import { Command } from 'commander';
-import { PluginStateEntry } from '../plugins/plugin.interface';
+import type { Command } from 'commander';
+import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
 
 /**
  * Adds a "Disabled Plugins" section to the help output showing all disabled plugins.

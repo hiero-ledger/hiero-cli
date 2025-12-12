@@ -3,8 +3,8 @@
  * Common data structures used across the Hedera CLI
  */
 
-import { CustomFee } from '@hashgraph/sdk';
-import { KeyAlgorithmType } from '../services/kms/kms-types.interface';
+import type { CustomFee } from '@hashgraph/sdk';
+import type { KeyAlgorithmType } from '@/core/services/kms/kms-types.interface';
 
 /**
  * Supported Hedera networks

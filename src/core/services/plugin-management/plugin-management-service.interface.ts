@@ -1,4 +1,4 @@
-import { PluginStateEntry } from '../../plugins/plugin.interface';
+import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
 
 export enum PluginManagementCreateStatus {
   Created = 'created',

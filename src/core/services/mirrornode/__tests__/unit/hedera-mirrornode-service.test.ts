@@ -2,19 +2,21 @@
  * Unit tests for HederaMirrornodeServiceDefaultImpl
  * Tests all public methods with success paths, error paths, and edge cases
  */
-import { HederaMirrornodeServiceDefaultImpl } from '../../hedera-mirrornode-service';
 import type { LedgerId } from '@hashgraph/sdk';
+
+import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
+
 import {
   createMockAccountAPIResponse,
+  createMockContractInfo,
+  createMockExchangeRateResponse,
+  createMockTokenAirdropsResponse,
   createMockTokenBalancesResponse,
-  createMockTopicMessage,
-  createMockTopicMessagesAPIResponse,
   createMockTokenInfo,
   createMockTopicInfo,
+  createMockTopicMessage,
+  createMockTopicMessagesAPIResponse,
   createMockTransactionDetailsResponse,
-  createMockContractInfo,
-  createMockTokenAirdropsResponse,
-  createMockExchangeRateResponse,
 } from './mocks';
 
 // Mock fetch globally

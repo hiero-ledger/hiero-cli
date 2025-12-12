@@ -2,12 +2,13 @@
  * Create Token From File Command Output Schema and Template
  */
 import { z } from 'zod';
+
 import {
   EntityIdSchema,
-  TransactionIdSchema,
   NetworkSchema,
   SupplyTypeSchema,
-} from '../../../../core/schemas/common-schemas';
+  TransactionIdSchema,
+} from '@/core/schemas/common-schemas';
 
 /**
  * Token Association Result Schema

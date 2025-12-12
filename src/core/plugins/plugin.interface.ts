@@ -10,10 +10,10 @@ export interface CommandHandlerArgs {
 }
 
 // Import types from other interfaces
-import { CoreApi } from '../core-api/core-api.interface';
-import { StateService } from '../services/state/state-service.interface';
-import { ConfigService } from '../services/config/config-service.interface';
-import { Logger } from '../services/logger/logger-service.interface';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
 
 // Type aliases for ADR-001 compliance
 export type StateManager = StateService;

@@ -2,7 +2,7 @@
  * Interface for network management operations
  * All network services must implement this interface
  */
-import { SupportedNetwork } from '../../types/shared.types';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface NetworkService {
   /**

@@ -1,10 +1,11 @@
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { formatError } from '../../../../core/utils/errors';
-import { UseNetworkOutput } from './output';
-import { Status } from '../../../../core/shared/constants';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { UseNetworkOutput } from './output';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
+
 import { UseNetworkInputSchema } from './input';
-import { ERROR_MESSAGES } from '../../error-messages';
 
 export async function useHandler(
   args: CommandHandlerArgs,

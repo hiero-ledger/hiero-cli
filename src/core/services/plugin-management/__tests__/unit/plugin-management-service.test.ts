@@ -2,17 +2,18 @@
  * Unit tests for PluginManagementServiceImpl
  * Tests plugin listing, CRUD, enable/disable and state persistence
  */
-import { PluginManagementServiceImpl } from '../../plugin-management-service';
-import { PLUGIN_MANAGEMENT_NAMESPACE } from '../../../../shared/constants';
-import { makeStateMock } from '../../../../../__tests__/mocks/mocks';
-import type { StateService } from '../../../state/state-service.interface';
-import type { PluginStateEntry } from '../../../../plugins/plugin.interface';
+import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+
+import { makeStateMock } from '@/__tests__/mocks/mocks';
+import { PluginManagementServiceImpl } from '@/core/services/plugin-management/plugin-management-service';
 import {
   PluginManagementCreateStatus,
   PluginManagementDisableStatus,
   PluginManagementEnableStatus,
   PluginManagementRemoveStatus,
-} from '../../plugin-management-service.interface';
+} from '@/core/services/plugin-management/plugin-management-service.interface';
+import { PLUGIN_MANAGEMENT_NAMESPACE } from '@/core/shared/constants';
 
 const PLUGIN_NAME_FOO = 'foo-plugin';
 const PLUGIN_NAME_BAR = 'bar-plugin';

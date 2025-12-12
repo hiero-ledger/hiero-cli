@@ -1,4 +1,4 @@
-import {
+import type {
   CreateTopicParams,
   MessageSubmitResult,
   SubmitMessageParams,

@@ -1,7 +1,7 @@
 /**
  * Output Handler Service Types
  */
-import { OutputFormat } from '../../shared/types/output-format';
+import type { OutputFormat } from '@/core/shared/types/output-format';
 
 export interface FormatOptions {
   format: OutputFormat;

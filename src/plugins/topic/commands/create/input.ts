@@ -1,10 +1,11 @@
 import { z } from 'zod';
+
 import {
   KeyManagerTypeSchema,
+  KeyOrAccountAliasSchema,
   MemoSchema,
   TopicNameSchema,
-  KeyOrAccountAliasSchema,
-} from '../../../../core/schemas';
+} from '@/core/schemas';
 
 /**
  * Input schema for topic create command

@@ -1,4 +1,5 @@
-import { HBAR_DECIMALS, TOKEN_BALANCE_LIMIT } from '../shared/constants';
+import { HBAR_DECIMALS, TOKEN_BALANCE_LIMIT } from '@/core/shared/constants';
+
 import { processBalanceInput } from './process-balance-input';
 
 export function processTokenBalanceInput(

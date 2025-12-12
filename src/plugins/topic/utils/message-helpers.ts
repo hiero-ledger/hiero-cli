@@ -2,9 +2,9 @@
  * Message Helpers
  * Utility functions for processing topic messages
  */
-import type { CoreApi } from '../../../core';
-import { Filter } from '../../../core/services/mirrornode/types';
-import { FindMessageOutput } from '../commands/find-message/output';
+import type { CoreApi } from '@/core';
+import type { Filter } from '@/core/services/mirrornode/types';
+import type { FindMessageOutput } from '@/plugins/topic/commands/find-message/output';
 
 export function decodeMessageData(message: string, consensusTimestamp: string) {
   const decodedMessage = Buffer.from(message, 'base64').toString('ascii');

@@ -4,4 +4,4 @@
  */
 export { associateToken } from './handler';
 export type { AssociateTokenOutput } from './output';
-export { AssociateTokenOutputSchema, ASSOCIATE_TOKEN_TEMPLATE } from './output';
+export { ASSOCIATE_TOKEN_TEMPLATE, AssociateTokenOutputSchema } from './output';

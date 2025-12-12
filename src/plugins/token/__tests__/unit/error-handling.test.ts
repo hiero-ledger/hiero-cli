@@ -2,17 +2,19 @@
  * Token Plugin Error Handling Tests
  * Tests error scenarios and edge cases across the token plugin
  */
-import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { createToken } from '../../commands/create';
-import { associateToken } from '../../commands/associate';
-import { transferToken } from '../../commands/transfer';
-import { createTokenFromFile } from '../../commands/createFromFile';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { Status } from '../../../../core/shared/constants';
-import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
+
+import { Status } from '@/core/shared/constants';
+import { associateToken } from '@/plugins/token/commands/associate';
+import { createToken } from '@/plugins/token/commands/create';
+import { createTokenFromFile } from '@/plugins/token/commands/createFromFile';
+import { transferToken } from '@/plugins/token/commands/transfer';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
 import {
-  makeLogger,
   makeApiMocks,
+  makeLogger,
   mockZustandTokenStateHelper,
 } from './helpers/mocks';
 

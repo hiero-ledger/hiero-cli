@@ -3,17 +3,19 @@
  * Handles token association operations using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { resolveTokenParameter } from '../../resolver-helper';
-import { formatError } from '../../../../core/utils/errors';
-import { AssociateTokenOutput } from './output';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { AssociateTokenOutput } from './output';
+
 import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
-import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { saveAssociationToState } from '@/plugins/token/utils/token-associations';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
 import { AssociateTokenInputSchema } from './input';
-import { saveAssociationToState } from '../../utils/token-associations';
 
 export async function associateToken(
   args: CommandHandlerArgs,

@@ -1,4 +1,4 @@
-import type { PluginStateEntry } from '../../../../../core/plugins/plugin.interface';
+import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
 
 export const CUSTOM_PLUGIN_ENTRY: PluginStateEntry = {
   name: 'custom-plugin',

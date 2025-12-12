@@ -1,18 +1,18 @@
-import { setOperatorHandler } from '../../commands/set-operator';
-import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
-import {
-  makeLogger,
-  makeArgs,
-  setupExitSpy,
-  makeNetworkMock,
-  makeKmsMock,
-  makeAliasMock,
-} from '../../../../__tests__/mocks/mocks';
 import {
   ECDSA_DER_PRIVATE_KEY,
   MOCK_PUBLIC_KEY,
-} from '../../../../__tests__/mocks/fixtures';
-import { ERROR_MESSAGES } from '../../error-messages';
+} from '@/__tests__/mocks/fixtures';
+import {
+  makeAliasMock,
+  makeArgs,
+  makeKmsMock,
+  makeLogger,
+  makeNetworkMock,
+  setupExitSpy,
+} from '@/__tests__/mocks/mocks';
+import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { setOperatorHandler } from '@/plugins/network/commands/set-operator';
+import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 
 let exitSpy: jest.SpyInstance;
 

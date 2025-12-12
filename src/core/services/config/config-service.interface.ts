@@ -2,8 +2,8 @@
  * Configuration service
  * Generic accessors so new options are easy to add and discover
  */
-import { KEY_MANAGER_VALUES } from '../kms/kms-types.interface';
-import { LOG_LEVEL_VALUES } from '../logger/logger-service.interface';
+import { KEY_MANAGER_VALUES } from '@/core/services/kms/kms-types.interface';
+import { LOG_LEVEL_VALUES } from '@/core/services/logger/logger-service.interface';
 
 export const CONFIG_NAMESPACE = 'config';
 

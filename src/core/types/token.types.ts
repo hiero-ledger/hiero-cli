@@ -3,7 +3,7 @@
  * Type definitions for token-related operations
  */
 
-import { PublicKey } from '@hashgraph/sdk';
+import type { PublicKey } from '@hashgraph/sdk';
 
 /**
  * Parameters for token transfer transactions

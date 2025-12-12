@@ -2,10 +2,13 @@
  * Token File Helpers
  * Utility functions for reading and validating token definition files
  */
+import type { Logger } from '@/core';
+import type { TokenFileDefinition } from '@/plugins/token/schema';
+
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { Logger } from '../../../core';
-import { TokenFileSchema, TokenFileDefinition } from '../schema';
+
+import { TokenFileSchema } from '@/plugins/token/schema';
 
 export function resolveTokenFilePath(filename: string): string {
   const hasPathSeparator = filename.includes('/') || filename.includes('\\');

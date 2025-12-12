@@ -3,18 +3,20 @@
  * Handles token creation from JSON file definitions using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { formatError } from '../../../../core/utils/errors';
-import { CreateTokenFromFileOutput } from './output';
-import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
-import { CreateTokenFromFileInputSchema } from './input';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { CreateTokenFromFileOutput } from './output';
+
 import { PublicKey } from '@hashgraph/sdk';
-import { readAndValidateTokenFile } from '../../utils/token-file-helpers';
-import { buildTokenDataFromFile } from '../../utils/token-data-builders';
-import { processTokenAssociations } from '../../utils/token-associations';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
+import { buildTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
+import { readAndValidateTokenFile } from '@/plugins/token/utils/token-file-helpers';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
+import { CreateTokenFromFileInputSchema } from './input';
 
 export async function createTokenFromFile(
   args: CommandHandlerArgs,

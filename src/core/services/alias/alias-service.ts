@@ -1,11 +1,11 @@
-import {
-  AliasService,
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import type {
   AliasRecord,
+  AliasService,
   AliasType,
 } from './alias-service.interface';
-import { SupportedNetwork } from '../../types/shared.types';
-import { StateService } from '../state/state-service.interface';
-import { Logger } from '../logger/logger-service.interface';
 
 const NAMESPACE = 'aliases';
 

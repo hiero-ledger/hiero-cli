@@ -4,10 +4,8 @@
  */
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import {
-  EntityIdSchema,
-  AliasNameSchema,
-} from '../../core/schemas/common-schemas';
+
+import { AliasNameSchema, EntityIdSchema } from '@/core/schemas/common-schemas';
 
 // Zod schema for runtime validation
 export const TopicDataSchema = z.object({

@@ -1,11 +1,12 @@
-import { parseKeyWithType } from '../keys';
 import {
-  ECDSA_HEX_PRIVATE_KEY_WITH_0X,
   ECDSA_DER_PRIVATE_KEY,
-  ED25519_HEX_PRIVATE_KEY_WITH_0X,
+  ECDSA_HEX_PRIVATE_KEY_WITH_0X,
   ED25519_DER_PRIVATE_KEY,
+  ED25519_HEX_PRIVATE_KEY_WITH_0X,
 } from '__tests__/mocks/fixtures';
-import { KeyAlgorithm } from '../../shared/constants';
+
+import { KeyAlgorithm } from '@/core/shared/constants';
+import { parseKeyWithType } from '@/core/utils/keys';
 
 describe('parseKeyWithType', () => {
   const validEcdsaHexKey = ECDSA_HEX_PRIVATE_KEY_WITH_0X;

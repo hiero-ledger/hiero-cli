@@ -1,16 +1,16 @@
-import { AccountIdWithPrivateKeySchema } from '../../common-schemas';
-import {
-  TEST_ACCOUNT_ID,
-  SHORT_KEY,
-  SHORT_DER_KEY,
-  SHORT_ECDSA_DER_KEY,
-} from '../helpers/fixtures';
 import {
   ED25519_DER_PRIVATE_KEY,
   ED25519_HEX_PRIVATE_KEY,
   ED25519_HEX_PRIVATE_KEY_WITH_0X,
-} from '../../../../__tests__/mocks/fixtures';
-import { INVALID_KEY } from '../../../../core/services/topic/__tests__/unit/mocks';
+} from '@/__tests__/mocks/fixtures';
+import {
+  SHORT_DER_KEY,
+  SHORT_ECDSA_DER_KEY,
+  SHORT_KEY,
+  TEST_ACCOUNT_ID,
+} from '@/core/schemas/__tests__/helpers/fixtures';
+import { AccountIdWithPrivateKeySchema } from '@/core/schemas/common-schemas';
+import { INVALID_KEY } from '@/core/services/topic/__tests__/unit/mocks';
 
 describe('AccountIdWithPrivateKeySchema', () => {
   const accountId = TEST_ACCOUNT_ID;

@@ -1,11 +1,11 @@
-import { useHandler } from '../../commands/use';
 import {
-  makeLogger,
   makeArgs,
-  setupExitSpy,
+  makeLogger,
   makeNetworkMock,
-} from '../../../../__tests__/mocks/mocks';
-import { Status } from '../../../../core/shared/constants';
+  setupExitSpy,
+} from '@/__tests__/mocks/mocks';
+import { Status } from '@/core/shared/constants';
+import { useHandler } from '@/plugins/network/commands/use';
 
 let exitSpy: jest.SpyInstance;
 

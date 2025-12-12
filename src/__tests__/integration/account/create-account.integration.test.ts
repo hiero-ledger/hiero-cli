@@ -1,14 +1,16 @@
-import { CoreApi } from '../../../core/core-api/core-api.interface';
-import { createCoreApi } from '../../../core/core-api/core-api';
-import { STATE_STORAGE_FILE_PATH } from '../../test-constants';
-import { createAccount, viewAccount } from '../../../plugins/account';
-import { KeyAlgorithm, Status } from '../../../core/shared/constants';
-import { CreateAccountOutput } from '../../../plugins/account/commands/create';
-import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
-import { ViewAccountOutput } from '../../../plugins/account/commands/view';
-import '../../../core/utils/json-serialize';
-import { delay } from '../../utils/common-utils';
-import { SupportedNetwork } from '../../../core/types/shared.types';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { CreateAccountOutput } from '@/plugins/account/commands/create';
+import type { ViewAccountOutput } from '@/plugins/account/commands/view';
+
+import '@/core/utils/json-serialize';
+
+import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
+import { delay } from '@/__tests__/utils/common-utils';
+import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
+import { createCoreApi } from '@/core/core-api/core-api';
+import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { createAccount, viewAccount } from '@/plugins/account';
 
 describe('Create Account Integration Tests', () => {
   let coreApi: CoreApi;

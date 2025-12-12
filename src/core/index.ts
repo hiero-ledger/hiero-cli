@@ -8,33 +8,33 @@ export * from './core-api';
 
 // Services
 export * from './services/account/account-transaction-service.interface';
-export * from './services/tx-execution/tx-execution-service.interface';
-export * from './services/state/state-service.interface';
-export * from './services/mirrornode/hedera-mirrornode-service.interface';
-export { NetworkService } from './services/network/network-service.interface';
-export { ConfigService } from './services/config/config-service.interface';
+export type { ConfigService } from './services/config/config-service.interface';
 export * from './services/logger/logger-service.interface';
+export * from './services/mirrornode/hedera-mirrornode-service.interface';
+export type { NetworkService } from './services/network/network-service.interface';
+export * from './services/state/state-service.interface';
+export * from './services/tx-execution/tx-execution-service.interface';
 
 // Shared Types
 export type {
   Account,
-  Token,
-  Topic,
-  Script,
   Credentials,
   NetworkConfig,
+  Script,
+  Token,
+  Topic,
 } from './types/shared.types';
 
 // Plugin Types
 export type {
-  PluginManifest,
-  CommandSpec,
-  CommandOption,
-  CommandOutputSpec,
-  PluginContext,
-  PluginStateSchema,
   CommandExecutionResult,
   CommandHandler,
+  CommandOption,
+  CommandOutputSpec,
+  CommandSpec,
+  PluginContext,
+  PluginManifest,
+  PluginStateSchema,
 } from './plugins/plugin.types';
 
 // Plugins

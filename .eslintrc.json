@@ -9,7 +9,12 @@
     "es2023": true,
     "node": true
   },
-  "plugins": ["@typescript-eslint"],
+  "plugins": [
+    "@typescript-eslint",
+    "simple-import-sort",
+    "no-relative-import-paths",
+    "import"
+  ],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
@@ -19,7 +24,41 @@
   "rules": {
     "no-console": "off",
     "@typescript-eslint/no-floating-promises": "off",
-    "no-restricted-syntax": "off"
+    "no-restricted-syntax": "off",
+    "simple-import-sort/imports": [
+      "error",
+      {
+        "groups": [
+          [
+            "^node:.*\\u0000$",
+            "^@?\\w.*\\u0000$",
+            "^@/.*\\u0000$",
+            "^\\.\\..*\\u0000$",
+            "^\\..*\\u0000$"
+          ],
+          ["^\\u0000"],
+          ["^node:"],
+          ["^@?\\w"],
+          ["^@/"],
+          ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
+          ["^\\./"]
+        ]
+      }
+    ],
+    "simple-import-sort/exports": "error",
+    "@typescript-eslint/consistent-type-imports": [
+      "error",
+      {
+        "prefer": "type-imports",
+        "fixStyle": "separate-type-imports"
+      }
+    ],
+    "@typescript-eslint/consistent-type-exports": ["error"],
+    "no-relative-import-paths/no-relative-import-paths": [
+      "error",
+      { "allowSameFolder": true, "rootDir": "src", "prefix": "@" }
+    ],
+    "import/no-duplicates": "error"
   },
   "overrides": [
     {

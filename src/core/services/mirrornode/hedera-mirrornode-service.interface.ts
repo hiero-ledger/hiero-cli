@@ -2,19 +2,19 @@
  * Comprehensive Hedera Mirror Node Service Interface
  * Provides access to all Hedera Mirror Node API endpoints
  */
-import {
+import type {
   AccountResponse,
+  ContractInfo,
+  ExchangeRateResponse,
+  TokenAirdropsResponse,
   TokenBalancesResponse,
-  TopicMessagesQueryParams,
-  TopicMessagesResponse,
   TokenInfo,
   TopicInfo,
-  TransactionDetailsResponse,
-  ContractInfo,
-  TokenAirdropsResponse,
-  ExchangeRateResponse,
-  TopicMessageQueryParams,
   TopicMessage,
+  TopicMessageQueryParams,
+  TopicMessagesQueryParams,
+  TopicMessagesResponse,
+  TransactionDetailsResponse,
 } from './types';
 
 export interface HederaMirrornodeService {
