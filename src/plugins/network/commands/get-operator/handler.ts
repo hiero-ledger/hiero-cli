@@ -62,5 +62,3 @@ export async function getOperatorHandler(
     };
   }
 }
-
-export default getOperatorHandler;
