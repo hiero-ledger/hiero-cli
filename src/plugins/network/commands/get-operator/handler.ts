@@ -5,6 +5,7 @@ import { Status } from '../../../../core/shared/constants';
 import { SupportedNetwork } from '../../../../core/types/shared.types';
 import { GetOperatorOutput } from './output';
 import { GetOperatorInputSchema } from './input';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 export async function getOperatorHandler(
   args: CommandHandlerArgs,
@@ -24,7 +25,7 @@ export async function getOperatorHandler(
       const available = api.network.getAvailableNetworks().join(', ');
       return {
         status: Status.Failure,
-        errorMessage: `Network '${networkArg}' is not available. Available networks: ${available}`,
+        errorMessage: ERROR_MESSAGES.networkNotAvailable(networkArg, available),
       };
     }
 
@@ -57,7 +58,7 @@ export async function getOperatorHandler(
   } catch (error) {
     return {
       status: Status.Failure,
-      errorMessage: formatError('Failed to get operator', error),
+      errorMessage: formatError(ERROR_MESSAGES.failedToGetOperator, error),
     };
   }
 }

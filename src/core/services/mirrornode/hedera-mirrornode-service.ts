@@ -7,21 +7,23 @@ import { HederaMirrornodeService } from './hedera-mirrornode-service.interface';
 import {
   AccountAPIResponse,
   AccountResponse,
+  ContractInfo,
+  ExchangeRateResponse,
   LedgerIdToBaseUrl,
+  MirrorNodeKeyType,
+  TokenAirdropsResponse,
   TokenBalancesResponse,
   TokenInfo,
   TopicInfo,
   TopicMessage,
+  TopicMessageQueryParams,
   TopicMessagesAPIResponse,
   TopicMessagesQueryParams,
   TopicMessagesResponse,
   TransactionDetailsResponse,
-  ContractInfo,
-  TokenAirdropsResponse,
-  ExchangeRateResponse,
-  TopicMessageQueryParams,
 } from './types';
 import { formatError } from '../../utils/errors';
+import { KeyAlgorithm } from '../../shared/constants';
 
 export class HederaMirrornodeServiceDefaultImpl
   implements HederaMirrornodeService
@@ -52,11 +54,18 @@ export class HederaMirrornodeServiceDefaultImpl
       throw new Error(`Account ${accountId} not found`);
     }
 
+    if (!data.key) {
+      throw new Error('No key is associated with the specified account.');
+    }
+
+    const keyAlgorithm = this.getKeyAlgorithm(data.key._type);
+
     return {
       accountId: data.account,
-      accountPublicKey: data?.key?.key,
+      accountPublicKey: data.key.key,
       balance: data.balance,
       evmAddress: data.evm_address,
+      keyAlgorithm,
     };
   }
 
@@ -257,5 +266,14 @@ export class HederaMirrornodeServiceDefaultImpl
     }
     const data = (await response.json()) as ExchangeRateResponse;
     return data;
+  }
+
+  private getKeyAlgorithm(keyType: MirrorNodeKeyType): KeyAlgorithm {
+    switch (keyType) {
+      case 'ECDSA_SECP256K1':
+        return KeyAlgorithm.ECDSA;
+      case 'ED25519':
+        return KeyAlgorithm.ED25519;
+    }
   }
 }

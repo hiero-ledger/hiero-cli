@@ -6,6 +6,7 @@ import {
   NetworkService,
   NetworkConfig,
   LocalnetConfig,
+  NetworkOperator,
 } from './network-service.interface';
 import { StateService } from '../state/state-service.interface';
 import { Logger } from '../logger/logger-service.interface';
@@ -107,5 +108,17 @@ export class NetworkServiceImpl implements NetworkService {
       `[NETWORK] Getting operator for network ${network}: ${operator ? operator.accountId : 'none'}`,
     );
     return operator || null;
+  }
+
+  //@TODO Replace everywhere where the current network is manually retrieved and manually checked whether the operator exists.
+  getCurrentOperatorOrThrow(): NetworkOperator {
+    const currentNetwork = this.getCurrentNetwork();
+    const operator = this.getOperator(currentNetwork);
+
+    if (!operator) {
+      throw new Error('The network operator is not set.');
+    }
+
+    return operator;
   }
 }

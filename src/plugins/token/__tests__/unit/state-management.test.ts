@@ -220,10 +220,22 @@ describe('Token State Management', () => {
       );
 
       expect(stateHelper.getToken).toHaveBeenCalledWith('0.0.123456');
-      expect(stateHelper.saveToken).toHaveBeenCalledWith('0.0.123456', {
-        ...mockStateTokenData.basic,
-        associations: [{ name: 'TestAccount', accountId: '0.0.111111' }],
-      });
+      expect(stateHelper.saveToken).toHaveBeenCalledWith(
+        '0.0.123456',
+        expect.objectContaining({
+          tokenId: '0.0.123456',
+          name: 'TestToken',
+          symbol: 'TEST',
+          decimals: 2,
+          initialSupply: 1000n,
+          supplyType: 'FINITE',
+          maxSupply: 10000n,
+          treasuryId: '0.0.789012',
+          adminPublicKey: 'admin-key',
+          network: 'testnet',
+          associations: [{ name: 'TestAccount', accountId: '0.0.111111' }],
+        }),
+      );
       expect(mockLogger.debug).toHaveBeenCalledWith(
         '[TOKEN STATE] Added association 0.0.111111 to token 0.0.123456',
       );

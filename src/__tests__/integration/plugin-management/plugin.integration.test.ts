@@ -39,6 +39,13 @@ describe('Plugin Management Integration Tests', () => {
       config: coreApi.config,
     });
 
+    if (addPluginResult.status !== Status.Success) {
+      console.log(
+        'Add plugin failed:',
+        addPluginResult.errorMessage || addPluginResult.outputJson,
+      );
+    }
+
     expect(addPluginResult.status).toBe(Status.Success);
     const addPluginOutput: AddPluginOutput = JSON.parse(
       addPluginResult.outputJson!,
@@ -128,7 +135,7 @@ describe('Plugin Management Integration Tests', () => {
     );
     expect(enablePluginOutput.name).toBe('test');
     expect(enablePluginOutput.message).toBe('Plugin test enabled successfully');
-    expect(enablePluginOutput.added).toBe(true);
+    expect(enablePluginOutput.enabled).toBe(true);
 
     const viewPluginEnabledArgs: Record<string, unknown> = {
       name: 'test',
