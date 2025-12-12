@@ -85,22 +85,9 @@ export const validTokenFile = {
   supplyType: 'finite' as const,
   initialSupply: 1000,
   maxSupply: 10000,
-  treasury: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
-  keys: {
-    adminKey: mockKeys.admin,
-    supplyKey: mockKeys.supply,
-    wipeKey: mockKeys.wipe,
-    kycKey: mockKeys.kyc,
-    freezeKey: mockKeys.freeze,
-    pauseKey: mockKeys.pause,
-    feeScheduleKey: mockKeys.feeSchedule,
-  },
-  associations: [
-    {
-      accountId: mockAccountIds.association,
-      key: mockKeys.association,
-    },
-  ],
+  treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
+  adminKey: `${mockAccountIds.operator}:${mockKeys.admin}`,
+  associations: [`${mockAccountIds.association}:${mockKeys.association}`],
   customFees: [
     {
       type: 'fixed' as const,
@@ -144,10 +131,8 @@ export const invalidTokenFileMissingName = {
   decimals: 2,
   supplyType: 'finite' as const,
   initialSupply: 1000,
-  treasury: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
-  keys: {
-    adminKey: mockKeys.admin,
-  },
+  treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
+  adminKey: `${mockAccountIds.operator}:${mockKeys.admin}`,
 };
 
 /**
@@ -155,7 +140,7 @@ export const invalidTokenFileMissingName = {
  */
 export const invalidTokenFileInvalidTreasury = {
   ...validTokenFile,
-  treasury: '', // Empty treasury string
+  treasuryKey: '', // Empty treasury string
 };
 
 /**
@@ -285,16 +270,7 @@ export const validTokenDataForSchema = {
       accountId: '0.0.345678',
     },
   ],
-  keys: {
-    adminKey: 'admin-key',
-    supplyKey: 'supply-key',
-    wipeKey: 'wipe-key',
-    kycKey: 'kyc-key',
-    freezeKey: 'freeze-key',
-    pauseKey: 'pause-key',
-    feeScheduleKey: 'fee-schedule-key',
-    treasuryKey: 'treasury-key',
-  },
+  adminPublicKey: 'admin-key',
   network: 'testnet' as const,
   customFees: [
     {
@@ -389,16 +365,7 @@ export const mockStateTokenData = {
     supplyType: 'FINITE' as const,
     maxSupply: 10000n,
     treasuryId: '0.0.789012',
-    keys: {
-      adminKey: 'admin-key',
-      supplyKey: '',
-      wipeKey: '',
-      kycKey: '',
-      freezeKey: '',
-      pauseKey: '',
-      feeScheduleKey: '',
-      treasuryKey: 'treasury-key',
-    },
+    adminPublicKey: 'admin-key',
     network: 'testnet' as const,
     associations: [],
     customFees: [],
@@ -412,16 +379,7 @@ export const mockStateTokenData = {
     supplyType: 'FINITE' as const,
     maxSupply: 10000n,
     treasuryId: '0.0.789012',
-    keys: {
-      adminKey: 'admin-key',
-      supplyKey: '',
-      wipeKey: '',
-      kycKey: '',
-      freezeKey: '',
-      pauseKey: '',
-      feeScheduleKey: '',
-      treasuryKey: 'treasury-key',
-    },
+    adminPublicKey: 'admin-key',
     network: 'testnet' as const,
     associations: [{ name: 'TestAccount', accountId: '0.0.111111' }],
     customFees: [],
@@ -435,16 +393,7 @@ export const mockStateTokenData = {
     supplyType: 'INFINITE' as const,
     maxSupply: 0n,
     treasuryId: '0.0.111111',
-    keys: {
-      adminKey: 'admin-key2',
-      supplyKey: '',
-      wipeKey: '',
-      kycKey: '',
-      freezeKey: '',
-      pauseKey: '',
-      feeScheduleKey: '',
-      treasuryKey: 'treasury-key2',
-    },
+    adminPublicKey: 'admin-key2',
     network: 'testnet' as const,
     associations: [],
     customFees: [],
@@ -494,7 +443,7 @@ export const expectedTokenTransactionParams = {
   supplyType: 'INFINITE',
   maxSupplyRaw: undefined,
   treasuryId: '0.0.123456',
-  adminKey: 'test-admin-key',
+  adminPublicKey: expect.any(Object),
 };
 
 /**
@@ -508,7 +457,7 @@ export const expectedTokenTransactionParamsFromFile = {
   supplyType: 'FINITE',
   maxSupplyRaw: 10000n,
   treasuryId: '0.0.123456',
-  adminKey: 'admin-key',
+  adminPublicKey: expect.any(Object), // PublicKey object from keyResolver
   customFees: [
     {
       type: 'fixed',
@@ -534,10 +483,7 @@ export const validTokenDataForValidation = {
   maxSupply: 10000,
   treasuryId: '0.0.789012',
   associations: [],
-  keys: {
-    adminKey: 'admin-key',
-    treasuryKey: 'treasury-key',
-  },
+  adminPublicKey: 'admin-key',
   network: 'testnet' as const,
   customFees: [],
 };
@@ -565,16 +511,7 @@ export const makeTokenData = (
     initialSupply: number;
     supplyType: 'FINITE' | 'INFINITE';
     maxSupply: number;
-    keys: {
-      adminKey: string;
-      supplyKey: string;
-      wipeKey: string;
-      kycKey: string;
-      freezeKey: string;
-      pauseKey: string;
-      feeScheduleKey: string;
-      treasuryKey: string;
-    };
+    adminPublicKey?: string;
     network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
     associations: Array<{ name: string; accountId: string }>;
     customFees: any[];
@@ -588,16 +525,7 @@ export const makeTokenData = (
   initialSupply: 1000000,
   supplyType: 'INFINITE' as const,
   maxSupply: 0,
-  keys: {
-    adminKey: 'test-admin-key',
-    supplyKey: '',
-    wipeKey: '',
-    kycKey: '',
-    freezeKey: '',
-    pauseKey: '',
-    feeScheduleKey: '',
-    treasuryKey: '',
-  },
+  adminPublicKey: 'test-admin-key',
   network: 'testnet' as const,
   associations: [],
   customFees: [],
@@ -680,16 +608,7 @@ export const mockListTokens = {
       name: 'Token 3',
       symbol: 'TK3',
       network: 'testnet',
-      keys: {
-        adminKey: 'admin-key-123',
-        supplyKey: 'supply-key-123',
-        wipeKey: '',
-        kycKey: '',
-        freezeKey: '',
-        pauseKey: '',
-        feeScheduleKey: '',
-        treasuryKey: '',
-      },
+      adminPublicKey: 'admin-key-123',
     }),
   ],
   multiNetwork: [

@@ -24,6 +24,7 @@ export interface KmsService {
   /**
    * Imports an existing private key using specified KeyManager.
    *
+   * @param keyType - Key algorithm type
    * @param privateKey - Private key string to import
    * @param keyManager - KeyManager to use ('local' or 'local_encrypted')
    * @param labels - Optional labels for the key
@@ -32,6 +33,24 @@ export interface KmsService {
   importPrivateKey(
     keyType: KeyAlgorithmType,
     privateKey: string,
+    keyManager?: KeyManagerName,
+    labels?: string[],
+  ): { keyRefId: string; publicKey: string };
+
+  /**
+   * Imports an existing private key and validates it against the public key from mirror node.
+   *
+   * @param keyType - Key algorithm type
+   * @param privateKey - Private key string to import
+   * @param validationPublicKey - The public key that should be associated with the given privateKey, used for validation.
+   * @param keyManager - KeyManager to use ('local' or 'local_encrypted')
+   * @param labels - Optional labels for the key
+   * @returns keyRefId and publicKey
+   */
+  importAndValidatePrivateKey(
+    keyType: KeyAlgorithmType,
+    privateKey: string,
+    validationPublicKey: string,
     keyManager?: KeyManagerName,
     labels?: string[],
   ): { keyRefId: string; publicKey: string };

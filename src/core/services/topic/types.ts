@@ -1,4 +1,5 @@
 import {
+  Key,
   TopicCreateTransaction,
   TopicMessageSubmitTransaction,
 } from '@hashgraph/sdk';
@@ -15,8 +16,8 @@ export interface MessageSubmitResult {
 // Parameter types for topic operations
 export interface CreateTopicParams {
   memo?: string;
-  adminKey?: string;
-  submitKey?: string;
+  adminKey?: Key;
+  submitKey?: Key;
 }
 
 export interface SubmitMessageParams {

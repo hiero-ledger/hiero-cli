@@ -1,24 +1,17 @@
 /**
  * Unit tests for TopicServiceImpl
- * Tests topic creation, message submission, and key handling
+ * Tests topic creation and message submission
  */
 import { TopicServiceImpl } from '../../topic-transaction-service';
 import {
   createMockTopicCreateTransaction,
   createMockTopicMessageSubmitTransaction,
-  createMockPrivateKey,
   createMockPublicKey,
   createCreateTopicParams,
   createSubmitMessageParams,
-  INVALID_KEY,
 } from './mocks';
-import {
-  ECDSA_DER_PRIVATE_KEY,
-  ECDSA_DER_PUBLIC_KEY,
-} from '../../../../../__tests__/mocks/fixtures';
 
 const mockTopicCreateTx = createMockTopicCreateTransaction();
-const mockPrivateKey = createMockPrivateKey();
 const mockPublicKey = createMockPublicKey();
 
 jest.mock('@hashgraph/sdk', () => ({
@@ -26,12 +19,6 @@ jest.mock('@hashgraph/sdk', () => ({
   TopicMessageSubmitTransaction: jest.fn((params) =>
     createMockTopicMessageSubmitTransaction(params),
   ),
-  PrivateKey: {
-    fromStringDer: jest.fn(() => mockPrivateKey),
-  },
-  PublicKey: {
-    fromString: jest.fn(() => mockPublicKey),
-  },
 }));
 
 describe('TopicServiceImpl', () => {
@@ -40,112 +27,6 @@ describe('TopicServiceImpl', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     topicService = new TopicServiceImpl();
-  });
-
-  describe('isPrivateKey', () => {
-    it('should return true for valid DER-formatted private key', () => {
-      const result = topicService.isPrivateKey(ECDSA_DER_PRIVATE_KEY);
-
-      const { PrivateKey } = jest.requireMock('@hashgraph/sdk');
-      expect(PrivateKey.fromStringDer).toHaveBeenCalledWith(
-        ECDSA_DER_PRIVATE_KEY,
-      );
-      expect(result).toBe(true);
-    });
-
-    it('should return false for valid public key string', () => {
-      const { PrivateKey } = jest.requireMock('@hashgraph/sdk');
-      PrivateKey.fromStringDer.mockImplementationOnce(() => {
-        throw new Error('Not a private key');
-      });
-
-      const result = topicService.isPrivateKey(ECDSA_DER_PUBLIC_KEY);
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false for invalid key format', () => {
-      const { PrivateKey } = jest.requireMock('@hashgraph/sdk');
-      PrivateKey.fromStringDer.mockImplementationOnce(() => {
-        throw new Error('Invalid format');
-      });
-
-      const result = topicService.isPrivateKey(INVALID_KEY);
-
-      expect(result).toBe(false);
-    });
-
-    it('should return false for empty string', () => {
-      const { PrivateKey } = jest.requireMock('@hashgraph/sdk');
-      PrivateKey.fromStringDer.mockImplementationOnce(() => {
-        throw new Error('Empty key');
-      });
-
-      const result = topicService.isPrivateKey('');
-
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('createKeyFromString', () => {
-    it('should create PrivateKey when key is private key string', () => {
-      const result = topicService.createKeyFromString(ECDSA_DER_PRIVATE_KEY);
-
-      const { PrivateKey } = jest.requireMock('@hashgraph/sdk');
-      expect(PrivateKey.fromStringDer).toHaveBeenCalledWith(
-        ECDSA_DER_PRIVATE_KEY,
-      );
-      expect(result).toBe(mockPrivateKey);
-    });
-
-    it('should create PublicKey when key is public key string', () => {
-      const { PrivateKey, PublicKey } = jest.requireMock('@hashgraph/sdk');
-      PrivateKey.fromStringDer.mockImplementationOnce(() => {
-        throw new Error('Not a private key');
-      });
-
-      const result = topicService.createKeyFromString(ECDSA_DER_PUBLIC_KEY);
-
-      expect(PublicKey.fromString).toHaveBeenCalledWith(ECDSA_DER_PUBLIC_KEY);
-      expect(result).toBe(mockPublicKey);
-    });
-
-    it('should delegate to isPrivateKey for key type detection', () => {
-      const isPrivateKeySpy = jest.spyOn(topicService, 'isPrivateKey');
-
-      topicService.createKeyFromString(ECDSA_DER_PRIVATE_KEY);
-
-      expect(isPrivateKeySpy).toHaveBeenCalledWith(ECDSA_DER_PRIVATE_KEY);
-    });
-
-    it('should throw when PrivateKey.fromStringDer fails on second call', () => {
-      const { PrivateKey } = jest.requireMock('@hashgraph/sdk');
-      // First call in isPrivateKey() - uses default mock (succeeds)
-      // Second call in createKeyFromString() - override to fail
-      PrivateKey.fromStringDer
-        .mockReturnValueOnce(mockPrivateKey)
-        .mockImplementationOnce(() => {
-          throw new Error('Invalid DER format');
-        });
-
-      expect(() =>
-        topicService.createKeyFromString(ECDSA_DER_PRIVATE_KEY),
-      ).toThrow('Invalid DER format');
-    });
-
-    it('should throw when PublicKey.fromString fails', () => {
-      const { PrivateKey, PublicKey } = jest.requireMock('@hashgraph/sdk');
-      PrivateKey.fromStringDer.mockImplementationOnce(() => {
-        throw new Error('Not private');
-      });
-      PublicKey.fromString.mockImplementationOnce(() => {
-        throw new Error('Invalid public key');
-      });
-
-      expect(() => topicService.createKeyFromString(INVALID_KEY)).toThrow(
-        'Invalid public key',
-      );
-    });
   });
 
   describe('createTopic', () => {
@@ -175,53 +56,27 @@ describe('TopicServiceImpl', () => {
       expect(result.transaction).toBe(mockTopicCreateTx);
     });
 
-    it('should create topic with admin key (private)', () => {
+    it('should create topic with admin key', () => {
       const params = createCreateTopicParams({
-        adminKey: ECDSA_DER_PRIVATE_KEY,
+        adminKey: mockPublicKey,
       });
 
       const result = topicService.createTopic(params);
 
-      const { PrivateKey } = jest.requireMock('@hashgraph/sdk');
-      expect(PrivateKey.fromStringDer).toHaveBeenCalledWith(
-        ECDSA_DER_PRIVATE_KEY,
-      );
-      expect(mockTopicCreateTx.setAdminKey).toHaveBeenCalledWith(
-        mockPrivateKey,
-      );
+      expect(mockTopicCreateTx.setAdminKey).toHaveBeenCalledWith(mockPublicKey);
       expect(mockTopicCreateTx.setSubmitKey).not.toHaveBeenCalled();
       expect(result.transaction).toBe(mockTopicCreateTx);
     });
 
-    it('should create topic with admin key (public)', () => {
-      const { PrivateKey, PublicKey } = jest.requireMock('@hashgraph/sdk');
-      PrivateKey.fromStringDer.mockImplementationOnce(() => {
-        throw new Error('Not private');
-      });
+    it('should create topic with submit key', () => {
       const params = createCreateTopicParams({
-        adminKey: ECDSA_DER_PUBLIC_KEY,
+        submitKey: mockPublicKey,
       });
 
       const result = topicService.createTopic(params);
 
-      expect(PublicKey.fromString).toHaveBeenCalledWith(ECDSA_DER_PUBLIC_KEY);
-      expect(mockTopicCreateTx.setAdminKey).toHaveBeenCalledWith(mockPublicKey);
-      expect(result.transaction).toBe(mockTopicCreateTx);
-    });
-
-    it('should create topic with submit key (private)', () => {
-      const params = createCreateTopicParams({
-        submitKey: ECDSA_DER_PRIVATE_KEY,
-      });
-
-      const result = topicService.createTopic(params);
-
-      const { PrivateKey } = jest.requireMock('@hashgraph/sdk');
-      expect(PrivateKey.fromStringDer).toHaveBeenCalledWith(
-        ECDSA_DER_PRIVATE_KEY,
-      );
       expect(mockTopicCreateTx.setSubmitKey).toHaveBeenCalledWith(
-        mockPrivateKey,
+        mockPublicKey,
       );
       expect(mockTopicCreateTx.setAdminKey).not.toHaveBeenCalled();
       expect(result.transaction).toBe(mockTopicCreateTx);
@@ -229,19 +84,15 @@ describe('TopicServiceImpl', () => {
 
     it('should create topic with both admin and submit keys', () => {
       const params = createCreateTopicParams({
-        adminKey: ECDSA_DER_PRIVATE_KEY,
-        submitKey: ECDSA_DER_PRIVATE_KEY,
+        adminKey: mockPublicKey,
+        submitKey: mockPublicKey,
       });
 
       const result = topicService.createTopic(params);
 
-      const { PrivateKey } = jest.requireMock('@hashgraph/sdk');
-      expect(PrivateKey.fromStringDer).toHaveBeenCalledTimes(4);
-      expect(mockTopicCreateTx.setAdminKey).toHaveBeenCalledWith(
-        mockPrivateKey,
-      );
+      expect(mockTopicCreateTx.setAdminKey).toHaveBeenCalledWith(mockPublicKey);
       expect(mockTopicCreateTx.setSubmitKey).toHaveBeenCalledWith(
-        mockPrivateKey,
+        mockPublicKey,
       );
       expect(result.transaction).toBe(mockTopicCreateTx);
     });
@@ -249,18 +100,16 @@ describe('TopicServiceImpl', () => {
     it('should create topic with all optional parameters', () => {
       const params = createCreateTopicParams({
         memo: 'Full Topic',
-        adminKey: ECDSA_DER_PRIVATE_KEY,
-        submitKey: ECDSA_DER_PRIVATE_KEY,
+        adminKey: mockPublicKey,
+        submitKey: mockPublicKey,
       });
 
       const result = topicService.createTopic(params);
 
       expect(mockTopicCreateTx.setTopicMemo).toHaveBeenCalledWith('Full Topic');
-      expect(mockTopicCreateTx.setAdminKey).toHaveBeenCalledWith(
-        mockPrivateKey,
-      );
+      expect(mockTopicCreateTx.setAdminKey).toHaveBeenCalledWith(mockPublicKey);
       expect(mockTopicCreateTx.setSubmitKey).toHaveBeenCalledWith(
-        mockPrivateKey,
+        mockPublicKey,
       );
       expect(result.transaction).toBe(mockTopicCreateTx);
     });
@@ -282,40 +131,6 @@ describe('TopicServiceImpl', () => {
 
       expect(mockTopicCreateTx.setTopicMemo).toHaveBeenCalledWith(longMemo);
       expect(result.transaction).toBe(mockTopicCreateTx);
-    });
-
-    it('should throw when adminKey is invalid', () => {
-      const { PrivateKey, PublicKey } = jest.requireMock('@hashgraph/sdk');
-      // isPrivateKey call - fails
-      PrivateKey.fromStringDer.mockImplementationOnce(() => {
-        throw new Error('Not a valid key');
-      });
-      // createKeyFromString tries PublicKey - also fails
-      PublicKey.fromString.mockImplementationOnce(() => {
-        throw new Error('Invalid DER format');
-      });
-      const params = createCreateTopicParams({ adminKey: INVALID_KEY });
-
-      expect(() => topicService.createTopic(params)).toThrow(
-        'Invalid DER format',
-      );
-    });
-
-    it('should throw when submitKey is invalid', () => {
-      const { PrivateKey, PublicKey } = jest.requireMock('@hashgraph/sdk');
-      // isPrivateKey call - fails
-      PrivateKey.fromStringDer.mockImplementationOnce(() => {
-        throw new Error('Not a valid key');
-      });
-      // createKeyFromString tries PublicKey - also fails
-      PublicKey.fromString.mockImplementationOnce(() => {
-        throw new Error('Invalid DER format');
-      });
-      const params = createCreateTopicParams({ submitKey: INVALID_KEY });
-
-      expect(() => topicService.createTopic(params)).toThrow(
-        'Invalid DER format',
-      );
     });
   });
 
