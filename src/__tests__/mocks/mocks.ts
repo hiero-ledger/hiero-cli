@@ -357,19 +357,6 @@ export const makeKeyResolverMock = (
     mirror?: any;
   } = {},
 ): jest.Mocked<KeyResolverService> => ({
-  // eslint-disable-next-line @typescript-eslint/require-await
-  verifyAndResolvePrivateKey: jest.fn().mockImplementation(async (key) => {
-    // Mock implementation that simulates verifyAndResolvePrivateKey behavior
-    // In real code, this would call mirror.getAccount to get keyAlgorithm
-    // For mocking purposes, we'll use ECDSA as default
-    const keyAlgorithm = 'ecdsa';
-    return {
-      keyAlgorithm,
-      privateKey: key.privateKey,
-      accountId: key.accountId,
-    };
-  }),
-
   getOrInitKey: jest
     .fn()
     // eslint-disable-next-line @typescript-eslint/require-await

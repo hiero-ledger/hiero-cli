@@ -41,6 +41,7 @@ export const createMockPrivateKey = (publicKeyValue = 'mock-public-key') => ({
  */
 export const createMockPublicKey = (publicKeyValue = 'mock-public-key') => ({
   toStringRaw: jest.fn().mockReturnValue(publicKeyValue),
+  _toProtobufKey: jest.fn().mockReturnValue({}),
 });
 
 /**
