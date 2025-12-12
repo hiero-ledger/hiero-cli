@@ -2,12 +2,13 @@
  * List Tokens Command Output Schema and Template
  */
 import { z } from 'zod';
+
 import {
   EntityIdSchema,
   NetworkSchema,
-  SupplyTypeSchema,
   PublicKeySchema,
-} from '../../../../core/schemas/common-schemas';
+  SupplyTypeSchema,
+} from '@/core/schemas/common-schemas';
 
 /**
  * Token Keys Schema

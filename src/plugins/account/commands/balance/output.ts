@@ -2,11 +2,12 @@
  * Account Balance Command Output Schema and Template
  */
 import { z } from 'zod';
+
 import {
   EntityIdSchema,
-  TinybarSchema,
   HtsBaseUnitSchema,
-} from '../../../../core/schemas';
+  TinybarSchema,
+} from '@/core/schemas';
 
 /**
  * Account Balance Command Output Schema

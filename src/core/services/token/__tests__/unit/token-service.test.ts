@@ -2,17 +2,20 @@
  * Unit tests for TokenServiceImpl
  * Tests token transfer, creation, and association transaction building
  */
-import { TokenServiceImpl } from '../../token-service';
-import { makeLogger } from '../../../../../__tests__/mocks/mocks';
-import type { Logger } from '../../../logger/logger-service.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+
+import { AccountId, Hbar, TokenId } from '@hashgraph/sdk';
+
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
+import { makeLogger } from '@/__tests__/mocks/mocks';
+import { TokenServiceImpl } from '@/core/services/token/token-service';
+
 import {
-  createMockTransferTransaction,
-  createMockTokenCreateTransaction,
-  createMockTokenAssociateTransaction,
   createMockCustomFixedFee,
+  createMockTokenAssociateTransaction,
+  createMockTokenCreateTransaction,
+  createMockTransferTransaction,
 } from './mocks';
-import { TokenId, AccountId, Hbar } from '@hashgraph/sdk';
-import { ECDSA_HEX_PUBLIC_KEY } from '../../../../../__tests__/mocks/fixtures';
 
 // Reusable test constants
 const ACCOUNT_ID_FROM = '0.0.1111';

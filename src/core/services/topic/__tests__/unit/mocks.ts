@@ -2,7 +2,10 @@
  * Topic Service Test Mocks
  * SDK mocks and test data factories for topic transaction service tests
  */
-import type { CreateTopicParams, SubmitMessageParams } from '../../types';
+import type {
+  CreateTopicParams,
+  SubmitMessageParams,
+} from '@/core/services/topic/types';
 
 export const INVALID_KEY = 'not-a-valid-key';
 

@@ -2,23 +2,28 @@
  * Token Associate Handler Unit Tests
  * Tests the token association functionality of the token plugin
  */
-import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { associateToken } from '../../commands/associate';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import type { AssociateTokenOutput } from '../../commands/associate';
-import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+
+import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
+
+import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import {
-  makeLogger,
-  makeApiMocks,
-  mockZustandTokenStateHelper,
-  makeTransactionResult,
-} from './helpers/mocks';
+  associateToken,
+  type AssociateTokenOutput,
+} from '@/plugins/token/commands/associate';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
 import {
   tokenAssociatedWithAccountFixture,
   tokenAssociatedWithAliasFixture,
   tokenWithoutAssociationsFixture,
 } from './helpers/fixtures';
-import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
+import {
+  makeApiMocks,
+  makeLogger,
+  makeTransactionResult,
+  mockZustandTokenStateHelper,
+} from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),

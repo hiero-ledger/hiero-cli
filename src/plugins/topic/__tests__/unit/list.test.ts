@@ -1,10 +1,11 @@
-import { listTopics } from '../../commands/list/handler';
-import { ZustandTopicStateHelper } from '../../zustand-state-helper';
-import type { CoreApi } from '../../../../core';
-import type { TopicData } from '../../schema';
-import type { ListTopicsOutput } from '../../commands/list';
-import { makeLogger, makeArgs } from '../../../../__tests__/mocks/mocks';
-import { Status } from '../../../../core/shared/constants';
+import type { CoreApi } from '@/core';
+import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
+import type { TopicData } from '@/plugins/topic/schema';
+
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { Status } from '@/core/shared/constants';
+import { listTopics } from '@/plugins/topic/commands/list/handler';
+import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTopicStateHelper: jest.fn(),

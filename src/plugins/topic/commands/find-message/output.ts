@@ -2,7 +2,8 @@
  * Find Messages Command Output Schema and Template
  */
 import { z } from 'zod';
-import { EntityIdSchema, TimestampSchema } from '../../../../core/schemas';
+
+import { EntityIdSchema, TimestampSchema } from '@/core/schemas';
 
 export const FindMessageOutputSchema = z.object({
   sequenceNumber: z

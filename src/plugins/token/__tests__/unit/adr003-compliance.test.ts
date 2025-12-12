@@ -2,23 +2,26 @@
  * ADR-003 Compliance Tests for Token Plugin
  * Tests that all command handlers return CommandExecutionResult according to ADR-003
  */
-import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { createToken } from '../../commands/create/handler';
-import { transferToken } from '../../commands/transfer/handler';
-import { associateToken } from '../../commands/associate/handler';
-import { listTokens } from '../../commands/list/handler';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import type { CreateTokenOutput } from '../../commands/create';
-import type { TransferTokenOutput } from '../../commands/transfer';
-import type { AssociateTokenOutput } from '../../commands/associate';
-import type { ListTokensOutput } from '../../commands/list';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { AssociateTokenOutput } from '@/plugins/token/commands/associate';
+import type { CreateTokenOutput } from '@/plugins/token/commands/create';
+import type { ListTokensOutput } from '@/plugins/token/commands/list';
+import type { TransferTokenOutput } from '@/plugins/token/commands/transfer';
+
+import '@/core/utils/json-serialize';
+
+import { Status } from '@/core/shared/constants';
+import { associateToken } from '@/plugins/token/commands/associate/handler';
+import { createToken } from '@/plugins/token/commands/create/handler';
+import { listTokens } from '@/plugins/token/commands/list/handler';
+import { transferToken } from '@/plugins/token/commands/transfer/handler';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
 import {
-  makeLogger,
   makeApiMocks,
+  makeLogger,
   makeTransactionResult,
 } from './helpers/mocks';
-import { Status } from '../../../../core/shared/constants';
-import '../../../../core/utils/json-serialize';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),

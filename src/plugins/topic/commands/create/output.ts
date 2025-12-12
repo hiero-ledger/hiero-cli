@@ -2,12 +2,13 @@
  * Create Topic Command Output Schema and Template
  */
 import { z } from 'zod';
+
 import {
   EntityIdSchema,
+  IsoTimestampSchema,
   NetworkSchema,
   TransactionIdSchema,
-  IsoTimestampSchema,
-} from '../../../../core/schemas';
+} from '@/core/schemas';
 
 /**
  * Create Topic Command Output Schema

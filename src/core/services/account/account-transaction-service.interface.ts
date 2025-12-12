@@ -1,4 +1,4 @@
-import { KeyAlgorithmType } from '../kms/kms-types.interface';
+import type { KeyAlgorithmType } from '@/core/services/kms/kms-types.interface';
 
 /**
  * Interface for Account-related operations
@@ -38,8 +38,8 @@ export interface CreateAccountParams {
 }
 
 // Import Hedera SDK types
-import {
+import type {
+  AccountBalanceQuery,
   AccountCreateTransaction,
   AccountInfoQuery,
-  AccountBalanceQuery,
 } from '@hashgraph/sdk';

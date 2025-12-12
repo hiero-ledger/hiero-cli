@@ -2,7 +2,7 @@
  * Default network configurations for NetworkService
  * This is the single source of truth for network settings
  */
-import { SupportedNetwork } from '../../types/shared.types';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface DefaultNetworkConfig {
   rpcUrl: string;

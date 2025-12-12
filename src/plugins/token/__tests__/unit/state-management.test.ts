@@ -3,10 +3,12 @@
  * Tests the ZustandTokenStateHelper functionality
  */
 
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { StateService } from '../../../../core/services/state/state-service.interface';
-import { Logger } from '../../../../core/services/logger/logger-service.interface';
-import { mockStateTokenData, mockMultipleTokens } from './helpers/fixtures';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
+import { mockMultipleTokens, mockStateTokenData } from './helpers/fixtures';
 
 // Mock the dependencies
 jest.mock('../../../../core/services/state/state-service.interface');

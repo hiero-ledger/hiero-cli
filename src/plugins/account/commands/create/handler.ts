@@ -3,20 +3,22 @@
  * Handles account creation using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { HBAR_DECIMALS, Status } from '../../../../core/shared/constants';
-import type { AccountData } from '../../schema';
-import { AliasType } from '../../../../core/services/alias/alias-service.interface';
-import { formatError } from '../../../../core/utils/errors';
-import { ZustandAccountStateHelper } from '../../zustand-state-helper';
-import { processBalanceInput } from '../../../../core/utils/process-balance-input';
-import { CreateAccountOutput } from './output';
-import type { KeyAlgorithmType as KeyAlgorithmType } from '../../../../core/services/kms/kms-types.interface';
-import { KeyAlgorithm } from '../../../../core/shared/constants';
-import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
-import { buildAccountEvmAddress } from '../../utils/account-address';
-import { validateSufficientBalance } from '../../utils/account-validation';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type {
+  KeyAlgorithmType as KeyAlgorithmType,
+  KeyManagerName,
+} from '@/core/services/kms/kms-types.interface';
+import type { AccountData } from '@/plugins/account/schema';
+import type { CreateAccountOutput } from './output';
+
+import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { HBAR_DECIMALS, KeyAlgorithm, Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { processBalanceInput } from '@/core/utils/process-balance-input';
+import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
+import { validateSufficientBalance } from '@/plugins/account/utils/account-validation';
+import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+
 import { CreateAccountInputSchema } from './input';
 
 export async function createAccount(

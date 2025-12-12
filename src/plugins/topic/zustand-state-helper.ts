@@ -2,9 +2,9 @@
  * Zustand-based Topic State Helper
  * Provides rich state management with subscriptions and actions
  */
-import { StateService } from '../../core';
-import { Logger } from '../../core';
-import { TopicData, TOPIC_NAMESPACE, safeParseTopicData } from './schema';
+import type { Logger, StateService } from '@/core';
+
+import { safeParseTopicData, TOPIC_NAMESPACE, type TopicData } from './schema';
 
 export class ZustandTopicStateHelper {
   private state: StateService;

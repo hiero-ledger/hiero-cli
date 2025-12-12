@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { AccountReferenceSchema } from '../../../../core/schemas';
+
+import { AccountReferenceSchema } from '@/core/schemas';
 
 /**
  * Input schema for account view command

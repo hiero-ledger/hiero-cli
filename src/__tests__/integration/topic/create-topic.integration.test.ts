@@ -1,13 +1,15 @@
-import { CoreApi } from '../../../core/core-api/core-api.interface';
-import { createCoreApi } from '../../../core/core-api/core-api';
-import { STATE_STORAGE_FILE_PATH } from '../../test-constants';
-import { Status } from '../../../core/shared/constants';
-import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
-import '../../../core/utils/json-serialize';
-import { createTopic, listTopics } from '../../../plugins/topic';
-import { CreateTopicOutput } from '../../../plugins/topic/commands/create';
-import { ListTopicsOutput } from '../../../plugins/topic/commands/list';
-import { SupportedNetwork } from '../../../core/types/shared.types';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
+import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
+
+import '@/core/utils/json-serialize';
+
+import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
+import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
+import { createCoreApi } from '@/core/core-api/core-api';
+import { Status } from '@/core/shared/constants';
+import { createTopic, listTopics } from '@/plugins/topic';
 
 describe('Create Topic Integration Tests', () => {
   let coreApi: CoreApi;

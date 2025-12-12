@@ -1,5 +1,6 @@
-import type { KeyProvider } from './key-provider.interface';
 import type { AlgorithmConfig } from './algorithm-config';
+import type { KeyProvider } from './key-provider.interface';
+
 import * as crypto from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';

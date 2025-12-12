@@ -3,14 +3,15 @@
  * Handles HBAR transfers using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { formatError } from '../../../../core/utils/errors';
-import { EntityIdSchema } from '../../../../core/schemas';
-import { HBAR_DECIMALS, Status } from '../../../../core/shared/constants';
-import { TransferOutput } from './output';
-import { processBalanceInput } from '../../../../core/utils/process-balance-input';
-import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { TransferOutput } from './output';
+
+import { EntityIdSchema } from '@/core/schemas';
+import { HBAR_DECIMALS, Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { processBalanceInput } from '@/core/utils/process-balance-input';
+
 import { TransferInputSchema } from './input';
 
 export async function transferHandler(

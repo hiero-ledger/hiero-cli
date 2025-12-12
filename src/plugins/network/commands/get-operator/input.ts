@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { NetworkSchema } from '../../../../core/schemas';
+
+import { NetworkSchema } from '@/core/schemas';
 
 /**
  * Input schema for network get-operator command

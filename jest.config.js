@@ -16,4 +16,7 @@ module.exports = {
   testTimeout: 40000,
   testPathIgnorePatterns: ['.*/__tests__/helpers/.*'],
   reporters: ['default', 'jest-junit'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
 };

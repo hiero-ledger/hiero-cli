@@ -1,15 +1,15 @@
-import { listHandler } from '../../commands/list';
 import {
-  makeLogger,
   makeArgs,
-  setupExitSpy,
+  makeLogger,
   makeNetworkMock,
-} from '../../../../__tests__/mocks/mocks';
-import { Status } from '../../../../core/shared/constants';
+  setupExitSpy,
+} from '@/__tests__/mocks/mocks';
+import { Status } from '@/core/shared/constants';
+import { listHandler } from '@/plugins/network/commands/list';
 import {
   checkMirrorNodeHealth,
   checkRpcHealth,
-} from '../../utils/networkHealth';
+} from '@/plugins/network/utils/networkHealth';
 
 jest.mock('../../utils/networkHealth', () => ({
   checkMirrorNodeHealth: jest.fn(),

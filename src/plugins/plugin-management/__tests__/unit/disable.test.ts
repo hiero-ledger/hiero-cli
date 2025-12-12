@@ -1,12 +1,14 @@
 /**
  * Unit tests for plugin-management disable command
  */
-import { Status } from '../../../../core/shared/constants';
-import { disablePlugin } from '../../commands/disable/handler';
-import { makeArgs, makeLogger } from '../../../../__tests__/mocks/mocks';
-import type { PluginManagementService } from '../../../../core/services/plugin-management/plugin-management-service.interface';
-import { PluginManagementDisableStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
-import { ERROR_MESSAGES } from '../../error-messages';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import {
+  PluginManagementDisableStatus,
+  type PluginManagementService,
+} from '@/core/services/plugin-management/plugin-management-service.interface';
+import { Status } from '@/core/shared/constants';
+import { disablePlugin } from '@/plugins/plugin-management/commands/disable/handler';
+import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 describe('plugin-management disable command', () => {
   it('should disable an enabled plugin', async () => {

@@ -2,13 +2,18 @@
  * Token Transfer Handler Unit Tests
  * Tests the token transfer functionality of the token plugin
  */
-import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { transferToken } from '../../commands/transfer';
-import type { TransferTokenOutput } from '../../commands/transfer';
-import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
-import { makeLogger, makeApiMocks } from './helpers/mocks';
-import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
-import '../../../../core/utils/json-serialize';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
+
+import '@/core/utils/json-serialize';
+
+import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import {
+  transferToken,
+  type TransferTokenOutput,
+} from '@/plugins/token/commands/transfer';
+
+import { makeApiMocks, makeLogger } from './helpers/mocks';
 
 describe('transferTokenHandler', () => {
   describe('success scenarios', () => {

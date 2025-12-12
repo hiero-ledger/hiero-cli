@@ -2,14 +2,16 @@
  * Topic Message Find Command Handler
  * Handles finding messages in topics using mirror node
  */
-import { CommandExecutionResult, CommandHandlerArgs } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { FindMessagesOutput } from './output';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { FindMessagesOutput } from './output';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { fetchFilteredMessages } from '@/plugins/topic/utils/message-helpers';
+import { buildApiFilters } from '@/plugins/topic/utils/messageFilters';
+import { resolveTopicId } from '@/plugins/topic/utils/topicResolver';
+
 import { FindMessageInputSchema } from './input';
-import { resolveTopicId } from '../../utils/topicResolver';
-import { buildApiFilters } from '../../utils/messageFilters';
-import { fetchFilteredMessages } from '../../utils/message-helpers';
 
 export async function findMessage(
   args: CommandHandlerArgs,

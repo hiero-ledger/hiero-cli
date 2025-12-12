@@ -1,8 +1,9 @@
 import { z } from 'zod';
+
 import {
   EntityReferenceSchema,
   PositiveIntFilterFieldSchema,
-} from '../../../../core/schemas';
+} from '@/core/schemas';
 
 /**
  * Input schema for topic find-message command

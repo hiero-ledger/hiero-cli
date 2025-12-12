@@ -1,19 +1,21 @@
-import '../../../../core/utils/json-serialize';
-import { importAccount } from '../../commands/import/handler';
-import type { ImportAccountOutput } from '../../commands/import';
-import { ZustandAccountStateHelper } from '../../zustand-state-helper';
-import type { CoreApi } from '../../../../core/core-api/core-api.interface';
-import type { HederaMirrornodeService } from '../../../../core/services/mirrornode/hedera-mirrornode-service.interface';
-import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
+import type { NetworkService } from '@/core/services/network/network-service.interface';
+import type { ImportAccountOutput } from '@/plugins/account/commands/import';
+
+import '@/core/utils/json-serialize';
+
 import {
-  makeLogger,
-  makeArgs,
-  makeNetworkMock,
-  makeKmsMock,
   makeAliasMock,
+  makeArgs,
+  makeKmsMock,
+  makeLogger,
   makeMirrorMock,
-} from '../../../../__tests__/mocks/mocks';
-import { NetworkService } from '../../../../core/services/network/network-service.interface';
+  makeNetworkMock,
+} from '@/__tests__/mocks/mocks';
+import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { importAccount } from '@/plugins/account/commands/import/handler';
+import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),

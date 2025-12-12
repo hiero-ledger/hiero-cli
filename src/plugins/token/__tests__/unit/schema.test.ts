@@ -2,21 +2,22 @@
  * Token Schema Validation Tests
  * Tests the token data validation and schema functionality
  */
+import { CreateTokenInputSchema } from '@/plugins/token/commands/create/input';
 import {
-  TokenDataSchema,
-  TokenAssociationSchema,
   CustomFeeSchema,
+  TokenAssociationSchema,
+  TokenDataSchema,
   validateTokenData,
-} from '../../schema';
-import { CreateTokenInputSchema } from '../../commands/create/input';
+} from '@/plugins/token/schema';
+
 import {
-  validTokenDataForSchema,
-  validTokenAssociation,
-  validCustomFee,
-  validTokenCreateParams,
-  minimalTokenCreateParams,
-  validTokenDataForValidation,
   invalidTokenDataForValidation,
+  minimalTokenCreateParams,
+  validCustomFee,
+  validTokenAssociation,
+  validTokenCreateParams,
+  validTokenDataForSchema,
+  validTokenDataForValidation,
 } from './helpers/fixtures';
 
 describe('Token Schema Validation', () => {

@@ -3,15 +3,19 @@
  * Handles listing tokens from state for the current network
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { formatError } from '../../../../core/utils/errors';
-import { ListTokensOutput } from './output';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { ListTokensOutput } from './output';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { findTokenAlias } from '@/plugins/account/utils/balance-helpers';
+import {
+  displayStatistics,
+  displayToken,
+} from '@/plugins/token/utils/token-display';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
 import { ListTokenInputSchema } from './input';
-import { findTokenAlias } from '../../../account/utils/balance-helpers';
-import { displayToken, displayStatistics } from '../../utils/token-display';
 
 export async function listTokens(
   args: CommandHandlerArgs,

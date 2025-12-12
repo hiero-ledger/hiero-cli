@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { EntityReferenceSchema } from '../../../../core/schemas';
+
+import { EntityReferenceSchema } from '@/core/schemas';
 
 /**
  * Input schema for topic submit-message command

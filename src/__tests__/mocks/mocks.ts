@@ -2,20 +2,21 @@
  * Core Test Helpers and Mocks
  * Shared mocks for core services and utilities used across all plugin tests
  */
-import type { CommandHandlerArgs } from '../../core/plugins/plugin.interface';
-import type { CoreApi } from '../../core/core-api/core-api.interface';
-import type { Logger } from '../../core/services/logger/logger-service.interface';
-import type { StateService } from '../../core/services/state/state-service.interface';
-import type { ConfigService } from '../../core/services/config/config-service.interface';
-import type { NetworkService } from '../../core/services/network/network-service.interface';
-import type { KmsService } from '../../core/services/kms/kms-service.interface';
-import type { AliasService } from '../../core/services/alias/alias-service.interface';
-import type { TxExecutionService } from '../../core/services/tx-execution/tx-execution-service.interface';
-import type { HederaMirrornodeService } from '../../core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { OutputService } from '../../core/services/output/output-service.interface';
-import type { HbarService } from '../../core/services/hbar/hbar-service.interface';
-import type { PluginManagementService } from '../../core/services/plugin-management/plugin-management-service.interface';
-import type { KeyResolverService } from '../../core/services/key-resolver/key-resolver-service.interface';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
+import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
+import type { KmsService } from '@/core/services/kms/kms-service.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
+import type { NetworkService } from '@/core/services/network/network-service.interface';
+import type { OutputService } from '@/core/services/output/output-service.interface';
+import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
+
 import { MOCK_PUBLIC_KEY } from './fixtures';
 
 /**

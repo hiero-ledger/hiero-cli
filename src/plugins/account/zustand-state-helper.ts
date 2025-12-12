@@ -2,10 +2,14 @@
  * Zustand-based Account State Helper
  * Provides rich state management with subscriptions and actions
  */
-import { StateService } from '../../core';
-import { Logger } from '../../core';
-import { AccountData, ACCOUNT_NAMESPACE, safeParseAccountData } from './schema';
-import { KeyAlgorithmType } from '../../core/services/kms/kms-types.interface';
+import type { Logger, StateService } from '@/core';
+import type { KeyAlgorithmType } from '@/core/services/kms/kms-types.interface';
+
+import {
+  ACCOUNT_NAMESPACE,
+  type AccountData,
+  safeParseAccountData,
+} from './schema';
 
 export class ZustandAccountStateHelper {
   private state: StateService;

@@ -3,17 +3,19 @@
  * Handles account balance retrieval using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status, HBAR_DECIMALS } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { AccountBalanceOutput } from './output';
-import { EntityIdSchema } from '../../../../core/schemas';
-import { AliasType } from '../../../../core/services/alias/alias-service.interface';
-import { AccountBalanceInputSchema, TokenEntityType } from './input';
-import { normalizeBalance } from '../../../../core/utils/normalize-balance';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { AccountBalanceOutput } from './output';
+
 import BigNumber from 'bignumber.js';
-import { fetchAccountTokenBalances } from '../../utils/balance-helpers';
+
+import { EntityIdSchema } from '@/core/schemas';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { HBAR_DECIMALS, Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { normalizeBalance } from '@/core/utils/normalize-balance';
+import { fetchAccountTokenBalances } from '@/plugins/account/utils/balance-helpers';
+
+import { AccountBalanceInputSchema, TokenEntityType } from './input';
 
 export async function getAccountBalance(
   args: CommandHandlerArgs,

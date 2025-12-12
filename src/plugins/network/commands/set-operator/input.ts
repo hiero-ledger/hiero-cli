@@ -1,9 +1,10 @@
 import { z } from 'zod';
+
 import {
   KeyManagerTypeSchema,
   KeyOrAccountAliasSchema,
   NetworkSchema,
-} from '../../../../core/schemas';
+} from '@/core/schemas';
 
 /**
  * Input schema for network set-operator command

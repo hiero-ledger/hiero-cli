@@ -1,11 +1,12 @@
-import { setConfigOption } from '../../../config/commands/set/handler';
-import { Status } from '../../../../core/shared/constants';
+import { Status } from '@/core/shared/constants';
+import { setConfigOption } from '@/plugins/config/commands/set/handler';
+
+import { enumOption } from './helpers/fixtures';
 import {
   makeApiMock,
   makeCommandArgs,
   makeConfigServiceMock,
 } from './helpers/mocks';
-import { enumOption } from './helpers/fixtures';
 
 describe('config plugin - set', () => {
   test('parses boolean value and sets', async () => {

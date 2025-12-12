@@ -1,4 +1,4 @@
-import { LogLevel, Logger } from './logger-service.interface';
+import type { Logger, LogLevel } from './logger-service.interface';
 
 const LOG_LEVEL_DATA: Record<
   LogLevel,

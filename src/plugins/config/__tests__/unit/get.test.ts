@@ -1,11 +1,12 @@
-import { getConfigOption } from '../../../config/commands/get/handler';
-import { Status } from '../../../../core/shared/constants';
+import { Status } from '@/core/shared/constants';
+import { getConfigOption } from '@/plugins/config/commands/get/handler';
+
+import { enumOption } from './helpers/fixtures';
 import {
   makeApiMock,
   makeCommandArgs,
   makeConfigServiceMock,
 } from './helpers/mocks';
-import { enumOption } from './helpers/fixtures';
 
 describe('config plugin - get', () => {
   test('returns option value and allowedValues for enum', async () => {

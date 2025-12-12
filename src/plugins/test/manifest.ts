@@ -2,9 +2,13 @@
  * Test Plugin Manifest
  * Provides commands to list, get and set configuration options
  */
-import { PluginManifest } from '../../core';
-import { FooTestOutputSchema, FOO_TEST_TEMPLATE } from './commands/foo';
-import { fooTestOptions } from './commands/foo/handler';
+import type { PluginManifest } from '@/core';
+
+import {
+  FOO_TEST_TEMPLATE,
+  fooTestOptions,
+  FooTestOutputSchema,
+} from './commands/foo';
 
 export const testPluginManifest: PluginManifest = {
   name: 'test',

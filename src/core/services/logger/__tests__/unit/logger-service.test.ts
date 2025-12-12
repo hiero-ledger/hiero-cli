@@ -2,7 +2,7 @@
  * Unit tests for LoggerService
  * Tests logging methods, level filtering, and message formatting
  */
-import { LoggerService } from '../../logger-service';
+import { LoggerService } from '@/core/services/logger/logger-service';
 
 describe('LoggerService', () => {
   let logger: LoggerService;

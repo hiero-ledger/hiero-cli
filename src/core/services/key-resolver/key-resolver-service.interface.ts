@@ -1,5 +1,5 @@
-import { KeyOrAccountAlias } from '../../schemas';
-import { KeyManagerName } from '../kms/kms-types.interface';
+import type { KeyOrAccountAlias } from '@/core/schemas';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 
 export type ResolvedKey = {
   publicKey: string;

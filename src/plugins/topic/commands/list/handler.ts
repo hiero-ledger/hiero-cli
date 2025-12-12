@@ -2,12 +2,13 @@
  * Topic List Command Handler
  * Handles listing topics from state
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { ZustandTopicStateHelper } from '../../zustand-state-helper';
-import { ListTopicsOutput } from './output';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { ListTopicsOutput } from './output';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+
 import { ListTopicsInputSchema } from './input';
 
 /**

@@ -2,13 +2,23 @@
  * Config Plugin Manifest
  * Provides commands to list, get and set configuration options
  */
-import { PluginManifest } from '../../core';
-import { ListConfigOutputSchema, LIST_CONFIG_TEMPLATE } from './commands/list';
-import { GetConfigOutputSchema, GET_CONFIG_TEMPLATE } from './commands/get';
-import { SetConfigOutputSchema, SET_CONFIG_TEMPLATE } from './commands/set';
-import { listConfigOptions } from './commands/list/handler';
-import { getConfigOption } from './commands/get/handler';
-import { setConfigOption } from './commands/set/handler';
+import type { PluginManifest } from '@/core';
+
+import {
+  GET_CONFIG_TEMPLATE,
+  getConfigOption,
+  GetConfigOutputSchema,
+} from './commands/get';
+import {
+  LIST_CONFIG_TEMPLATE,
+  listConfigOptions,
+  ListConfigOutputSchema,
+} from './commands/list';
+import {
+  SET_CONFIG_TEMPLATE,
+  setConfigOption,
+  SetConfigOutputSchema,
+} from './commands/set';
 
 export const configPluginManifest: PluginManifest = {
   name: 'config',

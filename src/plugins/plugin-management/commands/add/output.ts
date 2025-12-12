@@ -2,8 +2,9 @@
  * Add Plugin Command Output
  * Defines output schema and template for the add plugin command
  */
-import { z } from 'zod';
-import { AddPluginOutputSchema } from '../../schema';
+import type { z } from 'zod';
+
+import { AddPluginOutputSchema } from '@/plugins/plugin-management/schema';
 
 // Export the schema
 export { AddPluginOutputSchema };

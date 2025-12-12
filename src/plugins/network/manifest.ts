@@ -2,24 +2,28 @@
  * Network Plugin Manifest
  * Defines the network plugin
  */
-import { PluginManifest } from '../../core/plugins/plugin.interface';
+import type { PluginManifest } from '@/core/plugins/plugin.interface';
+
 import {
-  ListNetworksOutputSchema,
-  LIST_NETWORKS_TEMPLATE,
-} from './commands/list';
-import { UseNetworkOutputSchema, USE_NETWORK_TEMPLATE } from './commands/use';
-import { listHandler } from './commands/list/handler';
-import { useHandler } from './commands/use';
-import {
-  GetOperatorOutputSchema,
   GET_OPERATOR_TEMPLATE,
-} from './commands/get-operator/index';
-import { getOperatorHandler } from './commands/get-operator/handler';
+  getOperatorHandler,
+  GetOperatorOutputSchema,
+} from './commands/get-operator';
 import {
-  SetOperatorOutputSchema,
+  LIST_NETWORKS_TEMPLATE,
+  listHandler,
+  ListNetworksOutputSchema,
+} from './commands/list';
+import {
   SET_OPERATOR_TEMPLATE,
-} from './commands/set-operator/index';
-import { setOperatorHandler } from './commands/set-operator/handler';
+  setOperatorHandler,
+  SetOperatorOutputSchema,
+} from './commands/set-operator';
+import {
+  USE_NETWORK_TEMPLATE,
+  useHandler,
+  UseNetworkOutputSchema,
+} from './commands/use';
 
 export const networkPluginManifest: PluginManifest = {
   name: 'network',

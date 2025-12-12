@@ -3,9 +3,10 @@
  * Helper functions to resolve command parameters (names, account IDs, keys)
  * using CoreApi services
  */
-import { CoreApi } from '../../core';
-import { SupportedNetwork } from '../../core/types/shared.types';
-import { EntityIdSchema } from '../../core/schemas';
+import type { CoreApi } from '@/core';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+
+import { EntityIdSchema } from '@/core/schemas';
 
 /**
  * Resolved destination account information (no private key needed)

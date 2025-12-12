@@ -1,12 +1,13 @@
 /**
  * Unit tests for plugin-management info command
  */
-import { Status } from '../../../../core/shared/constants';
-import { getPluginInfo } from '../../commands/info/handler';
-import { makeArgs, makeLogger } from '../../../../__tests__/mocks/mocks';
-import type { PluginManagementService } from '../../../../core/services/plugin-management/plugin-management-service.interface';
-import type { PluginStateEntry } from '../../../../core/plugins/plugin.interface';
-import { ERROR_MESSAGES } from '../../error-messages';
+import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
+import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { Status } from '@/core/shared/constants';
+import { getPluginInfo } from '@/plugins/plugin-management/commands/info/handler';
+import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 jest.mock('path', () => ({
   resolve: (...segments: string[]) => segments.join('/'),

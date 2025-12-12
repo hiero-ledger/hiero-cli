@@ -1,9 +1,10 @@
+import { z } from 'zod';
+
 import {
   EntityReferenceSchema,
   KeyManagerTypeSchema,
   KeyOrAccountAliasSchema,
-} from '../../../../core/schemas';
-import { z } from 'zod';
+} from '@/core/schemas';
 
 /**
  * Input schema for token associate command
