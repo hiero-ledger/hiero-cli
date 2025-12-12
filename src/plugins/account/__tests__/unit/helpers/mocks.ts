@@ -178,6 +178,7 @@ export const makeAliasServiceMock = (options?: {
         });
       }),
     remove: jest.fn(),
+    clear: jest.fn(),
   };
 };
 
