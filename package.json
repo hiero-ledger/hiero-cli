@@ -20,7 +20,7 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "npm run format && rimraf --glob 'dist/' && tsc && chmod +x dist/hedera-cli.js",
+    "build": "npm run format && rimraf --glob 'dist/' && tsc && tsc-alias && chmod +x dist/hedera-cli.js",
     "build-test": "tsc && tsc -p tsconfig.test.json && npm run test ",
     "clean": "rm -rf dist/ && rm -rf coverage/ && rm -rf junit.xml && rm -rf junit-integration.xml",
     "dev-build": "rm -rf dist/ && tsc && chmod +x dist/hedera-cli.js && npm run watch",
@@ -83,6 +83,7 @@
     "prettier": "^3.5.3",
     "rimraf": "^5.0.5",
     "ts-jest": "^29.3.2",
+    "tsc-alias": "^1.8.16",
     "typescript": "^5.8.3"
   },
   "lint-staged": {
