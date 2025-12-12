@@ -153,6 +153,7 @@ describe('createTokenHandler', () => {
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
         adminPublicKey: expect.any(Object),
+        memo: undefined,
       });
       // When adminKey is not provided, only treasury signs (which is the operator)
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(

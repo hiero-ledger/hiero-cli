@@ -97,6 +97,7 @@ export async function createToken(
   const alias = validArgs.name;
   const providedMaxSupply = validArgs.maxSupply;
   const providedKeyManager = validArgs.keyManager;
+  const memo = validArgs.memo;
 
   // Get keyManager from args or fallback to config
   const keyManager =
@@ -157,6 +158,7 @@ export async function createToken(
       supplyType: supplyType.toUpperCase() as 'FINITE' | 'INFINITE',
       maxSupplyRaw: finalMaxSupply,
       adminPublicKey: PublicKey.fromString(admin.publicKey),
+      memo,
     };
 
     const tokenCreateTransaction =

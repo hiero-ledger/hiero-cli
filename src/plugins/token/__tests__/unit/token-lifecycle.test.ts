@@ -204,6 +204,7 @@ describe('Token Lifecycle Integration', () => {
         maxSupplyRaw: 100000n,
         treasuryId: _treasuryAccountId,
         adminPublicKey: expect.any(Object),
+        memo: undefined,
       });
 
       expect(
