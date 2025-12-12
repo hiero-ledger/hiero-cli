@@ -14,6 +14,7 @@ import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
 import { PluginInfoOutput } from './output';
 import { PluginInfoInputSchema } from './input';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 export async function getPluginInfo(
   args: CommandHandlerArgs,
@@ -32,13 +33,9 @@ export async function getPluginInfo(
     const entry: PluginStateEntry | undefined =
       pluginManagement.getPlugin(name);
     if (!entry) {
-      const notFound: PluginInfoOutput = {
-        found: false,
-        message: `Plugin ${name} not found in plugin-management state`,
-      };
       return {
-        status: Status.Success,
-        outputJson: JSON.stringify(notFound),
+        status: Status.Failure,
+        errorMessage: ERROR_MESSAGES.pluginNotFound(name),
       };
     }
 

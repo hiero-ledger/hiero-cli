@@ -1,10 +1,10 @@
 import { z } from 'zod';
 import {
-  AccountOrAliasSchema,
   AmountInputSchema,
   HtsDecimalsSchema,
   KeyManagerTypeSchema,
   MemoSchema,
+  KeyOrAccountAliasSchema,
   SupplyTypeSchema,
   TokenAliasNameSchema,
   TokenNameSchema,
@@ -20,7 +20,7 @@ export const CreateTokenInputSchema = z
   .object({
     tokenName: TokenNameSchema.describe('Token name'),
     symbol: TokenSymbolSchema.describe('Token symbol/ticker'),
-    treasury: AccountOrAliasSchema.optional().describe(
+    treasury: KeyOrAccountAliasSchema.optional().describe(
       'Treasury account. Can be alias or TreasuryID:treasuryKey pair. Defaults to operator.',
     ),
     decimals: HtsDecimalsSchema.default(0).describe(
@@ -35,7 +35,7 @@ export const CreateTokenInputSchema = z
     maxSupply: AmountInputSchema.optional().describe(
       'Maximum supply (required for FINITE supply type)',
     ),
-    adminKey: AccountOrAliasSchema.optional().describe(
+    adminKey: KeyOrAccountAliasSchema.optional().describe(
       'Admin key (optional). If not set, operator key is used as admin key.',
     ),
     name: TokenAliasNameSchema.optional().describe(

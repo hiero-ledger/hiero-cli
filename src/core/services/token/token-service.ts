@@ -8,7 +8,6 @@ import {
   TokenAssociateTransaction,
   AccountId,
   TokenId,
-  PublicKey,
   TokenSupplyType,
   CustomFee,
   CustomFixedFee,
@@ -22,7 +21,6 @@ import type {
   TokenAssociationParams,
   CustomFee as CustomFeeParams,
 } from '../../types/token.types';
-import { parsePrivateKey } from '../../utils/keys';
 
 export class TokenServiceImpl implements TokenService {
   private logger: Logger;
@@ -77,7 +75,7 @@ export class TokenServiceImpl implements TokenService {
       initialSupplyRaw,
       supplyType,
       maxSupplyRaw,
-      adminKey,
+      adminPublicKey,
       customFees,
       memo,
     } = params;
@@ -96,7 +94,7 @@ export class TokenServiceImpl implements TokenService {
       .setInitialSupply(initialSupplyRaw.toString())
       .setSupplyType(tokenSupplyType)
       .setTreasuryAccountId(AccountId.fromString(treasuryId))
-      .setAdminKey(this.parseKeyToPublic(adminKey));
+      .setAdminKey(adminPublicKey);
 
     // Set max supply for finite supply tokens
     if (supplyType === 'FINITE' && maxSupplyRaw !== undefined) {
@@ -150,24 +148,6 @@ export class TokenServiceImpl implements TokenService {
     );
 
     return associateTx;
-  }
-
-  /**
-   * Parse a key string to PublicKey
-   * Handles both public keys and private keys (extracts public key from private)
-   */
-  private parseKeyToPublic(key: string) {
-    try {
-      // Try to parse as private key first (for backwards compatibility)
-      return parsePrivateKey(key).publicKey;
-    } catch {
-      // If that fails, try to parse as public key directly
-      try {
-        return PublicKey.fromString(key);
-      } catch {
-        throw new Error(`Invalid key format: ${key}`);
-      }
-    }
   }
 
   /**

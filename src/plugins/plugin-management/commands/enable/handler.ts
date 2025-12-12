@@ -7,9 +7,10 @@ import { CommandHandlerArgs } from '../../../../core';
 import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { formatError } from '../../../../core/utils/errors';
-import { AddPluginOutput } from '../add/output';
+import { EnablePluginOutput } from './output';
 import { PluginManagementEnableStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
 import { EnablePluginInputSchema } from './input';
+import { ERROR_MESSAGES } from '../../error-messages';
 export async function enablePlugin(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
@@ -28,18 +29,22 @@ export async function enablePlugin(
     if (result.status === PluginManagementEnableStatus.NotFound) {
       return {
         status: Status.Failure,
-        errorMessage: `Plugin '${name}' not found in plugin-management state`,
+        errorMessage: ERROR_MESSAGES.pluginNotFound(name),
       };
     }
 
-    const outputData: AddPluginOutput = {
+    if (result.status === PluginManagementEnableStatus.AlreadyEnabled) {
+      return {
+        status: Status.Failure,
+        errorMessage: ERROR_MESSAGES.pluginAlreadyEnabled(name),
+      };
+    }
+
+    const outputData: EnablePluginOutput = {
       name,
       path: result.entry?.path ?? 'unknown',
-      added: result.status === PluginManagementEnableStatus.Enabled,
-      message:
-        result.status === PluginManagementEnableStatus.AlreadyEnabled
-          ? `Plugin ${name} is already enabled`
-          : `Plugin ${name} enabled successfully`,
+      enabled: true,
+      message: `Plugin ${name} enabled successfully`,
     };
 
     return {

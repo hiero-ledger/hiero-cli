@@ -10,6 +10,7 @@ import { formatError } from '../../../../core/utils/errors';
 import { RemovePluginOutput } from './output';
 import { PluginManagementRemoveStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
 import { RemovePluginInputSchema } from './input';
+import { ERROR_MESSAGES } from '../../error-messages';
 
 export async function removePlugin(
   args: CommandHandlerArgs,
@@ -26,30 +27,17 @@ export async function removePlugin(
   try {
     const result = api.pluginManagement.removePlugin(name);
 
-    if (result.status === PluginManagementRemoveStatus.Protected) {
-      const protectedResult: RemovePluginOutput = {
-        name,
-        removed: false,
-        message:
-          'Plugin plugin-management is a core plugin and cannot be removed from state via CLI.',
-      };
-
+    if (result.status === PluginManagementRemoveStatus.NotFound) {
       return {
-        status: Status.Success,
-        outputJson: JSON.stringify(protectedResult),
+        status: Status.Failure,
+        errorMessage: ERROR_MESSAGES.pluginNotFound(name),
       };
     }
 
-    if (result.status === PluginManagementRemoveStatus.NotFound) {
-      const notFound: RemovePluginOutput = {
-        name,
-        removed: false,
-        message: `Plugin ${name} is not registered in plugin-management state`,
-      };
-
+    if (result.status === PluginManagementRemoveStatus.Protected) {
       return {
-        status: Status.Success,
-        outputJson: JSON.stringify(notFound),
+        status: Status.Failure,
+        errorMessage: ERROR_MESSAGES.pluginProtectedCannotRemove(name),
       };
     }
 

@@ -150,13 +150,13 @@ export class ZustandTokenStateHelper {
           initialSupply: tokenData.initialSupply,
           supplyType: tokenData.supplyType,
           maxSupply: tokenData.maxSupply,
-          keys: { ...tokenData.keys },
           network: tokenData.network,
           associations: newAssociations,
           customFees: Array.isArray(tokenData.customFees)
             ? [...tokenData.customFees]
             : [],
           memo: tokenData.memo,
+          adminPublicKey: tokenData.adminPublicKey,
         };
 
         this.saveToken(tokenId, updatedTokenData);

@@ -7,21 +7,23 @@ import { HederaMirrornodeService } from './hedera-mirrornode-service.interface';
 import {
   AccountAPIResponse,
   AccountResponse,
+  ContractInfo,
+  ExchangeRateResponse,
   LedgerIdToBaseUrl,
+  MirrorNodeKeyType,
+  TokenAirdropsResponse,
   TokenBalancesResponse,
   TokenInfo,
   TopicInfo,
   TopicMessage,
+  TopicMessageQueryParams,
   TopicMessagesAPIResponse,
   TopicMessagesQueryParams,
   TopicMessagesResponse,
   TransactionDetailsResponse,
-  ContractInfo,
-  TokenAirdropsResponse,
-  ExchangeRateResponse,
-  TopicMessageQueryParams,
 } from './types';
 import { formatError } from '../../utils/errors';
+import { KeyAlgorithm } from '../../shared/constants';
 
 export class HederaMirrornodeServiceDefaultImpl
   implements HederaMirrornodeService
@@ -52,11 +54,18 @@ export class HederaMirrornodeServiceDefaultImpl
       throw new Error(`Account ${accountId} not found`);
     }
 
+    if (!data.key) {
+      throw new Error('No key is associated with the specified account.');
+    }
+
+    const keyAlgorithm = this.getKeyAlgorithm(data.key._type);
+
     return {
       accountId: data.account,
-      accountPublicKey: data?.key?.key,
+      accountPublicKey: data.key.key,
       balance: data.balance,
       evmAddress: data.evm_address,
+      keyAlgorithm,
     };
   }
 
@@ -103,15 +112,20 @@ export class HederaMirrornodeServiceDefaultImpl
   async getTopicMessages(
     queryParams: TopicMessagesQueryParams,
   ): Promise<TopicMessagesResponse> {
-    const { filter } = queryParams;
+    const { filters } = queryParams;
 
-    const queryWithFilter = filter
-      ? `${filter?.field}=${filter?.operation}:${filter?.value}`
-      : '';
+    const queryParamsArray = (filters || []).map(
+      (f) => `${f.field}=${f.operation}:${f.value}`,
+    );
+    const filterParams =
+      queryParamsArray.length > 0 ? queryParamsArray.join('&') : '';
+    const baseParams = 'order=desc&limit=100';
 
-    const baseParams = `&order=desc&limit=100`;
+    const allParams = filterParams
+      ? `${filterParams}&${baseParams}`
+      : baseParams;
     let url: string | null =
-      `${this.baseUrl}/topics/${queryParams.topicId}/messages?${queryWithFilter}${baseParams}`;
+      `${this.baseUrl}/topics/${queryParams.topicId}/messages?${allParams}`;
     const arrayOfMessages: TopicMessage[] = [];
     let fetchedMessages = 0;
     try {
@@ -257,5 +271,14 @@ export class HederaMirrornodeServiceDefaultImpl
     }
     const data = (await response.json()) as ExchangeRateResponse;
     return data;
+  }
+
+  private getKeyAlgorithm(keyType: MirrorNodeKeyType): KeyAlgorithm {
+    switch (keyType) {
+      case 'ECDSA_SECP256K1':
+        return KeyAlgorithm.ECDSA;
+      case 'ED25519':
+        return KeyAlgorithm.ED25519;
+    }
   }
 }

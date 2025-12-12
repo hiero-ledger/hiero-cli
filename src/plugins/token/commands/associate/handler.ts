@@ -7,10 +7,7 @@ import { CommandHandlerArgs } from '../../../../core';
 import { CommandExecutionResult } from '../../../../core';
 import { Status } from '../../../../core/shared/constants';
 import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import {
-  resolveAccountParameter,
-  resolveTokenParameter,
-} from '../../resolver-helper';
+import { resolveTokenParameter } from '../../resolver-helper';
 import { formatError } from '../../../../core/utils/errors';
 import { AssociateTokenOutput } from './output';
 import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
@@ -53,39 +50,24 @@ export async function associateToken(
 
   // Resolve account parameter (alias or account-id:account-key) if provided
 
-  const resolvedAccount = resolveAccountParameter(
+  const account = await api.keyResolver.getOrInitKey(
     accountIdOrAlias,
-    api,
-    network,
     keyManager,
+    ['token:associate'],
   );
 
-  // Account was explicitly provided - it MUST resolve or fail
-  if (!resolvedAccount) {
-    throw new Error(
-      `Failed to resolve account parameter: ${accountIdOrAlias}. ` +
-        `Expected format: account-name OR account-id:account-key`,
-    );
-  }
-
-  // Use resolved account from alias or account-id:account-key
-  const accountId = resolvedAccount.accountId;
-  const accountKeyRefId = resolvedAccount.accountKeyRefId;
-
-  // Get the account name for state storage
-  // If it's an alias, use the alias name; if it's account-id:key format, use account ID
-  const accountName = accountIdOrAlias.includes(':')
-    ? accountId
-    : accountIdOrAlias;
-
-  logger.info(`🔑 Using account: ${accountId}`);
+  logger.info(`🔑 Using account: ${account.accountId}`);
   logger.info(`🔑 Will sign with account key`);
-  logger.info(`Associating token ${tokenId} with account ${accountId}`);
+  logger.info(`Associating token ${tokenId} with account ${account.accountId}`);
 
   const saveAssociationToState = () => {
     const tokenData = tokenState.getToken(tokenId);
     if (tokenData) {
-      tokenState.addTokenAssociation(tokenId, accountId, accountName);
+      tokenState.addTokenAssociation(
+        tokenId,
+        account.accountId,
+        account.accountId,
+      );
       logger.info(`   Association saved to token state`);
     }
   };
@@ -96,7 +78,7 @@ export async function associateToken(
   // Check if token is already associated on chain via Mirror Node
   try {
     const tokenBalances = await api.mirror.getAccountTokenBalances(
-      accountId,
+      account.accountId,
       tokenId,
     );
     const isAssociated = tokenBalances.tokens.some(
@@ -105,7 +87,7 @@ export async function associateToken(
 
     if (isAssociated) {
       logger.info(
-        `Token ${tokenId} is already associated with account ${accountId}`,
+        `Token ${tokenId} is already associated with account ${account.accountId}`,
       );
 
       saveAssociationToState();
@@ -122,14 +104,14 @@ export async function associateToken(
       // 1. Create association transaction using Core API
       const associateTransaction = api.token.createTokenAssociationTransaction({
         tokenId,
-        accountId,
+        accountId: account.accountId,
       });
 
       // Sign and execute using the account key
-      logger.debug(`Using key ${accountKeyRefId} for signing transaction`);
+      logger.debug(`Using key ${account.keyRefId} for signing transaction`);
       const result = await api.txExecution.signAndExecuteWith(
         associateTransaction,
-        [accountKeyRefId],
+        [account.keyRefId],
       );
 
       if (result.success) {
@@ -147,7 +129,7 @@ export async function associateToken(
         error.status === HederaStatus.TokenAlreadyAssociatedToAccount
       ) {
         logger.info(
-          `Token ${tokenId} is already associated with account ${accountId}`,
+          `Token ${tokenId} is already associated with account ${account.accountId}`,
         );
         saveAssociationToState();
         alreadyAssociated = true;
@@ -168,7 +150,7 @@ export async function associateToken(
   }
 
   const outputData: AssociateTokenOutput = {
-    accountId,
+    accountId: account.accountId,
     tokenId,
     associated: true,
   };

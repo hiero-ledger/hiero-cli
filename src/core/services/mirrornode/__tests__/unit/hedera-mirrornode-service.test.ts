@@ -129,7 +129,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       );
     });
 
-    it('should handle response without optional key field', async () => {
+    it('should throw error when response has no key field', async () => {
       const { service } = setupService();
       const mockResponse = createMockAccountAPIResponse({ key: undefined });
       (global.fetch as jest.Mock).mockResolvedValue({
@@ -137,9 +137,9 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         json: jest.fn().mockResolvedValue(mockResponse),
       });
 
-      const result = await service.getAccount(TEST_ACCOUNT_ID);
-
-      expect(result.accountPublicKey).toBeUndefined();
+      await expect(service.getAccount(TEST_ACCOUNT_ID)).rejects.toThrow(
+        'No key is associated with the specified account.',
+      );
     });
 
     it('should handle response without optional evm_address field', async () => {
@@ -357,7 +357,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       const result = await service.getTopicMessages({ topicId: TEST_TOPIC_ID });
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/topics/${TEST_TOPIC_ID}/messages?&order=desc&limit=100`,
+        `${TESTNET_URL}/topics/${TEST_TOPIC_ID}/messages?order=desc&limit=100`,
       );
       expect(result.messages).toHaveLength(1);
       expect(result.topicId).toBe(TEST_TOPIC_ID);
@@ -374,7 +374,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await service.getTopicMessages({
         topicId: TEST_TOPIC_ID,
-        filter: { field: 'sequenceNumber', operation: 'gt', value: 10 },
+        filters: [{ field: 'sequenceNumber', operation: 'gt', value: 10 }],
       });
 
       expect(global.fetch).toHaveBeenCalledWith(
