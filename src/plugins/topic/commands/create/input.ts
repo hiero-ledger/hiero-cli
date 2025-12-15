@@ -17,7 +17,7 @@ export const CreateTopicInputSchema = z.object({
     'Admin key as private key in format {accountId}:{private_key} or account name/alias',
   ),
   submitKey: KeyOrAccountAliasSchema.optional().describe(
-    'Submit key as private key in format {accountId}:{private_key} or account name/alias',
+    'Submit key as account name or {accountId}:{private_key} format',
   ),
   name: TopicNameSchema.optional().describe(
     'Optional name/alias for the topic',
