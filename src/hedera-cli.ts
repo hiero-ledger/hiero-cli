@@ -34,6 +34,10 @@ async function initializeCLI() {
 
     coreApi.output.setFormat(format);
 
+    if (coreApi.setup.needsSetup()) {
+      await coreApi.setup.runInitialSetup();
+    }
+
     // Setup global error handlers with validated format
     setGlobalOutputFormat(format);
     setupGlobalErrorHandlers();

@@ -13,6 +13,8 @@ import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { PromptService } from '@/core/services/prompt/prompt-service.interface';
+import type { SetupService } from '@/core/services/setup/setup-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
@@ -93,4 +95,14 @@ export interface CoreApi {
    * Service for resolving accounts from args to keys
    */
   keyResolver: KeyResolverService;
+
+  /**
+   * Service for sending prompts to user
+   */
+  prompt: PromptService;
+
+  /**
+   * Service for CLI setup and initialization
+   */
+  setup: SetupService;
 }

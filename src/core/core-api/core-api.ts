@@ -17,6 +17,8 @@ import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { PromptService } from '@/core/services/prompt/prompt-service.interface';
+import type { SetupService } from '@/core/services/setup/setup-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
@@ -35,6 +37,8 @@ import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/h
 import { NetworkServiceImpl } from '@/core/services/network/network-service';
 import { OutputServiceImpl } from '@/core/services/output/output-service';
 import { PluginManagementServiceImpl } from '@/core/services/plugin-management/plugin-management-service';
+import { PromptServiceImpl } from '@/core/services/prompt/prompt-service';
+import { SetupServiceImpl } from '@/core/services/setup/setup-service';
 import { ZustandGenericStateServiceImpl } from '@/core/services/state/state-service';
 import { TokenServiceImpl } from '@/core/services/token/token-service';
 import { TopicServiceImpl } from '@/core/services/topic/topic-transaction-service';
@@ -56,6 +60,8 @@ export class CoreApiImplementation implements CoreApi {
   public output: OutputService;
   public pluginManagement: PluginManagementService;
   public keyResolver: KeyResolverService;
+  public prompt: PromptService;
+  public setup: SetupService;
 
   constructor(storageDir?: string) {
     this.logger = new LoggerService();
@@ -123,6 +129,10 @@ export class CoreApiImplementation implements CoreApi {
     this.output = new OutputServiceImpl();
 
     this.pluginManagement = new PluginManagementServiceImpl(this.state);
+
+    this.prompt = new PromptServiceImpl();
+
+    this.setup = new SetupServiceImpl(this.network, this.output, this.prompt);
   }
 }
 
