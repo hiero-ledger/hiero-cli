@@ -7,23 +7,6 @@ import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { EntityIdSchema, KeyOrAccountAliasSchema } from '@/core/schemas';
 
-/*
-  At that moment, these keys were useless because they were only stored locally, with no trace of them on the network.
-  @TODO Support for all these keys
-
-export const TokenKeysSchema = z.object({
-  adminKey: KeyOrAccountAliasSchema,
-  supplyKey: KeyOrAccountAliasSchema.optional(),
-  wipeKey: KeyOrAccountAliasSchema.optional(),
-  kycKey: KeyOrAccountAliasSchema.optional(),
-  freezeKey: KeyOrAccountAliasSchema.optional(),
-  pauseKey: KeyOrAccountAliasSchema.optional(),
-  feeScheduleKey: KeyOrAccountAliasSchema.optional(),
-  treasuryKey: KeyOrAccountAliasSchema.optional(),
-});
-
-*/
-
 // Zod schema for token association
 export const TokenAssociationSchema = z.object({
   name: z.string().min(1, 'Association name is required'),
@@ -61,6 +44,12 @@ export const TokenDataSchema = z.object({
   treasuryId: EntityIdSchema,
 
   adminPublicKey: z.string().optional(),
+  supplyPublicKey: z.string().optional(),
+  wipePublicKey: z.string().optional(),
+  kycPublicKey: z.string().optional(),
+  freezePublicKey: z.string().optional(),
+  pausePublicKey: z.string().optional(),
+  feeSchedulePublicKey: z.string().optional(),
 
   decimals: z
     .number()
@@ -156,6 +145,12 @@ export const TokenFileSchema = z.object({
     .default(0n),
   treasuryKey: KeyOrAccountAliasSchema,
   adminKey: KeyOrAccountAliasSchema,
+  supplyKey: KeyOrAccountAliasSchema.optional(),
+  wipeKey: KeyOrAccountAliasSchema.optional(),
+  kycKey: KeyOrAccountAliasSchema.optional(),
+  freezeKey: KeyOrAccountAliasSchema.optional(),
+  pauseKey: KeyOrAccountAliasSchema.optional(),
+  feeScheduleKey: KeyOrAccountAliasSchema.optional(),
   associations: z.array(KeyOrAccountAliasSchema).default([]),
   customFees: z.array(TokenFileFixedFeeSchema).default([]),
   memo: z.string().max(100).optional().default(''),

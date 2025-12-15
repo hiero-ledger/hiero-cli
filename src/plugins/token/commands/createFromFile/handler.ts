@@ -55,6 +55,52 @@ export async function createTokenFromFile(
     );
     logger.info(`🔑 Resolved admin key for signing`);
 
+    const supplyKey = tokenDefinition.supplyKey
+      ? await api.keyResolver.getOrInitKey(
+          tokenDefinition.supplyKey,
+          keyManager,
+          ['token:supply'],
+        )
+      : undefined;
+
+    const wipeKey = tokenDefinition.wipeKey
+      ? await api.keyResolver.getOrInitKey(
+          tokenDefinition.wipeKey,
+          keyManager,
+          ['token:wipe'],
+        )
+      : undefined;
+
+    const kycKey = tokenDefinition.kycKey
+      ? await api.keyResolver.getOrInitKey(tokenDefinition.kycKey, keyManager, [
+          'token:kyc',
+        ])
+      : undefined;
+
+    const freezeKey = tokenDefinition.freezeKey
+      ? await api.keyResolver.getOrInitKey(
+          tokenDefinition.freezeKey,
+          keyManager,
+          ['token:freeze'],
+        )
+      : undefined;
+
+    const pauseKey = tokenDefinition.pauseKey
+      ? await api.keyResolver.getOrInitKey(
+          tokenDefinition.pauseKey,
+          keyManager,
+          ['token:pause'],
+        )
+      : undefined;
+
+    const feeScheduleKey = tokenDefinition.feeScheduleKey
+      ? await api.keyResolver.getOrInitKey(
+          tokenDefinition.feeScheduleKey,
+          keyManager,
+          ['token:feeSchedule'],
+        )
+      : undefined;
+
     const tokenCreateTransaction = api.token.createTokenTransaction({
       name: tokenDefinition.name,
       symbol: tokenDefinition.symbol,
@@ -66,6 +112,22 @@ export async function createTokenFromFile(
         | 'INFINITE',
       maxSupplyRaw: tokenDefinition.maxSupply,
       adminPublicKey: PublicKey.fromString(adminKey.publicKey),
+      supplyPublicKey: supplyKey
+        ? PublicKey.fromString(supplyKey.publicKey)
+        : undefined,
+      wipePublicKey: wipeKey
+        ? PublicKey.fromString(wipeKey.publicKey)
+        : undefined,
+      kycPublicKey: kycKey ? PublicKey.fromString(kycKey.publicKey) : undefined,
+      freezePublicKey: freezeKey
+        ? PublicKey.fromString(freezeKey.publicKey)
+        : undefined,
+      pausePublicKey: pauseKey
+        ? PublicKey.fromString(pauseKey.publicKey)
+        : undefined,
+      feeSchedulePublicKey: feeScheduleKey
+        ? PublicKey.fromString(feeScheduleKey.publicKey)
+        : undefined,
       customFees: tokenDefinition.customFees.map((fee) => ({
         type: fee.type,
         amount: fee.amount,
@@ -95,6 +157,14 @@ export async function createTokenFromFile(
       treasury.accountId,
       adminKey.publicKey,
       network,
+      {
+        supplyPublicKey: supplyKey?.publicKey,
+        wipePublicKey: wipeKey?.publicKey,
+        kycPublicKey: kycKey?.publicKey,
+        freezePublicKey: freezeKey?.publicKey,
+        pausePublicKey: pauseKey?.publicKey,
+        feeSchedulePublicKey: feeScheduleKey?.publicKey,
+      },
     );
 
     const successfulAssociations = await processTokenAssociations(
