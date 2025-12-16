@@ -8,7 +8,7 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { AccountData } from '@/plugins/account/schema';
 import type { CreateAccountOutput } from './output';
 
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { HBAR_DECIMALS, KeyAlgorithm, Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
@@ -103,7 +103,7 @@ export async function createAccount(
       if (alias) {
         api.alias.register({
           alias,
-          type: AliasType.Account,
+          type: ALIAS_TYPE.Account,
           network,
           entityId: result.accountId,
           publicKey,

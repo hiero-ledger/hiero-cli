@@ -42,7 +42,7 @@ export function findTokenAlias(
       (alias: AliasRecord) => alias.entityId === tokenId,
     );
     return aliasRecord ? aliasRecord.alias : undefined;
-  } catch (error: unknown) {
+  } catch {
     return undefined;
   }
 }

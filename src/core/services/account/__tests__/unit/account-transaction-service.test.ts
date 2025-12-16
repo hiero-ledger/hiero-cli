@@ -66,7 +66,7 @@ describe('AccountServiceImpl', () => {
 
       const result = await accountService.createAccount(params);
 
-      expect(Hbar.fromTinybars).toHaveBeenCalledWith(100_000_000n);
+      expect(Hbar.fromTinybars).toHaveBeenCalledWith('100000000');
       expect(PublicKey.fromString).toHaveBeenCalledWith(ECDSA_HEX_PUBLIC_KEY);
       expect(mockTransaction.setInitialBalance).toHaveBeenCalledWith(
         mockHbarInstance,

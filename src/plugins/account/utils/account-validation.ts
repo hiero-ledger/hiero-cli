@@ -12,8 +12,12 @@ export function validateSufficientBalance(
   const isBalanceSufficient = availableBalance > requiredBalance;
 
   if (!isBalanceSufficient) {
-    const requiredHbar = Hbar.fromTinybars(requiredBalance).toString();
-    const availableHbar = Hbar.fromTinybars(availableBalance).toString();
+    const requiredHbar = Hbar.fromTinybars(
+      requiredBalance.toString(),
+    ).toString();
+    const availableHbar = Hbar.fromTinybars(
+      availableBalance.toString(),
+    ).toString();
 
     throw new Error(
       `Insufficient balance in account ${accountId}.\n` +

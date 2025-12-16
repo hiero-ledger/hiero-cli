@@ -3,9 +3,9 @@
  * Single source of truth for token data structure and validation
  */
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { AliasNameSchema } from '@/core/schemas';
+import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Main token data schema
 export const MemoDataSchema = z.object({

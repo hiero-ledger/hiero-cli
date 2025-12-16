@@ -9,7 +9,7 @@ import type { AccountBalanceOutput } from './output';
 import BigNumber from 'bignumber.js';
 
 import { EntityIdSchema } from '@/core/schemas';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { HBAR_DECIMALS, Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { normalizeBalance } from '@/core/utils/normalize-balance';
@@ -41,7 +41,7 @@ export async function getAccountBalance(
     const network = args.api.network.getCurrentNetwork();
     const account = args.api.alias.resolve(
       accountIdOrNameOrAlias,
-      AliasType.Account,
+      ALIAS_TYPE.Account,
       network,
     );
     if (account && account.entityId) {
@@ -90,7 +90,7 @@ export async function getAccountBalance(
         if (token.type === TokenEntityType.Alias) {
           const resolved = api.alias.resolve(
             token.value,
-            AliasType.Token,
+            ALIAS_TYPE.Token,
             network,
           );
           if (!resolved || !resolved.entityId) {

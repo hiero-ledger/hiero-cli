@@ -4,6 +4,8 @@ import './core/utils/json-serialize';
 
 import { program } from 'commander';
 
+import pkg from '../package.json';
+
 import { createCoreApi } from './core';
 import { PluginManager } from './core/plugins/plugin-manager';
 import { DEFAULT_PLUGIN_STATE } from './core/shared/config/cli-options';
@@ -14,9 +16,6 @@ import {
   setGlobalOutputFormat,
   setupGlobalErrorHandlers,
 } from './core/utils/error-handler';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pkg = require('../package.json') as { version?: string };
 
 program
   .version(pkg.version || '0.0.0')

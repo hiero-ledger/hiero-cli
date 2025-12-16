@@ -5,9 +5,9 @@
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { EntityIdSchema } from '@/core/schemas/common-schemas';
+import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Supported networks aligned with core SupportedNetwork type
 export const SUPPORTED_NETWORKS = [
@@ -27,7 +27,7 @@ export const CredentialsDataSchema = z.object({
     .describe('Encrypted private key string'),
 
   network: z.enum(SUPPORTED_NETWORKS, {
-    errorMap: () => ({
+    error: () => ({
       message: 'Network must be one of: mainnet, testnet, previewnet, localnet',
     }),
   }),

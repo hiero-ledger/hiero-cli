@@ -98,14 +98,14 @@ export class TokenServiceImpl implements TokenService {
       .setTokenName(name)
       .setTokenSymbol(symbol)
       .setDecimals(decimals)
-      .setInitialSupply(initialSupplyRaw.toString())
+      .setInitialSupply(initialSupplyRaw)
       .setSupplyType(tokenSupplyType)
       .setTreasuryAccountId(AccountId.fromString(treasuryId))
       .setAdminKey(adminPublicKey);
 
     // Set max supply for finite supply tokens
     if (supplyType === 'FINITE' && maxSupplyRaw !== undefined) {
-      tokenCreateTx.setMaxSupply(maxSupplyRaw.toString());
+      tokenCreateTx.setMaxSupply(maxSupplyRaw);
       this.logger.debug(
         `[TOKEN SERVICE] Set max supply to ${maxSupplyRaw} for finite supply token`,
       );

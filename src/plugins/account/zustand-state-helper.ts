@@ -31,7 +31,7 @@ export class ZustandAccountStateHelper {
 
     const validation = safeParseAccountData(accountData);
     if (!validation.success) {
-      const errors = validation.error.errors
+      const errors = validation.error.issues
         .map((e) => `${e.path.join('.')}: ${e.message}`)
         .join(', ');
       throw new Error(`Invalid account data: ${errors}`);
@@ -52,7 +52,7 @@ export class ZustandAccountStateHelper {
       const validation = safeParseAccountData(data);
       if (!validation.success) {
         this.logger.warn(
-          `[ZUSTAND ACCOUNT STATE] Invalid data for account: ${name}. Errors: ${validation.error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
+          `[ZUSTAND ACCOUNT STATE] Invalid data for account: ${name}. Errors: ${validation.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
         );
         return null;
       }

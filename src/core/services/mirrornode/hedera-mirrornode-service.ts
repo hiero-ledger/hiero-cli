@@ -27,12 +27,10 @@ import { formatError } from '@/core/utils/errors';
 
 import { NetworkToBaseUrl } from './types';
 
-export class HederaMirrornodeServiceDefaultImpl
-  implements HederaMirrornodeService
-{
+export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeService {
   private baseUrl!: string;
 
-  constructor(private readonly network: SupportedNetwork) {
+  constructor(network: SupportedNetwork) {
     this.setBaseUrl(network);
   }
 

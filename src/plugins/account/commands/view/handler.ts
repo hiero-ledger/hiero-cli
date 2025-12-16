@@ -7,7 +7,7 @@ import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { ViewAccountOutput } from './output';
 
 import { EntityIdSchema } from '@/core/schemas';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 
@@ -33,7 +33,7 @@ export async function viewAccount(
     const network = args.api.network.getCurrentNetwork();
     const account = args.api.alias.resolve(
       accountIdOrNameOrAlias,
-      AliasType.Account,
+      ALIAS_TYPE.Account,
       network,
     );
     if (account && account.entityId) {

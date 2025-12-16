@@ -5,7 +5,6 @@
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import {
   AliasNameSchema,
@@ -13,6 +12,7 @@ import {
   EvmAddressSchema,
 } from '@/core/schemas/common-schemas';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Supported networks aligned with core SupportedNetwork type
 export const SUPPORTED_NETWORKS = [
@@ -28,12 +28,12 @@ export const AccountDataSchema = z.object({
   name: AliasNameSchema.max(50, 'Name must be 50 characters or less'),
   accountId: EntityIdSchema,
   type: z.enum([KeyAlgorithm.ECDSA, KeyAlgorithm.ED25519], {
-    errorMap: () => ({ message: 'Type must be either ecdsa or ed25519' }),
+    error: () => ({ message: 'Type must be either ecdsa or ed25519' }),
   }),
   publicKey: z.string().min(1, 'Public key is required'),
   evmAddress: EvmAddressSchema,
   network: z.enum(SUPPORTED_NETWORKS, {
-    errorMap: () => ({
+    error: () => ({
       message: 'Network must be one of: mainnet, testnet, previewnet, localnet',
     }),
   }),
