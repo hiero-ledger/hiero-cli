@@ -1,10 +1,11 @@
 import { z } from 'zod';
+
 import {
-  KeyOrAccountSchema,
   KeyManagerTypeSchema,
+  KeyOrAccountAliasSchema,
   MemoSchema,
   TopicNameSchema,
-} from '../../../../core/schemas';
+} from '@/core/schemas';
 
 /**
  * Input schema for topic create command
@@ -12,11 +13,11 @@ import {
  */
 export const CreateTopicInputSchema = z.object({
   memo: MemoSchema.describe('Optional memo for the topic'),
-  adminKey: KeyOrAccountSchema.optional().describe(
-    'Admin key as private key (with optional key type prefix: ed25519: or ecdsa:) or account name/alias',
+  adminKey: KeyOrAccountAliasSchema.optional().describe(
+    'Admin key as private key in format {accountId}:{private_key} or account name/alias',
   ),
-  submitKey: KeyOrAccountSchema.optional().describe(
-    'Submit key as private key (with optional key type prefix: ed25519: or ecdsa:) or account name/alias',
+  submitKey: KeyOrAccountAliasSchema.optional().describe(
+    'Submit key as private key in format {accountId}:{private_key} or account name/alias',
   ),
   name: TopicNameSchema.optional().describe(
     'Optional name/alias for the topic',

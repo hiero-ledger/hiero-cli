@@ -2,17 +2,19 @@
  * Token Plugin Error Handling Tests
  * Tests error scenarios and edge cases across the token plugin
  */
-import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { createToken } from '../../commands/create';
-import { associateToken } from '../../commands/associate';
-import { transferToken } from '../../commands/transfer';
-import { createTokenFromFile } from '../../commands/createFromFile';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { Status } from '../../../../core/shared/constants';
-import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
+
+import { Status } from '@/core/shared/constants';
+import { associateToken } from '@/plugins/token/commands/associate';
+import { createToken } from '@/plugins/token/commands/create';
+import { createTokenFromFile } from '@/plugins/token/commands/createFromFile';
+import { transferToken } from '@/plugins/token/commands/transfer';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
 import {
-  makeLogger,
   makeApiMocks,
+  makeLogger,
   mockZustandTokenStateHelper,
 } from './helpers/mocks';
 
@@ -27,15 +29,29 @@ const MockedHelper = ZustandTokenStateHelper as jest.Mock;
  */
 const makeTestAliasService = () => ({
   resolve: jest.fn().mockImplementation((alias, type) => {
-    // Mock key alias resolution for test keys
-    if (type === 'key' && alias === 'admin-key') {
-      return {
-        keyRefId: 'admin-key-ref-id',
-        publicKey: 'admin-key',
+    // Mock account alias resolution for test keys
+    if (type === 'account') {
+      const accountAliases: Record<string, any> = {
+        'admin-key': {
+          entityId: '0.0.100000',
+          publicKey: '302a300506032b6570032100' + '0'.repeat(64),
+          keyRefId: 'admin-key-ref-id',
+        },
+        'treasury-account': {
+          entityId: '0.0.123456',
+          publicKey: '302a300506032b6570032100' + '1'.repeat(64),
+          keyRefId: 'treasury-key-ref-id',
+        },
       };
+      return accountAliases[alias] || null;
     }
     return null;
   }),
+  register: jest.fn(),
+  list: jest.fn().mockReturnValue([]),
+  remove: jest.fn(),
+  availableOrThrow: jest.fn(),
+  exists: jest.fn(),
 });
 
 describe('Token Plugin Error Handling', () => {
@@ -202,7 +218,7 @@ describe('Token Plugin Error Handling', () => {
         logger,
       };
 
-      // Act & Assert - Error is thrown before try-catch block
+      // Act & Assert - Error is thrown before try-catch block in handler
       await expect(createToken(args)).rejects.toThrow(
         'Invalid private key format',
       );

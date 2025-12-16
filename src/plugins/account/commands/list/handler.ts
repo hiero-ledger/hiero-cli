@@ -3,12 +3,14 @@
  * Handles listing all accounts using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { ZustandAccountStateHelper } from '../../zustand-state-helper';
-import { ListAccountsOutput } from './output';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { CommandExecutionResult } from '@/core/plugins/plugin.types';
+import type { ListAccountsOutput } from './output';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+
 import { ListAccountsInputSchema } from './input';
 
 export async function listAccounts(

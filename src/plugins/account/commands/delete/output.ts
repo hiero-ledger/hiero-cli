@@ -2,7 +2,8 @@
  * Delete Account Command Output Schema and Template
  */
 import { z } from 'zod';
-import { EntityIdSchema } from '../../../../core/schemas/common-schemas';
+
+import { EntityIdSchema } from '@/core/schemas/common-schemas';
 
 /**
  * Delete Account Command Output Schema

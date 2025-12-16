@@ -1,5 +1,6 @@
-import { Command } from 'commander';
-import { PluginStateEntry } from '../plugins/plugin.interface';
+import type { Command } from 'commander';
+import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
+
 import { formatAndExitWithError } from './error-handler';
 
 /**

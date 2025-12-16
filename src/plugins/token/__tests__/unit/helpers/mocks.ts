@@ -2,19 +2,23 @@
  * Shared Mock Factory Functions for Token Plugin Tests
  * Provides reusable mocks for services, APIs, and common test utilities
  */
-import type { Logger } from '../../../../../core/services/logger/logger-service.interface';
-import type { CoreApi } from '../../../../../core/core-api/core-api.interface';
-import type { TokenService } from '../../../../../core/services/token/token-service.interface';
-import type { TxExecutionService } from '../../../../../core/services/tx-execution/tx-execution-service.interface';
-import type { StateService } from '../../../../../core/services/state/state-service.interface';
-import type { KmsService } from '../../../../../core/services/kms/kms-service.interface';
-import type { AliasService } from '../../../../../core/services/alias/alias-service.interface';
-import type { AccountService } from '../../../../../core/services/account/account-transaction-service.interface';
-import type { NetworkService } from '../../../../../core/services/network/network-service.interface';
-import type { ConfigService } from '../../../../../core/services/config/config-service.interface';
-import type { HbarService } from '../../../../../core/services/hbar/hbar-service.interface';
-import type { OutputService } from '../../../../../core/services/output/output-service.interface';
-import type { PluginManagementService } from '../../../../../core/services/plugin-management/plugin-management-service.interface';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
+import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
+import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
+import type { KmsService } from '@/core/services/kms/kms-service.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { NetworkService } from '@/core/services/network/network-service.interface';
+import type { OutputService } from '@/core/services/output/output-service.interface';
+import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+import type { TokenService } from '@/core/services/token/token-service.interface';
+import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
+
+import { makeKeyResolverMock as makeGlobalKeyResolverMock } from '@/__tests__/mocks/mocks';
+
 import { mockTransactionResults } from './fixtures';
 
 /**
@@ -64,8 +68,15 @@ export const makeTxExecutionServiceMock = (
 export const makeKmsMock = (
   overrides?: Partial<jest.Mocked<KmsService>>,
 ): jest.Mocked<KmsService> => ({
-  createLocalPrivateKey: jest.fn(),
+  createLocalPrivateKey: jest.fn().mockReturnValue({
+    keyRefId: 'mock-key-ref-id',
+    publicKey: 'mock-public-key',
+  }),
   importPrivateKey: jest.fn().mockReturnValue({
+    keyRefId: 'mock-key-ref-id',
+    publicKey: 'mock-public-key',
+  }),
+  importAndValidatePrivateKey: jest.fn().mockReturnValue({
     keyRefId: 'mock-key-ref-id',
     publicKey: 'mock-public-key',
   }),
@@ -106,9 +117,64 @@ export const makeAliasServiceMock = (
   overrides?: Partial<jest.Mocked<AliasService>>,
 ): jest.Mocked<AliasService> => ({
   register: jest.fn(),
-  resolve: jest.fn().mockReturnValue(null),
+  resolve: jest.fn().mockImplementation((alias, type) => {
+    // Domyślnie zwracaj dane dla typowych aliasów używanych w testach
+    if (type === 'account') {
+      // Map typowych aliasów kont do mock danych
+      const accountAliases: Record<string, any> = {
+        'admin-key': {
+          entityId: '0.0.100000',
+          publicKey: '302a300506032b6570032100' + '0'.repeat(64),
+          keyRefId: 'admin-key-ref-id',
+        },
+        'test-admin-key': {
+          entityId: '0.0.100000',
+          publicKey: '302a300506032b6570032100' + '0'.repeat(64),
+          keyRefId: 'admin-key-ref-id',
+        },
+        'treasury-account': {
+          entityId: '0.0.123456',
+          publicKey: '302a300506032b6570032100' + '1'.repeat(64),
+          keyRefId: 'treasury-key-ref-id',
+        },
+        'admin-account': {
+          entityId: '0.0.100000',
+          publicKey: '302a300506032b6570032100' + '2'.repeat(64),
+          keyRefId: 'admin-key-ref-id',
+        },
+        alice: {
+          entityId: '0.0.200000',
+          publicKey: '302a300506032b6570032100' + '3'.repeat(64),
+          keyRefId: 'alice-key-ref-id',
+        },
+        bob: {
+          entityId: '0.0.300000',
+          publicKey: '302a300506032b6570032100' + '4'.repeat(64),
+          keyRefId: 'bob-key-ref-id',
+        },
+        'my-account-alias': {
+          entityId: '0.0.789012',
+          publicKey: '302a300506032b6570032100' + '5'.repeat(64),
+          keyRefId: 'my-account-key-ref-id',
+        },
+        TestAccount: {
+          entityId: '0.0.345678',
+          publicKey: '302a300506032b6570032100' + '6'.repeat(64),
+          keyRefId: 'test-account-key-ref-id',
+        },
+        'Account 1': {
+          entityId: '0.0.9999',
+          publicKey: '302a300506032b6570032100' + '7'.repeat(64),
+          keyRefId: 'account-1-key-ref-id',
+        },
+      };
+      return accountAliases[alias] || null;
+    }
+    return null;
+  }),
   list: jest.fn().mockReturnValue([]),
   remove: jest.fn(),
+  clear: jest.fn(),
   availableOrThrow: jest.fn(),
   exists: jest.fn(),
   ...overrides,
@@ -162,6 +228,7 @@ interface ApiMocksConfig {
   network?: string;
   createTransferImpl?: jest.Mock;
   signAndExecuteImpl?: jest.Mock;
+  keyResolver?: Partial<jest.Mocked<KeyResolverService>>;
 }
 
 /**
@@ -177,6 +244,20 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
   const alias = makeAliasServiceMock(config?.alias);
   const state = makeStateServiceMock(config?.state);
   const account = makeAccountTransactionServiceMock();
+
+  const keyResolver = makeGlobalKeyResolverMock({
+    network: {
+      getCurrentNetwork: jest
+        .fn()
+        .mockReturnValue(config?.network || 'testnet'),
+      getOperator: jest.fn().mockReturnValue({
+        accountId: '0.0.100000',
+        keyRefId: 'operator-key-ref-id',
+      }),
+    },
+    alias,
+    kms,
+  });
 
   const api: jest.Mocked<CoreApi> = {
     account,
@@ -229,6 +310,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       disablePlugin: jest.fn(),
       savePluginState: jest.fn(),
     } as PluginManagementService,
+    keyResolver,
   };
 
   return {
@@ -240,6 +322,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     alias,
     state,
     account,
+    keyResolver,
     createTransferImpl: config?.createTransferImpl, // Legacy support
   };
 };

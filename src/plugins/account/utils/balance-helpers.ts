@@ -1,0 +1,112 @@
+/**
+ * Balance Helper Functions
+ * Utility functions for account balance operations
+ */
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { AliasRecord } from '@/core/services/alias/alias-service.interface';
+import type { TokenBalanceInfo } from '@/core/services/mirrornode/types';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+
+import BigNumber from 'bignumber.js';
+
+import { normalizeBalance } from '@/core/utils/normalize-balance';
+
+/**
+ * Token balance with metadata
+ */
+export interface TokenBalanceWithMetadata {
+  tokenId: string;
+  name?: string;
+  symbol?: string;
+  alias?: string;
+  balance: bigint;
+  balanceDisplay?: string;
+  decimals?: number;
+}
+
+/**
+ * Finds the token alias for a given token ID from the alias service
+ * @param api - Core API instance
+ * @param tokenId - Token ID to find alias for
+ * @param network - Network the token is on
+ * @returns The alias if found, undefined otherwise
+ */
+export function findTokenAlias(
+  api: CoreApi,
+  tokenId: string,
+  network: SupportedNetwork,
+): string | undefined {
+  try {
+    const aliases = api.alias.list({ network, type: 'token' });
+    const aliasRecord = aliases.find(
+      (alias: AliasRecord) => alias.entityId === tokenId,
+    );
+    return aliasRecord ? aliasRecord.alias : undefined;
+  } catch (error: unknown) {
+    return undefined;
+  }
+}
+
+/**
+ * Fetches and maps token balances for an account with token metadata
+ * @param api - The Core API instance
+ * @param accountId - The account ID to fetch token balances for
+ * @param tokenId - Optional specific token ID to filter by
+ * @param raw - Whether to return raw units (base units) or display units
+ * @param network - Network the tokens are on
+ * @returns An array of token balances with metadata or undefined if no tokens found
+ * @throws Error if token balances could not be fetched
+ */
+export async function fetchAccountTokenBalances(
+  api: CoreApi,
+  accountId: string,
+  tokenId: string | undefined,
+  raw: boolean,
+  network: SupportedNetwork,
+): Promise<TokenBalanceWithMetadata[] | undefined> {
+  const tokenBalances = await api.mirror.getAccountTokenBalances(
+    accountId,
+    tokenId,
+  );
+
+  if (!tokenBalances.tokens?.length) {
+    return undefined;
+  }
+
+  return Promise.all(
+    tokenBalances.tokens.map(async (token: TokenBalanceInfo) => {
+      const balanceRaw = BigInt(token.balance.toString());
+      const alias = findTokenAlias(api, token.token_id, network);
+
+      let name: string | undefined;
+      let symbol: string | undefined;
+      let decimals: number | undefined;
+      try {
+        const tokenInfo = await api.mirror.getTokenInfo(token.token_id);
+        name = tokenInfo.name;
+        symbol = tokenInfo.symbol;
+        decimals = parseInt(tokenInfo.decimals, 10);
+      } catch {
+        decimals = token.decimals;
+      }
+
+      let balanceDisplay: string | undefined;
+      if (!raw && decimals !== undefined) {
+        balanceDisplay = normalizeBalance(
+          new BigNumber(balanceRaw.toString()),
+          decimals,
+        );
+      }
+
+      return {
+        tokenId: token.token_id,
+        name,
+        symbol,
+        alias,
+        balance: balanceRaw,
+        balanceDisplay,
+        decimals,
+      };
+    }),
+  );
+}

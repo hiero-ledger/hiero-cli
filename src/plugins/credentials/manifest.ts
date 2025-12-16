@@ -3,18 +3,19 @@
  * A plugin for managing operator credentials
  * Updated for ADR-003 compliance
  */
-import { PluginManifest } from '../../core/plugins/plugin.interface';
+import type { PluginManifest } from '@/core/plugins/plugin.interface';
+
 import {
-  ListCredentialsOutputSchema,
   LIST_CREDENTIALS_TEMPLATE,
-} from './commands/list/output';
+  listCredentials,
+  ListCredentialsOutputSchema,
+} from './commands/list';
 import {
-  RemoveCredentialsOutputSchema,
   REMOVE_CREDENTIALS_TEMPLATE,
-} from './commands/remove/output';
+  removeCredentials,
+  RemoveCredentialsOutputSchema,
+} from './commands/remove';
 import { CREDENTIALS_JSON_SCHEMA, CREDENTIALS_NAMESPACE } from './schema';
-import { listCredentials } from './commands/list/handler';
-import { removeCredentials } from './commands/remove/handler';
 
 export const credentialsManifest: PluginManifest = {
   name: 'credentials',

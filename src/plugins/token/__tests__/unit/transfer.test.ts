@@ -2,13 +2,18 @@
  * Token Transfer Handler Unit Tests
  * Tests the token transfer functionality of the token plugin
  */
-import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { transferToken } from '../../commands/transfer';
-import type { TransferTokenOutput } from '../../commands/transfer';
-import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
-import { makeLogger, makeApiMocks } from './helpers/mocks';
-import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
-import '../../../../core/utils/json-serialize';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
+
+import '@/core/utils/json-serialize';
+
+import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import {
+  transferToken,
+  type TransferTokenOutput,
+} from '@/plugins/token/commands/transfer';
+
+import { makeApiMocks, makeLogger } from './helpers/mocks';
 
 describe('transferTokenHandler', () => {
   describe('success scenarios', () => {
@@ -88,7 +93,7 @@ describe('transferTokenHandler', () => {
         KeyAlgorithm.ECDSA,
         '2222222222222222222222222222222222222222222222222222222222222222',
         'local',
-        ['token:account', 'temporary'],
+        ['token:account'],
       );
     });
 
@@ -115,6 +120,7 @@ describe('transferTokenHandler', () => {
           resolve: jest.fn().mockReturnValue({
             entityId: '0.0.345678',
             keyRefId: 'alias-key-ref-id',
+            publicKey: '302a300506032b6570032100' + '0'.repeat(64),
           }),
         },
         mirror: {
@@ -301,8 +307,24 @@ describe('transferTokenHandler', () => {
             keyRefId: 'imported-key-ref-id',
             publicKey: 'imported-public-key',
           }),
+          getPublicKey: jest
+            .fn()
+            .mockReturnValue('302a300506032b6570032100' + '0'.repeat(64)),
         },
       });
+
+      // Setup operator for fallback
+      api.network = {
+        ...api.network,
+        getOperator: jest.fn().mockReturnValue({
+          accountId: '0.0.2',
+          keyRefId: 'operator-key-ref-id',
+        }),
+        getCurrentOperatorOrThrow: jest.fn().mockReturnValue({
+          accountId: '0.0.2',
+          keyRefId: 'operator-key-ref-id',
+        }),
+      } as any;
 
       const logger = makeLogger();
       const args: CommandHandlerArgs = {

@@ -1,17 +1,19 @@
-import { deleteAccount } from '../../commands/delete/handler';
-import type { DeleteAccountOutput } from '../../commands/delete';
-import { ZustandAccountStateHelper } from '../../zustand-state-helper';
-import type { CoreApi } from '../../../../core/core-api/core-api.interface';
-import { Status } from '../../../../core/shared/constants';
-import {
-  makeLogger,
-  makeAccountData,
-  makeArgs,
-  makeNetworkServiceMock,
-  makeAliasServiceMock,
-} from './helpers/mocks';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { DeleteAccountOutput } from '@/plugins/account/commands/delete';
+
+import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { Status } from '@/core/shared/constants';
+import { deleteAccount } from '@/plugins/account/commands/delete/handler';
+import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+
 import { mockAliasLists } from './helpers/fixtures';
-import { AliasType } from '../../../../core/services/alias/alias-service.interface';
+import {
+  makeAccountData,
+  makeAliasServiceMock,
+  makeArgs,
+  makeLogger,
+  makeNetworkServiceMock,
+} from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),

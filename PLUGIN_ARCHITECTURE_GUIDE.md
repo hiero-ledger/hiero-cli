@@ -472,7 +472,7 @@ my-hedera-plugin/
 
 ```json
 {
-  "name": "@hashgraph/hedera-cli-plugin-my-plugin",
+  "name": "@hiero-ledger/hiero-cli-plugin-my-plugin",
   "version": "1.0.0",
   "description": "My custom Hedera CLI plugin",
   "main": "dist/index.js",
@@ -484,7 +484,7 @@ my-hedera-plugin/
     "dev": "tsc --watch"
   },
   "dependencies": {
-    "@hashgraph/hedera-cli": "^1.0.0"
+    "@hiero-ledger/hiero-cli": "^1.0.0"
   },
   "devDependencies": {
     "@types/node": "^18.0.0",
@@ -745,10 +745,17 @@ export async function createHandler(args: CommandHandlerArgs): Promise<void> {
 
 ### 1. Enable Debug Logging
 
+The CLI uses a config-based logging system. To enable debug logging, set the `log_level` config option:
+
 ```bash
-# Run with debug logging
-DEBUG=* node dist/hedera-cli.js my-plugin create --name test
+# Set log level to debug (persists across CLI invocations)
+node dist/hedera-cli.js config set -o log_level -v debug
+
+# Now run your plugin command with debug output
+node dist/hedera-cli.js my-plugin create --name test
 ```
+
+Available log levels: `silent` (default), `error`, `warn`, `info`, `debug`. All logger output is written to stderr, so command output on stdout remains clean.
 
 ### 2. Plugin Development Mode
 

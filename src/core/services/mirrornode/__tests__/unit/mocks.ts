@@ -3,16 +3,16 @@
  */
 import type {
   AccountAPIResponse,
+  ContractInfo,
+  ExchangeRateResponse,
+  TokenAirdropsResponse,
   TokenBalancesResponse,
-  TopicMessage,
-  TopicMessagesAPIResponse,
   TokenInfo,
   TopicInfo,
+  TopicMessage,
+  TopicMessagesAPIResponse,
   TransactionDetailsResponse,
-  ContractInfo,
-  TokenAirdropsResponse,
-  ExchangeRateResponse,
-} from '../../types';
+} from '@/core/services/mirrornode/types';
 
 export const createMockAccountAPIResponse = (
   overrides: Partial<AccountAPIResponse> = {},

@@ -2,13 +2,17 @@
  * Topic Message Submit Command Handler
  * Handles submitting messages to topics
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import type { TransactionResult } from '../../../../core';
-import { formatError } from '../../../../core/utils/errors';
-import { ZustandTopicStateHelper } from '../../zustand-state-helper';
-import { SubmitMessageOutput } from './output';
+import type { SubmitMessageOutput } from './output';
+
+import {
+  type CommandExecutionResult,
+  type CommandHandlerArgs,
+  type TransactionResult,
+} from '@/core';
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+
 import { SubmitMessageInputSchema } from './input';
 
 /**

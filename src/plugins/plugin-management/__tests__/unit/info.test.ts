@@ -1,11 +1,13 @@
 /**
  * Unit tests for plugin-management info command
  */
-import { Status } from '../../../../core/shared/constants';
-import { getPluginInfo } from '../../commands/info/handler';
-import { makeArgs, makeLogger } from '../../../../__tests__/mocks/mocks';
-import type { PluginManagementService } from '../../../../core/services/plugin-management/plugin-management-service.interface';
-import type { PluginStateEntry } from '../../../../core/plugins/plugin.interface';
+import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
+import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { Status } from '@/core/shared/constants';
+import { getPluginInfo } from '@/plugins/plugin-management/commands/info/handler';
+import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 jest.mock('path', () => ({
   resolve: (...segments: string[]) => segments.join('/'),
@@ -95,7 +97,7 @@ describe('plugin-management info command', () => {
     expect(output.plugin.capabilities).toEqual([]);
   });
 
-  it('should return not found when plugin does not exist', async () => {
+  it('should return failure when plugin does not exist', async () => {
     const logger = makeLogger();
     const pluginManagement = {
       getPlugin: jest.fn().mockReturnValue(undefined),
@@ -106,10 +108,10 @@ describe('plugin-management info command', () => {
 
     const result = await getPluginInfo(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-    const output = JSON.parse(result.outputJson!);
-    expect(output.found).toBe(false);
-    expect(output.message).toContain('missing-plugin');
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toBe(
+      ERROR_MESSAGES.pluginNotFound('missing-plugin'),
+    );
+    expect(result.outputJson).toBeUndefined();
   });
 });

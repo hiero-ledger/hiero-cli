@@ -1,10 +1,10 @@
-import {
+import type { StateService } from '@/core/services/state/state-service.interface';
+import type {
   ConfigOptionDescriptor,
   ConfigService,
-  CONFIG_OPTIONS,
-  CONFIG_NAMESPACE,
 } from './config-service.interface';
-import { StateService } from '../state/state-service.interface';
+
+import { CONFIG_NAMESPACE, CONFIG_OPTIONS } from './config-service.interface';
 
 export class ConfigServiceImpl implements ConfigService {
   private state: StateService;

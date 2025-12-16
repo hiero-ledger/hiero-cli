@@ -2,42 +2,20 @@
  * Implementation of Topic Transaction Service
  * Handles topic creation and message submission
  */
-import {
-  TopicCreateTransaction,
-  TopicMessageSubmitTransaction,
-  PublicKey,
-  PrivateKey,
-} from '@hashgraph/sdk';
-import { TopicService } from './topic-transaction-service.interface';
-import {
+import type { TopicService } from './topic-transaction-service.interface';
+import type {
   CreateTopicParams,
   MessageSubmitResult,
   SubmitMessageParams,
   TopicCreateResult,
 } from './types';
 
+import {
+  TopicCreateTransaction,
+  TopicMessageSubmitTransaction,
+} from '@hashgraph/sdk';
+
 export class TopicServiceImpl implements TopicService {
-  // Currently we only support DER formatted ECDSA private/public keys
-  // @TODO Support for HEX format and ED25519 keys
-  isPrivateKey(key: string): boolean {
-    try {
-      PrivateKey.fromStringDer(key);
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  createKeyFromString(key: string) {
-    const isKeyPrivate = this.isPrivateKey(key);
-
-    if (isKeyPrivate) {
-      return PrivateKey.fromStringDer(key);
-    }
-
-    return PublicKey.fromString(key);
-  }
-
   createTopic(params: CreateTopicParams): TopicCreateResult {
     // Create the topic creation transaction
     const topicCreateTx = new TopicCreateTransaction();
@@ -48,13 +26,11 @@ export class TopicServiceImpl implements TopicService {
     }
 
     if (params.adminKey) {
-      const adminKey = this.createKeyFromString(params.adminKey);
-      topicCreateTx.setAdminKey(adminKey);
+      topicCreateTx.setAdminKey(params.adminKey);
     }
 
     if (params.submitKey) {
-      const submitKey = this.createKeyFromString(params.submitKey);
-      topicCreateTx.setSubmitKey(submitKey);
+      topicCreateTx.setSubmitKey(params.submitKey);
     }
 
     const resultResponse: TopicCreateResult = {

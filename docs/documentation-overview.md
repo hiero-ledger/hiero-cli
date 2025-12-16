@@ -14,7 +14,7 @@ Technical documentation for developers and contributors working on the Hedera CL
 ## 🏗️ Project Structure
 
 ```
-hedera-cli/
+hiero-cli/
 ├── src/
 │   ├── core/                    # Core API and services
 │   │   ├── core-api/           # Main Core API

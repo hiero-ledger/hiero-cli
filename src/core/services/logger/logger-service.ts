@@ -1,4 +1,4 @@
-import { LogLevel, Logger } from './logger-service.interface';
+import type { Logger, LogLevel } from './logger-service.interface';
 
 const LOG_LEVEL_DATA: Record<
   LogLevel,
@@ -7,26 +7,30 @@ const LOG_LEVEL_DATA: Record<
     prefix: string;
   }
 > = {
-  error: {
+  silent: {
     priority: 0,
+    prefix: '',
+  },
+  error: {
+    priority: 1,
     prefix: '[ERROR]',
   },
   warn: {
-    priority: 1,
+    priority: 2,
     prefix: '[WARN]',
   },
   info: {
-    priority: 2,
+    priority: 3,
     prefix: '[INFO]',
   },
   debug: {
-    priority: 3,
+    priority: 4,
     prefix: '[DEBUG]',
   },
 };
 
 export class LoggerService implements Logger {
-  private currentLevel: LogLevel = 'info';
+  private currentLevel: LogLevel = 'silent';
 
   private shouldLog(level: LogLevel): boolean {
     return (

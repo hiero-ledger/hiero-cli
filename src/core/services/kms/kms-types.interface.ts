@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { KeyAlgorithm } from '../../shared/constants';
+
+import { KeyAlgorithm } from '@/core/shared/constants';
 
 // KEY MANAGERS - SINGLE SOURCE OF TRUTH
 

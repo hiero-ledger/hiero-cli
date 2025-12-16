@@ -1,19 +1,22 @@
-import { listTokens } from '../../commands/list';
-import type { ListTokensOutput } from '../../commands/list';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { Status } from '../../../../core/shared/constants';
+import { makeArgs } from '@/__tests__/mocks/mocks';
+import { Status } from '@/core/shared/constants';
 import {
-  makeLogger,
-  makeApiMocks,
-  setupZustandHelperMock,
-} from './helpers/mocks';
+  listTokens,
+  type ListTokensOutput,
+} from '@/plugins/token/commands/list';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
 import {
   makeTokenData,
   makeTokenStats,
   mockListTokens,
   mockTokenStats,
 } from './helpers/fixtures';
-import { makeArgs } from '../../../../__tests__/mocks/mocks';
+import {
+  makeApiMocks,
+  makeLogger,
+  setupZustandHelperMock,
+} from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
@@ -117,9 +120,7 @@ describe('token plugin - list command', () => {
     expect(output.tokens[0].name).toBe('Token 3');
     expect(output.tokens[0].symbol).toBe('TK3');
     expect(output.tokens[0].tokenId).toBe('0.0.3333');
-    expect(output.tokens[0].keys).toBeDefined();
-    expect(output.tokens[0].keys?.adminKey).toBe('admin-key-123');
-    expect(output.tokens[0].keys?.supplyKey).toBe('supply-key-123');
+    // Note: adminPublicKey is not returned in list output, only stored in state
   });
 
   test('filters tokens by current network', async () => {

@@ -2,27 +2,26 @@
  * Implementation of Token Service
  * Handles token-related transaction creation and execution
  */
+import type { CustomFee } from '@hashgraph/sdk';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type {
+  CustomFee as CustomFeeParams,
+  TokenAssociationParams,
+  TokenCreateParams,
+  TokenTransferParams,
+} from '@/core/types/token.types';
+import type { TokenService } from './token-service.interface';
+
 import {
-  TransferTransaction,
-  TokenCreateTransaction,
-  TokenAssociateTransaction,
   AccountId,
-  TokenId,
-  PublicKey,
-  TokenSupplyType,
-  CustomFee,
   CustomFixedFee,
   Hbar,
+  TokenAssociateTransaction,
+  TokenCreateTransaction,
+  TokenId,
+  TokenSupplyType,
+  TransferTransaction,
 } from '@hashgraph/sdk';
-import { Logger } from '../logger/logger-service.interface';
-import { TokenService } from './token-service.interface';
-import type {
-  TokenTransferParams,
-  TokenCreateParams,
-  TokenAssociationParams,
-  CustomFee as CustomFeeParams,
-} from '../../types/token.types';
-import { parsePrivateKey } from '../../utils/keys';
 
 export class TokenServiceImpl implements TokenService {
   private logger: Logger;
@@ -77,7 +76,7 @@ export class TokenServiceImpl implements TokenService {
       initialSupplyRaw,
       supplyType,
       maxSupplyRaw,
-      adminKey,
+      adminPublicKey,
       customFees,
       memo,
     } = params;
@@ -96,7 +95,7 @@ export class TokenServiceImpl implements TokenService {
       .setInitialSupply(initialSupplyRaw.toString())
       .setSupplyType(tokenSupplyType)
       .setTreasuryAccountId(AccountId.fromString(treasuryId))
-      .setAdminKey(this.parseKeyToPublic(adminKey));
+      .setAdminKey(adminPublicKey);
 
     // Set max supply for finite supply tokens
     if (supplyType === 'FINITE' && maxSupplyRaw !== undefined) {
@@ -150,24 +149,6 @@ export class TokenServiceImpl implements TokenService {
     );
 
     return associateTx;
-  }
-
-  /**
-   * Parse a key string to PublicKey
-   * Handles both public keys and private keys (extracts public key from private)
-   */
-  private parseKeyToPublic(key: string) {
-    try {
-      // Try to parse as private key first (for backwards compatibility)
-      return parsePrivateKey(key).publicKey;
-    } catch {
-      // If that fails, try to parse as public key directly
-      try {
-        return PublicKey.fromString(key);
-      } catch {
-        throw new Error(`Invalid key format: ${key}`);
-      }
-    }
   }
 
   /**

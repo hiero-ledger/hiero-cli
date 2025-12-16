@@ -2,14 +2,20 @@
  * Topic Create Command Handler
  * Handles topic creation using the Core API
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { ZustandTopicStateHelper } from '../../zustand-state-helper';
-import { AliasRecord } from '../../../../core/services/alias/alias-service.interface';
-import { CreateTopicOutput } from './output';
-import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
+import type {
+  CommandExecutionResult,
+  CommandHandlerArgs,
+  TransactionResult,
+} from '@/core';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { CreateTopicOutput } from './output';
+
+import { PublicKey } from '@hashgraph/sdk';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
+
 import { CreateTopicInputSchema } from './input';
 
 /**
@@ -29,8 +35,8 @@ export async function createTopic(
   const validArgs = CreateTopicInputSchema.parse(args.args);
 
   const memo = validArgs.memo;
-  const adminKey = validArgs.adminKey;
-  const submitKey = validArgs.submitKey;
+  const adminKeyArg = validArgs.adminKey;
+  const submitKeyArg = validArgs.submitKey;
   const alias = validArgs.name;
   const keyManagerArg = validArgs.keyManager;
 
@@ -51,87 +57,34 @@ export async function createTopic(
     logger.info(`Creating topic with memo: ${memo}`);
   }
 
+  const adminKey =
+    adminKeyArg &&
+    (await api.keyResolver.getOrInitKey(adminKeyArg, keyManager, [
+      'topic:admin',
+      `topic:${name}`,
+    ]));
+
+  const submitKey =
+    submitKeyArg &&
+    (await api.keyResolver.getOrInitKey(submitKeyArg, keyManager, [
+      'topic:submit',
+      `topic:${name}`,
+    ]));
+
   try {
-    const currentNetwork = api.network.getCurrentNetwork();
-
-    // Step 1: Resolve admin and submit key aliases to account references
-    let topicAdminKeyAlias: AliasRecord | undefined = undefined;
-    let topicSubmitKeyAlias: AliasRecord | undefined = undefined;
-
-    if (adminKey && typeof adminKey === 'string') {
-      const adminKeyAlias = api.alias.resolve(
-        adminKey,
-        'account',
-        currentNetwork,
-      );
-
-      if (adminKeyAlias) {
-        topicAdminKeyAlias = adminKeyAlias;
-      }
-    }
-
-    if (submitKey && typeof submitKey === 'string') {
-      const submitKeyAlias = api.alias.resolve(
-        submitKey,
-        'account',
-        currentNetwork,
-      );
-
-      if (submitKeyAlias) {
-        topicSubmitKeyAlias = submitKeyAlias;
-      }
-    }
-
     // Step 2: Create topic transaction using Core API
     const topicCreateResult = api.topic.createTopic({
       memo,
-      adminKey:
-        topicAdminKeyAlias?.publicKey ||
-        (typeof adminKey === 'string' ? adminKey : adminKey?.privateKey),
-      submitKey:
-        topicSubmitKeyAlias?.publicKey ||
-        (typeof submitKey === 'string' ? submitKey : submitKey?.privateKey),
+      adminKey: adminKey && PublicKey.fromString(adminKey.publicKey),
+      submitKey: submitKey && PublicKey.fromString(submitKey.publicKey),
     });
 
-    // Step 3: Import keys into KMS if they were provided directly (not via alias)
-    let adminKeyRefId: string | undefined = topicAdminKeyAlias?.keyRefId;
-    let submitKeyRefId: string | undefined = topicSubmitKeyAlias?.keyRefId;
+    let result: TransactionResult;
 
-    if (adminKey && !topicAdminKeyAlias && typeof adminKey !== 'string') {
-      // adminKey is already parsed by schema (PrivateKeyWithTypeSchema)
-      const { keyType, privateKey } = adminKey;
-      const { keyRefId } = api.kms.importPrivateKey(
-        keyType,
-        privateKey,
-        keyManager,
-        ['topic:admin', `topic:${name}`],
-      );
-      adminKeyRefId = keyRefId;
-    }
-
-    if (submitKey && !topicSubmitKeyAlias && typeof submitKey !== 'string') {
-      // submitKey is already parsed by schema (PrivateKeyWithTypeSchema)
-      const { keyType, privateKey } = submitKey;
-      const { keyRefId } = api.kms.importPrivateKey(
-        keyType,
-        privateKey,
-        keyManager,
-        ['topic:submit', `topic:${name}`],
-      );
-      submitKeyRefId = keyRefId;
-    }
-
-    // Step 4: Sign and execute transaction (with admin key if present)
-    let result;
-    if (topicAdminKeyAlias?.publicKey || adminKey) {
-      if (!adminKeyRefId) {
-        throw new Error(
-          '[TOPIC-CREATE] Admin key was provided but keyRefId is undefined',
-        );
-      }
+    if (adminKey) {
       result = await api.txExecution.signAndExecuteWith(
         topicCreateResult.transaction,
-        [adminKeyRefId],
+        [adminKey.keyRefId],
       );
     } else {
       result = await api.txExecution.signAndExecute(
@@ -145,8 +98,8 @@ export async function createTopic(
         name,
         topicId: result.topicId || '(unknown)',
         memo: memo || '(No memo)',
-        adminKeyRefId,
-        submitKeyRefId,
+        adminKeyRefId: adminKey?.keyRefId,
+        submitKeyRefId: submitKey?.keyRefId,
         network: api.network.getCurrentNetwork(),
         createdAt: result.consensusTimestamp,
         updatedAt: result.consensusTimestamp,

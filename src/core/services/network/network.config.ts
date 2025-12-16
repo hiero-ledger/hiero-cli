@@ -2,7 +2,7 @@
  * Default network configurations for NetworkService
  * This is the single source of truth for network settings
  */
-import { SupportedNetwork } from '../../types/shared.types';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface DefaultNetworkConfig {
   rpcUrl: string;
@@ -20,7 +20,7 @@ export const DEFAULT_NETWORK: SupportedNetwork = 'testnet';
 export const DEFAULT_NETWORKS: Record<string, DefaultNetworkConfig> = {
   localnet: {
     rpcUrl: 'http://localhost:7546',
-    mirrorNodeUrl: 'http://localhost:8081/api/v1',
+    mirrorNodeUrl: 'http://localhost:5551/api/v1',
   },
   testnet: {
     rpcUrl: 'https://testnet.hashio.io/api',

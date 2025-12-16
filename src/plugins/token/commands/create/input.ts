@@ -1,15 +1,17 @@
 import { z } from 'zod';
+
 import {
-  AccountOrAliasSchema,
   AmountInputSchema,
   HtsDecimalsSchema,
   KeyManagerTypeSchema,
+  KeyOrAccountAliasSchema,
+  MemoSchema,
   SupplyTypeSchema,
   TokenAliasNameSchema,
   TokenNameSchema,
   TokenSymbolSchema,
-} from '../../../../core/schemas';
-import { validateSupplyTypeAndMaxSupply } from '../../../../core/shared/validation/validate-supply.zod';
+} from '@/core/schemas';
+import { validateSupplyTypeAndMaxSupply } from '@/core/shared/validation/validate-supply.zod';
 
 /**
  * Input schema for token create command
@@ -19,7 +21,7 @@ export const CreateTokenInputSchema = z
   .object({
     tokenName: TokenNameSchema.describe('Token name'),
     symbol: TokenSymbolSchema.describe('Token symbol/ticker'),
-    treasury: AccountOrAliasSchema.optional().describe(
+    treasury: KeyOrAccountAliasSchema.optional().describe(
       'Treasury account. Can be alias or TreasuryID:treasuryKey pair. Defaults to operator.',
     ),
     decimals: HtsDecimalsSchema.default(0).describe(
@@ -34,7 +36,7 @@ export const CreateTokenInputSchema = z
     maxSupply: AmountInputSchema.optional().describe(
       'Maximum supply (required for FINITE supply type)',
     ),
-    adminKey: AccountOrAliasSchema.optional().describe(
+    adminKey: KeyOrAccountAliasSchema.optional().describe(
       'Admin key (optional). If not set, operator key is used as admin key.',
     ),
     name: TokenAliasNameSchema.optional().describe(
@@ -42,6 +44,9 @@ export const CreateTokenInputSchema = z
     ),
     keyManager: KeyManagerTypeSchema.optional().describe(
       'Key manager type (defaults to config setting)',
+    ),
+    memo: MemoSchema.describe(
+      'Optional memo for the token (max 100 characters)',
     ),
   })
   .superRefine(validateSupplyTypeAndMaxSupply);

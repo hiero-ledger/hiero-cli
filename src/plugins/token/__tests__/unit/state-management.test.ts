@@ -3,10 +3,12 @@
  * Tests the ZustandTokenStateHelper functionality
  */
 
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { StateService } from '../../../../core/services/state/state-service.interface';
-import { Logger } from '../../../../core/services/logger/logger-service.interface';
-import { mockStateTokenData, mockMultipleTokens } from './helpers/fixtures';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
+import { mockMultipleTokens, mockStateTokenData } from './helpers/fixtures';
 
 // Mock the dependencies
 jest.mock('../../../../core/services/state/state-service.interface');
@@ -220,10 +222,22 @@ describe('Token State Management', () => {
       );
 
       expect(stateHelper.getToken).toHaveBeenCalledWith('0.0.123456');
-      expect(stateHelper.saveToken).toHaveBeenCalledWith('0.0.123456', {
-        ...mockStateTokenData.basic,
-        associations: [{ name: 'TestAccount', accountId: '0.0.111111' }],
-      });
+      expect(stateHelper.saveToken).toHaveBeenCalledWith(
+        '0.0.123456',
+        expect.objectContaining({
+          tokenId: '0.0.123456',
+          name: 'TestToken',
+          symbol: 'TEST',
+          decimals: 2,
+          initialSupply: 1000n,
+          supplyType: 'FINITE',
+          maxSupply: 10000n,
+          treasuryId: '0.0.789012',
+          adminPublicKey: 'admin-key',
+          network: 'testnet',
+          associations: [{ name: 'TestAccount', accountId: '0.0.111111' }],
+        }),
+      );
       expect(mockLogger.debug).toHaveBeenCalledWith(
         '[TOKEN STATE] Added association 0.0.111111 to token 0.0.123456',
       );

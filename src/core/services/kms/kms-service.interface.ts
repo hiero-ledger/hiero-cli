@@ -1,8 +1,7 @@
-import type { KeyAlgorithmType } from './kms-types.interface';
-import type { KeyManagerName } from './kms-types.interface';
+import type { Client, Transaction as HederaTransaction } from '@hashgraph/sdk';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { KeyAlgorithmType, KeyManagerName } from './kms-types.interface';
 import type { Signer } from './signers/signer.interface';
-import { Client, Transaction as HederaTransaction } from '@hashgraph/sdk';
-import { SupportedNetwork } from '../../types/shared.types';
 
 export interface KmsService {
   /**
@@ -24,6 +23,7 @@ export interface KmsService {
   /**
    * Imports an existing private key using specified KeyManager.
    *
+   * @param keyType - Key algorithm type
    * @param privateKey - Private key string to import
    * @param keyManager - KeyManager to use ('local' or 'local_encrypted')
    * @param labels - Optional labels for the key
@@ -32,6 +32,24 @@ export interface KmsService {
   importPrivateKey(
     keyType: KeyAlgorithmType,
     privateKey: string,
+    keyManager?: KeyManagerName,
+    labels?: string[],
+  ): { keyRefId: string; publicKey: string };
+
+  /**
+   * Imports an existing private key and validates it against the public key from mirror node.
+   *
+   * @param keyType - Key algorithm type
+   * @param privateKey - Private key string to import
+   * @param validationPublicKey - The public key that should be associated with the given privateKey, used for validation.
+   * @param keyManager - KeyManager to use ('local' or 'local_encrypted')
+   * @param labels - Optional labels for the key
+   * @returns keyRefId and publicKey
+   */
+  importAndValidatePrivateKey(
+    keyType: KeyAlgorithmType,
+    privateKey: string,
+    validationPublicKey: string,
     keyManager?: KeyManagerName,
     labels?: string[],
   ): { keyRefId: string; publicKey: string };

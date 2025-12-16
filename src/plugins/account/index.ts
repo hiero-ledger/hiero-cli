@@ -14,10 +14,10 @@ export { accountPluginManifest } from './manifest';
 
 // Export command handlers
 export {
-  getAccountBalance,
   clearAccounts,
   createAccount,
   deleteAccount,
+  getAccountBalance,
   importAccount,
   listAccounts,
   viewAccount,

@@ -2,12 +2,12 @@
  * Plugin System Type Definitions
  * Types specific to the plugin architecture
  */
-import { CoreApi } from '../core-api/core-api.interface';
-import { StateService } from '../services/state/state-service.interface';
-import { ConfigService } from '../services/config/config-service.interface';
-import { Logger } from '../services/logger/logger-service.interface';
-import { CommandHandlerArgs } from './plugin.interface';
-import { Status } from '../shared/constants';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+import type { Status } from '@/core/shared/constants';
+import type { CommandHandlerArgs } from './plugin.interface';
 
 /**
  * Plugin manifest structure
@@ -33,7 +33,7 @@ export interface PluginManifest {
  * Command output specification
  * Defines the schema and optional human-readable template for command output
  */
-import { z } from 'zod';
+import type { z } from 'zod';
 
 export interface CommandOutputSpec {
   /** Zod schema for the command's output */

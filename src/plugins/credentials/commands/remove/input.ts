@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { KeyRefIdSchema } from '../../../../core/schemas';
+
+import { KeyRefIdSchema } from '@/core/schemas';
 
 /**
  * Input schema for credentials remove command

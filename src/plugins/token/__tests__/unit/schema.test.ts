@@ -2,23 +2,22 @@
  * Token Schema Validation Tests
  * Tests the token data validation and schema functionality
  */
+import { CreateTokenInputSchema } from '@/plugins/token/commands/create/input';
 import {
-  TokenDataSchema,
-  TokenKeysSchema,
-  TokenAssociationSchema,
   CustomFeeSchema,
+  TokenAssociationSchema,
+  TokenDataSchema,
   validateTokenData,
-} from '../../schema';
-import { CreateTokenInputSchema } from '../../commands/create/input';
+} from '@/plugins/token/schema';
+
 import {
-  validTokenDataForSchema,
-  validTokenKeys,
-  validTokenAssociation,
-  validCustomFee,
-  validTokenCreateParams,
-  minimalTokenCreateParams,
-  validTokenDataForValidation,
   invalidTokenDataForValidation,
+  minimalTokenCreateParams,
+  validCustomFee,
+  validTokenAssociation,
+  validTokenCreateParams,
+  validTokenDataForSchema,
+  validTokenDataForValidation,
 } from './helpers/fixtures';
 
 describe('Token Schema Validation', () => {
@@ -41,7 +40,7 @@ describe('Token Schema Validation', () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toContain(
-          'Token ID must be in format 0.0.123456',
+          'Hedera entity ID must be in format 0.0.{number}',
         );
       }
     });
@@ -141,7 +140,7 @@ describe('Token Schema Validation', () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toContain(
-          'Treasury ID must be in format 0.0.123456',
+          'Hedera entity ID must be in format 0.0.{number}',
         );
       }
     });
@@ -159,58 +158,6 @@ describe('Token Schema Validation', () => {
           'Network must be mainnet, testnet, previewnet, or localnet',
         );
       }
-    });
-  });
-
-  describe('TokenKeysSchema', () => {
-    test('should validate valid token keys', () => {
-      const result = TokenKeysSchema.safeParse(validTokenKeys);
-      expect(result.success).toBe(true);
-    });
-
-    test('should reject empty admin key', () => {
-      const invalidKeys = {
-        ...validTokenKeys,
-        adminKey: '',
-      };
-
-      const result = TokenKeysSchema.safeParse(invalidKeys);
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].message).toContain(
-          'Admin key is required',
-        );
-      }
-    });
-
-    test('should reject empty treasury key', () => {
-      const invalidKeys = {
-        ...validTokenKeys,
-        treasuryKey: '',
-      };
-
-      const result = TokenKeysSchema.safeParse(invalidKeys);
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].message).toContain(
-          'Treasury key is required',
-        );
-      }
-    });
-
-    test('should allow optional keys to be empty', () => {
-      const keysWithEmptyOptional = {
-        ...validTokenKeys,
-        supplyKey: '',
-        wipeKey: '',
-        kycKey: '',
-        freezeKey: '',
-        pauseKey: '',
-        feeScheduleKey: '',
-      };
-
-      const result = TokenKeysSchema.safeParse(keysWithEmptyOptional);
-      expect(result.success).toBe(true);
     });
   });
 
@@ -245,7 +192,7 @@ describe('Token Schema Validation', () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues[0].message).toContain(
-          'Account ID must be in format 0.0.123456',
+          'Hedera entity ID must be in format 0.0.{number}',
         );
       }
     });
@@ -356,10 +303,7 @@ describe('Token Schema Validation', () => {
         maxSupply: 10000,
         treasuryId: '0.0.789012',
         associations: [],
-        keys: {
-          adminKey: 'admin-key',
-          treasuryKey: 'treasury-key',
-        },
+        adminPublicKey: 'admin-key',
         network: 'testnet',
         customFees: [],
       };
@@ -379,10 +323,7 @@ describe('Token Schema Validation', () => {
         maxSupply: 0,
         treasuryId: '0.0.789012',
         associations: [],
-        keys: {
-          adminKey: 'admin-key',
-          treasuryKey: 'treasury-key',
-        },
+        adminPublicKey: 'admin-key',
         network: 'testnet',
         customFees: [],
       };
@@ -403,10 +344,7 @@ describe('Token Schema Validation', () => {
         maxSupply: 10000,
         treasuryId: '0.0.789012',
         associations: [],
-        keys: {
-          adminKey: 'admin-key',
-          treasuryKey: 'treasury-key',
-        },
+        adminPublicKey: 'admin-key',
         network: 'testnet',
         customFees: [],
       };
@@ -427,10 +365,7 @@ describe('Token Schema Validation', () => {
         maxSupply: 10000,
         treasuryId: '0.0.789012',
         associations: [],
-        keys: {
-          adminKey: 'admin-key',
-          treasuryKey: 'treasury-key',
-        },
+        adminPublicKey: 'admin-key',
         network: 'testnet',
         customFees: [],
       };

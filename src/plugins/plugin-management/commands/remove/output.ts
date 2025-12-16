@@ -2,8 +2,9 @@
  * Remove Plugin Command Output
  * Defines output schema and template for the remove plugin command
  */
-import { z } from 'zod';
-import { RemovePluginOutputSchema } from '../../schema';
+import type { z } from 'zod';
+
+import { RemovePluginOutputSchema } from '@/plugins/plugin-management/schema';
 
 // Export the schema
 export { RemovePluginOutputSchema };

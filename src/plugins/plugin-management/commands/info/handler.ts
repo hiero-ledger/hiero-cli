@@ -3,16 +3,20 @@
  * Returns plugin information based on the latest manifest.
  * Follows ADR-003 contract: returns CommandExecutionResult.
  */
-import * as path from 'path';
-import {
+import type {
+  CommandExecutionResult,
   CommandHandlerArgs,
-  PluginStateEntry,
   PluginManifest,
-} from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { PluginInfoOutput } from './output';
+  PluginStateEntry,
+} from '@/core';
+import type { PluginInfoOutput } from './output';
+
+import * as path from 'path';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
+
 import { PluginInfoInputSchema } from './input';
 
 export async function getPluginInfo(
@@ -32,13 +36,9 @@ export async function getPluginInfo(
     const entry: PluginStateEntry | undefined =
       pluginManagement.getPlugin(name);
     if (!entry) {
-      const notFound: PluginInfoOutput = {
-        found: false,
-        message: `Plugin ${name} not found in plugin-management state`,
-      };
       return {
-        status: Status.Success,
-        outputJson: JSON.stringify(notFound),
+        status: Status.Failure,
+        errorMessage: ERROR_MESSAGES.pluginNotFound(name),
       };
     }
 

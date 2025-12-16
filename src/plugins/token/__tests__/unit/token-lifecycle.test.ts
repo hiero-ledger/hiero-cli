@@ -2,19 +2,22 @@
  * Token Lifecycle Integration Tests
  * Tests the complete token lifecycle: create → associate → transfer
  */
-import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { createToken } from '../../commands/create';
-import { associateToken } from '../../commands/associate';
-import { transferToken } from '../../commands/transfer';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { Status } from '../../../../core/shared/constants';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+
+import '@/core/utils/json-serialize';
+
+import { Status } from '@/core/shared/constants';
+import { associateToken } from '@/plugins/token/commands/associate';
+import { createToken } from '@/plugins/token/commands/create';
+import { transferToken } from '@/plugins/token/commands/transfer';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
+import { mockAccountIds, mockKeys } from './helpers/fixtures';
 import {
-  makeLogger,
   makeApiMocks,
+  makeLogger,
   mockZustandTokenStateHelper,
 } from './helpers/mocks';
-import { mockAccountIds, mockKeys } from './helpers/fixtures';
-import '../../../../core/utils/json-serialize';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
@@ -111,11 +114,12 @@ describe('Token Lifecycle Integration', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            // Mock key alias resolution for test keys
-            if (type === 'key' && alias === 'admin-key') {
+            // Mock account alias resolution for test keys
+            if (type === 'account' && alias === 'admin-key') {
               return {
+                entityId: '0.0.100000',
+                publicKey: '302a300506032b6570032100' + '0'.repeat(64),
                 keyRefId: 'admin-key-ref-id',
-                publicKey: 'admin-key',
               };
             }
             return null;
@@ -202,7 +206,8 @@ describe('Token Lifecycle Integration', () => {
         supplyType: 'FINITE',
         maxSupplyRaw: 100000n,
         treasuryId: _treasuryAccountId,
-        adminKey: 'admin-key',
+        adminPublicKey: expect.any(Object),
+        memo: undefined,
       });
 
       expect(
@@ -289,11 +294,12 @@ describe('Token Lifecycle Integration', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            // Mock key alias resolution for test keys
-            if (type === 'key' && alias === 'admin-key') {
+            // Mock account alias resolution for test keys
+            if (type === 'account' && alias === 'admin-key') {
               return {
+                entityId: '0.0.100000',
+                publicKey: '302a300506032b6570032100' + '0'.repeat(64),
                 keyRefId: 'admin-key-ref-id',
-                publicKey: 'admin-key',
               };
             }
             return null;
@@ -414,11 +420,12 @@ describe('Token Lifecycle Integration', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            // Mock key alias resolution for test keys
-            if (type === 'key' && alias === 'admin-key') {
+            // Mock account alias resolution for test keys
+            if (type === 'account' && alias === 'admin-key') {
               return {
+                entityId: '0.0.100000',
+                publicKey: '302a300506032b6570032100' + '0'.repeat(64),
                 keyRefId: 'admin-key-ref-id',
-                publicKey: 'admin-key',
               };
             }
             return null;

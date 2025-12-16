@@ -4,4 +4,4 @@
  */
 export { listTokens } from './handler';
 export type { ListTokensOutput } from './output';
-export { ListTokensOutputSchema, LIST_TOKENS_TEMPLATE } from './output';
+export { LIST_TOKENS_TEMPLATE, ListTokensOutputSchema } from './output';

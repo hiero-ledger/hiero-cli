@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { PluginNameSchema } from '../../../../core/schemas';
+
+import { PluginNameSchema } from '@/core/schemas';
 
 /**
  * Input schema for plugin-management enable command

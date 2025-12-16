@@ -1,11 +1,12 @@
 /**
  * Common schemas for config command outputs
  */
+import { z } from 'zod';
+
 import {
   CONFIG_OPTION_TYPES,
-  ConfigOptionType,
-} from '../../core/services/config/config-service.interface';
-import { z } from 'zod';
+  type ConfigOptionType,
+} from '@/core/services/config/config-service.interface';
 
 export const ConfigOptionTypeSchema = z.enum(CONFIG_OPTION_TYPES);
 

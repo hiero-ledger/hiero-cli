@@ -2,15 +2,17 @@
  * Output Service Implementation
  * Handles command output formatting and rendering using the strategy pattern
  */
+import type { OutputFormat } from '@/core/shared/types/output-format';
+import type { OutputService } from './output-service.interface';
+import type { FormatStrategyOptions } from './strategies';
+import type { OutputHandlerOptions } from './types';
+
 import * as fs from 'fs';
 import * as path from 'path';
-import { OutputService } from './output-service.interface';
-import { OutputHandlerOptions } from './types';
-import {
-  OutputFormat,
-  DEFAULT_OUTPUT_FORMAT,
-} from '../../shared/types/output-format';
-import { OutputFormatterFactory, FormatStrategyOptions } from './strategies';
+
+import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
+
+import { OutputFormatterFactory } from './strategies';
 
 export class OutputServiceImpl implements OutputService {
   private currentFormat: OutputFormat;

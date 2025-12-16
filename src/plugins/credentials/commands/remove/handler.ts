@@ -2,11 +2,12 @@
  * Remove Credentials Command Handler
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { RemoveCredentialsOutput } from './output';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { RemoveCredentialsOutput } from './output';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+
 import { RemoveCredentialsInputSchema } from './input';
 
 export async function removeCredentials(
@@ -20,6 +21,20 @@ export async function removeCredentials(
   logger.info(`🗑️  Removing credentials for id: ${id}`);
 
   try {
+    const publicKey = api.kms.getPublicKey(id);
+    if (!publicKey) {
+      const outputData: RemoveCredentialsOutput = {
+        keyRefId: id,
+        removed: false,
+      };
+
+      return {
+        status: Status.Failure,
+        errorMessage: `Credential with key reference ID '${id}' does not exist`,
+        outputJson: JSON.stringify(outputData),
+      };
+    }
+
     // Remove the credentials
     api.kms.remove(id);
 

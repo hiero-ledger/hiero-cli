@@ -1,8 +1,12 @@
 /**
  * List Config Options Output Schema and Template
  */
-import { ConfigOptionTypeSchema, ConfigValueSchema } from '../../schema';
 import { z } from 'zod';
+
+import {
+  ConfigOptionTypeSchema,
+  ConfigValueSchema,
+} from '@/plugins/config/schema';
 
 export const ListConfigOutputSchema = z.object({
   options: z.array(

@@ -1,10 +1,11 @@
 import { z } from 'zod';
+
 import {
   EntityIdSchema,
   NetworkSchema,
   TinybarSchema,
   TransactionIdSchema,
-} from '../../../../core/schemas/common-schemas';
+} from '@/core/schemas/common-schemas';
 
 export const TransferOutputSchema = z.object({
   transactionId: TransactionIdSchema,

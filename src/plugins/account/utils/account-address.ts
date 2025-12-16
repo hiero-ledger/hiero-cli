@@ -1,6 +1,8 @@
+import type { KeyAlgorithmType } from '@/core/services/kms/kms-types.interface';
+
 import { AccountId, PublicKey } from '@hashgraph/sdk';
-import { KeyAlgorithm } from '../../../core/shared/constants';
-import type { KeyAlgorithmType } from '../../../core/services/kms/kms-types.interface';
+
+import { KeyAlgorithm } from '@/core/shared/constants';
 
 interface BuildAccountEvmAddressParams {
   accountId: string;

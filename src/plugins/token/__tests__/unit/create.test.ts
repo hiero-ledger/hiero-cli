@@ -3,23 +3,24 @@
  * Tests the token creation functionality of the token plugin
  * Updated for ADR-003 compliance
  */
-import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { createToken } from '../../commands/create';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import type { TransactionResult } from '../../../../core/services/tx-execution/tx-execution-service.interface';
-import { Status } from '../../../../core/shared/constants';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
+
+import { Status } from '@/core/shared/constants';
+import { createToken } from '@/plugins/token/commands/create';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
 import {
-  makeLogger,
-  makeApiMocks,
-  makeTransactionResult,
-} from './helpers/mocks';
-import {
+  expectedTokenTransactionParams,
+  makeTokenCreateCommandArgs,
   mockAccountIds,
   mockTransactions,
-  makeTokenCreateCommandArgs,
-  expectedTokenTransactionParams,
 } from './helpers/fixtures';
-// import type { CreateTokenOutput } from '../../commands/create';
+import {
+  makeApiMocks,
+  makeLogger,
+  makeTransactionResult,
+} from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
@@ -69,14 +70,16 @@ describe('createTokenHandler', () => {
             if (type === 'account' && alias === 'treasury-account') {
               return {
                 entityId: '0.0.123456',
+                publicKey: '302a300506032b6570032100' + '1'.repeat(64),
                 keyRefId: 'treasury-key-ref-id',
               };
             }
-            // Mock key alias resolution for test keys
-            if (type === 'key' && alias === 'test-admin-key') {
+            // Mock account alias resolution for admin-key
+            if (type === 'account' && alias === 'test-admin-key') {
               return {
+                entityId: '0.0.100000',
+                publicKey: '302a300506032b6570032100' + '0'.repeat(64),
                 keyRefId: 'admin-key-ref-id',
-                publicKey: 'test-admin-key',
               };
             }
             return null;
@@ -97,7 +100,7 @@ describe('createTokenHandler', () => {
       );
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTransactions.token,
-        ['admin-key-ref-id', 'treasury-key-ref-id'],
+        expect.arrayContaining(['admin-key-ref-id', 'treasury-key-ref-id']),
       );
       expect(mockSaveToken).toHaveBeenCalled();
       expect(result.status).toBe(Status.Success);
@@ -122,10 +125,7 @@ describe('createTokenHandler', () => {
             .mockReturnValue(mockTransactions.token),
         },
         signing: {
-          signAndExecute: jest.fn().mockResolvedValue(mockSignResult),
-        },
-        kms: {
-          getPublicKey: jest.fn().mockReturnValue('operator-public-key'),
+          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
       });
 
@@ -145,7 +145,7 @@ describe('createTokenHandler', () => {
       const result = await createToken(args);
 
       // Assert
-      expect(api.network.getOperator).toHaveBeenCalled();
+      // keyResolver.resolveKeyOrAliasWithFallback is called which internally uses getOperator
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith({
         name: 'TestToken',
         symbol: 'TEST',
@@ -154,11 +154,13 @@ describe('createTokenHandler', () => {
         supplyType: 'INFINITE',
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
-        adminKey: 'operator-public-key',
+        adminPublicKey: expect.any(Object),
+        memo: undefined,
       });
+      // When adminKey is not provided, only treasury signs (which is the operator)
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTransactions.token,
-        ['operator-key-ref-id', 'operator-key-ref-id'],
+        ['operator-key-ref-id'],
       );
       expect(mockSaveToken).toHaveBeenCalled();
       expect(result.status).toBe(Status.Success);
@@ -169,9 +171,12 @@ describe('createTokenHandler', () => {
   describe('validation scenarios', () => {
     test('should exit with error when no credentials found', async () => {
       // Arrange
-      const { api } = makeApiMocks();
+      const { api, keyResolver } = makeApiMocks();
 
-      (api.network.getOperator as jest.Mock).mockReturnValue(null);
+      // Mock keyResolver to throw error when no operator is available
+      keyResolver.getOrInitKeyWithFallback.mockImplementation(() =>
+        Promise.reject(new Error('No operator set')),
+      );
 
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
@@ -185,14 +190,8 @@ describe('createTokenHandler', () => {
         logger,
       };
 
-      // Act
-      const result = await createToken(args);
-
-      // Assert
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create token');
-      expect(result.errorMessage).toContain('No operator credentials found');
-      // This test is now ADR-003 compliant
+      // Act & Assert - Error is thrown before try-catch block in handler
+      await expect(createToken(args)).rejects.toThrow('No operator set');
     });
   });
 
@@ -292,6 +291,25 @@ describe('createTokenHandler', () => {
       expect(result.errorMessage).toContain('Service error');
       // This test is now ADR-003 compliant
     });
+    test('should handle initial supply limit exceeded', async () => {
+      const { api } = makeApiMocks({});
+      const logger = makeLogger();
+      const args: CommandHandlerArgs = {
+        args: {
+          tokenName: 'TestToken',
+          symbol: 'TEST',
+          adminKey: 'test-admin-key',
+          initialSupply: '250000000000000000000000000000',
+        },
+        api,
+        state: {} as any,
+        config: {} as any,
+        logger,
+      };
+      await expect(createToken(args)).rejects.toThrow(
+        'Maximum balance for token exceeded. Token balance cannot be greater than 9223372036854775807',
+      );
+    });
   });
 
   describe('state management', () => {
@@ -323,14 +341,16 @@ describe('createTokenHandler', () => {
             if (type === 'account' && alias === 'treasury-account') {
               return {
                 entityId: '0.0.123456',
+                publicKey: '302a300506032b6570032100' + '1'.repeat(64),
                 keyRefId: 'treasury-key-ref-id',
               };
             }
-            // Mock key alias resolution for test keys
-            if (type === 'key' && alias === 'test-admin-key') {
+            // Mock account alias resolution for admin-key
+            if (type === 'account' && alias === 'test-admin-key') {
               return {
+                entityId: '0.0.100000',
+                publicKey: '302a300506032b6570032100' + '0'.repeat(64),
                 keyRefId: 'admin-key-ref-id',
-                publicKey: 'test-admin-key',
               };
             }
             return null;

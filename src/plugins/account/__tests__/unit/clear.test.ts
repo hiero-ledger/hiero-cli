@@ -1,9 +1,10 @@
-import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { ZustandAccountStateHelper } from '../../zustand-state-helper';
-import { clearAccounts } from '../../commands/clear/handler';
-import type { ClearAccountsOutput } from '../../commands/clear';
-import { makeLogger } from '../../../../__tests__/mocks/mocks';
-import { Status } from '../../../../core/shared/constants';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { ClearAccountsOutput } from '@/plugins/account/commands/clear';
+
+import { makeLogger } from '@/__tests__/mocks/mocks';
+import { Status } from '@/core/shared/constants';
+import { clearAccounts } from '@/plugins/account/commands/clear/handler';
+import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),
@@ -18,6 +19,9 @@ describe('account plugin - clear command (ADR-003)', () => {
 
   test('clears all accounts successfully', async () => {
     const logger = makeLogger();
+    const alias = {
+      clear: jest.fn(),
+    };
 
     const listAccountsMock = jest
       .fn()
@@ -30,7 +34,10 @@ describe('account plugin - clear command (ADR-003)', () => {
     }));
 
     const args: Partial<CommandHandlerArgs> = {
-      api: { state: {} } as any,
+      api: {
+        state: {},
+        alias,
+      } as any,
       logger,
       args: {},
     };
@@ -41,6 +48,7 @@ describe('account plugin - clear command (ADR-003)', () => {
     expect(listAccountsMock).toHaveBeenCalledTimes(1);
     expect(clearAccountsMock).toHaveBeenCalledTimes(1);
     expect(logger.info).toHaveBeenCalledWith('Clearing all accounts...');
+    expect(alias.clear).toHaveBeenCalledTimes(1);
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
@@ -51,6 +59,9 @@ describe('account plugin - clear command (ADR-003)', () => {
 
   test('returns failure when clear fails', async () => {
     const logger = makeLogger();
+    const alias = {
+      clear: jest.fn(),
+    };
 
     MockedHelper.mockImplementation(() => ({
       listAccounts: jest.fn().mockReturnValue([{ name: 'a' }]),
@@ -60,7 +71,10 @@ describe('account plugin - clear command (ADR-003)', () => {
     }));
 
     const args: Partial<CommandHandlerArgs> = {
-      api: { state: {} } as any,
+      api: {
+        state: {},
+        alias,
+      } as any,
       logger,
       args: {},
     };
