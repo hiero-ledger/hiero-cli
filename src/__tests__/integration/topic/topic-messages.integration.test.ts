@@ -1,26 +1,32 @@
-import { CoreApi } from '../../../core/core-api/core-api.interface';
-import { createMockCoreApi } from '../../mocks/core-api.mock';
-import { Status } from '../../../core/shared/constants';
-import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
-import '../../../core/utils/json-serialize';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
+import type { FindMessagesOutput } from '@/plugins/topic/commands/find-message';
+import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
+import type { SubmitMessageOutput } from '@/plugins/topic/commands/submit-message';
+
+import '@/core/utils/json-serialize';
+
+import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
+import { delay } from '@/__tests__/utils/common-utils';
+import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
+import { createCoreApi } from '@/core/core-api/core-api';
+import { Status } from '@/core/shared/constants';
 import {
   createTopic,
   findMessage,
   listTopics,
   submitMessage,
-} from '../../../plugins/topic';
-import { CreateTopicOutput } from '../../../plugins/topic/commands/create';
-import { ListTopicsOutput } from '../../../plugins/topic/commands/list';
-import { SubmitMessageOutput } from '../../../plugins/topic/commands/submit-message';
-import { delay } from '../../utils/common-utils';
-import { FindMessagesOutput } from '../../../plugins/topic/commands/find-message';
+} from '@/plugins/topic';
 
 describe('Topic Messages Integration Tests', () => {
   let coreApi: CoreApi;
+  let network: SupportedNetwork;
 
   beforeAll(async () => {
-    coreApi = createMockCoreApi();
+    coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
+    network = coreApi.network.getCurrentNetwork();
   });
   it('should create a topic and submit message and then find it', async () => {
     const createTopicArgs: Record<string, unknown> = {
@@ -39,12 +45,12 @@ describe('Topic Messages Integration Tests', () => {
       createTopicResult.outputJson!,
     );
     expect(createTopicOutput.name).toBe('test-topic-submit');
-    expect(createTopicOutput.network).toBe('testnet');
+    expect(createTopicOutput.network).toBe(network);
     expect(createTopicOutput.adminKeyPresent).toBe(false);
     expect(createTopicOutput.submitKeyPresent).toBe(false);
 
     const listTopicArgs: Record<string, unknown> = {
-      network: 'testnet',
+      network: network,
     };
     const listTopicResult = await listTopics({
       args: listTopicArgs,
@@ -62,7 +68,7 @@ describe('Topic Messages Integration Tests', () => {
     );
     expect(topic).not.toBeNull();
     expect(topic?.name).toBe('test-topic-submit');
-    expect(topic?.network).toBe('testnet');
+    expect(topic?.network).toBe(network);
     expect(topic?.adminKeyPresent).toBe(false);
     expect(topic?.submitKeyPresent).toBe(false);
     expect(topic?.createdAt).toBe(createTopicOutput.createdAt);

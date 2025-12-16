@@ -2,26 +2,20 @@
  * Unit tests for TokenServiceImpl
  * Tests token transfer, creation, and association transaction building
  */
-import { TokenServiceImpl } from '../../token-service';
-import { makeLogger } from '../../../../../__tests__/mocks/mocks';
-import type { Logger } from '../../../logger/logger-service.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+
+import { AccountId, Hbar, TokenId } from '@hashgraph/sdk';
+
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
+import { makeLogger } from '@/__tests__/mocks/mocks';
+import { TokenServiceImpl } from '@/core/services/token/token-service';
+
 import {
-  createMockTransferTransaction,
-  createMockTokenCreateTransaction,
-  createMockTokenAssociateTransaction,
   createMockCustomFixedFee,
+  createMockTokenAssociateTransaction,
+  createMockTokenCreateTransaction,
+  createMockTransferTransaction,
 } from './mocks';
-import {
-  TokenId,
-  AccountId,
-  PublicKey,
-  PrivateKey,
-  Hbar,
-} from '@hashgraph/sdk';
-import {
-  ECDSA_DER_PRIVATE_KEY,
-  ECDSA_HEX_PUBLIC_KEY,
-} from '../../../../../__tests__/mocks/fixtures';
 
 // Reusable test constants
 const ACCOUNT_ID_FROM = '0.0.1111';
@@ -235,7 +229,7 @@ describe('TokenServiceImpl', () => {
       decimals: TOKEN_DECIMALS,
       initialSupplyRaw: INITIAL_SUPPLY,
       supplyType: 'INFINITE' as const,
-      adminKey: ECDSA_HEX_PUBLIC_KEY,
+      adminPublicKey: mockPublicKeyInstance as any,
     };
 
     it('should create token with all required parameters', () => {
@@ -317,45 +311,6 @@ describe('TokenServiceImpl', () => {
       tokenService.createTokenTransaction(baseParams);
 
       expect(mockTokenCreateTransaction.setTokenMemo).not.toHaveBeenCalled();
-    });
-
-    it('should parse admin key from public key string', () => {
-      // Make parsePrivateKey fail so it falls back to PublicKey.fromString
-      (PrivateKey.fromStringECDSA as jest.Mock).mockImplementationOnce(() => {
-        throw new Error('Not a private key');
-      });
-      (PrivateKey.fromStringDer as jest.Mock).mockImplementationOnce(() => {
-        throw new Error('Not a private key');
-      });
-
-      const params = {
-        ...baseParams,
-        adminKey: ECDSA_HEX_PUBLIC_KEY,
-      };
-
-      tokenService.createTokenTransaction(params);
-
-      expect(PublicKey.fromString).toHaveBeenCalledWith(ECDSA_HEX_PUBLIC_KEY);
-      expect(mockTokenCreateTransaction.setAdminKey).toHaveBeenCalledWith(
-        mockPublicKeyInstance,
-      );
-    });
-
-    it('should parse admin key from private key string', () => {
-      (PrivateKey.fromStringECDSA as jest.Mock).mockReturnValueOnce(
-        mockPrivateKeyInstance,
-      );
-
-      const params = {
-        ...baseParams,
-        adminKey: ECDSA_DER_PRIVATE_KEY,
-      };
-
-      tokenService.createTokenTransaction(params);
-
-      expect(mockTokenCreateTransaction.setAdminKey).toHaveBeenCalledWith(
-        mockPublicKeyInstance,
-      );
     });
 
     it('should set custom fees when provided', () => {

@@ -3,15 +3,16 @@
  * Handles importing existing accounts using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { ZustandAccountStateHelper } from '../../zustand-state-helper';
-import { ImportAccountOutput } from './output';
-import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
-import { AccountData } from '../../schema';
-import { buildAccountEvmAddress } from '../../utils/account-address';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { AccountData } from '@/plugins/account/schema';
+import type { ImportAccountOutput } from './output';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
+import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
+
 import { ImportAccountInputSchema } from './input';
 
 export async function importAccount(
@@ -25,10 +26,10 @@ export async function importAccount(
   // Parse and validate command arguments
   const validArgs = ImportAccountInputSchema.parse(args.args);
 
-  const accountId = validArgs.id;
-  const { keyType, privateKey } = validArgs.key;
+  const key = validArgs.key;
   const alias = validArgs.name;
   const keyManagerArg = validArgs.keyManager;
+  const accountId = key.accountId;
 
   // Check if name already exists on the current network
   const network = api.network.getCurrentNetwork();
@@ -42,6 +43,16 @@ export async function importAccount(
     // Check if account name already exists
     api.alias.availableOrThrow(alias, network);
 
+    // Get account info from mirror node
+    const accountInfo = await api.mirror.getAccount(key.accountId);
+
+    const { keyRefId, publicKey } = api.kms.importAndValidatePrivateKey(
+      accountInfo.keyAlgorithm,
+      key.privateKey,
+      accountInfo.accountPublicKey,
+      keyManager,
+    );
+
     // Generate a unique name for the account
     const name = alias || `imported-${accountId.replace(/\./g, '-')}`;
     logger.info(`Importing account: ${name} (${accountId})`);
@@ -53,17 +64,6 @@ export async function importAccount(
         errorMessage: `Account with name '${name}' already exists`,
       };
     }
-
-    // Get account info from mirror node
-    const accountInfo = await api.mirror.getAccount(accountId);
-
-    // Securely store the private key in credentials storage
-    const { keyRefId, publicKey } = api.kms.importPrivateKey(
-      keyType,
-      privateKey,
-      keyManager,
-      ['account:import', `account:${name}`],
-    );
 
     // Register name if provided
     if (alias) {
@@ -81,7 +81,7 @@ export async function importAccount(
     const evmAddress = buildAccountEvmAddress({
       accountId,
       publicKey,
-      keyType,
+      keyType: accountInfo.keyAlgorithm,
       existingEvmAddress: accountInfo.evmAddress,
     });
 
@@ -89,7 +89,7 @@ export async function importAccount(
     const account: AccountData = {
       name,
       accountId,
-      type: keyType,
+      type: accountInfo.keyAlgorithm,
       publicKey: publicKey,
       evmAddress,
       keyRefId,

@@ -1,15 +1,19 @@
-import { PluginStateEntry } from '../../plugins/plugin.interface';
-import { StateService } from '../state/state-service.interface';
-import { PLUGIN_MANAGEMENT_NAMESPACE } from '../../shared/constants';
-import {
-  PluginManagementDisableResult,
-  PluginManagementDisableStatus,
-  PluginManagementEnableResult,
-  PluginManagementEnableStatus,
-  PluginManagementService,
+import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+import type {
   PluginManagementCreateResult,
-  PluginManagementCreateStatus,
+  PluginManagementDisableResult,
+  PluginManagementEnableResult,
   PluginManagementRemoveResult,
+  PluginManagementService,
+} from './plugin-management-service.interface';
+
+import { PLUGIN_MANAGEMENT_NAMESPACE } from '@/core/shared/constants';
+
+import {
+  PluginManagementCreateStatus,
+  PluginManagementDisableStatus,
+  PluginManagementEnableStatus,
   PluginManagementRemoveStatus,
 } from './plugin-management-service.interface';
 

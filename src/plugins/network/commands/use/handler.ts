@@ -1,8 +1,10 @@
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { formatError } from '../../../../core/utils/errors';
-import { UseNetworkOutput } from './output';
-import { Status } from '../../../../core/shared/constants';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { UseNetworkOutput } from './output';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
+
 import { UseNetworkInputSchema } from './input';
 
 export async function useHandler(
@@ -27,7 +29,7 @@ export async function useHandler(
   } catch (error) {
     return {
       status: Status.Failure,
-      errorMessage: formatError('Failed to switch network', error),
+      errorMessage: formatError(ERROR_MESSAGES.failedToSwitchNetwork, error),
     };
   }
 }

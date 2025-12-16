@@ -3,6 +3,8 @@
  * Type definitions for token-related operations
  */
 
+import type { PublicKey } from '@hashgraph/sdk';
+
 /**
  * Parameters for token transfer transactions
  */
@@ -35,7 +37,7 @@ export interface TokenCreateParams {
   initialSupplyRaw: bigint;
   supplyType: 'FINITE' | 'INFINITE';
   maxSupplyRaw?: bigint; // Required for FINITE supply type
-  adminKey: string;
+  adminPublicKey: PublicKey;
   customFees?: CustomFee[];
   memo?: string;
 }

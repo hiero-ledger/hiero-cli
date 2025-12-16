@@ -2,8 +2,9 @@
  * List Credentials Command Output Schema and Template
  */
 import { z } from 'zod';
-import { PublicKeySchema } from '../../../../core/schemas';
-import { keyManagerNameSchema } from '../../../../core/services/kms/kms-types.interface';
+
+import { PublicKeySchema } from '@/core/schemas';
+import { keyManagerNameSchema } from '@/core/services/kms/kms-types.interface';
 
 /**
  * Credential entry schema

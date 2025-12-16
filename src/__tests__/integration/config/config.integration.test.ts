@@ -1,20 +1,23 @@
-import { CoreApi } from '../../../core/core-api/core-api.interface';
-import { createMockCoreApi } from '../../mocks/core-api.mock';
-import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
-import '../../../core/utils/json-serialize';
-import { listConfigOptions } from '../../../plugins/config/commands/list/handler';
-import { ListConfigOutput } from '../../../plugins/config/commands/list';
-import { Status } from '../../../core/shared/constants';
-import { setConfigOption } from '../../../plugins/config/commands/set/handler';
-import { SetConfigOutput } from '../../../plugins/config/commands/set';
-import { getConfigOption } from '../../../plugins/config/commands/get/handler';
-import { GetConfigOutput } from '../../../plugins/config/commands/get';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { GetConfigOutput } from '@/plugins/config/commands/get';
+import type { ListConfigOutput } from '@/plugins/config/commands/list';
+import type { SetConfigOutput } from '@/plugins/config/commands/set';
+
+import '@/core/utils/json-serialize';
+
+import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
+import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
+import { createCoreApi } from '@/core/core-api/core-api';
+import { Status } from '@/core/shared/constants';
+import { getConfigOption } from '@/plugins/config/commands/get/handler';
+import { listConfigOptions } from '@/plugins/config/commands/list/handler';
+import { setConfigOption } from '@/plugins/config/commands/set/handler';
 
 describe('Config Integration Tests', () => {
   let coreApi: CoreApi;
 
   beforeAll(async () => {
-    coreApi = createMockCoreApi();
+    coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
   });
 

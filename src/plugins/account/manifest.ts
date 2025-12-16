@@ -2,44 +2,46 @@
  * Account Plugin Manifest
  * Defines the account plugin according to ADR-001
  */
-import { PluginManifest } from '../../core';
-import { KeyAlgorithm } from '../../core/shared/constants';
-import { ACCOUNT_JSON_SCHEMA, ACCOUNT_NAMESPACE } from './schema';
+import type { PluginManifest } from '@/core';
+
+import { KeyAlgorithm } from '@/core/shared/constants';
+
 import {
-  ListAccountsOutputSchema,
-  LIST_ACCOUNTS_TEMPLATE,
-} from './commands/list';
-import {
-  CreateAccountOutputSchema,
-  CREATE_ACCOUNT_TEMPLATE,
-} from './commands/create';
-import {
-  AccountBalanceOutputSchema,
   ACCOUNT_BALANCE_TEMPLATE,
+  AccountBalanceOutputSchema,
+  getAccountBalance,
 } from './commands/balance';
 import {
-  ClearAccountsOutputSchema,
   CLEAR_ACCOUNTS_TEMPLATE,
+  clearAccounts,
+  ClearAccountsOutputSchema,
 } from './commands/clear';
 import {
-  DeleteAccountOutputSchema,
+  CREATE_ACCOUNT_TEMPLATE,
+  createAccount,
+  CreateAccountOutputSchema,
+} from './commands/create';
+import {
   DELETE_ACCOUNT_TEMPLATE,
+  deleteAccount,
+  DeleteAccountOutputSchema,
 } from './commands/delete';
 import {
-  ViewAccountOutputSchema,
-  VIEW_ACCOUNT_TEMPLATE,
-} from './commands/view';
-import {
-  ImportAccountOutputSchema,
   IMPORT_ACCOUNT_TEMPLATE,
+  importAccount,
+  ImportAccountOutputSchema,
 } from './commands/import';
-import { createAccount } from './commands/create/handler';
-import { getAccountBalance } from './commands/balance/handler';
-import { listAccounts } from './commands/list/handler';
-import { importAccount } from './commands/import/handler';
-import { clearAccounts } from './commands/clear/handler';
-import { deleteAccount } from './commands/delete/handler';
-import { viewAccount } from './commands/view/handler';
+import {
+  LIST_ACCOUNTS_TEMPLATE,
+  listAccounts,
+  ListAccountsOutputSchema,
+} from './commands/list';
+import {
+  VIEW_ACCOUNT_TEMPLATE,
+  viewAccount,
+  ViewAccountOutputSchema,
+} from './commands/view';
+import { ACCOUNT_JSON_SCHEMA, ACCOUNT_NAMESPACE } from './schema';
 
 export const accountPluginManifest: PluginManifest = {
   name: 'account',
@@ -141,6 +143,15 @@ export const accountPluginManifest: PluginManifest = {
           required: false,
           description: 'Token ID or token name',
         },
+        {
+          name: 'raw',
+          short: 'r',
+          type: 'boolean',
+          required: false,
+          default: false,
+          description:
+            'Display balances in raw units (tinybars for HBAR, base units for tokens)',
+        },
       ],
       handler: getAccountBalance,
       output: {
@@ -172,22 +183,15 @@ export const accountPluginManifest: PluginManifest = {
       name: 'import',
       summary: 'Import an existing account',
       description:
-        'Import an existing account into the CLI tool. Private key can be optionally prefixed with key type (e.g., "ed25519:..." or "ecdsa:..."). If no prefix is provided, defaults to ecdsa.',
+        'Import an existing account into the CLI tool. Provide accountId:privateKey format (e.g., "0.0.123456:abc123...").',
       options: [
-        {
-          name: 'id',
-          short: 'i',
-          type: 'string',
-          required: true,
-          description: 'Account ID.',
-        },
         {
           name: 'key',
           short: 'K',
           type: 'string',
-          required: false,
+          required: true,
           description:
-            'Private key. Can be prefixed with key type (e.g., "ed25519:..." or "ecdsa:..."). Defaults to ecdsa if no prefix.',
+            'Private key in accountId:privateKey format (e.g., "0.0.123456:abc123...")',
         },
         {
           name: 'name',

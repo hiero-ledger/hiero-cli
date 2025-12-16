@@ -1,11 +1,12 @@
 import { z } from 'zod';
+
 import {
-  AccountOrAliasSchema,
   AccountReferenceSchema,
   AmountInputSchema,
   EntityReferenceSchema,
   KeyManagerTypeSchema,
-} from '../../../../core/schemas';
+  KeyOrAccountAliasSchema,
+} from '@/core/schemas';
 
 /**
  * Input schema for token transfer command
@@ -16,7 +17,7 @@ export const TransferTokenInputSchema = z.object({
   to: AccountReferenceSchema.describe(
     'Destination account (ID, EVM address, or name)',
   ),
-  from: AccountOrAliasSchema.optional().describe(
+  from: KeyOrAccountAliasSchema.optional().describe(
     'Source account. Can be alias or AccountID:privateKey pair. Defaults to operator.',
   ),
   amount: AmountInputSchema.describe(

@@ -8,6 +8,10 @@
     "sourceMap": true,
     "removeComments": false,
     "typeRoots": ["./types", "./node_modules/@types"],
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   }
 }

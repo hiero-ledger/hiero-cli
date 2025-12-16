@@ -2,7 +2,10 @@
  * Topic Service Test Mocks
  * SDK mocks and test data factories for topic transaction service tests
  */
-import type { CreateTopicParams, SubmitMessageParams } from '../../types';
+import type {
+  CreateTopicParams,
+  SubmitMessageParams,
+} from '@/core/services/topic/types';
 
 export const INVALID_KEY = 'not-a-valid-key';
 
@@ -41,6 +44,7 @@ export const createMockPrivateKey = (publicKeyValue = 'mock-public-key') => ({
  */
 export const createMockPublicKey = (publicKeyValue = 'mock-public-key') => ({
   toStringRaw: jest.fn().mockReturnValue(publicKeyValue),
+  _toProtobufKey: jest.fn().mockReturnValue({}),
 });
 
 /**

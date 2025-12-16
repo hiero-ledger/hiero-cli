@@ -1,17 +1,19 @@
 #!/usr/bin/env node
 
-import { program } from 'commander';
-import { createCoreApi } from './core';
 import './core/utils/json-serialize';
-import { DEFAULT_PLUGIN_STATE } from './core/shared/config/cli-options';
-import { addDisabledPluginsHelp } from './core/utils/add-disabled-plugins-help';
+
+import { program } from 'commander';
+
+import { createCoreApi } from './core';
 import { PluginManager } from './core/plugins/plugin-manager';
-import {
-  setupGlobalErrorHandlers,
-  setGlobalOutputFormat,
-  formatAndExitWithError,
-} from './core/utils/error-handler';
+import { DEFAULT_PLUGIN_STATE } from './core/shared/config/cli-options';
 import { validateOutputFormat } from './core/shared/validation/validate-output-format.zod';
+import { addDisabledPluginsHelp } from './core/utils/add-disabled-plugins-help';
+import {
+  formatAndExitWithError,
+  setGlobalOutputFormat,
+  setupGlobalErrorHandlers,
+} from './core/utils/error-handler';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../package.json') as { version?: string };

@@ -2,11 +2,13 @@
  * Unit tests for ZustandGenericStateServiceImpl
  * Tests state management operations: get, set, delete, list, clear, has, subscribe, etc.
  */
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+
 import * as fs from 'fs';
 import * as path from 'path';
-import { ZustandGenericStateServiceImpl } from '../../state-service';
-import { makeLogger } from '../../../../../__tests__/mocks/mocks';
-import type { Logger } from '../../../logger/logger-service.interface';
+
+import { makeLogger } from '@/__tests__/mocks/mocks';
+import { ZustandGenericStateServiceImpl } from '@/core/services/state/state-service';
 
 const NAMESPACE_FOO = 'foo-namespace';
 const NAMESPACE_BAR = 'bar-namespace';

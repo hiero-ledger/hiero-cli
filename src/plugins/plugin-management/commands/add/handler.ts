@@ -9,14 +9,19 @@
  *
  * Follows ADR-003 contract: returns CommandExecutionResult.
  */
-import * as path from 'path';
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { AddPluginOutput } from './output';
-import { PluginStateEntry, PluginManifest } from '../../../../core';
-import { PluginManagementCreateStatus } from '../../../../core/services/plugin-management/plugin-management-service.interface';
+import type {
+  CommandExecutionResult,
+  CommandHandlerArgs,
+  PluginManifest,
+  PluginStateEntry,
+} from '@/core';
+import type { AddPluginOutput } from './output';
+
+import { PluginManagementCreateStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { validatePluginPath } from '@/plugins/plugin-management/utils/plugin-path-validator';
+
 import { AddPluginInputSchema } from './input';
 
 export async function addPlugin(
@@ -35,8 +40,7 @@ export async function addPlugin(
     // @TODO: Normalize plugin paths (relative vs absolute) once CLI packaging
     // as an npm package is finalized, so built-in and user-added plugins use
     // a consistent path format.
-    const resolvedPath = path.resolve(String(pluginPath));
-    const manifestPath = path.resolve(resolvedPath, 'manifest.js');
+    const { resolvedPath, manifestPath } = await validatePluginPath(pluginPath);
 
     logger.info(`🔍 Loading plugin manifest from: ${manifestPath}`);
 

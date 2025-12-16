@@ -2,5 +2,6 @@
  * List Command Exports
  * For use by tests and external consumers
  */
+export { listAccounts } from './handler';
 export type { ListAccountsOutput } from './output';
-export { ListAccountsOutputSchema, LIST_ACCOUNTS_TEMPLATE } from './output';
+export { LIST_ACCOUNTS_TEMPLATE, ListAccountsOutputSchema } from './output';

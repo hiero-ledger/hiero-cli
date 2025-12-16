@@ -1,8 +1,9 @@
-import { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../../core/plugins/plugin.types';
-import { Status } from '../../../../core/shared/constants';
-import { formatError } from '../../../../core/utils/errors';
-import { FooTestOutput } from './output';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { CommandExecutionResult } from '@/core/plugins/plugin.types';
+import type { FooTestOutput } from './output';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
 
 export async function fooTestOptions(
   args: CommandHandlerArgs,

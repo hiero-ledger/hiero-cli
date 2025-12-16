@@ -1,18 +1,24 @@
-import { CoreApi } from '../../../core/core-api/core-api.interface';
-import { createMockCoreApi } from '../../mocks/core-api.mock';
-import { Status } from '../../../core/shared/constants';
-import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
-import '../../../core/utils/json-serialize';
-import { createToken, listTokens } from '../../../plugins/token';
-import { CreateTokenOutput } from '../../../plugins/token/commands/create';
-import { ListTokensOutput } from '../../../plugins/token/commands/list';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { CreateTokenOutput } from '@/plugins/token/commands/create';
+import type { ListTokensOutput } from '@/plugins/token/commands/list';
+
+import '@/core/utils/json-serialize';
+
+import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
+import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
+import { createCoreApi } from '@/core/core-api/core-api';
+import { Status } from '@/core/shared/constants';
+import { createToken, listTokens } from '@/plugins/token';
 
 describe('List Token Integration Tests', () => {
   let coreApi: CoreApi;
+  let network: SupportedNetwork;
 
   beforeAll(async () => {
-    coreApi = createMockCoreApi();
+    coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
+    network = coreApi.network.getCurrentNetwork();
   });
   it('should create a token and check it with list', async () => {
     const createTokenArgs: Record<string, unknown> = {
@@ -33,7 +39,7 @@ describe('List Token Integration Tests', () => {
     const createTokenOutput: CreateTokenOutput = JSON.parse(
       createTokenResult.outputJson!,
     );
-    expect(createTokenOutput.network).toBe('testnet');
+    expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('10');
     expect(createTokenOutput.name).toBe('Test Token List');
@@ -44,7 +50,7 @@ describe('List Token Integration Tests', () => {
 
     const listTokenArgs: Record<string, unknown> = {
       keys: true,
-      network: 'testnet',
+      network: network,
     };
     const listTokenResult = await listTokens({
       args: listTokenArgs,
@@ -57,7 +63,7 @@ describe('List Token Integration Tests', () => {
     const listTokenOutput: ListTokensOutput = JSON.parse(
       listTokenResult.outputJson!,
     );
-    expect(listTokenOutput.network).toBe('testnet');
+    expect(listTokenOutput.network).toBe(network);
     const tokenNames = listTokenOutput.tokens.map((token) => token.tokenId);
     expect(tokenNames).toContain(createTokenOutput.tokenId);
   });

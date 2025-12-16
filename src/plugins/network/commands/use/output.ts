@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { NetworkSchema } from '../../../../core/schemas/common-schemas';
+
+import { NetworkSchema } from '@/core/schemas/common-schemas';
 
 export const UseNetworkOutputSchema = z.object({
   activeNetwork: NetworkSchema,

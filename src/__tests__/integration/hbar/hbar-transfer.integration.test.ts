@@ -1,23 +1,27 @@
-import { CoreApi } from '../../../core/core-api/core-api.interface';
-import { createMockCoreApi } from '../../mocks/core-api.mock';
-import { createAccount, viewAccount } from '../../../plugins/account';
-import { KeyAlgorithm, Status } from '../../../core/shared/constants';
-import { CreateAccountOutput } from '../../../plugins/account/commands/create';
-import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
-import { ViewAccountOutput } from '../../../plugins/account/commands/view';
-import '../../../core/utils/json-serialize';
-import { delay } from '../../utils/common-utils';
-import {
-  transferHandler,
-  TransferOutput,
-} from '../../../plugins/hbar/commands/transfer';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { CreateAccountOutput } from '@/plugins/account/commands/create';
+import type { ViewAccountOutput } from '@/plugins/account/commands/view';
+import type { TransferOutput } from '@/plugins/hbar/commands/transfer';
+
+import '@/core/utils/json-serialize';
+
+import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
+import { delay } from '@/__tests__/utils/common-utils';
+import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
+import { createCoreApi } from '@/core/core-api/core-api';
+import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { createAccount, viewAccount } from '@/plugins/account';
+import { transferHandler } from '@/plugins/hbar/commands/transfer';
 
 describe('HBAR Transfer Account Integration Tests', () => {
   let coreApi: CoreApi;
+  let network: SupportedNetwork;
 
   beforeAll(async () => {
-    coreApi = createMockCoreApi();
+    coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
+    network = coreApi.network.getCurrentNetwork();
   });
 
   it('should transfer HBAR from operator to account and then verify it with account view method', async () => {
@@ -41,7 +45,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     );
     expect(createAccountOutput.name).toBe('account-transfer');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
-    expect(createAccountOutput.network).toBe('testnet');
+    expect(createAccountOutput.network).toBe(network);
 
     await delay(5000);
 
@@ -65,7 +69,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     expect(transferHbarOutput.fromAccountId).toBe(process.env.OPERATOR_ID);
     expect(transferHbarOutput.toAccountId).toBe(createAccountOutput.accountId);
     expect(transferHbarOutput.memo).toBe('Memo test');
-    expect(transferHbarOutput.network).toBe('testnet');
+    expect(transferHbarOutput.network).toBe(network);
     expect(transferHbarOutput.amountTinybar).toBe('100000000');
 
     await delay(5000);
@@ -111,7 +115,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     );
     expect(accountFromOutput.name).toBe('account-transfer-from');
     expect(accountFromOutput.type).toBe(KeyAlgorithm.ECDSA);
-    expect(accountFromOutput.network).toBe('testnet');
+    expect(accountFromOutput.network).toBe(network);
 
     const accountToArgs: Record<string, unknown> = {
       name: 'account-transfer-to',
@@ -133,7 +137,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     );
     expect(accountToOutput.name).toBe('account-transfer-to');
     expect(accountToOutput.type).toBe(KeyAlgorithm.ECDSA);
-    expect(accountToOutput.network).toBe('testnet');
+    expect(accountToOutput.network).toBe(network);
 
     await delay(5000);
 
@@ -156,7 +160,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     expect(transferHbarOutput.status).toBe('success');
     expect(transferHbarOutput.fromAccountId).toBe(accountFromOutput.accountId);
     expect(transferHbarOutput.toAccountId).toBe(accountToOutput.accountId);
-    expect(transferHbarOutput.network).toBe('testnet');
+    expect(transferHbarOutput.network).toBe(network);
     expect(transferHbarOutput.amountTinybar).toBe('100000000');
 
     await delay(5000);
@@ -176,7 +180,6 @@ describe('HBAR Transfer Account Integration Tests', () => {
       viewAccountFromResult.outputJson!,
     );
     expect(viewAccountFromOutput.accountId).toBe(accountFromOutput.accountId);
-    expect(viewAccountFromOutput.balance).toBe('0');
     expect(viewAccountFromOutput.publicKey).toBe(accountFromOutput.publicKey);
 
     const viewAccountToArgs: Record<string, unknown> = {

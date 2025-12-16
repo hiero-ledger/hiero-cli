@@ -2,9 +2,9 @@
  * JSON Output Strategy
  * Formats output data as JSON using the strategy pattern
  */
-import {
-  OutputFormatterStrategy,
+import type {
   FormatStrategyOptions,
+  OutputFormatterStrategy,
 } from './output-formatter-strategy.interface';
 
 export class JsonOutputStrategy implements OutputFormatterStrategy {

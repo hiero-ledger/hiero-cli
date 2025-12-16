@@ -2,9 +2,10 @@
  * Unit tests for HbarServiceImpl
  * Tests HBAR transfer transaction creation
  */
-import { HbarServiceImpl } from '../../hbar-service';
-import { makeLogger } from '../../../../../__tests__/mocks/mocks';
-import type { Logger } from '../../../logger/logger-service.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+
+import { makeLogger } from '@/__tests__/mocks/mocks';
+import { HbarServiceImpl } from '@/core/services/hbar/hbar-service';
 
 const ACCOUNT_ID_FROM_1 = '0.0.1111';
 const ACCOUNT_ID_TO_1 = '0.0.2222';

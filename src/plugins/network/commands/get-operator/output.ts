@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { NetworkSchema } from '../../../../core/schemas/common-schemas';
+
+import { NetworkSchema } from '@/core/schemas/common-schemas';
 
 export const OperatorInfoSchema = z.object({
   accountId: z.string(),

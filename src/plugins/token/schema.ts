@@ -4,26 +4,30 @@
  */
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { EntityIdSchema } from '../../core/schemas';
 
-// Zod schema for token keys
+import { EntityIdSchema, KeyOrAccountAliasSchema } from '@/core/schemas';
+
+/*
+  At that moment, these keys were useless because they were only stored locally, with no trace of them on the network.
+  @TODO Support for all these keys
+
 export const TokenKeysSchema = z.object({
-  adminKey: z.string().min(1, 'Admin key is required'),
-  supplyKey: z.string().optional().default(''),
-  wipeKey: z.string().optional().default(''),
-  kycKey: z.string().optional().default(''),
-  freezeKey: z.string().optional().default(''),
-  pauseKey: z.string().optional().default(''),
-  feeScheduleKey: z.string().optional().default(''),
-  treasuryKey: z.string().min(1, 'Treasury key is required'),
+  adminKey: KeyOrAccountAliasSchema,
+  supplyKey: KeyOrAccountAliasSchema.optional(),
+  wipeKey: KeyOrAccountAliasSchema.optional(),
+  kycKey: KeyOrAccountAliasSchema.optional(),
+  freezeKey: KeyOrAccountAliasSchema.optional(),
+  pauseKey: KeyOrAccountAliasSchema.optional(),
+  feeScheduleKey: KeyOrAccountAliasSchema.optional(),
+  treasuryKey: KeyOrAccountAliasSchema.optional(),
 });
+
+*/
 
 // Zod schema for token association
 export const TokenAssociationSchema = z.object({
   name: z.string().min(1, 'Association name is required'),
-  accountId: z
-    .string()
-    .regex(/^0\.0\.[0-9]+$/, 'Account ID must be in format 0.0.123456'),
+  accountId: EntityIdSchema,
 });
 
 // Zod schema for custom fees
@@ -42,9 +46,7 @@ export const CustomFeeSchema = z.object({
 
 // Main token data schema
 export const TokenDataSchema = z.object({
-  tokenId: z
-    .string()
-    .regex(/^0\.0\.[0-9]+$/, 'Token ID must be in format 0.0.123456'),
+  tokenId: EntityIdSchema,
 
   name: z
     .string()
@@ -56,9 +58,9 @@ export const TokenDataSchema = z.object({
     .min(1, 'Token symbol is required')
     .max(10, 'Token symbol must be 10 characters or less'),
 
-  treasuryId: z
-    .string()
-    .regex(/^0\.0\.[0-9]+$/, 'Treasury ID must be in format 0.0.123456'),
+  treasuryId: EntityIdSchema,
+
+  adminPublicKey: z.string().optional(),
 
   decimals: z
     .number()
@@ -80,8 +82,6 @@ export const TokenDataSchema = z.object({
     .bigint({ message: 'Max supply must be an integer', coerce: true })
     .min(0n, 'Max supply must be non-negative'),
 
-  keys: TokenKeysSchema,
-
   network: z.enum(['mainnet', 'testnet', 'previewnet', 'localnet'], {
     errorMap: () => ({
       message: 'Network must be mainnet, testnet, previewnet, or localnet',
@@ -97,9 +97,6 @@ export const TokenDataSchema = z.object({
 
 // TypeScript type inferred from Zod schema
 export type TokenData = z.infer<typeof TokenDataSchema>;
-export type TokenKeys = z.infer<typeof TokenKeysSchema>;
-export type TokenAssociation = z.infer<typeof TokenAssociationSchema>;
-export type CustomFee = z.infer<typeof CustomFeeSchema>;
 
 // Namespace constant
 export const TOKEN_NAMESPACE = 'token-tokens';
@@ -133,11 +130,6 @@ export function safeParseTokenData(data: unknown) {
   return TokenDataSchema.safeParse(data);
 }
 
-// Treasury is a separate field in the file, so we omit treasuryKey here
-export const TokenFileKeysSchema = TokenKeysSchema.omit({
-  treasuryKey: true,
-}).strict();
-
 export const TokenFileFixedFeeSchema = z
   .object({
     type: z.literal('fixed'),
@@ -148,38 +140,25 @@ export const TokenFileFixedFeeSchema = z
   })
   .strict();
 
-export const TokenFileAccountSchema = z
-  .object({
-    accountId: EntityIdSchema,
-    key: z.string().min(1, 'account key is required'),
-  })
-  .strict();
-
-export const TokenFileTreasurySchema = z
-  .string()
-  .min(1, 'Treasury is required (either name or treasury-id:treasury-key)');
-
-export const TokenFileSchema = z
-  .object({
-    name: z.string().min(1).max(100),
-    symbol: z.string().min(1).max(20),
-    decimals: z.number().int().min(0).max(18),
-    supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
-    initialSupply: z
-      .union([z.number(), z.bigint()])
-      .transform((val) => BigInt(val))
-      .pipe(z.bigint().nonnegative()),
-    maxSupply: z
-      .union([z.number(), z.bigint()])
-      .transform((val) => BigInt(val))
-      .pipe(z.bigint().nonnegative())
-      .default(0n),
-    treasury: TokenFileTreasurySchema,
-    keys: TokenFileKeysSchema,
-    associations: z.array(TokenFileAccountSchema).default([]),
-    customFees: z.array(TokenFileFixedFeeSchema).default([]),
-    memo: z.string().max(100).optional().default(''),
-  })
-  .strict();
+export const TokenFileSchema = z.object({
+  name: z.string().min(1).max(100),
+  symbol: z.string().min(1).max(20),
+  decimals: z.number().int().min(0).max(18),
+  supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
+  initialSupply: z
+    .union([z.number(), z.bigint()])
+    .transform((val) => BigInt(val))
+    .pipe(z.bigint().nonnegative()),
+  maxSupply: z
+    .union([z.number(), z.bigint()])
+    .transform((val) => BigInt(val))
+    .pipe(z.bigint().nonnegative())
+    .default(0n),
+  treasuryKey: KeyOrAccountAliasSchema,
+  adminKey: KeyOrAccountAliasSchema,
+  associations: z.array(KeyOrAccountAliasSchema).default([]),
+  customFees: z.array(TokenFileFixedFeeSchema).default([]),
+  memo: z.string().max(100).optional().default(''),
+});
 
 export type TokenFileDefinition = z.infer<typeof TokenFileSchema>;

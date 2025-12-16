@@ -1,13 +1,17 @@
 /**
  * Type definitions for Hedera Mirror Node API responses
  */
+import type { KeyAlgorithm } from '@/core/shared/constants';
 
 // Base URL mapping for different networks
 export const LedgerIdToBaseUrl = new Map<string, string>([
   ['mainnet', 'https://mainnet-public.mirrornode.hedera.com/api/v1'],
   ['testnet', 'https://testnet.mirrornode.hedera.com/api/v1'],
   ['previewnet', 'https://previewnet.mirrornode.hedera.com/api/v1'],
+  ['local-node', 'http://localhost:5551/api/v1'],
 ]);
+
+export type MirrorNodeKeyType = 'ECDSA_SECP256K1' | 'ED25519';
 
 // Account API Response
 export interface AccountAPIResponse {
@@ -20,7 +24,7 @@ export interface AccountAPIResponse {
   created_timestamp: string;
   evm_address?: string;
   key?: {
-    _type: string;
+    _type: MirrorNodeKeyType;
     key: string;
   };
   max_automatic_token_associations: number;
@@ -30,12 +34,13 @@ export interface AccountAPIResponse {
 
 export interface AccountResponse {
   accountId: string;
-  accountPublicKey?: string;
+  accountPublicKey: string;
   balance: {
     balance: number;
     timestamp: string;
   };
   evmAddress?: string;
+  keyAlgorithm: KeyAlgorithm;
 }
 
 // Token Balance Response
@@ -147,7 +152,7 @@ export interface TopicMessageQueryParams {
 
 export interface TopicMessagesQueryParams {
   topicId: string;
-  filter?: Filter;
+  filters?: Filter[];
 }
 
 export interface TopicMessageResponse {

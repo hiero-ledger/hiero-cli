@@ -1,9 +1,10 @@
+import { z } from 'zod';
+
 import {
-  AccountOrAliasSchema,
   EntityReferenceSchema,
   KeyManagerTypeSchema,
-} from '../../../../core/schemas';
-import { z } from 'zod';
+  KeyOrAccountAliasSchema,
+} from '@/core/schemas';
 
 /**
  * Input schema for token associate command
@@ -11,7 +12,7 @@ import { z } from 'zod';
  */
 export const AssociateTokenInputSchema = z.object({
   token: EntityReferenceSchema.describe('Token identifier (ID or name)'),
-  account: AccountOrAliasSchema.describe(
+  account: KeyOrAccountAliasSchema.describe(
     'Account to associate. Can be alias or AccountID:accountKey pair.',
   ),
   keyManager: KeyManagerTypeSchema.optional().describe(

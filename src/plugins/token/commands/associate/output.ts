@@ -2,10 +2,11 @@
  * Associate Token Command Output Schema and Template
  */
 import { z } from 'zod';
+
 import {
   EntityIdSchema,
   TransactionIdSchema,
-} from '../../../../core/schemas/common-schemas';
+} from '@/core/schemas/common-schemas';
 
 /**
  * Associate Token Command Output Schema

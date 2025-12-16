@@ -1,12 +1,13 @@
 import { z } from 'zod';
+
 import {
   AccountNameSchema,
   AccountReferenceSchema,
   AmountInputSchema,
   KeyManagerTypeSchema,
   KeyTypeSchema,
-} from '../../../../core/schemas';
-import { KeyAlgorithm } from '../../../../core/shared/constants';
+} from '@/core/schemas';
+import { KeyAlgorithm } from '@/core/shared/constants';
 
 /**
  * Input schema for account create command
@@ -20,6 +21,10 @@ export const CreateAccountInputSchema = z.object({
     .number()
     .int()
     .min(0, 'Auto associations must be non-negative')
+    .max(
+      5000,
+      'Maximum number of automatic token associations cannot exceed 5000',
+    )
     .default(0)
     .describe('Maximum number of automatic token associations'),
   name: AccountNameSchema.optional().describe('Optional account name/alias'),

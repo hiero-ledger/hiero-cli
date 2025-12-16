@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js';
+import type BigNumber from 'bignumber.js';
 
 /**
  * Converts a raw integer balance to human-readable decimal format.

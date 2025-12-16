@@ -1,12 +1,12 @@
-import { getOperatorHandler } from '../../commands/get-operator';
-import { Status } from '../../../../core/shared/constants';
 import {
-  makeLogger,
   makeArgs,
-  setupExitSpy,
-  makeNetworkMock,
   makeKmsMock,
-} from '../../../../__tests__/mocks/mocks';
+  makeLogger,
+  makeNetworkMock,
+  setupExitSpy,
+} from '@/__tests__/mocks/mocks';
+import { Status } from '@/core/shared/constants';
+import { getOperatorHandler } from '@/plugins/network/commands/get-operator';
 
 let exitSpy: jest.SpyInstance;
 

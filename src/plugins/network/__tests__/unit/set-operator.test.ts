@@ -1,14 +1,18 @@
-import { setOperatorHandler } from '../../commands/set-operator';
-import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
 import {
-  makeLogger,
-  makeArgs,
-  setupExitSpy,
-  makeNetworkMock,
-  makeKmsMock,
+  ECDSA_DER_PRIVATE_KEY,
+  MOCK_PUBLIC_KEY,
+} from '@/__tests__/mocks/fixtures';
+import {
   makeAliasMock,
-} from '../../../../__tests__/mocks/mocks';
-import { ECDSA_DER_PRIVATE_KEY } from '../../../../__tests__/mocks/fixtures';
+  makeArgs,
+  makeKmsMock,
+  makeLogger,
+  makeNetworkMock,
+  setupExitSpy,
+} from '@/__tests__/mocks/mocks';
+import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { setOperatorHandler } from '@/plugins/network/commands/set-operator';
+import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 
 let exitSpy: jest.SpyInstance;
 
@@ -46,7 +50,7 @@ describe('network plugin - set-operator command', () => {
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
-      publicKey: 'pub-key-test',
+      publicKey: MOCK_PUBLIC_KEY,
     });
     expect(kmsService.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
@@ -73,7 +77,8 @@ describe('network plugin - set-operator command', () => {
       network: 'testnet',
       entityId: '0.0.789012',
       keyRefId: 'kr_alias123',
-      publicKey: 'pub-key-alias',
+      publicKey:
+        '302a300506032b65700321000000000000000000000000000000000000000000000000000000000000000000',
       createdAt: '2024-01-01T00:00:00Z',
     });
 
@@ -100,7 +105,8 @@ describe('network plugin - set-operator command', () => {
     expect(output.operator).toEqual({
       accountId: '0.0.789012',
       keyRefId: 'kr_alias123',
-      publicKey: 'pub-key-alias',
+      publicKey:
+        '302a300506032b65700321000000000000000000000000000000000000000000000000000000000000000000',
     });
   });
 
@@ -198,7 +204,11 @@ describe('network plugin - set-operator command', () => {
     aliasService.resolve.mockReturnValue(null);
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
+      {
+        network: networkService,
+        kms: kmsService,
+        alias: aliasService,
+      },
       logger,
       { operator: 'nonexistent' },
     );
@@ -207,7 +217,7 @@ describe('network plugin - set-operator command', () => {
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      "Alias 'nonexistent' not found for network testnet",
+      'No account is associated with the name provided',
     );
   });
 
@@ -229,7 +239,11 @@ describe('network plugin - set-operator command', () => {
     });
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
+      {
+        network: networkService,
+        kms: kmsService,
+        alias: aliasService,
+      },
       logger,
       { operator: 'testnet1' },
     );
@@ -238,7 +252,7 @@ describe('network plugin - set-operator command', () => {
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      'No key found for account 0.0.789012',
+      ERROR_MESSAGES.accountMissingPrivatePublicKey,
     );
   });
 
@@ -254,7 +268,11 @@ describe('network plugin - set-operator command', () => {
     });
 
     const args = makeArgs(
-      { network: networkService, kms: kmsService, alias: aliasService },
+      {
+        network: networkService,
+        kms: kmsService,
+        alias: aliasService,
+      },
       logger,
       {
         operator:
@@ -317,7 +335,7 @@ describe('network plugin - set-operator command', () => {
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
-      publicKey: 'pub-key-test',
+      publicKey: MOCK_PUBLIC_KEY,
     });
   });
 });

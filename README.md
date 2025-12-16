@@ -6,13 +6,12 @@ The Hedera CLI Tool elegantly addresses the complexities associated with distrib
 
 A key advantage of the Hedera CLI Tool is its potential to enhance your workflow. It's not just about performing individual tasks; it's about integrating these tasks into a larger, more efficient development process. With plans for future integration into Continuous Integration/Continuous Deployment (CI/CD) pipelines, this tool promises to be a versatile asset in the automation and management of Hedera network operations.
 
-> **🎯 Feature requests** can be submitted on the Hedera CLI repository as an issue. Please check the [issues](https://github.com/hashgraph/hedera-cli/issues) before submitting a new one and tag it with the `Feature Request` label.
+> **🎯 Feature requests** can be submitted on the Hedera CLI repository as an issue. Please check the [issues](https://github.com/hiero-ledger/hiero-cli/issues) before submitting a new one and tag it with the `Feature Request` label.
 
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
-- [Connecting the CLI tool with your Local Hedera Network](#connecting-the-cli-tool-with-your-local-hedera-network)
 - [Video Guide](#video-guide)
 - [Plugins](#plugins)
 - [Configuration & State Storage](#configuration--state-storage)
@@ -41,6 +40,10 @@ You will need an account on the Hedera network to interact with the ledger. Foll
 
 Make sure to securely store your DER encoded private key and account ID, as they are crucial for accessing and managing your Hedera account.
 
+### 3. Git Installation
+
+The Hedera CLI Tool repository is hosted on GitHub. You need to have Git installed to clone the repository. You can check your current version by running `git --version` in your terminal. If you do not have Git installed, you can download it from [Git official website](https://git-scm.com/).
+
 ## Installation
 
 ### 1. Clone the repository
@@ -48,7 +51,7 @@ Make sure to securely store your DER encoded private key and account ID, as they
 Make sure to clone the repository. You can do this by running the following command in your terminal:
 
 ```sh
-git clone https://github.com/hashgraph/hedera-cli.git
+git clone https://github.com/hiero-ledger/hiero-cli.git
 ```
 
 ### 2. Install Dependencies
@@ -56,7 +59,8 @@ git clone https://github.com/hashgraph/hedera-cli.git
 Navigate to the repository folder and install the necessary packages using `npm`. This sets up everything you need to get started with the Hedera CLI Tool.
 
 ```sh
-cd hedera-cli && npm install
+cd hiero-cli
+npm install
 ```
 
 ### 3. Build the Package
@@ -69,7 +73,7 @@ npm run build
 
 ### 4. CLI Initialization
 
-The Hedera CLI initializes automatically when you run any command. The CLI loads default plugins (account, token, network, plugin-management, credentials, topic, hbar, and config) and registers their commands. No manual setup is required.
+The Hedera CLI initializes automatically when you run any command. The CLI loads default plugins and registers their commands. No manual setup is required.
 
 When you first run the CLI, it will:
 
@@ -77,6 +81,8 @@ When you first run the CLI, it will:
 - Initialize the Core API with the selected output format
 - Register all plugin commands
 - Use `testnet` as the default network
+
+Note: There is a `test` plugin available that is required for running integration tests.
 
 You can verify the installation by checking available commands:
 
@@ -118,14 +124,14 @@ node dist/hedera-cli.js network use --network localnet
 
 ### 7. Optional: Setting Up an Alias
 
-To avoid typing the full command each time, you can set an alias in your shell profile. Replace the path with the absolute path to your `hedera-cli` installation.
+To avoid typing the full command each time, you can set an alias in your shell profile. Replace the path with the absolute path to your `hiero-cli` installation.
 
 #### macOS / Linux (bash/zsh)
 
 Add the following line to your `~/.bashrc`, `~/.bash_profile`, or `~/.zshrc`:
 
 ```sh
-alias hcli="node /path/to/hedera-cli/dist/hedera-cli.js"
+alias hcli="node /path/to/hiero-cli/dist/hedera-cli.js"
 ```
 
 Then reload your shell:
@@ -140,27 +146,33 @@ source ~/.bash_profile
 source ~/.zshrc
 ```
 
-@TODO: verify if this commands works for windows
-
 #### Windows (PowerShell)
 
-Add the following to your PowerShell profile (run `$PROFILE` to see the path):
+Add the following line to your PowerShell profile. First, open PowerShell and check if your profile exists:
 
 ```powershell
-Set-Alias -Name hcli -Value "node C:\path\to\hedera-cli\dist\hedera-cli.js"
+# Check if profile exists
+Test-Path $PROFILE
+
+# If it doesn't exist, create it
+New-Item -ItemType File -Path $PROFILE -Force
 ```
 
-Or add it to your PowerShell profile file:
+Then add the following function to your profile:
 
 ```powershell
-function hcli { node C:\path\to\hedera-cli\dist\hedera-cli.js $args }
+function hcli {
+    node C:\path\to\hiero-cli\dist\hedera-cli.js @args
+}
 ```
 
-You can verify the alias by running:
+Then reload your PowerShell:
 
-```sh
-hcli
+```powershell
+. $PROFILE
 ```
+
+Now you can use `hcli` with arguments just like on Unix systems.
 
 ## Connecting the CLI tool with your Local Hedera Network
 
@@ -174,7 +186,7 @@ By default, the `src/core/services/network/network.config.ts` file contains the 
   "localNodeAccountId": "0.0.3",
   "localNodeMirrorAddressGRPC": "127.0.0.1:5600",
   "rpcUrl": "http://localhost:7546",
-  "mirrorNodeUrl": "http://localhost:8081/api/v1"
+  "mirrorNodeUrl": "http://localhost:5551/api/v1"
 }
 ```
 
@@ -189,12 +201,6 @@ Then switch to the localnet:
 ```sh
 hcli network use --network localnet
 ```
-
-## Video Guide
-
-Learn how to use the Hedera CLI Tool by watching the video below.
-
-> Video coming soon ⚠️
 
 ## Plugins
 
@@ -260,8 +266,8 @@ This allows you to use different storage methods for different keys based on you
 
 If you encounter issues not covered here, please:
 
-1. Check the [GitHub issues](https://github.com/hashgraph/hedera-cli/issues) for similar problems
-2. Create a new issue with debug output included
+1. Check the [GitHub issues](https://github.com/hiero-ledger/hiero-cli/issues) for similar problems
+2. Create a new issue with debug output included and with a clear description
 
 ## Support
 

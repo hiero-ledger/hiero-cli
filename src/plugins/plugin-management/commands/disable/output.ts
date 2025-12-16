@@ -2,8 +2,9 @@
  * Disable Plugin Command Output
  * Reuses RemovePluginOutputSchema but with disable-specific template.
  */
-import { z } from 'zod';
-import { RemovePluginOutputSchema } from '../../schema';
+import type { z } from 'zod';
+
+import { RemovePluginOutputSchema } from '@/plugins/plugin-management/schema';
 
 // Export the schema
 export { RemovePluginOutputSchema as DisablePluginOutputSchema };

@@ -29,6 +29,14 @@ export const AddPluginOutputSchema = z.object({
   message: z.string().describe('Result message'),
 });
 
+// Enable plugin output schema
+export const EnablePluginOutputSchema = z.object({
+  name: z.string().describe('Plugin name'),
+  path: z.string().describe('Plugin path'),
+  enabled: z.boolean().describe('Whether plugin was successfully enabled'),
+  message: z.string().describe('Result message'),
+});
+
 // Remove plugin output schema
 export const RemovePluginOutputSchema = z.object({
   name: z.string().describe('Plugin name'),
@@ -53,6 +61,7 @@ export const PluginInfoOutputSchema = z.object({
 export type PluginInfo = z.infer<typeof PluginInfoSchema>;
 export type PluginListItem = z.infer<typeof PluginListItemSchema>;
 export type AddPluginOutput = z.infer<typeof AddPluginOutputSchema>;
+export type EnablePluginOutput = z.infer<typeof EnablePluginOutputSchema>;
 export type RemovePluginOutput = z.infer<typeof RemovePluginOutputSchema>;
 export type ListPluginsOutput = z.infer<typeof ListPluginsOutputSchema>;
 export type PluginInfoOutput = z.infer<typeof PluginInfoOutputSchema>;

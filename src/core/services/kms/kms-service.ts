@@ -1,30 +1,28 @@
+import type { Transaction as HederaTransaction } from '@hashgraph/sdk';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { NetworkService } from '@/core/services/network/network-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { KeyManager } from './key-managers/key-manager.interface';
 import type { KmsService } from './kms-service.interface';
 import type {
-  KmsCredentialRecord,
   KeyAlgorithmType as KeyAlgorithmType,
   KeyManagerName,
+  KmsCredentialRecord,
 } from './kms-types.interface';
-import { KeyAlgorithm } from '../../shared/constants';
-import { KEY_MANAGERS } from './kms-types.interface';
-import type { SupportedNetwork } from '../../types/shared.types';
-import { randomBytes } from 'crypto';
-import {
-  PrivateKey,
-  Client,
-  PublicKey,
-  AccountId,
-  Transaction as HederaTransaction,
-} from '@hashgraph/sdk';
 import type { Signer } from './signers/signer.interface';
-import type { Logger } from '../logger/logger-service.interface';
-import type { StateService } from '../state/state-service.interface';
-import type { NetworkService } from '../network/network-service.interface';
-import type { KeyManager } from './key-managers/key-manager.interface';
+
+import { AccountId, Client, PrivateKey, PublicKey } from '@hashgraph/sdk';
+import { randomBytes } from 'crypto';
+
+import { KeyAlgorithm } from '@/core/shared/constants';
+
 import { CredentialStorage } from './credential-storage';
-import { LocalKeyManager } from './key-managers/local-key-manager';
-import { EncryptionServiceImpl } from './encryption/encryption-service-impl';
-import { ConfigService } from '../config/config-service.interface';
 import { ALGORITHM_CONFIGS } from './encryption/algorithm-config';
+import { EncryptionServiceImpl } from './encryption/encryption-service-impl';
+import { LocalKeyManager } from './key-managers/local-key-manager';
+import { KEY_MANAGERS } from './kms-types.interface';
 import { EncryptedSecretStorage } from './storage/encrypted-secret-storage';
 import { LocalSecretStorage } from './storage/local-secret-storage';
 
@@ -176,6 +174,23 @@ export class KmsServiceImpl implements KmsService {
     return { keyRefId, publicKey };
   }
 
+  importAndValidatePrivateKey(
+    keyType: KeyAlgorithmType,
+    privateKeyRaw: string,
+    validationPublicKey: string,
+    keyManager?: KeyManagerName,
+    labels?: string[],
+  ): { keyRefId: string; publicKey: string } {
+    const privateKey = this.createPrivateKey(keyType, privateKeyRaw);
+    const publicKeyRaw = privateKey.publicKey.toStringRaw();
+
+    if (validationPublicKey !== publicKeyRaw) {
+      throw new Error("Given accountId doesn't correspond with private key");
+    }
+
+    return this.importPrivateKey(keyType, privateKeyRaw, keyManager, labels);
+  }
+
   getPublicKey(keyRefId: string): string | null {
     return this.getRecord(keyRefId)?.publicKey || null;
   }
@@ -314,6 +329,14 @@ export class KmsServiceImpl implements KmsService {
     await transaction.signWith(publicKey, async (message: Uint8Array) =>
       handle.sign(message),
     );
+  }
+
+  private createPrivateKey(keyAlgorithm: KeyAlgorithm, privateKey: string) {
+    if (keyAlgorithm === KeyAlgorithm.ECDSA) {
+      return PrivateKey.fromStringECDSA(privateKey);
+    }
+
+    return PrivateKey.fromStringED25519(privateKey);
   }
 
   private getPrivateKeyString(keyRefId: string): string | null {

@@ -2,11 +2,12 @@
  * List Topics Command Output Schema and Template
  */
 import { z } from 'zod';
+
 import {
   EntityIdSchema,
-  NetworkSchema,
   IsoTimestampSchema,
-} from '../../../../core/schemas';
+  NetworkSchema,
+} from '@/core/schemas';
 
 /**
  * List Topics Command Output Schema

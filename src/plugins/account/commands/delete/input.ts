@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { AccountNameSchema, EntityIdSchema } from '../../../../core/schemas';
+
+import { AccountNameSchema, EntityIdSchema } from '@/core/schemas';
 
 /**
  * Input schema for account delete command

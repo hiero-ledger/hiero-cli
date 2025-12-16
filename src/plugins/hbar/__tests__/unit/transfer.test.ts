@@ -1,20 +1,23 @@
-import { transferHandler } from '../../commands/transfer';
-import { Status } from '../../../../core/shared/constants';
-import { makeArgs } from '../../../../__tests__/mocks/mocks';
-import { setupTransferTest } from './helpers/mocks';
+import '@/core/utils/json-serialize';
+
+import { ZodError } from 'zod';
+
+import { makeArgs } from '@/__tests__/mocks/mocks';
+import { Status } from '@/core/shared/constants';
+import { transferHandler } from '@/plugins/hbar/commands/transfer';
+import { TransferInputSchema } from '@/plugins/hbar/commands/transfer/input';
+
 import {
-  mockAccounts,
   mockAccountIdKeyPairs,
   mockAccountIds,
+  mockAccounts,
+  mockAmounts,
+  mockDefaultCredentials,
+  mockParsedBalances,
   mockTransactionResults,
   mockTransferTransactionResults,
-  mockDefaultCredentials,
-  mockAmounts,
-  mockParsedBalances,
 } from './helpers/fixtures';
-import { ZodError } from 'zod';
-import { TransferInputSchema } from '../../commands/transfer/input';
-import '../../../../core/utils/json-serialize';
+import { setupTransferTest } from './helpers/mocks';
 
 jest.mock('../../../account/zustand-state-helper', () => ({
   ZustandAccountStateHelper: jest.fn(),
@@ -91,8 +94,12 @@ describe('hbar plugin - transfer command (unit)', () => {
       to: mockAccountIds.receiver,
     });
 
+    // Zod schema validation should reject amount=0
     const result = await transferHandler(args);
     expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain(
+      'Transfer amount must be greater than zero',
+    );
   });
 
   test('succeeds when valid params provided (no default accounts check)', async () => {
@@ -120,8 +127,20 @@ describe('hbar plugin - transfer command (unit)', () => {
   });
 
   test('returns failure when from equals to', async () => {
-    const { api, logger } = setupTransferTest({
+    const { api, logger, alias } = setupTransferTest({
       accounts: [mockAccounts.sameAccount],
+    });
+
+    // Mock alias resolution for 'same-account'
+    (alias.resolve as jest.Mock).mockImplementation((aliasName) => {
+      if (aliasName === 'same-account') {
+        return {
+          entityId: mockAccountIds.sender,
+          keyRefId: 'same-account-key',
+          publicKey: '302a300506032b6570032100' + '0'.repeat(64),
+        };
+      }
+      return null;
     });
 
     const args = makeArgs(api, logger, {

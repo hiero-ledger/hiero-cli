@@ -1,5 +1,6 @@
-import { NetworkSchema } from '../../../../core/schemas';
 import { z } from 'zod';
+
+import { NetworkSchema } from '@/core/schemas';
 
 /**
  * Input schema for token list command

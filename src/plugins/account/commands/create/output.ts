@@ -2,14 +2,15 @@
  * Create Account Command Output Schema and Template
  */
 import { z } from 'zod';
+
 import {
   EntityIdSchema,
+  EvmAddressSchema,
   KeyTypeSchema,
   NetworkSchema,
-  TransactionIdSchema,
-  EvmAddressSchema,
   PublicKeySchema,
-} from '../../../../core/schemas/common-schemas';
+  TransactionIdSchema,
+} from '@/core/schemas/common-schemas';
 
 /**
  * Create Account Command Output Schema

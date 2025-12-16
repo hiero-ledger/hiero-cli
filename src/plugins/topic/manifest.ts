@@ -1,27 +1,30 @@
 /**
  * Topic Plugin Manifest
  */
-import { PluginManifest } from '../../core';
-import { TOPIC_JSON_SCHEMA, TOPIC_NAMESPACE } from './schema';
+import type { PluginManifest } from '@/core';
 
 // Import output specifications from each command
 import {
-  CreateTopicOutputSchema,
   CREATE_TOPIC_TEMPLATE,
+  createTopic,
+  CreateTopicOutputSchema,
 } from './commands/create';
-import { ListTopicsOutputSchema, LIST_TOPICS_TEMPLATE } from './commands/list';
 import {
-  SubmitMessageOutputSchema,
-  SUBMIT_MESSAGE_TEMPLATE,
-} from './commands/submit-message';
-import {
-  FindMessagesOutputSchema,
   FIND_MESSAGES_TEMPLATE,
+  findMessage,
+  FindMessagesOutputSchema,
 } from './commands/find-message';
-import { createTopic } from './commands/create/handler';
-import { listTopics } from './commands/list/handler';
-import { submitMessage } from './commands/submit-message/handler';
-import { findMessage } from './commands/find-message/handler';
+import {
+  LIST_TOPICS_TEMPLATE,
+  listTopics,
+  ListTopicsOutputSchema,
+} from './commands/list';
+import {
+  SUBMIT_MESSAGE_TEMPLATE,
+  submitMessage,
+  SubmitMessageOutputSchema,
+} from './commands/submit-message';
+import { TOPIC_JSON_SCHEMA, TOPIC_NAMESPACE } from './schema';
 
 export const topicPluginManifest: PluginManifest = {
   name: 'topic',

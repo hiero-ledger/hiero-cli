@@ -2,14 +2,12 @@
  * Unit tests for NetworkServiceImpl
  * Tests network switching, configuration, and operator management
  */
-import { NetworkServiceImpl } from '../../network-service';
-import {
-  makeLogger,
-  makeStateMock,
-} from '../../../../../__tests__/mocks/mocks';
-import type { StateService } from '../../../state/state-service.interface';
-import type { Logger } from '../../../logger/logger-service.interface';
-import { DEFAULT_NETWORK } from '../../network.config';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
+
+import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import { DEFAULT_NETWORK } from '@/core/services/network/network.config';
+import { NetworkServiceImpl } from '@/core/services/network/network-service';
 
 const NAMESPACE = 'network-config';
 const CURRENT_KEY = 'current';
@@ -151,7 +149,7 @@ describe('NetworkServiceImpl', () => {
 
       expect(config.name).toBe(NETWORK_LOCALNET);
       expect(config.rpcUrl).toBe('http://localhost:7546');
-      expect(config.mirrorNodeUrl).toBe('http://localhost:8081/api/v1');
+      expect(config.mirrorNodeUrl).toBe('http://localhost:5551/api/v1');
       expect(config.chainId).toBe('0x128');
       expect(config.isTestnet).toBe(true);
     });

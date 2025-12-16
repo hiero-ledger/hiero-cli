@@ -2,9 +2,12 @@
  * Credentials Plugin State Schema
  * Single source of truth for credentials data structure and validation
  */
+import type { SupportedNetwork } from '@/core/types/shared.types';
+
 import { z } from 'zod';
-import type { SupportedNetwork } from '../../core/types/shared.types';
 import { zodToJsonSchema } from 'zod-to-json-schema';
+
+import { EntityIdSchema } from '@/core/schemas/common-schemas';
 
 // Supported networks aligned with core SupportedNetwork type
 export const SUPPORTED_NETWORKS = [
@@ -16,9 +19,7 @@ export const SUPPORTED_NETWORKS = [
 
 // Zod schema for credentials state validation
 export const CredentialsDataSchema = z.object({
-  accountId: z
-    .string()
-    .regex(/^0\.0\.[0-9]+$/, 'Account ID must be in format 0.0.123456'),
+  accountId: EntityIdSchema,
 
   privateKey: z
     .string()

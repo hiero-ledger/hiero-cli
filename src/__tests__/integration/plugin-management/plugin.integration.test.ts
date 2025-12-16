@@ -1,8 +1,17 @@
-import { CoreApi } from '../../../core/core-api/core-api.interface';
-import { createMockCoreApi } from '../../mocks/core-api.mock';
-import { setDefaultOperatorForNetwork } from '../../utils/network-and-operator-setup';
-import '../../../core/utils/json-serialize';
-import { Status } from '../../../core/shared/constants';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { AddPluginOutput } from '@/plugins/plugin-management/commands/add/output';
+import type { DisablePluginOutput } from '@/plugins/plugin-management/commands/disable/output';
+import type { EnablePluginOutput } from '@/plugins/plugin-management/commands/enable/output';
+import type { PluginInfoOutput } from '@/plugins/plugin-management/commands/info/output';
+import type { ListPluginsOutput } from '@/plugins/plugin-management/commands/list/output';
+import type { RemovePluginOutput } from '@/plugins/plugin-management/commands/remove/output';
+
+import '@/core/utils/json-serialize';
+
+import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
+import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
+import { createCoreApi } from '@/core/core-api/core-api';
+import { Status } from '@/core/shared/constants';
 import {
   addPlugin,
   disablePlugin,
@@ -10,19 +19,13 @@ import {
   getPluginInfo,
   getPluginList,
   removePlugin,
-} from '../../../plugins/plugin-management';
-import { AddPluginOutput } from '../../../plugins/plugin-management/commands/add/output';
-import { PluginInfoOutput } from '../../../plugins/plugin-management/commands/info/output';
-import { RemovePluginOutput } from '../../../plugins/plugin-management/commands/remove/output';
-import { ListPluginsOutput } from '../../../plugins/plugin-management/commands/list/output';
-import { EnablePluginOutput } from '../../../plugins/plugin-management/commands/enable/output';
-import { DisablePluginOutput } from '../../../plugins/plugin-management/commands/disable/output';
+} from '@/plugins/plugin-management';
 
 describe('Plugin Management Integration Tests', () => {
   let coreApi: CoreApi;
 
   beforeAll(async () => {
-    coreApi = createMockCoreApi();
+    coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
   });
 
@@ -37,6 +40,13 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
+
+    if (addPluginResult.status !== Status.Success) {
+      console.log(
+        'Add plugin failed:',
+        addPluginResult.errorMessage || addPluginResult.outputJson,
+      );
+    }
 
     expect(addPluginResult.status).toBe(Status.Success);
     const addPluginOutput: AddPluginOutput = JSON.parse(
@@ -127,7 +137,7 @@ describe('Plugin Management Integration Tests', () => {
     );
     expect(enablePluginOutput.name).toBe('test');
     expect(enablePluginOutput.message).toBe('Plugin test enabled successfully');
-    expect(enablePluginOutput.added).toBe(true);
+    expect(enablePluginOutput.enabled).toBe(true);
 
     const viewPluginEnabledArgs: Record<string, unknown> = {
       name: 'test',

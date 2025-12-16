@@ -1,8 +1,9 @@
 import { z } from 'zod';
+
 import {
   ConfigOptionNameSchema,
   ConfigOptionValueSchema,
-} from '../../../../core/schemas';
+} from '@/core/schemas';
 
 /**
  * Input schema for config set command

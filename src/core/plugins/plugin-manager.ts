@@ -3,21 +3,23 @@
  *
  * Direct plugin management without unnecessary layers
  */
-import * as path from 'path';
-import { Command } from 'commander';
-import { CoreApi } from '../core-api';
-import {
+import type { Command } from 'commander';
+import type { CoreApi } from '@/core/core-api';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type {
   CommandHandlerArgs,
   PluginManifest,
   PluginStateEntry,
 } from './plugin.interface';
-import { CommandSpec } from './plugin.types';
-import { formatAndExitWithError } from '../utils/error-handler';
-import { Status } from '../shared/constants';
-import { filterReservedOptions } from '../utils/filter-reserved-options';
-import { registerDisabledPlugin } from '../utils/register-disabled-plugin';
-import { Logger } from '../services/logger/logger-service.interface';
-import { PluginManagementService } from '../services/plugin-management/plugin-management-service.interface';
+import type { CommandSpec } from './plugin.types';
+
+import * as path from 'path';
+
+import { Status } from '@/core/shared/constants';
+import { formatAndExitWithError } from '@/core/utils/error-handler';
+import { filterReservedOptions } from '@/core/utils/filter-reserved-options';
+import { registerDisabledPlugin } from '@/core/utils/register-disabled-plugin';
 
 interface LoadedPlugin {
   manifest: PluginManifest;

@@ -1,4 +1,4 @@
-import { SupportedNetwork } from '../../types/shared.types';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export const AliasType = {
   Account: 'account',
@@ -34,6 +34,7 @@ export interface AliasService {
     type?: AliasType;
   }): AliasRecord[];
   remove(alias: string, network: SupportedNetwork): void;
+  clear(type: AliasType): void;
   exists(alias: string, network: SupportedNetwork): boolean;
   availableOrThrow(alias: string | undefined, network: SupportedNetwork): void;
 }

@@ -2,23 +2,28 @@
  * Token Associate Handler Unit Tests
  * Tests the token association functionality of the token plugin
  */
-import type { CommandHandlerArgs } from '../../../../core/plugins/plugin.interface';
-import { associateToken } from '../../commands/associate';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import type { AssociateTokenOutput } from '../../commands/associate';
-import { Status, KeyAlgorithm } from '../../../../core/shared/constants';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+
+import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
+
+import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import {
-  makeLogger,
-  makeApiMocks,
-  mockZustandTokenStateHelper,
-  makeTransactionResult,
-} from './helpers/mocks';
+  associateToken,
+  type AssociateTokenOutput,
+} from '@/plugins/token/commands/associate';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
 import {
   tokenAssociatedWithAccountFixture,
   tokenAssociatedWithAliasFixture,
   tokenWithoutAssociationsFixture,
 } from './helpers/fixtures';
-import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
+import {
+  makeApiMocks,
+  makeLogger,
+  makeTransactionResult,
+  mockZustandTokenStateHelper,
+} from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
@@ -235,7 +240,7 @@ describe('associateTokenHandler', () => {
         KeyAlgorithm.ECDSA,
         '3333333333333333333333333333333333333333333333333333333333333333',
         'local',
-        ['token:account', 'temporary'],
+        ['token:associate'],
       );
     });
 
@@ -261,6 +266,7 @@ describe('associateTokenHandler', () => {
         alias: {
           resolve: jest.fn().mockReturnValue({
             entityId: '0.0.789012',
+            publicKey: '302a300506032b6570032100' + '0'.repeat(64),
             keyRefId: 'alias-key-ref-id',
           }),
         },
@@ -590,7 +596,7 @@ describe('associateTokenHandler', () => {
         KeyAlgorithm.ECDSA,
         '3333333333333333333333333333333333333333333333333333333333333333',
         'local',
-        ['token:account', 'temporary'],
+        ['token:associate'],
       );
     });
 
@@ -620,6 +626,7 @@ describe('associateTokenHandler', () => {
         alias: {
           resolve: jest.fn().mockReturnValue({
             entityId: '0.0.789012',
+            publicKey: '302a300506032b6570032100' + '0'.repeat(64),
             keyRefId: 'alias-key-ref-id',
           }),
         },
@@ -657,11 +664,11 @@ describe('associateTokenHandler', () => {
       // Assert - Verify state helper was initialized
       expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);
 
-      // Assert - Verify association was saved with alias name
+      // Assert - Verify association was saved with account ID
       expect(mockAddTokenAssociation).toHaveBeenCalledWith(
         '0.0.123456',
         '0.0.789012',
-        'my-account-alias', // accountName = alias when using alias format
+        '0.0.789012', // accountName = accountId (resolved from alias)
       );
 
       // Assert - Verify transaction was created and executed

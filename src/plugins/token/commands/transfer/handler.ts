@@ -3,19 +3,19 @@
  * Handles token transfer operations using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import { CommandHandlerArgs } from '../../../../core';
-import { CommandExecutionResult } from '../../../../core';
-import { Status } from '../../../../core/shared/constants';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { TransferTokenOutput } from './output';
+
+import { Status } from '@/core/shared/constants';
+import { formatError } from '@/core/utils/errors';
+import { processBalanceInput } from '@/core/utils/process-balance-input';
 import {
-  resolveAccountParameter,
   resolveDestinationAccountParameter,
   resolveTokenParameter,
-} from '../../resolver-helper';
-import { formatError } from '../../../../core/utils/errors';
-import { processBalanceInput } from '../../../../core/utils/process-balance-input';
-import { ZustandTokenStateHelper } from '../../zustand-state-helper';
-import { TransferTokenOutput } from './output';
-import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
+} from '@/plugins/token/resolver-helper';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
 import { TransferTokenInputSchema } from './input';
 
 export async function transferToken(
@@ -86,44 +86,15 @@ export async function transferToken(
   // Convert amount input: display units (default) or raw units (with 't' suffix)
   const rawAmount = processBalanceInput(userAmountInput, tokenDecimals);
 
-  // Resolve from parameter (name or account-id:private-key) if provided
-
-  let resolvedFromAccount = resolveAccountParameter(
+  const resolvedFromAccount = await api.keyResolver.getOrInitKeyWithFallback(
     from,
-    api,
-    network,
     keyManager,
+    ['token:account'],
   );
-
-  // If from account wasn't provided, use operator as default
-  if (!resolvedFromAccount) {
-    const operator = api.network.getOperator(network);
-
-    if (!operator) {
-      throw new Error('No from account provided and no default operator set.');
-    }
-
-    const operatorPublicKey = api.kms.getPublicKey(operator.keyRefId);
-
-    if (!operatorPublicKey) {
-      // This should not happen - credentials state should ensure operator keys exist
-      throw new Error(
-        'No from account provided and cant resolve public key of default operator set.',
-      );
-    }
-
-    logger.info("No 'from' account provided, using default operator account.");
-
-    resolvedFromAccount = {
-      accountId: operator.accountId,
-      accountKeyRefId: operator.keyRefId,
-      accountPublicKey: operatorPublicKey,
-    };
-  }
 
   // Use resolved from account from alias or account-id:private-key
   const fromAccountId = resolvedFromAccount.accountId;
-  const signerKeyRefId = resolvedFromAccount.accountKeyRefId;
+  const signerKeyRefId = resolvedFromAccount.keyRefId;
 
   logger.info(`🔑 Using from account: ${fromAccountId}`);
   logger.info(`🔑 Will sign with from account key`);

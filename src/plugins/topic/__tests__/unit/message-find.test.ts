@@ -1,14 +1,17 @@
-import { findMessage } from '../../commands/find-message/handler';
-import type { CoreApi } from '../../../../core/core-api/core-api.interface';
-import type { HederaMirrornodeService } from '../../../../core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { FindMessagesOutput } from '../../commands/find-message/output';
-import { Status } from '../../../../core/shared/constants';
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
+import type { FindMessagesOutput } from '@/plugins/topic/commands/find-message/output';
+
+import { ZodError } from 'zod';
+
 import {
-  makeLogger,
-  makeArgs,
-  makeNetworkMock,
   makeAliasMock,
-} from '../../../../__tests__/mocks/mocks';
+  makeArgs,
+  makeLogger,
+  makeNetworkMock,
+} from '@/__tests__/mocks/mocks';
+import { Status } from '@/core/shared/constants';
+import { findMessage } from '@/plugins/topic/commands/find-message/handler';
 
 const makeTopicMessage = (sequenceNumber: number, message: string) => ({
   consensus_timestamp: '1234567890.123456789',
@@ -97,11 +100,13 @@ describe('topic plugin - message-find command', () => {
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
       topicId: '0.0.5678',
-      filter: {
-        field: 'sequenceNumber',
-        operation: 'gt',
-        value: 5,
-      },
+      filters: [
+        {
+          field: 'sequenceNumber',
+          operation: 'gt',
+          value: 5,
+        },
+      ],
     });
   });
 
@@ -145,11 +150,13 @@ describe('topic plugin - message-find command', () => {
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
       topicId: '0.0.5678',
-      filter: {
-        field: 'sequenceNumber',
-        operation: 'gte',
-        value: 5,
-      },
+      filters: [
+        {
+          field: 'sequenceNumber',
+          operation: 'gte',
+          value: 5,
+        },
+      ],
     });
   });
 
@@ -187,11 +194,13 @@ describe('topic plugin - message-find command', () => {
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
       topicId: '0.0.5678',
-      filter: {
-        field: 'sequenceNumber',
-        operation: 'lt',
-        value: 3,
-      },
+      filters: [
+        {
+          field: 'sequenceNumber',
+          operation: 'lt',
+          value: 3,
+        },
+      ],
     });
   });
 
@@ -226,11 +235,13 @@ describe('topic plugin - message-find command', () => {
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
       topicId: '0.0.5678',
-      filter: {
-        field: 'sequenceNumber',
-        operation: 'lte',
-        value: 3,
-      },
+      filters: [
+        {
+          field: 'sequenceNumber',
+          operation: 'lte',
+          value: 3,
+        },
+      ],
     });
   });
 
@@ -265,11 +276,13 @@ describe('topic plugin - message-find command', () => {
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
       topicId: '0.0.5678',
-      filter: {
-        field: 'sequenceNumber',
-        operation: 'eq',
-        value: 5,
-      },
+      filters: [
+        {
+          field: 'sequenceNumber',
+          operation: 'eq',
+          value: 5,
+        },
+      ],
     });
   });
 
@@ -372,9 +385,58 @@ describe('topic plugin - message-find command', () => {
     expect(output.messages).toEqual([]);
   });
 
-  test('uses first filter when multiple filters are provided', async () => {
+  test('throws ZodError when contradictory filters are provided', async () => {
     const logger = makeLogger();
-    const mockMessages = [makeTopicMessage(6, 'Message 6')];
+
+    const { mirror, networkMock, alias } = makeApiMocks({
+      getTopicMessagesImpl: jest.fn(),
+    });
+
+    const api: Partial<CoreApi> = {
+      mirror,
+      network: networkMock,
+      alias: alias as any,
+      logger,
+    };
+
+    // Test: sequenceEq cannot be combined with other filters
+    const args1 = makeArgs(api, logger, {
+      topic: '0.0.5678',
+      sequenceEq: 5,
+      sequenceGt: 3,
+    });
+
+    await expect(findMessage(args1)).rejects.toThrow(ZodError);
+    expect(mirror.getTopicMessages).not.toHaveBeenCalled();
+
+    // Test: lower bound greater than upper bound
+    const args2 = makeArgs(api, logger, {
+      topic: '0.0.5678',
+      sequenceGt: 10,
+      sequenceLt: 5,
+    });
+
+    await expect(findMessage(args2)).rejects.toThrow(ZodError);
+    expect(mirror.getTopicMessages).not.toHaveBeenCalled();
+
+    // Test: lower bound equal to upper bound with strict operators
+    const args3 = makeArgs(api, logger, {
+      topic: '0.0.5678',
+      sequenceGt: 5,
+      sequenceLt: 5,
+    });
+
+    await expect(findMessage(args3)).rejects.toThrow(ZodError);
+    expect(mirror.getTopicMessages).not.toHaveBeenCalled();
+  });
+
+  test('finds messages with multiple non-contradictory filters', async () => {
+    const logger = makeLogger();
+    const mockMessages = [
+      makeTopicMessage(6, 'Message 6'),
+      makeTopicMessage(7, 'Message 7'),
+      makeTopicMessage(8, 'Message 8'),
+    ];
 
     const { mirror, networkMock, alias } = makeApiMocks({
       getTopicMessagesImpl: jest.fn().mockResolvedValue({
@@ -390,24 +452,100 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
+    // Test: gt and lt filters (should filter to 6, 7, 8)
     const args = makeArgs(api, logger, {
       topic: '0.0.5678',
       sequenceGt: 5,
-      sequenceLt: 10,
+      sequenceLt: 9,
     });
 
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
+    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    expect(output.totalCount).toBe(3);
+    expect(output.messages).toHaveLength(3);
 
-    // Should use the first non-empty filter (gt)
+    // Should contain only messages 6, 7, 8 (filtered by API)
+    const sequenceNumbers = output.messages.map((m) => m.sequenceNumber);
+    expect(sequenceNumbers).toContain(6);
+    expect(sequenceNumbers).toContain(7);
+    expect(sequenceNumbers).toContain(8);
+
+    // API should be called with both filters
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
       topicId: '0.0.5678',
-      filter: {
-        field: 'sequenceNumber',
-        operation: 'gt',
-        value: 5,
-      },
+      filters: [
+        {
+          field: 'sequenceNumber',
+          operation: 'gt',
+          value: 5,
+        },
+        {
+          field: 'sequenceNumber',
+          operation: 'lt',
+          value: 9,
+        },
+      ],
+    });
+  });
+
+  test('finds messages with gte and lte filters', async () => {
+    const logger = makeLogger();
+    const mockMessages = [
+      makeTopicMessage(5, 'Message 5'),
+      makeTopicMessage(6, 'Message 6'),
+      makeTopicMessage(7, 'Message 7'),
+    ];
+
+    const { mirror, networkMock, alias } = makeApiMocks({
+      getTopicMessagesImpl: jest.fn().mockResolvedValue({
+        messages: mockMessages,
+        links: { next: null },
+      }),
+    });
+
+    const api: Partial<CoreApi> = {
+      mirror,
+      network: networkMock,
+      alias: alias as any,
+      logger,
+    };
+
+    // Test: gte and lte filters (API filters to 5, 6, 7)
+    const args = makeArgs(api, logger, {
+      topic: '0.0.5678',
+      sequenceGte: 5,
+      sequenceLte: 7,
+    });
+
+    const result = await findMessage(args);
+
+    expect(result.status).toBe(Status.Success);
+    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    expect(output.totalCount).toBe(3);
+
+    // Should contain messages 5, 6, 7 (filtered by API)
+    const sequenceNumbers = output.messages.map((m) => m.sequenceNumber);
+    expect(sequenceNumbers).toContain(5);
+    expect(sequenceNumbers).toContain(6);
+    expect(sequenceNumbers).toContain(7);
+
+    // API should be called with both filters
+    expect(mirror.getTopicMessages).toHaveBeenCalledWith({
+      topicId: '0.0.5678',
+      filters: [
+        {
+          field: 'sequenceNumber',
+          operation: 'gte',
+          value: 5,
+        },
+        {
+          field: 'sequenceNumber',
+          operation: 'lte',
+          value: 7,
+        },
+      ],
     });
   });
 });
