@@ -8,9 +8,9 @@ import type { RemovePluginOutput } from '@/plugins/plugin-management/commands/re
 
 import '@/core/utils/json-serialize';
 
+import { createMockCoreApi } from '@/__tests__/mocks/core-api.mock';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
-import { createCoreApi } from '@/core/core-api/core-api';
 import { Status } from '@/core/shared/constants';
 import {
   addPlugin,
@@ -25,7 +25,7 @@ describe('Plugin Management Integration Tests', () => {
   let coreApi: CoreApi;
 
   beforeAll(async () => {
-    coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
+    coreApi = createMockCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
   });
 

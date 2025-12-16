@@ -5,9 +5,9 @@ import type { ViewAccountOutput } from '@/plugins/account/commands/view';
 
 import '@/core/utils/json-serialize';
 
+import { createMockCoreApi } from '@/__tests__/mocks/core-api.mock';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
-import { createCoreApi } from '@/core/core-api/core-api';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import { importAccount, viewAccount } from '@/plugins/account';
 
@@ -19,7 +19,7 @@ describe('Import Account Integration Tests', () => {
   let evmAddress: string;
 
   beforeAll(async () => {
-    coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
+    coreApi = createMockCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
     network = coreApi.network.getCurrentNetwork();
     accountId = network === 'localnet' ? '0.0.1003' : '0.0.7300370';

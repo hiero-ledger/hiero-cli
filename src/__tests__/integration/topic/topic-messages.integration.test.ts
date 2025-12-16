@@ -7,10 +7,10 @@ import type { SubmitMessageOutput } from '@/plugins/topic/commands/submit-messag
 
 import '@/core/utils/json-serialize';
 
+import { createMockCoreApi } from '@/__tests__/mocks/core-api.mock';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
-import { createCoreApi } from '@/core/core-api/core-api';
 import { Status } from '@/core/shared/constants';
 import {
   createTopic,
@@ -24,7 +24,7 @@ describe('Topic Messages Integration Tests', () => {
   let network: SupportedNetwork;
 
   beforeAll(async () => {
-    coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
+    coreApi = createMockCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
     network = coreApi.network.getCurrentNetwork();
   });
