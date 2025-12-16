@@ -2,6 +2,7 @@
  * Topic Message Submit Command Handler
  * Handles submitting messages to topics
  */
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { SubmitMessageOutput } from './output';
 
 import {
@@ -14,7 +15,6 @@ import { formatError } from '@/core/utils/errors';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { SubmitMessageInputSchema } from './input';
-import { KeyManagerName } from '../../../../core/services/kms/kms-types.interface';
 
 /**
  * Default export handler function for message submission
