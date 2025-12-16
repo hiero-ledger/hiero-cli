@@ -587,6 +587,12 @@ export const PublicKeySchema = z.union([
   Ed25519PublicKeySchema,
 ]);
 
+// Generic private key schema (ECDSA or ED25519)
+export const PrivateKeySchema = z.union([
+  EcdsaPrivateKeySchema,
+  Ed25519PrivateKeySchema,
+]);
+
 /**
  * Type exports for TypeScript inference
  */
@@ -594,6 +600,7 @@ export type EcdsaPublicKey = z.infer<typeof EcdsaPublicKeySchema>;
 export type EcdsaPrivateKey = z.infer<typeof EcdsaPrivateKeySchema>;
 export type Ed25519PublicKey = z.infer<typeof Ed25519PublicKeySchema>;
 export type Ed25519PrivateKey = z.infer<typeof Ed25519PrivateKeySchema>;
+export type PrivateKey = z.infer<typeof PrivateKeySchema>;
 export type HbarDecimal = z.infer<typeof HbarDecimalSchema>;
 export type Tinybar = z.infer<typeof TinybarSchema>;
 export type HtsDecimals = z.infer<typeof HtsDecimalsSchema>;

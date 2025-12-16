@@ -4,19 +4,20 @@
  * Direct plugin management without unnecessary layers
  */
 import type { Command } from 'commander';
+import type {
+  CommandHandlerArgs,
+  CommandSpec,
+  PluginManifest,
+  PluginStateEntry,
+} from '@/core';
 import type { CoreApi } from '@/core/core-api';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
-import type {
-  CommandHandlerArgs,
-  PluginManifest,
-  PluginStateEntry,
-} from './plugin.interface';
-import type { CommandSpec } from './plugin.types';
 
 import * as path from 'path';
 
 import { Status } from '@/core/shared/constants';
+import { ensureCliInitialized } from '@/core/utils/ensure-cli-initialized';
 import { formatAndExitWithError } from '@/core/utils/error-handler';
 import { filterReservedOptions } from '@/core/utils/filter-reserved-options';
 import { registerDisabledPlugin } from '@/core/utils/register-disabled-plugin';
@@ -381,10 +382,12 @@ export class PluginManager {
    * Execute a plugin command
    */
   private async executePluginCommand(
-    plugin: LoadedPlugin,
+    _plugin: LoadedPlugin,
     commandSpec: CommandSpec,
     args: unknown[],
   ): Promise<void> {
+    await ensureCliInitialized(this.coreApi);
+
     const command = args[args.length - 1] as Command;
     const options = command.opts();
     const commandArgs = command.args;
