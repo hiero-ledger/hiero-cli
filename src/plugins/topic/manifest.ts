@@ -70,9 +70,8 @@ export const topicPluginManifest: PluginManifest = {
           name: 'submit-key',
           type: 'string',
           required: false,
-          default: false,
           description:
-            'Pass a submit key as name or private key for the topic. Private key can be optionally prefixed with key type (e.g., "ed25519:..." or "ecdsa:..."). Defaults to ecdsa if no prefix.',
+            'Submit key as account name or {accountId}:{private_key} format',
           short: 's',
         },
         {
@@ -134,6 +133,22 @@ export const topicPluginManifest: PluginManifest = {
           required: true,
           description: 'Submit a message to the topic',
           short: 'm',
+        },
+        {
+          name: 'signer',
+          type: 'string',
+          required: false,
+          description:
+            'Account to use for signing the message. Can be an alias or {accountId}:{private_key}. Required for public topics (without submit keys). For topics with submit keys, must be one of the authorized signers.',
+          short: 's',
+        },
+        {
+          name: 'key-manager',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+          short: 'k',
         },
       ],
       handler: submitMessage,
