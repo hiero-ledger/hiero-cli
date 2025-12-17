@@ -332,7 +332,7 @@ Core API
 - Keys are stored in the KMS (Key Management Service) with two storage options:
   - **`local`**: Plain text storage (development/testing environments)
   - **`local_encrypted`**: AES-256-GCM encrypted storage (production environments)
-- Default key manager configurable via `hcli config set -o default_key_manager local|local_encrypted`
+- Default key manager configurable via `hcli config set -o default_key_manager -v local|local_encrypted`
 - Per-operation override available using `--key-manager` flag on commands that store keys
 - No hardcoded credentials in code
 
