@@ -14,6 +14,10 @@ import { formatError } from '@/core/utils/errors';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
 import { buildTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
 import { readAndValidateTokenFile } from '@/plugins/token/utils/token-file-helpers';
+import {
+  resolveOptionalKey,
+  toPublicKey,
+} from '@/plugins/token/utils/token-resolve-optional-key';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { CreateTokenFromFileInputSchema } from './input';
@@ -55,6 +59,48 @@ export async function createTokenFromFile(
     );
     logger.info(`🔑 Resolved admin key for signing`);
 
+    const supplyKey = await resolveOptionalKey(
+      tokenDefinition.supplyKey,
+      keyManager,
+      api.keyResolver,
+      'token:supply',
+    );
+
+    const wipeKey = await resolveOptionalKey(
+      tokenDefinition.wipeKey,
+      keyManager,
+      api.keyResolver,
+      'token:wipe',
+    );
+
+    const kycKey = await resolveOptionalKey(
+      tokenDefinition.kycKey,
+      keyManager,
+      api.keyResolver,
+      'token:kyc',
+    );
+
+    const freezeKey = await resolveOptionalKey(
+      tokenDefinition.freezeKey,
+      keyManager,
+      api.keyResolver,
+      'token:freeze',
+    );
+
+    const pauseKey = await resolveOptionalKey(
+      tokenDefinition.pauseKey,
+      keyManager,
+      api.keyResolver,
+      'token:pause',
+    );
+
+    const feeScheduleKey = await resolveOptionalKey(
+      tokenDefinition.feeScheduleKey,
+      keyManager,
+      api.keyResolver,
+      'token:feeSchedule',
+    );
+
     const tokenCreateTransaction = api.token.createTokenTransaction({
       name: tokenDefinition.name,
       symbol: tokenDefinition.symbol,
@@ -66,13 +112,13 @@ export async function createTokenFromFile(
         | 'INFINITE',
       maxSupplyRaw: tokenDefinition.maxSupply,
       adminPublicKey: PublicKey.fromString(adminKey.publicKey),
-      customFees: tokenDefinition.customFees.map((fee) => ({
-        type: fee.type,
-        amount: fee.amount,
-        unitType: fee.unitType,
-        collectorId: fee.collectorId,
-        exempt: fee.exempt,
-      })),
+      supplyPublicKey: toPublicKey(supplyKey),
+      wipePublicKey: toPublicKey(wipeKey),
+      kycPublicKey: toPublicKey(kycKey),
+      freezePublicKey: toPublicKey(freezeKey),
+      pausePublicKey: toPublicKey(pauseKey),
+      feeSchedulePublicKey: toPublicKey(feeScheduleKey),
+      customFees: tokenDefinition.customFees,
       memo: tokenDefinition.memo,
     });
 
@@ -95,6 +141,14 @@ export async function createTokenFromFile(
       treasury.accountId,
       adminKey.publicKey,
       network,
+      {
+        supplyPublicKey: supplyKey?.publicKey,
+        wipePublicKey: wipeKey?.publicKey,
+        kycPublicKey: kycKey?.publicKey,
+        freezePublicKey: freezeKey?.publicKey,
+        pausePublicKey: pauseKey?.publicKey,
+        feeSchedulePublicKey: feeScheduleKey?.publicKey,
+      },
     );
 
     const successfulAssociations = await processTokenAssociations(

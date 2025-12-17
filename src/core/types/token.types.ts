@@ -38,6 +38,12 @@ export interface TokenCreateParams {
   supplyType: 'FINITE' | 'INFINITE';
   maxSupplyRaw?: bigint; // Required for FINITE supply type
   adminPublicKey: PublicKey;
+  supplyPublicKey?: PublicKey;
+  wipePublicKey?: PublicKey;
+  kycPublicKey?: PublicKey;
+  freezePublicKey?: PublicKey;
+  pausePublicKey?: PublicKey;
+  feeSchedulePublicKey?: PublicKey;
   customFees?: CustomFee[];
   memo?: string;
 }
