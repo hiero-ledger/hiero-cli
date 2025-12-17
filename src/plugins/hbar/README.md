@@ -150,7 +150,7 @@ Test coverage (71%):
 - **Default operator fallback**: Uses network operator credentials when sender not specified
 - **Name integration**: Works seamlessly with alias service
 - **Secure signing**: Leverages `keyRefId` system for key management
-- **Flexible balance input**: Supports display units (HBAR) or base units (tinybar with "t" suffix)
+- **Flexible amount input**: Supports display units (HBAR) or base units (tinybar with "t" suffix)
 
 ## 📝 Technical Details
 

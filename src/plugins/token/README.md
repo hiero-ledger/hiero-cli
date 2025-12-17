@@ -201,7 +201,7 @@ The plugin supports flexible parameter formats:
   - Key type can be `ecdsa` or `ed25519`
   - If key type is not specified, defaults to `ecdsa`
 - **Account name**: `alice` (resolved via alias service)
-- **Balance**: Display units (default) or base units with `t` suffix (e.g., `100t`)
+- **Amount**: Display units (default) or base units with `t` suffix (e.g., `100t`)
 
 ### Private Key Format
 
