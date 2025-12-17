@@ -14,6 +14,7 @@ import { formatError } from '@/core/utils/errors';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
 import { buildTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
 import { readAndValidateTokenFile } from '@/plugins/token/utils/token-file-helpers';
+import { resolveOptionalKey } from '@/plugins/token/utils/token-resolve-optional-key';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { CreateTokenFromFileInputSchema } from './input';
@@ -55,51 +56,47 @@ export async function createTokenFromFile(
     );
     logger.info(`🔑 Resolved admin key for signing`);
 
-    const supplyKey = tokenDefinition.supplyKey
-      ? await api.keyResolver.getOrInitKey(
-          tokenDefinition.supplyKey,
-          keyManager,
-          ['token:supply'],
-        )
-      : undefined;
+    const supplyKey = await resolveOptionalKey(
+      tokenDefinition.supplyKey,
+      keyManager,
+      api.keyResolver,
+      'token:supply',
+    );
 
-    const wipeKey = tokenDefinition.wipeKey
-      ? await api.keyResolver.getOrInitKey(
-          tokenDefinition.wipeKey,
-          keyManager,
-          ['token:wipe'],
-        )
-      : undefined;
+    const wipeKey = await resolveOptionalKey(
+      tokenDefinition.wipeKey,
+      keyManager,
+      api.keyResolver,
+      'token:wipe',
+    );
 
-    const kycKey = tokenDefinition.kycKey
-      ? await api.keyResolver.getOrInitKey(tokenDefinition.kycKey, keyManager, [
-          'token:kyc',
-        ])
-      : undefined;
+    const kycKey = await resolveOptionalKey(
+      tokenDefinition.kycKey,
+      keyManager,
+      api.keyResolver,
+      'token:kyc',
+    );
 
-    const freezeKey = tokenDefinition.freezeKey
-      ? await api.keyResolver.getOrInitKey(
-          tokenDefinition.freezeKey,
-          keyManager,
-          ['token:freeze'],
-        )
-      : undefined;
+    const freezeKey = await resolveOptionalKey(
+      tokenDefinition.freezeKey,
+      keyManager,
+      api.keyResolver,
+      'token:freeze',
+    );
 
-    const pauseKey = tokenDefinition.pauseKey
-      ? await api.keyResolver.getOrInitKey(
-          tokenDefinition.pauseKey,
-          keyManager,
-          ['token:pause'],
-        )
-      : undefined;
+    const pauseKey = await resolveOptionalKey(
+      tokenDefinition.pauseKey,
+      keyManager,
+      api.keyResolver,
+      'token:pause',
+    );
 
-    const feeScheduleKey = tokenDefinition.feeScheduleKey
-      ? await api.keyResolver.getOrInitKey(
-          tokenDefinition.feeScheduleKey,
-          keyManager,
-          ['token:feeSchedule'],
-        )
-      : undefined;
+    const feeScheduleKey = await resolveOptionalKey(
+      tokenDefinition.feeScheduleKey,
+      keyManager,
+      api.keyResolver,
+      'token:feeSchedule',
+    );
 
     const tokenCreateTransaction = api.token.createTokenTransaction({
       name: tokenDefinition.name,
