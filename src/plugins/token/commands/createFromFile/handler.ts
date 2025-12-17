@@ -14,7 +14,10 @@ import { formatError } from '@/core/utils/errors';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
 import { buildTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
 import { readAndValidateTokenFile } from '@/plugins/token/utils/token-file-helpers';
-import { resolveOptionalKey } from '@/plugins/token/utils/token-resolve-optional-key';
+import {
+  resolveOptionalKey,
+  toPublicKey,
+} from '@/plugins/token/utils/token-resolve-optional-key';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { CreateTokenFromFileInputSchema } from './input';
@@ -109,29 +112,13 @@ export async function createTokenFromFile(
         | 'INFINITE',
       maxSupplyRaw: tokenDefinition.maxSupply,
       adminPublicKey: PublicKey.fromString(adminKey.publicKey),
-      supplyPublicKey: supplyKey
-        ? PublicKey.fromString(supplyKey.publicKey)
-        : undefined,
-      wipePublicKey: wipeKey
-        ? PublicKey.fromString(wipeKey.publicKey)
-        : undefined,
-      kycPublicKey: kycKey ? PublicKey.fromString(kycKey.publicKey) : undefined,
-      freezePublicKey: freezeKey
-        ? PublicKey.fromString(freezeKey.publicKey)
-        : undefined,
-      pausePublicKey: pauseKey
-        ? PublicKey.fromString(pauseKey.publicKey)
-        : undefined,
-      feeSchedulePublicKey: feeScheduleKey
-        ? PublicKey.fromString(feeScheduleKey.publicKey)
-        : undefined,
-      customFees: tokenDefinition.customFees.map((fee) => ({
-        type: fee.type,
-        amount: fee.amount,
-        unitType: fee.unitType,
-        collectorId: fee.collectorId,
-        exempt: fee.exempt,
-      })),
+      supplyPublicKey: toPublicKey(supplyKey),
+      wipePublicKey: toPublicKey(wipeKey),
+      kycPublicKey: toPublicKey(kycKey),
+      freezePublicKey: toPublicKey(freezeKey),
+      pausePublicKey: toPublicKey(pauseKey),
+      feeSchedulePublicKey: toPublicKey(feeScheduleKey),
+      customFees: tokenDefinition.customFees,
       memo: tokenDefinition.memo,
     });
 

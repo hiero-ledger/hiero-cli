@@ -5,6 +5,8 @@ import type {
 } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 
+import { PublicKey } from '@hashgraph/sdk';
+
 export async function resolveOptionalKey(
   keyOrAlias: KeyOrAccountAlias | undefined,
   keyManager: KeyManagerName,
@@ -16,4 +18,10 @@ export async function resolveOptionalKey(
   }
 
   return keyResolver.getOrInitKey(keyOrAlias, keyManager, [tag]);
+}
+
+export function toPublicKey(
+  key: ResolvedKey | undefined,
+): PublicKey | undefined {
+  return key ? PublicKey.fromString(key.publicKey) : undefined;
 }
