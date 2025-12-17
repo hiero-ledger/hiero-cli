@@ -574,6 +574,7 @@ export const makeTokenStats = (
     bySupplyType: Record<string, number>;
     withAssociations: number;
     totalAssociations: number;
+    withKeys: number;
   }> = {},
 ) => ({
   total: 0,
@@ -581,6 +582,7 @@ export const makeTokenStats = (
   bySupplyType: {},
   withAssociations: 0,
   totalAssociations: 0,
+  withKeys: 0,
   ...overrides,
 });
 
@@ -665,16 +667,19 @@ export const mockTokenStats = {
     total: 2,
     byNetwork: { testnet: 2 },
     bySupplyType: { INFINITE: 2 },
+    withKeys: 2,
   }),
   withKeys: makeTokenStats({
     total: 1,
     byNetwork: { testnet: 1 },
     bySupplyType: { INFINITE: 1 },
+    withKeys: 1,
   }),
   multiNetwork: makeTokenStats({
     total: 2,
     byNetwork: { testnet: 1, mainnet: 1 },
     bySupplyType: { INFINITE: 2 },
+    withKeys: 2,
   }),
   withAssociations: makeTokenStats({
     total: 2,
@@ -682,10 +687,12 @@ export const mockTokenStats = {
     bySupplyType: { INFINITE: 1, FINITE: 1 },
     withAssociations: 1,
     totalAssociations: 1,
+    withKeys: 2,
   }),
   finiteSupply: makeTokenStats({
     total: 1,
     byNetwork: { testnet: 1 },
     bySupplyType: { FINITE: 1 },
+    withKeys: 1,
   }),
 };

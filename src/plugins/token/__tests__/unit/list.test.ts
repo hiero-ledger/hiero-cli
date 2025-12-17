@@ -90,6 +90,9 @@ describe('token plugin - list command', () => {
     expect(output.tokens[0].name).toBe('Token 1');
     expect(output.tokens[0].symbol).toBe('TK1');
     expect(output.tokens[0].tokenId).toBe('0.0.1111');
+
+    // Verify stats contain withKeys count
+    expect(output.stats?.withKeys).toBe(2);
   });
 
   test('lists tokens with keys when flag is set', async () => {
@@ -120,7 +123,14 @@ describe('token plugin - list command', () => {
     expect(output.tokens[0].name).toBe('Token 3');
     expect(output.tokens[0].symbol).toBe('TK3');
     expect(output.tokens[0].tokenId).toBe('0.0.3333');
-    // Note: adminPublicKey is not returned in list output, only stored in state
+
+    // Verify stats contain withKeys count
+    expect(output.stats?.withKeys).toBe(1);
+
+    // Verify logger was called with Admin Key when showKeys is true
+    expect(logger.info).toHaveBeenCalledWith(
+      expect.stringContaining('Admin Key: admin-key-123'),
+    );
   });
 
   test('filters tokens by current network', async () => {
