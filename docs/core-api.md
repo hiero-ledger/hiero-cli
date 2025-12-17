@@ -348,7 +348,7 @@ The KMS supports two storage modes for private keys:
 - **`local`** - Keys stored as plain text (suitable for development and testing)
 - **`local_encrypted`** - Keys encrypted using AES-256-GCM (recommended for production)
 
-The default storage mode is configured via `hcli config set -o default_key_manager local|local_encrypted`. Individual operations can override this using the `--key-manager` flag when available.
+The default storage mode is configured via `hcli config set -o default_key_manager -v local|local_encrypted`. Individual operations can override this using the `--key-manager` flag when available.
 
 ```typescript
 interface KmsService {

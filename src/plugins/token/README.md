@@ -113,14 +113,14 @@ hcli token transfer \
   --token mytoken-alias \
   --from alice \
   --to bob \
-  --balance 100
+  --amount 100
 
 # Using account-id:private-key pair for source
 hcli token transfer \
   --token 0.0.123456 \
   --from 0.0.111111:302e020100300506032b657004220420... \
   --to 0.0.222222 \
-  --balance 100t
+  --amount 100t
 ```
 
 ### Token List
