@@ -40,6 +40,6 @@ export const CREATE_TOPIC_TEMPLATE = `
    Memo: {{memo}}
 {{/if}}
    Admin key: {{#if adminKeyPresent}}✅ Present{{else}}❌ Not set{{/if}}
-   Submit key: {{#if submitKeyPresent}}✅ Present{{else}}❌ Not set{{/if}}
+   Submit key: {{#if submitKeyPresent}}✅ Present{{else}}❌ Not set (public topic){{/if}}
    Transaction ID: {{transactionId}}
 `.trim();

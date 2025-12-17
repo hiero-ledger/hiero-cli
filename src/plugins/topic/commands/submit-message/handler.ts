@@ -2,6 +2,7 @@
  * Topic Message Submit Command Handler
  * Handles submitting messages to topics
  */
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { SubmitMessageOutput } from './output';
 
 import {
@@ -33,8 +34,15 @@ export async function submitMessage(
 
   const topicIdOrAlias = validArgs.topic;
   const message = validArgs.message;
+  const signerArg = validArgs.signer;
+  const keyManagerArg = validArgs.keyManager;
 
   const currentNetwork = api.network.getCurrentNetwork();
+
+  // Get keyManager from args or fallback to config
+  const keyManager =
+    keyManagerArg ||
+    api.config.getOption<KeyManagerName>('default_key_manager');
 
   // Step 1: Resolve topic ID from alias if it exists
   let topicId = topicIdOrAlias;
@@ -62,25 +70,43 @@ export async function submitMessage(
       };
     }
 
+    // Resolve signer if provided
+    let signerKeyRefId: string | undefined;
+
+    if (signerArg) {
+      const resolvedSigner = await api.keyResolver.getOrInitKey(
+        signerArg,
+        keyManager,
+        ['topic:signer'],
+      );
+      signerKeyRefId = resolvedSigner.keyRefId;
+
+      // Validate: if topic has submit key, the signer must match it
+      if (topicData.submitKeyRefId) {
+        if (topicData.submitKeyRefId !== signerKeyRefId) {
+          return {
+            status: Status.Failure,
+            errorMessage: `The provided signer is not authorized to submit messages to this topic. The topic has a different submit key configured.`,
+          };
+        }
+        logger.info(`Using provided signer (authorized submit key)`);
+      } else {
+        logger.info(`Using provided signer for public topic`);
+      }
+    }
+
     // Step 3: Create message submit transaction using Core API
     const messageSubmitTx = api.topic.submitMessage({
       topicId,
       message,
     });
 
-    let txResult: TransactionResult;
-
-    // Step 4: Sign and execute transaction (with submit key if available)
-    if (topicData.submitKeyRefId) {
-      txResult = await api.txExecution.signAndExecuteWith(
-        messageSubmitTx.transaction,
-        [topicData.submitKeyRefId],
-      );
-    } else {
-      txResult = await api.txExecution.signAndExecute(
-        messageSubmitTx.transaction,
-      );
-    }
+    // Step 4: Sign and execute transaction
+    const txResult: TransactionResult = signerKeyRefId
+      ? await api.txExecution.signAndExecuteWith(messageSubmitTx.transaction, [
+          signerKeyRefId,
+        ])
+      : await api.txExecution.signAndExecute(messageSubmitTx.transaction);
 
     if (txResult.success) {
       // Step 5: Prepare structured output data
@@ -105,7 +131,15 @@ export async function submitMessage(
       };
     }
   } catch (error: unknown) {
-    // Catch and format any errors
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    if (errorMessage.includes('INVALID_SIGNATURE')) {
+      return {
+        status: Status.Failure,
+        errorMessage: `This topic requires a specific submit key to send messages. Use --signer (-s) option to specify the authorized account.`,
+      };
+    }
+
     return {
       status: Status.Failure,
       errorMessage: formatError('Failed to submit message', error),
