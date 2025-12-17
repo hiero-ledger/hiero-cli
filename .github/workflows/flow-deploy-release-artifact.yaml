@@ -175,7 +175,7 @@ jobs:
         run: |
           VERSION=$(jq -r '.version' './package.json')
           CLI_NPM_PACKAGE_NAME="hiero-ledger-hiero-cli-${VERSION}.tgz"
-          echo "artifact-name=${SOLO_NPM_PACKAGE_NAME}" >> $GITHUB_OUTPUT
+          echo "artifact-name=${CLI_NPM_PACKAGE_NAME}" >> $GITHUB_OUTPUT
 
       - name: Publish Semantic Release
         env:
