@@ -27,9 +27,7 @@ import { formatError } from '@/core/utils/errors';
 
 import { LedgerIdToBaseUrl } from './types';
 
-export class HederaMirrornodeServiceDefaultImpl
-  implements HederaMirrornodeService
-{
+export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeService {
   private readonly baseUrl: string;
 
   constructor(private readonly ledgerId: LedgerId) {
