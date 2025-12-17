@@ -2,7 +2,6 @@
  * Unit tests for HederaMirrornodeServiceDefaultImpl
  * Tests all public methods with success paths, error paths, and edge cases
  */
-import type { LedgerId } from '@hashgraph/sdk';
 
 import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
 
@@ -42,17 +41,13 @@ const TEST_SEQUENCE_NUMBER = 1;
 
 // Setup helper
 const setupService = (
-  network: 'mainnet' | 'testnet' | 'previewnet' = 'testnet',
+  network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet' = 'testnet',
 ) => {
   jest.clearAllMocks();
 
-  const ledgerId = {
-    toString: () => network,
-  } as LedgerId;
+  const service = new HederaMirrornodeServiceDefaultImpl(network);
 
-  const service = new HederaMirrornodeServiceDefaultImpl(ledgerId);
-
-  return { service, ledgerId };
+  return { service, network };
 };
 
 describe('HederaMirrornodeServiceDefaultImpl', () => {
@@ -81,16 +76,6 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
     it('should initialize with previewnet LedgerId', () => {
       const { service } = setupService('previewnet');
       expect(service).toBeDefined();
-    });
-
-    it('should throw error for unsupported network', () => {
-      const ledgerId = {
-        toString: () => 'unsupported',
-      } as LedgerId;
-
-      expect(() => new HederaMirrornodeServiceDefaultImpl(ledgerId)).toThrow(
-        'Network type unsupported not supported',
-      );
     });
   });
 

@@ -2,6 +2,7 @@
  * Comprehensive Hedera Mirror Node Service Interface
  * Provides access to all Hedera Mirror Node API endpoints
  */
+import type { SupportedNetwork } from '@/core/types/shared.types';
 import type {
   AccountResponse,
   ContractInfo,
@@ -18,6 +19,7 @@ import type {
 } from './types';
 
 export interface HederaMirrornodeService {
+  setBaseUrl(network: SupportedNetwork): void;
   /**
    * Get account information
    */

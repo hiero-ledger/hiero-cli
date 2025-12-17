@@ -3,9 +3,9 @@ import type { KmsCredentialRecord } from '@/core/services/kms/kms-types.interfac
 import type { ListCredentialsOutput } from '@/plugins/credentials/commands/list/output';
 import type { RemoveCredentialsOutput } from '@/plugins/credentials/commands/remove/output';
 
-import { createMockCoreApi } from '@/__tests__/mocks/core-api.mock';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
+import { createCoreApi } from '@/core';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import { listCredentials, removeCredentials } from '@/plugins/credentials';
 
@@ -13,7 +13,7 @@ describe('Credentials Integration Tests', () => {
   let coreApi: CoreApi;
 
   beforeAll(async () => {
-    coreApi = createMockCoreApi(STATE_STORAGE_FILE_PATH);
+    coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
   });
 

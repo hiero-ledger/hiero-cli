@@ -5,6 +5,7 @@ import type { FindMessagesOutput } from '@/plugins/topic/commands/find-message/o
 import { ZodError } from 'zod';
 
 import {
+  createMirrorNodeMock,
   makeAliasMock,
   makeArgs,
   makeLogger,
@@ -30,20 +31,9 @@ const makeApiMocks = ({
   getTopicMessagesImpl?: jest.Mock;
   network?: 'testnet' | 'mainnet' | 'previewnet';
 }) => {
-  const mirror: jest.Mocked<HederaMirrornodeService> = {
-    getTopicMessage: getTopicMessageImpl || jest.fn(),
-    getTopicMessages: getTopicMessagesImpl || jest.fn(),
-    getAccount: jest.fn(),
-    getAccountHBarBalance: jest.fn(),
-    getAccountTokenBalances: jest.fn(),
-    getTokenInfo: jest.fn(),
-    getTopicInfo: jest.fn(),
-    getTransactionRecord: jest.fn(),
-    getContractInfo: jest.fn(),
-    getPendingAirdrops: jest.fn(),
-    getOutstandingAirdrops: jest.fn(),
-    getExchangeRate: jest.fn(),
-  };
+  const mirror: jest.Mocked<HederaMirrornodeService> = createMirrorNodeMock();
+  mirror.getTopicMessage = getTopicMessageImpl || jest.fn();
+  mirror.getTopicMessages = getTopicMessagesImpl || jest.fn();
 
   const networkMock = makeNetworkMock(network);
   const alias = makeAliasMock();

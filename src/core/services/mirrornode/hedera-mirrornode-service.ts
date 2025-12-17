@@ -2,7 +2,7 @@
  * Comprehensive Hedera Mirror Node Service Implementation
  * Makes actual HTTP calls to Hedera Mirror Node API
  */
-import type { LedgerId } from '@hashgraph/sdk';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { HederaMirrornodeService } from './hedera-mirrornode-service.interface';
 import type {
   AccountAPIResponse,
@@ -25,18 +25,22 @@ import type {
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 
-import { LedgerIdToBaseUrl } from './types';
+import { NetworkToBaseUrl } from './types';
 
 export class HederaMirrornodeServiceDefaultImpl
   implements HederaMirrornodeService
 {
-  private readonly baseUrl: string;
+  private baseUrl!: string;
 
-  constructor(private readonly ledgerId: LedgerId) {
-    if (!LedgerIdToBaseUrl.has(ledgerId.toString())) {
-      throw new Error(`Network type ${ledgerId.toString()} not supported`);
+  constructor(private readonly network: SupportedNetwork) {
+    this.setBaseUrl(network);
+  }
+
+  setBaseUrl(network: SupportedNetwork): void {
+    if (!NetworkToBaseUrl.has(network)) {
+      throw new Error(`Network type ${network} not supported`);
     }
-    this.baseUrl = LedgerIdToBaseUrl.get(ledgerId.toString())!;
+    this.baseUrl = NetworkToBaseUrl.get(network)!;
   }
 
   async getAccount(accountId: string): Promise<AccountResponse> {
