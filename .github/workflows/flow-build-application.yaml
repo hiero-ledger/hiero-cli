@@ -42,6 +42,12 @@ defaults:
   run:
     shell: bash
 
+permissions:
+  contents: read
+  actions: read
+  checks: write
+  statuses: write
+
 jobs:
   code:
     name: Code
