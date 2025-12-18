@@ -250,7 +250,7 @@ export class PluginManager {
   }
 
   private getDefaultPluginPath(name: string): string {
-    return `./dist/plugins/${name}`;
+    return path.resolve(__dirname, '../../plugins', name);
   }
 
   /**

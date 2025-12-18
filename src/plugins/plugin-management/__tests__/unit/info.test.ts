@@ -10,7 +10,10 @@ import { getPluginInfo } from '@/plugins/plugin-management/commands/info/handler
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 jest.mock('path', () => ({
-  resolve: (...segments: string[]) => segments.join('/'),
+  resolve: (...segments: string[]) => {
+    const filtered = segments.filter((seg) => !seg.includes('dirname'));
+    return filtered.join('/');
+  },
   join: jest.fn(),
 }));
 

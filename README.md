@@ -223,9 +223,9 @@ The CLI externalizes both its immutable base configuration and mutable runtime s
 
 ## State directory location
 
-By default, the CLI stores plugin state in a directory relative to the current working directory:
+By default, the CLI stores plugin state in your home directory:
 
-- **Default location**: `./.hedera-cli/state/` (in the current working directory)
+- **Default location**: `~/.hedera-cli/state/` (in your home directory)
 
 Each plugin (or state namespace) uses its own JSON file inside this directory. These files are managed by the CLI; you typically should not edit them manually.
 
