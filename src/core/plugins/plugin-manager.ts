@@ -394,7 +394,11 @@ export class PluginManager {
     const commandArgs = command.args;
     const pluginName = command.parent?.name() || command.name();
 
-    const PLUGINS_DISABLED_FROM_INITIALIZATION = ['network', 'config'];
+    const PLUGINS_DISABLED_FROM_INITIALIZATION = [
+      'network',
+      'config',
+      'plugin-management',
+    ];
     if (!PLUGINS_DISABLED_FROM_INITIALIZATION.includes(pluginName)) {
       await ensureCliInitialized(this.coreApi);
     }
