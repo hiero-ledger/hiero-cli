@@ -14,7 +14,7 @@
     "LICENSE"
   ],
   "bin": {
-    "hedera-cli": "./dist/hedera-cli.js"
+    "hcli": "./dist/hedera-cli.js"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -32,9 +32,9 @@
     "format:check": "prettier --check .",
     "prepare": "husky install",
     "test:unit": "cross-env JEST_SUITE_NAME=\"Unit Tests\" JEST_JUNIT_OUTPUT_NAME=\"junit.xml\" jest -c jest.unit.config.js --coverage --coverageDirectory=coverage/unit --detectOpenHandles",
-    "test:integration": "cross-env JEST_SUITE_NAME=\"Integration Tests\" jest -c jest.integration.config.js --coverage --coverageDirectory=coverage/integration --detectOpenHandles",
+    "test:integration": "cross-env JEST_SUITE_NAME=\"Integration Tests\" JEST_JUNIT_OUTPUT_NAME=\"junit-integration.xml\" jest -c jest.integration.config.js --coverage --coverageDirectory=coverage/integration --detectOpenHandles",
     "test:e2e": "cross-env JEST_SUITE_NAME=\"E2E Tests\" JEST_JUNIT_OUTPUT_NAME=\"junit-e2e.xml\" jest -c jest.e2e.config.js --coverage --coverageDirectory=coverage/e2e --runInBand --passWithNoTests",
-    "test:all": "npm run test:unit && npm run test:e2e",
+    "test:all": "npm run test:unit && npm run test:integration",
     "test": "npm run test:unit",
     "single-test": "jest",
     "dev": "ts-node src/hedera-cli.ts",
@@ -86,6 +86,7 @@
     "rimraf": "5.0.10",
     "ts-jest": "29.4.6",
     "tsc-alias": "1.8.16",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "5.9.3"
   },
   "lint-staged": {

@@ -10,8 +10,10 @@ A key advantage of the Hedera CLI Tool is its potential to enhance your workflow
 
 ## Table of Contents
 
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Manual Setup (For Developers)](#manual-setup-for-developers)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
 - [Video Guide](#video-guide)
 - [Plugins](#plugins)
 - [Configuration & State Storage](#configuration--state-storage)
@@ -23,7 +25,34 @@ A key advantage of the Hedera CLI Tool is its potential to enhance your workflow
 - [Contributing](#contributing)
 - [License](#license)
 
-## Prerequisites
+## Quick Start
+
+The easiest way to get started with Hedera CLI is to install it globally via npm:
+
+```sh
+npm install -g @hiero-ledger/hiero-cli
+```
+
+Once installed, you can use the CLI with the `hcli` command:
+
+```sh
+# Check available commands
+hcli --help
+
+# Example: Check account balance
+hcli account balance --account-id 0.0.123456
+
+# Example: Transfer HBAR
+hcli hbar transfer --to 0.0.123456 --amount 10
+```
+
+**First-time setup**: When you run any command that requires an operator (like transferring HBAR or creating tokens), the CLI will automatically guide you through the configuration process if you haven't set up an operator yet.
+
+## Manual Setup (For Developers)
+
+If you want to contribute to the development of the Hedera CLI or run it from source, follow these instructions.
+
+### Prerequisites
 
 Before proceeding with the installation and setup of the Hedera CLI Tool, ensure the following prerequisites are met:
 
@@ -223,9 +252,9 @@ The CLI externalizes both its immutable base configuration and mutable runtime s
 
 ## State directory location
 
-By default, the CLI stores plugin state in a directory relative to the current working directory:
+By default, the CLI stores plugin state in your home directory:
 
-- **Default location**: `./.hedera-cli/state/` (in the current working directory)
+- **Default location**: `~/.hedera-cli/state/` (in your home directory)
 
 Each plugin (or state namespace) uses its own JSON file inside this directory. These files are managed by the CLI; you typically should not edit them manually.
 

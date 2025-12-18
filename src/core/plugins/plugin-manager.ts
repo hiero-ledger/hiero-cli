@@ -109,21 +109,24 @@ export class PluginManager {
    * Initialize plugin state and configure default plugin loading.
    * Returns the current list of plugin state entries.
    */
-  setupDefaultPlugins(defaultState: PluginManifest[]): PluginStateEntry[] {
+  setupPlugins(defaultState: PluginManifest[]): PluginStateEntry[] {
     const pluginState = this.initializePluginState(defaultState);
 
-    const enabledPluginPaths = defaultState
-      .map((manifest) => {
-        const stateEntry = pluginState.find(
-          (entry) => entry.name === manifest.name,
-        );
-        if (!stateEntry || !stateEntry.enabled) {
+    const enabledPluginPaths = pluginState
+      .map((state) => {
+        if (!state.enabled) {
           return undefined;
         }
-        return this.getDefaultPluginPath(manifest.name);
+        const defaultEntry = defaultState.find(
+          (entry) => entry.name === state.name,
+        );
+        if (defaultEntry) {
+          return this.getDefaultPluginPath(state.name);
+        } else {
+          return state.path;
+        }
       })
       .filter((p): p is string => Boolean(p));
-
     this.setDefaultPlugins(enabledPluginPaths);
 
     return pluginState;
@@ -136,7 +139,7 @@ export class PluginManager {
     program: Command,
     defaultState: PluginManifest[],
   ): Promise<PluginStateEntry[]> {
-    const pluginState = this.setupDefaultPlugins(defaultState);
+    const pluginState = this.setupPlugins(defaultState);
     registerDisabledPlugin(program, pluginState);
     await this.initialize();
     return pluginState;
@@ -247,7 +250,7 @@ export class PluginManager {
   }
 
   private getDefaultPluginPath(name: string): string {
-    return `./dist/plugins/${name}`;
+    return path.resolve(__dirname, '../../plugins', name);
   }
 
   /**

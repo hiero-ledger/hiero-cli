@@ -175,6 +175,23 @@ export const makeSigningMock = (
     }),
 });
 
+export const createMirrorNodeMock =
+  (): jest.Mocked<HederaMirrornodeService> => ({
+    setBaseUrl: jest.fn(),
+    getAccount: jest.fn(),
+    getAccountHBarBalance: jest.fn(),
+    getAccountTokenBalances: jest.fn(),
+    getTopicMessage: jest.fn(),
+    getTopicMessages: jest.fn(),
+    getTokenInfo: jest.fn(),
+    getTopicInfo: jest.fn(),
+    getTransactionRecord: jest.fn(),
+    getContractInfo: jest.fn(),
+    getPendingAirdrops: jest.fn(),
+    getOutstandingAirdrops: jest.fn(),
+    getExchangeRate: jest.fn(),
+  });
+
 /**
  * Create a mocked StateService
  */
