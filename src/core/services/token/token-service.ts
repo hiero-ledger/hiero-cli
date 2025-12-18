@@ -77,6 +77,12 @@ export class TokenServiceImpl implements TokenService {
       supplyType,
       maxSupplyRaw,
       adminPublicKey,
+      supplyPublicKey,
+      wipePublicKey,
+      kycPublicKey,
+      freezePublicKey,
+      pausePublicKey,
+      feeSchedulePublicKey,
       customFees,
       memo,
     } = params;
@@ -118,6 +124,37 @@ export class TokenServiceImpl implements TokenService {
     if (memo) {
       tokenCreateTx.setTokenMemo(memo);
       this.logger.debug(`[TOKEN SERVICE] Set token memo: ${memo}`);
+    }
+
+    // Set optional keys if provided
+    if (supplyPublicKey) {
+      tokenCreateTx.setSupplyKey(supplyPublicKey);
+      this.logger.debug(`[TOKEN SERVICE] Set supply key`);
+    }
+
+    if (wipePublicKey) {
+      tokenCreateTx.setWipeKey(wipePublicKey);
+      this.logger.debug(`[TOKEN SERVICE] Set wipe key`);
+    }
+
+    if (kycPublicKey) {
+      tokenCreateTx.setKycKey(kycPublicKey);
+      this.logger.debug(`[TOKEN SERVICE] Set KYC key`);
+    }
+
+    if (freezePublicKey) {
+      tokenCreateTx.setFreezeKey(freezePublicKey);
+      this.logger.debug(`[TOKEN SERVICE] Set freeze key`);
+    }
+
+    if (pausePublicKey) {
+      tokenCreateTx.setPauseKey(pausePublicKey);
+      this.logger.debug(`[TOKEN SERVICE] Set pause key`);
+    }
+
+    if (feeSchedulePublicKey) {
+      tokenCreateTx.setFeeScheduleKey(feeSchedulePublicKey);
+      this.logger.debug(`[TOKEN SERVICE] Set fee schedule key`);
     }
 
     this.logger.debug(

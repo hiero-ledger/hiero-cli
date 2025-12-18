@@ -2,13 +2,14 @@
  * Type definitions for Hedera Mirror Node API responses
  */
 import type { KeyAlgorithm } from '@/core/shared/constants';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 // Base URL mapping for different networks
-export const LedgerIdToBaseUrl = new Map<string, string>([
+export const NetworkToBaseUrl = new Map<SupportedNetwork, string>([
   ['mainnet', 'https://mainnet-public.mirrornode.hedera.com/api/v1'],
   ['testnet', 'https://testnet.mirrornode.hedera.com/api/v1'],
   ['previewnet', 'https://previewnet.mirrornode.hedera.com/api/v1'],
-  ['local-node', 'http://localhost:5551/api/v1'],
+  ['localnet', 'http://localhost:5551/api/v1'],
 ]);
 
 export type MirrorNodeKeyType = 'ECDSA_SECP256K1' | 'ED25519';

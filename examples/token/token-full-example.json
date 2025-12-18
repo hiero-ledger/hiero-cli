@@ -1,5 +1,5 @@
 {
-  "name": "token-full-example2",
+  "name": "token-full-example",
   "symbol": "TFE",
   "decimals": 8,
   "supplyType": "finite",
@@ -7,6 +7,12 @@
   "maxSupply": 10000000,
   "treasuryKey": "<alias or accountId:keyType:privateKey>",
   "adminKey": "<alias or accountId:keyType:privateKey>",
+  "supplyKey": "<alias or accountId:keyType:privateKey>",
+  "wipeKey": "<alias or accountId:keyType:privateKey>",
+  "kycKey": "<alias or accountId:keyType:privateKey>",
+  "freezeKey": "<alias or accountId:keyType:privateKey>",
+  "pauseKey": "<alias or accountId:keyType:privateKey>",
+  "feeScheduleKey": "<alias or accountId:keyType:privateKey>",
   "memo": "Full example token with all fields",
   "associations": ["<alias or accountId:keyType:privateKey>", "..."],
   "customFees": [

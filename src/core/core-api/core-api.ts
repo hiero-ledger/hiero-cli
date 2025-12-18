@@ -22,8 +22,6 @@ import type { TokenService } from '@/core/services/token/token-service.interface
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
 import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
 
-import { LedgerId } from '@hashgraph/sdk';
-
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
 import { AliasServiceImpl } from '@/core/services/alias/alias-service';
 import { ConfigServiceImpl } from '@/core/services/config/config-service';
@@ -93,25 +91,8 @@ export class CoreApiImplementation implements CoreApi {
 
     // Convert network string to LedgerId
     const networkString = this.network.getCurrentNetwork();
-    let ledgerId: LedgerId;
-    switch (networkString) {
-      case 'mainnet':
-        ledgerId = LedgerId.MAINNET;
-        break;
-      case 'testnet':
-        ledgerId = LedgerId.TESTNET;
-        break;
-      case 'previewnet':
-        ledgerId = LedgerId.PREVIEWNET;
-        break;
-      case 'localnet':
-        ledgerId = LedgerId.LOCAL_NODE;
-        break;
-      default:
-        ledgerId = LedgerId.TESTNET;
-    }
 
-    this.mirror = new HederaMirrornodeServiceDefaultImpl(ledgerId);
+    this.mirror = new HederaMirrornodeServiceDefaultImpl(networkString);
     this.keyResolver = new KeyResolverServiceImpl(
       this.mirror,
       this.alias,

@@ -52,6 +52,7 @@
   "author": "Michiel Mulders",
   "license": "Apache-2.0",
   "dependencies": {
+    "@clack/prompts": "^0.11.0",
     "@hashgraph/sdk": "2.66.0",
     "axios": "1.12.0",
     "bignumber.js": "9.3.1",
@@ -84,6 +85,7 @@
     "rimraf": "^5.0.5",
     "ts-jest": "^29.3.2",
     "tsc-alias": "^1.8.16",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.8.3"
   },
   "lint-staged": {

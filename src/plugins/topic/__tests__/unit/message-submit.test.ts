@@ -127,7 +127,7 @@ describe('topic plugin - message-submit command', () => {
     });
   });
 
-  test('submits message successfully with submit key', async () => {
+  test('submits message successfully with signer option', async () => {
     const logger = makeLogger();
     const submitKeyRefId = 'kr_submit123';
     const topicData = makeTopicData({
@@ -137,6 +137,14 @@ describe('topic plugin - message-submit command', () => {
     });
     const loadTopicMock = jest.fn().mockReturnValue(topicData);
     MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
+
+    const keyResolverMock = {
+      getOrInitKey: jest.fn().mockResolvedValue({
+        publicKey: '02abc123',
+        accountId: '0.0.999',
+        keyRefId: submitKeyRefId,
+      }),
+    };
 
     const { topicTransactions, signing, networkMock, alias } = makeApiMocks({
       submitMessageImpl: jest.fn().mockReturnValue({
@@ -157,11 +165,14 @@ describe('topic plugin - message-submit command', () => {
       alias: alias as any,
       state: {} as any,
       logger,
+      keyResolver: keyResolverMock as any,
+      config: { getOption: jest.fn().mockReturnValue('local') } as any,
     };
 
     const args = makeArgs(api, logger, {
       topic: '0.0.5678',
       message: 'Signed message',
+      signer: 'my-account-alias',
     });
 
     const result = await submitMessage(args);

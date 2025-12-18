@@ -18,6 +18,12 @@ export const createMockTokenCreateTransaction = () => ({
   setMaxSupply: jest.fn().mockReturnThis(),
   setCustomFees: jest.fn().mockReturnThis(),
   setTokenMemo: jest.fn().mockReturnThis(),
+  setSupplyKey: jest.fn().mockReturnThis(),
+  setWipeKey: jest.fn().mockReturnThis(),
+  setKycKey: jest.fn().mockReturnThis(),
+  setFreezeKey: jest.fn().mockReturnThis(),
+  setPauseKey: jest.fn().mockReturnThis(),
+  setFeeScheduleKey: jest.fn().mockReturnThis(),
 });
 
 export const createMockTokenAssociateTransaction = () => ({

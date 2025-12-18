@@ -37,12 +37,22 @@ export function buildTokenData(
   };
 }
 
+export interface TokenKeyOptions {
+  supplyPublicKey?: string;
+  wipePublicKey?: string;
+  kycPublicKey?: string;
+  freezePublicKey?: string;
+  pausePublicKey?: string;
+  feeSchedulePublicKey?: string;
+}
+
 export function buildTokenDataFromFile(
   result: TransactionResult,
   tokenDefinition: TokenFileDefinition,
   treasuryId: string,
   adminPublicKey: string,
   network: SupportedNetwork,
+  keys?: TokenKeyOptions,
 ): TokenData {
   return {
     tokenId: result.tokenId!,
@@ -50,6 +60,12 @@ export function buildTokenDataFromFile(
     symbol: tokenDefinition.symbol,
     treasuryId,
     adminPublicKey,
+    supplyPublicKey: keys?.supplyPublicKey,
+    wipePublicKey: keys?.wipePublicKey,
+    kycPublicKey: keys?.kycPublicKey,
+    freezePublicKey: keys?.freezePublicKey,
+    pausePublicKey: keys?.pausePublicKey,
+    feeSchedulePublicKey: keys?.feeSchedulePublicKey,
     decimals: tokenDefinition.decimals,
     initialSupply: tokenDefinition.initialSupply,
     supplyType: tokenDefinition.supplyType.toUpperCase() as
