@@ -1,8 +1,8 @@
-### ADR-001: Extensible Plugin Architecture for Hedera CLI
+### ADR-001: Extensible Plugin Architecture for Hiero CLI
 
 - Status: Proposed
 - Date: 2025-09-18
-- Owner: Tech Lead, Hedera CLI
+- Owner: Tech Lead, Hiero CLI
 - Related: `src/api/*`, `src/commands/*`, `src/state/*`, `src/utils/*`
 
 ## Context

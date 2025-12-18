@@ -2,8 +2,8 @@
 
 - Status: Proposed
 - Date: 2025-10-17
-- Owner: Tech Lead, Hedera CLI
-- Related: `src/hedera-cli.ts`, `src/core/*`, `src/plugins/*`, `docs/adr/ADR-001-plugin-architecture.md`
+- Owner: Tech Lead, Hiero CLI
+- Related: `src/hiero-cli.ts`, `src/core/*`, `src/plugins/*`, `docs/adr/ADR-001-plugin-architecture.md`
 
 ## Context
 
@@ -130,7 +130,7 @@ Exit codes within ranges may be refined later; the mapping lives centrally in Co
 
 - Add types to `src/core/types` (or equivalent) for `CommandExecutionResult` using the `Status` enum.
 - Extend plugin manifest types to include `CommandOutputSpec`.
-- Update `src/hedera-cli.ts` execution path to:
+- Update `src/hiero-cli.ts` execution path to:
   - Configure logging and script mode suppression
   - Execute handler, normalize exceptions, validate schema, render output, write to destination, set exit code
 - Provide a default human-readable formatter (table/list) when no template is provided.

@@ -1,6 +1,6 @@
 # HBAR Plugin
 
-Complete HBAR transfer management plugin for the Hedera CLI following the plugin architecture.
+Complete HBAR transfer management plugin for the Hiero CLI following the plugin architecture.
 
 ## 🏗️ Architecture
 

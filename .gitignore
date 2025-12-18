@@ -123,24 +123,24 @@ junit*.xml
 # Exclude E2E/Unit test generated state files
 
 # Ignore any accidental local persisted state copies
-hedera-cli/state.json
+hiero-cli/state.json
 **/state.json
 
-# Ignore .hedera-cli state directory
-.hedera-cli/state/
+# Ignore .hiero-cli state directory
+.hiero-cli/state/
 
 # Exclude semantic-release version info
 VERSION
 
 # User configuration overrides (cosmiconfig) - keep local only
-hedera-cli.config.local.json
-hedera-cli.config.*.local.json
-.hedera-clirc
-.hedera-clirc.json
-.hedera-clirc.yaml
-.hedera-clirc.yml
-.hedera-cli
-.hedera-cli-test
+hiero-cli.config.local.json
+hiero-cli.config.*.local.json
+.hiero-clirc
+.hiero-clirc.json
+.hiero-clirc.yaml
+.hiero-clirc.yml
+.hiero-cli
+.hiero-cli-test
 
 #AI agents
 .claude

@@ -1,6 +1,6 @@
 # Plugin Management Plugin
 
-A plugin for managing other plugins in the Hedera CLI system.
+A plugin for managing other plugins in the Hiero CLI system.
 
 ## Overview
 

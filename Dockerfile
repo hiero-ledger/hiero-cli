@@ -35,7 +35,7 @@ COPY --from=build-stage /app/docker-entrypoint.sh ./docker-entrypoint.sh
 RUN chmod +x docker-entrypoint.sh
 
 # Define the command to run the application
-# CMD [ "node", "dist/hedera-cli.js" ]
+# CMD [ "node", "dist/hiero-cli.js" ]
 
 # Define the entrypoint script: Hang until the container is stopped
 ENTRYPOINT [ "./docker-entrypoint.sh" ]

@@ -1,6 +1,6 @@
 /**
  * Shared Type Definitions
- * Common data structures used across the Hedera CLI
+ * Common data structures used across the Hiero CLI
  */
 
 import type { CustomFee } from '@hashgraph/sdk';
