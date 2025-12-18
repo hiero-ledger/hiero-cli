@@ -25,15 +25,20 @@ print_error() {
   echo "[ERROR] $1" >&2
 }
 
-# --- Ensure built CLI is available ---
+# --- Pre-flight checks for dependencies and build ---
+if [[ ! -d "${PROJECT_DIR}/node_modules" ]]; then
+  print_error "Project dependencies are not installed. Please run: npm install && npm run build"
+  exit 1
+fi
+
 if [[ ! -f "${PROJECT_DIR}/dist/hedera-cli.js" ]]; then
   print_error "Built CLI not found at dist/hedera-cli.js. Please run: npm run build"
   exit 1
 fi
 
-# --- hcli wrapper (uses built JS CLI) ---
+# --- hcli wrapper (uses built JS CLI with JSON output to avoid interactive prompts) ---
 hcli() {
-  cd "${PROJECT_DIR}" && node dist/hedera-cli.js "$@"
+  cd "${PROJECT_DIR}" && node dist/hedera-cli.js --format json "$@"
 }
 
 # --- Check required environment variables for operator ---
