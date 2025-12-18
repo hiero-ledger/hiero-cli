@@ -87,7 +87,7 @@ hcli topic submit-message \
 
 # Using explicit topic ID
 hcli topic submit-message \
-  --topic-id 0.0.900123 \
+  --topic 0.0.900123 \
   --message '{"event":"mint","amount":10}'
 ```
 
@@ -99,12 +99,12 @@ Query mirror node data for a topic by sequence number or with range filters.
 # Fetch a specific sequence number
 hcli topic find-message \
   --topic marketing-updates \
-  --sequence-number 42
+  --sequence-eq 42
 
 # Fetch all messages after a sequence number
 hcli topic find-message \
-  --topic-id 0.0.900123 \
-  --sequence-number-gt 100
+  --topic 0.0.900123 \
+  --sequence-gt 100
 ```
 
 ## 📝 Parameter Formats
@@ -112,7 +112,7 @@ hcli topic find-message \
 - **Topic reference**: alias registered in the CLI or explicit `0.0.x` ID
 - **Keys**: account alias (resolved via `api.alias`) or raw private key string (imported into KMS and referenced via `keyRefId`)
 - **Messages**: UTF-8 strings; mirror results are automatically Base64-decoded
-- **Sequence filters**: `--sequence-number`, `--sequence-number-gt`, `--sequence-number-gte`, `--sequence-number-lt`, `--sequence-number-lte`, `--sequence-number-eq`, `--sequence-number-ne`
+- **Sequence filters**: `--sequence-gt`, `--sequence-gte`, `--sequence-lt`, `--sequence-lte`, `--sequence-eq` (short forms: `-g`, `-G`, `-l`, `-L`, `-e`)
 
 ## 🔧 Core API Integration
 

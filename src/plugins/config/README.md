@@ -1,6 +1,6 @@
-# Credentials Plugin
+# Config Plugin
 
-A plugin for managing operator credentials and keys in the Hiero CLI.
+Configuration management plugin for the Hedera CLI.
 
 ## 🏗️ Architecture
 
@@ -15,16 +15,22 @@ This plugin follows the plugin architecture principles:
 ## 📁 Structure
 
 ```
-src/plugins/credentials/
+src/plugins/config/
 ├── manifest.ts              # Plugin manifest with command definitions
-├── schema.ts                # Credentials data schema with Zod validation
+├── schema.ts                # Config option type inference utilities
 ├── commands/
 │   ├── list/
-│   │   ├── handler.ts      # List credentials handler
+│   │   ├── handler.ts      # List config options handler
 │   │   ├── output.ts       # Output schema and template
 │   │   └── index.ts        # Command exports
-│   └── remove/
-│       ├── handler.ts      # Remove credentials handler
+│   ├── get/
+│   │   ├── handler.ts      # Get config option handler
+│   │   ├── input.ts        # Input schema
+│   │   ├── output.ts       # Output schema and template
+│   │   └── index.ts        # Command exports
+│   └── set/
+│       ├── handler.ts      # Set config option handler
+│       ├── input.ts        # Input schema
 │       ├── output.ts       # Output schema and template
 │       └── index.ts        # Command exports
 ├── __tests__/unit/         # Unit tests
@@ -41,74 +47,95 @@ All commands return `CommandExecutionResult` with structured output that include
 
 Each command defines a Zod schema for output validation and a Handlebars template for human-readable formatting.
 
-### List Credentials
+### Config List
 
-Show all stored credentials and their metadata.
+List all available configuration options with their current values, types, and allowed values (for enum options).
 
 ```bash
-hcli credentials list
+hcli config list
 ```
 
 **Output:**
 
 ```json
 {
-  "credentials": [
+  "options": [
     {
-      "keyRefId": "key-ref-123",
-      "type": "ecdsa",
-      "publicKey": "02a1b2c3...",
-      "labels": ["default-operator"]
+      "name": "default_key_manager",
+      "type": "enum",
+      "value": "local",
+      "allowedValues": ["local", "local_encrypted"]
+    },
+    {
+      "name": "log_level",
+      "type": "enum",
+      "value": "silent",
+      "allowedValues": ["silent", "error", "warn", "info", "debug"]
+    },
+    {
+      "name": "ed25519_support_enabled",
+      "type": "boolean",
+      "value": false
     }
   ],
-  "totalCount": 1
+  "totalCount": 3
 }
 ```
 
-### Remove Credentials
+### Config Get
 
-Remove credentials for a specific key reference ID.
+Get the value of a specific configuration option.
 
 ```bash
-hcli credentials remove --id key-ref-123
+hcli config get -o default_key_manager
 ```
 
 **Options:**
 
-- `--id, -i` (required): Key reference ID to remove
-
-## 📊 State Management
-
-```bash
-hcli credentials remove --id key-ref-123
-```
+- `-o, --option <string>` - Option name to read (required)
 
 **Output:**
 
 ```json
 {
-  "keyRefId": "key-ref-123",
-  "removed": true
+  "name": "default_key_manager",
+  "type": "enum",
+  "value": "local",
+  "allowedValues": ["local", "local_encrypted"]
 }
 ```
 
-## Plugin Architecture
+### Config Set
 
-### State Management
+Set the value of a configuration option.
 
-The plugin stores credentials metadata using the following schema:
+```bash
+hcli config set -o default_key_manager -v local_encrypted
+hcli config set -o log_level -v info
+```
 
-```typescript
+**Options:**
+
+- `-o, --option <string>` - Option name to set (required)
+- `-v, --value <string>` - Value to set (required)
+
+**Output:**
+
+```json
 {
-  accountId: string; // Format: 0.0.123456
-  privateKey: string; // Encrypted private key
-  network: string; // mainnet|testnet|previewnet|localnet
-  isDefault: boolean; // Whether this is the default credential set
-  createdAt: string; // ISO timestamp
+  "name": "default_key_manager",
+  "type": "enum",
+  "previousValue": "local",
+  "newValue": "local_encrypted"
 }
 ```
 
-The schema is validated using Zod (`CredentialsDataSchema`) and stored as JSON Schema in the plugin manifest for runtime validation.
+## 🔧 Core API Integration
+
+The plugin uses the Core API services:
+
+- `api.config` - Configuration option management (list, get, set)
+- `api.logger` - Logging
 
 ## 📤 Output Formatting
 
@@ -131,37 +158,19 @@ interface CommandExecutionResult {
 
 The `outputJson` field contains a JSON string that conforms to the Zod schema defined in each command's `output.ts` file, ensuring type safety and consistent output structure.
 
-## 🔧 Core API Integration
-
-The plugin uses the Core API services:
-
-- `api.kms` - Secure key storage and management
-- `api.network` - Operator configuration per network
-- `api.state` - Persistent credential metadata storage
-- `api.logger` - Logging
-
-## 🔐 Security Notes
-
-- Private keys are stored securely via the KMS service using one of two storage modes:
-  - **`local`**: Plain text storage (development/testing)
-  - **`local_encrypted`**: AES-256-GCM encrypted storage (production)
-- Default storage mode configured via `hcli config set -o default_key_manager -v local|local_encrypted`
-- Per-operation override available using `--key-manager` flag on commands that import or create keys
-- Only key reference IDs and public keys are exposed in outputs
-- Network-specific operator configuration prevents key reuse across environments
-- Private keys never logged in plaintext
-
 ## 🧪 Testing
 
 Unit tests located in `__tests__/unit/`:
 
 ```bash
-npm test -- src/plugins/credentials/__tests__/unit
+npm test -- src/plugins/config/__tests__/unit
 ```
 
 Test coverage includes:
 
-- Listing credentials
-- Removing credentials by key reference ID
-- Error handling for invalid inputs
-- Missing credentials handling
+- Listing configuration options
+- Getting configuration option values
+- Setting configuration option values
+- Type validation for boolean, number, string, and enum values
+- Error handling for invalid option names or values
+- Enum value validation

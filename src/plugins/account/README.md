@@ -184,7 +184,7 @@ The schema is validated using Zod (`AccountDataSchema`) and stored as JSON Schem
 
 - Private keys stored securely via `KmsService` using `keyRefId` references
 - Two storage modes available: `local` (plain text) and `local_encrypted` (AES-256-GCM)
-- Default storage mode configurable via `hcli config set -o default_key_manager local|local_encrypted`
+- Default storage mode configurable via `hcli config set -o default_key_manager -v local|local_encrypted`
 - Per-operation override using `--key-manager` flag
 - No raw private keys in plugin state JSON
 - Secure key retrieval through Core API
