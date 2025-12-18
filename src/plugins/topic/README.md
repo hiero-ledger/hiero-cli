@@ -1,6 +1,6 @@
 # Topic Plugin
 
-Complete topic management plugin for the Hedera CLI following the plugin architecture.
+Complete topic management plugin for the Hiero CLI following the plugin architecture.
 
 ## 🏗️ Architecture
 

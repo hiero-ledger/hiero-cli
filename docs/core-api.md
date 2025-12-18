@@ -1,6 +1,6 @@
 # Core Api Reference
 
-Complete reference documentation for the Hedera CLI Core Api, including all services, interfaces, and types.
+Complete reference documentation for the Hiero CLI Core Api, including all services, interfaces, and types.
 
 ## 📋 Overview
 

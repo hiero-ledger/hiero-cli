@@ -64,7 +64,7 @@ describe('ZustandGenericStateServiceImpl', () => {
 
       new ZustandGenericStateServiceImpl(logger);
 
-      expect(path.join).toHaveBeenCalledWith(cwd, '.hedera-cli', 'state');
+      expect(path.join).toHaveBeenCalledWith(cwd, '.hiero-cli', 'state');
     });
 
     it('should discover existing namespaces from storage files', () => {

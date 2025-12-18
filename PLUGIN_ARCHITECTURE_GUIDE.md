@@ -1,10 +1,10 @@
 # Plugin Development Guide
 
-Complete guide to creating, developing, and testing plugins for the Hedera CLI.
+Complete guide to creating, developing, and testing plugins for the Hiero CLI.
 
 ## 📋 Overview
 
-The Hedera CLI uses a plugin-based architecture that allows developers to extend functionality without modifying the core codebase. This guide covers everything you need to know to create plugins and highlights where to find deeper reference material:
+The Hiero CLI uses a plugin-based architecture that allows developers to extend functionality without modifying the core codebase. This guide covers everything you need to know to create plugins and highlights where to find deeper reference material:
 
 - [`docs/architecture.md`](docs/architecture.md) – system architecture
 - [`docs/core-api.md`](docs/core-api.md) – full Core API reference
@@ -66,7 +66,7 @@ export const myPluginManifest: PluginManifest = {
   name: 'my-plugin',
   version: '1.0.0',
   displayName: 'My Plugin',
-  description: 'A custom plugin for Hedera CLI',
+  description: 'A custom plugin for Hiero CLI',
   compatibility: {
     cli: '^1.0.0',
     core: '^1.0.0',
@@ -474,7 +474,7 @@ my-hedera-plugin/
 {
   "name": "@hiero-ledger/hiero-cli-plugin-my-plugin",
   "version": "1.0.0",
-  "description": "My custom Hedera CLI plugin",
+  "description": "My custom Hiero CLI plugin",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": ["dist/**/*"],
@@ -749,10 +749,10 @@ The CLI uses a config-based logging system. To enable debug logging, set the `lo
 
 ```bash
 # Set log level to debug (persists across CLI invocations)
-node dist/hedera-cli.js config set -o log_level -v debug
+node dist/hiero-cli.js config set -o log_level -v debug
 
 # Now run your plugin command with debug output
-node dist/hedera-cli.js my-plugin create --name test
+node dist/hiero-cli.js my-plugin create --name test
 ```
 
 Available log levels: `silent` (default), `error`, `warn`, `info`, `debug`. All logger output is written to stderr, so command output on stdout remains clean.
@@ -764,19 +764,19 @@ Available log levels: `silent` (default), `error`, `warn`, `info`, `debug`. All 
 npm run dev
 
 # In another terminal, test the plugin
-node dist/hedera-cli.js my-plugin create --name test
+node dist/hiero-cli.js my-plugin create --name test
 ```
 
 ### 3. State Inspection
 
 ```bash
-# View plugin state stored under .hedera-cli/state
+# View plugin state stored under .hiero-cli/state
 
 # macOS / Linux
-cat .hedera-cli/state/my-plugin-data-storage.json | jq '.'
+cat .hiero-cli/state/my-plugin-data-storage.json | jq '.'
 
 # Windows PowerShell
-Get-Content .hedera-cli/state/my-plugin-data-storage.json | ConvertFrom-Json | ConvertTo-Json -Depth 10
+Get-Content .hiero-cli/state/my-plugin-data-storage.json | ConvertFrom-Json | ConvertTo-Json -Depth 10
 ```
 
 ## 📖 Related Documentation

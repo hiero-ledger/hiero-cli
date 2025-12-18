@@ -1,13 +1,13 @@
-### ADR-004: Key Protection Mechanism for Hedera CLI (Revised)
+### ADR-004: Key Protection Mechanism for Hiero CLI (Revised)
 
 - Status: Proposed
 - Date: 2025-11-03
 - Supersedes: ADR-004 (original version dated 2025-10-31)
-- Related: `src/hedera-cli.ts`, `src/core/*`, `src/plugins/*`
+- Related: `src/hiero-cli.ts`, `src/core/*`, `src/plugins/*`
 
 ## Context
 
-The Hedera CLI requires secure storage and management of sensitive cryptographic material, particularly private keys used for transaction signing. These keys must be protected at rest while remaining accessible to the CLI for authorized operations. The solution must balance security, usability, and cross-platform compatibility.
+The Hiero CLI requires secure storage and management of sensitive cryptographic material, particularly private keys used for transaction signing. These keys must be protected at rest while remaining accessible to the CLI for authorized operations. The solution must balance security, usability, and cross-platform compatibility.
 
 Goals:
 
@@ -32,7 +32,7 @@ We will implement a two-layer key protection mechanism with **optional global op
 
 Use a dedicated secure file in the CLI's configuration directory to store the auto-generated encryption password:
 
-- **Storage Location**: `~/.hedera-cli/.secret`
+- **Storage Location**: `~/.hiero-cli/.secret`
 - **Content**: Auto-generated cryptographically secure password (base64-encoded 32-byte random value)
 
 **Key Design Decision**: The encryption password is generated automatically on first use and stored in a protected file, eliminating the need for user password input during normal operations.
@@ -74,7 +74,7 @@ Apply AES-256 in Galois/Counter Mode (GCM) for authenticated encryption of priva
 
 - 256-bit key derived from auto-generated password via Argon2id
 - Storage format: Same as current, but with encrypted keys
-- Storage location: `~/.hedera-cli/state/` (same as current, but in encrypted files)
+- Storage location: `~/.hiero-cli/state/` (same as current, but in encrypted files)
 
 **Technical Advantages:**
 
@@ -101,7 +101,7 @@ This means key encryption/decryption is effectively instantaneous from a user ex
 
 ### File Structure and Permissions
 
-**Secret File** (`~/.hedera-cli/.secret`):
+**Secret File** (`~/.hiero-cli/.secret`):
 
 ```
 Format: Base64-encoded 32-byte random value
@@ -125,7 +125,7 @@ Users can disable encryption entirely for development and testing scenarios:
 
 **When Encryption is Disabled:**
 
-- Keys are stored in plaintext same as before in `~/.hedera-cli/state/` directory
+- Keys are stored in plaintext same as before in `~/.hiero-cli/state/` directory
 - Warning message displayed on CLI startup: "⚠️ Key encryption is disabled. Keys are stored in plaintext."
 - `.secret` file is not created or used
 - This setting is stored in the configuration file for persistence
@@ -146,7 +146,7 @@ The encryption functionality will be implemented as a new storage provider that 
 1. **SecretManager**: Handles generation, storage, and retrieval of the encryption password
 
    - Auto-generates secure random password on first use
-   - Stores in `~/.hedera-cli/.secret` with proper permissions
+   - Stores in `~/.hiero-cli/.secret` with proper permissions
    - Verifies file permissions on every access
    - Provides fallback and error handling
 
