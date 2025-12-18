@@ -54,26 +54,30 @@ jobs:
       custom-job-label: Standard
       enable-unit-tests: true
 
-  e2e-tests:
-    name: E2E Tests
+  integration-tests:
+    name: Integration Tests
     uses: ./.github/workflows/zxc-compile-code.yaml
     needs:
       - code-style
     with:
       custom-job-label: Standard
-      enable-e2e-tests: true
+      enable-integration-tests: true
+    secrets:
+      integration-tests-network: ${{ secrets.INTEGRATION_TESTS_NETWORK }}
+      integration-tests-operator-id: ${{ secrets.INTEGRATION_TESTS_OPERATOR_ID }}
+      integration-tests-operator-key: ${{ secrets.INTEGRATION_TESTS_OPERATOR_KEY }}
 
   codecov:
     name: CodeCov
     uses: ./.github/workflows/zxc-code-analysis.yaml
     needs:
       - unit-tests
-      - e2e-tests
+      - integration-tests
     if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name && github.actor != 'dependabot[bot]' }}
     with:
       custom-job-label: Standard
       enable-codecov-analysis: true
-      enable-e2e-coverage-report: true
+      enable-integration-coverage-report: true
     secrets:
       codecov-token: ${{ secrets.CODECOV_TOKEN }}
 
@@ -82,12 +86,12 @@ jobs:
     uses: ./.github/workflows/zxc-code-analysis.yaml
     needs:
       - unit-tests
-      - e2e-tests
+      - integration-tests
     if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name && github.actor != 'dependabot[bot]' }}
     with:
       custom-job-label: Coverage
       enable-codacy-coverage: true
-      enable-e2e-coverage-report: true
+      enable-integration-coverage-report: true
     secrets:
       codacy-project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
 #  snyk:
@@ -95,7 +99,7 @@ jobs:
 #    uses: ./.github/workflows/zxc-code-analysis.yaml
 #    needs:
 #      - unit-tests
-#      - e2e-tests
+#      - integration-tests
 #    if: ${{ github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name && github.actor != 'dependabot[bot]' }}
 #    with:
 #      custom-job-label: Standard
