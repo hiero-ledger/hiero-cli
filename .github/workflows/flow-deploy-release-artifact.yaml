@@ -168,7 +168,7 @@ jobs:
 
       - name: Setup NPM Authentication
         run: |
-          # create .npmrc file to publish Hedera CLI to the npmjs.org registry
+          # create .npmrc file to publish Hiero CLI to the npmjs.org registry
           rm -f .npmrc || true
           echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' > ".npmrc"
           echo '@hashgraph:registry=https://registry.npmjs.org/' >> ".npmrc"
