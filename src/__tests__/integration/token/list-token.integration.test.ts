@@ -7,7 +7,7 @@ import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
-import { createCoreApi } from '@/core/core-api/core-api';
+import { createCoreApi } from '@/core';
 import { Status } from '@/core/shared/constants';
 import { createToken, listTokens } from '@/plugins/token';
 

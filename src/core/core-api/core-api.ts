@@ -30,7 +30,6 @@ import { KeyResolverServiceImpl } from '@/core/services/key-resolver/key-resolve
 import { KmsServiceImpl } from '@/core/services/kms/kms-service';
 import { LoggerService } from '@/core/services/logger/logger-service';
 import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
-import { mapNetworkToLedgerId } from '@/core/services/mirrornode/network-ledger.utils';
 import { NetworkServiceImpl } from '@/core/services/network/network-service';
 import { OutputServiceImpl } from '@/core/services/output/output-service';
 import { PluginManagementServiceImpl } from '@/core/services/plugin-management/plugin-management-service';
@@ -92,9 +91,7 @@ export class CoreApiImplementation implements CoreApi {
 
     // Initialize mirror node service for current network
     const currentNetwork = this.network.getCurrentNetwork();
-    this.mirror = new HederaMirrornodeServiceDefaultImpl(
-      mapNetworkToLedgerId(currentNetwork),
-    );
+    this.mirror = new HederaMirrornodeServiceDefaultImpl(currentNetwork);
     this.keyResolver = new KeyResolverServiceImpl(
       this.mirror,
       this.alias,

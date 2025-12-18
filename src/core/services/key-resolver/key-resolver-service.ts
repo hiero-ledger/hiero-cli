@@ -15,7 +15,6 @@ import type {
 
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
-import { mapNetworkToLedgerId } from '@/core/services/mirrornode/network-ledger.utils';
 
 import { ERROR_MESSAGES } from './error-messages';
 
@@ -111,9 +110,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
     const mirror =
       targetNetwork && targetNetwork !== this.network.getCurrentNetwork()
-        ? new HederaMirrornodeServiceDefaultImpl(
-            mapNetworkToLedgerId(targetNetwork),
-          )
+        ? new HederaMirrornodeServiceDefaultImpl(targetNetwork)
         : this.mirror;
 
     const { keyAlgorithm, accountPublicKey } =
