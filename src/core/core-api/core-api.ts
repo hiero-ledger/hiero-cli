@@ -22,8 +22,6 @@ import type { TokenService } from '@/core/services/token/token-service.interface
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
 import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
 
-import { LedgerId } from '@hashgraph/sdk';
-
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
 import { AliasServiceImpl } from '@/core/services/alias/alias-service';
 import { ConfigServiceImpl } from '@/core/services/config/config-service';
@@ -32,6 +30,7 @@ import { KeyResolverServiceImpl } from '@/core/services/key-resolver/key-resolve
 import { KmsServiceImpl } from '@/core/services/kms/kms-service';
 import { LoggerService } from '@/core/services/logger/logger-service';
 import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
+import { mapNetworkToLedgerId } from '@/core/services/mirrornode/network-ledger.utils';
 import { NetworkServiceImpl } from '@/core/services/network/network-service';
 import { OutputServiceImpl } from '@/core/services/output/output-service';
 import { PluginManagementServiceImpl } from '@/core/services/plugin-management/plugin-management-service';
@@ -91,27 +90,11 @@ export class CoreApiImplementation implements CoreApi {
     this.token = new TokenServiceImpl(this.logger);
     this.topic = new TopicServiceImpl();
 
-    // Convert network string to LedgerId
-    const networkString = this.network.getCurrentNetwork();
-    let ledgerId: LedgerId;
-    switch (networkString) {
-      case 'mainnet':
-        ledgerId = LedgerId.MAINNET;
-        break;
-      case 'testnet':
-        ledgerId = LedgerId.TESTNET;
-        break;
-      case 'previewnet':
-        ledgerId = LedgerId.PREVIEWNET;
-        break;
-      case 'localnet':
-        ledgerId = LedgerId.LOCAL_NODE;
-        break;
-      default:
-        ledgerId = LedgerId.TESTNET;
-    }
-
-    this.mirror = new HederaMirrornodeServiceDefaultImpl(ledgerId);
+    // Initialize mirror node service for current network
+    const currentNetwork = this.network.getCurrentNetwork();
+    this.mirror = new HederaMirrornodeServiceDefaultImpl(
+      mapNetworkToLedgerId(currentNetwork),
+    );
     this.keyResolver = new KeyResolverServiceImpl(
       this.mirror,
       this.alias,
