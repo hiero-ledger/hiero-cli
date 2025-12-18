@@ -7,5 +7,5 @@ export const FooTestOutputSchema = z.object({
 export type FooTestOutput = z.infer<typeof FooTestOutputSchema>;
 
 export const FOO_TEST_TEMPLATE = `
-📝 FOO TEST Plugin
+📝 FOO TEST Plugin {{bar}}
 `.trim();
