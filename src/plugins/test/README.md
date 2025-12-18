@@ -14,7 +14,7 @@ This plugin follows the plugin architecture principles:
 
 ## 📁 Structure
 
-To showcase how the structure of the new plugin should like I will take the test plugin structure and add description what specific file contain
+To showcase how the structure of the new plugin should like please check the plugin structure that is described below.
 
 ```
 src/plugins/test/
@@ -38,7 +38,7 @@ src/plugins/test/
 
 ### Manifest file
 
-Manifest file is used to declare plugin's information, commands and schemas that will be used by it. Let me describe what needs to be defined in manifest by taking `manifest.ts` file located in this directory.
+Manifest file is used to declare plugin's information, commands and schemas that will be used by it. Below you can see the description of `manifest.ts` that is used to build example custom plugin.
 
 ```ts
 export const testPluginManifest: PluginManifest = {
