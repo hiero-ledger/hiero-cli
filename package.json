@@ -14,7 +14,7 @@
     "LICENSE"
   ],
   "bin": {
-    "hedera-cli": "./dist/hedera-cli.js"
+    "hcli": "./dist/hedera-cli.js"
   },
   "engines": {
     "node": ">=18.0.0"
