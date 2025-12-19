@@ -40,6 +40,7 @@ Use a dedicated secure file in the CLI's configuration directory to store the au
 **Alternatives Considered and Rejected:**
 
 1. **System Keyring Integration (keytar/OS credential storage)**
+
    - Native module compilation issues across platforms
    - Unreliable in Linux (multiple keyring implementations)
    - Fails in headless/CI/CD environments
@@ -48,12 +49,14 @@ Use a dedicated secure file in the CLI's configuration directory to store the au
    - Over-engineering for threat model (provides marginal security improvement over file-based approach)
 
 2. **External Secret Managers (Vault, AWS Secrets Manager)**
+
    - Requires network connectivity for every operation
    - Adds external service dependency and latency
    - Complex setup for individual developers
    - Potential cost implications for users
 
 3. **User Password for Each Operation**
+
    - Poor UX - interrupts workflow constantly
    - Password fatigue leads to weak passwords
    - Incompatible with automation and CI/CD
@@ -141,6 +144,7 @@ The encryption functionality will be implemented as a new storage provider that 
 **Key Components:**
 
 1. **SecretManager**: Handles generation, storage, and retrieval of the encryption password
+
    - Auto-generates secure random password on first use
    - Stores in `~/.hedera-cli/.secret` with proper permissions
    - Verifies file permissions on every access
