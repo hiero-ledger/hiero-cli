@@ -21,5 +21,3 @@ export const SetOperatorInputSchema = z.object({
     'Key manager type (defaults to config setting)',
   ),
 });
-
-export type SetOperatorInput = z.infer<typeof SetOperatorInputSchema>;

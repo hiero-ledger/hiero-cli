@@ -1,7 +1,4 @@
-import type {
-  KeyAlgorithmType,
-  KmsCredentialSecret,
-} from '@/core/services/kms/kms-types.interface';
+import type { KmsCredentialSecret } from '@/core/services/kms/kms-types.interface';
 import type { Signer } from './signer.interface';
 
 import { PrivateKey } from '@hashgraph/sdk';
@@ -16,7 +13,7 @@ export class PrivateKeySigner implements Signer {
   constructor(
     private readonly publicKey: string,
     private readonly secret: KmsCredentialSecret,
-    private readonly algorithm: KeyAlgorithmType,
+    private readonly algorithm: KeyAlgorithm,
   ) {}
 
   sign(bytes: Uint8Array): Uint8Array {

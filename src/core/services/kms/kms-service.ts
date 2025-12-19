@@ -7,7 +7,6 @@ import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { KeyManager } from './key-managers/key-manager.interface';
 import type { KmsService } from './kms-service.interface';
 import type {
-  KeyAlgorithmType as KeyAlgorithmType,
   KeyManagerName,
   KmsCredentialRecord,
 } from './kms-types.interface';
@@ -76,7 +75,7 @@ export class KmsServiceImpl implements KmsService {
   }
 
   createLocalPrivateKey(
-    keyType: KeyAlgorithmType,
+    keyType: KeyAlgorithm,
     keyManager: KeyManagerName = KEY_MANAGERS.local,
     labels?: string[],
   ): {
@@ -175,7 +174,7 @@ export class KmsServiceImpl implements KmsService {
   }
 
   importAndValidatePrivateKey(
-    keyType: KeyAlgorithmType,
+    keyType: KeyAlgorithm,
     privateKeyRaw: string,
     validationPublicKey: string,
     keyManager?: KeyManagerName,
