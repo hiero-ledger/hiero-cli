@@ -4,11 +4,42 @@ This folder contains example configuration files and documentation for end-to-en
 
 Each script focuses on a simple, concrete scenario and prints clear, human-readable messages while it runs.
 
-## 1. Simple plugin demo (`examples/scripts/simple-plugin-demo.sh`)
+## 1. Create account demo (`examples/scripts/create-account-demo.sh`)
 
 ### What this script does
 
-This is the first and simplest end-to-end example script. It shows how to:
+This the first and simplest script. Its job is to:
+
+- Create a demo account with a balance of 1 HBAR
+- View account details with `account view` command
+
+### How to run this script
+
+1. **Install prerequisites** (only once):
+
+   - Install **Node.js 18 or newer** on your machine.
+   - Clone this repository and install dependencies in the project folder:
+     - `npm install`
+   - Build the CLI so the compiled binary is available:
+     - `npm run build`
+
+2. **Prepare your Hedera operator credentials**:
+
+   - You need a Hedera testnet account and its private key.
+   - Export them as environment variables in your terminal (replace the placeholders with your real values):
+     - `export HEDERA_OPERATOR_ACCOUNT_ID=0.0.xxxxxx`
+     - `export HEDERA_OPERATOR_KEY=302e020100300506032b657004220420...`
+
+3. **Run the script**:
+
+   - From the project root directory, run:
+     - `./examples/scripts/create-account-demo.sh`
+
+## 2. Trasfer hbar demo (`examples/scripts/transfer-hbar-demo.sh`)
+
+### What this script does
+
+This script job is end-to-end example script that executes HBAR transfer between accounts. It shows how to:
 
 - Configure the CLI operator for the Hedera **testnet** using your operator account ID and private key
 - Create **two demo accounts** with random English names:
@@ -44,12 +75,41 @@ This script represents simple story:
 3. **Run the script**:
 
    - From the project root directory, run:
-     - `./examples/scripts/simple-plugin-demo.sh`
+     - `./examples/scripts/transfer-hbar-demo.sh`
 
-The script will automatically:
+## 3. Token and topics operations demo (`examples/scripts/token-topic-operations-demo.sh`)
 
-- Select the Hedera testnet as the active network
-- Configure the CLI operator using your credentials
-- Create two demo accounts
-- Transfer 2 HBAR between them
-- Print the final HBAR balances of both accounts in a clear, human-readable format.
+### What this script does
+
+The last script's job is to execute script that would perform token operations and record this information on the topic. Its job is two:
+
+- Configure the CLI operator for the Hedera **testnet** using your operator account ID and private key
+- Create **three demo accounts** with random English names:
+- Create public topic for recording executed steps of token operations
+- Create token for each of the account with treasury and admin key set to corresponding accout
+- Record the token creation event on the topic
+- Associate and transfer tokens between the accounts
+- Record the transfer step on public topic
+- Check account balance for each of the created account
+
+### How to run this script
+
+1. **Install prerequisites** (only once):
+
+   - Install **Node.js 18 or newer** on your machine.
+   - Clone this repository and install dependencies in the project folder:
+     - `npm install`
+   - Build the CLI so the compiled binary is available:
+     - `npm run build`
+
+2. **Prepare your Hedera operator credentials**:
+
+   - You need a Hedera testnet account and its private key.
+   - Export them as environment variables in your terminal (replace the placeholders with your real values):
+     - `export HEDERA_OPERATOR_ACCOUNT_ID=0.0.xxxxxx`
+     - `export HEDERA_OPERATOR_KEY=302e020100300506032b657004220420...`
+
+3. **Run the script**:
+
+   - From the project root directory, run:
+     - `./examples/scripts/token-topic-operations-demo.sh`
