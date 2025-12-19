@@ -35,7 +35,7 @@ export type SubmitMessageOutput = z.infer<typeof SubmitMessageOutputSchema>;
 export const SUBMIT_MESSAGE_TEMPLATE = `
 ✅ Message submitted successfully
    Topic ID: {{topicId}}
-   Message: "{{message}}"
+   Message: "{{{message}}}"
    Sequence Number: {{sequenceNumber}}
    Transaction ID: {{transactionId}}
 `.trim();
