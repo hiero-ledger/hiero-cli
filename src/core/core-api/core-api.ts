@@ -89,10 +89,9 @@ export class CoreApiImplementation implements CoreApi {
     this.token = new TokenServiceImpl(this.logger);
     this.topic = new TopicServiceImpl();
 
-    // Convert network string to LedgerId
-    const networkString = this.network.getCurrentNetwork();
-
-    this.mirror = new HederaMirrornodeServiceDefaultImpl(networkString);
+    // Initialize mirror node service for current network
+    const currentNetwork = this.network.getCurrentNetwork();
+    this.mirror = new HederaMirrornodeServiceDefaultImpl(currentNetwork);
     this.keyResolver = new KeyResolverServiceImpl(
       this.mirror,
       this.alias,

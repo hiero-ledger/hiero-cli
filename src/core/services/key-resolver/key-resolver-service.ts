@@ -7,12 +7,14 @@ import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 import type {
   KeyResolverService,
   ResolvedKey,
 } from './key-resolver-service.interface';
 
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
 
 import { ERROR_MESSAGES } from './error-messages';
 
@@ -38,11 +40,12 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     keyOrAlias: KeyOrAccountAlias,
     keyManager: KeyManagerName,
     labels?: string[],
+    targetNetwork?: SupportedNetwork,
   ): Promise<ResolvedKey> {
     const argType = keyOrAlias.type;
 
     if (argType === 'keypair') {
-      return this.resolveKeypair(keyOrAlias, keyManager, labels);
+      return this.resolveKeypair(keyOrAlias, keyManager, labels, targetNetwork);
     }
 
     return this.resolveAlias(keyOrAlias.alias);
@@ -52,6 +55,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     keyOrAlias: KeyOrAccountAlias | undefined,
     keyManager: KeyManagerName,
     labels?: string[],
+    targetNetwork?: SupportedNetwork,
   ): Promise<ResolvedKey> {
     if (!keyOrAlias) {
       const operator = this.network.getCurrentOperatorOrThrow();
@@ -69,7 +73,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       };
     }
 
-    return this.getOrInitKey(keyOrAlias, keyManager, labels);
+    return this.getOrInitKey(keyOrAlias, keyManager, labels, targetNetwork);
   }
 
   private resolveAlias(accountAlias: string): ResolvedKey {
@@ -100,11 +104,17 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     keyPair: AccountIdWithPrivateKey,
     keyManager: KeyManagerName,
     labels?: string[],
+    targetNetwork?: SupportedNetwork,
   ): Promise<ResolvedKey> {
     const { accountId, privateKey } = keyPair;
 
+    const mirror =
+      targetNetwork && targetNetwork !== this.network.getCurrentNetwork()
+        ? new HederaMirrornodeServiceDefaultImpl(targetNetwork)
+        : this.mirror;
+
     const { keyAlgorithm, accountPublicKey } =
-      await this.mirror.getAccount(accountId);
+      await mirror.getAccount(accountId);
 
     if (!keyAlgorithm || !accountPublicKey) {
       throw new Error(ERROR_MESSAGES.unableToGetKeyAlgorithm);

@@ -34,6 +34,7 @@ export async function setOperatorHandler(
       operatorArg,
       keyManager,
       ['network:operator', `network:${targetNetwork}`],
+      targetNetwork,
     );
     if (networkArg && !api.network.isNetworkAvailable(networkArg)) {
       const available = api.network.getAvailableNetworks().join(', ');
