@@ -33,14 +33,21 @@ describe('account plugin - delete command (ADR-003)', () => {
     const deleteAccountMock = jest.fn().mockReturnValue(undefined);
     MockedHelper.mockImplementation(() => ({
       loadAccount: jest.fn().mockReturnValue(account),
-      listAccounts: jest.fn(),
+      listAccounts: jest.fn().mockReturnValue([]),
       deleteAccount: deleteAccountMock,
     }));
 
     const alias = makeAliasServiceMock();
     const network = makeNetworkServiceMock('testnet');
+    const kms = { remove: jest.fn() };
 
-    const api: Partial<CoreApi> = { state: {} as any, logger, alias, network };
+    const api: Partial<CoreApi> = {
+      state: {} as any,
+      logger,
+      alias,
+      network,
+      kms: kms as any,
+    };
     const args = makeArgs(api, logger, { name: 'acc1' });
 
     const result = await deleteAccount(args);
@@ -67,8 +74,15 @@ describe('account plugin - delete command (ADR-003)', () => {
 
     const alias = makeAliasServiceMock();
     const network = makeNetworkServiceMock('testnet');
+    const kms = { remove: jest.fn() };
 
-    const api: Partial<CoreApi> = { state: {} as any, logger, alias, network };
+    const api: Partial<CoreApi> = {
+      state: {} as any,
+      logger,
+      alias,
+      network,
+      kms: kms as any,
+    };
     const args = makeArgs(api, logger, { id: '0.0.2222' });
 
     const result = await deleteAccount(args);
@@ -209,7 +223,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     // Mock account state helper
     MockedHelper.mockImplementation(() => ({
       loadAccount: jest.fn().mockReturnValue(account),
-      listAccounts: jest.fn(),
+      listAccounts: jest.fn().mockReturnValue([]),
       deleteAccount: jest.fn(),
     }));
 
@@ -218,8 +232,15 @@ describe('account plugin - delete command (ADR-003)', () => {
       records: mockAliasLists.multiNetworkMultiType,
     });
     const network = makeNetworkServiceMock('testnet');
+    const kms = { remove: jest.fn() };
 
-    const api: Partial<CoreApi> = { state: {} as any, logger, alias, network };
+    const api: Partial<CoreApi> = {
+      state: {} as any,
+      logger,
+      alias,
+      network,
+      kms: kms as any,
+    };
     const args = makeArgs(api, logger, { name: 'acc-alias' });
 
     const result = await deleteAccount(args);

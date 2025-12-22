@@ -64,6 +64,20 @@ export async function deleteAccount(
     // Delete account from state
     accountState.deleteAccount(accountToDelete.name);
 
+    // Delete credential if no other account uses the same keyRefId
+    const accountsWithSameKeyRef = accountState
+      .listAccounts()
+      .filter((acc) => acc.keyRefId === accountToDelete.keyRefId);
+    const isOtherAccountUseSameKey = accountsWithSameKeyRef.length > 1;
+
+    const operator = api.network.getCurrentOperatorOrThrow();
+    const isOperatorHaveSameKeyRef =
+      operator.keyRefId === accountToDelete.keyRefId;
+
+    if (!isOtherAccountUseSameKey && !isOperatorHaveSameKeyRef) {
+      api.kms.remove(accountToDelete.keyRefId);
+    }
+
     // Prepare output data
     const outputData: DeleteAccountOutput = {
       deletedAccount: {
