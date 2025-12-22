@@ -4,10 +4,7 @@
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
-import type {
-  KeyAlgorithmType as KeyAlgorithmType,
-  KeyManagerName,
-} from '@/core/services/kms/kms-types.interface';
+import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { AccountData } from '@/plugins/account/schema';
 import type { CreateAccountOutput } from './output';
 
@@ -57,7 +54,7 @@ export async function createAccount(
     };
   }
 
-  const keyType: KeyAlgorithmType = keyTypeArg;
+  const keyType = keyTypeArg;
 
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(alias, network);

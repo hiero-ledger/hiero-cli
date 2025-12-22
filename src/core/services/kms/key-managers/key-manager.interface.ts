@@ -1,8 +1,6 @@
-import type {
-  KeyAlgorithmType,
-  KmsCredentialSecret,
-} from '@/core/services/kms/kms-types.interface';
+import type { KmsCredentialSecret } from '@/core/services/kms/kms-types.interface';
 import type { Signer } from '@/core/services/kms/signers/signer.interface';
+import type { KeyAlgorithm } from '@/core/shared/constants';
 
 /**
  * KeyManager is responsible for:
@@ -22,7 +20,7 @@ export interface KeyManager {
    * @param algorithm - Key algorithm (ed25519 or ecdsa)
    * @returns Public key only (secret is stored internally)
    */
-  generateKey(keyRefId: string, algorithm: KeyAlgorithmType): string;
+  generateKey(keyRefId: string, algorithm: KeyAlgorithm): string;
 
   /**
    * Writes secret using manager-specific storage strategy.
@@ -63,7 +61,7 @@ export interface KeyManager {
   createSigner(
     keyRefId: string,
     publicKey: string,
-    algorithm: KeyAlgorithmType,
+    algorithm: KeyAlgorithm,
   ): Signer;
 
   /**

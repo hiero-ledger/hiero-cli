@@ -3,7 +3,7 @@
  * Provides rich state management with subscriptions and actions
  */
 import type { Logger, StateService } from '@/core';
-import type { KeyAlgorithmType } from '@/core/services/kms/kms-types.interface';
+import type { KeyAlgorithm } from '@/core/shared/constants';
 
 import {
   ACCOUNT_NAMESPACE,
@@ -115,7 +115,7 @@ export class ZustandAccountStateHelper {
   /**
    * Get accounts by type
    */
-  getAccountsByType(type: KeyAlgorithmType): AccountData[] {
+  getAccountsByType(type: KeyAlgorithm): AccountData[] {
     const accounts = this.listAccounts();
     return accounts.filter((account) => account.type === type);
   }
@@ -200,7 +200,7 @@ export class ZustandAccountStateHelper {
    */
   searchAccounts(criteria: {
     network?: string;
-    type?: KeyAlgorithmType;
+    type?: KeyAlgorithm;
     namePattern?: string;
   }): AccountData[] {
     let accounts = this.listAccounts();

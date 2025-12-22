@@ -46,7 +46,7 @@ hcli account balance --account-id 0.0.123456
 hcli hbar transfer --to 0.0.123456 --amount 10
 ```
 
-**First-time setup**: When you run any command that requires an operator (like transferring HBAR or creating tokens), the CLI will automatically guide you through the configuration process if you haven't set up an operator yet.
+**First-time setup (Initialization)**: When you run any command that requires an operator (like transferring HBAR or creating tokens) in interactive mode, the CLI will automatically launch an **initialization wizard** to guide you through configuring the operator account, private key, and settings. In script mode (non-interactive), an error will be thrown instead, requiring you to use `hcli network set-operator` to configure the operator first.
 
 ## Manual Setup (For Developers)
 
@@ -135,6 +135,8 @@ node dist/hedera-cli.js network set-operator --operator 0.0.123456:302e020100300
 ```
 
 The operator credentials are stored in the CLI's state management system. Make sure that each operator account **contains at least 1 Hbar** for transaction fees.
+
+> **💡 Note on Initialization**: When running the CLI interactively, if an operator is not configured and you attempt to run a command that requires it, the CLI will automatically launch an **interactive setup wizard** that guides you through configuring the operator, private key, and related settings. In script mode (non-interactive), if the operator is not configured, an error will be thrown instead.
 
 ### 6. Set Network
 
