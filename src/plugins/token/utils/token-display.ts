@@ -26,6 +26,10 @@ export function displayToken(
   if (associationCount > 0) {
     logger.info(`   Associations: ${associationCount}`);
   }
+
+  if (showKeys && token.adminPublicKey) {
+    logger.info(`   Admin Key: ${token.adminPublicKey}`);
+  }
 }
 
 export function displayStatistics(
@@ -35,6 +39,7 @@ export function displayStatistics(
     bySupplyType: Record<string, number>;
     withAssociations: number;
     totalAssociations: number;
+    withKeys: number;
   },
   logger: CommandHandlerArgs['logger'],
 ): void {
@@ -46,6 +51,10 @@ export function displayStatistics(
     Object.entries(stats.bySupplyType).forEach(([supplyType, count]) => {
       logger.info(`  ${supplyType}: ${count}`);
     });
+  }
+
+  if (stats.withKeys > 0) {
+    logger.info(`\nWith Admin Key: ${stats.withKeys}`);
   }
 
   if (stats.withAssociations > 0) {

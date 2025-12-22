@@ -99,7 +99,9 @@ export const LIST_TOKENS_TEMPLATE = `
    Alias: {{alias}}
 {{/if}}
 {{#if keys}}
-   Keys Available: {{#if keys.adminKey}}Admin {{/if}}{{#if keys.supplyKey}}Supply {{/if}}{{#if keys.wipeKey}}Wipe {{/if}}{{#if keys.kycKey}}KYC {{/if}}{{#if keys.freezeKey}}Freeze {{/if}}{{#if keys.pauseKey}}Pause {{/if}}{{#if keys.feeScheduleKey}}FeeSchedule {{/if}}{{#if keys.treasuryKey}}Treasury{{/if}}
+{{#if keys.adminKey}}
+   Admin Key: {{keys.adminKey}}
+{{/if}}
 {{/if}}
 
 {{/each}}
