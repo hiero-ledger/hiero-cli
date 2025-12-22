@@ -1,10 +1,10 @@
-import type {
-  AccountIdWithPrivateKey,
-  KeyOrAccountAlias,
-} from '@/core/schemas';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type {
+  AccountIdWithPrivateKey,
+  KeyManagerName,
+  KeyOrAccountAlias,
+} from '@/core/services/kms/kms-types.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type {
