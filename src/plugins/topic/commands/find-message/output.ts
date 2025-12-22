@@ -42,7 +42,7 @@ Found {{totalCount}} message(s) in topic {{topicId}}
 ──────────────────────────────────────
 {{#each messages}}
 {{add1 @index}}. Sequence #{{sequenceNumber}}
-   Message: "{{message}}"
+   Message: "{{{message}}}"
    Timestamp: {{timestamp}}
 {{#unless @last}}
 
