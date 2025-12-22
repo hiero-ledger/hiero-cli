@@ -128,6 +128,8 @@ export class TxExecutionServiceImpl implements TxExecutionService {
         `[TX-EXECUTION] Transaction execution failed: ${error?.toString()}`,
       );
       throw error;
+    } finally {
+      client.close();
     }
   }
 }

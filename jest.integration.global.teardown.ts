@@ -17,7 +17,5 @@ export default async () => {
     deleteStateFiles(STATE_STORAGE_FILE_PATH);
   } catch (e) {
     throw e;
-  } finally {
-    process.exit();
   }
 };
