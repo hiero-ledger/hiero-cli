@@ -1,7 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { DeleteAccountOutput } from '@/plugins/account/commands/delete';
 
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { deleteAccount } from '@/plugins/account/commands/delete/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -227,7 +227,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     // Ensure list was requested with the correct filters
     expect(alias.list).toHaveBeenCalledWith({
       network: 'testnet',
-      type: AliasType.Account,
+      type: ALIAS_TYPE.Account,
     });
 
     // Only the matching testnet+account type alias for the same entity should be removed

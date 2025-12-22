@@ -16,7 +16,6 @@ This the first and simplest script. Its job is to:
 ### How to run this script
 
 1. **Install prerequisites** (only once):
-
    - Install **Node.js 18 or newer** on your machine.
    - Clone this repository and install dependencies in the project folder:
      - `npm install`
@@ -24,14 +23,12 @@ This the first and simplest script. Its job is to:
      - `npm run build`
 
 2. **Prepare your Hedera operator credentials**:
-
    - You need a Hedera testnet account and its private key.
    - Export them as environment variables in your terminal (replace the placeholders with your real values):
      - `export HEDERA_OPERATOR_ACCOUNT_ID=0.0.xxxxxx`
      - `export HEDERA_OPERATOR_KEY=302e020100300506032b657004220420...`
 
 3. **Run the script**:
-
    - From the project root directory, run:
      - `./examples/scripts/create-account-demo.sh`
 
@@ -58,7 +55,6 @@ This script represents simple story:
 ### How to run this script
 
 1. **Install prerequisites** (only once):
-
    - Install **Node.js 18 or newer** on your machine.
    - Clone this repository and install dependencies in the project folder:
      - `npm install`
@@ -66,14 +62,12 @@ This script represents simple story:
      - `npm run build`
 
 2. **Prepare your Hedera operator credentials**:
-
    - You need a Hedera testnet account and its private key.
    - Export them as environment variables in your terminal (replace the placeholders with your real values):
      - `export HEDERA_OPERATOR_ACCOUNT_ID=0.0.xxxxxx`
      - `export HEDERA_OPERATOR_KEY=302e020100300506032b657004220420...`
 
 3. **Run the script**:
-
    - From the project root directory, run:
      - `./examples/scripts/transfer-hbar-demo.sh`
 
@@ -95,7 +89,6 @@ The last script's job is to execute script that would perform token operations a
 ### How to run this script
 
 1. **Install prerequisites** (only once):
-
    - Install **Node.js 18 or newer** on your machine.
    - Clone this repository and install dependencies in the project folder:
      - `npm install`
@@ -103,13 +96,11 @@ The last script's job is to execute script that would perform token operations a
      - `npm run build`
 
 2. **Prepare your Hedera operator credentials**:
-
    - You need a Hedera testnet account and its private key.
    - Export them as environment variables in your terminal (replace the placeholders with your real values):
      - `export HEDERA_OPERATOR_ACCOUNT_ID=0.0.xxxxxx`
      - `export HEDERA_OPERATOR_KEY=302e020100300506032b657004220420...`
 
 3. **Run the script**:
-
    - From the project root directory, run:
      - `./examples/scripts/token-topic-operations-demo.sh`

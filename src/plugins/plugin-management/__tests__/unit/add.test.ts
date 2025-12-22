@@ -1,6 +1,7 @@
 /**
  * Unit tests for plugin-management add command
  */
+import type * as path from 'path';
 import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
 
 import * as fs from 'fs/promises';
@@ -19,24 +20,38 @@ jest.mock('fs/promises', () => ({
   access: jest.fn(),
 }));
 
-// Mock path to produce predictable manifest path
-jest.mock('path', () => ({
-  resolve: (...segments: string[]) => segments.join('/'),
-  join: jest.fn(),
-}));
+/**
+ * Mock path.resolve to redirect manifest.js imports to test fixtures.
+ * This is necessary because Jest 30 doesn't properly handle virtual mocks
+ * with dynamic imports (await import()).
+ */
+jest.mock('path', () => {
+  const actualPath = jest.requireActual<typeof path>('path');
+  return {
+    ...actualPath,
+    resolve: jest.fn((...segments: string[]) => {
+      const joined = segments.join('/');
+
+      // Redirect plugin manifest to test fixture
+      // Handler calls: path.resolve(basePath, 'manifest.js')
+      // where basePath is 'dist/plugins/custom-plugin'
+      if (
+        joined.includes('dist/plugins/custom-plugin') &&
+        joined.endsWith('manifest.js')
+      ) {
+        return actualPath.resolve(
+          __dirname,
+          '../fixtures/custom-plugin-manifest.js',
+        );
+      }
+
+      return joined;
+    }),
+    join: jest.fn(),
+  };
+});
 
 const mockFs = fs as jest.Mocked<typeof fs>;
-
-// Mock manifest module for a test plugin
-jest.mock(
-  'dist/plugins/custom-plugin/manifest.js',
-  () => ({
-    default: {
-      name: 'custom-plugin',
-    },
-  }),
-  { virtual: true },
-);
 
 describe('plugin-management add command', () => {
   beforeEach(() => {

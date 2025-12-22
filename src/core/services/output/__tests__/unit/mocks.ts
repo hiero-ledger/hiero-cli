@@ -17,11 +17,13 @@ export const setupFileMocks = (
   (fs.existsSync as jest.Mock).mockReturnValue(overrides.dirExists ?? false);
   if (overrides.mkdirSyncError) {
     (fs.mkdirSync as jest.Mock).mockImplementation(() => {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw overrides.mkdirSyncError;
     });
   }
   if (overrides.writeFileSyncError) {
     (fs.writeFileSync as jest.Mock).mockImplementation(() => {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error
       throw overrides.writeFileSyncError;
     });
   }

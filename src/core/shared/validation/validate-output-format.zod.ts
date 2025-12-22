@@ -7,6 +7,7 @@ import {
   OUTPUT_FORMATS,
 } from '@/core/shared/types/output-format';
 import { formatAndExitWithError } from '@/core/utils/error-handler';
+import { isStringifiable } from '@/core/utils/is-stringifiable';
 
 // Zod schema from const array
 const outputFormatSchema = z.enum(OUTPUT_FORMATS);
@@ -17,13 +18,13 @@ export function validateOutputFormat(outputFormat: unknown): OutputFormat {
 
   try {
     return outputFormatSchema.parse(outputFormat);
-  } catch (error) {
+  } catch {
     // Dynamic list of valid formats
     const validFormats = OUTPUT_FORMATS.join(', ');
     formatAndExitWithError(
       'Invalid format option',
       new Error(
-        `Format '${String(outputFormat)}' is not supported. Valid formats: ${validFormats}`,
+        `Format '${isStringifiable(outputFormat) ? String(outputFormat) : JSON.stringify(outputFormat)}' is not supported. Valid formats: ${validFormats}`,
       ),
     );
   }

@@ -4,6 +4,8 @@ import type {
   ConfigService,
 } from './config-service.interface';
 
+import { isStringifiable } from '@/core/utils/is-stringifiable';
+
 import { CONFIG_NAMESPACE, CONFIG_OPTIONS } from './config-service.interface';
 
 export class ConfigServiceImpl implements ConfigService {
@@ -56,13 +58,19 @@ export class ConfigServiceImpl implements ConfigService {
         return n as unknown as T;
       }
       case 'string':
-        return String(raw) as unknown as T;
-      case 'enum': {
-        const s = String(raw);
-        if (!spec.allowedValues.includes(s)) {
-          return spec.default as unknown as T;
+        if (isStringifiable(raw)) {
+          return String(raw) as unknown as T;
         }
-        return s as unknown as T;
+        return spec.default as unknown as T;
+      case 'enum': {
+        if (isStringifiable(raw)) {
+          const s = String(raw);
+          if (!spec.allowedValues.includes(s)) {
+            return spec.default as unknown as T;
+          }
+          return s as unknown as T;
+        }
+        return spec.default as unknown as T;
       }
       default:
         return raw as T;

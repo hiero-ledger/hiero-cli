@@ -245,7 +245,7 @@ describe('TokenServiceImpl', () => {
         TOKEN_DECIMALS,
       );
       expect(mockTokenCreateTransaction.setInitialSupply).toHaveBeenCalledWith(
-        INITIAL_SUPPLY.toString(),
+        INITIAL_SUPPLY,
       );
       expect(mockTokenCreateTransaction.setSupplyType).toHaveBeenCalledWith(
         'INFINITE',
@@ -272,7 +272,7 @@ describe('TokenServiceImpl', () => {
         'FINITE',
       );
       expect(mockTokenCreateTransaction.setMaxSupply).toHaveBeenCalledWith(
-        MAX_SUPPLY.toString(),
+        MAX_SUPPLY,
       );
       expect(logger.debug).toHaveBeenCalledWith(
         `[TOKEN SERVICE] Set max supply to ${MAX_SUPPLY} for finite supply token`,
@@ -437,7 +437,7 @@ describe('TokenServiceImpl', () => {
       tokenService.createTokenTransaction(params);
 
       expect(mockTokenCreateTransaction.setInitialSupply).toHaveBeenCalledWith(
-        '0',
+        0n,
       );
     });
 

@@ -2,12 +2,12 @@
  * Real implementation of Account Transaction Service
  * Uses Hedera SDK to create actual transactions and queries
  */
-import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type {
   AccountCreateResult,
   AccountService,
   CreateAccountParams,
-} from './account-transaction-service.interface';
+} from '@/core';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
 
 import {
   AccountBalanceQuery,
@@ -34,7 +34,7 @@ export class AccountServiceImpl implements AccountService {
       `[ACCOUNT TX] Creating account with params: ${JSON.stringify(params)}`,
     );
 
-    const balance = Hbar.fromTinybars(params.balanceRaw);
+    const balance = Hbar.fromTinybars(params.balanceRaw.toString());
 
     // Create the account creation transaction
     const publicKey = PublicKey.fromString(params.publicKey);

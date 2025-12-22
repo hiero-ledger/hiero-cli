@@ -364,7 +364,7 @@ export const AccountNameSchema = AliasNameSchema.describe(
  */
 export const EntityReferenceSchema = z
   .union([EntityIdSchema, AliasNameSchema], {
-    errorMap: () => ({
+    error: () => ({
       message:
         'Entity reference must be a valid Hedera ID (0.0.xxx) or alias name',
     }),
@@ -378,7 +378,7 @@ export const EntityReferenceSchema = z
  */
 export const AccountReferenceSchema = z
   .union([EntityIdSchema, AccountNameSchema], {
-    errorMap: () => ({
+    error: () => ({
       message:
         'Account reference must be a valid Hedera ID (0.0.xxx), , or alias name',
     }),

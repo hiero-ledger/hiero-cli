@@ -52,8 +52,8 @@ describe('HbarServiceImpl', () => {
 
       expect(AccountId.fromString).toHaveBeenCalledWith(ACCOUNT_ID_FROM_1);
       expect(AccountId.fromString).toHaveBeenCalledWith(ACCOUNT_ID_TO_1);
-      expect(Hbar).toHaveBeenCalledWith(-100_000_000n, HbarUnit.Tinybar);
-      expect(Hbar).toHaveBeenCalledWith(100_000_000n, HbarUnit.Tinybar);
+      expect(Hbar).toHaveBeenCalledWith('-100000000', HbarUnit.Tinybar);
+      expect(Hbar).toHaveBeenCalledWith('100000000', HbarUnit.Tinybar);
       expect(mockTransferTransaction.addHbarTransfer).toHaveBeenCalledTimes(2);
       expect(result.transaction).toBe(mockTransferTransaction);
     });
@@ -139,8 +139,8 @@ describe('HbarServiceImpl', () => {
 
       await hbarService.transferTinybar(params);
 
-      expect(Hbar).toHaveBeenCalledWith(-1n, HbarUnit.Tinybar);
-      expect(Hbar).toHaveBeenCalledWith(1n, HbarUnit.Tinybar);
+      expect(Hbar).toHaveBeenCalledWith('-1', HbarUnit.Tinybar);
+      expect(Hbar).toHaveBeenCalledWith('1', HbarUnit.Tinybar);
     });
 
     it('should handle large amounts', async () => {
@@ -152,11 +152,8 @@ describe('HbarServiceImpl', () => {
 
       await hbarService.transferTinybar(params);
 
-      expect(Hbar).toHaveBeenCalledWith(
-        -100_000_000_000_000n,
-        HbarUnit.Tinybar,
-      );
-      expect(Hbar).toHaveBeenCalledWith(100_000_000_000_000n, HbarUnit.Tinybar);
+      expect(Hbar).toHaveBeenCalledWith('-100000000000000', HbarUnit.Tinybar);
+      expect(Hbar).toHaveBeenCalledWith('100000000000000', HbarUnit.Tinybar);
     });
   });
 });

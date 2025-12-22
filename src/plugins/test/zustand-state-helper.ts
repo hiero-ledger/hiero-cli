@@ -28,7 +28,7 @@ export class ZustandMemoStateHelper {
 
       const validation = safeParseMemoData(memoData);
       if (!validation.success) {
-        const errors = validation.error.errors
+        const errors = validation.error.issues
           .map((e) => `${e.path.join('.')}: ${e.message}`)
           .join(', ');
         throw new Error(`Invalid memo data: ${errors}`);

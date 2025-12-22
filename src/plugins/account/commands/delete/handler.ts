@@ -6,7 +6,7 @@
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { DeleteAccountOutput } from './output';
 
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -51,7 +51,7 @@ export async function deleteAccount(
     // Remove any names associated with this account on the current network
     const currentNetwork = api.network.getCurrentNetwork();
     const aliasesForAccount = api.alias
-      .list({ network: currentNetwork, type: AliasType.Account })
+      .list({ network: currentNetwork, type: ALIAS_TYPE.Account })
       .filter((rec) => rec.entityId === accountToDelete.accountId);
 
     const removedAliases: string[] = [];
