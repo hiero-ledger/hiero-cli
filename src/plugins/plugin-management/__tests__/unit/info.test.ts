@@ -1,6 +1,7 @@
 /**
  * Unit tests for plugin-management info command
  */
+import type * as path from 'path';
 import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 
@@ -9,13 +10,42 @@ import { Status } from '@/core/shared/constants';
 import { getPluginInfo } from '@/plugins/plugin-management/commands/info/handler';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
-jest.mock('path', () => ({
-  resolve: (...segments: string[]) => {
-    const filtered = segments.filter((seg) => !seg.includes('dirname'));
-    return filtered.join('/');
-  },
-  join: jest.fn(),
-}));
+/**
+ * Mock path.resolve to redirect manifest.js imports to test fixtures.
+ * This is necessary because Jest 30 doesn't properly handle virtual mocks
+ * with dynamic imports (await import()).
+ */
+jest.mock('path', () => {
+  const actualPath = jest.requireActual<typeof path>('path');
+  return {
+    ...actualPath,
+    resolve: jest.fn((...segments: string[]) => {
+      const joined = segments.join('/');
+
+      // Redirect plugin manifests to test fixtures
+      // Handler calls: path.resolve(basePath, 'manifest.js')
+      // where basePath is 'dist/plugins/topic' or 'dist/plugins/custom-plugin'
+      if (
+        joined.includes('dist/plugins/topic') &&
+        joined.endsWith('manifest.js')
+      ) {
+        return actualPath.resolve(__dirname, '../fixtures/topic-manifest.js');
+      }
+      if (
+        joined.includes('dist/plugins/custom-plugin') &&
+        joined.endsWith('manifest.js')
+      ) {
+        return actualPath.resolve(
+          __dirname,
+          '../fixtures/custom-plugin-manifest.js',
+        );
+      }
+
+      return joined;
+    }),
+    join: jest.fn(),
+  };
+});
 
 jest.mock(
   'dist/plugins/topic/manifest.js',

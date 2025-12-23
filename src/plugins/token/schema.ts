@@ -3,9 +3,9 @@
  * Single source of truth for token data structure and validation
  */
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { EntityIdSchema, KeyOrAccountAliasSchema } from '@/core/schemas';
+import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Zod schema for token association
 export const TokenAssociationSchema = z.object({
@@ -62,7 +62,7 @@ export const TokenDataSchema = z.object({
     .min(0n, 'Initial supply must be non-negative'),
 
   supplyType: z.enum(['FINITE', 'INFINITE'], {
-    errorMap: () => ({
+    error: () => ({
       message: 'Supply type must be either FINITE or INFINITE',
     }),
   }),
@@ -72,7 +72,7 @@ export const TokenDataSchema = z.object({
     .min(0n, 'Max supply must be non-negative'),
 
   network: z.enum(['mainnet', 'testnet', 'previewnet', 'localnet'], {
-    errorMap: () => ({
+    error: () => ({
       message: 'Network must be mainnet, testnet, previewnet, or localnet',
     }),
   }),
@@ -91,6 +91,7 @@ export type TokenData = z.infer<typeof TokenDataSchema>;
 export const TOKEN_NAMESPACE = 'token-tokens';
 
 // JSON Schema for manifest (automatically generated from Zod schema)
+// BigInt is not representable in JSON Schema, so we convert it to string with numeric pattern
 export const TOKEN_JSON_SCHEMA = zodToJsonSchema(TokenDataSchema);
 
 /**

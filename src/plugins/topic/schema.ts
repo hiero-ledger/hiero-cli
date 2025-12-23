@@ -3,9 +3,9 @@
  * Single source of truth for topic data structure and validation
  */
 import { z } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
 
 import { AliasNameSchema, EntityIdSchema } from '@/core/schemas/common-schemas';
+import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Zod schema for runtime validation
 export const TopicDataSchema = z.object({
@@ -34,7 +34,7 @@ export const TopicDataSchema = z.object({
     .describe('Topic expiration time as ISO string'),
 
   network: z.enum(['mainnet', 'testnet', 'previewnet', 'localnet'], {
-    errorMap: () => ({
+    error: () => ({
       message: 'Network must be mainnet, testnet, or previewnet',
     }),
   }),

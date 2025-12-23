@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "ES2020",
+    "lib": ["ES2022"],
     "module": "CommonJS",
     "moduleResolution": "node",
     "allowJs": true,
@@ -9,6 +10,8 @@
     "removeComments": false,
     "typeRoots": ["./types", "./node_modules/@types"],
     "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"]

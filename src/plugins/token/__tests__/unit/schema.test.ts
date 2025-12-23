@@ -273,8 +273,8 @@ describe('Token Schema Validation', () => {
       const result = CreateTokenInputSchema.safeParse(invalidParams);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.errors.length).toBeGreaterThan(0);
-        expect(result.error.errors[0].message).toContain('cannot be empty');
+        expect(result.error.issues.length).toBeGreaterThan(0);
+        expect(result.error.issues[0].message).toContain('cannot be empty');
       }
     });
   });

@@ -36,7 +36,7 @@ const envSchema = z.object({
       },
     ),
   NETWORK: z.enum(['testnet', 'localnet'], {
-    errorMap: () => ({
+    error: () => ({
       message: 'Network must be testnet or localnet',
     }),
   }),

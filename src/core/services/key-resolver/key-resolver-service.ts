@@ -12,7 +12,7 @@ import type {
   ResolvedKey,
 } from './key-resolver-service.interface';
 
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 
 import { ERROR_MESSAGES } from './error-messages';
 
@@ -77,7 +77,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
     const account = this.alias.resolve(
       accountAlias,
-      AliasType.Account,
+      ALIAS_TYPE.Account,
       currentNetwork,
     );
 

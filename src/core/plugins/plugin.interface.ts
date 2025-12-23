@@ -1,5 +1,5 @@
 // Import plugin types
-export * from './plugin.types';
+export type * from './plugin.types';
 
 export interface CommandHandlerArgs {
   args: Record<string, unknown>;

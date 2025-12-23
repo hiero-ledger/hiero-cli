@@ -4,12 +4,11 @@
     "outDir": "dist",
     "rootDir": "src"
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "package.json"],
   "exclude": [
     "hardhat.config.js",
     "node_modules",
     "**/*.spec.ts",
-    "**/*.json",
     "**/__mocks__/**/*",
     "**/__tests__/**/*",
     ".husky/**/*"
