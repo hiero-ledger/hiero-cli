@@ -26,6 +26,7 @@ describe('account plugin - list command (ADR-003)', () => {
       listAccounts: jest.fn().mockReturnValue([]),
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, {});
 
@@ -50,6 +51,7 @@ describe('account plugin - list command (ADR-003)', () => {
       listAccounts: jest.fn().mockReturnValue(accounts),
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, {});
 
@@ -77,6 +79,7 @@ describe('account plugin - list command (ADR-003)', () => {
       listAccounts: jest.fn().mockReturnValue(accounts),
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, { private: true });
 
@@ -103,6 +106,7 @@ describe('account plugin - list command (ADR-003)', () => {
       }),
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, {});
 

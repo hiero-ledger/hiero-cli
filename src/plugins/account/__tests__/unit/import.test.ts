@@ -116,6 +116,7 @@ describe('account plugin - import command (ADR-003)', () => {
       kms,
       alias,
       logger,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       state: {} as any,
     };
 
@@ -154,6 +155,7 @@ describe('account plugin - import command (ADR-003)', () => {
       kms,
       alias,
       logger,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       state: {} as any,
     };
 

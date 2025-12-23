@@ -1,4 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 import type { SubmitMessageOutput } from '@/plugins/topic/commands/submit-message/output';
 import type { TopicData } from '@/plugins/topic/schema';
@@ -91,7 +94,7 @@ describe('topic plugin - message-submit command', () => {
         transactionId: 'tx-123',
         success: true,
         topicSequenceNumber: 5,
-        receipt: {} as any,
+        receipt: { status: { status: 'success' } },
       } as TransactionResult),
     });
 
@@ -99,8 +102,7 @@ describe('topic plugin - message-submit command', () => {
       topic: topicTransactions,
       txExecution: signing,
       network: networkMock,
-      alias: alias as any,
-      state: {} as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -154,7 +156,7 @@ describe('topic plugin - message-submit command', () => {
         transactionId: 'tx-456',
         success: true,
         topicSequenceNumber: 10,
-        receipt: {} as any,
+        receipt: { status: { status: 'success' } },
       } as TransactionResult),
     });
 
@@ -162,11 +164,12 @@ describe('topic plugin - message-submit command', () => {
       topic: topicTransactions,
       txExecution: signing,
       network: networkMock,
-      alias: alias as any,
-      state: {} as any,
+      alias: alias as AliasService,
       logger,
-      keyResolver: keyResolverMock as any,
-      config: { getOption: jest.fn().mockReturnValue('local') } as any,
+      keyResolver: keyResolverMock as KeyResolverService,
+      config: {
+        getOption: jest.fn().mockReturnValue('local'),
+      } as ConfigService,
     };
 
     const args = makeArgs(api, logger, {
@@ -199,8 +202,7 @@ describe('topic plugin - message-submit command', () => {
       topic: topicTransactions,
       txExecution: signing,
       network: networkMock,
-      alias: alias as any,
-      state: {} as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -230,7 +232,7 @@ describe('topic plugin - message-submit command', () => {
       signAndExecuteImpl: jest.fn().mockResolvedValue({
         transactionId: 'tx-123',
         success: false,
-        receipt: {} as any,
+        receipt: { status: { status: 'success' } },
       } as TransactionResult),
     });
 
@@ -238,8 +240,7 @@ describe('topic plugin - message-submit command', () => {
       topic: topicTransactions,
       txExecution: signing,
       network: networkMock,
-      alias: alias as any,
-      state: {} as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -272,8 +273,7 @@ describe('topic plugin - message-submit command', () => {
       topic: topicTransactions,
       txExecution: signing,
       network: networkMock,
-      alias: alias as any,
-      state: {} as any,
+      alias: alias as AliasService,
       logger,
     };
 

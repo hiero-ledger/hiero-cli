@@ -42,8 +42,8 @@ describe('account plugin - create command (ADR-003)', () => {
           transactionId: 'tx-123',
           success: true,
           accountId: '0.0.9999',
-          receipt: {} as any,
-        } as TransactionResult),
+          receipt: { status: { status: 'success' } },
+        } as Partial<TransactionResult>),
       });
 
     const api: Partial<CoreApi> = {
@@ -52,6 +52,7 @@ describe('account plugin - create command (ADR-003)', () => {
       network: networkMock,
       kms,
       alias,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mirror: mirror as any,
       logger,
     };
@@ -126,8 +127,8 @@ describe('account plugin - create command (ADR-003)', () => {
         signAndExecuteImpl: jest.fn().mockResolvedValue({
           transactionId: 'tx-123',
           success: false,
-          receipt: {} as any,
-        } as TransactionResult),
+          receipt: { status: { status: 'failed' } },
+        } as Partial<TransactionResult>),
       });
 
     const api: Partial<CoreApi> = {
@@ -135,6 +136,7 @@ describe('account plugin - create command (ADR-003)', () => {
       txExecution: signing,
       network: networkMock,
       kms,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mirror: mirror as any,
       alias,
       logger,
@@ -164,6 +166,7 @@ describe('account plugin - create command (ADR-003)', () => {
       txExecution: signing,
       network: networkMock,
       kms,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mirror: mirror as any,
       alias,
       logger,
@@ -196,8 +199,8 @@ describe('account plugin - create command (ADR-003)', () => {
           transactionId: 'tx-ecdsa',
           success: true,
           accountId: '0.0.8888',
-          receipt: {} as any,
-        } as TransactionResult),
+          receipt: { status: { status: 'success' } },
+        } as Partial<TransactionResult>),
       });
 
     const api: Partial<CoreApi> = {
@@ -206,6 +209,7 @@ describe('account plugin - create command (ADR-003)', () => {
       network: networkMock,
       kms,
       alias,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mirror: mirror as any,
       logger,
     };
@@ -251,8 +255,8 @@ describe('account plugin - create command (ADR-003)', () => {
           transactionId: 'tx-ed25519',
           success: true,
           accountId: '0.0.7777',
-          receipt: {} as any,
-        } as TransactionResult),
+          receipt: { status: { status: 'success' } },
+        } as Partial<TransactionResult>),
       });
 
     const api: Partial<CoreApi> = {
@@ -261,6 +265,7 @@ describe('account plugin - create command (ADR-003)', () => {
       network: networkMock,
       kms,
       alias,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       mirror: mirror as any,
       logger,
     };

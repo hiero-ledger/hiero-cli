@@ -165,7 +165,7 @@ export const makeAccountStateHelperMock = (overrides?: {
  * By default, returns an empty list and supports filtering by network and type
  */
 export const makeAliasServiceMock = (options?: {
-  records?: any[];
+  records?: Array<Record<string, unknown>>;
 }): jest.Mocked<AliasService> => {
   const records = options?.records ?? mockAliasLists.empty;
 
@@ -177,7 +177,7 @@ export const makeAliasServiceMock = (options?: {
     list: jest
       .fn()
       .mockImplementation((filter?: { network?: string; type?: string }) => {
-        return records.filter((r: any) => {
+        return records.filter((r: Record<string, unknown>) => {
           if (filter?.network && r.network !== filter.network) return false;
           if (filter?.type && r.type !== filter.type) return false;
           return true;
@@ -209,7 +209,9 @@ export const makeArgs = (
     ...api,
   } as CoreApi,
   logger,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   state: {} as any,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   config: {} as any,
   args,
 });

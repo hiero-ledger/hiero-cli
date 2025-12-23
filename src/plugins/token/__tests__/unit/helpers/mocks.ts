@@ -111,6 +111,15 @@ export const makeKmsMock = (
 });
 
 /**
+ * Alias account data structure for mock implementations
+ */
+interface AliasAccountData {
+  entityId: string;
+  publicKey: string;
+  keyRefId: string;
+}
+
+/**
  * Create a mocked AliasService
  */
 export const makeAliasServiceMock = (
@@ -121,7 +130,7 @@ export const makeAliasServiceMock = (
     // Domyślnie zwracaj dane dla typowych aliasów używanych w testach
     if (type === 'account') {
       // Map typowych aliasów kont do mock danych
-      const accountAliases: Record<string, any> = {
+      const accountAliases: Record<string, AliasAccountData> = {
         'admin-key': {
           entityId: '0.0.100000',
           publicKey: '302a300506032b6570032100' + '0'.repeat(64),
@@ -254,23 +263,29 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
         accountId: '0.0.100000',
         keyRefId: 'operator-key-ref-id',
       }),
-    },
+    } as unknown as NetworkService,
     alias,
     kms,
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const api: jest.Mocked<CoreApi> = {
     account,
     token: tokens,
-    topic: {} as unknown as any,
+    // Topic service not mocked for token tests - not needed
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    topic: {} as any,
     txExecution: signing,
     kms,
     alias,
     state,
+    // Mirror service minimal mock - only getTokenInfo used
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     mirror: {
       getTokenInfo: jest.fn().mockResolvedValue({ decimals: 6 }),
       ...(config?.mirror || {}),
-    } as unknown as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any,
     network: {
       getCurrentNetwork: jest
         .fn()
@@ -405,7 +420,7 @@ export const mockProcessExitThrows = () => {
  * Provides a mocked implementation of the token state helper
  */
 export const mockZustandTokenStateHelper = (
-  ZustandTokenStateHelperClass: any,
+  ZustandTokenStateHelperClass: jest.Mock,
   overrides?: Partial<{
     saveToken: jest.Mock;
     addToken: jest.Mock;
@@ -441,8 +456,8 @@ export const makeFsMocks = () => {
   const mockResolve = jest.fn();
 
   const setupFsMocks = (
-    fs: any,
-    path: any,
+    fs: Record<string, unknown>,
+    path: Record<string, unknown>,
     config?: {
       fileContent?: string;
       fileExists?: boolean;
@@ -497,7 +512,7 @@ export const makeFsMocks = () => {
 export const setupZustandHelperMock = (
   MockedHelperClass: jest.Mock,
   config: {
-    tokens?: any[];
+    tokens?: Array<unknown>;
     stats?: {
       total: number;
       byNetwork: Record<string, number>;

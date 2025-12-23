@@ -40,6 +40,7 @@ describe('account plugin - view command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       state: {} as any,
       alias: {
         resolve: jest.fn().mockReturnValue({
@@ -91,6 +92,7 @@ describe('account plugin - view command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       state: {} as any,
       alias,
     };
@@ -121,6 +123,7 @@ describe('account plugin - view command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       state: {} as any,
     };
     const args = makeArgs(api, logger, { account: '0.0.3333' });
@@ -140,6 +143,7 @@ describe('account plugin - view command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       state: {} as any,
     };
     const account = 'broken';

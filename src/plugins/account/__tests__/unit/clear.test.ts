@@ -37,6 +37,7 @@ describe('account plugin - clear command (ADR-003)', () => {
       api: {
         state: {},
         alias,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       logger,
       args: {},
@@ -74,6 +75,7 @@ describe('account plugin - clear command (ADR-003)', () => {
       api: {
         state: {},
         alias,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any,
       logger,
       args: {},

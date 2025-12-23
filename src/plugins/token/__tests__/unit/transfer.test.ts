@@ -3,6 +3,9 @@
  * Tests the token transfer functionality of the token plugin
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { NetworkService } from '@/core/services/network/network-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
 import '@/core/utils/json-serialize';
@@ -15,6 +18,30 @@ import {
 
 import { makeApiMocks, makeLogger } from './helpers/mocks';
 
+// Test helper for creating mock state and config
+const createMockStateService = (): Partial<StateService> => ({
+  list: jest.fn().mockReturnValue([]),
+  get: jest.fn(),
+  set: jest.fn(),
+  delete: jest.fn(),
+  clear: jest.fn(),
+  has: jest.fn(),
+  getNamespaces: jest.fn(),
+  getKeys: jest.fn(),
+  subscribe: jest.fn(),
+  getActions: jest.fn(),
+  getState: jest.fn(),
+  registerNamespaces: jest.fn(),
+  getStorageDirectory: jest.fn().mockReturnValue(''),
+  isInitialized: jest.fn().mockReturnValue(true),
+});
+
+const createMockConfigService = (): Partial<ConfigService> => ({
+  listOptions: jest.fn().mockReturnValue([]),
+  getOption: jest.fn().mockReturnValue('local'),
+  setOption: jest.fn(),
+});
+
 describe('transferTokenHandler', () => {
   describe('success scenarios', () => {
     test('should transfer tokens between accounts using account-id:private-key format', async () => {
@@ -23,7 +50,7 @@ describe('transferTokenHandler', () => {
       const mockSignResult: TransactionResult = {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
-        receipt: {} as any,
+        receipt: { status: { status: 'success' } },
         consensusTimestamp: '1234567890.123456789',
       };
 
@@ -59,8 +86,8 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: createMockStateService() as StateService,
+        config: createMockConfigService() as ConfigService,
         logger,
       };
 
@@ -103,7 +130,7 @@ describe('transferTokenHandler', () => {
       const mockSignResult: TransactionResult = {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
-        receipt: {} as any,
+        receipt: { status: { status: 'success' } },
         consensusTimestamp: '1234567890.123456789',
       };
 
@@ -140,8 +167,8 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: createMockStateService() as StateService,
+        config: createMockConfigService() as ConfigService,
         logger,
       };
 
@@ -179,7 +206,7 @@ describe('transferTokenHandler', () => {
       const mockSignResult: TransactionResult = {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
-        receipt: {} as any,
+        receipt: { status: { status: 'success' } },
         consensusTimestamp: '1234567890.123456789',
       };
 
@@ -223,8 +250,8 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: createMockStateService() as StateService,
+        config: createMockConfigService() as ConfigService,
         logger,
       };
 
@@ -268,8 +295,8 @@ describe('transferTokenHandler', () => {
           amount: '0',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: createMockStateService() as StateService,
+        config: createMockConfigService() as ConfigService,
         logger,
       };
 
@@ -289,7 +316,7 @@ describe('transferTokenHandler', () => {
       const mockSignResult: TransactionResult = {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
-        receipt: {} as any,
+        receipt: { status: { status: 'success' } },
         consensusTimestamp: '1234567890.123456789',
       };
 
@@ -324,7 +351,7 @@ describe('transferTokenHandler', () => {
           accountId: '0.0.2',
           keyRefId: 'operator-key-ref-id',
         }),
-      } as any;
+      } as Partial<NetworkService>;
 
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
@@ -335,8 +362,8 @@ describe('transferTokenHandler', () => {
           // from missing - should use default operator
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: createMockStateService() as StateService,
+        config: createMockConfigService() as ConfigService,
         logger,
       };
 
@@ -393,8 +420,8 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: createMockStateService() as StateService,
+        config: createMockConfigService() as ConfigService,
         logger,
       };
 
@@ -433,8 +460,8 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: createMockStateService() as StateService,
+        config: createMockConfigService() as ConfigService,
         logger,
       };
 
@@ -484,8 +511,8 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: createMockStateService() as StateService,
+        config: createMockConfigService() as ConfigService,
         logger,
       };
 
@@ -506,7 +533,7 @@ describe('transferTokenHandler', () => {
       const mockSignResult: TransactionResult = {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
-        receipt: {} as any,
+        receipt: { status: { status: 'success' } },
         consensusTimestamp: '1234567890.123456789',
       };
 
@@ -539,8 +566,8 @@ describe('transferTokenHandler', () => {
           amount: '999999999', // Large amount
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: createMockStateService() as StateService,
+        config: createMockConfigService() as ConfigService,
         logger,
       };
 
@@ -576,7 +603,7 @@ describe('transferTokenHandler', () => {
       const mockSignResult: TransactionResult = {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
-        receipt: {} as any,
+        receipt: { status: { status: 'success' } },
         consensusTimestamp: '1234567890.123456789',
       };
 
@@ -609,8 +636,8 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: createMockStateService() as StateService,
+        config: createMockConfigService() as ConfigService,
         logger,
       };
 
@@ -637,7 +664,7 @@ describe('transferTokenHandler', () => {
       const mockSignResult: TransactionResult = {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
-        receipt: {} as any,
+        receipt: { status: { status: 'success' } },
         consensusTimestamp: '1234567890.123456789',
       };
 
@@ -670,8 +697,8 @@ describe('transferTokenHandler', () => {
           amount: '100',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: createMockStateService() as StateService,
+        config: createMockConfigService() as ConfigService,
         logger,
       };
 
@@ -711,8 +738,8 @@ describe('transferTokenHandler', () => {
           amount: '100.5', // Decimal amount - should be rejected
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: createMockStateService() as StateService,
+        config: createMockConfigService() as ConfigService,
         logger,
       };
 

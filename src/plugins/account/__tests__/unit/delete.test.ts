@@ -40,6 +40,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const alias = makeAliasServiceMock();
     const network = makeNetworkServiceMock('testnet');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger, alias, network };
     const args = makeArgs(api, logger, { name: 'acc1' });
 
@@ -68,6 +69,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const alias = makeAliasServiceMock();
     const network = makeNetworkServiceMock('testnet');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger, alias, network };
     const args = makeArgs(api, logger, { id: '0.0.2222' });
 
@@ -95,6 +97,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const network = makeNetworkServiceMock('testnet');
 
     const api: Partial<CoreApi> = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       state: {} as any,
       logger,
       alias,
@@ -121,6 +124,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const network = makeNetworkServiceMock('testnet');
 
     const api: Partial<CoreApi> = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       state: {} as any,
       logger,
       alias,
@@ -152,6 +156,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const network = makeNetworkServiceMock('testnet');
 
     const api: Partial<CoreApi> = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       state: {} as any,
       logger,
       alias,
@@ -184,6 +189,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const network = makeNetworkServiceMock('testnet');
 
     const api: Partial<CoreApi> = {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       state: {} as any,
       logger,
       alias,
@@ -219,6 +225,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     });
     const network = makeNetworkServiceMock('testnet');
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger, alias, network };
     const args = makeArgs(api, logger, { name: 'acc-alias' });
 

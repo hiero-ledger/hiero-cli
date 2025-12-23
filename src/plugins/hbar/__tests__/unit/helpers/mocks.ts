@@ -127,6 +127,7 @@ export const setupTransferTest = (options: SetupTransferTestOptions = {}) => {
  * Provides a mocked implementation of the account state helper
  */
 export const mockZustandAccountStateHelper = (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ZustandAccountStateHelperClass: any,
   config?: {
     accounts?: AccountData[];

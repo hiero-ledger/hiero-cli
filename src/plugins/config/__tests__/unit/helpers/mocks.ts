@@ -44,6 +44,7 @@ export const makeCommandArgs = (params: {
     ...(params.args || {}),
   },
   api: params.api,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   state: {} as any,
   config: params.api.config,
   logger: params.logger || makeLogger(),

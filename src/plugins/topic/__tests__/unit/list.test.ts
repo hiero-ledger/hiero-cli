@@ -35,6 +35,7 @@ describe('topic plugin - list command', () => {
       listTopics: jest.fn().mockReturnValue([]),
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, {});
 
@@ -59,6 +60,7 @@ describe('topic plugin - list command', () => {
       listTopics: jest.fn().mockReturnValue(topics),
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, {});
 
@@ -95,6 +97,7 @@ describe('topic plugin - list command', () => {
       listTopics: jest.fn().mockReturnValue(topics),
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, { keys: true });
 
@@ -131,6 +134,7 @@ describe('topic plugin - list command', () => {
       listTopics: jest.fn().mockReturnValue([MAINNET_TOPIC, TESTNET_TOPIC]),
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, { network: 'mainnet' });
 
@@ -160,6 +164,7 @@ describe('topic plugin - list command', () => {
       ]),
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, { network: 'mainnet' });
 
@@ -202,6 +207,7 @@ describe('topic plugin - list command', () => {
       listTopics: jest.fn().mockReturnValue(topics),
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, {});
 
@@ -232,6 +238,7 @@ describe('topic plugin - list command', () => {
       listTopics: jest.fn().mockReturnValue(topics),
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, {});
 
@@ -253,6 +260,7 @@ describe('topic plugin - list command', () => {
       }),
     }));
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const api: Partial<CoreApi> = { state: {} as any, logger };
     const args = makeArgs(api, logger, {});
 

@@ -2,6 +2,8 @@
  * Test Fixtures for Token Plugin Tests
  * Reusable test data and constants
  */
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
 
 /**
  * Mock Account IDs
@@ -412,25 +414,28 @@ export const mockMultipleTokens = {
  * Factory function to create CommandHandlerArgs for token create tests
  */
 export const makeTokenCreateCommandArgs = (params: {
-  api: any;
-  logger: any;
-  args?: Record<string, any>;
-}) => ({
-  args: {
-    tokenName: 'TestToken',
-    symbol: 'TEST',
-    decimals: 2,
-    initialSupply: '1000',
-    supplyType: 'INFINITE',
-    treasury: 'treasury-account', // Use alias
-    adminKey: 'test-admin-key', // Use alias
-    ...params.args,
-  },
-  api: params.api,
-  state: {} as any,
-  config: {} as any,
-  logger: params.logger,
-});
+  api: Partial<CoreApi>;
+  logger: Logger;
+  args?: Record<string, string | number | boolean | undefined>;
+}) => {
+  const api = params.api as unknown as CoreApi;
+  return {
+    args: {
+      tokenName: 'TestToken',
+      symbol: 'TEST',
+      decimals: 2,
+      initialSupply: '1000',
+      supplyType: 'INFINITE',
+      treasury: 'treasury-account', // Use alias
+      adminKey: 'test-admin-key', // Use alias
+      ...params.args,
+    },
+    api,
+    state: api.state,
+    config: api.config,
+    logger: params.logger,
+  };
+};
 
 /**
  * Expected token transaction parameters for create tests
@@ -515,7 +520,7 @@ export const makeTokenData = (
     adminPublicKey?: string;
     network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
     associations: Array<{ name: string; accountId: string }>;
-    customFees: any[];
+    customFees: Array<unknown>;
   }> = {},
 ) => ({
   tokenId: '0.0.1234',

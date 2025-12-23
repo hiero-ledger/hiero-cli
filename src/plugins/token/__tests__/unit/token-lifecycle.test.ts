@@ -142,8 +142,6 @@ describe('Token Lifecycle Integration', () => {
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
       };
 
@@ -162,8 +160,6 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId}:${userKey}`,
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
       };
 
@@ -184,8 +180,6 @@ describe('Token Lifecycle Integration', () => {
           amount: '100',
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
       };
 
@@ -318,8 +312,6 @@ describe('Token Lifecycle Integration', () => {
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
       };
 
@@ -338,8 +330,6 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId}:${userKey}`,
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
       };
 
@@ -444,8 +434,6 @@ describe('Token Lifecycle Integration', () => {
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
       };
 
@@ -464,8 +452,6 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId1}:${userKey1}`,
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
       };
 
@@ -484,8 +470,6 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId2}:${userKey2}`,
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
       };
 
@@ -546,8 +530,6 @@ describe('Token Lifecycle Integration', () => {
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
       };
 
@@ -565,8 +547,6 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId}:5555555555555555555555555555555555555555555555555555555555555555`,
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
       };
 
