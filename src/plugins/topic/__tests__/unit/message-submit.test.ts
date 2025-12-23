@@ -1,6 +1,5 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
-import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 import type { SubmitMessageOutput } from '@/plugins/topic/commands/submit-message/output';
@@ -9,6 +8,7 @@ import type { TopicData } from '@/plugins/topic/schema';
 import {
   makeAliasMock,
   makeArgs,
+  makeConfigMock,
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
@@ -172,11 +172,7 @@ describe('topic plugin - message-submit command', () => {
       alias: alias as AliasService,
       logger,
       keyResolver: keyResolverMock as KeyResolverService,
-      config: {
-        getOption: jest.fn().mockReturnValue('local'),
-        listOptions: jest.fn(),
-        setOption: jest.fn(),
-      } as ConfigService,
+      config: makeConfigMock(),
     };
 
     const args = makeArgs(api, logger, {

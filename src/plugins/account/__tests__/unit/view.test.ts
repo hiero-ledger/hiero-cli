@@ -1,5 +1,4 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { ViewAccountOutput } from '@/plugins/account/commands/view';
 
@@ -10,8 +9,9 @@ import {
   makeArgs,
   makeLogger,
   makeMirrorMock,
+  makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
+import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import { viewAccount } from '@/plugins/account/commands/view/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -35,22 +35,22 @@ describe('account plugin - view command (ADR-003)', () => {
         balance: { balance: 1000, timestamp: '1234567890' },
         evmAddress: '0xabc',
         accountPublicKey: 'pubKey',
-        keyAlgorithm: 'ecdsa',
+        keyAlgorithm: KeyAlgorithm.ECDSA,
       },
     });
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      state: {} as any,
+      state: makeStateMock(),
       alias: {
+        ...makeAliasMock(),
         resolve: jest.fn().mockReturnValue({
           alias: 'acc1',
           type: 'account',
           network: 'testnet',
           entityId: '0.0.1111',
         }),
-      } as unknown as AliasService,
+      },
     };
     const args = makeArgs(api, logger, { account: 'acc1' });
 
@@ -80,7 +80,7 @@ describe('account plugin - view command (ADR-003)', () => {
         balance: { balance: 2000, timestamp: '1234567890' },
         evmAddress: '0xdef',
         accountPublicKey: 'pubKey2',
-        keyAlgorithm: 'ecdsa',
+        keyAlgorithm: KeyAlgorithm.ECDSA,
       },
     });
     const alias = makeAliasMock();
@@ -94,8 +94,7 @@ describe('account plugin - view command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      state: {} as any,
+      state: makeStateMock(),
       alias,
     };
     const args = makeArgs(api, logger, { account: 'acc2' });
@@ -125,8 +124,7 @@ describe('account plugin - view command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      state: {} as any,
+      state: makeStateMock(),
     };
     const args = makeArgs(api, logger, { account: '0.0.3333' });
 
@@ -145,8 +143,7 @@ describe('account plugin - view command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      state: {} as any,
+      state: makeStateMock(),
     };
     const account = 'broken';
     const args = makeArgs(api, logger, { account });

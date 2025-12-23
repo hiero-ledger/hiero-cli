@@ -3,14 +3,13 @@
  * Tests the token creation from file functionality of the token plugin
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { ConfigService } from '@/core/services/config/config-service.interface';
-import type { StateService } from '@/core/services/state/state-service.interface';
 
 import '@/core/utils/json-serialize';
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
+import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import {
   createTokenFromFile,
@@ -27,30 +26,6 @@ import {
   validTokenFile,
 } from './helpers/fixtures';
 import { makeApiMocks, makeLogger } from './helpers/mocks';
-
-// Test helper for creating mock state and config
-const createMockStateService = (): Partial<StateService> => ({
-  list: jest.fn().mockReturnValue([]),
-  get: jest.fn(),
-  set: jest.fn(),
-  delete: jest.fn(),
-  clear: jest.fn(),
-  has: jest.fn(),
-  getNamespaces: jest.fn(),
-  getKeys: jest.fn(),
-  subscribe: jest.fn(),
-  getActions: jest.fn(),
-  getState: jest.fn(),
-  registerNamespaces: jest.fn(),
-  getStorageDirectory: jest.fn().mockReturnValue(''),
-  isInitialized: jest.fn().mockReturnValue(true),
-});
-
-const createMockConfigService = (): Partial<ConfigService> => ({
-  listOptions: jest.fn().mockReturnValue([]),
-  getOption: jest.fn().mockReturnValue('local'),
-  setOption: jest.fn(),
-});
 
 // ADR-003 compliance: handlers now return CommandExecutionResult instead of calling process.exit()
 
@@ -185,8 +160,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -243,8 +218,8 @@ describe('createTokenFromFileHandler', () => {
           file: fullPath,
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -281,8 +256,8 @@ describe('createTokenFromFileHandler', () => {
           file: absolutePath,
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -361,8 +336,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -467,8 +442,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -508,8 +483,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'nonexistent',
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -541,8 +516,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -574,8 +549,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -621,8 +596,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -657,8 +632,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -693,8 +668,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -729,8 +704,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -807,8 +782,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -890,8 +865,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -974,8 +949,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: createMockStateService() as StateService,
-        config: createMockConfigService() as ConfigService,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 

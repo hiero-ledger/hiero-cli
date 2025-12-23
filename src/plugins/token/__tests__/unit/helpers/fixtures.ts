@@ -4,6 +4,7 @@
  */
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
 /**
  * Mock Account IDs
@@ -200,6 +201,24 @@ export const mockTransactionResults = {
     },
   },
 };
+
+/**
+ * Factory function for TransactionResult with overrides
+ */
+export const makeTransactionResult = (
+  overrides?: Partial<TransactionResult>,
+): TransactionResult => ({
+  success: true,
+  transactionId: '0.0.123@1234567890.123456789',
+  consensusTimestamp: '2024-01-01T00:00:00.000Z',
+  receipt: {
+    status: {
+      status: 'success' as const,
+      transactionId: '0.0.123@1234567890.123456789',
+    },
+  },
+  ...overrides,
+});
 
 /**
  * Mock Token Data (stored in state)

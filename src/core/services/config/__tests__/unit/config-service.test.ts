@@ -13,7 +13,7 @@ describe('ConfigServiceImpl', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    stateMock = makeStateMock() as jest.Mocked<StateService>;
+    stateMock = makeStateMock();
     configService = new ConfigServiceImpl(stateMock);
   });
 

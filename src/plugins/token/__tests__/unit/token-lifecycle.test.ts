@@ -15,7 +15,11 @@ import { createToken } from '@/plugins/token/commands/create';
 import { transferToken } from '@/plugins/token/commands/transfer';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { mockAccountIds, mockKeys } from './helpers/fixtures';
+import {
+  mockAccountIds,
+  mockKeys,
+  mockTransactionResults,
+} from './helpers/fixtures';
 import {
   makeApiMocks,
   makeLogger,
@@ -70,39 +74,21 @@ describe('Token Lifecycle Integration', () => {
             // Mock different responses based on transaction type
             if (transaction === mockTokenTransaction) {
               return Promise.resolve({
-                success: true,
+                ...mockTransactionResults.success,
                 transactionId: `${token}@1234567890.123456789`,
                 tokenId: token,
-                receipt: {
-                  status: {
-                    status: 'success',
-                    transactionId: `${token}@1234567890.123456789`,
-                  },
-                },
               });
             }
             if (transaction === mockAssociationTransaction) {
               return Promise.resolve({
-                success: true,
+                ...mockTransactionResults.successWithAssociation,
                 transactionId: '0.0.123@1234567890.123456790',
-                receipt: {
-                  status: {
-                    status: 'success',
-                    transactionId: '0.0.123@1234567890.123456790',
-                  },
-                },
               });
             }
             if (transaction === mockTransferTransaction) {
               return Promise.resolve({
-                success: true,
+                ...mockTransactionResults.success,
                 transactionId: '0.0.123@1234567890.123456791',
-                receipt: {
-                  status: {
-                    status: 'success',
-                    transactionId: '0.0.123@1234567890.123456791',
-                  },
-                },
               });
             }
             return Promise.resolve({
@@ -265,27 +251,15 @@ describe('Token Lifecycle Integration', () => {
           signAndExecuteWith: jest.fn().mockImplementation((transaction) => {
             if (transaction === mockTokenTransaction) {
               return Promise.resolve({
-                success: true,
+                ...mockTransactionResults.success,
                 transactionId: `${token}@1234567890.123456789`,
                 tokenId: token,
-                receipt: {
-                  status: {
-                    status: 'success',
-                    transactionId: `${token}@1234567890.123456789`,
-                  },
-                },
               });
             }
             if (transaction === mockAssociationTransaction) {
               return Promise.resolve({
-                success: true,
+                ...mockTransactionResults.successWithAssociation,
                 transactionId: '0.0.123@1234567890.123456790',
-                receipt: {
-                  status: {
-                    status: 'success',
-                    transactionId: '0.0.123@1234567890.123456790',
-                  },
-                },
               });
             }
             return Promise.resolve({
@@ -403,14 +377,13 @@ describe('Token Lifecycle Integration', () => {
               transaction === mockAssociationTransaction2
             ) {
               return Promise.resolve({
-                success: true,
+                ...mockTransactionResults.success,
                 transactionId: '0.0.123@1234567890.123456789',
                 tokenId:
                   transaction === mockTokenTransaction
                     ? '0.0.123456'
                     : undefined,
                 consensusTimestamp: '2024-01-01T00:00:00.000Z',
-                receipt: {},
               });
             }
             return Promise.resolve({
@@ -531,9 +504,8 @@ describe('Token Lifecycle Integration', () => {
         },
         signing: {
           signAndExecuteWith: jest.fn().mockReturnValue({
-            success: true,
+            ...mockTransactionResults.success,
             transactionId: '0.0.123@1234567890.123456789',
-            receipt: {},
           }),
         },
       });

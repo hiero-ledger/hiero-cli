@@ -15,7 +15,10 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
-import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
+import type {
+  TransactionResult,
+  TxExecutionService,
+} from '@/core/services/tx-execution/tx-execution-service.interface';
 
 import { KeyAlgorithm } from '@/core/shared/constants';
 
@@ -38,7 +41,7 @@ interface AccountInfo {
   balance: { balance: number; timestamp: string };
   evmAddress: string;
   accountPublicKey: string;
-  keyAlgorithm: string;
+  keyAlgorithm: KeyAlgorithm;
 }
 
 /**
@@ -197,6 +200,24 @@ export const makeSigningMock = (
     }),
 });
 
+/**
+ * Create mock TransactionResult
+ */
+export const makeTransactionResultMock = (
+  overrides?: Partial<TransactionResult>,
+): TransactionResult => ({
+  success: true,
+  transactionId: 'mock-tx-id',
+  consensusTimestamp: '2024-01-01T00:00:00.000Z',
+  receipt: {
+    status: {
+      status: 'success' as const,
+      transactionId: 'mock-tx-id',
+    },
+  },
+  ...overrides,
+});
+
 export const createMirrorNodeMock =
   (): jest.Mocked<HederaMirrornodeService> => ({
     setBaseUrl: jest.fn(),
@@ -221,18 +242,21 @@ export const makeStateMock = (
   options: {
     listData?: unknown[];
   } = {},
-): Partial<StateService> => ({
+): jest.Mocked<StateService> => ({
   list: jest.fn().mockReturnValue(options.listData || []),
   get: jest.fn(),
   set: jest.fn(),
   delete: jest.fn(),
   clear: jest.fn(),
   has: jest.fn(),
-  getNamespaces: jest.fn(),
-  getKeys: jest.fn(),
+  getNamespaces: jest.fn().mockReturnValue([]),
+  getKeys: jest.fn().mockReturnValue([]),
   subscribe: jest.fn(),
   getActions: jest.fn(),
   getState: jest.fn(),
+  registerNamespaces: jest.fn(),
+  getStorageDirectory: jest.fn().mockReturnValue(''),
+  isInitialized: jest.fn().mockReturnValue(true),
 });
 
 /**
@@ -263,7 +287,7 @@ export const makeMirrorMock = (
         balance: { balance: 1000, timestamp: '1234567890' },
         evmAddress: '0xabc',
         accountPublicKey: 'pubKey',
-        keyAlgorithm: 'ecdsa',
+        keyAlgorithm: KeyAlgorithm.ECDSA,
       },
     ),
   getTokenInfo: jest.fn().mockImplementation((tokenId: string) => {
