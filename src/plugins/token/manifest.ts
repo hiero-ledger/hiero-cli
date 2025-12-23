@@ -164,7 +164,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: 'string',
           required: false,
           description:
-            'Admin key to be set for the token upon. If option not set then the operator key is passed as admin key',
+            'Admin key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
         },
         {
           name: 'name',
