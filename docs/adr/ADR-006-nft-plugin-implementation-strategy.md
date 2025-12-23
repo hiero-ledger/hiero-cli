@@ -1,17 +1,17 @@
 ### ADR-006: NFT plugin implementation (proposal)
 
 - Status: Proposed
-- Date: 2025-12-17
-- Related: `src/hedera-cli.ts`, `src/core/*`, `src/plugins/*`
+- Date: 2025-12-23
+- Related: `src/core/*`, `src/plugins/*`
 
 ## Context
 
-The Hiero CLI requires implementation of NFT plugin that would perform basic handling of NFT token operation on Hedera. Operations that should be covered would NFT creation, minting, transfer. We also need to consider proper approach of metadata file upload to IPFS pinning service or S3 service.
+The Hiero CLI requires implementation of NFT plugin that would handle basic NFT token operation on Hedera. Operations that should be covered would be creation, minting, transfer of non-fungible tokens.
 
 Goals:
 
 - We should implement basic NFT operations that will use Hashgraph SDK methods to perform operations
-- New commands should cover basic non-fungible tokens: create, mint, transfer and associate
+- Implementation of commands should cover basic non-fungible tokens: create, mint, transfer and associate
 - NFT information will need to be stored in state manager
 
 ## Decision
