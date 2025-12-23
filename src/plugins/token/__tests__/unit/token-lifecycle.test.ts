@@ -3,9 +3,12 @@
  * Tests the complete token lifecycle: create → associate → transfer
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
 
 import '@/core/utils/json-serialize';
 
+import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createToken } from '@/plugins/token/commands/create';
@@ -143,6 +146,8 @@ describe('Token Lifecycle Integration', () => {
         },
         api,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const createResult = await createToken(createArgs);
@@ -161,6 +166,8 @@ describe('Token Lifecycle Integration', () => {
         },
         api,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult = await associateToken(associateArgs);
@@ -181,6 +188,8 @@ describe('Token Lifecycle Integration', () => {
         },
         api,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const transferResult = await transferToken(transferArgs);
@@ -313,6 +322,8 @@ describe('Token Lifecycle Integration', () => {
         },
         api,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const createResult = await createToken(createArgs);
@@ -331,6 +342,8 @@ describe('Token Lifecycle Integration', () => {
         },
         api,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult = await associateToken(associateArgs);
@@ -435,6 +448,8 @@ describe('Token Lifecycle Integration', () => {
         },
         api,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const createResult = await createToken(createArgs);
@@ -453,6 +468,8 @@ describe('Token Lifecycle Integration', () => {
         },
         api,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult1 = await associateToken(associateArgs1);
@@ -471,6 +488,8 @@ describe('Token Lifecycle Integration', () => {
         },
         api,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult2 = await associateToken(associateArgs2);
@@ -531,6 +550,8 @@ describe('Token Lifecycle Integration', () => {
         },
         api,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const createResult = await createToken(createArgs);
@@ -548,6 +569,8 @@ describe('Token Lifecycle Integration', () => {
         },
         api,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult = await associateToken(associateArgs);

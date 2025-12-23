@@ -50,7 +50,12 @@ describe('transferTokenHandler', () => {
       const mockSignResult: TransactionResult = {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
-        receipt: { status: { status: 'success' } },
+        receipt: {
+          status: {
+            status: 'success',
+            transactionId: '0.0.123@1234567890.123456789',
+          },
+        },
         consensusTimestamp: '1234567890.123456789',
       };
 
@@ -130,7 +135,12 @@ describe('transferTokenHandler', () => {
       const mockSignResult: TransactionResult = {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
-        receipt: { status: { status: 'success' } },
+        receipt: {
+          status: {
+            status: 'success',
+            transactionId: '0.0.123@1234567890.123456789',
+          },
+        },
         consensusTimestamp: '1234567890.123456789',
       };
 
@@ -206,7 +216,12 @@ describe('transferTokenHandler', () => {
       const mockSignResult: TransactionResult = {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
-        receipt: { status: { status: 'success' } },
+        receipt: {
+          status: {
+            status: 'success',
+            transactionId: '0.0.123@1234567890.123456789',
+          },
+        },
         consensusTimestamp: '1234567890.123456789',
       };
 
@@ -316,7 +331,12 @@ describe('transferTokenHandler', () => {
       const mockSignResult: TransactionResult = {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
-        receipt: { status: { status: 'success' } },
+        receipt: {
+          status: {
+            status: 'success',
+            transactionId: '0.0.123@1234567890.123456789',
+          },
+        },
         consensusTimestamp: '1234567890.123456789',
       };
 
@@ -343,6 +363,7 @@ describe('transferTokenHandler', () => {
       // Setup operator for fallback
       api.network = {
         ...api.network,
+        getCurrentNetwork: jest.fn().mockReturnValue('testnet'),
         getOperator: jest.fn().mockReturnValue({
           accountId: '0.0.2',
           keyRefId: 'operator-key-ref-id',
@@ -351,7 +372,7 @@ describe('transferTokenHandler', () => {
           accountId: '0.0.2',
           keyRefId: 'operator-key-ref-id',
         }),
-      } as Partial<NetworkService>;
+      } as NetworkService;
 
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
@@ -533,7 +554,12 @@ describe('transferTokenHandler', () => {
       const mockSignResult: TransactionResult = {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
-        receipt: { status: { status: 'success' } },
+        receipt: {
+          status: {
+            status: 'success',
+            transactionId: '0.0.123@1234567890.123456789',
+          },
+        },
         consensusTimestamp: '1234567890.123456789',
       };
 
@@ -603,7 +629,12 @@ describe('transferTokenHandler', () => {
       const mockSignResult: TransactionResult = {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
-        receipt: { status: { status: 'success' } },
+        receipt: {
+          status: {
+            status: 'success',
+            transactionId: '0.0.123@1234567890.123456789',
+          },
+        },
         consensusTimestamp: '1234567890.123456789',
       };
 
@@ -664,7 +695,12 @@ describe('transferTokenHandler', () => {
       const mockSignResult: TransactionResult = {
         success: true,
         transactionId: '0.0.123@1234567890.123456789',
-        receipt: { status: { status: 'success' } },
+        receipt: {
+          status: {
+            status: 'success',
+            transactionId: '0.0.123@1234567890.123456789',
+          },
+        },
         consensusTimestamp: '1234567890.123456789',
       };
 

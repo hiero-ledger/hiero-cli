@@ -17,6 +17,8 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
 
+import { KeyAlgorithm } from '@/core/shared/constants';
+
 import { MOCK_PUBLIC_KEY } from './fixtures';
 
 /**
@@ -454,7 +456,7 @@ export const makeKeyResolverMock = (
         // Call kms.importPrivateKey if available
         if (options.kms?.importPrivateKey) {
           const importResult = options.kms.importPrivateKey(
-            'ecdsa',
+            KeyAlgorithm.ECDSA,
             keyOrAlias.privateKey,
             keyManager,
             labels || [],
@@ -502,7 +504,8 @@ export const makeKeyResolverMock = (
     .mockImplementation(async (keyOrAlias, keyManager, labels) => {
       // undefined -> fallback do operatora
       if (!keyOrAlias && options.network) {
-        const operator = options.network.getOperator();
+        const network = options.network.getCurrentNetwork();
+        const operator = options.network.getOperator(network);
         if (!operator) throw new Error('No operator set');
         // Always use default valid public key for mocking
         const publicKey = '302a300506032b6570032100' + '0'.repeat(64);

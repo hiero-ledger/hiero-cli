@@ -146,6 +146,11 @@ describe('topic plugin - message-submit command', () => {
         accountId: '0.0.999',
         keyRefId: submitKeyRefId,
       }),
+      getOrInitKeyWithFallback: jest.fn().mockResolvedValue({
+        publicKey: '02abc123',
+        accountId: '0.0.999',
+        keyRefId: submitKeyRefId,
+      }),
     };
 
     const { topicTransactions, signing, networkMock, alias } = makeApiMocks({
@@ -169,6 +174,8 @@ describe('topic plugin - message-submit command', () => {
       keyResolver: keyResolverMock as KeyResolverService,
       config: {
         getOption: jest.fn().mockReturnValue('local'),
+        listOptions: jest.fn(),
+        setOption: jest.fn(),
       } as ConfigService,
     };
 

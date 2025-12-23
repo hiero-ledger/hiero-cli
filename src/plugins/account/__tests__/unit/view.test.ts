@@ -32,9 +32,10 @@ describe('account plugin - view command (ADR-003)', () => {
     const mirrorMock = makeMirrorMock({
       accountInfo: {
         accountId: '0.0.1111',
-        balance: { balance: 1000n, timestamp: '1234567890' },
+        balance: { balance: 1000, timestamp: '1234567890' },
         evmAddress: '0xabc',
         accountPublicKey: 'pubKey',
+        keyAlgorithm: 'ecdsa',
       },
     });
     const api: Partial<CoreApi> = {
@@ -76,9 +77,10 @@ describe('account plugin - view command (ADR-003)', () => {
     const mirrorMock = makeMirrorMock({
       accountInfo: {
         accountId: '0.0.2222',
-        balance: { balance: 2000n, timestamp: '1234567890' },
+        balance: { balance: 2000, timestamp: '1234567890' },
         evmAddress: '0xdef',
         accountPublicKey: 'pubKey2',
+        keyAlgorithm: 'ecdsa',
       },
     });
     const alias = makeAliasMock();
