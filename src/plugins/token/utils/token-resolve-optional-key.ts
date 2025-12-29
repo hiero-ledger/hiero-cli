@@ -1,9 +1,11 @@
-import type { KeyOrAccountAlias } from '@/core/schemas';
 import type {
   KeyResolverService,
   ResolvedKey,
 } from '@/core/services/key-resolver/key-resolver-service.interface';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type {
+  KeyManagerName,
+  KeyOrAccountAlias,
+} from '@/core/services/kms/kms-types.interface';
 
 import { PublicKey } from '@hashgraph/sdk';
 

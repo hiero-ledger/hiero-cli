@@ -42,7 +42,8 @@ export async function getPluginInfo(
       };
     }
 
-    const basePath = entry.path ?? path.resolve('./dist/plugins', entry.name);
+    const basePath =
+      entry.path ?? path.resolve(__dirname, '../../../../plugins', entry.name);
     const manifestPath = path.resolve(basePath, 'manifest.js');
 
     logger.info(`🔍 Loading plugin manifest for info from: ${manifestPath}`);

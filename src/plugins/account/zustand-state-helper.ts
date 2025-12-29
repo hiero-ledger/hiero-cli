@@ -3,7 +3,7 @@
  * Provides rich state management with subscriptions and actions
  */
 import type { Logger, StateService } from '@/core';
-import type { KeyAlgorithmType } from '@/core/services/kms/kms-types.interface';
+import type { KeyAlgorithm } from '@/core/shared/constants';
 
 import {
   ACCOUNT_NAMESPACE,
@@ -31,7 +31,7 @@ export class ZustandAccountStateHelper {
 
     const validation = safeParseAccountData(accountData);
     if (!validation.success) {
-      const errors = validation.error.errors
+      const errors = validation.error.issues
         .map((e) => `${e.path.join('.')}: ${e.message}`)
         .join(', ');
       throw new Error(`Invalid account data: ${errors}`);
@@ -52,7 +52,7 @@ export class ZustandAccountStateHelper {
       const validation = safeParseAccountData(data);
       if (!validation.success) {
         this.logger.warn(
-          `[ZUSTAND ACCOUNT STATE] Invalid data for account: ${name}. Errors: ${validation.error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
+          `[ZUSTAND ACCOUNT STATE] Invalid data for account: ${name}. Errors: ${validation.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
         );
         return null;
       }
@@ -115,7 +115,7 @@ export class ZustandAccountStateHelper {
   /**
    * Get accounts by type
    */
-  getAccountsByType(type: KeyAlgorithmType): AccountData[] {
+  getAccountsByType(type: KeyAlgorithm): AccountData[] {
     const accounts = this.listAccounts();
     return accounts.filter((account) => account.type === type);
   }
@@ -200,7 +200,7 @@ export class ZustandAccountStateHelper {
    */
   searchAccounts(criteria: {
     network?: string;
-    type?: KeyAlgorithmType;
+    type?: KeyAlgorithm;
     namePattern?: string;
   }): AccountData[] {
     let accounts = this.listAccounts();

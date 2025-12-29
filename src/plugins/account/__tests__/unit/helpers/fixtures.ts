@@ -5,7 +5,7 @@
 import type { AliasRecord } from '@/core/services/alias/alias-service.interface';
 import type { AccountData } from '@/plugins/account/schema';
 
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 
 /**
@@ -127,28 +127,28 @@ export const mockAccountLists = {
 export const mockAliasRecords = {
   accountTestnet: {
     alias: 'acc-alias-testnet',
-    type: AliasType.Account,
+    type: ALIAS_TYPE.Account,
     network: 'testnet' as const,
     entityId: '0.0.7777',
     createdAt: '2024-01-01T00:00:00.000Z',
   } satisfies AliasRecord,
   accountMainnet: {
     alias: 'acc-alias-mainnet',
-    type: AliasType.Account,
+    type: ALIAS_TYPE.Account,
     network: 'mainnet' as const,
     entityId: '0.0.7777',
     createdAt: '2024-01-01T00:00:00.000Z',
   } satisfies AliasRecord,
   tokenTestnet: {
     alias: 'token-alias-testnet',
-    type: AliasType.Token,
+    type: ALIAS_TYPE.Token,
     network: 'testnet' as const,
     entityId: '0.0.7777',
     createdAt: '2024-01-01T00:00:00.000Z',
   } satisfies AliasRecord,
   otherAccountTestnet: {
     alias: 'other-acc-testnet',
-    type: AliasType.Account,
+    type: ALIAS_TYPE.Account,
     network: 'testnet' as const,
     entityId: '0.0.8888',
     createdAt: '2024-01-01T00:00:00.000Z',

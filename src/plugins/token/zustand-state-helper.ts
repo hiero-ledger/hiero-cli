@@ -235,6 +235,7 @@ export class ZustandTokenStateHelper {
     bySupplyType: Record<string, number>;
     withAssociations: number;
     totalAssociations: number;
+    withKeys: number;
   } {
     try {
       this.logger.debug(`[TOKEN STATE] Generating token statistics`);
@@ -247,6 +248,7 @@ export class ZustandTokenStateHelper {
         bySupplyType: {} as Record<string, number>,
         withAssociations: 0,
         totalAssociations: 0,
+        withKeys: 0,
       };
 
       for (const token of tokens) {
@@ -263,6 +265,11 @@ export class ZustandTokenStateHelper {
         if (associationCount > 0) {
           stats.withAssociations++;
           stats.totalAssociations += associationCount;
+        }
+
+        // Count tokens with admin key
+        if (token.adminPublicKey) {
+          stats.withKeys++;
         }
       }
 

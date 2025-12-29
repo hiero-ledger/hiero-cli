@@ -37,7 +37,7 @@ export const CreateTokenInputSchema = z
       'Maximum supply (required for FINITE supply type)',
     ),
     adminKey: KeyOrAccountAliasSchema.optional().describe(
-      'Admin key (optional). If not set, operator key is used as admin key.',
+      'Admin key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
     ),
     name: TokenAliasNameSchema.optional().describe(
       'Optional alias to register for the token',

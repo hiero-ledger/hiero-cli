@@ -1,5 +1,7 @@
-import type { KeyOrAccountAlias } from '@/core/schemas';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type {
+  KeyManagerName,
+  KeyOrAccountAlias,
+} from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export type ResolvedKey = {

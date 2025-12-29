@@ -120,6 +120,19 @@ export async function listTokens(
         treasuryId: token.treasuryId,
         network: token.network,
         alias,
+        ...(showKeys &&
+          token.adminPublicKey && {
+            keys: {
+              adminKey: token.adminPublicKey,
+              supplyKey: null,
+              wipeKey: null,
+              kycKey: null,
+              freezeKey: null,
+              pauseKey: null,
+              feeScheduleKey: null,
+              treasuryKey: null,
+            },
+          }),
       };
     });
 
@@ -132,7 +145,7 @@ export async function listTokens(
       network: targetNetwork,
       stats: {
         total: stats.total,
-        withKeys: 0, // Will need to calculate this
+        withKeys: stats.withKeys,
         byNetwork: stats.byNetwork,
         bySupplyType: stats.bySupplyType,
         withAssociations: stats.withAssociations,

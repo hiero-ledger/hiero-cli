@@ -250,7 +250,7 @@ export class PluginManager {
   }
 
   private getDefaultPluginPath(name: string): string {
-    return `./dist/plugins/${name}`;
+    return path.resolve(__dirname, '../../plugins', name);
   }
 
   /**
@@ -389,11 +389,19 @@ export class PluginManager {
     commandSpec: CommandSpec,
     args: unknown[],
   ): Promise<void> {
-    await ensureCliInitialized(this.coreApi);
-
     const command = args[args.length - 1] as Command;
     const options = command.opts();
     const commandArgs = command.args;
+    const pluginName = command.parent?.name() || command.name();
+
+    const PLUGINS_DISABLED_FROM_INITIALIZATION = [
+      'network',
+      'config',
+      'plugin-management',
+    ];
+    if (!PLUGINS_DISABLED_FROM_INITIALIZATION.includes(pluginName)) {
+      await ensureCliInitialized(this.coreApi);
+    }
 
     const handlerArgs: CommandHandlerArgs = {
       args: {

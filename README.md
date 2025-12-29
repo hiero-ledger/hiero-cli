@@ -10,8 +10,10 @@ A key advantage of the Hedera CLI Tool is its potential to enhance your workflow
 
 ## Table of Contents
 
-- [Prerequisites](#prerequisites)
-- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Manual Setup (For Developers)](#manual-setup-for-developers)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
 - [Video Guide](#video-guide)
 - [Plugins](#plugins)
 - [Configuration & State Storage](#configuration--state-storage)
@@ -23,7 +25,34 @@ A key advantage of the Hedera CLI Tool is its potential to enhance your workflow
 - [Contributing](#contributing)
 - [License](#license)
 
-## Prerequisites
+## Quick Start
+
+The easiest way to get started with Hedera CLI is to install it globally via npm:
+
+```sh
+npm install -g @hiero-ledger/hiero-cli
+```
+
+Once installed, you can use the CLI with the `hcli` command:
+
+```sh
+# Check available commands
+hcli --help
+
+# Example: Check account balance
+hcli account balance --account-id 0.0.123456
+
+# Example: Transfer HBAR
+hcli hbar transfer --to 0.0.123456 --amount 10
+```
+
+**First-time setup (Initialization)**: When you run any command that requires an operator (like transferring HBAR or creating tokens) in interactive mode, the CLI will automatically launch an **initialization wizard** to guide you through configuring the operator account, private key, and settings. In script mode (non-interactive), an error will be thrown instead, requiring you to use `hcli network set-operator` to configure the operator first.
+
+## Manual Setup (For Developers)
+
+If you want to contribute to the development of the Hedera CLI or run it from source, follow these instructions.
+
+### Prerequisites
 
 Before proceeding with the installation and setup of the Hedera CLI Tool, ensure the following prerequisites are met:
 
@@ -106,6 +135,8 @@ node dist/hedera-cli.js network set-operator --operator 0.0.123456:302e020100300
 ```
 
 The operator credentials are stored in the CLI's state management system. Make sure that each operator account **contains at least 1 Hbar** for transaction fees.
+
+> **💡 Note on Initialization**: When running the CLI interactively, if an operator is not configured and you attempt to run a command that requires it, the CLI will automatically launch an **interactive setup wizard** that guides you through configuring the operator, private key, and related settings. In script mode (non-interactive), if the operator is not configured, an error will be thrown instead.
 
 ### 6. Set Network
 
@@ -223,9 +254,9 @@ The CLI externalizes both its immutable base configuration and mutable runtime s
 
 ## State directory location
 
-By default, the CLI stores plugin state in a directory relative to the current working directory:
+By default, the CLI stores plugin state in your home directory:
 
-- **Default location**: `./.hedera-cli/state/` (in the current working directory)
+- **Default location**: `~/.hedera-cli/state/` (in your home directory)
 
 Each plugin (or state namespace) uses its own JSON file inside this directory. These files are managed by the CLI; you typically should not edit them manually.
 

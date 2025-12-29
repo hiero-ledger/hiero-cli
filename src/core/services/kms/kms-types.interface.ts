@@ -36,11 +36,13 @@ export const KEY_MANAGERS = KEY_MANAGER_VALUES.reduce(
 
 // KEY ALGORITHMS
 
+/**
+ * Zod schema for key algorithm validation at IO boundaries
+ */
 export const keyAlgorithmSchema = z.enum([
   KeyAlgorithm.ED25519,
   KeyAlgorithm.ECDSA,
 ]);
-export type KeyAlgorithmType = z.infer<typeof keyAlgorithmSchema>;
 
 // CREDENTIAL RECORD (Metadata)
 
@@ -53,7 +55,7 @@ export interface KmsCredentialRecord {
   keyManager: KeyManagerName; // Which KeyManager owns this key
   publicKey: string;
   labels?: string[];
-  keyAlgorithm: KeyAlgorithmType;
+  keyAlgorithm: KeyAlgorithm;
   createdAt: string; // ISO timestamp
 }
 
@@ -64,10 +66,42 @@ export interface KmsCredentialRecord {
  * Each KeyManager has its own SecretStorage implementation.
  */
 export interface KmsCredentialSecret {
-  keyAlgorithm: KeyAlgorithmType;
+  keyAlgorithm: KeyAlgorithm;
   privateKey: string; // Raw private key (plain or encrypted depending on storage)
   mnemonic?: string; // For future HD wallet support
   derivationPath?: string; // For future hardware wallet support
   providerHandle?: string; // For future external KMS/HSM
   createdAt: string; // ISO timestamp
 }
+
+// EXPLICIT DOMAIN TYPES (ADR-005)
+
+/**
+ * Credential using account ID + private key pair
+ */
+export type KeypairCredential = {
+  type: 'keypair';
+  accountId: string;
+  privateKey: string;
+};
+
+/**
+ * Credential using account alias from key manager
+ */
+export type AliasCredential = {
+  type: 'alias';
+  alias: string;
+};
+
+/**
+ * Key resolution - explicit keypair or alias reference
+ */
+export type KeyOrAccountAlias = KeypairCredential | AliasCredential;
+
+/**
+ * Parsed "accountId=privateKey" format
+ */
+export type AccountIdWithPrivateKey = {
+  accountId: string;
+  privateKey: string;
+};

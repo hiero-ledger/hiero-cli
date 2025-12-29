@@ -32,7 +32,7 @@ export class ZustandTopicStateHelper {
 
     const validation = safeParseTopicData(updatedData);
     if (!validation.success) {
-      const errors = validation.error.errors
+      const errors = validation.error.issues
         .map((e) => `${e.path.join('.')}: ${e.message}`)
         .join(', ');
       throw new Error(`Invalid topic data: ${errors}`);
@@ -53,7 +53,7 @@ export class ZustandTopicStateHelper {
       const validation = safeParseTopicData(data);
       if (!validation.success) {
         this.logger.warn(
-          `[ZUSTAND TOPIC STATE] Invalid data for topic: ${name}. Errors: ${validation.error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
+          `[ZUSTAND TOPIC STATE] Invalid data for topic: ${name}. Errors: ${validation.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`,
         );
         return null;
       }
