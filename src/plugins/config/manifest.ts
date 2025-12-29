@@ -25,12 +25,6 @@ export const configPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Configuration Plugin',
   description: 'Manage CLI configuration options',
-  compatibility: {
-    cli: '^1.0.0',
-    core: '^1.0.0',
-    api: '^1.0.0',
-  },
-  capabilities: ['config:read', 'config:write'],
   commands: [
     {
       name: 'list',
@@ -91,13 +85,6 @@ export const configPluginManifest: PluginManifest = {
       },
     },
   ],
-  stateSchemas: [],
-  init: () => {
-    console.log('[CONFIG PLUGIN] Initializing config plugin...');
-  },
-  teardown: () => {
-    console.log('[CONFIG PLUGIN] Tearing down config plugin...');
-  },
 };
 
 export default configPluginManifest;

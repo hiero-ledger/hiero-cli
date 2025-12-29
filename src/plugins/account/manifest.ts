@@ -41,24 +41,11 @@ import {
   viewAccount,
   ViewAccountOutputSchema,
 } from './commands/view';
-import { ACCOUNT_JSON_SCHEMA, ACCOUNT_NAMESPACE } from './schema';
-
 export const accountPluginManifest: PluginManifest = {
   name: 'account',
   version: '1.0.0',
   displayName: 'Account Plugin',
   description: 'Plugin for managing Hedera accounts',
-  compatibility: {
-    cli: '^1.0.0',
-    core: '^1.0.0',
-    api: '^1.0.0',
-  },
-  capabilities: [
-    `state:namespace:${ACCOUNT_NAMESPACE}`,
-    'network:read',
-    'network:write',
-    'tx-execution:use',
-  ],
   commands: [
     {
       name: 'create',
@@ -274,20 +261,6 @@ export const accountPluginManifest: PluginManifest = {
       },
     },
   ],
-  stateSchemas: [
-    {
-      namespace: ACCOUNT_NAMESPACE,
-      version: 1,
-      jsonSchema: ACCOUNT_JSON_SCHEMA,
-      scope: 'profile',
-    },
-  ],
-  init: () => {
-    console.log('[ACCOUNT PLUGIN] Initializing account plugin...');
-  },
-  teardown: () => {
-    console.log('[ACCOUNT PLUGIN] Tearing down account plugin...');
-  },
 };
 
 export default accountPluginManifest;

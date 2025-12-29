@@ -68,7 +68,6 @@ export async function getPluginInfo(
       description:
         manifest.description ?? 'No description available for this plugin.',
       commands: manifest.commands?.map((command) => command.name) ?? [],
-      capabilities: manifest.capabilities ?? [],
       enabled: entry.enabled,
     };
 

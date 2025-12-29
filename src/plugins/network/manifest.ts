@@ -30,12 +30,6 @@ export const networkPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Network Plugin',
   description: 'Plugin for managing Hedera network configurations',
-  compatibility: {
-    cli: '^1.0.0',
-    core: '^1.0.0',
-    api: '^1.0.0',
-  },
-  capabilities: ['state:read', 'state:write', 'config:read'],
   commands: [
     {
       name: 'list',

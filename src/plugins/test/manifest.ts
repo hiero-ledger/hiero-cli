@@ -6,7 +6,6 @@ import type { PluginManifest } from '@/core';
 
 import { createMemo, MEMO_TEST_TEMPLATE } from '@/plugins/test/commands/memo';
 import { MemoTestOutputSchema } from '@/plugins/test/commands/memo/output';
-import { MEMO_JSON_SCHEMA, MEMO_NAMESPACE } from '@/plugins/test/schema';
 
 import {
   FOO_TEST_TEMPLATE,
@@ -19,12 +18,6 @@ export const testPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Test Plugin',
   description: 'For integration plugin',
-  compatibility: {
-    cli: '^1.0.0',
-    core: '^1.0.0',
-    api: '^1.0.0',
-  },
-  capabilities: ['test:read', 'memo:create'],
   commands: [
     {
       name: 'foo',
@@ -72,14 +65,6 @@ export const testPluginManifest: PluginManifest = {
         schema: MemoTestOutputSchema,
         humanTemplate: MEMO_TEST_TEMPLATE,
       },
-    },
-  ],
-  stateSchemas: [
-    {
-      namespace: MEMO_NAMESPACE,
-      version: 1,
-      jsonSchema: MEMO_JSON_SCHEMA,
-      scope: 'profile',
     },
   ],
 };

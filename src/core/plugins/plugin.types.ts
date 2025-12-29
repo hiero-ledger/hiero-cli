@@ -2,6 +2,7 @@
  * Plugin System Type Definitions
  * Types specific to the plugin architecture
  */
+import type { z } from 'zod';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
@@ -17,24 +18,13 @@ export interface PluginManifest {
   version: string;
   displayName: string;
   description: string;
-  compatibility: {
-    cli: string;
-    core: string;
-    api: string;
-  };
-  capabilities: string[];
   commands: CommandSpec[];
-  stateSchemas?: PluginStateSchema[];
-  init?: (context?: PluginContext) => void | Promise<void>;
-  teardown?: (context?: PluginContext) => void | Promise<void>;
 }
 
 /**
  * Command output specification
  * Defines the schema and optional human-readable template for command output
  */
-import type { z } from 'zod';
-
 export interface CommandOutputSpec {
   /** Zod schema for the command's output */
   schema: z.ZodTypeAny;

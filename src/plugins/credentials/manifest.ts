@@ -15,19 +15,11 @@ import {
   removeCredentials,
   RemoveCredentialsOutputSchema,
 } from './commands/remove';
-import { CREDENTIALS_JSON_SCHEMA, CREDENTIALS_NAMESPACE } from './schema';
-
 export const credentialsManifest: PluginManifest = {
   name: 'credentials',
   version: '1.0.0',
   displayName: 'Credentials Management',
   description: 'Manage operator credentials and keys',
-  compatibility: {
-    cli: '>=1.0.0',
-    core: '>=1.0.0',
-    api: '>=1.0.0',
-  },
-  capabilities: ['credentials:manage', 'credentials:list'],
   commands: [
     {
       name: 'list',
@@ -58,14 +50,6 @@ export const credentialsManifest: PluginManifest = {
         schema: RemoveCredentialsOutputSchema,
         humanTemplate: REMOVE_CREDENTIALS_TEMPLATE,
       },
-    },
-  ],
-  stateSchemas: [
-    {
-      namespace: CREDENTIALS_NAMESPACE,
-      version: 1,
-      jsonSchema: CREDENTIALS_JSON_SCHEMA,
-      scope: 'profile',
     },
   ],
 };

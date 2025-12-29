@@ -30,24 +30,12 @@ import {
   transferToken,
   TransferTokenOutputSchema,
 } from './commands/transfer';
-import { TOKEN_JSON_SCHEMA, TOKEN_NAMESPACE } from './schema';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
   version: '1.0.0',
   displayName: 'Token Plugin',
   description: 'Plugin for managing Hedera tokens',
-  compatibility: {
-    cli: '^1.0.0',
-    core: '^1.0.0',
-    api: '^1.0.0',
-  },
-  capabilities: [
-    `state:namespace:${TOKEN_NAMESPACE}`,
-    'network:read',
-    'network:write',
-    'tx-execution:use',
-  ],
   commands: [
     {
       name: 'transfer',
@@ -289,22 +277,6 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
   ],
-  stateSchemas: [
-    {
-      namespace: TOKEN_NAMESPACE,
-      version: 1,
-      jsonSchema: TOKEN_JSON_SCHEMA,
-      scope: 'profile',
-    },
-  ],
-  init: () => {
-    console.log('[TOKEN PLUGIN] Initializing token plugin...');
-    // Plugin initialization logic
-  },
-  teardown: () => {
-    console.log('[TOKEN PLUGIN] Tearing down token plugin...');
-    // Plugin cleanup logic
-  },
 };
 
 export default tokenPluginManifest;

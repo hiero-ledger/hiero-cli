@@ -15,12 +15,6 @@ export const hbarPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'HBAR Plugin',
   description: 'HBAR related commands (transfer etc.)',
-  compatibility: {
-    cli: '^1.0.0',
-    core: '^1.0.0',
-    api: '^1.0.0',
-  },
-  capabilities: ['tx-execution:use', 'network:read'],
   commands: [
     {
       name: 'transfer',
