@@ -36,6 +36,11 @@ export const tokenPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Token Plugin',
   description: 'Plugin for managing Hedera tokens',
+  compatibility: {
+    cli: '^1.0.0',
+    core: '^1.0.0',
+    api: '^1.0.0',
+  },
   commands: [
     {
       name: 'transfer',

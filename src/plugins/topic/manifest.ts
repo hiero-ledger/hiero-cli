@@ -30,6 +30,11 @@ export const topicPluginManifest: PluginManifest = {
   displayName: 'Topic Plugin',
   description:
     'Plugin for managing Hedera Consensus Service topics and messages',
+  compatibility: {
+    cli: '^1.0.0',
+    core: '^1.0.0',
+    api: '^1.0.0',
+  },
   commands: [
     {
       name: 'create',

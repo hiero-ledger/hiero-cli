@@ -25,6 +25,11 @@ export const configPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Configuration Plugin',
   description: 'Manage CLI configuration options',
+  compatibility: {
+    cli: '^1.0.0',
+    core: '^1.0.0',
+    api: '^1.0.0',
+  },
   commands: [
     {
       name: 'list',

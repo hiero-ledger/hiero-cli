@@ -18,6 +18,11 @@ export interface PluginManifest {
   version: string;
   displayName: string;
   description: string;
+  compatibility: {
+    cli: string;
+    core: string;
+    api: string;
+  };
   commands: CommandSpec[];
 }
 

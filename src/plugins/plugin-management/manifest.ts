@@ -40,6 +40,11 @@ export const pluginManagementManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Plugin Management',
   description: 'Plugin for managing other CLI plugins',
+  compatibility: {
+    cli: '>=1.0.0',
+    core: '>=1.0.0',
+    api: '>=1.0.0',
+  },
   commands: [
     {
       name: 'add',

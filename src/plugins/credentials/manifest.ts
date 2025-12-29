@@ -20,6 +20,11 @@ export const credentialsManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Credentials Management',
   description: 'Manage operator credentials and keys',
+  compatibility: {
+    cli: '>=1.0.0',
+    core: '>=1.0.0',
+    api: '>=1.0.0',
+  },
   commands: [
     {
       name: 'list',
