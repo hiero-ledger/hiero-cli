@@ -31,7 +31,9 @@ export const ListTopicsOutputSchema = z.object({
     withAdminKey: z.number().describe('Count of topics with admin key'),
     withSubmitKey: z.number().describe('Count of topics with submit key'),
     withMemo: z.number().describe('Count of topics with memo'),
-    byNetwork: z.record(z.number()).describe('Count of topics by network'),
+    byNetwork: z
+      .record(z.number(), z.number())
+      .describe('Count of topics by network'),
   }),
 });
 

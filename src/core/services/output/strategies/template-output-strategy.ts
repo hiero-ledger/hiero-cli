@@ -9,6 +9,8 @@ import type {
 
 import * as Handlebars from 'handlebars';
 
+import { isStringifiable } from '@/core/utils/is-stringifiable';
+
 export class TemplateOutputStrategy implements OutputFormatterStrategy {
   constructor() {
     this.registerHelpers();
@@ -157,11 +159,17 @@ export class TemplateOutputStrategy implements OutputFormatterStrategy {
           if (typeof value === 'object' && value !== null) {
             return `${spaces}${key}:\n${this.formatAsKeyValue(value, indent + 2)}`;
           }
-          return `${spaces}${key}: ${String(value)}`;
+          return `${spaces}${key}: ${isStringifiable(value) ? String(value) : '[Unsupported type]'}`;
         })
         .join('\n');
     }
 
-    return `${spaces}${String(data)}`;
+    // Primitives can be safely converted to string
+    if (isStringifiable(data)) {
+      return `${spaces}${String(data)}`;
+    }
+
+    // Fallback for unexpected types (symbols, functions, etc.)
+    return `${spaces}[Unsupported type: ${JSON.stringify(data)}]`;
   }
 }

@@ -1,7 +1,4 @@
-import type {
-  KeyAlgorithmType,
-  KmsCredentialSecret,
-} from '@/core/services/kms/kms-types.interface';
+import type { KmsCredentialSecret } from '@/core/services/kms/kms-types.interface';
 import type { Signer } from '@/core/services/kms/signers/signer.interface';
 import type { SecretStorage } from '@/core/services/kms/storage/secret-storage.interface';
 import type { KeyManager } from './key-manager.interface';
@@ -22,7 +19,7 @@ export class LocalKeyManager implements KeyManager {
     this.secretStorage = secretStorage;
   }
 
-  generateKey(keyRefId: string, algorithm: KeyAlgorithmType): string {
+  generateKey(keyRefId: string, algorithm: KeyAlgorithm): string {
     // 1. Generate key pair
     const privateKey =
       algorithm === KeyAlgorithm.ECDSA
@@ -55,7 +52,7 @@ export class LocalKeyManager implements KeyManager {
   createSigner(
     keyRefId: string,
     publicKey: string,
-    algorithm: KeyAlgorithmType,
+    algorithm: KeyAlgorithm,
   ): Signer {
     const secret = this.readSecret(keyRefId);
     if (!secret) {

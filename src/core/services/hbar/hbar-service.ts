@@ -30,8 +30,8 @@ export class HbarServiceImpl implements HbarService {
     const toId = AccountId.fromString(to);
 
     const tx = new TransferTransaction()
-      .addHbarTransfer(fromId, new Hbar(-amount, HbarUnit.Tinybar))
-      .addHbarTransfer(toId, new Hbar(amount, HbarUnit.Tinybar));
+      .addHbarTransfer(fromId, new Hbar((-amount).toString(), HbarUnit.Tinybar))
+      .addHbarTransfer(toId, new Hbar(amount.toString(), HbarUnit.Tinybar));
 
     if (memo) {
       tx.setTransactionMemo(memo);

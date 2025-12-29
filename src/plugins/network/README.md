@@ -111,6 +111,15 @@ hcli network set-operator --operator 0.0.123456:302e020100300506032b657004220420
 - `--operator <string>` - Operator credentials: name or account-id:private-key pair (required)
 - `-N, --network <string>` - Target network (defaults to current network) (optional)
 
+> **💡 Interactive Setup (Initialization)**: When running the CLI in interactive mode and an operator is not configured, running a command that requires operator credentials will trigger an automatic **operator initialization wizard**. This wizard guides you through:
+>
+> - Entering your Account ID
+> - Entering your Private Key
+> - Selecting a Key Manager (Local Encrypted or Local)
+> - Configuring ED25519 support
+>
+> In script mode (non-interactive), if no operator is configured, an error will be thrown instead.
+
 ## 📤 Output Formatting
 
 All commands return structured output through the `CommandExecutionResult` interface:

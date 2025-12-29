@@ -10,7 +10,7 @@ import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
-import { createCoreApi } from '@/core/core-api/core-api';
+import { createCoreApi } from '@/core';
 import { Status } from '@/core/shared/constants';
 import {
   addPlugin,
@@ -81,7 +81,7 @@ describe('Plugin Management Integration Tests', () => {
     expect(viewPluginOutput.plugin?.description).toBe('For integration plugin');
     expect(viewPluginOutput.plugin?.displayName).toBe('Test Plugin');
     expect(viewPluginOutput.plugin?.version).toBe('1.0.0');
-    expect(viewPluginOutput.plugin?.commands.length).toBe(1);
+    expect(viewPluginOutput.plugin?.commands.length).toBe(2);
     expect(viewPluginOutput.plugin?.enabled).toBe(true);
 
     const disablePluginArgs: Record<string, unknown> = {
@@ -163,7 +163,7 @@ describe('Plugin Management Integration Tests', () => {
     );
     expect(viewPluginEnabledOutput.plugin?.displayName).toBe('Test Plugin');
     expect(viewPluginEnabledOutput.plugin?.version).toBe('1.0.0');
-    expect(viewPluginEnabledOutput.plugin?.commands.length).toBe(1);
+    expect(viewPluginEnabledOutput.plugin?.commands.length).toBe(2);
     expect(viewPluginEnabledOutput.plugin?.enabled).toBe(true);
 
     const removePluginArgs: Record<string, unknown> = {

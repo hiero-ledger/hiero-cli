@@ -5,6 +5,7 @@
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
@@ -60,11 +61,11 @@ describe('ZustandGenericStateServiceImpl', () => {
 
     it('should use default storage directory when not provided', () => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
-      const cwd = process.cwd();
+      const homeDir = os.homedir();
 
       new ZustandGenericStateServiceImpl(logger);
 
-      expect(path.join).toHaveBeenCalledWith(cwd, '.hiero-cli', 'state');
+      expect(path.join).toHaveBeenCalledWith(homeDir, '.hiero-cli', 'state');
     });
 
     it('should discover existing namespaces from storage files', () => {

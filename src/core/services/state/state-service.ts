@@ -6,6 +6,7 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from './state-service.interface';
 
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
@@ -180,7 +181,7 @@ export class ZustandGenericStateServiceImpl implements StateService {
   constructor(logger: Logger, storageDir?: string) {
     this.logger = logger;
     this.storageDir =
-      storageDir || path.join(process.cwd(), '.hiero-cli', 'state');
+      storageDir || path.join(os.homedir(), '.hiero-cli', 'state');
     this.ensureStorageDir();
 
     // Discover existing namespaces from storage files

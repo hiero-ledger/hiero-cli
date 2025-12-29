@@ -3,6 +3,7 @@ import type { KeyProvider } from './key-provider.interface';
 
 import * as crypto from 'crypto';
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 /**
@@ -22,7 +23,7 @@ export class FileKeyProvider implements KeyProvider {
     private readonly config: AlgorithmConfig,
     baseDir?: string,
   ) {
-    const base = baseDir || path.join(process.cwd(), '.hiero-cli');
+    const base = baseDir || path.join(os.homedir(), '.hiero-cli');
     this.secretFilePath = path.join(base, `.secret-${config.identifier}`);
   }
 

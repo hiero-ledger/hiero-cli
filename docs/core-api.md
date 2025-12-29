@@ -262,6 +262,8 @@ api.network.setOperator('testnet', {
 const operator = api.network.getOperator(currentNetwork);
 ```
 
+> **💡 Interactive Setup (Initialization)**: For CLI users, when an operator is not configured and a command requiring it is executed interactively (human output mode), the CLI automatically launches an interactive **operator initialization wizard**. In script mode (non-interactive), an error is thrown instead. For plugin developers, you may use `api.network.setOperator()` to configure operators programmatically.
+
 ### Config Service
 
 Provides read-only access to CLI configuration.

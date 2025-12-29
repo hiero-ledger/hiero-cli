@@ -364,7 +364,7 @@ export const AccountNameSchema = AliasNameSchema.describe(
  */
 export const EntityReferenceSchema = z
   .union([EntityIdSchema, AliasNameSchema], {
-    errorMap: () => ({
+    error: () => ({
       message:
         'Entity reference must be a valid Hedera ID (0.0.xxx) or alias name',
     }),
@@ -378,7 +378,7 @@ export const EntityReferenceSchema = z
  */
 export const AccountReferenceSchema = z
   .union([EntityIdSchema, AccountNameSchema], {
-    errorMap: () => ({
+    error: () => ({
       message:
         'Account reference must be a valid Hedera ID (0.0.xxx), , or alias name',
     }),
@@ -592,59 +592,3 @@ export const PrivateKeySchema = z.union([
   EcdsaPrivateKeySchema,
   Ed25519PrivateKeySchema,
 ]);
-
-/**
- * Type exports for TypeScript inference
- */
-export type EcdsaPublicKey = z.infer<typeof EcdsaPublicKeySchema>;
-export type EcdsaPrivateKey = z.infer<typeof EcdsaPrivateKeySchema>;
-export type Ed25519PublicKey = z.infer<typeof Ed25519PublicKeySchema>;
-export type Ed25519PrivateKey = z.infer<typeof Ed25519PrivateKeySchema>;
-export type PrivateKey = z.infer<typeof PrivateKeySchema>;
-export type HbarDecimal = z.infer<typeof HbarDecimalSchema>;
-export type Tinybar = z.infer<typeof TinybarSchema>;
-export type HtsDecimals = z.infer<typeof HtsDecimalsSchema>;
-export type HtsBaseUnit = z.infer<typeof HtsBaseUnitSchema>;
-export type HtsDecimal = z.infer<typeof HtsDecimalSchema>;
-export type EvmDecimals = z.infer<typeof EvmDecimalsSchema>;
-export type EvmBaseUnit = z.infer<typeof EvmBaseUnitSchema>;
-export type EvmDecimal = z.infer<typeof EvmDecimalSchema>;
-
-// Legacy types
-export type EntityId = z.infer<typeof EntityIdSchema>;
-export type Timestamp = z.infer<typeof TimestampSchema>;
-export type TransactionId = z.infer<typeof TransactionIdSchema>;
-export type AccountIdWithPrivateKey = z.infer<
-  typeof AccountIdWithPrivateKeySchema
->;
-export type TokenAmount = z.infer<typeof TokenAmountSchema>;
-export type TokenBalance = z.infer<typeof TokenBalanceSchema>;
-export type TinybarBalance = z.infer<typeof TinybarBalanceSchema>;
-export type EvmAddress = z.infer<typeof EvmAddressSchema>;
-export type PublicKey = z.infer<typeof PublicKeySchema>;
-export type Network = z.infer<typeof NetworkSchema>;
-export type KeyType = z.infer<typeof KeyTypeSchema>;
-export type SupplyType = z.infer<typeof SupplyTypeSchema>;
-export type IsoTimestamp = z.infer<typeof IsoTimestampSchema>;
-export type AccountData = z.infer<typeof AccountDataSchema>;
-export type TokenData = z.infer<typeof TokenDataSchema>;
-export type TopicData = z.infer<typeof TopicDataSchema>;
-export type TransactionResult = z.infer<typeof TransactionResultSchema>;
-
-// Input types
-export type AmountInput = z.infer<typeof AmountInputSchema>;
-export type KeyManagerType = z.infer<typeof KeyManagerTypeSchema>;
-export type AccountName = z.infer<typeof AccountNameSchema>;
-export type ConfigOptionName = z.infer<typeof ConfigOptionNameSchema>;
-export type ConfigOptionValue = z.infer<typeof ConfigOptionValueSchema>;
-export type KeyRefId = z.infer<typeof KeyRefIdSchema>;
-export type PluginName = z.infer<typeof PluginNameSchema>;
-export type FilePath = z.infer<typeof FilePathSchema>;
-export type StateNamespace = z.infer<typeof StateNamespaceSchema>;
-export type TokenName = z.infer<typeof TokenNameSchema>;
-export type TokenSymbol = z.infer<typeof TokenSymbolSchema>;
-export type AliasName = z.infer<typeof AliasNameSchema>;
-export type TopicName = z.infer<typeof TopicNameSchema>;
-export type TokenAliasName = z.infer<typeof TokenAliasNameSchema>;
-export type Memo = z.infer<typeof MemoSchema>;
-export type KeyOrAccountAlias = z.infer<typeof KeyOrAccountAliasSchema>;

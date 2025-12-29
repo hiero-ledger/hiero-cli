@@ -4,15 +4,19 @@ import type { FooTestOutput } from './output';
 
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
+import { FooTestInputSchema } from '@/plugins/test/commands/foo/input';
 
 export async function fooTestOptions(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { logger } = args;
   try {
-    logger.info('Test Foo');
+    // Parse and validate args
+    const validArgs = FooTestInputSchema.parse(args.args);
+    const message = validArgs.message;
+    logger.info(message);
     const output: FooTestOutput = {
-      bar: 'Foo',
+      bar: message,
     };
     return {
       status: Status.Success,

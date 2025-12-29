@@ -3,8 +3,10 @@
  * Utility functions for processing token associations
  */
 import type { CoreApi, Logger } from '@/core';
-import type { KeyOrAccountAlias } from '@/core/schemas';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type {
+  KeyManagerName,
+  KeyOrAccountAlias,
+} from '@/core/services/kms/kms-types.interface';
 import type { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { toErrorMessage } from '@/core/utils/errors';

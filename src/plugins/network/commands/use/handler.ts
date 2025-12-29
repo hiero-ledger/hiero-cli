@@ -21,6 +21,7 @@ export async function useHandler(
 
   try {
     api.network.switchNetwork(network);
+    api.mirror.setBaseUrl(network);
 
     const output: UseNetworkOutput = {
       activeNetwork: network,
