@@ -160,7 +160,7 @@ jobs:
 
       - name: Setup JFrog NPM Repository
         run: |
-          jf npmc --server-id-resolve setup-jfrog-cli-server --server-id-deploy setup-jfrog-cli-server --repo-resolve hiero-cli-npm-release --repo-deploy hiero-cli-npm-release
+          jf npmc --server-id-resolve setup-jfrog-cli-server --server-id-deploy setup-jfrog-cli-server --repo-resolve hedera-cli-npm-release --repo-deploy hedera-cli-npm-release
           echo "::group::JFrog NPM Repository Configuration"
             cat .jfrog/projects/npm.yaml
           echo "::endgroup::"
