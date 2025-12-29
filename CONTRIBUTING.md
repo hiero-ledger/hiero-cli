@@ -59,7 +59,7 @@ Most feature work lives in the built‑in plugins under `src/plugins/` (for exam
 
 ### State & Configuration (High Level)
 
-The CLI stores per‑plugin state as JSON files under the user‑specific `.hedera-cli/state/` directory (see the main `README.md` for details). For an up‑to‑date description of configuration and state behavior, refer to the **Configuration & State Storage** section in the root [`README.md`](./README.md#configuration--state-storage).
+The CLI stores per‑plugin state as JSON files under the user‑specific `.hiero-cli/state/` directory (see the main `README.md` for details). For an up‑to‑date description of configuration and state behavior, refer to the **Configuration & State Storage** section in the root [`README.md`](./README.md#configuration--state-storage).
 
 ### Commit Guidelines
 

@@ -1,6 +1,6 @@
 # Account Plugin
 
-Complete account management plugin for the Hedera CLI following the plugin architecture.
+Complete account management plugin for the Hiero CLI following the plugin architecture.
 
 ## 🏗️ Architecture
 

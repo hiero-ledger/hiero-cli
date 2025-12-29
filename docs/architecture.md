@@ -1,16 +1,16 @@
 # Architecture Overview
 
-This document provides a comprehensive overview of the Hedera CLI architecture, focusing on the plugin system, core services, and how everything works together.
+This document provides a comprehensive overview of the Hiero CLI architecture, focusing on the plugin system, core services, and how everything works together.
 
 ## 🏗️ High-Level Architecture
 
-The Hedera CLI is built on a plugin-based architecture designed to be extensible, maintainable, and secure.
+The Hiero CLI is built on a plugin-based architecture designed to be extensible, maintainable, and secure.
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Hedera CLI Architecture                  │
+│                    Hiero CLI Architecture                   │
 ├─────────────────────────────────────────────────────────────┤
-│  CLI Entry Point (hedera-cli.ts)                            │
+│  CLI Entry Point (hiero-cli.ts)                             │
 │  ├── Plugin Manager                                         │
 │  ├── Core API                                               │
 │  └── Command Router                                         │

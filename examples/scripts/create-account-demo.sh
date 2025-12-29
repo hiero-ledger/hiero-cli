@@ -33,7 +33,7 @@ source "$SETUP"
 
 # --- hcli wrapper (uses built JS CLI with JSON output to avoid interactive prompts) ---
 hcli() {
-  cd "${PROJECT_DIR}" && node dist/hedera-cli.js --format json "$@"
+  cd "${PROJECT_DIR}" && node dist/hiero-cli.js --format json "$@"
 }
 
 print_step "Using project directory: ${PROJECT_DIR}"

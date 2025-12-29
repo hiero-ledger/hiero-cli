@@ -7,12 +7,12 @@ import * as os from 'os';
 import * as path from 'path';
 
 /**
- * Auto-generates and stores encryption key in .hedera-cli/.secret-{algorithm}
+ * Auto-generates and stores encryption key in .hiero-cli/.secret-{algorithm}
  *
  * Security model:
  * - Key is auto-generated on first use (user-transparent)
  * - Key length determined by algorithm configuration
- * - Stored in .hedera-cli/.secret-{identifier} (outside of state/ directory)
+ * - Stored in .hiero-cli/.secret-{identifier} (outside of state/ directory)
  * - File permissions set to 0600 (read/write for owner only)
  */
 export class FileKeyProvider implements KeyProvider {
@@ -23,7 +23,7 @@ export class FileKeyProvider implements KeyProvider {
     private readonly config: AlgorithmConfig,
     baseDir?: string,
   ) {
-    const base = baseDir || path.join(os.homedir(), '.hedera-cli');
+    const base = baseDir || path.join(os.homedir(), '.hiero-cli');
     this.secretFilePath = path.join(base, `.secret-${config.identifier}`);
   }
 
@@ -70,7 +70,7 @@ export class FileKeyProvider implements KeyProvider {
     const key = crypto.randomBytes(this.config.keyLengthBytes);
     const hex = key.toString('hex');
 
-    // Ensure .hedera-cli directory exists
+    // Ensure .hiero-cli directory exists
     const dir = path.dirname(this.secretFilePath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });

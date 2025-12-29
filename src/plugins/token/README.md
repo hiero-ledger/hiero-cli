@@ -1,6 +1,6 @@
 # Token Plugin
 
-Complete token management plugin for the Hedera CLI following the plugin architecture.
+Complete token management plugin for the Hiero CLI following the plugin architecture.
 
 ## 🏗️ Architecture
 

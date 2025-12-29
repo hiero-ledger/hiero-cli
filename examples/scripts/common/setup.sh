@@ -4,8 +4,8 @@ if [[ ! -d "${PROJECT_DIR}/node_modules" ]]; then
   npm run install
 fi
 
-if [[ ! -f "${PROJECT_DIR}/dist/hedera-cli.js" ]]; then
-  print_warn "Built CLI not found at dist/hedera-cli.js. Running: npm run build"
+if [[ ! -f "${PROJECT_DIR}/dist/hiero-cli.js" ]]; then
+  print_warn "Built CLI not found at dist/hiero-cli.js. Running: npm run build"
   npm run build
 fi
 
