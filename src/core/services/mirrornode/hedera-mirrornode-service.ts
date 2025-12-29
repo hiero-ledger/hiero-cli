@@ -27,9 +27,7 @@ import { formatError } from '@/core/utils/errors';
 
 import { NetworkToBaseUrl } from './types';
 
-export class HederaMirrornodeServiceDefaultImpl
-  implements HederaMirrornodeService
-{
+export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeService {
   private baseUrl!: string;
 
   constructor(private readonly network: SupportedNetwork) {
@@ -43,8 +41,21 @@ export class HederaMirrornodeServiceDefaultImpl
     this.baseUrl = NetworkToBaseUrl.get(network)!;
   }
 
-  async getAccount(accountId: string): Promise<AccountResponse> {
-    const url = `${this.baseUrl}/accounts/${accountId}`;
+  async getAccount(
+    accountId: string,
+    network?: SupportedNetwork,
+  ): Promise<AccountResponse> {
+    const baseUrl = network ? NetworkToBaseUrl.get(network) : this.baseUrl;
+
+    if (!baseUrl) {
+      throw new Error(
+        network
+          ? `Network type ${network} not supported`
+          : 'Mirror node service not initialized',
+      );
+    }
+
+    const url = `${baseUrl}/accounts/${accountId}`;
     const response = await fetch(url);
 
     if (!response.ok) {

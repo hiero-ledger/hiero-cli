@@ -14,7 +14,6 @@ import type {
 } from './key-resolver-service.interface';
 
 import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
 
 import { ERROR_MESSAGES } from './error-messages';
 
@@ -108,13 +107,10 @@ export class KeyResolverServiceImpl implements KeyResolverService {
   ): Promise<ResolvedKey> {
     const { accountId, privateKey } = keyPair;
 
-    const mirror =
-      targetNetwork && targetNetwork !== this.network.getCurrentNetwork()
-        ? new HederaMirrornodeServiceDefaultImpl(targetNetwork)
-        : this.mirror;
-
-    const { keyAlgorithm, accountPublicKey } =
-      await mirror.getAccount(accountId);
+    const { keyAlgorithm, accountPublicKey } = await this.mirror.getAccount(
+      accountId,
+      targetNetwork,
+    );
 
     if (!keyAlgorithm || !accountPublicKey) {
       throw new Error(ERROR_MESSAGES.unableToGetKeyAlgorithm);

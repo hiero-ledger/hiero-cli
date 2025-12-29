@@ -22,8 +22,13 @@ export interface HederaMirrornodeService {
   setBaseUrl(network: SupportedNetwork): void;
   /**
    * Get account information
+   * @param accountId - Account ID to fetch
+   * @param network - Optional network override. If provided, uses this network's mirror node URL instead of the service's default
    */
-  getAccount(accountId: string): Promise<AccountResponse>;
+  getAccount(
+    accountId: string,
+    network?: SupportedNetwork,
+  ): Promise<AccountResponse>;
 
   /**
    * Get account HBAR balance
