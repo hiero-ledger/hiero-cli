@@ -6,7 +6,7 @@ import { execSync } from 'child_process';
 import * as path from 'path';
 
 describe('CLI from different working directories', () => {
-  const CLI_PATH = path.resolve(__dirname, '../../../../dist/hedera-cli.js');
+  const CLI_PATH = path.resolve(__dirname, '../../../../dist/hiero-cli.js');
 
   it('should load plugins when run from project root', () => {
     const result = execSync(`node ${CLI_PATH} --help`, {
