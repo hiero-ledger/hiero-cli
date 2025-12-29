@@ -8,9 +8,9 @@ The Hiero CLI is built on a plugin-based architecture designed to be extensible,
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    Hiero CLI Architecture                  │
+│                    Hiero CLI Architecture                   │
 ├─────────────────────────────────────────────────────────────┤
-│  CLI Entry Point (hiero-cli.ts)                            │
+│  CLI Entry Point (hiero-cli.ts)                             │
 │  ├── Plugin Manager                                         │
 │  ├── Core API                                               │
 │  └── Command Router                                         │
