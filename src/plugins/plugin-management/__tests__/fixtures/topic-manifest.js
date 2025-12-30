@@ -10,5 +10,4 @@ module.exports = {
   displayName: 'Topic Plugin',
   description: 'Manage Hedera topics',
   commands: [{ name: 'list' }, { name: 'create' }],
-  capabilities: ['topic:list', 'topic:create'],
 };

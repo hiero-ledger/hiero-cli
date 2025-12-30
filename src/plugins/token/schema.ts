@@ -87,9 +87,6 @@ export const TokenDataSchema = z.object({
 // TypeScript type inferred from Zod schema
 export type TokenData = z.infer<typeof TokenDataSchema>;
 
-// Namespace constant
-export const TOKEN_NAMESPACE = 'token-tokens';
-
 // JSON Schema for manifest (automatically generated from Zod schema)
 // BigInt is not representable in JSON Schema, so we convert it to string with numeric pattern
 export const TOKEN_JSON_SCHEMA = zodToJsonSchema(TokenDataSchema);

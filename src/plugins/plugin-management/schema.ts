@@ -11,7 +11,6 @@ export const PluginInfoSchema = z.object({
   displayName: z.string().describe('Plugin display name'),
   description: z.string().describe('Plugin description'),
   commands: z.array(z.string()).describe('Available commands'),
-  capabilities: z.array(z.string()).describe('Plugin capabilities'),
   enabled: z.boolean().describe('Whether plugin is enabled'),
 });
 

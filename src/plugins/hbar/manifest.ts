@@ -20,7 +20,6 @@ export const hbarPluginManifest: PluginManifest = {
     core: '^1.0.0',
     api: '^1.0.0',
   },
-  capabilities: ['tx-execution:use', 'network:read'],
   commands: [
     {
       name: 'transfer',

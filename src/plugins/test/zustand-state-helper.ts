@@ -8,7 +8,8 @@ import type { MemoData } from './schema';
 
 import { toErrorMessage } from '@/core/utils/errors';
 
-import { MEMO_NAMESPACE, safeParseMemoData } from './schema';
+import { MEMO_NAMESPACE } from './manifest';
+import { safeParseMemoData } from './schema';
 
 export class ZustandMemoStateHelper {
   private state: StateService;

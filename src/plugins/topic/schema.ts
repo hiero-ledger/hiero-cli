@@ -55,9 +55,6 @@ export const TopicDataSchema = z.object({
 // TypeScript type inferred from Zod schema
 export type TopicData = z.infer<typeof TopicDataSchema>;
 
-// Namespace constant
-export const TOPIC_NAMESPACE = 'topic-topics';
-
 // JSON Schema for manifest (automatically generated from Zod schema)
 export const TOPIC_JSON_SCHEMA = zodToJsonSchema(TopicDataSchema);
 

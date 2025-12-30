@@ -59,17 +59,6 @@ export class PluginManager {
       this.logger.info(`✅ Loaded: ${pluginPath}`);
     }
 
-    // Register all namespaces with the state service
-    const namespaces = this.getAllNamespaces();
-    if (namespaces.length > 0) {
-      try {
-        this.coreApi.state.registerNamespaces(namespaces);
-      } catch (error) {
-        // Use centralized error handler for consistent error formatting
-        this.exitWithError('Failed to register plugin namespaces', error);
-      }
-    }
-
     this.logger.info(`✅ Plugin system ready`);
   }
 
@@ -181,23 +170,6 @@ export class PluginManager {
       path: plugin.path,
       status: plugin.status,
     }));
-  }
-
-  /**
-   * Get all namespaces from loaded plugins
-   */
-  getAllNamespaces(): string[] {
-    const namespaces = new Set<string>();
-
-    for (const plugin of this.loadedPlugins.values()) {
-      if (plugin.status === 'loaded' && plugin.manifest.stateSchemas) {
-        for (const schema of plugin.manifest.stateSchemas) {
-          namespaces.add(schema.namespace);
-        }
-      }
-    }
-
-    return Array.from(namespaces);
   }
 
   /**

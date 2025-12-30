@@ -344,12 +344,6 @@ export const expectedPluginManifest = {
   version: '1.0.0',
   displayName: 'Token Plugin',
   expectedCommands: ['create', 'associate', 'transfer', 'create-from-file'],
-  expectedCapabilities: [
-    'state:namespace:token-tokens',
-    'network:read',
-    'network:write',
-    'tx-execution:use',
-  ],
 };
 
 /**
