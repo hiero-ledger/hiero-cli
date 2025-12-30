@@ -25,7 +25,6 @@ Goals:
 ## Implementation Strategy
 
 1. `token` plugin - commands summary:
-
    - `token ft-create` - renamed `token create` command for better clarity and user experience
    - `token nft-create` - new command for NFT creation, should prepare valid call with `@hashgraph/sdk` to create new NFT token
    - `token ft-mint` - new command for minting fungible tokens
@@ -54,7 +53,7 @@ If additional data would be required to store inside the token state we will add
 1. Consistency - as the `@hashgraph/sdk` uses same methods for handling fungible and non-fungible token operations we would also use same command for performing these operations.
    That will result in more consistent approach from the user's perspective.
 2. Simplicity - as we are using expanding `token` plugin we will not introduce another namespace for NFT data only. We will be using same storage and expand the model with `tokenType`.
-   If we had needed to expand the data model and change it for one of the tokens we would discriminate by the newly added `tokenType` field.
+   If we needed to expand the data model and make changes for a specific token, we would discriminate using the newly added `tokenType` field.
 3. Separation of the methods for creation, mint and transfer of token by the type will result in far less complexity of the handlers' methods.
 
 **Negative:**
