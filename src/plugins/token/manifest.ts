@@ -30,7 +30,8 @@ import {
   transferToken,
   TransferTokenOutputSchema,
 } from './commands/transfer';
-import { TOKEN_JSON_SCHEMA, TOKEN_NAMESPACE } from './schema';
+
+export const TOKEN_NAMESPACE = 'token-tokens';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
@@ -42,12 +43,6 @@ export const tokenPluginManifest: PluginManifest = {
     core: '^1.0.0',
     api: '^1.0.0',
   },
-  capabilities: [
-    `state:namespace:${TOKEN_NAMESPACE}`,
-    'network:read',
-    'network:write',
-    'tx-execution:use',
-  ],
   commands: [
     {
       name: 'transfer',
@@ -290,22 +285,6 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
   ],
-  stateSchemas: [
-    {
-      namespace: TOKEN_NAMESPACE,
-      version: 1,
-      jsonSchema: TOKEN_JSON_SCHEMA,
-      scope: 'profile',
-    },
-  ],
-  init: () => {
-    console.log('[TOKEN PLUGIN] Initializing token plugin...');
-    // Plugin initialization logic
-  },
-  teardown: () => {
-    console.log('[TOKEN PLUGIN] Tearing down token plugin...');
-    // Plugin cleanup logic
-  },
 };
 
 export default tokenPluginManifest;

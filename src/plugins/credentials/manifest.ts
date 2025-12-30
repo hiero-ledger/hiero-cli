@@ -15,7 +15,8 @@ import {
   removeCredentials,
   RemoveCredentialsOutputSchema,
 } from './commands/remove';
-import { CREDENTIALS_JSON_SCHEMA, CREDENTIALS_NAMESPACE } from './schema';
+
+export const CREDENTIALS_NAMESPACE = 'credentials';
 
 export const credentialsManifest: PluginManifest = {
   name: 'credentials',
@@ -27,7 +28,6 @@ export const credentialsManifest: PluginManifest = {
     core: '>=1.0.0',
     api: '>=1.0.0',
   },
-  capabilities: ['credentials:manage', 'credentials:list'],
   commands: [
     {
       name: 'list',
@@ -58,14 +58,6 @@ export const credentialsManifest: PluginManifest = {
         schema: RemoveCredentialsOutputSchema,
         humanTemplate: REMOVE_CREDENTIALS_TEMPLATE,
       },
-    },
-  ],
-  stateSchemas: [
-    {
-      namespace: CREDENTIALS_NAMESPACE,
-      version: 1,
-      jsonSchema: CREDENTIALS_JSON_SCHEMA,
-      scope: 'profile',
     },
   ],
 };

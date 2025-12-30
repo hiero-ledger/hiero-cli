@@ -5,11 +5,8 @@
 import type { Logger, StateService } from '@/core';
 import type { KeyAlgorithm } from '@/core/shared/constants';
 
-import {
-  ACCOUNT_NAMESPACE,
-  type AccountData,
-  safeParseAccountData,
-} from './schema';
+import { ACCOUNT_NAMESPACE } from './manifest';
+import { type AccountData, safeParseAccountData } from './schema';
 
 export class ZustandAccountStateHelper {
   private state: StateService;

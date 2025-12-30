@@ -18,7 +18,6 @@ export const PLUGIN_INFO_TEMPLATE = `{{#if found}}
    Enabled: {{plugin.enabled}}
    Description: {{plugin.description}}
    Commands: {{plugin.commands}}
-   Capabilities: {{plugin.capabilities}}
 {{else}}
 ❌ {{message}}
 {{/if}}`;
