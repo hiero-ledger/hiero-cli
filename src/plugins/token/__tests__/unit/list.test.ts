@@ -55,7 +55,7 @@ describe('token plugin - list command', () => {
     // Parse and verify output JSON
     const output = JSON.parse(result.outputJson!);
     expect(output.tokens).toHaveLength(0);
-    expect(output.count).toBe(0);
+    expect(output.totalCount).toBe(0);
     expect(output.network).toBe('testnet');
   });
 
@@ -85,7 +85,7 @@ describe('token plugin - list command', () => {
     // Parse and verify output JSON
     const output = JSON.parse(result.outputJson!);
     expect(output.tokens).toHaveLength(2);
-    expect(output.count).toBe(2);
+    expect(output.totalCount).toBe(2);
     expect(output.network).toBe('testnet');
     expect(output.tokens[0].name).toBe('Token 1');
     expect(output.tokens[0].symbol).toBe('TK1');
@@ -119,7 +119,7 @@ describe('token plugin - list command', () => {
 
     const output: ListTokensOutput = JSON.parse(result.outputJson!);
     expect(output.tokens).toHaveLength(1);
-    expect(output.count).toBe(1);
+    expect(output.totalCount).toBe(1);
     expect(output.tokens[0].name).toBe('Token 3');
     expect(output.tokens[0].symbol).toBe('TK3');
     expect(output.tokens[0].tokenId).toBe('0.0.3333');
@@ -127,10 +127,9 @@ describe('token plugin - list command', () => {
     // Verify stats contain withKeys count
     expect(output.stats?.withKeys).toBe(1);
 
-    // Verify logger was called with Admin Key when showKeys is true
-    expect(logger.info).toHaveBeenCalledWith(
-      expect.stringContaining('Admin Key: admin-key-123'),
-    );
+    // Verify keys are included in output when showKeys is true
+    expect(output.tokens[0].keys).toBeDefined();
+    expect(output.tokens[0].keys?.adminKey).toBe('admin-key-123');
   });
 
   test('filters tokens by current network', async () => {
@@ -157,7 +156,7 @@ describe('token plugin - list command', () => {
 
     const output: ListTokensOutput = JSON.parse(result.outputJson!);
     expect(output.tokens).toHaveLength(1);
-    expect(output.count).toBe(1);
+    expect(output.totalCount).toBe(1);
     expect(output.network).toBe('testnet');
     expect(output.tokens[0].name).toBe('Testnet Token');
     expect(output.tokens[0].symbol).toBe('TST');
@@ -189,7 +188,7 @@ describe('token plugin - list command', () => {
 
     const output: ListTokensOutput = JSON.parse(result.outputJson!);
     expect(output.tokens).toHaveLength(1);
-    expect(output.count).toBe(1);
+    expect(output.totalCount).toBe(1);
     expect(output.network).toBe('mainnet');
     expect(output.tokens[0].name).toBe('Mainnet Token');
     expect(output.tokens[0].symbol).toBe('MNT');
@@ -232,7 +231,7 @@ describe('token plugin - list command', () => {
 
     const output: ListTokensOutput = JSON.parse(result.outputJson!);
     expect(output.tokens).toHaveLength(0);
-    expect(output.count).toBe(0);
+    expect(output.totalCount).toBe(0);
     expect(output.network).toBe('mainnet');
   });
 
