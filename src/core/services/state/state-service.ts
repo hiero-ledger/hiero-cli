@@ -226,18 +226,6 @@ export class ZustandGenericStateServiceImpl implements StateService {
   }
 
   /**
-   * Register namespaces from loaded plugins
-   */
-  registerNamespaces(namespaces: string[]): void {
-    for (const namespace of namespaces) {
-      this.getOrCreateStore(namespace);
-    }
-    this.logger.debug(
-      `[ZUSTAND STATE] Registered ${namespaces.length} namespaces: ${namespaces.join(', ')}`,
-    );
-  }
-
-  /**
    * Get the storage directory path
    */
   getStorageDirectory(): string {

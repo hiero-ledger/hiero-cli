@@ -264,18 +264,4 @@ describe('ZustandGenericStateServiceImpl', () => {
       expect(result).toHaveProperty('data');
     });
   });
-
-  describe('registerNamespaces', () => {
-    it('should register multiple namespaces', () => {
-      const namespaces = [NAMESPACE_FOO, NAMESPACE_BAR];
-
-      service.registerNamespaces(namespaces);
-
-      expect(service.getNamespaces()).toContain(NAMESPACE_FOO);
-      expect(service.getNamespaces()).toContain(NAMESPACE_BAR);
-      expect(logger.debug).toHaveBeenCalledWith(
-        expect.stringContaining('Registered 2 namespaces'),
-      );
-    });
-  });
 });

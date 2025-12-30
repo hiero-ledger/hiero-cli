@@ -59,11 +59,6 @@ export interface StateService {
   getState(namespace: string): unknown;
 
   /**
-   * Register namespaces from loaded plugins
-   */
-  registerNamespaces(namespaces: string[]): void;
-
-  /**
    * Get the storage directory path
    */
   getStorageDirectory(): string;
