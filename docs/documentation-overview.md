@@ -1,6 +1,6 @@
-# Hedera CLI Technical Documentation
+# Hiero CLI Technical Documentation
 
-Technical documentation for developers and contributors working on the Hedera CLI project.
+Technical documentation for developers and contributors working on the Hiero CLI project.
 
 ## 📚 Documentation Structure
 
@@ -30,7 +30,7 @@ hiero-cli/
 │   │   ├── config/             # CLI configuration plugin
 │   │   ├── plugin-management/  # Plugin management plugin
 │   │   └── topic/              # Topic management plugin
-│   └── hedera-cli.ts           # Main CLI entry point
+│   └── hiero-cli.ts           # Main CLI entry point
 ├── docs/                       # Technical documentation
 └── coverage/                   # Test coverage reports
 ```
@@ -39,7 +39,7 @@ hiero-cli/
 
 - **🔌 Plugin Architecture**: Extensible plugin system
 - **🏦 Real Hedera Integration**: Direct integration with Hedera networks via Mirror Node API
-- **💾 State Management**: Persistent state with Zustand, schema validation, and per-plugin JSON files under `.hedera-cli/state/`
+- **💾 State Management**: Persistent state with Zustand, schema validation, and per-plugin JSON files under `.hiero-cli/state/`
 - **🔐 Credentials Management**: Secure credential handling via KMS and per-network operators
 - **📊 Comprehensive API**: Full Hedera Mirror Node API support with TypeScript types
 - **🛡️ Type Safety**: Full TypeScript support throughout the codebase

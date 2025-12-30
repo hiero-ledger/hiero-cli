@@ -2,7 +2,7 @@
   "name": "@hiero-ledger/hiero-cli",
   "version": "0.9.1",
   "description": "CLI tool to manage and setup developer environments for Hiero-Ledger.",
-  "main": "hedera-cli.js",
+  "main": "hiero-cli.js",
   "target": "esnext",
   "module": "esnext",
   "publishConfig": {
@@ -14,16 +14,16 @@
     "LICENSE"
   ],
   "bin": {
-    "hcli": "./dist/hedera-cli.js"
+    "hcli": "./dist/hiero-cli.js"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "npm run format && rimraf --glob 'dist/' && tsc && tsc-alias && chmod +x dist/hedera-cli.js",
+    "build": "npm run format && rimraf --glob 'dist/' && tsc && tsc-alias && chmod +x dist/hiero-cli.js",
     "build-test": "tsc && tsc -p tsconfig.test.json && npm run test ",
     "clean": "rm -rf dist/ && rm -rf coverage/ && rm -rf junit.xml && rm -rf junit-integration.xml",
-    "dev-build": "rm -rf dist/ && tsc && chmod +x dist/hedera-cli.js && npm run watch",
+    "dev-build": "rm -rf dist/ && tsc && chmod +x dist/hiero-cli.js && npm run watch",
     "watch": "tsc --watch",
     "lint": "eslint . --quiet",
     "lint:fix": "eslint . --fix",
@@ -36,11 +36,11 @@
     "test:all": "npm run test:unit && npm run test:integration",
     "test": "npm run test:unit",
     "single-test": "jest",
-    "dev": "ts-node src/hedera-cli.ts",
-    "dev:watch": "nodemon --exec ts-node src/hedera-cli.ts",
-    "start": "ts-node src/hedera-cli.ts",
-    "hcli": "ts-node src/hedera-cli.ts",
-    "debug": "ts-node --inspect src/hedera-cli.ts"
+    "dev": "ts-node src/hiero-cli.ts",
+    "dev:watch": "nodemon --exec ts-node src/hiero-cli.ts",
+    "start": "ts-node src/hiero-cli.ts",
+    "hcli": "ts-node src/hiero-cli.ts",
+    "debug": "ts-node --inspect src/hiero-cli.ts"
   },
   "keywords": [
     "CLI",

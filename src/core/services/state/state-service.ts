@@ -181,7 +181,7 @@ export class ZustandGenericStateServiceImpl implements StateService {
   constructor(logger: Logger, storageDir?: string) {
     this.logger = logger;
     this.storageDir =
-      storageDir || path.join(os.homedir(), '.hedera-cli', 'state');
+      storageDir || path.join(os.homedir(), '.hiero-cli', 'state');
     this.ensureStorageDir();
 
     // Discover existing namespaces from storage files

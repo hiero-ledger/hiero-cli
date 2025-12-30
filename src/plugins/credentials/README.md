@@ -1,6 +1,6 @@
 # Credentials Plugin
 
-A plugin for managing operator credentials and keys in the Hedera CLI.
+A plugin for managing operator credentials and keys in the Hiero CLI.
 
 ## 🏗️ Architecture
 

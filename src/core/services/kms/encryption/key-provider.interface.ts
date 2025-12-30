@@ -2,7 +2,7 @@
  * KeyProvider manages the lifecycle of encryption keys.
  *
  * This abstraction allows different key storage strategies:
- * - FileKeyProvider: Auto-generated key in .hedera-cli/.secret (current)
+ * - FileKeyProvider: Auto-generated key in .hiero-cli/.secret (current)
  * - Future: PasswordBasedKeyProvider, KeychainKeyProvider, HSM, etc.
  */
 export interface KeyProvider {

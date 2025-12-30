@@ -1,6 +1,6 @@
 # Network Plugin
 
-Network management plugin for the Hedera CLI.
+Network management plugin for the Hiero CLI.
 
 ## 🏗️ Architecture
 
