@@ -1,6 +1,6 @@
 # Config Plugin
 
-Configuration management plugin for the Hedera CLI.
+Configuration management plugin for the Hiero CLI.
 
 ## 🏗️ Architecture
 
