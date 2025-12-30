@@ -9,10 +9,6 @@ import type { ListTokensOutput } from './output';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { findTokenAlias } from '@/plugins/account/utils/balance-helpers';
-import {
-  displayStatistics,
-  displayToken,
-} from '@/plugins/token/utils/token-display';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { ListTokenInputSchema } from './input';
@@ -57,59 +53,8 @@ export async function listTokens(
       `[TOKEN LIST] After network filtering: ${tokens.length} tokens (filtered out ${tokensBeforeFilter - tokens.length})`,
     );
 
-    if (tokens.length === 0) {
-      if (tokensBeforeFilter > 0) {
-        logger.info(`\n⚠️  No tokens found for network: ${targetNetwork}`);
-        logger.info(
-          `\n💡 You have ${tokensBeforeFilter} token(s) on other networks.`,
-        );
-        logger.info(
-          `   Use --network <network-name> to view tokens on a specific network.`,
-        );
-      } else if (networkFilter) {
-        logger.info(`\nNo tokens found for network: ${networkFilter}`);
-      } else {
-        logger.info(`\nNo tokens found for current network: ${currentNetwork}`);
-      }
-
-      const outputData: ListTokensOutput = {
-        tokens: [],
-        count: 0,
-        network: targetNetwork,
-        stats: {
-          total: 0,
-          withKeys: 0,
-          byNetwork: {},
-          bySupplyType: {},
-          withAssociations: 0,
-          totalAssociations: 0,
-        },
-      };
-
-      return {
-        status: Status.Success,
-        outputJson: JSON.stringify(outputData),
-      };
-    }
-
-    logger.info(
-      `\nFound ${tokens.length} token(s) for network ${targetNetwork}:`,
-    );
-    if (tokensBeforeFilter > tokens.length) {
-      logger.info(
-        `(${tokensBeforeFilter - tokens.length} token(s) filtered out from other networks)`,
-      );
-    }
-    logger.info('──────────────────────────────────────');
-
-    const tokensList = tokens.map((token, index) => {
+    const tokensList = tokens.map((token) => {
       const alias = findTokenAlias(api, token.tokenId, token.network);
-
-      displayToken(token, index, showKeys, alias, logger);
-
-      if (index < tokens.length - 1) {
-        logger.info('');
-      }
 
       return {
         tokenId: token.tokenId,
@@ -120,6 +65,8 @@ export async function listTokens(
         treasuryId: token.treasuryId,
         network: token.network,
         alias,
+        maxSupply: Number(token.maxSupply),
+        associationCount: token.associations?.length || 0,
         ...(showKeys &&
           token.adminPublicKey && {
             keys: {
@@ -137,11 +84,10 @@ export async function listTokens(
     });
 
     const stats = tokenState.getTokensWithStats();
-    displayStatistics(stats, logger);
 
     const outputData: ListTokensOutput = {
       tokens: tokensList,
-      count: tokens.length,
+      totalCount: tokens.length,
       network: targetNetwork,
       stats: {
         total: stats.total,
