@@ -41,6 +41,9 @@ import {
   viewAccount,
   ViewAccountOutputSchema,
 } from './commands/view';
+
+export const ACCOUNT_NAMESPACE = 'account-accounts';
+
 export const accountPluginManifest: PluginManifest = {
   name: 'account',
   version: '1.0.0',

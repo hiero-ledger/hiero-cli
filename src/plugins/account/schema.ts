@@ -42,9 +42,6 @@ export const AccountDataSchema = z.object({
 // TypeScript type inferred from Zod schema
 export type AccountData = z.infer<typeof AccountDataSchema>;
 
-// Namespace constant
-export const ACCOUNT_NAMESPACE = 'account-accounts';
-
 // JSON Schema for manifest (automatically generated from Zod schema)
 export const ACCOUNT_JSON_SCHEMA = zodToJsonSchema(AccountDataSchema);
 

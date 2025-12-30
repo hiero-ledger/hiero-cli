@@ -7,7 +7,8 @@ import type { StateService } from '@/core/services/state/state-service.interface
 
 import { toErrorMessage } from '@/core/utils/errors';
 
-import { TOKEN_NAMESPACE, type TokenData } from './schema';
+import { TOKEN_NAMESPACE } from './manifest';
+import { type TokenData } from './schema';
 
 export class ZustandTokenStateHelper {
   private state: StateService;

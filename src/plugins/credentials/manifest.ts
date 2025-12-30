@@ -15,6 +15,9 @@ import {
   removeCredentials,
   RemoveCredentialsOutputSchema,
 } from './commands/remove';
+
+export const CREDENTIALS_NAMESPACE = 'credentials';
+
 export const credentialsManifest: PluginManifest = {
   name: 'credentials',
   version: '1.0.0',

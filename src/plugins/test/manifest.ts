@@ -13,6 +13,8 @@ import {
   FooTestOutputSchema,
 } from './commands/foo';
 
+export const MEMO_NAMESPACE = 'memo-memos';
+
 export const testPluginManifest: PluginManifest = {
   name: 'test',
   version: '1.0.0',

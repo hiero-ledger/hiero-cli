@@ -24,6 +24,9 @@ import {
   submitMessage,
   SubmitMessageOutputSchema,
 } from './commands/submit-message';
+
+export const TOPIC_NAMESPACE = 'topic-topics';
+
 export const topicPluginManifest: PluginManifest = {
   name: 'topic',
   version: '1.0.0',
