@@ -211,9 +211,10 @@ Manages network configuration, selection, and per-network operator credentials.
 ```typescript
 interface NetworkService {
   getCurrentNetwork(): SupportedNetwork;
+  setNetwork(network: SupportedNetwork): void;
   getAvailableNetworks(): string[];
   getNetworkConfig(network: string): NetworkConfig;
-  switchNetwork(network: string): void;
+  switchNetwork(network: SupportedNetwork): void;
   getLocalnetConfig(): LocalnetConfig;
   isNetworkAvailable(network: string): boolean;
   setOperator(
@@ -251,6 +252,12 @@ interface LocalnetConfig {
 const currentNetwork = api.network.getCurrentNetwork();
 const config = api.network.getNetworkConfig(currentNetwork);
 const availableNetworks = api.network.getAvailableNetworks();
+
+// Temporarily set network (in-memory only, does not persist)
+api.network.setNetwork('previewnet');
+
+// Switch network permanently (persists to state)
+api.network.switchNetwork('testnet');
 
 // Set operator for specific network
 api.network.setOperator('testnet', {
