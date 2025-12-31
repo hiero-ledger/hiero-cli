@@ -125,12 +125,11 @@ hcli token transfer \
 
 ### Token List
 
-List all tokens stored in state for the current or specified network.
+List all tokens stored in state for all networks.
 
 ```bash
 hcli token list
 hcli token list --keys  # Show token key information
-hcli token list --network testnet  # Filter by network
 ```
 
 ### Token Create From File

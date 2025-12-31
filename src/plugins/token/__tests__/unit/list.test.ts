@@ -3,6 +3,7 @@ import { Status } from '@/core/shared/constants';
 import {
   listTokens,
   type ListTokensOutput,
+  type TokenListItem,
 } from '@/plugins/token/commands/list';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -56,7 +57,6 @@ describe('token plugin - list command', () => {
     const output = JSON.parse(result.outputJson!);
     expect(output.tokens).toHaveLength(0);
     expect(output.totalCount).toBe(0);
-    expect(output.network).toBe('testnet');
   });
 
   test('lists tokens without keys', async () => {
@@ -86,7 +86,6 @@ describe('token plugin - list command', () => {
     const output = JSON.parse(result.outputJson!);
     expect(output.tokens).toHaveLength(2);
     expect(output.totalCount).toBe(2);
-    expect(output.network).toBe('testnet');
     expect(output.tokens[0].name).toBe('Token 1');
     expect(output.tokens[0].symbol).toBe('TK1');
     expect(output.tokens[0].tokenId).toBe('0.0.1111');
@@ -132,7 +131,7 @@ describe('token plugin - list command', () => {
     expect(output.tokens[0].keys?.adminKey).toBe('admin-key-123');
   });
 
-  test('filters tokens by current network', async () => {
+  test('lists tokens from all networks', async () => {
     const logger = makeLogger();
     setupZustandHelperMock(MockedHelper, {
       tokens: mockListTokens.multiNetwork,
@@ -155,84 +154,27 @@ describe('token plugin - list command', () => {
     expect(result.errorMessage).toBeUndefined();
 
     const output: ListTokensOutput = JSON.parse(result.outputJson!);
-    expect(output.tokens).toHaveLength(1);
-    expect(output.totalCount).toBe(1);
-    expect(output.network).toBe('testnet');
-    expect(output.tokens[0].name).toBe('Testnet Token');
-    expect(output.tokens[0].symbol).toBe('TST');
-    expect(output.tokens[0].tokenId).toBe('0.0.4444');
-    expect(output.tokens[0].network).toBe('testnet');
-  });
+    expect(output.tokens).toHaveLength(2);
+    expect(output.totalCount).toBe(2);
 
-  test('filters tokens by specified network', async () => {
-    const logger = makeLogger();
-    setupZustandHelperMock(MockedHelper, {
-      tokens: mockListTokens.multiNetwork,
-      stats: mockTokenStats.multiNetwork,
-    });
+    const testnetToken = output.tokens.find(
+      (t: TokenListItem) => t.network === 'testnet',
+    );
+    const mainnetToken = output.tokens.find(
+      (t: TokenListItem) => t.network === 'mainnet',
+    );
 
-    const { api } = makeApiMocks({
-      network: 'testnet',
-      alias: {
-        list: jest.fn().mockReturnValue([]),
-      },
-    });
-    const args = makeArgs(api, logger, { network: 'mainnet' });
+    expect(testnetToken).toBeDefined();
+    expect(testnetToken!.name).toBe('Testnet Token');
+    expect(testnetToken!.symbol).toBe('TST');
+    expect(testnetToken!.tokenId).toBe('0.0.4444');
+    expect(testnetToken!.network).toBe('testnet');
 
-    const result = await listTokens(args);
-
-    expect(result).toBeDefined();
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-    expect(result.errorMessage).toBeUndefined();
-
-    const output: ListTokensOutput = JSON.parse(result.outputJson!);
-    expect(output.tokens).toHaveLength(1);
-    expect(output.totalCount).toBe(1);
-    expect(output.network).toBe('mainnet');
-    expect(output.tokens[0].name).toBe('Mainnet Token');
-    expect(output.tokens[0].symbol).toBe('MNT');
-    expect(output.tokens[0].tokenId).toBe('0.0.5555');
-    expect(output.tokens[0].network).toBe('mainnet');
-  });
-
-  test('returns empty list when no tokens match network filter', async () => {
-    const logger = makeLogger();
-    setupZustandHelperMock(MockedHelper, {
-      tokens: [
-        makeTokenData({
-          tokenId: '0.0.5555',
-          name: 'Testnet Token',
-          symbol: 'TST',
-          network: 'testnet',
-        }),
-      ],
-      stats: makeTokenStats({
-        total: 1,
-        byNetwork: { testnet: 1 },
-        bySupplyType: { INFINITE: 1 },
-      }),
-    });
-
-    const { api } = makeApiMocks({
-      network: 'testnet',
-      alias: {
-        list: jest.fn().mockReturnValue([]),
-      },
-    });
-    const args = makeArgs(api, logger, { network: 'mainnet' });
-
-    const result = await listTokens(args);
-
-    expect(result).toBeDefined();
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-    expect(result.errorMessage).toBeUndefined();
-
-    const output: ListTokensOutput = JSON.parse(result.outputJson!);
-    expect(output.tokens).toHaveLength(0);
-    expect(output.totalCount).toBe(0);
-    expect(output.network).toBe('mainnet');
+    expect(mainnetToken).toBeDefined();
+    expect(mainnetToken!.name).toBe('Mainnet Token');
+    expect(mainnetToken!.symbol).toBe('MNT');
+    expect(mainnetToken!.tokenId).toBe('0.0.5555');
+    expect(mainnetToken!.network).toBe('mainnet');
   });
 
   test('displays token aliases when available', async () => {

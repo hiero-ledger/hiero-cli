@@ -1,6 +1,6 @@
 /**
  * Token List Command Handler
- * Handles listing tokens from state for the current network
+ * Handles listing all tokens from state for all networks
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
@@ -23,35 +23,18 @@ export async function listTokens(
   const validArgs = ListTokenInputSchema.parse(args.args);
 
   const showKeys = validArgs.keys;
-  const networkFilter = validArgs.network;
-
-  const currentNetwork = api.network.getCurrentNetwork();
-  const targetNetwork = networkFilter || currentNetwork;
 
   logger.info('Listing tokens...');
-  logger.debug(`[TOKEN LIST] Current network: ${currentNetwork}`);
-  logger.debug(`[TOKEN LIST] Target network: ${targetNetwork}`);
-  logger.debug(
-    `[TOKEN LIST] Network filter override: ${networkFilter || 'none'}`,
-  );
 
   try {
-    let tokens = tokenState.listTokens();
-    logger.debug(
-      `[TOKEN LIST] Retrieved ${tokens.length} tokens from state before filtering`,
-    );
+    const tokens = tokenState.listTokens();
+    logger.debug(`[TOKEN LIST] Retrieved ${tokens.length} tokens from state`);
 
     tokens.forEach((token, index) => {
       logger.debug(
         `[TOKEN LIST]   ${index + 1}. ${token.name} (${token.symbol}) - ${token.tokenId} on ${token.network}`,
       );
     });
-
-    const tokensBeforeFilter = tokens.length;
-    tokens = tokens.filter((token) => token.network === targetNetwork);
-    logger.debug(
-      `[TOKEN LIST] After network filtering: ${tokens.length} tokens (filtered out ${tokensBeforeFilter - tokens.length})`,
-    );
 
     const tokensList = tokens.map((token) => {
       const alias = findTokenAlias(api, token.tokenId, token.network);
@@ -88,7 +71,6 @@ export async function listTokens(
     const outputData: ListTokensOutput = {
       tokens: tokensList,
       totalCount: tokens.length,
-      network: targetNetwork,
       stats: {
         total: stats.total,
         withKeys: stats.withKeys,

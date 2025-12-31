@@ -85,20 +85,20 @@ const TokenStatisticsSchema = z.object({
 export const ListTokensOutputSchema = z.object({
   tokens: z.array(TokenListItemSchema),
   totalCount: z.number().int().nonnegative().describe('Total number of tokens'),
-  network: NetworkSchema.optional(),
   stats: TokenStatisticsSchema.optional(),
 });
 
 export type ListTokensOutput = z.infer<typeof ListTokensOutputSchema>;
+export type TokenListItem = z.infer<typeof TokenListItemSchema>;
 
 /**
  * Human-readable template for list tokens output
  */
 export const LIST_TOKENS_TEMPLATE = `
 {{#if (eq totalCount 0)}}
-📝 No tokens found{{#if network}} on {{network}}{{/if}}
+📝 No tokens found
 {{else}}
-📝 Found {{totalCount}} token(s){{#if network}} on {{network}}{{/if}}:
+📝 Found {{totalCount}} token(s):
 
 {{#each tokens}}
 {{add1 @index}}. Name: {{name}} ({{symbol}})
