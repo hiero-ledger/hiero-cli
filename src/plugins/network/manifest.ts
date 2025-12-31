@@ -55,8 +55,8 @@ export const networkPluginManifest: PluginManifest = {
       description: 'Switch the active network to the specified network name',
       options: [
         {
-          name: 'network',
-          short: 'N',
+          name: 'global',
+          short: 'g',
           type: 'string',
           required: true,
           description: 'Network name (testnet, mainnet, previewnet, localnet)',
@@ -72,15 +72,7 @@ export const networkPluginManifest: PluginManifest = {
       name: 'get-operator',
       summary: 'Get operator for a network',
       description: 'Get operator credentials for a specific network',
-      options: [
-        {
-          name: 'network',
-          short: 'N',
-          type: 'string',
-          required: false,
-          description: 'Target network (defaults to current network)',
-        },
-      ],
+      options: [],
       handler: getOperatorHandler,
       output: {
         schema: GetOperatorOutputSchema,
@@ -100,13 +92,6 @@ export const networkPluginManifest: PluginManifest = {
           required: true,
           description:
             'Operator credentials: name or account-id:private-key pair',
-        },
-        {
-          name: 'network',
-          short: 'N',
-          type: 'string',
-          required: false,
-          description: 'Target network (defaults to current network)',
         },
         {
           name: 'key-manager',

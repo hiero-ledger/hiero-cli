@@ -13,6 +13,7 @@ import type {
 import type { CoreApi } from '@/core/core-api';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import * as path from 'path';
 
@@ -390,7 +391,7 @@ export class PluginManager {
     args: unknown[],
   ): Promise<void> {
     const command = args[args.length - 1] as Command;
-    const options = command.opts();
+    const options = command.optsWithGlobals();
     const commandArgs = command.args;
     const pluginName = command.parent?.name() || command.name();
 
@@ -401,6 +402,21 @@ export class PluginManager {
     ];
     if (!PLUGINS_DISABLED_FROM_INITIALIZATION.includes(pluginName)) {
       await ensureCliInitialized(this.coreApi);
+    }
+
+    const networkOverride = (options.network || options.N) as SupportedNetwork;
+    const previousNetwork = this.coreApi.network.getCurrentNetwork();
+
+    if (networkOverride) {
+      if (!this.coreApi.network.isNetworkAvailable(networkOverride)) {
+        this.exitWithError(
+          `Command ${commandSpec.name} failed`,
+          new Error(
+            `Network not available: ${networkOverride}. Available networks: ${this.coreApi.network.getAvailableNetworks().join(', ')}`,
+          ),
+        );
+      }
+      this.coreApi.network.setNetwork(networkOverride);
     }
 
     const handlerArgs: CommandHandlerArgs = {
@@ -428,6 +444,10 @@ export class PluginManager {
       result = await commandSpec.handler(handlerArgs);
     } catch (error) {
       this.exitWithError(`Command ${commandSpec.name} execution failed`, error);
+    } finally {
+      if (networkOverride) {
+        this.coreApi.network.setNetwork(previousNetwork);
+      }
     }
 
     // ADR-003: If command has output spec, expect handler to return result

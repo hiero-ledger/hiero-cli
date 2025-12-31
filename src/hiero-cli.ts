@@ -20,7 +20,11 @@ import {
 program
   .version(pkg.version || '0.0.0')
   .description('A CLI tool for managing Hedera environments')
-  .option('--format <type>', 'Output format: human (default) or json');
+  .option('--format <type>', 'Output format: human (default) or json')
+  .option(
+    '-N, --network <network>',
+    'Target network (testnet, mainnet, previewnet, localnet)',
+  );
 
 // Initialize the simplified plugin system
 async function initializeCLI() {

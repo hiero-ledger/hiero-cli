@@ -100,15 +100,7 @@ export const topicPluginManifest: PluginManifest = {
       name: 'list',
       summary: 'List all topics',
       description: 'List all topics stored in the state',
-      options: [
-        {
-          name: 'network',
-          type: 'string',
-          required: false,
-          description: 'Filter topics by network',
-          short: 'n',
-        },
-      ],
+      options: [],
       handler: listTopics,
       output: {
         schema: ListTopicsOutputSchema,

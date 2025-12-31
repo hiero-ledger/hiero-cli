@@ -106,7 +106,7 @@ export const tokenPluginManifest: PluginManifest = {
       options: [
         {
           name: 'token-name',
-          short: 'N',
+          short: 'T',
           type: 'string',
           required: true,
           description: 'Token name. Option required.',
@@ -272,14 +272,6 @@ export const tokenPluginManifest: PluginManifest = {
           required: false,
           default: false,
           description: 'Show token key information (admin, supply, wipe, etc.)',
-        },
-        {
-          name: 'network',
-          short: 'N',
-          type: 'string',
-          required: false,
-          description:
-            'Filter tokens by network (defaults to current active network)',
         },
       ],
       handler: listTokens,

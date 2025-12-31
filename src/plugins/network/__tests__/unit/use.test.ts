@@ -34,7 +34,7 @@ describe('network plugin - use command', () => {
       { network: networkService, mirror: mirrorService },
       logger,
       {
-        network: 'mainnet',
+        global: 'mainnet',
       },
     );
 
@@ -53,7 +53,7 @@ describe('network plugin - use command', () => {
     });
 
     const args = makeArgs({ network: networkService }, logger, {
-      network: 'testnet',
+      global: 'testnet',
     });
 
     const result = await useHandler(args);
@@ -72,7 +72,7 @@ describe('network plugin - use command', () => {
       { network: networkService, mirror: mirrorService },
       logger,
       {
-        network: 'previewnet',
+        global: 'previewnet',
         json: true,
       },
     );
@@ -96,7 +96,7 @@ describe('network plugin - use command', () => {
       { network: networkService, mirror: mirrorService },
       logger,
       {
-        network: 'mainnet',
+        global: 'mainnet',
       },
     );
 
@@ -117,7 +117,7 @@ describe('network plugin - use command', () => {
       { network: networkService, mirror: mirrorService },
       logger,
       {
-        network: 'mainnet',
+        global: 'mainnet',
       },
     );
 
@@ -133,7 +133,7 @@ describe('network plugin - use command', () => {
       { network: networkService, mirror: mirrorService },
       logger,
       {
-        network: 'previewnet',
+        global: 'previewnet',
       },
     );
 

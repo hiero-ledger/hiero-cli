@@ -11,6 +11,11 @@ export interface NetworkService {
   getCurrentNetwork(): SupportedNetwork;
 
   /**
+   * Set the current network (temporary, in-memory only)
+   */
+  setNetwork(network: SupportedNetwork): void;
+
+  /**
    * Get list of available networks
    */
   getAvailableNetworks(): string[];
@@ -18,7 +23,7 @@ export interface NetworkService {
   /**
    * Switch to a different network
    */
-  switchNetwork(network: string): void;
+  switchNetwork(network: SupportedNetwork): void;
 
   /**
    * Get configuration for a specific network

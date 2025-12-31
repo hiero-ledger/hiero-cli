@@ -3,6 +3,7 @@
  * Tests all public methods with success paths, error paths, and edge cases
  */
 
+import { makeNetworkMock } from '@/__tests__/mocks/mocks';
 import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
 
 import {
@@ -45,9 +46,10 @@ const setupService = (
 ) => {
   jest.clearAllMocks();
 
-  const service = new HederaMirrornodeServiceDefaultImpl(network);
+  const networkService = makeNetworkMock(network);
+  const service = new HederaMirrornodeServiceDefaultImpl(networkService);
 
-  return { service, network };
+  return { service, network, networkService };
 };
 
 describe('HederaMirrornodeServiceDefaultImpl', () => {

@@ -34,9 +34,10 @@ export const makeLogger = (): jest.Mocked<Logger> => ({
  * Create a mocked NetworkService
  */
 export const makeNetworkMock = (
-  network: 'testnet' | 'mainnet' | 'previewnet' = 'testnet',
+  network: 'testnet' | 'mainnet' | 'previewnet' | 'localnet' = 'testnet',
 ): jest.Mocked<NetworkService> => ({
   getCurrentNetwork: jest.fn().mockReturnValue(network),
+  setNetwork: jest.fn(),
   getAvailableNetworks: jest
     .fn()
     .mockReturnValue(['localnet', 'testnet', 'previewnet', 'mainnet']),
