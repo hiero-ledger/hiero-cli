@@ -43,9 +43,6 @@ export const CredentialsDataSchema = z.object({
 // TypeScript type inferred from Zod schema
 export type CredentialsData = z.infer<typeof CredentialsDataSchema>;
 
-// Namespace constant
-export const CREDENTIALS_NAMESPACE = 'credentials';
-
 // JSON Schema for manifest (automatically generated from Zod schema)
 export const CREDENTIALS_JSON_SCHEMA = zodToJsonSchema(CredentialsDataSchema);
 

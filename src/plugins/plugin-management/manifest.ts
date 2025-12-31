@@ -45,7 +45,6 @@ export const pluginManagementManifest: PluginManifest = {
     core: '>=1.0.0',
     api: '>=1.0.0',
   },
-  capabilities: ['plugin:manage', 'plugin:list', 'plugin:info'],
   commands: [
     {
       name: 'add',

@@ -35,7 +35,6 @@ export const networkPluginManifest: PluginManifest = {
     core: '^1.0.0',
     api: '^1.0.0',
   },
-  capabilities: ['state:read', 'state:write', 'config:read'],
   commands: [
     {
       name: 'list',

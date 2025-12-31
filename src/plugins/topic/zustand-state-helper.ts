@@ -4,7 +4,8 @@
  */
 import type { Logger, StateService } from '@/core';
 
-import { safeParseTopicData, TOPIC_NAMESPACE, type TopicData } from './schema';
+import { TOPIC_NAMESPACE } from './manifest';
+import { safeParseTopicData, type TopicData } from './schema';
 
 export class ZustandTopicStateHelper {
   private state: StateService;
