@@ -1,6 +1,6 @@
 {
-  "name": "my-token",
-  "symbol": "MTK",
+  "name": "token-full-example",
+  "symbol": "TFE",
   "decimals": 8,
   "supplyType": "finite",
   "initialSupply": 1000000,
@@ -13,7 +13,7 @@
   "freezeKey": "<alias or accountId:privateKey>",
   "pauseKey": "<alias or accountId:privateKey>",
   "feeScheduleKey": "<alias or accountId:privateKey>",
-  "memo": "Optional token memo",
+  "memo": "Full example token with all fields",
   "associations": ["<alias or accountId:privateKey>", "..."],
   "customFees": [
     {
