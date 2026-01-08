@@ -39,6 +39,12 @@ const TokenListItemSchema = z.object({
   network: NetworkSchema,
   keys: TokenKeysSchema.optional(),
   alias: z.string().describe('Token alias').optional(),
+  maxSupply: z.int().nonnegative().describe('Maximum supply for finite tokens'),
+  associationCount: z
+    .number()
+    .int()
+    .nonnegative()
+    .describe('Number of associations'),
 });
 
 /**
@@ -74,27 +80,35 @@ const TokenStatisticsSchema = z.object({
  */
 export const ListTokensOutputSchema = z.object({
   tokens: z.array(TokenListItemSchema),
-  count: z.number().int().nonnegative().describe('Number of tokens returned'),
-  network: NetworkSchema.optional(),
+  totalCount: z.number().int().nonnegative().describe('Total number of tokens'),
   stats: TokenStatisticsSchema.optional(),
 });
 
 export type ListTokensOutput = z.infer<typeof ListTokensOutputSchema>;
+export type TokenListItem = z.infer<typeof TokenListItemSchema>;
 
 /**
  * Human-readable template for list tokens output
  */
 export const LIST_TOKENS_TEMPLATE = `
-{{#if tokens.length}}
-📄 Found {{count}} token(s){{#if network}} on {{network}}{{/if}}:
+{{#if (eq totalCount 0)}}
+📝 No tokens found
+{{else}}
+📝 Found {{totalCount}} token(s):
 
 {{#each tokens}}
-{{add1 @index}}. {{symbol}} ({{name}})
+{{add1 @index}}. Name: {{name}} ({{symbol}})
    Token ID: {{tokenId}}
    Treasury: {{treasuryId}}
    Supply Type: {{supplyType}}
    Decimals: {{decimals}}
    Network: {{network}}
+{{#if maxSupply}}
+   Max Supply: {{maxSupply}}
+{{/if}}
+{{#if (gt associationCount 0)}}
+   Associations: {{associationCount}}
+{{/if}}
 {{#if alias}}
    Alias: {{alias}}
 {{/if}}
@@ -105,14 +119,5 @@ export const LIST_TOKENS_TEMPLATE = `
 {{/if}}
 
 {{/each}}
-{{#if stats}}
-📊 Statistics:
-   Total: {{stats.total}}
-   With Keys: {{stats.withKeys}}
-   With Associations: {{stats.withAssociations}}
-   Total Associations: {{stats.totalAssociations}}
-{{/if}}
-{{else}}
-📄 No tokens found{{#if network}} on {{network}}{{/if}}.
 {{/if}}
 `.trim();

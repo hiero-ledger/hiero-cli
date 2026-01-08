@@ -151,7 +151,8 @@ export const tokenPluginManifest: PluginManifest = {
           short: 'm',
           type: 'string',
           required: false,
-          description: 'Maximum supply of the token to bet set upon creation',
+          description:
+            'Maximum supply of the token to be set upon creation. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "1000t")',
         },
         {
           name: 'admin-key',
@@ -257,8 +258,7 @@ export const tokenPluginManifest: PluginManifest = {
     {
       name: 'list',
       summary: 'List all tokens',
-      description:
-        'List all tokens stored in state for the current network or a specified network',
+      description: 'List all tokens stored in state for all networks',
       options: [
         {
           name: 'keys',

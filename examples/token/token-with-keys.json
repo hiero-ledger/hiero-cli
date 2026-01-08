@@ -1,0 +1,9 @@
+{
+  "name": "token-keys-example",
+  "symbol": "TRK",
+  "decimals": 10,
+  "supplyType": "infinite",
+  "initialSupply": 1000,
+  "treasuryKey": "<0.0.1002:3030020100300706052b8104000a042204207f109a9e3b0d8ecfba9cc23a3614433ce0fa7ddcc80f2a8f10b222179a5a80d6>",
+  "adminKey": "<0.0.1002:3030020100300706052b8104000a042204207f109a9e3b0d8ecfba9cc23a3614433ce0fa7ddcc80f2a8f10b222179a5a80d6>"
+}

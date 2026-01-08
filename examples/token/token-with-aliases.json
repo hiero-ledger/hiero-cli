@@ -4,6 +4,6 @@
   "decimals": 10,
   "supplyType": "infinite",
   "initialSupply": 1000,
-  "treasuryKey": "<alias or accountId:privateKey>",
-  "adminKey": "<alias or accountId:privateKey>"
+  "treasuryKey": "treasuryAccount",
+  "adminKey": "<adminAccount>"
 }
