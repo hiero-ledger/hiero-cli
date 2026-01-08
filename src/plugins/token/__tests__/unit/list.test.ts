@@ -25,6 +25,9 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
 
+const NETWORK_TESTNET = 'testnet';
+const NETWORK_MAINNET = 'mainnet';
+
 describe('token plugin - list command', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -158,10 +161,10 @@ describe('token plugin - list command', () => {
     expect(output.totalCount).toBe(2);
 
     const testnetToken = output.tokens.find(
-      (t: TokenListItem) => t.network === 'testnet',
+      (t: TokenListItem) => t.network === NETWORK_TESTNET,
     );
     const mainnetToken = output.tokens.find(
-      (t: TokenListItem) => t.network === 'mainnet',
+      (t: TokenListItem) => t.network === NETWORK_MAINNET,
     );
 
     expect(testnetToken).toBeDefined();
