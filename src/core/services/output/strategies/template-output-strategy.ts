@@ -2,6 +2,8 @@
  * Template Output Strategy
  * Formats output data using Handlebars templates with the strategy pattern
  */
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { HashscanEntityType } from '@/core/utils/hashscan-link';
 import type {
   FormatStrategyOptions,
   OutputFormatterStrategy,
@@ -9,6 +11,7 @@ import type {
 
 import * as Handlebars from 'handlebars';
 
+import { createHashscanLink } from '@/core/utils/hashscan-link';
 import { isStringifiable } from '@/core/utils/is-stringifiable';
 
 export class TemplateOutputStrategy implements OutputFormatterStrategy {
@@ -87,6 +90,35 @@ export class TemplateOutputStrategy implements OutputFormatterStrategy {
           return opts.fn(this);
         }
         return opts.inverse(this);
+      },
+    );
+
+    // Helper for creating Hashscan links
+    Handlebars.registerHelper(
+      'hashscanLink',
+      function (
+        entityId: unknown,
+        entityType: unknown,
+        network: unknown,
+        displayText?: unknown,
+      ): string {
+        if (
+          typeof entityId !== 'string' ||
+          typeof entityType !== 'string' ||
+          typeof network !== 'string'
+        ) {
+          return typeof entityId === 'string' ? entityId : '';
+        }
+
+        const text =
+          typeof displayText === 'string' ? displayText : String(entityId);
+
+        return createHashscanLink(
+          network as SupportedNetwork,
+          entityType as HashscanEntityType,
+          entityId,
+          text,
+        );
       },
     );
   }

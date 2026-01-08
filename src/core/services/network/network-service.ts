@@ -18,6 +18,8 @@ import {
   DEFAULT_NETWORKS,
 } from './network.config';
 
+export const HASHSCAN_BASE_URL = 'https://hashscan.io/';
+
 const NAMESPACE = 'network-config';
 const CURRENT_NETWORK_KEY = 'current';
 
@@ -70,7 +72,7 @@ export class NetworkServiceImpl implements NetworkService {
       rpcUrl: config.rpcUrl,
       mirrorNodeUrl: config.mirrorNodeUrl,
       chainId: network === 'mainnet' ? '0x127' : '0x128',
-      explorerUrl: `https://hashscan.io/${network}`,
+      explorerUrl: `${HASHSCAN_BASE_URL}${network}`,
       isTestnet: network !== 'mainnet',
     };
   }
