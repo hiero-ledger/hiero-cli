@@ -157,18 +157,16 @@ The token file supports aliases and raw keys with optional key type prefixes:
   "supplyType": "finite",
   "initialSupply": 1000000,
   "maxSupply": 10000000,
-  "treasury": "<alias or accountId:keyType:privateKey>",
+  "treasuryKey": "<alias or accountId:privateKey>",
+  "adminKey": "<alias or accountId:privateKey>",
+  "supplyKey": "<alias or accountId:privateKey>",
+  "wipeKey": "<alias or accountId:privateKey>",
+  "kycKey": "<alias or accountId:privateKey>",
+  "freezeKey": "<alias or accountId:privateKey>",
+  "pauseKey": "<alias or accountId:privateKey>",
+  "feeScheduleKey": "<alias or accountId:privateKey>",
   "memo": "Optional token memo",
-  "keys": {
-    "adminKey": "<alias or keyType:privateKey>",
-    "supplyKey": "<alias or keyType:privateKey>"
-  },
-  "associations": [
-    {
-      "accountId": "<accountId>",
-      "key": "<keyType:privateKey>"
-    }
-  ],
+  "associations": ["<alias or accountId:privateKey>", "..."],
   "customFees": [
     {
       "type": "fixed",
@@ -184,8 +182,7 @@ The token file supports aliases and raw keys with optional key type prefixes:
 **Supported formats for treasury and keys:**
 
 - **Alias**: `"my-account"` - resolved via alias service
-- **Account with key**: `"0.0.123456:ecdsa:privateKey"` or `"0.0.123456:ed25519:privateKey"`
-- **Key only** (for `keys` section): `"ecdsa:privateKey"` or `"ed25519:privateKey"`
+- **Account with key**: `"0.0.123456:privateKey"`
 
 **Note**: Token name is automatically registered as an alias after successful creation. Duplicate names are not allowed.
 
@@ -197,9 +194,6 @@ The plugin supports flexible parameter formats:
 - **Treasury**: Account alias (name) or `treasury-id:treasury-key` pair (e.g., `0.0.123456:302e0201...`)
 - **Account ID only**: `0.0.123456` (for destination accounts)
 - **Account ID with key**: `0.0.123456:private-key` (for source accounts that need signing)
-- **Account ID with key type**: `0.0.123456:keyType:private-key` (e.g., `0.0.123456:ed25519:...` or `0.0.123456:ecdsa:...`)
-  - Key type can be `ecdsa` or `ed25519`
-  - If key type is not specified, defaults to `ecdsa`
 - **Account name**: `alice` (resolved via alias service)
 - **Amount**: Display units (default) or base units with `t` suffix (e.g., `100t`)
 
