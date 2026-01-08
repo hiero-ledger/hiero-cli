@@ -24,7 +24,8 @@ import {
   submitMessage,
   SubmitMessageOutputSchema,
 } from './commands/submit-message';
-import { TOPIC_JSON_SCHEMA, TOPIC_NAMESPACE } from './schema';
+
+export const TOPIC_NAMESPACE = 'topic-topics';
 
 export const topicPluginManifest: PluginManifest = {
   name: 'topic',
@@ -37,12 +38,6 @@ export const topicPluginManifest: PluginManifest = {
     core: '^1.0.0',
     api: '^1.0.0',
   },
-  capabilities: [
-    `state:namespace:${TOPIC_NAMESPACE}`,
-    'network:read',
-    'network:write',
-    'tx-execution:use',
-  ],
   commands: [
     {
       name: 'create',
@@ -210,14 +205,6 @@ export const topicPluginManifest: PluginManifest = {
         schema: FindMessagesOutputSchema,
         humanTemplate: FIND_MESSAGES_TEMPLATE,
       },
-    },
-  ],
-  stateSchemas: [
-    {
-      namespace: TOPIC_NAMESPACE,
-      version: 1,
-      jsonSchema: TOPIC_JSON_SCHEMA,
-      scope: 'profile',
     },
   ],
 };

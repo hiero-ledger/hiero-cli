@@ -20,9 +20,6 @@ export const MemoDataSchema = z.object({
 // TypeScript type inferred from Zod schema
 export type MemoData = z.infer<typeof MemoDataSchema>;
 
-// Namespace constant
-export const MEMO_NAMESPACE = 'memo-memos';
-
 // JSON Schema for manifest (automatically generated from Zod schema)
 export const MEMO_JSON_SCHEMA = zodToJsonSchema(MemoDataSchema);
 

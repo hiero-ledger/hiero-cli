@@ -56,7 +56,6 @@ jest.mock(
       displayName: 'Topic Plugin',
       description: 'Manage Hedera topics',
       commands: [{ name: 'list' }, { name: 'create' }],
-      capabilities: ['topic:list', 'topic:create'],
     },
   }),
   { virtual: true },
@@ -99,7 +98,6 @@ describe('plugin-management info command', () => {
     expect(output.plugin.enabled).toBe(true);
     expect(output.plugin.description).toContain('Manage Hedera topics');
     expect(output.plugin.commands).toEqual(['list', 'create']);
-    expect(output.plugin.capabilities).toEqual(['topic:list', 'topic:create']);
   });
 
   it('should use fallback values when optional metadata missing', async () => {
@@ -127,7 +125,6 @@ describe('plugin-management info command', () => {
     expect(output.plugin.displayName).toBe('custom-plugin');
     expect(output.plugin.description).toContain('No description available');
     expect(output.plugin.commands).toEqual([]);
-    expect(output.plugin.capabilities).toEqual([]);
   });
 
   it('should return failure when plugin does not exist', async () => {
