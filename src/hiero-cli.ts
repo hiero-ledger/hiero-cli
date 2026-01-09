@@ -38,8 +38,11 @@ async function initializeCLI() {
 
     coreApi.output.setFormat(format);
 
-    // Validate network override if provided
-    validateNetwork(opts.network || opts.N);
+    const networkOverride = validateNetwork(opts.network || opts.N);
+
+    if (networkOverride) {
+      coreApi.network.setNetwork(networkOverride);
+    }
 
     // Setup global error handlers with validated format
     setGlobalOutputFormat(format);
