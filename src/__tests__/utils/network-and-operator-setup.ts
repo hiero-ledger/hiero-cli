@@ -53,7 +53,7 @@ export const setDefaultOperatorForNetwork = async (
   });
 
   const useNetworkArgs: Record<string, unknown> = {
-    network: env.NETWORK,
+    global: env.NETWORK,
   };
   await useHandler({
     args: useNetworkArgs,

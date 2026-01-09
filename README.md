@@ -134,6 +134,8 @@ node dist/hiero-cli.js network set-operator --operator 0.0.123456:302e0201003005
 node dist/hiero-cli.js network set-operator --operator 0.0.123456:302e020100300506032b657004220420... --network mainnet
 ```
 
+> **💡 Note**: The `--network` flag used above is a global flag available for all CLI commands. It allows you to execute commands on a specific network without changing the CLI's default network.
+
 The operator credentials are stored in the CLI's state management system. Make sure that each operator account **contains at least 1 Hbar** for transaction fees.
 
 > **💡 Note on Initialization**: When running the CLI interactively, if an operator is not configured and you attempt to run a command that requires it, the CLI will automatically launch an **interactive setup wizard** that guides you through configuring the operator, private key, and related settings. In script mode (non-interactive), if the operator is not configured, an error will be thrown instead.
@@ -144,14 +146,23 @@ The CLI uses `testnet` as the default network. You can switch to other networks 
 
 ```sh
 # Switch to mainnet
-node dist/hiero-cli.js network use --network mainnet
+node dist/hiero-cli.js network use --global mainnet
 
 # Switch to previewnet
-node dist/hiero-cli.js network use --network previewnet
+node dist/hiero-cli.js network use --global previewnet
 
 # Switch to localnet
-node dist/hiero-cli.js network use --network localnet
+node dist/hiero-cli.js network use --global localnet
 ```
+
+You can also use the short form `-g`:
+
+```sh
+# Switch to mainnet using short form
+node dist/hiero-cli.js network use -g mainnet
+```
+
+> **💡 Global Network Flag**: You can execute any command on a different network without changing the CLI's default network by using the global `--network` or `-N` flag. For example: `hcli account list --network previewnet` will list accounts on previewnet without switching the default network.
 
 ### 7. Optional: Setting Up an Alias
 
@@ -230,7 +241,7 @@ hcli network set-operator --operator 0.0.2:302e020100300506032b65700123456789132
 Then switch to the localnet:
 
 ```sh
-hcli network use --network localnet
+hcli network use --global localnet
 ```
 
 ## Plugins

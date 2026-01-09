@@ -4,6 +4,7 @@
  */
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { DEFAULT_NETWORK } from '@/core/services/network/network.config';
@@ -45,18 +46,20 @@ describe('NetworkServiceImpl', () => {
   describe('getCurrentNetwork', () => {
     it('should return default network when no network is set', () => {
       stateMock.get.mockReturnValue(undefined);
+      networkService = new NetworkServiceImpl(stateMock, loggerMock);
 
       const network = networkService.getCurrentNetwork();
 
       expect(stateMock.get).toHaveBeenCalledWith(NAMESPACE, CURRENT_KEY);
       expect(loggerMock.debug).toHaveBeenCalledWith(
-        '[NETWORK] Getting current network: undefined',
+        `[NETWORK] Getting current network: ${DEFAULT_NETWORK}`,
       );
       expect(network).toBe(DEFAULT_NETWORK);
     });
 
     it('should return stored network when set', () => {
       stateMock.get.mockReturnValue(NETWORK_MAINNET);
+      networkService = new NetworkServiceImpl(stateMock, loggerMock);
 
       const network = networkService.getCurrentNetwork();
 
@@ -97,14 +100,14 @@ describe('NetworkServiceImpl', () => {
         NETWORK_MAINNET,
       );
       expect(loggerMock.debug).toHaveBeenCalledWith(
-        `[NETWORK] Switching network from ${NETWORK_TESTNET} to ${NETWORK_MAINNET}`,
+        `[NETWORK] Setting network from ${NETWORK_TESTNET} to ${NETWORK_MAINNET}`,
       );
     });
 
     it('should throw error for unavailable network', () => {
-      expect(() => networkService.switchNetwork(NETWORK_INVALID)).toThrow(
-        ERROR_NETWORK_NOT_AVAILABLE,
-      );
+      expect(() =>
+        networkService.switchNetwork(NETWORK_INVALID as SupportedNetwork),
+      ).toThrow(ERROR_NETWORK_NOT_AVAILABLE);
       expect(stateMock.set).not.toHaveBeenCalled();
     });
   });
