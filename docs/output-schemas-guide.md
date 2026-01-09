@@ -554,7 +554,7 @@ Transaction ID:
 **Usage:** `{{hashscanLink entityId entityType network [displayText]}}`
 
 - `entityId` - Entity ID (e.g., `"0.0.12345"`)
-- `entityType` - Type: `"token"`, `"account"`, or `"transaction"`
+- `entityType` - Type: `"token"`, `"account"`, `"transaction"`, or `"topic"`
 - `network` - Network name (e.g., `"testnet"`, `"mainnet"`)
 - `displayText` (optional) - Custom text to display (defaults to `entityId`)
 
