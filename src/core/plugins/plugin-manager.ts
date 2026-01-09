@@ -362,7 +362,7 @@ export class PluginManager {
     args: unknown[],
   ): Promise<void> {
     const command = args[args.length - 1] as Command;
-    const options = command.optsWithGlobals();
+    const options = command.opts();
     const commandArgs = command.args;
     const pluginName = command.parent?.name() || command.name();
 
