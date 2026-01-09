@@ -3,6 +3,7 @@
  * Utility functions for building token data objects for state storage
  */
 import type { TransactionResult } from '@/core';
+import type { TokenTypeEnum } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TokenData, TokenFileDefinition } from '@/plugins/token/schema';
 
@@ -14,9 +15,10 @@ export function buildTokenData(
     treasuryId: string;
     decimals: number;
     initialSupply: bigint;
+    tokenType: TokenTypeEnum;
     supplyType: string;
     adminPublicKey: string;
-    treasuryPublicKey?: string;
+    supplyPublicKey?: string;
     network: SupportedNetwork;
   },
 ): TokenData {
@@ -27,10 +29,12 @@ export function buildTokenData(
     treasuryId: params.treasuryId,
     decimals: params.decimals,
     initialSupply: params.initialSupply,
+    tokenType: params.tokenType,
     supplyType: params.supplyType.toUpperCase() as 'FINITE' | 'INFINITE',
     maxSupply:
       params.supplyType.toUpperCase() === 'FINITE' ? params.initialSupply : 0n,
     adminPublicKey: params.adminPublicKey,
+    supplyPublicKey: params?.supplyPublicKey,
     network: params.network,
     associations: [],
     customFees: [],
@@ -68,6 +72,7 @@ export function buildTokenDataFromFile(
     feeSchedulePublicKey: keys?.feeSchedulePublicKey,
     decimals: tokenDefinition.decimals,
     initialSupply: tokenDefinition.initialSupply,
+    tokenType: tokenDefinition.tokenType,
     supplyType: tokenDefinition.supplyType.toUpperCase() as
       | 'FINITE'
       | 'INFINITE',

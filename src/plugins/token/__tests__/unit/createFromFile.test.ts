@@ -9,7 +9,7 @@ import '@/core/utils/json-serialize';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-import { Status } from '@/core/shared/constants';
+import { Status, TokenTypeEnum } from '@/core/shared/constants';
 import {
   createTokenFromFile,
   type CreateTokenFromFileOutput,
@@ -376,6 +376,7 @@ describe('createTokenFromFileHandler', () => {
           },
         ],
         memo: 'Test token created from file',
+        tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
       });
     });
 

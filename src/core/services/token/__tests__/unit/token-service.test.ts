@@ -4,11 +4,12 @@
  */
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 
-import { AccountId, Hbar, TokenId } from '@hashgraph/sdk';
+import { AccountId, Hbar, TokenId, TokenType } from '@hashgraph/sdk';
 
 import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { TokenServiceImpl } from '@/core/services/token/token-service';
+import { TokenTypeEnum } from '@/core/shared/constants';
 
 import {
   createMockCustomFixedFee,
@@ -29,6 +30,7 @@ const TOKEN_SYMBOL = 'TST';
 const TOKEN_DECIMALS = 2;
 const INITIAL_SUPPLY = 1000n;
 const MAX_SUPPLY = 10000n;
+const TOKEN_TYPE = TokenTypeEnum.FUNGIBLE_COMMON;
 
 const TRANSFER_AMOUNT = 100n;
 
@@ -71,6 +73,10 @@ jest.mock('@hashgraph/sdk', () => ({
   TokenSupplyType: {
     Finite: 'FINITE',
     Infinite: 'INFINITE',
+  },
+  TokenType: {
+    NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
+    FungibleCommon: 'FUNGIBLE_COMMON',
   },
   Hbar: {
     fromTinybars: jest.fn(() => mockHbarInstance),
@@ -228,6 +234,7 @@ describe('TokenServiceImpl', () => {
       treasuryId: TREASURY_ACCOUNT_ID,
       decimals: TOKEN_DECIMALS,
       initialSupplyRaw: INITIAL_SUPPLY,
+      tokenType: TOKEN_TYPE,
       supplyType: 'INFINITE' as const,
       adminPublicKey: mockPublicKeyInstance as any,
     };
@@ -249,6 +256,9 @@ describe('TokenServiceImpl', () => {
       );
       expect(mockTokenCreateTransaction.setSupplyType).toHaveBeenCalledWith(
         'INFINITE',
+      );
+      expect(mockTokenCreateTransaction.setTokenType).toHaveBeenCalledWith(
+        TokenType.FungibleCommon,
       );
       expect(
         mockTokenCreateTransaction.setTreasuryAccountId,
