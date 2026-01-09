@@ -100,7 +100,7 @@ describe('NetworkServiceImpl', () => {
         NETWORK_MAINNET,
       );
       expect(loggerMock.debug).toHaveBeenCalledWith(
-        `[NETWORK] Switching network from ${NETWORK_TESTNET} to ${NETWORK_MAINNET}`,
+        `[NETWORK] Setting network from ${NETWORK_TESTNET} to ${NETWORK_MAINNET}`,
       );
     });
 

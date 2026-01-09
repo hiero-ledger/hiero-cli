@@ -61,11 +61,7 @@ export class NetworkServiceImpl implements NetworkService {
     if (!this.isNetworkAvailable(network)) {
       throw new Error(`Network not available: ${network}`);
     }
-    const currentNetwork = this.getCurrentNetwork();
-    this.logger.debug(
-      `[NETWORK] Switching network from ${currentNetwork} to ${network}`,
-    );
-    this.network = network;
+    this.setNetwork(network);
     this.state.set<string>(NAMESPACE, CURRENT_NETWORK_KEY, network);
   }
 
