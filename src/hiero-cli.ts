@@ -18,6 +18,7 @@ import {
 } from './core/utils/error-handler';
 
 program
+  .name('hcli')
   .version(pkg.version || '0.0.0')
   .description('A CLI tool for managing Hedera environments')
   .option('--format <type>', 'Output format: human (default) or json');
