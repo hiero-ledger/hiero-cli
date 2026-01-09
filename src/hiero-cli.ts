@@ -9,6 +9,7 @@ import pkg from '../package.json';
 import { createCoreApi } from './core';
 import { PluginManager } from './core/plugins/plugin-manager';
 import { DEFAULT_PLUGIN_STATE } from './core/shared/config/cli-options';
+import { validateNetwork } from './core/shared/validation/validate-network.zod';
 import { validateOutputFormat } from './core/shared/validation/validate-output-format.zod';
 import { addDisabledPluginsHelp } from './core/utils/add-disabled-plugins-help';
 import {
@@ -36,6 +37,9 @@ async function initializeCLI() {
     const format = validateOutputFormat(opts.format);
 
     coreApi.output.setFormat(format);
+
+    // Validate network override if provided
+    validateNetwork(opts.network || opts.N);
 
     // Setup global error handlers with validated format
     setGlobalOutputFormat(format);
