@@ -118,6 +118,26 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       );
     });
 
+    it('should automatically use new network URL after network switch', async () => {
+      const { service, networkService } = setupService('testnet');
+      const mockResponse = createMockAccountAPIResponse();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      await service.getAccount(TEST_ACCOUNT_ID);
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_URL}/accounts/${TEST_ACCOUNT_ID}`,
+      );
+
+      networkService.getCurrentNetwork = jest.fn().mockReturnValue('mainnet');
+      await service.getAccount(TEST_ACCOUNT_ID);
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${MAINNET_URL}/accounts/${TEST_ACCOUNT_ID}`,
+      );
+    });
+
     it('should throw error when response has no key field', async () => {
       const { service } = setupService();
       const mockResponse = createMockAccountAPIResponse({ key: undefined });

@@ -178,7 +178,6 @@ export const makeSigningMock = (
 
 export const createMirrorNodeMock =
   (): jest.Mocked<HederaMirrornodeService> => ({
-    setBaseUrl: jest.fn(),
     getAccount: jest.fn(),
     getAccountHBarBalance: jest.fn(),
     getAccountTokenBalances: jest.fn(),

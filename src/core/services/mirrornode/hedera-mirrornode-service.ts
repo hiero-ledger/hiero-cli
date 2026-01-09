@@ -3,7 +3,6 @@
  * Makes actual HTTP calls to Hedera Mirror Node API
  */
 import type { NetworkService } from '@/core/services/network/network-service.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { HederaMirrornodeService } from './hedera-mirrornode-service.interface';
 import type {
   AccountAPIResponse,
@@ -41,10 +40,6 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       throw new Error(`Network type ${network} not supported`);
     }
     return NetworkToBaseUrl.get(network)!;
-  }
-
-  setBaseUrl(network: SupportedNetwork): void {
-    this.networkService.setNetwork(network);
   }
 
   async getAccount(accountId: string): Promise<AccountResponse> {
