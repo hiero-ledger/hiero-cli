@@ -286,7 +286,7 @@ interface CommandOutputSpec {
 
 ### Token Plugin
 
-#### `token create`
+#### `token create-ft`
 
 **Output**:
 
@@ -304,7 +304,7 @@ interface CommandOutputSpec {
 }
 ```
 
-#### `token transfer`
+#### `token transfer-ft`
 
 **Output**:
 
@@ -318,7 +318,7 @@ interface CommandOutputSpec {
 }
 ```
 
-#### `token associate`
+#### `token associate-ft`
 
 **Output**:
 

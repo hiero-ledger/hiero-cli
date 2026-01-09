@@ -59,13 +59,13 @@ All commands return `CommandExecutionResult` with structured output that include
 
 Each command defines a Zod schema for output validation and a Handlebars template for human-readable formatting.
 
-### Token Create
+### Token Create (Fungible Token)
 
 Create a new fungible token with specified properties.
 
 ```bash
 # Using account alias
-hcli token create \
+hcli token create-ft \
   --token-name "My Token" \
   --symbol "MTK" \
   --treasury alice \
@@ -77,7 +77,7 @@ hcli token create \
   --name mytoken-alias
 
 # Using treasury-id:treasury-key pair
-hcli token create \
+hcli token create-ft \
   --token-name "My Token" \
   --symbol "MTK" \
   --treasury 0.0.123456:302e020100300506032b657004220420... \
@@ -87,36 +87,36 @@ hcli token create \
   --name mytoken-alias
 ```
 
-### Token Associate
+### Token Associate (Fungible Token)
 
-Associate a token with an account to enable transfers.
+Associate a fungible token with an account to enable transfers.
 
 ```bash
 # Using account alias
-hcli token associate \
+hcli token associate-ft \
   --token mytoken-alias \
   --account alice
 
 # Using account-id:account-key pair
-hcli token associate \
+hcli token associate-ft \
   --token 0.0.123456 \
   --account 0.0.789012:302e020100300506032b657004220420...
 ```
 
-### Token Transfer
+### Token Transfer (Fungible Token)
 
 Transfer a fungible token from one account to another.
 
 ```bash
 # Using account name for source
-hcli token transfer \
+hcli token transfer-ft \
   --token mytoken-alias \
   --from alice \
   --to bob \
   --amount 100
 
 # Using account-id:private-key pair for source
-hcli token transfer \
+hcli token transfer-ft \
   --token 0.0.123456 \
   --from 0.0.111111:302e020100300506032b657004220420... \
   --to 0.0.222222 \
@@ -125,23 +125,23 @@ hcli token transfer \
 
 ### Token List
 
-List all tokens stored in state for all networks.
+List all tokens (FT and NFT) stored in state for all networks.
 
 ```bash
 hcli token list
 hcli token list --keys  # Show token key information
 ```
 
-### Token Create From File
+### Token Create From File (Fungible Token)
 
-Create a new token from a JSON file definition with advanced features.
+Create a new fungible token from a JSON file definition with advanced features.
 
 ```bash
 # Basic usage
-hcli token create-from-file --file token-definition.json
+hcli token create-ft-from-file --file token-definition.json
 
 # With specific key manager
-hcli token create-from-file --file token-definition.json --key-manager local_encrypted
+hcli token create-ft-from-file --file token-definition.json --key-manager local_encrypted
 ```
 
 **Token File Format:**
