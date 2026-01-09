@@ -26,8 +26,15 @@ export class ZustandTokenStateHelper {
     try {
       this.logger.debug(`[TOKEN STATE] Saving token ${tokenId} to state`);
 
-      // Use the state service to save data in the token namespace
-      this.state.set(TOKEN_NAMESPACE, tokenId, tokenData);
+      const ftTokens =
+        this.state.get<Record<string, TokenData>>(TOKEN_NAMESPACE, 'ft') || {};
+
+      const updatedFtTokens = {
+        ...ftTokens,
+        [tokenId]: tokenData,
+      };
+
+      this.state.set(TOKEN_NAMESPACE, 'ft', updatedFtTokens);
 
       this.logger.debug(`[TOKEN STATE] Successfully saved token ${tokenId}`);
     } catch (error) {
@@ -45,7 +52,9 @@ export class ZustandTokenStateHelper {
     try {
       this.logger.debug(`[TOKEN STATE] Getting token ${tokenId} from state`);
 
-      const tokenData = this.state.get<TokenData>(TOKEN_NAMESPACE, tokenId);
+      const ftTokens =
+        this.state.get<Record<string, TokenData>>(TOKEN_NAMESPACE, 'ft') || {};
+      const tokenData = ftTokens[tokenId];
 
       if (tokenData) {
         this.logger.debug(`[TOKEN STATE] Found token ${tokenId} in state`);
@@ -69,20 +78,13 @@ export class ZustandTokenStateHelper {
     try {
       this.logger.debug(`[TOKEN STATE] Getting all tokens from state`);
 
-      const allTokens = this.state.list<TokenData>(TOKEN_NAMESPACE);
-      const tokensMap: Record<string, TokenData> = {};
-
-      // Convert array to record using token IDs as keys
-      allTokens.forEach((token) => {
-        if (token && token.tokenId) {
-          tokensMap[token.tokenId] = token;
-        }
-      });
+      const ftTokens =
+        this.state.get<Record<string, TokenData>>(TOKEN_NAMESPACE, 'ft') || {};
 
       this.logger.debug(
-        `[TOKEN STATE] Found ${Object.keys(tokensMap).length} tokens in state`,
+        `[TOKEN STATE] Found ${Object.keys(ftTokens).length} tokens in state`,
       );
-      return tokensMap;
+      return ftTokens;
     } catch (error) {
       this.logger.error(
         `[TOKEN STATE] Failed to get all tokens: ${toErrorMessage(error)}`,
@@ -98,7 +100,13 @@ export class ZustandTokenStateHelper {
     try {
       this.logger.debug(`[TOKEN STATE] Removing token ${tokenId} from state`);
 
-      this.state.delete(TOKEN_NAMESPACE, tokenId);
+      const ftTokens =
+        this.state.get<Record<string, TokenData>>(TOKEN_NAMESPACE, 'ft') || {};
+
+      const remainingTokens = { ...ftTokens };
+      delete remainingTokens[tokenId];
+
+      this.state.set(TOKEN_NAMESPACE, 'ft', remainingTokens);
 
       this.logger.debug(`[TOKEN STATE] Successfully removed token ${tokenId}`);
     } catch (error) {
@@ -186,7 +194,10 @@ export class ZustandTokenStateHelper {
     try {
       this.logger.debug(`[TOKEN STATE] Listing all tokens`);
 
-      const allTokens = this.state.list<TokenData>(TOKEN_NAMESPACE);
+      const ftTokens =
+        this.state.get<Record<string, TokenData>>(TOKEN_NAMESPACE, 'ft') || {};
+      const allTokens = Object.values(ftTokens);
+
       this.logger.debug(
         `[TOKEN STATE] Retrieved ${allTokens.length} tokens from state`,
       );

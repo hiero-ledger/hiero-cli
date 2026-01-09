@@ -45,7 +45,7 @@ export const tokenPluginManifest: PluginManifest = {
   },
   commands: [
     {
-      name: 'transfer',
+      name: 'transfer-ft',
       summary: 'Transfer a fungible token',
       description: 'Transfer a fungible token from one account to another',
       options: [
@@ -95,7 +95,7 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
-      name: 'create',
+      name: 'create-ft',
       summary: 'Create a new fungible token',
       description: 'Create a new fungible token with specified properties',
       options: [
@@ -192,9 +192,10 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
-      name: 'associate',
-      summary: 'Associate a token with an account',
-      description: 'Associate a token with an account to enable transfers',
+      name: 'associate-ft',
+      summary: 'Associate a fungible token with an account',
+      description:
+        'Associate a fungible token with an account to enable transfers',
       options: [
         {
           name: 'token',
@@ -227,10 +228,10 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
-      name: 'create-from-file',
-      summary: 'Create a new token from a file',
+      name: 'create-ft-from-file',
+      summary: 'Create a new fungible token from a file',
       description:
-        'Create a new token from a JSON file definition with advanced features',
+        'Create a new fungible token from a JSON file definition with advanced features',
       options: [
         {
           name: 'file',
@@ -258,7 +259,8 @@ export const tokenPluginManifest: PluginManifest = {
     {
       name: 'list',
       summary: 'List all tokens',
-      description: 'List all tokens stored in state for all networks',
+      description:
+        'List all tokens (FT and NFT) stored in state for all networks',
       options: [
         {
           name: 'keys',

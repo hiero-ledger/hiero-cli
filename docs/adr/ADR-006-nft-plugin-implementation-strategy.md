@@ -18,23 +18,25 @@ Goals:
 
 - New commands for NFT operations will be added to the existing token plugin with proper naming with `nft` prefix
 - Old commands for fungible commands will be added prefix `ft` that would mean token handles fungible operations
-- Operations that can be handled same way for non-fungible as for fungible tokens should stay unchanged for example `token associate` command
+- Operations that can be handled same way for non-fungible as for fungible tokens will have separate commands with appropriate suffixes (e.g., `token associate-ft` and `token associate-nft`)
 - The same storage will be used to store non-fungible token operation, the data model will vary from the original fungible token data model
 - We will not support passing multiple metadata into one transaction execution - user can only provide one metadata link that will be added to for example mint transaction in each call
 
 ## Implementation Strategy
 
 1. `token` plugin - commands summary:
-   - `token ft-create` - renamed `token create` command for better clarity and user experience
-   - `token nft-create` - new command for NFT creation, should prepare valid call with `@hashgraph/sdk` to create new NFT token
-   - `token ft-mint` - new command for minting fungible tokens
-   - `token nft-mint` - new command for minting non-fungible tokens
-   - `token ft-transfer` - renamed `token transfer` command for better clarity and user experience
-   - `token nft-transfer` - new command for transferring NFT serial between accounts
-   - `token associate` - implemented and will remain unchanged
-   - `token list` - unchanged command that will retrieve all tokens information stored in our state
+   - `token create-ft` - renamed `token create` command for better clarity and user experience
+   - `token create-nft` - new command for NFT creation, should prepare valid call with `@hashgraph/sdk` to create new NFT token
+   - `token mint-ft` - new command for minting fungible tokens
+   - `token mint-nft` - new command for minting non-fungible tokens
+   - `token transfer-ft` - renamed `token transfer` command for better clarity and user experience
+   - `token transfer-nft` - new command for transferring NFT serial between accounts
+   - `token associate-ft` - renamed `token associate` command for better clarity and user experience
+   - `token associate-nft` - new command for associating NFT tokens with accounts
+   - `token list` - unchanged command that will retrieve all tokens information stored in our state (both FT and NFT)
+   - `token create-ft-from-file` - renamed `token create-from-file` command for better clarity and user experience
    - `token view` - unchanged command for retrieving token information from Hedera Mirror Node REST API
-   - `token nft-view` - new command that retrieves specific token's information for non-fungible token with all serials present. Can filter out by specific serial number
+   - `token view-nft` - new command that retrieves specific token's information for non-fungible token with all serials present. Can filter out by specific serial number
 
 2. Token storage data model
 

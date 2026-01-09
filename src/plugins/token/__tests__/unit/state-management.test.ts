@@ -50,15 +50,15 @@ describe('Token State Management', () => {
 
   describe('saveToken', () => {
     test('should save token successfully', () => {
+      mockStateService.get.mockReturnValue({});
       mockStateService.set.mockReturnValue(undefined);
 
       stateHelper.saveToken('0.0.123456', mockStateTokenData.basic);
 
-      expect(mockStateService.set).toHaveBeenCalledWith(
-        'token-tokens',
-        '0.0.123456',
-        mockStateTokenData.basic,
-      );
+      expect(mockStateService.get).toHaveBeenCalledWith('token-tokens', 'ft');
+      expect(mockStateService.set).toHaveBeenCalledWith('token-tokens', 'ft', {
+        '0.0.123456': mockStateTokenData.basic,
+      });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         '[TOKEN STATE] Saving token 0.0.123456 to state',
       );
@@ -69,6 +69,7 @@ describe('Token State Management', () => {
 
     test('should handle save error', () => {
       const error = new Error('Save failed');
+      mockStateService.get.mockReturnValue({});
       mockStateService.set.mockImplementation(() => {
         throw error;
       });
@@ -84,15 +85,14 @@ describe('Token State Management', () => {
 
   describe('getToken', () => {
     test('should get token successfully', () => {
-      mockStateService.get.mockReturnValue(mockStateTokenData.basic);
+      mockStateService.get.mockReturnValue({
+        '0.0.123456': mockStateTokenData.basic,
+      });
 
       const result = stateHelper.getToken('0.0.123456');
 
       expect(result).toEqual(mockStateTokenData.basic);
-      expect(mockStateService.get).toHaveBeenCalledWith(
-        'token-tokens',
-        '0.0.123456',
-      );
+      expect(mockStateService.get).toHaveBeenCalledWith('token-tokens', 'ft');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         '[TOKEN STATE] Getting token 0.0.123456 from state',
       );
@@ -102,7 +102,7 @@ describe('Token State Management', () => {
     });
 
     test('should return null when token not found', () => {
-      mockStateService.get.mockReturnValue(null);
+      mockStateService.get.mockReturnValue({});
 
       const result = stateHelper.getToken('0.0.123456');
 
@@ -127,16 +127,12 @@ describe('Token State Management', () => {
 
   describe('getAllTokens', () => {
     test('should get all tokens successfully', () => {
-      const tokenArray = [
-        mockMultipleTokens['0.0.123456'],
-        mockMultipleTokens['0.0.789012'],
-      ];
-      mockStateService.list.mockReturnValue(tokenArray);
+      mockStateService.get.mockReturnValue(mockMultipleTokens);
 
       const result = stateHelper.getAllTokens();
 
       expect(result).toEqual(mockMultipleTokens);
-      expect(mockStateService.list).toHaveBeenCalledWith('token-tokens');
+      expect(mockStateService.get).toHaveBeenCalledWith('token-tokens', 'ft');
       expect(mockLogger.debug).toHaveBeenCalledWith(
         '[TOKEN STATE] Getting all tokens from state',
       );
@@ -146,7 +142,7 @@ describe('Token State Management', () => {
     });
 
     test('should return empty object when no tokens', () => {
-      mockStateService.list.mockReturnValue([]);
+      mockStateService.get.mockReturnValue(null);
 
       const result = stateHelper.getAllTokens();
 
@@ -157,28 +153,32 @@ describe('Token State Management', () => {
     });
 
     test('should handle errors', () => {
-      const error = new Error('List failed');
-      mockStateService.list.mockImplementation(() => {
+      const error = new Error('Get failed');
+      mockStateService.get.mockImplementation(() => {
         throw error;
       });
 
-      expect(() => stateHelper.getAllTokens()).toThrow('List failed');
+      expect(() => stateHelper.getAllTokens()).toThrow('Get failed');
       expect(mockLogger.error).toHaveBeenCalledWith(
-        '[TOKEN STATE] Failed to get all tokens: List failed',
+        '[TOKEN STATE] Failed to get all tokens: Get failed',
       );
     });
   });
 
   describe('removeToken', () => {
     test('should remove token successfully', () => {
-      mockStateService.delete.mockReturnValue(undefined);
+      mockStateService.get.mockReturnValue({
+        '0.0.123456': mockStateTokenData.basic,
+        '0.0.789012': mockStateTokenData.token2,
+      });
+      mockStateService.set.mockReturnValue(undefined);
 
       stateHelper.removeToken('0.0.123456');
 
-      expect(mockStateService.delete).toHaveBeenCalledWith(
-        'token-tokens',
-        '0.0.123456',
-      );
+      expect(mockStateService.get).toHaveBeenCalledWith('token-tokens', 'ft');
+      expect(mockStateService.set).toHaveBeenCalledWith('token-tokens', 'ft', {
+        '0.0.789012': mockStateTokenData.token2,
+      });
       expect(mockLogger.debug).toHaveBeenCalledWith(
         '[TOKEN STATE] Removing token 0.0.123456 from state',
       );
@@ -188,16 +188,14 @@ describe('Token State Management', () => {
     });
 
     test('should handle remove error', () => {
-      const error = new Error('Delete failed');
-      mockStateService.delete.mockImplementation(() => {
+      const error = new Error('Get failed');
+      mockStateService.get.mockImplementation(() => {
         throw error;
       });
 
-      expect(() => stateHelper.removeToken('0.0.123456')).toThrow(
-        'Delete failed',
-      );
+      expect(() => stateHelper.removeToken('0.0.123456')).toThrow('Get failed');
       expect(mockLogger.error).toHaveBeenCalledWith(
-        '[TOKEN STATE] Failed to remove token 0.0.123456: Delete failed',
+        '[TOKEN STATE] Failed to remove token 0.0.123456: Get failed',
       );
     });
   });
