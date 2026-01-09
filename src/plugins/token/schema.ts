@@ -5,6 +5,7 @@
 import { z } from 'zod';
 
 import { EntityIdSchema, KeyOrAccountAliasSchema } from '@/core/schemas';
+import { TokenTypeEnum } from '@/core/shared/constants';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Zod schema for token association
@@ -60,6 +61,16 @@ export const TokenDataSchema = z.object({
   initialSupply: z
     .bigint({ message: 'Initial supply must be an integer', coerce: true })
     .min(0n, 'Initial supply must be non-negative'),
+
+  tokenType: z.enum(
+    [TokenTypeEnum.NON_FUNGIBLE_TOKEN, TokenTypeEnum.FUNGIBLE_COMMON],
+    {
+      error: () => ({
+        message:
+          'Token type must be either NonFungibleUnique or FungibleCommon',
+      }),
+    },
+  ),
 
   supplyType: z.enum(['FINITE', 'INFINITE'], {
     error: () => ({
@@ -152,6 +163,10 @@ export const TokenFileSchema = z.object({
   associations: z.array(KeyOrAccountAliasSchema).default([]),
   customFees: z.array(TokenFileFixedFeeSchema).default([]),
   memo: z.string().max(100).optional().default(''),
+  tokenType: z
+    .enum([TokenTypeEnum.NON_FUNGIBLE_TOKEN, TokenTypeEnum.FUNGIBLE_COMMON])
+    .optional()
+    .default(TokenTypeEnum.FUNGIBLE_COMMON),
 });
 
 export type TokenFileDefinition = z.infer<typeof TokenFileSchema>;

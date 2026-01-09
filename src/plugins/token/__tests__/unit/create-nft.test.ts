@@ -4,15 +4,14 @@
  * Updated for ADR-003 compliance
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
 import { Status, TokenTypeEnum } from '@/core/shared/constants';
-import { createToken } from '@/plugins/token/commands/create';
+import { createNft } from '@/plugins/token/commands/create-nft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
-  expectedTokenTransactionParams,
-  makeTokenCreateCommandArgs,
+  expectedNftTransactionParams,
+  makeNftCreateCommandArgs,
   mockAccountIds,
   mockTransactions,
 } from './helpers/fixtures';
@@ -28,7 +27,7 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
 
-describe('createTokenHandler', () => {
+describe('createNftHandler', () => {
   beforeEach(() => {
     MockedHelper.mockClear();
     MockedHelper.mockImplementation(() => ({
@@ -37,7 +36,7 @@ describe('createTokenHandler', () => {
   });
 
   describe('success scenarios', () => {
-    test('should create token with valid parameters', async () => {
+    test('should create NFT with valid parameters', async () => {
       // Arrange
       const mockSaveToken = jest.fn();
       const mockSignResult = makeTransactionResult({
@@ -82,21 +81,29 @@ describe('createTokenHandler', () => {
                 keyRefId: 'admin-key-ref-id',
               };
             }
+            // Mock account alias resolution for supply-key
+            if (type === 'account' && alias === 'test-supply-key') {
+              return {
+                entityId: '0.0.200000',
+                publicKey: '302a300506032b6570032100' + '0'.repeat(64),
+                keyRefId: 'supply-key-ref-id',
+              };
+            }
             return null;
           }),
         },
       });
 
       const logger = makeLogger();
-      const args = makeTokenCreateCommandArgs({ api, logger });
+      const args = makeNftCreateCommandArgs({ api, logger });
 
       // Act
-      const result = await createToken(args);
+      const result = await createNft(args);
 
       // Assert
       // Note: importPrivateKey is NOT called because treasury is resolved from alias
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
-        expectedTokenTransactionParams,
+        expectedNftTransactionParams,
       );
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTransactions.token,
@@ -104,7 +111,6 @@ describe('createTokenHandler', () => {
       );
       expect(mockSaveToken).toHaveBeenCalled();
       expect(result.status).toBe(Status.Success);
-      // This test is now ADR-003 compliant
     });
 
     test('should use default credentials when treasury not provided', async () => {
@@ -142,7 +148,7 @@ describe('createTokenHandler', () => {
       };
 
       // Act
-      const result = await createToken(args);
+      const result = await createNft(args);
 
       // Assert
       // keyResolver.resolveKeyOrAliasWithFallback is called which internally uses getOperator
@@ -150,12 +156,13 @@ describe('createTokenHandler', () => {
         name: 'TestToken',
         symbol: 'TEST',
         decimals: 0,
-        initialSupplyRaw: 1000000n,
+        initialSupplyRaw: 0n,
         supplyType: 'INFINITE',
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
+        tokenType: TokenTypeEnum.NON_FUNGIBLE_TOKEN,
         adminPublicKey: expect.any(Object),
-        tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
+        supplyPublicKey: expect.any(Object),
         memo: undefined,
       });
       // When adminKey is not provided, only treasury signs (which is the operator)
@@ -192,124 +199,7 @@ describe('createTokenHandler', () => {
       };
 
       // Act & Assert - Error is thrown before try-catch block in handler
-      await expect(createToken(args)).rejects.toThrow('No operator set');
-    });
-  });
-
-  describe('error scenarios', () => {
-    test('should handle transaction failure', async () => {
-      // Arrange
-      const mockSaveToken = jest.fn();
-      const mockTokenTransaction = { test: 'transaction' };
-      const mockSignResult = {
-        success: true, // Success but no tokenId - this triggers the error
-        transactionId: '0.0.123@1234567890.123456789',
-        // tokenId is missing - this should trigger the error path
-        receipt: {
-          status: {
-            status: 'success',
-            transactionId: '0.0.123@1234567890.123456789',
-          },
-        },
-      };
-
-      MockedHelper.mockImplementation(() => ({
-        saveToken: mockSaveToken,
-      }));
-
-      const { api } = makeApiMocks({
-        tokenTransactions: {
-          createTokenTransaction: jest
-            .fn()
-            .mockReturnValue(mockTokenTransaction),
-        },
-        signing: {
-          signAndExecuteWith: jest
-            .fn()
-            .mockResolvedValue(mockSignResult as TransactionResult),
-        },
-        kms: {
-          getPublicKey: jest.fn().mockReturnValue('operator-public-key'),
-        },
-      });
-
-      const logger = makeLogger();
-      const args: CommandHandlerArgs = {
-        args: {
-          tokenName: 'TestToken',
-          symbol: 'TEST',
-          adminKey: 'test-admin-key',
-        },
-        api,
-        state: {} as any,
-        config: {} as any,
-        logger,
-      };
-
-      // Act
-      const result = await createToken(args);
-
-      // Assert
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create token');
-      expect(result.errorMessage).toContain('no token ID returned');
-      expect(mockSaveToken).not.toHaveBeenCalled();
-      // This test is now ADR-003 compliant
-    });
-
-    test('should handle token transaction service error', async () => {
-      // Arrange
-      const { api } = makeApiMocks({
-        tokenTransactions: {
-          createTokenTransaction: jest.fn().mockImplementation(() => {
-            throw new Error('Service error');
-          }),
-        },
-        kms: {
-          getPublicKey: jest.fn().mockReturnValue('operator-public-key'),
-        },
-      });
-
-      const logger = makeLogger();
-      const args: CommandHandlerArgs = {
-        args: {
-          tokenName: 'TestToken',
-          symbol: 'TEST',
-          adminKey: 'test-admin-key',
-        },
-        api,
-        state: {} as any,
-        config: {} as any,
-        logger,
-      };
-
-      // Act
-      const result = await createToken(args);
-
-      // Assert
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create token');
-      expect(result.errorMessage).toContain('Service error');
-      // This test is now ADR-003 compliant
-    });
-    test('should handle initial supply limit exceeded', async () => {
-      const { api } = makeApiMocks({});
-      const logger = makeLogger();
-      const args: CommandHandlerArgs = {
-        args: {
-          tokenName: 'TestToken',
-          symbol: 'TEST',
-          adminKey: 'test-admin-key',
-          initialSupply: '250000000000000000000000000000',
-        },
-        api,
-        state: {} as any,
-        config: {} as any,
-        logger,
-      };
-      await expect(createToken(args)).rejects.toThrow(
-        'Maximum balance for token exceeded. Token balance cannot be greater than 9223372036854775807',
-      );
+      await expect(createNft(args)).rejects.toThrow('No operator set');
     });
   });
 
@@ -354,6 +244,14 @@ describe('createTokenHandler', () => {
                 keyRefId: 'admin-key-ref-id',
               };
             }
+            // Mock account alias resolution for supply-key
+            if (type === 'account' && alias === 'test-supply-key') {
+              return {
+                entityId: '0.0.100000',
+                publicKey: '302a300506032b6570032100' + '0'.repeat(64),
+                keyRefId: 'supply-key-ref-id',
+              };
+            }
             return null;
           }),
         },
@@ -365,6 +263,7 @@ describe('createTokenHandler', () => {
           tokenName: 'TestToken',
           symbol: 'TEST',
           adminKey: 'test-admin-key',
+          supplyKey: 'test-supply-key',
         },
         api,
         state: {} as any,
@@ -373,7 +272,7 @@ describe('createTokenHandler', () => {
       };
 
       // Act
-      const result = await createToken(args);
+      const result = await createNft(args);
 
       // Assert
       expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);

@@ -44,6 +44,10 @@ jest.mock('@hashgraph/sdk', () => ({
   Hbar: {
     fromTinybars: jest.fn(() => mockHbarInstance),
   },
+  TokenType: {
+    NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
+    FungibleCommon: 'FUNGIBLE_COMMON',
+  },
 }));
 
 describe('AccountServiceImpl', () => {
