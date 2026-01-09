@@ -47,9 +47,9 @@ export type CreateTokenFromFileOutput = z.infer<
  * Human-readable template for create token from file output
  */
 export const CREATE_TOKEN_FROM_FILE_TEMPLATE = `
-✅ Token created from file successfully: {{tokenId}}
+✅ Token created from file successfully: {{hashscanLink tokenId "token" network}}
    Name: {{name}} ({{symbol}})
-   Treasury: {{treasuryId}}
+   Treasury: {{hashscanLink treasuryId "account" network}}
    Decimals: {{decimals}}
    Initial Supply: {{initialSupply}}
    Supply Type: {{supplyType}}
@@ -57,12 +57,12 @@ export const CREATE_TOKEN_FROM_FILE_TEMPLATE = `
    Alias: {{alias}}
 {{/if}}
    Network: {{network}}
-   Transaction ID: {{transactionId}}
+   Transaction ID: {{hashscanLink transactionId "transaction" network}}
 
 {{#if associations.length}}
 🔗 Token Associations ({{associations.length}}):
 {{#each associations}}
-   {{add1 @index}}. {{name}} ({{accountId}}) - {{#if success}}✅ Success{{else}}❌ Failed{{/if}}{{#if transactionId}} - {{transactionId}}{{/if}}
+   {{add1 @index}}. {{name}} ({{hashscanLink accountId "account" ../network}}) - {{#if success}}✅ Success{{else}}❌ Failed{{/if}}{{#if transactionId}} - {{hashscanLink transactionId "transaction" ../network}}{{/if}}
 {{/each}}
 {{/if}}
 `.trim();

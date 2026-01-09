@@ -135,6 +135,7 @@ export async function associateToken(
     accountId: account.accountId,
     tokenId,
     associated: true,
+    network,
   };
 
   if (transactionId) {

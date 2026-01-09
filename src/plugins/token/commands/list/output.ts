@@ -90,8 +90,8 @@ export const LIST_TOKENS_TEMPLATE = `
 
 {{#each tokens}}
 {{add1 @index}}. {{symbol}} ({{name}})
-   Token ID: {{tokenId}}
-   Treasury: {{treasuryId}}
+   Token ID: {{hashscanLink tokenId "token" network}}
+   Treasury: {{hashscanLink treasuryId "account" network}}
    Supply Type: {{supplyType}}
    Decimals: {{decimals}}
    Network: {{network}}

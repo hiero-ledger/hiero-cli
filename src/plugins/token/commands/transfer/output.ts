@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import {
   EntityIdSchema,
+  NetworkSchema,
   TokenAmountSchema,
   TransactionIdSchema,
 } from '@/core/schemas/common-schemas';
@@ -18,6 +19,7 @@ export const TransferTokenOutputSchema = z.object({
   from: EntityIdSchema,
   to: EntityIdSchema,
   amount: TokenAmountSchema.describe('Amount transferred in base units'),
+  network: NetworkSchema,
 });
 
 export type TransferTokenOutput = z.infer<typeof TransferTokenOutputSchema>;
@@ -27,9 +29,9 @@ export type TransferTokenOutput = z.infer<typeof TransferTokenOutputSchema>;
  */
 export const TRANSFER_TOKEN_TEMPLATE = `
 ✅ Token transfer successful!
-   Token ID: {{tokenId}}
-   From: {{from}}
-   To: {{to}}
+   Token ID: {{hashscanLink tokenId "token" network}}
+   From: {{hashscanLink from "account" network}}
+   To: {{hashscanLink to "account" network}}
    Amount: {{amount}}
-   Transaction ID: {{transactionId}}
+   Transaction ID: {{hashscanLink transactionId "transaction" network}}
 `.trim();
