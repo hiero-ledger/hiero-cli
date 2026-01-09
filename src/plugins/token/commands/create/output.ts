@@ -32,9 +32,9 @@ export type CreateTokenOutput = z.infer<typeof CreateTokenOutputSchema>;
  * Human-readable template for create token output
  */
 export const CREATE_TOKEN_TEMPLATE = `
-✅ Token created successfully: {{tokenId}}
+✅ Token created successfully: {{hashscanLink tokenId "token" network}}
    Name: {{name}} ({{symbol}})
-   Treasury: {{treasuryId}}
+   Treasury: {{hashscanLink treasuryId "account" network}}
    Decimals: {{decimals}}
    Initial Supply: {{initialSupply}}
    Supply Type: {{supplyType}}
@@ -42,5 +42,5 @@ export const CREATE_TOKEN_TEMPLATE = `
    Alias: {{alias}}
 {{/if}}
    Network: {{network}}
-   Transaction ID: {{transactionId}}
+   Transaction ID: {{hashscanLink transactionId "transaction" network}}
 `.trim();
