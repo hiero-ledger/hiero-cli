@@ -31,11 +31,11 @@ export type CreateAccountOutput = z.infer<typeof CreateAccountOutputSchema>;
  * Human-readable template for create account output
  */
 export const CREATE_ACCOUNT_TEMPLATE = `
-✅ Account created successfully: {{accountId}}
+✅ Account created successfully: {{hashscanLink accountId "account" network}}
    Name: {{name}}
    Type: {{type}}
    Network: {{network}}
    EVM Address: {{evmAddress}}
    Public Key: {{publicKey}}
-   Transaction ID: {{transactionId}}
+   Transaction ID: {{hashscanLink transactionId "transaction" network}}
 `.trim();

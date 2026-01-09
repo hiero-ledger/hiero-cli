@@ -85,6 +85,7 @@ export async function deleteAccount(
         accountId: accountToDelete.accountId,
       },
       ...(removedAliases.length > 0 && { removedAliases }),
+      network: currentNetwork,
     };
 
     return {
