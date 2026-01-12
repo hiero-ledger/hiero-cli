@@ -4,6 +4,7 @@
  */
 import type { AccountData } from '@/plugins/account/schema';
 
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { makeAccountData } from '@/plugins/account/__tests__/unit/helpers/mocks';
 
 /**
@@ -42,17 +43,17 @@ export const mockAccounts = {
   sender: makeAccountData({
     name: 'sender',
     accountId: mockAccountIds.sender,
-    network: 'testnet',
+    network: SupportedNetwork.TESTNET,
   }),
   receiver: makeAccountData({
     name: 'receiver',
     accountId: mockAccountIds.receiver,
-    network: 'testnet',
+    network: SupportedNetwork.TESTNET,
   }),
   sameAccount: makeAccountData({
     name: 'same-account',
     accountId: mockAccountIds.sender,
-    network: 'testnet',
+    network: SupportedNetwork.TESTNET,
   }),
 };
 

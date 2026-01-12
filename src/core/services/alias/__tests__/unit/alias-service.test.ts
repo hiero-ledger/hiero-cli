@@ -9,6 +9,7 @@ import type { StateService } from '@/core/services/state/state-service.interface
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { AliasServiceImpl } from '@/core/services/alias/alias-service';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 describe('AliasServiceImpl', () => {
   let aliasService: AliasServiceImpl;
@@ -20,7 +21,7 @@ describe('AliasServiceImpl', () => {
   ): AliasRecord => ({
     alias: 'test-alias',
     type: ALIAS_TYPE.Account,
-    network: 'testnet',
+    network: SupportedNetwork.TESTNET,
     entityId: '0.0.1234',
     createdAt: '2024-01-01T00:00:00.000Z',
     ...overrides,
@@ -50,7 +51,7 @@ describe('AliasServiceImpl', () => {
         expect.objectContaining({
           alias: 'test-alias',
           type: ALIAS_TYPE.Account,
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           entityId: '0.0.1234',
           updatedAt: expect.any(String),
         }),
@@ -74,13 +75,15 @@ describe('AliasServiceImpl', () => {
     it('should register alias with different networks', () => {
       stateMock.has.mockReturnValue(false);
 
-      const mainnetRecord = createAliasRecord({ network: 'mainnet' });
+      const mainnetRecord = createAliasRecord({
+        network: SupportedNetwork.MAINNET,
+      });
       aliasService.register(mainnetRecord);
 
       expect(stateMock.set).toHaveBeenCalledWith(
         'aliases',
         'mainnet:test-alias',
-        expect.objectContaining({ network: 'mainnet' }),
+        expect.objectContaining({ network: SupportedNetwork.MAINNET }),
       );
     });
 
@@ -105,7 +108,11 @@ describe('AliasServiceImpl', () => {
       const record = createAliasRecord();
       stateMock.get.mockReturnValue(record);
 
-      const result = aliasService.resolve('test-alias', undefined, 'testnet');
+      const result = aliasService.resolve(
+        'test-alias',
+        undefined,
+        SupportedNetwork.TESTNET,
+      );
 
       expect(stateMock.get).toHaveBeenCalledWith(
         'aliases',
@@ -117,7 +124,11 @@ describe('AliasServiceImpl', () => {
     it('should return null when alias does not exist', () => {
       stateMock.get.mockReturnValue(undefined);
 
-      const result = aliasService.resolve('non-existent', undefined, 'testnet');
+      const result = aliasService.resolve(
+        'non-existent',
+        undefined,
+        SupportedNetwork.TESTNET,
+      );
 
       expect(result).toBeNull();
     });
@@ -129,7 +140,7 @@ describe('AliasServiceImpl', () => {
       const result = aliasService.resolve(
         'test-alias',
         ALIAS_TYPE.Token,
-        'testnet',
+        SupportedNetwork.TESTNET,
       );
 
       expect(result).toBeNull();
@@ -142,7 +153,7 @@ describe('AliasServiceImpl', () => {
       const result = aliasService.resolve(
         'test-alias',
         ALIAS_TYPE.Token,
-        'testnet',
+        SupportedNetwork.TESTNET,
       );
 
       expect(result).toEqual(record);
@@ -152,7 +163,11 @@ describe('AliasServiceImpl', () => {
       const record = createAliasRecord({ type: ALIAS_TYPE.Topic });
       stateMock.get.mockReturnValue(record);
 
-      const result = aliasService.resolve('test-alias', undefined, 'testnet');
+      const result = aliasService.resolve(
+        'test-alias',
+        undefined,
+        SupportedNetwork.TESTNET,
+      );
 
       expect(result).toEqual(record);
     });
@@ -174,12 +189,18 @@ describe('AliasServiceImpl', () => {
 
     it('should filter by network', () => {
       const records = [
-        createAliasRecord({ alias: 'alias1', network: 'testnet' }),
-        createAliasRecord({ alias: 'alias2', network: 'mainnet' }),
+        createAliasRecord({
+          alias: 'alias1',
+          network: SupportedNetwork.TESTNET,
+        }),
+        createAliasRecord({
+          alias: 'alias2',
+          network: SupportedNetwork.MAINNET,
+        }),
       ];
       stateMock.list.mockReturnValue(records);
 
-      const result = aliasService.list({ network: 'testnet' });
+      const result = aliasService.list({ network: SupportedNetwork.TESTNET });
 
       expect(result).toHaveLength(1);
       expect(result[0].network).toBe('testnet');
@@ -202,24 +223,24 @@ describe('AliasServiceImpl', () => {
       const records = [
         createAliasRecord({
           alias: 'a1',
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           type: ALIAS_TYPE.Account,
         }),
         createAliasRecord({
           alias: 'a2',
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           type: ALIAS_TYPE.Token,
         }),
         createAliasRecord({
           alias: 'a3',
-          network: 'mainnet',
+          network: SupportedNetwork.MAINNET,
           type: ALIAS_TYPE.Token,
         }),
       ];
       stateMock.list.mockReturnValue(records);
 
       const result = aliasService.list({
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
         type: ALIAS_TYPE.Token,
       });
 
@@ -259,7 +280,7 @@ describe('AliasServiceImpl', () => {
 
   describe('remove', () => {
     it('should remove alias successfully', () => {
-      aliasService.remove('test-alias', 'testnet');
+      aliasService.remove('test-alias', SupportedNetwork.TESTNET);
 
       expect(stateMock.delete).toHaveBeenCalledWith(
         'aliases',
@@ -271,7 +292,7 @@ describe('AliasServiceImpl', () => {
     });
 
     it('should use correct key format for different networks', () => {
-      aliasService.remove('my-alias', 'mainnet');
+      aliasService.remove('my-alias', SupportedNetwork.MAINNET);
 
       expect(stateMock.delete).toHaveBeenCalledWith(
         'aliases',
@@ -284,7 +305,10 @@ describe('AliasServiceImpl', () => {
     it('should return true when alias exists', () => {
       stateMock.has.mockReturnValue(true);
 
-      const result = aliasService.exists('test-alias', 'testnet');
+      const result = aliasService.exists(
+        'test-alias',
+        SupportedNetwork.TESTNET,
+      );
 
       expect(stateMock.has).toHaveBeenCalledWith(
         'aliases',
@@ -296,7 +320,10 @@ describe('AliasServiceImpl', () => {
     it('should return false when alias does not exist', () => {
       stateMock.has.mockReturnValue(false);
 
-      const result = aliasService.exists('non-existent', 'testnet');
+      const result = aliasService.exists(
+        'non-existent',
+        SupportedNetwork.TESTNET,
+      );
 
       expect(result).toBe(false);
     });
@@ -305,7 +332,7 @@ describe('AliasServiceImpl', () => {
   describe('availableOrThrow', () => {
     it('should not throw when alias is undefined', () => {
       expect(() =>
-        aliasService.availableOrThrow(undefined, 'testnet'),
+        aliasService.availableOrThrow(undefined, SupportedNetwork.TESTNET),
       ).not.toThrow();
       expect(stateMock.has).not.toHaveBeenCalled();
     });
@@ -314,7 +341,7 @@ describe('AliasServiceImpl', () => {
       stateMock.has.mockReturnValue(false);
 
       expect(() =>
-        aliasService.availableOrThrow('new-alias', 'testnet'),
+        aliasService.availableOrThrow('new-alias', SupportedNetwork.TESTNET),
       ).not.toThrow();
     });
 
@@ -322,7 +349,7 @@ describe('AliasServiceImpl', () => {
       stateMock.has.mockReturnValue(true);
 
       expect(() =>
-        aliasService.availableOrThrow('existing', 'testnet'),
+        aliasService.availableOrThrow('existing', SupportedNetwork.TESTNET),
       ).toThrow('Alias "existing" already exists on network "testnet"');
     });
   });
@@ -332,17 +359,17 @@ describe('AliasServiceImpl', () => {
       const records = [
         createAliasRecord({
           alias: 'a1',
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           type: ALIAS_TYPE.Account,
         }),
         createAliasRecord({
           alias: 'a2',
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
           type: ALIAS_TYPE.Token,
         }),
         createAliasRecord({
           alias: 'a3',
-          network: 'mainnet',
+          network: SupportedNetwork.MAINNET,
           type: ALIAS_TYPE.Account,
         }),
       ];

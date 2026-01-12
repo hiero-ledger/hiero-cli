@@ -15,6 +15,7 @@ import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { KmsServiceImpl } from '@/core/services/kms/kms-service';
 import { KEY_MANAGERS } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 jest.mock('crypto', () => ({
   randomBytes: jest.fn(() => Buffer.from('0011223344556677', 'hex')),
@@ -364,9 +365,11 @@ describe('KmsServiceImpl', () => {
       privateKey: 'operator-private-key',
     });
 
-    const client = service.createClient('testnet');
+    const client = service.createClient(SupportedNetwork.TESTNET);
 
-    expect(networkService.getOperator).toHaveBeenCalledWith('testnet');
+    expect(networkService.getOperator).toHaveBeenCalledWith(
+      SupportedNetwork.TESTNET,
+    );
     expect(Client.forTestnet).toHaveBeenCalled();
     expect(AccountId.fromString).toHaveBeenCalledWith('0.0.1001');
     expect(client.setOperator).toHaveBeenCalledWith(
