@@ -8,7 +8,7 @@
  */
 import { z } from 'zod';
 
-import { KeyAlgorithm } from '@/core/shared/constants';
+import { KeyAlgorithm, TokenTypeEnum } from '@/core/shared/constants';
 
 // ======================================================
 // 1. ECDSA (secp256k1) Keys
@@ -440,6 +440,16 @@ export const MemoSchema = z
   .describe('Optional memo for the transaction');
 
 /**
+ * Token Type schema
+ * Optional Token Type field for transactions
+ * Enum of TokenTypeEnum
+ */
+export const TokenTypeSchema = z
+  .enum(TokenTypeEnum)
+  .optional()
+  .default(TokenTypeEnum.FUNGIBLE_COMMON);
+
+/**
  * Key or Account Alias Input (Normalized)
  * Accepts AccountID:privateKey pair format or account name/alias
  * Transforms input into normalized discriminated union for easier handler processing:
@@ -592,3 +602,8 @@ export const PrivateKeySchema = z.union([
   EcdsaPrivateKeySchema,
   Ed25519PrivateKeySchema,
 ]);
+
+export const NonNegativeNumberOrBigintSchema = z
+  .union([z.number(), z.bigint()])
+  .transform((val) => BigInt(val))
+  .pipe(z.bigint().nonnegative());

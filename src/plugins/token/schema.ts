@@ -4,7 +4,16 @@
  */
 import { z } from 'zod';
 
-import { EntityIdSchema, KeyOrAccountAliasSchema } from '@/core/schemas';
+import {
+  EntityIdSchema,
+  HtsDecimalsSchema,
+  KeyOrAccountAliasSchema,
+  MemoSchema,
+  NonNegativeNumberOrBigintSchema,
+  TokenNameSchema,
+  TokenSymbolSchema,
+  TokenTypeSchema,
+} from '@/core/schemas';
 import { TokenTypeEnum } from '@/core/shared/constants';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
@@ -139,19 +148,12 @@ export const TokenFileFixedFeeSchema = z
   .strict();
 
 export const TokenFileSchema = z.object({
-  name: z.string().min(1).max(100),
-  symbol: z.string().min(1).max(20),
-  decimals: z.number().int().min(0).max(18),
+  name: TokenNameSchema,
+  symbol: TokenSymbolSchema,
+  decimals: HtsDecimalsSchema,
   supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
-  initialSupply: z
-    .union([z.number(), z.bigint()])
-    .transform((val) => BigInt(val))
-    .pipe(z.bigint().nonnegative()),
-  maxSupply: z
-    .union([z.number(), z.bigint()])
-    .transform((val) => BigInt(val))
-    .pipe(z.bigint().nonnegative())
-    .default(0n),
+  initialSupply: NonNegativeNumberOrBigintSchema,
+  maxSupply: NonNegativeNumberOrBigintSchema.default(0n),
   treasuryKey: KeyOrAccountAliasSchema,
   adminKey: KeyOrAccountAliasSchema,
   supplyKey: KeyOrAccountAliasSchema.optional(),
@@ -162,11 +164,8 @@ export const TokenFileSchema = z.object({
   feeScheduleKey: KeyOrAccountAliasSchema.optional(),
   associations: z.array(KeyOrAccountAliasSchema).default([]),
   customFees: z.array(TokenFileFixedFeeSchema).default([]),
-  memo: z.string().max(100).optional().default(''),
-  tokenType: z
-    .enum([TokenTypeEnum.NON_FUNGIBLE_TOKEN, TokenTypeEnum.FUNGIBLE_COMMON])
-    .optional()
-    .default(TokenTypeEnum.FUNGIBLE_COMMON),
+  memo: MemoSchema.default(''),
+  tokenType: TokenTypeSchema,
 });
 
 export type TokenFileDefinition = z.infer<typeof TokenFileSchema>;

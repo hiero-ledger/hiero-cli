@@ -7,6 +7,8 @@ import {
   EntityIdSchema,
   NetworkSchema,
   SupplyTypeSchema,
+  TokenNameSchema,
+  TokenSymbolSchema,
   TransactionIdSchema,
 } from '@/core/schemas/common-schemas';
 
@@ -14,16 +16,20 @@ import {
  * Create Token Command Output Schema
  */
 export const CreateNftOutputSchema = z.object({
-  tokenId: EntityIdSchema,
-  name: z.string().describe('Token name'),
-  symbol: z.string().describe('Token symbol'),
-  treasuryId: EntityIdSchema,
-  supplyType: SupplyTypeSchema,
-  transactionId: TransactionIdSchema,
-  adminAccountId: EntityIdSchema,
-  supplyAccountId: EntityIdSchema,
+  tokenId: EntityIdSchema.describe('Token ID'),
+  name: TokenNameSchema.describe('Token name'),
+  symbol: TokenSymbolSchema.describe('Token symbol'),
+  treasuryId: EntityIdSchema.describe('Treasury account ID'),
+  supplyType: SupplyTypeSchema.describe(
+    'Supply type: INFINITE (default) or FINITE',
+  ),
+  transactionId: TransactionIdSchema.describe(
+    'Hedera token create transaction ID',
+  ),
+  adminAccountId: EntityIdSchema.describe('Admin account ID'),
+  supplyAccountId: EntityIdSchema.describe('Supply account ID'),
   alias: z.string().describe('Token alias').optional(),
-  network: NetworkSchema,
+  network: NetworkSchema.describe('Network on which token exists'),
 });
 
 export type CreateNftOutput = z.infer<typeof CreateNftOutputSchema>;
