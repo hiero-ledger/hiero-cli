@@ -20,6 +20,7 @@ import {
   makeNetworkMock as makeGlobalNetworkMock,
   makeSigningMock as makeGlobalSigningMock,
 } from '@/__tests__/mocks/mocks';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 import {
   mockAccountData,
@@ -101,7 +102,7 @@ export const makeTxExecutionServiceMock = (
  * Creates mock NetworkService
  */
 export const makeNetworkServiceMock = (
-  network: 'testnet' | 'mainnet' | 'previewnet' = 'testnet',
+  network: SupportedNetwork = SupportedNetwork.TESTNET,
 ): jest.Mocked<NetworkService> => ({
   getCurrentNetwork: jest.fn().mockReturnValue(network),
   getAvailableNetworks: jest

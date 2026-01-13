@@ -9,6 +9,7 @@
 import { z } from 'zod';
 
 import { KeyAlgorithm, TokenTypeEnum } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 // ======================================================
 // 1. ECDSA (secp256k1) Keys
@@ -225,7 +226,7 @@ export const AccountIdWithPrivateKeySchema = z
  * Supported Hedera network names
  */
 export const NetworkSchema = z
-  .enum(['mainnet', 'testnet', 'previewnet', 'localnet'])
+  .nativeEnum(SupportedNetwork)
   .describe('Hedera network identifier');
 
 /**

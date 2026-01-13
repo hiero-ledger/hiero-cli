@@ -4,6 +4,7 @@
  */
 
 import { TokenTypeEnum } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 /**
  * Mock Account IDs
@@ -64,14 +65,14 @@ export const mockCredentials = {
   testnet: {
     accountId: mockAccountIds.operator,
     privateKey: mockKeys.operator,
-    network: 'testnet' as const,
+    network: SupportedNetwork.TESTNET,
     isDefault: true,
     createdAt: '2024-01-01T00:00:00.000Z',
   },
   mainnet: {
     accountId: mockAccountIds.operator,
     privateKey: mockKeys.operator,
-    network: 'mainnet' as const,
+    network: SupportedNetwork.MAINNET,
     isDefault: true,
     createdAt: '2024-01-01T00:00:00.000Z',
   },
@@ -214,7 +215,7 @@ export const mockTokenData = {
     treasury: mockAccountIds.treasury,
     adminKey: mockKeys.admin,
     supplyKey: mockKeys.supply,
-    network: 'testnet' as const,
+    network: SupportedNetwork.TESTNET,
     customFees: [],
   },
   withFees: {
@@ -226,7 +227,7 @@ export const mockTokenData = {
     treasury: mockAccountIds.treasury,
     adminKey: mockKeys.admin,
     supplyKey: mockKeys.supply,
-    network: 'testnet' as const,
+    network: SupportedNetwork.TESTNET,
     customFees: [
       {
         feeCollectorAccountId: mockAccountIds.collector,
@@ -273,7 +274,7 @@ export const validTokenDataForSchema = {
     },
   ],
   adminPublicKey: 'admin-key',
-  network: 'testnet' as const,
+  network: SupportedNetwork.TESTNET,
   customFees: [
     {
       type: 'fixed' as const,
@@ -363,7 +364,7 @@ export const mockStateTokenData = {
     maxSupply: 10000n,
     treasuryId: '0.0.789012',
     adminPublicKey: 'admin-key',
-    network: 'testnet' as const,
+    network: SupportedNetwork.TESTNET,
     associations: [],
     customFees: [],
     tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
@@ -378,7 +379,7 @@ export const mockStateTokenData = {
     maxSupply: 10000n,
     treasuryId: '0.0.789012',
     adminPublicKey: 'admin-key',
-    network: 'testnet' as const,
+    network: SupportedNetwork.TESTNET,
     associations: [{ name: 'TestAccount', accountId: '0.0.111111' }],
     customFees: [],
     tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
@@ -393,7 +394,7 @@ export const mockStateTokenData = {
     maxSupply: 0n,
     treasuryId: '0.0.111111',
     adminPublicKey: 'admin-key2',
-    network: 'testnet' as const,
+    network: SupportedNetwork.TESTNET,
     associations: [],
     customFees: [],
     tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
@@ -527,7 +528,7 @@ export const validTokenDataForValidation = {
   treasuryId: '0.0.789012',
   associations: [],
   adminPublicKey: 'admin-key',
-  network: 'testnet' as const,
+  network: SupportedNetwork.TESTNET,
   customFees: [],
   tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
 };
@@ -570,7 +571,7 @@ export const makeTokenData = (
   supplyType: 'INFINITE' as const,
   maxSupply: 0,
   adminPublicKey: 'test-admin-key',
-  network: 'testnet' as const,
+  network: SupportedNetwork.TESTNET,
   associations: [],
   customFees: [],
   ...overrides,
