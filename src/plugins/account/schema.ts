@@ -2,8 +2,6 @@
  * Account Plugin State Schema
  * Single source of truth for account data structure and validation
  */
-import type { SupportedNetwork } from '@/core/types/shared.types';
-
 import { z } from 'zod';
 
 import {
@@ -12,15 +10,8 @@ import {
   EvmAddressSchema,
 } from '@/core/schemas/common-schemas';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { SUPPORTED_NETWORKS } from '@/core/shared/validation/validate-network.zod';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
-
-// Supported networks aligned with core SupportedNetwork type
-export const SUPPORTED_NETWORKS = [
-  'mainnet',
-  'testnet',
-  'previewnet',
-  'localnet',
-] as const satisfies readonly SupportedNetwork[];
 
 // Zod schema for runtime validation
 export const AccountDataSchema = z.object({

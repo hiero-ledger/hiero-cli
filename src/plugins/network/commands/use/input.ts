@@ -7,8 +7,11 @@ import { NetworkSchema } from '@/core/schemas';
  * Validates arguments for switching to a specific network
  */
 export const UseNetworkInputSchema = z.object({
-  network: NetworkSchema.describe(
+  global: NetworkSchema.describe(
     'Network to switch to (testnet, mainnet, previewnet, localnet)',
+  ),
+  g: NetworkSchema.optional().describe(
+    'Network to switch to (short form of --global)',
   ),
 });
 

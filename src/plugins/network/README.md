@@ -68,15 +68,23 @@ hcli network list
 Switch the active network to the specified network name.
 
 ```bash
-hcli network use --network testnet
-hcli network use --network mainnet
-hcli network use --network previewnet
-hcli network use --network localnet
+hcli network use --global testnet
+hcli network use --global mainnet
+hcli network use --global previewnet
+hcli network use --global localnet
+```
+
+You can also use the short form `-g`:
+
+```bash
+hcli network use -g testnet
 ```
 
 **Options:**
 
-- `-N, --network <string>` - Network name (testnet, mainnet, previewnet, localnet) (required)
+- `-g, --global <string>` - Network name (testnet, mainnet, previewnet, localnet) (required)
+
+> **💡 Note**: To execute any command on a different network without changing the CLI's default network, use the global `--network` or `-N` flag available for all commands. For example: `hcli account list --network previewnet`
 
 ### Network Get Operator
 
@@ -86,13 +94,13 @@ Get operator credentials for a specific network.
 # Get operator for current network
 hcli network get-operator
 
-# Get operator for specific network
+# Get operator for specific network using global flag
 hcli network get-operator --network testnet
 ```
 
 **Options:**
 
-- `-N, --network <string>` - Target network (defaults to current network) (optional)
+- None - Uses the current network by default. Use the global `--network` or `-N` flag to target a specific network.
 
 ### Network Set Operator
 
@@ -109,7 +117,7 @@ hcli network set-operator --operator 0.0.123456:302e020100300506032b657004220420
 **Options:**
 
 - `--operator <string>` - Operator credentials: name or account-id:private-key pair (required)
-- `-N, --network <string>` - Target network (defaults to current network) (optional)
+- `-N, --network <string>` - Target network (uses the global `--network` flag, defaults to current network) (optional)
 
 > **💡 Interactive Setup (Initialization)**: When running the CLI in interactive mode and an operator is not configured, running a command that requires operator credentials will trigger an automatic **operator initialization wizard**. This wizard guides you through:
 >

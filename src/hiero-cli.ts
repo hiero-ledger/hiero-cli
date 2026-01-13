@@ -9,6 +9,7 @@ import pkg from '../package.json';
 import { createCoreApi } from './core';
 import { PluginManager } from './core/plugins/plugin-manager';
 import { DEFAULT_PLUGIN_STATE } from './core/shared/config/cli-options';
+import { validateNetwork } from './core/shared/validation/validate-network.zod';
 import { validateOutputFormat } from './core/shared/validation/validate-output-format.zod';
 import { addDisabledPluginsHelp } from './core/utils/add-disabled-plugins-help';
 import {
@@ -21,7 +22,11 @@ program
   .name('hcli')
   .version(pkg.version || '0.0.0')
   .description('A CLI tool for managing Hedera environments')
-  .option('--format <type>', 'Output format: human (default) or json');
+  .option('--format <type>', 'Output format: human (default) or json')
+  .option(
+    '-N, --network <network>',
+    'Target network (testnet, mainnet, previewnet, localnet)',
+  );
 
 // Initialize the simplified plugin system
 async function initializeCLI() {
@@ -33,6 +38,12 @@ async function initializeCLI() {
     const format = validateOutputFormat(opts.format);
 
     coreApi.output.setFormat(format);
+
+    const networkOverride = validateNetwork(opts.network || opts.N);
+
+    if (networkOverride) {
+      coreApi.network.setNetwork(networkOverride);
+    }
 
     // Setup global error handlers with validated format
     setGlobalOutputFormat(format);
