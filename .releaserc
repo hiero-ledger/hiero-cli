@@ -75,7 +75,9 @@
       "channel": "rc"
     },
     {
-      "name": "fix-semantic-release"
+      "name": "fix-semantic-release",
+      "prerelease": "testing",
+      "channel": "fix-semantic-release"
     }
   ]
 }
