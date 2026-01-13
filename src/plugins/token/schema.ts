@@ -5,6 +5,7 @@
 import { z } from 'zod';
 
 import { EntityIdSchema, KeyOrAccountAliasSchema } from '@/core/schemas';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Zod schema for token association
@@ -71,7 +72,7 @@ export const TokenDataSchema = z.object({
     .bigint({ message: 'Max supply must be an integer', coerce: true })
     .min(0n, 'Max supply must be non-negative'),
 
-  network: z.enum(['mainnet', 'testnet', 'previewnet', 'localnet'], {
+  network: z.enum(SupportedNetwork, {
     error: () => ({
       message: 'Network must be mainnet, testnet, previewnet, or localnet',
     }),

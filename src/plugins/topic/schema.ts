@@ -5,6 +5,7 @@
 import { z } from 'zod';
 
 import { AliasNameSchema, EntityIdSchema } from '@/core/schemas/common-schemas';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Zod schema for runtime validation
@@ -33,7 +34,7 @@ export const TopicDataSchema = z.object({
     .optional()
     .describe('Topic expiration time as ISO string'),
 
-  network: z.enum(['mainnet', 'testnet', 'previewnet', 'localnet'], {
+  network: z.enum(SupportedNetwork, {
     error: () => ({
       message: 'Network must be mainnet, testnet, or previewnet',
     }),
