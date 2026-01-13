@@ -12,6 +12,7 @@ import {
   makeLogger,
   makeMirrorMock,
   makeNetworkMock,
+  makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import { importAccount } from '@/plugins/account/commands/import/handler';
@@ -116,7 +117,7 @@ describe('account plugin - import command (ADR-003)', () => {
       kms,
       alias,
       logger,
-      state: {} as any,
+      state: makeStateMock(),
     };
 
     const args = makeArgs(api, logger, {
@@ -154,7 +155,7 @@ describe('account plugin - import command (ADR-003)', () => {
       kms,
       alias,
       logger,
-      state: {} as any,
+      state: makeStateMock(),
     };
 
     const args = makeArgs(api, logger, {

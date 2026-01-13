@@ -2,7 +2,7 @@ import type { CoreApi } from '@/core';
 import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
 import type { TopicData } from '@/plugins/topic/schema';
 
-import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import { listTopics } from '@/plugins/topic/commands/list/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -35,7 +35,7 @@ describe('topic plugin - list command', () => {
       listTopics: jest.fn().mockReturnValue([]),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
     const result = await listTopics(args);
@@ -59,7 +59,7 @@ describe('topic plugin - list command', () => {
       listTopics: jest.fn().mockReturnValue(topics),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
     const result = await listTopics(args);
@@ -95,7 +95,7 @@ describe('topic plugin - list command', () => {
       listTopics: jest.fn().mockReturnValue(topics),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, { keys: true });
 
     const result = await listTopics(args);
@@ -131,7 +131,7 @@ describe('topic plugin - list command', () => {
       listTopics: jest.fn().mockReturnValue([MAINNET_TOPIC, TESTNET_TOPIC]),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, { network: 'mainnet' });
 
     const result = await listTopics(args);
@@ -160,7 +160,7 @@ describe('topic plugin - list command', () => {
       ]),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, { network: 'mainnet' });
 
     const result = await listTopics(args);
@@ -202,7 +202,7 @@ describe('topic plugin - list command', () => {
       listTopics: jest.fn().mockReturnValue(topics),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
     const result = await listTopics(args);
@@ -232,7 +232,7 @@ describe('topic plugin - list command', () => {
       listTopics: jest.fn().mockReturnValue(topics),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
     const result = await listTopics(args);
@@ -253,7 +253,7 @@ describe('topic plugin - list command', () => {
       }),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
     const result = await listTopics(args);

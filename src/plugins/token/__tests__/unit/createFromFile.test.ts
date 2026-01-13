@@ -9,6 +9,7 @@ import '@/core/utils/json-serialize';
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
+import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import {
   createTokenFromFile,
@@ -159,8 +160,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -217,8 +218,8 @@ describe('createTokenFromFileHandler', () => {
           file: fullPath,
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -255,8 +256,8 @@ describe('createTokenFromFileHandler', () => {
           file: absolutePath,
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -335,8 +336,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -441,8 +442,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -482,8 +483,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'nonexistent',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -515,8 +516,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -548,8 +549,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -595,8 +596,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -631,8 +632,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -667,8 +668,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -703,8 +704,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -781,8 +782,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -864,8 +865,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 
@@ -948,8 +949,8 @@ describe('createTokenFromFileHandler', () => {
           file: 'test',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: makeStateMock(),
+        config: makeConfigMock(),
         logger,
       };
 

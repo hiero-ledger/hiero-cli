@@ -37,7 +37,6 @@ describe('account plugin - balance command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      state: {} as any,
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'token-account',
@@ -87,7 +86,6 @@ describe('account plugin - balance command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      state: {} as any,
       alias: {
         resolve: jest
           .fn()
@@ -142,7 +140,6 @@ describe('account plugin - balance command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      state: {} as any,
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'test-account',
@@ -185,7 +182,6 @@ describe('account plugin - balance command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      state: {} as any,
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc2',
@@ -248,7 +244,6 @@ describe('account plugin - balance command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      state: {} as any,
       alias,
     };
     const args = makeArgs(api, logger, { account: 'acc777' });
@@ -274,7 +269,6 @@ describe('account plugin - balance command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      state: {} as any,
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc3',
@@ -309,7 +303,6 @@ describe('account plugin - balance command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      state: {} as any,
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc4',
@@ -345,7 +338,6 @@ describe('account plugin - balance command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      state: {} as any,
     };
     const account = 'broken';
     const args = makeArgs(api, logger, { account });
@@ -371,7 +363,6 @@ describe('account plugin - balance command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      state: {} as any,
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'test-acc',
@@ -410,7 +401,6 @@ describe('account plugin - balance command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      state: {} as any,
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'test-acc',
@@ -462,7 +452,6 @@ describe('account plugin - balance command (ADR-003)', () => {
     const api: Partial<CoreApi> = {
       mirror: mirrorMock as HederaMirrornodeService,
       logger,
-      state: {} as any,
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'test-acc',

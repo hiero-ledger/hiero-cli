@@ -173,9 +173,11 @@ describe('network plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
 
     const parsed = JSON.parse(result.outputJson as string);
-    expect(parsed.networks.some((n: any) => n.operatorId === '0.0.1001')).toBe(
-      true,
-    );
+    expect(
+      parsed.networks.some(
+        (n: Record<string, unknown>) => n.operatorId === '0.0.1001',
+      ),
+    ).toBe(true);
   });
 
   test('shows "Not configured" when no operator is set', async () => {
@@ -188,6 +190,8 @@ describe('network plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
 
     const parsed = JSON.parse(result.outputJson as string);
-    expect(parsed.networks.some((n: any) => !n.operatorId)).toBe(true);
+    expect(
+      parsed.networks.some((n: Record<string, unknown>) => !n.operatorId),
+    ).toBe(true);
   });
 });

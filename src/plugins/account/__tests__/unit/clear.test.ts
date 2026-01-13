@@ -1,7 +1,8 @@
+import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { ClearAccountsOutput } from '@/plugins/account/commands/clear';
 
-import { makeLogger } from '@/__tests__/mocks/mocks';
+import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import { clearAccounts } from '@/plugins/account/commands/clear/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -35,9 +36,9 @@ describe('account plugin - clear command (ADR-003)', () => {
 
     const args: Partial<CommandHandlerArgs> = {
       api: {
-        state: {},
+        state: makeStateMock(),
         alias,
-      } as any,
+      } as unknown as CoreApi,
       logger,
       args: {},
     };
@@ -72,9 +73,9 @@ describe('account plugin - clear command (ADR-003)', () => {
 
     const args: Partial<CommandHandlerArgs> = {
       api: {
-        state: {},
+        state: makeStateMock(),
         alias,
-      } as any,
+      } as unknown as CoreApi,
       logger,
       args: {},
     };
