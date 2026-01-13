@@ -73,6 +73,9 @@
       "name": "rc/*",
       "prerelease": "rc",
       "channel": "rc"
+    },
+    {
+      "name": "fix-semantic-release"
     }
   ]
 }
