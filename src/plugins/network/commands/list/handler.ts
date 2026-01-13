@@ -22,20 +22,21 @@ export async function listHandler(
 
     const networks = await Promise.all(
       networkNames.map(async (name) => {
-        const config = api.network.getNetworkConfig(name as SupportedNetwork);
-        const operator = api.network.getOperator(name as SupportedNetwork);
+        const networkName = name as SupportedNetwork;
+        const config = api.network.getNetworkConfig(networkName);
+        const operator = api.network.getOperator(networkName);
 
         let mirrorNodeHealth;
         let rpcHealth;
 
-        if (name === currentNetwork) {
+        if (networkName === currentNetwork) {
           mirrorNodeHealth = await checkMirrorNodeHealth(config.mirrorNodeUrl);
           rpcHealth = await checkRpcHealth(config.rpcUrl);
         }
 
         return {
-          name: name as SupportedNetwork,
-          isActive: name === currentNetwork,
+          name: networkName,
+          isActive: networkName === currentNetwork,
           mirrorNodeUrl: config.mirrorNodeUrl,
           rpcUrl: config.rpcUrl,
           operatorId: operator?.accountId || '',

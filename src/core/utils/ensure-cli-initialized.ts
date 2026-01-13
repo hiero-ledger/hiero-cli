@@ -91,7 +91,10 @@ async function saveOperatorConfig(
 }
 
 async function initializeCliOperator(api: CoreApi) {
-  clack.intro('⚙️  No operator configured. Setting up default operator.');
+  const currentNetwork = api.network.getCurrentNetwork();
+  clack.intro(
+    `⚙️  No operator configured for ${currentNetwork.toString()}. Setting up default operator.`,
+  );
 
   const { accountId, privateKey, keyManager, ed25519Support } =
     await collectOperatorData();

@@ -3,6 +3,7 @@
  * Provides rich state management with subscriptions and actions
  */
 import type { Logger, StateService } from '@/core';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import { TOPIC_NAMESPACE } from './manifest';
 import { safeParseTopicData, type TopicData } from './schema';
@@ -109,7 +110,7 @@ export class ZustandTopicStateHelper {
   /**
    * Get topics by network
    */
-  getTopicsByNetwork(network: string): TopicData[] {
+  getTopicsByNetwork(network: SupportedNetwork): TopicData[] {
     const topics = this.listTopics();
     return topics.filter((topic) => topic.network === network);
   }

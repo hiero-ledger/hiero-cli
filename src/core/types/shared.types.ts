@@ -10,11 +10,12 @@ import type { KeyAlgorithm } from '@/core/shared/constants';
  * Supported Hedera networks
  * Used across all services for network identification
  */
-export type SupportedNetwork =
-  | 'mainnet'
-  | 'testnet'
-  | 'previewnet'
-  | 'localnet';
+export enum SupportedNetwork {
+  MAINNET = 'mainnet',
+  TESTNET = 'testnet',
+  PREVIEWNET = 'previewnet',
+  LOCALNET = 'localnet',
+}
 
 /**
  * Account data structure

@@ -2,20 +2,11 @@
  * Credentials Plugin State Schema
  * Single source of truth for credentials data structure and validation
  */
-import type { SupportedNetwork } from '@/core/types/shared.types';
-
 import { z } from 'zod';
 
 import { EntityIdSchema } from '@/core/schemas/common-schemas';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
-
-// Supported networks aligned with core SupportedNetwork type
-export const SUPPORTED_NETWORKS = [
-  'mainnet',
-  'testnet',
-  'previewnet',
-  'localnet',
-] as const satisfies readonly SupportedNetwork[];
 
 // Zod schema for credentials state validation
 export const CredentialsDataSchema = z.object({
@@ -26,7 +17,7 @@ export const CredentialsDataSchema = z.object({
     .min(1, 'Private key is required')
     .describe('Encrypted private key string'),
 
-  network: z.enum(SUPPORTED_NETWORKS, {
+  network: z.enum(SupportedNetwork, {
     error: () => ({
       message: 'Network must be one of: mainnet, testnet, previewnet, localnet',
     }),

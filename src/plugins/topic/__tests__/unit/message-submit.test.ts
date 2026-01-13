@@ -10,6 +10,7 @@ import {
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { submitMessage } from '@/plugins/topic/commands/submit-message/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -23,7 +24,7 @@ const makeTopicData = (overrides: Partial<TopicData> = {}): TopicData => ({
   name: 'test-topic',
   topicId: '0.0.1234',
   memo: 'Test topic',
-  network: 'testnet',
+  network: SupportedNetwork.TESTNET,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...overrides,

@@ -4,6 +4,7 @@
  */
 import type { Logger, StateService } from '@/core';
 import type { KeyAlgorithm } from '@/core/shared/constants';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import { ACCOUNT_NAMESPACE } from './manifest';
 import { type AccountData, safeParseAccountData } from './schema';
@@ -104,7 +105,7 @@ export class ZustandAccountStateHelper {
   /**
    * Get accounts by network
    */
-  getAccountsByNetwork(network: string): AccountData[] {
+  getAccountsByNetwork(network: SupportedNetwork): AccountData[] {
     const accounts = this.listAccounts();
     return accounts.filter((account) => account.network === network);
   }
