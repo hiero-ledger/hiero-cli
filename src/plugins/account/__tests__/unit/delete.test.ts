@@ -1,6 +1,8 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { DeleteAccountOutput } from '@/plugins/account/commands/delete';
 
+import { makeStateMock } from '@/__tests__/mocks/mocks';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -43,11 +45,11 @@ describe('account plugin - delete command (ADR-003)', () => {
     const kms = { remove: jest.fn() };
 
     const api: Partial<CoreApi> = {
-      state: {} as any,
+      state: makeStateMock(),
       logger,
       alias,
       network,
-      kms: kms as any,
+      kms: kms as unknown as KmsService,
     };
     const args = makeArgs(api, logger, { name: 'acc1' });
 
@@ -78,11 +80,11 @@ describe('account plugin - delete command (ADR-003)', () => {
     const kms = { remove: jest.fn() };
 
     const api: Partial<CoreApi> = {
-      state: {} as any,
+      state: makeStateMock(),
       logger,
       alias,
       network,
-      kms: kms as any,
+      kms: kms as unknown as KmsService,
     };
     const args = makeArgs(api, logger, { id: '0.0.2222' });
 
@@ -110,7 +112,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const network = makeNetworkServiceMock(SupportedNetwork.TESTNET);
 
     const api: Partial<CoreApi> = {
-      state: {} as any,
+      state: makeStateMock(),
       logger,
       alias,
       network,
@@ -136,7 +138,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const network = makeNetworkServiceMock(SupportedNetwork.TESTNET);
 
     const api: Partial<CoreApi> = {
-      state: {} as any,
+      state: makeStateMock(),
       logger,
       alias,
       network,
@@ -167,7 +169,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const network = makeNetworkServiceMock(SupportedNetwork.TESTNET);
 
     const api: Partial<CoreApi> = {
-      state: {} as any,
+      state: makeStateMock(),
       logger,
       alias,
       network,
@@ -199,7 +201,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const network = makeNetworkServiceMock(SupportedNetwork.TESTNET);
 
     const api: Partial<CoreApi> = {
-      state: {} as any,
+      state: makeStateMock(),
       logger,
       alias,
       network,
@@ -236,11 +238,11 @@ describe('account plugin - delete command (ADR-003)', () => {
     const kms = { remove: jest.fn() };
 
     const api: Partial<CoreApi> = {
-      state: {} as any,
+      state: makeStateMock(),
       logger,
       alias,
       network,
-      kms: kms as any,
+      kms: kms as unknown as KmsService,
     };
     const args = makeArgs(api, logger, { name: 'acc-alias' });
 

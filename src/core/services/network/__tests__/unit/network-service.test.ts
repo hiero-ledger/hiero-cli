@@ -38,7 +38,7 @@ describe('NetworkServiceImpl', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    stateMock = makeStateMock() as jest.Mocked<StateService>;
+    stateMock = makeStateMock();
     loggerMock = makeLogger();
     networkService = new NetworkServiceImpl(stateMock, loggerMock);
   });

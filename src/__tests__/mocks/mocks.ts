@@ -15,9 +15,35 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
-import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
+import type {
+  TransactionResult,
+  TxExecutionService,
+} from '@/core/services/tx-execution/tx-execution-service.interface';
+
+import { KeyAlgorithm } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 import { MOCK_PUBLIC_KEY } from './fixtures';
+
+/**
+ * Alias account data structure
+ */
+interface AccountAlias {
+  entityId: string;
+  publicKey: string;
+  keyRefId: string;
+}
+
+/**
+ * Account info structure for mirror node mock
+ */
+interface AccountInfo {
+  accountId: string;
+  balance: { balance: number; timestamp: string };
+  evmAddress: string;
+  accountPublicKey: string;
+  keyAlgorithm: KeyAlgorithm;
+}
 
 /**
  * Create a mocked Logger instance
@@ -94,7 +120,7 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
   resolve: jest.fn().mockImplementation((alias, type) => {
     // Domyślnie zwracaj dane dla typowych aliasów używanych w testach
     if (type === 'account') {
-      const accountAliases: Record<string, any> = {
+      const accountAliases: Record<string, AccountAlias> = {
         'admin-key': {
           entityId: '0.0.100000',
           publicKey: '302a300506032b6570032100' + '0'.repeat(64),
@@ -181,6 +207,24 @@ export const makeSigningMock = (
     }),
 });
 
+/**
+ * Create mock TransactionResult
+ */
+export const makeTransactionResultMock = (
+  overrides?: Partial<TransactionResult>,
+): TransactionResult => ({
+  success: true,
+  transactionId: 'mock-tx-id',
+  consensusTimestamp: '2024-01-01T00:00:00.000Z',
+  receipt: {
+    status: {
+      status: 'success' as const,
+      transactionId: 'mock-tx-id',
+    },
+  },
+  ...overrides,
+});
+
 export const createMirrorNodeMock =
   (): jest.Mocked<HederaMirrornodeService> => ({
     getAccount: jest.fn(),
@@ -204,18 +248,20 @@ export const makeStateMock = (
   options: {
     listData?: unknown[];
   } = {},
-): Partial<StateService> => ({
+): jest.Mocked<StateService> => ({
   list: jest.fn().mockReturnValue(options.listData || []),
   get: jest.fn(),
   set: jest.fn(),
   delete: jest.fn(),
   clear: jest.fn(),
   has: jest.fn(),
-  getNamespaces: jest.fn(),
-  getKeys: jest.fn(),
+  getNamespaces: jest.fn().mockReturnValue([]),
+  getKeys: jest.fn().mockReturnValue([]),
   subscribe: jest.fn(),
   getActions: jest.fn(),
   getState: jest.fn(),
+  getStorageDirectory: jest.fn().mockReturnValue(''),
+  isInitialized: jest.fn().mockReturnValue(true),
 });
 
 /**
@@ -226,7 +272,7 @@ export const makeMirrorMock = (
     hbarBalance?: bigint;
     tokenBalances?: { token_id: string; balance: number }[];
     tokenError?: Error;
-    accountInfo?: any;
+    accountInfo?: AccountInfo;
     getAccountImpl?: jest.Mock;
     tokenInfo?: Record<
       string,
@@ -246,7 +292,7 @@ export const makeMirrorMock = (
         balance: { balance: 1000, timestamp: '1234567890' },
         evmAddress: '0xabc',
         accountPublicKey: 'pubKey',
-        keyAlgorithm: 'ecdsa',
+        keyAlgorithm: KeyAlgorithm.ECDSA,
       },
     ),
   getTokenInfo: jest.fn().mockImplementation((tokenId: string) => {
@@ -331,30 +377,78 @@ export const makeArgs = (
   const alias = api.alias || makeAliasMock();
   const kms = api.kms || makeKmsMock();
 
-  return {
-    api: {
-      account: {} as any,
-      token: {} as any,
-      txExecution: makeSigningMock(),
-      topic: {
-        createTopic: jest.fn(),
-        submitMessage: jest.fn(),
-      } as any,
-      state: {} as any,
-      mirror: {} as any,
-      network,
-      config: makeConfigMock(),
-      logger,
-      alias,
-      kms,
-      hbar: makeHbarMock(),
-      output: makeOutputMock(),
-      pluginManagement: makePluginManagementServiceMock(),
-      keyResolver: makeKeyResolverMock({ network, alias, kms }),
-      ...api,
-    },
+  // Exclude state and config from api spread since they're already mocked above
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { state, config, ...restApi } = api;
+
+  const api_object = {
+    account: {} as unknown,
+    token: {} as unknown,
+    txExecution: makeSigningMock(),
+    topic: {
+      createTopic: jest.fn(),
+      submitMessage: jest.fn(),
+    } as unknown,
+    state: {
+      list: jest.fn().mockReturnValue([]),
+      get: jest.fn(),
+      set: jest.fn(),
+      delete: jest.fn(),
+      clear: jest.fn(),
+      has: jest.fn(),
+      getNamespaces: jest.fn(),
+      getKeys: jest.fn(),
+      subscribe: jest.fn(),
+      getActions: jest.fn(),
+      getState: jest.fn(),
+      getStorageDirectory: jest.fn().mockReturnValue(''),
+      isInitialized: jest.fn().mockReturnValue(true),
+    } as unknown as StateService,
+    mirror: {
+      setBaseUrl: jest.fn(),
+      getAccount: jest.fn(),
+      getAccountHBarBalance: jest.fn(),
+      getAccountTokenBalances: jest.fn(),
+      getTopicMessage: jest.fn(),
+      getTopicMessages: jest.fn(),
+      getTokenInfo: jest.fn(),
+      getTopicInfo: jest.fn(),
+      getTransactionRecord: jest.fn(),
+      getContractInfo: jest.fn(),
+      getPendingAirdrops: jest.fn(),
+      getOutstandingAirdrops: jest.fn(),
+      getExchangeRate: jest.fn(),
+    } as HederaMirrornodeService,
+    network,
+    config: makeConfigMock(),
     logger,
-    state: {} as StateService,
+    alias,
+    kms,
+    hbar: makeHbarMock(),
+    output: makeOutputMock(),
+    pluginManagement: makePluginManagementServiceMock(),
+    keyResolver: makeKeyResolverMock({ network, alias, kms }),
+    ...restApi,
+  } as unknown as CoreApi;
+
+  return {
+    api: api_object,
+    logger,
+    state: {
+      list: jest.fn().mockReturnValue([]),
+      get: jest.fn(),
+      set: jest.fn(),
+      delete: jest.fn(),
+      clear: jest.fn(),
+      has: jest.fn(),
+      getNamespaces: jest.fn(),
+      getKeys: jest.fn(),
+      subscribe: jest.fn(),
+      getActions: jest.fn(),
+      getState: jest.fn(),
+      getStorageDirectory: jest.fn().mockReturnValue(''),
+      isInitialized: jest.fn().mockReturnValue(true),
+    } as unknown as StateService,
     config: makeConfigMock(),
     args,
   };
@@ -374,10 +468,10 @@ export const setupExitSpy = (): jest.SpyInstance => {
  */
 export const makeKeyResolverMock = (
   options: {
-    network?: any;
-    alias?: any;
-    kms?: any;
-    mirror?: any;
+    network?: NetworkService;
+    alias?: AliasService;
+    kms?: KmsService;
+    mirror?: HederaMirrornodeService;
   } = {},
 ): jest.Mocked<KeyResolverService> => ({
   getOrInitKey: jest
@@ -389,7 +483,7 @@ export const makeKeyResolverMock = (
         // Call kms.importPrivateKey if available
         if (options.kms?.importPrivateKey) {
           const importResult = options.kms.importPrivateKey(
-            'ecdsa',
+            KeyAlgorithm.ECDSA,
             keyOrAlias.privateKey,
             keyManager,
             labels || [],
@@ -409,7 +503,8 @@ export const makeKeyResolverMock = (
 
       // alias format
       if (keyOrAlias?.type === 'alias' && options.alias) {
-        const network = options.network?.getCurrentNetwork() || 'testnet';
+        const network =
+          options.network?.getCurrentNetwork() || SupportedNetwork.TESTNET;
         const resolved = options.alias.resolve(
           keyOrAlias.alias,
           'account',
@@ -437,7 +532,8 @@ export const makeKeyResolverMock = (
     .mockImplementation(async (keyOrAlias, keyManager, labels) => {
       // undefined -> fallback do operatora
       if (!keyOrAlias && options.network) {
-        const operator = options.network.getOperator();
+        const network = options.network.getCurrentNetwork();
+        const operator = options.network.getOperator(network);
         if (!operator) throw new Error('No operator set');
         // Always use default valid public key for mocking
         const publicKey = '302a300506032b6570032100' + '0'.repeat(64);

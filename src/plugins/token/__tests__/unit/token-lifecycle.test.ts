@@ -3,16 +3,23 @@
  * Tests the complete token lifecycle: create → associate → transfer
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { StateService } from '@/core/services/state/state-service.interface';
 
 import '@/core/utils/json-serialize';
 
+import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { HederaTokenType, Status } from '@/core/shared/constants';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createToken } from '@/plugins/token/commands/create';
 import { transferToken } from '@/plugins/token/commands/transfer';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { mockAccountIds, mockKeys } from './helpers/fixtures';
+import {
+  mockAccountIds,
+  mockKeys,
+  mockTransactionResults,
+} from './helpers/fixtures';
 import {
   makeApiMocks,
   makeLogger,
@@ -67,39 +74,21 @@ describe('Token Lifecycle Integration', () => {
             // Mock different responses based on transaction type
             if (transaction === mockTokenTransaction) {
               return Promise.resolve({
-                success: true,
+                ...mockTransactionResults.success,
                 transactionId: `${token}@1234567890.123456789`,
                 tokenId: token,
-                receipt: {
-                  status: {
-                    status: 'success',
-                    transactionId: `${token}@1234567890.123456789`,
-                  },
-                },
               });
             }
             if (transaction === mockAssociationTransaction) {
               return Promise.resolve({
-                success: true,
+                ...mockTransactionResults.successWithAssociation,
                 transactionId: '0.0.123@1234567890.123456790',
-                receipt: {
-                  status: {
-                    status: 'success',
-                    transactionId: '0.0.123@1234567890.123456790',
-                  },
-                },
               });
             }
             if (transaction === mockTransferTransaction) {
               return Promise.resolve({
-                success: true,
+                ...mockTransactionResults.success,
                 transactionId: '0.0.123@1234567890.123456791',
-                receipt: {
-                  status: {
-                    status: 'success',
-                    transactionId: '0.0.123@1234567890.123456791',
-                  },
-                },
               });
             }
             return Promise.resolve({
@@ -142,9 +131,9 @@ describe('Token Lifecycle Integration', () => {
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const createResult = await createToken(createArgs);
@@ -162,9 +151,9 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId}:${userKey}`,
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult = await associateToken(associateArgs);
@@ -184,9 +173,9 @@ describe('Token Lifecycle Integration', () => {
           amount: '100',
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const transferResult = await transferToken(transferArgs);
@@ -263,27 +252,15 @@ describe('Token Lifecycle Integration', () => {
           signAndExecuteWith: jest.fn().mockImplementation((transaction) => {
             if (transaction === mockTokenTransaction) {
               return Promise.resolve({
-                success: true,
+                ...mockTransactionResults.success,
                 transactionId: `${token}@1234567890.123456789`,
                 tokenId: token,
-                receipt: {
-                  status: {
-                    status: 'success',
-                    transactionId: `${token}@1234567890.123456789`,
-                  },
-                },
               });
             }
             if (transaction === mockAssociationTransaction) {
               return Promise.resolve({
-                success: true,
+                ...mockTransactionResults.successWithAssociation,
                 transactionId: '0.0.123@1234567890.123456790',
-                receipt: {
-                  status: {
-                    status: 'success',
-                    transactionId: '0.0.123@1234567890.123456790',
-                  },
-                },
               });
             }
             return Promise.resolve({
@@ -319,9 +296,9 @@ describe('Token Lifecycle Integration', () => {
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const createResult = await createToken(createArgs);
@@ -339,9 +316,9 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId}:${userKey}`,
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult = await associateToken(associateArgs);
@@ -401,14 +378,13 @@ describe('Token Lifecycle Integration', () => {
               transaction === mockAssociationTransaction2
             ) {
               return Promise.resolve({
-                success: true,
+                ...mockTransactionResults.success,
                 transactionId: '0.0.123@1234567890.123456789',
                 tokenId:
                   transaction === mockTokenTransaction
                     ? '0.0.123456'
                     : undefined,
                 consensusTimestamp: '2024-01-01T00:00:00.000Z',
-                receipt: {},
               });
             }
             return Promise.resolve({
@@ -445,9 +421,9 @@ describe('Token Lifecycle Integration', () => {
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const createResult = await createToken(createArgs);
@@ -465,9 +441,9 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId1}:${userKey1}`,
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult1 = await associateToken(associateArgs1);
@@ -485,9 +461,9 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId2}:${userKey2}`,
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult2 = await associateToken(associateArgs2);
@@ -529,9 +505,8 @@ describe('Token Lifecycle Integration', () => {
         },
         signing: {
           signAndExecuteWith: jest.fn().mockReturnValue({
-            success: true,
+            ...mockTransactionResults.success,
             transactionId: '0.0.123@1234567890.123456789',
-            receipt: {},
           }),
         },
       });
@@ -547,9 +522,9 @@ describe('Token Lifecycle Integration', () => {
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const createResult = await createToken(createArgs);
@@ -566,9 +541,9 @@ describe('Token Lifecycle Integration', () => {
           account: `${userAccountId}:5555555555555555555555555555555555555555555555555555555555555555`,
         },
         api,
-        state: {} as any,
-        config: {} as any,
         logger,
+        state: makeStateMock() as StateService,
+        config: makeConfigMock() as ConfigService,
       };
 
       const associateResult = await associateToken(associateArgs);

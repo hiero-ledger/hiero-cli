@@ -66,7 +66,8 @@ describe('OutputServiceImpl', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     service = new OutputServiceImpl();
-    getStrategyMock = OutputFormatterFactory.getStrategy as any as jest.Mock;
+    getStrategyMock =
+      OutputFormatterFactory.getStrategy as unknown as jest.Mock;
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
   });
 

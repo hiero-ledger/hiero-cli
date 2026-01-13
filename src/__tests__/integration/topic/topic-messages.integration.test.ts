@@ -96,7 +96,7 @@ describe('Topic Messages Integration Tests', () => {
 
     await delay(5000);
 
-    const findMessageEqArgs: Record<string, any> = {
+    const findMessageEqArgs: Record<string, string | number> = {
       topic: createTopicOutput.topicId,
       sequenceEq: 3,
     };
@@ -114,7 +114,7 @@ describe('Topic Messages Integration Tests', () => {
     expect(findMessageEqOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageEqOutput.messages?.at(0)?.message).toBe(`Test message 3`);
 
-    const findMessageGtArgs: Record<string, any> = {
+    const findMessageGtArgs: Record<string, string | number> = {
       topic: createTopicOutput.topicId,
       sequenceGt: 7,
     };
@@ -132,7 +132,7 @@ describe('Topic Messages Integration Tests', () => {
     expect(findMessageGtOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageGtOutput.messages.length).toBe(3);
 
-    const findMessageGteArgs: Record<string, any> = {
+    const findMessageGteArgs: Record<string, string | number> = {
       topic: createTopicOutput.topicId,
       sequenceGte: 7,
     };
@@ -150,7 +150,7 @@ describe('Topic Messages Integration Tests', () => {
     expect(findMessageGteOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageGteOutput.messages.length).toBe(4);
 
-    const findMessageLtArgs: Record<string, any> = {
+    const findMessageLtArgs: Record<string, string | number> = {
       topic: createTopicOutput.topicId,
       sequenceLt: 4,
     };
@@ -168,7 +168,7 @@ describe('Topic Messages Integration Tests', () => {
     expect(findMessageLtOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageLtOutput.messages.length).toBe(3);
 
-    const findMessageLteArgs: Record<string, any> = {
+    const findMessageLteArgs: Record<string, string | number> = {
       topic: createTopicOutput.topicId,
       sequenceLte: 4,
     };

@@ -72,12 +72,12 @@ export const mockTransactionResults = {
     transactionId: 'tx-123',
     success: true,
     accountId: '0.0.9999',
-    receipt: {} as any,
+    receipt: { status: { status: 'success' } },
   },
   failure: {
     transactionId: 'tx-456',
     success: false,
-    receipt: {} as any,
+    receipt: { status: { status: 'failed' } },
   },
 };
 
