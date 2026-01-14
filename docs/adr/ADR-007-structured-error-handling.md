@@ -57,7 +57,7 @@ Replace the return-based error handling with a throw-based model using a structu
 
 7. **JSON output includes structured error data**: Error code, message, context, and cause for scripting consumption.
 
-8. **Simplified handler return type**: Handlers return plain data objects instead of `CommandExecutionResult`. Core handles serialization. This eliminates redundant `status: Success` (implicit if no throw) and `JSON.stringify()` boilerplate.
+8. **Simplified handler return type**: Handlers return an updated `CommandExecutionResult<T>` containing only the data in a `result` field. Core handles serialization and adds `status: "success"` to the final flat JSON output. This eliminates redundant boilerplate while allowing for future extensibility (e.g., adding metadata).
 
 ## Specification
 
@@ -174,10 +174,11 @@ export class ValidationError extends CliError {
 
 ### JSON Error Output Format
 
-Success (unchanged):
+Success (new structured format):
 
 ```json
 {
+  "status": "success",
   "accountId": "0.0.123",
   "hbarBalance": "100000000"
 }
@@ -217,7 +218,7 @@ Error [NOT_FOUND]: Account not found: myaccount
   Caused by: Request failed with status code 404
 ```
 
-> **Note**: This is an additional simplification on top of the throw-based error model. Handlers no longer return `CommandExecutionResult` - they return plain data objects. Core handles serialization.
+> **Note**: This is an additional simplification on top of the throw-based error model. Handlers no longer return the old `CommandExecutionResult` - they return a simplified version `{ result: T }`. Core handles serialization and adds `status: "success"` to the flat output.
 
 **Rationale**:
 
@@ -230,8 +231,14 @@ Error [NOT_FOUND]: Account not found: myaccount
 ```typescript
 // src/core/types/command-handler.ts
 
-// Handler returns plain data, core wraps it
-type CommandHandler<T = unknown> = (args: CommandHandlerArgs) => Promise<T>;
+export interface CommandExecutionResult<T = unknown> {
+  result: T;
+}
+
+// Handler returns result data, core adds status and serializes
+type CommandHandler<T = unknown> = (
+  args: CommandHandlerArgs,
+) => Promise<CommandExecutionResult<T>>;
 
 // Core execution (simplified)
 async function executeHandler<T>(
@@ -240,9 +247,35 @@ async function executeHandler<T>(
   format: OutputFormat,
 ): Promise<void> {
   try {
-    const result = await handler(args);
+    const handlerResult = await handler(args);
     const output =
-      format === 'json' ? JSON.stringify(result) : formatAsTable(result);
+      format === 'json'
+        ? JSON.stringify({ status: 'success', ...handlerResult.result })
+        : formatAsTable(handlerResult.result);
+    console.log(output);
+    process.exit(0);
+  } catch (error) {
+    formatAndExitWithError(error, format);
+  }
+}
+
+// Handler returns wrapped result, core adds status and serializes
+type CommandHandler<T = unknown> = (
+  args: CommandHandlerArgs,
+) => Promise<CommandResponse<T>>;
+
+// Core execution (simplified)
+async function executeHandler<T>(
+  handler: CommandHandler<T>,
+  args: CommandHandlerArgs,
+  format: OutputFormat,
+): Promise<void> {
+  try {
+    const handlerResult = await handler(args);
+    const output =
+      format === 'json'
+        ? JSON.stringify({ status: 'success', ...handlerResult })
+        : formatAsTable(handlerResult.result);
     console.log(output);
     process.exit(0);
   } catch (error) {
@@ -281,8 +314,8 @@ export async function getAccountBalance(args: CommandHandlerArgs): Promise<Comma
 After (new approach):
 
 ```typescript
-// Handler returns data object directly - no status, no stringify
-export async function getAccountBalance(args: CommandHandlerArgs): Promise<AccountBalanceOutput> {
+// Handler returns result data - no status boilerplate, no stringify
+export async function getAccountBalance(args: CommandHandlerArgs): Promise<CommandExecutionResult<AccountBalanceOutput>> {
   const validArgs = AccountBalanceInputSchema.parse(args.args);
 
   const account = api.alias.resolve(validArgs.account, ALIAS_TYPE.Account, network);
@@ -293,11 +326,13 @@ export async function getAccountBalance(args: CommandHandlerArgs): Promise<Accou
   // fetchAccountTokenBalances throws NetworkError - core catches it
   const balances = await fetchAccountTokenBalances(...);
 
-  // Return plain object - core serializes based on --format flag
+  // Return data object - core adds status: success and serializes to flat JSON
   return {
-    accountId: account.id,
-    hbarBalance: balances.hbar,
-    tokens: balances.tokens,
+    result: {
+      accountId: account.id,
+      hbarBalance: balances.hbar,
+      tokens: balances.tokens,
+    },
   };
 }
 ```
@@ -416,7 +451,7 @@ esac
 
 7. **Cause chain preservation**: Original errors are captured in `cause` for debugging without losing the structured error type.
 
-8. **Handler simplification**: Returning plain data instead of `CommandExecutionResult` eliminates redundant `status: Success` and `JSON.stringify()`. Core owns serialization, enabling future format additions (YAML, table) without handler changes.
+8. **Handler simplification**: Returning the data in a `result` field instead of the full `CommandExecutionResult` eliminates redundant `status: Success` and `JSON.stringify()`. This structure ensures extensibility while core handles serialization and maintains a flat output format.
 
 ## Consequences
 
@@ -439,7 +474,7 @@ esac
 - **~47 files with catch blocks** must be refactored
 - **~11 mirrornode service methods** need NetworkError/NotFoundError throwing
 - **All handlers** switch from `return {status: Failure}` to `throw new XxxError()`
-- **All handlers** change return type from `CommandExecutionResult` to plain data object
+- **All handlers** change return type to updated `CommandExecutionResult<T>` (`{ result: T }`)
 - **Core plugin-manager** must serialize handler results and handle output formatting
 - **Tests** must verify error types instead of string matching
 
