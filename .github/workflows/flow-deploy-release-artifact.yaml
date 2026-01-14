@@ -207,57 +207,64 @@ jobs:
         run: |
           npm pack --pack-destination ./dist
 
-      # Upload the artifact
-      - name: Upload Hiero CLI Package Artifact
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        with:
-          name: cli-npm-package
-          path: ./dist/${{ steps.set-publish-data.outputs.artifact-name }}
-          if-no-files-found: error
 
-      - name: Deploy to JFrog Registry
-        if: ${{ github.event.inputs.dry-run-enabled != 'true' && !cancelled() && !failure() }}
-        run: jf npm publish
-
-  # Add a publishing job for Hiero CLI to npmjs
-  publish-npm-package:
-    name: Publish Hiero CLI NPM Package
-    runs-on: ubuntu-latest
-    needs:
-      - create-github-release
-    steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
-        with:
-          egress-policy: audit
-
-      - name: Checkout Code
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-        with:
-          fetch-depth: 1
-
-      - name: Setup Node
-        uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
-        with:
-          node-version: 22
-          registry-url: 'https://registry.npmjs.org'
-
-      - name: Install NPM latest
-        run: npm install -g npm@11.7.0
-
-      - name: Download Hiero CLI NPM Package Artifact
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: cli-npm-package
-
-      - name: Publish Hiero CLI NPM Package
+      - name: Verify Release
         run: |
-          args="--access=public"
-          if [[ "${{ inputs.dry-run-enabled }}" == "true" ]]; then
-            args="${args} --dry-run"
-          fi
+          echo "Expected package name: ${{ steps.set-publish-data.outputs.artifact-name }}"
+          echo "Dist dir files:"
+          ls -la ./dist
 
-          package="${{ needs.create-github-release.outputs.npm-artifact-name }}"
-          echo "::group::Publishing package: ${package} with args: ${args}"
-          npm publish ${package} ${args}
-          echo "::endgroup::"
+  #     # Upload the artifact
+  #     - name: Upload Hiero CLI Package Artifact
+  #       uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+  #       with:
+  #         name: cli-npm-package
+  #         path: ./dist/${{ steps.set-publish-data.outputs.artifact-name }}
+  #         if-no-files-found: error
+
+  #     - name: Deploy to JFrog Registry
+  #       if: ${{ github.event.inputs.dry-run-enabled != 'true' && !cancelled() && !failure() }}
+  #       run: jf npm publish
+
+  # # Add a publishing job for Hiero CLI to npmjs
+  # publish-npm-package:
+  #   name: Publish Hiero CLI NPM Package
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - create-github-release
+  #   steps:
+  #     - name: Harden Runner
+  #       uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+  #       with:
+  #         egress-policy: audit
+
+  #     - name: Checkout Code
+  #       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+  #       with:
+  #         fetch-depth: 1
+
+  #     - name: Setup Node
+  #       uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
+  #       with:
+  #         node-version: 22
+  #         registry-url: 'https://registry.npmjs.org'
+
+  #     - name: Install NPM latest
+  #       run: npm install -g npm@11.7.0
+
+  #     - name: Download Hiero CLI NPM Package Artifact
+  #       uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+  #       with:
+  #         name: cli-npm-package
+
+  #     - name: Publish Hiero CLI NPM Package
+  #       run: |
+  #         args="--access=public"
+  #         if [[ "${{ inputs.dry-run-enabled }}" == "true" ]]; then
+  #           args="${args} --dry-run"
+  #         fi
+
+  #         package="${{ needs.create-github-release.outputs.npm-artifact-name }}"
+  #         echo "::group::Publishing package: ${package} with args: ${args}"
+  #         npm publish ${package} ${args}
+  #         echo "::endgroup::"
