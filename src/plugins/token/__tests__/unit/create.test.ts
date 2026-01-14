@@ -250,7 +250,7 @@ describe('createTokenHandler', () => {
 
       // Assert
       expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create token');
+      expect(result.errorMessage).toContain('Failed to create fungible token');
       expect(result.errorMessage).toContain('no token ID returned');
       expect(mockSaveToken).not.toHaveBeenCalled();
       // This test is now ADR-003 compliant
@@ -287,7 +287,7 @@ describe('createTokenHandler', () => {
 
       // Assert
       expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create token');
+      expect(result.errorMessage).toContain('Failed to create fungible token');
       expect(result.errorMessage).toContain('Service error');
       // This test is now ADR-003 compliant
     });

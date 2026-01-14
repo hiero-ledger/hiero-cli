@@ -21,23 +21,23 @@ src/plugins/token/
 ├── schema.ts                # Token data schema with Zod validation
 ├── commands/
 │   ├── create/
-│   │   ├── handler.ts       # Token creation handler
+│   │   ├── handler.ts       # Fungible token creation handler
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts        # Command exports
 │   ├── transfer/
-│   │   ├── handler.ts       # Token transfer handler
+│   │   ├── handler.ts       # Fungible token transfer handler
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts        # Command exports
 │   ├── associate/
-│   │   ├── handler.ts       # Token association handler
+│   │   ├── handler.ts       # Fungible token association handler
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts        # Command exports
 │   ├── list/
-│   │   ├── handler.ts       # Token list handler
+│   │   ├── handler.ts       # Fungible token list handler
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts        # Command exports
 │   └── createFromFile/
-│       ├── handler.ts       # Token from file handler
+│       ├── handler.ts       # Fungible token from file handler
 │       ├── output.ts        # Output schema and template
 │       └── index.ts        # Command exports
 ├── zustand-state-helper.ts  # State management helper

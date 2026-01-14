@@ -1,5 +1,5 @@
 /**
- * Associate Token Command Output Schema and Template
+ * Associate Fungible Token Command Output Schema and Template
  */
 import { z } from 'zod';
 
@@ -9,9 +9,9 @@ import {
 } from '@/core/schemas/common-schemas';
 
 /**
- * Associate Token Command Output Schema
+ * Associate Fungible Token Command Output Schema
  */
-export const AssociateTokenOutputSchema = z.object({
+export const AssociateFungibleTokenOutputSchema = z.object({
   transactionId: TransactionIdSchema.optional(),
   accountId: EntityIdSchema,
   tokenId: EntityIdSchema,
@@ -22,18 +22,20 @@ export const AssociateTokenOutputSchema = z.object({
     .describe('Indicates that the association already existed on chain'),
 });
 
-export type AssociateTokenOutput = z.infer<typeof AssociateTokenOutputSchema>;
+export type AssociateFungibleTokenOutput = z.infer<
+  typeof AssociateFungibleTokenOutputSchema
+>;
 
 /**
- * Human-readable template for associate token output
+ * Human-readable template for associate fungible token output
  */
-export const ASSOCIATE_TOKEN_TEMPLATE = `
+export const ASSOCIATE_FUNGIBLE_TOKEN_TEMPLATE = `
 {{#if alreadyAssociated}}
-✅ Token already associated!
+✅ Fungible token already associated!
 {{else}}
-✅ Token association successful!
+✅ Fungible token association successful!
 {{/if}}
-   Token ID: {{tokenId}}
+   Fungible Token ID: {{tokenId}}
    Account ID: {{accountId}}
    Associated: {{associated}}
 {{#if transactionId}}

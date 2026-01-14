@@ -1,11 +1,11 @@
 /**
- * Token Transfer Command Handler
- * Handles token transfer operations using the Core API
+ * Fungible Token Transfer Command Handler
+ * Handles fungible token transfer operations using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { TransferTokenOutput } from './output';
+import type { TransferFungibleTokenOutput } from './output';
 
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
@@ -16,7 +16,7 @@ import {
 } from '@/plugins/token/resolver-helper';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { TransferTokenInputSchema } from './input';
+import { TransferFungibleTokenInputSchema } from './input';
 
 export async function transferToken(
   args: CommandHandlerArgs,
@@ -26,7 +26,7 @@ export async function transferToken(
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
   // Validate command parameters
-  const validArgs = TransferTokenInputSchema.parse(args.args);
+  const validArgs = TransferFungibleTokenInputSchema.parse(args.args);
 
   // Use validated parameters
   const tokenIdOrAlias = validArgs.token;
@@ -46,7 +46,7 @@ export async function transferToken(
 
   if (!resolvedToken) {
     throw new Error(
-      `Failed to resolve token parameter: ${tokenIdOrAlias}. ` +
+      `Failed to resolve fungible token parameter: ${tokenIdOrAlias}. ` +
         `Expected format: token-name OR token-id`,
     );
   }
@@ -76,7 +76,7 @@ export async function transferToken(
       return {
         status: Status.Failure,
         errorMessage: formatError(
-          `Failed to fetch token decimals for ${tokenId}`,
+          `Failed to fetch fungible token decimals for ${tokenId}`,
           error,
         ),
       };
@@ -142,7 +142,7 @@ export async function transferToken(
       // (e.g., update associations, balances, etc.)
 
       // Prepare output data
-      const outputData: TransferTokenOutput = {
+      const outputData: TransferFungibleTokenOutput = {
         transactionId: result.transactionId,
         tokenId,
         from: fromAccountId,
@@ -157,13 +157,13 @@ export async function transferToken(
     } else {
       return {
         status: Status.Failure,
-        errorMessage: 'Token transfer failed',
+        errorMessage: 'Fungible token transfer failed',
       };
     }
   } catch (error: unknown) {
     return {
       status: Status.Failure,
-      errorMessage: formatError('Failed to transfer token', error),
+      errorMessage: formatError('Failed to transfer fungible token', error),
     };
   }
 }

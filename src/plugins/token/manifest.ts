@@ -6,19 +6,19 @@
 import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
 import {
-  ASSOCIATE_TOKEN_TEMPLATE,
+  ASSOCIATE_FUNGIBLE_TOKEN_TEMPLATE,
+  AssociateFungibleTokenOutputSchema,
   associateToken,
-  AssociateTokenOutputSchema,
 } from './commands/associate';
 import {
-  CREATE_TOKEN_TEMPLATE,
+  CREATE_FUNGIBLE_TOKEN_TEMPLATE,
+  CreateFungibleTokenOutputSchema,
   createToken,
-  CreateTokenOutputSchema,
 } from './commands/create';
 import {
-  CREATE_TOKEN_FROM_FILE_TEMPLATE,
+  CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE,
+  CreateFungibleTokenFromFileOutputSchema,
   createTokenFromFile,
-  CreateTokenFromFileOutputSchema,
 } from './commands/createFromFile';
 import {
   LIST_TOKENS_TEMPLATE,
@@ -26,9 +26,9 @@ import {
   ListTokensOutputSchema,
 } from './commands/list';
 import {
-  TRANSFER_TOKEN_TEMPLATE,
+  TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
+  TransferFungibleTokenOutputSchema,
   transferToken,
-  TransferTokenOutputSchema,
 } from './commands/transfer';
 
 export const TOKEN_NAMESPACE = 'token-tokens';
@@ -54,7 +54,7 @@ export const tokenPluginManifest: PluginManifest = {
           short: 'T',
           type: 'string',
           required: true,
-          description: 'Token: either a token alias or token-id',
+          description: 'Fungible token: either a token alias or token-id',
         },
         {
           name: 'to',
@@ -90,8 +90,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: transferToken,
       output: {
-        schema: TransferTokenOutputSchema,
-        humanTemplate: TRANSFER_TOKEN_TEMPLATE,
+        schema: TransferFungibleTokenOutputSchema,
+        humanTemplate: TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
       },
     },
     {
@@ -104,14 +104,14 @@ export const tokenPluginManifest: PluginManifest = {
           short: 'N',
           type: 'string',
           required: true,
-          description: 'Token name. Option required.',
+          description: 'Fungible token name. Option required.',
         },
         {
           name: 'symbol',
           short: 's',
           type: 'string',
           required: true,
-          description: 'Token symbol. Option required.',
+          description: 'Fungible token symbol. Option required.',
         },
         {
           name: 'treasury',
@@ -127,7 +127,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: 'number',
           required: false,
           default: 0,
-          description: 'Decimals for the token. Default: 0',
+          description: 'Decimals for the fungible token. Default: 0',
         },
         {
           name: 'initial-supply',
@@ -152,7 +152,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: 'string',
           required: false,
           description:
-            'Maximum supply of the token to be set upon creation. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "1000t")',
+            'Maximum supply of the fungible token to be set upon creation. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "1000t")',
         },
         {
           name: 'admin-key',
@@ -167,7 +167,7 @@ export const tokenPluginManifest: PluginManifest = {
           short: 'n',
           type: 'string',
           required: false,
-          description: 'Optional name to register for the token',
+          description: 'Optional name to register for the fungible token',
         },
         {
           name: 'key-manager',
@@ -182,13 +182,14 @@ export const tokenPluginManifest: PluginManifest = {
           short: 'M',
           type: 'string',
           required: false,
-          description: 'Optional memo for the token (max 100 characters)',
+          description:
+            'Optional memo for the fungible token (max 100 characters)',
         },
       ],
       handler: createToken,
       output: {
-        schema: CreateTokenOutputSchema,
-        humanTemplate: CREATE_TOKEN_TEMPLATE,
+        schema: CreateFungibleTokenOutputSchema,
+        humanTemplate: CREATE_FUNGIBLE_TOKEN_TEMPLATE,
       },
     },
     {
@@ -202,7 +203,7 @@ export const tokenPluginManifest: PluginManifest = {
           short: 'T',
           type: 'string',
           required: true,
-          description: 'Token: either a token alias or token-id',
+          description: 'Fungible token: either a token alias or token-id',
         },
         {
           name: 'account',
@@ -223,8 +224,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: associateToken,
       output: {
-        schema: AssociateTokenOutputSchema,
-        humanTemplate: ASSOCIATE_TOKEN_TEMPLATE,
+        schema: AssociateFungibleTokenOutputSchema,
+        humanTemplate: ASSOCIATE_FUNGIBLE_TOKEN_TEMPLATE,
       },
     },
     {
@@ -239,7 +240,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: 'string',
           required: true,
           description:
-            'Token definition file path (absolute or relative) to a JSON file',
+            'Fungible token definition file path (absolute or relative) to a JSON file',
         },
         {
           name: 'key-manager',
@@ -252,8 +253,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: createTokenFromFile,
       output: {
-        schema: CreateTokenFromFileOutputSchema,
-        humanTemplate: CREATE_TOKEN_FROM_FILE_TEMPLATE,
+        schema: CreateFungibleTokenFromFileOutputSchema,
+        humanTemplate: CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE,
       },
     },
     {
@@ -268,7 +269,8 @@ export const tokenPluginManifest: PluginManifest = {
           type: 'boolean',
           required: false,
           default: false,
-          description: 'Show token key information (admin, supply, wipe, etc.)',
+          description:
+            'Show fungible token key information (admin, supply, wipe, etc.)',
         },
       ],
       handler: listTokens,

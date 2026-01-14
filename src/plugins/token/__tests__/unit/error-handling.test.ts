@@ -94,7 +94,7 @@ describe('Token Plugin Error Handling', () => {
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
       expect(result.errorMessage).toContain(
-        'Failed to create token: Network timeout',
+        'Failed to create fungible token: Network timeout',
       );
       expect(result.outputJson).toBeUndefined();
     });
@@ -131,7 +131,7 @@ describe('Token Plugin Error Handling', () => {
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
       expect(result.errorMessage).toContain(
-        'Failed to associate token: Connection refused',
+        'Failed to associate fungible token: Connection refused',
       );
       expect(result.outputJson).toBeUndefined();
     });
@@ -176,7 +176,7 @@ describe('Token Plugin Error Handling', () => {
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
       expect(result.errorMessage).toContain(
-        'Failed to transfer token: Network unreachable',
+        'Failed to transfer fungible token: Network unreachable',
       );
       expect(result.outputJson).toBeUndefined();
     });
@@ -896,7 +896,9 @@ describe('Token Plugin Error Handling', () => {
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
       expect(result.errorMessage).toBeDefined();
-      expect(result.errorMessage).toContain('Token association failed');
+      expect(result.errorMessage).toContain(
+        'Fungible token association failed',
+      );
       expect(result.outputJson).toBeUndefined();
     });
   });

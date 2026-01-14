@@ -117,7 +117,7 @@ We will implement a **two-tier testing strategy**:
 ### Phase 3: End-to-End Workflows
 
 - Write E2E tests that execute CLI commands.
-- Cover account creation, token transfer, and the rest of the plugin commands.
+- Cover account creation, fungible token operations (token-ft), and the rest of the plugin commands.
 - Implement cleanup and isolation strategies.
 
 ---

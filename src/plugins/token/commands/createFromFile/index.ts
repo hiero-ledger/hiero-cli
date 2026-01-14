@@ -3,8 +3,8 @@
  * For use by tests and external consumers
  */
 export { createTokenFromFile } from './handler';
-export type { CreateTokenFromFileOutput } from './output';
+export type { CreateFungibleTokenFromFileOutput } from './output';
 export {
-  CREATE_TOKEN_FROM_FILE_TEMPLATE,
-  CreateTokenFromFileOutputSchema,
+  CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE,
+  CreateFungibleTokenFromFileOutputSchema,
 } from './output';

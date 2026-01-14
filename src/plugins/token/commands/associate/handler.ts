@@ -1,11 +1,11 @@
 /**
- * Token Associate Command Handler
- * Handles token association operations using the Core API
+ * Fungible Token Associate Command Handler
+ * Handles fungible token association operations using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { AssociateTokenOutput } from './output';
+import type { AssociateFungibleTokenOutput } from './output';
 
 import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
 
@@ -15,7 +15,7 @@ import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { saveAssociationToState } from '@/plugins/token/utils/token-associations';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { AssociateTokenInputSchema } from './input';
+import { AssociateFungibleTokenInputSchema } from './input';
 
 export async function associateToken(
   args: CommandHandlerArgs,
@@ -24,7 +24,7 @@ export async function associateToken(
 
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
-  const validArgs = AssociateTokenInputSchema.parse(args.args);
+  const validArgs = AssociateFungibleTokenInputSchema.parse(args.args);
 
   const tokenIdOrAlias = validArgs.token;
   const accountIdOrAlias = validArgs.account;
@@ -40,7 +40,7 @@ export async function associateToken(
 
   if (!resolvedToken) {
     throw new Error(
-      `Failed to resolve token parameter: ${tokenIdOrAlias}. ` +
+      `Failed to resolve fungible token parameter: ${tokenIdOrAlias}. ` +
         `Expected format: token-name OR token-id`,
     );
   }
@@ -55,7 +55,9 @@ export async function associateToken(
 
   logger.info(`🔑 Using account: ${account.accountId}`);
   logger.info(`🔑 Will sign with account key`);
-  logger.info(`Associating token ${tokenId} with account ${account.accountId}`);
+  logger.info(
+    `Associating fungible token ${tokenId} with account ${account.accountId}`,
+  );
 
   let alreadyAssociated = false;
   let transactionId: string | undefined;
@@ -79,7 +81,7 @@ export async function associateToken(
     }
   } catch (mirrorError) {
     logger.debug(
-      `Failed to check token association via Mirror Node: ${formatError('', mirrorError)}. Proceeding with transaction.`,
+      `Failed to check fungible token association via Mirror Node: ${formatError('', mirrorError)}. Proceeding with transaction.`,
     );
   }
 
@@ -102,7 +104,7 @@ export async function associateToken(
       } else {
         return {
           status: Status.Failure,
-          errorMessage: 'Token association failed',
+          errorMessage: 'Fungible token association failed',
         };
       }
     } catch (error: unknown) {
@@ -118,7 +120,10 @@ export async function associateToken(
       } else {
         return {
           status: Status.Failure,
-          errorMessage: formatError('Failed to associate token', error),
+          errorMessage: formatError(
+            'Failed to associate fungible token',
+            error,
+          ),
         };
       }
     }
@@ -127,11 +132,11 @@ export async function associateToken(
   if (!alreadyAssociated && !transactionId) {
     return {
       status: Status.Failure,
-      errorMessage: 'Failed to associate token',
+      errorMessage: 'Failed to associate fungible token',
     };
   }
 
-  const outputData: AssociateTokenOutput = {
+  const outputData: AssociateFungibleTokenOutput = {
     accountId: account.accountId,
     tokenId,
     associated: true,

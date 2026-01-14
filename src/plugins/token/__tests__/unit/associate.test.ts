@@ -8,8 +8,8 @@ import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
 
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import {
+  type AssociateFungibleTokenOutput,
   associateToken,
-  type AssociateTokenOutput,
 } from '@/plugins/token/commands/associate';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -94,7 +94,9 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = JSON.parse(
+        result.outputJson!,
+      ) as AssociateFungibleTokenOutput;
       expect(output.tokenId).toBe(tokenId);
       expect(output.accountId).toBe(accountId);
       expect(output.associated).toBe(true);
@@ -161,7 +163,9 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = JSON.parse(
+        result.outputJson!,
+      ) as AssociateFungibleTokenOutput;
       expect(output.tokenId).toBe(tokenId);
       expect(output.accountId).toBe(accountId);
       expect(output.associated).toBe(true);
@@ -220,7 +224,9 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = JSON.parse(
+        result.outputJson!,
+      ) as AssociateFungibleTokenOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -295,7 +301,9 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = JSON.parse(
+        result.outputJson!,
+      ) as AssociateFungibleTokenOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -362,7 +370,9 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = JSON.parse(
+        result.outputJson!,
+      ) as AssociateFungibleTokenOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -420,7 +430,7 @@ describe('associateTokenHandler', () => {
       // Assert - ADR-003 compliance: check CommandExecutionResult
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toBe('Token association failed');
+      expect(result.errorMessage).toBe('Fungible token association failed');
       expect(result.outputJson).toBeUndefined();
     });
 
@@ -461,7 +471,9 @@ describe('associateTokenHandler', () => {
       // Assert - ADR-003 compliance: check CommandExecutionResult
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to associate token');
+      expect(result.errorMessage).toContain(
+        'Failed to associate fungible token',
+      );
       expect(result.outputJson).toBeUndefined();
     });
 
@@ -507,7 +519,9 @@ describe('associateTokenHandler', () => {
       // Assert - ADR-003 compliance: check CommandExecutionResult
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to associate token');
+      expect(result.errorMessage).toContain(
+        'Failed to associate fungible token',
+      );
       expect(result.outputJson).toBeUndefined();
     });
   });
@@ -565,7 +579,9 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = JSON.parse(
+        result.outputJson!,
+      ) as AssociateFungibleTokenOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -655,7 +671,9 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = JSON.parse(
+        result.outputJson!,
+      ) as AssociateFungibleTokenOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
