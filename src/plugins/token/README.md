@@ -93,12 +93,12 @@ Associate a fungible token with an account to enable transfers.
 
 ```bash
 # Using account alias
-hcli token associate-ft \
+hcli token associate \
   --token mytoken-alias \
   --account alice
 
 # Using account-id:account-key pair
-hcli token associate-ft \
+hcli token associate \
   --token 0.0.123456 \
   --account 0.0.789012:302e020100300506032b657004220420...
 ```

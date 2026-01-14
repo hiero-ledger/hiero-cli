@@ -318,7 +318,7 @@ interface CommandOutputSpec {
 }
 ```
 
-#### `token associate-ft`
+#### `token associate`
 
 **Output**:
 

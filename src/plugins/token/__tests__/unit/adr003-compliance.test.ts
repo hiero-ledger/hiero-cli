@@ -3,7 +3,7 @@
  * Tests that all command handlers return CommandExecutionResult according to ADR-003
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { AssociateFungibleTokenOutput } from '@/plugins/token/commands/associate';
+import type { AssociateTokenOutput } from '@/plugins/token/commands/associate';
 import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create';
 import type { ListTokensOutput } from '@/plugins/token/commands/list';
 import type { TransferFungibleTokenOutput } from '@/plugins/token/commands/transfer';
@@ -216,9 +216,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(
-        result.outputJson!,
-      ) as AssociateFungibleTokenOutput;
+      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.associated).toBe(true);
       expect(output.transactionId).toBe('0.0.123@1700000000.123456789');

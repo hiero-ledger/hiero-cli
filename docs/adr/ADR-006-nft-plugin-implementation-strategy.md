@@ -18,7 +18,7 @@ Goals:
 
 - New commands for NFT operations will be added to the existing token plugin with proper naming with `nft` prefix
 - Old commands for fungible commands will be added prefix `ft` that would mean token handles fungible operations
-- Operations that can be handled same way for non-fungible as for fungible tokens will have separate commands with appropriate suffixes (e.g., `token associate-ft` and `token associate-nft`)
+- Operations that can be handled same way for non-fungible as for fungible tokens will use a single shared command (e.g., `token associate` for both FT and NFT)
 - The same storage will be used to store non-fungible token operation, the data model will vary from the original fungible token data model
 - We will not support passing multiple metadata into one transaction execution - user can only provide one metadata link that will be added to for example mint transaction in each call
 
@@ -31,8 +31,7 @@ Goals:
    - `token mint-nft` - new command for minting non-fungible tokens
    - `token transfer-ft` - renamed `token transfer` command for better clarity and user experience
    - `token transfer-nft` - new command for transferring NFT serial between accounts
-   - `token associate-ft` - renamed `token associate` command for better clarity and user experience
-   - `token associate-nft` - new command for associating NFT tokens with accounts
+   - `token associate` - shared command for both fungible and non-fungible token association
    - `token list` - unchanged command that will retrieve all tokens information stored in our state (both FT and NFT)
    - `token create-ft-from-file` - renamed `token create-from-file` command for better clarity and user experience
    - `token view` - unchanged command for retrieving token information from Hedera Mirror Node REST API

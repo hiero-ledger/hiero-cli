@@ -96,7 +96,7 @@ for ((i=1; i<=ACCOUNTS_NUMBER; i++)); do
       # i and j are different, do something
       account_to="${ACCOUNTS[$((j - 1))]}"
       print_step "Creating association with token $token_name for account $account_to"
-      hcli token associate-ft \
+      hcli token associate \
         -T "$token_name" \
         -a "$account_to"
       print_step "Transfer token $token_name from account $account_from to account $account_to"

@@ -10,7 +10,7 @@ import {
  * Input schema for token associate command
  * Validates arguments for associating a token with an account
  */
-export const AssociateFungibleTokenInputSchema = z.object({
+export const AssociateTokenInputSchema = z.object({
   token: EntityReferenceSchema.describe('Token identifier (ID or name)'),
   account: KeyOrAccountAliasSchema.describe(
     'Account to associate. Can be alias or AccountID:accountKey pair.',
@@ -20,6 +20,4 @@ export const AssociateFungibleTokenInputSchema = z.object({
   ),
 });
 
-export type AssociateFungibleTokenInput = z.infer<
-  typeof AssociateFungibleTokenInputSchema
->;
+export type AssociateTokenInput = z.infer<typeof AssociateTokenInputSchema>;

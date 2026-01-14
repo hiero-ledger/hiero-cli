@@ -131,7 +131,7 @@ describe('Token Plugin Error Handling', () => {
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
       expect(result.errorMessage).toContain(
-        'Failed to associate fungible token: Connection refused',
+        'Failed to associate token: Connection refused',
       );
       expect(result.outputJson).toBeUndefined();
     });
@@ -896,9 +896,7 @@ describe('Token Plugin Error Handling', () => {
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
       expect(result.errorMessage).toBeDefined();
-      expect(result.errorMessage).toContain(
-        'Fungible token association failed',
-      );
+      expect(result.errorMessage).toContain('Token association failed');
       expect(result.outputJson).toBeUndefined();
     });
   });

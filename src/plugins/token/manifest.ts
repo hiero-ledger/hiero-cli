@@ -6,9 +6,9 @@
 import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
 import {
-  ASSOCIATE_FUNGIBLE_TOKEN_TEMPLATE,
-  AssociateFungibleTokenOutputSchema,
+  ASSOCIATE_TOKEN_TEMPLATE,
   associateToken,
+  AssociateTokenOutputSchema,
 } from './commands/associate';
 import {
   CREATE_FUNGIBLE_TOKEN_TEMPLATE,
@@ -193,17 +193,16 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
-      name: 'associate-ft',
-      summary: 'Associate a fungible token with an account',
-      description:
-        'Associate a fungible token with an account to enable transfers',
+      name: 'associate',
+      summary: 'Associate a token with an account',
+      description: 'Associate a token with an account to enable transfers',
       options: [
         {
           name: 'token',
           short: 'T',
           type: 'string',
           required: true,
-          description: 'Fungible token: either a token alias or token-id',
+          description: 'Token: either a token alias or token-id',
         },
         {
           name: 'account',
@@ -224,8 +223,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: associateToken,
       output: {
-        schema: AssociateFungibleTokenOutputSchema,
-        humanTemplate: ASSOCIATE_FUNGIBLE_TOKEN_TEMPLATE,
+        schema: AssociateTokenOutputSchema,
+        humanTemplate: ASSOCIATE_TOKEN_TEMPLATE,
       },
     },
     {
