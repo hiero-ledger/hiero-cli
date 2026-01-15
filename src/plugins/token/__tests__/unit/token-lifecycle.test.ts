@@ -6,7 +6,7 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
 
-import { Status, TokenTypeEnum } from '@/core/shared/constants';
+import { HederaTokenType, Status } from '@/core/shared/constants';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createToken } from '@/plugins/token/commands/create';
 import { transferToken } from '@/plugins/token/commands/transfer';
@@ -207,7 +207,7 @@ describe('Token Lifecycle Integration', () => {
         maxSupplyRaw: 100000n,
         treasuryId: _treasuryAccountId,
         adminPublicKey: expect.any(Object),
-        tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
+        tokenType: HederaTokenType.FUNGIBLE_COMMON,
         memo: undefined,
       });
 

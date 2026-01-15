@@ -6,7 +6,7 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
-import { Status, TokenTypeEnum } from '@/core/shared/constants';
+import { HederaTokenType, Status } from '@/core/shared/constants';
 import { createToken } from '@/plugins/token/commands/create';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -155,7 +155,7 @@ describe('createTokenHandler', () => {
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
         adminPublicKey: expect.any(Object),
-        tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
+        tokenType: HederaTokenType.FUNGIBLE_COMMON,
         memo: undefined,
       });
       // When adminKey is not provided, only treasury signs (which is the operator)

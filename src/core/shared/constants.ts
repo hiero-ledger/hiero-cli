@@ -19,12 +19,12 @@ export enum KeyAlgorithm {
   ED25519 = 'ed25519',
 }
 
-export enum TokenTypeEnum {
+export enum HederaTokenType {
   NON_FUNGIBLE_TOKEN = 'NonFungibleToken',
   FUNGIBLE_COMMON = 'FungibleCommon',
 }
 
 export const TokenTypeMap = {
-  [TokenTypeEnum.NON_FUNGIBLE_TOKEN]: TokenType.NonFungibleUnique,
-  [TokenTypeEnum.FUNGIBLE_COMMON]: TokenType.FungibleCommon,
-} satisfies Record<TokenTypeEnum, TokenType>;
+  [HederaTokenType.NON_FUNGIBLE_TOKEN]: TokenType.NonFungibleUnique,
+  [HederaTokenType.FUNGIBLE_COMMON]: TokenType.FungibleCommon,
+} satisfies Record<HederaTokenType, TokenType>;

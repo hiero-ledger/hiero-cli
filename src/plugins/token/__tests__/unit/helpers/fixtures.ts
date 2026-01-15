@@ -3,7 +3,7 @@
  * Reusable test data and constants
  */
 
-import { TokenTypeEnum } from '@/core/shared/constants';
+import { HederaTokenType } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 /**
@@ -283,7 +283,7 @@ export const validTokenDataForSchema = {
       collectorId: '0.0.999999',
     },
   ],
-  tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
 };
 
 /**
@@ -367,7 +367,7 @@ export const mockStateTokenData = {
     network: SupportedNetwork.TESTNET,
     associations: [],
     customFees: [],
-    tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
+    tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
   withAssociations: {
     tokenId: '0.0.123456',
@@ -382,7 +382,7 @@ export const mockStateTokenData = {
     network: SupportedNetwork.TESTNET,
     associations: [{ name: 'TestAccount', accountId: '0.0.111111' }],
     customFees: [],
-    tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
+    tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
   token2: {
     tokenId: '0.0.789012',
@@ -397,7 +397,7 @@ export const mockStateTokenData = {
     network: SupportedNetwork.TESTNET,
     associations: [],
     customFees: [],
-    tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
+    tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
 };
 
@@ -464,7 +464,7 @@ export const expectedTokenTransactionParams = {
   symbol: 'TEST',
   decimals: 2,
   initialSupplyRaw: 100000n,
-  tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
   supplyType: 'INFINITE',
   maxSupplyRaw: undefined,
   treasuryId: '0.0.123456',
@@ -481,7 +481,7 @@ export const expectedNftTransactionParams = {
   decimals: 0,
   initialSupplyRaw: 0n,
   supplyType: 'INFINITE',
-  tokenType: TokenTypeEnum.NON_FUNGIBLE_TOKEN,
+  tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
   maxSupplyRaw: undefined,
   treasuryId: '0.0.123456',
   adminPublicKey: expect.any(Object),
@@ -510,7 +510,7 @@ export const expectedTokenTransactionParamsFromFile = {
       exempt: undefined,
     },
   ],
-  tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
   memo: 'Test token created from file',
 };
 
@@ -530,7 +530,7 @@ export const validTokenDataForValidation = {
   adminPublicKey: 'admin-key',
   network: SupportedNetwork.TESTNET,
   customFees: [],
-  tokenType: TokenTypeEnum.FUNGIBLE_COMMON,
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
 };
 
 /**

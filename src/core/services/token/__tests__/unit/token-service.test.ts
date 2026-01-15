@@ -9,7 +9,7 @@ import { AccountId, Hbar, TokenId, TokenType } from '@hashgraph/sdk';
 import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { TokenServiceImpl } from '@/core/services/token/token-service';
-import { TokenTypeEnum } from '@/core/shared/constants';
+import { HederaTokenType } from '@/core/shared/constants';
 
 import {
   createMockCustomFixedFee,
@@ -30,7 +30,7 @@ const TOKEN_SYMBOL = 'TST';
 const TOKEN_DECIMALS = 2;
 const INITIAL_SUPPLY = 1000n;
 const MAX_SUPPLY = 10000n;
-const TOKEN_TYPE = TokenTypeEnum.FUNGIBLE_COMMON;
+const TOKEN_TYPE = HederaTokenType.FUNGIBLE_COMMON;
 
 const TRANSFER_AMOUNT = 100n;
 

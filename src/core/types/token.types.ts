@@ -4,7 +4,7 @@
  */
 
 import type { PublicKey } from '@hashgraph/sdk';
-import type { TokenTypeEnum } from '@/core/shared/constants';
+import type { HederaTokenType } from '@/core/shared/constants';
 
 /**
  * Parameters for token transfer transactions
@@ -38,7 +38,7 @@ export interface TokenCreateParams {
   treasuryId: string;
   decimals: number;
   initialSupplyRaw: bigint;
-  tokenType: TokenTypeEnum;
+  tokenType: HederaTokenType;
   supplyType: SupplyType;
   maxSupplyRaw?: bigint; // Required for FINITE supply type
   adminPublicKey: PublicKey;

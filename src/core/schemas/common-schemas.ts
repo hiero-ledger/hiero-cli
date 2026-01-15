@@ -8,7 +8,7 @@
  */
 import { z } from 'zod';
 
-import { KeyAlgorithm, TokenTypeEnum } from '@/core/shared/constants';
+import { HederaTokenType, KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 // ======================================================
@@ -443,12 +443,12 @@ export const MemoSchema = z
 /**
  * Token Type schema
  * Optional Token Type field for transactions
- * Enum of TokenTypeEnum
+ * Enum of HederaTokenType
  */
 export const TokenTypeSchema = z
-  .enum(TokenTypeEnum)
+  .enum(HederaTokenType)
   .optional()
-  .default(TokenTypeEnum.FUNGIBLE_COMMON);
+  .default(HederaTokenType.FUNGIBLE_COMMON);
 
 /**
  * Key or Account Alias Input (Normalized)

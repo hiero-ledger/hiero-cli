@@ -10,7 +10,7 @@ import type { CreateNftOutput } from '@/plugins/token/commands/create-nft/output
 
 import { PublicKey } from '@hashgraph/sdk';
 
-import { Status, TokenTypeEnum } from '@/core/shared/constants';
+import { HederaTokenType, Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { CreateNftInputSchema } from '@/plugins/token/commands/create-nft/input';
@@ -33,7 +33,7 @@ export async function createNft(
   const symbol = validArgs.symbol;
   const decimals = 0;
   const initialSupply = 0n;
-  const tokenType = TokenTypeEnum.NON_FUNGIBLE_TOKEN;
+  const tokenType = HederaTokenType.NON_FUNGIBLE_TOKEN;
   const supplyType = validArgs.supplyType;
   const alias = validArgs.name;
   const providedMaxSupply = validArgs.maxSupply;
@@ -72,6 +72,7 @@ export async function createNft(
   let finalMaxSupply: bigint | undefined = undefined;
   if (supplyType.toUpperCase() === 'FINITE') {
     finalMaxSupply = determineFiniteMaxSupply(maxSupply, initialSupply);
+    logger.info(`Max supply: ${finalMaxSupply}`);
   } else if (maxSupply !== undefined) {
     logger.warn(
       `Max supply specified for INFINITE supply type - ignoring max supply parameter`,
@@ -79,9 +80,6 @@ export async function createNft(
   }
 
   logger.info(`Creating NFT: ${name} (${symbol})`);
-  if (finalMaxSupply !== undefined) {
-    logger.info(`Max supply: ${finalMaxSupply}`);
-  }
 
   try {
     logger.debug('=== NFT PARAMS DEBUG ===');
@@ -157,7 +155,7 @@ export async function createNft(
       adminAccountId: admin.accountId,
       supplyAccountId: supply.accountId,
       alias,
-      network: api.network.getCurrentNetwork(),
+      network: network,
     };
 
     return {

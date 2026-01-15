@@ -3,7 +3,7 @@
  * Utility functions for building token data objects for state storage
  */
 import type { TransactionResult } from '@/core';
-import type { TokenTypeEnum } from '@/core/shared/constants';
+import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TokenData, TokenFileDefinition } from '@/plugins/token/schema';
 
@@ -15,7 +15,7 @@ export function buildTokenData(
     treasuryId: string;
     decimals: number;
     initialSupply: bigint;
-    tokenType: TokenTypeEnum;
+    tokenType: HederaTokenType;
     supplyType: string;
     adminPublicKey: string;
     supplyPublicKey?: string;

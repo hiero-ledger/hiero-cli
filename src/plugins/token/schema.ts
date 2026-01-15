@@ -14,7 +14,7 @@ import {
   TokenSymbolSchema,
   TokenTypeSchema,
 } from '@/core/schemas';
-import { TokenTypeEnum } from '@/core/shared/constants';
+import { HederaTokenType } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
@@ -73,7 +73,7 @@ export const TokenDataSchema = z.object({
     .min(0n, 'Initial supply must be non-negative'),
 
   tokenType: z.enum(
-    [TokenTypeEnum.NON_FUNGIBLE_TOKEN, TokenTypeEnum.FUNGIBLE_COMMON],
+    [HederaTokenType.NON_FUNGIBLE_TOKEN, HederaTokenType.FUNGIBLE_COMMON],
     {
       error: () => ({
         message:

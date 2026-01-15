@@ -10,7 +10,7 @@ import type { CreateTokenOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
 
-import { Status, TokenTypeEnum } from '@/core/shared/constants';
+import { HederaTokenType, Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import {
@@ -40,7 +40,7 @@ export async function createToken(
   const providedMaxSupply = validArgs.maxSupply;
   const providedKeyManager = validArgs.keyManager;
   const memo = validArgs.memo;
-  const tokenType = TokenTypeEnum.FUNGIBLE_COMMON;
+  const tokenType = HederaTokenType.FUNGIBLE_COMMON;
 
   const keyManager =
     providedKeyManager ??

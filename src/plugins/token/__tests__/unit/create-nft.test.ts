@@ -5,7 +5,7 @@
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
-import { Status, TokenTypeEnum } from '@/core/shared/constants';
+import { HederaTokenType, Status } from '@/core/shared/constants';
 import { createNft } from '@/plugins/token/commands/create-nft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -160,7 +160,7 @@ describe('createNftHandler', () => {
         supplyType: 'INFINITE',
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
-        tokenType: TokenTypeEnum.NON_FUNGIBLE_TOKEN,
+        tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
         adminPublicKey: expect.any(Object),
         supplyPublicKey: expect.any(Object),
         memo: undefined,
