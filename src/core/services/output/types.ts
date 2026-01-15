@@ -15,3 +15,16 @@ export interface OutputHandlerOptions {
   format: OutputFormat;
   outputPath?: string;
 }
+
+export interface HandleResultOptions {
+  result: unknown;
+  template?: string;
+  format?: OutputFormat;
+  outputPath?: string;
+}
+
+export interface HandleErrorOptions {
+  error: unknown;
+  format?: OutputFormat;
+  outputPath?: string;
+}

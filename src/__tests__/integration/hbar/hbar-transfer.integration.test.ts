@@ -41,7 +41,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
 
     expect(createAccountResult.status).toBe(Status.Success);
     const createAccountOutput: CreateAccountOutput = JSON.parse(
-      createAccountResult.outputJson!,
+      createAccountResult.outputJson,
     );
     expect(createAccountOutput.name).toBe('account-transfer');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
@@ -111,7 +111,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
 
     expect(accountFromResult.status).toBe(Status.Success);
     const accountFromOutput: CreateAccountOutput = JSON.parse(
-      accountFromResult.outputJson!,
+      accountFromResult.outputJson,
     );
     expect(accountFromOutput.name).toBe('account-transfer-from');
     expect(accountFromOutput.type).toBe(KeyAlgorithm.ECDSA);
@@ -133,7 +133,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
 
     expect(accountToResult.status).toBe(Status.Success);
     const accountToOutput: CreateAccountOutput = JSON.parse(
-      accountToResult.outputJson!,
+      accountToResult.outputJson,
     );
     expect(accountToOutput.name).toBe('account-transfer-to');
     expect(accountToOutput.type).toBe(KeyAlgorithm.ECDSA);

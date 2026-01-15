@@ -1,125 +1,31 @@
-/**
- * Centralized Error Handler
- * Handles all error formatting, output, and process termination
- */
-import type { OutputFormat } from '@/core/shared/types/output-format';
-
-import { ZodError } from 'zod';
-
-import { Status } from '@/core/shared/constants';
-import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
-
-import { formatError } from './errors';
-
-// Global output format state for error handlers
-let globalOutputFormat: OutputFormat = DEFAULT_OUTPUT_FORMAT;
-
-/**
- * Set the global output format for error handlers
- */
-export function setGlobalOutputFormat(format: OutputFormat): void {
-  globalOutputFormat = format;
-}
-
-/**
- * Format error message for output
- */
-function formatErrorOutput(
-  errorMessage: string,
-  format: OutputFormat,
-  error?: unknown,
-): string {
-  if (format === 'json') {
-    // Special handling for ZodError in JSON format
-    if (error instanceof ZodError) {
-      return JSON.stringify(
-        {
-          status: Status.Failure,
-          errorMessage: errorMessage,
-          errors: error.issues.map((issue) => issue.message),
-        },
-        null,
-        2,
-      );
-    }
-
-    // Default JSON format for other errors
-    return JSON.stringify(
-      {
-        status: Status.Failure,
-        errorMessage: errorMessage,
-      },
-      null,
-      2,
-    );
-  }
-
-  return `Error: ${errorMessage}`;
-}
+import type { OutputService } from '@/core/services/output/output-service.interface';
 
 /**
  * Format error and exit process
- * Uses provided format or falls back to global format
- * Outputs to stdout for consistent error handling
+ * Delegates to OutputService for consistent formatting
  */
 export function formatAndExitWithError(
   context: string,
   error: unknown,
-  format?: OutputFormat,
+  outputService: OutputService,
 ): never {
-  const errorMessage = formatError(context, error);
-  const outputFormat = format ?? globalOutputFormat;
-  const output = formatErrorOutput(errorMessage, outputFormat, error);
-
-  console.log(output);
-  process.exit(1);
-}
-
-/**
- * Handle termination signals (SIGINT, SIGTERM)
- * Formats output and exits with specified code
- */
-function handleTerminationSignal(message: string, exitCode: number): void {
-  const format = globalOutputFormat;
-
-  if (format === 'json') {
-    const output = JSON.stringify(
-      {
-        status: Status.Failure,
-        errorMessage: message,
-      },
-      null,
-      2,
-    );
-    console.log(output);
-  } else {
-    console.log(`\n${message}`);
-  }
-  process.exit(exitCode);
+  return outputService.handleError({ error });
 }
 
 /**
  * Setup global error handlers for uncaught exceptions and signals
- * Should be called once at application startup
+ * NOTE: For PoC this is simplified as global handlers would need
+ * an initialized OutputService which is not always available at startup.
+ * @TODO POC_ERROR_HANDLING: Refactor to use OutputService once it's available
  */
 export function setupGlobalErrorHandlers(): void {
-  // Handle uncaught exceptions
   process.on('uncaughtException', (error: Error) => {
-    formatAndExitWithError('Uncaught exception', error);
+    console.error('Uncaught exception:', error);
+    process.exit(1);
   });
 
-  // Handle unhandled promise rejections
   process.on('unhandledRejection', (reason: unknown) => {
-    formatAndExitWithError('Unhandled promise rejection', reason);
-  });
-
-  // Handle SIGINT (Ctrl+C) - user cancellation
-  process.on('SIGINT', () => {
-    handleTerminationSignal('Operation cancelled by user', 1);
-  });
-
-  // Handle SIGTERM - graceful shutdown requested by system
-  process.on('SIGTERM', () => {
-    handleTerminationSignal('Process terminated', 0);
+    console.error('Unhandled promise rejection:', reason);
+    process.exit(1);
   });
 }

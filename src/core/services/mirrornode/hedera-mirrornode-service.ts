@@ -22,8 +22,8 @@ import type {
   TransactionDetailsResponse,
 } from './types';
 
+import { NetworkError, NotFoundError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { formatError } from '@/core/utils/errors';
 
 import { NetworkToBaseUrl } from './types';
 
@@ -43,10 +43,20 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
 
   async getAccount(accountId: string): Promise<AccountResponse> {
     const url = `${this.baseUrl}/accounts/${accountId}`;
-    const response = await fetch(url);
+    let response: Response;
+    try {
+      response = await fetch(url);
+    } catch (error) {
+      throw new NetworkError(`Failed to fetch account ${accountId}`, {
+        cause: error,
+      });
+    }
 
     if (!response.ok) {
-      throw new Error(
+      if (response.status === 404) {
+        throw new NotFoundError('Account', accountId);
+      }
+      throw new NetworkError(
         `Failed to fetch account ${accountId}: ${response.status} ${response.statusText}`,
       );
     }
@@ -55,11 +65,13 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
 
     // Check if the response is empty (no account found)
     if (!data.account) {
-      throw new Error(`Account ${accountId} not found`);
+      throw new NotFoundError('Account', accountId);
     }
 
     if (!data.key) {
-      throw new Error('No key is associated with the specified account.');
+      throw new NetworkError(
+        'No key is associated with the specified account.',
+      );
     }
 
     const keyAlgorithm = this.getKeyAlgorithm(data.key._type);
@@ -74,14 +86,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
   }
 
   async getAccountHBarBalance(accountId: string): Promise<bigint> {
-    let account;
-    try {
-      account = await this.getAccount(accountId);
-    } catch (error) {
-      throw Error(
-        formatError(`Failed to fetch hbar balance for ${accountId}: `, error),
-      );
-    }
+    const account = await this.getAccount(accountId);
     return BigInt(account.balance.balance);
   }
 

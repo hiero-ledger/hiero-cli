@@ -40,7 +40,7 @@ describe('Create Account Integration Tests', () => {
 
       expect(createAccountResult.status).toBe(Status.Success);
       const createAccountOutput: CreateAccountOutput = JSON.parse(
-        createAccountResult.outputJson!,
+        createAccountResult.outputJson,
       );
       expect(createAccountOutput.name).toBe('account-test');
       expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);

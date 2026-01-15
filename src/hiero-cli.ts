@@ -13,7 +13,6 @@ import { validateOutputFormat } from './core/shared/validation/validate-output-f
 import { addDisabledPluginsHelp } from './core/utils/add-disabled-plugins-help';
 import {
   formatAndExitWithError,
-  setGlobalOutputFormat,
   setupGlobalErrorHandlers,
 } from './core/utils/error-handler';
 
@@ -34,8 +33,7 @@ async function initializeCLI() {
 
     coreApi.output.setFormat(format);
 
-    // Setup global error handlers with validated format
-    setGlobalOutputFormat(format);
+    // Setup global error handlers
     setupGlobalErrorHandlers();
 
     const pluginManager = new PluginManager(coreApi);
@@ -58,7 +56,7 @@ async function initializeCLI() {
     await program.parseAsync(process.argv);
     process.exit(0);
   } catch (error) {
-    formatAndExitWithError('CLI initialization failed', error);
+    formatAndExitWithError('CLI initialization failed', error, coreApi.output);
   }
 }
 

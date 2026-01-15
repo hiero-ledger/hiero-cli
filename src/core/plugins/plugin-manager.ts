@@ -129,7 +129,7 @@ export class PluginManager {
     defaultState: PluginManifest[],
   ): Promise<PluginStateEntry[]> {
     const pluginState = this.setupPlugins(defaultState);
-    registerDisabledPlugin(program, pluginState);
+    registerDisabledPlugin(program, pluginState, this.coreApi.output);
     await this.initialize();
     return pluginState;
   }
@@ -177,11 +177,7 @@ export class PluginManager {
    * Wrapper for formatAndExitWithError with automatic format detection
    */
   private exitWithError(context: string, error: unknown): never {
-    return formatAndExitWithError(
-      context,
-      error,
-      this.coreApi.output.getFormat(),
-    );
+    return formatAndExitWithError(context, error, this.coreApi.output);
   }
 
   /**
@@ -395,10 +391,13 @@ export class PluginManager {
     }
 
     // Execute command handler with error handling
-    let result;
+    // @TODO POC_ERROR_HANDLING: Ensure all handlers are migrated to ADR-007 throw-based model
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    let result: any;
     try {
       result = await commandSpec.handler(handlerArgs);
     } catch (error) {
+      // ADR-007: Core catches thrown errors and formats them
       this.exitWithError(`Command ${commandSpec.name} execution failed`, error);
     }
 
@@ -407,18 +406,40 @@ export class PluginManager {
       this.exitWithError(
         `Command ${commandSpec.name} handler error`,
         new Error(
-          'Handler must return CommandExecutionResult when output spec is defined',
+          'Handler must return CommandExecutionResult or CommandResult when output spec is defined',
         ),
       );
     }
 
+    // ADR-007: Check if it's the new CommandResult format
+    // @TODO POC_ERROR_HANDLING: This dual-contract support should be removed once migration is complete
+    if ('result' in result && !('status' in result)) {
+      try {
+        this.coreApi.output.handleResult({
+          /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+          result: result.result,
+          template: commandSpec.output.humanTemplate,
+          format: this.coreApi.output.getFormat(),
+        });
+        return;
+      } catch (error) {
+        this.exitWithError(
+          `Failed to format output for ${commandSpec.name}`,
+          error,
+        );
+      }
+    }
+
+    /* eslint-disable @typescript-eslint/no-unsafe-assignment */
     const executionResult = result;
 
-    // Handle non-success statuses
+    // Handle non-success statuses (Old ADR-003 path)
+    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
     if (executionResult.status !== Status.Success) {
       this.exitWithError(
         `Command ${commandSpec.name} failed`,
         new Error(
+          /* eslint-disable @typescript-eslint/no-unsafe-argument */
           executionResult.errorMessage || `Status: ${executionResult.status}`,
         ),
       );
@@ -441,5 +462,6 @@ export class PluginManager {
         );
       }
     }
+    /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
   }
 }
