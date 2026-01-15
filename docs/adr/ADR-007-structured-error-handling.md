@@ -28,6 +28,8 @@ ADR-003 introduced the `CommandExecutionResult` contract where handlers return `
 
 5. **Inconsistent service errors**: Services throw raw `Error` objects; handlers must catch and transform them individually, or rely on global handler to catch and handle them.
 
+6. **Dual output paths and format drift**: Success output goes through `OutputService`, but errors bypass it via `formatAndExitWithError`. The `format` is managed in both `OutputService` and `error-handler.ts`, so `--format` is not a single source of truth and JSON error output can diverge from standard output formatting.
+
 ### Future Considerations: Retry Strategy
 
 The `recoverable` property introduced in this ADR is designed to support a future retry mechanism. The planned retry strategy will:
@@ -41,7 +43,7 @@ This ADR establishes the error type foundation that makes intelligent retry deci
 
 ## Decision
 
-Replace the return-based error handling with a throw-based model using a structured `CliError` hierarchy:
+Replace the return-based error handling with a throw-based model using a structured `CliError` hierarchy and a single output pipeline through `OutputService`:
 
 1. **Introduce `ErrorCode` enum**: Predefined error codes for structured error handling. External plugins should prefer these codes when semantics match.
 
@@ -53,11 +55,13 @@ Replace the return-based error handling with a throw-based model using a structu
 
 5. **Services throw `CliError` directly**: Removes the need for handlers to catch and transform service errors.
 
-6. **Core error boundary handles all**: The existing try-catch in `plugin-manager.ts` becomes the single point of error handling.
+6. **Single output boundary**: Both success and errors flow through `OutputService`. `error-handler.ts` becomes a thin adapter that converts thrown errors into structured error output and delegates formatting to `OutputService`.
 
-7. **JSON output includes structured error data**: Error code, message, context, and cause for scripting consumption.
+7. **Single format source of truth**: `OutputService` owns `OutputFormat` state. All error formatting uses `coreApi.output.getFormat()` (or an injected output service), removing global format state.
 
-8. **Simplified handler return type**: Handlers return an updated `CommandExecutionResult<T>` containing only the data in a `result` field. Core handles serialization and adds `status: "success"` to the final flat JSON output. This eliminates redundant boilerplate while allowing for future extensibility (e.g., adding metadata).
+8. **JSON output includes structured error data**: Error code, message, context, and cause for scripting consumption.
+
+9. **Simplified handler return type**: Handlers return an updated `CommandExecutionResult<T>` containing only the data in a `result` field. Core handles serialization and adds `status: "success"` to the final flat JSON output. This eliminates redundant boilerplate while allowing for future extensibility (e.g., adding metadata).
 
 ## Specification
 
@@ -174,7 +178,7 @@ export class ValidationError extends CliError {
 
 ### JSON Error Output Format
 
-Success (new structured format):
+Success (structured format):
 
 ```json
 {
@@ -184,7 +188,7 @@ Success (new structured format):
 }
 ```
 
-Failure (new structured format):
+Failure (structured format, still formatted by OutputService):
 
 ```json
 {
@@ -199,7 +203,7 @@ Failure (new structured format):
 }
 ```
 
-Validation failure:
+Validation failure (Zod -> ValidationError):
 
 ```json
 {
@@ -210,6 +214,8 @@ Validation failure:
   "cause": ["Account ID is required"]
 }
 ```
+
+**Rule**: The JSON structure is created once (by `output-service`), and formatting is applied uniformly for both success and error paths. No other module should stringify or format JSON error output.
 
 ### Human-Readable Format
 
@@ -225,6 +231,7 @@ Error [NOT_FOUND]: Account not found: myaccount
 - `status: Success` is redundant - if handler didn't throw, it succeeded
 - `JSON.stringify()` in every handler is boilerplate - core should serialize
 - Handlers shouldn't know about output format (JSON/table/etc.)
+- **Errors use the same output pipeline** - `OutputService` formats both error and success outputs
 
 **New handler contract**:
 
@@ -236,53 +243,79 @@ export interface CommandExecutionResult<T = unknown> {
 }
 
 // Handler returns result data, core adds status and serializes
-type CommandHandler<T = unknown> = (
-  args: CommandHandlerArgs,
-) => Promise<CommandExecutionResult<T>>;
+```
 
-// Core execution (simplified)
-async function executeHandler<T>(
-  handler: CommandHandler<T>,
-  args: CommandHandlerArgs,
-  format: OutputFormat,
-): Promise<void> {
-  try {
-    const handlerResult = await handler(args);
-    const output =
-      format === 'json'
-        ? JSON.stringify({ status: 'success', ...handlerResult.result })
-        : formatAsTable(handlerResult.result);
-    console.log(output);
-    process.exit(0);
-  } catch (error) {
-    formatAndExitWithError(error, format);
-  }
-}
+### Output Pipeline (Single Source of Truth)
 
-// Handler returns wrapped result, core adds status and serializes
-type CommandHandler<T = unknown> = (
-  args: CommandHandlerArgs,
-) => Promise<CommandResponse<T>>;
+All output (success + errors) flows through `OutputService` with a single `OutputFormat` source of truth.
 
-// Core execution (simplified)
-async function executeHandler<T>(
-  handler: CommandHandler<T>,
-  args: CommandHandlerArgs,
-  format: OutputFormat,
-): Promise<void> {
-  try {
-    const handlerResult = await handler(args);
-    const output =
-      format === 'json'
-        ? JSON.stringify({ status: 'success', ...handlerResult })
-        : formatAsTable(handlerResult.result);
-    console.log(output);
-    process.exit(0);
-  } catch (error) {
-    formatAndExitWithError(error, format);
-  }
+```
+Handler → Core → OutputService.format({ status: 'success', ...result })
+                  ↓
+            OutputStrategy (human/json)
+                  ↓
+               stdout / file
+
+Error thrown → ErrorAdapter → OutputService.format({ status: 'failure', ...error })
+                             ↓
+                      same OutputStrategy
+                             ↓
+                          stdout / file
+```
+
+**Rules**:
+
+- `OutputService` owns format state; no other module keeps global format.
+- `error-handler.ts` does not format output; it maps exceptions to structured error objects and delegates to `OutputService`.
+- `--format` only affects `OutputService` and is queried via `coreApi.output.getFormat()`.
+- `OutputService` accepts structured objects (not pre-stringified JSON). JSON stringification happens only inside the JSON strategy.
+
+**OutputService contract (proposed)**:
+
+```typescript
+interface OutputService {
+  handleResult(options: {
+    data: Record<string, unknown>;
+    template?: string;
+    format?: OutputFormat;
+    outputPath?: string;
+  }): void;
+
+  handleError(options: {
+    error: CliError | ZodError | unknown;
+    format?: OutputFormat;
+    outputPath?: string;
+  }): never;
 }
 ```
+
+**Error adapter (proposed)**:
+
+```typescript
+function mapErrorToOutput(error: unknown): {
+  status: 'failure';
+  code: string;
+  message: string;
+  context?: unknown;
+  cause?: unknown;
+} {
+  if (error instanceof CliError)
+    return { status: 'failure', ...error.toJSON() };
+  if (error instanceof ZodError)
+    return { status: 'failure', ...ValidationError.fromZod(error).toJSON() };
+  return {
+    status: 'failure',
+    code: ErrorCode.INTERNAL_ERROR,
+    message: formatUnknownError(error),
+  };
+}
+```
+
+**Notes**:
+
+- `OutputService.handleResult` is used in `plugin-manager.ts` for successful command results.
+- `OutputService.handleError` is used in `error-handler.ts` and error boundaries to keep all formatting consistent.
+- `OutputService` is the only place that knows about the `format` option.
 
 ### Handler Migration
 
@@ -437,28 +470,30 @@ esac
 
 ## Rationale
 
-1. **Single error boundary**: Core's existing try-catch in `executePluginCommand` becomes the sole point of error handling, eliminating duplicated catch blocks in handlers.
+1. **Single output boundary**: `OutputService` formats both success and error output, keeping `--format` and JSON rendering in one place.
 
-2. **Type-safe error codes**: `ErrorCode` enum prevents typos and enables IDE autocomplete. Scripts differentiate errors via JSON `code` field.
+2. **Single error boundary**: Core's existing try-catch in `executePluginCommand` becomes the sole point of error handling, eliminating duplicated catch blocks in handlers.
 
-3. **Scripting first**: Structured JSON with `code`, `message`, `context` enables reliable script automation without string parsing.
+3. **Type-safe error codes**: `ErrorCode` enum prevents typos and enables IDE autocomplete. Scripts differentiate errors via JSON `code` field.
 
-4. **Retry-ready**: The `recoverable` flag provides semantic information for the future retry mechanism. `NetworkError` defaults to `recoverable: true`, enabling automatic retry for transient failures.
+4. **Scripting first**: Structured JSON with `code`, `message`, `context` enables reliable script automation without string parsing.
 
-5. **Service simplification**: Services throwing `CliError` directly removes transformation boilerplate from handlers.
+5. **Retry-ready**: The `recoverable` flag provides semantic information for the future retry mechanism. `NetworkError` defaults to `recoverable: true`, enabling automatic retry for transient failures.
 
-6. **Plugin extensibility**: Plugins can extend core error types or create custom error codes for domain-specific failures. Required `recoverable` field ensures explicit retry behavior decisions.
+6. **Service simplification**: Services throwing `CliError` directly removes transformation boilerplate from handlers.
 
-7. **Cause chain preservation**: Original errors are captured in `cause` for debugging without losing the structured error type.
+7. **Plugin extensibility**: Plugins can extend core error types or create custom error codes for domain-specific failures. Required `recoverable` field ensures explicit retry behavior decisions.
 
-8. **Handler simplification**: Returning the data in a `result` field instead of the full `CommandExecutionResult` eliminates redundant `status: Success` and `JSON.stringify()`. This structure ensures extensibility while core handles serialization and maintains a flat output format.
+8. **Cause chain preservation**: Original errors are captured in `cause` for debugging without losing the structured error type.
+
+9. **Handler simplification**: Returning the data in a `result` field instead of the full `CommandExecutionResult` eliminates redundant `status: Success` and `JSON.stringify()`. This structure ensures extensibility while core handles serialization and maintains a flat output format.
 
 ## Consequences
 
 ### Positive
 
 - **~50% code reduction** in handlers through boilerplate elimination (try-catch + status + stringify)
-- **Consistent UX**: Same error format across all commands and plugins
+- **Consistent UX**: Same output pipeline for success and errors
 - **Scriptable**: Stable error codes enable reliable automation
 - **Debuggable**: Full error chain with `cause` preserved
 - **Extensible**: Plugins can extend `CliError` while maintaining compatibility
@@ -475,10 +510,19 @@ esac
 - **~11 mirrornode service methods** need NetworkError/NotFoundError throwing
 - **All handlers** switch from `return {status: Failure}` to `throw new XxxError()`
 - **All handlers** change return type to updated `CommandExecutionResult<T>` (`{ result: T }`)
-- **Core plugin-manager** must serialize handler results and handle output formatting
-- **Tests** must verify error types instead of string matching
+- **Core plugin-manager** must route success output through `OutputService.handleResult`
+- **Error handler** must delegate formatting to `OutputService.handleError`
+- **Tests** must verify structured error output from the unified pipeline
 
 ## Implementation Notes
+
+### Output Format Single Source of Truth
+
+- `OutputService` is the only owner of `OutputFormat` state.
+- `--format` is parsed once and stored on `coreApi.output`.
+- Any error formatting queries `coreApi.output.getFormat()` instead of a global variable.
+- `OutputService` accepts structured objects, not pre-stringified JSON.
+- `OutputService` handles both output and error writing to stdout/file.
 
 ### File Structure
 
@@ -509,25 +553,20 @@ export * from './errors';
 ```typescript
 // src/core/utils/error-handler.ts
 export function formatAndExitWithError(
+  context: string,
   error: unknown,
-  format?: OutputFormat,
+  output: OutputService,
 ): never {
-  if (error instanceof CliError) {
-    console.log(formatCliErrorOutput(error, format));
-    process.exit(CLI_ERROR_EXIT_CODE);
-  }
-
-  if (error instanceof ZodError) {
-    const validationError = ValidationError.fromZod(error);
-    console.log(formatCliErrorOutput(validationError, format));
-    process.exit(CLI_ERROR_EXIT_CODE);
-  }
-
-  // Unknown error
-  console.log(formatUnknownErrorOutput(error, format));
-  process.exit(CLI_ERROR_EXIT_CODE);
+  const mapped = mapErrorToOutput(error, context);
+  output.handleError({ error: mapped });
 }
 ```
+
+**Notes**:
+
+- `error-handler.ts` should not own format state.
+- `context` is used to enrich the error message or `context` payload.
+- `OutputService.handleError` is responsible for JSON/human formatting and exiting.
 
 ## Alternatives Considered
 
