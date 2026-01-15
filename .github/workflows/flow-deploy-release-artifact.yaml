@@ -177,9 +177,6 @@ jobs:
       - name: Compile Code
         run: npm run build
 
-      - name: GH Auth Status (without ENV)
-        run: gh auth status
-
       - name: GH Auth Status (with ENV)
         env:
           GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
