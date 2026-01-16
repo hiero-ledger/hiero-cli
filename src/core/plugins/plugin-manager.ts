@@ -16,6 +16,7 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 
 import * as path from 'path';
 
+import { ConfigurationError, PluginError } from '@/core/errors';
 import { Status } from '@/core/shared/constants';
 import { ensureCliInitialized } from '@/core/utils/ensure-cli-initialized';
 import { filterReservedOptions } from '@/core/utils/filter-reserved-options';
@@ -186,7 +187,7 @@ export class PluginManager {
       if (!manifest) {
         // Use centralized error handler for consistent error formatting
         return this.coreApi.output.handleError({
-          error: new Error(`No manifest found in ${pluginPath}`),
+          error: new PluginError(`No manifest found in ${pluginPath}`),
         });
       }
 
@@ -369,7 +370,7 @@ export class PluginManager {
     // Validate that output spec is present (required per CommandSpec type)
     if (!commandSpec.output) {
       this.coreApi.output.handleError({
-        error: new Error(
+        error: new ConfigurationError(
           `Command ${commandSpec.name} configuration error: Command must define an output specification`,
         ),
       });
@@ -389,7 +390,7 @@ export class PluginManager {
     // ADR-003: If command has output spec, expect handler to return result
     if (!result) {
       this.coreApi.output.handleError({
-        error: new Error(
+        error: new PluginError(
           `Command ${commandSpec.name} handler error: Handler must return CommandExecutionResult or CommandResult when output spec is defined`,
         ),
       });
@@ -419,7 +420,7 @@ export class PluginManager {
     if (executionResult.status !== Status.Success) {
       this.coreApi.output.handleError({
         /* eslint-disable @typescript-eslint/no-unsafe-argument */
-        error: new Error(
+        error: new PluginError(
           executionResult.errorMessage || `Status: ${executionResult.status}`,
         ),
       });

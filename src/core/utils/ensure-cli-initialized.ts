@@ -4,6 +4,7 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 
 import * as clack from '@clack/prompts';
 
+import { ConfigurationError } from '@/core/errors';
 import { EntityIdSchema, PrivateKeySchema } from '@/core/schemas';
 
 const KEY_MANAGER_OPTIONS = [
@@ -125,7 +126,7 @@ export async function ensureCliInitialized(api: CoreApi) {
     return;
   }
 
-  throw new Error(
+  throw new ConfigurationError(
     'CLI operator is not configured. Use hcli network set-operator --operator <AccountAlias or AccountId:PrivateKey>',
   );
 }
