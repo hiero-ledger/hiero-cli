@@ -6,6 +6,7 @@ import type { OutputFormat } from '@/core/shared/types/output-format';
 import type { OutputService } from './output-service.interface';
 import type { FormatStrategyOptions } from './strategies';
 import type {
+  ErrorOutput,
   HandleErrorOptions,
   HandleResultOptions,
   OutputHandlerOptions,
@@ -124,7 +125,7 @@ export class OutputServiceImpl implements OutputService {
   /**
    * Map internal error types to structured output format
    */
-  private mapErrorToOutput(error: unknown) {
+  private mapErrorToOutput(error: unknown): ErrorOutput {
     if (error instanceof CliError) {
       return { status: 'failure', ...error.toJSON() };
     }

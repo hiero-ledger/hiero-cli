@@ -1,11 +1,16 @@
 /**
  * Output Handler Service Types
  */
+import type { SerializedCliError } from '@/core/errors';
 import type { OutputFormat } from '@/core/shared/types/output-format';
 
 export interface FormatOptions {
   format: OutputFormat;
   pretty?: boolean;
+}
+
+export interface ErrorOutput extends SerializedCliError {
+  status: 'failure';
 }
 
 export interface OutputHandlerOptions {

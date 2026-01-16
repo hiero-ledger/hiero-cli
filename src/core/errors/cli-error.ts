@@ -8,6 +8,17 @@ export interface CliErrorOptions {
   recoverable: boolean;
 }
 
+/**
+ * Interface for serialized error data
+ * Ensures type safety for CLI output
+ */
+export interface SerializedCliError {
+  code: ErrorCode;
+  message: string;
+  context?: Record<string, unknown>;
+  cause?: unknown;
+}
+
 export class CliError extends Error {
   readonly code: ErrorCode;
   readonly context?: Record<string, unknown>;
@@ -39,7 +50,7 @@ export class CliError extends Error {
     return this.cause;
   }
 
-  toJSON(): object {
+  toJSON(): SerializedCliError {
     return {
       code: this.code,
       message: this.message,
