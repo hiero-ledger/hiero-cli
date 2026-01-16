@@ -47,7 +47,7 @@ Replace the return-based error handling with a throw-based model using a structu
 
 1. **Introduce `ErrorCode` enum**: Predefined error codes for structured error handling. External plugins should prefer these codes when semantics match.
 
-2. **Introduce `CliError` base class**: Structured error with `code`, `message`, `context`, `cause`, and `recoverable` properties.
+2. **Introduce `CliError` base class**: Structured error with `code`, `message`, `context`, `cause`, `recoverable`, and a `template` used for human output.
 
 3. **Provide typed error subclasses**: `ValidationError`, `NotFoundError`, `NetworkError`, `TransactionError`, etc.
 
@@ -120,6 +120,10 @@ export class CliError extends Error {
     this.recoverable = options.recoverable;
   }
 
+  getTemplate(): string {
+    return '{{message}}';
+  }
+
   toJSON(): object {
     return {
       code: this.code,
@@ -144,7 +148,7 @@ export class CliError extends Error {
 | `StateError`         | `STATE_ERROR`         | No                | State corruption, invalid state                          |
 | `FileError`          | `FILE_ERROR`          | No                | File I/O errors                                          |
 
-**Note**: All errors exit with code 1. Scripts should use the JSON `code` field to differentiate error types.
+**Note**: All errors exit with code 1. Scripts should use the JSON `code` field to differentiate error types. Human output uses `CliError.getTemplate()`; by default it renders `{{message}}`.
 
 ### ValidationError with Zod Support
 
@@ -177,6 +181,8 @@ export class ValidationError extends CliError {
 ```
 
 ### JSON Error Output Format
+
+The JSON payload always contains the full structured error. The `template` is only used for human output and does not affect JSON.
 
 Success (structured format):
 
@@ -219,9 +225,18 @@ Validation failure (Zod -> ValidationError):
 
 ### Human-Readable Format
 
+Human output is rendered using `CliError.getTemplate()` with access to the full error payload (`code`, `message`, `context`, `cause`). The default template is `{{message}}`.
+
+Example (default template):
+
 ```
-Error [NOT_FOUND]: Account not found: myaccount
-  Caused by: Request failed with status code 404
+Account not found: myaccount
+```
+
+Example (custom template in plugin error):
+
+```
+Error [{{code}}]: {{message}}
 ```
 
 > **Note**: This is an additional simplification on top of the throw-based error model. Handlers no longer return the old `CommandExecutionResult` - they return a simplified version `{ result: T }`. Core handles serialization and adds `status: "success"` to the flat output.

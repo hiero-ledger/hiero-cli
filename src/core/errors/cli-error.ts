@@ -39,6 +39,10 @@ export class CliError extends Error {
     }
   }
 
+  getTemplate(): string {
+    return '{{message}}';
+  }
+
   protected formatCause(): unknown {
     if (this.cause instanceof Error) {
       return {

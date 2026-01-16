@@ -68,9 +68,11 @@ export class OutputServiceImpl implements OutputService {
 
     const formatter = OutputFormatterFactory.getStrategy(outputFormat);
 
-    // For human format, we might want a different template for errors
-    // but for PoC we use default behavior of the strategy
-    const formattedOutput = formatter.format(errorData, { pretty: true });
+    const template = this.resolveErrorTemplate(error, outputFormat);
+    const formattedOutput = formatter.format(errorData, {
+      template,
+      pretty: true,
+    });
 
     if (outputPath) {
       this.writeToFile(formattedOutput, outputPath);
@@ -131,7 +133,10 @@ export class OutputServiceImpl implements OutputService {
     }
 
     if (error instanceof ZodError) {
-      return { status: 'failure', ...ValidationError.fromZod(error).toJSON() };
+      return {
+        status: 'failure',
+        ...ValidationError.fromZod(error).toJSON(),
+      };
     }
 
     const errorMessage = error instanceof Error ? error.message : String(error);
@@ -141,6 +146,25 @@ export class OutputServiceImpl implements OutputService {
       code: ErrorCode.INTERNAL_ERROR,
       message: errorMessage,
     };
+  }
+
+  private resolveErrorTemplate(
+    error: unknown,
+    format: OutputFormat,
+  ): string | undefined {
+    if (format !== 'human') {
+      return undefined;
+    }
+
+    if (error instanceof CliError) {
+      return error.getTemplate();
+    }
+
+    if (error instanceof ZodError) {
+      return ValidationError.fromZod(error).getTemplate();
+    }
+
+    return '{{message}}';
   }
 
   private writeToFile(content: string, filePath: string): void {
