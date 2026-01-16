@@ -13,9 +13,10 @@ import type {
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { ZodError } from 'zod';
 
+import { CliError, ErrorCode, ValidationError } from '@/core/errors';
 import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
-import { mapErrorToOutput } from '@/core/utils/error-mapper';
 
 import { OutputFormatterFactory } from './strategies';
 
@@ -62,7 +63,7 @@ export class OutputServiceImpl implements OutputService {
     const { error, format, outputPath } = options;
     const outputFormat = format ?? this.currentFormat;
 
-    const errorData = mapErrorToOutput(error);
+    const errorData = this.mapErrorToOutput(error);
 
     const formatter = OutputFormatterFactory.getStrategy(outputFormat);
 
@@ -80,11 +81,6 @@ export class OutputServiceImpl implements OutputService {
     process.exit(1);
   }
 
-  /**
-   * Handle command output - parse, validate, format, and output
-   * @deprecated Use handleResult instead
-   * @TODO POC_ERROR_HANDLING: Remove this method once all handlers are migrated to ADR-007
-   */
   /**
    * Handle command output - parse, validate, format, and output
    * @deprecated Use handleResult instead
@@ -123,6 +119,27 @@ export class OutputServiceImpl implements OutputService {
     } else {
       console.log(formattedOutput);
     }
+  }
+
+  /**
+   * Map internal error types to structured output format
+   */
+  private mapErrorToOutput(error: unknown) {
+    if (error instanceof CliError) {
+      return { status: 'failure', ...error.toJSON() };
+    }
+
+    if (error instanceof ZodError) {
+      return { status: 'failure', ...ValidationError.fromZod(error).toJSON() };
+    }
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    return {
+      status: 'failure',
+      code: ErrorCode.INTERNAL_ERROR,
+      message: errorMessage,
+    };
   }
 
   private writeToFile(content: string, filePath: string): void {

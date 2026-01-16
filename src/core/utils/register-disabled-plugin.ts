@@ -2,8 +2,6 @@ import type { Command } from 'commander';
 import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
 
-import { formatAndExitWithError } from './error-handler';
-
 /**
  * Registers stub commands for disabled plugins in Commander.js.
  * This allow users to see error message that plugin is disabled
@@ -35,19 +33,11 @@ export function registerDisabledPlugin(
 
       // Override the help method to show disabled message
       command.help = () => {
-        formatAndExitWithError(
-          'Plugin disabled',
-          new Error(disabledMessage),
-          outputService,
-        );
+        outputService.handleError({ error: new Error(disabledMessage) });
       };
 
       command.action(() => {
-        formatAndExitWithError(
-          'Plugin disabled',
-          new Error(disabledMessage),
-          outputService,
-        );
+        outputService.handleError({ error: new Error(disabledMessage) });
       });
     });
 }
