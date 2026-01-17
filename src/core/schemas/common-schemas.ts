@@ -8,7 +8,7 @@
  */
 import { z } from 'zod';
 
-import { KeyAlgorithm } from '@/core/shared/constants';
+import { HederaTokenType, KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 // ======================================================
@@ -441,6 +441,16 @@ export const MemoSchema = z
   .describe('Optional memo for the transaction');
 
 /**
+ * Token Type schema
+ * Optional Token Type field for transactions
+ * Enum of HederaTokenType
+ */
+export const TokenTypeSchema = z
+  .enum(HederaTokenType)
+  .optional()
+  .default(HederaTokenType.FUNGIBLE_COMMON);
+
+/**
  * Key or Account Alias Input (Normalized)
  * Accepts AccountID:privateKey pair format or account name/alias
  * Transforms input into normalized discriminated union for easier handler processing:
@@ -593,3 +603,8 @@ export const PrivateKeySchema = z.union([
   EcdsaPrivateKeySchema,
   Ed25519PrivateKeySchema,
 ]);
+
+export const NonNegativeNumberOrBigintSchema = z
+  .union([z.number(), z.bigint()])
+  .transform((val) => BigInt(val))
+  .pipe(z.bigint().nonnegative());

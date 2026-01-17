@@ -23,6 +23,8 @@ import {
   TransferTransaction,
 } from '@hashgraph/sdk';
 
+import { TokenTypeMap } from '@/core/shared/constants';
+
 export class TokenServiceImpl implements TokenService {
   private logger: Logger;
 
@@ -74,6 +76,7 @@ export class TokenServiceImpl implements TokenService {
       treasuryId,
       decimals,
       initialSupplyRaw,
+      tokenType,
       supplyType,
       maxSupplyRaw,
       adminPublicKey,
@@ -98,6 +101,7 @@ export class TokenServiceImpl implements TokenService {
       .setTokenName(name)
       .setTokenSymbol(symbol)
       .setDecimals(decimals)
+      .setTokenType(TokenTypeMap[tokenType])
       .setInitialSupply(initialSupplyRaw)
       .setSupplyType(tokenSupplyType)
       .setTreasuryAccountId(AccountId.fromString(treasuryId))

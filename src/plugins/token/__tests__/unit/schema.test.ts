@@ -2,6 +2,7 @@
  * Token Schema Validation Tests
  * Tests the token data validation and schema functionality
  */
+import { HederaTokenType } from '@/core/shared/constants';
 import { CreateTokenInputSchema } from '@/plugins/token/commands/create/input';
 import {
   CustomFeeSchema,
@@ -306,6 +307,7 @@ describe('Token Schema Validation', () => {
         adminPublicKey: 'admin-key',
         network: 'testnet',
         customFees: [],
+        tokenType: HederaTokenType.FUNGIBLE_COMMON,
       };
 
       const result = TokenDataSchema.safeParse(validData);
@@ -326,6 +328,7 @@ describe('Token Schema Validation', () => {
         adminPublicKey: 'admin-key',
         network: 'testnet',
         customFees: [],
+        tokenType: HederaTokenType.FUNGIBLE_COMMON,
       };
 
       const result = TokenDataSchema.safeParse(validData);
@@ -347,6 +350,7 @@ describe('Token Schema Validation', () => {
         adminPublicKey: 'admin-key',
         network: 'testnet',
         customFees: [],
+        tokenType: HederaTokenType.FUNGIBLE_COMMON,
       };
 
       const result = TokenDataSchema.safeParse(validData);

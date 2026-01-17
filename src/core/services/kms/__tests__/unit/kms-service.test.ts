@@ -93,6 +93,10 @@ jest.mock('@hashgraph/sdk', () => ({
     forPreviewnet: jest.fn(() => buildClient()),
     forNetwork: jest.fn(() => buildClient()),
   },
+  TokenType: {
+    NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
+    FungibleCommon: 'FUNGIBLE_COMMON',
+  },
 }));
 
 const getLocalKeyManager = (name: KeyManagerName = KEY_MANAGERS.local) => {

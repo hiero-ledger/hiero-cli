@@ -12,6 +12,7 @@ export const createMockTokenCreateTransaction = () => ({
   setTokenSymbol: jest.fn().mockReturnThis(),
   setDecimals: jest.fn().mockReturnThis(),
   setInitialSupply: jest.fn().mockReturnThis(),
+  setTokenType: jest.fn().mockReturnThis(),
   setSupplyType: jest.fn().mockReturnThis(),
   setTreasuryAccountId: jest.fn().mockReturnThis(),
   setAdminKey: jest.fn().mockReturnThis(),
