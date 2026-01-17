@@ -30,7 +30,7 @@ describe('AliasServiceImpl', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     logger = makeLogger();
-    stateMock = makeStateMock() as jest.Mocked<StateService>;
+    stateMock = makeStateMock();
     aliasService = new AliasServiceImpl(stateMock, logger);
   });
 

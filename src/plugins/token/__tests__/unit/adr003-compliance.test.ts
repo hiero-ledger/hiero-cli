@@ -83,8 +83,8 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       const result = await createToken({
         api,
         logger: makeLogger(),
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         args,
       } as CommandHandlerArgs);
 
@@ -153,8 +153,8 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       const result = await transferToken({
         api,
         logger: makeLogger(),
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         args,
       } as CommandHandlerArgs);
 
@@ -202,8 +202,8 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       const result = await associateToken({
         api,
         logger: makeLogger(),
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         args,
       } as CommandHandlerArgs);
 
@@ -230,8 +230,8 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       const result = await listTokens({
         api,
         logger: makeLogger(),
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         args,
       } as CommandHandlerArgs);
 
@@ -277,8 +277,8 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       const result = await listTokens({
         api,
         logger: makeLogger(),
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         args,
       } as CommandHandlerArgs);
 
