@@ -1,6 +1,6 @@
 /**
- * Token List Command Handler
- * Handles listing all tokens from state for all networks
+ * Fungible Token List Command Handler
+ * Handles listing all fungible tokens from state for all networks
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';

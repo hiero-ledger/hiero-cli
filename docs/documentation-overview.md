@@ -23,7 +23,7 @@ hiero-cli/
 │   │   └── types/              # Shared types
 │   ├── plugins/                # Built-in plugins
 │   │   ├── account/            # Account management plugin
-│   │   ├── token/              # Token management plugin
+│   │   ├── token/              # Fungible and non-fungible token management plugin
 │   │   ├── network/            # Network selection and operator management
 │   │   ├── hbar/               # HBAR transfer plugin
 │   │   ├── credentials/        # Credentials plugin

@@ -1,5 +1,5 @@
 /**
- * Create Token From File Command Output Schema and Template
+ * Create Fungible Token From File Command Output Schema and Template
  */
 import { z } from 'zod';
 
@@ -11,7 +11,7 @@ import {
 } from '@/core/schemas/common-schemas';
 
 /**
- * Token Association Result Schema
+ * Fungible Token Association Result Schema
  */
 const TokenAssociationResultSchema = z.object({
   accountId: EntityIdSchema,
@@ -21,33 +21,33 @@ const TokenAssociationResultSchema = z.object({
 });
 
 /**
- * Create Token From File Command Output Schema
+ * Create Fungible Token From File Command Output Schema
  */
-export const CreateTokenFromFileOutputSchema = z.object({
+export const CreateFungibleTokenFromFileOutputSchema = z.object({
   tokenId: EntityIdSchema,
-  name: z.string().describe('Token name'),
-  symbol: z.string().describe('Token symbol'),
+  name: z.string().describe('Fungible token name'),
+  symbol: z.string().describe('Fungible token symbol'),
   treasuryId: EntityIdSchema,
   decimals: z.number().int().min(0).max(8).describe('Number of decimal places'),
   initialSupply: z.string().describe('Initial supply in base units'),
   supplyType: SupplyTypeSchema,
   transactionId: TransactionIdSchema,
-  alias: z.string().describe('Token alias').optional(),
+  alias: z.string().describe('Fungible token alias').optional(),
   network: NetworkSchema,
   associations: z
     .array(TokenAssociationResultSchema)
-    .describe('Token associations created'),
+    .describe('Fungible token associations created'),
 });
 
-export type CreateTokenFromFileOutput = z.infer<
-  typeof CreateTokenFromFileOutputSchema
+export type CreateFungibleTokenFromFileOutput = z.infer<
+  typeof CreateFungibleTokenFromFileOutputSchema
 >;
 
 /**
- * Human-readable template for create token from file output
+ * Human-readable template for create fungible token from file output
  */
-export const CREATE_TOKEN_FROM_FILE_TEMPLATE = `
-✅ Token created from file successfully: {{tokenId}}
+export const CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE = `
+✅ Fungible token created from file successfully: {{tokenId}}
    Name: {{name}} ({{symbol}})
    Treasury: {{treasuryId}}
    Decimals: {{decimals}}
@@ -60,7 +60,7 @@ export const CREATE_TOKEN_FROM_FILE_TEMPLATE = `
    Transaction ID: {{transactionId}}
 
 {{#if associations.length}}
-🔗 Token Associations ({{associations.length}}):
+🔗 Fungible Token Associations ({{associations.length}}):
 {{#each associations}}
    {{add1 @index}}. {{name}} ({{accountId}}) - {{#if success}}✅ Success{{else}}❌ Failed{{/if}}{{#if transactionId}} - {{transactionId}}{{/if}}
 {{/each}}

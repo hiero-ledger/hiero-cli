@@ -67,7 +67,7 @@ export interface PluginManifest {
 }
 
 export interface CommandSpec {
-  name: string; // e.g., 'token create'
+  name: string; // e.g., 'token create-ft'
   summary?: string;
   description?: string;
   options?: Array<{

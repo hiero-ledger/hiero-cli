@@ -12,7 +12,7 @@ import {
  * Input schema for token transfer command
  * Validates arguments for transferring tokens between accounts
  */
-export const TransferTokenInputSchema = z.object({
+export const TransferFungibleTokenInputSchema = z.object({
   token: EntityReferenceSchema.describe('Token identifier (ID or name)'),
   to: AccountReferenceSchema.describe(
     'Destination account (ID, EVM address, or name)',
@@ -28,4 +28,6 @@ export const TransferTokenInputSchema = z.object({
   ),
 });
 
-export type TransferTokenInput = z.infer<typeof TransferTokenInputSchema>;
+export type TransferFungibleTokenInput = z.infer<
+  typeof TransferFungibleTokenInputSchema
+>;

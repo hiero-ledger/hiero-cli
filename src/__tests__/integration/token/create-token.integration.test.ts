@@ -3,7 +3,7 @@ import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountBalanceOutput } from '@/plugins/account/commands/balance';
 import type { CreateAccountOutput } from '@/plugins/account/commands/create';
 import type { ViewAccountOutput } from '@/plugins/account/commands/view';
-import type { CreateTokenOutput } from '@/plugins/token/commands/create';
+import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create';
 
 import '@/core/utils/json-serialize';
 
@@ -90,7 +90,7 @@ describe('Create Token Integration Tests', () => {
       config: coreApi.config,
     });
     expect(createTokenResult.status).toBe(Status.Success);
-    const createTokenOutput: CreateTokenOutput = JSON.parse(
+    const createTokenOutput: CreateFungibleTokenOutput = JSON.parse(
       createTokenResult.outputJson!,
     );
     expect(createTokenOutput.network).toBe(network);

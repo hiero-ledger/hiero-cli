@@ -6,7 +6,7 @@ import { FilePathSchema, KeyManagerTypeSchema } from '@/core/schemas';
  * Input schema for token create-from-file command
  * Validates arguments for creating a token from a JSON file definition
  */
-export const CreateTokenFromFileInputSchema = z.object({
+export const CreateFungibleTokenFromFileInputSchema = z.object({
   file: FilePathSchema.describe(
     'Filesystem path to JSON file containing token definition',
   ),
@@ -15,6 +15,6 @@ export const CreateTokenFromFileInputSchema = z.object({
   ),
 });
 
-export type CreateTokenFromFileInput = z.infer<
-  typeof CreateTokenFromFileInputSchema
+export type CreateFungibleTokenFromFileInput = z.infer<
+  typeof CreateFungibleTokenFromFileInputSchema
 >;
