@@ -47,7 +47,7 @@ describe('Transfer Token Integration Tests', () => {
 
     expect(createAccountResult.status).toBe(Status.Success);
     const createAccountOutput: CreateAccountOutput = JSON.parse(
-      createAccountResult.outputJson!,
+      createAccountResult.outputJson,
     );
     expect(createAccountOutput.name).toBe('account-transfer-token');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);

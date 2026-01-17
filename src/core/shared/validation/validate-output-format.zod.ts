@@ -2,11 +2,11 @@ import type { OutputFormat } from '@/core/shared/types/output-format';
 
 import { z } from 'zod';
 
+import { ValidationError } from '@/core/errors';
 import {
   DEFAULT_OUTPUT_FORMAT,
   OUTPUT_FORMATS,
 } from '@/core/shared/types/output-format';
-import { formatAndExitWithError } from '@/core/utils/error-handler';
 import { isStringifiable } from '@/core/utils/is-stringifiable';
 
 // Zod schema from const array
@@ -21,11 +21,8 @@ export function validateOutputFormat(outputFormat: unknown): OutputFormat {
   } catch {
     // Dynamic list of valid formats
     const validFormats = OUTPUT_FORMATS.join(', ');
-    formatAndExitWithError(
-      'Invalid format option',
-      new Error(
-        `Format '${isStringifiable(outputFormat) ? String(outputFormat) : JSON.stringify(outputFormat)}' is not supported. Valid formats: ${validFormats}`,
-      ),
+    throw new ValidationError(
+      `Format '${isStringifiable(outputFormat) ? String(outputFormat) : JSON.stringify(outputFormat)}' is not supported. Valid formats: ${validFormats}`,
     );
   }
 }

@@ -11,11 +11,7 @@ import { PluginManager } from './core/plugins/plugin-manager';
 import { DEFAULT_PLUGIN_STATE } from './core/shared/config/cli-options';
 import { validateOutputFormat } from './core/shared/validation/validate-output-format.zod';
 import { addDisabledPluginsHelp } from './core/utils/add-disabled-plugins-help';
-import {
-  formatAndExitWithError,
-  setGlobalOutputFormat,
-  setupGlobalErrorHandlers,
-} from './core/utils/error-handler';
+import { setupGlobalErrorHandlers } from './core/utils/error-handler';
 
 program
   .name('hcli')
@@ -23,7 +19,9 @@ program
   .description('A CLI tool for managing Hedera environments')
   .option('--format <type>', 'Output format: human (default) or json');
 
-// Initialize the simplified plugin system
+/**
+ * Initialize the simplified plugin system
+ */
 async function initializeCLI() {
   const coreApi = createCoreApi();
 
@@ -34,9 +32,8 @@ async function initializeCLI() {
 
     coreApi.output.setFormat(format);
 
-    // Setup global error handlers with validated format
-    setGlobalOutputFormat(format);
-    setupGlobalErrorHandlers();
+    // Setup global error handlers with initialized OutputService
+    setupGlobalErrorHandlers(coreApi.output);
 
     const pluginManager = new PluginManager(coreApi);
 
@@ -58,7 +55,8 @@ async function initializeCLI() {
     await program.parseAsync(process.argv);
     process.exit(0);
   } catch (error) {
-    formatAndExitWithError('CLI initialization failed', error);
+    // Directly use OutputService for consistent error formatting and exit
+    coreApi.output.handleError({ error });
   }
 }
 

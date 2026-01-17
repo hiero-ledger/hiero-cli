@@ -16,9 +16,9 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 
 import * as path from 'path';
 
+import { ConfigurationError, PluginError } from '@/core/errors';
 import { Status } from '@/core/shared/constants';
 import { ensureCliInitialized } from '@/core/utils/ensure-cli-initialized';
-import { formatAndExitWithError } from '@/core/utils/error-handler';
 import { filterReservedOptions } from '@/core/utils/filter-reserved-options';
 import { registerDisabledPlugin } from '@/core/utils/register-disabled-plugin';
 
@@ -129,7 +129,7 @@ export class PluginManager {
     defaultState: PluginManifest[],
   ): Promise<PluginStateEntry[]> {
     const pluginState = this.setupPlugins(defaultState);
-    registerDisabledPlugin(program, pluginState);
+    registerDisabledPlugin(program, pluginState, this.coreApi.output);
     await this.initialize();
     return pluginState;
   }
@@ -173,18 +173,6 @@ export class PluginManager {
   }
 
   /**
-   * Exit with formatted error using the current output format
-   * Wrapper for formatAndExitWithError with automatic format detection
-   */
-  private exitWithError(context: string, error: unknown): never {
-    return formatAndExitWithError(
-      context,
-      error,
-      this.coreApi.output.getFormat(),
-    );
-  }
-
-  /**
    * Load a plugin from path
    */
   private async loadPluginFromPath(pluginPath: string): Promise<LoadedPlugin> {
@@ -198,10 +186,9 @@ export class PluginManager {
 
       if (!manifest) {
         // Use centralized error handler for consistent error formatting
-        return this.exitWithError(
-          'Plugin initialization failed',
-          new Error(`No manifest found in ${pluginPath}`),
-        );
+        return this.coreApi.output.handleError({
+          error: new PluginError(`No manifest found in ${pluginPath}`),
+        });
       }
 
       const loadedPlugin: LoadedPlugin = {
@@ -214,10 +201,7 @@ export class PluginManager {
       return loadedPlugin;
     } catch (error) {
       // Use centralized error handler for consistent error formatting
-      return this.exitWithError(
-        `Failed to load plugin from ${pluginPath}`,
-        error,
-      );
+      return this.coreApi.output.handleError({ error });
     }
   }
 
@@ -346,10 +330,7 @@ export class PluginManager {
       });
     } catch (error) {
       // Use centralized error handler for consistent error formatting
-      this.exitWithError(
-        `Failed to register command ${commandSpec.name} from plugin ${plugin.manifest.name}`,
-        error,
-      );
+      this.coreApi.output.handleError({ error });
     }
   }
 
@@ -388,40 +369,61 @@ export class PluginManager {
 
     // Validate that output spec is present (required per CommandSpec type)
     if (!commandSpec.output) {
-      this.exitWithError(
-        `Command ${commandSpec.name} configuration error`,
-        new Error('Command must define an output specification'),
-      );
+      this.coreApi.output.handleError({
+        error: new ConfigurationError(
+          `Command ${commandSpec.name} configuration error: Command must define an output specification`,
+        ),
+      });
     }
 
     // Execute command handler with error handling
-    let result;
+    // @TODO POC_ERROR_HANDLING: Ensure all handlers are migrated to ADR-007 throw-based model
+    /* eslint-disable @typescript-eslint/no-explicit-any */
+    let result: any;
     try {
       result = await commandSpec.handler(handlerArgs);
     } catch (error) {
-      this.exitWithError(`Command ${commandSpec.name} execution failed`, error);
+      // ADR-007: Core catches thrown errors and formats them
+      this.coreApi.output.handleError({ error });
     }
 
     // ADR-003: If command has output spec, expect handler to return result
     if (!result) {
-      this.exitWithError(
-        `Command ${commandSpec.name} handler error`,
-        new Error(
-          'Handler must return CommandExecutionResult when output spec is defined',
+      this.coreApi.output.handleError({
+        error: new PluginError(
+          `Command ${commandSpec.name} handler error: Handler must return CommandExecutionResult or CommandResult when output spec is defined`,
         ),
-      );
+      });
     }
 
+    // ADR-007: Check if it's the new CommandResult format
+    // @TODO POC_ERROR_HANDLING: This dual-contract support should be removed once migration is complete
+    if ('result' in result && !('status' in result)) {
+      try {
+        this.coreApi.output.handleResult({
+          /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+          result: result.result,
+          template: commandSpec.output.humanTemplate,
+          format: this.coreApi.output.getFormat(),
+        });
+        return;
+      } catch (error) {
+        this.coreApi.output.handleError({ error });
+      }
+    }
+
+    /* eslint-disable @typescript-eslint/no-unsafe-assignment */
     const executionResult = result;
 
-    // Handle non-success statuses
+    // Handle non-success statuses (Old ADR-003 path)
+    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
     if (executionResult.status !== Status.Success) {
-      this.exitWithError(
-        `Command ${commandSpec.name} failed`,
-        new Error(
+      this.coreApi.output.handleError({
+        /* eslint-disable @typescript-eslint/no-unsafe-argument */
+        error: new PluginError(
           executionResult.errorMessage || `Status: ${executionResult.status}`,
         ),
-      );
+      });
     }
 
     // Handle successful execution with output
@@ -435,11 +437,9 @@ export class PluginManager {
           format: this.coreApi.output.getFormat(),
         });
       } catch (error) {
-        this.exitWithError(
-          `Failed to format output for ${commandSpec.name}`,
-          error,
-        );
+        this.coreApi.output.handleError({ error });
       }
     }
+    /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
   }
 }

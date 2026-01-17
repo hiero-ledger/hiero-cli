@@ -84,13 +84,20 @@ export interface CommandExecutionResult {
 }
 
 /**
+ * ADR-007: Simplified result for throw-based handlers
+ */
+export interface CommandResult<T = unknown> {
+  result: T;
+}
+
+/**
  * Command handler function type
- * - All handlers are asynchronous and must return Promise<CommandExecutionResult>
- * - Enforces ADR-003 contract (structured status/error/output handling)
+ * - All handlers are asynchronous and must return Promise<CommandExecutionResult | CommandResult>
+ * - Supports both ADR-003 (return status) and ADR-007 (throw based)
  */
 export type CommandHandler = (
   args: CommandHandlerArgs,
-) => Promise<CommandExecutionResult>;
+) => Promise<CommandExecutionResult | CommandResult<unknown>>;
 
 /**
  * Plugin state schema

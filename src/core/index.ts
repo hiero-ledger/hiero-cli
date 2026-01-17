@@ -31,6 +31,7 @@ export type {
   CommandHandler,
   CommandOption,
   CommandOutputSpec,
+  CommandResult,
   CommandSpec,
   PluginContext,
   PluginManifest,
@@ -39,3 +40,6 @@ export type {
 
 // Plugins
 export type * from './plugins/plugin.interface';
+
+// Errors
+export * from './errors';

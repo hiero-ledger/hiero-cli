@@ -5,11 +5,18 @@
 import type { OutputFormat } from '@/core/shared/types/output-format';
 import type { OutputService } from './output-service.interface';
 import type { FormatStrategyOptions } from './strategies';
-import type { OutputHandlerOptions } from './types';
+import type {
+  ErrorOutput,
+  HandleErrorOptions,
+  HandleResultOptions,
+  OutputHandlerOptions,
+} from './types';
 
 import * as fs from 'fs';
 import * as path from 'path';
+import { ZodError } from 'zod';
 
+import { CliError, ErrorCode, ValidationError } from '@/core/errors';
 import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
 
 import { OutputFormatterFactory } from './strategies';
@@ -29,6 +36,59 @@ export class OutputServiceImpl implements OutputService {
     return this.currentFormat;
   }
 
+  handleResult(options: HandleResultOptions): void {
+    const { result, template, format, outputPath } = options;
+    const outputFormat = format ?? this.currentFormat;
+
+    const data = {
+      status: 'success',
+      ...(typeof result === 'object' && result !== null ? result : { result }),
+    };
+
+    const formatter = OutputFormatterFactory.getStrategy(outputFormat);
+    const formatOptions: FormatStrategyOptions = {
+      template,
+      pretty: true,
+    };
+
+    const formattedOutput = formatter.format(data, formatOptions);
+
+    if (outputPath) {
+      this.writeToFile(formattedOutput, outputPath);
+    } else {
+      console.log(formattedOutput);
+    }
+  }
+
+  handleError(options: HandleErrorOptions): never {
+    const { error, format, outputPath } = options;
+    const outputFormat = format ?? this.currentFormat;
+
+    const errorData = this.mapErrorToOutput(error);
+
+    const formatter = OutputFormatterFactory.getStrategy(outputFormat);
+
+    const template = this.resolveErrorTemplate(error, outputFormat);
+    const formattedOutput = formatter.format(errorData, {
+      template,
+      pretty: true,
+    });
+
+    if (outputPath) {
+      this.writeToFile(formattedOutput, outputPath);
+    } else {
+      // Errors go to stdout in this CLI design for consistency with success output
+      console.log(formattedOutput);
+    }
+
+    process.exit(1);
+  }
+
+  /**
+   * Handle command output - parse, validate, format, and output
+   * @deprecated Use handleResult instead
+   * @TODO POC_ERROR_HANDLING: Remove this method once all handlers are migrated to ADR-007
+   */
   handleCommandOutput(options: OutputHandlerOptions): void {
     const { outputJson, template, format, outputPath } = options;
 
@@ -62,6 +122,49 @@ export class OutputServiceImpl implements OutputService {
     } else {
       console.log(formattedOutput);
     }
+  }
+
+  /**
+   * Map internal error types to structured output format
+   */
+  private mapErrorToOutput(error: unknown): ErrorOutput {
+    if (error instanceof CliError) {
+      return { status: 'failure', ...error.toJSON() };
+    }
+
+    if (error instanceof ZodError) {
+      return {
+        status: 'failure',
+        ...ValidationError.fromZod(error).toJSON(),
+      };
+    }
+
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    return {
+      status: 'failure',
+      code: ErrorCode.INTERNAL_ERROR,
+      message: errorMessage,
+    };
+  }
+
+  private resolveErrorTemplate(
+    error: unknown,
+    format: OutputFormat,
+  ): string | undefined {
+    if (format !== 'human') {
+      return undefined;
+    }
+
+    if (error instanceof CliError) {
+      return error.getTemplate();
+    }
+
+    if (error instanceof ZodError) {
+      return ValidationError.fromZod(error).getTemplate();
+    }
+
+    return '{{message}}';
   }
 
   private writeToFile(content: string, filePath: string): void {

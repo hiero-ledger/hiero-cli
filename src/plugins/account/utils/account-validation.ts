@@ -4,6 +4,8 @@
  */
 import { Hbar } from '@hashgraph/sdk';
 
+import { ValidationError } from '@/core';
+
 export function validateSufficientBalance(
   availableBalance: bigint,
   requiredBalance: bigint,
@@ -19,10 +21,12 @@ export function validateSufficientBalance(
       availableBalance.toString(),
     ).toString();
 
-    throw new Error(
-      `Insufficient balance in account ${accountId}.\n` +
-        `   Required balance:  ${requiredHbar}\n` +
-        `   Available balance: ${availableHbar}`,
-    );
+    throw new ValidationError(`Insufficient balance in account ${accountId}.`, {
+      context: {
+        requiredBalance: requiredHbar,
+        availableBalance: availableHbar,
+        accountId,
+      },
+    });
   }
 }
