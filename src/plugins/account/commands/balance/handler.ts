@@ -67,6 +67,7 @@ export async function getAccountBalance(
       hbarOnly,
       tokenOnly,
       raw,
+      network,
     };
 
     if (!tokenOnly) {

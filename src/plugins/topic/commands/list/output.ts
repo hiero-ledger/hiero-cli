@@ -51,8 +51,8 @@ export const LIST_TOPICS_TEMPLATE = `
 📝 Found {{totalCount}} topic(s):
 
 {{#each topics}}
-{{add1 @index}}. Name: {{name}}
-   Topic ID: {{topicId}}
+{{add1 @index}}. {{name}}
+   Topic ID: {{hashscanLink topicId "topic" network}}
    Network: {{network}}
 {{#if memo}}
    Memo: {{memo}}

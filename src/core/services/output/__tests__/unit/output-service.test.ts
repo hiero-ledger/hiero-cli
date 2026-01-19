@@ -21,6 +21,25 @@ jest.mock('path', () => ({
   dirname: jest.fn(),
 }));
 
+jest.mock('ansi-escapes', () => ({
+  default: {
+    link: jest.fn((text: string, url: string) => `[LINK:${text}](${url})`),
+  },
+}));
+
+jest.mock('supports-hyperlinks', () => ({
+  default: {
+    stdout: true,
+  },
+}));
+
+jest.mock('@hashgraph/sdk', () => ({
+  TokenType: {
+    NonFungibleUnique: 'NonFungibleUnique',
+    FungibleCommon: 'FungibleCommon',
+  },
+}));
+
 jest.mock('../../strategies', () => {
   const actual = jest.requireActual('../../strategies');
   return {

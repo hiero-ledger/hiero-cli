@@ -148,6 +148,7 @@ export async function transferToken(
         from: fromAccountId,
         to: toAccountId,
         amount: BigInt(rawAmount.toString()),
+        network,
       };
 
       return {

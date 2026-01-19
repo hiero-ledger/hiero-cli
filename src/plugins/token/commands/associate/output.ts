@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import {
   EntityIdSchema,
+  NetworkSchema,
   TransactionIdSchema,
 } from '@/core/schemas/common-schemas';
 
@@ -20,6 +21,7 @@ export const AssociateTokenOutputSchema = z.object({
     .boolean()
     .optional()
     .describe('Indicates that the association already existed on chain'),
+  network: NetworkSchema,
 });
 
 export type AssociateTokenOutput = z.infer<typeof AssociateTokenOutputSchema>;
@@ -33,10 +35,10 @@ export const ASSOCIATE_TOKEN_TEMPLATE = `
 {{else}}
 ✅ Token association successful!
 {{/if}}
-   Token ID: {{tokenId}}
-   Account ID: {{accountId}}
+   Token ID: {{hashscanLink tokenId "token" network}}
+   Account ID: {{hashscanLink accountId "account" network}}
    Associated: {{associated}}
 {{#if transactionId}}
-   Transaction ID: {{transactionId}}
+   Transaction ID: {{hashscanLink transactionId "transaction" network}}
 {{/if}}
 `.trim();

@@ -97,9 +97,9 @@ export const LIST_TOKENS_TEMPLATE = `
 📝 Found {{totalCount}} token(s):
 
 {{#each tokens}}
-{{add1 @index}}. Name: {{name}} ({{symbol}})
-   Token ID: {{tokenId}}
-   Treasury: {{treasuryId}}
+{{add1 @index}}. {{symbol}} ({{name}})
+   Token ID: {{hashscanLink tokenId "token" network}}
+   Treasury: {{hashscanLink treasuryId "account" network}}
    Supply Type: {{supplyType}}
    Decimals: {{decimals}}
    Network: {{network}}

@@ -116,6 +116,7 @@ export async function submitMessage(
         sequenceNumber: txResult.topicSequenceNumber ?? 0,
         transactionId: txResult.transactionId || '',
         submittedAt: new Date().toISOString(),
+        network: currentNetwork,
       };
 
       // Return success result with JSON output

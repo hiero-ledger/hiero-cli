@@ -18,7 +18,7 @@ export type GetOperatorOutput = z.infer<typeof GetOperatorOutputSchema>;
 export const GET_OPERATOR_TEMPLATE = `
 {{#if operator}}
 ✅ Operator for network: {{network}}
-   Account ID: {{operator.accountId}}
+   Account ID: {{hashscanLink operator.accountId "account" network}}
    Key Reference ID: {{operator.keyRefId}}
    {{#if operator.publicKey}}Public Key: {{operator.publicKey}}{{/if}}
 {{else}}
