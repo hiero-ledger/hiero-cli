@@ -45,7 +45,7 @@ This ADR establishes the error type foundation that makes intelligent retry deci
 
 Replace the return-based error handling with a throw-based model using a structured `CliError` hierarchy and a single output pipeline through `OutputService`:
 
-1. **Introduce `ErrorCode` enum**: Predefined error codes for structured error handling. External plugins should prefer these codes when semantics match.
+1. **Decentralized error codes**: Error codes are strings defined directly in `CliError` subclasses as static constants. This avoids a central enum and allows domain errors to own their identity.
 
 2. **Introduce `CliError` base class**: Structured error with `code`, `message`, `context`, `cause`, `recoverable`, and a `template` used for human output.
 
@@ -65,28 +65,15 @@ Replace the return-based error handling with a throw-based model using a structu
 
 ## Specification
 
-### ErrorCode Enum
+### Error Code Strategy
+
+Error codes are unique strings defined within domain-specific error classes. While codes are decentralized, common codes should be reused when semantics match (e.g., `NOT_FOUND`).
 
 ```typescript
-// src/core/errors/error-code.ts
+// src/core/errors/constants.ts
 
-/**
- * Predefined CLI error codes for structured error handling.
- * External plugins should prefer these codes when semantics match.
- * Custom codes are allowed for domain-specific errors.
- */
-export enum ErrorCode {
-  INTERNAL_ERROR = 'INTERNAL_ERROR',
-  VALIDATION_ERROR = 'VALIDATION_ERROR',
-  NOT_FOUND = 'NOT_FOUND',
-  NETWORK_ERROR = 'NETWORK_ERROR',
-  AUTHORIZATION_ERROR = 'AUTHORIZATION_ERROR',
-  CONFIGURATION_ERROR = 'CONFIGURATION_ERROR',
-  TRANSACTION_ERROR = 'TRANSACTION_ERROR',
-  STATE_ERROR = 'STATE_ERROR',
-  PLUGIN_ERROR = 'PLUGIN_ERROR',
-  FILE_ERROR = 'FILE_ERROR',
-}
+// Fallback for unexpected errors
+export const INTERNAL_ERROR_CODE = 'INTERNAL_ERROR';
 
 // All errors exit with code 1. Scripts differentiate errors via JSON `code` field.
 export const CLI_ERROR_EXIT_CODE = 1;
@@ -98,22 +85,22 @@ export const CLI_ERROR_EXIT_CODE = 1;
 // src/core/errors/cli-error.ts
 
 export interface CliErrorOptions {
-  code: ErrorCode;
+  code: string;
   message: string;
   cause?: unknown;
   context?: Record<string, unknown>;
   recoverable: boolean;
 }
 
-export class CliError extends Error {
-  readonly code: ErrorCode;
+export abstract class CliError extends Error {
+  readonly code: string;
   readonly context?: Record<string, unknown>;
   readonly recoverable: boolean;
   override readonly cause?: unknown;
 
   constructor(options: CliErrorOptions) {
     super(options.message);
-    this.name = 'CliError';
+    this.name = this.constructor.name;
     this.code = options.code;
     this.cause = options.cause;
     this.context = options.context;
@@ -137,7 +124,7 @@ export class CliError extends Error {
 
 ### Error Type Hierarchy
 
-| Class                | ErrorCode             | Recoverable       | Use Case                                                 |
+| Class                | Static `CODE`         | Recoverable       | Use Case                                                 |
 | -------------------- | --------------------- | ----------------- | -------------------------------------------------------- |
 | `ValidationError`    | `VALIDATION_ERROR`    | No                | Input validation, Zod errors                             |
 | `NotFoundError`      | `NOT_FOUND`           | No                | Entity not found (account, token, alias)                 |
@@ -154,6 +141,7 @@ export class CliError extends Error {
 
 ```typescript
 export class ValidationError extends CliError {
+  static readonly CODE = 'VALIDATION_ERROR';
   readonly issues?: string[];
 
   constructor(
@@ -161,7 +149,7 @@ export class ValidationError extends CliError {
     options?: { context?: Record<string, unknown>; cause?: unknown },
   ) {
     super({
-      code: ErrorCode.VALIDATION_ERROR,
+      code: ValidationError.CODE,
       message,
       recoverable: false,
       ...options,
@@ -247,6 +235,7 @@ Error [{{code}}]: {{message}}
 - `JSON.stringify()` in every handler is boilerplate - core should serialize
 - Handlers shouldn't know about output format (JSON/table/etc.)
 - **Errors use the same output pipeline** - `OutputService` formats both error and success outputs
+- **Decentralized error codes**: Static string codes in error classes eliminate the need for a central registry and reduce cross-module coupling. Scripts differentiate errors via JSON `code` field.
 
 **New handler contract**:
 
@@ -320,7 +309,7 @@ function mapErrorToOutput(error: unknown): {
     return { status: 'failure', ...ValidationError.fromZod(error).toJSON() };
   return {
     status: 'failure',
-    code: ErrorCode.INTERNAL_ERROR,
+    code: INTERNAL_ERROR_CODE,
     message: formatUnknownError(error),
   };
 }
@@ -389,49 +378,15 @@ export async function getAccountBalance(args: CommandHandlerArgs): Promise<Comma
 
 ### Service Error Throwing
 
-Services throw `CliError` directly for simplicity:
-
-```typescript
-// mirrornode-service.ts
-async getAccountHBarBalance(accountId: string): Promise<string> {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      // Map HTTP status to appropriate error type
-      if (response.status === 404) {
-        throw new NotFoundError('Account', accountId);
-      }
-      if (response.status === 400 || response.status === 422) {
-        throw new ValidationError(`Invalid request: ${response.statusText}`, { context: { accountId } });
-      }
-      if (response.status === 401 || response.status === 403) {
-        throw new AuthorizationError(`Access denied: ${response.statusText}`, { context: { accountId } });
-      }
-      // 5xx and other errors → NetworkError (recoverable)
-      throw new NetworkError(`Mirror node error: ${response.status}`, { recoverable: true });
-    }
-    return response.data.balance.balance.toString();
-  } catch (error) {
-    if (error instanceof CliError) throw error;
-    throw new NetworkError(`Failed to fetch balance for ${accountId}`, { cause: error, recoverable: true });
-  }
-}
-```
-
 ### External Plugin Support
 
-Plugins should use core error types when semantics match. Custom errors are allowed for domain-specific failures but must explicitly set `recoverable`.
+Plugins should use core error types when semantics match. Custom errors are allowed for domain-specific failures by defining unique string codes.
 
 **Recommended: Use core error types**
 
 ```typescript
 // my-plugin/handler.ts
-import {
-  CliError,
-  ErrorCode,
-  NotFoundError,
-  NetworkError,
-} from '@hiero/cli-core';
+import { CliError, NotFoundError, NetworkError } from '@hiero/cli-core';
 
 export async function myHandler(args: CommandHandlerArgs) {
   if (!entity) {
@@ -444,27 +399,17 @@ export async function myHandler(args: CommandHandlerArgs) {
 }
 ```
 
-**Allowed: Custom error codes for domain-specific errors**
+**Allowed: Custom domain-specific errors**
 
 ```typescript
 class InsufficientGasError extends CliError {
+  static readonly CODE = 'INSUFFICIENT_GAS';
   constructor(required: string, available: string) {
     super({
-      code: 'INSUFFICIENT_GAS' as ErrorCode,
+      code: InsufficientGasError.CODE,
       message: `Insufficient gas: need ${required}, have ${available}`,
       recoverable: true,
       context: { required, available },
-    });
-  }
-}
-
-class SignatureExpiredError extends CliError {
-  constructor(expiredAt: string) {
-    super({
-      code: 'SIGNATURE_EXPIRED' as ErrorCode,
-      message: `Signature expired at ${expiredAt}`,
-      recoverable: false,
-      context: { expiredAt },
     });
   }
 }
@@ -489,7 +434,7 @@ esac
 
 2. **Single error boundary**: Core's existing try-catch in `executePluginCommand` becomes the sole point of error handling, eliminating duplicated catch blocks in handlers.
 
-3. **Type-safe error codes**: `ErrorCode` enum prevents typos and enables IDE autocomplete. Scripts differentiate errors via JSON `code` field.
+3. **Decentralized error codes**: Static string codes in error classes eliminate the need for a central registry and reduce cross-module coupling. Scripts differentiate errors via JSON `code` field.
 
 4. **Scripting first**: Structured JSON with `code`, `message`, `context` enables reliable script automation without string parsing.
 
@@ -544,7 +489,7 @@ esac
 ```
 src/core/errors/
 ├── index.ts                 # Re-exports all
-├── error-code.ts            # ErrorCode enum + CLI_ERROR_EXIT_CODE
+├── constants.ts             # INTERNAL_ERROR_CODE + CLI_ERROR_EXIT_CODE
 ├── cli-error.ts             # CliError base class
 ├── validation-error.ts
 ├── not-found-error.ts
