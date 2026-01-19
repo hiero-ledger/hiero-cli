@@ -34,14 +34,13 @@ describe('network plugin - use command', () => {
       { network: networkService, mirror: mirrorService },
       logger,
       {
-        network: 'mainnet',
+        global: 'mainnet',
       },
     );
 
     const result = await useHandler(args);
 
     expect(networkService.switchNetwork).toHaveBeenCalledWith('mainnet');
-    expect(mirrorService.setBaseUrl).toHaveBeenCalledWith('mainnet');
     expect(result.status).toBe(Status.Success);
   });
 
@@ -53,7 +52,7 @@ describe('network plugin - use command', () => {
     });
 
     const args = makeArgs({ network: networkService }, logger, {
-      network: 'testnet',
+      global: 'testnet',
     });
 
     const result = await useHandler(args);
@@ -72,7 +71,7 @@ describe('network plugin - use command', () => {
       { network: networkService, mirror: mirrorService },
       logger,
       {
-        network: 'previewnet',
+        global: 'previewnet',
         json: true,
       },
     );
@@ -80,7 +79,6 @@ describe('network plugin - use command', () => {
     const result = await useHandler(args);
 
     expect(networkService.switchNetwork).toHaveBeenCalledWith('previewnet');
-    expect(mirrorService.setBaseUrl).toHaveBeenCalledWith('previewnet');
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
   });
@@ -96,7 +94,7 @@ describe('network plugin - use command', () => {
       { network: networkService, mirror: mirrorService },
       logger,
       {
-        network: 'mainnet',
+        global: 'mainnet',
       },
     );
 
@@ -117,7 +115,7 @@ describe('network plugin - use command', () => {
       { network: networkService, mirror: mirrorService },
       logger,
       {
-        network: 'mainnet',
+        global: 'mainnet',
       },
     );
 
@@ -125,7 +123,6 @@ describe('network plugin - use command', () => {
     expect(res1.status).toBe(Status.Success);
 
     expect(networkService.switchNetwork).toHaveBeenCalledWith('mainnet');
-    expect(mirrorService.setBaseUrl).toHaveBeenCalledWith('mainnet');
 
     jest.clearAllMocks();
 
@@ -133,7 +130,7 @@ describe('network plugin - use command', () => {
       { network: networkService, mirror: mirrorService },
       logger,
       {
-        network: 'previewnet',
+        global: 'previewnet',
       },
     );
 
@@ -141,6 +138,5 @@ describe('network plugin - use command', () => {
     expect(res2.status).toBe(Status.Success);
 
     expect(networkService.switchNetwork).toHaveBeenCalledWith('previewnet');
-    expect(mirrorService.setBaseUrl).toHaveBeenCalledWith('previewnet');
   });
 });

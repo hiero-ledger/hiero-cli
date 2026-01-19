@@ -6,6 +6,12 @@
 import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
 import {
+  CREATE_NFT_TEMPLATE,
+  createNft,
+  CreateNftOutputSchema,
+} from '@/plugins/token/commands/create-nft';
+
+import {
   ASSOCIATE_TOKEN_TEMPLATE,
   associateToken,
   AssociateTokenOutputSchema,
@@ -101,14 +107,14 @@ export const tokenPluginManifest: PluginManifest = {
       options: [
         {
           name: 'token-name',
-          short: 'N',
+          short: 'T',
           type: 'string',
           required: true,
           description: 'Token name. Option required.',
         },
         {
           name: 'symbol',
-          short: 's',
+          short: 'Y',
           type: 'string',
           required: true,
           description: 'Token symbol. Option required.',
@@ -163,6 +169,14 @@ export const tokenPluginManifest: PluginManifest = {
             'Admin key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
         },
         {
+          name: 'supply-key',
+          short: 's',
+          type: 'string',
+          required: false,
+          description:
+            'Optional supply key as account name or {accountId}:{private_key} format.',
+        },
+        {
           name: 'name',
           short: 'n',
           type: 'string',
@@ -189,6 +203,95 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: CreateTokenOutputSchema,
         humanTemplate: CREATE_TOKEN_TEMPLATE,
+      },
+    },
+
+    {
+      name: 'create-nft',
+      summary: 'Create a new non-fungible token',
+      description: 'Create a new non-fungible token with specified properties',
+      options: [
+        {
+          name: 'token-name',
+          short: 'N',
+          type: 'string',
+          required: true,
+          description: 'Token name. Option required.',
+        },
+        {
+          name: 'symbol',
+          short: 'Y',
+          type: 'string',
+          required: true,
+          description: 'Token symbol. Option required.',
+        },
+        {
+          name: 'treasury',
+          short: 't',
+          type: 'string',
+          required: false,
+          description:
+            'Treasury account: either an alias or treasury-id:treasury-key pair',
+        },
+        {
+          name: 'supply-type',
+          type: 'string',
+          short: 'S',
+          required: false,
+          default: 'INFINITE',
+          description: 'Set supply type: INFINITE(default) or FINITE',
+        },
+        {
+          name: 'max-supply',
+          short: 'm',
+          type: 'string',
+          required: false,
+          description:
+            'Maximum supply of the token to be set upon creation. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "1000t")',
+        },
+        {
+          name: 'admin-key',
+          short: 'a',
+          type: 'string',
+          required: false,
+          description:
+            'Admin key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
+        },
+        {
+          name: 'supply-key',
+          short: 's',
+          type: 'string',
+          required: false,
+          description:
+            'Supply key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
+        },
+        {
+          name: 'name',
+          short: 'n',
+          type: 'string',
+          required: false,
+          description: 'Optional name to register for the token',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+        {
+          name: 'memo',
+          short: 'M',
+          type: 'string',
+          required: false,
+          description: 'Optional memo for the token (max 100 characters)',
+        },
+      ],
+      handler: createNft,
+      output: {
+        schema: CreateNftOutputSchema,
+        humanTemplate: CREATE_NFT_TEMPLATE,
       },
     },
     {

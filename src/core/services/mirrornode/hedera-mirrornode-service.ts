@@ -2,7 +2,7 @@
  * Comprehensive Hedera Mirror Node Service Implementation
  * Makes actual HTTP calls to Hedera Mirror Node API
  */
-import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { HederaMirrornodeService } from './hedera-mirrornode-service.interface';
 import type {
   AccountAPIResponse,
@@ -28,21 +28,22 @@ import { formatError } from '@/core/utils/errors';
 import { NetworkToBaseUrl } from './types';
 
 export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeService {
-  private baseUrl!: string;
+  private readonly networkService: NetworkService;
 
-  constructor(network: SupportedNetwork) {
-    this.setBaseUrl(network);
+  constructor(networkService: NetworkService) {
+    this.networkService = networkService;
   }
 
-  setBaseUrl(network: SupportedNetwork): void {
+  private getBaseUrl(): string {
+    const network = this.networkService.getCurrentNetwork();
     if (!NetworkToBaseUrl.has(network)) {
       throw new Error(`Network type ${network} not supported`);
     }
-    this.baseUrl = NetworkToBaseUrl.get(network)!;
+    return NetworkToBaseUrl.get(network)!;
   }
 
   async getAccount(accountId: string): Promise<AccountResponse> {
-    const url = `${this.baseUrl}/accounts/${accountId}`;
+    const url = `${this.getBaseUrl()}/accounts/${accountId}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -90,7 +91,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
     tokenId?: string,
   ): Promise<TokenBalancesResponse> {
     const tokenIdParam = tokenId ? `&token.id=${tokenId}` : '';
-    const url = `${this.baseUrl}/accounts/${accountId}/tokens?${tokenIdParam}`;
+    const url = `${this.getBaseUrl()}/accounts/${accountId}/tokens?${tokenIdParam}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -107,7 +108,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
     queryParams: TopicMessageQueryParams,
   ): Promise<TopicMessage> {
     const response = await fetch(
-      `${this.baseUrl}/topics/${queryParams.topicId}/messages/${queryParams.sequenceNumber}`,
+      `${this.getBaseUrl()}/topics/${queryParams.topicId}/messages/${queryParams.sequenceNumber}`,
     );
 
     return (await response.json()) as TopicMessage;
@@ -129,7 +130,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       ? `${filterParams}&${baseParams}`
       : baseParams;
     let url: string | null =
-      `${this.baseUrl}/topics/${queryParams.topicId}/messages?${allParams}`;
+      `${this.getBaseUrl()}/topics/${queryParams.topicId}/messages?${allParams}`;
     const arrayOfMessages: TopicMessage[] = [];
     let fetchedMessages = 0;
     try {
@@ -154,7 +155,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
 
         // Update URL for pagination.
         // This endpoint does not return a full path to the next page, it has to be built first
-        url = data.links?.next ? this.baseUrl + data.links.next : null;
+        url = data.links?.next ? this.getBaseUrl() + data.links.next : null;
       }
     } catch (error) {
       console.error(
@@ -170,7 +171,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
   }
 
   async getTokenInfo(tokenId: string): Promise<TokenInfo> {
-    const url = `${this.baseUrl}/tokens/${tokenId}`;
+    const url = `${this.getBaseUrl()}/tokens/${tokenId}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -184,7 +185,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
   }
 
   async getTopicInfo(topicId: string): Promise<TopicInfo> {
-    const url = `${this.baseUrl}/topics/${topicId}`;
+    const url = `${this.getBaseUrl()}/topics/${topicId}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -201,7 +202,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
     transactionId: string,
     nonce?: number,
   ): Promise<TransactionDetailsResponse> {
-    let url = `${this.baseUrl}/transactions/${transactionId}`;
+    let url = `${this.getBaseUrl()}/transactions/${transactionId}`;
     if (nonce !== undefined) {
       url += `?nonce=${nonce}`;
     }
@@ -219,7 +220,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
   }
 
   async getContractInfo(contractId: string): Promise<ContractInfo> {
-    const url = `${this.baseUrl}/contracts/${contractId}`;
+    const url = `${this.getBaseUrl()}/contracts/${contractId}`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -233,7 +234,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
   }
 
   async getPendingAirdrops(accountId: string): Promise<TokenAirdropsResponse> {
-    const url = `${this.baseUrl}/accounts/${accountId}/airdrops/pending`;
+    const url = `${this.getBaseUrl()}/accounts/${accountId}/airdrops/pending`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -249,7 +250,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
   async getOutstandingAirdrops(
     accountId: string,
   ): Promise<TokenAirdropsResponse> {
-    const url = `${this.baseUrl}/accounts/${accountId}/airdrops/outstanding`;
+    const url = `${this.getBaseUrl()}/accounts/${accountId}/airdrops/outstanding`;
     const response = await fetch(url);
 
     if (!response.ok) {
@@ -266,7 +267,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
     const timestampParam = timestamp
       ? `?timestamp=${encodeURIComponent(timestamp)}`
       : '';
-    const url = `${this.baseUrl}/network/exchangerate${timestampParam}`;
+    const url = `${this.getBaseUrl()}/network/exchangerate${timestampParam}`;
     const response = await fetch(url);
     if (!response.ok) {
       throw new Error(

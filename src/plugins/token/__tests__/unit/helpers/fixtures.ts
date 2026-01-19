@@ -3,6 +3,7 @@
  * Reusable test data and constants
  */
 
+import { HederaTokenType } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 /**
@@ -282,6 +283,7 @@ export const validTokenDataForSchema = {
       collectorId: '0.0.999999',
     },
   ],
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
 };
 
 /**
@@ -365,6 +367,7 @@ export const mockStateTokenData = {
     network: SupportedNetwork.TESTNET,
     associations: [],
     customFees: [],
+    tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
   withAssociations: {
     tokenId: '0.0.123456',
@@ -379,6 +382,7 @@ export const mockStateTokenData = {
     network: SupportedNetwork.TESTNET,
     associations: [{ name: 'TestAccount', accountId: '0.0.111111' }],
     customFees: [],
+    tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
   token2: {
     tokenId: '0.0.789012',
@@ -393,6 +397,7 @@ export const mockStateTokenData = {
     network: SupportedNetwork.TESTNET,
     associations: [],
     customFees: [],
+    tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
 };
 
@@ -429,6 +434,29 @@ export const makeTokenCreateCommandArgs = (params: {
 });
 
 /**
+ * Factory function to create CommandHandlerArgs for token create-nft tests
+ */
+export const makeNftCreateCommandArgs = (params: {
+  api: any;
+  logger: any;
+  args?: Record<string, any>;
+}) => ({
+  args: {
+    tokenName: 'TestToken',
+    symbol: 'TEST',
+    supplyType: 'INFINITE',
+    treasury: 'treasury-account', // Use alias
+    adminKey: 'test-admin-key', // Use alias
+    supplyKey: 'test-supply-key', // Use alias
+    ...params.args,
+  },
+  api: params.api,
+  state: {} as any,
+  config: {} as any,
+  logger: params.logger,
+});
+
+/**
  * Expected token transaction parameters for create tests
  */
 export const expectedTokenTransactionParams = {
@@ -436,10 +464,28 @@ export const expectedTokenTransactionParams = {
   symbol: 'TEST',
   decimals: 2,
   initialSupplyRaw: 100000n,
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
   supplyType: 'INFINITE',
   maxSupplyRaw: undefined,
   treasuryId: '0.0.123456',
   adminPublicKey: expect.any(Object),
+  memo: undefined,
+};
+
+/**
+ * Expected token transaction parameters for create-nft tests
+ */
+export const expectedNftTransactionParams = {
+  name: 'TestToken',
+  symbol: 'TEST',
+  decimals: 0,
+  initialSupplyRaw: 0n,
+  supplyType: 'INFINITE',
+  tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
+  maxSupplyRaw: undefined,
+  treasuryId: '0.0.123456',
+  adminPublicKey: expect.any(Object),
+  supplyPublicKey: expect.any(Object),
   memo: undefined,
 };
 
@@ -464,6 +510,7 @@ export const expectedTokenTransactionParamsFromFile = {
       exempt: undefined,
     },
   ],
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
   memo: 'Test token created from file',
 };
 
@@ -483,6 +530,7 @@ export const validTokenDataForValidation = {
   adminPublicKey: 'admin-key',
   network: SupportedNetwork.TESTNET,
   customFees: [],
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
 };
 
 /**

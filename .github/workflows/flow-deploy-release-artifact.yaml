@@ -186,7 +186,8 @@ jobs:
           GIT_COMMITTER_NAME: ${{ secrets.GIT_USER_NAME }}
           GIT_COMMITTER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
         if: ${{ github.event.inputs.dry-run-enabled != 'true' && !cancelled() && !failure() }}
-        run: npx semantic-release
+        run:
+          npx semantic-release
 
       - name: Update Version for Dry Run
         if: ${{ github.event.inputs.dry-run-enabled == 'true' }}

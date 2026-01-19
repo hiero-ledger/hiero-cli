@@ -1,4 +1,5 @@
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { UseNetworkOutput } from './output';
 
 import { Status } from '@/core/shared/constants';
@@ -15,13 +16,19 @@ export async function useHandler(
   // Parse and validate args
   const validArgs = UseNetworkInputSchema.parse(args.args);
 
-  const network = validArgs.network;
+  const network = (validArgs.global || validArgs.g) as SupportedNetwork;
+
+  if (!network) {
+    return {
+      status: Status.Failure,
+      errorMessage: 'Network is required. Use --global or -g flag.',
+    };
+  }
 
   logger.info(`Switching to network: ${network}`);
 
   try {
     api.network.switchNetwork(network);
-    api.mirror.setBaseUrl(network);
 
     const output: UseNetworkOutput = {
       activeNetwork: network,

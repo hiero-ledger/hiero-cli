@@ -34,9 +34,10 @@ export const makeLogger = (): jest.Mocked<Logger> => ({
  * Create a mocked NetworkService
  */
 export const makeNetworkMock = (
-  network: 'testnet' | 'mainnet' | 'previewnet' = 'testnet',
+  network: 'testnet' | 'mainnet' | 'previewnet' | 'localnet' = 'testnet',
 ): jest.Mocked<NetworkService> => ({
   getCurrentNetwork: jest.fn().mockReturnValue(network),
+  setNetwork: jest.fn(),
   getAvailableNetworks: jest
     .fn()
     .mockReturnValue(['localnet', 'testnet', 'previewnet', 'mainnet']),
@@ -139,6 +140,11 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
           publicKey: '302a300506032b6570032100' + '7'.repeat(64),
           keyRefId: 'account-1-key-ref-id',
         },
+        'supply-key': {
+          entityId: '0.0.300000',
+          publicKey: '302a300506032b6570032100' + '8'.repeat(64),
+          keyRefId: 'supply-key-ref-id',
+        },
       };
       return accountAliases[alias] || null;
     }
@@ -177,7 +183,6 @@ export const makeSigningMock = (
 
 export const createMirrorNodeMock =
   (): jest.Mocked<HederaMirrornodeService> => ({
-    setBaseUrl: jest.fn(),
     getAccount: jest.fn(),
     getAccountHBarBalance: jest.fn(),
     getAccountTokenBalances: jest.fn(),
