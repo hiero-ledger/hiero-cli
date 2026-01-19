@@ -398,7 +398,7 @@ export class PluginManager {
     }
 
     // ADR-007: Check if it's the new CommandResult format
-    // @TODO POC_ERROR_HANDLING: This dual-contract support should be removed once migration is complete
+    // @TODO POC_ERROR_HANDLING: Remove dual-contract once handlers always return { result: T }
     if ('result' in result) {
       try {
         this.coreApi.output.handleResult({

@@ -40,9 +40,11 @@ export class OutputServiceImpl implements OutputService {
     const { result, template, format, outputPath } = options;
     const outputFormat = format ?? this.currentFormat;
 
+    // @TODO POC_ERROR_HANDLING: Remove normalization once handlers always return { result: T }
+    const payload = this.normalizeResultPayload(result);
     const data = {
       status: 'success',
-      ...(typeof result === 'object' && result !== null ? result : { result }),
+      ...payload,
     };
 
     const formatter = OutputFormatterFactory.getStrategy(outputFormat);
@@ -58,6 +60,15 @@ export class OutputServiceImpl implements OutputService {
     } else {
       console.log(formattedOutput);
     }
+  }
+
+  // @TODO POC_ERROR_HANDLING: Remove once handlers always return { result: T }
+  private normalizeResultPayload(result: unknown): Record<string, unknown> {
+    if (typeof result === 'object' && result !== null) {
+      return result as Record<string, unknown>;
+    }
+
+    return { result };
   }
 
   handleError(options: HandleErrorOptions): never {
