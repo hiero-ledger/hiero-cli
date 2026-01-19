@@ -5,7 +5,7 @@
  */
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
-import { HASHSCAN_BASE_URL } from '@/core/services/network/network-service';
+import { HASHSCAN_BASE_URL } from '@/core/shared/constants';
 
 import { terminalLink } from './terminal-link';
 

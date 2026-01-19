@@ -33,6 +33,13 @@ jest.mock('supports-hyperlinks', () => ({
   },
 }));
 
+jest.mock('@hashgraph/sdk', () => ({
+  TokenType: {
+    NonFungibleUnique: 'NonFungibleUnique',
+    FungibleCommon: 'FungibleCommon',
+  },
+}));
+
 jest.mock('../../strategies', () => {
   const actual = jest.requireActual('../../strategies');
   return {

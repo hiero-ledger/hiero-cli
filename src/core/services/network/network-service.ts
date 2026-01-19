@@ -12,13 +12,13 @@ import type {
   NetworkService,
 } from './network-service.interface';
 
+import { HASHSCAN_BASE_URL } from '@/core/shared/constants';
+
 import {
   DEFAULT_LOCALNET_NODE,
   DEFAULT_NETWORK,
   DEFAULT_NETWORKS,
 } from './network.config';
-
-export const HASHSCAN_BASE_URL = 'https://hashscan.io/';
 
 const NAMESPACE = 'network-config';
 const CURRENT_NETWORK_KEY = 'current';
