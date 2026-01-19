@@ -381,7 +381,7 @@ export const makeArgs = (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { state, config, ...restApi } = api;
 
-  const api_object = {
+  const apiObject = {
     account: {} as unknown,
     token: {} as unknown,
     txExecution: makeSigningMock(),
@@ -432,7 +432,7 @@ export const makeArgs = (
   } as unknown as CoreApi;
 
   return {
-    api: api_object,
+    api: apiObject,
     logger,
     state: {
       list: jest.fn().mockReturnValue([]),
