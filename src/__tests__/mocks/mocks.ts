@@ -140,6 +140,11 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
           publicKey: '302a300506032b6570032100' + '7'.repeat(64),
           keyRefId: 'account-1-key-ref-id',
         },
+        'supply-key': {
+          entityId: '0.0.300000',
+          publicKey: '302a300506032b6570032100' + '8'.repeat(64),
+          keyRefId: 'supply-key-ref-id',
+        },
       };
       return accountAliases[alias] || null;
     }

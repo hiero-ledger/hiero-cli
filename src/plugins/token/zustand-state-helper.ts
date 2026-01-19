@@ -151,6 +151,7 @@ export class ZustandTokenStateHelper {
           treasuryId: tokenData.treasuryId,
           decimals: tokenData.decimals,
           initialSupply: tokenData.initialSupply,
+          tokenType: tokenData.tokenType,
           supplyType: tokenData.supplyType,
           maxSupply: tokenData.maxSupply,
           network: tokenData.network,
@@ -160,6 +161,7 @@ export class ZustandTokenStateHelper {
             : [],
           memo: tokenData.memo,
           adminPublicKey: tokenData.adminPublicKey,
+          supplyPublicKey: tokenData.supplyPublicKey,
         };
 
         this.saveToken(tokenId, updatedTokenData);
