@@ -5,7 +5,9 @@
  */
 import type { Command } from 'commander';
 import type {
+  CommandExecutionResult,
   CommandHandlerArgs,
+  CommandResult,
   CommandSpec,
   PluginManifest,
   PluginStateEntry,
@@ -378,8 +380,7 @@ export class PluginManager {
 
     // Execute command handler with error handling
     // @TODO POC_ERROR_HANDLING: Ensure all handlers are migrated to ADR-007 throw-based model
-    /* eslint-disable @typescript-eslint/no-explicit-any */
-    let result: any;
+    let result: CommandExecutionResult | CommandResult<unknown> | undefined;
     try {
       result = await commandSpec.handler(handlerArgs);
     } catch (error) {
@@ -398,10 +399,9 @@ export class PluginManager {
 
     // ADR-007: Check if it's the new CommandResult format
     // @TODO POC_ERROR_HANDLING: This dual-contract support should be removed once migration is complete
-    if ('result' in result && !('status' in result)) {
+    if ('result' in result) {
       try {
         this.coreApi.output.handleResult({
-          /* eslint-disable @typescript-eslint/no-unsafe-member-access */
           result: result.result,
           template: commandSpec.output.humanTemplate,
           format: this.coreApi.output.getFormat(),
@@ -412,14 +412,11 @@ export class PluginManager {
       }
     }
 
-    /* eslint-disable @typescript-eslint/no-unsafe-assignment */
     const executionResult = result;
 
     // Handle non-success statuses (Old ADR-003 path)
-    /* eslint-disable @typescript-eslint/no-unsafe-member-access */
     if (executionResult.status !== Status.Success) {
       this.coreApi.output.handleError({
-        /* eslint-disable @typescript-eslint/no-unsafe-argument */
         error: new PluginError(
           executionResult.errorMessage || `Status: ${executionResult.status}`,
         ),
@@ -440,6 +437,5 @@ export class PluginManager {
         this.coreApi.output.handleError({ error });
       }
     }
-    /* eslint-enable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-argument */
   }
 }
