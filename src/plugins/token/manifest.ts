@@ -32,6 +32,11 @@ import {
   ListTokensOutputSchema,
 } from './commands/list';
 import {
+  MINT_FT_TEMPLATE,
+  mintFt,
+  MintFtOutputSchema,
+} from './commands/mint-ft';
+import {
   TRANSFER_TOKEN_TEMPLATE,
   transferToken,
   TransferTokenOutputSchema,
@@ -50,6 +55,49 @@ export const tokenPluginManifest: PluginManifest = {
     api: '^1.0.0',
   },
   commands: [
+    {
+      name: 'mint-ft',
+      summary: 'Mint fungible tokens',
+      description: 'Mint additional fungible tokens to increase supply.',
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: 'string',
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'amount',
+          short: 'a',
+          type: 'string',
+          required: true,
+          description:
+            'Amount to mint. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "100t")',
+        },
+        {
+          name: 'supply-key',
+          short: 's',
+          type: 'string',
+          required: true,
+          description:
+            'Supply key as account name or {accountId}:{private_key} format',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: mintFt,
+      output: {
+        schema: MintFtOutputSchema,
+        humanTemplate: MINT_FT_TEMPLATE,
+      },
+    },
     {
       name: 'transfer',
       summary: 'Transfer a fungible token',
@@ -213,7 +261,7 @@ export const tokenPluginManifest: PluginManifest = {
       options: [
         {
           name: 'token-name',
-          short: 'N',
+          short: 'T',
           type: 'string',
           required: true,
           description: 'Token name. Option required.',

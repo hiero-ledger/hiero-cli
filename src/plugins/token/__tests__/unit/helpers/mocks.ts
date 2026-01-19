@@ -41,6 +41,7 @@ export const makeTokenServiceMock = (
   createTokenTransaction: jest.fn(),
   createTokenAssociationTransaction: jest.fn(),
   createTransferTransaction: jest.fn(),
+  createMintTransaction: jest.fn(),
   ...overrides,
 });
 

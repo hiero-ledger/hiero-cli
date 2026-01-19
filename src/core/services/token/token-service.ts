@@ -8,6 +8,7 @@ import type {
   CustomFee as CustomFeeParams,
   TokenAssociationParams,
   TokenCreateParams,
+  TokenMintParams,
   TokenTransferParams,
 } from '@/core/types/token.types';
 import type { TokenService } from './token-service.interface';
@@ -19,6 +20,7 @@ import {
   TokenAssociateTransaction,
   TokenCreateTransaction,
   TokenId,
+  TokenMintTransaction,
   TokenSupplyType,
   TransferTransaction,
 } from '@hashgraph/sdk';
@@ -190,6 +192,28 @@ export class TokenServiceImpl implements TokenService {
     );
 
     return associateTx;
+  }
+
+  /**
+   * Create a token mint transaction (without execution)
+   */
+  createMintTransaction(params: TokenMintParams): TokenMintTransaction {
+    const tokenId: string = params.tokenId;
+    const amount: bigint = params.amount;
+
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating mint transaction: ${amount.toString()} tokens for token ${tokenId}`,
+    );
+
+    const mintTx = new TokenMintTransaction()
+      .setTokenId(TokenId.fromString(tokenId))
+      .setAmount(amount);
+
+    this.logger.debug(
+      `[TOKEN SERVICE] Created mint transaction for token ${tokenId}`,
+    );
+
+    return mintTx;
   }
 
   /**
