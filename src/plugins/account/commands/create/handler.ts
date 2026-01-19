@@ -123,11 +123,11 @@ export async function createAccount(
   const accountData: AccountData = {
     name,
     accountId: result.accountId,
-    type: keyType as KeyAlgorithm,
+    type: keyType as KeyAlgorithm, // Temporary solution, to fix after PoC
     publicKey: accountCreateResult.publicKey,
     evmAddress,
     keyRefId,
-    network: api.network.getCurrentNetwork() as AccountData['network'],
+    network: api.network.getCurrentNetwork() as AccountData['network'], // Temporary solution, to fix after PoC
   };
 
   accountState.saveAccount(name, accountData);

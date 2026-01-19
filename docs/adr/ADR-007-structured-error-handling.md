@@ -28,7 +28,7 @@ ADR-003 introduced the `CommandExecutionResult` contract where handlers return `
 
 5. **Inconsistent service errors**: Services throw raw `Error` objects; handlers must catch and transform them individually, or rely on global handler to catch and handle them.
 
-6. **Dual output paths and format drift**: Success output goes through `OutputService`, but errors bypass it via `formatAndExitWithError`. The `format` is managed in both `OutputService` and `error-handler.ts`, so `--format` is not a single source of truth and JSON error output can diverge from standard output formatting.
+6. **Dual output paths and format drift**: Success output goes through `OutputService`, but error handling is fragmented across the codebase. With multiple modules managing formatting, `--format` is not a single source of truth, and JSON error output can diverge from standard success output formatting.
 
 ### Future Considerations: Retry Strategy
 
@@ -563,25 +563,15 @@ src/core/errors/
 export * from './errors';
 ```
 
-### Error Handler Modification
+### Global Error Boundary
 
-```typescript
-// src/core/utils/error-handler.ts
-export function formatAndExitWithError(
-  context: string,
-  error: unknown,
-  output: OutputService,
-): never {
-  const mapped = mapErrorToOutput(error, context);
-  output.handleError({ error: mapped });
-}
-```
+`error-handler.ts` serves as a "last resort" global catch-all. It captures any unhandled exceptions at the process level, ensures they are mapped to structured output, and delegates final formatting to `OutputService`.
 
 **Notes**:
 
-- `error-handler.ts` should not own format state.
-- `context` is used to enrich the error message or `context` payload.
-- `OutputService.handleError` is responsible for JSON/human formatting and exiting.
+- `error-handler.ts` becomes a thin wrapper for global process errors (unhandled rejections/exceptions).
+- Handlers and services throw structured errors; they do not call formatting utilities directly.
+- `OutputService.handleError` is the single point responsible for JSON/human formatting and process exit.
 
 ## Alternatives Considered
 
