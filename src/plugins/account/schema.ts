@@ -10,7 +10,7 @@ import {
   EvmAddressSchema,
 } from '@/core/schemas/common-schemas';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { SUPPORTED_NETWORKS } from '@/core/shared/validation/validate-network.zod';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Zod schema for runtime validation
@@ -23,7 +23,7 @@ export const AccountDataSchema = z.object({
   }),
   publicKey: z.string().min(1, 'Public key is required'),
   evmAddress: EvmAddressSchema,
-  network: z.enum(SUPPORTED_NETWORKS, {
+  network: z.enum(SupportedNetwork, {
     error: () => ({
       message: 'Network must be one of: mainnet, testnet, previewnet, localnet',
     }),

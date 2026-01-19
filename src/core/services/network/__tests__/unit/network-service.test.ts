@@ -4,21 +4,21 @@
  */
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { DEFAULT_NETWORK } from '@/core/services/network/network.config';
 import { NetworkServiceImpl } from '@/core/services/network/network-service';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 const NAMESPACE = 'network-config';
 const CURRENT_KEY = 'current';
 const TESTNET_OPERATOR_KEY = 'testnetOperator';
 const MAINNET_OPERATOR_KEY = 'mainnetOperator';
 
-const NETWORK_MAINNET = 'mainnet';
-const NETWORK_TESTNET = 'testnet';
-const NETWORK_PREVIEWNET = 'previewnet';
-const NETWORK_LOCALNET = 'localnet';
+const NETWORK_MAINNET = SupportedNetwork.MAINNET;
+const NETWORK_TESTNET = SupportedNetwork.TESTNET;
+const NETWORK_PREVIEWNET = SupportedNetwork.PREVIEWNET;
+const NETWORK_LOCALNET = SupportedNetwork.LOCALNET;
 const NETWORK_INVALID = 'invalid';
 const NETWORK_UNKNOWN = 'unknown';
 

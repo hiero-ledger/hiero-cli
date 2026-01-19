@@ -5,6 +5,7 @@
 
 import { makeNetworkMock } from '@/__tests__/mocks/mocks';
 import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 import {
   createMockAccountAPIResponse,
@@ -41,9 +42,7 @@ const TEST_TIMESTAMP = '2024-01-01T12:00:00.000Z';
 const TEST_SEQUENCE_NUMBER = 1;
 
 // Setup helper
-const setupService = (
-  network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet' = 'testnet',
-) => {
+const setupService = (network: SupportedNetwork = SupportedNetwork.TESTNET) => {
   jest.clearAllMocks();
 
   const networkService = makeNetworkMock(network);
@@ -66,24 +65,24 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
   describe('constructor', () => {
     it('should initialize with testnet LedgerId', () => {
-      const { service } = setupService('testnet');
+      const { service } = setupService(SupportedNetwork.TESTNET);
       expect(service).toBeDefined();
     });
 
     it('should initialize with mainnet LedgerId', () => {
-      const { service } = setupService('mainnet');
+      const { service } = setupService(SupportedNetwork.MAINNET);
       expect(service).toBeDefined();
     });
 
     it('should initialize with previewnet LedgerId', () => {
-      const { service } = setupService('previewnet');
+      const { service } = setupService(SupportedNetwork.PREVIEWNET);
       expect(service).toBeDefined();
     });
   });
 
   describe('getAccount', () => {
     it('should fetch account successfully', async () => {
-      const { service } = setupService('testnet');
+      const { service } = setupService(SupportedNetwork.TESTNET);
       const mockResponse = createMockAccountAPIResponse();
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
@@ -104,7 +103,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
     });
 
     it('should construct correct URL for different networks', async () => {
-      const { service } = setupService('mainnet');
+      const { service } = setupService(SupportedNetwork.MAINNET);
       const mockResponse = createMockAccountAPIResponse();
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
@@ -119,7 +118,9 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
     });
 
     it('should automatically use new network URL after network switch', async () => {
-      const { service, networkService } = setupService('testnet');
+      const { service, networkService } = setupService(
+        SupportedNetwork.TESTNET,
+      );
       const mockResponse = createMockAccountAPIResponse();
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,

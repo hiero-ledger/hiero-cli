@@ -1,26 +1,18 @@
-import type { SupportedNetwork } from '@/core/types/shared.types';
-
 import { z } from 'zod';
 
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { formatAndExitWithError } from '@/core/utils/error-handler';
 import { isStringifiable } from '@/core/utils/is-stringifiable';
 
-export const SUPPORTED_NETWORKS = [
-  'mainnet',
-  'testnet',
-  'previewnet',
-  'localnet',
-] as const satisfies readonly SupportedNetwork[];
-
-const networkSchema = z.enum(SUPPORTED_NETWORKS);
+const networkSchema = z.enum(Object.values(SupportedNetwork));
 
 export function validateNetwork(network: unknown): SupportedNetwork | null {
   if (!network) return null;
 
   try {
-    return networkSchema.parse(network) as SupportedNetwork;
+    return networkSchema.parse(network);
   } catch {
-    const validNetworks = SUPPORTED_NETWORKS.join(', ');
+    const validNetworks = Object.values(SupportedNetwork).join(', ');
     formatAndExitWithError(
       'Invalid network option',
       new Error(

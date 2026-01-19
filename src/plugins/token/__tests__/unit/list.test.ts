@@ -1,5 +1,6 @@
 import { makeArgs } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   listTokens,
   type ListTokensOutput,
@@ -25,8 +26,8 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
 
-const NETWORK_TESTNET = 'testnet';
-const NETWORK_MAINNET = 'mainnet';
+const NETWORK_TESTNET = SupportedNetwork.TESTNET;
+const NETWORK_MAINNET = SupportedNetwork.MAINNET;
 
 describe('token plugin - list command', () => {
   beforeEach(() => {

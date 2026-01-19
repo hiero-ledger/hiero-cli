@@ -11,6 +11,7 @@ import {
   setupExitSpy,
 } from '@/__tests__/mocks/mocks';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { setOperatorHandler } from '@/plugins/network/commands/set-operator';
 import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 
@@ -74,7 +75,7 @@ describe('network plugin - set-operator command', () => {
     aliasService.resolve.mockReturnValue({
       alias: 'testnet1',
       type: 'account',
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
       entityId: '0.0.789012',
       keyRefId: 'kr_alias123',
       publicKey:
@@ -231,7 +232,7 @@ describe('network plugin - set-operator command', () => {
     aliasService.resolve.mockReturnValue({
       alias: 'testnet1',
       type: 'account',
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
       entityId: '0.0.789012',
       keyRefId: undefined,
       publicKey: undefined,

@@ -5,7 +5,7 @@
 import { z } from 'zod';
 
 import { EntityIdSchema } from '@/core/schemas/common-schemas';
-import { SUPPORTED_NETWORKS } from '@/core/shared/validation/validate-network.zod';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Zod schema for credentials state validation
@@ -17,7 +17,7 @@ export const CredentialsDataSchema = z.object({
     .min(1, 'Private key is required')
     .describe('Encrypted private key string'),
 
-  network: z.enum(SUPPORTED_NETWORKS, {
+  network: z.enum(SupportedNetwork, {
     error: () => ({
       message: 'Network must be one of: mainnet, testnet, previewnet, localnet',
     }),

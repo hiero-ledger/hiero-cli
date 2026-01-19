@@ -34,7 +34,13 @@
     ]
   ],
   "prepare": [
-    "@semantic-release/npm",
+    [
+      "@semantic-release/npm",
+      {
+        "npmPublish": false,
+        "tarballDir": "dist"
+      }
+    ],
     [
       "@semantic-release/git",
       {

@@ -4,6 +4,7 @@ import type { TopicData } from '@/plugins/topic/schema';
 
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { listTopics } from '@/plugins/topic/commands/list/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -17,7 +18,7 @@ const makeTopicData = (overrides: Partial<TopicData> = {}): TopicData => ({
   name: 'test-topic',
   topicId: '0.0.1234',
   memo: 'Test topic',
-  network: 'testnet',
+  network: SupportedNetwork.TESTNET,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString(),
   ...overrides,
@@ -117,14 +118,14 @@ describe('topic plugin - list command', () => {
       topicId: '0.0.4444',
       memo: 'Mainnet Topic',
       name: 'Mainnet Topic',
-      network: 'mainnet',
+      network: SupportedNetwork.MAINNET,
     });
 
     const TESTNET_TOPIC = makeTopicData({
       topicId: '0.0.5555',
       memo: 'Testnet Topic',
       name: 'Testnet Topic',
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
 
     MockedHelper.mockImplementation(() => ({
@@ -155,7 +156,7 @@ describe('topic plugin - list command', () => {
           topicId: '0.0.5555',
           memo: 'Testnet Topic',
           name: 'Testnet Topic',
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
         }),
       ]),
     }));
@@ -181,20 +182,20 @@ describe('topic plugin - list command', () => {
         memo: 'Topic 1',
         name: 'Topic 1',
         adminKeyRefId: 'kr_admin1',
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
       }),
       makeTopicData({
         topicId: '0.0.2222',
         memo: 'Topic 2',
         name: 'Topic 2',
         submitKeyRefId: 'kr_submit1',
-        network: 'mainnet',
+        network: SupportedNetwork.MAINNET,
       }),
       makeTopicData({
         topicId: '0.0.3333',
         memo: '(No memo)',
         name: 'Topic 3',
-        network: 'testnet',
+        network: SupportedNetwork.TESTNET,
       }),
     ];
 
