@@ -242,7 +242,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
 
       const output = JSON.parse(result.outputJson!) as ListTokensOutput;
       expect(output.tokens).toEqual([]);
-      expect(output.count).toBe(0);
+      expect(output.totalCount).toBe(0);
       expect(output.stats).toBeDefined();
     });
 
@@ -290,7 +290,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       const output = JSON.parse(result.outputJson!) as ListTokensOutput;
       expect(output.tokens).toHaveLength(1);
       expect(output.tokens[0].tokenId).toBe('0.0.12345');
-      expect(output.count).toBe(1);
+      expect(output.totalCount).toBe(1);
     });
   });
 });

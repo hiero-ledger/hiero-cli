@@ -48,8 +48,8 @@ export const LIST_TOPICS_TEMPLATE = `
 {{#if (eq totalCount 0)}}
 📝 No topics found
 {{else}}
-Found {{totalCount}} topic(s):
-──────────────────────────────────────
+📝 Found {{totalCount}} topic(s):
+
 {{#each topics}}
 {{add1 @index}}. {{name}}
    Topic ID: {{hashscanLink topicId "topic" network}}
@@ -60,20 +60,7 @@ Found {{totalCount}} topic(s):
    Admin Key: {{#if adminKeyPresent}}✅ Present{{else}}❌ Not Present{{/if}}
    Submit Key: {{#if submitKeyPresent}}✅ Present{{else}}❌ Not Present{{/if}}
    Created: {{createdAt}}
-{{#unless @last}}
 
-{{/unless}}
-{{/each}}
-
-──────────────────────────────────────
-Total Topics: {{totalCount}}
-With Admin Key: {{stats.withAdminKey}}
-With Submit Key: {{stats.withSubmitKey}}
-With Memo: {{stats.withMemo}}
-
-By Network:
-{{#each stats.byNetwork}}
-  {{@key}}: {{this}}
 {{/each}}
 {{/if}}
 `.trim();

@@ -333,27 +333,52 @@ interface CommandOutputSpec {
 
 #### `token list`
 
+Lists all tokens from all networks stored in state.
+
 **Output**:
 
 ```json
 {
   "tokens": [
     {
-      "tokenId": "0.0.67890",
-      "name": "MyToken",
-      "symbol": "MTK",
+      "tokenId": "0.0.12345",
+      "name": "my-testnet-token",
+      "symbol": "MTT",
       "decimals": 2,
       "supplyType": "INFINITE",
       "treasuryId": "0.0.12345",
       "network": "testnet",
-      "keys": {
-        "adminKey": "02a1b2...",
-        "supplyKey": null
-      }
+      "alias": "my-testnet-token",
+      "maxSupply": 0,
+      "associationCount": 0
+    },
+    {
+      "tokenId": "0.0.7654321",
+      "name": "my-previewnet-token",
+      "symbol": "MPT",
+      "decimals": 0,
+      "supplyType": "INFINITE",
+      "treasuryId": "0.0.54321",
+      "network": "previewnet",
+      "alias": "token-previewnet1",
+      "maxSupply": 0,
+      "associationCount": 0
     }
   ],
-  "count": 1,
-  "network": "testnet"
+  "totalCount": 2,
+  "stats": {
+    "total": 2,
+    "withKeys": 2,
+    "byNetwork": {
+      "previewnet": 1,
+      "testnet": 1
+    },
+    "bySupplyType": {
+      "INFINITE": 2
+    },
+    "withAssociations": 0,
+    "totalAssociations": 0
+  }
 }
 ```
 

@@ -3,7 +3,6 @@ import type { ConfigService } from '@/core/services/config/config-service.interf
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { KeyManager } from './key-managers/key-manager.interface';
 import type { KmsService } from './kms-service.interface';
 import type {
@@ -16,6 +15,7 @@ import { AccountId, Client, PrivateKey, PublicKey } from '@hashgraph/sdk';
 import { randomBytes } from 'crypto';
 
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 import { CredentialStorage } from './credential-storage';
 import { ALGORITHM_CONFIGS } from './encryption/algorithm-config';
@@ -273,16 +273,16 @@ export class KmsServiceImpl implements KmsService {
     // Create client and set operator with credentials
     let client: Client;
     switch (network) {
-      case 'mainnet':
+      case SupportedNetwork.MAINNET:
         client = Client.forMainnet();
         break;
-      case 'testnet':
+      case SupportedNetwork.TESTNET:
         client = Client.forTestnet();
         break;
-      case 'previewnet':
+      case SupportedNetwork.PREVIEWNET:
         client = Client.forPreviewnet();
         break;
-      case 'localnet': {
+      case SupportedNetwork.LOCALNET: {
         // For localnet, get configuration from NetworkService
         const localnetConfig = this.networkService.getLocalnetConfig();
 

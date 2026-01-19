@@ -1,5 +1,4 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { DeleteAccountOutput } from '@/plugins/account/commands/delete';
 import type { ImportAccountOutput } from '@/plugins/account/commands/import';
 import type { ViewAccountOutput } from '@/plugins/account/commands/view';
@@ -10,6 +9,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { deleteAccount, importAccount, viewAccount } from '@/plugins/account';
 
 describe('Delete Account Integration Tests', () => {
@@ -23,13 +23,14 @@ describe('Delete Account Integration Tests', () => {
     coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
     network = coreApi.network.getCurrentNetwork();
-    accountId = network === 'localnet' ? '0.0.1003' : '0.0.7300370';
+    accountId =
+      network === SupportedNetwork.LOCALNET ? '0.0.1003' : '0.0.7300370';
     accountKey =
-      network === 'localnet'
+      network === SupportedNetwork.LOCALNET
         ? '3030020100300706052b8104000a042204206ec1f2e7d126a74a1d2ff9e1c5d90b92378c725e506651ff8bb8616a5c724628'
         : '3030020100300706052b8104000a042204206790ef7f62d1b4a2d2fdcf4e0fc0882b86786dfbb1efc9ace8a2e3656adea122';
     evmAddress =
-      network === 'localnet'
+      network === SupportedNetwork.LOCALNET
         ? '0x00000000000000000000000000000000000003eb'
         : '0x91d9247415c979a289aa178c4c67181e11d38872';
   });

@@ -50,7 +50,6 @@ describe('List Token Integration Tests', () => {
 
     const listTokenArgs: Record<string, unknown> = {
       keys: true,
-      network: network,
     };
     const listTokenResult = await listTokens({
       args: listTokenArgs,
@@ -63,7 +62,6 @@ describe('List Token Integration Tests', () => {
     const listTokenOutput: ListTokensOutput = JSON.parse(
       listTokenResult.outputJson!,
     );
-    expect(listTokenOutput.network).toBe(network);
     const tokenNames = listTokenOutput.tokens.map((token) => token.tokenId);
     expect(tokenNames).toContain(createTokenOutput.tokenId);
   });

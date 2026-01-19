@@ -7,6 +7,7 @@ import type { AccountData } from '@/plugins/account/schema';
 
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 /**
  * Mock Account IDs
@@ -30,7 +31,7 @@ export const mockAccountData = {
     type: KeyAlgorithm.ECDSA,
     publicKey: 'pk',
     evmAddress: '0x0000000000000000000000000000000000000000',
-    network: 'testnet',
+    network: SupportedNetwork.TESTNET,
   } satisfies AccountData,
   testAccount: {
     keyRefId: 'kr_test456',
@@ -39,7 +40,7 @@ export const mockAccountData = {
     type: KeyAlgorithm.ECDSA,
     publicKey: 'pk',
     evmAddress: '0x0000000000000000000000000000000000000000',
-    network: 'testnet',
+    network: SupportedNetwork.TESTNET,
   } satisfies AccountData,
   ed25519Account: {
     keyRefId: 'kr_test789',
@@ -48,7 +49,7 @@ export const mockAccountData = {
     type: KeyAlgorithm.ED25519,
     publicKey: 'pk',
     evmAddress: '0x0000000000000000000000000000000000000000',
-    network: 'testnet',
+    network: SupportedNetwork.TESTNET,
   } satisfies AccountData,
 };
 
@@ -128,28 +129,28 @@ export const mockAliasRecords = {
   accountTestnet: {
     alias: 'acc-alias-testnet',
     type: ALIAS_TYPE.Account,
-    network: 'testnet' as const,
+    network: SupportedNetwork.TESTNET,
     entityId: '0.0.7777',
     createdAt: '2024-01-01T00:00:00.000Z',
   } satisfies AliasRecord,
   accountMainnet: {
     alias: 'acc-alias-mainnet',
     type: ALIAS_TYPE.Account,
-    network: 'mainnet' as const,
+    network: SupportedNetwork.MAINNET,
     entityId: '0.0.7777',
     createdAt: '2024-01-01T00:00:00.000Z',
   } satisfies AliasRecord,
   tokenTestnet: {
     alias: 'token-alias-testnet',
     type: ALIAS_TYPE.Token,
-    network: 'testnet' as const,
+    network: SupportedNetwork.TESTNET,
     entityId: '0.0.7777',
     createdAt: '2024-01-01T00:00:00.000Z',
   } satisfies AliasRecord,
   otherAccountTestnet: {
     alias: 'other-acc-testnet',
     type: ALIAS_TYPE.Account,
-    network: 'testnet' as const,
+    network: SupportedNetwork.TESTNET,
     entityId: '0.0.8888',
     createdAt: '2024-01-01T00:00:00.000Z',
   } satisfies AliasRecord,
