@@ -105,6 +105,7 @@ export const makeNetworkServiceMock = (
   network: SupportedNetwork = SupportedNetwork.TESTNET,
 ): jest.Mocked<NetworkService> => ({
   getCurrentNetwork: jest.fn().mockReturnValue(network),
+  setNetwork: jest.fn(),
   getAvailableNetworks: jest
     .fn()
     .mockReturnValue(['localnet', 'testnet', 'previewnet', 'mainnet']),

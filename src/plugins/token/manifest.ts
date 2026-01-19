@@ -101,7 +101,7 @@ export const tokenPluginManifest: PluginManifest = {
       options: [
         {
           name: 'token-name',
-          short: 'N',
+          short: 'T',
           type: 'string',
           required: true,
           description: 'Token name. Option required.',

@@ -3,6 +3,7 @@
  * Tests all public methods with success paths, error paths, and edge cases
  */
 
+import { makeNetworkMock } from '@/__tests__/mocks/mocks';
 import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -44,9 +45,10 @@ const TEST_SEQUENCE_NUMBER = 1;
 const setupService = (network: SupportedNetwork = SupportedNetwork.TESTNET) => {
   jest.clearAllMocks();
 
-  const service = new HederaMirrornodeServiceDefaultImpl(network);
+  const networkService = makeNetworkMock(network);
+  const service = new HederaMirrornodeServiceDefaultImpl(networkService);
 
-  return { service, network };
+  return { service, network, networkService };
 };
 
 describe('HederaMirrornodeServiceDefaultImpl', () => {
@@ -110,6 +112,28 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await service.getAccount(TEST_ACCOUNT_ID);
 
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${MAINNET_URL}/accounts/${TEST_ACCOUNT_ID}`,
+      );
+    });
+
+    it('should automatically use new network URL after network switch', async () => {
+      const { service, networkService } = setupService(
+        SupportedNetwork.TESTNET,
+      );
+      const mockResponse = createMockAccountAPIResponse();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      await service.getAccount(TEST_ACCOUNT_ID);
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_URL}/accounts/${TEST_ACCOUNT_ID}`,
+      );
+
+      networkService.getCurrentNetwork = jest.fn().mockReturnValue('mainnet');
+      await service.getAccount(TEST_ACCOUNT_ID);
       expect(global.fetch).toHaveBeenCalledWith(
         `${MAINNET_URL}/accounts/${TEST_ACCOUNT_ID}`,
       );
