@@ -520,3 +520,52 @@ export const setupZustandHelperMock = (
     ),
   }));
 };
+
+/**
+ * Create API mocks configured for successful mint-ft operations
+ * Provides default mocks for token minting with configurable overrides
+ */
+export const makeMintFtSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    decimals?: string;
+    supply_key?: { key: string } | null;
+    total_supply?: string;
+    max_supply?: string;
+  };
+  signResult?: ReturnType<typeof makeTransactionResult>;
+}) => {
+  const mockMintTransaction = { test: 'mint-transaction' };
+
+  return {
+    ...makeApiMocks({
+      tokens: {
+        createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
+      },
+      signing: {
+        signAndExecuteWith: jest
+          .fn()
+          .mockResolvedValue(
+            overrides?.signResult || makeTransactionResult({ success: true }),
+          ),
+      },
+      mirror: {
+        getTokenInfo: jest.fn().mockResolvedValue({
+          decimals: overrides?.tokenInfo?.decimals ?? '2',
+          supply_key: overrides?.tokenInfo?.supply_key ?? { key: 'supply-key' },
+          total_supply: overrides?.tokenInfo?.total_supply ?? '1000000',
+          max_supply: overrides?.tokenInfo?.max_supply ?? '0',
+        }),
+      },
+      alias: {
+        resolve: jest.fn().mockReturnValue(null),
+      },
+      kms: {
+        importPrivateKey: jest.fn().mockReturnValue({
+          keyRefId: 'supply-key-ref-id',
+          publicKey: 'supply-public-key',
+        }),
+      },
+    }),
+    mockMintTransaction,
+  };
+};
