@@ -54,17 +54,8 @@ export async function mintFt(
     const tokenData = tokenState.getToken(tokenId);
 
     if (tokenData && tokenData.tokenType !== HederaTokenType.FUNGIBLE_COMMON) {
-      if (tokenDecimals === 0) {
-        throw new Error(
-          `Token ${tokenId} is not a fungible token. This command only supports fungible tokens.`,
-        );
-      }
-      logger.warn(
-        `Token ${tokenId} has incorrect tokenType in state but has decimals (${tokenDecimals}), treating as fungible token.`,
-      );
-    } else if (!tokenData && tokenDecimals === 0) {
-      logger.warn(
-        `Token ${tokenId} appears to be an NFT (no decimals). Minting may fail.`,
+      throw new Error(
+        `Token ${tokenId} is not a fungible token. This command only supports fungible tokens.`,
       );
     }
 
