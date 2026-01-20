@@ -84,13 +84,15 @@ describe('mintFtHandler', () => {
     });
 
     test('should mint tokens for FINITE supply token below max supply', async () => {
+      const supplyKeyPublicKey = 'supply-public-key';
       const { api } = makeMintFtSuccessMocks({
         tokenInfo: {
           decimals: '2',
-          supply_key: { key: 'supply-key' },
+          supply_key: { key: supplyKeyPublicKey },
           total_supply: '5000000',
           max_supply: '10000000',
         },
+        supplyKeyPublicKey,
       });
 
       const logger = makeLogger();
@@ -273,13 +275,15 @@ describe('mintFtHandler', () => {
     });
 
     test('should handle exceeding max supply for FINITE token', async () => {
+      const supplyKeyPublicKey = 'supply-public-key';
       const { api } = makeMintFtSuccessMocks({
         tokenInfo: {
           decimals: '2',
-          supply_key: { key: 'supply-key' },
+          supply_key: { key: supplyKeyPublicKey },
           total_supply: '9000000',
           max_supply: '10000000',
         },
+        supplyKeyPublicKey,
       });
 
       const logger = makeLogger();

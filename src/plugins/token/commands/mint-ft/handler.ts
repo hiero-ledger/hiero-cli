@@ -74,6 +74,24 @@ export async function mintFt(
       );
     }
 
+    const supplyKeyResolved = await api.keyResolver.getOrInitKey(
+      validArgs.supplyKey,
+      keyManager,
+      ['token:supply'],
+    );
+
+    const tokenSupplyKeyPublicKey = tokenInfo.supply_key.key;
+    const providedSupplyKeyPublicKey = supplyKeyResolved.publicKey;
+
+    if (tokenSupplyKeyPublicKey !== providedSupplyKeyPublicKey) {
+      throw new Error(
+        `The provided supply key does not match the token's supply key. ` +
+          `Token ${tokenId} requires a different supply key.`,
+      );
+    }
+
+    logger.info(`Using supply key: ${supplyKeyResolved.accountId}`);
+
     const isRawUnits = String(userAmountInput).trim().endsWith('t');
     const rawAmount = processTokenBalanceInput(
       userAmountInput,
@@ -101,13 +119,6 @@ export async function mintFt(
         `Token has finite supply. Current: ${totalSupply.toString()}, Max: ${maxSupply.toString()}, After mint: ${newTotalSupply.toString()}`,
       );
     }
-
-    const supplyKeyResolved = await api.keyResolver.getOrInitKey(
-      validArgs.supplyKey,
-      keyManager,
-      ['token:supply'],
-    );
-    logger.info(`Using supply key: ${supplyKeyResolved.accountId}`);
 
     const mintTransaction = api.token.createMintTransaction({
       tokenId,
