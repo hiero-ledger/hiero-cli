@@ -11,6 +11,7 @@ import { HederaTokenType, Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { isRawUnits } from '@/plugins/token/utils/token-amount-helpers';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { MintFtInputSchema } from './input';
@@ -50,7 +51,6 @@ export async function mintFt(
   try {
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
-    const tokenDecimals = parseInt(tokenInfo.decimals) || 0;
     const tokenData = tokenState.getToken(tokenId);
 
     if (tokenData && tokenData.tokenType !== HederaTokenType.FUNGIBLE_COMMON) {
@@ -83,11 +83,9 @@ export async function mintFt(
 
     logger.info(`Using supply key: ${supplyKeyResolved.accountId}`);
 
-    const isRawUnits = String(userAmountInput).trim().endsWith('t');
-    const rawAmount = processTokenBalanceInput(
-      userAmountInput,
-      isRawUnits ? 0 : tokenDecimals,
-    );
+    const rawUnits = isRawUnits(userAmountInput);
+    const tokenDecimals = rawUnits ? 0 : parseInt(tokenInfo.decimals);
+    const rawAmount = processTokenBalanceInput(userAmountInput, tokenDecimals);
 
     if (rawAmount <= 0n) {
       throw new Error('Amount must be greater than 0');

@@ -14,6 +14,7 @@ import {
   resolveDestinationAccountParameter,
   resolveTokenParameter,
 } from '@/plugins/token/resolver-helper';
+import { isRawUnits } from '@/plugins/token/utils/token-amount-helpers';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TransferTokenInputSchema } from './input';
@@ -53,13 +54,10 @@ export async function transferToken(
 
   const tokenId = resolvedToken.tokenId;
 
-  // Get token decimals from API (needed for amount conversion)
-  let tokenDecimals = 0;
   const userAmountInput = validArgs.amount;
 
-  // Only fetch decimals if user input doesn't have 't' suffix (raw units)
-  const isRawUnits = String(userAmountInput).trim().endsWith('t');
-  if (!isRawUnits) {
+  let tokenDecimals = 0;
+  if (!isRawUnits(userAmountInput)) {
     try {
       const tokenInfoStorage = tokenState.getToken(tokenId);
 
@@ -69,9 +67,6 @@ export async function transferToken(
         const tokenInfoMirror = await api.mirror.getTokenInfo(tokenId);
         tokenDecimals = parseInt(tokenInfoMirror.decimals) || 0;
       }
-
-      const tokenInfo = await api.mirror.getTokenInfo(tokenId);
-      tokenDecimals = parseInt(tokenInfo.decimals) || 0;
     } catch (error) {
       return {
         status: Status.Failure,
@@ -83,7 +78,6 @@ export async function transferToken(
     }
   }
 
-  // Convert amount input: display units (default) or raw units (with 't' suffix)
   const rawAmount = processBalanceInput(userAmountInput, tokenDecimals);
 
   const resolvedFromAccount = await api.keyResolver.getOrInitKeyWithFallback(
