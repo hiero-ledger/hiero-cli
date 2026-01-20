@@ -1,7 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { ListAccountsOutput } from '@/plugins/account/commands/list';
 
-import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import { listAccounts } from '@/plugins/account/commands/list/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -26,7 +26,7 @@ describe('account plugin - list command (ADR-003)', () => {
       listAccounts: jest.fn().mockReturnValue([]),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
     const result = await listAccounts(args);
@@ -50,7 +50,7 @@ describe('account plugin - list command (ADR-003)', () => {
       listAccounts: jest.fn().mockReturnValue(accounts),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
     const result = await listAccounts(args);
@@ -77,7 +77,7 @@ describe('account plugin - list command (ADR-003)', () => {
       listAccounts: jest.fn().mockReturnValue(accounts),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, { private: true });
 
     const result = await listAccounts(args);
@@ -103,7 +103,7 @@ describe('account plugin - list command (ADR-003)', () => {
       }),
     }));
 
-    const api: Partial<CoreApi> = { state: {} as any, logger };
+    const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
     const result = await listAccounts(args);

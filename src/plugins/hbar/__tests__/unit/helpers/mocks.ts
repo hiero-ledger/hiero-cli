@@ -127,7 +127,7 @@ export const setupTransferTest = (options: SetupTransferTestOptions = {}) => {
  * Provides a mocked implementation of the account state helper
  */
 export const mockZustandAccountStateHelper = (
-  ZustandAccountStateHelperClass: any,
+  ZustandAccountStateHelperClass: jest.Mock,
   config?: {
     accounts?: AccountData[];
   },

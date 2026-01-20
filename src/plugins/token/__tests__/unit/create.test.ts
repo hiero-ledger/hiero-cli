@@ -136,8 +136,8 @@ describe('createTokenHandler', () => {
           symbol: 'TEST',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -186,8 +186,8 @@ describe('createTokenHandler', () => {
           symbol: 'TEST',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -241,8 +241,8 @@ describe('createTokenHandler', () => {
           adminKey: 'test-admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -278,8 +278,8 @@ describe('createTokenHandler', () => {
           adminKey: 'test-admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -303,8 +303,8 @@ describe('createTokenHandler', () => {
           initialSupply: '250000000000000000000000000000',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
       await expect(createToken(args)).rejects.toThrow(
@@ -367,8 +367,8 @@ describe('createTokenHandler', () => {
           adminKey: 'test-admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
