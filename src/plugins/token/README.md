@@ -24,6 +24,10 @@ src/plugins/token/
 │   │   ├── handler.ts       # Token creation handler
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts        # Command exports
+│   ├── mint-ft/
+│   │   ├── handler.ts       # Fungible token minting handler
+│   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts        # Command exports
 │   ├── transfer/
 │   │   ├── handler.ts       # Token transfer handler
 │   │   ├── output.ts        # Output schema and template
@@ -59,7 +63,7 @@ All commands return `CommandExecutionResult` with structured output that include
 
 Each command defines a Zod schema for output validation and a Handlebars template for human-readable formatting.
 
-### Token Create
+### Token Create (Fungible Token)
 
 Create a new fungible token with specified properties.
 
@@ -77,7 +81,7 @@ hcli token create \
   --name mytoken-alias
 
 # Using treasury-id:treasury-key pair
-hcli token create \
+hcli token create-ft \
   --token-name "My Token" \
   --symbol "MTK" \
   --treasury 0.0.123456:302e020100300506032b657004220420... \
@@ -87,36 +91,74 @@ hcli token create \
   --name mytoken-alias
 ```
 
+### Token Mint FT
+
+Mint additional fungible tokens to increase supply. Tokens are minted to the token's treasury account.
+
+```bash
+# Using token alias
+hcli token mint-ft \
+  --token mytoken-alias \
+  --amount 1000 \
+  --supply-key 0.0.123456:302e020100300506032b657004220420...
+
+# Using token ID with account alias for supply key
+hcli token mint-ft \
+  --token 0.0.123456 \
+  --amount 500t \
+  --supply-key supply-account-alias
+
+# Using base units (t suffix)
+hcli token mint-ft \
+  --token 0.0.123456 \
+  --amount 5000t \
+  --supply-key 0.0.123456:302e020100300506032b657004220420...
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+- `--amount` / `-a`: Amount to mint - **Required**
+  - Display units (default): `100` (will be multiplied by token decimals)
+  - Base units: `100t` (raw amount without decimals)
+- `--supply-key` / `-s`: Supply key for signing - **Required**
+  - Account alias: `supply-account-alias`
+  - Account with key: `0.0.123456:private-key`
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Note:** The token must have a supply key configured. Minted tokens are added to the token's treasury account.
+
 ### Token Associate
 
-Associate a token with an account to enable transfers.
+Associate a fungible token with an account to enable transfers.
 
 ```bash
 # Using account alias
-hcli token associate \
+hcli token associate-ft \
   --token mytoken-alias \
   --account alice
 
 # Using account-id:account-key pair
-hcli token associate \
+hcli token associate-ft \
   --token 0.0.123456 \
   --account 0.0.789012:302e020100300506032b657004220420...
 ```
 
-### Token Transfer
+### Token Transfer (Fungible Token)
 
 Transfer a fungible token from one account to another.
 
 ```bash
 # Using account name for source
-hcli token transfer \
+hcli token transfer-ft \
   --token mytoken-alias \
   --from alice \
   --to bob \
   --amount 100
 
 # Using account-id:private-key pair for source
-hcli token transfer \
+hcli token transfer-ft \
   --token 0.0.123456 \
   --from 0.0.111111:302e020100300506032b657004220420... \
   --to 0.0.222222 \
