@@ -10,4 +10,5 @@ export { createToken } from './commands/create';
 export { createTokenFromFile } from './commands/createFromFile';
 export { listTokens } from './commands/list';
 export { mintFt } from './commands/mint-ft';
+export { mintNft } from './commands/mint-nft';
 export { transferToken } from './commands/transfer';

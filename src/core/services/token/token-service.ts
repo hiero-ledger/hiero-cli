@@ -8,7 +8,8 @@ import type {
   CustomFee as CustomFeeParams,
   TokenAssociationParams,
   TokenCreateParams,
-  TokenMintParams,
+  TokenMintFtParams,
+  TokenMintNftParams,
   TokenTransferParams,
 } from '@/core/types/token.types';
 import type { TokenService } from './token-service.interface';
@@ -195,9 +196,9 @@ export class TokenServiceImpl implements TokenService {
   }
 
   /**
-   * Create a token mint transaction (without execution)
+   * Create a fungible token mint transaction (without execution)
    */
-  createMintTransaction(params: TokenMintParams): TokenMintTransaction {
+  createMintFtTransaction(params: TokenMintFtParams): TokenMintTransaction {
     const tokenId: string = params.tokenId;
     const amount: bigint = params.amount;
 
@@ -211,6 +212,27 @@ export class TokenServiceImpl implements TokenService {
 
     this.logger.debug(
       `[TOKEN SERVICE] Created mint transaction for token ${tokenId}`,
+    );
+
+    return mintTx;
+  }
+
+  /**
+   * Create an NFT mint transaction (without execution)
+   */
+  createMintNftTransaction(params: TokenMintNftParams): TokenMintTransaction {
+    const { tokenId, metadata } = params;
+
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating NFT mint transaction for token ${tokenId} with metadata (${metadata.length} bytes)`,
+    );
+
+    const mintTx = new TokenMintTransaction()
+      .setTokenId(TokenId.fromString(tokenId))
+      .addMetadata(metadata);
+
+    this.logger.debug(
+      `[TOKEN SERVICE] Created NFT mint transaction for token ${tokenId}`,
     );
 
     return mintTx;

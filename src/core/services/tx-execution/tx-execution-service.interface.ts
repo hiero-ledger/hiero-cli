@@ -24,6 +24,7 @@ export interface TransactionResult {
   tokenId?: string;
   topicId?: string;
   topicSequenceNumber?: number;
+  serialNumbers?: string[];
   consensusTimestamp: string;
 }
 

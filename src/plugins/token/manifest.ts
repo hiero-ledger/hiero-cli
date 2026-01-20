@@ -37,6 +37,11 @@ import {
   MintFtOutputSchema,
 } from './commands/mint-ft';
 import {
+  MINT_NFT_TEMPLATE,
+  mintNft,
+  MintNftOutputSchema,
+} from './commands/mint-nft';
+import {
   TRANSFER_TOKEN_TEMPLATE,
   transferToken,
   TransferTokenOutputSchema,
@@ -96,6 +101,48 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: MintFtOutputSchema,
         humanTemplate: MINT_FT_TEMPLATE,
+      },
+    },
+    {
+      name: 'mint-nft',
+      summary: 'Mint NFT',
+      description: 'Mint a new NFT to an existing NFT collection.',
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: 'string',
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'metadata',
+          short: 'm',
+          type: 'string',
+          required: true,
+          description: 'NFT metadata (string, max 100 bytes)',
+        },
+        {
+          name: 'supply-key',
+          short: 's',
+          type: 'string',
+          required: true,
+          description:
+            'Supply key as account name or {accountId}:{private_key} format',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: mintNft,
+      output: {
+        schema: MintNftOutputSchema,
+        humanTemplate: MINT_NFT_TEMPLATE,
       },
     },
     {

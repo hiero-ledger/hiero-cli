@@ -61,9 +61,17 @@ export interface TokenAssociationParams {
 }
 
 /**
- * Parameters for token mint transactions
+ * Parameters for FT token mint transactions
  */
-export interface TokenMintParams {
+export interface TokenMintFtParams {
   tokenId: string;
   amount: bigint;
+}
+
+/**
+ * Parameters for NFT mint transactions
+ */
+export interface TokenMintNftParams {
+  tokenId: string;
+  metadata: Uint8Array;
 }
