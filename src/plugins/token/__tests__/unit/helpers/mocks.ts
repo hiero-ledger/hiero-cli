@@ -43,7 +43,8 @@ export const makeTokenServiceMock = (
   createTokenTransaction: jest.fn(),
   createTokenAssociationTransaction: jest.fn(),
   createTransferTransaction: jest.fn(),
-  createMintTransaction: jest.fn(),
+  createMintFtTransaction: jest.fn(),
+  createMintNftTransaction: jest.fn(),
   ...overrides,
 });
 
@@ -555,7 +556,7 @@ export const makeMintFtSuccessMocks = (overrides?: {
 
   const apiMocks = makeApiMocks({
     tokens: {
-      createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
+      createMintFtTransaction: jest.fn().mockReturnValue(mockMintTransaction),
     },
     signing: {
       signAndExecuteWith: jest

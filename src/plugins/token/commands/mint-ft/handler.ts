@@ -109,7 +109,7 @@ export async function mintFt(
       );
     }
 
-    const mintTransaction = api.token.createMintTransaction({
+    const mintTransaction = api.token.createMintFtTransaction({
       tokenId,
       amount: rawAmount,
     });

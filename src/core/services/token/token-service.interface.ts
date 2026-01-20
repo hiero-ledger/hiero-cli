@@ -11,6 +11,7 @@ import type {
 import type {
   TokenAssociationParams,
   TokenCreateParams,
+  TokenMintNftParams,
   TokenMintParams,
   TokenTransferParams,
 } from '@/core/types/token.types';
@@ -34,7 +35,12 @@ export interface TokenService {
   ): TokenAssociateTransaction;
 
   /**
-   * Create a token mint transaction (without execution)
+   * Create a fungible token mint transaction (without execution)
    */
-  createMintTransaction(params: TokenMintParams): TokenMintTransaction;
+  createMintFtTransaction(params: TokenMintParams): TokenMintTransaction;
+
+  /**
+   * Create an NFT mint transaction (without execution)
+   */
+  createMintNftTransaction(params: TokenMintNftParams): TokenMintTransaction;
 }
