@@ -2,6 +2,9 @@
  * Test Fixtures for Token Plugin Tests
  * Reusable test data and constants
  */
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -201,6 +204,24 @@ export const mockTransactionResults = {
     },
   },
 };
+
+/**
+ * Factory function for TransactionResult with overrides
+ */
+export const makeTransactionResult = (
+  overrides?: Partial<TransactionResult>,
+): TransactionResult => ({
+  success: true,
+  transactionId: '0.0.123@1234567890.123456789',
+  consensusTimestamp: '2024-01-01T00:00:00.000Z',
+  receipt: {
+    status: {
+      status: 'success' as const,
+      transactionId: '0.0.123@1234567890.123456789',
+    },
+  },
+  ...overrides,
+});
 
 /**
  * Mock Token Data (stored in state)
@@ -413,48 +434,54 @@ export const mockMultipleTokens = {
  * Factory function to create CommandHandlerArgs for token create tests
  */
 export const makeTokenCreateCommandArgs = (params: {
-  api: any;
-  logger: any;
-  args?: Record<string, any>;
-}) => ({
-  args: {
-    tokenName: 'TestToken',
-    symbol: 'TEST',
-    decimals: 2,
-    initialSupply: '1000',
-    supplyType: 'INFINITE',
-    treasury: 'treasury-account', // Use alias
-    adminKey: 'test-admin-key', // Use alias
-    ...params.args,
-  },
-  api: params.api,
-  state: {} as any,
-  config: {} as any,
-  logger: params.logger,
-});
+  api: Partial<CoreApi>;
+  logger: Logger;
+  args?: Record<string, string | number | boolean | undefined>;
+}) => {
+  const api = params.api as unknown as CoreApi;
+  return {
+    args: {
+      tokenName: 'TestToken',
+      symbol: 'TEST',
+      decimals: 2,
+      initialSupply: '1000',
+      supplyType: 'INFINITE',
+      treasury: 'treasury-account', // Use alias
+      adminKey: 'test-admin-key', // Use alias
+      ...params.args,
+    },
+    api,
+    state: api.state,
+    config: api.config,
+    logger: params.logger,
+  };
+};
 
 /**
  * Factory function to create CommandHandlerArgs for token create-nft tests
  */
 export const makeNftCreateCommandArgs = (params: {
-  api: any;
-  logger: any;
-  args?: Record<string, any>;
-}) => ({
-  args: {
-    tokenName: 'TestToken',
-    symbol: 'TEST',
-    supplyType: 'INFINITE',
-    treasury: 'treasury-account', // Use alias
-    adminKey: 'test-admin-key', // Use alias
-    supplyKey: 'test-supply-key', // Use alias
-    ...params.args,
-  },
-  api: params.api,
-  state: {} as any,
-  config: {} as any,
-  logger: params.logger,
-});
+  api: Partial<CoreApi>;
+  logger: Logger;
+  args?: Record<string, unknown>;
+}) => {
+  const api = params.api as unknown as CoreApi;
+  return {
+    args: {
+      tokenName: 'TestToken',
+      symbol: 'TEST',
+      supplyType: 'INFINITE',
+      treasury: 'treasury-account', // Use alias
+      adminKey: 'test-admin-key', // Use alias
+      supplyKey: 'test-supply-key', // Use alias
+      ...params.args,
+    },
+    api,
+    state: api.state,
+    config: api.config,
+    logger: params.logger,
+  };
+};
 
 /**
  * Expected token transaction parameters for create tests
@@ -559,7 +586,7 @@ export const makeTokenData = (
     adminPublicKey?: string;
     network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
     associations: Array<{ name: string; accountId: string }>;
-    customFees: any[];
+    customFees: Array<unknown>;
   }> = {},
 ) => ({
   tokenId: '0.0.1234',
@@ -745,21 +772,23 @@ export const mockTokenStats = {
  * Factory function to create CommandHandlerArgs for token mint-ft tests
  */
 export const makeMintFtCommandArgs = (params: {
-  api: any;
-  logger: any;
-  args?: Record<string, any>;
-}) => ({
-  args: {
-    token: '0.0.123456',
-    amount: '100',
-    supplyKey: 'test-supply-key',
-    ...params.args,
-  },
-  api: params.api,
-  state: {} as any,
-  config: {} as any,
-  logger: params.logger,
-});
+  api: CoreApi;
+  logger: Logger;
+  args?: Record<string, string | number | boolean | undefined>;
+}) => {
+  return {
+    args: {
+      token: '0.0.123456',
+      amount: '100',
+      supplyKey: 'test-supply-key',
+      ...params.args,
+    },
+    api: params.api,
+    state: params.api.state,
+    config: params.api.config,
+    logger: params.logger,
+  };
+};
 
 /**
  * Expected mint transaction parameters for mint-ft tests

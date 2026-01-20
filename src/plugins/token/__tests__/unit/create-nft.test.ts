@@ -142,8 +142,8 @@ describe('createNftHandler', () => {
           symbol: 'TEST',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -193,8 +193,8 @@ describe('createNftHandler', () => {
           symbol: 'TEST',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -266,8 +266,8 @@ describe('createNftHandler', () => {
           supplyKey: 'test-supply-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 

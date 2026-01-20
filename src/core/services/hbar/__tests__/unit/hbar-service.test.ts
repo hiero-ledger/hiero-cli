@@ -26,6 +26,10 @@ jest.mock('@hashgraph/sdk', () => ({
   HbarUnit: {
     Tinybar: 'tinybar',
   },
+  TokenType: {
+    NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
+    FungibleCommon: 'FUNGIBLE_COMMON',
+  },
 }));
 
 import { AccountId, Hbar, HbarUnit } from '@hashgraph/sdk';

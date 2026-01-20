@@ -52,7 +52,10 @@ describe('associateTokenHandler', () => {
       const receiptStatusError = new ReceiptStatusError({
         status: HederaStatus.TokenAlreadyAssociatedToAccount,
         transactionId: '0.0.123@1234567890.123456789',
-      } as any);
+        transactionReceipt: {
+          status: HederaStatus.TokenAlreadyAssociatedToAccount,
+        },
+      } as unknown as ConstructorParameters<typeof ReceiptStatusError>[0]);
 
       const { api } = makeApiMocks({
         alias: {
@@ -83,8 +86,8 @@ describe('associateTokenHandler', () => {
           account: `${accountId}:3333333333333333333333333333333333333333333333333333333333333333`,
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -119,7 +122,10 @@ describe('associateTokenHandler', () => {
       const receiptStatusError = new ReceiptStatusError({
         status: HederaStatus.TokenAlreadyAssociatedToAccount,
         transactionId: '0.0.123@1234567890.123456789',
-      } as any);
+        transactionReceipt: {
+          status: HederaStatus.TokenAlreadyAssociatedToAccount,
+        },
+      } as unknown as ConstructorParameters<typeof ReceiptStatusError>[0]);
 
       const { api } = makeApiMocks({
         alias: {
@@ -150,8 +156,8 @@ describe('associateTokenHandler', () => {
           account: `${accountId}:3333333333333333333333333333333333333333333333333333333333333333`,
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -207,8 +213,8 @@ describe('associateTokenHandler', () => {
             '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -282,8 +288,8 @@ describe('associateTokenHandler', () => {
           account: 'alice',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -349,8 +355,8 @@ describe('associateTokenHandler', () => {
             '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -409,8 +415,8 @@ describe('associateTokenHandler', () => {
             '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -450,8 +456,8 @@ describe('associateTokenHandler', () => {
             '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -496,8 +502,8 @@ describe('associateTokenHandler', () => {
             '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -552,8 +558,8 @@ describe('associateTokenHandler', () => {
             '0.0.789012:3333333333333333333333333333333333333333333333333333333333333333',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -642,8 +648,8 @@ describe('associateTokenHandler', () => {
           account: 'my-account-alias',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 

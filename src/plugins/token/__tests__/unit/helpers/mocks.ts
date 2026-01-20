@@ -10,11 +10,13 @@ import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
+import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
 import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
 
 import { makeKeyResolverMock as makeGlobalKeyResolverMock } from '@/__tests__/mocks/mocks';
@@ -112,6 +114,15 @@ export const makeKmsMock = (
 });
 
 /**
+ * Alias account data structure for mock implementations
+ */
+interface AliasAccountData {
+  entityId: string;
+  publicKey: string;
+  keyRefId: string;
+}
+
+/**
  * Create a mocked AliasService
  */
 export const makeAliasServiceMock = (
@@ -122,7 +133,7 @@ export const makeAliasServiceMock = (
     // Domyślnie zwracaj dane dla typowych aliasów używanych w testach
     if (type === 'account') {
       // Map typowych aliasów kont do mock danych
-      const accountAliases: Record<string, any> = {
+      const accountAliases: Record<string, AliasAccountData> = {
         'admin-key': {
           entityId: '0.0.100000',
           publicKey: '302a300506032b6570032100' + '0'.repeat(64),
@@ -254,7 +265,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
         accountId: '0.0.100000',
         keyRefId: 'operator-key-ref-id',
       }),
-    },
+    } as unknown as NetworkService,
     alias,
     kms,
   });
@@ -262,15 +273,18 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
   const api: jest.Mocked<CoreApi> = {
     account,
     token: tokens,
-    topic: {} as unknown as any,
+    // Topic service not mocked for token tests - not needed
+    topic: {} as unknown as TopicService,
     txExecution: signing,
     kms,
     alias,
     state,
+    // Mirror service minimal mock - only getTokenInfo used
+
     mirror: {
       getTokenInfo: jest.fn().mockResolvedValue({ decimals: 6 }),
       ...(config?.mirror || {}),
-    } as unknown as any,
+    } as unknown as HederaMirrornodeService,
     network: {
       getCurrentNetwork: jest
         .fn()
@@ -405,7 +419,7 @@ export const mockProcessExitThrows = () => {
  * Provides a mocked implementation of the token state helper
  */
 export const mockZustandTokenStateHelper = (
-  ZustandTokenStateHelperClass: any,
+  ZustandTokenStateHelperClass: jest.Mock,
   overrides?: Partial<{
     saveToken: jest.Mock;
     addToken: jest.Mock;
@@ -441,8 +455,8 @@ export const makeFsMocks = () => {
   const mockResolve = jest.fn();
 
   const setupFsMocks = (
-    fs: any,
-    path: any,
+    fs: Record<string, unknown>,
+    path: Record<string, unknown>,
     config?: {
       fileContent?: string;
       fileExists?: boolean;
@@ -497,7 +511,7 @@ export const makeFsMocks = () => {
 export const setupZustandHelperMock = (
   MockedHelperClass: jest.Mock,
   config: {
-    tokens?: any[];
+    tokens?: Array<unknown>;
     stats?: {
       total: number;
       byNetwork: Record<string, number>;

@@ -2,6 +2,7 @@
  * Unit tests for TokenServiceImpl
  * Tests token transfer, creation, and association transaction building
  */
+import type { PublicKey } from '@hashgraph/sdk';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 
 import { AccountId, Hbar, TokenId, TokenType } from '@hashgraph/sdk';
@@ -236,7 +237,7 @@ describe('TokenServiceImpl', () => {
       initialSupplyRaw: INITIAL_SUPPLY,
       tokenType: TOKEN_TYPE,
       supplyType: 'INFINITE' as const,
-      adminPublicKey: mockPublicKeyInstance as any,
+      adminPublicKey: mockPublicKeyInstance as unknown as PublicKey,
     };
 
     it('should create token with all required parameters', () => {
