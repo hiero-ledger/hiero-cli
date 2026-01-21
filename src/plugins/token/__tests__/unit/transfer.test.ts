@@ -12,7 +12,7 @@ import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import {
   type TransferFungibleTokenOutput,
   transferToken,
-} from '@/plugins/token/commands/transfer';
+} from '@/plugins/token/commands/transfer-ft';
 
 import { mockTransactionResults } from './helpers/fixtures';
 import { makeApiMocks, makeLogger } from './helpers/mocks';

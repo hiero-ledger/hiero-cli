@@ -7,7 +7,7 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
 import { HederaTokenType, Status } from '@/core/shared/constants';
-import { createToken } from '@/plugins/token/commands/create';
+import { createToken } from '@/plugins/token/commands/create-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {

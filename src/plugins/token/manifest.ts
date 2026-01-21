@@ -20,12 +20,12 @@ import {
   CREATE_FUNGIBLE_TOKEN_TEMPLATE,
   CreateFungibleTokenOutputSchema,
   createToken,
-} from './commands/create';
+} from './commands/create-ft';
 import {
   CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE,
   CreateFungibleTokenFromFileOutputSchema,
   createTokenFromFile,
-} from './commands/createFromFile';
+} from './commands/create-ft-from-file';
 import {
   LIST_TOKENS_TEMPLATE,
   listTokens,
@@ -40,7 +40,7 @@ import {
   TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
   TransferFungibleTokenOutputSchema,
   transferToken,
-} from './commands/transfer';
+} from './commands/transfer-ft';
 
 export const TOKEN_NAMESPACE = 'token-tokens';
 

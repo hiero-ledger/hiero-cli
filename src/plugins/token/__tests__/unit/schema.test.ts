@@ -3,7 +3,7 @@
  * Tests the token data validation and schema functionality
  */
 import { HederaTokenType } from '@/core/shared/constants';
-import { CreateFungibleTokenInputSchema } from '@/plugins/token/commands/create/input';
+import { CreateFungibleTokenInputSchema } from '@/plugins/token/commands/create-ft/input';
 import {
   CustomFeeSchema,
   TokenAssociationSchema,

@@ -6,9 +6,9 @@ import type { TransactionResult } from '@/core/services/tx-execution/tx-executio
 
 import { Status } from '@/core/shared/constants';
 import { associateToken } from '@/plugins/token/commands/associate';
-import { createToken } from '@/plugins/token/commands/create';
-import { createTokenFromFile } from '@/plugins/token/commands/createFromFile';
-import { transferToken } from '@/plugins/token/commands/transfer';
+import { createToken } from '@/plugins/token/commands/create-ft';
+import { createTokenFromFile } from '@/plugins/token/commands/create-ft-from-file';
+import { transferToken } from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {

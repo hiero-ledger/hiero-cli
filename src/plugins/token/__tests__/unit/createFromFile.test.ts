@@ -14,7 +14,7 @@ import { HederaTokenType, Status } from '@/core/shared/constants';
 import {
   type CreateFungibleTokenFromFileOutput,
   createTokenFromFile,
-} from '@/plugins/token/commands/createFromFile';
+} from '@/plugins/token/commands/create-ft-from-file';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {

@@ -4,17 +4,17 @@
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { AssociateTokenOutput } from '@/plugins/token/commands/associate';
-import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create';
+import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
 import type { ListTokensOutput } from '@/plugins/token/commands/list';
-import type { TransferFungibleTokenOutput } from '@/plugins/token/commands/transfer';
+import type { TransferFungibleTokenOutput } from '@/plugins/token/commands/transfer-ft';
 
 import '@/core/utils/json-serialize';
 
 import { Status } from '@/core/shared/constants';
 import { associateToken } from '@/plugins/token/commands/associate/handler';
-import { createToken } from '@/plugins/token/commands/create/handler';
+import { createToken } from '@/plugins/token/commands/create-ft/handler';
 import { listTokens } from '@/plugins/token/commands/list/handler';
-import { transferToken } from '@/plugins/token/commands/transfer/handler';
+import { transferToken } from '@/plugins/token/commands/transfer-ft/handler';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
