@@ -32,8 +32,8 @@ describe('Mint NFT Integration Tests', () => {
     const createAccountArgs: Record<string, unknown> = {
       name: 'account-mint-nft',
       balance: 1,
-      'key-type': 'ecdsa',
-      'auto-associations': 10,
+      keyType: 'ecdsa',
+      autoAssociations: 10,
     };
     const createAccountResult = await createAccount({
       args: createAccountArgs,
