@@ -1,12 +1,12 @@
 /**
- * Token Create Command Handler
- * Handles token creation operations using the Core API
+ * Fungible Token Create Command Handler
+ * Handles fungible token creation operations using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/token.types';
-import type { CreateTokenOutput } from './output';
+import type { CreateFungibleTokenOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
 
@@ -20,7 +20,7 @@ import {
 import { resolveOptionalKey } from '@/plugins/token/utils/token-resolve-optional-key';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { CreateTokenInputSchema } from './input';
+import { CreateFungibleTokenInputSchema } from './input';
 
 export async function createToken(
   args: CommandHandlerArgs,
@@ -29,7 +29,7 @@ export async function createToken(
 
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
-  const validArgs = CreateTokenInputSchema.parse(args.args);
+  const validArgs = CreateFungibleTokenInputSchema.parse(args.args);
 
   const name = validArgs.tokenName;
   const symbol = validArgs.symbol;
@@ -82,7 +82,7 @@ export async function createToken(
     );
   }
 
-  logger.info(`Creating token: ${name} (${symbol})`);
+  logger.info(`Creating fungible token: ${name} (${symbol})`);
   if (finalMaxSupply !== undefined) {
     logger.info(`Max supply: ${finalMaxSupply}`);
   }
@@ -152,7 +152,7 @@ export async function createToken(
       logger.info(`   Name registered: ${alias}`);
     }
 
-    const outputData: CreateTokenOutput = {
+    const outputData: CreateFungibleTokenOutput = {
       tokenId: result.tokenId,
       name,
       symbol,
@@ -172,7 +172,7 @@ export async function createToken(
   } catch (error: unknown) {
     return {
       status: Status.Failure,
-      errorMessage: formatError('Failed to create token', error),
+      errorMessage: formatError('Failed to create fungible token', error),
     };
   }
 }

@@ -4,8 +4,8 @@ import type { AccountBalanceOutput } from '@/plugins/account/commands/balance';
 import type { CreateAccountOutput } from '@/plugins/account/commands/create';
 import type { ViewAccountOutput } from '@/plugins/account/commands/view';
 import type { AssociateTokenOutput } from '@/plugins/token/commands/associate';
-import type { CreateTokenOutput } from '@/plugins/token/commands/create';
-import type { TransferTokenOutput } from '@/plugins/token/commands/transfer';
+import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create';
+import type { TransferFungibleTokenOutput } from '@/plugins/token/commands/transfer';
 
 import '@/core/utils/json-serialize';
 
@@ -89,7 +89,7 @@ describe('Transfer Token Integration Tests', () => {
       config: coreApi.config,
     });
     expect(createTokenResult.status).toBe(Status.Success);
-    const createTokenOutput: CreateTokenOutput = JSON.parse(
+    const createTokenOutput: CreateFungibleTokenOutput = JSON.parse(
       createTokenResult.outputJson!,
     );
     expect(createTokenOutput.network).toBe(network);
@@ -139,7 +139,7 @@ describe('Transfer Token Integration Tests', () => {
       config: coreApi.config,
     });
     expect(transferTokenResult.status).toBe(Status.Success);
-    const transferTokenOutput: TransferTokenOutput = JSON.parse(
+    const transferTokenOutput: TransferFungibleTokenOutput = JSON.parse(
       transferTokenResult.outputJson!,
     );
     expect(transferTokenOutput.tokenId).toBe(createTokenOutput.tokenId);

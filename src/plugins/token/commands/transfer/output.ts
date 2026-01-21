@@ -1,5 +1,5 @@
 /**
- * Transfer Token Command Output Schema and Template
+ * Transfer Fungible Token Command Output Schema and Template
  */
 import { z } from 'zod';
 
@@ -11,9 +11,9 @@ import {
 } from '@/core/schemas/common-schemas';
 
 /**
- * Transfer Token Command Output Schema
+ * Transfer Fungible Token Command Output Schema
  */
-export const TransferTokenOutputSchema = z.object({
+export const TransferFungibleTokenOutputSchema = z.object({
   transactionId: TransactionIdSchema,
   tokenId: EntityIdSchema,
   from: EntityIdSchema,
@@ -22,13 +22,15 @@ export const TransferTokenOutputSchema = z.object({
   network: NetworkSchema,
 });
 
-export type TransferTokenOutput = z.infer<typeof TransferTokenOutputSchema>;
+export type TransferFungibleTokenOutput = z.infer<
+  typeof TransferFungibleTokenOutputSchema
+>;
 
 /**
- * Human-readable template for transfer token output
+ * Human-readable template for transfer fungible token output
  */
-export const TRANSFER_TOKEN_TEMPLATE = `
-✅ Token transfer successful!
+export const TRANSFER_FUNGIBLE_TOKEN_TEMPLATE = `
+✅ Fungible token transfer successful!
    Token ID: {{hashscanLink tokenId "token" network}}
    From: {{hashscanLink from "account" network}}
    To: {{hashscanLink to "account" network}}

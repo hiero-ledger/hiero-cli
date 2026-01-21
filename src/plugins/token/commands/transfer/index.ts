@@ -3,5 +3,8 @@
  * For use by tests and external consumers
  */
 export { transferToken } from './handler';
-export type { TransferTokenOutput } from './output';
-export { TRANSFER_TOKEN_TEMPLATE, TransferTokenOutputSchema } from './output';
+export type { TransferFungibleTokenOutput } from './output';
+export {
+  TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
+  TransferFungibleTokenOutputSchema,
+} from './output';

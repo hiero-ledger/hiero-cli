@@ -99,7 +99,7 @@ describe('Token Plugin Error Handling', () => {
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
       expect(result.errorMessage).toContain(
-        'Failed to create token: Network timeout',
+        'Failed to create fungible token: Network timeout',
       );
       expect(result.outputJson).toBeUndefined();
     });
@@ -181,7 +181,7 @@ describe('Token Plugin Error Handling', () => {
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
       expect(result.errorMessage).toContain(
-        'Failed to transfer token: Network unreachable',
+        'Failed to transfer fungible token: Network unreachable',
       );
       expect(result.outputJson).toBeUndefined();
     });

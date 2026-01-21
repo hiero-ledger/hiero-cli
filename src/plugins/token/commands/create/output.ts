@@ -1,5 +1,5 @@
 /**
- * Create Token Command Output Schema and Template
+ * Create Fungible Token Command Output Schema and Template
  */
 import { z } from 'zod';
 
@@ -11,28 +11,30 @@ import {
 } from '@/core/schemas/common-schemas';
 
 /**
- * Create Token Command Output Schema
+ * Create Fungible Token Command Output Schema
  */
-export const CreateTokenOutputSchema = z.object({
+export const CreateFungibleTokenOutputSchema = z.object({
   tokenId: EntityIdSchema,
-  name: z.string().describe('Token name'),
-  symbol: z.string().describe('Token symbol'),
+  name: z.string().describe('Fungible token name'),
+  symbol: z.string().describe('Fungible token symbol'),
   treasuryId: EntityIdSchema,
   decimals: z.number().int().min(0).max(8).describe('Number of decimal places'),
   initialSupply: z.string().describe('Initial supply in base units'),
   supplyType: SupplyTypeSchema,
   transactionId: TransactionIdSchema,
-  alias: z.string().describe('Token alias').optional(),
+  alias: z.string().describe('Fungible token alias').optional(),
   network: NetworkSchema,
 });
 
-export type CreateTokenOutput = z.infer<typeof CreateTokenOutputSchema>;
+export type CreateFungibleTokenOutput = z.infer<
+  typeof CreateFungibleTokenOutputSchema
+>;
 
 /**
- * Human-readable template for create token output
+ * Human-readable template for create fungible token output
  */
-export const CREATE_TOKEN_TEMPLATE = `
-✅ Token created successfully: {{hashscanLink tokenId "token" network}}
+export const CREATE_FUNGIBLE_TOKEN_TEMPLATE = `
+✅ Fungible token created successfully: {{hashscanLink tokenId "token" network}}
    Name: {{name}} ({{symbol}})
    Treasury: {{hashscanLink treasuryId "account" network}}
    Decimals: {{decimals}}

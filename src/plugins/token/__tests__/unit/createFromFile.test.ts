@@ -12,8 +12,8 @@ import * as path from 'path';
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { HederaTokenType, Status } from '@/core/shared/constants';
 import {
+  type CreateFungibleTokenFromFileOutput,
   createTokenFromFile,
-  type CreateTokenFromFileOutput,
 } from '@/plugins/token/commands/createFromFile';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -174,7 +174,9 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output: CreateTokenFromFileOutput = JSON.parse(result.outputJson!);
+      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
+        result.outputJson!,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -229,7 +231,9 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output: CreateTokenFromFileOutput = JSON.parse(result.outputJson!);
+      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
+        result.outputJson!,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -267,7 +271,9 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output: CreateTokenFromFileOutput = JSON.parse(result.outputJson!);
+      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
+        result.outputJson!,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -350,7 +356,9 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output: CreateTokenFromFileOutput = JSON.parse(result.outputJson!);
+      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
+        result.outputJson!,
+      );
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
       expect(output.treasuryId).toBe('0.0.123456');
@@ -457,7 +465,9 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output: CreateTokenFromFileOutput = JSON.parse(result.outputJson!);
+      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
+        result.outputJson!,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.associations).toBeDefined();
       expect(output.associations.length).toBeGreaterThan(0);
@@ -495,7 +505,9 @@ describe('createTokenFromFileHandler', () => {
       // ADR-003 compliance: check CommandExecutionResult
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create token from file');
+      expect(result.errorMessage).toContain(
+        'Failed to create fungible token from file',
+      );
       expect(result.outputJson).toBeUndefined();
 
       // ADR-003 compliance: logger.error calls are no longer expected
@@ -528,7 +540,9 @@ describe('createTokenFromFileHandler', () => {
       // ADR-003 compliance: check CommandExecutionResult
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create token from file');
+      expect(result.errorMessage).toContain(
+        'Failed to create fungible token from file',
+      );
       expect(result.outputJson).toBeUndefined();
 
       // ADR-003 compliance: logger.error calls are no longer expected
@@ -561,7 +575,9 @@ describe('createTokenFromFileHandler', () => {
       // ADR-003 compliance: check CommandExecutionResult
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create token from file');
+      expect(result.errorMessage).toContain(
+        'Failed to create fungible token from file',
+      );
       expect(result.outputJson).toBeUndefined();
 
       // ADR-003 compliance: logger.error calls are no longer expected
@@ -794,7 +810,9 @@ describe('createTokenFromFileHandler', () => {
       // ADR-003 compliance: check CommandExecutionResult
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create token from file');
+      expect(result.errorMessage).toContain(
+        'Failed to create fungible token from file',
+      );
       expect(result.outputJson).toBeUndefined();
 
       // ADR-003 compliance: logger.error calls are no longer expected
@@ -880,7 +898,9 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output: CreateTokenFromFileOutput = JSON.parse(result.outputJson!);
+      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
+        result.outputJson!,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
 
@@ -964,12 +984,14 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output: CreateTokenFromFileOutput = JSON.parse(result.outputJson!);
+      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
+        result.outputJson!,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
 
       expect(logger.info).toHaveBeenCalledWith(
-        'Creating token from file: test',
+        'Creating fungible token from file: test',
       );
       expect(logger.info).toHaveBeenCalledWith(
         '🔑 Resolved admin key for signing',

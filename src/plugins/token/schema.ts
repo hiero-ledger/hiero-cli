@@ -148,7 +148,7 @@ export const TokenFileFixedFeeSchema = z
   })
   .strict();
 
-export const TokenFileSchema = z.object({
+export const FungibleTokenFileSchema = z.object({
   name: TokenNameSchema,
   symbol: TokenSymbolSchema,
   decimals: HtsDecimalsSchema,
@@ -169,4 +169,6 @@ export const TokenFileSchema = z.object({
   tokenType: TokenTypeSchema,
 });
 
-export type TokenFileDefinition = z.infer<typeof TokenFileSchema>;
+export type FungibleTokenFileDefinition = z.infer<
+  typeof FungibleTokenFileSchema
+>;
