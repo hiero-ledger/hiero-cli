@@ -603,3 +603,73 @@ export const makeMintFtSuccessMocks = (overrides?: {
     mockMintTransaction,
   };
 };
+
+/**
+ * Create mocks for successful NFT mint scenarios
+ */
+export const makeMintNftSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    decimals?: string;
+    supply_key?: { key: string } | null;
+    total_supply?: string;
+    max_supply?: string;
+    type?: string;
+  };
+  signResult?: ReturnType<typeof makeTransactionResult> & {
+    receipt?: { serials?: string[] };
+  };
+  supplyKeyPublicKey?: string;
+}) => {
+  const mockMintTransaction = { test: 'mint-nft-transaction' };
+  const defaultSupplyKeyPublicKey =
+    overrides?.supplyKeyPublicKey ?? 'supply-public-key';
+
+  const defaultSignResult = makeTransactionResult({ success: true });
+  const signResult = overrides?.signResult || {
+    ...defaultSignResult,
+    receipt: {
+      ...defaultSignResult.receipt,
+      serials: ['1'],
+    },
+  };
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createMintNftTransaction: jest.fn().mockReturnValue(mockMintTransaction),
+    },
+    signing: {
+      signAndExecuteWith: jest.fn().mockResolvedValue(signResult),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        decimals: overrides?.tokenInfo?.decimals ?? '0',
+        type: overrides?.tokenInfo?.type ?? 'NON_FUNGIBLE_TOKEN',
+        supply_key: overrides?.tokenInfo?.supply_key ?? {
+          key: defaultSupplyKeyPublicKey,
+        },
+        total_supply: overrides?.tokenInfo?.total_supply ?? '0',
+        max_supply: overrides?.tokenInfo?.max_supply ?? '0',
+      }),
+    },
+    alias: {
+      resolve: jest.fn().mockReturnValue(null),
+    },
+    kms: {
+      importPrivateKey: jest.fn().mockReturnValue({
+        keyRefId: 'supply-key-ref-id',
+        publicKey: defaultSupplyKeyPublicKey,
+      }),
+    },
+  });
+
+  apiMocks.keyResolver.getOrInitKey = jest.fn().mockResolvedValue({
+    accountId: '0.0.200000',
+    publicKey: defaultSupplyKeyPublicKey,
+    keyRefId: 'supply-key-ref-id',
+  });
+
+  return {
+    ...apiMocks,
+    mockMintTransaction,
+  };
+};
