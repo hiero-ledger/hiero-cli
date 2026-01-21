@@ -5,6 +5,7 @@ import type {
   AccountAPIResponse,
   ContractInfo,
   ExchangeRateResponse,
+  NftInfo,
   TokenAirdropsResponse,
   TokenBalancesResponse,
   TokenInfo,
@@ -79,6 +80,7 @@ export const createMockTokenInfo = (
   decimals: '6',
   total_supply: '1000000000',
   max_supply: '1000000000',
+  type: 'NON_FUNGIBLE_UNIQUE',
   treasury: '0.0.1234',
   created_timestamp: '2024-01-01T12:00:00.000Z',
   deleted: false,
@@ -169,5 +171,18 @@ export const createMockExchangeRateResponse = (
     hbar_equivalent: 1,
   },
   timestamp: '2024-01-01T12:00:00.000Z',
+  ...overrides,
+});
+
+export const createMockNftInfo = (
+  overrides: Partial<NftInfo> = {},
+): NftInfo => ({
+  account_id: '0.0.1234',
+  created_timestamp: '2024-01-01T12:00:00.000Z',
+  deleted: false,
+  metadata: 'VGhpcyBpcyBhIHRlc3QgTkZU',
+  modified_timestamp: '2024-01-01T12:00:00.000Z',
+  serial_number: 1,
+  token_id: '0.0.2000',
   ...overrides,
 });

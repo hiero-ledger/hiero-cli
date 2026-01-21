@@ -130,9 +130,7 @@ export const makeAliasServiceMock = (
 ): jest.Mocked<AliasService> => ({
   register: jest.fn(),
   resolve: jest.fn().mockImplementation((alias, type) => {
-    // Domyślnie zwracaj dane dla typowych aliasów używanych w testach
     if (type === 'account') {
-      // Map typowych aliasów kont do mock danych
       const accountAliases: Record<string, AliasAccountData> = {
         'admin-key': {
           entityId: '0.0.100000',
@@ -181,6 +179,14 @@ export const makeAliasServiceMock = (
         },
       };
       return accountAliases[alias] || null;
+    }
+    if (type === 'token') {
+      const tokenAliases: Record<string, { entityId: string }> = {
+        'my-token': { entityId: '0.0.12345' },
+        'my-nft-collection': { entityId: '0.0.54321' },
+        'test-fungible': { entityId: '0.0.99999' },
+      };
+      return tokenAliases[alias] || null;
     }
     return null;
   }),
