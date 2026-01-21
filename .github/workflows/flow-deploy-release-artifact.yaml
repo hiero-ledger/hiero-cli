@@ -177,6 +177,13 @@ jobs:
       - name: Compile Code
         run: npm run build
 
+      - name: Set Publish Data
+        id: set-publish-data
+        run: |
+          VERSION=$(jq -r '.version' './package.json')
+          CLI_NPM_PACKAGE_NAME="hiero-ledger-hiero-cli-${VERSION}.tgz"
+          echo "artifact-name=${CLI_NPM_PACKAGE_NAME}" >> $GITHUB_OUTPUT
+
       - name: Publish Semantic Release
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -187,19 +194,22 @@ jobs:
           GIT_COMMITTER_EMAIL: ${{ secrets.GIT_USER_EMAIL }}
         if: ${{ github.event.inputs.dry-run-enabled != 'true' && !cancelled() && !failure() }}
         run:
-          npx semantic-release
+          FLAGS=""
+          if [[ "${{ inputs.dry-run-enabled }}" == "true" ]]; then
+            FLAGS="--dry-run"
+          fi
+          
+          npx semantic-release --no-sign ${FLAGS}
+          
+          if [[ -d "dist" ]]; then
+            echo "Dist dir has the following contents:"
+            ls dist
+          fi
 
       - name: Update Version for Dry Run
         if: ${{ github.event.inputs.dry-run-enabled == 'true' }}
         run: |
           npm version ${{ needs.prepare-release.outputs.version }} --no-git-tag-version
-
-      - name: Set Publish Data
-        id: set-publish-data
-        run: |
-          VERSION=$(jq -r '.version' './package.json')
-          CLI_NPM_PACKAGE_NAME="hiero-ledger-hiero-cli-${VERSION}.tgz"
-          echo "artifact-name=${CLI_NPM_PACKAGE_NAME}" >> $GITHUB_OUTPUT
 
       # Needed since semantic release dry-run won't pack the tarball
       - name: Pack for Dry Run
