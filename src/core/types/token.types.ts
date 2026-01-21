@@ -59,3 +59,11 @@ export interface TokenAssociationParams {
   tokenId: string;
   accountId: string;
 }
+
+/**
+ * Parameters for token mint transactions
+ */
+export interface TokenMintParams {
+  tokenId: string;
+  amount: bigint;
+}
