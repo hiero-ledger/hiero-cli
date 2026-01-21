@@ -45,6 +45,7 @@ export async function listTokens(
         symbol: token.symbol,
         decimals: token.decimals,
         supplyType: token.supplyType,
+        tokenType: token.tokenType,
         treasuryId: token.treasuryId,
         network: token.network,
         alias,

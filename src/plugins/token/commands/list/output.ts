@@ -9,6 +9,7 @@ import {
   PublicKeySchema,
   SupplyTypeSchema,
 } from '@/core/schemas/common-schemas';
+import { HederaTokenType } from '@/core/shared/constants';
 
 /**
  * Token Keys Schema
@@ -35,6 +36,9 @@ const TokenListItemSchema = z.object({
   symbol: z.string().describe('Token symbol'),
   decimals: z.number().int().min(0).max(8).describe('Number of decimal places'),
   supplyType: SupplyTypeSchema,
+  tokenType: z
+    .enum([HederaTokenType.NON_FUNGIBLE_TOKEN, HederaTokenType.FUNGIBLE_COMMON])
+    .describe('Token type: FungibleCommon or NonFungibleToken'),
   treasuryId: EntityIdSchema,
   network: NetworkSchema,
   keys: TokenKeysSchema.optional(),
@@ -100,6 +104,7 @@ export const LIST_TOKENS_TEMPLATE = `
 {{add1 @index}}. {{symbol}} ({{name}})
    Token ID: {{hashscanLink tokenId "token" network}}
    Treasury: {{hashscanLink treasuryId "account" network}}
+   Token Type: {{#if (eq tokenType "NonFungibleToken")}}NON FUNGIBLE TOKEN{{else}}FUNGIBLE TOKEN{{/if}}
    Supply Type: {{supplyType}}
    Decimals: {{decimals}}
    Network: {{network}}

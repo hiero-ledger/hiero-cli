@@ -587,6 +587,7 @@ export const makeTokenData = (
     network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
     associations: Array<{ name: string; accountId: string }>;
     customFees: Array<unknown>;
+    tokenType: HederaTokenType;
   }> = {},
 ) => ({
   tokenId: '0.0.1234',
@@ -601,6 +602,7 @@ export const makeTokenData = (
   network: SupportedNetwork.TESTNET,
   associations: [],
   customFees: [],
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
   ...overrides,
 });
 
