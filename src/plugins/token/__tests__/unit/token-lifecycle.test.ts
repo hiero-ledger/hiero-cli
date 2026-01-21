@@ -11,8 +11,8 @@ import '@/core/utils/json-serialize';
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { HederaTokenType, Status } from '@/core/shared/constants';
 import { associateToken } from '@/plugins/token/commands/associate';
-import { createToken } from '@/plugins/token/commands/create';
-import { transferToken } from '@/plugins/token/commands/transfer';
+import { createToken } from '@/plugins/token/commands/create-ft';
+import { transferToken } from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {

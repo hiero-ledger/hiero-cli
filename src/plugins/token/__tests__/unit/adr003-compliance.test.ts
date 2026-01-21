@@ -4,17 +4,17 @@
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { AssociateTokenOutput } from '@/plugins/token/commands/associate';
-import type { CreateTokenOutput } from '@/plugins/token/commands/create';
+import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
 import type { ListTokensOutput } from '@/plugins/token/commands/list';
-import type { TransferTokenOutput } from '@/plugins/token/commands/transfer';
+import type { TransferFungibleTokenOutput } from '@/plugins/token/commands/transfer-ft';
 
 import '@/core/utils/json-serialize';
 
 import { Status } from '@/core/shared/constants';
 import { associateToken } from '@/plugins/token/commands/associate/handler';
-import { createToken } from '@/plugins/token/commands/create/handler';
+import { createToken } from '@/plugins/token/commands/create-ft/handler';
 import { listTokens } from '@/plugins/token/commands/list/handler';
-import { transferToken } from '@/plugins/token/commands/transfer/handler';
+import { transferToken } from '@/plugins/token/commands/transfer-ft/handler';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -93,7 +93,9 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as CreateTokenOutput;
+      const output = JSON.parse(
+        result.outputJson!,
+      ) as CreateFungibleTokenOutput;
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TTK');
@@ -163,7 +165,9 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as TransferTokenOutput;
+      const output = JSON.parse(
+        result.outputJson!,
+      ) as TransferFungibleTokenOutput;
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.transactionId).toBe('0.0.123@1700000000.123456789');
       expect(output.amount).toBe('100');

@@ -7,7 +7,7 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
 import { HederaTokenType, Status } from '@/core/shared/constants';
-import { createToken } from '@/plugins/token/commands/create';
+import { createToken } from '@/plugins/token/commands/create-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -251,7 +251,7 @@ describe('createTokenHandler', () => {
 
       // Assert
       expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create token');
+      expect(result.errorMessage).toContain('Failed to create fungible token');
       expect(result.errorMessage).toContain('no token ID returned');
       expect(mockSaveToken).not.toHaveBeenCalled();
       // This test is now ADR-003 compliant
@@ -288,7 +288,7 @@ describe('createTokenHandler', () => {
 
       // Assert
       expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create token');
+      expect(result.errorMessage).toContain('Failed to create fungible token');
       expect(result.errorMessage).toContain('Service error');
       // This test is now ADR-003 compliant
     });

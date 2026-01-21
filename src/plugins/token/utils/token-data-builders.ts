@@ -5,7 +5,10 @@
 import type { TransactionResult } from '@/core';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { TokenData, TokenFileDefinition } from '@/plugins/token/schema';
+import type {
+  FungibleTokenFileDefinition,
+  TokenData,
+} from '@/plugins/token/schema';
 
 export function buildTokenData(
   result: TransactionResult,
@@ -52,7 +55,7 @@ export interface TokenKeyOptions {
 
 export function buildTokenDataFromFile(
   result: TransactionResult,
-  tokenDefinition: TokenFileDefinition,
+  tokenDefinition: FungibleTokenFileDefinition,
   treasuryId: string,
   adminPublicKey: string,
   network: SupportedNetwork,

@@ -10,9 +10,9 @@ import '@/core/utils/json-serialize';
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import {
+  type TransferFungibleTokenOutput,
   transferToken,
-  type TransferTokenOutput,
-} from '@/plugins/token/commands/transfer';
+} from '@/plugins/token/commands/transfer-ft';
 
 import { mockTransactionResults } from './helpers/fixtures';
 import { makeApiMocks, makeLogger } from './helpers/mocks';
@@ -73,7 +73,9 @@ describe('transferTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as TransferTokenOutput;
+      const output = JSON.parse(
+        result.outputJson!,
+      ) as TransferFungibleTokenOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.from).toBe('0.0.345678');
       expect(output.to).toBe('0.0.789012');
@@ -153,7 +155,9 @@ describe('transferTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as TransferTokenOutput;
+      const output = JSON.parse(
+        result.outputJson!,
+      ) as TransferFungibleTokenOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.from).toBe('0.0.345678');
       expect(output.to).toBe('0.0.789012');
