@@ -35,6 +35,7 @@ export interface TokenService {
 
   /**
    * Create a token mint transaction (without execution)
+   * Supports both fungible tokens (with amount) and NFTs (with metadata)
    */
   createMintTransaction(params: TokenMintParams): TokenMintTransaction;
 }

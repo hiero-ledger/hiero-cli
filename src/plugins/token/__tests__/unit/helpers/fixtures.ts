@@ -799,3 +799,25 @@ export const expectedMintFtTransactionParams = {
   tokenId: '0.0.123456',
   amount: 10000n,
 };
+
+/**
+ * Create command args for mint-nft tests
+ */
+export const makeMintNftCommandArgs = (params: {
+  api: CoreApi;
+  logger: Logger;
+  args?: Record<string, string | number | boolean | undefined>;
+}) => {
+  return {
+    args: {
+      token: '0.0.123456',
+      metadata: 'Test NFT metadata',
+      supplyKey: 'test-supply-key',
+      ...params.args,
+    },
+    api: params.api,
+    state: params.api.state,
+    config: params.api.config,
+    logger: params.logger,
+  };
+};

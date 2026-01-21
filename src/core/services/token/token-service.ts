@@ -196,22 +196,36 @@ export class TokenServiceImpl implements TokenService {
 
   /**
    * Create a token mint transaction (without execution)
+   * Supports both fungible tokens (with amount) and NFTs (with metadata)
    */
   createMintTransaction(params: TokenMintParams): TokenMintTransaction {
-    const tokenId: string = params.tokenId;
-    const amount: bigint = params.amount;
+    const tokenId = params.tokenId;
+    const amount = params.amount;
+    const metadata = params.metadata;
 
-    this.logger.debug(
-      `[TOKEN SERVICE] Creating mint transaction: ${amount.toString()} tokens for token ${tokenId}`,
+    const mintTx = new TokenMintTransaction().setTokenId(
+      TokenId.fromString(tokenId),
     );
 
-    const mintTx = new TokenMintTransaction()
-      .setTokenId(TokenId.fromString(tokenId))
-      .setAmount(amount);
-
-    this.logger.debug(
-      `[TOKEN SERVICE] Created mint transaction for token ${tokenId}`,
-    );
+    if (amount !== undefined) {
+      // FT minting
+      this.logger.debug(
+        `[TOKEN SERVICE] Creating FT mint transaction: ${amount.toString()} tokens for token ${tokenId}`,
+      );
+      mintTx.setAmount(amount);
+      this.logger.debug(
+        `[TOKEN SERVICE] Created FT mint transaction for token ${tokenId}`,
+      );
+    } else {
+      // NFT minting
+      this.logger.debug(
+        `[TOKEN SERVICE] Creating NFT mint transaction for token ${tokenId} with metadata (${metadata!.length} bytes)`,
+      );
+      mintTx.addMetadata(metadata!);
+      this.logger.debug(
+        `[TOKEN SERVICE] Created NFT mint transaction for token ${tokenId}`,
+      );
+    }
 
     return mintTx;
   }

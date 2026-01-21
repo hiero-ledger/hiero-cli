@@ -26,7 +26,7 @@ export type MintFtOutput = z.infer<typeof MintFtOutputSchema>;
  * Human-readable template for mint-ft output
  */
 export const MINT_FT_TEMPLATE = `
-✅ Token mint successful!
+✅ FT mint successful!
    Token ID: {{hashscanLink tokenId "token" network}}
    Amount minted: {{amount}}
    Transaction ID: {{hashscanLink transactionId "transaction" network}}
