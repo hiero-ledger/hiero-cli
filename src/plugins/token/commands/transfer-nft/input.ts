@@ -5,6 +5,7 @@ import {
   EntityReferenceSchema,
   KeyManagerTypeSchema,
   KeyOrAccountAliasSchema,
+  NftSerialNumbersSchema,
 } from '@/core/schemas';
 
 export const TransferNftInputSchema = z.object({
@@ -15,16 +16,7 @@ export const TransferNftInputSchema = z.object({
   from: KeyOrAccountAliasSchema.optional().describe(
     'Source account. Can be alias or AccountID:privateKey pair. Defaults to operator.',
   ),
-  serials: z
-    .string()
-    .trim()
-    .transform((val) => val.split(',').map((s) => parseInt(s.trim(), 10)))
-    .refine((arr) => arr.length > 0, 'At least one serial number is required')
-    .refine(
-      (arr) => arr.every((n) => !Number.isNaN(n) && n > 0),
-      'Serial numbers must be positive integers separated by commas',
-    )
-    .describe('NFT serial numbers (comma-separated list)'),
+  serials: NftSerialNumbersSchema,
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type (defaults to config setting)',
   ),

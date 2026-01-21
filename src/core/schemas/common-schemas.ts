@@ -576,6 +576,22 @@ export const TokenSymbolSchema = z
   .max(20, 'Token symbol must be 20 characters or less')
   .describe('Token symbol');
 
+/**
+ * NFT Serial Numbers Input
+ * Comma-separated list of NFT serial numbers
+ * Transformed to array of positive integers
+ */
+export const NftSerialNumbersSchema = z
+  .string()
+  .trim()
+  .transform((val) => val.split(',').map((s) => parseInt(s.trim(), 10)))
+  .refine((arr) => arr.length > 0, 'At least one serial number is required')
+  .refine(
+    (arr) => arr.every((n) => !Number.isNaN(n) && n > 0),
+    'Serial numbers must be positive integers separated by commas',
+  )
+  .describe('NFT serial numbers (comma-separated list)');
+
 // ======================================================
 // 10. Legacy Compatibility Exports
 // ======================================================
