@@ -40,6 +40,10 @@ src/plugins/token/
 │   │   ├── handler.ts       # Fungible token list handler
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts        # Command exports
+│   ├── view/
+│   │   ├── handler.ts       # Token view handler
+│   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts        # Command exports
 │   └── createFromFile/
 │       ├── handler.ts       # Fungible token from file handler
 │       ├── output.ts        # Output schema and template
@@ -172,6 +176,21 @@ List all tokens (FT and NFT) stored in state for all networks.
 ```bash
 hcli token list
 hcli token list --keys  # Show token key information
+```
+
+### Token View
+
+View detailed information about fungible or non-fungible tokens from the Hedera Mirror Node.
+
+```bash
+# View token by alias
+hcli token view --token mytoken-alias
+
+# View token by ID
+hcli token view --token 0.0.123456
+
+# View specific NFT serial
+hcli token view --token mytoken-alias --serial 1
 ```
 
 ### Token Create From File (Fungible Token)

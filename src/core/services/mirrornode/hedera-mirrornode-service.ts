@@ -10,6 +10,7 @@ import type {
   ContractInfo,
   ExchangeRateResponse,
   MirrorNodeKeyType,
+  NftInfo,
   TokenAirdropsResponse,
   TokenBalancesResponse,
   TokenInfo,
@@ -181,6 +182,20 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
     }
 
     const data = (await response.json()) as TokenInfo;
+    return data;
+  }
+
+  async getNftInfo(tokenId: string, serialNumber: number): Promise<NftInfo> {
+    const url = `${this.getBaseUrl()}/tokens/${tokenId}/nfts/${serialNumber}`;
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to get NFT info for token ${tokenId} serial ${serialNumber}: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    const data = (await response.json()) as NftInfo;
     return data;
   }
 
