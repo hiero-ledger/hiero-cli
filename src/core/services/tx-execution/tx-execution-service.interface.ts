@@ -24,7 +24,6 @@ export interface TransactionResult {
   tokenId?: string;
   topicId?: string;
   topicSequenceNumber?: number;
-  serialNumbers?: string[];
   consensusTimestamp: string;
 }
 
@@ -40,4 +39,5 @@ export interface TransactionReceipt {
   tokenId?: string;
   topicId?: string;
   topicSequenceNumber?: number;
+  serials?: string[];
 }

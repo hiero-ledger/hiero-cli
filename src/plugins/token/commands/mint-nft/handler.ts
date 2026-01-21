@@ -132,13 +132,7 @@ export async function mintNft(
       };
     }
 
-    if (!result.serialNumbers || result.serialNumbers.length === 0) {
-      throw new Error(
-        'NFT mint transaction succeeded but no serial numbers were returned',
-      );
-    }
-
-    const serialNumber = result.serialNumbers[0];
+    const serialNumber = result.receipt.serials![0];
 
     const outputData: MintNftOutput = {
       transactionId: result.transactionId,
