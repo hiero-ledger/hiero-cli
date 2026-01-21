@@ -249,7 +249,7 @@ hcli network use --global localnet
 The Hiero CLI is built on a plugin architecture. The following default plugins are loaded automatically:
 
 - **[Account Plugin](src/plugins/account/README.md)** - Create, import, manage accounts, and view balances
-- **[Token Plugin](src/plugins/token/README.md)** - Create, associate, and transfer fungible and non-fungible tokens
+- **[Token Plugin](src/plugins/token/README.md)** - Create, view, associate, and transfer fungible and non-fungible tokens
 - **[Network Plugin](src/plugins/network/README.md)** - Switch networks, manage operator credentials, and check network health
 - **[HBAR Plugin](src/plugins/hbar/README.md)** - Transfer HBAR between accounts
 - **[Credentials Plugin](src/plugins/credentials/README.md)** - Manage operator credentials and keys

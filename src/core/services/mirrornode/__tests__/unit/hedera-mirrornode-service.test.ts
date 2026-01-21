@@ -11,6 +11,7 @@ import {
   createMockAccountAPIResponse,
   createMockContractInfo,
   createMockExchangeRateResponse,
+  createMockNftInfo,
   createMockTokenAirdropsResponse,
   createMockTokenBalancesResponse,
   createMockTokenInfo,
@@ -29,6 +30,7 @@ jest.mock('@hashgraph/sdk');
 // Test constants
 const TEST_ACCOUNT_ID = '0.0.1234';
 const TEST_TOKEN_ID = '0.0.2000';
+const TEST_SERIAL_NUMBER = 1;
 const TEST_TOPIC_ID = '0.0.3000';
 const TEST_CONTRACT_ID = '0.0.4000';
 const TEST_TX_ID = '0.0.1234-1700000000-000000000';
@@ -564,6 +566,59 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await expect(service.getTokenInfo(TEST_TOKEN_ID)).rejects.toThrow(
         `Failed to get token info for a token ${TEST_TOKEN_ID}: 404 Not Found`,
+      );
+    });
+  });
+
+  describe('getNftInfo', () => {
+    it('should fetch NFT info with correct URL', async () => {
+      const { service } = setupService();
+      const mockNftInfo = createMockNftInfo();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockNftInfo),
+      });
+
+      const result = await service.getNftInfo(
+        TEST_TOKEN_ID,
+        TEST_SERIAL_NUMBER,
+      );
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_URL}/tokens/${TEST_TOKEN_ID}/nfts/${TEST_SERIAL_NUMBER}`,
+      );
+      expect(result.token_id).toBe(TEST_TOKEN_ID);
+      expect(result.serial_number).toBe(TEST_SERIAL_NUMBER);
+      expect(result.account_id).toBe('0.0.1234');
+    });
+
+    it('should throw error on HTTP 404', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      await expect(
+        service.getNftInfo(TEST_TOKEN_ID, TEST_SERIAL_NUMBER),
+      ).rejects.toThrow(
+        `Failed to get NFT info for token ${TEST_TOKEN_ID} serial ${TEST_SERIAL_NUMBER}: 404 Not Found`,
+      );
+    });
+
+    it('should work with mainnet network', async () => {
+      const { service } = setupService(SupportedNetwork.MAINNET);
+      const mockNftInfo = createMockNftInfo();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockNftInfo),
+      });
+
+      await service.getNftInfo(TEST_TOKEN_ID, TEST_SERIAL_NUMBER);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${MAINNET_URL}/tokens/${TEST_TOKEN_ID}/nfts/${TEST_SERIAL_NUMBER}`,
       );
     });
   });

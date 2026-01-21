@@ -46,6 +46,11 @@ import {
   TransferFungibleTokenOutputSchema,
   transferToken,
 } from './commands/transfer-ft';
+import {
+  VIEW_TOKEN_TEMPLATE,
+  viewToken,
+  ViewTokenOutputSchema,
+} from './commands/view';
 
 export const TOKEN_NAMESPACE = 'token-tokens';
 
@@ -473,6 +478,33 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: ListTokensOutputSchema,
         humanTemplate: LIST_TOKENS_TEMPLATE,
+      },
+    },
+    {
+      name: 'view',
+      summary: 'View token information',
+      description:
+        'View detailed information about fungible or non-fungible tokens',
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: 'string',
+          required: true,
+          description: 'Token identifier: either a token alias or token-id',
+        },
+        {
+          name: 'serial',
+          short: 'S',
+          type: 'string',
+          required: false,
+          description: 'Serial number of a specific NFT instance',
+        },
+      ],
+      handler: viewToken,
+      output: {
+        schema: ViewTokenOutputSchema,
+        humanTemplate: VIEW_TOKEN_TEMPLATE,
       },
     },
   ],

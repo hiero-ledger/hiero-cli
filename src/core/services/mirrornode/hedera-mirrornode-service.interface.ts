@@ -6,6 +6,7 @@ import type {
   AccountResponse,
   ContractInfo,
   ExchangeRateResponse,
+  NftInfo,
   TokenAirdropsResponse,
   TokenBalancesResponse,
   TokenInfo,
@@ -52,6 +53,11 @@ export interface HederaMirrornodeService {
    * Get token information
    */
   getTokenInfo(tokenId: string): Promise<TokenInfo>;
+
+  /**
+   * Get NFT information by token ID and serial number
+   */
+  getNftInfo(tokenId: string, serialNumber: number): Promise<NftInfo>;
 
   /**
    * Get topic information
