@@ -20,44 +20,63 @@ src/plugins/token/
 ├── manifest.ts              # Plugin manifest with command definitions and output specs
 ├── schema.ts                # Token data schema with Zod validation
 ├── commands/
-│   ├── create/
+│   ├── create-ft/
 │   │   ├── handler.ts       # Fungible token creation handler
+│   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
-│   │   └── index.ts        # Command exports
+│   │   └── index.ts         # Command exports
+│   ├── create-nft/
+│   │   ├── handler.ts       # Non-fungible token creation handler
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts         # Command exports
+│   ├── create-ft-from-file/
+│   │   ├── handler.ts       # Fungible token from file handler
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts         # Command exports
 │   ├── mint-ft/
 │   │   ├── handler.ts       # Fungible token minting handler
+│   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
-│   │   └── index.ts        # Command exports
-│   ├── mint-ft/
-│   │   ├── handler.ts       # Fungible token minting handler
+│   │   └── index.ts         # Command exports
+│   ├── mint-nft/
+│   │   ├── handler.ts       # Non-fungible token minting handler
+│   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
-│   │   └── index.ts        # Command exports
-│   ├── transfer/
+│   │   └── index.ts         # Command exports
+│   ├── transfer-ft/
 │   │   ├── handler.ts       # Fungible token transfer handler
+│   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
-│   │   └── index.ts        # Command exports
+│   │   └── index.ts         # Command exports
 │   ├── associate/
-│   │   ├── handler.ts       # Fungible token association handler
+│   │   ├── handler.ts       # Token association handler
+│   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
-│   │   └── index.ts        # Command exports
+│   │   └── index.ts         # Command exports
 │   ├── list/
-│   │   ├── handler.ts       # Fungible token list handler
+│   │   ├── handler.ts       # Token list handler
+│   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
-│   │   └── index.ts        # Command exports
-│   ├── view/
-│   │   ├── handler.ts       # Token view handler
-│   │   ├── output.ts        # Output schema and template
-│   │   └── index.ts        # Command exports
-│   └── createFromFile/
-│       ├── handler.ts       # Fungible token from file handler
+│   │   └── index.ts         # Command exports
+│   └── view/
+│       ├── handler.ts       # Token view handler
+│       ├── input.ts         # Input schema
 │       ├── output.ts        # Output schema and template
-│       └── index.ts        # Command exports
+│       └── index.ts         # Command exports
+├── utils/
+│   ├── nft-build-output.ts  # NFT output builder utilities
+│   ├── token-amount-helpers.ts  # Token amount processing helpers
+│   └── [other utility files...]
 ├── zustand-state-helper.ts  # State management helper
 ├── resolver-helper.ts       # Token and account resolver utilities
 ├── __tests__/               # Comprehensive test suite
-│   └── unit/
-│       ├── adr003-compliance.test.ts  # Output structure compliance tests
-│       └── [other test files...]
+│   ├── unit/
+│   │   ├── adr003-compliance.test.ts  # Output structure compliance tests
+│   │   └── [other test files...]
+│   └── integration/
+│       └── [integration test files...]
 └── index.ts                # Plugin exports
 ```
 
@@ -136,6 +155,90 @@ hcli token mint-ft \
   - `local` or `local_encrypted`
 
 **Note:** The token must have a supply key configured. Minted tokens are added to the token's treasury account.
+
+### Token Mint NFT
+
+Mint a new non-fungible token (NFT) to an NFT collection. Each mint operation creates a single NFT with unique metadata and serial number.
+
+```bash
+# Using token alias
+hcli token mint-nft \
+  --token my-nft-collection \
+  --metadata "My NFT Metadata" \
+  --supply-key 0.0.123456:302e020100300506032b657004220420...
+
+# Using token ID with account alias for supply key
+hcli token mint-nft \
+  --token 0.0.123456 \
+  --metadata "Unique NFT #1" \
+  --supply-key supply-account-alias
+
+# Using account-id:private-key pair for supply key
+hcli token mint-nft \
+  --token 0.0.123456 \
+  --metadata "Test NFT" \
+  --supply-key 0.0.123456:302e020100300506032b657004220420...
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+  - Must be an NFT collection (type: `NON_FUNGIBLE_TOKEN`)
+- `--metadata` / `-m`: NFT metadata string - **Required**
+  - Maximum size: 100 bytes
+  - UTF-8 encoded string
+- `--supply-key` / `-s`: Supply key for signing - **Required**
+  - Account alias: `supply-account-alias`
+  - Account with key: `0.0.123456:private-key`
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Output:**
+
+The command returns the minted NFT's serial number, which uniquely identifies the NFT within the collection:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "serialNumber": "1",
+  "network": "testnet"
+}
+```
+
+**Notes:**
+
+- The token must be an NFT collection (created with `create-nft` command)
+- The token must have a supply key configured
+- The provided supply key must match the token's supply key
+- Metadata cannot exceed 100 bytes (Hedera limit)
+- For tokens with finite supply, the command validates that minting won't exceed `maxSupply`
+- Minted NFT is assigned to the token's treasury account
+- Each mint operation creates exactly one NFT with a unique serial number
+
+**Example Workflow:**
+
+```bash
+# 1. Create NFT collection
+hcli token create-nft \
+  --token-name "My Collection" \
+  --symbol "MC" \
+  --treasury alice \
+  --supply-type FINITE \
+  --max-supply 100 \
+  --admin-key alice \
+  --supply-key alice \
+  --name my-collection
+
+# 2. Mint NFT to collection
+hcli token mint-nft \
+  --token my-collection \
+  --metadata "First NFT in collection" \
+  --supply-key alice
+
+# 3. View minted NFT
+hcli token view --token my-collection --serial 1
+```
 
 ### Token Associate
 
@@ -380,6 +483,8 @@ All commands support multiple output formats:
 
 ### JSON Output
 
+**Fungible Token Create:**
+
 ```json
 {
   "tokenId": "0.0.12345",
@@ -390,6 +495,17 @@ All commands support multiple output formats:
   "initialSupply": "1000000",
   "supplyType": "INFINITE",
   "transactionId": "0.0.123@1700000000.123456789",
+  "network": "testnet"
+}
+```
+
+**NFT Mint:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "serialNumber": "1",
   "network": "testnet"
 }
 ```
