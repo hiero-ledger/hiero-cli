@@ -6,8 +6,8 @@ export { tokenPluginManifest } from './manifest';
 
 // Export command handlers and schemas
 export { associateToken } from './commands/associate';
-export { createToken } from './commands/create';
-export { createTokenFromFile } from './commands/createFromFile';
+export { createToken } from './commands/create-ft';
+export { createTokenFromFile } from './commands/create-ft-from-file';
 export { listTokens } from './commands/list';
 export { mintFt } from './commands/mint-ft';
-export { transferToken } from './commands/transfer';
+export { transferToken } from './commands/transfer-ft';

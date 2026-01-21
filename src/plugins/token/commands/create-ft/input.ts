@@ -17,7 +17,7 @@ import { validateSupplyTypeAndMaxSupply } from '@/core/shared/validation/validat
  * Input schema for token create command
  * Validates arguments for creating a new fungible token
  */
-export const CreateTokenInputSchema = z
+export const CreateFungibleTokenInputSchema = z
   .object({
     tokenName: TokenNameSchema.describe('Token name'),
     symbol: TokenSymbolSchema.describe('Token symbol/ticker'),
@@ -54,4 +54,6 @@ export const CreateTokenInputSchema = z
   })
   .superRefine(validateSupplyTypeAndMaxSupply);
 
-export type CreateTokenInput = z.infer<typeof CreateTokenInputSchema>;
+export type CreateFungibleTokenInput = z.infer<
+  typeof CreateFungibleTokenInputSchema
+>;

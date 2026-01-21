@@ -2,7 +2,7 @@
 
 Welcome to the Hiero CLI Tool, a powerful and intuitive command-line interface designed to streamline your interactions with the Hedera network. Whether you're a developer needing to set up test environments, automate network-related tasks, or explore the extensive capabilities of the Hedera mainnet and testnet, this tool is your one-stop solution.
 
-The Hiero CLI Tool elegantly addresses the complexities associated with distributed ledger technologies. It simplifies the process of executing actions such as creating new accounts, sending transactions, managing tokens, and associating with existing tokens directly from the CLI. This high level of functionality and ease of use significantly reduces the barrier to entry for developers working on Hedera-based projects.
+The Hiero CLI Tool elegantly addresses the complexities associated with distributed ledger technologies. It simplifies the process of executing actions such as creating new accounts, sending transactions, managing fungible and non-fungible tokens, and associating with existing tokens directly from the CLI. This high level of functionality and ease of use significantly reduces the barrier to entry for developers working on Hedera-based projects.
 
 A key advantage of the Hiero CLI Tool is its potential to enhance your workflow. It's not just about performing individual tasks; it's about integrating these tasks into a larger, more efficient development process. With plans for future integration into Continuous Integration/Continuous Deployment (CI/CD) pipelines, this tool promises to be a versatile asset in the automation and management of Hedera network operations.
 
@@ -46,7 +46,7 @@ hcli account balance --account-id 0.0.123456
 hcli hbar transfer --to 0.0.123456 --amount 10
 ```
 
-**First-time setup (Initialization)**: When you run any command that requires an operator (like transferring HBAR or creating tokens) in interactive mode, the CLI will automatically launch an **initialization wizard** to guide you through configuring the operator account, private key, and settings. In script mode (non-interactive), an error will be thrown instead, requiring you to use `hcli network set-operator` to configure the operator first.
+**First-time setup (Initialization)**: When you run any command that requires an operator (like transferring HBAR or creating fungible tokens) in interactive mode, the CLI will automatically launch an **initialization wizard** to guide you through configuring the operator account, private key, and settings. In script mode (non-interactive), an error will be thrown instead, requiring you to use `hcli network set-operator` to configure the operator first.
 
 ## Manual Setup (For Developers)
 
@@ -249,7 +249,7 @@ hcli network use --global localnet
 The Hiero CLI is built on a plugin architecture. The following default plugins are loaded automatically:
 
 - **[Account Plugin](src/plugins/account/README.md)** - Create, import, manage accounts, and view balances
-- **[Token Plugin](src/plugins/token/README.md)** - Create, associate, and transfer tokens
+- **[Token Plugin](src/plugins/token/README.md)** - Create, associate, and transfer fungible and non-fungible tokens
 - **[Network Plugin](src/plugins/network/README.md)** - Switch networks, manage operator credentials, and check network health
 - **[HBAR Plugin](src/plugins/hbar/README.md)** - Transfer HBAR between accounts
 - **[Credentials Plugin](src/plugins/credentials/README.md)** - Manage operator credentials and keys

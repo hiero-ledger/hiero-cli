@@ -21,7 +21,7 @@ src/plugins/token/
 ├── schema.ts                # Token data schema with Zod validation
 ├── commands/
 │   ├── create/
-│   │   ├── handler.ts       # Token creation handler
+│   │   ├── handler.ts       # Fungible token creation handler
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts        # Command exports
 │   ├── mint-ft/
@@ -29,19 +29,19 @@ src/plugins/token/
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts        # Command exports
 │   ├── transfer/
-│   │   ├── handler.ts       # Token transfer handler
+│   │   ├── handler.ts       # Fungible token transfer handler
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts        # Command exports
 │   ├── associate/
-│   │   ├── handler.ts       # Token association handler
+│   │   ├── handler.ts       # Fungible token association handler
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts        # Command exports
 │   ├── list/
-│   │   ├── handler.ts       # Token list handler
+│   │   ├── handler.ts       # Fungible token list handler
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts        # Command exports
 │   └── createFromFile/
-│       ├── handler.ts       # Token from file handler
+│       ├── handler.ts       # Fungible token from file handler
 │       ├── output.ts        # Output schema and template
 │       └── index.ts        # Command exports
 ├── zustand-state-helper.ts  # State management helper
@@ -69,7 +69,7 @@ Create a new fungible token with specified properties.
 
 ```bash
 # Using account alias
-hcli token create \
+hcli token create-ft \
   --token-name "My Token" \
   --symbol "MTK" \
   --treasury alice \
@@ -131,16 +131,16 @@ hcli token mint-ft \
 
 ### Token Associate
 
-Associate a fungible token with an account to enable transfers.
+Associate a fungible or non-fungible token with an account to enable transfers.
 
 ```bash
 # Using account alias
-hcli token associate-ft \
+hcli token associate \
   --token mytoken-alias \
   --account alice
 
 # Using account-id:account-key pair
-hcli token associate-ft \
+hcli token associate \
   --token 0.0.123456 \
   --account 0.0.789012:302e020100300506032b657004220420...
 ```
@@ -167,23 +167,23 @@ hcli token transfer-ft \
 
 ### Token List
 
-List all tokens stored in state for all networks.
+List all tokens (FT and NFT) stored in state for all networks.
 
 ```bash
 hcli token list
 hcli token list --keys  # Show token key information
 ```
 
-### Token Create From File
+### Token Create From File (Fungible Token)
 
-Create a new token from a JSON file definition with advanced features.
+Create a new fungible token from a JSON file definition with advanced features.
 
 ```bash
 # Basic usage
-hcli token create-from-file --file token-definition.json
+hcli token create-ft-from-file --file token-definition.json
 
 # With specific key manager
-hcli token create-from-file --file token-definition.json --key-manager local_encrypted
+hcli token create-ft-from-file --file token-definition.json --key-manager local_encrypted
 ```
 
 **Token File Format:**
@@ -316,15 +316,15 @@ import { Status } from '../../../core/shared/constants';
 
 // Example test verifying CommandExecutionResult structure
 describe('Token Plugin Output Structure', () => {
-  test('token create command returns CommandExecutionResult', async () => {
-    const result = await createTokenHandler(mockArgs);
+  test('fungible token create command returns CommandExecutionResult', async () => {
+    const result = await createToken(mockArgs);
 
     // Assert structure
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
     // Assert output format
-    const output = JSON.parse(result.outputJson) as CreateTokenOutput;
+    const output = JSON.parse(result.outputJson) as CreateFungibleTokenOutput;
     expect(output.tokenId).toBe('0.0.12345');
     expect(output.name).toBe('TestToken');
   });
