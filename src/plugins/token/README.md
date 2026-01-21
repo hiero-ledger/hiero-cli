@@ -470,6 +470,8 @@ All commands support multiple output formats:
 
 ### Human-Readable (Default)
 
+**Token Create:**
+
 ```
 ✅ Token created successfully: 0.0.12345
    Name: MyToken (MTK)
@@ -478,6 +480,24 @@ All commands support multiple output formats:
    Initial Supply: 1000000
    Supply Type: INFINITE
    Network: testnet
+   Transaction ID: 0.0.123@1700000000.123456789
+```
+
+**FT Mint:**
+
+```
+✅ FT mint successful!
+   Token ID: 0.0.123456
+   Amount minted: 10000
+   Transaction ID: 0.0.123@1700000000.123456789
+```
+
+**NFT Mint:**
+
+```
+✅ NFT mint successful!
+   Token ID: 0.0.123456
+   Serial Number: 1
    Transaction ID: 0.0.123@1700000000.123456789
 ```
 
@@ -495,6 +515,17 @@ All commands support multiple output formats:
   "initialSupply": "1000000",
   "supplyType": "INFINITE",
   "transactionId": "0.0.123@1700000000.123456789",
+  "network": "testnet"
+}
+```
+
+**FT Mint:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "amount": "10000",
   "network": "testnet"
 }
 ```
