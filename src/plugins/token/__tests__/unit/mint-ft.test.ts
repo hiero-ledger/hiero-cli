@@ -44,7 +44,7 @@ describe('mintFtHandler', () => {
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
 
-      expect(api.token.createMintFtTransaction).toHaveBeenCalledWith({
+      expect(api.token.createMintTransaction).toHaveBeenCalledWith({
         tokenId: '0.0.123456',
         amount: 10000n,
       });
@@ -77,7 +77,7 @@ describe('mintFtHandler', () => {
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.amount).toBe('5000');
 
-      expect(api.token.createMintFtTransaction).toHaveBeenCalledWith({
+      expect(api.token.createMintTransaction).toHaveBeenCalledWith({
         tokenId: '0.0.123456',
         amount: 5000n,
       });
@@ -115,7 +115,7 @@ describe('mintFtHandler', () => {
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.amount).toBe('10000');
 
-      expect(api.token.createMintFtTransaction).toHaveBeenCalledWith({
+      expect(api.token.createMintTransaction).toHaveBeenCalledWith({
         tokenId: '0.0.123456',
         amount: 10000n,
       });
@@ -163,9 +163,7 @@ describe('mintFtHandler', () => {
       const mockMintTransaction = { test: 'mint-transaction' };
       const { api } = makeApiMocks({
         tokens: {
-          createMintFtTransaction: jest
-            .fn()
-            .mockReturnValue(mockMintTransaction),
+          createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
         },
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({
@@ -212,9 +210,7 @@ describe('mintFtHandler', () => {
       const mockMintTransaction = { test: 'mint-transaction' };
       const { api } = makeApiMocks({
         tokens: {
-          createMintFtTransaction: jest
-            .fn()
-            .mockReturnValue(mockMintTransaction),
+          createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
         },
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({

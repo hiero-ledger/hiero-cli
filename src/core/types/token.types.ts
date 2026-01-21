@@ -61,17 +61,11 @@ export interface TokenAssociationParams {
 }
 
 /**
- * Parameters for FT token mint transactions
+ * Parameters for token mint transactions (FT or NFT)
+ * Either amount (for FT) or metadata (for NFT) must be provided
  */
-export interface TokenMintFtParams {
+export interface TokenMintParams {
   tokenId: string;
-  amount: bigint;
-}
-
-/**
- * Parameters for NFT mint transactions
- */
-export interface TokenMintNftParams {
-  tokenId: string;
-  metadata: Uint8Array;
+  amount?: bigint; // Required for FT minting
+  metadata?: Uint8Array; // Required for NFT minting
 }

@@ -113,7 +113,7 @@ export async function mintNft(
       );
     }
 
-    const mintTransaction = api.token.createMintNftTransaction({
+    const mintTransaction = api.token.createMintTransaction({
       tokenId,
       metadata: metadataBytes,
     });

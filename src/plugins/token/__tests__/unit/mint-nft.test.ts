@@ -46,7 +46,7 @@ describe('mintNftHandler', () => {
       expect(output.serialNumber).toBe('1');
 
       const metadataBytes = new TextEncoder().encode('Test NFT metadata');
-      expect(api.token.createMintNftTransaction).toHaveBeenCalledWith({
+      expect(api.token.createMintTransaction).toHaveBeenCalledWith({
         tokenId: '0.0.123456',
         metadata: metadataBytes,
       });
@@ -104,11 +104,10 @@ describe('mintNftHandler', () => {
     });
 
     test('should mint NFT with token alias', async () => {
+      const mockMintTransaction = { test: 'mint-nft-transaction' };
       const { api } = makeApiMocks({
         tokens: {
-          createMintNftTransaction: jest.fn().mockReturnValue({
-            test: 'mint-nft-transaction',
-          }),
+          createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
         },
         signing: {
           signAndExecuteWith: jest.fn().mockResolvedValue({
@@ -207,9 +206,7 @@ describe('mintNftHandler', () => {
       const mockMintTransaction = { test: 'mint-transaction' };
       const { api } = makeApiMocks({
         tokens: {
-          createMintNftTransaction: jest
-            .fn()
-            .mockReturnValue(mockMintTransaction),
+          createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
         },
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({
@@ -257,9 +254,7 @@ describe('mintNftHandler', () => {
       const mockMintTransaction = { test: 'mint-transaction' };
       const { api } = makeApiMocks({
         tokens: {
-          createMintNftTransaction: jest
-            .fn()
-            .mockReturnValue(mockMintTransaction),
+          createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
         },
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({
@@ -412,12 +407,11 @@ describe('mintNftHandler', () => {
     test('should handle mismatched supply key', async () => {
       const tokenSupplyKeyPublicKey = 'token-supply-key';
       const providedSupplyKeyPublicKey = 'different-supply-key';
+      const mockMintTransaction = { test: 'mint-transaction' };
 
       const { api } = makeApiMocks({
         tokens: {
-          createMintNftTransaction: jest.fn().mockReturnValue({
-            test: 'mint-transaction',
-          }),
+          createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
         },
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({
