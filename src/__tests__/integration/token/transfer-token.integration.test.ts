@@ -4,8 +4,8 @@ import type { AccountBalanceOutput } from '@/plugins/account/commands/balance';
 import type { CreateAccountOutput } from '@/plugins/account/commands/create';
 import type { ViewAccountOutput } from '@/plugins/account/commands/view';
 import type { AssociateTokenOutput } from '@/plugins/token/commands/associate';
-import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create';
-import type { TransferFungibleTokenOutput } from '@/plugins/token/commands/transfer';
+import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
+import type { TransferFungibleTokenOutput } from '@/plugins/token/commands/transfer-ft';
 
 import '@/core/utils/json-serialize';
 

@@ -3,7 +3,7 @@ import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountBalanceOutput } from '@/plugins/account/commands/balance';
 import type { CreateAccountOutput } from '@/plugins/account/commands/create';
 import type { ViewAccountOutput } from '@/plugins/account/commands/view';
-import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create';
+import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
 
 import '@/core/utils/json-serialize';
 

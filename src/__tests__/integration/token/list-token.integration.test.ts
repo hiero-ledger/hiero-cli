@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create';
+import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
 import type { ListTokensOutput } from '@/plugins/token/commands/list';
 
 import '@/core/utils/json-serialize';
