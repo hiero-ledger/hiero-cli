@@ -585,10 +585,13 @@ export const NftSerialNumbersSchema = z
   .string()
   .trim()
   .transform((val) => val.split(',').map((s) => parseInt(s.trim(), 10)))
-  .refine((arr) => arr.length > 0, 'At least one serial number is required')
-  .refine(
-    (arr) => arr.every((n) => !Number.isNaN(n) && n > 0),
-    'Serial numbers must be positive integers separated by commas',
+  .pipe(
+    z
+      .array(
+        z.number().int().positive('Serial numbers must be positive integers'),
+      )
+      .min(1, 'At least one serial number is required')
+      .max(10, 'Maximum 10 serial numbers allowed'),
   )
   .describe('NFT serial numbers (comma-separated list)');
 
