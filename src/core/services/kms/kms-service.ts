@@ -1,4 +1,7 @@
-import type { Transaction as HederaTransaction } from '@hashgraph/sdk';
+import type {
+  ContractCreateFlow,
+  Transaction as HederaTransaction,
+} from '@hashgraph/sdk';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
@@ -317,7 +320,7 @@ export class KmsServiceImpl implements KmsService {
   }
 
   async signTransaction(
-    transaction: HederaTransaction,
+    transaction: HederaTransaction | ContractCreateFlow,
     keyRefId: string,
   ): Promise<void> {
     const handle = this.getSignerHandle(keyRefId);

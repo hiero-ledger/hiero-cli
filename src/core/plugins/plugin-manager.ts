@@ -237,7 +237,9 @@ export class PluginManager {
       .command(pluginName)
       .description(
         plugin.manifest.description || `Commands for ${pluginName} plugin`,
-      );
+      )
+      .allowUnknownOption(true)
+      .allowExcessArguments(true);
 
     // Register each command
     for (const commandSpec of commands) {
@@ -258,16 +260,7 @@ export class PluginManager {
   ): void {
     try {
       const commandName = String(commandSpec.name);
-      const command = pluginCommand
-        .command(commandName)
-        .description(
-          String(
-            commandSpec.description ||
-              commandSpec.summary ||
-              `Execute ${commandName}`,
-          ),
-        );
-
+      const command = this.buildCommand(pluginCommand, commandSpec);
       // Add options
       if (commandSpec.options) {
         const { allowed, filtered } = filterReservedOptions(
@@ -321,6 +314,27 @@ export class PluginManager {
                 flags,
                 String(option.description || `Set ${optionName}`),
                 (value: unknown) => String(value).split(','),
+              );
+            }
+          } else if (option.type === 'repeatable') {
+            const flags = `${combined} <values>`;
+            if (option.required) {
+              command.requiredOption(
+                flags,
+                String(option.description || `Set ${optionName}`),
+                (value: string, args: string[] = []) => {
+                  args.push(value);
+                  return args;
+                },
+              );
+            } else {
+              command.option(
+                flags,
+                String(option.description || `Set ${optionName}`),
+                (value: string, args: string[] = []) => {
+                  args.push(value);
+                  return args;
+                },
               );
             }
           } else {
@@ -441,5 +455,22 @@ export class PluginManager {
         );
       }
     }
+  }
+
+  private buildCommand(pluginCommand: Command, commandSpec: CommandSpec) {
+    const commandName = String(commandSpec.name);
+    let command = pluginCommand
+      .command(commandName)
+      .description(
+        String(
+          commandSpec.description ||
+            commandSpec.summary ||
+            `Execute ${commandName}`,
+        ),
+      );
+    if (commandSpec.excessArguments) {
+      command = command.allowUnknownOption(true).allowExcessArguments(true);
+    }
+    return command;
   }
 }

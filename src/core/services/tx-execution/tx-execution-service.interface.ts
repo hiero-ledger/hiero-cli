@@ -1,4 +1,7 @@
-import type { Transaction as HederaTransaction } from '@hashgraph/sdk';
+import type {
+  ContractCreateFlow,
+  Transaction as HederaTransaction,
+} from '@hashgraph/sdk';
 
 /**
  * Interface for transaction execution
@@ -6,11 +9,13 @@ import type { Transaction as HederaTransaction } from '@hashgraph/sdk';
  */
 export interface TxExecutionService {
   /** Sign and execute transaction with operator key (fast path for simple signing) */
-  signAndExecute(transaction: HederaTransaction): Promise<TransactionResult>;
+  signAndExecute(
+    transaction: HederaTransaction | ContractCreateFlow,
+  ): Promise<TransactionResult>;
 
   /** Sign and execute with multiple keys (validates, deduplicates, preserves order) */
   signAndExecuteWith(
-    transaction: HederaTransaction,
+    transaction: HederaTransaction | ContractCreateFlow,
     keyRefIds: string[],
   ): Promise<TransactionResult>;
 }
@@ -23,6 +28,8 @@ export interface TransactionResult {
   accountId?: string;
   tokenId?: string;
   topicId?: string;
+  fileId?: string;
+  contractId?: string;
   topicSequenceNumber?: number;
   consensusTimestamp: string;
 }

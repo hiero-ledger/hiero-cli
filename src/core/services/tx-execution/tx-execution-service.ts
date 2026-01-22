@@ -4,7 +4,7 @@
  */
 import type {
   Client,
-  Transaction as HederaTransaction,
+  ContractCreateFlow,
   TransactionReceipt,
   TransactionResponse,
 } from '@hashgraph/sdk';
@@ -16,7 +16,7 @@ import type {
   TxExecutionService,
 } from './tx-execution-service.interface';
 
-import { Status } from '@hashgraph/sdk';
+import { Status, Transaction as HederaTransaction } from '@hashgraph/sdk';
 
 export class TxExecutionServiceImpl implements TxExecutionService {
   private logger: Logger;
@@ -40,7 +40,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
   }
 
   async signAndExecute(
-    transaction: HederaTransaction,
+    transaction: HederaTransaction | ContractCreateFlow,
   ): Promise<TransactionResult> {
     this.logger.debug(
       `[TX-EXECUTION] Signing and executing transaction with operator`,
@@ -49,13 +49,13 @@ export class TxExecutionServiceImpl implements TxExecutionService {
   }
 
   async signAndExecuteWith(
-    transaction: HederaTransaction,
+    transaction: HederaTransaction | ContractCreateFlow,
     keyRefIds: string[],
   ): Promise<TransactionResult> {
     this.logger.debug(`[TX-EXECUTION] Signing with ${keyRefIds.length} key(s)`);
 
     const client = this.getClient();
-    if (!transaction.isFrozen()) {
+    if (transaction instanceof HederaTransaction && !transaction.isFrozen()) {
       transaction.freezeWith(client);
     }
 
@@ -71,7 +71,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
 
   /** Execute transaction and parse receipt (shared by signAndExecute and signAndExecuteWith) */
   private async executeAndParseReceipt(
-    transaction: HederaTransaction,
+    transaction: HederaTransaction | ContractCreateFlow,
     client: Client,
   ): Promise<TransactionResult> {
     try {
@@ -91,6 +91,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       let tokenId: string | undefined;
       let topicId: string | undefined;
       let topicSequenceNumber: number | undefined;
+      let contractId: string | undefined;
 
       if (receipt.accountId) {
         accountId = receipt.accountId.toString();
@@ -107,6 +108,10 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       if (receipt.topicSequenceNumber) {
         topicSequenceNumber = Number(receipt.topicSequenceNumber);
       }
+      if (receipt.contractId) {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+        contractId = receipt.contractId.toString();
+      }
 
       return {
         transactionId: response.transactionId.toString(),
@@ -116,6 +121,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
         tokenId,
         topicId,
         topicSequenceNumber,
+        contractId,
         receipt: {
           status: {
             status: receipt.status === Status.Success ? 'success' : 'failed',

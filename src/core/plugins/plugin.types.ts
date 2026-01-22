@@ -47,6 +47,7 @@ export interface CommandSpec {
   options?: CommandOption[];
   handler: CommandHandler;
   output: CommandOutputSpec;
+  excessArguments?: boolean;
 }
 
 /**
@@ -54,7 +55,7 @@ export interface CommandSpec {
  */
 export interface CommandOption {
   name: string;
-  type: 'string' | 'number' | 'boolean' | 'array';
+  type: 'string' | 'number' | 'boolean' | 'array' | 'repeatable';
   required: boolean;
   default?: unknown;
   description?: string;

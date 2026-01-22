@@ -17,6 +17,20 @@ export enum SupportedNetwork {
   LOCALNET = 'localnet',
 }
 
+export enum NetworkChainId {
+  MAINNET = 295,
+  TESTNET = 296,
+  PREVIEWNET = 297,
+  LOCALNET = 298,
+}
+
+export const NetworkConfig: Record<SupportedNetwork, NetworkChainId> = {
+  [SupportedNetwork.MAINNET]: NetworkChainId.MAINNET,
+  [SupportedNetwork.TESTNET]: NetworkChainId.TESTNET,
+  [SupportedNetwork.PREVIEWNET]: NetworkChainId.PREVIEWNET,
+  [SupportedNetwork.LOCALNET]: NetworkChainId.LOCALNET,
+};
+
 /**
  * Account data structure
  */
@@ -90,23 +104,3 @@ export interface Credentials {
   isDefault: boolean;
   createdAt: string;
 }
-
-/**
- * Network configuration
- */
-export interface NetworkConfig {
-  name: string;
-  rpcUrl: string;
-  mirrorNodeUrl: string;
-  chainId: string;
-  explorerUrl?: string;
-}
-
-export type BackupPayload = {
-  timestamp: string;
-  namespaces: Record<string, unknown[]>;
-  metadata: {
-    totalNamespaces: number;
-    totalSize: number;
-  };
-};

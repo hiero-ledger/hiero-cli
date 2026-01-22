@@ -35,7 +35,6 @@ export type { CreateAccountParams } from '../services/account/account-transactio
 export type {
   Account,
   Credentials,
-  NetworkConfig,
   Script,
   Token,
   Topic,
