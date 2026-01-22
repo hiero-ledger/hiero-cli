@@ -1,6 +1,6 @@
 {
   "name": "@hiero-ledger/hiero-cli",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "description": "CLI tool to manage and setup developer environments for Hiero-Ledger.",
   "main": "hiero-cli.js",
   "target": "esnext",
