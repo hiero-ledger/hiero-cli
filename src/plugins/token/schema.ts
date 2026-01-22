@@ -172,3 +172,52 @@ export const FungibleTokenFileSchema = z.object({
 export type FungibleTokenFileDefinition = z.infer<
   typeof FungibleTokenFileSchema
 >;
+
+function validateFileSupplyTypeAndMaxSupply<
+  Args extends {
+    maxSupply?: bigint | number;
+    supplyType?: 'finite' | 'infinite';
+  },
+>(args: Args, ctx: z.RefinementCtx) {
+  const isFinite = args.supplyType === 'finite';
+
+  if (isFinite && !args.maxSupply) {
+    ctx.addIssue({
+      message: 'maxSupply is required when supplyType is finite',
+      code: z.ZodIssueCode.custom,
+      path: ['maxSupply'],
+    });
+  }
+
+  if (!isFinite && args.maxSupply) {
+    ctx.addIssue({
+      message:
+        'maxSupply should not be provided when supplyType is infinite, set supplyType to finite to specify maxSupply',
+      code: z.ZodIssueCode.custom,
+      path: ['maxSupply'],
+    });
+  }
+}
+
+export const NonFungibleTokenFileSchema = z
+  .object({
+    name: TokenNameSchema,
+    symbol: TokenSymbolSchema,
+    supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
+    maxSupply: NonNegativeNumberOrBigintSchema.optional(),
+    treasuryKey: KeyOrAccountAliasSchema,
+    adminKey: KeyOrAccountAliasSchema,
+    supplyKey: KeyOrAccountAliasSchema,
+    wipeKey: KeyOrAccountAliasSchema.optional(),
+    kycKey: KeyOrAccountAliasSchema.optional(),
+    freezeKey: KeyOrAccountAliasSchema.optional(),
+    pauseKey: KeyOrAccountAliasSchema.optional(),
+    feeScheduleKey: KeyOrAccountAliasSchema.optional(),
+    associations: z.array(KeyOrAccountAliasSchema).default([]),
+    memo: MemoSchema.default(''),
+  })
+  .superRefine(validateFileSupplyTypeAndMaxSupply);
+
+export type NonFungibleTokenFileDefinition = z.infer<
+  typeof NonFungibleTokenFileSchema
+>;

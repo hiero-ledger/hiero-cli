@@ -7,8 +7,11 @@ import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type {
   FungibleTokenFileDefinition,
+  NonFungibleTokenFileDefinition,
   TokenData,
 } from '@/plugins/token/schema';
+
+import { HederaTokenType as HederaTokenTypeValues } from '@/core/shared/constants';
 
 export function buildTokenData(
   result: TransactionResult,
@@ -89,6 +92,41 @@ export function buildTokenDataFromFile(
       collectorId: fee.collectorId,
       exempt: fee.exempt,
     })),
+    memo: tokenDefinition.memo,
+  };
+}
+
+export function buildNftTokenDataFromFile(
+  result: TransactionResult,
+  tokenDefinition: NonFungibleTokenFileDefinition,
+  treasuryId: string,
+  adminPublicKey: string,
+  supplyPublicKey: string,
+  network: SupportedNetwork,
+  keys?: Omit<TokenKeyOptions, 'supplyPublicKey'>,
+): TokenData {
+  return {
+    tokenId: result.tokenId!,
+    name: tokenDefinition.name,
+    symbol: tokenDefinition.symbol,
+    treasuryId,
+    adminPublicKey,
+    supplyPublicKey,
+    wipePublicKey: keys?.wipePublicKey,
+    kycPublicKey: keys?.kycPublicKey,
+    freezePublicKey: keys?.freezePublicKey,
+    pausePublicKey: keys?.pausePublicKey,
+    feeSchedulePublicKey: keys?.feeSchedulePublicKey,
+    decimals: 0,
+    initialSupply: 0n,
+    tokenType: HederaTokenTypeValues.NON_FUNGIBLE_TOKEN,
+    supplyType: tokenDefinition.supplyType.toUpperCase() as
+      | 'FINITE'
+      | 'INFINITE',
+    maxSupply: tokenDefinition.maxSupply ?? 0n,
+    network,
+    associations: [],
+    customFees: [],
     memo: tokenDefinition.memo,
   };
 }
