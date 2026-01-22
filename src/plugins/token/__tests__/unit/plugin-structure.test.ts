@@ -20,10 +20,11 @@ describe('Token Plugin Structure', () => {
 
   test('manifest should declare all commands', () => {
     const commandNames = tokenPluginManifest.commands.map((cmd) => cmd.name);
-    expect(commandNames).toContain('create');
+    expect(commandNames).toContain('create-ft');
     expect(commandNames).toContain('associate');
-    expect(commandNames).toContain('transfer');
-    expect(commandNames).toContain('create-from-file');
+    expect(commandNames).toContain('transfer-ft');
+    expect(commandNames).toContain('create-ft-from-file');
+    expect(commandNames).toContain('list');
   });
 
   test('command handlers should be exported', () => {

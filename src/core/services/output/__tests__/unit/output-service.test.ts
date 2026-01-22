@@ -21,6 +21,25 @@ jest.mock('path', () => ({
   dirname: jest.fn(),
 }));
 
+jest.mock('ansi-escapes', () => ({
+  default: {
+    link: jest.fn((text: string, url: string) => `[LINK:${text}](${url})`),
+  },
+}));
+
+jest.mock('supports-hyperlinks', () => ({
+  default: {
+    stdout: true,
+  },
+}));
+
+jest.mock('@hashgraph/sdk', () => ({
+  TokenType: {
+    NonFungibleUnique: 'NonFungibleUnique',
+    FungibleCommon: 'FungibleCommon',
+  },
+}));
+
 jest.mock('../../strategies', () => {
   const actual = jest.requireActual('../../strategies');
   return {
@@ -47,7 +66,8 @@ describe('OutputServiceImpl', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     service = new OutputServiceImpl();
-    getStrategyMock = OutputFormatterFactory.getStrategy as any as jest.Mock;
+    getStrategyMock =
+      OutputFormatterFactory.getStrategy as unknown as jest.Mock;
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
   });
 

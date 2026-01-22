@@ -38,7 +38,7 @@ describe('NetworkServiceImpl', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    stateMock = makeStateMock() as jest.Mocked<StateService>;
+    stateMock = makeStateMock();
     loggerMock = makeLogger();
     networkService = new NetworkServiceImpl(stateMock, loggerMock);
   });
@@ -46,18 +46,20 @@ describe('NetworkServiceImpl', () => {
   describe('getCurrentNetwork', () => {
     it('should return default network when no network is set', () => {
       stateMock.get.mockReturnValue(undefined);
+      networkService = new NetworkServiceImpl(stateMock, loggerMock);
 
       const network = networkService.getCurrentNetwork();
 
       expect(stateMock.get).toHaveBeenCalledWith(NAMESPACE, CURRENT_KEY);
       expect(loggerMock.debug).toHaveBeenCalledWith(
-        '[NETWORK] Getting current network: undefined',
+        `[NETWORK] Getting current network: ${DEFAULT_NETWORK}`,
       );
       expect(network).toBe(DEFAULT_NETWORK);
     });
 
     it('should return stored network when set', () => {
       stateMock.get.mockReturnValue(NETWORK_MAINNET);
+      networkService = new NetworkServiceImpl(stateMock, loggerMock);
 
       const network = networkService.getCurrentNetwork();
 
@@ -98,14 +100,14 @@ describe('NetworkServiceImpl', () => {
         NETWORK_MAINNET,
       );
       expect(loggerMock.debug).toHaveBeenCalledWith(
-        `[NETWORK] Switching network from ${NETWORK_TESTNET} to ${NETWORK_MAINNET}`,
+        `[NETWORK] Setting network from ${NETWORK_TESTNET} to ${NETWORK_MAINNET}`,
       );
     });
 
     it('should throw error for unavailable network', () => {
-      expect(() => networkService.switchNetwork(NETWORK_INVALID)).toThrow(
-        ERROR_NETWORK_NOT_AVAILABLE,
-      );
+      expect(() =>
+        networkService.switchNetwork(NETWORK_INVALID as SupportedNetwork),
+      ).toThrow(ERROR_NETWORK_NOT_AVAILABLE);
       expect(stateMock.set).not.toHaveBeenCalled();
     });
   });

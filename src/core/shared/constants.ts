@@ -1,5 +1,9 @@
+import { TokenType } from '@hashgraph/sdk';
+
 export const HBAR_DECIMALS = 8;
 export const TOKEN_BALANCE_LIMIT = 9_223_372_036_854_775_807n; // Based on TokenCreateTransactionBody from hashgraph protobufs docs max limit for token initial supply is 2^63 - 1
+
+export const HASHSCAN_BASE_URL = 'https://hashscan.io/';
 
 export enum Status {
   Success = 'success',
@@ -16,3 +20,13 @@ export enum KeyAlgorithm {
   ECDSA = 'ecdsa',
   ED25519 = 'ed25519',
 }
+
+export enum HederaTokenType {
+  NON_FUNGIBLE_TOKEN = 'NonFungibleToken',
+  FUNGIBLE_COMMON = 'FungibleCommon',
+}
+
+export const TokenTypeMap = {
+  [HederaTokenType.NON_FUNGIBLE_TOKEN]: TokenType.NonFungibleUnique,
+  [HederaTokenType.FUNGIBLE_COMMON]: TokenType.FungibleCommon,
+} satisfies Record<HederaTokenType, TokenType>;

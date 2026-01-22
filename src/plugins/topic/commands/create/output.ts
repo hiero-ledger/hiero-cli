@@ -33,7 +33,7 @@ export type CreateTopicOutput = z.infer<typeof CreateTopicOutputSchema>;
  * Matches the current CLI output format for consistency
  */
 export const CREATE_TOPIC_TEMPLATE = `
-✅ Topic created successfully: {{topicId}}
+✅ Topic created successfully: {{hashscanLink topicId "topic" network}}
    Network: {{network}}
    Name (Alias): {{name}}
 {{#if memo}}
@@ -41,5 +41,5 @@ export const CREATE_TOPIC_TEMPLATE = `
 {{/if}}
    Admin key: {{#if adminKeyPresent}}✅ Present{{else}}❌ Not set{{/if}}
    Submit key: {{#if submitKeyPresent}}✅ Present{{else}}❌ Not set (public topic){{/if}}
-   Transaction ID: {{transactionId}}
+   Transaction ID: {{hashscanLink transactionId "transaction" network}}
 `.trim();

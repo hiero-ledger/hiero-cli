@@ -1,5 +1,5 @@
 import { makeArgs } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
+import { HederaTokenType, Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   listTokens,
@@ -289,6 +289,63 @@ describe('token plugin - list command', () => {
     expect(output.tokens[0].supplyType).toBe('FINITE');
     expect(output.tokens[0].name).toBe('Finite Token');
     expect(output.tokens[0].symbol).toBe('FNT');
+  });
+
+  test('displays token type for fungible and non-fungible tokens', async () => {
+    const logger = makeLogger();
+    setupZustandHelperMock(MockedHelper, {
+      tokens: [
+        makeTokenData({
+          tokenId: '0.0.1111',
+          name: 'Fungible Token',
+          symbol: 'FT',
+          network: 'testnet',
+          tokenType: HederaTokenType.FUNGIBLE_COMMON,
+        }),
+        makeTokenData({
+          tokenId: '0.0.2222',
+          name: 'Non-Fungible Token',
+          symbol: 'NFT',
+          network: 'testnet',
+          decimals: 0,
+          tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
+        }),
+      ],
+      stats: makeTokenStats({
+        total: 2,
+        byNetwork: { testnet: 2 },
+        bySupplyType: { INFINITE: 2 },
+        withKeys: 2,
+      }),
+    });
+
+    const { api } = makeApiMocks({
+      network: 'testnet',
+      alias: {
+        list: jest.fn().mockReturnValue([]),
+      },
+    });
+    const args = makeArgs(api, logger, {});
+
+    const result = await listTokens(args);
+
+    expect(result).toBeDefined();
+    expect(result.status).toBe(Status.Success);
+    expect(result.outputJson).toBeDefined();
+    expect(result.errorMessage).toBeUndefined();
+
+    const output: ListTokensOutput = JSON.parse(result.outputJson!);
+    expect(output.tokens).toHaveLength(2);
+
+    const fungibleToken = output.tokens.find((t) => t.tokenId === '0.0.1111');
+    expect(fungibleToken).toBeDefined();
+    expect(fungibleToken!.tokenType).toBe(HederaTokenType.FUNGIBLE_COMMON);
+    expect(fungibleToken!.name).toBe('Fungible Token');
+
+    const nftToken = output.tokens.find((t) => t.tokenId === '0.0.2222');
+    expect(nftToken).toBeDefined();
+    expect(nftToken!.tokenType).toBe(HederaTokenType.NON_FUNGIBLE_TOKEN);
+    expect(nftToken!.name).toBe('Non-Fungible Token');
   });
 
   test('logs error and exits when listTokens throws', async () => {

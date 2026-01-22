@@ -68,6 +68,7 @@ export async function viewAccount(
         publicKey: accountInfo.accountPublicKey,
       }),
       balanceTimestamp: accountInfo.balance.timestamp,
+      network,
     };
 
     return {

@@ -2,7 +2,11 @@
  * Test Fixtures for Token Plugin Tests
  * Reusable test data and constants
  */
+import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
+import { HederaTokenType } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 /**
@@ -202,6 +206,24 @@ export const mockTransactionResults = {
 };
 
 /**
+ * Factory function for TransactionResult with overrides
+ */
+export const makeTransactionResult = (
+  overrides?: Partial<TransactionResult>,
+): TransactionResult => ({
+  success: true,
+  transactionId: '0.0.123@1234567890.123456789',
+  consensusTimestamp: '2024-01-01T00:00:00.000Z',
+  receipt: {
+    status: {
+      status: 'success' as const,
+      transactionId: '0.0.123@1234567890.123456789',
+    },
+  },
+  ...overrides,
+});
+
+/**
  * Mock Token Data (stored in state)
  */
 export const mockTokenData = {
@@ -282,6 +304,7 @@ export const validTokenDataForSchema = {
       collectorId: '0.0.999999',
     },
   ],
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
 };
 
 /**
@@ -365,6 +388,7 @@ export const mockStateTokenData = {
     network: SupportedNetwork.TESTNET,
     associations: [],
     customFees: [],
+    tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
   withAssociations: {
     tokenId: '0.0.123456',
@@ -379,6 +403,7 @@ export const mockStateTokenData = {
     network: SupportedNetwork.TESTNET,
     associations: [{ name: 'TestAccount', accountId: '0.0.111111' }],
     customFees: [],
+    tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
   token2: {
     tokenId: '0.0.789012',
@@ -393,6 +418,7 @@ export const mockStateTokenData = {
     network: SupportedNetwork.TESTNET,
     associations: [],
     customFees: [],
+    tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
 };
 
@@ -408,25 +434,54 @@ export const mockMultipleTokens = {
  * Factory function to create CommandHandlerArgs for token create tests
  */
 export const makeTokenCreateCommandArgs = (params: {
-  api: any;
-  logger: any;
-  args?: Record<string, any>;
-}) => ({
-  args: {
-    tokenName: 'TestToken',
-    symbol: 'TEST',
-    decimals: 2,
-    initialSupply: '1000',
-    supplyType: 'INFINITE',
-    treasury: 'treasury-account', // Use alias
-    adminKey: 'test-admin-key', // Use alias
-    ...params.args,
-  },
-  api: params.api,
-  state: {} as any,
-  config: {} as any,
-  logger: params.logger,
-});
+  api: Partial<CoreApi>;
+  logger: Logger;
+  args?: Record<string, string | number | boolean | undefined>;
+}) => {
+  const api = params.api as unknown as CoreApi;
+  return {
+    args: {
+      tokenName: 'TestToken',
+      symbol: 'TEST',
+      decimals: 2,
+      initialSupply: '1000',
+      supplyType: 'INFINITE',
+      treasury: 'treasury-account', // Use alias
+      adminKey: 'test-admin-key', // Use alias
+      ...params.args,
+    },
+    api,
+    state: api.state,
+    config: api.config,
+    logger: params.logger,
+  };
+};
+
+/**
+ * Factory function to create CommandHandlerArgs for token create-nft tests
+ */
+export const makeNftCreateCommandArgs = (params: {
+  api: Partial<CoreApi>;
+  logger: Logger;
+  args?: Record<string, unknown>;
+}) => {
+  const api = params.api as unknown as CoreApi;
+  return {
+    args: {
+      tokenName: 'TestToken',
+      symbol: 'TEST',
+      supplyType: 'INFINITE',
+      treasury: 'treasury-account', // Use alias
+      adminKey: 'test-admin-key', // Use alias
+      supplyKey: 'test-supply-key', // Use alias
+      ...params.args,
+    },
+    api,
+    state: api.state,
+    config: api.config,
+    logger: params.logger,
+  };
+};
 
 /**
  * Expected token transaction parameters for create tests
@@ -436,10 +491,28 @@ export const expectedTokenTransactionParams = {
   symbol: 'TEST',
   decimals: 2,
   initialSupplyRaw: 100000n,
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
   supplyType: 'INFINITE',
   maxSupplyRaw: undefined,
   treasuryId: '0.0.123456',
   adminPublicKey: expect.any(Object),
+  memo: undefined,
+};
+
+/**
+ * Expected token transaction parameters for create-nft tests
+ */
+export const expectedNftTransactionParams = {
+  name: 'TestToken',
+  symbol: 'TEST',
+  decimals: 0,
+  initialSupplyRaw: 0n,
+  supplyType: 'INFINITE',
+  tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
+  maxSupplyRaw: undefined,
+  treasuryId: '0.0.123456',
+  adminPublicKey: expect.any(Object),
+  supplyPublicKey: expect.any(Object),
   memo: undefined,
 };
 
@@ -464,6 +537,7 @@ export const expectedTokenTransactionParamsFromFile = {
       exempt: undefined,
     },
   ],
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
   memo: 'Test token created from file',
 };
 
@@ -483,6 +557,7 @@ export const validTokenDataForValidation = {
   adminPublicKey: 'admin-key',
   network: SupportedNetwork.TESTNET,
   customFees: [],
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
 };
 
 /**
@@ -511,7 +586,8 @@ export const makeTokenData = (
     adminPublicKey?: string;
     network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
     associations: Array<{ name: string; accountId: string }>;
-    customFees: any[];
+    customFees: Array<unknown>;
+    tokenType: HederaTokenType;
   }> = {},
 ) => ({
   tokenId: '0.0.1234',
@@ -526,6 +602,7 @@ export const makeTokenData = (
   network: SupportedNetwork.TESTNET,
   associations: [],
   customFees: [],
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
   ...overrides,
 });
 
@@ -691,4 +768,56 @@ export const mockTokenStats = {
     bySupplyType: { FINITE: 1 },
     withKeys: 1,
   }),
+};
+
+/**
+ * Factory function to create CommandHandlerArgs for token mint-ft tests
+ */
+export const makeMintFtCommandArgs = (params: {
+  api: CoreApi;
+  logger: Logger;
+  args?: Record<string, string | number | boolean | undefined>;
+}) => {
+  return {
+    args: {
+      token: '0.0.123456',
+      amount: '100',
+      supplyKey: 'test-supply-key',
+      ...params.args,
+    },
+    api: params.api,
+    state: params.api.state,
+    config: params.api.config,
+    logger: params.logger,
+  };
+};
+
+/**
+ * Expected mint transaction parameters for mint-ft tests
+ */
+export const expectedMintFtTransactionParams = {
+  tokenId: '0.0.123456',
+  amount: 10000n,
+};
+
+/**
+ * Create command args for mint-nft tests
+ */
+export const makeMintNftCommandArgs = (params: {
+  api: CoreApi;
+  logger: Logger;
+  args?: Record<string, string | number | boolean | undefined>;
+}) => {
+  return {
+    args: {
+      token: '0.0.123456',
+      metadata: 'Test NFT metadata',
+      supplyKey: 'test-supply-key',
+      ...params.args,
+    },
+    api: params.api,
+    state: params.api.state,
+    config: params.api.config,
+    logger: params.logger,
+  };
 };

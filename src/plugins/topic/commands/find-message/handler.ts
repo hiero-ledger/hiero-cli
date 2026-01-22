@@ -41,6 +41,7 @@ export async function findMessage(
       topicId,
       messages,
       totalCount: messages.length,
+      network: currentNetwork,
     };
 
     return {

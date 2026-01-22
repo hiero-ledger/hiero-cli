@@ -3,7 +3,7 @@
  */
 import { z } from 'zod';
 
-import { EntityIdSchema, TimestampSchema } from '@/core/schemas';
+import { EntityIdSchema, NetworkSchema, TimestampSchema } from '@/core/schemas';
 
 export const FindMessageOutputSchema = z.object({
   sequenceNumber: z
@@ -25,6 +25,7 @@ export const FindMessagesOutputSchema = z.object({
   topicId: EntityIdSchema,
   messages: z.array(FindMessageOutputSchema).describe('Messages found'),
   totalCount: z.number().describe('Total number of messages found'),
+  network: NetworkSchema,
 });
 
 // Infer TypeScript type from schema for type safety
@@ -36,9 +37,9 @@ export type FindMessagesOutput = z.infer<typeof FindMessagesOutputSchema>;
  */
 export const FIND_MESSAGES_TEMPLATE = `
 {{#if (eq totalCount 0)}}
-No messages found in topic {{topicId}}
+No messages found in topic {{hashscanLink topicId "topic" network}}
 {{else}}
-Found {{totalCount}} message(s) in topic {{topicId}}
+Found {{totalCount}} message(s) in topic {{hashscanLink topicId "topic" network}}
 ──────────────────────────────────────
 {{#each messages}}
 {{add1 @index}}. Sequence #{{sequenceNumber}}

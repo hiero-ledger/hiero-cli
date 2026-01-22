@@ -2,14 +2,13 @@
  * Token Plugin Error Handling Tests
  * Tests error scenarios and edge cases across the token plugin
  */
-import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
 import { Status } from '@/core/shared/constants';
 import { associateToken } from '@/plugins/token/commands/associate';
-import { createToken } from '@/plugins/token/commands/create';
-import { createTokenFromFile } from '@/plugins/token/commands/createFromFile';
-import { transferToken } from '@/plugins/token/commands/transfer';
+import { createToken } from '@/plugins/token/commands/create-ft';
+import { createTokenFromFile } from '@/plugins/token/commands/create-ft-from-file';
+import { transferToken } from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -27,11 +26,17 @@ const MockedHelper = ZustandTokenStateHelper as jest.Mock;
 /**
  * Helper to create alias mock that resolves test key strings
  */
+interface AliasData {
+  entityId: string;
+  publicKey: string;
+  keyRefId: string;
+}
+
 const makeTestAliasService = () => ({
-  resolve: jest.fn().mockImplementation((alias, type) => {
+  resolve: jest.fn().mockImplementation((alias: string, type: string) => {
     // Mock account alias resolution for test keys
     if (type === 'account') {
-      const accountAliases: Record<string, any> = {
+      const accountAliases: Record<string, AliasData> = {
         'admin-key': {
           entityId: '0.0.100000',
           publicKey: '302a300506032b6570032100' + '0'.repeat(64),
@@ -75,15 +80,15 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -94,7 +99,7 @@ describe('Token Plugin Error Handling', () => {
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
       expect(result.errorMessage).toContain(
-        'Failed to create token: Network timeout',
+        'Failed to create fungible token: Network timeout',
       );
       expect(result.outputJson).toBeUndefined();
     });
@@ -112,15 +117,15 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           token: '0.0.123456',
           account:
             '0.0.789012:2222222222222222222222222222222222222222222222222222222222222222',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -156,7 +161,7 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           token: '0.0.123456',
           from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
@@ -164,8 +169,8 @@ describe('Token Plugin Error Handling', () => {
           amount: '100',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -176,7 +181,7 @@ describe('Token Plugin Error Handling', () => {
       expect(result).toBeDefined();
       expect(result.status).toBe(Status.Failure);
       expect(result.errorMessage).toContain(
-        'Failed to transfer token: Network unreachable',
+        'Failed to transfer fungible token: Network unreachable',
       );
       expect(result.outputJson).toBeUndefined();
     });
@@ -205,7 +210,7 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
@@ -213,8 +218,8 @@ describe('Token Plugin Error Handling', () => {
             '0.0.123456:9999999999999999999999999999999999999999999999999999999999999999',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -265,15 +270,15 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -316,15 +321,15 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           token: '0.0.123456',
           account:
             '0.0.789012:4444444444444444444444444444444444444444444444444444444444444444',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -369,7 +374,7 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           token: '0.0.123456',
           from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
@@ -377,8 +382,8 @@ describe('Token Plugin Error Handling', () => {
           amount: '1000000',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -405,15 +410,15 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           token: '0.0.999999',
           account:
             '0.0.789012:1111111111111111111111111111111111111111111111111111111111111111',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -449,15 +454,15 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           token: '0.0.123456',
           account:
             '0.0.999999:1111111111111111111111111111111111111111111111111111111111111111',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -500,15 +505,15 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           tokenName: 'ExistingToken', // Duplicate name
           symbol: 'TEST',
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -529,13 +534,13 @@ describe('Token Plugin Error Handling', () => {
       // Arrange
       const { api } = makeApiMocks();
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           file: 'nonexistent-file',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -553,13 +558,13 @@ describe('Token Plugin Error Handling', () => {
       // Arrange
       const { api } = makeApiMocks();
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           file: 'restricted-file',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -577,13 +582,13 @@ describe('Token Plugin Error Handling', () => {
       // Arrange
       const { api } = makeApiMocks();
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           file: 'corrupted-file',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -648,7 +653,7 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
@@ -657,8 +662,8 @@ describe('Token Plugin Error Handling', () => {
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -689,15 +694,15 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -736,7 +741,7 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           token: '0.0.123456',
           from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
@@ -744,8 +749,8 @@ describe('Token Plugin Error Handling', () => {
           amount: '100',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -774,7 +779,7 @@ describe('Token Plugin Error Handling', () => {
             transactionId: 'malformed-transaction-id',
           },
         },
-      } as any;
+      } as TransactionResult;
 
       const { api } = makeApiMocks({
         tokenTransactions: {
@@ -793,7 +798,7 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
@@ -802,8 +807,8 @@ describe('Token Plugin Error Handling', () => {
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -827,7 +832,7 @@ describe('Token Plugin Error Handling', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
@@ -836,8 +841,8 @@ describe('Token Plugin Error Handling', () => {
           adminKey: 'admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -877,15 +882,15 @@ describe('Token Plugin Error Handling', () => {
       const logger = makeLogger();
 
       // Act - Associate token (should fail)
-      const associateArgs: CommandHandlerArgs = {
+      const associateArgs = {
         args: {
           token: '0.0.123456',
           account:
             '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 

@@ -2,7 +2,7 @@
 
 Welcome to the Hiero CLI Tool, a powerful and intuitive command-line interface designed to streamline your interactions with the Hedera network. Whether you're a developer needing to set up test environments, automate network-related tasks, or explore the extensive capabilities of the Hedera mainnet and testnet, this tool is your one-stop solution.
 
-The Hiero CLI Tool elegantly addresses the complexities associated with distributed ledger technologies. It simplifies the process of executing actions such as creating new accounts, sending transactions, managing tokens, and associating with existing tokens directly from the CLI. This high level of functionality and ease of use significantly reduces the barrier to entry for developers working on Hedera-based projects.
+The Hiero CLI Tool elegantly addresses the complexities associated with distributed ledger technologies. It simplifies the process of executing actions such as creating new accounts, sending transactions, managing fungible and non-fungible tokens, and associating with existing tokens directly from the CLI. This high level of functionality and ease of use significantly reduces the barrier to entry for developers working on Hedera-based projects.
 
 A key advantage of the Hiero CLI Tool is its potential to enhance your workflow. It's not just about performing individual tasks; it's about integrating these tasks into a larger, more efficient development process. With plans for future integration into Continuous Integration/Continuous Deployment (CI/CD) pipelines, this tool promises to be a versatile asset in the automation and management of Hedera network operations.
 
@@ -46,7 +46,7 @@ hcli account balance --account-id 0.0.123456
 hcli hbar transfer --to 0.0.123456 --amount 10
 ```
 
-**First-time setup (Initialization)**: When you run any command that requires an operator (like transferring HBAR or creating tokens) in interactive mode, the CLI will automatically launch an **initialization wizard** to guide you through configuring the operator account, private key, and settings. In script mode (non-interactive), an error will be thrown instead, requiring you to use `hcli network set-operator` to configure the operator first.
+**First-time setup (Initialization)**: When you run any command that requires an operator (like transferring HBAR or creating fungible tokens) in interactive mode, the CLI will automatically launch an **initialization wizard** to guide you through configuring the operator account, private key, and settings. In script mode (non-interactive), an error will be thrown instead, requiring you to use `hcli network set-operator` to configure the operator first.
 
 ## Manual Setup (For Developers)
 
@@ -134,6 +134,8 @@ node dist/hiero-cli.js network set-operator --operator 0.0.123456:302e0201003005
 node dist/hiero-cli.js network set-operator --operator 0.0.123456:302e020100300506032b657004220420... --network mainnet
 ```
 
+> **💡 Note**: The `--network` flag used above is a global flag available for all CLI commands. It allows you to execute commands on a specific network without changing the CLI's default network.
+
 The operator credentials are stored in the CLI's state management system. Make sure that each operator account **contains at least 1 Hbar** for transaction fees.
 
 > **💡 Note on Initialization**: When running the CLI interactively, if an operator is not configured and you attempt to run a command that requires it, the CLI will automatically launch an **interactive setup wizard** that guides you through configuring the operator, private key, and related settings. In script mode (non-interactive), if the operator is not configured, an error will be thrown instead.
@@ -144,14 +146,23 @@ The CLI uses `testnet` as the default network. You can switch to other networks 
 
 ```sh
 # Switch to mainnet
-node dist/hiero-cli.js network use --network mainnet
+node dist/hiero-cli.js network use --global mainnet
 
 # Switch to previewnet
-node dist/hiero-cli.js network use --network previewnet
+node dist/hiero-cli.js network use --global previewnet
 
 # Switch to localnet
-node dist/hiero-cli.js network use --network localnet
+node dist/hiero-cli.js network use --global localnet
 ```
+
+You can also use the short form `-g`:
+
+```sh
+# Switch to mainnet using short form
+node dist/hiero-cli.js network use -g mainnet
+```
+
+> **💡 Global Network Flag**: You can execute any command on a different network without changing the CLI's default network by using the global `--network` or `-N` flag. For example: `hcli account list --network previewnet` will list accounts on previewnet without switching the default network.
 
 ### 7. Optional: Setting Up an Alias
 
@@ -230,7 +241,7 @@ hcli network set-operator --operator 0.0.2:302e020100300506032b65700123456789132
 Then switch to the localnet:
 
 ```sh
-hcli network use --network localnet
+hcli network use --global localnet
 ```
 
 ## Plugins
@@ -238,7 +249,7 @@ hcli network use --network localnet
 The Hiero CLI is built on a plugin architecture. The following default plugins are loaded automatically:
 
 - **[Account Plugin](src/plugins/account/README.md)** - Create, import, manage accounts, and view balances
-- **[Token Plugin](src/plugins/token/README.md)** - Create, associate, and transfer tokens
+- **[Token Plugin](src/plugins/token/README.md)** - Create, view, associate, and transfer fungible and non-fungible tokens
 - **[Network Plugin](src/plugins/network/README.md)** - Switch networks, manage operator credentials, and check network health
 - **[HBAR Plugin](src/plugins/hbar/README.md)** - Transfer HBAR between accounts
 - **[Credentials Plugin](src/plugins/credentials/README.md)** - Manage operator credentials and keys

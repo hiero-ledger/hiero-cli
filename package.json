@@ -1,6 +1,6 @@
 {
   "name": "@hiero-ledger/hiero-cli",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "description": "CLI tool to manage and setup developer environments for Hiero-Ledger.",
   "main": "hiero-cli.js",
   "target": "esnext",
@@ -54,11 +54,13 @@
   "dependencies": {
     "@clack/prompts": "0.11.0",
     "@hashgraph/sdk": "2.78.0",
+    "ansi-escapes": "^4.3.2",
     "axios": "1.13.2",
     "bignumber.js": "9.3.1",
     "commander": "14.0.2",
     "ethers": "^6.16.0",
     "handlebars": "4.7.8",
+    "supports-hyperlinks": "3.0.0",
     "solc": "^0.8.33",
     "zod": "4.2.1",
     "zustand": "5.0.9"

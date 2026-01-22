@@ -40,7 +40,7 @@ export const LIST_ACCOUNTS_TEMPLATE = `
 
 {{#each accounts}}
 {{add1 @index}}. Name: {{name}}
-   Account ID: {{accountId}}
+   Account ID: {{hashscanLink accountId "account" network}}
    Type: {{type}}
    Network: {{network}}
    EVM Address: {{evmAddress}}

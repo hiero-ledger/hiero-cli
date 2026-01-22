@@ -2,11 +2,11 @@
  * Comprehensive Hedera Mirror Node Service Interface
  * Provides access to all Hedera Mirror Node API endpoints
  */
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type {
   AccountResponse,
   ContractInfo,
   ExchangeRateResponse,
+  NftInfo,
   TokenAirdropsResponse,
   TokenBalancesResponse,
   TokenInfo,
@@ -19,7 +19,6 @@ import type {
 } from './types';
 
 export interface HederaMirrornodeService {
-  setBaseUrl(network: SupportedNetwork): void;
   /**
    * Get account information
    */
@@ -54,6 +53,11 @@ export interface HederaMirrornodeService {
    * Get token information
    */
   getTokenInfo(tokenId: string): Promise<TokenInfo>;
+
+  /**
+   * Get NFT information by token ID and serial number
+   */
+  getNftInfo(tokenId: string, serialNumber: number): Promise<NftInfo>;
 
   /**
    * Get topic information

@@ -92,6 +92,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       let topicId: string | undefined;
       let topicSequenceNumber: number | undefined;
       let contractId: string | undefined;
+      let serials: string[] | undefined;
 
       if (receipt.accountId) {
         accountId = receipt.accountId.toString();
@@ -113,6 +114,10 @@ export class TxExecutionServiceImpl implements TxExecutionService {
         contractId = receipt.contractId.toString();
       }
 
+      if (receipt.serials && receipt.serials.length > 0) {
+        serials = receipt.serials.map((serial) => serial.toString());
+      }
+
       return {
         transactionId: response.transactionId.toString(),
         success: receipt.status === Status.Success,
@@ -127,6 +132,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
             status: receipt.status === Status.Success ? 'success' : 'failed',
             transactionId: response.transactionId.toString(),
           },
+          serials,
         },
       };
     } catch (error) {

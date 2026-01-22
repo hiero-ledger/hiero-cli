@@ -64,17 +64,17 @@ export const mockTransactionResults = {
   success: {
     success: true,
     transactionId: '0.0.1001@1234567890.123456789',
-    receipt: {} as any,
+    receipt: { status: { status: 'success' } },
   },
   successDefault: {
     success: true,
     transactionId: '0.0.3000@1234567890.987654321',
-    receipt: {} as any,
+    receipt: { status: { status: 'success' } },
   },
   successGeneric: {
     success: true,
     transactionId: 'test-tx',
-    receipt: {} as any,
+    receipt: { status: { status: 'success' } },
   },
   failure: {
     success: false,

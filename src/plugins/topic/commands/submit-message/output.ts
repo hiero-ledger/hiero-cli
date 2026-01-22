@@ -6,6 +6,7 @@ import { z } from 'zod';
 import {
   EntityIdSchema,
   IsoTimestampSchema,
+  NetworkSchema,
   TransactionIdSchema,
 } from '@/core/schemas';
 
@@ -23,6 +24,7 @@ export const SubmitMessageOutputSchema = z.object({
     .describe('Message sequence number in topic'),
   transactionId: TransactionIdSchema,
   submittedAt: IsoTimestampSchema,
+  network: NetworkSchema,
 });
 
 // Infer TypeScript type from schema for type safety
@@ -34,8 +36,8 @@ export type SubmitMessageOutput = z.infer<typeof SubmitMessageOutputSchema>;
  */
 export const SUBMIT_MESSAGE_TEMPLATE = `
 ✅ Message submitted successfully
-   Topic ID: {{topicId}}
+   Topic ID: {{hashscanLink topicId "topic" network}}
    Message: "{{{message}}}"
    Sequence Number: {{sequenceNumber}}
-   Transaction ID: {{transactionId}}
+   Transaction ID: {{hashscanLink transactionId "transaction" network}}
 `.trim();

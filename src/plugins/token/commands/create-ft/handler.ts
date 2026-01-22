@@ -1,24 +1,26 @@
 /**
- * Token Create Command Handler
- * Handles token creation operations using the Core API
+ * Fungible Token Create Command Handler
+ * Handles fungible token creation operations using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { CreateTokenOutput } from './output';
+import type { SupplyType } from '@/core/types/token.types';
+import type { CreateFungibleTokenOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
 
-import { Status } from '@/core/shared/constants';
+import { HederaTokenType, Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import {
   buildTokenData,
   determineFiniteMaxSupply,
 } from '@/plugins/token/utils/token-data-builders';
+import { resolveOptionalKey } from '@/plugins/token/utils/token-resolve-optional-key';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { CreateTokenInputSchema } from './input';
+import { CreateFungibleTokenInputSchema } from './input';
 
 export async function createToken(
   args: CommandHandlerArgs,
@@ -27,7 +29,7 @@ export async function createToken(
 
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
-  const validArgs = CreateTokenInputSchema.parse(args.args);
+  const validArgs = CreateFungibleTokenInputSchema.parse(args.args);
 
   const name = validArgs.tokenName;
   const symbol = validArgs.symbol;
@@ -38,6 +40,7 @@ export async function createToken(
   const providedMaxSupply = validArgs.maxSupply;
   const providedKeyManager = validArgs.keyManager;
   const memo = validArgs.memo;
+  const tokenType = HederaTokenType.FUNGIBLE_COMMON;
 
   const keyManager =
     providedKeyManager ??
@@ -63,6 +66,13 @@ export async function createToken(
     ['token:admin'],
   );
 
+  const supply = await resolveOptionalKey(
+    validArgs.supplyKey,
+    keyManager,
+    api.keyResolver,
+    'token:supply',
+  );
+
   let finalMaxSupply: bigint | undefined = undefined;
   if (supplyType.toUpperCase() === 'FINITE') {
     finalMaxSupply = determineFiniteMaxSupply(maxSupply, initialSupply);
@@ -72,7 +82,7 @@ export async function createToken(
     );
   }
 
-  logger.info(`Creating token: ${name} (${symbol})`);
+  logger.info(`Creating fungible token: ${name} (${symbol})`);
   if (finalMaxSupply !== undefined) {
     logger.info(`Max supply: ${finalMaxSupply}`);
   }
@@ -90,9 +100,13 @@ export async function createToken(
       treasuryId: treasury.accountId,
       decimals,
       initialSupplyRaw: initialSupply,
-      supplyType: supplyType.toUpperCase() as 'FINITE' | 'INFINITE',
+      tokenType,
+      supplyType: supplyType.toUpperCase() as SupplyType,
       maxSupplyRaw: finalMaxSupply,
       adminPublicKey: PublicKey.fromString(admin.publicKey),
+      supplyPublicKey: supply
+        ? PublicKey.fromString(supply.publicKey)
+        : undefined,
       memo,
     });
 
@@ -117,9 +131,10 @@ export async function createToken(
       treasuryId: treasury.accountId,
       decimals,
       initialSupply,
+      tokenType,
       supplyType,
       adminPublicKey: admin.publicKey,
-      treasuryPublicKey: treasury.publicKey,
+      supplyPublicKey: supply ? supply.publicKey : undefined,
       network: api.network.getCurrentNetwork(),
     });
 
@@ -137,7 +152,7 @@ export async function createToken(
       logger.info(`   Name registered: ${alias}`);
     }
 
-    const outputData: CreateTokenOutput = {
+    const outputData: CreateFungibleTokenOutput = {
       tokenId: result.tokenId,
       name,
       symbol,
@@ -157,7 +172,7 @@ export async function createToken(
   } catch (error: unknown) {
     return {
       status: Status.Failure,
-      errorMessage: formatError('Failed to create token', error),
+      errorMessage: formatError('Failed to create fungible token', error),
     };
   }
 }

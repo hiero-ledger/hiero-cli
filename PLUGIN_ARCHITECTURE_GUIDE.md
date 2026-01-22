@@ -721,6 +721,7 @@ The following CLI options are reserved by the core CLI and cannot be used in plu
 - `--debug` - Debug logging
 - `--help` / `-h` - Help display
 - `--version` / `-V` - Version display
+- `--network` / `-N` - Global network override flag
 
 **Important:** If your plugin defines a reserved option, it will be silently filtered during command registration. You will see a warning message indicating which options were filtered. Use alternative option names for your plugin-specific functionality.
 

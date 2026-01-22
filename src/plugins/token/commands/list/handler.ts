@@ -1,6 +1,6 @@
 /**
  * Token List Command Handler
- * Handles listing all tokens from state for all networks
+ * Handles listing all tokens (FT and NFT) from state for all networks
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
@@ -45,6 +45,7 @@ export async function listTokens(
         symbol: token.symbol,
         decimals: token.decimals,
         supplyType: token.supplyType,
+        tokenType: token.tokenType,
         treasuryId: token.treasuryId,
         network: token.network,
         alias,

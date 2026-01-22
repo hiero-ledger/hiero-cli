@@ -286,7 +286,7 @@ interface CommandOutputSpec {
 
 ### Token Plugin
 
-#### `token create`
+#### `token create-ft`
 
 **Output**:
 
@@ -304,7 +304,7 @@ interface CommandOutputSpec {
 }
 ```
 
-#### `token transfer`
+#### `token transfer-ft`
 
 **Output**:
 
@@ -558,6 +558,32 @@ Templates use [Handlebars](https://handlebarsjs.com/) syntax:
 ```handlebars
 Balance: {{balance.amount}} {{balance.unit}}
 ```
+
+### Creating Clickable Links
+
+You can create clickable links in your templates. The CLI provides a universal link system that supports creating links to various explorers and services.
+
+**Example - Hashscan Links:**
+
+Currently, Hashscan explorer links are available via the `hashscanLink` helper:
+
+```handlebars
+✅ Token created successfully:
+{{hashscanLink tokenId 'token' network}}
+Treasury:
+{{hashscanLink treasuryId 'account' network}}
+Transaction ID:
+{{hashscanLink transactionId 'transaction' network}}
+```
+
+**Usage:** `{{hashscanLink entityId entityType network [displayText]}}`
+
+- `entityId` - Entity ID (e.g., `"0.0.12345"`)
+- `entityType` - Type: `"token"`, `"account"`, `"transaction"`, or `"topic"`
+- `network` - Network name (e.g., `"testnet"`, `"mainnet"`)
+- `displayText` (optional) - Custom text to display (defaults to `entityId`)
+
+**Note:** Links are clickable in terminals that support hyperlinks. In terminals without support, plain text is displayed. The link system is extensible, allowing easy addition of links to other explorers or services in the future.
 
 ## Usage in CLI (Future Implementation)
 

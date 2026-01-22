@@ -8,6 +8,7 @@ import type {
   CustomFee as CustomFeeParams,
   TokenAssociationParams,
   TokenCreateParams,
+  TokenMintParams,
   TokenTransferParams,
 } from '@/core/types/token.types';
 import type { TokenService } from './token-service.interface';
@@ -19,9 +20,12 @@ import {
   TokenAssociateTransaction,
   TokenCreateTransaction,
   TokenId,
+  TokenMintTransaction,
   TokenSupplyType,
   TransferTransaction,
 } from '@hashgraph/sdk';
+
+import { TokenTypeMap } from '@/core/shared/constants';
 
 export class TokenServiceImpl implements TokenService {
   private logger: Logger;
@@ -74,6 +78,7 @@ export class TokenServiceImpl implements TokenService {
       treasuryId,
       decimals,
       initialSupplyRaw,
+      tokenType,
       supplyType,
       maxSupplyRaw,
       adminPublicKey,
@@ -98,6 +103,7 @@ export class TokenServiceImpl implements TokenService {
       .setTokenName(name)
       .setTokenSymbol(symbol)
       .setDecimals(decimals)
+      .setTokenType(TokenTypeMap[tokenType])
       .setInitialSupply(initialSupplyRaw)
       .setSupplyType(tokenSupplyType)
       .setTreasuryAccountId(AccountId.fromString(treasuryId))
@@ -186,6 +192,42 @@ export class TokenServiceImpl implements TokenService {
     );
 
     return associateTx;
+  }
+
+  /**
+   * Create a token mint transaction (without execution)
+   * Supports both fungible tokens (with amount) and NFTs (with metadata)
+   */
+  createMintTransaction(params: TokenMintParams): TokenMintTransaction {
+    const tokenId = params.tokenId;
+    const amount = params.amount;
+    const metadata = params.metadata;
+
+    const mintTx = new TokenMintTransaction().setTokenId(
+      TokenId.fromString(tokenId),
+    );
+
+    if (amount !== undefined) {
+      // FT minting
+      this.logger.debug(
+        `[TOKEN SERVICE] Creating FT mint transaction: ${amount.toString()} tokens for token ${tokenId}`,
+      );
+      mintTx.setAmount(amount);
+      this.logger.debug(
+        `[TOKEN SERVICE] Created FT mint transaction for token ${tokenId}`,
+      );
+    } else {
+      // NFT minting
+      this.logger.debug(
+        `[TOKEN SERVICE] Creating NFT mint transaction for token ${tokenId} with metadata (${metadata!.length} bytes)`,
+      );
+      mintTx.addMetadata(metadata!);
+      this.logger.debug(
+        `[TOKEN SERVICE] Created NFT mint transaction for token ${tokenId}`,
+      );
+    }
+
+    return mintTx;
   }
 
   /**

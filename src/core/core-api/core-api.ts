@@ -101,10 +101,7 @@ export class CoreApiImplementation implements CoreApi {
     this.contractCompiler = new ContractCompilerServiceImpl();
     this.contractVerifier = new ContractVerifierServiceImpl(this.network);
 
-    // Convert network string to LedgerId
-    const networkString = this.network.getCurrentNetwork();
-
-    this.mirror = new HederaMirrornodeServiceDefaultImpl(networkString);
+    this.mirror = new HederaMirrornodeServiceDefaultImpl(this.network);
     this.keyResolver = new KeyResolverServiceImpl(
       this.mirror,
       this.alias,

@@ -6,30 +6,51 @@
 import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
 import {
+  CREATE_NFT_TEMPLATE,
+  createNft,
+  CreateNftOutputSchema,
+} from '@/plugins/token/commands/create-nft';
+
+import {
   ASSOCIATE_TOKEN_TEMPLATE,
   associateToken,
   AssociateTokenOutputSchema,
 } from './commands/associate';
 import {
-  CREATE_TOKEN_TEMPLATE,
+  CREATE_FUNGIBLE_TOKEN_TEMPLATE,
+  CreateFungibleTokenOutputSchema,
   createToken,
-  CreateTokenOutputSchema,
-} from './commands/create';
+} from './commands/create-ft';
 import {
-  CREATE_TOKEN_FROM_FILE_TEMPLATE,
+  CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE,
+  CreateFungibleTokenFromFileOutputSchema,
   createTokenFromFile,
-  CreateTokenFromFileOutputSchema,
-} from './commands/createFromFile';
+} from './commands/create-ft-from-file';
 import {
   LIST_TOKENS_TEMPLATE,
   listTokens,
   ListTokensOutputSchema,
 } from './commands/list';
 import {
-  TRANSFER_TOKEN_TEMPLATE,
+  MINT_FT_TEMPLATE,
+  mintFt,
+  MintFtOutputSchema,
+} from './commands/mint-ft';
+import {
+  MINT_NFT_TEMPLATE,
+  mintNft,
+  MintNftOutputSchema,
+} from './commands/mint-nft';
+import {
+  TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
+  TransferFungibleTokenOutputSchema,
   transferToken,
-  TransferTokenOutputSchema,
-} from './commands/transfer';
+} from './commands/transfer-ft';
+import {
+  VIEW_TOKEN_TEMPLATE,
+  viewToken,
+  ViewTokenOutputSchema,
+} from './commands/view';
 
 export const TOKEN_NAMESPACE = 'token-tokens';
 
@@ -37,7 +58,7 @@ export const tokenPluginManifest: PluginManifest = {
   name: 'token',
   version: '1.0.0',
   displayName: 'Token Plugin',
-  description: 'Plugin for managing Hedera tokens',
+  description: 'Plugin for managing Hedera fungible and non-fungible tokens',
   compatibility: {
     cli: '^1.0.0',
     core: '^1.0.0',
@@ -45,7 +66,92 @@ export const tokenPluginManifest: PluginManifest = {
   },
   commands: [
     {
-      name: 'transfer',
+      name: 'mint-ft',
+      summary: 'Mint fungible tokens',
+      description: 'Mint additional fungible tokens to increase supply.',
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: 'string',
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'amount',
+          short: 'a',
+          type: 'string',
+          required: true,
+          description:
+            'Amount to mint. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "100t")',
+        },
+        {
+          name: 'supply-key',
+          short: 's',
+          type: 'string',
+          required: true,
+          description:
+            'Supply key as account name or {accountId}:{private_key} format',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: mintFt,
+      output: {
+        schema: MintFtOutputSchema,
+        humanTemplate: MINT_FT_TEMPLATE,
+      },
+    },
+    {
+      name: 'mint-nft',
+      summary: 'Mint NFT',
+      description: 'Mint a new NFT to an existing NFT collection.',
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: 'string',
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'metadata',
+          short: 'm',
+          type: 'string',
+          required: true,
+          description: 'NFT metadata (string, max 100 bytes)',
+        },
+        {
+          name: 'supply-key',
+          short: 's',
+          type: 'string',
+          required: true,
+          description:
+            'Supply key as account name or {accountId}:{private_key} format',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: mintNft,
+      output: {
+        schema: MintNftOutputSchema,
+        humanTemplate: MINT_NFT_TEMPLATE,
+      },
+    },
+    {
+      name: 'transfer-ft',
       summary: 'Transfer a fungible token',
       description: 'Transfer a fungible token from one account to another',
       options: [
@@ -54,7 +160,7 @@ export const tokenPluginManifest: PluginManifest = {
           short: 'T',
           type: 'string',
           required: true,
-          description: 'Token: either a token alias or token-id',
+          description: 'Fungible token: either a token alias or token-id',
         },
         {
           name: 'to',
@@ -90,28 +196,28 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: transferToken,
       output: {
-        schema: TransferTokenOutputSchema,
-        humanTemplate: TRANSFER_TOKEN_TEMPLATE,
+        schema: TransferFungibleTokenOutputSchema,
+        humanTemplate: TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
       },
     },
     {
-      name: 'create',
+      name: 'create-ft',
       summary: 'Create a new fungible token',
       description: 'Create a new fungible token with specified properties',
       options: [
         {
           name: 'token-name',
-          short: 'N',
+          short: 'T',
           type: 'string',
           required: true,
-          description: 'Token name. Option required.',
+          description: 'Fungible token name. Option required.',
         },
         {
           name: 'symbol',
-          short: 's',
+          short: 'Y',
           type: 'string',
           required: true,
-          description: 'Token symbol. Option required.',
+          description: 'Fungible token symbol. Option required.',
         },
         {
           name: 'treasury',
@@ -127,7 +233,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: 'number',
           required: false,
           default: 0,
-          description: 'Decimals for the token. Default: 0',
+          description: 'Decimals for the fungible token. Default: 0',
         },
         {
           name: 'initial-supply',
@@ -137,6 +243,96 @@ export const tokenPluginManifest: PluginManifest = {
           default: 1000000,
           description:
             'Initial supply amount. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "1000t")',
+        },
+        {
+          name: 'supply-type',
+          type: 'string',
+          short: 'S',
+          required: false,
+          default: 'INFINITE',
+          description: 'Set supply type: INFINITE(default) or FINITE',
+        },
+        {
+          name: 'max-supply',
+          short: 'm',
+          type: 'string',
+          required: false,
+          description:
+            'Maximum supply of the fungible token to be set upon creation. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "1000t")',
+        },
+        {
+          name: 'admin-key',
+          short: 'a',
+          type: 'string',
+          required: false,
+          description:
+            'Admin key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
+        },
+        {
+          name: 'supply-key',
+          short: 's',
+          type: 'string',
+          required: false,
+          description:
+            'Optional supply key as account name or {accountId}:{private_key} format.',
+        },
+        {
+          name: 'name',
+          short: 'n',
+          type: 'string',
+          required: false,
+          description: 'Optional name to register for the fungible token',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+        {
+          name: 'memo',
+          short: 'M',
+          type: 'string',
+          required: false,
+          description:
+            'Optional memo for the fungible token (max 100 characters)',
+        },
+      ],
+      handler: createToken,
+      output: {
+        schema: CreateFungibleTokenOutputSchema,
+        humanTemplate: CREATE_FUNGIBLE_TOKEN_TEMPLATE,
+      },
+    },
+
+    {
+      name: 'create-nft',
+      summary: 'Create a new non-fungible token',
+      description: 'Create a new non-fungible token with specified properties',
+      options: [
+        {
+          name: 'token-name',
+          short: 'T',
+          type: 'string',
+          required: true,
+          description: 'Token name. Option required.',
+        },
+        {
+          name: 'symbol',
+          short: 'Y',
+          type: 'string',
+          required: true,
+          description: 'Token symbol. Option required.',
+        },
+        {
+          name: 'treasury',
+          short: 't',
+          type: 'string',
+          required: false,
+          description:
+            'Treasury account: either an alias or treasury-id:treasury-key pair',
         },
         {
           name: 'supply-type',
@@ -163,6 +359,14 @@ export const tokenPluginManifest: PluginManifest = {
             'Admin key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
         },
         {
+          name: 'supply-key',
+          short: 's',
+          type: 'string',
+          required: false,
+          description:
+            'Supply key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
+        },
+        {
           name: 'name',
           short: 'n',
           type: 'string',
@@ -185,10 +389,10 @@ export const tokenPluginManifest: PluginManifest = {
           description: 'Optional memo for the token (max 100 characters)',
         },
       ],
-      handler: createToken,
+      handler: createNft,
       output: {
-        schema: CreateTokenOutputSchema,
-        humanTemplate: CREATE_TOKEN_TEMPLATE,
+        schema: CreateNftOutputSchema,
+        humanTemplate: CREATE_NFT_TEMPLATE,
       },
     },
     {
@@ -227,10 +431,10 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
-      name: 'create-from-file',
-      summary: 'Create a new token from a file',
+      name: 'create-ft-from-file',
+      summary: 'Create a new fungible token from a file',
       description:
-        'Create a new token from a JSON file definition with advanced features',
+        'Create a new fungible token from a JSON file definition with advanced features',
       options: [
         {
           name: 'file',
@@ -238,7 +442,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: 'string',
           required: true,
           description:
-            'Token definition file path (absolute or relative) to a JSON file',
+            'Fungible token definition file path (absolute or relative) to a JSON file',
         },
         {
           name: 'key-manager',
@@ -251,14 +455,15 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: createTokenFromFile,
       output: {
-        schema: CreateTokenFromFileOutputSchema,
-        humanTemplate: CREATE_TOKEN_FROM_FILE_TEMPLATE,
+        schema: CreateFungibleTokenFromFileOutputSchema,
+        humanTemplate: CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE,
       },
     },
     {
       name: 'list',
       summary: 'List all tokens',
-      description: 'List all tokens stored in state for all networks',
+      description:
+        'List all tokens (FT and NFT) stored in state for all networks',
       options: [
         {
           name: 'keys',
@@ -273,6 +478,33 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: ListTokensOutputSchema,
         humanTemplate: LIST_TOKENS_TEMPLATE,
+      },
+    },
+    {
+      name: 'view',
+      summary: 'View token information',
+      description:
+        'View detailed information about fungible or non-fungible tokens',
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: 'string',
+          required: true,
+          description: 'Token identifier: either a token alias or token-id',
+        },
+        {
+          name: 'serial',
+          short: 'S',
+          type: 'string',
+          required: false,
+          description: 'Serial number of a specific NFT instance',
+        },
+      ],
+      handler: viewToken,
+      output: {
+        schema: ViewTokenOutputSchema,
+        humanTemplate: VIEW_TOKEN_TEMPLATE,
       },
     },
   ],

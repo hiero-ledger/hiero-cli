@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import {
   AmountInputSchema,
-  HtsDecimalsSchema,
   KeyManagerTypeSchema,
   KeyOrAccountAliasSchema,
   MemoSchema,
@@ -17,18 +16,12 @@ import { validateSupplyTypeAndMaxSupply } from '@/core/shared/validation/validat
  * Input schema for token create command
  * Validates arguments for creating a new fungible token
  */
-export const CreateTokenInputSchema = z
+export const CreateNftInputSchema = z
   .object({
     tokenName: TokenNameSchema.describe('Token name'),
     symbol: TokenSymbolSchema.describe('Token symbol/ticker'),
     treasury: KeyOrAccountAliasSchema.optional().describe(
       'Treasury account. Can be alias or TreasuryID:treasuryKey pair. Defaults to operator.',
-    ),
-    decimals: HtsDecimalsSchema.default(0).describe(
-      'Token decimals (0-18). Default: 0',
-    ),
-    initialSupply: AmountInputSchema.default('1000000').describe(
-      'Initial supply amount. Default: 1000000 (display units or "t" for base units)',
     ),
     supplyType: SupplyTypeSchema.default('INFINITE').describe(
       'Supply type: INFINITE (default) or FINITE',
@@ -38,6 +31,9 @@ export const CreateTokenInputSchema = z
     ),
     adminKey: KeyOrAccountAliasSchema.optional().describe(
       'Admin key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
+    ),
+    supplyKey: KeyOrAccountAliasSchema.optional().describe(
+      'Supply key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
     ),
     name: TokenAliasNameSchema.optional().describe(
       'Optional alias to register for the token',
@@ -51,4 +47,4 @@ export const CreateTokenInputSchema = z
   })
   .superRefine(validateSupplyTypeAndMaxSupply);
 
-export type CreateTokenInput = z.infer<typeof CreateTokenInputSchema>;
+export type CreateNftInput = z.infer<typeof CreateNftInputSchema>;

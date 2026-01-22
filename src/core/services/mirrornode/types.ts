@@ -73,6 +73,7 @@ export interface TokenInfo {
   decimals: string;
   total_supply: string;
   max_supply: string;
+  type: string;
   treasury: string;
   admin_key?: {
     _type: string;
@@ -258,6 +259,19 @@ export interface ExchangeRateResponse {
     hbar_equivalent: number;
   };
   timestamp: string;
+}
+
+// NFT Info
+export interface NftInfo {
+  account_id: string;
+  created_timestamp: string;
+  delegating_spender?: string | null;
+  deleted: boolean;
+  metadata?: string;
+  modified_timestamp: string;
+  serial_number: number;
+  spender_id?: string | null;
+  token_id: string;
 }
 
 export interface Filter {

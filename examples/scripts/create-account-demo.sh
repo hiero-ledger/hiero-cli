@@ -41,7 +41,7 @@ print_info "Operator account ID: ${HEDERA_OPERATOR_ACCOUNT_ID} (from environment
 
 # --- Configure network and operator ---
 print_step "Selecting Hedera testnet as the active network"
-hcli network use --network testnet
+hcli network use --global testnet
 
 print_step "Configuring CLI operator for testnet"
 hcli network set-operator \

@@ -1,4 +1,5 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { FindMessagesOutput } from '@/plugins/topic/commands/find-message/output';
 
@@ -64,7 +65,7 @@ describe('topic plugin - message-find command', () => {
     const api: Partial<CoreApi> = {
       mirror,
       network: networkMock,
-      alias: alias as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -117,7 +118,7 @@ describe('topic plugin - message-find command', () => {
     const api: Partial<CoreApi> = {
       mirror,
       network: networkMock,
-      alias: alias as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -167,7 +168,7 @@ describe('topic plugin - message-find command', () => {
     const api: Partial<CoreApi> = {
       mirror,
       network: networkMock,
-      alias: alias as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -208,7 +209,7 @@ describe('topic plugin - message-find command', () => {
     const api: Partial<CoreApi> = {
       mirror,
       network: networkMock,
-      alias: alias as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -249,7 +250,7 @@ describe('topic plugin - message-find command', () => {
     const api: Partial<CoreApi> = {
       mirror,
       network: networkMock,
-      alias: alias as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -297,7 +298,7 @@ describe('topic plugin - message-find command', () => {
     const api: Partial<CoreApi> = {
       mirror,
       network: networkMock,
-      alias: alias as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -329,7 +330,7 @@ describe('topic plugin - message-find command', () => {
     const api: Partial<CoreApi> = {
       mirror,
       network: networkMock,
-      alias: alias as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -358,7 +359,7 @@ describe('topic plugin - message-find command', () => {
     const api: Partial<CoreApi> = {
       mirror,
       network: networkMock,
-      alias: alias as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -385,7 +386,7 @@ describe('topic plugin - message-find command', () => {
     const api: Partial<CoreApi> = {
       mirror,
       network: networkMock,
-      alias: alias as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -438,7 +439,7 @@ describe('topic plugin - message-find command', () => {
     const api: Partial<CoreApi> = {
       mirror,
       network: networkMock,
-      alias: alias as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -498,7 +499,7 @@ describe('topic plugin - message-find command', () => {
     const api: Partial<CoreApi> = {
       mirror,
       network: networkMock,
-      alias: alias as any,
+      alias: alias as AliasService,
       logger,
     };
 

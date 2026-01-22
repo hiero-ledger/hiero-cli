@@ -13,11 +13,13 @@ import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
+import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
 import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
 
 import { makeKeyResolverMock as makeGlobalKeyResolverMock } from '@/__tests__/mocks/mocks';
@@ -44,6 +46,7 @@ export const makeTokenServiceMock = (
   createTokenTransaction: jest.fn(),
   createTokenAssociationTransaction: jest.fn(),
   createTransferTransaction: jest.fn(),
+  createMintTransaction: jest.fn(),
   ...overrides,
 });
 
@@ -114,6 +117,15 @@ export const makeKmsMock = (
 });
 
 /**
+ * Alias account data structure for mock implementations
+ */
+interface AliasAccountData {
+  entityId: string;
+  publicKey: string;
+  keyRefId: string;
+}
+
+/**
  * Create a mocked AliasService
  */
 export const makeAliasServiceMock = (
@@ -121,10 +133,8 @@ export const makeAliasServiceMock = (
 ): jest.Mocked<AliasService> => ({
   register: jest.fn(),
   resolve: jest.fn().mockImplementation((alias, type) => {
-    // Domyślnie zwracaj dane dla typowych aliasów używanych w testach
     if (type === 'account') {
-      // Map typowych aliasów kont do mock danych
-      const accountAliases: Record<string, any> = {
+      const accountAliases: Record<string, AliasAccountData> = {
         'admin-key': {
           entityId: '0.0.100000',
           publicKey: '302a300506032b6570032100' + '0'.repeat(64),
@@ -172,6 +182,14 @@ export const makeAliasServiceMock = (
         },
       };
       return accountAliases[alias] || null;
+    }
+    if (type === 'token') {
+      const tokenAliases: Record<string, { entityId: string }> = {
+        'my-token': { entityId: '0.0.12345' },
+        'my-nft-collection': { entityId: '0.0.54321' },
+        'test-fungible': { entityId: '0.0.99999' },
+      };
+      return tokenAliases[alias] || null;
     }
     return null;
   }),
@@ -256,7 +274,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
         accountId: '0.0.100000',
         keyRefId: 'operator-key-ref-id',
       }),
-    },
+    } as unknown as NetworkService,
     alias,
     kms,
   });
@@ -264,15 +282,18 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
   const api: jest.Mocked<CoreApi> = {
     account,
     token: tokens,
-    topic: {} as unknown as any,
+    // Topic service not mocked for token tests - not needed
+    topic: {} as unknown as TopicService,
     txExecution: signing,
     kms,
     alias,
     state,
+    // Mirror service minimal mock - only getTokenInfo used
+
     mirror: {
       getTokenInfo: jest.fn().mockResolvedValue({ decimals: 6 }),
       ...(config?.mirror || {}),
-    } as unknown as any,
+    } as unknown as HederaMirrornodeService,
     network: {
       getCurrentNetwork: jest
         .fn()
@@ -416,7 +437,7 @@ export const mockProcessExitThrows = () => {
  * Provides a mocked implementation of the token state helper
  */
 export const mockZustandTokenStateHelper = (
-  ZustandTokenStateHelperClass: any,
+  ZustandTokenStateHelperClass: jest.Mock,
   overrides?: Partial<{
     saveToken: jest.Mock;
     addToken: jest.Mock;
@@ -452,8 +473,8 @@ export const makeFsMocks = () => {
   const mockResolve = jest.fn();
 
   const setupFsMocks = (
-    fs: any,
-    path: any,
+    fs: Record<string, unknown>,
+    path: Record<string, unknown>,
     config?: {
       fileContent?: string;
       fileExists?: boolean;
@@ -508,7 +529,7 @@ export const makeFsMocks = () => {
 export const setupZustandHelperMock = (
   MockedHelperClass: jest.Mock,
   config: {
-    tokens?: any[];
+    tokens?: Array<unknown>;
     stats?: {
       total: number;
       byNetwork: Record<string, number>;
@@ -530,4 +551,136 @@ export const setupZustandHelperMock = (
       },
     ),
   }));
+};
+
+/**
+ * Create API mocks configured for successful mint-ft operations
+ * Provides default mocks for token minting with configurable overrides
+ */
+export const makeMintFtSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    decimals?: string;
+    supply_key?: { key: string } | null;
+    total_supply?: string;
+    max_supply?: string;
+  };
+  signResult?: ReturnType<typeof makeTransactionResult>;
+  supplyKeyPublicKey?: string;
+}) => {
+  const mockMintTransaction = { test: 'mint-transaction' };
+  const defaultSupplyKeyPublicKey =
+    overrides?.supplyKeyPublicKey ?? 'supply-public-key';
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
+    },
+    signing: {
+      signAndExecuteWith: jest
+        .fn()
+        .mockResolvedValue(
+          overrides?.signResult || makeTransactionResult({ success: true }),
+        ),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        decimals: overrides?.tokenInfo?.decimals ?? '2',
+        supply_key: overrides?.tokenInfo?.supply_key ?? {
+          key: defaultSupplyKeyPublicKey,
+        },
+        total_supply: overrides?.tokenInfo?.total_supply ?? '1000000',
+        max_supply: overrides?.tokenInfo?.max_supply ?? '0',
+      }),
+    },
+    alias: {
+      resolve: jest.fn().mockReturnValue(null),
+    },
+    kms: {
+      importPrivateKey: jest.fn().mockReturnValue({
+        keyRefId: 'supply-key-ref-id',
+        publicKey: defaultSupplyKeyPublicKey,
+      }),
+    },
+  });
+
+  apiMocks.keyResolver.getOrInitKey = jest.fn().mockResolvedValue({
+    accountId: '0.0.200000',
+    publicKey: defaultSupplyKeyPublicKey,
+    keyRefId: 'supply-key-ref-id',
+  });
+
+  return {
+    ...apiMocks,
+    mockMintTransaction,
+  };
+};
+
+/**
+ * Create mocks for successful NFT mint scenarios
+ */
+export const makeMintNftSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    decimals?: string;
+    supply_key?: { key: string } | null;
+    total_supply?: string;
+    max_supply?: string;
+    type?: string;
+  };
+  signResult?: ReturnType<typeof makeTransactionResult> & {
+    receipt?: { serials?: string[] };
+  };
+  supplyKeyPublicKey?: string;
+}) => {
+  const mockMintTransaction = { test: 'mint-nft-transaction' };
+  const defaultSupplyKeyPublicKey =
+    overrides?.supplyKeyPublicKey ?? 'supply-public-key';
+
+  const defaultSignResult = makeTransactionResult({ success: true });
+  const signResult = overrides?.signResult || {
+    ...defaultSignResult,
+    receipt: {
+      ...defaultSignResult.receipt,
+      serials: ['1'],
+    },
+  };
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
+    },
+    signing: {
+      signAndExecuteWith: jest.fn().mockResolvedValue(signResult),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        decimals: overrides?.tokenInfo?.decimals ?? '0',
+        type: overrides?.tokenInfo?.type ?? 'NON_FUNGIBLE_TOKEN',
+        supply_key: overrides?.tokenInfo?.supply_key ?? {
+          key: defaultSupplyKeyPublicKey,
+        },
+        total_supply: overrides?.tokenInfo?.total_supply ?? '0',
+        max_supply: overrides?.tokenInfo?.max_supply ?? '0',
+      }),
+    },
+    alias: {
+      resolve: jest.fn().mockReturnValue(null),
+    },
+    kms: {
+      importPrivateKey: jest.fn().mockReturnValue({
+        keyRefId: 'supply-key-ref-id',
+        publicKey: defaultSupplyKeyPublicKey,
+      }),
+    },
+  });
+
+  apiMocks.keyResolver.getOrInitKey = jest.fn().mockResolvedValue({
+    accountId: '0.0.200000',
+    publicKey: defaultSupplyKeyPublicKey,
+    keyRefId: 'supply-key-ref-id',
+  });
+
+  return {
+    ...apiMocks,
+    mockMintTransaction,
+  };
 };

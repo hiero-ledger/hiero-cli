@@ -5,11 +5,13 @@
 import type {
   TokenAssociateTransaction,
   TokenCreateTransaction,
+  TokenMintTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
 import type {
   TokenAssociationParams,
   TokenCreateParams,
+  TokenMintParams,
   TokenTransferParams,
 } from '@/core/types/token.types';
 
@@ -30,4 +32,10 @@ export interface TokenService {
   createTokenAssociationTransaction(
     params: TokenAssociationParams,
   ): TokenAssociateTransaction;
+
+  /**
+   * Create a token mint transaction (without execution)
+   * Supports both fungible tokens (with amount) and NFTs (with metadata)
+   */
+  createMintTransaction(params: TokenMintParams): TokenMintTransaction;
 }

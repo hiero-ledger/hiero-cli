@@ -6,6 +6,7 @@ import { z } from 'zod';
 import {
   EntityIdSchema,
   HtsBaseUnitSchema,
+  NetworkSchema,
   TinybarSchema,
 } from '@/core/schemas';
 
@@ -19,6 +20,7 @@ export const AccountBalanceOutputSchema = z.object({
   hbarOnly: z.boolean().optional(),
   tokenOnly: z.boolean().optional(),
   raw: z.boolean().optional(),
+  network: NetworkSchema,
   tokenBalances: z
     .array(
       z.object({
@@ -46,12 +48,12 @@ export const ACCOUNT_BALANCE_TEMPLATE = `
 {{#unless hbarOnly}}
 {{#if tokenBalances}}
 {{#if tokenOnly}}
-🪙 Token Balance:
+🪙  Token Balance:
 {{else}}
-🪙 Token Balances:
+🪙  Token Balances:
 {{/if}}
 {{#each tokenBalances}}
-   {{tokenId}}{{#if alias}} ({{alias}}){{/if}}: {{#if ../raw}}{{balance}}{{else}}{{#if balanceDisplay}}{{balanceDisplay}}{{else}}{{balance}}{{/if}}{{/if}}{{#if symbol}} {{symbol}}{{/if}}{{#if name}} ({{name}}){{/if}}
+   {{hashscanLink tokenId "token" ../network}}{{#if alias}} ({{alias}}){{/if}}: {{#if ../raw}}{{balance}}{{else}}{{#if balanceDisplay}}{{balanceDisplay}}{{else}}{{balance}}{{/if}}{{/if}}{{#if symbol}} {{symbol}}{{/if}}{{#if name}} ({{name}}){{/if}}
 {{/each}}
 {{else}}
 {{#unless tokenOnly}}

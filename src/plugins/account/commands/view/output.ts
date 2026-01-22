@@ -6,6 +6,7 @@ import { z } from 'zod';
 import {
   EntityIdSchema,
   EvmAddressSchema,
+  NetworkSchema,
   PublicKeySchema,
   TimestampSchema,
   TinybarSchema,
@@ -20,6 +21,7 @@ export const ViewAccountOutputSchema = z.object({
   evmAddress: EvmAddressSchema.optional(),
   publicKey: PublicKeySchema.optional(),
   balanceTimestamp: TimestampSchema,
+  network: NetworkSchema,
 });
 
 export type ViewAccountOutput = z.infer<typeof ViewAccountOutputSchema>;
@@ -29,7 +31,7 @@ export type ViewAccountOutput = z.infer<typeof ViewAccountOutputSchema>;
  */
 export const VIEW_ACCOUNT_TEMPLATE = `
 📋 Account Details:
-   Account ID: {{accountId}}
+   Account ID: {{hashscanLink accountId "account" network}}
    Balance: {{balance}} tinybars
    EVM Address: {{#if evmAddress}}{{evmAddress}}{{else}}N/A{{/if}}
    Public Key: {{#if publicKey}}{{publicKey}}{{else}}N/A{{/if}}

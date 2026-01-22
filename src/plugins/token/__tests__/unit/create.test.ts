@@ -6,8 +6,8 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
-import { Status } from '@/core/shared/constants';
-import { createToken } from '@/plugins/token/commands/create';
+import { HederaTokenType, Status } from '@/core/shared/constants';
+import { createToken } from '@/plugins/token/commands/create-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -136,8 +136,8 @@ describe('createTokenHandler', () => {
           symbol: 'TEST',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -155,6 +155,7 @@ describe('createTokenHandler', () => {
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
         adminPublicKey: expect.any(Object),
+        tokenType: HederaTokenType.FUNGIBLE_COMMON,
         memo: undefined,
       });
       // When adminKey is not provided, only treasury signs (which is the operator)
@@ -185,8 +186,8 @@ describe('createTokenHandler', () => {
           symbol: 'TEST',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -240,8 +241,8 @@ describe('createTokenHandler', () => {
           adminKey: 'test-admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -250,7 +251,7 @@ describe('createTokenHandler', () => {
 
       // Assert
       expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create token');
+      expect(result.errorMessage).toContain('Failed to create fungible token');
       expect(result.errorMessage).toContain('no token ID returned');
       expect(mockSaveToken).not.toHaveBeenCalled();
       // This test is now ADR-003 compliant
@@ -277,8 +278,8 @@ describe('createTokenHandler', () => {
           adminKey: 'test-admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 
@@ -287,7 +288,7 @@ describe('createTokenHandler', () => {
 
       // Assert
       expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create token');
+      expect(result.errorMessage).toContain('Failed to create fungible token');
       expect(result.errorMessage).toContain('Service error');
       // This test is now ADR-003 compliant
     });
@@ -302,8 +303,8 @@ describe('createTokenHandler', () => {
           initialSupply: '250000000000000000000000000000',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
       await expect(createToken(args)).rejects.toThrow(
@@ -366,8 +367,8 @@ describe('createTokenHandler', () => {
           adminKey: 'test-admin-key',
         },
         api,
-        state: {} as any,
-        config: {} as any,
+        state: api.state,
+        config: api.config,
         logger,
       };
 

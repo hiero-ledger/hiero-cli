@@ -1,11 +1,12 @@
 /**
- * Token Create From File Command Handler
- * Handles token creation from JSON file definitions using the Core API
+ * Fungible Token Create From File Command Handler
+ * Handles fungible token creation from JSON file definitions using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { CreateTokenFromFileOutput } from './output';
+import type { SupplyType } from '@/core/types/token.types';
+import type { CreateFungibleTokenFromFileOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
 
@@ -20,7 +21,7 @@ import {
 } from '@/plugins/token/utils/token-resolve-optional-key';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { CreateTokenFromFileInputSchema } from './input';
+import { CreateFungibleTokenFromFileInputSchema } from './input';
 
 export async function createTokenFromFile(
   args: CommandHandlerArgs,
@@ -29,7 +30,7 @@ export async function createTokenFromFile(
 
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
-  const validArgs = CreateTokenFromFileInputSchema.parse(args.args);
+  const validArgs = CreateFungibleTokenFromFileInputSchema.parse(args.args);
 
   const filename = validArgs.file;
   const providedKeyManager = validArgs.keyManager;
@@ -38,7 +39,7 @@ export async function createTokenFromFile(
     providedKeyManager ??
     api.config.getOption<KeyManagerName>('default_key_manager');
 
-  logger.info(`Creating token from file: ${filename}`);
+  logger.info(`Creating fungible token from file: ${filename}`);
 
   try {
     const tokenDefinition = await readAndValidateTokenFile(filename, logger);
@@ -107,9 +108,8 @@ export async function createTokenFromFile(
       treasuryId: treasury.accountId,
       decimals: tokenDefinition.decimals,
       initialSupplyRaw: tokenDefinition.initialSupply,
-      supplyType: tokenDefinition.supplyType.toUpperCase() as
-        | 'FINITE'
-        | 'INFINITE',
+      tokenType: tokenDefinition.tokenType,
+      supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
       maxSupplyRaw: tokenDefinition.maxSupply,
       adminPublicKey: PublicKey.fromString(adminKey.publicKey),
       supplyPublicKey: toPublicKey(supplyKey),
@@ -172,7 +172,7 @@ export async function createTokenFromFile(
     });
     logger.info(`   Name registered: ${tokenDefinition.name}`);
 
-    const outputData: CreateTokenFromFileOutput = {
+    const outputData: CreateFungibleTokenFromFileOutput = {
       tokenId: result.tokenId,
       name: tokenDefinition.name,
       symbol: tokenDefinition.symbol,
@@ -199,7 +199,10 @@ export async function createTokenFromFile(
   } catch (error: unknown) {
     return {
       status: Status.Failure,
-      errorMessage: formatError('Failed to create token from file', error),
+      errorMessage: formatError(
+        'Failed to create fungible token from file',
+        error,
+      ),
     };
   }
 }

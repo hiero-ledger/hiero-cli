@@ -1,4 +1,5 @@
 import type { CoreApi, TransactionResult } from '@/core';
+import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
 
 import { ED25519_DER_PRIVATE_KEY } from '@/__tests__/mocks/fixtures';
@@ -92,7 +93,7 @@ describe('topic plugin - create command', () => {
           transactionId: 'tx-123',
           success: true,
           topicId: '0.0.9999',
-          receipt: {} as any,
+          receipt: { status: { status: 'success' } },
         } as TransactionResult),
       });
 
@@ -101,8 +102,7 @@ describe('topic plugin - create command', () => {
       txExecution: signing,
       network: networkMock,
       kms,
-      alias: alias as any,
-      state: {} as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -155,7 +155,7 @@ describe('topic plugin - create command', () => {
           transactionId: 'tx-456',
           success: true,
           topicId: '0.0.8888',
-          receipt: {} as any,
+          receipt: { status: { status: 'success' } },
         } as TransactionResult),
       });
 
@@ -164,8 +164,7 @@ describe('topic plugin - create command', () => {
       txExecution: signing,
       network: networkMock,
       kms,
-      alias: alias as any,
-      state: {} as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -229,7 +228,7 @@ describe('topic plugin - create command', () => {
           transactionId: 'tx-789',
           success: true,
           topicId: '0.0.7777',
-          receipt: {} as any,
+          receipt: { status: { status: 'success' } },
         } as TransactionResult),
       });
 
@@ -238,8 +237,7 @@ describe('topic plugin - create command', () => {
       txExecution: signing,
       network: networkMock,
       kms,
-      alias: alias as any,
-      state: {} as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -281,7 +279,7 @@ describe('topic plugin - create command', () => {
         signAndExecuteImpl: jest.fn().mockResolvedValue({
           transactionId: 'tx-123',
           success: false,
-          receipt: {} as any,
+          receipt: { status: { status: 'success' } },
         } as TransactionResult),
       });
 
@@ -290,8 +288,7 @@ describe('topic plugin - create command', () => {
       txExecution: signing,
       network: networkMock,
       kms,
-      alias: alias as any,
-      state: {} as any,
+      alias: alias as AliasService,
       logger,
     };
 
@@ -319,8 +316,7 @@ describe('topic plugin - create command', () => {
       txExecution: signing,
       network: networkMock,
       kms,
-      alias: alias as any,
-      state: {} as any,
+      alias: alias as AliasService,
       logger,
     };
 

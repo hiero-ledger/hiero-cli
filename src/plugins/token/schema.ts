@@ -4,7 +4,17 @@
  */
 import { z } from 'zod';
 
-import { EntityIdSchema, KeyOrAccountAliasSchema } from '@/core/schemas';
+import {
+  EntityIdSchema,
+  HtsDecimalsSchema,
+  KeyOrAccountAliasSchema,
+  MemoSchema,
+  NonNegativeNumberOrBigintSchema,
+  TokenNameSchema,
+  TokenSymbolSchema,
+  TokenTypeSchema,
+} from '@/core/schemas';
+import { HederaTokenType } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
@@ -61,6 +71,16 @@ export const TokenDataSchema = z.object({
   initialSupply: z
     .bigint({ message: 'Initial supply must be an integer', coerce: true })
     .min(0n, 'Initial supply must be non-negative'),
+
+  tokenType: z.enum(
+    [HederaTokenType.NON_FUNGIBLE_TOKEN, HederaTokenType.FUNGIBLE_COMMON],
+    {
+      error: () => ({
+        message:
+          'Token type must be either NonFungibleUnique or FungibleCommon',
+      }),
+    },
+  ),
 
   supplyType: z.enum(['FINITE', 'INFINITE'], {
     error: () => ({
@@ -128,20 +148,13 @@ export const TokenFileFixedFeeSchema = z
   })
   .strict();
 
-export const TokenFileSchema = z.object({
-  name: z.string().min(1).max(100),
-  symbol: z.string().min(1).max(20),
-  decimals: z.number().int().min(0).max(18),
+export const FungibleTokenFileSchema = z.object({
+  name: TokenNameSchema,
+  symbol: TokenSymbolSchema,
+  decimals: HtsDecimalsSchema,
   supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
-  initialSupply: z
-    .union([z.number(), z.bigint()])
-    .transform((val) => BigInt(val))
-    .pipe(z.bigint().nonnegative()),
-  maxSupply: z
-    .union([z.number(), z.bigint()])
-    .transform((val) => BigInt(val))
-    .pipe(z.bigint().nonnegative())
-    .default(0n),
+  initialSupply: NonNegativeNumberOrBigintSchema,
+  maxSupply: NonNegativeNumberOrBigintSchema.default(0n),
   treasuryKey: KeyOrAccountAliasSchema,
   adminKey: KeyOrAccountAliasSchema,
   supplyKey: KeyOrAccountAliasSchema.optional(),
@@ -152,7 +165,10 @@ export const TokenFileSchema = z.object({
   feeScheduleKey: KeyOrAccountAliasSchema.optional(),
   associations: z.array(KeyOrAccountAliasSchema).default([]),
   customFees: z.array(TokenFileFixedFeeSchema).default([]),
-  memo: z.string().max(100).optional().default(''),
+  memo: MemoSchema.default(''),
+  tokenType: TokenTypeSchema,
 });
 
-export type TokenFileDefinition = z.infer<typeof TokenFileSchema>;
+export type FungibleTokenFileDefinition = z.infer<
+  typeof FungibleTokenFileSchema
+>;

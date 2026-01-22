@@ -39,7 +39,7 @@ print_info "Operator account ID: ${HEDERA_OPERATOR_ACCOUNT_ID} (from environment
 
 # --- Configure network and operator ---
 print_step "Selecting Hedera testnet as the active network"
-hcli network use --network testnet
+hcli network use --global testnet
 
 print_step "Configuring CLI operator for testnet"
 hcli network set-operator \
@@ -73,7 +73,7 @@ for ((i=1; i<=ACCOUNTS_NUMBER; i++)); do
   token_name="$account-token"
   hedera_token_name="$account TOKEN"
   TOKENS+=("$token_name")
-  hcli token create \
+  hcli token create-ft \
     -n "$token_name" \
     -N "$hedera_token_name" \
     -s "TT" \
@@ -100,7 +100,7 @@ for ((i=1; i<=ACCOUNTS_NUMBER; i++)); do
         -T "$token_name" \
         -a "$account_to"
       print_step "Transfer token $token_name from account $account_from to account $account_to"
-      hcli token transfer \
+      hcli token transfer-ft \
         -T "$token_name" \
         -f "$account_from" \
         -t "$account_to" \

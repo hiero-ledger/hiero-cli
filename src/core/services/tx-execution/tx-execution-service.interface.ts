@@ -46,4 +46,5 @@ export interface TransactionReceipt {
   tokenId?: string;
   topicId?: string;
   topicSequenceNumber?: number;
+  serials?: string[];
 }

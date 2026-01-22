@@ -34,7 +34,7 @@ describe('PluginManagementServiceImpl', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    stateMock = makeStateMock() as jest.Mocked<StateService>;
+    stateMock = makeStateMock();
     service = new PluginManagementServiceImpl(stateMock);
   });
 

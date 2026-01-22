@@ -11,6 +11,7 @@ import type {
   NetworkService,
 } from './network-service.interface';
 
+import { HASHSCAN_BASE_URL } from '@/core/shared/constants';
 import {
   NetworkConfig as NetworkIdsConfig,
   type SupportedNetwork,
@@ -28,19 +29,29 @@ const CURRENT_NETWORK_KEY = 'current';
 export class NetworkServiceImpl implements NetworkService {
   private readonly state: StateService;
   private readonly logger: Logger;
+  private network: SupportedNetwork;
 
   constructor(state: StateService, logger: Logger) {
     this.state = state;
     this.logger = logger;
-  }
-
-  getCurrentNetwork(): SupportedNetwork {
-    const network = this.state.get<SupportedNetwork>(
+    const storedNetwork = this.state.get<SupportedNetwork>(
       NAMESPACE,
       CURRENT_NETWORK_KEY,
     );
-    this.logger.debug(`[NETWORK] Getting current network: ${network}`);
-    return network || DEFAULT_NETWORK;
+    this.network = storedNetwork || DEFAULT_NETWORK;
+    this.logger.debug(`[NETWORK] Initialized with network: ${this.network}`);
+  }
+
+  getCurrentNetwork(): SupportedNetwork {
+    this.logger.debug(`[NETWORK] Getting current network: ${this.network}`);
+    return this.network;
+  }
+
+  setNetwork(network: SupportedNetwork): void {
+    this.logger.debug(
+      `[NETWORK] Setting network from ${this.network} to ${network}`,
+    );
+    this.network = network;
   }
 
   getAvailableNetworks(): string[] {
@@ -51,14 +62,11 @@ export class NetworkServiceImpl implements NetworkService {
     return networks;
   }
 
-  switchNetwork(network: string): void {
+  switchNetwork(network: SupportedNetwork): void {
     if (!this.isNetworkAvailable(network)) {
       throw new Error(`Network not available: ${network}`);
     }
-    const currentNetwork = this.getCurrentNetwork();
-    this.logger.debug(
-      `[NETWORK] Switching network from ${currentNetwork} to ${network}`,
-    );
+    this.setNetwork(network);
     this.state.set<string>(NAMESPACE, CURRENT_NETWORK_KEY, network);
   }
 
@@ -76,7 +84,7 @@ export class NetworkServiceImpl implements NetworkService {
       rpcUrl: config.rpcUrl,
       mirrorNodeUrl: config.mirrorNodeUrl,
       chainId: `0x${chainId.toString(16)}`,
-      explorerUrl: `https://hashscan.io/${network}`,
+      explorerUrl: `${HASHSCAN_BASE_URL}${network}`,
       isTestnet: network !== 'mainnet',
     };
   }

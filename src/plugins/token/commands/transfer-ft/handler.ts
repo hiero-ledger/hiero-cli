@@ -1,11 +1,11 @@
 /**
- * Token Transfer Command Handler
- * Handles token transfer operations using the Core API
+ * Fungible Token Transfer Command Handler
+ * Handles fungible token transfer operations using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { TransferTokenOutput } from './output';
+import type { TransferFungibleTokenOutput } from './output';
 
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
@@ -14,9 +14,10 @@ import {
   resolveDestinationAccountParameter,
   resolveTokenParameter,
 } from '@/plugins/token/resolver-helper';
+import { isRawUnits } from '@/plugins/token/utils/token-amount-helpers';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { TransferTokenInputSchema } from './input';
+import { TransferFungibleTokenInputSchema } from './input';
 
 export async function transferToken(
   args: CommandHandlerArgs,
@@ -26,7 +27,7 @@ export async function transferToken(
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
   // Validate command parameters
-  const validArgs = TransferTokenInputSchema.parse(args.args);
+  const validArgs = TransferFungibleTokenInputSchema.parse(args.args);
 
   // Use validated parameters
   const tokenIdOrAlias = validArgs.token;
@@ -46,20 +47,17 @@ export async function transferToken(
 
   if (!resolvedToken) {
     throw new Error(
-      `Failed to resolve token parameter: ${tokenIdOrAlias}. ` +
+      `Failed to resolve fungible token parameter: ${tokenIdOrAlias}. ` +
         `Expected format: token-name OR token-id`,
     );
   }
 
   const tokenId = resolvedToken.tokenId;
 
-  // Get token decimals from API (needed for amount conversion)
-  let tokenDecimals = 0;
   const userAmountInput = validArgs.amount;
 
-  // Only fetch decimals if user input doesn't have 't' suffix (raw units)
-  const isRawUnits = String(userAmountInput).trim().endsWith('t');
-  if (!isRawUnits) {
+  let tokenDecimals = 0;
+  if (!isRawUnits(userAmountInput)) {
     try {
       const tokenInfoStorage = tokenState.getToken(tokenId);
 
@@ -69,21 +67,17 @@ export async function transferToken(
         const tokenInfoMirror = await api.mirror.getTokenInfo(tokenId);
         tokenDecimals = parseInt(tokenInfoMirror.decimals) || 0;
       }
-
-      const tokenInfo = await api.mirror.getTokenInfo(tokenId);
-      tokenDecimals = parseInt(tokenInfo.decimals) || 0;
     } catch (error) {
       return {
         status: Status.Failure,
         errorMessage: formatError(
-          `Failed to fetch token decimals for ${tokenId}`,
+          `Failed to fetch fungible token decimals for ${tokenId}`,
           error,
         ),
       };
     }
   }
 
-  // Convert amount input: display units (default) or raw units (with 't' suffix)
   const rawAmount = processBalanceInput(userAmountInput, tokenDecimals);
 
   const resolvedFromAccount = await api.keyResolver.getOrInitKeyWithFallback(
@@ -142,12 +136,13 @@ export async function transferToken(
       // (e.g., update associations, balances, etc.)
 
       // Prepare output data
-      const outputData: TransferTokenOutput = {
+      const outputData: TransferFungibleTokenOutput = {
         transactionId: result.transactionId,
         tokenId,
         from: fromAccountId,
         to: toAccountId,
         amount: BigInt(rawAmount.toString()),
+        network,
       };
 
       return {
@@ -157,13 +152,13 @@ export async function transferToken(
     } else {
       return {
         status: Status.Failure,
-        errorMessage: 'Token transfer failed',
+        errorMessage: 'Fungible token transfer failed',
       };
     }
   } catch (error: unknown) {
     return {
       status: Status.Failure,
-      errorMessage: formatError('Failed to transfer token', error),
+      errorMessage: formatError('Failed to transfer fungible token', error),
     };
   }
 }

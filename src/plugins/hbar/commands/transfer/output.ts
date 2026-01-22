@@ -22,9 +22,9 @@ export type TransferOutput = z.infer<typeof TransferOutputSchema>;
 export const TRANSFER_TEMPLATE = `
 ✅ HBAR transfer submitted successfully
 
-Transaction ID: {{transactionId}}
-From: {{fromAccountId}}
-To: {{toAccountId}}
+Transaction ID: {{hashscanLink transactionId "transaction" network}}
+From: {{hashscanLink fromAccountId "account" network}}
+To: {{hashscanLink toAccountId "account" network}}
 Amount: {{amountTinybar}} tinybars
 Network: {{network}}
 {{#if memo}}
