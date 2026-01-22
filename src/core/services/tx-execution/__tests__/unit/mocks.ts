@@ -3,13 +3,19 @@
  * Factory functions that create fresh mock instances for each test
  */
 
-export const createMockTransaction = (overrides = {}) => ({
-  isFrozen: jest.fn().mockReturnValue(false),
-  freezeWith: jest.fn().mockReturnThis(),
-  signWith: jest.fn().mockResolvedValue(undefined),
-  execute: jest.fn(),
-  ...overrides,
-});
+import { Transaction } from '@hashgraph/sdk';
+
+export const createMockTransaction = (overrides = {}) => {
+  const mock = {
+    isFrozen: jest.fn().mockReturnValue(false),
+    freezeWith: jest.fn().mockReturnThis(),
+    signWith: jest.fn().mockResolvedValue(undefined),
+    execute: jest.fn(),
+    ...overrides,
+  };
+  Object.setPrototypeOf(mock, Transaction.prototype);
+  return mock;
+};
 
 export const createMockTransactionResponse = (overrides = {}) => ({
   transactionId: {

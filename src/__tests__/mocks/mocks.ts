@@ -6,6 +6,9 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
+import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
+import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
 import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
@@ -305,6 +308,21 @@ const makePluginManagementServiceMock = (): PluginManagementService =>
     savePluginState: jest.fn(),
   }) as unknown as PluginManagementService;
 
+const makeContractTransactionServiceMock = (): ContractTransactionService =>
+  ({
+    contractCreateFlowTransaction: jest.fn(),
+  }) as unknown as ContractTransactionService;
+
+const makeContractVerifierServiceMock = (): ContractVerifierService =>
+  ({
+    verifyContract: jest.fn(),
+  }) as unknown as ContractVerifierService;
+
+const makeContractCompilerService = (): ContractCompilerService =>
+  ({
+    compileContract: jest.fn(),
+  }) as unknown as ContractCompilerService;
+
 /**
  * Create a mocked ConfigService
  */
@@ -345,6 +363,9 @@ export const makeArgs = (
       hbar: makeHbarMock(),
       output: makeOutputMock(),
       pluginManagement: makePluginManagementServiceMock(),
+      contract: makeContractTransactionServiceMock(),
+      contractCompiler: makeContractCompilerService(),
+      contractVerifier: makeContractVerifierServiceMock(),
       keyResolver: makeKeyResolverMock({ network, alias, kms }),
       ...api,
     },

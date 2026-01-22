@@ -2,7 +2,7 @@ import type {
   FileCreateTransaction,
   FileDeleteTransaction,
   FileId,
-  type Key,
+  Key,
 } from '@hashgraph/sdk';
 
 export interface FileCreateParams {

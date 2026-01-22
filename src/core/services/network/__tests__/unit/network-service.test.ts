@@ -141,7 +141,7 @@ describe('NetworkServiceImpl', () => {
       const config = networkService.getNetworkConfig(NETWORK_PREVIEWNET);
 
       expect(config.name).toBe(NETWORK_PREVIEWNET);
-      expect(config.chainId).toBe('0x128');
+      expect(config.chainId).toBe('0x129');
       expect(config.isTestnet).toBe(true);
     });
 
@@ -151,7 +151,7 @@ describe('NetworkServiceImpl', () => {
       expect(config.name).toBe(NETWORK_LOCALNET);
       expect(config.rpcUrl).toBe('http://localhost:7546');
       expect(config.mirrorNodeUrl).toBe('http://localhost:5551/api/v1');
-      expect(config.chainId).toBe('0x128');
+      expect(config.chainId).toBe('0x12a');
       expect(config.isTestnet).toBe(true);
     });
 
