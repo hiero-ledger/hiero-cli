@@ -7,6 +7,7 @@ import {
   EntityIdSchema,
   NetworkSchema,
   PublicKeySchema,
+  SupplyTypeSchema,
 } from '@/core/schemas/common-schemas';
 
 /**
@@ -23,6 +24,7 @@ export const ViewTokenOutputSchema = z.object({
   // === Supply info (crucial for NFT - shows valid serial range) ===
   totalSupply: z.string(), // For NFT = current minted count
   maxSupply: z.string(),
+  supplyType: SupplyTypeSchema,
 
   // === Fungible Token specific ===
   decimals: z.number().optional(), // NFT doesn't have decimals
@@ -67,7 +69,9 @@ export const VIEW_TOKEN_TEMPLATE = `
    Name: {{name}}
    Symbol: {{symbol}}
    Total Minted: {{totalSupply}}
+{{#if (eq supplyType "FINITE")}}
    Max Supply: {{maxSupply}}
+{{/if}}
 {{#if treasury}}
    Treasury: {{hashscanLink treasury "account" network}}
 {{/if}}
@@ -98,10 +102,14 @@ export const VIEW_TOKEN_TEMPLATE = `
 
 {{#if (eq type "NON_FUNGIBLE_UNIQUE")}}
    Current Supply: {{totalSupply}}
+{{#if (eq supplyType "FINITE")}}
    Max Supply: {{maxSupply}}
+{{/if}}
 {{else}}
    Total Supply: {{totalSupply}}
+{{#if (eq supplyType "FINITE")}}
    Max Supply: {{maxSupply}}
+{{/if}}
 {{#if decimals}}
    Decimals: {{decimals}}
 {{/if~}}

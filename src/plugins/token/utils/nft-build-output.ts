@@ -1,5 +1,6 @@
 import type { NftInfo, TokenInfo } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { SupplyType } from '@/core/types/token.types';
 import type { ViewTokenOutput } from '@/plugins/token/commands/view';
 
 /**
@@ -50,6 +51,11 @@ export function buildOutput(
   nftInfo: NftInfo | null,
   network: SupportedNetwork,
 ): ViewTokenOutput {
+  // Determine supply type based on max_supply
+  // If max_supply is "0", it's INFINITE, otherwise FINITE
+  const supplyType: SupplyType =
+    tokenInfo.max_supply === '0' ? 'INFINITE' : 'FINITE';
+
   const base = {
     tokenId: tokenInfo.token_id,
     name: tokenInfo.name,
@@ -58,6 +64,7 @@ export function buildOutput(
     network,
     totalSupply: tokenInfo.total_supply,
     maxSupply: tokenInfo.max_supply,
+    supplyType,
     treasury: tokenInfo.treasury || undefined,
     memo: tokenInfo.memo || undefined,
     createdTimestamp: formatHederaTimestamp(tokenInfo.created_timestamp),
