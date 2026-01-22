@@ -3,7 +3,11 @@
  */
 import { z } from 'zod';
 
-import { EntityIdSchema } from '@/core/schemas/common-schemas';
+import {
+  EntityIdSchema,
+  NetworkSchema,
+  PublicKeySchema,
+} from '@/core/schemas/common-schemas';
 
 /**
  * Token Info Schema
@@ -14,6 +18,7 @@ export const ViewTokenOutputSchema = z.object({
   name: z.string(),
   symbol: z.string(),
   type: z.string(), // 'FUNGIBLE_COMMON' | 'NON_FUNGIBLE_UNIQUE'
+  network: NetworkSchema,
 
   // === Supply info (crucial for NFT - shows valid serial range) ===
   totalSupply: z.string(), // For NFT = current minted count
@@ -26,6 +31,10 @@ export const ViewTokenOutputSchema = z.object({
   treasury: z.string().optional(),
   memo: z.string().optional(),
   createdTimestamp: z.string().optional(),
+
+  // === Token keys ===
+  adminKey: PublicKeySchema.nullable().optional(),
+  supplyKey: PublicKeySchema.nullable().optional(),
 
   // === Specific NFT instance (when --serial provided) ===
   nftSerial: z
@@ -54,19 +63,19 @@ export const VIEW_TOKEN_TEMPLATE = `
 
  Collection Info:
 
-   Token ID: {{tokenId}}
+   Token ID: {{hashscanLink tokenId "token" network}}
    Name: {{name}}
    Symbol: {{symbol}}
    Total Minted: {{totalSupply}}
    Max Supply: {{maxSupply}}
 {{#if treasury}}
-   Treasury: {{treasury}}
+   Treasury: {{hashscanLink treasury "account" network}}
 {{/if}}
 
  NFT Details:
  
    Serial: #{{nftSerial.serialNumber}}
-   Owner: {{nftSerial.owner}}
+   Owner: {{hashscanLink nftSerial.owner "account" network}}
 {{#if nftSerial.createdTimestamp}}
    Created: {{nftSerial.createdTimestamp}}
 {{/if~}}
@@ -83,12 +92,12 @@ export const VIEW_TOKEN_TEMPLATE = `
 💰 Fungible Token
 {{/if}}
 
-   ID: {{tokenId}}
+   ID: {{hashscanLink tokenId "token" network}}
    Name: {{name}}
    Symbol: {{symbol}}
 
 {{#if (eq type "NON_FUNGIBLE_UNIQUE")}}
-   Current Supply: {{totalSupply}}{{#if (gt totalSupply "0")}} (Valid serials: 1 to {{totalSupply}}){{/if}}
+   Current Supply: {{totalSupply}}
    Max Supply: {{maxSupply}}
 {{else}}
    Total Supply: {{totalSupply}}
@@ -98,7 +107,13 @@ export const VIEW_TOKEN_TEMPLATE = `
 {{/if~}}
 {{/if~}}
 {{#if treasury}}
-   Treasury: {{treasury}}
+   Treasury: {{hashscanLink treasury "account" network}}
+{{/if~}}
+{{#if adminKey}}
+   Admin Key: {{adminKey}}
+{{/if~}}
+{{#if supplyKey}}
+   Supply Key: {{supplyKey}}
 {{/if~}}
 {{#if memo}}
    Memo: {{memo}}
