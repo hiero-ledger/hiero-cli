@@ -2,6 +2,7 @@
  * Network Service Implementation
  * Manages network configuration using StateService with namespace
  */
+import type { ResolvedKey } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
@@ -27,6 +28,8 @@ export class NetworkServiceImpl implements NetworkService {
   private readonly state: StateService;
   private readonly logger: Logger;
   private network: SupportedNetwork;
+  private payerOverrideString: string | null = null;
+  private payerOverrideResolved: ResolvedKey | null = null;
 
   constructor(state: StateService, logger: Logger) {
     this.state = state;
@@ -130,5 +133,28 @@ export class NetworkServiceImpl implements NetworkService {
     }
 
     return operator;
+  }
+
+  setPayerOverride(payer: ResolvedKey | null): void {
+    if (payer) {
+      this.logger.debug(`[NETWORK] Setting payer override: ${payer.accountId}`);
+      this.payerOverrideString = null;
+    }
+    this.payerOverrideResolved = payer;
+  }
+
+  getPayerOverrideString(): string | null {
+    return this.payerOverrideString;
+  }
+
+  setPayerOverrideString(payer: string | null): void {
+    if (payer) {
+      this.logger.debug(`[NETWORK] Setting payer override string: ${payer}`);
+    }
+    this.payerOverrideString = payer;
+  }
+
+  getPayerOverrideResolved(): ResolvedKey | null {
+    return this.payerOverrideResolved;
   }
 }

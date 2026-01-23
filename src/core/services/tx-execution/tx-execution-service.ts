@@ -16,7 +16,7 @@ import type {
   TxExecutionService,
 } from './tx-execution-service.interface';
 
-import { Status } from '@hashgraph/sdk';
+import { AccountId, Status, TransactionId } from '@hashgraph/sdk';
 
 export class TxExecutionServiceImpl implements TxExecutionService {
   private logger: Logger;
@@ -36,7 +36,16 @@ export class TxExecutionServiceImpl implements TxExecutionService {
   private getClient(): Client {
     this.logger.debug('[TX-EXECUTION] Creating client for current network');
     const network = this.networkService.getCurrentNetwork();
-    return this.kms.createClient(network);
+    const payerOverride =
+      this.networkService.getPayerOverrideResolved() || undefined;
+
+    if (payerOverride) {
+      this.logger.debug(
+        `[TX-EXECUTION] Using payer override: ${payerOverride.accountId}`,
+      );
+    }
+
+    return this.kms.createClient(network, payerOverride);
   }
 
   async signAndExecute(
@@ -55,6 +64,17 @@ export class TxExecutionServiceImpl implements TxExecutionService {
     this.logger.debug(`[TX-EXECUTION] Signing with ${keyRefIds.length} key(s)`);
 
     const client = this.getClient();
+    const payerOverride = this.networkService.getPayerOverrideResolved();
+
+    if (payerOverride && !transaction.isFrozen()) {
+      const payerAccountId = AccountId.fromString(payerOverride.accountId);
+      const transactionId = TransactionId.generate(payerAccountId);
+      transaction.setTransactionId(transactionId);
+      this.logger.debug(
+        `[TX-EXECUTION] Set transaction payer account ID: ${payerOverride.accountId}`,
+      );
+    }
+
     if (!transaction.isFrozen()) {
       transaction.freezeWith(client);
     }
@@ -64,6 +84,13 @@ export class TxExecutionServiceImpl implements TxExecutionService {
     for (const keyRefId of uniqueKeyRefIds) {
       this.logger.debug(`[TX-EXECUTION] Signing with key: ${keyRefId}`);
       await this.kms.signTransaction(transaction, keyRefId);
+    }
+
+    if (payerOverride && !uniqueKeyRefIds.has(payerOverride.keyRefId)) {
+      this.logger.debug(
+        `[TX-EXECUTION] Signing with payer key: ${payerOverride.keyRefId}`,
+      );
+      await this.kms.signTransaction(transaction, payerOverride.keyRefId);
     }
 
     return this.executeAndParseReceipt(transaction, client);

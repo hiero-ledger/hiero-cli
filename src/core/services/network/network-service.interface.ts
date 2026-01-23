@@ -2,6 +2,7 @@
  * Interface for network management operations
  * All network services must implement this interface
  */
+import type { ResolvedKey } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface NetworkService {
@@ -57,6 +58,27 @@ export interface NetworkService {
    * Get operator for current network or throw
    */
   getCurrentOperatorOrThrow(): NetworkOperator;
+
+  /**
+   * Set payer override (session-scoped, in-memory only)
+   * Used to override the default operator as payer for all transactions
+   */
+  setPayerOverride(payer: ResolvedKey | null): void;
+
+  /**
+   * Set payer override string (from CLI flag, before resolution)
+   */
+  setPayerOverrideString(payer: string | null): void;
+
+  /**
+   * Get payer override string
+   */
+  getPayerOverrideString(): string | null;
+
+  /**
+   * Get payer override
+   */
+  getPayerOverrideResolved(): ResolvedKey | null;
 }
 
 export interface NetworkOperator {

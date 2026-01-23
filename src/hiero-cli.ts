@@ -26,6 +26,10 @@ program
   .option(
     '-N, --network <network>',
     'Target network (testnet, mainnet, previewnet, localnet)',
+  )
+  .option(
+    '-P, --payer <payer>',
+    'Payer account (alias or account-id:private-key format)',
   );
 
 // Initialize the simplified plugin system
@@ -43,6 +47,11 @@ async function initializeCLI() {
 
     if (networkOverride) {
       coreApi.network.setNetwork(networkOverride);
+    }
+
+    const payerOverride = (opts.payer || opts.P) as string | undefined;
+    if (payerOverride) {
+      coreApi.network.setPayerOverrideString(payerOverride);
     }
 
     // Setup global error handlers with validated format
