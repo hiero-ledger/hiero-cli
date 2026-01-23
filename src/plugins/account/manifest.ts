@@ -214,6 +214,8 @@ export const accountPluginManifest: PluginManifest = {
         schema: ClearAccountsOutputSchema,
         humanTemplate: CLEAR_ACCOUNTS_TEMPLATE,
       },
+      requireConfirmation:
+        'Are you sure you want to remove ALL accounts from the address book? This action cannot be undone.',
     },
     {
       name: 'delete',
@@ -241,6 +243,8 @@ export const accountPluginManifest: PluginManifest = {
         schema: DeleteAccountOutputSchema,
         humanTemplate: DELETE_ACCOUNT_TEMPLATE,
       },
+      requireConfirmation:
+        'Are you sure you want to delete account {{name}}{{id}}? This action cannot be undone.',
     },
     {
       name: 'view',

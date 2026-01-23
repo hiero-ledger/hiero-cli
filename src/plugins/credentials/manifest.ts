@@ -53,6 +53,8 @@ export const credentialsManifest: PluginManifest = {
         schema: RemoveCredentialsOutputSchema,
         humanTemplate: REMOVE_CREDENTIALS_TEMPLATE,
       },
+      requireConfirmation:
+        "Are you sure you want to remove credentials with ID '{{id}}'? This action cannot be undone.",
     },
   ],
 };

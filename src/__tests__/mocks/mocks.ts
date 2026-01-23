@@ -346,6 +346,7 @@ const makeOutputMock = (): jest.Mocked<OutputService> => ({
   handleCommandOutput: jest.fn(),
   setFormat: jest.fn(),
   getFormat: jest.fn().mockReturnValue('human'),
+  emptyLine: jest.fn(),
 });
 
 const makePluginManagementServiceMock = (): PluginManagementService =>

@@ -321,6 +321,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       handleCommandOutput: jest.fn(),
       getFormat: jest.fn().mockReturnValue('human'),
       setFormat: jest.fn(),
+      emptyLine: jest.fn(),
     } as jest.Mocked<OutputService>,
     pluginManagement: {
       listPlugins: jest.fn().mockReturnValue([]),
