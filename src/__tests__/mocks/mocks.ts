@@ -370,7 +370,7 @@ const makeContractVerifierServiceMock = (): ContractVerifierService =>
     verifyContract: jest.fn(),
   }) as unknown as ContractVerifierService;
 
-const makeContractCompilerService = (): ContractCompilerService =>
+const makeContractCompilerServiceMock = (): ContractCompilerService =>
   ({
     compileContract: jest.fn(),
   }) as unknown as ContractCompilerService;
@@ -395,6 +395,11 @@ export const makeArgs = (
   const network = api.network || makeNetworkMock('testnet');
   const alias = api.alias || makeAliasMock();
   const kms = api.kms || makeKmsMock();
+  const contract = api.contract || makeContractTransactionServiceMock();
+  const contractCompiler =
+    api.contractCompiler || makeContractCompilerServiceMock();
+  const contractVerifier =
+    api.contractVerifier || makeContractVerifierServiceMock();
 
   // Exclude state and config from api spread since they're already mocked above
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -447,9 +452,9 @@ export const makeArgs = (
     hbar: makeHbarMock(),
     output: makeOutputMock(),
     pluginManagement: makePluginManagementServiceMock(),
-    contract: makeContractTransactionServiceMock(),
-    contractCompiler: makeContractCompilerService(),
-    contractVerifier: makeContractVerifierServiceMock(),
+    contract,
+    contractCompiler,
+    contractVerifier,
     keyResolver: makeKeyResolverMock({ network, alias, kms }),
     ...restApi,
   } as unknown as CoreApi;

@@ -249,6 +249,9 @@ interface ApiMocksConfig {
   createTransferImpl?: jest.Mock;
   signAndExecuteImpl?: jest.Mock;
   keyResolver?: Partial<jest.Mocked<KeyResolverService>>;
+  contract?: Partial<jest.Mocked<ContractTransactionService>>;
+  contractCompiler?: Partial<jest.Mocked<ContractCompilerService>>;
+  contractVerifier?: Partial<jest.Mocked<ContractVerifierService>>;
 }
 
 /**
@@ -393,6 +396,7 @@ export const makeTransactionResult = (
     transactionId: string;
     tokenId?: string;
     accountId?: string;
+    contractId?: string;
   }>,
 ) => ({
   success: overrides?.success ?? true,

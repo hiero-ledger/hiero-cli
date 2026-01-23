@@ -41,7 +41,7 @@ export async function createContract(
     const admin = await api.keyResolver.getOrInitKeyWithFallback(
       validArgs.adminKey,
       keyManager,
-      ['token:admin'],
+      ['contract:admin'],
     );
 
     const contractFileContent = await readContractFile(filename, logger);
@@ -72,10 +72,12 @@ export async function createContract(
       adminKey: PublicKey.fromString(admin.publicKey),
       memo: memo,
     });
+    console.log(contractCreateFlowTx);
     const contractCreateFlowResult = await api.txExecution.signAndExecuteWith(
       contractCreateFlowTx.transaction,
       txSigners,
     );
+    console.log(contractCreateFlowResult);
     if (!contractCreateFlowResult.contractId) {
       throw new Error(
         `There was a problem with creating contract, no contract address present in the receipt`,
@@ -112,7 +114,7 @@ export async function createContract(
       api.alias.register({
         alias,
         type: 'contract',
-        network: api.network.getCurrentNetwork(),
+        network: network,
         entityId: contractCreateFlowResult.contractId,
         createdAt: contractCreateFlowResult.consensusTimestamp,
       });
@@ -134,7 +136,7 @@ export async function createContract(
   } catch (error) {
     return {
       status: Status.Failure,
-      errorMessage: formatError('Failed to list configuration options', error),
+      errorMessage: formatError('Failed to list contracts', error),
     };
   }
 }
