@@ -1,6 +1,6 @@
 export interface CompilationParams {
-  filename: string;
-  name: string;
+  contractFilename: string;
+  contractName: string;
   contractContent: string;
   basePath: string;
 }

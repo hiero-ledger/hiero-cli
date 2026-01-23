@@ -1,11 +1,16 @@
 // Main token data schema
 import { z } from 'zod';
 
-import { EntityIdSchema, EvmAddressSchema } from '@/core/schemas';
+import {
+  ContractNameSchema,
+  EntityIdSchema,
+  EvmAddressSchema,
+} from '@/core/schemas';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 export const ContractDataSchema = z.object({
   contractId: EntityIdSchema.describe('Contract ID'),
+  contractName: ContractNameSchema,
 
   contractEvmAddress: EvmAddressSchema.describe(
     'Deployed contract EVM address',

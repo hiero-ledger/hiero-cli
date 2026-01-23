@@ -1,25 +1,26 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { CommandExecutionResult } from '@/core/plugins/plugin.types';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { CreateContractOutput } from '@/plugins/contract/commands/create/output';
+import type { ContractCreateOutput } from '@/plugins/contract/commands/create/output';
 
 import { ContractId, PublicKey } from '@hashgraph/sdk';
 import path from 'path';
 
 import { Status } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { formatError } from '@/core/utils/errors';
-import { CreateContractSchema } from '@/plugins/contract/commands/create/input';
+import { ContractCreateSchema } from '@/plugins/contract/commands/create/input';
 import { readContractFile } from '@/plugins/contract/utils/contract-file-helpers';
-import { ZustandStateHelper } from '@/plugins/contract/zustand-state-helper';
+import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
 export async function createContract(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { logger, api, state } = args;
-  const contractState = new ZustandStateHelper(state, logger);
+  const contractState = new ZustandContractStateHelper(state, logger);
   try {
     // Parse and validate args
-    const validArgs = CreateContractSchema.parse(args.args);
+    const validArgs = ContractCreateSchema.parse(args.args);
     const alias = validArgs.name;
     const filename = validArgs.file;
     const gas = validArgs.gas;
@@ -30,6 +31,7 @@ export async function createContract(
     const network = api.network.getCurrentNetwork();
 
     api.alias.availableOrThrow(alias, network);
+    const contractFilename = path.basename(filename);
 
     // Get keyManager from args or fallback to config
     const keyManager =
@@ -43,19 +45,21 @@ export async function createContract(
     );
 
     const contractFileContent = await readContractFile(filename, logger);
+    if (!contractFileContent) {
+      throw new Error(`Could not read contract file ${validArgs.file}`);
+    }
     const match = contractFileContent.match(/\bcontract\s+(\w+)/);
     const contractName = match ? match[1] : null;
     if (!contractName) {
       throw new Error(
-        `Could not find contract name from the given file ${path.basename(filename)}`,
+        `Could not find contract name from the given file ${contractFilename}`,
       );
     }
-    console.log(contractName);
     const compilationResult = api.contractCompiler.compileContract({
-      filename: path.basename(filename),
+      contractName: contractName,
       contractContent: contractFileContent,
+      contractFilename: contractFilename,
       basePath: basePath,
-      name: contractName,
     });
 
     const txSigners = [admin.keyRefId];
@@ -80,15 +84,21 @@ export async function createContract(
     const contractId = ContractId.fromString(
       contractCreateFlowResult.contractId,
     );
-
-    await api.contractVerifier.verifyContract({
-      contractFilename: path.basename(filename),
-      contractContent: contractFileContent,
-      metadataContent: compilationResult.metadata,
-      contractEvmAddress: contractId.toEvmAddress(),
-    });
+    if (SupportedNetwork.LOCALNET === network) {
+      logger.warn(
+        `Skipping contract verification as the selected network ${network} is not supported `,
+      );
+    } else {
+      await api.contractVerifier.verifyContract({
+        contractFilename: contractFilename,
+        contractContent: contractFileContent,
+        metadataContent: compilationResult.metadata,
+        contractEvmAddress: contractId.toEvmAddress(),
+      });
+    }
     const contractData = {
       contractId: contractCreateFlowResult.contractId,
+      contractName,
       contractEvmAddress: contractId.toEvmAddress(),
       adminPublicKey: admin.publicKey,
       network,
@@ -108,12 +118,14 @@ export async function createContract(
       });
     }
 
-    const output: CreateContractOutput = {
+    const output: ContractCreateOutput = {
       contractId: contractCreateFlowResult.contractId,
+      contractName: contractName,
       contractEvmAddress: `0x${contractId.toEvmAddress()}`,
       network: network,
       alias: alias,
       transactionId: contractCreateFlowResult.transactionId,
+      adminPublicKey: admin.publicKey,
     };
     return {
       status: Status.Success,

@@ -6,12 +6,11 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
 import { toErrorMessage } from '@/core/utils/errors';
+import { CONTRACT_NAMESPACE } from '@/plugins/contract/manifest';
 
 import { type ContractData } from './schema';
-// import { CONTRACT_NAMESPACE } from '@/plugins/contract/manifest';
 
-export class ZustandStateHelper {
-  private readonly CONTRACT_NAMESPACE = 'contract-contracts';
+export class ZustandContractStateHelper {
   private state: StateService;
   private logger: Logger;
 
@@ -30,7 +29,7 @@ export class ZustandStateHelper {
       );
 
       // Use the state service to save data in the contract namespace
-      this.state.set(this.CONTRACT_NAMESPACE, contractId, contractData);
+      this.state.set(CONTRACT_NAMESPACE, contractId, contractData);
 
       this.logger.debug(
         `[CONTRACT STATE] Successfully saved contract ${contractId}`,
@@ -44,31 +43,48 @@ export class ZustandStateHelper {
   }
 
   /**
-   * Get all contracts from the state
+   * List all contracts with validation
    */
-  getAllContracts(): Record<string, ContractData> {
+  listContracts(): ContractData[] {
     try {
-      this.logger.debug(`[CONTRACT STATE] Getting all contracts from state`);
+      this.logger.debug(`[CONTRACT STATE] Listing all contracts`);
 
-      const allContracts = this.state.list<ContractData>(
-        this.CONTRACT_NAMESPACE,
+      const contracts = this.state.list<ContractData>(CONTRACT_NAMESPACE);
+      this.logger.debug(
+        `[CONTRACT STATE] Retrieved ${contracts.length} contracts from state`,
       );
-      const contractsMap: Record<string, ContractData> = {};
 
-      // Convert array to record using contract IDs as keys
-      allContracts.forEach((contract) => {
+      // Log each contract for debugging
+      contracts.forEach((contract, index) => {
         if (contract && contract.contractId) {
-          contractsMap[contract.contractId] = contract;
+          this.logger.debug(
+            `[CONTRACT STATE]   ${index + 1}. ${contract.contractName} - ${contract.contractId} on ${contract.network}`,
+          );
+        } else {
+          this.logger.debug(
+            `[CONTRACT STATE]   ${index + 1}. Invalid contract data: ${JSON.stringify(contract)}`,
+          );
         }
       });
 
+      // Filter and return only valid contracts
+      const validContracts = contracts.filter((contractData) => {
+        if (!contractData || !contractData.contractId) {
+          this.logger.warn(
+            `[CONTRACT STATE] Skipping invalid contract data (missing contractId)`,
+          );
+          return false;
+        }
+        return true;
+      });
+
       this.logger.debug(
-        `[CONTRACT STATE] Found ${Object.keys(contractsMap).length} contracts in state`,
+        `[CONTRACT STATE] Returning ${validContracts.length} valid contracts`,
       );
-      return contractsMap;
+      return validContracts;
     } catch (error) {
       this.logger.error(
-        `[CONTRACT STATE] Failed to get all contracts: ${toErrorMessage(error)}`,
+        `[CONTRACT STATE] Failed to list contracts: ${toErrorMessage(error)}`,
       );
       throw error;
     }

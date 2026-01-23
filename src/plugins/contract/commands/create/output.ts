@@ -2,28 +2,34 @@ import { z } from 'zod';
 
 import {
   AliasNameSchema,
+  ContractNameSchema,
   EntityIdSchema,
   EvmAddressSchema,
   NetworkSchema,
+  PublicKeySchema,
   TransactionIdSchema,
 } from '@/core/schemas';
 
-export const CreateContractOutputSchema = z.object({
+export const ContractCreateOutputSchema = z.object({
   contractId: EntityIdSchema,
+  contractName: ContractNameSchema,
   contractEvmAddress: EvmAddressSchema,
   alias: AliasNameSchema.optional(),
   network: NetworkSchema,
   transactionId: TransactionIdSchema,
+  adminPublicKey: PublicKeySchema,
 });
 
-export type CreateContractOutput = z.infer<typeof CreateContractOutputSchema>;
+export type ContractCreateOutput = z.infer<typeof ContractCreateOutputSchema>;
 
-export const CREATE_CONTRACT_TEMPLATE = `
-✅ Contract created successfully: {{contractId}}
+export const CONTRACT_CREATE_TEMPLATE = `
+✅ Contract created successfully: {{hashscanLink contractId "contract" network}}
+   Contract name: {{contractName}}
    Contract EVM address: {{contractEvmAddress}}
 {{#if alias}}
    Alias: {{alias}}
 {{/if}}
+   Admin public key: {{adminPublicKey}}
    Network: {{network}}
-   Transaction ID: {{transactionId}}
+   Transaction ID: {{hashscanLink transactionId "transaction" network}}
 `.trim();

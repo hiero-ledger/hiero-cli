@@ -5,9 +5,15 @@
 import type { PluginManifest } from '@/core';
 
 import {
-  CREATE_CONTRACT_TEMPLATE,
+  CONTRACT_LIST_TEMPLATE,
+  ContractListOutputSchema,
+  listContracts,
+} from '@/plugins/contract/commands/list';
+
+import {
+  CONTRACT_CREATE_TEMPLATE,
+  ContractCreateOutputSchema,
   createContract,
-  CreateContractOutputSchema,
 } from './commands/create';
 
 export const CONTRACT_NAMESPACE = 'contract-contracts';
@@ -95,21 +101,21 @@ export const contractPluginManifest: PluginManifest = {
       ],
       handler: createContract,
       output: {
-        schema: CreateContractOutputSchema,
-        humanTemplate: CREATE_CONTRACT_TEMPLATE,
+        schema: ContractCreateOutputSchema,
+        humanTemplate: CONTRACT_CREATE_TEMPLATE,
       },
     },
-    // {
-    //   name: 'list',
-    //   summary: 'List all contracts',
-    //   description: 'List all smart contracts stored in the state',
-    //   options: [],
-    //   handler: listContracts,
-    //   output: {
-    //     schema: ListContractOutputSchema,
-    //     humanTemplate: LIST_CONTRACT_TEMPLATE,
-    //   },
-    // },
+    {
+      name: 'list',
+      summary: 'List all contracts',
+      description: 'List all smart contracts stored in the state',
+      options: [],
+      handler: listContracts,
+      output: {
+        schema: ContractListOutputSchema,
+        humanTemplate: CONTRACT_LIST_TEMPLATE,
+      },
+    },
   ],
 };
 

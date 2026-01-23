@@ -2,7 +2,7 @@ import type { PluginManifest } from '@/core/plugins/plugin.types';
 
 import accountPluginManifest from '@/plugins/account/manifest';
 import configPluginManifest from '@/plugins/config/manifest';
-import { contractPluginManifest } from '@/plugins/contract';
+import contractPluginManifest from '@/plugins/contract/manifest';
 import credentialsPluginManifest from '@/plugins/credentials/manifest';
 import hbarPluginManifest from '@/plugins/hbar/manifest';
 import networkPluginManifest from '@/plugins/network/manifest';
@@ -33,6 +33,6 @@ export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
   credentialsPluginManifest,
   topicPluginManifest,
   hbarPluginManifest,
-  configPluginManifest,
   contractPluginManifest,
+  configPluginManifest,
 ];

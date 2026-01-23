@@ -12,7 +12,7 @@ import {
  * Input schema for plugin-management add command
  * Validates arguments for adding a plugin from filesystem path
  */
-export const CreateContractSchema = z
+export const ContractCreateSchema = z
   .object({
     name: AliasNameSchema.describe('Optional name/alias for the contract'),
     file: FilePathSchema.describe(
@@ -51,5 +51,3 @@ export const CreateContractSchema = z
     constructorParameters: data.constructorParameter,
     keyManager: data.keyManager,
   }));
-
-export type CreateContractInput = z.infer<typeof CreateContractSchema>;

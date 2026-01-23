@@ -237,9 +237,7 @@ export class PluginManager {
       .command(pluginName)
       .description(
         plugin.manifest.description || `Commands for ${pluginName} plugin`,
-      )
-      .allowUnknownOption(true)
-      .allowExcessArguments(true);
+      );
 
     // Register each command
     for (const commandSpec of commands) {

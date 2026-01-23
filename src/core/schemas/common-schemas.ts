@@ -608,3 +608,18 @@ export const NonNegativeNumberOrBigintSchema = z
   .union([z.number(), z.bigint()])
   .transform((val) => BigInt(val))
   .pipe(z.bigint().nonnegative());
+
+/**
+ * Alias Name Input (Base Schema)
+ * Base schema for all entity aliases (alphanumeric, hyphens, underscores)
+ * Used as foundation for AccountNameSchema, TopicNameSchema, TokenAliasNameSchema
+ */
+export const ContractNameSchema = z
+  .string()
+  .trim()
+  .min(1, 'Contract name cannot be empty')
+  .regex(
+    /^[a-zA-Z0-9_-]+$/,
+    'Contract name must contain only letters, numbers, hyphens, and underscores',
+  )
+  .describe('Contract name');

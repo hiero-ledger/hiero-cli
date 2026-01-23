@@ -28,7 +28,6 @@ export interface TransactionResult {
   accountId?: string;
   tokenId?: string;
   topicId?: string;
-  fileId?: string;
   contractId?: string;
   topicSequenceNumber?: number;
   consensusTimestamp: string;

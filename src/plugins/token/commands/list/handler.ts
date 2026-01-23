@@ -7,8 +7,8 @@ import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { ListTokensOutput } from './output';
 
 import { Status } from '@/core/shared/constants';
+import { findAlias } from '@/core/utils/alias-helper';
 import { formatError } from '@/core/utils/errors';
-import { findTokenAlias } from '@/plugins/account/utils/balance-helpers';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { ListTokenInputSchema } from './input';
@@ -37,7 +37,7 @@ export async function listTokens(
     });
 
     const tokensList = tokens.map((token) => {
-      const alias = findTokenAlias(api, token.tokenId, token.network);
+      const alias = findAlias(api, token.tokenId, token.network, 'token');
 
       return {
         tokenId: token.tokenId,

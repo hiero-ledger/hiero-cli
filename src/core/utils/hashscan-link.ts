@@ -9,7 +9,12 @@ import { HASHSCAN_BASE_URL } from '@/core/shared/constants';
 
 import { terminalLink } from './terminal-link';
 
-export type HashscanEntityType = 'token' | 'account' | 'transaction' | 'topic';
+export type HashscanEntityType =
+  | 'token'
+  | 'account'
+  | 'transaction'
+  | 'topic'
+  | 'contract';
 
 /**
  * Build Hashscan URL for a given entity
