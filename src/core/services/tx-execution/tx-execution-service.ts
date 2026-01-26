@@ -61,8 +61,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
     // This would result in transaction being executed with operator instead of payer
     if (payer && transaction.isFrozen()) {
       throw new Error(
-        `[TX-EXECUTION] Transaction is already frozen but payer is set. ` +
-          `Cannot set payer account ID. Transaction would be executed with operator instead of payer.`,
+        `[TX-EXECUTION] Transaction is already frozen before setting requested payer of the transaction`,
       );
     }
 
