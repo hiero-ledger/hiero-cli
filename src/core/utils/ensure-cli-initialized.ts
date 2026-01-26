@@ -1,6 +1,7 @@
 import type { ZodSchema } from 'zod';
 import type { CoreApi } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import * as clack from '@clack/prompts';
 
@@ -35,7 +36,31 @@ function clackZodValidation(
   };
 }
 
-async function collectOperatorData() {
+function capitalize(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+async function selectNetwork(api: CoreApi): Promise<SupportedNetwork> {
+  const networks = api.network.getAvailableNetworks();
+  const selected = await clack.select({
+    message: 'Select network',
+    options: networks.map((n) => ({
+      label: n === 'testnet' ? 'Testnet (Recommended)' : capitalize(n),
+      value: n,
+    })),
+    initialValue: 'testnet',
+  });
+
+  if (clack.isCancel(selected)) {
+    clack.cancel('Setup cancelled.');
+    process.exit(0);
+  }
+
+  api.network.switchNetwork(selected as SupportedNetwork);
+  return selected as SupportedNetwork;
+}
+
+async function collectAccountCredentials() {
   const accountId = (await clack.text({
     message: 'Enter your Account ID (e.g., 0.0.123):',
     validate: clackZodValidation(EntityIdSchema),
@@ -49,6 +74,10 @@ async function collectOperatorData() {
   })) as string;
   handleCancel(privateKey);
 
+  return { accountId, privateKey };
+}
+
+async function collectGlobalConfig() {
   const keyManager = (await clack.select({
     message: 'Select Key Manager:',
     options: KEY_MANAGER_OPTIONS,
@@ -62,54 +91,89 @@ async function collectOperatorData() {
   })) as boolean;
   handleCancel(ed25519Support);
 
-  return { accountId, privateKey, keyManager, ed25519Support };
+  return { keyManager, ed25519Support };
 }
 
 async function saveOperatorConfig(
   api: CoreApi,
-  accountId: string,
-  privateKey: string,
-  keyManager: KeyManagerName,
-  ed25519Support: boolean,
+  config: {
+    accountId: string;
+    privateKey: string;
+    keyManager?: KeyManagerName;
+    ed25519Support?: boolean;
+    saveGlobalConfig: boolean;
+  },
 ) {
-  api.config.setOption('ed25519_support_enabled', ed25519Support);
-  api.config.setOption('default_key_manager', keyManager);
+  if (config.saveGlobalConfig && config.ed25519Support !== undefined) {
+    api.config.setOption('ed25519_support_enabled', config.ed25519Support);
+  }
 
-  const account = await api.mirror.getAccount(accountId);
+  if (config.saveGlobalConfig && config.keyManager) {
+    api.config.setOption('default_key_manager', config.keyManager);
+  }
+
+  const account = await api.mirror.getAccount(config.accountId);
+  const keyManager =
+    config.keyManager || api.config.getOption('default_key_manager');
   const { keyRefId } = api.kms.importAndValidatePrivateKey(
     account.keyAlgorithm,
-    privateKey,
+    config.privateKey,
     account.accountPublicKey,
     keyManager,
   );
 
   const currentNetwork = api.network.getCurrentNetwork();
   api.network.setOperator(currentNetwork, {
-    accountId,
+    accountId: config.accountId,
     keyRefId,
   });
 }
 
-async function initializeCliOperator(api: CoreApi) {
-  const currentNetwork = api.network.getCurrentNetwork();
-  clack.intro(
-    `⚙️  No operator configured for ${currentNetwork.toString()}. Setting up default operator.`,
-  );
+async function initializeCliOperator(api: CoreApi): Promise<void> {
+  clack.intro('Hiero CLI Setup');
 
-  const { accountId, privateKey, keyManager, ed25519Support } =
-    await collectOperatorData();
+  const isFirstTime = !api.network.hasAnyOperator();
 
-  clack.outro('Setup data collected.');
+  if (isFirstTime) {
+    await selectNetwork(api);
+    const credentials = await collectAccountCredentials();
+    const globalConfig = await collectGlobalConfig();
+    await saveOperatorConfig(api, {
+      ...credentials,
+      ...globalConfig,
+      saveGlobalConfig: true,
+    });
+  } else {
+    const credentials = await collectAccountCredentials();
 
-  await saveOperatorConfig(
-    api,
-    accountId,
-    privateKey,
-    keyManager,
-    ed25519Support,
-  );
+    const override = await clack.confirm({
+      message:
+        'KeyManager and ED25519 support already configured. Override global settings?',
+      initialValue: false,
+    });
 
-  api.logger.info('Setup complete: operator and config verified and saved.');
+    if (clack.isCancel(override)) {
+      clack.cancel('Setup cancelled.');
+      process.exit(0);
+    }
+
+    if (override) {
+      const globalConfig = await collectGlobalConfig();
+      await saveOperatorConfig(api, {
+        ...credentials,
+        ...globalConfig,
+        saveGlobalConfig: true,
+      });
+    } else {
+      await saveOperatorConfig(api, {
+        ...credentials,
+        saveGlobalConfig: false,
+      });
+      clack.log.info('Operator saved. Global configuration unchanged.');
+    }
+  }
+
+  clack.outro('Setup complete!');
 }
 
 /**
