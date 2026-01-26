@@ -57,6 +57,7 @@ describe('ContractCompilerServiceImpl', () => {
                   object: '0xabc123',
                 },
               },
+              abi: JSON.stringify(abi),
               metadata: JSON.stringify(metadata),
             },
           },
@@ -85,7 +86,7 @@ describe('ContractCompilerServiceImpl', () => {
       );
       expect(parsedInput.settings.outputSelection).toEqual({
         '*': {
-          '*': ['evm.bytecode.object', 'metadata'],
+          '*': ['abi', 'evm.bytecode.object', 'metadata'],
         },
       });
 
@@ -94,7 +95,7 @@ describe('ContractCompilerServiceImpl', () => {
 
       expect(result).toEqual({
         bytecode: '0xabc123',
-        abiDefinition: abi,
+        abiDefinition: JSON.stringify(abi),
         metadata: JSON.stringify(metadata),
       });
     });
@@ -162,6 +163,7 @@ describe('ContractCompilerServiceImpl', () => {
             [CONTRACT_FILENAME]: {
               [CONTRACT_NAME]: {
                 evm: { bytecode: { object: '0x0' } },
+                abi: JSON.stringify([]),
                 metadata: JSON.stringify({ output: { abi: [] } }),
               },
             },

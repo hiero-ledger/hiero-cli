@@ -4,7 +4,6 @@ import type {
   CompilationResult,
   SolcImportResult,
   SolcInput,
-  SolcMetadata,
   SolcOutput,
 } from '@/core/services/contract-compiler/types';
 
@@ -14,6 +13,13 @@ import * as solc from 'solc';
 
 export class ContractCompilerServiceImpl implements ContractCompilerService {
   public compileContract(params: CompilationParams): CompilationResult {
+    if (!params.contractContent.trim()) {
+      throw new Error('Contract content is empty');
+    }
+
+    if (!params.contractName) {
+      throw new Error('Contract name is required');
+    }
     const input: SolcInput = {
       language: 'Solidity',
       sources: {
@@ -24,7 +30,7 @@ export class ContractCompilerServiceImpl implements ContractCompilerService {
       settings: {
         outputSelection: {
           '*': {
-            '*': ['evm.bytecode.object', 'metadata'],
+            '*': ['abi', 'evm.bytecode.object', 'metadata'],
           },
         },
       },
@@ -36,12 +42,17 @@ export class ContractCompilerServiceImpl implements ContractCompilerService {
       }),
     ) as SolcOutput;
 
+    if (!output.contracts?.[params.contractFilename]?.[params.contractName]) {
+      throw new Error(
+        `Contract ${params.contractName} not found in compilation output`,
+      );
+    }
+
     const contract =
       output.contracts[params.contractFilename][params.contractName];
-    const metadataOutput = JSON.parse(contract.metadata) as SolcMetadata;
     return {
       bytecode: contract.evm.bytecode.object,
-      abiDefinition: metadataOutput.output.abi,
+      abiDefinition: contract.abi,
       metadata: contract.metadata,
     };
   }

@@ -50,6 +50,7 @@ export interface SolcMetadata {
 
 export interface SolcContract {
   evm: SolcEvm;
+  abi: string;
   metadata: string;
 }
 
