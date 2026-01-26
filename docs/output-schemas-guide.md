@@ -331,6 +331,105 @@ interface CommandOutputSpec {
 }
 ```
 
+#### `token create-nft`
+
+**Output**:
+
+```json
+{
+  "tokenId": "0.0.67890",
+  "name": "MyNFT",
+  "symbol": "MNFT",
+  "treasuryId": "0.0.12345",
+  "supplyType": "FINITE",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "adminAccountId": "0.0.12345",
+  "supplyAccountId": "0.0.12345",
+  "alias": "my-nft",
+  "network": "testnet"
+}
+```
+
+#### `token mint-ft`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "amount": "10000",
+  "network": "testnet"
+}
+```
+
+#### `token mint-nft`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "serialNumber": "1",
+  "network": "testnet"
+}
+```
+
+#### `token create-ft-from-file`
+
+**Output**:
+
+```json
+{
+  "tokenId": "0.0.67890",
+  "name": "MyToken",
+  "symbol": "MTK",
+  "treasuryId": "0.0.12345",
+  "decimals": 2,
+  "initialSupply": "1000000",
+  "supplyType": "INFINITE",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "alias": "my-token",
+  "network": "testnet",
+  "associations": [
+    {
+      "accountId": "0.0.54321",
+      "name": "alice",
+      "success": true,
+      "transactionId": "0.0.123@1700000000.123456789"
+    }
+  ]
+}
+```
+
+#### `token create-nft-from-file`
+
+**Output**:
+
+```json
+{
+  "tokenId": "0.0.67890",
+  "name": "MyNFT",
+  "symbol": "MNFT",
+  "treasuryId": "0.0.12345",
+  "adminAccountId": "0.0.12345",
+  "supplyAccountId": "0.0.12345",
+  "supplyType": "FINITE",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "alias": "my-nft",
+  "network": "testnet",
+  "associations": [
+    {
+      "accountId": "0.0.54321",
+      "name": "alice",
+      "success": true,
+      "transactionId": "0.0.123@1700000000.123456789"
+    }
+  ]
+}
+```
+
 #### `token list`
 
 Lists all tokens from all networks stored in state.
@@ -378,6 +477,48 @@ Lists all tokens from all networks stored in state.
     },
     "withAssociations": 0,
     "totalAssociations": 0
+  }
+}
+```
+
+#### `token view`
+
+**Output**:
+
+```json
+{
+  "tokenId": "0.0.67890",
+  "name": "MyToken",
+  "symbol": "MTK",
+  "type": "FUNGIBLE_COMMON",
+  "totalSupply": "1000000",
+  "maxSupply": "10000000",
+  "decimals": 2,
+  "treasury": "0.0.12345",
+  "memo": "Test token",
+  "createdTimestamp": "1700000000.123456789"
+}
+```
+
+**Output with NFT serial**:
+
+```json
+{
+  "tokenId": "0.0.67890",
+  "name": "MyNFT",
+  "symbol": "MNFT",
+  "type": "NON_FUNGIBLE_UNIQUE",
+  "totalSupply": "100",
+  "maxSupply": "1000",
+  "treasury": "0.0.12345",
+  "createdTimestamp": "1700000000.123456789",
+  "nftSerial": {
+    "serialNumber": 1,
+    "owner": "0.0.54321",
+    "metadata": "Decoded metadata",
+    "metadataRaw": "base64encodedmetadata",
+    "createdTimestamp": "1700000000.123456789",
+    "deleted": false
   }
 }
 ```

@@ -34,6 +34,7 @@ Goals:
    - `token associate` - shared command for both fungible and non-fungible token association
    - `token list` - unchanged command that will retrieve all tokens information stored in our state (both FT and NFT)
    - `token create-ft-from-file` - renamed `token create-from-file` command for better clarity and user experience
+   - `token create-nft-from-file` - new command for NFT creation from file definition with advanced features
    - `token view` - unchanged command for retrieving token (FT and NFT) information from Hedera Mirror Node REST API
 
 2. Token storage data model
