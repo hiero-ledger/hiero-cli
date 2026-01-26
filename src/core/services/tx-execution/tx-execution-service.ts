@@ -66,6 +66,15 @@ export class TxExecutionServiceImpl implements TxExecutionService {
     const client = this.getClient();
     const payerOverride = this.networkService.getPayerOverrideResolved();
 
+    // If payer override is set but transaction is already frozen, we cannot set TransactionId
+    // This would result in transaction being executed with operator instead of payer
+    if (payerOverride && transaction.isFrozen()) {
+      throw new Error(
+        `[TX-EXECUTION] Transaction is already frozen but payer override is set. ` +
+          `Cannot set payer account ID. Transaction would be executed with operator instead of payer.`,
+      );
+    }
+
     if (payerOverride && !transaction.isFrozen()) {
       const payerAccountId = AccountId.fromString(payerOverride.accountId);
       const transactionId = TransactionId.generate(payerAccountId);
