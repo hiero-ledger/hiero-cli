@@ -12,3 +12,4 @@ export { listTokens } from './commands/list';
 export { mintFt } from './commands/mint-ft';
 export { mintNft } from './commands/mint-nft';
 export { transferToken } from './commands/transfer-ft';
+export { transferNft } from './commands/transfer-nft';

@@ -50,6 +50,11 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── transfer-nft/
+│   │   ├── handler.ts       # NFT transfer handler
+│   │   ├── input.ts         # Input validation schema
+│   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts         # Command exports
 │   ├── associate/
 │   │   ├── handler.ts       # Token association handler
 │   │   ├── input.ts         # Input schema
@@ -275,6 +280,43 @@ hcli token transfer-ft \
   --to 0.0.222222 \
   --amount 100t
 ```
+
+### Token Transfer NFT
+
+Transfer one or more NFTs from one account to another.
+
+```bash
+# Using account alias for source
+hcli token transfer-nft \
+  --token mynft-alias \
+  --from alice \
+  --to bob \
+  --serials 1,2,3
+
+# Using account-id:private-key pair for source
+hcli token transfer-nft \
+  --token 0.0.123456 \
+  --from 0.0.111111:302e020100300506032b657004220420... \
+  --to 0.0.222222 \
+  --serials 5
+
+# Omitting --from uses operator account
+hcli token transfer-nft \
+  --token mynft-alias \
+  --to bob \
+  --serials 1,2,3
+```
+
+**Parameters:**
+
+- `--token` / `-T`: NFT token identifier (alias or token ID) - **Required**
+- `--to` / `-t`: Destination account (alias, account-id, or EVM address) - **Required**
+- `--from` / `-f`: Source account (alias or account-id:private-key pair) - **Optional** (defaults to operator)
+- `--serials` / `-s`: NFT serial numbers to transfer (comma-separated, max 10) - **Required**
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Note:** Maximum 10 serial numbers per transaction (Hedera limit). The command verifies NFT ownership before transfer.
 
 ### Token List
 
