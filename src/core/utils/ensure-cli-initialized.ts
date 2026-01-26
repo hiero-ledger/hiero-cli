@@ -6,6 +6,26 @@ import type { SupportedNetwork } from '@/core/types/shared.types';
 import * as clack from '@clack/prompts';
 
 import { EntityIdSchema, PrivateKeySchema } from '@/core/schemas';
+import { SupportedNetwork as NetworkEnum } from '@/core/types/shared.types';
+
+const NETWORK_DISPLAY_OPTIONS = [
+  {
+    value: NetworkEnum.TESTNET,
+    label: 'Testnet (Recommended)',
+  },
+  {
+    value: NetworkEnum.MAINNET,
+    label: 'Mainnet',
+  },
+  {
+    value: NetworkEnum.PREVIEWNET,
+    label: 'Previewnet',
+  },
+  {
+    value: NetworkEnum.LOCALNET,
+    label: 'Localnet',
+  },
+];
 
 const KEY_MANAGER_OPTIONS = [
   {
@@ -36,31 +56,21 @@ function clackZodValidation(
   };
 }
 
-function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-async function selectNetwork(api: CoreApi): Promise<SupportedNetwork> {
-  const networks = api.network.getAvailableNetworks();
+async function promptForNetworkSelection(): Promise<SupportedNetwork> {
   const selected = await clack.select({
     message: 'Select network',
-    options: networks.map((n) => ({
-      label: n === 'testnet' ? 'Testnet (Recommended)' : capitalize(n),
-      value: n,
-    })),
-    initialValue: 'testnet',
+    options: NETWORK_DISPLAY_OPTIONS,
+    initialValue: NetworkEnum.TESTNET,
   });
 
-  if (clack.isCancel(selected)) {
-    clack.cancel('Setup cancelled.');
-    process.exit(0);
-  }
-
-  api.network.switchNetwork(selected as SupportedNetwork);
+  handleCancel(selected);
   return selected as SupportedNetwork;
 }
 
-async function collectAccountCredentials() {
+async function promptForAccountCredentials(): Promise<{
+  accountId: string;
+  privateKey: string;
+}> {
   const accountId = (await clack.text({
     message: 'Enter your Account ID (e.g., 0.0.123):',
     validate: clackZodValidation(EntityIdSchema),
@@ -77,7 +87,10 @@ async function collectAccountCredentials() {
   return { accountId, privateKey };
 }
 
-async function collectGlobalConfig() {
+async function promptForGlobalConfig(): Promise<{
+  keyManager: KeyManagerName;
+  ed25519Support: boolean;
+}> {
   const keyManager = (await clack.select({
     message: 'Select Key Manager:',
     options: KEY_MANAGER_OPTIONS,
@@ -94,6 +107,17 @@ async function collectGlobalConfig() {
   return { keyManager, ed25519Support };
 }
 
+async function promptForOverride(): Promise<boolean> {
+  const override = await clack.confirm({
+    message:
+      'KeyManager and ED25519 support already configured. Override global settings?',
+    initialValue: false,
+  });
+
+  handleCancel(override);
+  return override as boolean;
+}
+
 async function saveOperatorConfig(
   api: CoreApi,
   config: {
@@ -103,7 +127,7 @@ async function saveOperatorConfig(
     ed25519Support?: boolean;
     saveGlobalConfig: boolean;
   },
-) {
+): Promise<void> {
   if (config.saveGlobalConfig && config.ed25519Support !== undefined) {
     api.config.setOption('ed25519_support_enabled', config.ed25519Support);
   }
@@ -129,48 +153,49 @@ async function saveOperatorConfig(
   });
 }
 
-async function initializeCliOperator(api: CoreApi): Promise<void> {
-  clack.intro('Hiero CLI Setup');
+async function runFirstTimeSetup(api: CoreApi): Promise<void> {
+  const selectedNetwork = await promptForNetworkSelection();
+  api.network.switchNetwork(selectedNetwork);
 
-  const isFirstTime = !api.network.hasAnyOperator();
+  const credentials = await promptForAccountCredentials();
+  const globalConfig = await promptForGlobalConfig();
 
-  if (isFirstTime) {
-    await selectNetwork(api);
-    const credentials = await collectAccountCredentials();
-    const globalConfig = await collectGlobalConfig();
+  await saveOperatorConfig(api, {
+    ...credentials,
+    ...globalConfig,
+    saveGlobalConfig: true,
+  });
+}
+
+async function runNetworkChangeSetup(api: CoreApi): Promise<void> {
+  const credentials = await promptForAccountCredentials();
+  const override = await promptForOverride();
+
+  if (override) {
+    const globalConfig = await promptForGlobalConfig();
     await saveOperatorConfig(api, {
       ...credentials,
       ...globalConfig,
       saveGlobalConfig: true,
     });
   } else {
-    const credentials = await collectAccountCredentials();
-
-    const override = await clack.confirm({
-      message:
-        'KeyManager and ED25519 support already configured. Override global settings?',
-      initialValue: false,
+    await saveOperatorConfig(api, {
+      ...credentials,
+      saveGlobalConfig: false,
     });
+    clack.log.info('Operator saved. Global configuration unchanged.');
+  }
+}
 
-    if (clack.isCancel(override)) {
-      clack.cancel('Setup cancelled.');
-      process.exit(0);
-    }
+async function initializeCliOperator(api: CoreApi): Promise<void> {
+  clack.intro('Hiero CLI Setup');
 
-    if (override) {
-      const globalConfig = await collectGlobalConfig();
-      await saveOperatorConfig(api, {
-        ...credentials,
-        ...globalConfig,
-        saveGlobalConfig: true,
-      });
-    } else {
-      await saveOperatorConfig(api, {
-        ...credentials,
-        saveGlobalConfig: false,
-      });
-      clack.log.info('Operator saved. Global configuration unchanged.');
-    }
+  const isFirstTime = !api.network.hasAnyOperator();
+
+  if (isFirstTime) {
+    await runFirstTimeSetup(api);
+  } else {
+    await runNetworkChangeSetup(api);
   }
 
   clack.outro('Setup complete!');
