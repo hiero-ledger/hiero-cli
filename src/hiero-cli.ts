@@ -17,6 +17,7 @@ import {
   setGlobalOutputFormat,
   setupGlobalErrorHandlers,
 } from './core/utils/error-handler';
+import { resolvePayer } from './core/utils/resolve-payer';
 
 program
   .name('hcli')
@@ -49,9 +50,9 @@ async function initializeCLI() {
       coreApi.network.setNetwork(networkOverride);
     }
 
-    const payerOverride = (opts.payer || opts.P) as string | undefined;
-    if (payerOverride) {
-      coreApi.network.setPayerOverrideString(payerOverride);
+    const payer = (opts.payer || opts.P) as string | undefined;
+    if (payer) {
+      await resolvePayer(payer, coreApi);
     }
 
     // Setup global error handlers with validated format

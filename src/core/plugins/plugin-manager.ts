@@ -11,13 +11,11 @@ import type {
   PluginStateEntry,
 } from '@/core';
 import type { CoreApi } from '@/core/core-api';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 
 import * as path from 'path';
 
-import { KeyOrAccountAliasSchema } from '@/core/schemas';
 import { Status } from '@/core/shared/constants';
 import { ensureCliInitialized } from '@/core/utils/ensure-cli-initialized';
 import { formatAndExitWithError } from '@/core/utils/error-handler';
@@ -375,32 +373,6 @@ export class PluginManager {
     ];
     if (!PLUGINS_DISABLED_FROM_INITIALIZATION.includes(pluginName)) {
       await ensureCliInitialized(this.coreApi);
-    }
-
-    const payerOverrideString = this.coreApi.network.getPayerOverrideString();
-
-    if (payerOverrideString) {
-      try {
-        const keyManager =
-          this.coreApi.config.getOption<KeyManagerName>(
-            'default_key_manager',
-          ) || 'local';
-        const parsedPayer = KeyOrAccountAliasSchema.parse(payerOverrideString);
-        const resolvedPayer = await this.coreApi.keyResolver.getOrInitKey(
-          parsedPayer,
-          keyManager,
-          ['payer:override'],
-        );
-        this.coreApi.network.setPayerOverride(resolvedPayer);
-        this.logger.debug(
-          `[PLUGIN-MANAGER] Resolved payer override: ${resolvedPayer.accountId}`,
-        );
-      } catch (error) {
-        this.exitWithError(
-          `Failed to resolve payer override: ${payerOverrideString}`,
-          error,
-        );
-      }
     }
 
     const handlerArgs: CommandHandlerArgs = {
