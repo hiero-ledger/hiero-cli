@@ -821,3 +821,134 @@ export const makeMintNftCommandArgs = (params: {
     logger: params.logger,
   };
 };
+
+/**
+ * Valid NFT Token File Data (for create-nft-from-file tests)
+ */
+export const validNftTokenFile = {
+  name: 'TestNFT',
+  symbol: 'TNFT',
+  supplyType: 'finite',
+  maxSupply: 1000,
+  treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
+  adminKey: `${mockAccountIds.operator}:${mockKeys.admin}`,
+  supplyKey: `${mockAccountIds.operator}:${mockKeys.supply}`,
+  associations: [`${mockAccountIds.association}:${mockKeys.association}`],
+  memo: 'Test NFT created from file',
+};
+
+/**
+ * Infinite Supply NFT Token File
+ */
+export const infiniteSupplyNftFile = {
+  name: 'TestNFT',
+  symbol: 'TNFT',
+  supplyType: 'infinite',
+  treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
+  adminKey: `${mockAccountIds.operator}:${mockKeys.admin}`,
+  supplyKey: `${mockAccountIds.operator}:${mockKeys.supply}`,
+  memo: 'Test NFT with infinite supply',
+};
+
+/**
+ * Invalid NFT Token File - Missing supplyKey (required for NFT)
+ */
+export const invalidNftFileMissingSupplyKey = {
+  name: 'TestNFT',
+  symbol: 'TNFT',
+  supplyType: 'infinite',
+  treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
+  adminKey: `${mockAccountIds.operator}:${mockKeys.admin}`,
+  // supplyKey missing - should fail validation
+};
+
+/**
+ * Invalid NFT Token File - Finite without maxSupply
+ */
+export const invalidNftFileFiniteWithoutMaxSupply = {
+  name: 'TestNFT',
+  symbol: 'TNFT',
+  supplyType: 'finite',
+  // maxSupply missing - should fail validation
+  treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
+  adminKey: `${mockAccountIds.operator}:${mockKeys.admin}`,
+  supplyKey: `${mockAccountIds.operator}:${mockKeys.supply}`,
+};
+
+/**
+ * Invalid NFT Token File - Infinite with maxSupply
+ */
+export const invalidNftFileInfiniteWithMaxSupply = {
+  name: 'TestNFT',
+  symbol: 'TNFT',
+  supplyType: 'infinite',
+  maxSupply: 1000,
+  treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
+  adminKey: `${mockAccountIds.operator}:${mockKeys.admin}`,
+  supplyKey: `${mockAccountIds.operator}:${mockKeys.supply}`,
+};
+
+/**
+ * Invalid NFT Token File - Missing Name
+ */
+export const invalidNftFileWithoutName = {
+  symbol: 'TNFT',
+  supplyType: 'finite',
+  treasuryKey: '0.0.123456:treasury-key',
+  adminKey: 'admin-key',
+  supplyKey: 'supply-key',
+};
+
+/**
+ * Invalid NFT Token File - Missing Treasury
+ */
+export const invalidNftFileWithoutTreasury = {
+  ...validNftTokenFile,
+  treasuryKey: '',
+};
+
+/**
+ * Invalid NFT Token File - Invalid Supply Type
+ */
+export const invalidNftFileWithInvalidSupplyType = {
+  ...validNftTokenFile,
+  supplyType: 'invalid-type',
+};
+
+/**
+ * Expected NFT token transaction parameters for createNftFromFile tests
+ */
+export const expectedNftTransactionParamsFromFile = {
+  name: 'TestNFT',
+  symbol: 'TNFT',
+  treasuryId: mockAccountIds.treasury,
+  decimals: 0,
+  initialSupplyRaw: 0n,
+  supplyType: 'FINITE',
+  maxSupplyRaw: 1000n,
+  adminPublicKey: expect.any(Object),
+  supplyPublicKey: expect.any(Object),
+  memo: 'Test NFT created from file',
+  tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
+};
+
+/**
+ * Factory function to create CommandHandlerArgs for create-nft-from-file tests
+ */
+export const makeCreateNftFromFileCommandArgs = (params: {
+  api: Partial<CoreApi>;
+  logger: Logger;
+  args?: Record<string, string | number | boolean | undefined>;
+}) => {
+  const api = params.api as unknown as CoreApi;
+  return {
+    args: {
+      file: 'test.json',
+      ...params.args,
+    },
+    api,
+    state: api.state,
+    config: api.config,
+    logger: params.logger,
+  };
+};

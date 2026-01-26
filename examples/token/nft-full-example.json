@@ -1,0 +1,16 @@
+{
+  "name": "nft-full-example",
+  "symbol": "NFE",
+  "supplyType": "finite",
+  "maxSupply": 10000,
+  "treasuryKey": "<alias or accountId:privateKey>",
+  "adminKey": "<alias or accountId:privateKey>",
+  "supplyKey": "<alias or accountId:privateKey>",
+  "wipeKey": "<alias or accountId:privateKey>",
+  "kycKey": "<alias or accountId:privateKey>",
+  "freezeKey": "<alias or accountId:privateKey>",
+  "pauseKey": "<alias or accountId:privateKey>",
+  "feeScheduleKey": "<alias or accountId:privateKey>",
+  "memo": "Full example NFT with all fields",
+  "associations": ["<alias or accountId:privateKey>", "..."]
+}

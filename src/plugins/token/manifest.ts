@@ -27,6 +27,11 @@ import {
   createTokenFromFile,
 } from './commands/create-ft-from-file';
 import {
+  CREATE_NFT_FROM_FILE_TEMPLATE,
+  createNftFromFile,
+  CreateNftFromFileOutputSchema,
+} from './commands/create-nft-from-file';
+import {
   LIST_TOKENS_TEMPLATE,
   listTokens,
   ListTokensOutputSchema,
@@ -507,6 +512,35 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: CreateFungibleTokenFromFileOutputSchema,
         humanTemplate: CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE,
+      },
+    },
+    {
+      name: 'create-nft-from-file',
+      summary: 'Create a new NFT token from a file',
+      description:
+        'Create a new non-fungible token from a JSON file definition with advanced features',
+      options: [
+        {
+          name: 'file',
+          short: 'f',
+          type: 'string',
+          required: true,
+          description:
+            'NFT token definition file path (absolute or relative) to a JSON file',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: createNftFromFile,
+      output: {
+        schema: CreateNftFromFileOutputSchema,
+        humanTemplate: CREATE_NFT_FROM_FILE_TEMPLATE,
       },
     },
     {

@@ -1,0 +1,8 @@
+{
+  "name": "nft-keys-example",
+  "symbol": "NKE",
+  "supplyType": "infinite",
+  "treasuryKey": "<alias or accountId:privateKey>",
+  "adminKey": "<alias or accountId:privateKey>",
+  "supplyKey": "<alias or accountId:privateKey>"
+}

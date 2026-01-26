@@ -395,6 +395,55 @@ The token file supports aliases and raw keys with optional key type prefixes:
 
 **Note**: Token name is automatically registered as an alias after successful creation. Duplicate names are not allowed.
 
+### Token Create From File (Non-Fungible Token)
+
+Create a new non-fungible token from a JSON file definition with advanced features.
+
+```bash
+# Basic usage
+hcli token create-nft-from-file --file nft-definition.json
+
+# With specific key manager
+hcli token create-nft-from-file --file nft-definition.json --key-manager local_encrypted
+```
+
+**Token File Format:**
+
+The NFT file supports aliases and raw keys with optional key type prefixes:
+
+```json
+{
+  "name": "my-nft",
+  "symbol": "MNFT",
+  "supplyType": "finite",
+  "maxSupply": 1000,
+  "treasuryKey": "<alias or accountId:privateKey>",
+  "adminKey": "<alias or accountId:privateKey>",
+  "supplyKey": "<alias or accountId:privateKey>",
+  "wipeKey": "<alias or accountId:privateKey>",
+  "kycKey": "<alias or accountId:privateKey>",
+  "freezeKey": "<alias or accountId:privateKey>",
+  "pauseKey": "<alias or accountId:privateKey>",
+  "feeScheduleKey": "<alias or accountId:privateKey>",
+  "memo": "Optional NFT collection memo",
+  "associations": ["<alias or accountId:privateKey>", "..."]
+}
+```
+
+**Supported formats for treasury and keys:**
+
+- **Alias**: `"my-account"` - resolved via alias service
+- **Account with key**: `"0.0.123456:privateKey"`
+
+**Key Differences from Fungible Token:**
+
+- No `decimals` or `initialSupply` fields (NFT-specific)
+- `maxSupply` represents the maximum number of NFT instances in the collection
+- NFTs are minted individually with metadata via `mint-nft` command
+- No `customFees` field (planned for future versions)
+
+**Note**: NFT token name is automatically registered as an alias after successful creation. Duplicate names are not allowed. Token associations are created automatically for all specified accounts.
+
 ## 📝 Parameter Formats
 
 The plugin supports flexible parameter formats:
