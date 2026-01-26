@@ -59,11 +59,6 @@ export const tokenPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Token Plugin',
   description: 'Plugin for managing Hedera fungible and non-fungible tokens',
-  compatibility: {
-    cli: '^1.0.0',
-    core: '^1.0.0',
-    api: '^1.0.0',
-  },
   commands: [
     {
       name: 'mint-ft',

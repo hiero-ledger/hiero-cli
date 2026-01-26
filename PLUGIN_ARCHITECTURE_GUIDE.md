@@ -67,11 +67,6 @@ export const myPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'My Plugin',
   description: 'A custom plugin for Hiero CLI',
-  compatibility: {
-    cli: '^1.0.0',
-    core: '^1.0.0',
-    api: '^1.0.0',
-  },
   capabilities: [
     'state:namespace:my-plugin-data',
     'network:read',

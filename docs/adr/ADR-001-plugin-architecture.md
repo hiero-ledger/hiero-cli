@@ -30,7 +30,6 @@ Non-goals (v1):
 - Plugins are Node packages publishing a manifest and command handlers.
 - Plugins are functionally stateless; persistence (if any) is declared via schemas and stored by Core under a namespace.
 - Plugins export commands via a manifest; CLI loads manifests, registers commands, and injects Core services into handlers.
-- Capability model and compatibility checks enforced on load.
 
 ## Rationale
 
@@ -51,46 +50,56 @@ Non-goals (v1):
 export interface PluginManifest {
   name: string;
   version: string;
-  displayName?: string;
-  description?: string;
-  compatibility: { cli: string; core: string; api?: string };
-  capabilities: string[];
+  displayName: string;
+  description: string;
   commands: CommandSpec[];
-  stateSchemas?: Array<{
-    namespace: string;
-    version: number;
-    jsonSchema: unknown;
-    scope?: 'profile' | 'global';
-  }>;
-  init?: (context: PluginContext) => void | Promise<void>;
-  teardown?: (context: PluginContext) => void | Promise<void>;
 }
 
 export interface CommandSpec {
-  name: string; // e.g., 'token create-ft'
-  summary?: string;
+  name: string;
+  summary: string;
+  description: string;
+  options?: CommandOption[];
+  handler: CommandHandler;
+  output: CommandOutputSpec;
+}
+
+export interface CommandOption {
+  name: string;
+  type: 'string' | 'number' | 'boolean' | 'array';
+  required: boolean;
+  default?: unknown;
   description?: string;
-  options?: Array<{
-    name: string;
-    type: 'string' | 'number' | 'boolean' | 'array';
-    required?: boolean;
-    default?: unknown;
-  }>;
-  handler: string; // path within plugin package
+  short?: string; // optional short flag alias like 'b' for -b
+}
+
+export interface CommandOutputSpec {
+  schema: z.ZodTypeAny; // Zod schema for the command's output
+  humanTemplate?: string; // Optional human-readable Handlebars template string
+}
+
+export type CommandHandler = (
+  args: CommandHandlerArgs,
+) => Promise<CommandExecutionResult>;
+
+export interface CommandExecutionResult {
+  status: Status;
+  errorMessage?: string; // Optional, present when status !== 'success'
+  outputJson?: string; // JSON string conforming to the manifest-declared output schema
 }
 
 export interface CommandHandlerArgs {
   args: Record<string, unknown>;
-  api: CoreAPI; // injected instance per execution
-  state: StateManager; // namespaced access provided by Core
-  config: ConfigView;
+  api: CoreApi; // injected instance per execution
+  state: StateService; // namespaced access provided by Core
+  config: ConfigService;
   logger: Logger;
 }
 
 export interface PluginContext {
-  api: CoreAPI; // injected instance for plugin lifecycle
-  state: StateManager; // namespaced access provided by Core
-  config: ConfigView;
+  api: CoreApi; // injected instance for plugin lifecycle
+  state: StateService; // namespaced access provided by Core
+  config: ConfigService;
   logger: Logger;
 }
 ```
@@ -99,12 +108,12 @@ export interface PluginContext {
 
 - Plugins import Core types only and receive instances via handler args (DI). They do not construct or import runtime singletons.
 - Command conflicts resolved by namespacing; canonical id `pluginName:cmd`. Commands are called as `<pluginName> <cmd>` (e.g., `myplugin create`). Names allowed if conflict-free.
-- Plugin lifecycle: `init()` called during plugin registration, `teardown()` called on CLI exit or plugin removal.
+- Command handlers are functions that receive Core API services via dependency injection and return structured results.
 - Error taxonomy standardized with exit codes for consistent UX and automation.
 
-## Versioning & Compatibility
+## Versioning
 
-- SemVer for CLI and Core; plugins declare compatibility ranges.
+- SemVer for CLI and Core.
 - Deprecations are warned and removed after two minor versions or 6 months (whichever later).
 
 ## Distribution & UX
@@ -123,7 +132,6 @@ export interface PluginContext {
 
 - ESM-first plugins targeting Node 22 LTS (support Node 20 for now)
 - Per-profile default scoping for plugin state and config views
-- Capability set: `network:read|write`, `state:namespace:<ns>`, `signing:use`
 - Canonical command id format and help aliasing
 
 ## Consequences

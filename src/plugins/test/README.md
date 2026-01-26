@@ -46,11 +46,6 @@ export const testPluginManifest: PluginManifest = {
   version: '1.0.0', // version of the plugin, mandatory field
   displayName: 'Test Plugin', // for displaying plugin's name, mandatory field
   description: 'For integration plugin', // brief description of what plugin capabilities, mandatory field
-  compatibility: {
-    cli: '^1.0.0',
-    core: '^1.0.0',
-    api: '^1.0.0',
-  }, // compatibility with CLI components, for now use this default set of values, mandatory field
   capabilities: ['test:read', 'memo:create'], // set of capabilites, can be empty
   commands: [
     // definitions of commands
