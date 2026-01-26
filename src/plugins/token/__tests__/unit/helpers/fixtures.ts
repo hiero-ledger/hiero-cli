@@ -828,7 +828,7 @@ export const makeMintNftCommandArgs = (params: {
 export const validNftTokenFile = {
   name: 'TestNFT',
   symbol: 'TNFT',
-  supplyType: 'finite' as const,
+  supplyType: 'finite',
   maxSupply: 1000,
   treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
   adminKey: `${mockAccountIds.operator}:${mockKeys.admin}`,
@@ -843,7 +843,7 @@ export const validNftTokenFile = {
 export const infiniteSupplyNftFile = {
   name: 'TestNFT',
   symbol: 'TNFT',
-  supplyType: 'infinite' as const,
+  supplyType: 'infinite',
   treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
   adminKey: `${mockAccountIds.operator}:${mockKeys.admin}`,
   supplyKey: `${mockAccountIds.operator}:${mockKeys.supply}`,
@@ -856,7 +856,7 @@ export const infiniteSupplyNftFile = {
 export const invalidNftFileMissingSupplyKey = {
   name: 'TestNFT',
   symbol: 'TNFT',
-  supplyType: 'infinite' as const,
+  supplyType: 'infinite',
   treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
   adminKey: `${mockAccountIds.operator}:${mockKeys.admin}`,
   // supplyKey missing - should fail validation
@@ -868,7 +868,7 @@ export const invalidNftFileMissingSupplyKey = {
 export const invalidNftFileFiniteWithoutMaxSupply = {
   name: 'TestNFT',
   symbol: 'TNFT',
-  supplyType: 'finite' as const,
+  supplyType: 'finite',
   // maxSupply missing - should fail validation
   treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
   adminKey: `${mockAccountIds.operator}:${mockKeys.admin}`,
@@ -881,11 +881,38 @@ export const invalidNftFileFiniteWithoutMaxSupply = {
 export const invalidNftFileInfiniteWithMaxSupply = {
   name: 'TestNFT',
   symbol: 'TNFT',
-  supplyType: 'infinite' as const,
-  maxSupply: 1000, // should not be provided for infinite
+  supplyType: 'infinite',
+  maxSupply: 1000,
   treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
   adminKey: `${mockAccountIds.operator}:${mockKeys.admin}`,
   supplyKey: `${mockAccountIds.operator}:${mockKeys.supply}`,
+};
+
+/**
+ * Invalid NFT Token File - Missing Name
+ */
+export const invalidNftFileWithoutName = {
+  symbol: 'TNFT',
+  supplyType: 'finite',
+  treasuryKey: '0.0.123456:treasury-key',
+  adminKey: 'admin-key',
+  supplyKey: 'supply-key',
+};
+
+/**
+ * Invalid NFT Token File - Missing Treasury
+ */
+export const invalidNftFileWithoutTreasury = {
+  ...validNftTokenFile,
+  treasuryKey: '',
+};
+
+/**
+ * Invalid NFT Token File - Invalid Supply Type
+ */
+export const invalidNftFileWithInvalidSupplyType = {
+  ...validNftTokenFile,
+  supplyType: 'invalid-type',
 };
 
 /**

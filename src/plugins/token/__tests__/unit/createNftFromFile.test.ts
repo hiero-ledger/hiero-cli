@@ -2,15 +2,13 @@
  * NFT Token Create From File Handler Unit Tests
  * Tests the NFT token creation from file functionality of the token plugin
  */
-import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-
 import '@/core/utils/json-serialize';
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { HederaTokenType, Status } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   createNftFromFile,
   type CreateNftFromFileOutput,
@@ -23,6 +21,11 @@ import {
   invalidNftFileFiniteWithoutMaxSupply,
   invalidNftFileInfiniteWithMaxSupply,
   invalidNftFileMissingSupplyKey,
+  invalidNftFileWithInvalidSupplyType,
+  invalidNftFileWithoutName,
+  invalidNftFileWithoutTreasury,
+  makeCreateNftFromFileCommandArgs,
+  mockAccountIds,
   mockKeys,
   mockTransactionResults,
   mockTransactions,
@@ -160,15 +163,13 @@ describe('createNftFromFileHandler', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -178,13 +179,17 @@ describe('createNftFromFileHandler', () => {
       expect(result.errorMessage).toBeUndefined();
 
       const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
-      expect(output.tokenId).toBe('0.0.123456');
-      expect(output.name).toBe('TestNFT');
-      expect(output.symbol).toBe('TNFT');
-      expect(output.treasuryId).toBe('0.0.123456');
-      expect(output.supplyType).toBe('FINITE');
-      expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
-      expect(output.network).toBe('testnet');
+      expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
+      expect(output.name).toBe(validNftTokenFile.name);
+      expect(output.symbol).toBe(validNftTokenFile.symbol);
+      expect(output.treasuryId).toBe(mockAccountIds.treasury);
+      expect(output.supplyType).toBe(
+        validNftTokenFile.supplyType.toUpperCase(),
+      );
+      expect(output.transactionId).toBe(
+        mockTransactionResults.success.transactionId,
+      );
+      expect(output.network).toBe(SupportedNetwork.TESTNET);
 
       expect(mockFs.readFile).toHaveBeenCalledWith(
         '/resolved/path/to/test.json',
@@ -213,15 +218,11 @@ describe('createNftFromFileHandler', () => {
       const { api } = createMockApi();
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
-        args: {
-          file: fullPath,
-        },
+      const args = makeCreateNftFromFileCommandArgs({
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
         logger,
-      };
+        args: { file: fullPath },
+      });
 
       const result = await createNftFromFile(args);
 
@@ -230,9 +231,9 @@ describe('createNftFromFileHandler', () => {
       expect(result.errorMessage).toBeUndefined();
 
       const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
-      expect(output.tokenId).toBe('0.0.123456');
-      expect(output.name).toBe('TestNFT');
-      expect(output.symbol).toBe('TNFT');
+      expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
+      expect(output.name).toBe(validNftTokenFile.name);
+      expect(output.symbol).toBe(validNftTokenFile.symbol);
 
       expect(mockFs.readFile).toHaveBeenCalledWith(fullPath, 'utf-8');
       expect(mockAddToken).toHaveBeenCalled();
@@ -251,15 +252,11 @@ describe('createNftFromFileHandler', () => {
       const { api } = createMockApi();
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
-        args: {
-          file: absolutePath,
-        },
+      const args = makeCreateNftFromFileCommandArgs({
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
         logger,
-      };
+        args: { file: absolutePath },
+      });
 
       const result = await createNftFromFile(args);
 
@@ -268,9 +265,9 @@ describe('createNftFromFileHandler', () => {
       expect(result.errorMessage).toBeUndefined();
 
       const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
-      expect(output.tokenId).toBe('0.0.123456');
-      expect(output.name).toBe('TestNFT');
-      expect(output.symbol).toBe('TNFT');
+      expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
+      expect(output.name).toBe(validNftTokenFile.name);
+      expect(output.symbol).toBe(validNftTokenFile.symbol);
 
       expect(mockFs.readFile).toHaveBeenCalledWith(absolutePath, 'utf-8');
       expect(mockAddToken).toHaveBeenCalled();
@@ -331,15 +328,13 @@ describe('createNftFromFileHandler', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -349,10 +344,12 @@ describe('createNftFromFileHandler', () => {
       expect(result.errorMessage).toBeUndefined();
 
       const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
-      expect(output.name).toBe('TestNFT');
-      expect(output.symbol).toBe('TNFT');
-      expect(output.treasuryId).toBe('0.0.123456');
-      expect(output.supplyType).toBe('FINITE');
+      expect(output.name).toBe(validNftTokenFile.name);
+      expect(output.symbol).toBe(validNftTokenFile.symbol);
+      expect(output.treasuryId).toBe(mockAccountIds.treasury);
+      expect(output.supplyType).toBe(
+        validNftTokenFile.supplyType.toUpperCase(),
+      );
 
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
         expectedNftTransactionParamsFromFile,
@@ -414,15 +411,13 @@ describe('createNftFromFileHandler', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -432,18 +427,20 @@ describe('createNftFromFileHandler', () => {
       expect(result.errorMessage).toBeUndefined();
 
       const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
-      expect(output.name).toBe('TestNFT');
-      expect(output.symbol).toBe('TNFT');
-      expect(output.treasuryId).toBe('0.0.123456');
-      expect(output.supplyType).toBe('INFINITE');
+      expect(output.name).toBe(infiniteSupplyNftFile.name);
+      expect(output.symbol).toBe(infiniteSupplyNftFile.symbol);
+      expect(output.treasuryId).toBe(mockAccountIds.treasury);
+      expect(output.supplyType).toBe(
+        infiniteSupplyNftFile.supplyType.toUpperCase(),
+      );
 
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith({
-        name: 'TestNFT',
-        symbol: 'TNFT',
-        treasuryId: '0.0.123456',
+        name: infiniteSupplyNftFile.name,
+        symbol: infiniteSupplyNftFile.symbol,
+        treasuryId: mockAccountIds.treasury,
         decimals: 0,
         initialSupplyRaw: 0n,
-        supplyType: 'INFINITE',
+        supplyType: infiniteSupplyNftFile.supplyType.toUpperCase(),
         maxSupplyRaw: 0n,
         adminPublicKey: expect.any(Object),
         supplyPublicKey: expect.any(Object),
@@ -514,15 +511,13 @@ describe('createNftFromFileHandler', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -532,7 +527,7 @@ describe('createNftFromFileHandler', () => {
       expect(result.errorMessage).toBeUndefined();
 
       const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
-      expect(output.tokenId).toBe('0.0.123456');
+      expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
       expect(output.associations).toBeDefined();
       expect(output.associations.length).toBeGreaterThan(0);
 
@@ -552,15 +547,11 @@ describe('createNftFromFileHandler', () => {
 
       const { api } = makeApiMocks({});
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
-        args: {
-          file: 'nonexistent',
-        },
+      const args = makeCreateNftFromFileCommandArgs({
         api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
         logger,
-      };
+        args: { file: 'nonexistent' },
+      });
 
       const result = await createNftFromFile(args);
 
@@ -579,15 +570,13 @@ describe('createNftFromFileHandler', () => {
 
       const { api } = makeApiMocks({});
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -606,15 +595,13 @@ describe('createNftFromFileHandler', () => {
 
       const { api } = makeApiMocks({});
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -629,30 +616,21 @@ describe('createNftFromFileHandler', () => {
 
   describe('validation scenarios', () => {
     test('should handle missing required fields', async () => {
-      const invalidFile = {
-        // name missing
-        symbol: 'TNFT',
-        supplyType: 'finite',
-        treasuryKey: '0.0.123456:treasury-key',
-        adminKey: 'admin-key',
-        supplyKey: 'supply-key',
-      };
-
-      mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
+      mockFs.readFile.mockResolvedValue(
+        JSON.stringify(invalidNftFileWithoutName),
+      );
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/nft.test.json');
 
       const { api } = makeApiMocks({});
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -673,15 +651,13 @@ describe('createNftFromFileHandler', () => {
 
       const { api } = makeApiMocks({});
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -694,26 +670,21 @@ describe('createNftFromFileHandler', () => {
     });
 
     test('should handle invalid treasury format', async () => {
-      const invalidFile = {
-        ...validNftTokenFile,
-        treasuryKey: '', // Empty treasury string
-      };
-
-      mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
+      mockFs.readFile.mockResolvedValue(
+        JSON.stringify(invalidNftFileWithoutTreasury),
+      );
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/nft.test.json');
 
       const { api } = makeApiMocks({});
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -726,26 +697,21 @@ describe('createNftFromFileHandler', () => {
     });
 
     test('should handle invalid supply type', async () => {
-      const invalidFile = {
-        ...validNftTokenFile,
-        supplyType: 'invalid-type',
-      };
-
-      mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
+      mockFs.readFile.mockResolvedValue(
+        JSON.stringify(invalidNftFileWithInvalidSupplyType),
+      );
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/nft.test.json');
 
       const { api } = makeApiMocks({});
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -766,15 +732,13 @@ describe('createNftFromFileHandler', () => {
 
       const { api } = makeApiMocks({});
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -795,15 +759,13 @@ describe('createNftFromFileHandler', () => {
 
       const { api } = makeApiMocks({});
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -875,15 +837,13 @@ describe('createNftFromFileHandler', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -958,15 +918,13 @@ describe('createNftFromFileHandler', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -976,8 +934,8 @@ describe('createNftFromFileHandler', () => {
       expect(result.errorMessage).toBeUndefined();
 
       const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
-      expect(output.tokenId).toBe('0.0.123456');
-      expect(output.name).toBe('TestNFT');
+      expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
+      expect(output.name).toBe(validNftTokenFile.name);
 
       expect(logger.warn).toHaveBeenCalledWith(
         expect.stringContaining('⚠️  Failed to associate account 0.0.789012:'),
@@ -1044,15 +1002,13 @@ describe('createNftFromFileHandler', () => {
       });
 
       const logger = makeLogger();
-      const args: CommandHandlerArgs = {
+      const args = makeCreateNftFromFileCommandArgs({
+        api,
+        logger,
         args: {
           file: 'test',
         },
-        api,
-        state: makeStateMock(),
-        config: makeConfigMock(),
-        logger,
-      };
+      });
 
       const result = await createNftFromFile(args);
 
@@ -1062,8 +1018,8 @@ describe('createNftFromFileHandler', () => {
       expect(result.errorMessage).toBeUndefined();
 
       const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
-      expect(output.tokenId).toBe('0.0.123456');
-      expect(output.name).toBe('TestNFT');
+      expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
+      expect(output.name).toBe(validNftTokenFile.name);
 
       expect(logger.info).toHaveBeenCalledWith(
         'Creating NFT token from file: test',

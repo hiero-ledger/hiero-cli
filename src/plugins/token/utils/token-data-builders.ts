@@ -5,6 +5,7 @@
 import type { TransactionResult } from '@/core';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { SupplyType } from '@/core/types/token.types';
 import type {
   FungibleTokenFileDefinition,
   NonFungibleTokenFileDefinition,
@@ -36,7 +37,7 @@ export function buildTokenData(
     decimals: params.decimals,
     initialSupply: params.initialSupply,
     tokenType: params.tokenType,
-    supplyType: params.supplyType.toUpperCase() as 'FINITE' | 'INFINITE',
+    supplyType: params.supplyType.toUpperCase() as SupplyType,
     maxSupply:
       params.supplyType.toUpperCase() === 'FINITE' ? params.initialSupply : 0n,
     adminPublicKey: params.adminPublicKey,
