@@ -115,7 +115,7 @@ describe('TxExecutionServiceImpl', () => {
       expect(mockTx.isFrozen).toHaveBeenCalled();
       expect(mockTx.freezeWith).toHaveBeenCalledWith(mockClient);
       expect(networkService.getCurrentNetwork).toHaveBeenCalled();
-      expect(kms.createClient).toHaveBeenCalledWith(NETWORK, undefined);
+      expect(kms.createClient).toHaveBeenCalledWith(NETWORK);
       expect(mockTx.execute).toHaveBeenCalledWith(mockClient);
       expect(mockResponse.getReceipt).toHaveBeenCalledWith(mockClient);
       expect(mockResponse.getRecord).toHaveBeenCalledWith(mockClient);

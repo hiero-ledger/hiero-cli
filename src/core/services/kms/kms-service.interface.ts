@@ -1,5 +1,4 @@
 import type { Client, Transaction as HederaTransaction } from '@hashgraph/sdk';
-import type { ResolvedKey } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KeyAlgorithm } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { KeyManagerName } from './kms-types.interface';
@@ -87,11 +86,10 @@ export interface KmsService {
   remove(keyRefId: string): void;
 
   /**
-   * Creates a Hedera client with operator credentials or payer override.
+   * Creates a Hedera client with operator credentials.
    * @param network - Network to connect to
-   * @param payerOverride - Optional payer override (ResolvedKey) to use instead of operator
    */
-  createClient(network: SupportedNetwork, payerOverride?: ResolvedKey): Client;
+  createClient(network: SupportedNetwork): Client;
 
   /**
    * Signs a transaction with specified key.

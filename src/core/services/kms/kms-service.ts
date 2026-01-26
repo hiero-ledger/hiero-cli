@@ -1,6 +1,5 @@
 import type { Transaction as HederaTransaction } from '@hashgraph/sdk';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
-import type { ResolvedKey } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
@@ -253,15 +252,14 @@ export class KmsServiceImpl implements KmsService {
 
   // Removed registerProvider - no longer needed
 
-  createClient(network: SupportedNetwork, payerOverride?: ResolvedKey): Client {
-    // Use payer override if provided, otherwise use operator
-    const payer = payerOverride || this.networkService.getOperator(network);
+  createClient(network: SupportedNetwork): Client {
+    const operator = this.networkService.getOperator(network);
 
-    if (!payer) {
+    if (!operator) {
       throw new Error(`[CRED] No operator configured for network: ${network}`);
     }
 
-    const { accountId, keyRefId } = payer;
+    const { accountId, keyRefId } = operator;
     const privateKeyString = this.getPrivateKeyString(keyRefId);
     if (!privateKeyString) {
       throw new Error('[CRED] Default operator keyRef missing private key');
@@ -273,7 +271,7 @@ export class KmsServiceImpl implements KmsService {
       throw new Error('[CRED] Default operator keyRef record not found');
     }
 
-    // Create client and set operator/payer with credentials
+    // Create client and set operator with credentials
     let client: Client;
     switch (network) {
       case SupportedNetwork.MAINNET:
@@ -313,14 +311,8 @@ export class KmsServiceImpl implements KmsService {
         ? PrivateKey.fromStringECDSA(privateKeyString)
         : PrivateKey.fromStringED25519(privateKeyString);
 
-    // Set the operator/payer on the client
+    // Set the operator on the client
     client.setOperator(accountIdObj, privateKey);
-
-    if (payerOverride) {
-      this.logger.debug(
-        `[CRED] Using payer override: ${accountId} (keyRefId: ${keyRefId})`,
-      );
-    }
 
     return client;
   }

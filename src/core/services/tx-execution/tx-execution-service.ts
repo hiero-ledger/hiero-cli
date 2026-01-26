@@ -36,16 +36,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
   private getClient(): Client {
     this.logger.debug('[TX-EXECUTION] Creating client for current network');
     const network = this.networkService.getCurrentNetwork();
-    const payerOverride =
-      this.networkService.getPayerOverrideResolved() || undefined;
-
-    if (payerOverride) {
-      this.logger.debug(
-        `[TX-EXECUTION] Using payer override: ${payerOverride.accountId}`,
-      );
-    }
-
-    return this.kms.createClient(network, payerOverride);
+    return this.kms.createClient(network);
   }
 
   async signAndExecute(
