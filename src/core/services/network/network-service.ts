@@ -28,8 +28,7 @@ export class NetworkServiceImpl implements NetworkService {
   private readonly state: StateService;
   private readonly logger: Logger;
   private network: SupportedNetwork;
-  private payerOverrideString: string | null = null;
-  private payerOverrideResolved: ResolvedKey | null = null;
+  private payer: ResolvedKey | null = null;
 
   constructor(state: StateService, logger: Logger) {
     this.state = state;
@@ -135,26 +134,14 @@ export class NetworkServiceImpl implements NetworkService {
     return operator;
   }
 
-  setPayerOverride(payer: ResolvedKey | null): void {
+  setPayer(payer: ResolvedKey | null): void {
     if (payer) {
-      this.logger.debug(`[NETWORK] Setting payer override: ${payer.accountId}`);
-      this.payerOverrideString = null;
+      this.logger.debug(`[NETWORK] Setting payer: ${payer.accountId}`);
     }
-    this.payerOverrideResolved = payer;
+    this.payer = payer;
   }
 
-  getPayerOverrideString(): string | null {
-    return this.payerOverrideString;
-  }
-
-  setPayerOverrideString(payer: string | null): void {
-    if (payer) {
-      this.logger.debug(`[NETWORK] Setting payer override string: ${payer}`);
-    }
-    this.payerOverrideString = payer;
-  }
-
-  getPayerOverrideResolved(): ResolvedKey | null {
-    return this.payerOverrideResolved;
+  getPayer(): ResolvedKey | null {
+    return this.payer;
   }
 }

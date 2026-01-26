@@ -60,25 +60,15 @@ export interface NetworkService {
   getCurrentOperatorOrThrow(): NetworkOperator;
 
   /**
-   * Set payer override (session-scoped, in-memory only)
+   * Set payer (session-scoped, in-memory only)
    * Used to override the default operator as payer for all transactions
    */
-  setPayerOverride(payer: ResolvedKey | null): void;
+  setPayer(payer: ResolvedKey | null): void;
 
   /**
-   * Set payer override string (from CLI flag, before resolution)
+   * Get payer
    */
-  setPayerOverrideString(payer: string | null): void;
-
-  /**
-   * Get payer override string
-   */
-  getPayerOverrideString(): string | null;
-
-  /**
-   * Get payer override
-   */
-  getPayerOverrideResolved(): ResolvedKey | null;
+  getPayer(): ResolvedKey | null;
 }
 
 export interface NetworkOperator {

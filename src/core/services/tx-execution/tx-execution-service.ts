@@ -55,23 +55,23 @@ export class TxExecutionServiceImpl implements TxExecutionService {
     this.logger.debug(`[TX-EXECUTION] Signing with ${keyRefIds.length} key(s)`);
 
     const client = this.getClient();
-    const payerOverride = this.networkService.getPayerOverrideResolved();
+    const payer = this.networkService.getPayer();
 
-    // If payer override is set but transaction is already frozen, we cannot set TransactionId
+    // If payer is set but transaction is already frozen, we cannot set TransactionId
     // This would result in transaction being executed with operator instead of payer
-    if (payerOverride && transaction.isFrozen()) {
+    if (payer && transaction.isFrozen()) {
       throw new Error(
-        `[TX-EXECUTION] Transaction is already frozen but payer override is set. ` +
+        `[TX-EXECUTION] Transaction is already frozen but payer is set. ` +
           `Cannot set payer account ID. Transaction would be executed with operator instead of payer.`,
       );
     }
 
-    if (payerOverride && !transaction.isFrozen()) {
-      const payerAccountId = AccountId.fromString(payerOverride.accountId);
+    if (payer && !transaction.isFrozen()) {
+      const payerAccountId = AccountId.fromString(payer.accountId);
       const transactionId = TransactionId.generate(payerAccountId);
       transaction.setTransactionId(transactionId);
       this.logger.debug(
-        `[TX-EXECUTION] Set transaction payer account ID: ${payerOverride.accountId}`,
+        `[TX-EXECUTION] Set transaction payer account ID: ${payer.accountId}`,
       );
     }
 
@@ -86,11 +86,11 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       await this.kms.signTransaction(transaction, keyRefId);
     }
 
-    if (payerOverride && !uniqueKeyRefIds.has(payerOverride.keyRefId)) {
+    if (payer && !uniqueKeyRefIds.has(payer.keyRefId)) {
       this.logger.debug(
-        `[TX-EXECUTION] Signing with payer key: ${payerOverride.keyRefId}`,
+        `[TX-EXECUTION] Signing with payer key: ${payer.keyRefId}`,
       );
-      await this.kms.signTransaction(transaction, payerOverride.keyRefId);
+      await this.kms.signTransaction(transaction, payer.keyRefId);
     }
 
     return this.executeAndParseReceipt(transaction, client);

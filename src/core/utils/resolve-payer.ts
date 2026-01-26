@@ -25,11 +25,10 @@ export async function resolvePayer(
       keyManager,
       ['payer:override'],
     );
-    coreApi.network.setPayerOverride(resolvedPayer);
+    coreApi.network.setPayer(resolvedPayer);
     coreApi.logger.debug(`[CLI] Resolved payer: ${resolvedPayer.accountId}`);
   } catch (error) {
-    throw new Error(
-      `Failed to resolve payer: ${payerString}. ${error instanceof Error ? error.message : String(error)}`,
-    );
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to resolve payer: ${payerString}. ${errorMessage}`);
   }
 }
