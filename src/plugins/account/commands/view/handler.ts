@@ -19,9 +19,7 @@ export async function viewAccount(
   const { api, logger } = args;
 
   // Parse and validate command arguments
-  console.log(args.args);
   const validArgs = ViewAccountInputSchema.parse(args.args);
-  console.log(validArgs);
 
   const accountIdOrNameOrAlias = validArgs.account;
 
