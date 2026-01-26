@@ -115,7 +115,7 @@ The `create` command will take five options:
 - option `file` - it will be pointing to the smart contract file definition you want to deploy to Hedera network.
 - option `base-path` - it will be pointing to the directory in which you want to execute compilation of smart contract so that all imports will be searched from the level of this directory. It will default to the current directory you are executing your command when this option is not provided.
 - option `admin-key` - it will be used for setting up an admin key for smart contract
-- option `constructor-parameter` - a new type of parameter `repetable`. The `repeatable` parameter can be set many set and each assign results in putting new value to the list of this option. This `constructor-parameter` will be a list consisting of parameters that are needed for constructor of deployed smart contract.
+- option `constructor-parameter` - a new type of parameter `repeatable`. The `repeatable` parameter can be set many set and each assign results in putting new value to the list of this option. This `constructor-parameter` will be a list consisting of parameters that are needed for constructor of deployed smart contract.
 - option `memo` - it will be used to pass string field as contract memo
 - option `key-manager` - points to the key manager for using in the command execution
 

@@ -134,7 +134,7 @@ export async function createContract(
   } catch (error) {
     return {
       status: Status.Failure,
-      errorMessage: formatError('Failed to list contracts', error),
+      errorMessage: formatError('Failed to create contract', error),
     };
   }
 }
