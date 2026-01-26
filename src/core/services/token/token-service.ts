@@ -6,6 +6,7 @@ import type { CustomFee } from '@hashgraph/sdk';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type {
   CustomFee as CustomFeeParams,
+  NftTransferParams,
   TokenAssociationParams,
   TokenCreateParams,
   TokenMintParams,
@@ -17,6 +18,7 @@ import {
   AccountId,
   CustomFixedFee,
   Hbar,
+  NftId,
   TokenAssociateTransaction,
   TokenCreateTransaction,
   TokenId,
@@ -228,6 +230,34 @@ export class TokenServiceImpl implements TokenService {
     }
 
     return mintTx;
+  }
+
+  /**
+   * Create an NFT transfer transaction (without execution)
+   */
+  createNftTransferTransaction(params: NftTransferParams): TransferTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating NFT transfer transaction: ${params.serialNumbers.length} NFTs of token ${params.tokenId} from ${params.fromAccountId} to ${params.toAccountId}`,
+    );
+
+    const { tokenId, fromAccountId, toAccountId, serialNumbers } = params;
+
+    const transferTx = new TransferTransaction();
+
+    for (const serial of serialNumbers) {
+      const nftId = new NftId(TokenId.fromString(tokenId), serial);
+      transferTx.addNftTransfer(
+        nftId,
+        AccountId.fromString(fromAccountId),
+        AccountId.fromString(toAccountId),
+      );
+    }
+
+    this.logger.debug(
+      `[TOKEN SERVICE] Created NFT transfer transaction for ${serialNumbers.length} NFTs`,
+    );
+
+    return transferTx;
   }
 
   /**

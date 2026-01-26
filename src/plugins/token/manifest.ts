@@ -47,6 +47,11 @@ import {
   transferToken,
 } from './commands/transfer-ft';
 import {
+  TRANSFER_NFT_TEMPLATE,
+  transferNft,
+  TransferNftOutputSchema,
+} from './commands/transfer-nft';
+import {
   VIEW_TOKEN_TEMPLATE,
   viewToken,
   ViewTokenOutputSchema,
@@ -193,6 +198,56 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TransferFungibleTokenOutputSchema,
         humanTemplate: TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
+      },
+    },
+    {
+      name: 'transfer-nft',
+      summary: 'Transfer a non-fungible token',
+      description: 'Transfer one or more NFTs from one account to another',
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: 'string',
+          required: true,
+          description: 'NFT token: either a token alias or token-id',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: 'string',
+          required: true,
+          description: 'Destination account: either an alias or account-id',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: 'string',
+          required: false,
+          description:
+            'Source account: either a stored alias or account-id:private-key pair',
+        },
+        {
+          name: 'serials',
+          short: 's',
+          type: 'string',
+          required: true,
+          description:
+            'NFT serial numbers to transfer (comma-separated list, e.g., "1,2,3")',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: transferNft,
+      output: {
+        schema: TransferNftOutputSchema,
+        humanTemplate: TRANSFER_NFT_TEMPLATE,
       },
     },
     {
