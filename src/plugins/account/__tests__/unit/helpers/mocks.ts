@@ -132,6 +132,8 @@ export const makeNetworkServiceMock = (
     accountId: '0.0.100000',
     keyRefId: 'operator-key-ref-id',
   }),
+  setPayer: jest.fn(),
+  getPayer: jest.fn().mockReturnValue(null),
 });
 
 /**

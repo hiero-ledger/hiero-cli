@@ -17,6 +17,7 @@ import {
   setGlobalOutputFormat,
   setupGlobalErrorHandlers,
 } from './core/utils/error-handler';
+import { resolvePayer } from './core/utils/resolve-payer';
 
 program
   .name('hcli')
@@ -26,6 +27,10 @@ program
   .option(
     '-N, --network <network>',
     'Target network (testnet, mainnet, previewnet, localnet)',
+  )
+  .option(
+    '-P, --payer <payer>',
+    'Payer account (alias or account-id:private-key format)',
   );
 
 // Initialize the simplified plugin system
@@ -43,6 +48,11 @@ async function initializeCLI() {
 
     if (networkOverride) {
       coreApi.network.setNetwork(networkOverride);
+    }
+
+    const payer = (opts.payer || opts.P) as string | undefined;
+    if (payer) {
+      await resolvePayer(payer, coreApi);
     }
 
     // Setup global error handlers with validated format

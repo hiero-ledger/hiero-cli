@@ -254,6 +254,7 @@ export class KmsServiceImpl implements KmsService {
 
   createClient(network: SupportedNetwork): Client {
     const operator = this.networkService.getOperator(network);
+
     if (!operator) {
       throw new Error(`[CRED] No operator configured for network: ${network}`);
     }

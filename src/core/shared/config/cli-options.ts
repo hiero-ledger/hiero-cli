@@ -22,6 +22,7 @@ export const RESERVED_LONG_OPTIONS = new Set<string>([
   'help',
   'version',
   'network',
+  'payer',
 ]);
 
 export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
