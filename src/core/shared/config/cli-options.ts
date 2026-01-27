@@ -25,6 +25,12 @@ export const RESERVED_LONG_OPTIONS = new Set<string>([
   'payer',
 ]);
 
+export const RESERVED_SHORT_OPTIONS = new Set<string>([
+  'h', // help (Commander default)
+  'V', // version (Commander default)
+  'N', // network
+]);
+
 export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
   accountPluginManifest,
   tokenPluginManifest,

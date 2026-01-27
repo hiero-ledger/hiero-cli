@@ -27,6 +27,11 @@ import {
   createTokenFromFile,
 } from './commands/create-ft-from-file';
 import {
+  CREATE_NFT_FROM_FILE_TEMPLATE,
+  createNftFromFile,
+  CreateNftFromFileOutputSchema,
+} from './commands/create-nft-from-file';
+import {
   LIST_TOKENS_TEMPLATE,
   listTokens,
   ListTokensOutputSchema,
@@ -46,6 +51,11 @@ import {
   TransferFungibleTokenOutputSchema,
   transferToken,
 } from './commands/transfer-ft';
+import {
+  TRANSFER_NFT_TEMPLATE,
+  transferNft,
+  TransferNftOutputSchema,
+} from './commands/transfer-nft';
 import {
   VIEW_TOKEN_TEMPLATE,
   viewToken,
@@ -193,6 +203,56 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TransferFungibleTokenOutputSchema,
         humanTemplate: TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
+      },
+    },
+    {
+      name: 'transfer-nft',
+      summary: 'Transfer a non-fungible token',
+      description: 'Transfer one or more NFTs from one account to another',
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: 'string',
+          required: true,
+          description: 'NFT token: either a token alias or token-id',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: 'string',
+          required: true,
+          description: 'Destination account: either an alias or account-id',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: 'string',
+          required: false,
+          description:
+            'Source account: either a stored alias or account-id:private-key pair',
+        },
+        {
+          name: 'serials',
+          short: 's',
+          type: 'string',
+          required: true,
+          description:
+            'NFT serial numbers to transfer (comma-separated list, e.g., "1,2,3")',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: transferNft,
+      output: {
+        schema: TransferNftOutputSchema,
+        humanTemplate: TRANSFER_NFT_TEMPLATE,
       },
     },
     {
@@ -452,6 +512,35 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: CreateFungibleTokenFromFileOutputSchema,
         humanTemplate: CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE,
+      },
+    },
+    {
+      name: 'create-nft-from-file',
+      summary: 'Create a new NFT token from a file',
+      description:
+        'Create a new non-fungible token from a JSON file definition with advanced features',
+      options: [
+        {
+          name: 'file',
+          short: 'f',
+          type: 'string',
+          required: true,
+          description:
+            'NFT token definition file path (absolute or relative) to a JSON file',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: 'string',
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: createNftFromFile,
+      output: {
+        schema: CreateNftFromFileOutputSchema,
+        humanTemplate: CREATE_NFT_FROM_FILE_TEMPLATE,
       },
     },
     {
