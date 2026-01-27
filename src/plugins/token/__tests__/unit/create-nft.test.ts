@@ -6,6 +6,7 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import { HederaTokenType, Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import { createNft } from '@/plugins/token/commands/create-nft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -157,7 +158,7 @@ describe('createNftHandler', () => {
         symbol: 'TEST',
         decimals: 0,
         initialSupplyRaw: 0n,
-        supplyType: 'INFINITE',
+        supplyType: SupplyType.INFINITE,
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
         tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,

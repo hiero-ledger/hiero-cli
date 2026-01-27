@@ -5,7 +5,7 @@
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { SupplyType } from '@/core/types/token.types';
+import type { SupplyType } from '@/core/types/shared.types';
 import type { CreateNftFromFileOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
@@ -182,9 +182,7 @@ export async function createNftFromFile(
       treasuryId: treasury.accountId,
       adminAccountId: adminKey.accountId,
       supplyAccountId: supplyKey.accountId,
-      supplyType: tokenDefinition.supplyType.toUpperCase() as
-        | 'FINITE'
-        | 'INFINITE',
+      supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
       transactionId: result.transactionId,
       network,
       associations: successfulAssociations.map((assoc) => ({

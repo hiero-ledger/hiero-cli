@@ -5,6 +5,7 @@
 import '@/core/utils/json-serialize';
 
 import { HederaTokenType, Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import { mintFt, type MintFtOutput } from '@/plugins/token/commands/mint-ft';
 import { TOKEN_NAMESPACE } from '@/plugins/token/manifest';
 
@@ -232,7 +233,7 @@ describe('mintFtHandler', () => {
                 symbol: 'NFT',
                 decimals: 0,
                 initialSupplyRaw: 0,
-                supplyType: 'INFINITE',
+                supplyType: SupplyType.INFINITE,
                 tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
                 maxSupplyRaw: undefined,
                 treasuryId: '0.0.123456',

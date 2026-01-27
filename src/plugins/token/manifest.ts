@@ -5,6 +5,7 @@
  */
 import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
+import { SupplyType } from '@/core/types/shared.types';
 import {
   CREATE_NFT_TEMPLATE,
   createNft,
@@ -304,7 +305,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: 'string',
           short: 'S',
           required: false,
-          default: 'INFINITE',
+          default: SupplyType.INFINITE,
           description: 'Set supply type: INFINITE(default) or FINITE',
         },
         {
@@ -394,7 +395,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: 'string',
           short: 'S',
           required: false,
-          default: 'INFINITE',
+          default: SupplyType.INFINITE,
           description: 'Set supply type: INFINITE(default) or FINITE',
         },
         {

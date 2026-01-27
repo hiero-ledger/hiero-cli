@@ -11,6 +11,7 @@ import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import { createAccount, viewAccount } from '@/plugins/account';
 import { createNft } from '@/plugins/token/commands/create-nft';
 
@@ -71,7 +72,7 @@ describe('Create NFT Integration Tests', () => {
       tokenName: 'Test NFT',
       symbol: 'NFT',
       treasury: 'account-create-nft',
-      supplyType: 'FINITE',
+      supplyType: SupplyType.FINITE,
       maxSupply: '100',
       adminKey: 'account-create-nft',
       supplyKey: 'account-create-nft',
@@ -95,6 +96,6 @@ describe('Create NFT Integration Tests', () => {
     expect(createNftOutput.adminAccountId).toBe(viewAccountOutput.accountId);
     expect(createNftOutput.supplyAccountId).toBe(viewAccountOutput.accountId);
     expect(createNftOutput.symbol).toBe('NFT');
-    expect(createNftOutput.supplyType).toBe('FINITE');
+    expect(createNftOutput.supplyType).toBe(SupplyType.FINITE);
   });
 });

@@ -14,6 +14,7 @@ import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import {
   createAccount,
   getAccountBalance,
@@ -78,7 +79,7 @@ describe('Transfer Token Integration Tests', () => {
       tokenName: 'Test Token Transfer',
       symbol: 'TTT',
       initialSupply: '10',
-      supplyType: 'INFINITE',
+      supplyType: SupplyType.INFINITE,
       name: 'test-token-transfer',
     };
     const createTokenResult = await createToken({
@@ -99,7 +100,7 @@ describe('Transfer Token Integration Tests', () => {
     expect(createTokenOutput.alias).toBe('test-token-transfer');
     expect(createTokenOutput.treasuryId).toBe(process.env.OPERATOR_ID);
     expect(createTokenOutput.symbol).toBe('TTT');
-    expect(createTokenOutput.supplyType).toBe('INFINITE');
+    expect(createTokenOutput.supplyType).toBe(SupplyType.INFINITE);
 
     await delay(5000);
 

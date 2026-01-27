@@ -12,6 +12,7 @@ import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import {
   createAccount,
   getAccountBalance,
@@ -77,7 +78,7 @@ describe('Create Token Integration Tests', () => {
       symbol: 'TT',
       treasury: 'account-create-token',
       initialSupply: '10',
-      supplyType: 'FINITE',
+      supplyType: SupplyType.FINITE,
       maxSupply: '100',
       adminKey: 'account-create-token',
       name: 'test-token',
@@ -100,7 +101,7 @@ describe('Create Token Integration Tests', () => {
     expect(createTokenOutput.alias).toBe('test-token');
     expect(createTokenOutput.treasuryId).toBe(viewAccountOutput.accountId);
     expect(createTokenOutput.symbol).toBe('TT');
-    expect(createTokenOutput.supplyType).toBe('FINITE');
+    expect(createTokenOutput.supplyType).toBe(SupplyType.FINITE);
 
     await delay(5000);
 

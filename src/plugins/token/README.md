@@ -512,7 +512,7 @@ interface TokenData {
   treasuryId: string;
   decimals: number;
   initialSupply: number;
-  supplyType: 'FINITE' | 'INFINITE';
+  supplyType: SupplyType;
   maxSupply: number;
   memo?: string;
   keys: TokenKeys;
