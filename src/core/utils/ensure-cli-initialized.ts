@@ -1,7 +1,6 @@
 import type { ZodSchema } from 'zod';
 import type { CoreApi } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import * as clack from '@clack/prompts';
 
@@ -40,11 +39,13 @@ const KEY_MANAGER_OPTIONS = [
   },
 ];
 
-function handleCancel(result: unknown): void {
+function ensureNotCanceled<T>(result: T | symbol): T {
   if (clack.isCancel(result)) {
     clack.cancel('Operation cancelled.');
     process.exit(0);
   }
+
+  return result;
 }
 
 function clackZodValidation(
@@ -56,33 +57,32 @@ function clackZodValidation(
   };
 }
 
-async function promptForNetworkSelection(): Promise<SupportedNetwork> {
+async function promptForNetworkSelection(): Promise<NetworkEnum> {
   const selected = await clack.select({
     message: 'Select network',
     options: NETWORK_DISPLAY_OPTIONS,
     initialValue: NetworkEnum.TESTNET,
   });
 
-  handleCancel(selected);
-  return selected as SupportedNetwork;
+  return ensureNotCanceled(selected);
 }
 
 async function promptForAccountCredentials(): Promise<{
   accountId: string;
   privateKey: string;
 }> {
-  const accountId = (await clack.text({
+  let accountId = await clack.text({
     message: 'Enter your Account ID (e.g., 0.0.123):',
     validate: clackZodValidation(EntityIdSchema),
     placeholder: '0.0.123',
-  })) as string;
-  handleCancel(accountId);
+  });
+  accountId = ensureNotCanceled(accountId);
 
-  const privateKey = (await clack.text({
+  let privateKey = await clack.text({
     message: 'Enter your Private Key:',
     validate: clackZodValidation(PrivateKeySchema),
-  })) as string;
-  handleCancel(privateKey);
+  });
+  privateKey = ensureNotCanceled(privateKey);
 
   return { accountId, privateKey };
 }
@@ -91,98 +91,104 @@ async function promptForGlobalConfig(): Promise<{
   keyManager: KeyManagerName;
   ed25519Support: boolean;
 }> {
-  const keyManager = (await clack.select({
+  let keyManager = (await clack.select({
     message: 'Select Key Manager:',
     options: KEY_MANAGER_OPTIONS,
     initialValue: 'local_encrypted',
   })) as KeyManagerName;
-  handleCancel(keyManager);
+  keyManager = ensureNotCanceled(keyManager);
 
-  const ed25519Support = (await clack.confirm({
+  let ed25519Support = await clack.confirm({
     message: 'Enable ED25519 key support?',
     initialValue: false,
-  })) as boolean;
-  handleCancel(ed25519Support);
+  });
+  ed25519Support = ensureNotCanceled(ed25519Support);
 
   return { keyManager, ed25519Support };
 }
 
 async function promptForOverride(): Promise<boolean> {
-  const override = await clack.confirm({
+  let override = await clack.confirm({
     message:
       'KeyManager and ED25519 support already configured. Override global settings?',
     initialValue: false,
   });
 
-  handleCancel(override);
-  return override as boolean;
+  return ensureNotCanceled(override);
 }
 
-async function saveOperatorConfig(
+function saveGlobalConfiguration(
   api: CoreApi,
-  config: {
-    accountId: string;
-    privateKey: string;
-    keyManager?: KeyManagerName;
-    ed25519Support?: boolean;
-    saveGlobalConfig: boolean;
-  },
-): Promise<void> {
-  if (config.saveGlobalConfig && config.ed25519Support !== undefined) {
-    api.config.setOption('ed25519_support_enabled', config.ed25519Support);
-  }
+  keyManager: KeyManagerName,
+  ed25519Support: boolean,
+): void {
+  api.config.setOption('ed25519_support_enabled', ed25519Support);
+  api.config.setOption('default_key_manager', keyManager);
+}
 
-  if (config.saveGlobalConfig && config.keyManager) {
-    api.config.setOption('default_key_manager', config.keyManager);
-  }
+async function importOperatorKey(
+  api: CoreApi,
+  accountId: string,
+  privateKey: string,
+  keyManager?: KeyManagerName,
+): Promise<string> {
+  const account = await api.mirror.getAccount(accountId);
+  const finalKeyManager =
+    keyManager ?? api.config.getOption('default_key_manager');
 
-  const account = await api.mirror.getAccount(config.accountId);
-  const keyManager =
-    config.keyManager || api.config.getOption('default_key_manager');
   const { keyRefId } = api.kms.importAndValidatePrivateKey(
     account.keyAlgorithm,
-    config.privateKey,
+    privateKey,
     account.accountPublicKey,
-    keyManager,
+    finalKeyManager,
   );
 
+  return keyRefId;
+}
+
+function setOperatorForCurrentNetwork(
+  api: CoreApi,
+  accountId: string,
+  keyRefId: string,
+): void {
   const currentNetwork = api.network.getCurrentNetwork();
-  api.network.setOperator(currentNetwork, {
-    accountId: config.accountId,
-    keyRefId,
-  });
+  api.network.setOperator(currentNetwork, { accountId, keyRefId });
 }
 
 async function runFirstTimeSetup(api: CoreApi): Promise<void> {
   const selectedNetwork = await promptForNetworkSelection();
   api.network.switchNetwork(selectedNetwork);
 
-  const credentials = await promptForAccountCredentials();
-  const globalConfig = await promptForGlobalConfig();
+  const { accountId, privateKey } = await promptForAccountCredentials();
+  const { keyManager, ed25519Support } = await promptForGlobalConfig();
 
-  await saveOperatorConfig(api, {
-    ...credentials,
-    ...globalConfig,
-    saveGlobalConfig: true,
-  });
+  saveGlobalConfiguration(api, keyManager, ed25519Support);
+  const keyRefId = await importOperatorKey(
+    api,
+    accountId,
+    privateKey,
+    keyManager,
+  );
+  setOperatorForCurrentNetwork(api, accountId, keyRefId);
 }
 
 async function runNetworkChangeSetup(api: CoreApi): Promise<void> {
-  const credentials = await promptForAccountCredentials();
+  const { accountId, privateKey } = await promptForAccountCredentials();
   const override = await promptForOverride();
 
   if (override) {
-    const globalConfig = await promptForGlobalConfig();
-    await saveOperatorConfig(api, {
-      ...credentials,
-      ...globalConfig,
-      saveGlobalConfig: true,
-    });
+    const { keyManager, ed25519Support } = await promptForGlobalConfig();
+    saveGlobalConfiguration(api, keyManager, ed25519Support);
+    const keyRefId = await importOperatorKey(
+      api,
+      accountId,
+      privateKey,
+      keyManager,
+    );
+    setOperatorForCurrentNetwork(api, accountId, keyRefId);
   } else {
-    await saveOperatorConfig(api, {
-      ...credentials,
-      saveGlobalConfig: false,
-    });
+    const keyRefId = await importOperatorKey(api, accountId, privateKey);
+    setOperatorForCurrentNetwork(api, accountId, keyRefId);
     clack.log.info('Operator saved. Global configuration unchanged.');
   }
 }
