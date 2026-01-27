@@ -31,7 +31,8 @@ program
   .option(
     '-P, --payer <payer>',
     'Payer account (alias or account-id:private-key format)',
-  );
+  )
+  .showHelpAfterError('use --help for available options');
 
 // Initialize the simplified plugin system
 async function initializeCLI() {
