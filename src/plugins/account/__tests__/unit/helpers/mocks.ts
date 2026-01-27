@@ -134,6 +134,7 @@ export const makeNetworkServiceMock = (
   }),
   setPayer: jest.fn(),
   getPayer: jest.fn().mockReturnValue(null),
+  hasAnyOperator: jest.fn().mockReturnValue(false),
 });
 
 /**

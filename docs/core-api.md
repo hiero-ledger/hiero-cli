@@ -321,6 +321,7 @@ interface NetworkService {
   getOperator(
     network: SupportedNetwork,
   ): { accountId: string; keyRefId: string } | null;
+  hasAnyOperator(): boolean;
 }
 
 interface NetworkConfig {
@@ -364,9 +365,17 @@ api.network.setOperator('testnet', {
 
 // Get operator for current network
 const operator = api.network.getOperator(currentNetwork);
+
+// Check if any network has an operator configured
+const isInitialized = api.network.hasAnyOperator();
 ```
 
-> **💡 Interactive Setup (Initialization)**: For CLI users, when an operator is not configured and a command requiring it is executed interactively (human output mode), the CLI automatically launches an interactive **operator initialization wizard**. In script mode (non-interactive), an error is thrown instead. For plugin developers, you may use `api.network.setOperator()` to configure operators programmatically.
+> **💡 Interactive Setup (Initialization)**: For CLI users, when an operator is not configured and a command requiring it is executed interactively (human output mode), the CLI automatically launches an interactive **operator initialization wizard**. The wizard adapts based on whether this is the first initialization:
+>
+> - **First Time**: User is prompted to select a network (testnet recommended), then provide account credentials and global configuration (key manager, ED25519 support)
+> - **Network Change**: User provides account credentials for the new network and is asked whether to override global settings
+>
+> In script mode (non-interactive), an error is thrown instead. For plugin developers, you may use `api.network.setOperator()` to configure operators programmatically.
 
 ### Config Service
 
