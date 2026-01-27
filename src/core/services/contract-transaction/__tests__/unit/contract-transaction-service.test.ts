@@ -2,16 +2,29 @@
  * Unit tests for ContractTransactionServiceImpl
  * Tests contract creation flow transaction construction
  */
-import type { ContractCreateFlowParams } from '@/core/services/contract-transaction/types';
+import type { ContractFunctionParameters } from '@hashgraph/sdk';
+import type {
+  ContractCreateFlowParams,
+  ContractExecuteParams,
+} from '@/core/services/contract-transaction/types';
 
-import { ContractCreateFlow, PrivateKey } from '@hashgraph/sdk';
+import {
+  ContractCreateFlow,
+  ContractExecuteTransaction,
+  ContractId,
+  PrivateKey,
+} from '@hashgraph/sdk';
 import { ethers, getBytes } from 'ethers';
 
 import { ContractTransactionServiceImpl } from '@/core/services/contract-transaction/contract-transaction-service';
 
-import { createMockContractCreateFlow } from './mocks';
+import {
+  createMockContractCreateFlow,
+  createMockContractExecuteTransaction,
+} from './mocks';
 
 const mockContractCreateFlow = createMockContractCreateFlow();
+const mockContractExecuteTx = createMockContractExecuteTransaction();
 const mockAdminKey = PrivateKey.generateED25519(); // Use a real key for simplicity in tests, or mock if strictly needed. Real key is easier here.
 
 // Mock ethers
@@ -22,6 +35,10 @@ const mockInterfaceInstance = {
 
 jest.mock('@hashgraph/sdk', () => ({
   ContractCreateFlow: jest.fn(() => mockContractCreateFlow),
+  ContractExecuteTransaction: jest.fn(() => mockContractExecuteTx),
+  ContractId: {
+    fromString: jest.fn((id: string) => ({ id })),
+  },
   PrivateKey: {
     generateED25519: jest.fn(() => ({ toString: () => 'mock-key' })),
   },
@@ -114,6 +131,51 @@ describe('ContractTransactionServiceImpl', () => {
       expect(
         mockContractCreateFlow.setConstructorParameters,
       ).toHaveBeenCalledWith(new Uint8Array([0x12, 0x34]));
+    });
+  });
+
+  describe('contractExecuteTransaction', () => {
+    it('should create contract execute transaction with contractId, gas and function with parameters', () => {
+      const params: ContractExecuteParams = {
+        contractId: '0.0.1234',
+        gas: 250000,
+        functionName: 'transfer',
+        // using a double cast here to avoid depending on actual ContractFunctionParameters implementation
+        functionParameters: {} as unknown as ContractFunctionParameters,
+      };
+
+      const result = contractService.contractExecuteTransaction(params);
+
+      expect(ContractExecuteTransaction).toHaveBeenCalledTimes(1);
+      expect(ContractId.fromString).toHaveBeenCalledWith('0.0.1234');
+      expect(mockContractExecuteTx.setContractId).toHaveBeenCalledWith({
+        id: '0.0.1234',
+      });
+      expect(mockContractExecuteTx.setGas).toHaveBeenCalledWith(250000);
+      expect(mockContractExecuteTx.setFunction).toHaveBeenCalledWith(
+        'transfer',
+        params.functionParameters,
+      );
+      expect(result.transaction).toBe(mockContractExecuteTx);
+    });
+
+    it('should create contract execute transaction with only function name when parameters are not provided', () => {
+      const params: ContractExecuteParams = {
+        contractId: '0.0.1234',
+        gas: 100000,
+        functionName: 'pause',
+      };
+
+      const result = contractService.contractExecuteTransaction(params);
+
+      expect(ContractExecuteTransaction).toHaveBeenCalledTimes(1);
+      expect(mockContractExecuteTx.setContractId).toHaveBeenCalledWith({
+        id: '0.0.1234',
+      });
+      expect(mockContractExecuteTx.setGas).toHaveBeenCalledWith(100000);
+      // when no parameters present, the service calls setFunction twice (once with name+params guard failing, once with name only)
+      expect(mockContractExecuteTx.setFunction).toHaveBeenCalledWith('pause');
+      expect(result.transaction).toBe(mockContractExecuteTx);
     });
   });
 });

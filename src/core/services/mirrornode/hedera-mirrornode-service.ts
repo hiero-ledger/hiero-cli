@@ -7,6 +7,8 @@ import type { HederaMirrornodeService } from './hedera-mirrornode-service.interf
 import type {
   AccountAPIResponse,
   AccountResponse,
+  ContractCallRequest,
+  ContractCallResponse,
   ContractInfo,
   ExchangeRateResponse,
   MirrorNodeKeyType,
@@ -291,6 +293,27 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
     }
     const data = (await response.json()) as ExchangeRateResponse;
     return data;
+  }
+
+  async postContractCall(
+    request: ContractCallRequest,
+  ): Promise<ContractCallResponse> {
+    const url = `${this.getBaseUrl()}/contracts/call`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to call contract via mirror node: ${response.status} ${response.statusText}`,
+      );
+    }
+
+    return (await response.json()) as ContractCallResponse;
   }
 
   private getKeyAlgorithm(keyType: MirrorNodeKeyType): KeyAlgorithm {

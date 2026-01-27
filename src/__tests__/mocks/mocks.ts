@@ -245,6 +245,7 @@ export const createMirrorNodeMock =
     getPendingAirdrops: jest.fn(),
     getOutstandingAirdrops: jest.fn(),
     getExchangeRate: jest.fn(),
+    postContractCall: jest.fn(),
   });
 
 /**
@@ -445,6 +446,7 @@ export const makeArgs = (
       getPendingAirdrops: jest.fn(),
       getOutstandingAirdrops: jest.fn(),
       getExchangeRate: jest.fn(),
+      postContractCall: jest.fn(),
     } as HederaMirrornodeService,
     network,
     config: makeConfigMock(),

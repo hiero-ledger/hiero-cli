@@ -279,3 +279,48 @@ export interface Filter {
   operation: 'gt' | 'lt' | 'gte' | 'lte' | 'eq' | 'ne';
   value: number | string;
 }
+
+export interface ContractCallRequest {
+  /**
+   * Block identifier.
+   * Defaults to 'latest' when not provided.
+   */
+  block?: string;
+  /**
+   * Hex-encoded call data (function selector + encoded parameters).
+   */
+  data?: string;
+  /**
+   * When true, executes the call in estimation mode (no state changes).
+   */
+  estimate?: boolean;
+  /**
+   * Hex-encoded 20 byte EVM address of the caller.
+   */
+  from?: string;
+  /**
+   * Maximum amount of gas to be used for the call.
+   */
+  gas?: number;
+  /**
+   * Gas price to use for the call.
+   */
+  gasPrice?: number;
+  /**
+   * Hex-encoded 20 byte EVM address of the contract to call.
+   *
+   * This is the only required field.
+   */
+  to: string;
+  /**
+   * Amount of value (in tinybars) to send with the call.
+   */
+  value?: number;
+}
+
+export interface ContractCallResponse {
+  /**
+   * Hex-encoded result of the EVM execution.
+   */
+  result: string;
+}
