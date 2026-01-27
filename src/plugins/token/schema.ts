@@ -141,7 +141,7 @@ export function safeParseTokenData(data: unknown) {
 export const TokenFileFixedFeeSchema = z
   .object({
     type: z.literal('fixed'),
-    amount: z.number().int().positive('Amount must be positive'),
+    amount: z.int().positive('Amount must be positive'),
     unitType: z.literal('HBAR').optional().default('HBAR'),
     collectorId: EntityIdSchema.optional(),
     exempt: z.boolean().optional(),
