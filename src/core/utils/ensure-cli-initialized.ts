@@ -5,23 +5,23 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import * as clack from '@clack/prompts';
 
 import { EntityIdSchema, PrivateKeySchema } from '@/core/schemas';
-import { SupportedNetwork as NetworkEnum } from '@/core/types/shared.types';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 const NETWORK_DISPLAY_OPTIONS = [
   {
-    value: NetworkEnum.TESTNET,
+    value: SupportedNetwork.TESTNET,
     label: 'Testnet (Recommended)',
   },
   {
-    value: NetworkEnum.MAINNET,
+    value: SupportedNetwork.MAINNET,
     label: 'Mainnet',
   },
   {
-    value: NetworkEnum.PREVIEWNET,
+    value: SupportedNetwork.PREVIEWNET,
     label: 'Previewnet',
   },
   {
-    value: NetworkEnum.LOCALNET,
+    value: SupportedNetwork.LOCALNET,
     label: 'Localnet',
   },
 ];
@@ -57,11 +57,11 @@ function clackZodValidation(
   };
 }
 
-async function promptForNetworkSelection(): Promise<NetworkEnum> {
+async function promptForNetworkSelection(): Promise<SupportedNetwork> {
   const selected = await clack.select({
     message: 'Select network',
     options: NETWORK_DISPLAY_OPTIONS,
-    initialValue: NetworkEnum.TESTNET,
+    initialValue: SupportedNetwork.TESTNET,
   });
 
   return ensureNotCanceled(selected);
