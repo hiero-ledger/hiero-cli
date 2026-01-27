@@ -80,7 +80,6 @@ export const accountPluginManifest: PluginManifest = {
           required: false,
           description: 'Alias of the created account to be used',
         },
-        { name: 'payer', short: 'p', type: 'string', required: false }, //TODO: I do not see see any usage of the payer option. Should we delete that?
         {
           name: 'key-manager',
           short: 'k',
