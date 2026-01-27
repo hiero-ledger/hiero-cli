@@ -225,6 +225,8 @@ Configuration options include:
 
 - `ed25519_support_enabled` (boolean, default: false)
 - `default_key_manager` (enum: 'local' | 'encrypted_local', default: 'local')
+- `log_level` (enum: 'silent' | 'error' | 'warn' | 'info' | 'debug', default: 'silent')
+- `skip_confirmations` (boolean, default: false)
 
 **Implementation Details**:
 

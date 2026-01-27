@@ -68,25 +68,59 @@ const result = await api.account.createAccount({
 
 ### Token Service
 
-Handles Hedera token operations including creation, minting, association, and transfers.
+Handles Hedera token operations including creation, minting, association, and transfers (FT and NFT).
 
 ```typescript
 interface TokenService {
-  createFungibleTokenTransaction(
-    params: TokenCreateParams,
-  ): TokenCreateTransaction;
+  createTokenTransaction(params: TokenCreateParams): TokenCreateTransaction;
 
   createTokenAssociationTransaction(
     params: TokenAssociationParams,
   ): TokenAssociateTransaction;
 
-  createFungibleTokenTransferTransaction(
-    params: FungibleTokenTransferParams,
-  ): TransferTransaction;
+  createTransferTransaction(params: TokenTransferParams): TransferTransaction;
 
   createMintTransaction(params: TokenMintParams): TokenMintTransaction;
 
   createNftTransferTransaction(params: NftTransferParams): TransferTransaction;
+}
+
+interface TokenCreateParams {
+  name: string;
+  symbol: string;
+  treasuryId: string;
+  tokenType: 'FUNGIBLE_COMMON' | 'NON_FUNGIBLE_UNIQUE';
+  decimals?: number;
+  initialSupplyRaw?: bigint;
+  supplyType: 'FINITE' | 'INFINITE';
+  maxSupplyRaw?: bigint;
+  adminPublicKey: PublicKey;
+  supplyPublicKey?: PublicKey;
+  wipePublicKey?: PublicKey;
+  kycPublicKey?: PublicKey;
+  freezePublicKey?: PublicKey;
+  pausePublicKey?: PublicKey;
+  feeSchedulePublicKey?: PublicKey;
+  customFees?: CustomFee[];
+  memo?: string;
+}
+
+interface TokenAssociationParams {
+  tokenId: string;
+  accountId: string;
+}
+
+interface TokenTransferParams {
+  tokenId: string;
+  fromAccountId: string;
+  toAccountId: string;
+  amount: bigint;
+}
+
+interface TokenMintParams {
+  tokenId: string;
+  amount?: bigint;
+  metadata?: Uint8Array;
 }
 
 interface NftTransferParams {
@@ -97,17 +131,26 @@ interface NftTransferParams {
 }
 ```
 
-**Usage Example:**
+**Usage Examples:**
 
 ```typescript
-const transferTx = api.token.createNftTransferTransaction({
+const ftTransferTx = api.token.createTransferTransaction({
+  tokenId: '0.0.123456',
+  fromAccountId: '0.0.111111',
+  toAccountId: '0.0.222222',
+  amount: 100n,
+});
+
+const nftTransferTx = api.token.createNftTransferTransaction({
   tokenId: '0.0.123456',
   fromAccountId: '0.0.111111',
   toAccountId: '0.0.222222',
   serialNumbers: [1, 2, 3],
 });
 
-const result = await api.txExecution.signAndExecuteWith(transferTx, [keyRefId]);
+const result = await api.txExecution.signAndExecuteWith(nftTransferTx, [
+  keyRefId,
+]);
 ```
 
 ### TxExecutionService
@@ -135,6 +178,15 @@ interface TransactionResult {
   topicId?: string;
   topicSequenceNumber?: number;
   consensusTimestamp: string;
+}
+
+interface TransactionReceipt {
+  status: TransactionStatus;
+  accountId?: string;
+  tokenId?: string;
+  topicId?: string;
+  topicSequenceNumber?: number;
+  serials?: string[];
 }
 
 type SignerRef = {
@@ -202,6 +254,7 @@ interface HederaMirrornodeService {
 
   // Token operations
   getTokenInfo(tokenId: string): Promise<TokenInfo>;
+  getNftInfo(tokenId: string, serialNumber: number): Promise<NftInfo>;
 
   // Topic operations
   getTopicInfo(topicId: string): Promise<TopicInfo>;
@@ -268,6 +321,7 @@ interface NetworkService {
   getOperator(
     network: SupportedNetwork,
   ): { accountId: string; keyRefId: string } | null;
+  hasAnyOperator(): boolean;
 }
 
 interface NetworkConfig {
@@ -311,9 +365,17 @@ api.network.setOperator('testnet', {
 
 // Get operator for current network
 const operator = api.network.getOperator(currentNetwork);
+
+// Check if any network has an operator configured
+const isInitialized = api.network.hasAnyOperator();
 ```
 
-> **💡 Interactive Setup (Initialization)**: For CLI users, when an operator is not configured and a command requiring it is executed interactively (human output mode), the CLI automatically launches an interactive **operator initialization wizard**. In script mode (non-interactive), an error is thrown instead. For plugin developers, you may use `api.network.setOperator()` to configure operators programmatically.
+> **💡 Interactive Setup (Initialization)**: For CLI users, when an operator is not configured and a command requiring it is executed interactively (human output mode), the CLI automatically launches an interactive **operator initialization wizard**. The wizard adapts based on whether this is the first initialization:
+>
+> - **First Time**: User is prompted to select a network (testnet recommended), then provide account credentials and global configuration (key manager, ED25519 support)
+> - **Network Change**: User provides account credentials for the new network and is asked whether to override global settings
+>
+> In script mode (non-interactive), an error is thrown instead. For plugin developers, you may use `api.network.setOperator()` to configure operators programmatically.
 
 ### Config Service
 

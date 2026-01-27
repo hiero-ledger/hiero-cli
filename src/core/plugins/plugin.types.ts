@@ -43,6 +43,8 @@ export interface CommandSpec {
   handler: CommandHandler;
   output: CommandOutputSpec;
   excessArguments?: boolean;
+  /** Handlebars template for pre-execution confirmation (human format only). Example: 'Delete account {{name}}?' */
+  requireConfirmation?: string;
 }
 
 /**

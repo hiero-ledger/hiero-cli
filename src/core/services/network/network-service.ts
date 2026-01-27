@@ -149,4 +149,11 @@ export class NetworkServiceImpl implements NetworkService {
   getPayer(): ResolvedKey | null {
     return this.payer;
   }
+
+  hasAnyOperator(): boolean {
+    const networks = this.getAvailableNetworks();
+    return networks.some(
+      (network) => this.getOperator(network as SupportedNetwork) !== null,
+    );
+  }
 }

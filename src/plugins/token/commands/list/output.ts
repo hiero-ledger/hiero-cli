@@ -34,7 +34,7 @@ const TokenListItemSchema = z.object({
   tokenId: EntityIdSchema,
   name: z.string().describe('Token name'),
   symbol: z.string().describe('Token symbol'),
-  decimals: z.number().int().min(0).max(8).describe('Number of decimal places'),
+  decimals: z.int().min(0).max(8).describe('Number of decimal places'),
   supplyType: SupplyTypeSchema,
   tokenType: z
     .enum([HederaTokenType.NON_FUNGIBLE_TOKEN, HederaTokenType.FUNGIBLE_COMMON])
@@ -55,17 +55,17 @@ const TokenListItemSchema = z.object({
  * Token Statistics Schema
  */
 const TokenStatisticsSchema = z.object({
-  total: z.number().int().nonnegative().describe('Total number of tokens'),
+  total: z.int().nonnegative().describe('Total number of tokens'),
   withKeys: z
     .number()
     .int()
     .nonnegative()
     .describe('Tokens with management keys'),
   byNetwork: z
-    .record(z.string(), z.number().int().nonnegative())
+    .record(z.string(), z.int().nonnegative())
     .describe('Token count by network'),
   bySupplyType: z
-    .record(z.string(), z.number().int().nonnegative())
+    .record(z.string(), z.int().nonnegative())
     .describe('Token count by supply type'),
   withAssociations: z
     .number()
@@ -84,7 +84,7 @@ const TokenStatisticsSchema = z.object({
  */
 export const ListTokensOutputSchema = z.object({
   tokens: z.array(TokenListItemSchema),
-  totalCount: z.number().int().nonnegative().describe('Total number of tokens'),
+  totalCount: z.int().nonnegative().describe('Total number of tokens'),
   stats: TokenStatisticsSchema.optional(),
 });
 

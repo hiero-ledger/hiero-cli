@@ -69,6 +69,11 @@ export interface NetworkService {
    * Get payer
    */
   getPayer(): ResolvedKey | null;
+
+  /**
+   * Check if any network has an operator configured
+   */
+  hasAnyOperator(): boolean;
 }
 
 export interface NetworkOperator {

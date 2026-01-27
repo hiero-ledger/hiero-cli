@@ -247,16 +247,16 @@ hcli token view --token my-collection --serial 1
 
 ### Token Associate
 
-Associate a fungible or non-fungible token with an account to enable transfers.
+Associate a fungible or non-fungible token with an account to enable transfers. Use `token associate` for both FT and NFT tokens.
 
 ```bash
 # Using account alias
-hcli token associate-ft \
+hcli token associate \
   --token mytoken-alias \
   --account alice
 
 # Using account-id:account-key pair
-hcli token associate-ft \
+hcli token associate \
   --token 0.0.123456 \
   --account 0.0.789012:302e020100300506032b657004220420...
 ```
@@ -510,6 +510,7 @@ interface TokenData {
   name: string;
   symbol: string;
   treasuryId: string;
+  tokenType: 'FUNGIBLE_COMMON' | 'NON_FUNGIBLE_UNIQUE';
   decimals: number;
   initialSupply: number;
   supplyType: 'FINITE' | 'INFINITE';
@@ -522,7 +523,7 @@ interface TokenData {
 }
 ```
 
-The schema is validated using Zod (`TokenDataSchema`) and stored as JSON Schema in the plugin manifest for runtime validation.
+The `tokenType` field discriminates fungible tokens (`FUNGIBLE_COMMON`) from NFT collections (`NON_FUNGIBLE_UNIQUE`). NFT tokens use zero for `decimals` and `initialSupply`; minted NFTs are tracked by serial number on the ledger. The schema is validated using Zod (`TokenDataSchema`) and stored as JSON Schema in the plugin manifest for runtime validation.
 
 ## 🧪 Testing
 
