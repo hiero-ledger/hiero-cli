@@ -65,7 +65,6 @@ export const hbarPluginManifest: PluginManifest = {
         schema: TransferOutputSchema,
         humanTemplate: TRANSFER_TEMPLATE,
       },
-      requireConfirmation: 'Transfer {{amount}} to {{to}}?',
     },
   ],
 };

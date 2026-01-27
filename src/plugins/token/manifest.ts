@@ -204,7 +204,6 @@ export const tokenPluginManifest: PluginManifest = {
         schema: TransferFungibleTokenOutputSchema,
         humanTemplate: TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
       },
-      requireConfirmation: 'Transfer {{amount}} of {{token}} to {{to}}?',
     },
     {
       name: 'transfer-nft',

@@ -3,7 +3,7 @@
  *
  * Direct plugin management without unnecessary layers
  */
-import type { Command } from 'commander';
+import type { Command, OptionValues } from 'commander';
 import type {
   CommandHandlerArgs,
   CommandSpec,
@@ -227,12 +227,18 @@ export class PluginManager {
     return path.resolve(__dirname, '../../plugins', name);
   }
 
+  private shouldSkipConfirmation(opts: OptionValues): boolean {
+    return Boolean(opts.confirm);
+  }
+
   /**
    * Register commands for a specific plugin
    */
   private registerPluginCommands(program: Command, plugin: LoadedPlugin): void {
     const pluginName = plugin.manifest.name;
     const commands = plugin.manifest.commands || [];
+
+    const skipConfirmation = this.shouldSkipConfirmation(program.opts());
 
     // Create plugin command group
     const pluginCommand = program
@@ -243,7 +249,12 @@ export class PluginManager {
 
     // Register each command
     for (const commandSpec of commands) {
-      this.registerSingleCommand(pluginCommand, plugin, commandSpec);
+      this.registerSingleCommand(
+        pluginCommand,
+        plugin,
+        commandSpec,
+        skipConfirmation,
+      );
     }
 
     this.logger.info(`✅ Registered commands for: ${pluginName}`);
@@ -257,6 +268,7 @@ export class PluginManager {
     pluginCommand: Command,
     plugin: LoadedPlugin,
     commandSpec: CommandSpec,
+    skipConfirmation: boolean,
   ): void {
     try {
       const commandName = String(commandSpec.name);
@@ -346,7 +358,12 @@ export class PluginManager {
 
       // Set up action handler
       command.action(async (...args: unknown[]) => {
-        await this.executePluginCommand(plugin, commandSpec, args);
+        await this.executePluginCommand(
+          plugin,
+          commandSpec,
+          args,
+          skipConfirmation,
+        );
       });
     } catch (error) {
       // Use centralized error handler for consistent error formatting
@@ -361,8 +378,9 @@ export class PluginManager {
   private async handleConfirmation(
     commandSpec: CommandSpec,
     handlerArgs: CommandHandlerArgs,
+    skipConfirmation: boolean,
   ): Promise<void> {
-    if (!commandSpec.requireConfirmation) {
+    if (!commandSpec.requireConfirmation || skipConfirmation) {
       return;
     }
 
@@ -404,6 +422,7 @@ export class PluginManager {
     _plugin: LoadedPlugin,
     commandSpec: CommandSpec,
     args: unknown[],
+    skipConfirmation: boolean,
   ): Promise<void> {
     const command = args[args.length - 1] as Command;
     const options = command.opts();
@@ -430,7 +449,7 @@ export class PluginManager {
       logger: this.logger,
     };
 
-    await this.handleConfirmation(commandSpec, handlerArgs);
+    await this.handleConfirmation(commandSpec, handlerArgs, skipConfirmation);
 
     // Validate that output spec is present (required per CommandSpec type)
     if (!commandSpec.output) {
