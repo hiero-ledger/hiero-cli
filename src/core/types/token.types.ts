@@ -69,3 +69,13 @@ export interface TokenMintParams {
   amount?: bigint; // Required for FT minting
   metadata?: Uint8Array; // Required for NFT minting
 }
+
+/**
+ * Parameters for NFT transfer transactions
+ */
+export interface NftTransferParams {
+  tokenId: string;
+  fromAccountId: string;
+  toAccountId: string;
+  serialNumbers: number[];
+}

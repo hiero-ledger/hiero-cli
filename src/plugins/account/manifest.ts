@@ -49,11 +49,6 @@ export const accountPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Account Plugin',
   description: 'Plugin for managing Hedera accounts',
-  compatibility: {
-    cli: '^1.0.0',
-    core: '^1.0.0',
-    api: '^1.0.0',
-  },
   commands: [
     {
       name: 'create',
@@ -85,7 +80,6 @@ export const accountPluginManifest: PluginManifest = {
           required: false,
           description: 'Alias of the created account to be used',
         },
-        { name: 'payer', short: 'p', type: 'string', required: false }, //TODO: I do not see see any usage of the payer option. Should we delete that?
         {
           name: 'key-manager',
           short: 'k',

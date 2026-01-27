@@ -66,6 +66,50 @@ const result = await api.account.createAccount({
 });
 ```
 
+### Token Service
+
+Handles Hedera token operations including creation, minting, association, and transfers.
+
+```typescript
+interface TokenService {
+  createFungibleTokenTransaction(
+    params: TokenCreateParams,
+  ): TokenCreateTransaction;
+
+  createTokenAssociationTransaction(
+    params: TokenAssociationParams,
+  ): TokenAssociateTransaction;
+
+  createFungibleTokenTransferTransaction(
+    params: FungibleTokenTransferParams,
+  ): TransferTransaction;
+
+  createMintTransaction(params: TokenMintParams): TokenMintTransaction;
+
+  createNftTransferTransaction(params: NftTransferParams): TransferTransaction;
+}
+
+interface NftTransferParams {
+  tokenId: string;
+  fromAccountId: string;
+  toAccountId: string;
+  serialNumbers: number[]; // Max 10 serials per transaction (Hedera limit)
+}
+```
+
+**Usage Example:**
+
+```typescript
+const transferTx = api.token.createNftTransferTransaction({
+  tokenId: '0.0.123456',
+  fromAccountId: '0.0.111111',
+  toAccountId: '0.0.222222',
+  serialNumbers: [1, 2, 3],
+});
+
+const result = await api.txExecution.signAndExecuteWith(transferTx, [keyRefId]);
+```
+
 ### TxExecutionService
 
 Manages transaction signing and execution.

@@ -24,11 +24,6 @@ export const contractPluginManifest: PluginManifest = {
   displayName: 'Smart Contract Plugin',
   description:
     'Plugin designed for managing compiling, deployment and verification of smart contract',
-  compatibility: {
-    cli: '^1.0.0',
-    core: '^1.0.0',
-    api: '^1.0.0',
-  },
   commands: [
     {
       name: 'create',

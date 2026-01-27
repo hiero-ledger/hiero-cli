@@ -65,7 +65,7 @@ export async function viewToken(
     }
 
     // 3. Build output based on mode
-    const output: ViewTokenOutput = buildOutput(tokenInfo, nftInfo);
+    const output: ViewTokenOutput = buildOutput(tokenInfo, nftInfo, network);
 
     return {
       status: Status.Success,

@@ -91,6 +91,7 @@ export interface KmsService {
 
   /**
    * Creates a Hedera client with operator credentials.
+   * @param network - Network to connect to
    */
   createClient(network: SupportedNetwork): Client;
 

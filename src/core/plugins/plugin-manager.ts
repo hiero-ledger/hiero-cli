@@ -261,15 +261,17 @@ export class PluginManager {
       const command = this.buildCommand(pluginCommand, commandSpec);
       // Add options
       if (commandSpec.options) {
-        const { allowed, filtered } = filterReservedOptions(
+        const { allowed, filteredLong, filteredShort } = filterReservedOptions(
           commandSpec.options,
         );
 
-        if (filtered.length > 0) {
-          this.logger.info(
-            `⚠️  Plugin ${plugin.manifest.name} command ${commandName}: filtered reserved option(s) ${filtered
-              .map((n) => `--${n}`)
-              .join(', ')} (reserved by core CLI)`,
+        if (filteredLong.length > 0 || filteredShort.length > 0) {
+          const longDesc = filteredLong.map((n) => `--${n}`).join(', ');
+          const shortDesc = filteredShort.map((s) => `-${s}`).join(', ');
+          const combined = [longDesc, shortDesc].filter(Boolean).join(', ');
+
+          throw new Error(
+            `Plugin ${plugin.manifest.name} command ${commandName} uses reserved option(s): ${combined}. These are reserved by the core CLI.`,
           );
         }
 

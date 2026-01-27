@@ -38,15 +38,15 @@ export type CreateNftOutput = z.infer<typeof CreateNftOutputSchema>;
  * Human-readable template for create token output
  */
 export const CREATE_NFT_TEMPLATE = `
-✅ NFT created successfully: {{tokenId}}
+✅ NFT created successfully: {{hashscanLink tokenId "token" network}}
    Name: {{name}} ({{symbol}})
-   Treasury: {{treasuryId}}
+   Treasury: {{hashscanLink treasuryId "account" network}}
    Supply Type: {{supplyType}}
-   Admin account: {{adminAccountId}}
-   Supply account: {{supplyAccountId}}
+   Admin account: {{hashscanLink adminAccountId "account" network}}
+   Supply account: {{hashscanLink supplyAccountId "account" network}}
 {{#if alias}}
    Alias: {{alias}}
 {{/if}}
    Network: {{network}}
-   Transaction ID: {{transactionId}}
+   Transaction ID: {{hashscanLink transactionId "transaction" network}}
 `.trim();

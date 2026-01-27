@@ -108,7 +108,7 @@ export const LIST_TOKENS_TEMPLATE = `
    Supply Type: {{supplyType}}
    Decimals: {{decimals}}
    Network: {{network}}
-{{#if maxSupply}}
+{{#if (eq supplyType "FINITE")}}
    Max Supply: {{maxSupply}}
 {{/if}}
 {{#if (gt associationCount 0)}}

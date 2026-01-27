@@ -9,6 +9,7 @@ import type {
   TransferTransaction,
 } from '@hashgraph/sdk';
 import type {
+  NftTransferParams,
   TokenAssociationParams,
   TokenCreateParams,
   TokenMintParams,
@@ -38,4 +39,9 @@ export interface TokenService {
    * Supports both fungible tokens (with amount) and NFTs (with metadata)
    */
   createMintTransaction(params: TokenMintParams): TokenMintTransaction;
+
+  /**
+   * Create an NFT transfer transaction (without execution)
+   */
+  createNftTransferTransaction(params: NftTransferParams): TransferTransaction;
 }

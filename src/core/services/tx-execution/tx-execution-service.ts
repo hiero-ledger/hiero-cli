@@ -16,7 +16,12 @@ import type {
   TxExecutionService,
 } from './tx-execution-service.interface';
 
-import { Status, Transaction as HederaTransaction } from '@hashgraph/sdk';
+import {
+  AccountId,
+  Status,
+  Transaction as HederaTransaction,
+  TransactionId,
+} from '@hashgraph/sdk';
 
 export class TxExecutionServiceImpl implements TxExecutionService {
   private logger: Logger;
@@ -55,6 +60,33 @@ export class TxExecutionServiceImpl implements TxExecutionService {
     this.logger.debug(`[TX-EXECUTION] Signing with ${keyRefIds.length} key(s)`);
 
     const client = this.getClient();
+    const payer = this.networkService.getPayer();
+
+    // If payer is set but transaction is already frozen, we cannot set TransactionId
+    // This would result in transaction being executed with operator instead of payer
+    if (
+      transaction instanceof HederaTransaction &&
+      payer &&
+      transaction.isFrozen()
+    ) {
+      throw new Error(
+        `[TX-EXECUTION] Transaction is already frozen before setting requested payer of the transaction`,
+      );
+    }
+
+    if (
+      transaction instanceof HederaTransaction &&
+      payer &&
+      !transaction.isFrozen()
+    ) {
+      const payerAccountId = AccountId.fromString(payer.accountId);
+      const transactionId = TransactionId.generate(payerAccountId);
+      transaction.setTransactionId(transactionId);
+      this.logger.debug(
+        `[TX-EXECUTION] Set transaction payer account ID: ${payer.accountId}`,
+      );
+    }
+
     if (transaction instanceof HederaTransaction && !transaction.isFrozen()) {
       transaction.freezeWith(client);
     }
@@ -64,6 +96,13 @@ export class TxExecutionServiceImpl implements TxExecutionService {
     for (const keyRefId of uniqueKeyRefIds) {
       this.logger.debug(`[TX-EXECUTION] Signing with key: ${keyRefId}`);
       await this.kms.signTransaction(transaction, keyRefId);
+    }
+
+    if (payer && !uniqueKeyRefIds.has(payer.keyRefId)) {
+      this.logger.debug(
+        `[TX-EXECUTION] Signing with payer key: ${payer.keyRefId}`,
+      );
+      await this.kms.signTransaction(transaction, payer.keyRefId);
     }
 
     return this.executeAndParseReceipt(transaction, client);
