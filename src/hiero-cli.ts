@@ -32,6 +32,7 @@ program
     '-P, --payer <payer>',
     'Payer account (alias or account-id:private-key format)',
   )
+  .option('--confirm', 'Skip confirmation prompts')
   .showHelpAfterError('use --help for available options');
 
 // Initialize the simplified plugin system

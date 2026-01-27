@@ -34,7 +34,7 @@ describe('Config Integration Tests', () => {
     const listConfigOutput: ListConfigOutput = JSON.parse(
       listConfigResult.outputJson!,
     );
-    expect(listConfigOutput.totalCount).toBe(3);
+    expect(listConfigOutput.totalCount).toBe(4);
     const optionNames = listConfigOutput.options.map((option) => option.name);
     expect(optionNames).toEqual(
       expect.arrayContaining([

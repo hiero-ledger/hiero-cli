@@ -20,4 +20,9 @@ export interface OutputService {
    * Set the current output format
    */
   setFormat(format: OutputFormat): void;
+
+  /**
+   * Write empty line for UI spacing
+   */
+  emptyLine(): void;
 }
