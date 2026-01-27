@@ -78,24 +78,30 @@ describe('contract plugin - list command', () => {
     const { api } = makeApiMocks({
       network: SupportedNetwork.TESTNET,
       alias: {
-        list: jest.fn().mockImplementation(({ network, type }) => {
-          if (type === 'contract') {
-            if (network === SupportedNetwork.TESTNET) {
-              return [
-                {
-                  alias: 'contract-alias-one',
-                  type: 'contract',
-                  network: SupportedNetwork.TESTNET,
-                  entityId: '0.0.1001',
-                },
-              ];
-            }
-            if (network === SupportedNetwork.MAINNET) {
-              return [];
-            }
-          }
-          return [];
-        }),
+        resolve: jest
+          .fn()
+          .mockImplementation(
+            (
+              ref: string,
+              type: string | undefined,
+              network: SupportedNetwork,
+            ) => {
+              if (ref === '0.0.1001' && type === 'contract') {
+                if (network === SupportedNetwork.TESTNET) {
+                  return {
+                    alias: 'contract-alias-one',
+                    type: 'contract',
+                    network: SupportedNetwork.TESTNET,
+                    entityId: '0.0.1001',
+                  };
+                }
+                if (network === SupportedNetwork.MAINNET) {
+                  return null;
+                }
+              }
+              return null;
+            },
+          ),
       },
     });
     const args = makeArgs(api, logger, {});

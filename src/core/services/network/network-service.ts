@@ -14,7 +14,7 @@ import type {
 
 import { HASHSCAN_BASE_URL } from '@/core/shared/constants';
 import {
-  NetworkConfig as NetworkIdsConfig,
+  NetworkChainMap as NetworkIdsConfig,
   type SupportedNetwork,
 } from '@/core/types/shared.types';
 

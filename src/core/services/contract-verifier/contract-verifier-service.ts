@@ -7,9 +7,7 @@ import type {
   SmartContractVerifyApiOkResponse,
 } from '@/core/services/contract-verifier/types';
 
-import axios from 'axios';
-
-import { NetworkConfig } from '@/core/types/shared.types';
+import { NetworkChainMap } from '@/core/types/shared.types';
 
 export class ContractVerifierServiceImpl implements ContractVerifierService {
   private static readonly BASE_URL = 'https://server-verify.hashscan.io/verify';
@@ -22,7 +20,7 @@ export class ContractVerifierServiceImpl implements ContractVerifierService {
     params: ContractVerificationParams,
   ): Promise<ContractVerificationResult> {
     const network = this.networkService.getCurrentNetwork();
-    const chainId = NetworkConfig[network];
+    const chainId = NetworkChainMap[network];
     const payload = {
       address: params.contractEvmAddress,
       chain: String(chainId),
@@ -32,12 +30,30 @@ export class ContractVerifierServiceImpl implements ContractVerifierService {
       },
     };
     try {
-      const response = await axios.post<SmartContractVerifyApiOkResponse>(
-        ContractVerifierServiceImpl.BASE_URL,
-        payload,
-      );
+      const response = await fetch(ContractVerifierServiceImpl.BASE_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
 
-      const data = response.data;
+      if (!response.ok) {
+        let errorMessage: string;
+        try {
+          const errorData =
+            (await response.json()) as SmartContractVerifyApiErrorResponse;
+          errorMessage = `${response.status} ${errorData.error}`;
+        } catch {
+          errorMessage = `${response.status} ${response.statusText}`;
+        }
+
+        throw new Error(
+          `Failed to verify smart contract ${params.contractFilename} with address ${params.contractEvmAddress} on chain ${chainId}: ${errorMessage}`,
+        );
+      }
+
+      const data = (await response.json()) as SmartContractVerifyApiOkResponse;
 
       return {
         address: data.result[0].address,
@@ -46,14 +62,6 @@ export class ContractVerifierServiceImpl implements ContractVerifierService {
         message: data.result[0].message,
       };
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        const errorData = error.response
-          .data as SmartContractVerifyApiErrorResponse;
-        throw new Error(
-          `Failed to verify smart contract ${params.contractFilename} with address ${params.contractEvmAddress} on chain ${chainId}: ${error.response.status} ${errorData.error}`,
-        );
-      }
-
       throw new Error(
         `Failed to verify smart contract ${params.contractFilename} with address ${params.contractEvmAddress} on chain ${chainId}: ${error instanceof Error ? error.message : String(error)}`,
       );

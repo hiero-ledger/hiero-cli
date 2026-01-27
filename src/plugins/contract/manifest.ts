@@ -78,6 +78,13 @@ export const contractPluginManifest: PluginManifest = {
           description: 'Smart contract memo.',
         },
         {
+          name: 'solidity-version',
+          short: 'v',
+          type: 'string',
+          required: false,
+          description: 'Solidity compiler version.',
+        },
+        {
           name: 'constructor-parameter',
           short: 'c',
           type: 'repeatable',

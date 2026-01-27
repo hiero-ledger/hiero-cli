@@ -202,14 +202,12 @@ describe('token plugin - list command', () => {
     const { api } = makeApiMocks({
       network: 'testnet',
       alias: {
-        list: jest.fn().mockReturnValue([
-          {
-            alias: 'my-token',
-            type: 'token',
-            network: 'testnet',
-            entityId: '0.0.1111',
-          },
-        ]),
+        resolve: jest.fn().mockReturnValue({
+          alias: 'my-token',
+          type: 'token',
+          network: 'testnet',
+          entityId: '0.0.1111',
+        }),
       },
     });
     const args = makeArgs(api, logger, {});

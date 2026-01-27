@@ -26,6 +26,7 @@ export async function createContract(
     const gas = validArgs.gas;
     const basePath = validArgs.basePath;
     const memo = validArgs.memo;
+    const solidityVersion = validArgs.solidityVersion;
     const constructorParameters = validArgs.constructorParameters;
     const keyManagerArg = validArgs.keyManager;
     const network = api.network.getCurrentNetwork();
@@ -55,11 +56,12 @@ export async function createContract(
         `Could not find contract name from the given file ${contractFilename}`,
       );
     }
-    const compilationResult = api.contractCompiler.compileContract({
+    const compilationResult = await api.contractCompiler.compileContract({
       contractName: contractName,
       contractContent: contractFileContent,
       contractFilename: contractFilename,
       basePath: basePath,
+      solidityVersion: solidityVersion,
     });
 
     const txSigners = [admin.keyRefId];

@@ -4,6 +4,7 @@
  */
 
 import type { CustomFee } from '@hashgraph/sdk';
+import type { CompileOptions } from 'solc';
 import type { KeyAlgorithm } from '@/core/shared/constants';
 
 /**
@@ -24,7 +25,7 @@ export enum NetworkChainId {
   LOCALNET = 298,
 }
 
-export const NetworkConfig: Record<SupportedNetwork, NetworkChainId> = {
+export const NetworkChainMap: Record<SupportedNetwork, NetworkChainId> = {
   [SupportedNetwork.MAINNET]: NetworkChainId.MAINNET,
   [SupportedNetwork.TESTNET]: NetworkChainId.TESTNET,
   [SupportedNetwork.PREVIEWNET]: NetworkChainId.PREVIEWNET,
@@ -103,4 +104,12 @@ export interface Credentials {
   network: string;
   isDefault: boolean;
   createdAt: string;
+}
+
+/**
+ * Solc compiler interface
+ */
+export interface SolcCompiler {
+  compile(input: string, options?: CompileOptions): string;
+  version(): string;
 }

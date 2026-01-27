@@ -6,7 +6,6 @@ import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { ContractListOutput } from '@/plugins/contract/commands/list/output';
 
 import { Status } from '@/core/shared/constants';
-import { findAlias } from '@/core/utils/alias-helper';
 import { formatError } from '@/core/utils/errors';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
@@ -32,12 +31,11 @@ export async function listContracts(
     });
 
     const contractAliases = contracts.map((contract) => {
-      const alias = findAlias(
-        api,
+      const alias = api.alias.resolve(
         contract.contractId,
-        contract.network,
         'contract',
-      );
+        contract.network,
+      )?.alias;
 
       return {
         ...contract,

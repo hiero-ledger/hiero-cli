@@ -280,75 +280,39 @@ export class PluginManager {
           const short = option.short ? `-${String(option.short)}` : '';
           const long = `--${optionName}`;
           const combined = short ? `${short}, ${long}` : long;
+          const flags = `${combined} <value>`;
+          const description = String(option.description || `Set ${optionName}`);
 
           if (option.type === 'boolean') {
-            command.option(
-              combined,
-              String(option.description || `Set ${optionName}`),
-            );
+            command.option(combined, description);
           } else if (option.type === 'number') {
-            const flags = `${combined} <value>`;
             if (option.required) {
-              command.requiredOption(
-                flags,
-                String(option.description || `Set ${optionName}`),
-                parseFloat,
-              );
+              command.requiredOption(flags, description, parseFloat);
             } else {
-              command.option(
-                flags,
-                String(option.description || `Set ${optionName}`),
-                parseFloat,
-              );
+              command.option(flags, description, parseFloat);
             }
           } else if (option.type === 'array') {
-            const flags = `${combined} <values>`;
+            const parseArray = (value: unknown) => String(value).split(',');
             if (option.required) {
-              command.requiredOption(
-                flags,
-                String(option.description || `Set ${optionName}`),
-                (value: unknown) => String(value).split(','),
-              );
+              command.requiredOption(flags, description, parseArray);
             } else {
-              command.option(
-                flags,
-                String(option.description || `Set ${optionName}`),
-                (value: unknown) => String(value).split(','),
-              );
+              command.option(flags, description, parseArray);
             }
           } else if (option.type === 'repeatable') {
-            const flags = `${combined} <values>`;
+            const parseRepeatable = (value: string, args: string[] = []) => {
+              args.push(value);
+              return args;
+            };
             if (option.required) {
-              command.requiredOption(
-                flags,
-                String(option.description || `Set ${optionName}`),
-                (value: string, args: string[] = []) => {
-                  args.push(value);
-                  return args;
-                },
-              );
+              command.requiredOption(flags, description, parseRepeatable);
             } else {
-              command.option(
-                flags,
-                String(option.description || `Set ${optionName}`),
-                (value: string, args: string[] = []) => {
-                  args.push(value);
-                  return args;
-                },
-              );
+              command.option(flags, description, parseRepeatable);
             }
           } else {
-            const flags = `${combined} <value>`;
             if (option.required) {
-              command.requiredOption(
-                flags,
-                String(option.description || `Set ${optionName}`),
-              );
+              command.requiredOption(flags, description);
             } else {
-              command.option(
-                flags,
-                String(option.description || `Set ${optionName}`),
-              );
+              command.option(flags, description);
             }
           }
         }

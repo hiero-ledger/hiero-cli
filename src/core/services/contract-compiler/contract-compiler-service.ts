@@ -9,10 +9,14 @@ import type {
 
 import * as fs from 'fs';
 import * as path from 'path';
-import * as solc from 'solc';
+
+import { loadSolcVersion } from '@/core/utils/solc-loader';
 
 export class ContractCompilerServiceImpl implements ContractCompilerService {
-  public compileContract(params: CompilationParams): CompilationResult {
+  public async compileContract(
+    params: CompilationParams,
+  ): Promise<CompilationResult> {
+    const solc = await loadSolcVersion(params.solidityVersion);
     if (!params.contractContent.trim()) {
       throw new Error('Contract content is empty');
     }
@@ -20,6 +24,7 @@ export class ContractCompilerServiceImpl implements ContractCompilerService {
     if (!params.contractName) {
       throw new Error('Contract name is required');
     }
+
     const input: SolcInput = {
       language: 'Solidity',
       sources: {
@@ -48,6 +53,8 @@ export class ContractCompilerServiceImpl implements ContractCompilerService {
       );
     }
 
+    // Solidity compiler output structure: output.contracts[filename][contractName]
+    // Example: output.contracts['MyContract.sol']['MyContract'] contains the compiled contract data
     const contract =
       output.contracts[params.contractFilename][params.contractName];
     return {

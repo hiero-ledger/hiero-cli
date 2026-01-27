@@ -6,13 +6,32 @@ import type { CompilationParams } from '@/core/services/contract-compiler/types'
 
 import * as fs from 'fs';
 import * as path from 'path';
-import * as solc from 'solc';
 
 import { ContractCompilerServiceImpl } from '@/core/services/contract-compiler/contract-compiler-service';
 
-jest.mock('solc', () => ({
-  compile: jest.fn(),
+// Use a global object to store the mock compile function
+// This works around Jest's hoisting of jest.mock()
+interface GlobalWithMockSolc {
+  __mockSolcCompile?: jest.Mock;
+}
+
+const globalWithMock = global as GlobalWithMockSolc;
+globalWithMock.__mockSolcCompile = jest.fn();
+
+jest.mock('@/core/utils/solc-loader', () => ({
+  loadSolcVersion: jest.fn(() =>
+    Promise.resolve({
+      compile: globalWithMock.__mockSolcCompile,
+    }),
+  ),
 }));
+
+// Export a reference to the mock compile for use in tests
+const mockSolcModule = {
+  get compile() {
+    return globalWithMock.__mockSolcCompile!;
+  },
+};
 
 jest.mock('fs', () => ({
   readFileSync: jest.fn(),
@@ -22,7 +41,6 @@ jest.mock('path', () => ({
   resolve: jest.fn((...segments: string[]) => segments.join('/')),
 }));
 
-const mockCompile = solc.compile as jest.Mock;
 const mockReadFileSync = fs.readFileSync as jest.Mock;
 const mockPathResolve = path.resolve as jest.Mock;
 
@@ -40,7 +58,7 @@ describe('ContractCompilerServiceImpl', () => {
   });
 
   describe('compileContract', () => {
-    it('should compile contract and return bytecode, abi and metadata', () => {
+    it('should compile contract and return bytecode, abi and metadata', async () => {
       const abi = [{ name: 'constructor', type: 'constructor', inputs: [] }];
       const metadata = {
         output: {
@@ -64,7 +82,9 @@ describe('ContractCompilerServiceImpl', () => {
         },
       };
 
-      mockCompile.mockImplementationOnce(() => JSON.stringify(solcOutput));
+      mockSolcModule.compile.mockImplementationOnce(() =>
+        JSON.stringify(solcOutput),
+      );
 
       const params: CompilationParams = {
         basePath: BASE_PATH,
@@ -73,11 +93,11 @@ describe('ContractCompilerServiceImpl', () => {
         contractContent: CONTRACT_CONTENT,
       };
 
-      const result = service.compileContract(params);
+      const result = await service.compileContract(params);
 
-      expect(mockCompile).toHaveBeenCalledTimes(1);
+      expect(mockSolcModule.compile).toHaveBeenCalledTimes(1);
 
-      const [rawInput, compileOptions] = mockCompile.mock.calls[0];
+      const [rawInput, compileOptions] = mockSolcModule.compile.mock.calls[0];
       const parsedInput = JSON.parse(rawInput);
 
       expect(parsedInput.language).toBe('Solidity');
@@ -100,7 +120,7 @@ describe('ContractCompilerServiceImpl', () => {
       });
     });
 
-    it('should resolve import paths using basePath for local and node_modules imports', () => {
+    it('should resolve import paths using basePath for local and node_modules imports', async () => {
       const params: CompilationParams = {
         basePath: BASE_PATH,
         contractFilename: CONTRACT_FILENAME,
@@ -108,12 +128,13 @@ describe('ContractCompilerServiceImpl', () => {
         contractContent: CONTRACT_CONTENT,
       };
 
-      mockCompile.mockImplementationOnce(() => {
+      mockSolcModule.compile.mockImplementationOnce(() => {
         return JSON.stringify({
           contracts: {
             [CONTRACT_FILENAME]: {
               [CONTRACT_NAME]: {
                 evm: { bytecode: { object: '0x0' } },
+                abi: JSON.stringify([]),
                 metadata: JSON.stringify({ output: { abi: [] } }),
               },
             },
@@ -124,9 +145,9 @@ describe('ContractCompilerServiceImpl', () => {
       mockReadFileSync.mockReturnValueOnce('imported content');
       mockReadFileSync.mockReturnValueOnce('node module content');
 
-      service.compileContract(params);
+      await service.compileContract(params);
 
-      const [, compileOptions] = mockCompile.mock.calls[0];
+      const [, compileOptions] = mockSolcModule.compile.mock.calls[0];
       const importFn = compileOptions.import as (p: string) => {
         contents?: string;
         error?: string;
@@ -149,7 +170,7 @@ describe('ContractCompilerServiceImpl', () => {
       expect(nodeModuleResult).toEqual({ contents: 'node module content' });
     });
 
-    it('should return error from import callback when file is not found', () => {
+    it('should return error from import callback when file is not found', async () => {
       const params: CompilationParams = {
         basePath: BASE_PATH,
         contractFilename: CONTRACT_FILENAME,
@@ -157,7 +178,7 @@ describe('ContractCompilerServiceImpl', () => {
         contractContent: CONTRACT_CONTENT,
       };
 
-      mockCompile.mockImplementationOnce(() => {
+      mockSolcModule.compile.mockImplementationOnce(() => {
         return JSON.stringify({
           contracts: {
             [CONTRACT_FILENAME]: {
@@ -176,9 +197,9 @@ describe('ContractCompilerServiceImpl', () => {
         throw error;
       });
 
-      service.compileContract(params);
+      await service.compileContract(params);
 
-      const [, compileOptions] = mockCompile.mock.calls[0];
+      const [, compileOptions] = mockSolcModule.compile.mock.calls[0];
       const importFn = compileOptions.import as (p: string) => {
         contents?: string;
         error?: string;

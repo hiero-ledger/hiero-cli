@@ -161,21 +161,12 @@ export const accountPluginManifest: PluginManifest = {
           default: false,
           description: 'Include private keys reference ID in listing',
         },
-        {
-          name: 'repeatable',
-          short: 'r',
-          type: 'repeatable',
-          required: false,
-          default: false,
-          description: 'Repeatable test',
-        },
       ],
       handler: listAccounts,
       output: {
         schema: ListAccountsOutputSchema,
         humanTemplate: LIST_ACCOUNTS_TEMPLATE,
       },
-      excessArguments: true,
     },
     {
       name: 'import',

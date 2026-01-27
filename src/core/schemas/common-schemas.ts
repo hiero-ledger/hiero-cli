@@ -642,3 +642,14 @@ export const ContractNameSchema = z
     'Contract name must contain only letters, numbers, hyphens, and underscores',
   )
   .describe('Contract name');
+
+/**
+ * Solidity Compiler Version Input
+ * Optional solidity compiler version field for transactions
+ * Max 100 characters
+ */
+export const SolidityCompilerVersion = z
+  .string()
+  .trim()
+  .optional()
+  .describe('Optional Solidity compiler version');
