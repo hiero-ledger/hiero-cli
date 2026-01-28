@@ -1,16 +1,17 @@
 import { z } from 'zod';
 
+import { SupplyType } from '@/core/types/shared.types';
+
 type MinimalSupplyArgs = {
   maxSupply?: string;
-  // @TODO Add enum for supply type
-  supplyType?: 'FINITE' | 'INFINITE';
+  supplyType?: SupplyType;
 };
 
 export function validateSupplyTypeAndMaxSupply<Args extends MinimalSupplyArgs>(
   args: Args,
   ctx: z.RefinementCtx,
 ) {
-  const isFinite = args.supplyType === 'FINITE';
+  const isFinite = args.supplyType === SupplyType.FINITE;
 
   if (isFinite && !args.maxSupply) {
     ctx.addIssue({

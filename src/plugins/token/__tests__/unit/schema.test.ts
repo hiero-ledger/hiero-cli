@@ -3,6 +3,7 @@
  * Tests the token data validation and schema functionality
  */
 import { HederaTokenType } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import { CreateFungibleTokenInputSchema } from '@/plugins/token/commands/create-ft/input';
 import {
   CustomFeeSchema,
@@ -265,7 +266,7 @@ describe('Token Schema Validation', () => {
       if (result.success) {
         expect(result.data.decimals).toBe(0); // default value
         expect(result.data.initialSupply).toBe('1000000'); // default value
-        expect(result.data.supplyType).toBe('INFINITE'); // default value
+        expect(result.data.supplyType).toBe(SupplyType.INFINITE); // default value
       }
     });
 
@@ -304,7 +305,7 @@ describe('Token Schema Validation', () => {
         symbol: 'TEST',
         decimals: 18, // Maximum allowed
         initialSupply: 1000,
-        supplyType: 'FINITE',
+        supplyType: SupplyType.FINITE,
         maxSupply: 10000,
         treasuryId: '0.0.789012',
         associations: [],
@@ -325,7 +326,7 @@ describe('Token Schema Validation', () => {
         symbol: 'TEST',
         decimals: 0,
         initialSupply: 0, // Zero is valid
-        supplyType: 'INFINITE',
+        supplyType: SupplyType.INFINITE,
         maxSupply: 0,
         treasuryId: '0.0.789012',
         associations: [],
@@ -347,7 +348,7 @@ describe('Token Schema Validation', () => {
         symbol: 'TEST',
         decimals: 0,
         initialSupply: 1000,
-        supplyType: 'FINITE',
+        supplyType: SupplyType.FINITE,
         maxSupply: 10000,
         treasuryId: '0.0.789012',
         associations: [],
@@ -369,7 +370,7 @@ describe('Token Schema Validation', () => {
         symbol: 'TEST',
         decimals: 0,
         initialSupply: 1000,
-        supplyType: 'FINITE',
+        supplyType: SupplyType.FINITE,
         maxSupply: 10000,
         treasuryId: '0.0.789012',
         associations: [],

@@ -5,12 +5,12 @@
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { SupplyType } from '@/core/types/token.types';
 import type { CreateNftOutput } from '@/plugins/token/commands/create-nft/output';
 
 import { PublicKey } from '@hashgraph/sdk';
 
 import { HederaTokenType, Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import { formatError } from '@/core/utils/errors';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { CreateNftInputSchema } from '@/plugins/token/commands/create-nft/input';
@@ -70,7 +70,7 @@ export async function createNft(
   );
 
   let finalMaxSupply: bigint | undefined = undefined;
-  if (supplyType.toUpperCase() === 'FINITE') {
+  if (supplyType === SupplyType.FINITE) {
     finalMaxSupply = determineFiniteMaxSupply(maxSupply, initialSupply);
     logger.info(`Max supply: ${finalMaxSupply}`);
   } else if (maxSupply !== undefined) {
@@ -96,7 +96,7 @@ export async function createNft(
       decimals,
       initialSupplyRaw: initialSupply,
       tokenType: tokenType,
-      supplyType: supplyType.toUpperCase() as SupplyType,
+      supplyType,
       maxSupplyRaw: finalMaxSupply,
       adminPublicKey: PublicKey.fromString(admin.publicKey),
       supplyPublicKey: PublicKey.fromString(supply.publicKey),
@@ -150,7 +150,7 @@ export async function createNft(
       name,
       symbol,
       treasuryId: treasury.accountId,
-      supplyType: supplyType.toUpperCase() as 'FINITE' | 'INFINITE',
+      supplyType,
       transactionId: result.transactionId,
       adminAccountId: admin.accountId,
       supplyAccountId: supply.accountId,

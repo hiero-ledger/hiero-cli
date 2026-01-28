@@ -5,7 +5,6 @@
 import type { TransactionResult } from '@/core';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { SupplyType } from '@/core/types/token.types';
 import type {
   FungibleTokenFileDefinition,
   NonFungibleTokenFileDefinition,
@@ -13,6 +12,7 @@ import type {
 } from '@/plugins/token/schema';
 
 import { HederaTokenType as HederaTokenTypeValues } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 
 export function buildTokenData(
   result: TransactionResult,
@@ -39,7 +39,9 @@ export function buildTokenData(
     tokenType: params.tokenType,
     supplyType: params.supplyType.toUpperCase() as SupplyType,
     maxSupply:
-      params.supplyType.toUpperCase() === 'FINITE' ? params.initialSupply : 0n,
+      (params.supplyType.toUpperCase() as SupplyType) === SupplyType.FINITE
+        ? params.initialSupply
+        : 0n,
     adminPublicKey: params.adminPublicKey,
     supplyPublicKey: params?.supplyPublicKey,
     network: params.network,
@@ -80,9 +82,7 @@ export function buildTokenDataFromFile(
     decimals: tokenDefinition.decimals,
     initialSupply: tokenDefinition.initialSupply,
     tokenType: tokenDefinition.tokenType,
-    supplyType: tokenDefinition.supplyType.toUpperCase() as
-      | 'FINITE'
-      | 'INFINITE',
+    supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
     maxSupply: tokenDefinition.maxSupply,
     network,
     associations: [],
@@ -121,9 +121,7 @@ export function buildNftTokenDataFromFile(
     decimals: 0,
     initialSupply: 0n,
     tokenType: HederaTokenTypeValues.NON_FUNGIBLE_TOKEN,
-    supplyType: tokenDefinition.supplyType.toUpperCase() as
-      | 'FINITE'
-      | 'INFINITE',
+    supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
     maxSupply: tokenDefinition.maxSupply ?? 0n,
     network,
     associations: [],

@@ -11,6 +11,7 @@ import {
   TokenSymbolSchema,
 } from '@/core/schemas';
 import { validateSupplyTypeAndMaxSupply } from '@/core/shared/validation/validate-supply.zod';
+import { SupplyType } from '@/core/types/shared.types';
 
 /**
  * Input schema for token create command
@@ -23,7 +24,7 @@ export const CreateNftInputSchema = z
     treasury: KeyOrAccountAliasSchema.optional().describe(
       'Treasury account. Can be alias or TreasuryID:treasuryKey pair. Defaults to operator.',
     ),
-    supplyType: SupplyTypeSchema.default('INFINITE').describe(
+    supplyType: SupplyTypeSchema.default(SupplyType.INFINITE).describe(
       'Supply type: INFINITE (default) or FINITE',
     ),
     maxSupply: AmountInputSchema.optional().describe(

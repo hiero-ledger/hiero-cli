@@ -1,7 +1,8 @@
 import type { NftInfo, TokenInfo } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { SupplyType } from '@/core/types/token.types';
 import type { ViewTokenOutput } from '@/plugins/token/commands/view';
+
+import { SupplyType } from '@/core/types/shared.types';
 
 /**
  * Decode base64 metadata to UTF-8 string
@@ -54,7 +55,7 @@ export function buildOutput(
   // Determine supply type based on max_supply
   // If max_supply is "0", it's INFINITE, otherwise FINITE
   const supplyType: SupplyType =
-    tokenInfo.max_supply === '0' ? 'INFINITE' : 'FINITE';
+    tokenInfo.max_supply === '0' ? SupplyType.INFINITE : SupplyType.FINITE;
 
   const base = {
     tokenId: tokenInfo.token_id,

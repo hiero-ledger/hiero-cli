@@ -5,7 +5,7 @@
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { SupplyType } from '@/core/types/token.types';
+import type { SupplyType } from '@/core/types/shared.types';
 import type { CreateFungibleTokenFromFileOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
@@ -179,9 +179,7 @@ export async function createTokenFromFile(
       treasuryId: treasury.accountId,
       decimals: tokenDefinition.decimals,
       initialSupply: tokenDefinition.initialSupply.toString(),
-      supplyType: tokenDefinition.supplyType.toUpperCase() as
-        | 'FINITE'
-        | 'INFINITE',
+      supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
       transactionId: result.transactionId,
       network,
       associations: successfulAssociations.map((assoc) => ({

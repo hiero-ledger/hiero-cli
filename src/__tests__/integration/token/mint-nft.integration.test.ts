@@ -13,6 +13,7 @@ import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import { createAccount, viewAccount } from '@/plugins/account';
 import { createNft } from '@/plugins/token/commands/create-nft';
 import { mintNft } from '@/plugins/token/commands/mint-nft';
@@ -76,7 +77,7 @@ describe('Mint NFT Integration Tests', () => {
       tokenName: 'Test NFT Collection',
       symbol: 'TNFT',
       treasury: 'account-mint-nft',
-      supplyType: 'FINITE',
+      supplyType: SupplyType.FINITE,
       maxSupply: '100',
       adminKey: 'account-mint-nft',
       supplyKey: 'account-mint-nft',
@@ -100,7 +101,7 @@ describe('Mint NFT Integration Tests', () => {
     expect(createNftOutput.adminAccountId).toBe(viewAccountOutput.accountId);
     expect(createNftOutput.supplyAccountId).toBe(viewAccountOutput.accountId);
     expect(createNftOutput.symbol).toBe('TNFT');
-    expect(createNftOutput.supplyType).toBe('FINITE');
+    expect(createNftOutput.supplyType).toBe(SupplyType.FINITE);
 
     await delay(5000);
 
