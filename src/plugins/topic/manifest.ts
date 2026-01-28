@@ -3,6 +3,8 @@
  */
 import type { PluginManifest } from '@/core';
 
+import { OptionType } from '@/core/types/shared.types';
+
 // Import output specifications from each command
 import {
   CREATE_TOPIC_TEMPLATE,
@@ -42,14 +44,14 @@ export const topicPluginManifest: PluginManifest = {
       options: [
         {
           name: 'memo',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description: 'The memo',
           short: 'm',
         },
         {
           name: 'admin-key',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           default: false,
           description:
@@ -58,7 +60,7 @@ export const topicPluginManifest: PluginManifest = {
         },
         {
           name: 'submit-key',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Submit key as account name or {accountId}:{private_key} format',
@@ -67,14 +69,14 @@ export const topicPluginManifest: PluginManifest = {
         {
           name: 'name',
           short: 'n',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description: 'Define the name for this topic',
         },
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
@@ -104,21 +106,21 @@ export const topicPluginManifest: PluginManifest = {
       options: [
         {
           name: 'topic',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'The topic ID or topic name',
           short: 't',
         },
         {
           name: 'message',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Submit a message to the topic',
           short: 'm',
         },
         {
           name: 'signer',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Account to use for signing the message. Can be an alias or {accountId}:{private_key}. Required for public topics (without submit keys). For topics with submit keys, must be one of the authorized signers.',
@@ -126,7 +128,7 @@ export const topicPluginManifest: PluginManifest = {
         },
         {
           name: 'key-manager',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
@@ -146,14 +148,14 @@ export const topicPluginManifest: PluginManifest = {
       options: [
         {
           name: 'topic',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'The topic ID or topic name',
           short: 't',
         },
         {
           name: 'sequence-gt',
-          type: 'number',
+          type: OptionType.NUMBER,
           required: false,
           description: 'Filter by sequence number greater than',
           short: 'g',
@@ -161,28 +163,28 @@ export const topicPluginManifest: PluginManifest = {
         {
           name: 'sequence-gte',
           short: 'G',
-          type: 'number',
+          type: OptionType.NUMBER,
           required: false,
           description: 'Filter by sequence number greater than or equal to',
         },
         {
           name: 'sequence-lt',
           short: 'l',
-          type: 'number',
+          type: OptionType.NUMBER,
           required: false,
           description: 'Filter by sequence number less than',
         },
         {
           name: 'sequence-lte',
           short: 'L',
-          type: 'number',
+          type: OptionType.NUMBER,
           required: false,
           description: 'Filter by sequence number less than or equal to',
         },
         {
           name: 'sequence-eq',
           short: 'e',
-          type: 'number',
+          type: OptionType.NUMBER,
           required: false,
           description: 'Filter by sequence number equal to',
         },

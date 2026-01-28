@@ -5,6 +5,8 @@
  */
 import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
+import { OptionType } from '@/core/types/shared.types';
+
 import {
   LIST_CREDENTIALS_TEMPLATE,
   listCredentials,
@@ -43,7 +45,7 @@ export const credentialsManifest: PluginManifest = {
         {
           name: 'id',
           short: 'i',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Key reference ID to remove from KMS',
         },

@@ -5,7 +5,6 @@
 import type { ResolvedKey } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type {
   LocalnetConfig,
   NetworkConfig,
@@ -14,6 +13,10 @@ import type {
 } from './network-service.interface';
 
 import { HASHSCAN_BASE_URL } from '@/core/shared/constants';
+import {
+  NetworkChainMap as NetworkIdsConfig,
+  type SupportedNetwork,
+} from '@/core/types/shared.types';
 
 import {
   DEFAULT_LOCALNET_NODE,
@@ -76,11 +79,13 @@ export class NetworkServiceImpl implements NetworkService {
       throw new Error(`Network configuration not found: ${network}`);
     }
 
+    const chainId = NetworkIdsConfig[network as SupportedNetwork];
+
     return {
       name: network,
       rpcUrl: config.rpcUrl,
       mirrorNodeUrl: config.mirrorNodeUrl,
-      chainId: network === 'mainnet' ? '0x127' : '0x128',
+      chainId: `0x${chainId.toString(16)}`,
       explorerUrl: `${HASHSCAN_BASE_URL}${network}`,
       isTestnet: network !== 'mainnet',
     };

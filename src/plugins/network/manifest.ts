@@ -4,6 +4,8 @@
  */
 import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
+import { OptionType } from '@/core/types/shared.types';
+
 import {
   GET_OPERATOR_TEMPLATE,
   getOperatorHandler,
@@ -51,7 +53,7 @@ export const networkPluginManifest: PluginManifest = {
         {
           name: 'global',
           short: 'g',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Network name (testnet, mainnet, previewnet, localnet)',
         },
@@ -82,7 +84,7 @@ export const networkPluginManifest: PluginManifest = {
         {
           name: 'operator',
           short: 'o',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Operator credentials: name or account-id:private-key pair',
@@ -90,7 +92,7 @@ export const networkPluginManifest: PluginManifest = {
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',

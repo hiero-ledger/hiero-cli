@@ -6,6 +6,9 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
+import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
+import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
 import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
@@ -63,6 +66,9 @@ export const makeTxExecutionServiceMock = (
   signAndExecuteWith: jest
     .fn()
     .mockResolvedValue(mockTransactionResults.success),
+  signAndExecuteContractCreateFlowWith: jest
+    .fn()
+    .mockResolvedValue(mockTransactionResults.success),
   ...overrides,
 });
 
@@ -111,6 +117,7 @@ export const makeKmsMock = (
 
   createClient: jest.fn(),
   signTransaction: jest.fn(),
+  signContractCreateFlow: jest.fn(),
   ...overrides,
 });
 
@@ -247,6 +254,9 @@ interface ApiMocksConfig {
   createTransferImpl?: jest.Mock;
   signAndExecuteImpl?: jest.Mock;
   keyResolver?: Partial<jest.Mocked<KeyResolverService>>;
+  contract?: Partial<jest.Mocked<ContractTransactionService>>;
+  contractCompiler?: Partial<jest.Mocked<ContractCompilerService>>;
+  contractVerifier?: Partial<jest.Mocked<ContractVerifierService>>;
 }
 
 /**
@@ -332,6 +342,15 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       disablePlugin: jest.fn(),
       savePluginState: jest.fn(),
     } as PluginManagementService,
+    contract: {
+      contractCreateFlowTransaction: jest.fn(),
+    } as unknown as ContractTransactionService,
+    contractCompiler: {
+      compileContract: jest.fn(),
+    } as ContractCompilerService,
+    contractVerifier: {
+      verifyContract: jest.fn(),
+    } as ContractVerifierService,
     keyResolver,
   };
 
@@ -383,6 +402,7 @@ export const makeTransactionResult = (
     transactionId: string;
     tokenId?: string;
     accountId?: string;
+    contractId?: string;
   }>,
 ) => ({
   success: overrides?.success ?? true,

@@ -19,7 +19,6 @@ export type * from './services/tx-execution/tx-execution-service.interface';
 export type {
   Account,
   Credentials,
-  NetworkConfig,
   Script,
   Token,
   Topic,

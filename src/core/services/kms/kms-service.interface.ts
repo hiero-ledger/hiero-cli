@@ -1,4 +1,8 @@
-import type { Client, Transaction as HederaTransaction } from '@hashgraph/sdk';
+import type {
+  Client,
+  ContractCreateFlow,
+  Transaction as HederaTransaction,
+} from '@hashgraph/sdk';
 import type { KeyAlgorithm } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { KeyManagerName } from './kms-types.interface';
@@ -98,4 +102,12 @@ export interface KmsService {
     transaction: HederaTransaction,
     keyRefId: string,
   ): Promise<void>;
+
+  /**
+   * Signs a transaction with specified key.
+   */
+  signContractCreateFlow(
+    transaction: ContractCreateFlow,
+    keyRefId: string,
+  ): void;
 }

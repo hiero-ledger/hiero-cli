@@ -18,6 +18,7 @@ import * as Handlebars from 'handlebars';
 import * as path from 'path';
 
 import { Status } from '@/core/shared/constants';
+import { OptionType } from '@/core/types/shared.types';
 import { requireConfirmation } from '@/core/utils/confirmation';
 import { ensureCliInitialized } from '@/core/utils/ensure-cli-initialized';
 import { formatAndExitWithError } from '@/core/utils/error-handler';
@@ -272,16 +273,7 @@ export class PluginManager {
   ): void {
     try {
       const commandName = String(commandSpec.name);
-      const command = pluginCommand
-        .command(commandName)
-        .description(
-          String(
-            commandSpec.description ||
-              commandSpec.summary ||
-              `Execute ${commandName}`,
-          ),
-        );
-
+      const command = this.buildCommand(pluginCommand, commandSpec);
       // Add options
       if (commandSpec.options) {
         const { allowed, filteredLong, filteredShort } = filterReservedOptions(
@@ -303,55 +295,58 @@ export class PluginManager {
           const short = option.short ? `-${String(option.short)}` : '';
           const long = `--${optionName}`;
           const combined = short ? `${short}, ${long}` : long;
+          const flags = `${combined} <value>`;
+          const description = String(option.description || `Set ${optionName}`);
 
-          if (option.type === 'boolean') {
-            command.option(
-              combined,
-              String(option.description || `Set ${optionName}`),
-            );
-          } else if (option.type === 'number') {
-            const flags = `${combined} <value>`;
+          const addOption = <T>(
+            parser?: (value: string, previous: T) => T,
+            useValueFlag = true,
+          ) => {
+            const optionFlags = useValueFlag ? flags : combined;
             if (option.required) {
-              command.requiredOption(
-                flags,
-                String(option.description || `Set ${optionName}`),
-                parseFloat,
-              );
+              // Commander treats the third argument as an optional parser/transform function
+              if (parser) {
+                command.requiredOption(optionFlags, description, parser);
+              } else {
+                command.requiredOption(optionFlags, description);
+              }
             } else {
-              command.option(
-                flags,
-                String(option.description || `Set ${optionName}`),
-                parseFloat,
-              );
+              if (parser) {
+                command.option(optionFlags, description, parser);
+              } else {
+                command.option(optionFlags, description);
+              }
             }
-          } else if (option.type === 'array') {
-            const flags = `${combined} <values>`;
-            if (option.required) {
-              command.requiredOption(
-                flags,
-                String(option.description || `Set ${optionName}`),
-                (value: unknown) => String(value).split(','),
-              );
-            } else {
-              command.option(
-                flags,
-                String(option.description || `Set ${optionName}`),
-                (value: unknown) => String(value).split(','),
-              );
+          };
+
+          switch (option.type) {
+            case OptionType.BOOLEAN:
+              // boolean flags don't take a value placeholder or parser
+              addOption<boolean | undefined>(undefined, false);
+              break;
+            case OptionType.NUMBER:
+              addOption<number>((value) => parseFloat(value));
+              break;
+            case OptionType.ARRAY: {
+              const parseArray = (value: string) => String(value).split(',');
+              addOption<string[]>(parseArray);
+              break;
             }
-          } else {
-            const flags = `${combined} <value>`;
-            if (option.required) {
-              command.requiredOption(
-                flags,
-                String(option.description || `Set ${optionName}`),
-              );
-            } else {
-              command.option(
-                flags,
-                String(option.description || `Set ${optionName}`),
-              );
+            case OptionType.REPEATABLE: {
+              const parseRepeatable = (
+                value: string,
+                previous: string[] | undefined,
+              ) => {
+                const arr = previous ?? [];
+                arr.push(value);
+                return arr;
+              };
+              addOption<string[]>(parseRepeatable);
+              break;
             }
+            default:
+              // default to a simple string option (no parser)
+              addOption<string | undefined>();
           }
         }
       }
@@ -506,5 +501,22 @@ export class PluginManager {
         );
       }
     }
+  }
+
+  private buildCommand(pluginCommand: Command, commandSpec: CommandSpec) {
+    const commandName = String(commandSpec.name);
+    let command = pluginCommand
+      .command(commandName)
+      .description(
+        String(
+          commandSpec.description ||
+            commandSpec.summary ||
+            `Execute ${commandName}`,
+        ),
+      );
+    if (commandSpec.excessArguments) {
+      command = command.allowUnknownOption(true).allowExcessArguments(true);
+    }
+    return command;
   }
 }

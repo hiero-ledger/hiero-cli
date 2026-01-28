@@ -4,6 +4,7 @@
  */
 
 import type { CustomFee } from '@hashgraph/sdk';
+import type { CompileOptions } from 'solc';
 import type { KeyAlgorithm } from '@/core/shared/constants';
 
 /**
@@ -16,6 +17,20 @@ export enum SupportedNetwork {
   PREVIEWNET = 'previewnet',
   LOCALNET = 'localnet',
 }
+
+export enum NetworkChainId {
+  MAINNET = 295,
+  TESTNET = 296,
+  PREVIEWNET = 297,
+  LOCALNET = 298,
+}
+
+export const NetworkChainMap: Record<SupportedNetwork, NetworkChainId> = {
+  [SupportedNetwork.MAINNET]: NetworkChainId.MAINNET,
+  [SupportedNetwork.TESTNET]: NetworkChainId.TESTNET,
+  [SupportedNetwork.PREVIEWNET]: NetworkChainId.PREVIEWNET,
+  [SupportedNetwork.LOCALNET]: NetworkChainId.LOCALNET,
+};
 
 /**
  * Account data structure
@@ -97,21 +112,17 @@ export interface Credentials {
 }
 
 /**
- * Network configuration
+ * Solc compiler interface
  */
-export interface NetworkConfig {
-  name: string;
-  rpcUrl: string;
-  mirrorNodeUrl: string;
-  chainId: string;
-  explorerUrl?: string;
+export interface SolcCompiler {
+  compile(input: string, options?: CompileOptions): string;
+  version(): string;
 }
 
-export type BackupPayload = {
-  timestamp: string;
-  namespaces: Record<string, unknown[]>;
-  metadata: {
-    totalNamespaces: number;
-    totalSize: number;
-  };
-};
+export enum OptionType {
+  STRING = 'string',
+  NUMBER = 'number',
+  BOOLEAN = 'boolean',
+  ARRAY = 'array',
+  REPEATABLE = 'repeatable',
+}
