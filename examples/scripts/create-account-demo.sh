@@ -9,9 +9,7 @@ set -euo pipefail
 
 # --- Paths ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-echo $SCRIPT_DIR
 PROJECT_DIR="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-echo $PROJECT_DIR
 
 HELPERS="$SCRIPT_DIR/common/helpers.sh"
 
@@ -22,7 +20,7 @@ fi
 
 source "$HELPERS"
 
-SETUP="$SCRIPT_DIR/common/helpers.sh"
+SETUP="$SCRIPT_DIR/common/setup.sh"
 
 if [[ ! -f "$SETUP" ]]; then
   echo "[ERROR] setup.sh not found" >&2
@@ -31,20 +29,24 @@ fi
 
 source "$SETUP"
 
-# --- hcli wrapper (uses built JS CLI with JSON output to avoid interactive prompts) ---
-hcli() {
-  cd "${PROJECT_DIR}" && node dist/hiero-cli.js --format json "$@"
-}
-
-print_step "Using project directory: ${PROJECT_DIR}"
+if [[ "${HIERO_SCRIPT_CLI_MODE}" == "global" ]]; then
+  print_step "CLI mode: global (using globally installed hcli)"
+else
+  print_step "CLI mode: local (project directory: ${PROJECT_DIR})"
+fi
 print_info "Operator account ID: ${HEDERA_OPERATOR_ACCOUNT_ID} (from environment)"
 
 # --- Configure network and operator ---
 print_step "Selecting Hedera testnet as the active network"
-hcli network use --global testnet
+# @TODO Remove this if-else block after next npm release; published package still uses --network, local build uses --global.
+if [[ "${HIERO_SCRIPT_CLI_MODE}" == "global" ]]; then
+  run_hcli network use --network testnet
+else
+  run_hcli network use --global testnet
+fi
 
 print_step "Configuring CLI operator for testnet"
-hcli network set-operator \
+run_hcli network set-operator \
   --operator "${HEDERA_OPERATOR_ACCOUNT_ID}:${HEDERA_OPERATOR_KEY}" \
   --network testnet
 
@@ -55,7 +57,7 @@ print_info "Account name: ${ACCOUNT_NAME} (1 HBAR)"
 
 # --- Create account ---
 print_step "Creating demo account (1 HBAR)"
-hcli account create \
+run_hcli account create \
   --name "${ACCOUNT_NAME}" \
   --balance 1.0
 
@@ -64,7 +66,7 @@ sleep_loop 5
 print_info "Done"
 
 print_step "View newly created account ${ACCOUNT_NAME}"
-hcli account view \
+run_hcli account view \
   --account "${ACCOUNT_NAME}"
 
 
