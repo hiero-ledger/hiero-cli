@@ -41,7 +41,7 @@ Once installed, you can use the CLI with the `hcli` command:
 hcli --help
 
 # Example: Check account balance
-hcli account balance --account-id 0.0.123456
+hcli account balance --account 0.0.123456
 
 # Example: Transfer HBAR
 hcli hbar transfer --to 0.0.123456 --amount 10
@@ -173,7 +173,7 @@ Execute any command on a different network without changing the CLI's default ne
 
 ```sh
 # Transfer HBAR on mainnet while default network is testnet
-hcli hbar transfer -a 1 -t 0.0.789012 --network mainnet
+hcli hbar transfer --amount 1 --to 0.0.789012 --network mainnet
 
 # Set operator for a specific network
 hcli network set-operator --operator 0.0.123456:302e... --network testnet
@@ -188,13 +188,13 @@ Override the default operator as the payer for all transactions in a command. Th
 
 ```sh
 # Transfer HBAR with a different account paying for the transaction
-hcli hbar transfer -a 1 -t 0.0.789012 --payer myaccount
+hcli hbar transfer --amount 1 --to 0.0.789012 --payer myaccount
 
 # Create token with a specific account as payer
-hcli token create-ft --name "MyToken" --symbol "MT" --payer 0.0.123456:302e...
+hcli token create-ft --tokenName "MyToken" --symbol "MT" --payer 0.0.123456:302e...
 
 # Use payer flag with network flag together
-hcli hbar transfer -a 1 -t 0.0.789012 --network testnet --payer myaccount
+hcli hbar transfer --amount 1 --to 0.0.789012 --network testnet --payer myaccount
 ```
 
 **Important Notes:**
@@ -335,7 +335,7 @@ You can override the default key manager for specific operations by providing th
 
 ```bash
 # Import account with encrypted key storage
-hcli account import --id 0.0.123456 --key <private-key> --name myaccount --key-manager local_encrypted
+hcli account import --key 0.0.123456:<private-key> --name myaccount --key-manager local_encrypted
 
 # Set operator with plain text storage
 hcli network set-operator --operator 0.0.123456:302e... --network testnet --key-manager local
