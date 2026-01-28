@@ -74,10 +74,11 @@ export async function createContract(
       adminKey: PublicKey.fromString(admin.publicKey),
       memo: memo,
     });
-    const contractCreateFlowResult = await api.txExecution.signAndExecuteWith(
-      contractCreateFlowTx.transaction,
-      txSigners,
-    );
+    const contractCreateFlowResult =
+      await api.txExecution.signAndExecuteContractCreateFlowWith(
+        contractCreateFlowTx.transaction,
+        txSigners,
+      );
     if (!contractCreateFlowResult.contractId) {
       throw new Error(
         `There was a problem with creating contract, no contract address present in the receipt`,

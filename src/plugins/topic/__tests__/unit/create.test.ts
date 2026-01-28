@@ -24,11 +24,13 @@ const makeApiMocks = ({
   createTopicImpl,
   signAndExecuteImpl,
   signAndExecuteWithImpl,
+  signAndExecuteContractCreateFlowWithImpl,
   network = 'testnet',
 }: {
   createTopicImpl?: jest.Mock;
   signAndExecuteImpl?: jest.Mock;
   signAndExecuteWithImpl?: jest.Mock;
+  signAndExecuteContractCreateFlowWithImpl?: jest.Mock;
   network?: 'testnet' | 'mainnet' | 'previewnet';
 }) => {
   const topicTransactions = {
@@ -39,6 +41,8 @@ const makeApiMocks = ({
   const signing = {
     signAndExecute: signAndExecuteImpl || jest.fn(),
     signAndExecuteWith: signAndExecuteWithImpl || jest.fn(),
+    signAndExecuteContractCreateFlowWith:
+      signAndExecuteContractCreateFlowWithImpl || jest.fn(),
     sign: jest.fn(),
     execute: jest.fn(),
     getStatus: jest.fn(),

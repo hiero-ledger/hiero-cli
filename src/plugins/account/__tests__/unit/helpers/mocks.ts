@@ -97,6 +97,9 @@ export const makeTxExecutionServiceMock = (
   signAndExecuteWith: jest
     .fn()
     .mockResolvedValue(mockTransactionResults.success),
+  signAndExecuteContractCreateFlowWith: jest
+    .fn()
+    .mockResolvedValue(mockTransactionResults.success),
   ...overrides,
 });
 

@@ -15,9 +15,15 @@ export interface TxExecutionService {
 
   /** Sign and execute with multiple keys (validates, deduplicates, preserves order) */
   signAndExecuteWith(
-    transaction: HederaTransaction | ContractCreateFlow,
+    transaction: HederaTransaction,
     keyRefIds: string[],
   ): Promise<TransactionResult>;
+
+  /** Sign and execute ContractCreateFlow with multiple keys (validates, deduplicates, preserves order) */
+  signAndExecuteContractCreateFlowWith(
+    transaction: ContractCreateFlow,
+    keyRefIds: string[],
+  ): Promise<ContractCreateFlowResult>;
 }
 
 // Result types
@@ -28,8 +34,16 @@ export interface TransactionResult {
   accountId?: string;
   tokenId?: string;
   topicId?: string;
-  contractId?: string;
   topicSequenceNumber?: number;
+  consensusTimestamp: string;
+}
+
+// ContractCreateFlow Result types
+export interface ContractCreateFlowResult {
+  transactionId: string;
+  success: boolean;
+  receipt: TransactionReceipt;
+  contractId?: string;
   consensusTimestamp: string;
 }
 

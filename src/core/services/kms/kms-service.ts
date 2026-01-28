@@ -321,7 +321,7 @@ export class KmsServiceImpl implements KmsService {
   }
 
   async signTransaction(
-    transaction: HederaTransaction | ContractCreateFlow,
+    transaction: HederaTransaction,
     keyRefId: string,
   ): Promise<void> {
     const handle = this.getSignerHandle(keyRefId);
@@ -330,6 +330,20 @@ export class KmsServiceImpl implements KmsService {
     // Use the opaque signer handle for signing
     // eslint-disable-next-line @typescript-eslint/require-await
     await transaction.signWith(publicKey, async (message: Uint8Array) =>
+      handle.sign(message),
+    );
+  }
+
+  signContractCreateFlow(
+    transaction: ContractCreateFlow,
+    keyRefId: string,
+  ): void {
+    const handle = this.getSignerHandle(keyRefId);
+    const publicKey = PublicKey.fromString(handle.getPublicKey());
+
+    // Use the opaque signer handle for signing
+    // eslint-disable-next-line @typescript-eslint/require-await
+    transaction.signWith(publicKey, async (message: Uint8Array) =>
       handle.sign(message),
     );
   }

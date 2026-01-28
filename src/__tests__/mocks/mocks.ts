@@ -116,6 +116,7 @@ export const makeKmsMock = (): jest.Mocked<KmsService> => ({
   remove: jest.fn(),
   createClient: jest.fn(),
   signTransaction: jest.fn(),
+  signContractCreateFlow: jest.fn(),
 });
 
 /**
@@ -205,6 +206,13 @@ export const makeSigningMock = (
       receipt: { status: { status: 'success' } },
     }),
   signAndExecuteWith:
+    options.signAndExecuteImpl ||
+    jest.fn().mockResolvedValue({
+      success: true,
+      transactionId: 'mock-tx-id',
+      receipt: { status: { status: 'success' } },
+    }),
+  signAndExecuteContractCreateFlowWith:
     options.signAndExecuteImpl ||
     jest.fn().mockResolvedValue({
       success: true,

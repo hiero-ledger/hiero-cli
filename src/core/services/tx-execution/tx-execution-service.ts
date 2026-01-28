@@ -5,6 +5,7 @@
 import type {
   Client,
   ContractCreateFlow,
+  Transaction as HederaTransaction,
   TransactionReceipt,
   TransactionResponse,
 } from '@hashgraph/sdk';
@@ -12,16 +13,12 @@ import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type {
+  ContractCreateFlowResult,
   TransactionResult,
   TxExecutionService,
 } from './tx-execution-service.interface';
 
-import {
-  AccountId,
-  Status,
-  Transaction as HederaTransaction,
-  TransactionId,
-} from '@hashgraph/sdk';
+import { AccountId, Status, TransactionId } from '@hashgraph/sdk';
 
 export class TxExecutionServiceImpl implements TxExecutionService {
   private logger: Logger;
@@ -45,7 +42,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
   }
 
   async signAndExecute(
-    transaction: HederaTransaction | ContractCreateFlow,
+    transaction: HederaTransaction,
   ): Promise<TransactionResult> {
     this.logger.debug(
       `[TX-EXECUTION] Signing and executing transaction with operator`,
@@ -54,7 +51,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
   }
 
   async signAndExecuteWith(
-    transaction: HederaTransaction | ContractCreateFlow,
+    transaction: HederaTransaction,
     keyRefIds: string[],
   ): Promise<TransactionResult> {
     this.logger.debug(`[TX-EXECUTION] Signing with ${keyRefIds.length} key(s)`);
@@ -64,21 +61,13 @@ export class TxExecutionServiceImpl implements TxExecutionService {
 
     // If payer is set but transaction is already frozen, we cannot set TransactionId
     // This would result in transaction being executed with operator instead of payer
-    if (
-      transaction instanceof HederaTransaction &&
-      payer &&
-      transaction.isFrozen()
-    ) {
+    if (payer && transaction.isFrozen()) {
       throw new Error(
         `[TX-EXECUTION] Transaction is already frozen before setting requested payer of the transaction`,
       );
     }
 
-    if (
-      transaction instanceof HederaTransaction &&
-      payer &&
-      !transaction.isFrozen()
-    ) {
+    if (payer && !transaction.isFrozen()) {
       const payerAccountId = AccountId.fromString(payer.accountId);
       const transactionId = TransactionId.generate(payerAccountId);
       transaction.setTransactionId(transactionId);
@@ -87,7 +76,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       );
     }
 
-    if (transaction instanceof HederaTransaction && !transaction.isFrozen()) {
+    if (!transaction.isFrozen()) {
       transaction.freezeWith(client);
     }
 
@@ -108,9 +97,27 @@ export class TxExecutionServiceImpl implements TxExecutionService {
     return this.executeAndParseReceipt(transaction, client);
   }
 
+  async signAndExecuteContractCreateFlowWith(
+    transaction: ContractCreateFlow,
+    keyRefIds: string[],
+  ): Promise<ContractCreateFlowResult> {
+    this.logger.debug(`[TX-EXECUTION] Signing with ${keyRefIds.length} key(s)`);
+
+    const client = this.getClient();
+
+    const uniqueKeyRefIds = new Set<string>(keyRefIds);
+
+    for (const keyRefId of uniqueKeyRefIds) {
+      this.logger.debug(`[TX-EXECUTION] Signing with key: ${keyRefId}`);
+      this.kms.signContractCreateFlow(transaction, keyRefId);
+    }
+
+    return this.executeContractCreateFlowAndParseReceipt(transaction, client);
+  }
+
   /** Execute transaction and parse receipt (shared by signAndExecute and signAndExecuteWith) */
   private async executeAndParseReceipt(
-    transaction: HederaTransaction | ContractCreateFlow,
+    transaction: HederaTransaction,
     client: Client,
   ): Promise<TransactionResult> {
     try {
@@ -130,7 +137,6 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       let tokenId: string | undefined;
       let topicId: string | undefined;
       let topicSequenceNumber: number | undefined;
-      let contractId: string | undefined;
       let serials: string[] | undefined;
 
       if (receipt.accountId) {
@@ -148,10 +154,6 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       if (receipt.topicSequenceNumber) {
         topicSequenceNumber = Number(receipt.topicSequenceNumber);
       }
-      if (receipt.contractId) {
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-        contractId = receipt.contractId.toString();
-      }
 
       if (receipt.serials && receipt.serials.length > 0) {
         serials = receipt.serials.map((serial) => serial.toString());
@@ -165,13 +167,57 @@ export class TxExecutionServiceImpl implements TxExecutionService {
         tokenId,
         topicId,
         topicSequenceNumber,
-        contractId,
         receipt: {
           status: {
             status: receipt.status === Status.Success ? 'success' : 'failed',
             transactionId: response.transactionId.toString(),
           },
           serials,
+        },
+      };
+    } catch (error) {
+      this.logger.error(
+        `[TX-EXECUTION] Transaction execution failed: ${error?.toString()}`,
+      );
+      throw error;
+    } finally {
+      client.close();
+    }
+  }
+
+  /** Execute contract create flow and parse receipt (shared by signAndExecute and signAndExecuteWith) */
+  private async executeContractCreateFlowAndParseReceipt(
+    transaction: ContractCreateFlow,
+    client: Client,
+  ): Promise<ContractCreateFlowResult> {
+    try {
+      const response: TransactionResponse = await transaction.execute(client);
+      const receipt: TransactionReceipt = await response.getReceipt(client);
+      const record = await response.getRecord(client);
+
+      const consensusTimestamp = record.consensusTimestamp
+        .toDate()
+        .toISOString();
+
+      this.logger.debug(
+        `[TX-EXECUTION] Transaction executed successfully: ${response.transactionId.toString()}`,
+      );
+      let contractId: string | undefined;
+      if (receipt.contractId) {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+        contractId = receipt.contractId.toString();
+      }
+
+      return {
+        transactionId: response.transactionId.toString(),
+        success: receipt.status === Status.Success,
+        consensusTimestamp,
+        contractId,
+        receipt: {
+          status: {
+            status: receipt.status === Status.Success ? 'success' : 'failed',
+            transactionId: response.transactionId.toString(),
+          },
         },
       };
     } catch (error) {

@@ -37,12 +37,14 @@ const makeApiMocks = ({
   submitMessageImpl,
   signAndExecuteImpl,
   signAndExecuteWithImpl,
+  signAndExecuteContractCreateFlowWithImpl,
   freezeTransactionImpl,
   network = 'testnet',
 }: {
   submitMessageImpl?: jest.Mock;
   signAndExecuteImpl?: jest.Mock;
   signAndExecuteWithImpl?: jest.Mock;
+  signAndExecuteContractCreateFlowWithImpl?: jest.Mock;
   freezeTransactionImpl?: jest.Mock;
   network?: 'testnet' | 'mainnet' | 'previewnet';
 }) => {
@@ -60,6 +62,8 @@ const makeApiMocks = ({
   const signing = {
     signAndExecute: signAndExecuteImpl || jest.fn(),
     signAndExecuteWith: signAndExecuteWithImpl || jest.fn(),
+    signAndExecuteContractCreateFlowWith:
+      signAndExecuteContractCreateFlowWithImpl || jest.fn(),
     sign: jest.fn(),
     execute: jest.fn(),
     getStatus: jest.fn(),
@@ -97,6 +101,7 @@ describe('topic plugin - message-submit command', () => {
         topicSequenceNumber: 5,
         receipt: { status: { status: 'success' } },
       } as TransactionResult),
+      signAndExecuteContractCreateFlowWithImpl: jest.fn(),
     });
 
     const api: Partial<CoreApi> = {

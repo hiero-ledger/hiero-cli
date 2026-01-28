@@ -66,6 +66,9 @@ export const makeTxExecutionServiceMock = (
   signAndExecuteWith: jest
     .fn()
     .mockResolvedValue(mockTransactionResults.success),
+  signAndExecuteContractCreateFlowWith: jest
+    .fn()
+    .mockResolvedValue(mockTransactionResults.success),
   ...overrides,
 });
 
@@ -114,6 +117,7 @@ export const makeKmsMock = (
 
   createClient: jest.fn(),
   signTransaction: jest.fn(),
+  signContractCreateFlow: jest.fn(),
   ...overrides,
 });
 
