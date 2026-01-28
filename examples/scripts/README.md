@@ -4,10 +4,49 @@ This folder contains example configuration files and documentation for end-to-en
 
 Each script focuses on a simple, concrete scenario and prints clear, human-readable messages while it runs.
 
+### CLI execution mode
+
+Scripts can use either a **local** build (from the repo) or the **globally** installed `@hiero-ledger/hiero-cli` package. Control this with the `HIERO_SCRIPT_CLI_MODE` environment variable:
+
+- **`local`** (default) – run the CLI from the repo: `node dist/hiero-cli.js` in the project directory. Requires `npm install` and `npm run build` in the project.
+- **`global`** – run the globally installed `hcli` binary (e.g. after `npm install -g @hiero-ledger/hiero-cli`). No need to clone the repo or build.
+
+Example:
+
+```bash
+# Use locally built CLI (default)
+./examples/scripts/create-account-demo.sh
+
+# Use globally installed CLI
+HIERO_SCRIPT_CLI_MODE=global ./examples/scripts/create-account-demo.sh
+```
+
+**Note:** Scripts require Hedera operator credentials (see below). Without them you will see an error like `HEDERA_OPERATOR_ACCOUNT_ID environment variable is required`.
+
+### Credentials (required)
+
+Scripts need `HEDERA_OPERATOR_ACCOUNT_ID` and `HEDERA_OPERATOR_KEY`. You can provide them in either way:
+
+1. **Using a `.env` file (recommended)**
+   Create a file named `.env` in the **`examples/scripts/`** directory (same folder as `create-account-demo.sh`). Use `examples/scripts/.env.sample` as a template: copy it to `.env` and replace the placeholders with your Hedera testnet account ID and private key. The scripts load this file automatically.
+
+   ```bash
+   cp examples/scripts/.env.sample examples/scripts/.env
+   # Edit examples/scripts/.env and set your HEDERA_OPERATOR_ACCOUNT_ID and HEDERA_OPERATOR_KEY
+   ```
+
+   You can also set `HIERO_SCRIPT_CLI_MODE=global` in that same `.env` file if you always want to use the globally installed CLI.
+
+2. **Using exported variables**  
+   In your terminal, run:
+   - `export HEDERA_OPERATOR_ACCOUNT_ID=0.0.xxxxxx`
+   - `export HEDERA_OPERATOR_KEY=302e020100300506032b657004220420...`
+     before running a script.
+
 There are also helper scripts that are put inside directory `examples/scripts/common` which are:
 
-- `helper.ts` - contains helper functions that are shared between main scripts, for example message formatting
-- `setup.ts` - setup script for installing dependencies, building project and validation for operator account present as environment variable
+- `helpers.sh` – shared helpers (e.g. message formatting, `run_hcli`)
+- `setup.sh` – loads optional `.env`, checks dependencies/build for local mode, validates operator credentials
 
 ## 1. Create account demo (`examples/scripts/create-account-demo.sh`)
 
@@ -27,17 +66,13 @@ This the first and simplest script. Its job is to:
    - Build the CLI so the compiled binary is available:
      - `npm run build`
 
-2. **Prepare your Hedera operator credentials**:
-   - You need a Hedera testnet account and its private key.
-   - Export them as environment variables in your terminal (replace the placeholders with your real values):
-     - `export HEDERA_OPERATOR_ACCOUNT_ID=0.0.xxxxxx`
-     - `export HEDERA_OPERATOR_KEY=302e020100300506032b657004220420...`
+2. **Prepare your Hedera operator credentials** (see [Credentials (required)](#credentials-required) above): either create `examples/scripts/.env` from `.env.sample` and fill in your values, or export `HEDERA_OPERATOR_ACCOUNT_ID` and `HEDERA_OPERATOR_KEY` in your terminal.
 
-3. **Run the script**:
-   - From the project root directory, run:
-     - `./examples/scripts/create-account-demo.sh`
+3. **Run the script** (from the project root):
+   - Local CLI: `./examples/scripts/create-account-demo.sh`
+   - Global CLI: `HIERO_SCRIPT_CLI_MODE=global ./examples/scripts/create-account-demo.sh`
 
-## 2. Trasfer hbar demo (`examples/scripts/transfer-hbar-demo.sh`)
+## 2. Transfer HBAR demo (`examples/scripts/transfer-hbar-demo.sh`)
 
 ### What this script does
 
@@ -59,22 +94,13 @@ This script represents simple story:
 
 ### How to run this script
 
-1. **Install prerequisites** (only once):
-   - Install **Node.js 18 or newer** on your machine.
-   - Clone this repository and install dependencies in the project folder:
-     - `npm install`
-   - Build the CLI so the compiled binary is available:
-     - `npm run build`
+1. **Install prerequisites** (only once): Node.js 18+, then for **local** mode: clone the repo, `npm install`, `npm run build`. For **global** mode: `npm install -g @hiero-ledger/hiero-cli` (see [CLI execution mode](#cli-execution-mode)).
 
-2. **Prepare your Hedera operator credentials**:
-   - You need a Hedera testnet account and its private key.
-   - Export them as environment variables in your terminal (replace the placeholders with your real values):
-     - `export HEDERA_OPERATOR_ACCOUNT_ID=0.0.xxxxxx`
-     - `export HEDERA_OPERATOR_KEY=302e020100300506032b657004220420...`
+2. **Prepare your Hedera operator credentials** (see [Credentials (required)](#credentials-required) above): either create `examples/scripts/.env` from `.env.sample` or export `HEDERA_OPERATOR_ACCOUNT_ID` and `HEDERA_OPERATOR_KEY`.
 
-3. **Run the script**:
-   - From the project root directory, run:
-     - `./examples/scripts/transfer-hbar-demo.sh`
+3. **Run the script** (from the project root):
+   - Local CLI: `./examples/scripts/transfer-hbar-demo.sh`
+   - Global CLI: `HIERO_SCRIPT_CLI_MODE=global ./examples/scripts/transfer-hbar-demo.sh`
 
 ## 3. Token and topics operations demo (`examples/scripts/token-topic-operations-demo.sh`)
 
@@ -93,19 +119,10 @@ The last script's job is to execute script that would perform token operations a
 
 ### How to run this script
 
-1. **Install prerequisites** (only once):
-   - Install **Node.js 18 or newer** on your machine.
-   - Clone this repository and install dependencies in the project folder:
-     - `npm install`
-   - Build the CLI so the compiled binary is available:
-     - `npm run build`
+1. **Install prerequisites** (only once): Node.js 18+, then for **local** mode: clone the repo, `npm install`, `npm run build`. For **global** mode: `npm install -g @hiero-ledger/hiero-cli` (see [CLI execution mode](#cli-execution-mode)).
 
-2. **Prepare your Hedera operator credentials**:
-   - You need a Hedera testnet account and its private key.
-   - Export them as environment variables in your terminal (replace the placeholders with your real values):
-     - `export HEDERA_OPERATOR_ACCOUNT_ID=0.0.xxxxxx`
-     - `export HEDERA_OPERATOR_KEY=302e020100300506032b657004220420...`
+2. **Prepare your Hedera operator credentials** (see [Credentials (required)](#credentials-required) above): either create `examples/scripts/.env` from `.env.sample` or export `HEDERA_OPERATOR_ACCOUNT_ID` and `HEDERA_OPERATOR_KEY`.
 
-3. **Run the script**:
-   - From the project root directory, run:
-     - `./examples/scripts/token-topic-operations-demo.sh`
+3. **Run the script** (from the project root):
+   - Local CLI: `./examples/scripts/token-topic-operations-demo.sh`
+   - Global CLI: `HIERO_SCRIPT_CLI_MODE=global ./examples/scripts/token-topic-operations-demo.sh`

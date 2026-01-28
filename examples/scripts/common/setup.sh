@@ -1,12 +1,21 @@
-# --- Pre-flight checks for dependencies and build ---
-if [[ ! -d "${PROJECT_DIR}/node_modules" ]]; then
-  print_warn "Project dependencies are not installed. Running: npm install"
-  npm run install
+# --- Load optional .env from script directory ---
+if [[ -n "${SCRIPT_DIR:-}" && -f "${SCRIPT_DIR}/.env" ]]; then
+  set -a
+  source "${SCRIPT_DIR}/.env"
+  set +a
 fi
 
-if [[ ! -f "${PROJECT_DIR}/dist/hiero-cli.js" ]]; then
-  print_warn "Built CLI not found at dist/hiero-cli.js. Running: npm run build"
-  npm run build
+# --- Pre-flight checks for dependencies and build (skip when using global CLI) ---
+if [[ "${HIERO_SCRIPT_CLI_MODE:-local}" != "global" ]]; then
+  if [[ ! -d "${PROJECT_DIR}/node_modules" ]]; then
+    print_warn "Project dependencies are not installed. Running: npm install"
+    npm run install
+  fi
+
+  if [[ ! -f "${PROJECT_DIR}/dist/hiero-cli.js" ]]; then
+    print_warn "Built CLI not found at dist/hiero-cli.js. Running: npm run build"
+    npm run build
+  fi
 fi
 
 # --- Check required environment variables for operator ---
