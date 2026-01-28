@@ -298,47 +298,55 @@ export class PluginManager {
           const flags = `${combined} <value>`;
           const description = String(option.description || `Set ${optionName}`);
 
+          const addOption = <T>(
+            parser?: (value: string, previous: T) => T,
+            useValueFlag = true,
+          ) => {
+            const optionFlags = useValueFlag ? flags : combined;
+            if (option.required) {
+              // Commander treats the third argument as an optional parser/transform function
+              if (parser) {
+                command.requiredOption(optionFlags, description, parser);
+              } else {
+                command.requiredOption(optionFlags, description);
+              }
+            } else {
+              if (parser) {
+                command.option(optionFlags, description, parser);
+              } else {
+                command.option(optionFlags, description);
+              }
+            }
+          };
+
           switch (option.type) {
-            case OptionType.BOOLEAN: {
-              command.option(combined, description);
+            case OptionType.BOOLEAN:
+              // boolean flags don't take a value placeholder or parser
+              addOption<boolean | undefined>(undefined, false);
               break;
-            }
-            case OptionType.NUMBER: {
-              if (option.required) {
-                command.requiredOption(flags, description, parseFloat);
-              } else {
-                command.option(flags, description, parseFloat);
-              }
+            case OptionType.NUMBER:
+              addOption<number>((value) => parseFloat(value));
               break;
-            }
             case OptionType.ARRAY: {
-              const parseArray = (value: unknown) => String(value).split(',');
-              if (option.required) {
-                command.requiredOption(flags, description, parseArray);
-              } else {
-                command.option(flags, description, parseArray);
-              }
+              const parseArray = (value: string) => String(value).split(',');
+              addOption<string[]>(parseArray);
               break;
             }
             case OptionType.REPEATABLE: {
-              const parseRepeatable = (value: string, args: string[] = []) => {
-                args.push(value);
-                return args;
+              const parseRepeatable = (
+                value: string,
+                previous: string[] | undefined,
+              ) => {
+                const arr = previous ?? [];
+                arr.push(value);
+                return arr;
               };
-              if (option.required) {
-                command.requiredOption(flags, description, parseRepeatable);
-              } else {
-                command.option(flags, description, parseRepeatable);
-              }
+              addOption<string[]>(parseRepeatable);
               break;
             }
-            default: {
-              if (option.required) {
-                command.requiredOption(flags, description);
-              } else {
-                command.option(flags, description);
-              }
-            }
+            default:
+              // default to a simple string option (no parser)
+              addOption<string | undefined>();
           }
         }
       }
