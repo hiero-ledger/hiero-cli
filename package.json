@@ -60,7 +60,7 @@
     "commander": "14.0.2",
     "ethers": "6.16.0",
     "handlebars": "4.7.8",
-    "supports-hyperlinks": "3.0.0",
+    "supports-hyperlinks": "4.4.0",
     "solc": "0.8.33",
     "zod": "4.2.1",
     "zustand": "5.0.9"
