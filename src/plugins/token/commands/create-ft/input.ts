@@ -12,6 +12,7 @@ import {
   TokenSymbolSchema,
 } from '@/core/schemas';
 import { validateSupplyTypeAndMaxSupply } from '@/core/shared/validation/validate-supply.zod';
+import { SupplyType } from '@/core/types/shared.types';
 
 /**
  * Input schema for token create command
@@ -30,9 +31,12 @@ export const CreateFungibleTokenInputSchema = z
     initialSupply: AmountInputSchema.default('1000000').describe(
       'Initial supply amount. Default: 1000000 (display units or "t" for base units)',
     ),
-    supplyType: SupplyTypeSchema.default('INFINITE').describe(
-      'Supply type: INFINITE (default) or FINITE',
-    ),
+    supplyType: z
+      .preprocess(
+        (val) => (typeof val === 'string' ? val.toUpperCase() : val),
+        SupplyTypeSchema.default(SupplyType.INFINITE),
+      )
+      .describe('Supply type: INFINITE (default) or FINITE'),
     maxSupply: AmountInputSchema.optional().describe(
       'Maximum supply (required for FINITE supply type)',
     ),

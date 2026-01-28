@@ -66,6 +66,11 @@ export interface Token {
   network: 'mainnet' | 'testnet' | 'previewnet';
 }
 
+export enum SupplyType {
+  FINITE = 'FINITE',
+  INFINITE = 'INFINITE',
+}
+
 /**
  * Topic data structure
  */

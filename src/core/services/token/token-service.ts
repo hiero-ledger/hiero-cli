@@ -28,6 +28,7 @@ import {
 } from '@hashgraph/sdk';
 
 import { TokenTypeMap } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 
 export class TokenServiceImpl implements TokenService {
   private logger: Logger;
@@ -96,7 +97,7 @@ export class TokenServiceImpl implements TokenService {
 
     // Convert supply type string to enum
     const tokenSupplyType =
-      supplyType === 'FINITE'
+      supplyType === SupplyType.FINITE
         ? TokenSupplyType.Finite
         : TokenSupplyType.Infinite;
 
@@ -112,7 +113,7 @@ export class TokenServiceImpl implements TokenService {
       .setAdminKey(adminPublicKey);
 
     // Set max supply for finite supply tokens
-    if (supplyType === 'FINITE' && maxSupplyRaw !== undefined) {
+    if (supplyType === SupplyType.FINITE && maxSupplyRaw !== undefined) {
       tokenCreateTx.setMaxSupply(maxSupplyRaw);
       this.logger.debug(
         `[TOKEN SERVICE] Set max supply to ${maxSupplyRaw} for finite supply token`,

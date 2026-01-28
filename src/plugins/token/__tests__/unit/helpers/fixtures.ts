@@ -7,7 +7,7 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
 import { HederaTokenType } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 
 /**
  * Mock Account IDs
@@ -113,7 +113,7 @@ export const validTokenParams = {
   symbol: 'TEST',
   decimals: 2,
   initialSupply: 1000,
-  supplyType: 'FINITE' as const,
+  supplyType: SupplyType.FINITE,
   maxSupply: 10000,
   treasuryId: mockAccountIds.treasury,
   adminKey: mockKeys.admin,
@@ -285,7 +285,7 @@ export const validTokenDataForSchema = {
   symbol: 'TEST',
   decimals: 2,
   initialSupply: 1000n,
-  supplyType: 'FINITE' as const,
+  supplyType: SupplyType.FINITE,
   maxSupply: 10000n,
   treasuryId: '0.0.789012',
   associations: [
@@ -348,7 +348,7 @@ export const validTokenCreateParams = {
   symbol: 'TEST',
   decimals: 2,
   initialSupply: '1000',
-  supplyType: 'INFINITE' as const,
+  supplyType: SupplyType.INFINITE,
   treasury: 'treasury-account', // Use alias
   adminKey: 'admin-account', // Use alias
 };
@@ -381,7 +381,7 @@ export const mockStateTokenData = {
     symbol: 'TEST',
     decimals: 2,
     initialSupply: 1000n,
-    supplyType: 'FINITE' as const,
+    supplyType: SupplyType.FINITE,
     maxSupply: 10000n,
     treasuryId: '0.0.789012',
     adminPublicKey: 'admin-key',
@@ -396,7 +396,7 @@ export const mockStateTokenData = {
     symbol: 'TEST',
     decimals: 2,
     initialSupply: 1000n,
-    supplyType: 'FINITE' as const,
+    supplyType: SupplyType.FINITE,
     maxSupply: 10000n,
     treasuryId: '0.0.789012',
     adminPublicKey: 'admin-key',
@@ -411,7 +411,7 @@ export const mockStateTokenData = {
     symbol: 'TEST2',
     decimals: 8,
     initialSupply: 5000n,
-    supplyType: 'INFINITE' as const,
+    supplyType: SupplyType.INFINITE,
     maxSupply: 0n,
     treasuryId: '0.0.111111',
     adminPublicKey: 'admin-key2',
@@ -445,7 +445,7 @@ export const makeTokenCreateCommandArgs = (params: {
       symbol: 'TEST',
       decimals: 2,
       initialSupply: '1000',
-      supplyType: 'INFINITE',
+      supplyType: SupplyType.INFINITE,
       treasury: 'treasury-account', // Use alias
       adminKey: 'test-admin-key', // Use alias
       ...params.args,
@@ -470,7 +470,7 @@ export const makeNftCreateCommandArgs = (params: {
     args: {
       tokenName: 'TestToken',
       symbol: 'TEST',
-      supplyType: 'INFINITE',
+      supplyType: SupplyType.INFINITE,
       treasury: 'treasury-account', // Use alias
       adminKey: 'test-admin-key', // Use alias
       supplyKey: 'test-supply-key', // Use alias
@@ -492,7 +492,7 @@ export const expectedTokenTransactionParams = {
   decimals: 2,
   initialSupplyRaw: 100000n,
   tokenType: HederaTokenType.FUNGIBLE_COMMON,
-  supplyType: 'INFINITE',
+  supplyType: SupplyType.INFINITE,
   maxSupplyRaw: undefined,
   treasuryId: '0.0.123456',
   adminPublicKey: expect.any(Object),
@@ -507,7 +507,7 @@ export const expectedNftTransactionParams = {
   symbol: 'TEST',
   decimals: 0,
   initialSupplyRaw: 0n,
-  supplyType: 'INFINITE',
+  supplyType: SupplyType.INFINITE,
   tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
   maxSupplyRaw: undefined,
   treasuryId: '0.0.123456',
@@ -524,7 +524,7 @@ export const expectedTokenTransactionParamsFromFile = {
   symbol: 'TEST',
   decimals: 2,
   initialSupplyRaw: 1000n,
-  supplyType: 'FINITE',
+  supplyType: SupplyType.FINITE,
   maxSupplyRaw: 10000n,
   treasuryId: '0.0.123456',
   adminPublicKey: expect.any(Object), // PublicKey object from keyResolver
@@ -550,7 +550,7 @@ export const validTokenDataForValidation = {
   symbol: 'TEST',
   decimals: 2,
   initialSupply: 1000,
-  supplyType: 'FINITE' as const,
+  supplyType: SupplyType.FINITE,
   maxSupply: 10000,
   treasuryId: '0.0.789012',
   associations: [],
@@ -581,7 +581,7 @@ export const makeTokenData = (
     treasuryId: string;
     decimals: number;
     initialSupply: number;
-    supplyType: 'FINITE' | 'INFINITE';
+    supplyType: SupplyType;
     maxSupply: number;
     adminPublicKey?: string;
     network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
@@ -596,7 +596,7 @@ export const makeTokenData = (
   treasuryId: '0.0.5678',
   decimals: 2,
   initialSupply: 1000000,
-  supplyType: 'INFINITE' as const,
+  supplyType: SupplyType.INFINITE,
   maxSupply: 0,
   adminPublicKey: 'test-admin-key',
   network: SupportedNetwork.TESTNET,
@@ -707,7 +707,7 @@ export const mockListTokens = {
       name: 'Token 1',
       symbol: 'TK1',
       network: 'testnet',
-      supplyType: 'INFINITE',
+      supplyType: SupplyType.INFINITE,
       associations: [{ name: 'Account 1', accountId: '0.0.9999' }],
     }),
     makeTokenData({
@@ -715,7 +715,7 @@ export const mockListTokens = {
       name: 'Token 2',
       symbol: 'TK2',
       network: 'testnet',
-      supplyType: 'FINITE',
+      supplyType: SupplyType.FINITE,
       maxSupply: 1000000,
     }),
   ],
@@ -725,7 +725,7 @@ export const mockListTokens = {
       name: 'Finite Token',
       symbol: 'FNT',
       network: 'testnet',
-      supplyType: 'FINITE',
+      supplyType: SupplyType.FINITE,
       maxSupply: 500000,
     }),
   ],
@@ -739,25 +739,25 @@ export const mockTokenStats = {
   twoTokens: makeTokenStats({
     total: 2,
     byNetwork: { testnet: 2 },
-    bySupplyType: { INFINITE: 2 },
+    bySupplyType: { [SupplyType.INFINITE]: 2 },
     withKeys: 2,
   }),
   withKeys: makeTokenStats({
     total: 1,
     byNetwork: { testnet: 1 },
-    bySupplyType: { INFINITE: 1 },
+    bySupplyType: { [SupplyType.INFINITE]: 1 },
     withKeys: 1,
   }),
   multiNetwork: makeTokenStats({
     total: 2,
     byNetwork: { testnet: 1, mainnet: 1 },
-    bySupplyType: { INFINITE: 2 },
+    bySupplyType: { [SupplyType.INFINITE]: 2 },
     withKeys: 2,
   }),
   withAssociations: makeTokenStats({
     total: 2,
     byNetwork: { testnet: 2 },
-    bySupplyType: { INFINITE: 1, FINITE: 1 },
+    bySupplyType: { [SupplyType.INFINITE]: 1, [SupplyType.FINITE]: 1 },
     withAssociations: 1,
     totalAssociations: 1,
     withKeys: 2,
@@ -765,7 +765,7 @@ export const mockTokenStats = {
   finiteSupply: makeTokenStats({
     total: 1,
     byNetwork: { testnet: 1 },
-    bySupplyType: { FINITE: 1 },
+    bySupplyType: { [SupplyType.FINITE]: 1 },
     withKeys: 1,
   }),
 };
@@ -924,7 +924,7 @@ export const expectedNftTransactionParamsFromFile = {
   treasuryId: mockAccountIds.treasury,
   decimals: 0,
   initialSupplyRaw: 0n,
-  supplyType: 'FINITE',
+  supplyType: SupplyType.FINITE,
   maxSupplyRaw: 1000n,
   adminPublicKey: expect.any(Object),
   supplyPublicKey: expect.any(Object),
