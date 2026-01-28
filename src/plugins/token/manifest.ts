@@ -5,6 +5,7 @@
  */
 import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
+import { OptionType } from '@/core/types/shared.types';
 import {
   CREATE_NFT_TEMPLATE,
   createNft,
@@ -78,14 +79,14 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'token',
           short: 'T',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Token: either a token alias or token-id',
         },
         {
           name: 'amount',
           short: 'a',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Amount to mint. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "100t")',
@@ -93,7 +94,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'supply-key',
           short: 's',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Supply key as account name or {accountId}:{private_key} format',
@@ -101,7 +102,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
@@ -121,21 +122,21 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'token',
           short: 'T',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Token: either a token alias or token-id',
         },
         {
           name: 'metadata',
           short: 'm',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'NFT metadata (string, max 100 bytes)',
         },
         {
           name: 'supply-key',
           short: 's',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Supply key as account name or {accountId}:{private_key} format',
@@ -143,7 +144,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
@@ -163,21 +164,21 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'token',
           short: 'T',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Fungible token: either a token alias or token-id',
         },
         {
           name: 'to',
           short: 't',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Destination account: either an alias or account-id',
         },
         {
           name: 'from',
           short: 'f',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Source account: either a stored alias or account-id:private-key or account-id:key-type:private-key pair',
@@ -185,7 +186,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'amount',
           short: 'a',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Amount to transfer. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "100t")',
@@ -193,7 +194,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
@@ -213,21 +214,21 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'token',
           short: 'T',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'NFT token: either a token alias or token-id',
         },
         {
           name: 'to',
           short: 't',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Destination account: either an alias or account-id',
         },
         {
           name: 'from',
           short: 'f',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Source account: either a stored alias or account-id:private-key pair',
@@ -235,7 +236,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'serials',
           short: 's',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'NFT serial numbers to transfer (comma-separated list, e.g., "1,2,3")',
@@ -243,7 +244,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
@@ -263,21 +264,21 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'token-name',
           short: 'T',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Fungible token name. Option required.',
         },
         {
           name: 'symbol',
           short: 'Y',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Fungible token symbol. Option required.',
         },
         {
           name: 'treasury',
           short: 't',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Treasury account: either an alias or treasury-id:treasury-key pair',
@@ -285,7 +286,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'decimals',
           short: 'd',
-          type: 'number',
+          type: OptionType.NUMBER,
           required: false,
           default: 0,
           description: 'Decimals for the fungible token. Default: 0',
@@ -293,7 +294,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'initial-supply',
           short: 'i',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           default: 1000000,
           description:
@@ -301,7 +302,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'supply-type',
-          type: 'string',
+          type: OptionType.STRING,
           short: 'S',
           required: false,
           default: 'INFINITE',
@@ -310,7 +311,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'max-supply',
           short: 'm',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Maximum supply of the fungible token to be set upon creation. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "1000t")',
@@ -318,7 +319,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Admin key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
@@ -326,7 +327,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'supply-key',
           short: 's',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Optional supply key as account name or {accountId}:{private_key} format.',
@@ -334,14 +335,14 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'name',
           short: 'n',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description: 'Optional name to register for the fungible token',
         },
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
@@ -349,7 +350,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'memo',
           short: 'M',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Optional memo for the fungible token (max 100 characters)',
@@ -370,28 +371,28 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'token-name',
           short: 'T',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Token name. Option required.',
         },
         {
           name: 'symbol',
           short: 'Y',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Token symbol. Option required.',
         },
         {
           name: 'treasury',
           short: 't',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Treasury account: either an alias or treasury-id:treasury-key pair',
         },
         {
           name: 'supply-type',
-          type: 'string',
+          type: OptionType.STRING,
           short: 'S',
           required: false,
           default: 'INFINITE',
@@ -400,7 +401,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'max-supply',
           short: 'm',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Maximum supply of the token to be set upon creation. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "1000t")',
@@ -408,7 +409,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Admin key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
@@ -416,7 +417,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'supply-key',
           short: 's',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Supply key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
@@ -424,14 +425,14 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'name',
           short: 'n',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description: 'Optional name to register for the token',
         },
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
@@ -439,7 +440,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'memo',
           short: 'M',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description: 'Optional memo for the token (max 100 characters)',
         },
@@ -458,14 +459,14 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'token',
           short: 'T',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Token: either a token alias or token-id',
         },
         {
           name: 'account',
           short: 'a',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Account: either an alias or account-id:account-key pair',
@@ -473,7 +474,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
@@ -494,7 +495,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'file',
           short: 'f',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Fungible token definition file path (absolute or relative) to a JSON file',
@@ -502,7 +503,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
@@ -523,7 +524,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'file',
           short: 'f',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'NFT token definition file path (absolute or relative) to a JSON file',
@@ -531,7 +532,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
@@ -552,7 +553,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'keys',
           short: 'k',
-          type: 'boolean',
+          type: OptionType.BOOLEAN,
           required: false,
           default: false,
           description: 'Show token key information (admin, supply, wipe, etc.)',
@@ -573,14 +574,14 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'token',
           short: 'T',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Token identifier: either a token alias or token-id',
         },
         {
           name: 'serial',
           short: 'S',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description: 'Serial number of a specific NFT instance',
         },

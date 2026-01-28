@@ -18,6 +18,7 @@ import * as Handlebars from 'handlebars';
 import * as path from 'path';
 
 import { Status } from '@/core/shared/constants';
+import { OptionType } from '@/core/types/shared.types';
 import { requireConfirmation } from '@/core/utils/confirmation';
 import { ensureCliInitialized } from '@/core/utils/ensure-cli-initialized';
 import { formatAndExitWithError } from '@/core/utils/error-handler';
@@ -297,36 +298,46 @@ export class PluginManager {
           const flags = `${combined} <value>`;
           const description = String(option.description || `Set ${optionName}`);
 
-          if (option.type === 'boolean') {
-            command.option(combined, description);
-          } else if (option.type === 'number') {
-            if (option.required) {
-              command.requiredOption(flags, description, parseFloat);
-            } else {
-              command.option(flags, description, parseFloat);
+          switch (option.type) {
+            case OptionType.BOOLEAN: {
+              command.option(combined, description);
+              break;
             }
-          } else if (option.type === 'array') {
-            const parseArray = (value: unknown) => String(value).split(',');
-            if (option.required) {
-              command.requiredOption(flags, description, parseArray);
-            } else {
-              command.option(flags, description, parseArray);
+            case OptionType.NUMBER: {
+              if (option.required) {
+                command.requiredOption(flags, description, parseFloat);
+              } else {
+                command.option(flags, description, parseFloat);
+              }
+              break;
             }
-          } else if (option.type === 'repeatable') {
-            const parseRepeatable = (value: string, args: string[] = []) => {
-              args.push(value);
-              return args;
-            };
-            if (option.required) {
-              command.requiredOption(flags, description, parseRepeatable);
-            } else {
-              command.option(flags, description, parseRepeatable);
+            case OptionType.ARRAY: {
+              const parseArray = (value: unknown) => String(value).split(',');
+              if (option.required) {
+                command.requiredOption(flags, description, parseArray);
+              } else {
+                command.option(flags, description, parseArray);
+              }
+              break;
             }
-          } else {
-            if (option.required) {
-              command.requiredOption(flags, description);
-            } else {
-              command.option(flags, description);
+            case OptionType.REPEATABLE: {
+              const parseRepeatable = (value: string, args: string[] = []) => {
+                args.push(value);
+                return args;
+              };
+              if (option.required) {
+                command.requiredOption(flags, description, parseRepeatable);
+              } else {
+                command.option(flags, description, parseRepeatable);
+              }
+              break;
+            }
+            default: {
+              if (option.required) {
+                command.requiredOption(flags, description);
+              } else {
+                command.option(flags, description);
+              }
             }
           }
         }

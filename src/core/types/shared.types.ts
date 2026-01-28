@@ -113,3 +113,11 @@ export interface SolcCompiler {
   compile(input: string, options?: CompileOptions): string;
   version(): string;
 }
+
+export enum OptionType {
+  STRING = 'string',
+  NUMBER = 'number',
+  BOOLEAN = 'boolean',
+  ARRAY = 'array',
+  REPEATABLE = 'repeatable',
+}

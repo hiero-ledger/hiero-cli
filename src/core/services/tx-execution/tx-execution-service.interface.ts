@@ -23,7 +23,7 @@ export interface TxExecutionService {
   signAndExecuteContractCreateFlowWith(
     transaction: ContractCreateFlow,
     keyRefIds: string[],
-  ): Promise<ContractCreateFlowResult>;
+  ): Promise<TransactionResult>;
 }
 
 // Result types
@@ -34,16 +34,8 @@ export interface TransactionResult {
   accountId?: string;
   tokenId?: string;
   topicId?: string;
-  topicSequenceNumber?: number;
-  consensusTimestamp: string;
-}
-
-// ContractCreateFlow Result types
-export interface ContractCreateFlowResult {
-  transactionId: string;
-  success: boolean;
-  receipt: TransactionReceipt;
   contractId?: string;
+  topicSequenceNumber?: number;
   consensusTimestamp: string;
 }
 

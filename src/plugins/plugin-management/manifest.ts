@@ -4,6 +4,8 @@
  */
 import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
+import { OptionType } from '@/core/types/shared.types';
+
 import {
   ADD_PLUGIN_TEMPLATE,
   addPlugin,
@@ -50,7 +52,7 @@ export const pluginManagementManifest: PluginManifest = {
         {
           name: 'path',
           short: 'p',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Filesystem path to the plugin directory containing manifest.js',
@@ -70,7 +72,7 @@ export const pluginManagementManifest: PluginManifest = {
         {
           name: 'name',
           short: 'n',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Name of the plugin to remove from the state',
         },
@@ -89,7 +91,7 @@ export const pluginManagementManifest: PluginManifest = {
         {
           name: 'name',
           short: 'n',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Name of the plugin to enable',
         },
@@ -108,7 +110,7 @@ export const pluginManagementManifest: PluginManifest = {
         {
           name: 'name',
           short: 'n',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Name of the plugin to disable',
         },
@@ -138,7 +140,7 @@ export const pluginManagementManifest: PluginManifest = {
         {
           name: 'name',
           short: 'n',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Name of the plugin for information display. Option required.',

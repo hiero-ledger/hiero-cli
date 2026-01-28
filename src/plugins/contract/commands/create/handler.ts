@@ -39,11 +39,19 @@ export async function createContract(
       keyManagerArg ||
       api.config.getOption<KeyManagerName>('default_key_manager');
 
-    const admin = await api.keyResolver.getOrInitKeyWithFallback(
-      validArgs.adminKey,
-      keyManager,
-      ['contract:admin'],
-    );
+    const admin = validArgs.adminKey
+      ? await api.keyResolver.getOrInitKeyWithFallback(
+          validArgs.adminKey,
+          keyManager,
+          ['contract:admin'],
+        )
+      : undefined;
+
+    if (!admin) {
+      logger.warn(
+        `Admin key not specified. Smart contract will lack admin key set`,
+      );
+    }
 
     const contractFileContent = await readContractFile(filename, logger);
     if (!contractFileContent) {
@@ -64,14 +72,17 @@ export async function createContract(
       solidityVersion: solidityVersion,
     });
 
-    const txSigners = [admin.keyRefId];
+    const txSigners = admin ? [admin.keyRefId] : [];
+    const adminPublicKey = admin ? admin.publicKey : undefined;
 
     const contractCreateFlowTx = api.contract.contractCreateFlowTransaction({
       bytecode: compilationResult.bytecode,
       gas: gas,
       abiDefinition: compilationResult.abiDefinition,
       constructorParameters: constructorParameters,
-      adminKey: PublicKey.fromString(admin.publicKey),
+      adminKey: adminPublicKey
+        ? PublicKey.fromString(adminPublicKey)
+        : undefined,
       memo: memo,
     });
     const contractCreateFlowResult =
@@ -103,7 +114,7 @@ export async function createContract(
       contractId: contractCreateFlowResult.contractId,
       contractName,
       contractEvmAddress: contractId.toEvmAddress(),
-      adminPublicKey: admin.publicKey,
+      adminPublicKey,
       network,
       memo,
     };
@@ -128,7 +139,7 @@ export async function createContract(
       network: network,
       alias: alias,
       transactionId: contractCreateFlowResult.transactionId,
-      adminPublicKey: admin.publicKey,
+      adminPublicKey: adminPublicKey,
     };
     return {
       status: Status.Success,

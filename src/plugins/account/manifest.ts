@@ -5,6 +5,7 @@
 import type { PluginManifest } from '@/core';
 
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { OptionType } from '@/core/types/shared.types';
 
 import {
   ACCOUNT_BALANCE_TEMPLATE,
@@ -59,7 +60,7 @@ export const accountPluginManifest: PluginManifest = {
         {
           name: 'balance',
           short: 'b',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Initial HBAR balance. Default: display units. Add "t" for base units.',
@@ -67,7 +68,7 @@ export const accountPluginManifest: PluginManifest = {
         {
           name: 'auto-associations',
           short: 'a',
-          type: 'number',
+          type: OptionType.NUMBER,
           required: false,
           default: 0,
           description:
@@ -76,14 +77,14 @@ export const accountPluginManifest: PluginManifest = {
         {
           name: 'name',
           short: 'n',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description: 'Alias of the created account to be used',
         },
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
@@ -91,7 +92,7 @@ export const accountPluginManifest: PluginManifest = {
         {
           name: 'key-type',
           short: 't',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           default: KeyAlgorithm.ECDSA,
           description:
@@ -112,7 +113,7 @@ export const accountPluginManifest: PluginManifest = {
         {
           name: 'account',
           short: 'a',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Account ID, alias or name of the account present in state',
@@ -120,7 +121,7 @@ export const accountPluginManifest: PluginManifest = {
         {
           name: 'hbar-only',
           short: 'H',
-          type: 'boolean',
+          type: OptionType.BOOLEAN,
           required: false,
           default: false,
           description: 'Show only HBAR balance',
@@ -128,14 +129,14 @@ export const accountPluginManifest: PluginManifest = {
         {
           name: 'token',
           short: 't',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description: 'Token ID or token name',
         },
         {
           name: 'raw',
           short: 'r',
-          type: 'boolean',
+          type: OptionType.BOOLEAN,
           required: false,
           default: false,
           description:
@@ -156,7 +157,7 @@ export const accountPluginManifest: PluginManifest = {
         {
           name: 'private',
           short: 'p',
-          type: 'boolean',
+          type: OptionType.BOOLEAN,
           required: false,
           default: false,
           description: 'Include private keys reference ID in listing',
@@ -177,7 +178,7 @@ export const accountPluginManifest: PluginManifest = {
         {
           name: 'key',
           short: 'K',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Private key in accountId:privateKey format (e.g., "0.0.123456:abc123...")',
@@ -185,14 +186,14 @@ export const accountPluginManifest: PluginManifest = {
         {
           name: 'name',
           short: 'n',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description: 'Name of the account to be used',
         },
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
@@ -226,14 +227,14 @@ export const accountPluginManifest: PluginManifest = {
         {
           name: 'name',
           short: 'n',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description: 'Account name to be deleted from the store',
         },
         {
           name: 'id',
           short: 'i',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description: 'Account ID to be deleted from the store',
         },
@@ -254,7 +255,7 @@ export const accountPluginManifest: PluginManifest = {
         {
           name: 'account',
           short: 'a',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Account ID, alias or name of the account present in state',

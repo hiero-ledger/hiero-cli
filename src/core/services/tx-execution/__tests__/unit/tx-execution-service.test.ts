@@ -344,7 +344,7 @@ describe('TxExecutionServiceImpl', () => {
     });
 
     it('should throw error when getting receipt fails', async () => {
-      const { service, logger } = setupService();
+      const { service } = setupService();
       const mockTx = createMockTransaction();
       const mockResponse = createMockTransactionResponse();
       const error = new Error('Receipt error');
@@ -355,10 +355,6 @@ describe('TxExecutionServiceImpl', () => {
       await expect(
         service.signAndExecuteWith(mockTx as unknown as HederaTransaction, []),
       ).rejects.toThrow('Receipt error');
-
-      expect(logger.error).toHaveBeenCalledWith(
-        expect.stringContaining('[TX-EXECUTION] Transaction execution failed'),
-      );
     });
   });
 

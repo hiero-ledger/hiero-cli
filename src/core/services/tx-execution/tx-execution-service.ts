@@ -13,7 +13,6 @@ import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type {
-  ContractCreateFlowResult,
   TransactionResult,
   TxExecutionService,
 } from './tx-execution-service.interface';
@@ -100,7 +99,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
   async signAndExecuteContractCreateFlowWith(
     transaction: ContractCreateFlow,
     keyRefIds: string[],
-  ): Promise<ContractCreateFlowResult> {
+  ): Promise<TransactionResult> {
     this.logger.debug(`[TX-EXECUTION] Signing with ${keyRefIds.length} key(s)`);
 
     const client = this.getClient();
@@ -122,59 +121,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
   ): Promise<TransactionResult> {
     try {
       const response: TransactionResponse = await transaction.execute(client);
-      const receipt: TransactionReceipt = await response.getReceipt(client);
-      const record = await response.getRecord(client);
-
-      const consensusTimestamp = record.consensusTimestamp
-        .toDate()
-        .toISOString();
-
-      this.logger.debug(
-        `[TX-EXECUTION] Transaction executed successfully: ${response.transactionId.toString()}`,
-      );
-
-      let accountId: string | undefined;
-      let tokenId: string | undefined;
-      let topicId: string | undefined;
-      let topicSequenceNumber: number | undefined;
-      let serials: string[] | undefined;
-
-      if (receipt.accountId) {
-        accountId = receipt.accountId.toString();
-      }
-
-      if (receipt.tokenId) {
-        tokenId = receipt.tokenId.toString();
-      }
-
-      if (receipt.topicId) {
-        topicId = receipt.topicId.toString();
-      }
-
-      if (receipt.topicSequenceNumber) {
-        topicSequenceNumber = Number(receipt.topicSequenceNumber);
-      }
-
-      if (receipt.serials && receipt.serials.length > 0) {
-        serials = receipt.serials.map((serial) => serial.toString());
-      }
-
-      return {
-        transactionId: response.transactionId.toString(),
-        success: receipt.status === Status.Success,
-        consensusTimestamp,
-        accountId,
-        tokenId,
-        topicId,
-        topicSequenceNumber,
-        receipt: {
-          status: {
-            status: receipt.status === Status.Success ? 'success' : 'failed',
-            transactionId: response.transactionId.toString(),
-          },
-          serials,
-        },
-      };
+      return this.processTransactionResponse(response, client);
     } catch (error) {
       this.logger.error(
         `[TX-EXECUTION] Transaction execution failed: ${error?.toString()}`,
@@ -189,37 +136,10 @@ export class TxExecutionServiceImpl implements TxExecutionService {
   private async executeContractCreateFlowAndParseReceipt(
     transaction: ContractCreateFlow,
     client: Client,
-  ): Promise<ContractCreateFlowResult> {
+  ): Promise<TransactionResult> {
     try {
       const response: TransactionResponse = await transaction.execute(client);
-      const receipt: TransactionReceipt = await response.getReceipt(client);
-      const record = await response.getRecord(client);
-
-      const consensusTimestamp = record.consensusTimestamp
-        .toDate()
-        .toISOString();
-
-      this.logger.debug(
-        `[TX-EXECUTION] Transaction executed successfully: ${response.transactionId.toString()}`,
-      );
-      let contractId: string | undefined;
-      if (receipt.contractId) {
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-        contractId = receipt.contractId.toString();
-      }
-
-      return {
-        transactionId: response.transactionId.toString(),
-        success: receipt.status === Status.Success,
-        consensusTimestamp,
-        contractId,
-        receipt: {
-          status: {
-            status: receipt.status === Status.Success ? 'success' : 'failed',
-            transactionId: response.transactionId.toString(),
-          },
-        },
-      };
+      return this.processTransactionResponse(response, client);
     } catch (error) {
       this.logger.error(
         `[TX-EXECUTION] Transaction execution failed: ${error?.toString()}`,
@@ -228,5 +148,69 @@ export class TxExecutionServiceImpl implements TxExecutionService {
     } finally {
       client.close();
     }
+  }
+
+  private async processTransactionResponse(
+    response: TransactionResponse,
+    client: Client,
+  ): Promise<TransactionResult> {
+    const receipt: TransactionReceipt = await response.getReceipt(client);
+    const record = await response.getRecord(client);
+
+    const consensusTimestamp = record.consensusTimestamp.toDate().toISOString();
+
+    this.logger.debug(
+      `[TX-EXECUTION] Transaction executed successfully: ${response.transactionId.toString()}`,
+    );
+
+    let accountId: string | undefined;
+    let tokenId: string | undefined;
+    let topicId: string | undefined;
+    let topicSequenceNumber: number | undefined;
+    let serials: string[] | undefined;
+    let contractId: string | undefined;
+
+    if (receipt.accountId) {
+      accountId = receipt.accountId.toString();
+    }
+
+    if (receipt.tokenId) {
+      tokenId = receipt.tokenId.toString();
+    }
+
+    if (receipt.topicId) {
+      topicId = receipt.topicId.toString();
+    }
+
+    if (receipt.topicSequenceNumber) {
+      topicSequenceNumber = Number(receipt.topicSequenceNumber);
+    }
+
+    if (receipt.serials && receipt.serials.length > 0) {
+      serials = receipt.serials.map((serial) => serial.toString());
+    }
+
+    if (receipt.contractId) {
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      contractId = receipt.contractId.toString();
+    }
+
+    return {
+      transactionId: response.transactionId.toString(),
+      success: receipt.status === Status.Success,
+      consensusTimestamp,
+      accountId,
+      tokenId,
+      topicId,
+      contractId,
+      topicSequenceNumber,
+      receipt: {
+        status: {
+          status: receipt.status === Status.Success ? 'success' : 'failed',
+          transactionId: response.transactionId.toString(),
+        },
+        serials,
+      },
+    };
   }
 }
