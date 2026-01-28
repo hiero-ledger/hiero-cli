@@ -121,7 +121,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
   ): Promise<TransactionResult> {
     try {
       const response: TransactionResponse = await transaction.execute(client);
-      return this.processTransactionResponse(response, client);
+      return await this.processTransactionResponse(response, client);
     } catch (error) {
       this.logger.error(
         `[TX-EXECUTION] Transaction execution failed: ${error?.toString()}`,
@@ -139,7 +139,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
   ): Promise<TransactionResult> {
     try {
       const response: TransactionResponse = await transaction.execute(client);
-      return this.processTransactionResponse(response, client);
+      return await this.processTransactionResponse(response, client);
     } catch (error) {
       this.logger.error(
         `[TX-EXECUTION] Transaction execution failed: ${error?.toString()}`,
