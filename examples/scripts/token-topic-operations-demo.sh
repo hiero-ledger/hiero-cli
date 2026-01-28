@@ -20,7 +20,7 @@ fi
 
 source "$HELPERS"
 
-SETUP="$SCRIPT_DIR/common/helpers.sh"
+SETUP="$SCRIPT_DIR/common/setup.sh"
 
 if [[ ! -f "$SETUP" ]]; then
   echo "[ERROR] setup.sh not found" >&2
@@ -29,20 +29,24 @@ fi
 
 source "$SETUP"
 
-# --- hcli wrapper (uses built JS CLI with JSON output to avoid interactive prompts) ---
-hcli() {
-  cd "${PROJECT_DIR}" && node dist/hiero-cli.js --format json "$@"
-}
-
-print_step "Using project directory: ${PROJECT_DIR}"
+if [[ "${HIERO_SCRIPT_CLI_MODE}" == "global" ]]; then
+  print_step "CLI mode: global (using globally installed hcli)"
+else
+  print_step "CLI mode: local (project directory: ${PROJECT_DIR})"
+fi
 print_info "Operator account ID: ${HEDERA_OPERATOR_ACCOUNT_ID} (from environment)"
 
 # --- Configure network and operator ---
 print_step "Selecting Hedera testnet as the active network"
-hcli network use --global testnet
+# @TODO Remove this if-else block after next npm release; published package still uses --network, local build uses --global.
+if [[ "${HIERO_SCRIPT_CLI_MODE}" == "global" ]]; then
+  run_hcli network use --network testnet
+else
+  run_hcli network use --global testnet
+fi
 
 print_step "Configuring CLI operator for testnet"
-hcli network set-operator \
+run_hcli network set-operator \
   --operator "${HEDERA_OPERATOR_ACCOUNT_ID}:${HEDERA_OPERATOR_KEY}" \
   --network testnet
 
@@ -52,7 +56,7 @@ print_step "Creating ${ACCOUNTS_NUMBER} accounts"
 for ((i=1; i<=ACCOUNTS_NUMBER; i++)); do
   print_step "Creating account (1 HBAR)"
   ACCOUNTS+=("$(pick_random_name)")
-  hcli account create \
+  run_hcli account create \
     --name "${ACCOUNTS[$((i - 1))]}" \
     --balance 1.0
 done;
@@ -60,7 +64,7 @@ print_step "Done."
 
 print_step "Creating public topic for token creation and transfer information"
 TOPIC_NAME="public-topic"
-hcli topic create --name $TOPIC_NAME
+run_hcli topic create --name $TOPIC_NAME
 
 sleep_loop 3
 
@@ -73,14 +77,25 @@ for ((i=1; i<=ACCOUNTS_NUMBER; i++)); do
   token_name="$account-token"
   hedera_token_name="$account TOKEN"
   TOKENS+=("$token_name")
-  hcli token create-ft \
-    -n "$token_name" \
-    -N "$hedera_token_name" \
-    -s "TT" \
-    -t "$account" \
-    -i 300 \
-    -a "$account"
-  hcli topic submit-message --topic $TOPIC_NAME --message "Created token for an account with alias $account"
+  # @TODO Use only token create-ft after next npm release; published package still has unified token create.
+  if [[ "${HIERO_SCRIPT_CLI_MODE}" == "global" ]]; then
+    run_hcli token create \
+      -n "$token_name" \
+      -N "$hedera_token_name" \
+      -s "TT" \
+      -t "$account" \
+      -i 300 \
+      -a "$account"
+  else
+    run_hcli token create-ft \
+      -n "$token_name" \
+      -N "$hedera_token_name" \
+      -s "TT" \
+      -t "$account" \
+      -i 300 \
+      -a "$account"
+  fi
+  run_hcli topic submit-message --topic $TOPIC_NAME --message "Created token for an account with alias $account"
 done;
 print_step "Done."
 
@@ -96,16 +111,25 @@ for ((i=1; i<=ACCOUNTS_NUMBER; i++)); do
       # i and j are different, do something
       account_to="${ACCOUNTS[$((j - 1))]}"
       print_step "Creating association with token $token_name for account $account_to"
-      hcli token associate \
+      run_hcli token associate \
         -T "$token_name" \
         -a "$account_to"
       print_step "Transfer token $token_name from account $account_from to account $account_to"
-      hcli token transfer-ft \
-        -T "$token_name" \
-        -f "$account_from" \
-        -t "$account_to" \
-        -a 100
-      hcli topic submit-message --topic $TOPIC_NAME --message "Transfer token $token_name from $account_from to $account_to"
+      # @TODO Use only token transfer-ft after next npm release; published package still has unified token transfer.
+      if [[ "${HIERO_SCRIPT_CLI_MODE}" == "global" ]]; then
+        run_hcli token transfer \
+          -T "$token_name" \
+          -f "$account_from" \
+          -t "$account_to" \
+          -a 100
+      else
+        run_hcli token transfer-ft \
+          -T "$token_name" \
+          -f "$account_from" \
+          -t "$account_to" \
+          -a 100
+      fi
+      run_hcli topic submit-message --topic $TOPIC_NAME --message "Transfer token $token_name from $account_from to $account_to"
     fi
   done;
 done;
@@ -116,7 +140,7 @@ print_step "Print token balances of the accounts"
 for ((i=1; i<=ACCOUNTS_NUMBER; i++)); do
   account="${ACCOUNTS[$((i - 1))]}"
   print_step "Print balance of account $account"
-  hcli account balance -a ${account}
+  run_hcli account balance -a ${account}
 done;
 
 print_step "Demo complete. You have configured the operator, created 3 accounts, created token for each of the account and public topic to send information about it. Then the association and transfer of tokens between accounts was done and message sent to the topic confirming operation."

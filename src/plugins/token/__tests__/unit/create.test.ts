@@ -7,6 +7,7 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
 import { HederaTokenType, Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import { createToken } from '@/plugins/token/commands/create-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -151,7 +152,7 @@ describe('createTokenHandler', () => {
         symbol: 'TEST',
         decimals: 0,
         initialSupplyRaw: 1000000n,
-        supplyType: 'INFINITE',
+        supplyType: SupplyType.INFINITE,
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
         adminPublicKey: expect.any(Object),

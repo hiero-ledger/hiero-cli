@@ -9,6 +9,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import { createToken, listTokens } from '@/plugins/token';
 
 describe('List Token Integration Tests', () => {
@@ -25,7 +26,7 @@ describe('List Token Integration Tests', () => {
       tokenName: 'Test Token List',
       symbol: 'TTL',
       initialSupply: '10',
-      supplyType: 'INFINITE',
+      supplyType: SupplyType.INFINITE,
       name: 'test-token-list',
     };
     const createTokenResult = await createToken({
@@ -46,7 +47,7 @@ describe('List Token Integration Tests', () => {
     expect(createTokenOutput.alias).toBe('test-token-list');
     expect(createTokenOutput.treasuryId).toBe(process.env.OPERATOR_ID);
     expect(createTokenOutput.symbol).toBe('TTL');
-    expect(createTokenOutput.supplyType).toBe('INFINITE');
+    expect(createTokenOutput.supplyType).toBe(SupplyType.INFINITE);
 
     const listTokenArgs: Record<string, unknown> = {
       keys: true,

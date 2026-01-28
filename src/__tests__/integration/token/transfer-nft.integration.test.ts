@@ -14,6 +14,7 @@ import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import { createAccount } from '@/plugins/account';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createNft } from '@/plugins/token/commands/create-nft';
@@ -89,7 +90,7 @@ describe('Transfer NFT Integration Tests', () => {
         tokenName: 'Test NFT Transfer Collection',
         symbol: 'TNFTC',
         treasury: 'account-nft-transfer-source',
-        supplyType: 'FINITE',
+        supplyType: SupplyType.FINITE,
         maxSupply: '100',
         adminKey: 'account-nft-transfer-source',
         supplyKey: 'account-nft-transfer-source',
@@ -119,7 +120,7 @@ describe('Transfer NFT Integration Tests', () => {
         createSourceAccountOutput.accountId,
       );
       expect(createNftOutput.symbol).toBe('TNFTC');
-      expect(createNftOutput.supplyType).toBe('FINITE');
+      expect(createNftOutput.supplyType).toBe(SupplyType.FINITE);
 
       await delay(5000);
 
@@ -287,7 +288,7 @@ describe('Transfer NFT Integration Tests', () => {
         tokenName: 'Test NFT Not Owned',
         symbol: 'TNNO',
         treasury: 'account-nft-not-owned-test',
-        supplyType: 'FINITE',
+        supplyType: SupplyType.FINITE,
         maxSupply: '100',
         adminKey: 'account-nft-not-owned-test',
         supplyKey: 'account-nft-not-owned-test',

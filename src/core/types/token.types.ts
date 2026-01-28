@@ -5,6 +5,7 @@
 
 import type { PublicKey } from '@hashgraph/sdk';
 import type { HederaTokenType } from '@/core/shared/constants';
+import type { SupplyType } from '@/core/types/shared.types';
 
 /**
  * Parameters for token transfer transactions
@@ -26,8 +27,6 @@ export interface CustomFee {
   collectorId?: string;
   exempt?: boolean;
 }
-
-export type SupplyType = 'FINITE' | 'INFINITE';
 
 /**
  * Parameters for token creation transactions

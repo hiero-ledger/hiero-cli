@@ -11,6 +11,7 @@ import * as path from 'path';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { HederaTokenType, Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import {
   type CreateFungibleTokenFromFileOutput,
   createTokenFromFile,
@@ -183,7 +184,7 @@ describe('createTokenFromFileHandler', () => {
       expect(output.treasuryId).toBe('0.0.123456');
       expect(output.decimals).toBe(2);
       expect(output.initialSupply).toBe('1000');
-      expect(output.supplyType).toBe('FINITE');
+      expect(output.supplyType).toBe(SupplyType.FINITE);
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
       expect(output.network).toBe('testnet');
 
@@ -364,7 +365,7 @@ describe('createTokenFromFileHandler', () => {
       expect(output.treasuryId).toBe('0.0.123456');
       expect(output.decimals).toBe(2);
       expect(output.initialSupply).toBe('1000');
-      expect(output.supplyType).toBe('INFINITE');
+      expect(output.supplyType).toBe(SupplyType.INFINITE);
 
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith({
         name: 'TestToken',
@@ -372,7 +373,7 @@ describe('createTokenFromFileHandler', () => {
         treasuryId: '0.0.123456',
         decimals: 2,
         initialSupplyRaw: 1000n,
-        supplyType: 'INFINITE',
+        supplyType: SupplyType.INFINITE,
         maxSupplyRaw: 0n,
         adminPublicKey: expect.any(Object),
         customFees: [

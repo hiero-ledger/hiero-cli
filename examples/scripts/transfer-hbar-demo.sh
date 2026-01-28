@@ -20,7 +20,7 @@ fi
 
 source "$HELPERS"
 
-SETUP="$SCRIPT_DIR/common/helpers.sh"
+SETUP="$SCRIPT_DIR/common/setup.sh"
 
 if [[ ! -f "$SETUP" ]]; then
   echo "[ERROR] setup.sh not found" >&2
@@ -29,20 +29,24 @@ fi
 
 source "$SETUP"
 
-# --- hcli wrapper (uses built JS CLI with JSON output to avoid interactive prompts) ---
-hcli() {
-  cd "${PROJECT_DIR}" && node dist/hiero-cli.js --format json "$@"
-}
-
-print_step "Using project directory: ${PROJECT_DIR}"
+if [[ "${HIERO_SCRIPT_CLI_MODE}" == "global" ]]; then
+  print_step "CLI mode: global (using globally installed hcli)"
+else
+  print_step "CLI mode: local (project directory: ${PROJECT_DIR})"
+fi
 print_info "Operator account ID: ${HEDERA_OPERATOR_ACCOUNT_ID} (from environment)"
 
 # --- Configure network and operator ---
 print_step "Selecting Hedera testnet as the active network"
-hcli network use --global testnet
+# @TODO Remove this if-else block after next npm release; published package still uses --network, local build uses --global.
+if [[ "${HIERO_SCRIPT_CLI_MODE}" == "global" ]]; then
+  run_hcli network use --network testnet
+else
+  run_hcli network use --global testnet
+fi
 
 print_step "Configuring CLI operator for testnet"
-hcli network set-operator \
+run_hcli network set-operator \
   --operator "${HEDERA_OPERATOR_ACCOUNT_ID}:${HEDERA_OPERATOR_KEY}" \
   --network testnet
 
@@ -60,23 +64,23 @@ print_info "Low-balance account name: ${ACCOUNT_LOW_BALANCE_NAME} (1 HBAR)"
 
 # --- Create accounts with different starting balances ---
 print_step "Creating high-balance account (10 HBAR)"
-hcli account create \
+run_hcli account create \
   --name "${ACCOUNT_HIGH_BALANCE_NAME}" \
   --balance 10.0
 
 print_step "Creating low-balance account (1 HBAR)"
-hcli account create \
+run_hcli account create \
   --name "${ACCOUNT_LOW_BALANCE_NAME}" \
   --balance 1.0
 
 # --- Show accounts stored in state ---
 print_step "Listing all accounts stored in the CLI state"
-hcli account list
+run_hcli account list
 
 # --- Transfer 2 HBAR from the high-balance account to the low-balance account ---
 print_step "Transferring 2 HBAR from high-balance account to low-balance account"
 # The sender is explicitly set to the high-balance account so the transfer does not use the operator as the payer.
-hcli hbar transfer \
+run_hcli hbar transfer \
   --amount 2 \
   --from "${ACCOUNT_HIGH_BALANCE_NAME}" \
   --to "${ACCOUNT_LOW_BALANCE_NAME}"
@@ -84,12 +88,12 @@ hcli hbar transfer \
 # --- Show final HBAR-only balances for both accounts ---
 print_step "Fetching final HBAR-only balances for both accounts"
 print_info "Balance for high-balance account (${ACCOUNT_HIGH_BALANCE_NAME}):"
-hcli account balance \
+run_hcli account balance \
   --account "${ACCOUNT_HIGH_BALANCE_NAME}" \
   --hbar-only
 
 print_info "Balance for low-balance account (${ACCOUNT_LOW_BALANCE_NAME}):"
-hcli account balance \
+run_hcli account balance \
   --account "${ACCOUNT_LOW_BALANCE_NAME}" \
   --hbar-only
 

@@ -9,7 +9,7 @@
 import { z } from 'zod';
 
 import { HederaTokenType, KeyAlgorithm } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 
 // ======================================================
 // 1. ECDSA (secp256k1) Keys
@@ -241,7 +241,7 @@ export const KeyTypeSchema = z
  * Token Supply Type
  */
 export const SupplyTypeSchema = z
-  .enum(['FINITE', 'INFINITE'])
+  .enum(SupplyType)
   .describe('Token supply type');
 
 /**

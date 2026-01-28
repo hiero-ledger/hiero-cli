@@ -513,7 +513,7 @@ interface TokenData {
   tokenType: 'FUNGIBLE_COMMON' | 'NON_FUNGIBLE_UNIQUE';
   decimals: number;
   initialSupply: number;
-  supplyType: 'FINITE' | 'INFINITE';
+  supplyType: SupplyType;
   maxSupply: number;
   memo?: string;
   keys: TokenKeys;

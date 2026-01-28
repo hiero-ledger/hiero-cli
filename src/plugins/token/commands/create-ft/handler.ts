@@ -5,12 +5,12 @@
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { SupplyType } from '@/core/types/token.types';
 import type { CreateFungibleTokenOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
 
 import { HederaTokenType, Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import { formatError } from '@/core/utils/errors';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import {
@@ -74,7 +74,7 @@ export async function createToken(
   );
 
   let finalMaxSupply: bigint | undefined = undefined;
-  if (supplyType.toUpperCase() === 'FINITE') {
+  if (supplyType === SupplyType.FINITE) {
     finalMaxSupply = determineFiniteMaxSupply(maxSupply, initialSupply);
   } else if (maxSupply !== undefined) {
     logger.warn(
@@ -101,7 +101,7 @@ export async function createToken(
       decimals,
       initialSupplyRaw: initialSupply,
       tokenType,
-      supplyType: supplyType.toUpperCase() as SupplyType,
+      supplyType,
       maxSupplyRaw: finalMaxSupply,
       adminPublicKey: PublicKey.fromString(admin.publicKey),
       supplyPublicKey: supply
@@ -159,7 +159,7 @@ export async function createToken(
       treasuryId: treasury.accountId,
       decimals,
       initialSupply: initialSupply.toString(),
-      supplyType: supplyType.toUpperCase() as 'FINITE' | 'INFINITE',
+      supplyType,
       transactionId: result.transactionId,
       alias,
       network: api.network.getCurrentNetwork(),
