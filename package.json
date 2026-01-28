@@ -68,7 +68,7 @@
   "devDependencies": {
     "@types/handlebars": "4.1.0",
     "@types/jest": "30.0.0",
-    "@types/node": "25.0.3",
+    "@types/node": "25.1.0",
     "@typescript-eslint/eslint-plugin": "8.50.0",
     "@typescript-eslint/parser": "8.50.0",
     "copyfiles": "2.4.1",
