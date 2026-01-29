@@ -1,0 +1,20 @@
+{
+  "name": "token-fixed-fee-token",
+  "symbol": "FFTOK",
+  "decimals": 8,
+  "supplyType": "finite",
+  "initialSupply": 1000000,
+  "maxSupply": 10000000,
+  "treasuryKey": "<alias or accountId:privateKey>",
+  "adminKey": "<alias or accountId:privateKey>",
+  "memo": "Token with fixed fee paid in same token units",
+  "customFees": [
+    {
+      "type": "fixed",
+      "amount": 50,
+      "unitType": "TOKEN",
+      "collectorId": "<accountId>",
+      "exempt": false
+    }
+  ]
+}

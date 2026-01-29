@@ -1,0 +1,20 @@
+{
+  "name": "token-fixed-fee-hbar",
+  "symbol": "FFHBAR",
+  "decimals": 8,
+  "supplyType": "finite",
+  "initialSupply": 1000000,
+  "maxSupply": 10000000,
+  "treasuryKey": "<alias or accountId:privateKey>",
+  "adminKey": "<alias or accountId:privateKey>",
+  "memo": "Token with fixed fee paid in HBAR (tinybars)",
+  "customFees": [
+    {
+      "type": "fixed",
+      "amount": 100,
+      "unitType": "HBAR",
+      "collectorId": "<accountId>",
+      "exempt": false
+    }
+  ]
+}
