@@ -1,0 +1,23 @@
+{
+  "name": "token-fractional-receiver",
+  "symbol": "FFRECV",
+  "decimals": 8,
+  "supplyType": "finite",
+  "initialSupply": 1000000,
+  "maxSupply": 10000000,
+  "treasuryKey": "<alias or accountId:privateKey>",
+  "adminKey": "<alias or accountId:privateKey>",
+  "memo": "Token with fractional fee (receiver pays, netOfTransfers=false)",
+  "customFees": [
+    {
+      "type": "fractional",
+      "numerator": 1,
+      "denominator": 10,
+      "min": 10,
+      "max": 1000,
+      "netOfTransfers": false,
+      "collectorId": "<accountId>",
+      "exempt": false
+    }
+  ]
+}
