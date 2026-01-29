@@ -6,6 +6,11 @@ import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
 import {
+  CONTRACT_ERC20_CALL_DECIMALS_CREATE_TEMPLATE,
+  ContractErc20CallDecimalsOutputSchema,
+  decimals,
+} from '@/plugins/contract-erc20/commands/decimals';
+import {
   CONTRACT_ERC20_CALL_NAME_CREATE_TEMPLATE,
   ContractErc20CallNameOutputSchema,
   name,
@@ -17,6 +22,26 @@ export const contractErc20PluginManifest: PluginManifest = {
   displayName: 'Smart Contract ERC20 Plugin',
   description: "Plugin designed for calling ERC-20 contract's functions",
   commands: [
+    {
+      name: 'decimals',
+      summary: 'Call decimals function',
+      description: 'Command for calling ERC-20 decimals function',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias or contract ID. Option required',
+        },
+      ],
+      handler: decimals,
+      output: {
+        schema: ContractErc20CallDecimalsOutputSchema,
+        humanTemplate: CONTRACT_ERC20_CALL_DECIMALS_CREATE_TEMPLATE,
+      },
+    },
     {
       name: 'name',
       summary: 'Call name function',

@@ -146,6 +146,7 @@ export async function createContract(
       outputJson: JSON.stringify(output),
     };
   } catch (error) {
+    console.log({ error });
     return {
       status: Status.Failure,
       errorMessage: formatError('Failed to create contract', error),
