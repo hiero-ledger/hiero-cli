@@ -17,6 +17,8 @@ import type { TokenService } from './token-service.interface';
 import {
   AccountId,
   CustomFixedFee,
+  CustomFractionalFee,
+  FeeAssessmentMethod,
   Hbar,
   NftId,
   TokenAssociateTransaction,
@@ -273,26 +275,61 @@ export class TokenServiceImpl implements TokenService {
 
     for (const fee of customFees) {
       if (fee.type === 'fixed') {
-        // Only support HBAR fixed fees
         const fixedFee = new CustomFixedFee();
 
-        // Set HBAR amount (default unitType is HBAR)
-        fixedFee.setHbarAmount(Hbar.fromTinybars(fee.amount || 0));
-        this.logger.debug(
-          `[TOKEN SERVICE] Added fixed HBAR fee: ${fee.amount} tinybars`,
-        );
-
-        if (fee.collectorId) {
-          fixedFee.setFeeCollectorAccountId(
-            AccountId.fromString(fee.collectorId),
+        if (fee.unitType === 'TOKEN') {
+          fixedFee.setDenominatingTokenToSameToken();
+          fixedFee.setAmount(fee.amount || 0);
+          this.logger.debug(
+            `[TOKEN SERVICE] Added fixed TOKEN fee: ${fee.amount} units`,
+          );
+        } else {
+          fixedFee.setHbarAmount(Hbar.fromTinybars(fee.amount || 0));
+          this.logger.debug(
+            `[TOKEN SERVICE] Added fixed HBAR fee: ${fee.amount} tinybars`,
           );
         }
+
+        fixedFee.setFeeCollectorAccountId(
+          AccountId.fromString(fee.collectorId),
+        );
 
         if (fee.exempt !== undefined) {
           fixedFee.setAllCollectorsAreExempt(fee.exempt);
         }
 
         hederaCustomFees.push(fixedFee);
+      } else if (fee.type === 'fractional') {
+        const fractionalFee = new CustomFractionalFee()
+          .setNumerator(fee.numerator)
+          .setDenominator(fee.denominator);
+
+        if (fee.min !== undefined) {
+          fractionalFee.setMin(fee.min);
+        }
+
+        if (fee.max !== undefined) {
+          fractionalFee.setMax(fee.max);
+        }
+
+        const assessmentMethod = fee.netOfTransfers
+          ? FeeAssessmentMethod.Inclusive
+          : FeeAssessmentMethod.Exclusive;
+        fractionalFee.setAssessmentMethod(assessmentMethod);
+
+        fractionalFee.setFeeCollectorAccountId(
+          AccountId.fromString(fee.collectorId),
+        );
+
+        if (fee.exempt !== undefined) {
+          fractionalFee.setAllCollectorsAreExempt(fee.exempt);
+        }
+
+        this.logger.debug(
+          `[TOKEN SERVICE] Added fractional fee: ${fee.numerator}/${fee.denominator}, netOfTransfers=${fee.netOfTransfers}`,
+        );
+
+        hederaCustomFees.push(fractionalFee);
       }
     }
 

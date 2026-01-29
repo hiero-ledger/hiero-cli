@@ -22,9 +22,11 @@ export async function createContract(
 ): Promise<CommandExecutionResult> {
   const { logger, api, state } = args;
   const contractState = new ZustandContractStateHelper(state, logger);
+
+  const validArgs = ContractCreateSchema.parse(args.args);
+
   try {
     // Parse and validate args
-    const validArgs = ContractCreateSchema.parse(args.args);
     const alias = validArgs.name;
     const filename = validArgs.file;
     const gas = validArgs.gas;
