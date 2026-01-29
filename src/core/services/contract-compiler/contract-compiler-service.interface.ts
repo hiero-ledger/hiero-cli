@@ -4,5 +4,5 @@ import type {
 } from '@/core/services/contract-compiler/types';
 
 export interface ContractCompilerService {
-  compileContract(params: CompilationParams): CompilationResult;
+  compileContract(params: CompilationParams): Promise<CompilationResult>;
 }

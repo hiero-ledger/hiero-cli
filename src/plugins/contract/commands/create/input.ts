@@ -6,6 +6,7 @@ import {
   KeyManagerTypeSchema,
   KeyOrAccountAliasSchema,
   MemoSchema,
+  SolidityCompilerVersion,
 } from '@/core/schemas';
 
 /**
@@ -32,6 +33,7 @@ export const ContractCreateSchema = z
     memo: MemoSchema.describe(
       'Optional memo for the contract (max 100 characters)',
     ),
+    solidityCompiler: SolidityCompilerVersion,
     constructorParameter: z
       .array(z.string())
       .optional()
@@ -48,6 +50,7 @@ export const ContractCreateSchema = z
     basePath: data.basePath,
     adminKey: data.adminKey,
     memo: data.memo,
+    solidityVersion: data.solidityCompiler,
     constructorParameters: data.constructorParameter,
     keyManager: data.keyManager,
   }));

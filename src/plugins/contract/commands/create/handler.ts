@@ -26,6 +26,7 @@ export async function createContract(
     const gas = validArgs.gas;
     const basePath = validArgs.basePath;
     const memo = validArgs.memo;
+    const solidityVersion = validArgs.solidityVersion;
     const constructorParameters = validArgs.constructorParameters;
     const keyManagerArg = validArgs.keyManager;
     const network = api.network.getCurrentNetwork();
@@ -38,11 +39,19 @@ export async function createContract(
       keyManagerArg ||
       api.config.getOption<KeyManagerName>('default_key_manager');
 
-    const admin = await api.keyResolver.getOrInitKeyWithFallback(
-      validArgs.adminKey,
-      keyManager,
-      ['contract:admin'],
-    );
+    const admin = validArgs.adminKey
+      ? await api.keyResolver.getOrInitKeyWithFallback(
+          validArgs.adminKey,
+          keyManager,
+          ['contract:admin'],
+        )
+      : undefined;
+
+    if (!admin) {
+      logger.warn(
+        `Admin key not specified. Smart contract will lack admin key set`,
+      );
+    }
 
     const contractFileContent = await readContractFile(filename, logger);
     if (!contractFileContent) {
@@ -55,27 +64,32 @@ export async function createContract(
         `Could not find contract name from the given file ${contractFilename}`,
       );
     }
-    const compilationResult = api.contractCompiler.compileContract({
+    const compilationResult = await api.contractCompiler.compileContract({
       contractName: contractName,
       contractContent: contractFileContent,
       contractFilename: contractFilename,
       basePath: basePath,
+      solidityVersion: solidityVersion,
     });
 
-    const txSigners = [admin.keyRefId];
+    const txSigners = admin ? [admin.keyRefId] : [];
+    const adminPublicKey = admin ? admin.publicKey : undefined;
 
     const contractCreateFlowTx = api.contract.contractCreateFlowTransaction({
       bytecode: compilationResult.bytecode,
       gas: gas,
       abiDefinition: compilationResult.abiDefinition,
       constructorParameters: constructorParameters,
-      adminKey: PublicKey.fromString(admin.publicKey),
+      adminKey: adminPublicKey
+        ? PublicKey.fromString(adminPublicKey)
+        : undefined,
       memo: memo,
     });
-    const contractCreateFlowResult = await api.txExecution.signAndExecuteWith(
-      contractCreateFlowTx.transaction,
-      txSigners,
-    );
+    const contractCreateFlowResult =
+      await api.txExecution.signAndExecuteContractCreateFlowWith(
+        contractCreateFlowTx.transaction,
+        txSigners,
+      );
     if (!contractCreateFlowResult.contractId) {
       throw new Error(
         `There was a problem with creating contract, no contract address present in the receipt`,
@@ -100,7 +114,7 @@ export async function createContract(
       contractId: contractCreateFlowResult.contractId,
       contractName,
       contractEvmAddress: contractId.toEvmAddress(),
-      adminPublicKey: admin.publicKey,
+      adminPublicKey,
       network,
       memo,
     };
@@ -125,7 +139,7 @@ export async function createContract(
       network: network,
       alias: alias,
       transactionId: contractCreateFlowResult.transactionId,
-      adminPublicKey: admin.publicKey,
+      adminPublicKey: adminPublicKey,
     };
     return {
       status: Status.Success,

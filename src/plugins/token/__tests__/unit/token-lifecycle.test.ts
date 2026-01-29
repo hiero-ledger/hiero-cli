@@ -10,6 +10,7 @@ import '@/core/utils/json-serialize';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { HederaTokenType, Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createToken } from '@/plugins/token/commands/create-ft';
 import { transferToken } from '@/plugins/token/commands/transfer-ft';
@@ -126,7 +127,7 @@ describe('Token Lifecycle Integration', () => {
           decimals: 2,
           initialSupply: '1000',
           maxSupply: '1000',
-          supplyType: 'FINITE',
+          supplyType: SupplyType.FINITE,
           treasury: `${_treasuryAccountId}:${treasuryKey}`,
           adminKey: 'admin-key',
         },
@@ -192,7 +193,7 @@ describe('Token Lifecycle Integration', () => {
         symbol: 'TEST',
         decimals: 2,
         initialSupplyRaw: 100000n,
-        supplyType: 'FINITE',
+        supplyType: SupplyType.FINITE,
         maxSupplyRaw: 100000n,
         treasuryId: _treasuryAccountId,
         adminPublicKey: expect.any(Object),

@@ -66,6 +66,9 @@ export const makeTxExecutionServiceMock = (
   signAndExecuteWith: jest
     .fn()
     .mockResolvedValue(mockTransactionResults.success),
+  signAndExecuteContractCreateFlowWith: jest
+    .fn()
+    .mockResolvedValue(mockTransactionResults.success),
   ...overrides,
 });
 
@@ -114,6 +117,7 @@ export const makeKmsMock = (
 
   createClient: jest.fn(),
   signTransaction: jest.fn(),
+  signContractCreateFlow: jest.fn(),
   ...overrides,
 });
 
@@ -327,6 +331,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       handleCommandOutput: jest.fn(),
       getFormat: jest.fn().mockReturnValue('human'),
       setFormat: jest.fn(),
+      emptyLine: jest.fn(),
     } as jest.Mocked<OutputService>,
     pluginManagement: {
       listPlugins: jest.fn().mockReturnValue([]),

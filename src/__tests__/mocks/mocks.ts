@@ -93,6 +93,7 @@ export const makeNetworkMock = (
   }),
   setPayer: jest.fn(),
   getPayer: jest.fn().mockReturnValue(null),
+  hasAnyOperator: jest.fn().mockReturnValue(false),
 });
 
 /**
@@ -115,6 +116,7 @@ export const makeKmsMock = (): jest.Mocked<KmsService> => ({
   remove: jest.fn(),
   createClient: jest.fn(),
   signTransaction: jest.fn(),
+  signContractCreateFlow: jest.fn(),
 });
 
 /**
@@ -204,6 +206,13 @@ export const makeSigningMock = (
       receipt: { status: { status: 'success' } },
     }),
   signAndExecuteWith:
+    options.signAndExecuteImpl ||
+    jest.fn().mockResolvedValue({
+      success: true,
+      transactionId: 'mock-tx-id',
+      receipt: { status: { status: 'success' } },
+    }),
+  signAndExecuteContractCreateFlowWith:
     options.signAndExecuteImpl ||
     jest.fn().mockResolvedValue({
       success: true,
@@ -350,6 +359,7 @@ const makeOutputMock = (): jest.Mocked<OutputService> => ({
   handleCommandOutput: jest.fn(),
   setFormat: jest.fn(),
   getFormat: jest.fn().mockReturnValue('human'),
+  emptyLine: jest.fn(),
 });
 
 const makePluginManagementServiceMock = (): PluginManagementService =>

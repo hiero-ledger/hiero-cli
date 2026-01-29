@@ -1,11 +1,17 @@
 import type { CommandOption } from '@/core/core-api';
 
+import { OptionType } from '@/core/types/shared.types';
 import { filterReservedOptions } from '@/core/utils/filter-reserved-options';
 
 describe('filterReservedOptions', () => {
   it('should allow non-reserved options', () => {
     const options: CommandOption[] = [
-      { name: 'my-option', type: 'string', required: false, short: 'm' },
+      {
+        name: 'my-option',
+        type: OptionType.STRING,
+        required: false,
+        short: 'm',
+      },
     ];
     const result = filterReservedOptions(options);
     expect(result.allowed).toHaveLength(1);
@@ -16,9 +22,9 @@ describe('filterReservedOptions', () => {
 
   it('should filter reserved long options', () => {
     const options: CommandOption[] = [
-      { name: 'network', type: 'string', required: false },
-      { name: 'format', type: 'string', required: false },
-      { name: 'valid', type: 'string', required: false },
+      { name: 'network', type: OptionType.STRING, required: false },
+      { name: 'format', type: OptionType.STRING, required: false },
+      { name: 'valid', type: OptionType.STRING, required: false },
     ];
     const result = filterReservedOptions(options);
     expect(result.allowed).toHaveLength(1);
@@ -29,9 +35,9 @@ describe('filterReservedOptions', () => {
 
   it('should filter reserved short options', () => {
     const options: CommandOption[] = [
-      { name: 'my-n', short: 'N', type: 'string', required: false },
-      { name: 'my-h', short: 'h', type: 'string', required: false },
-      { name: 'valid', short: 'v', type: 'string', required: false },
+      { name: 'my-n', short: 'N', type: OptionType.STRING, required: false },
+      { name: 'my-h', short: 'h', type: OptionType.STRING, required: false },
+      { name: 'valid', short: 'v', type: OptionType.STRING, required: false },
     ];
     const result = filterReservedOptions(options);
     expect(result.allowed).toHaveLength(1);
@@ -42,9 +48,9 @@ describe('filterReservedOptions', () => {
 
   it('should filter both long and short reserved options', () => {
     const options: CommandOption[] = [
-      { name: 'network', short: 'N', type: 'string', required: false },
-      { name: 'format', short: 'f', type: 'string', required: false },
-      { name: 'custom', short: 'h', type: 'string', required: false },
+      { name: 'network', short: 'N', type: OptionType.STRING, required: false },
+      { name: 'format', short: 'f', type: OptionType.STRING, required: false },
+      { name: 'custom', short: 'h', type: OptionType.STRING, required: false },
     ];
     const result = filterReservedOptions(options);
     expect(result.allowed).toHaveLength(0);
@@ -56,8 +62,13 @@ describe('filterReservedOptions', () => {
 
   it('should be case-insensitive for long names but case-sensitive for short names', () => {
     const options: CommandOption[] = [
-      { name: 'NETWORK', type: 'string', required: false },
-      { name: 'valid', short: 'n', type: 'string', required: false }, // lowercase 'n' is not reserved, 'N' is
+      { name: 'NETWORK', type: OptionType.STRING, required: false },
+      {
+        name: 'valid',
+        short: 'n',
+        type: OptionType.STRING,
+        required: false,
+      }, // lowercase 'n' is not reserved, 'N' is
     ];
     const result = filterReservedOptions(options);
     expect(result.allowed).toHaveLength(1);

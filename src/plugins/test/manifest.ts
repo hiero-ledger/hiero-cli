@@ -4,6 +4,7 @@
  */
 import type { PluginManifest } from '@/core';
 
+import { OptionType } from '@/core/types/shared.types';
 import { createMemo, MEMO_TEST_TEMPLATE } from '@/plugins/test/commands/memo';
 import { MemoTestOutputSchema } from '@/plugins/test/commands/memo/output';
 
@@ -30,7 +31,7 @@ export const testPluginManifest: PluginManifest = {
         {
           name: 'message',
           short: 'm',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Message to print. Max size should be 100 characters',
         },
@@ -50,14 +51,14 @@ export const testPluginManifest: PluginManifest = {
         {
           name: 'account',
           short: 'a',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Account alias present in state',
         },
         {
           name: 'memo',
           short: 'm',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Memo for an account. Max size should be 100 characters',
         },

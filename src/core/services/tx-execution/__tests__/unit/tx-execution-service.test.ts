@@ -2,7 +2,11 @@
  * Unit tests for TxExecutionServiceImpl
  * Tests transaction signing, execution, and result parsing
  */
-import type { Client, Transaction as HederaTransaction } from '@hashgraph/sdk';
+import type {
+  Client,
+  ContractCreateFlow,
+  Transaction as HederaTransaction,
+} from '@hashgraph/sdk';
 
 import { Status } from '@hashgraph/sdk';
 
@@ -15,6 +19,7 @@ import { TxExecutionServiceImpl } from '@/core/services/tx-execution/tx-executio
 
 import {
   createMockClient,
+  createMockContractCreateFlow,
   createMockTransaction,
   createMockTransactionReceipt,
   createMockTransactionRecord,
@@ -339,7 +344,7 @@ describe('TxExecutionServiceImpl', () => {
     });
 
     it('should throw error when getting receipt fails', async () => {
-      const { service, logger } = setupService();
+      const { service } = setupService();
       const mockTx = createMockTransaction();
       const mockResponse = createMockTransactionResponse();
       const error = new Error('Receipt error');
@@ -350,6 +355,122 @@ describe('TxExecutionServiceImpl', () => {
       await expect(
         service.signAndExecuteWith(mockTx as unknown as HederaTransaction, []),
       ).rejects.toThrow('Receipt error');
+    });
+  });
+
+  describe('signAndExecuteContractCreateFlowWith', () => {
+    it('should sign contract create flow with unique keys and return result', async () => {
+      const { service, logger, kms, mockClient } = setupService();
+      const mockFlow = createMockContractCreateFlow();
+      const mockResponse = createMockTransactionResponse();
+      const mockReceipt = createMockTransactionReceipt({
+        status: Status.Success,
+        contractId: {
+          toString: jest.fn().mockReturnValue('0.0.9999'),
+        },
+      });
+      const mockRecord = createMockTransactionRecord();
+
+      mockFlow.execute.mockResolvedValue(mockResponse);
+      mockResponse.getReceipt.mockResolvedValue(mockReceipt);
+      mockResponse.getRecord.mockResolvedValue(mockRecord);
+
+      const result = await service.signAndExecuteContractCreateFlowWith(
+        mockFlow as unknown as ContractCreateFlow,
+        [MOCK_KEY_REF_1, MOCK_KEY_REF_2],
+      );
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        '[TX-EXECUTION] Signing with 2 key(s)',
+      );
+      expect(kms.signContractCreateFlow).toHaveBeenCalledTimes(2);
+      expect(kms.signContractCreateFlow).toHaveBeenNthCalledWith(
+        1,
+        mockFlow,
+        MOCK_KEY_REF_1,
+      );
+      expect(kms.signContractCreateFlow).toHaveBeenNthCalledWith(
+        2,
+        mockFlow,
+        MOCK_KEY_REF_2,
+      );
+
+      expect(mockFlow.execute).toHaveBeenCalledWith(mockClient);
+      expect(mockResponse.getReceipt).toHaveBeenCalledWith(mockClient);
+      expect(mockResponse.getRecord).toHaveBeenCalledWith(mockClient);
+
+      expect(result.transactionId).toBe(MOCK_TX_ID);
+      expect(result.success).toBe(true);
+      expect(result.contractId).toBe('0.0.9999');
+      expect(result.consensusTimestamp).toBe(MOCK_CONSENSUS_TS);
+      expect(result.receipt.status.status).toBe('success');
+      expect(mockClient.close).toHaveBeenCalled();
+    });
+
+    it('should deduplicate keyRefIds for contract create flow', async () => {
+      const { service, kms } = setupService();
+      const mockFlow = createMockContractCreateFlow();
+      const mockResponse = createMockTransactionResponse();
+      const mockReceipt = createMockTransactionReceipt({
+        status: Status.Success,
+      });
+      const mockRecord = createMockTransactionRecord();
+
+      mockFlow.execute.mockResolvedValue(mockResponse);
+      mockResponse.getReceipt.mockResolvedValue(mockReceipt);
+      mockResponse.getRecord.mockResolvedValue(mockRecord);
+
+      await service.signAndExecuteContractCreateFlowWith(
+        mockFlow as unknown as ContractCreateFlow,
+        [MOCK_KEY_REF_1, MOCK_KEY_REF_2, MOCK_KEY_REF_1],
+      );
+
+      expect(kms.signContractCreateFlow).toHaveBeenCalledTimes(2);
+      expect(kms.signContractCreateFlow).toHaveBeenCalledWith(
+        mockFlow,
+        MOCK_KEY_REF_1,
+      );
+      expect(kms.signContractCreateFlow).toHaveBeenCalledWith(
+        mockFlow,
+        MOCK_KEY_REF_2,
+      );
+    });
+
+    it('should return success=false when contract create flow status is not Success', async () => {
+      const { service } = setupService();
+      const mockFlow = createMockContractCreateFlow();
+      const mockResponse = createMockTransactionResponse();
+      const mockReceipt = createMockTransactionReceipt({
+        status: NonSuccessStatus,
+      });
+      const mockRecord = createMockTransactionRecord();
+
+      mockFlow.execute.mockResolvedValue(mockResponse);
+      mockResponse.getReceipt.mockResolvedValue(mockReceipt);
+      mockResponse.getRecord.mockResolvedValue(mockRecord);
+
+      const result = await service.signAndExecuteContractCreateFlowWith(
+        mockFlow as unknown as ContractCreateFlow,
+        [],
+      );
+
+      expect(result.success).toBe(false);
+      expect(result.receipt.status.status).toBe('failed');
+    });
+
+    it('should throw error and log when contract create flow execution fails', async () => {
+      const { service, logger } = setupService();
+      const mockFlow = createMockContractCreateFlow();
+      const error = new Error('Flow network error');
+
+      mockFlow.execute.mockRejectedValue(error);
+
+      await expect(
+        service.signAndExecuteContractCreateFlowWith(
+          mockFlow as unknown as ContractCreateFlow,
+          [],
+        ),
+      ).rejects.toThrow('Flow network error');
 
       expect(logger.error).toHaveBeenCalledWith(
         expect.stringContaining('[TX-EXECUTION] Transaction execution failed'),

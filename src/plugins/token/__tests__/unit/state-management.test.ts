@@ -6,6 +6,7 @@
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
+import { SupplyType } from '@/core/types/shared.types';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { mockMultipleTokens, mockStateTokenData } from './helpers/fixtures';
@@ -229,7 +230,7 @@ describe('Token State Management', () => {
           symbol: 'TEST',
           decimals: 2,
           initialSupply: 1000n,
-          supplyType: 'FINITE',
+          supplyType: SupplyType.FINITE,
           maxSupply: 10000n,
           treasuryId: '0.0.789012',
           adminPublicKey: 'admin-key',

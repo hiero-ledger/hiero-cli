@@ -41,6 +41,10 @@ export const CONFIG_OPTIONS: Record<string, OptionSpec> = {
     default: 'local',
     allowedValues: KEY_MANAGER_VALUES,
   },
+  skip_confirmations: {
+    type: 'boolean',
+    default: false,
+  },
 } as const;
 
 export const CONFIG_OPTION_TYPES = [

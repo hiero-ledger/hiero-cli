@@ -14,7 +14,7 @@ import type {
 
 import { HASHSCAN_BASE_URL } from '@/core/shared/constants';
 import {
-  NetworkConfig as NetworkIdsConfig,
+  NetworkChainMap,
   type SupportedNetwork,
 } from '@/core/types/shared.types';
 
@@ -79,7 +79,7 @@ export class NetworkServiceImpl implements NetworkService {
       throw new Error(`Network configuration not found: ${network}`);
     }
 
-    const chainId = NetworkIdsConfig[network as SupportedNetwork];
+    const chainId = NetworkChainMap[network as SupportedNetwork];
 
     return {
       name: network,
@@ -148,5 +148,12 @@ export class NetworkServiceImpl implements NetworkService {
 
   getPayer(): ResolvedKey | null {
     return this.payer;
+  }
+
+  hasAnyOperator(): boolean {
+    const networks = this.getAvailableNetworks();
+    return networks.some(
+      (network) => this.getOperator(network as SupportedNetwork) !== null,
+    );
   }
 }

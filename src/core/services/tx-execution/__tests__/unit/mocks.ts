@@ -17,6 +17,11 @@ export const createMockTransaction = (overrides = {}) => {
   return mock;
 };
 
+export const createMockContractCreateFlow = (overrides = {}) => ({
+  execute: jest.fn(),
+  ...overrides,
+});
+
 export const createMockTransactionResponse = (overrides = {}) => ({
   transactionId: {
     toString: jest.fn().mockReturnValue('0.0.1234@1234567890.000'),
@@ -32,6 +37,8 @@ export const createMockTransactionReceipt = (overrides = {}) => ({
   tokenId: null,
   topicId: null,
   topicSequenceNumber: null,
+  contractId: null,
+  serials: null,
   ...overrides,
 });
 

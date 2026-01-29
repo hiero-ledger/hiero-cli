@@ -15,7 +15,7 @@ import {
   TokenTypeSchema,
 } from '@/core/schemas';
 import { HederaTokenType } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Zod schema for token association
@@ -82,10 +82,8 @@ export const TokenDataSchema = z.object({
     },
   ),
 
-  supplyType: z.enum(['FINITE', 'INFINITE'], {
-    error: () => ({
-      message: 'Supply type must be either FINITE or INFINITE',
-    }),
+  supplyType: z.enum(SupplyType, {
+    message: `Supply type must be either ${SupplyType.FINITE} or ${SupplyType.INFINITE}`,
   }),
 
   maxSupply: z
@@ -141,7 +139,7 @@ export function safeParseTokenData(data: unknown) {
 export const TokenFileFixedFeeSchema = z
   .object({
     type: z.literal('fixed'),
-    amount: z.number().int().positive('Amount must be positive'),
+    amount: z.int().positive('Amount must be positive'),
     unitType: z.literal('HBAR').optional().default('HBAR'),
     collectorId: EntityIdSchema.optional(),
     exempt: z.boolean().optional(),

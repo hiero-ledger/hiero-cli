@@ -11,6 +11,7 @@ import type { TransferFungibleTokenOutput } from '@/plugins/token/commands/trans
 import '@/core/utils/json-serialize';
 
 import { Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import { associateToken } from '@/plugins/token/commands/associate/handler';
 import { createToken } from '@/plugins/token/commands/create-ft/handler';
 import { listTokens } from '@/plugins/token/commands/list/handler';
@@ -76,7 +77,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         symbol: 'TTK',
         decimals: 2,
         initialSupply: '1000',
-        supplyType: 'INFINITE',
+        supplyType: SupplyType.INFINITE,
       };
 
       // Act
@@ -259,7 +260,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
             name: 'TestToken',
             symbol: 'TTK',
             decimals: 2,
-            supplyType: 'INFINITE',
+            supplyType: SupplyType.INFINITE,
             treasuryId: '0.0.111',
             network: 'testnet',
           },
@@ -267,7 +268,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         getTokensWithStats: jest.fn().mockReturnValue({
           total: 1,
           byNetwork: { testnet: 1 },
-          bySupplyType: { INFINITE: 1 },
+          bySupplyType: { [SupplyType.INFINITE]: 1 },
           withAssociations: 0,
           totalAssociations: 0,
         }),

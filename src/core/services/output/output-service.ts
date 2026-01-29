@@ -64,6 +64,10 @@ export class OutputServiceImpl implements OutputService {
     }
   }
 
+  emptyLine(): void {
+    console.log('');
+  }
+
   private writeToFile(content: string, filePath: string): void {
     try {
       const dir = path.dirname(filePath);

@@ -9,7 +9,7 @@
 import { z } from 'zod';
 
 import { HederaTokenType, KeyAlgorithm } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 
 // ======================================================
 // 1. ECDSA (secp256k1) Keys
@@ -79,7 +79,7 @@ export const HbarDecimalSchema = z
 export const TinybarSchema = z
   .union([
     z.string().regex(/^-?\d+$/, 'Tinybars must be integer string'),
-    z.number().int(),
+    z.int(),
     z.bigint(),
   ])
   .transform((val) => BigInt(val))
@@ -93,13 +93,13 @@ export const TinybarSchema = z
 // ======================================================
 
 // HTS decimals(immutable after token creation)
-export const HtsDecimalsSchema = z.number().int().min(0);
+export const HtsDecimalsSchema = z.int().min(0);
 
 // HTS base unit (integer form)
 export const HtsBaseUnitSchema = z
   .union([
     z.string().regex(/^\d+$/, 'Base unit must be integer string'),
-    z.number().int(),
+    z.int(),
     z.bigint(),
   ])
   .transform((val) => BigInt(val))
@@ -124,13 +124,13 @@ export const HtsDecimalSchema = z
 // ======================================================
 
 // Standard ERC-20 decimals: usually 18
-export const EvmDecimalsSchema = z.number().int().min(0).max(36);
+export const EvmDecimalsSchema = z.int().min(0).max(36);
 
 // Base unit (wei-like integer)
 export const EvmBaseUnitSchema = z
   .union([
     z.string().regex(/^\d+$/, 'Base unit must be integer string'),
-    z.number().int(),
+    z.int(),
     z.bigint(),
   ])
   .transform((val) => BigInt(val))
@@ -241,7 +241,7 @@ export const KeyTypeSchema = z
  * Token Supply Type
  */
 export const SupplyTypeSchema = z
-  .enum(['FINITE', 'INFINITE'])
+  .enum(SupplyType)
   .describe('Token supply type');
 
 /**
@@ -587,9 +587,7 @@ export const NftSerialNumbersSchema = z
   .transform((val) => val.split(',').map((s) => parseInt(s.trim(), 10)))
   .pipe(
     z
-      .array(
-        z.number().int().positive('Serial numbers must be positive integers'),
-      )
+      .array(z.int().positive('Serial numbers must be positive integers'))
       .min(1, 'At least one serial number is required')
       .max(10, 'Maximum 10 serial numbers allowed'),
   )
@@ -642,3 +640,14 @@ export const ContractNameSchema = z
     'Contract name must contain only letters, numbers, hyphens, and underscores',
   )
   .describe('Contract name');
+
+/**
+ * Solidity Compiler Version Input
+ * Optional solidity compiler version field for transactions
+ * Max 100 characters
+ */
+export const SolidityCompilerVersion = z
+  .string()
+  .trim()
+  .optional()
+  .describe('Optional Solidity compiler version');

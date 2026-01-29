@@ -18,6 +18,12 @@ export interface TxExecutionService {
     transaction: HederaTransaction | ContractCreateFlow,
     keyRefIds: string[],
   ): Promise<TransactionResult>;
+
+  /** Sign and execute ContractCreateFlow with multiple keys (validates, deduplicates, preserves order) */
+  signAndExecuteContractCreateFlowWith(
+    transaction: ContractCreateFlow,
+    keyRefIds: string[],
+  ): Promise<TransactionResult>;
 }
 
 // Result types

@@ -3,6 +3,7 @@ export interface CompilationParams {
   contractName: string;
   contractContent: string;
   basePath: string;
+  solidityVersion?: string;
 }
 
 export interface CompilationResult {
@@ -56,6 +57,7 @@ export interface SolcContract {
 
 export interface SolcOutput {
   contracts: {
+    // output contracts, each contract is represented by a file name and a contract name in each file
     [fileName: string]: {
       [contractName: string]: SolcContract;
     };

@@ -4,6 +4,7 @@
  */
 import type { PluginManifest } from '@/core';
 
+import { OptionType } from '@/core/types/shared.types';
 import {
   CONTRACT_LIST_TEMPLATE,
   ContractListOutputSchema,
@@ -34,7 +35,7 @@ export const contractPluginManifest: PluginManifest = {
         {
           name: 'name',
           short: 'n',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Smart contract name represented in the state. Option required',
@@ -42,7 +43,7 @@ export const contractPluginManifest: PluginManifest = {
         {
           name: 'file',
           short: 'f',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Smart contract definition file path (absolute or relative) to a Solidity file. Option required',
@@ -50,7 +51,7 @@ export const contractPluginManifest: PluginManifest = {
         {
           name: 'base-path',
           short: 'b',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Base path to the smart contract file directory. Defaults to current directory',
@@ -58,7 +59,7 @@ export const contractPluginManifest: PluginManifest = {
         {
           name: 'gas',
           short: 'g',
-          type: 'number',
+          type: OptionType.NUMBER,
           required: false,
           default: 1000000,
           description: 'Gas for smart contract creation. Default: 1000000',
@@ -66,21 +67,28 @@ export const contractPluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description: 'Smart contract admin key.',
         },
         {
           name: 'memo',
           short: 'm',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description: 'Smart contract memo.',
         },
         {
+          name: 'solidity-version',
+          short: 'v',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Solidity compiler version.',
+        },
+        {
           name: 'constructor-parameter',
           short: 'c',
-          type: 'repeatable',
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Repeatable parameter to be set for smart contract constructor',
@@ -88,7 +96,7 @@ export const contractPluginManifest: PluginManifest = {
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',

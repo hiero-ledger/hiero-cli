@@ -4,6 +4,7 @@
  */
 import type { PluginManifest } from '@/core';
 
+import { OptionType } from '@/core/types/shared.types';
 import {
   CONTRACT_ERC20_CALL_NAME_CREATE_TEMPLATE,
   ContractErc20CallNameOutputSchema,
@@ -24,7 +25,7 @@ export const contractErc20PluginManifest: PluginManifest = {
         {
           name: 'contract',
           short: 'c',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Smart contract ID represented by alias or contract ID. Option required',

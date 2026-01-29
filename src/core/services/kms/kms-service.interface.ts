@@ -102,4 +102,12 @@ export interface KmsService {
     transaction: HederaTransaction | ContractCreateFlow,
     keyRefId: string,
   ): Promise<void>;
+
+  /**
+   * Signs a transaction with specified key.
+   */
+  signContractCreateFlow(
+    transaction: ContractCreateFlow,
+    keyRefId: string,
+  ): void;
 }

@@ -334,6 +334,20 @@ export class KmsServiceImpl implements KmsService {
     );
   }
 
+  signContractCreateFlow(
+    transaction: ContractCreateFlow,
+    keyRefId: string,
+  ): void {
+    const handle = this.getSignerHandle(keyRefId);
+    const publicKey = PublicKey.fromString(handle.getPublicKey());
+
+    // Use the opaque signer handle for signing
+    // eslint-disable-next-line @typescript-eslint/require-await
+    transaction.signWith(publicKey, async (message: Uint8Array) =>
+      handle.sign(message),
+    );
+  }
+
   private createPrivateKey(keyAlgorithm: KeyAlgorithm, privateKey: string) {
     if (keyAlgorithm === KeyAlgorithm.ECDSA) {
       return PrivateKey.fromStringECDSA(privateKey);
