@@ -99,7 +99,7 @@ export interface KmsService {
    * Signs a transaction with specified key.
    */
   signTransaction(
-    transaction: HederaTransaction,
+    transaction: HederaTransaction | ContractCreateFlow,
     keyRefId: string,
   ): Promise<void>;
 

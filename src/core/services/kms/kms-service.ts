@@ -321,7 +321,7 @@ export class KmsServiceImpl implements KmsService {
   }
 
   async signTransaction(
-    transaction: HederaTransaction,
+    transaction: HederaTransaction | ContractCreateFlow,
     keyRefId: string,
   ): Promise<void> {
     const handle = this.getSignerHandle(keyRefId);

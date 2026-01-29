@@ -10,3 +10,9 @@ export const createMockContractCreateFlow = () => ({
   setContractMemo: jest.fn().mockReturnThis(),
   setConstructorParameters: jest.fn().mockReturnThis(),
 });
+
+export const createMockContractExecuteTransaction = () => ({
+  setContractId: jest.fn().mockReturnThis(),
+  setGas: jest.fn().mockReturnThis(),
+  setFunction: jest.fn().mockReturnThis(),
+});

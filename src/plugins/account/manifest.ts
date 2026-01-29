@@ -168,6 +168,7 @@ export const accountPluginManifest: PluginManifest = {
         schema: ListAccountsOutputSchema,
         humanTemplate: LIST_ACCOUNTS_TEMPLATE,
       },
+      excessArguments: true,
     },
     {
       name: 'import',

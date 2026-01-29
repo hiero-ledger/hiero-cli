@@ -2,9 +2,15 @@ import type { ContractTransactionService } from '@/core/services/contract-transa
 import type {
   ContractCreateFlowParams,
   ContractCreateFlowResult,
+  ContractExecuteParams,
+  ContractExecuteResult,
 } from '@/core/services/contract-transaction/types';
 
-import { ContractCreateFlow } from '@hashgraph/sdk';
+import {
+  ContractCreateFlow,
+  ContractExecuteTransaction,
+  ContractId,
+} from '@hashgraph/sdk';
 import { ethers, getBytes } from 'ethers';
 
 export class ContractTransactionServiceImpl implements ContractTransactionService {
@@ -33,6 +39,30 @@ export class ContractTransactionServiceImpl implements ContractTransactionServic
     }
     return {
       transaction: contractCreateTx,
+    };
+  }
+
+  contractExecuteTransaction(
+    params: ContractExecuteParams,
+  ): ContractExecuteResult {
+    const contractExecuteTx = new ContractExecuteTransaction();
+    if (params.contractId) {
+      contractExecuteTx.setContractId(ContractId.fromString(params.contractId));
+    }
+    if (params.gas) {
+      contractExecuteTx.setGas(params.gas);
+    }
+    if (params.functionName && params.functionParameters) {
+      contractExecuteTx.setFunction(
+        params.functionName,
+        params.functionParameters,
+      );
+    }
+    if (params.functionName) {
+      contractExecuteTx.setFunction(params.functionName);
+    }
+    return {
+      transaction: contractExecuteTx,
     };
   }
 }
