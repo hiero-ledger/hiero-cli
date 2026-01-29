@@ -15,7 +15,7 @@ export interface TxExecutionService {
 
   /** Sign and execute with multiple keys (validates, deduplicates, preserves order) */
   signAndExecuteWith(
-    transaction: HederaTransaction | ContractCreateFlow,
+    transaction: HederaTransaction,
     keyRefIds: string[],
   ): Promise<TransactionResult>;
 
