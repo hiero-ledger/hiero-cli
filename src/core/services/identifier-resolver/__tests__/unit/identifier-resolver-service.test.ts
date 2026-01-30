@@ -29,23 +29,47 @@ describe('IdentifierResolverServiceImpl', () => {
 
   describe('resolveEntityId', () => {
     it('returns entityId when entityIdOrAlias is a valid Hedera entity ID', () => {
+      aliasService.resolve.mockReturnValue({
+        alias: '0.0.1234',
+        type: ALIAS_TYPE.Contract,
+        network: SupportedNetwork.TESTNET,
+        entityId: '0.0.1234',
+        createdAt: '2024-01-01T00:00:00.000Z',
+      });
+
       const result = service.resolveEntityId({
         ...baseParams,
         entityIdOrAlias: '0.0.1234',
       });
 
       expect(result).toEqual({ entityId: '0.0.1234' });
-      expect(aliasService.resolve).not.toHaveBeenCalled();
+      expect(aliasService.resolve).toHaveBeenCalledWith(
+        '0.0.1234',
+        ALIAS_TYPE.Contract,
+        SupportedNetwork.TESTNET,
+      );
     });
 
     it('returns entityId for another valid entity ID format', () => {
+      aliasService.resolve.mockReturnValue({
+        alias: '0.0.999999',
+        type: ALIAS_TYPE.Contract,
+        network: SupportedNetwork.TESTNET,
+        entityId: '0.0.999999',
+        createdAt: '2024-01-01T00:00:00.000Z',
+      });
+
       const result = service.resolveEntityId({
         ...baseParams,
         entityIdOrAlias: '0.0.999999',
       });
 
       expect(result).toEqual({ entityId: '0.0.999999' });
-      expect(aliasService.resolve).not.toHaveBeenCalled();
+      expect(aliasService.resolve).toHaveBeenCalledWith(
+        '0.0.999999',
+        ALIAS_TYPE.Contract,
+        SupportedNetwork.TESTNET,
+      );
     });
 
     it('resolves via alias when entityIdOrAlias is not a valid entity ID', () => {

@@ -9,7 +9,11 @@
 import { z } from 'zod';
 
 import { HederaTokenType, KeyAlgorithm } from '@/core/shared/constants';
-import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
+import {
+  EntityReferenceType,
+  SupplyType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 
 // ======================================================
 // 1. ECDSA (secp256k1) Keys
@@ -371,6 +375,43 @@ export const EntityReferenceSchema = z
     }),
   })
   .describe('Entity reference (ID or name)');
+
+/**
+ * Entity or EVM Address Reference Input
+ * Universal schema for referencing any Hedera entity by ID, EVM address, or alias name
+ */
+export const EntityOrEvmAddressReferenceSchema = z
+  .union([EntityIdSchema, AliasNameSchema, EvmAddressSchema], {
+    error: () => ({
+      message:
+        'Entity reference must be a valid Hedera ID (0.0.xxx), alias name, or EVM address (0x...)',
+    }),
+  })
+  .describe('Entity reference (ID, EVM address, or name)');
+
+/**
+ * Parsed entity reference as a discriminated object by type (EVM address, entity ID, or alias).
+ * Use this when the handler needs to branch on which kind of reference was provided.
+ */
+export const EntityOrEvmAddressReferenceObjectSchema = z
+  .string()
+  .trim()
+  .min(1, 'Contract identifier cannot be empty')
+  .transform((val): { type: EntityReferenceType; value: string } => {
+    if (EvmAddressSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.EVM_ADDRESS, value: val };
+    }
+    if (EntityIdSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ENTITY_ID, value: val };
+    }
+    if (AliasNameSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ALIAS, value: val };
+    }
+    throw new Error(
+      'Entity reference must be a valid Hedera ID (0.0.xxx), alias name, or EVM address (0x...)',
+    );
+  })
+  .describe('Contract identifier (ID, EVM address, or alias)');
 
 /**
  * Account Reference Input (ID or Name)

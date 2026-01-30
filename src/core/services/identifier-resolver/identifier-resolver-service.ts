@@ -5,22 +5,12 @@ import type {
   ResolveEntityResult,
 } from '@/core/services/identifier-resolver/types';
 
-import { EntityIdSchema } from '@/core/schemas';
-
 export class IdentifierResolverServiceImpl implements IdentifierResolverService {
   private readonly aliasService: AliasService;
   constructor(aliasService: AliasService) {
     this.aliasService = aliasService;
   }
   resolveEntityId(params: ResolveEntityParams): ResolveEntityResult {
-    const contractIdParseResult = EntityIdSchema.safeParse(
-      params.entityIdOrAlias,
-    );
-
-    if (contractIdParseResult.success) {
-      return { entityId: contractIdParseResult.data };
-    }
-
     const aliasRecord = this.aliasService.resolve(
       params.entityIdOrAlias,
       params.type,

@@ -8,6 +8,7 @@ import { Interface } from 'ethers';
 
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
+import { EntityReferenceType } from '@/core/types/shared.types';
 import { formatError } from '@/core/utils/errors';
 import { ContractErc20CallSymbolInputSchema } from '@/plugins/contract-erc20/commands/symbol/input';
 import { ERC20_ABI } from '@/plugins/contract-erc20/shared/erc20-abi';
@@ -22,27 +23,33 @@ export async function symbolFunctionCall(
   const { logger, api } = args;
   try {
     const validArgs = ContractErc20CallSymbolInputSchema.parse(args.args);
-    const contractIdOrAlias = validArgs.contract;
+    const contractRef = validArgs.contract;
     const network = api.network.getCurrentNetwork();
 
-    const contractId = api.identifierResolver.resolveEntityId({
-      entityIdOrAlias: contractIdOrAlias,
-      type: ALIAS_TYPE.Contract,
-      network,
-    }).entityId;
-    const erc20Interface = new Interface(ERC20_ABI);
-    const data = erc20Interface.encodeFunctionData(ERC_20_FUNCTION_NAME);
-
-    logger.info(
-      `Calling contract ${contractId} "${ERC_20_FUNCTION_NAME}" function on mirror node`,
+    const contractIdOrEvmForMirror =
+      contractRef.type === EntityReferenceType.ALIAS
+        ? api.identifierResolver.resolveEntityId({
+            entityIdOrAlias: contractRef.value,
+            type: ALIAS_TYPE.Contract,
+            network,
+          }).entityId
+        : contractRef.value;
+    const contractInfo = await api.mirror.getContractInfo(
+      contractIdOrEvmForMirror,
     );
-    const contractInfo = await api.mirror.getContractInfo(contractId);
     if (!contractInfo) {
-      throw new Error(`Contract ${contractId} not found`);
+      throw new Error(`Contract ${contractIdOrEvmForMirror} not found`);
     }
+    const contractId = contractInfo.contract_id;
     if (!contractInfo.evm_address) {
       throw new Error(`Contract ${contractId} does not have an EVM address`);
     }
+
+    const erc20Interface = new Interface(ERC20_ABI);
+    const data = erc20Interface.encodeFunctionData(ERC_20_FUNCTION_NAME);
+    logger.info(
+      `Calling contract ${contractId} "${ERC_20_FUNCTION_NAME}" function on mirror node`,
+    );
     const response = await api.mirror.postContractCall({
       to: contractInfo.evm_address,
       data: data,

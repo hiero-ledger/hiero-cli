@@ -42,6 +42,7 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
       },
       mirror: {
         getContractInfo: jest.fn().mockResolvedValue({
+          contract_id: '0.0.1234',
           evm_address: EVM_ADDRESS,
         }),
         postContractCall: jest.fn(),

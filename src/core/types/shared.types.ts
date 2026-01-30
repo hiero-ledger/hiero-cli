@@ -127,7 +127,8 @@ export enum OptionType {
   REPEATABLE = 'repeatable',
 }
 
-export enum ContractType {
-  ERC20 = 'erc20',
-  ERC721 = 'erc721',
+export enum EntityReferenceType {
+  ALIAS = 'alias',
+  ENTITY_ID = 'entity_id',
+  EVM_ADDRESS = 'evm_address',
 }
