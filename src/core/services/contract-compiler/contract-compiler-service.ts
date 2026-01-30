@@ -47,6 +47,8 @@ export class ContractCompilerServiceImpl implements ContractCompilerService {
       }),
     ) as SolcOutput;
 
+    console.dir({ output }, { depth: 3 });
+
     if (!output.contracts?.[params.contractFilename]?.[params.contractName]) {
       throw new Error(
         `Contract ${params.contractName} not found in compilation output`,
