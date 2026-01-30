@@ -1,4 +1,4 @@
-import type { CommandHandlerArgs, CoreApi } from '@/core';
+import type { CoreApi } from '@/core';
 import type { ContractErc20CallSymbolOutput } from '@/plugins/contract-erc20/commands/symbol/output';
 
 import { ZodError } from 'zod';
@@ -22,7 +22,7 @@ jest.mock('@hashgraph/sdk', () => ({
 }));
 
 describe('contract-erc20 plugin - symbol command (unit)', () => {
-  let api: CommandHandlerArgs['api'];
+  let api: CoreApi;
   let logger: ReturnType<typeof makeLogger>;
 
   beforeEach(() => {

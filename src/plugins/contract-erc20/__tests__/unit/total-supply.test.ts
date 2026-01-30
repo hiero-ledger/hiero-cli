@@ -1,13 +1,13 @@
 import type { CoreApi } from '@/core';
-import type { ContractErc20CallNameOutput } from '@/plugins/contract-erc20/commands/name/output';
+import type { ContractErc20CallTotalSupplyOutput } from '@/plugins/contract-erc20/commands/total-supply/output';
 
 import { ZodError } from 'zod';
 
 import { makeAliasMock, makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import { ContractType } from '@/core/types/shared.types';
-import { nameFunctionCall as erc20NameHandler } from '@/plugins/contract-erc20/commands/name/handler';
-import { ContractErc20CallNameInputSchema } from '@/plugins/contract-erc20/commands/name/input';
+import { totalSupplyFunctionCall as erc20TotalSupplyHandler } from '@/plugins/contract-erc20/commands/total-supply/handler';
+import { ContractErc20CallTotalSupplyInputSchema } from '@/plugins/contract-erc20/commands/total-supply/input';
 
 jest.mock('@hashgraph/sdk', () => ({
   ContractId: {
@@ -21,7 +21,7 @@ jest.mock('@hashgraph/sdk', () => ({
   },
 }));
 
-describe('contract-erc20 plugin - name command (unit)', () => {
+describe('contract-erc20 plugin - total-supply command (unit)', () => {
   let api: CoreApi;
   let logger: ReturnType<typeof makeLogger>;
 
@@ -43,35 +43,35 @@ describe('contract-erc20 plugin - name command (unit)', () => {
     } as unknown as CoreApi;
   });
 
-  test('calls ERC-20 name successfully and returns expected output', async () => {
+  test('calls ERC-20 totalSupply successfully and returns expected output', async () => {
     const args = makeArgs(api, logger, {
       contract: 'some-alias-or-id',
     });
     (
       args.api.contractCall.callMirrorNodeFunction as jest.Mock
-    ).mockResolvedValue('MyToken');
+    ).mockResolvedValue(1000000n);
 
-    const result = await erc20NameHandler(args);
+    const result = await erc20TotalSupplyHandler(args);
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
     const parsed = JSON.parse(
       result.outputJson as string,
-    ) as ContractErc20CallNameOutput;
+    ) as ContractErc20CallTotalSupplyOutput;
 
     expect(parsed.contractId).toBe('0.0.1234');
-    expect(parsed.contractName).toBe('MyToken');
+    expect(parsed.totalSupply).toBe('1000000');
     expect(parsed.network).toBe('testnet');
 
     expect(args.api.contractCall.callMirrorNodeFunction).toHaveBeenCalledWith({
       contractType: ContractType.ERC20,
-      functionName: 'name',
+      functionName: 'totalSupply',
       contractId: '0.0.1234',
       args: [],
     });
     expect(logger.info).toHaveBeenCalledWith(
-      'Calling ERC-20 name function on contract 0.0.1234 (network: testnet)',
+      'Calling ERC-20 totalSupply function on contract 0.0.1234 (network: testnet)',
     );
   });
 
@@ -83,15 +83,15 @@ describe('contract-erc20 plugin - name command (unit)', () => {
       args.api.contractCall.callMirrorNodeFunction as jest.Mock
     ).mockRejectedValue(
       new Error(
-        'There was a problem with calling contract 0.0.1234 "name" function',
+        'There was a problem with calling contract 0.0.1234 "totalSupply" function',
       ),
     );
 
-    const result = await erc20NameHandler(args);
+    const result = await erc20TotalSupplyHandler(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      'There was a problem with calling contract 0.0.1234 "name" function',
+      'There was a problem with calling contract 0.0.1234 "totalSupply" function',
     );
   });
 
@@ -103,15 +103,15 @@ describe('contract-erc20 plugin - name command (unit)', () => {
       args.api.contractCall.callMirrorNodeFunction as jest.Mock
     ).mockRejectedValue(
       new Error(
-        'There was a problem with decoding contract 0.0.1234 "name" function result',
+        'There was a problem with decoding contract 0.0.1234 "totalSupply" function result',
       ),
     );
 
-    const result = await erc20NameHandler(args);
+    const result = await erc20TotalSupplyHandler(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      'There was a problem with decoding contract 0.0.1234 "name" function result',
+      'There was a problem with decoding contract 0.0.1234 "totalSupply" function result',
     );
   });
 
@@ -123,17 +123,17 @@ describe('contract-erc20 plugin - name command (unit)', () => {
       args.api.contractCall.callMirrorNodeFunction as jest.Mock
     ).mockRejectedValue(new Error('mirror node error'));
 
-    const result = await erc20NameHandler(args);
+    const result = await erc20TotalSupplyHandler(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      'Failed to call name function: mirror node error',
+      'Failed to call totalSupply function: mirror node error',
     );
   });
 
   test('schema validation fails when contract is missing', () => {
     expect(() => {
-      ContractErc20CallNameInputSchema.parse({});
+      ContractErc20CallTotalSupplyInputSchema.parse({});
     }).toThrow(ZodError);
   });
 });
