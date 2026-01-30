@@ -33,24 +33,6 @@
       { "cmd": "echo ${nextRelease.version} > VERSION" }
     ]
   ],
-  "prepare": [
-    [
-      "@semantic-release/npm",
-      {
-        "npmPublish": false,
-        "tarballDir": "dist"
-      }
-    ],
-    [
-      "@semantic-release/git",
-      {
-        "assets": [
-          "package.json",
-          "package-lock.json"
-        ]
-      }
-    ]
-  ],
   "branches":[
     {
       "name": "main"
