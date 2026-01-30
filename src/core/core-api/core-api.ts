@@ -6,11 +6,11 @@ import type { CoreApi } from '@/core';
 import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
-import type { ContractCallService } from '@/core/services/contract-call/contract-call-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
 import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
+import type { IdentifierResolverService } from '@/core/services/identifier-resolver/identifier-resolver-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type {
@@ -29,11 +29,11 @@ import type { TxExecutionService } from '@/core/services/tx-execution/tx-executi
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
 import { AliasServiceImpl } from '@/core/services/alias/alias-service';
 import { ConfigServiceImpl } from '@/core/services/config/config-service';
-import { ContractCallServiceImpl } from '@/core/services/contract-call/contract-call-service';
 import { ContractCompilerServiceImpl } from '@/core/services/contract-compiler/contract-compiler-service';
 import { ContractTransactionServiceImpl } from '@/core/services/contract-transaction/contract-transaction-service';
 import { ContractVerifierServiceImpl } from '@/core/services/contract-verifier/contract-verifier-service';
 import { HbarServiceImpl } from '@/core/services/hbar/hbar-service';
+import { IdentifierResolverServiceImpl } from '@/core/services/identifier-resolver/identifier-resolver-service';
 import { KeyResolverServiceImpl } from '@/core/services/key-resolver/key-resolver-service';
 import { KmsServiceImpl } from '@/core/services/kms/kms-service';
 import { LoggerService } from '@/core/services/logger/logger-service';
@@ -65,7 +65,7 @@ export class CoreApiImplementation implements CoreApi {
   public contract: ContractTransactionService;
   public contractCompiler: ContractCompilerService;
   public contractVerifier: ContractVerifierService;
-  public contractCall: ContractCallService;
+  public identifierResolver: IdentifierResolverService;
 
   constructor(storageDir?: string) {
     this.logger = new LoggerService();
@@ -116,7 +116,7 @@ export class CoreApiImplementation implements CoreApi {
     this.output = new OutputServiceImpl();
 
     this.pluginManagement = new PluginManagementServiceImpl(this.state);
-    this.contractCall = new ContractCallServiceImpl(this.mirror, this.logger);
+    this.identifierResolver = new IdentifierResolverServiceImpl(this.alias);
   }
 }
 

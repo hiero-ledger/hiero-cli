@@ -29,11 +29,6 @@ export interface AliasService {
     expectation: AliasType | undefined,
     network: SupportedNetwork,
   ): AliasRecord | null;
-  resolveEntityId(
-    entityIdOrAlias: string,
-    type: AliasType,
-    network: SupportedNetwork,
-  ): string;
   list(filter?: {
     network?: SupportedNetwork;
     type?: AliasType;
