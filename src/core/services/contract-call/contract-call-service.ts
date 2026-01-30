@@ -1,24 +1,15 @@
-import type { AliasService, HederaMirrornodeService, Logger } from '@/core';
+import type { HederaMirrornodeService, Logger } from '@/core';
 import type { CallMirrorNodeFunctionParams } from '@/core/services/contract-call/types';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import { ContractId } from '@hashgraph/sdk';
 
-import { EntityIdSchema } from '@/core/schemas';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { resolveAndInitAbiInterface } from '@/core/utils/contract-abi-resolver';
 
 export class ContractCallServiceImpl {
-  private aliasService: AliasService;
   private mirrorService: HederaMirrornodeService;
   private logger: Logger;
 
-  constructor(
-    aliasService: AliasService,
-    mirrorService: HederaMirrornodeService,
-    logger: Logger,
-  ) {
-    this.aliasService = aliasService;
+  constructor(mirrorService: HederaMirrornodeService, logger: Logger) {
     this.mirrorService = mirrorService;
     this.logger = logger;
   }
@@ -55,36 +46,5 @@ export class ContractCallServiceImpl {
       );
     }
     return decodedParameter[0];
-  }
-
-  resolveContractId(
-    contractIdOrAlias: string,
-    currentNetwork: SupportedNetwork,
-  ): string {
-    const contractIdParseResult = EntityIdSchema.safeParse(contractIdOrAlias);
-
-    if (contractIdParseResult.success) {
-      return contractIdParseResult.data;
-    }
-
-    const contractAliasResult = this.aliasService.resolve(
-      contractIdOrAlias,
-      ALIAS_TYPE.Contract,
-      currentNetwork,
-    );
-
-    if (!contractAliasResult) {
-      throw new Error(
-        `Contract alias "${contractIdOrAlias}" not found for network ${currentNetwork}. Please provide either a valid contract alias or contract ID.`,
-      );
-    }
-
-    if (!contractAliasResult.entityId) {
-      throw new Error(
-        `Contract alias "${contractIdOrAlias}" does not have an associated contract ID.`,
-      );
-    }
-
-    return contractAliasResult.entityId;
   }
 }

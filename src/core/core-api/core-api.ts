@@ -116,11 +116,7 @@ export class CoreApiImplementation implements CoreApi {
     this.output = new OutputServiceImpl();
 
     this.pluginManagement = new PluginManagementServiceImpl(this.state);
-    this.contractCall = new ContractCallServiceImpl(
-      this.alias,
-      this.mirror,
-      this.logger,
-    );
+    this.contractCall = new ContractCallServiceImpl(this.mirror, this.logger);
   }
 }
 
