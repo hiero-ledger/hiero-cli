@@ -6,16 +6,16 @@ import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { CreateFungibleTokenInputSchema } from '@/plugins/token/commands/create-ft/input';
 import {
-  CustomFeeSchema,
+  FungibleTokenFileSchema,
   TokenAssociationSchema,
   TokenDataSchema,
+  TokenFileCustomFeeSchema,
   validateTokenData,
 } from '@/plugins/token/schema';
 
 import {
   invalidTokenDataForValidation,
   minimalTokenCreateParams,
-  validCustomFee,
   validTokenAssociation,
   validTokenCreateParams,
   validTokenDataForSchema,
@@ -200,48 +200,164 @@ describe('Token Schema Validation', () => {
     });
   });
 
-  describe('CustomFeeSchema', () => {
-    test('should validate valid custom fee', () => {
-      const result = CustomFeeSchema.safeParse(validCustomFee);
+  describe('TokenFileCustomFeeSchema', () => {
+    test('should validate valid fixed HBAR fee', () => {
+      const validFixedFee = {
+        type: 'fixed',
+        amount: 100,
+        unitType: 'HBAR',
+        collectorId: '0.0.12345',
+      };
+      const result = TokenFileCustomFeeSchema.safeParse(validFixedFee);
       expect(result.success).toBe(true);
     });
 
-    test('should accept any fee type (no validation)', () => {
+    test('should validate valid fixed TOKEN fee', () => {
+      const validFixedFee = {
+        type: 'fixed',
+        amount: 50,
+        unitType: 'TOKEN',
+        collectorId: '0.0.12345',
+        exempt: true,
+      };
+      const result = TokenFileCustomFeeSchema.safeParse(validFixedFee);
+      expect(result.success).toBe(true);
+    });
+
+    test('should validate valid fractional fee', () => {
+      const validFractionalFee = {
+        type: 'fractional',
+        numerator: 1,
+        denominator: 10,
+        netOfTransfers: true,
+        collectorId: '0.0.12345',
+      };
+      const result = TokenFileCustomFeeSchema.safeParse(validFractionalFee);
+      expect(result.success).toBe(true);
+    });
+
+    test('should validate fractional fee with min and max', () => {
+      const validFractionalFee = {
+        type: 'fractional',
+        numerator: 1,
+        denominator: 10,
+        min: 10,
+        max: 1000,
+        netOfTransfers: false,
+        collectorId: '0.0.12345',
+      };
+      const result = TokenFileCustomFeeSchema.safeParse(validFractionalFee);
+      expect(result.success).toBe(true);
+    });
+
+    test('should reject invalid fee type', () => {
       const invalidFee = {
-        ...validCustomFee,
         type: 'invalid-type',
+        amount: 100,
+        collectorId: '0.0.12345',
       };
-
-      const result = CustomFeeSchema.safeParse(invalidFee);
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data.type).toBe('invalid-type');
-      }
+      const result = TokenFileCustomFeeSchema.safeParse(invalidFee);
+      expect(result.success).toBe(false);
     });
 
-    test('should accept negative amount (no validation)', () => {
+    test('should reject negative amount for fixed fee', () => {
       const invalidFee = {
-        ...validCustomFee,
+        type: 'fixed',
         amount: -10,
+        collectorId: '0.0.12345',
       };
-
-      const result = CustomFeeSchema.safeParse(invalidFee);
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data.amount).toBe(-10);
-      }
+      const result = TokenFileCustomFeeSchema.safeParse(invalidFee);
+      expect(result.success).toBe(false);
     });
 
-    test('should accept any collector ID format (no validation)', () => {
+    test('should reject invalid collectorId format', () => {
       const invalidFee = {
-        ...validCustomFee,
+        type: 'fixed',
+        amount: 100,
         collectorId: 'invalid-collector-id',
       };
+      const result = TokenFileCustomFeeSchema.safeParse(invalidFee);
+      expect(result.success).toBe(false);
+    });
 
-      const result = CustomFeeSchema.safeParse(invalidFee);
+    test('should reject fractional fee when numerator > denominator', () => {
+      const invalidFee = {
+        type: 'fractional',
+        numerator: 11,
+        denominator: 10,
+        netOfTransfers: true,
+        collectorId: '0.0.12345',
+      };
+      const result = TokenFileCustomFeeSchema.safeParse(invalidFee);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues[0].message).toContain(
+          'Numerator must be less than or equal to denominator',
+        );
+      }
+    });
+
+    test('should reject fractional fee when min > max', () => {
+      const invalidFee = {
+        type: 'fractional',
+        numerator: 1,
+        denominator: 10,
+        min: 1000,
+        max: 10,
+        netOfTransfers: true,
+        collectorId: '0.0.12345',
+      };
+      const result = TokenFileCustomFeeSchema.safeParse(invalidFee);
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues[0].message).toContain(
+          'Min must be less than or equal to max',
+        );
+      }
+    });
+  });
+
+  describe('FungibleTokenFileSchema customFees max limit', () => {
+    const baseToken = {
+      name: 'Test Token',
+      symbol: 'TST',
+      decimals: 8,
+      supplyType: 'infinite',
+      initialSupply: 1000,
+      treasuryKey: 'my-treasury',
+      adminKey: 'my-admin',
+      memo: '',
+      tokenType: 'FungibleCommon',
+    };
+
+    test('should accept up to 10 custom fees', () => {
+      const fees = Array.from({ length: 10 }, () => ({
+        type: 'fixed' as const,
+        amount: 100,
+        collectorId: '0.0.12345',
+      }));
+      const result = FungibleTokenFileSchema.safeParse({
+        ...baseToken,
+        customFees: fees,
+      });
       expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data.collectorId).toBe('invalid-collector-id');
+    });
+
+    test('should reject more than 10 custom fees', () => {
+      const fees = Array.from({ length: 11 }, () => ({
+        type: 'fixed' as const,
+        amount: 100,
+        collectorId: '0.0.12345',
+      }));
+      const result = FungibleTokenFileSchema.safeParse({
+        ...baseToken,
+        customFees: fees,
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        expect(result.error.issues[0].message).toContain(
+          'Maximum 10 custom fees allowed per token',
+        );
       }
     });
   });
