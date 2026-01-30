@@ -6,6 +6,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { ContractCallService } from '@/core/services/contract-call/contract-call-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
@@ -188,6 +189,7 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
   exists: jest.fn().mockReturnValue(false),
   availableOrThrow: jest.fn(),
   clear: jest.fn(),
+  resolveEntityId: jest.fn(),
 });
 
 /**
@@ -383,6 +385,10 @@ const makeContractVerifierServiceMock = (): ContractVerifierService =>
     verifyContract: jest.fn(),
   }) as unknown as ContractVerifierService;
 
+const makeContractCallServiceMock = (): jest.Mocked<ContractCallService> => ({
+  callMirrorNodeFunction: jest.fn(),
+});
+
 const makeContractCompilerServiceMock = (): ContractCompilerService =>
   ({
     compileContract: jest.fn(),
@@ -413,6 +419,7 @@ export const makeArgs = (
     api.contractCompiler || makeContractCompilerServiceMock();
   const contractVerifier =
     api.contractVerifier || makeContractVerifierServiceMock();
+  const contractCall = api.contractCall || makeContractCallServiceMock();
 
   // Exclude state and config from api spread since they're already mocked above
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -467,6 +474,7 @@ export const makeArgs = (
     output: makeOutputMock(),
     pluginManagement: makePluginManagementServiceMock(),
     contract,
+    contractCall,
     contractCompiler,
     contractVerifier,
     keyResolver: makeKeyResolverMock({ network, alias, kms }),

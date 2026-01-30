@@ -6,6 +6,7 @@ import type { CoreApi } from '@/core';
 import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { ContractCallService } from '@/core/services/contract-call/contract-call-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
@@ -28,6 +29,7 @@ import type { TxExecutionService } from '@/core/services/tx-execution/tx-executi
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
 import { AliasServiceImpl } from '@/core/services/alias/alias-service';
 import { ConfigServiceImpl } from '@/core/services/config/config-service';
+import { ContractCallServiceImpl } from '@/core/services/contract-call/contract-call-service';
 import { ContractCompilerServiceImpl } from '@/core/services/contract-compiler/contract-compiler-service';
 import { ContractTransactionServiceImpl } from '@/core/services/contract-transaction/contract-transaction-service';
 import { ContractVerifierServiceImpl } from '@/core/services/contract-verifier/contract-verifier-service';
@@ -63,6 +65,7 @@ export class CoreApiImplementation implements CoreApi {
   public contract: ContractTransactionService;
   public contractCompiler: ContractCompilerService;
   public contractVerifier: ContractVerifierService;
+  public contractCall: ContractCallService;
 
   constructor(storageDir?: string) {
     this.logger = new LoggerService();
@@ -113,6 +116,11 @@ export class CoreApiImplementation implements CoreApi {
     this.output = new OutputServiceImpl();
 
     this.pluginManagement = new PluginManagementServiceImpl(this.state);
+    this.contractCall = new ContractCallServiceImpl(
+      this.alias,
+      this.mirror,
+      this.logger,
+    );
   }
 }
 

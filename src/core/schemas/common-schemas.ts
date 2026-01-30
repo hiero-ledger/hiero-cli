@@ -627,9 +627,9 @@ export const NonNegativeNumberOrBigintSchema = z
   .pipe(z.bigint().nonnegative());
 
 /**
- * Alias Name Input (Base Schema)
- * Base schema for all entity aliases (alphanumeric, hyphens, underscores)
- * Used as foundation for AccountNameSchema, TopicNameSchema, TokenAliasNameSchema
+ * Contract Name Input (Base Schema)
+ * Base schema for all contract names (alphanumeric, hyphens, underscores)
+ * Used as foundation for ContractNameSchema
  */
 export const ContractNameSchema = z
   .string()
@@ -640,6 +640,21 @@ export const ContractNameSchema = z
     'Contract name must contain only letters, numbers, hyphens, and underscores',
   )
   .describe('Contract name');
+
+/**
+ * Contract Symbol Input (Base Schema)
+ * Base schema for all contract symbols (alphanumeric, hyphens, underscores)
+ * Used as foundation for ContractSymbolSchema
+ */
+export const ContractSymbolSchema = z
+  .string()
+  .trim()
+  .min(1, 'Contract symbol cannot be empty')
+  .regex(
+    /^[a-zA-Z0-9_-]+$/,
+    'Contract symbol must contain only letters, numbers, hyphens, and underscores',
+  )
+  .describe('Contract symbol');
 
 /**
  * Solidity Compiler Version Input

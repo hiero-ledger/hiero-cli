@@ -6,6 +6,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { ContractCallService } from '@/core/services/contract-call/contract-call-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
@@ -203,6 +204,7 @@ export const makeAliasServiceMock = (
   clear: jest.fn(),
   availableOrThrow: jest.fn(),
   exists: jest.fn(),
+  resolveEntityId: jest.fn(),
   ...overrides,
 });
 
@@ -255,6 +257,7 @@ interface ApiMocksConfig {
   signAndExecuteImpl?: jest.Mock;
   keyResolver?: Partial<jest.Mocked<KeyResolverService>>;
   contract?: Partial<jest.Mocked<ContractTransactionService>>;
+  contractCall?: Partial<jest.Mocked<ContractCallService>>;
   contractCompiler?: Partial<jest.Mocked<ContractCompilerService>>;
   contractVerifier?: Partial<jest.Mocked<ContractVerifierService>>;
 }
@@ -345,6 +348,9 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     contract: {
       contractCreateFlowTransaction: jest.fn(),
     } as unknown as ContractTransactionService,
+    contractCall: {
+      callMirrorNodeFunction: jest.fn(),
+    } as jest.Mocked<ContractCallService>,
     contractCompiler: {
       compileContract: jest.fn(),
     } as ContractCompilerService,

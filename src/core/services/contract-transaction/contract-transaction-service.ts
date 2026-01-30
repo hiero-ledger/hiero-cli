@@ -57,8 +57,7 @@ export class ContractTransactionServiceImpl implements ContractTransactionServic
         params.functionName,
         params.functionParameters,
       );
-    }
-    if (params.functionName) {
+    } else if (params.functionName) {
       contractExecuteTx.setFunction(params.functionName);
     }
     return {

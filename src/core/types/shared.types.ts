@@ -126,3 +126,8 @@ export enum OptionType {
   ARRAY = 'array',
   REPEATABLE = 'repeatable',
 }
+
+export enum ContractType {
+  ERC20 = 'erc20',
+  ERC721 = 'erc721',
+}

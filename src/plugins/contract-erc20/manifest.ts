@@ -8,12 +8,12 @@ import { OptionType } from '@/core/types/shared.types';
 import {
   CONTRACT_ERC20_CALL_NAME_CREATE_TEMPLATE,
   ContractErc20CallNameOutputSchema,
-  name,
+  nameFunctionCall,
 } from '@/plugins/contract-erc20/commands/name';
 import {
   CONTRACT_ERC20_CALL_SYMBOL_CREATE_TEMPLATE,
   ContractErc20CallSymbolOutputSchema,
-  symbol,
+  symbolFunctionCall,
 } from '@/plugins/contract-erc20/commands/symbol';
 
 export const contractErc20PluginManifest: PluginManifest = {
@@ -36,7 +36,7 @@ export const contractErc20PluginManifest: PluginManifest = {
             'Smart contract ID represented by alias or contract ID. Option required',
         },
       ],
-      handler: name,
+      handler: nameFunctionCall,
       output: {
         schema: ContractErc20CallNameOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_NAME_CREATE_TEMPLATE,
@@ -56,7 +56,7 @@ export const contractErc20PluginManifest: PluginManifest = {
             'Smart contract ID represented by alias or contract ID. Option required',
         },
       ],
-      handler: symbol,
+      handler: symbolFunctionCall,
       output: {
         schema: ContractErc20CallSymbolOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_SYMBOL_CREATE_TEMPLATE,

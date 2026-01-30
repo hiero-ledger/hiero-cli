@@ -1,11 +1,12 @@
-import type { AliasService, CommandHandlerArgs, CoreApi } from '@/core';
+import type { CommandHandlerArgs, CoreApi } from '@/core';
 import type { ContractErc20CallNameOutput } from '@/plugins/contract-erc20/commands/name/output';
 
 import { ZodError } from 'zod';
 
-import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { makeAliasMock, makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
-import { name as erc20NameHandler } from '@/plugins/contract-erc20/commands/name/handler';
+import { ContractType } from '@/core/types/shared.types';
+import { nameFunctionCall as erc20NameHandler } from '@/plugins/contract-erc20/commands/name/handler';
 import { ContractErc20CallNameInputSchema } from '@/plugins/contract-erc20/commands/name/input';
 
 jest.mock('@hashgraph/sdk', () => ({
@@ -20,22 +21,6 @@ jest.mock('@hashgraph/sdk', () => ({
   },
 }));
 
-const mockEncodeFunctionData = jest.fn().mockReturnValue('0xencoded');
-const mockDecodeFunctionResult = jest
-  .fn()
-  .mockReturnValue(['MyToken'] as unknown[]);
-
-jest.mock('@/plugins/contract-erc20/utils/erc20-abi-resolver', () => ({
-  getAbiErc20Interface: jest.fn(() => ({
-    encodeFunctionData: mockEncodeFunctionData,
-    decodeFunctionResult: mockDecodeFunctionResult,
-  })),
-}));
-
-jest.mock('@/core/utils/contract-resolver', () => ({
-  resolveContractId: jest.fn(() => '0.0.1234'),
-}));
-
 describe('contract-erc20 plugin - name command (unit)', () => {
   let api: CommandHandlerArgs['api'];
   let logger: ReturnType<typeof makeLogger>;
@@ -45,11 +30,13 @@ describe('contract-erc20 plugin - name command (unit)', () => {
 
     logger = makeLogger();
 
+    const alias = makeAliasMock();
+    (alias.resolveEntityId as jest.Mock).mockReturnValue('0.0.1234');
     api = {
       network: {
         getCurrentNetwork: jest.fn(() => 'testnet'),
       },
-      alias: {} as unknown as AliasService,
+      alias,
       mirror: {
         postContractCall: jest.fn(),
       },
@@ -57,13 +44,12 @@ describe('contract-erc20 plugin - name command (unit)', () => {
   });
 
   test('calls ERC-20 name successfully and returns expected output', async () => {
-    (api.mirror.postContractCall as jest.Mock).mockResolvedValue({
-      result: '0xencodedResult',
-    });
-
     const args = makeArgs(api, logger, {
       contract: 'some-alias-or-id',
     });
+    (
+      args.api.contractCall.callMirrorNodeFunction as jest.Mock
+    ).mockResolvedValue('MyToken');
 
     const result = await erc20NameHandler(args);
 
@@ -78,26 +64,28 @@ describe('contract-erc20 plugin - name command (unit)', () => {
     expect(parsed.contractName).toBe('MyToken');
     expect(parsed.network).toBe('testnet');
 
-    expect(mockEncodeFunctionData).toHaveBeenCalledWith('name');
-    expect(api.mirror.postContractCall).toHaveBeenCalledWith({
-      to: `0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa`,
-      data: '0xencoded',
+    expect(args.api.contractCall.callMirrorNodeFunction).toHaveBeenCalledWith({
+      contractType: ContractType.ERC20,
+      functionName: 'name',
+      contractId: '0.0.1234',
+      args: [],
     });
-    expect(mockDecodeFunctionResult).toHaveBeenCalledWith(
-      'name',
-      '0xencodedResult',
-    );
     expect(logger.info).toHaveBeenCalledWith(
-      'Calling ERC-20 "name" function on contract 0.0.1234 (network: testnet)',
+      'Calling ERC-20 name function on contract 0.0.1234 (network: testnet)',
     );
   });
 
   test('returns failure when mirror returns no result', async () => {
-    (api.mirror.postContractCall as jest.Mock).mockResolvedValue({});
-
     const args = makeArgs(api, logger, {
       contract: 'some-alias-or-id',
     });
+    (
+      args.api.contractCall.callMirrorNodeFunction as jest.Mock
+    ).mockRejectedValue(
+      new Error(
+        'There was a problem with calling contract 0.0.1234 "name" function',
+      ),
+    );
 
     const result = await erc20NameHandler(args);
 
@@ -107,15 +95,17 @@ describe('contract-erc20 plugin - name command (unit)', () => {
     );
   });
 
-  test('returns failure when decodeFunctionResult returns empty array', async () => {
-    (api.mirror.postContractCall as jest.Mock).mockResolvedValue({
-      result: '0xencodedResult',
-    });
-    mockDecodeFunctionResult.mockReturnValueOnce([]);
-
+  test('returns failure when decode returns empty', async () => {
     const args = makeArgs(api, logger, {
       contract: 'some-alias-or-id',
     });
+    (
+      args.api.contractCall.callMirrorNodeFunction as jest.Mock
+    ).mockRejectedValue(
+      new Error(
+        'There was a problem with decoding contract 0.0.1234 "name" function result',
+      ),
+    );
 
     const result = await erc20NameHandler(args);
 
@@ -125,20 +115,19 @@ describe('contract-erc20 plugin - name command (unit)', () => {
     );
   });
 
-  test('returns failure when postContractCall throws', async () => {
-    (api.mirror.postContractCall as jest.Mock).mockRejectedValue(
-      new Error('mirror node error'),
-    );
-
+  test('returns failure when callMirrorNodeFunction throws', async () => {
     const args = makeArgs(api, logger, {
       contract: 'some-alias-or-id',
     });
+    (
+      args.api.contractCall.callMirrorNodeFunction as jest.Mock
+    ).mockRejectedValue(new Error('mirror node error'));
 
     const result = await erc20NameHandler(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      'Failed to call "name" function: mirror node error',
+      'Failed to call name function: mirror node error',
     );
   });
 

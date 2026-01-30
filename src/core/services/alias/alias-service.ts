@@ -7,6 +7,8 @@ import type {
   AliasType,
 } from './alias-service.interface';
 
+import { EntityIdSchema } from '@/core/schemas';
+
 const NAMESPACE = 'aliases';
 
 export class AliasServiceImpl implements AliasService {
@@ -45,6 +47,34 @@ export class AliasServiceImpl implements AliasService {
     if (!rec) return null;
     if (expectation && rec.type !== expectation) return null;
     return rec;
+  }
+
+  resolveEntityId(
+    entityIdOrAlias: string,
+    type: AliasType,
+    network: SupportedNetwork,
+  ): string {
+    const contractIdParseResult = EntityIdSchema.safeParse(entityIdOrAlias);
+
+    if (contractIdParseResult.success) {
+      return contractIdParseResult.data;
+    }
+
+    const aliasRecord = this.resolve(entityIdOrAlias, type, network);
+
+    if (!aliasRecord) {
+      throw new Error(
+        `Alias "${entityIdOrAlias}" not found for network ${network}. Please provide either a valid contract alias or contract ID.`,
+      );
+    }
+
+    if (!aliasRecord.entityId) {
+      throw new Error(
+        `Alias "${aliasRecord.alias}" for type ${aliasRecord.type} does not have an associated entity ID.`,
+      );
+    }
+
+    return aliasRecord.entityId;
   }
 
   list(filter?: {

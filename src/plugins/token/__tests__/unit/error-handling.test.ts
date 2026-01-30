@@ -57,6 +57,7 @@ const makeTestAliasService = () => ({
   remove: jest.fn(),
   availableOrThrow: jest.fn(),
   exists: jest.fn(),
+  resolveEntityId: jest.fn(),
 });
 
 describe('Token Plugin Error Handling', () => {
