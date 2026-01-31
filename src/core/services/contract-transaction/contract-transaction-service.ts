@@ -45,21 +45,10 @@ export class ContractTransactionServiceImpl implements ContractTransactionServic
   contractExecuteTransaction(
     params: ContractExecuteParams,
   ): ContractExecuteResult {
-    const contractExecuteTx = new ContractExecuteTransaction();
-    if (params.contractId) {
-      contractExecuteTx.setContractId(ContractId.fromString(params.contractId));
-    }
-    if (params.gas) {
-      contractExecuteTx.setGas(params.gas);
-    }
-    if (params.functionName && params.functionParameters) {
-      contractExecuteTx.setFunction(
-        params.functionName,
-        params.functionParameters,
-      );
-    } else if (params.functionName) {
-      contractExecuteTx.setFunction(params.functionName);
-    }
+    const contractExecuteTx = new ContractExecuteTransaction()
+      .setContractId(ContractId.fromString(params.contractId))
+      .setGas(params.gas)
+      .setFunction(params.functionName, params.functionParameters);
     return {
       transaction: contractExecuteTx,
     };

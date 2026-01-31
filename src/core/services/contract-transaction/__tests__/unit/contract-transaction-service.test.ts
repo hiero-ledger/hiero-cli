@@ -174,7 +174,10 @@ describe('ContractTransactionServiceImpl', () => {
       });
       expect(mockContractExecuteTx.setGas).toHaveBeenCalledWith(100000);
       // when no parameters present, the service calls setFunction twice (once with name+params guard failing, once with name only)
-      expect(mockContractExecuteTx.setFunction).toHaveBeenCalledWith('pause');
+      expect(mockContractExecuteTx.setFunction).toHaveBeenCalledWith(
+        'pause',
+        undefined,
+      );
       expect(result.transaction).toBe(mockContractExecuteTx);
     });
   });
