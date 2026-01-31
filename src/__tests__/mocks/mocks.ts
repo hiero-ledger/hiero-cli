@@ -7,10 +7,10 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
+import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
 import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
-import type { IdentifierResolverService } from '@/core/services/identifier-resolver/identifier-resolver-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
@@ -184,6 +184,13 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
     }
     return null;
   }),
+  resolveOrThrow: jest.fn().mockReturnValue({
+    entityId: '0.0.1234',
+    alias: 'default',
+    type: 'contract',
+    network: 'testnet',
+    createdAt: '2024-01-01T00:00:00.000Z',
+  }),
   list: jest.fn(),
   remove: jest.fn(),
   exists: jest.fn().mockReturnValue(false),
@@ -192,11 +199,11 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
 });
 
 /**
- * Create a mocked IdentifierResolverService
+ * Create a mocked ContractQueryService
  */
-export const makeIdentifierResolverMock =
-  (): jest.Mocked<IdentifierResolverService> => ({
-    resolveEntityId: jest.fn(),
+export const makeContractQueryServiceMock =
+  (): jest.Mocked<ContractQueryService> => ({
+    queryContractFunction: jest.fn(),
   });
 
 /**
@@ -422,8 +429,7 @@ export const makeArgs = (
     api.contractCompiler || makeContractCompilerServiceMock();
   const contractVerifier =
     api.contractVerifier || makeContractVerifierServiceMock();
-  const identifierResolver =
-    api.identifierResolver || makeIdentifierResolverMock();
+  const contractQuery = api.contractQuery || makeContractQueryServiceMock();
 
   // Exclude state and config from api spread since they're already mocked above
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -481,7 +487,7 @@ export const makeArgs = (
     contractCompiler,
     contractVerifier,
     keyResolver: makeKeyResolverMock({ network, alias, kms }),
-    identifierResolver,
+    contractQuery,
     ...restApi,
   } as unknown as CoreApi;
 

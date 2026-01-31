@@ -1,14 +1,12 @@
 import type { CommandHandlerArgs, CoreApi } from '@/core';
 import type { ContractErc20CallSymbolOutput } from '@/plugins/contract-erc20/commands/symbol/output';
 
-import { Interface } from 'ethers';
 import { ZodError } from 'zod';
 
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import { symbolFunctionCall as erc20SymbolHandler } from '@/plugins/contract-erc20/commands/symbol/handler';
 import { ContractErc20CallSymbolInputSchema } from '@/plugins/contract-erc20/commands/symbol/input';
-import { ERC20_ABI } from '@/plugins/contract-erc20/shared/erc20-abi';
 
 jest.mock('@hashgraph/sdk', () => ({
   ContractId: {
@@ -21,8 +19,6 @@ jest.mock('@hashgraph/sdk', () => ({
     FungibleCommon: 'FungibleCommon',
   },
 }));
-
-const EVM_ADDRESS = '0x' + 'a'.repeat(40);
 
 describe('contract-erc20 plugin - symbol command (unit)', () => {
   let api: CommandHandlerArgs['api'];
@@ -37,15 +33,20 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
       network: {
         getCurrentNetwork: jest.fn(() => 'testnet'),
       },
-      identifierResolver: {
-        resolveEntityId: jest.fn().mockReturnValue({ entityId: '0.0.1234' }),
-      },
-      mirror: {
-        getContractInfo: jest.fn().mockResolvedValue({
-          contract_id: '0.0.1234',
-          evm_address: EVM_ADDRESS,
+      alias: {
+        resolveOrThrow: jest.fn().mockReturnValue({
+          entityId: '0.0.1234',
+          alias: 'some-alias-or-id',
+          type: 'contract',
+          network: 'testnet',
+          createdAt: '2024-01-01T00:00:00.000Z',
         }),
-        postContractCall: jest.fn(),
+      },
+      contractQuery: {
+        queryContractFunction: jest.fn().mockResolvedValue({
+          contractId: '0.0.1234',
+          queryResult: ['HBAR'],
+        }),
       },
     } as unknown as CoreApi;
   });
@@ -53,11 +54,6 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
   test('calls ERC-20 symbol successfully and returns expected output', async () => {
     const args = makeArgs(api, logger, {
       contract: 'some-alias-or-id',
-    });
-    const iface = new Interface(ERC20_ABI);
-    const encodedResult = iface.encodeFunctionResult('symbol', ['HBAR']);
-    (args.api.mirror.postContractCall as jest.Mock).mockResolvedValue({
-      result: encodedResult,
     });
 
     const result = await erc20SymbolHandler(args);
@@ -73,62 +69,51 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
     expect(parsed.contractSymbol).toBe('HBAR');
     expect(parsed.network).toBe('testnet');
 
-    expect(args.api.identifierResolver.resolveEntityId).toHaveBeenCalledWith({
-      entityIdOrAlias: 'some-alias-or-id',
-      type: 'contract',
-      network: 'testnet',
-    });
-    expect(args.api.mirror.getContractInfo).toHaveBeenCalledWith('0.0.1234');
-    expect(args.api.mirror.postContractCall).toHaveBeenCalledWith({
-      to: EVM_ADDRESS,
-      data: expect.any(String),
-    });
-    expect(logger.info).toHaveBeenCalledWith(
-      'Calling contract 0.0.1234 "symbol" function on mirror node',
+    expect(args.api.alias.resolveOrThrow).toHaveBeenCalledWith(
+      'some-alias-or-id',
+      'contract',
+      'testnet',
+    );
+    expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
+      expect.objectContaining({
+        contractIdOrEvmAddress: '0.0.1234',
+        functionName: 'symbol',
+      }),
     );
   });
 
-  test('returns failure when mirror returns no result', async () => {
+  test('returns failure when contractQuery returns empty queryResult', async () => {
     const args = makeArgs(api, logger, {
       contract: 'some-alias-or-id',
     });
-    (args.api.mirror.postContractCall as jest.Mock).mockResolvedValue({});
+    (
+      args.api.contractQuery.queryContractFunction as jest.Mock
+    ).mockResolvedValue({
+      contractId: '0.0.1234',
+      queryResult: [],
+    });
 
     const result = await erc20SymbolHandler(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      'There was a problem with calling contract 0.0.1234 "symbol" function',
+      'There was a problem with decoding contract 0.0.1234 "symbol" function result',
     );
   });
 
-  test('returns failure when decode fails (invalid result hex)', async () => {
+  test('returns failure when queryContractFunction throws', async () => {
     const args = makeArgs(api, logger, {
       contract: 'some-alias-or-id',
     });
-    (args.api.mirror.postContractCall as jest.Mock).mockResolvedValue({
-      result: '0xinvalid',
-    });
-
-    const result = await erc20SymbolHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Failed to call symbol function');
-  });
-
-  test('returns failure when postContractCall throws', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'some-alias-or-id',
-    });
-    (args.api.mirror.postContractCall as jest.Mock).mockRejectedValue(
-      new Error('mirror node error'),
-    );
+    (
+      args.api.contractQuery.queryContractFunction as jest.Mock
+    ).mockRejectedValue(new Error('contract query error'));
 
     const result = await erc20SymbolHandler(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      'Failed to call symbol function: mirror node error',
+      'Failed to call symbol function: contract query error',
     );
   });
 
