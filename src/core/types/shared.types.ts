@@ -126,3 +126,9 @@ export enum OptionType {
   ARRAY = 'array',
   REPEATABLE = 'repeatable',
 }
+
+export enum EntityReferenceType {
+  ALIAS = 'alias',
+  ENTITY_ID = 'entity_id',
+  EVM_ADDRESS = 'evm_address',
+}

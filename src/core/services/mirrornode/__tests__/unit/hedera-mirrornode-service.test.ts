@@ -897,4 +897,52 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       );
     });
   });
+
+  describe('postContractCall', () => {
+    it('should POST contract call with correct URL, headers and body and return result', async () => {
+      const { service } = setupService();
+      const requestBody = {
+        to: '0x1234567890123456789012345678901234567890',
+        data: '0xabcdef',
+        gas: 1_500_000,
+      };
+      const mockResponse = { result: '0xdeadbeef' };
+
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.postContractCall(requestBody);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_URL}/contracts/call`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        },
+      );
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should throw error when mirror node returns non-ok response', async () => {
+      const { service } = setupService();
+      const requestBody = {
+        to: '0x1234567890123456789012345678901234567890',
+      };
+
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+
+      await expect(service.postContractCall(requestBody)).rejects.toThrow(
+        'Failed to call contract via mirror node: 500 Internal Server Error',
+      );
+    });
+  });
 });

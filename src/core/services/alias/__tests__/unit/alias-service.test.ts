@@ -173,6 +173,105 @@ describe('AliasServiceImpl', () => {
     });
   });
 
+  describe('resolveOrThrow', () => {
+    it('should return record when alias exists and type matches', () => {
+      const record = createAliasRecord({
+        alias: 'my-contract',
+        type: ALIAS_TYPE.Contract,
+        entityId: '0.0.5678',
+      });
+      stateMock.get.mockReturnValue(record);
+
+      const result = aliasService.resolveOrThrow(
+        'my-contract',
+        ALIAS_TYPE.Contract,
+        SupportedNetwork.TESTNET,
+      );
+
+      expect(stateMock.get).toHaveBeenCalledWith(
+        'aliases',
+        'testnet:my-contract',
+      );
+      expect(result).toEqual(record);
+      expect(result.entityId).toBe('0.0.5678');
+    });
+
+    it('should throw when alias does not exist', () => {
+      stateMock.get.mockReturnValue(undefined);
+
+      expect(() =>
+        aliasService.resolveOrThrow(
+          'non-existent',
+          ALIAS_TYPE.Contract,
+          SupportedNetwork.TESTNET,
+        ),
+      ).toThrow(
+        'Alias "non-existent" for contract on network "testnet" not found',
+      );
+      expect(stateMock.get).toHaveBeenCalledWith(
+        'aliases',
+        'testnet:non-existent',
+      );
+    });
+
+    it('should throw when alias exists but type does not match', () => {
+      const record = createAliasRecord({
+        alias: 'test-alias',
+        type: ALIAS_TYPE.Account,
+      });
+      stateMock.get.mockReturnValue(record);
+
+      expect(() =>
+        aliasService.resolveOrThrow(
+          'test-alias',
+          ALIAS_TYPE.Contract,
+          SupportedNetwork.TESTNET,
+        ),
+      ).toThrow(
+        'Alias "test-alias" for contract on network "testnet" not found',
+      );
+    });
+
+    it('should use correct key for different networks', () => {
+      const record = createAliasRecord({
+        alias: 'main-alias',
+        network: SupportedNetwork.MAINNET,
+        type: ALIAS_TYPE.Token,
+      });
+      stateMock.get.mockReturnValue(record);
+
+      const result = aliasService.resolveOrThrow(
+        'main-alias',
+        ALIAS_TYPE.Token,
+        SupportedNetwork.MAINNET,
+      );
+
+      expect(stateMock.get).toHaveBeenCalledWith(
+        'aliases',
+        'mainnet:main-alias',
+      );
+      expect(result.network).toBe(SupportedNetwork.MAINNET);
+    });
+
+    it('should return record for account type', () => {
+      const record = createAliasRecord({
+        alias: 'treasury',
+        type: ALIAS_TYPE.Account,
+        entityId: '0.0.100',
+      });
+      stateMock.get.mockReturnValue(record);
+
+      const result = aliasService.resolveOrThrow(
+        'treasury',
+        ALIAS_TYPE.Account,
+        SupportedNetwork.TESTNET,
+      );
+
+      expect(result).toEqual(record);
+      expect(result.type).toBe(ALIAS_TYPE.Account);
+    });
+  });
+
   describe('list', () => {
     it('should return all aliases when no filter provided', () => {
       const records = [
