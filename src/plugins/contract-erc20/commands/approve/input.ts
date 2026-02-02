@@ -7,15 +7,15 @@ import {
 } from '@/core/schemas';
 
 /**
- * Input schema for contract erc20 call transfer command.
+ * Input schema for contract erc20 call approve command.
  * Parsed contract is a discriminated object: { type: EntityReferenceType, value: string }.
  */
-export const ContractErc20CallTransferInputSchema = z.object({
+export const ContractErc20CallApproveInputSchema = z.object({
   contract: ContractReferenceObjectSchema,
   gas: GasInputSchema.describe('Gas for contract call. Default: 100000'),
-  to: AccountReferenceObjectSchema,
+  spender: AccountReferenceObjectSchema,
   value: z
     .number()
-    .min(0, 'Transfer value must be greater than or equal to 0')
-    .describe('Transfer value for contract transfer call'),
+    .min(0, 'Approve value must be greater than or equal to 0')
+    .describe('Approval amount for contract approve call'),
 });

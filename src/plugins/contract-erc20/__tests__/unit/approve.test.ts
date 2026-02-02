@@ -1,12 +1,12 @@
-import type { CommandHandlerArgs, CoreApi } from '@/core';
-import type { ContractErc20CallTransferOutput } from '@/plugins/contract-erc20/commands/transfer/output';
+import type { CoreApi, Logger } from '@/core';
+import type { ContractErc20CallApproveOutput } from '@/plugins/contract-erc20/commands/approve/output';
 
 import { ZodError } from 'zod';
 
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
-import { transferFunctionCall as erc20TransferHandler } from '@/plugins/contract-erc20/commands/transfer/handler';
-import { ContractErc20CallTransferInputSchema } from '@/plugins/contract-erc20/commands/transfer/input';
+import { approveFunctionCall as erc20ApproveHandler } from '@/plugins/contract-erc20/commands/approve/handler';
+import { ContractErc20CallApproveInputSchema } from '@/plugins/contract-erc20/commands/approve/input';
 
 const mockAddAddress = jest.fn().mockReturnThis();
 const mockAddUint256 = jest.fn().mockReturnThis();
@@ -32,9 +32,9 @@ const CONTRACT_ID = '0.0.1234';
 const ACCOUNT_ID = '0.0.5678';
 const TX_ID = '0.0.1234@1234567890.123456789';
 
-describe('contract-erc20 plugin - transfer command (unit)', () => {
-  let api: CommandHandlerArgs['api'];
-  let logger: ReturnType<typeof makeLogger>;
+describe('contract-erc20 plugin - approve command (unit)', () => {
+  let api: CoreApi;
+  let logger: jest.Mocked<Logger>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -86,22 +86,22 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
     } as unknown as CoreApi;
   });
 
-  test('calls ERC-20 transfer successfully and returns expected output', async () => {
+  test('calls ERC-20 approve successfully and returns expected output', async () => {
     const args = makeArgs(api, logger, {
       contract: 'my-token',
-      to: 'bob',
+      spender: 'bob',
       gas: 100000,
       value: 100,
     });
 
-    const result = await erc20TransferHandler(args);
+    const result = await erc20ApproveHandler(args);
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
     const parsed = JSON.parse(
       result.outputJson as string,
-    ) as ContractErc20CallTransferOutput;
+    ) as ContractErc20CallApproveOutput;
 
     expect(parsed.contractIdOrEvm).toBe(CONTRACT_ID);
     expect(parsed.network).toBe('testnet');
@@ -125,7 +125,7 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
       expect.objectContaining({
         contractId: CONTRACT_ID,
         gas: 100000,
-        functionName: 'transfer',
+        functionName: 'approve',
       }),
     );
     expect(args.api.txExecution.signAndExecute).toHaveBeenCalledWith({});
@@ -134,7 +134,7 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
   test('uses entity ID when contract is entity ID (not alias)', async () => {
     const args = makeArgs(api, logger, {
       contract: '0.0.9999',
-      to: '0.0.8888',
+      spender: '0.0.8888',
       gas: 200000,
       value: 50,
     });
@@ -146,7 +146,7 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
       evmAddress: EVM_ADDRESS,
     });
 
-    const result = await erc20TransferHandler(args);
+    const result = await erc20ApproveHandler(args);
 
     expect(result.status).toBe(Status.Success);
     expect(args.api.alias.resolveOrThrow).not.toHaveBeenCalled();
@@ -154,11 +154,11 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
     expect(args.api.mirror.getAccount).toHaveBeenCalledWith('0.0.8888');
   });
 
-  test('uses EVM address directly when to is EVM address', async () => {
-    const evmTo = '0x' + 'b'.repeat(40);
+  test('uses EVM address directly when spender is EVM address', async () => {
+    const evmSpender = '0x' + 'b'.repeat(40);
     const args = makeArgs(api, logger, {
       contract: '0.0.1234',
-      to: evmTo,
+      spender: evmSpender,
       gas: 100000,
       value: 1,
     });
@@ -167,17 +167,17 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
       contract_id: CONTRACT_ID,
     });
 
-    const result = await erc20TransferHandler(args);
+    const result = await erc20ApproveHandler(args);
 
     expect(result.status).toBe(Status.Success);
     expect(args.api.mirror.getAccount).not.toHaveBeenCalled();
-    expect(mockAddAddress).toHaveBeenCalledWith(evmTo);
+    expect(mockAddAddress).toHaveBeenCalledWith(evmSpender);
   });
 
   test('returns failure when signAndExecute returns success false', async () => {
     const args = makeArgs(api, logger, {
       contract: 'my-token',
-      to: 'bob',
+      spender: 'bob',
       gas: 100000,
       value: 100,
     });
@@ -186,18 +186,18 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
       receipt: { status: { status: 'FAILURE' } },
     });
 
-    const result = await erc20TransferHandler(args);
+    const result = await erc20ApproveHandler(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      'Failed to call transfer function: FAILURE',
+      'Failed to call approve function: FAILURE',
     );
   });
 
   test('returns failure when signAndExecute throws', async () => {
     const args = makeArgs(api, logger, {
       contract: 'my-token',
-      to: 'bob',
+      spender: 'bob',
       gas: 100000,
       value: 100,
     });
@@ -205,18 +205,18 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
       new Error('network error'),
     );
 
-    const result = await erc20TransferHandler(args);
+    const result = await erc20ApproveHandler(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      'Failed to call transfer function: network error',
+      'Failed to call approve function: network error',
     );
   });
 
   test('returns failure when alias not found for contract', async () => {
     const args = makeArgs(api, logger, {
       contract: 'missing-contract',
-      to: 'bob',
+      spender: 'bob',
       gas: 100000,
       value: 100,
     });
@@ -237,17 +237,17 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
       },
     );
 
-    const result = await erc20TransferHandler(args);
+    const result = await erc20ApproveHandler(args);
 
     expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Failed to call transfer function');
+    expect(result.errorMessage).toContain('Failed to call approve function');
     expect(result.errorMessage).toContain('not found');
   });
 
   test('returns failure when mirror.getAccount has no evmAddress', async () => {
     const args = makeArgs(api, logger, {
       contract: '0.0.1234',
-      to: 'bob',
+      spender: 'bob',
       gas: 100000,
       value: 100,
     });
@@ -258,7 +258,7 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
       evmAddress: undefined,
     });
 
-    const result = await erc20TransferHandler(args);
+    const result = await erc20ApproveHandler(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
@@ -268,8 +268,8 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
 
   test('schema validation fails when contract is missing', () => {
     expect(() => {
-      ContractErc20CallTransferInputSchema.parse({
-        to: 'bob',
+      ContractErc20CallApproveInputSchema.parse({
+        spender: 'bob',
         gas: 100000,
         value: 100,
       });
@@ -278,9 +278,9 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
 
   test('schema validation fails when value is negative', () => {
     expect(() => {
-      ContractErc20CallTransferInputSchema.parse({
+      ContractErc20CallApproveInputSchema.parse({
         contract: 'my-token',
-        to: 'bob',
+        spender: 'bob',
         gas: 100000,
         value: -1,
       });
