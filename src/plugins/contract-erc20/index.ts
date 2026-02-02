@@ -7,4 +7,5 @@ export { nameFunctionCall } from './commands/name';
 export { symbolFunctionCall } from './commands/symbol';
 export { totalSupplyFunctionCall } from './commands/total-supply';
 export { transferFunctionCall } from './commands/transfer';
+export { transferFromFunctionCall } from './commands/transfer-from';
 export { contractErc20PluginManifest } from './manifest';
