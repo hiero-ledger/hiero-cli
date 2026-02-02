@@ -1,5 +1,4 @@
-import type { CommandHandlerArgs, CoreApi } from '@/core';
-import type { ContractErc20CallTransferOutput } from '@/plugins/contract-erc20/commands/transfer/output';
+import type { CoreApi, Logger } from '@/core';
 
 import { ZodError } from 'zod';
 
@@ -33,8 +32,8 @@ const ACCOUNT_ID = '0.0.5678';
 const TX_ID = '0.0.1234@1234567890.123456789';
 
 describe('contract-erc20 plugin - transfer command (unit)', () => {
-  let api: CommandHandlerArgs['api'];
-  let logger: ReturnType<typeof makeLogger>;
+  let api: CoreApi;
+  let logger: jest.Mocked<Logger>;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -99,9 +98,7 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const parsed = JSON.parse(
-      result.outputJson as string,
-    ) as ContractErc20CallTransferOutput;
+    const parsed = JSON.parse(result.outputJson as string);
 
     expect(parsed.contractIdOrEvm).toBe(CONTRACT_ID);
     expect(parsed.network).toBe('testnet');
