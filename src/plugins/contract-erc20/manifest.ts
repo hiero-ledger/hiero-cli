@@ -16,6 +16,11 @@ import {
   symbolFunctionCall,
 } from '@/plugins/contract-erc20/commands/symbol';
 import {
+  CONTRACT_ERC20_CALL_TOTAL_SUPPLY_CREATE_TEMPLATE,
+  ContractErc20CallTotalSupplyOutputSchema,
+  totalSupplyFunctionCall,
+} from '@/plugins/contract-erc20/commands/total-supply';
+import {
   CONTRACT_ERC20_CALL_TRANSFER_TEMPLATE,
   ContractErc20CallTransferOutputSchema,
   transferFunctionCall,
@@ -68,6 +73,26 @@ export const contractErc20PluginManifest: PluginManifest = {
       },
     },
     {
+      name: 'total-supply',
+      summary: 'Call totalSupply function',
+      description: 'Command for calling ERC-20 totalSupply function',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias or contract ID. Option required',
+        },
+      ],
+      handler: totalSupplyFunctionCall,
+      output: {
+        schema: ContractErc20CallTotalSupplyOutputSchema,
+        humanTemplate: CONTRACT_ERC20_CALL_TOTAL_SUPPLY_CREATE_TEMPLATE,
+      },
+    },
+    {
       name: 'transfer',
       summary: 'Call transfer function',
       description: 'Command for calling ERC-20 transfer function',
@@ -102,7 +127,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           type: OptionType.NUMBER,
           required: true,
           description:
-            'Parameter "to" in transfer function represented by a number. Option required',
+            'Parameter "amount" in transfer function. Option required',
         },
       ],
       handler: transferFunctionCall,
