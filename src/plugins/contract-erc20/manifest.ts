@@ -6,6 +6,11 @@ import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
 import {
+  allowanceFunctionCall,
+  CONTRACT_ERC20_CALL_ALLOWANCE_CREATE_TEMPLATE,
+  ContractErc20CallAllowanceOutputSchema,
+} from '@/plugins/contract-erc20/commands/allowance';
+import {
   CONTRACT_ERC20_CALL_NAME_CREATE_TEMPLATE,
   ContractErc20CallNameOutputSchema,
   nameFunctionCall,
@@ -65,6 +70,42 @@ export const contractErc20PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc20CallSymbolOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_SYMBOL_CREATE_TEMPLATE,
+      },
+    },
+    {
+      name: 'allowance',
+      summary: 'Call allowance function',
+      description: 'Command for calling ERC-20 allowance function',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias or contract ID. Option required',
+        },
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Owner account represented by alias, account ID or EVM address. Option required',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Spender account represented by alias, account ID or EVM address. Option required',
+        },
+      ],
+      handler: allowanceFunctionCall,
+      output: {
+        schema: ContractErc20CallAllowanceOutputSchema,
+        humanTemplate: CONTRACT_ERC20_CALL_ALLOWANCE_CREATE_TEMPLATE,
       },
     },
     {
