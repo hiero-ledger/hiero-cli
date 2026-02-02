@@ -1,8 +1,8 @@
 /**
- * Contract ERC20 name Command Handler
+ * Contract ERC20 approve Command Handler
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
-import type { ContractErc20CallTransferOutput } from './output';
+import type { ContractErc20CallApproveOutput } from './output';
 
 import { ContractFunctionParameters } from '@hashgraph/sdk';
 
@@ -11,18 +11,19 @@ import { Status } from '@/core/shared/constants';
 import { EntityReferenceType } from '@/core/types/shared.types';
 import { formatError } from '@/core/utils/errors';
 
-import { ContractErc20CallTransferInputSchema } from './input';
-const ERC_20_FUNCTION_NAME = 'transfer';
+import { ContractErc20CallApproveInputSchema } from './input';
 
-export async function transferFunctionCall(
+const ERC_20_FUNCTION_NAME = 'approve';
+
+export async function approveFunctionCall(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { api } = args;
   try {
-    const validArgs = ContractErc20CallTransferInputSchema.parse(args.args);
+    const validArgs = ContractErc20CallApproveInputSchema.parse(args.args);
     const contractRef = validArgs.contract;
     const gas = validArgs.gas;
-    const accountToRef = validArgs.to;
+    const spenderRef = validArgs.spender;
     const value = validArgs.value;
     const network = api.network.getCurrentNetwork();
 
@@ -42,31 +43,31 @@ export async function transferFunctionCall(
     const contractInfo = await api.mirror.getContractInfo(contractIdOrEvm);
     const contractId = contractInfo.contract_id;
 
-    const accountToIdOrEvm =
-      accountToRef.type === EntityReferenceType.ALIAS
+    const spenderIdOrEvm =
+      spenderRef.type === EntityReferenceType.ALIAS
         ? api.alias.resolveOrThrow(
-            accountToRef.value,
+            spenderRef.value,
             ALIAS_TYPE.Account,
             network,
           ).entityId
-        : accountToRef.value;
-    if (!accountToIdOrEvm) {
+        : spenderRef.value;
+    if (!spenderIdOrEvm) {
       throw new Error(
-        `Account ${accountToRef.value} is missing an account ID in its alias record`,
+        `Account ${spenderRef.value} is missing an account ID in its alias record`,
       );
     }
-    const accountToEvmAddress =
-      accountToRef.type === EntityReferenceType.EVM_ADDRESS
-        ? accountToIdOrEvm
-        : (await api.mirror.getAccount(accountToIdOrEvm)).evmAddress;
-    if (!accountToEvmAddress) {
+    const spenderEvmAddress =
+      spenderRef.type === EntityReferenceType.EVM_ADDRESS
+        ? spenderIdOrEvm
+        : (await api.mirror.getAccount(spenderIdOrEvm)).evmAddress;
+    if (!spenderEvmAddress) {
       throw new Error(
-        `Couldn't resolve EVM address for an account ${accountToIdOrEvm}`,
+        `Couldn't resolve EVM address for an account ${spenderIdOrEvm}`,
       );
     }
     const functionParameters: ContractFunctionParameters =
       new ContractFunctionParameters()
-        .addAddress(accountToEvmAddress)
+        .addAddress(spenderEvmAddress)
         .addUint256(value);
 
     const contractCallTransaction = api.contract.contractExecuteTransaction({
@@ -85,7 +86,7 @@ export async function transferFunctionCall(
         errorMessage: `Failed to call ${ERC_20_FUNCTION_NAME} function: ${result.receipt?.status?.status ?? 'UNKNOWN'}`,
       };
     }
-    const outputData: ContractErc20CallTransferOutput = {
+    const outputData: ContractErc20CallApproveOutput = {
       contractIdOrEvm,
       network,
       transactionId: result.transactionId,

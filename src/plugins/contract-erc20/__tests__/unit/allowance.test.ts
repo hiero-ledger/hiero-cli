@@ -111,7 +111,9 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const parsed = JSON.parse(result.outputJson);
+    const parsed = JSON.parse(
+      result.outputJson as string,
+    ) as ContractErc20CallAllowanceOutput;
 
     expect(parsed.owner).toBe(OWNER_EVM);
     expect(parsed.spender).toBe(SPENDER_EVM);
