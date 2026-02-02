@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   AliasNameSchema,
   FilePathSchema,
+  GasInputSchema,
   KeyManagerTypeSchema,
   KeyOrAccountAliasSchema,
   MemoSchema,
@@ -19,11 +20,9 @@ export const ContractCreateSchema = z
     file: FilePathSchema.describe(
       'Filesystem path to Solidity file containing smart contract definition',
     ),
-    gas: z
-      .number()
-      .min(0)
-      .default(1000000)
-      .describe('Gas for contract creation. Default: 1000000'),
+    gas: GasInputSchema.default(1000000).describe(
+      'Gas for contract creation. Default: 1000000',
+    ),
     basePath: FilePathSchema.describe(
       'Base path to main directory of smart contract path',
     ),
