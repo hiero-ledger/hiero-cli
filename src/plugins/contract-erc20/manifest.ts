@@ -15,6 +15,11 @@ import {
   ContractErc20CallSymbolOutputSchema,
   symbolFunctionCall,
 } from '@/plugins/contract-erc20/commands/symbol';
+import {
+  CONTRACT_ERC20_CALL_TRANSFER_TEMPLATE,
+  ContractErc20CallTransferOutputSchema,
+  transferFunctionCall,
+} from '@/plugins/contract-erc20/commands/transfer';
 
 export const contractErc20PluginManifest: PluginManifest = {
   name: 'contract-erc20',
@@ -60,6 +65,50 @@ export const contractErc20PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc20CallSymbolOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_SYMBOL_CREATE_TEMPLATE,
+      },
+    },
+    {
+      name: 'transfer',
+      summary: 'Call transfer function',
+      description: 'Command for calling ERC-20 transfer function',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+        },
+        {
+          name: 'gas',
+          short: 'g',
+          type: OptionType.NUMBER,
+          required: true,
+          default: 100000,
+          description: 'Gas for function call. Default: 1000000',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "to" in transfer function represented by alias, account ID or EVM address. Option required',
+        },
+        {
+          name: 'amount',
+          short: 'a',
+          type: OptionType.NUMBER,
+          required: true,
+          description:
+            'Parameter "to" in transfer function represented by a number. Option required',
+        },
+      ],
+      handler: transferFunctionCall,
+      output: {
+        schema: ContractErc20CallTransferOutputSchema,
+        humanTemplate: CONTRACT_ERC20_CALL_TRANSFER_TEMPLATE,
       },
     },
   ],
