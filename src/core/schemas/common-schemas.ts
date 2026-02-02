@@ -446,7 +446,7 @@ export const AccountReferenceSchema = z
   .union([EntityIdSchema, AccountNameSchema], {
     error: () => ({
       message:
-        'Account reference must be a valid Hedera ID (0.0.xxx), , or alias name',
+        'Account reference must be a valid Hedera ID (0.0.xxx) or alias name',
     }),
   })
   .describe('Account reference (ID, EVM address, or name)');
@@ -731,3 +731,5 @@ export const SolidityCompilerVersion = z
   .trim()
   .optional()
   .describe('Optional Solidity compiler version');
+
+export const GasInputSchema = z.number().min(0).default(100000);
