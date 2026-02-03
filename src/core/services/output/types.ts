@@ -1,6 +1,7 @@
 /**
  * Output Handler Service Types
  */
+import type { z } from 'zod';
 import type { OutputFormat } from '@/core/shared/types/output-format';
 
 export interface FormatOptions {
@@ -10,7 +11,7 @@ export interface FormatOptions {
 
 export interface OutputHandlerOptions {
   outputJson: string;
-  schema?: unknown;
+  schema: z.ZodTypeAny;
   template?: string;
   format: OutputFormat;
   outputPath?: string;
