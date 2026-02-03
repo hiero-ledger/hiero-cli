@@ -107,7 +107,7 @@ export async function transferFromFunctionCall(
       };
     }
     const outputData: ContractErc20CallTransferFromOutput = {
-      contractIdOrEvm,
+      contractId: contractIdOrEvm,
       network,
       transactionId: result.transactionId,
     };

@@ -7,7 +7,7 @@ import {
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 export const ContractErc20CallTransferOutputSchema = z.object({
-  contractIdOrEvm: EntityOrEvmAddressReferenceSchema,
+  contractId: EntityOrEvmAddressReferenceSchema,
   network: SupportedNetwork,
   transactionId: TransactionIdSchema,
 });
@@ -17,6 +17,6 @@ export type ContractErc20CallTransferOutput = z.infer<
 >;
 
 export const CONTRACT_ERC20_CALL_TRANSFER_TEMPLATE = `
-✅ Contract ({{hashscanLink contractIdOrEvm "contract" network}}) function "transfer" called successfully!
+✅ Contract ({{hashscanLink contractId "contract" network}}) function "transfer" called successfully!
    Transaction ID: {{hashscanLink transactionId "transaction" network}}
 `.trim();

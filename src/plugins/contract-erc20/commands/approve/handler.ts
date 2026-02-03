@@ -6,7 +6,6 @@ import type { ContractErc20CallApproveOutput } from './output';
 
 import { ContractFunctionParameters } from '@hashgraph/sdk';
 
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { EntityReferenceType } from '@/core/types/shared.types';
 import { formatError } from '@/core/utils/errors';
@@ -27,51 +26,36 @@ export async function approveFunctionCall(
     const value = validArgs.value;
     const network = api.network.getCurrentNetwork();
 
-    const contractIdOrEvm =
-      contractRef.type === EntityReferenceType.ALIAS
-        ? api.alias.resolveOrThrow(
-            contractRef.value,
-            ALIAS_TYPE.Contract,
-            network,
-          ).entityId
-        : contractRef.value;
-    if (!contractIdOrEvm) {
-      throw new Error(
-        `Contract ${contractRef.value} is missing an contract ID in its alias record`,
-      );
-    }
-    const contractInfo = await api.mirror.getContractInfo(contractIdOrEvm);
-    const contractId = contractInfo.contract_id;
+    const contractInfo = await api.identityResolution.resolveContract({
+      contractReference: contractRef.value,
+      type: contractRef.type,
+      network,
+    });
 
-    const spenderIdOrEvm =
-      spenderRef.type === EntityReferenceType.ALIAS
-        ? api.alias.resolveOrThrow(
-            spenderRef.value,
-            ALIAS_TYPE.Account,
-            network,
-          ).entityId
-        : spenderRef.value;
-    if (!spenderIdOrEvm) {
-      throw new Error(
-        `Account ${spenderRef.value} is missing an account ID in its alias record`,
-      );
-    }
     const spenderEvmAddress =
       spenderRef.type === EntityReferenceType.EVM_ADDRESS
-        ? spenderIdOrEvm
-        : (await api.mirror.getAccount(spenderIdOrEvm)).evmAddress;
+        ? spenderRef.value
+        : (
+            await api.identityResolution.resolveAccount({
+              accountReference: spenderRef.value,
+              type: spenderRef.type,
+              network,
+            })
+          ).evmAddress;
+
     if (!spenderEvmAddress) {
       throw new Error(
-        `Couldn't resolve EVM address for an account ${spenderIdOrEvm}`,
+        `Couldn't resolve EVM address for an account ${spenderRef.value}`,
       );
     }
+
     const functionParameters: ContractFunctionParameters =
       new ContractFunctionParameters()
         .addAddress(spenderEvmAddress)
         .addUint256(value);
 
     const contractCallTransaction = api.contract.contractExecuteTransaction({
-      contractId,
+      contractId: contractInfo.contractId,
       gas,
       functionName: ERC_20_FUNCTION_NAME,
       functionParameters,
@@ -87,7 +71,7 @@ export async function approveFunctionCall(
       };
     }
     const outputData: ContractErc20CallApproveOutput = {
-      contractIdOrEvm,
+      contractId: contractInfo.contractId,
       network,
       transactionId: result.transactionId,
     };

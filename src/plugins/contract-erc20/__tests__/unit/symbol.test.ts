@@ -3,7 +3,7 @@ import type { ContractErc20CallSymbolOutput } from '@/plugins/contract-erc20/com
 
 import { ZodError } from 'zod';
 
-import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import { symbolFunctionCall as erc20SymbolHandler } from '@/plugins/contract-erc20/commands/symbol/handler';
 import { ContractErc20CallSymbolInputSchema } from '@/plugins/contract-erc20/commands/symbol/input';
@@ -33,14 +33,12 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
       network: {
         getCurrentNetwork: jest.fn(() => 'testnet'),
       },
-      alias: {
-        resolveOrThrow: jest.fn().mockReturnValue({
-          entityId: '0.0.1234',
-          alias: 'some-alias-or-id',
-          type: 'contract',
-          network: 'testnet',
-          createdAt: '2024-01-01T00:00:00.000Z',
-        }),
+      identityResolution: {
+        resolveReferenceToEntityOrEvmAddress: jest
+          .fn()
+          .mockReturnValue({ entityIdOrEvmAddress: '0.0.1234' }),
+        resolveAccount: jest.fn(),
+        resolveContract: jest.fn(),
       },
       contractQuery: {
         queryContractFunction: jest.fn().mockResolvedValue({
@@ -52,9 +50,15 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
   });
 
   test('calls ERC-20 symbol successfully and returns expected output', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'some-alias-or-id',
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'some-alias-or-id',
+      },
+    } as unknown as CommandHandlerArgs;
 
     const result = await erc20SymbolHandler(args);
 
@@ -69,11 +73,14 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
     expect(parsed.contractSymbol).toBe('HBAR');
     expect(parsed.network).toBe('testnet');
 
-    expect(args.api.alias.resolveOrThrow).toHaveBeenCalledWith(
-      'some-alias-or-id',
-      'contract',
-      'testnet',
-    );
+    expect(
+      args.api.identityResolution.resolveReferenceToEntityOrEvmAddress,
+    ).toHaveBeenCalledWith({
+      entityReference: 'some-alias-or-id',
+      referenceType: expect.any(String),
+      network: 'testnet',
+      aliasType: expect.any(String),
+    });
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({
         contractIdOrEvmAddress: '0.0.1234',
@@ -83,9 +90,15 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
   });
 
   test('returns failure when contractQuery returns empty queryResult', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'some-alias-or-id',
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'some-alias-or-id',
+      },
+    } as unknown as CommandHandlerArgs;
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockResolvedValue({
@@ -102,9 +115,15 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
   });
 
   test('returns failure when queryContractFunction throws', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'some-alias-or-id',
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'some-alias-or-id',
+      },
+    } as unknown as CommandHandlerArgs;
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
