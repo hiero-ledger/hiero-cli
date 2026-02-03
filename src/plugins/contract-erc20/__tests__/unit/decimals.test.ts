@@ -1,10 +1,14 @@
-import type { CommandHandlerArgs, CoreApi } from '@/core';
+import type { CoreApi, Logger } from '@/core';
 import type { ContractErc20CallDecimalsOutput } from '@/plugins/contract-erc20/commands/decimals/output';
 
 import { ZodError } from 'zod';
 
-import { makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
+import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
+import {
+  makeApiMocks,
+  makeLogger,
+} from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { decimalsFunctionCall as erc20DecimalsHandler } from '@/plugins/contract-erc20/commands/decimals/handler';
 import { ContractErc20CallDecimalsInputSchema } from '@/plugins/contract-erc20/commands/decimals/input';
 
@@ -21,44 +25,17 @@ jest.mock('@hashgraph/sdk', () => ({
 }));
 
 describe('contract-erc20 plugin - decimals command (unit)', () => {
-  let api: CommandHandlerArgs['api'];
-  let logger: ReturnType<typeof makeLogger>;
+  let api: jest.Mocked<CoreApi>;
+  let logger: jest.Mocked<Logger>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-
     logger = makeLogger();
-
-    api = {
-      network: {
-        getCurrentNetwork: jest.fn(() => 'testnet'),
-      },
-      identityResolution: {
-        resolveReferenceToEntityOrEvmAddress: jest
-          .fn()
-          .mockReturnValue({ entityIdOrEvmAddress: '0.0.1234' }),
-        resolveAccount: jest.fn(),
-        resolveContract: jest.fn(),
-      },
-      contractQuery: {
-        queryContractFunction: jest.fn().mockResolvedValue({
-          contractId: '0.0.1234',
-          queryResult: [18],
-        }),
-      },
-    } as unknown as CoreApi;
+    api = makeApiMocks().api;
   });
 
   test('calls ERC-20 decimals successfully and returns expected output', async () => {
-    const args = {
-      api,
-      logger,
-      state: {} as unknown,
-      config: {} as unknown,
-      args: {
-        contract: 'some-alias-or-id',
-      },
-    } as unknown as CommandHandlerArgs;
+    const args = makeContractErc20CallCommandArgs({ api, logger });
 
     const result = await erc20DecimalsHandler(args);
 
@@ -90,15 +67,7 @@ describe('contract-erc20 plugin - decimals command (unit)', () => {
   });
 
   test('returns failure when contractQuery returns empty queryResult', async () => {
-    const args = {
-      api,
-      logger,
-      state: {} as unknown,
-      config: {} as unknown,
-      args: {
-        contract: 'some-alias-or-id',
-      },
-    } as unknown as CommandHandlerArgs;
+    const args = makeContractErc20CallCommandArgs({ api, logger });
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockResolvedValue({
@@ -115,15 +84,7 @@ describe('contract-erc20 plugin - decimals command (unit)', () => {
   });
 
   test('returns failure when queryContractFunction throws', async () => {
-    const args = {
-      api,
-      logger,
-      state: {} as unknown,
-      config: {} as unknown,
-      args: {
-        contract: 'some-alias-or-id',
-      },
-    } as unknown as CommandHandlerArgs;
+    const args = makeContractErc20CallCommandArgs({ api, logger });
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));

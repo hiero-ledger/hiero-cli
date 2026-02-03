@@ -6,7 +6,6 @@ import type { ContractErc20CallTransferFromOutput } from './output';
 
 import { ContractFunctionParameters } from '@hashgraph/sdk';
 
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { EntityReferenceType } from '@/core/types/shared.types';
 import { formatError } from '@/core/utils/errors';
@@ -28,59 +27,43 @@ export async function transferFromFunctionCall(
     const value = validArgs.value;
     const network = api.network.getCurrentNetwork();
 
-    const contractIdOrEvm =
-      contractRef.type === EntityReferenceType.ALIAS
-        ? api.alias.resolveOrThrow(
-            contractRef.value,
-            ALIAS_TYPE.Contract,
-            network,
-          ).entityId
-        : contractRef.value;
-    if (!contractIdOrEvm) {
-      throw new Error(
-        `Contract ${contractRef.value} is missing an contract ID in its alias record`,
-      );
-    }
-    const contractInfo = await api.mirror.getContractInfo(contractIdOrEvm);
-    const contractId = contractInfo.contract_id;
+    const contractInfo = await api.identityResolution.resolveContract({
+      contractReference: contractRef.value,
+      type: contractRef.type,
+      network,
+    });
 
-    const fromIdOrEvm =
-      fromRef.type === EntityReferenceType.ALIAS
-        ? api.alias.resolveOrThrow(fromRef.value, ALIAS_TYPE.Account, network)
-            .entityId
-        : fromRef.value;
-    if (!fromIdOrEvm) {
-      throw new Error(
-        `Account ${fromRef.value} is missing an account ID in its alias record`,
-      );
-    }
     const fromEvmAddress =
       fromRef.type === EntityReferenceType.EVM_ADDRESS
-        ? fromIdOrEvm
-        : (await api.mirror.getAccount(fromIdOrEvm)).evmAddress;
+        ? fromRef.value
+        : (
+            await api.identityResolution.resolveAccount({
+              accountReference: fromRef.value,
+              type: fromRef.type,
+              network,
+            })
+          ).evmAddress;
+
     if (!fromEvmAddress) {
       throw new Error(
-        `Couldn't resolve EVM address for an account ${fromIdOrEvm}`,
+        `Couldn't resolve EVM address for an account ${fromRef.value}`,
       );
     }
 
-    const toIdOrEvm =
-      toRef.type === EntityReferenceType.ALIAS
-        ? api.alias.resolveOrThrow(toRef.value, ALIAS_TYPE.Account, network)
-            .entityId
-        : toRef.value;
-    if (!toIdOrEvm) {
-      throw new Error(
-        `Account ${toRef.value} is missing an account ID in its alias record`,
-      );
-    }
     const toEvmAddress =
       toRef.type === EntityReferenceType.EVM_ADDRESS
-        ? toIdOrEvm
-        : (await api.mirror.getAccount(toIdOrEvm)).evmAddress;
+        ? toRef.value
+        : (
+            await api.identityResolution.resolveAccount({
+              accountReference: toRef.value,
+              type: toRef.type,
+              network,
+            })
+          ).evmAddress;
+
     if (!toEvmAddress) {
       throw new Error(
-        `Couldn't resolve EVM address for an account ${toIdOrEvm}`,
+        `Couldn't resolve EVM address for an account ${toRef.value}`,
       );
     }
 
@@ -91,7 +74,7 @@ export async function transferFromFunctionCall(
         .addUint256(value);
 
     const contractCallTransaction = api.contract.contractExecuteTransaction({
-      contractId,
+      contractId: contractInfo.contractId,
       gas,
       functionName: ERC_20_FUNCTION_NAME,
       functionParameters,
@@ -107,7 +90,7 @@ export async function transferFromFunctionCall(
       };
     }
     const outputData: ContractErc20CallTransferFromOutput = {
-      contractId: contractIdOrEvm,
+      contractId: contractInfo.contractId,
       network,
       transactionId: result.transactionId,
     };
