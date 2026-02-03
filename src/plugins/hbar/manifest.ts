@@ -4,6 +4,8 @@
  */
 import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
+import { OptionType } from '@/core/types/shared.types';
+
 import {
   TRANSFER_TEMPLATE,
   transferHandler,
@@ -15,11 +17,6 @@ export const hbarPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'HBAR Plugin',
   description: 'HBAR related commands (transfer etc.)',
-  compatibility: {
-    cli: '^1.0.0',
-    core: '^1.0.0',
-    api: '^1.0.0',
-  },
   commands: [
     {
       name: 'transfer',
@@ -29,7 +26,7 @@ export const hbarPluginManifest: PluginManifest = {
         {
           name: 'amount',
           short: 'a',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Amount to transfer. Default: display units. Add "t" for base units. Example: "1" = 1 HBAR, "100t" = 100 tinybar',
@@ -37,14 +34,14 @@ export const hbarPluginManifest: PluginManifest = {
         {
           name: 'to',
           short: 't',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Account ID or name to transfer to',
         },
         {
           name: 'from',
           short: 'f',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'AccountID:privateKey pair, AccountID:keyType:privateKey format, or account name to transfer from (defaults to operator). Key type can be "ecdsa" or "ed25519" (defaults to ecdsa if not specified).',
@@ -52,14 +49,14 @@ export const hbarPluginManifest: PluginManifest = {
         {
           name: 'memo',
           short: 'm',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description: 'Memo for the transfer',
         },
         {
           name: 'key-manager',
           short: 'k',
-          type: 'string',
+          type: OptionType.STRING,
           required: false,
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',

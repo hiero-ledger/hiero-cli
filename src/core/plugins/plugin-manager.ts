@@ -3,7 +3,7 @@
  *
  * Direct plugin management without unnecessary layers
  */
-import type { Command } from 'commander';
+import type { Command, OptionValues } from 'commander';
 import type {
   CommandHandlerArgs,
   CommandSpec,
@@ -14,9 +14,12 @@ import type { CoreApi } from '@/core/core-api';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 
+import * as Handlebars from 'handlebars';
 import * as path from 'path';
 
 import { Status } from '@/core/shared/constants';
+import { OptionType } from '@/core/types/shared.types';
+import { requireConfirmation } from '@/core/utils/confirmation';
 import { ensureCliInitialized } from '@/core/utils/ensure-cli-initialized';
 import { formatAndExitWithError } from '@/core/utils/error-handler';
 import { filterReservedOptions } from '@/core/utils/filter-reserved-options';
@@ -225,12 +228,18 @@ export class PluginManager {
     return path.resolve(__dirname, '../../plugins', name);
   }
 
+  private shouldSkipConfirmation(opts: OptionValues): boolean {
+    return Boolean(opts.confirm);
+  }
+
   /**
    * Register commands for a specific plugin
    */
   private registerPluginCommands(program: Command, plugin: LoadedPlugin): void {
     const pluginName = plugin.manifest.name;
     const commands = plugin.manifest.commands || [];
+
+    const skipConfirmation = this.shouldSkipConfirmation(program.opts());
 
     // Create plugin command group
     const pluginCommand = program
@@ -241,7 +250,12 @@ export class PluginManager {
 
     // Register each command
     for (const commandSpec of commands) {
-      this.registerSingleCommand(pluginCommand, plugin, commandSpec);
+      this.registerSingleCommand(
+        pluginCommand,
+        plugin,
+        commandSpec,
+        skipConfirmation,
+      );
     }
 
     this.logger.info(`✅ Registered commands for: ${pluginName}`);
@@ -255,30 +269,24 @@ export class PluginManager {
     pluginCommand: Command,
     plugin: LoadedPlugin,
     commandSpec: CommandSpec,
+    skipConfirmation: boolean,
   ): void {
     try {
       const commandName = String(commandSpec.name);
-      const command = pluginCommand
-        .command(commandName)
-        .description(
-          String(
-            commandSpec.description ||
-              commandSpec.summary ||
-              `Execute ${commandName}`,
-          ),
-        );
-
+      const command = this.buildCommand(pluginCommand, commandSpec);
       // Add options
       if (commandSpec.options) {
-        const { allowed, filtered } = filterReservedOptions(
+        const { allowed, filteredLong, filteredShort } = filterReservedOptions(
           commandSpec.options,
         );
 
-        if (filtered.length > 0) {
-          this.logger.info(
-            `⚠️  Plugin ${plugin.manifest.name} command ${commandName}: filtered reserved option(s) ${filtered
-              .map((n) => `--${n}`)
-              .join(', ')} (reserved by core CLI)`,
+        if (filteredLong.length > 0 || filteredShort.length > 0) {
+          const longDesc = filteredLong.map((n) => `--${n}`).join(', ');
+          const shortDesc = filteredShort.map((s) => `-${s}`).join(', ');
+          const combined = [longDesc, shortDesc].filter(Boolean).join(', ');
+
+          throw new Error(
+            `Plugin ${plugin.manifest.name} command ${commandName} uses reserved option(s): ${combined}. These are reserved by the core CLI.`,
           );
         }
 
@@ -287,62 +295,70 @@ export class PluginManager {
           const short = option.short ? `-${String(option.short)}` : '';
           const long = `--${optionName}`;
           const combined = short ? `${short}, ${long}` : long;
+          const flags = `${combined} <value>`;
+          const description = String(option.description || `Set ${optionName}`);
 
-          if (option.type === 'boolean') {
-            command.option(
-              combined,
-              String(option.description || `Set ${optionName}`),
-            );
-          } else if (option.type === 'number') {
-            const flags = `${combined} <value>`;
+          const addOption = <T>(
+            parser?: (value: string, previous: T) => T,
+            useValueFlag = true,
+          ) => {
+            const optionFlags = useValueFlag ? flags : combined;
             if (option.required) {
-              command.requiredOption(
-                flags,
-                String(option.description || `Set ${optionName}`),
-                parseFloat,
-              );
+              // Commander treats the third argument as an optional parser/transform function
+              if (parser) {
+                command.requiredOption(optionFlags, description, parser);
+              } else {
+                command.requiredOption(optionFlags, description);
+              }
             } else {
-              command.option(
-                flags,
-                String(option.description || `Set ${optionName}`),
-                parseFloat,
-              );
+              if (parser) {
+                command.option(optionFlags, description, parser);
+              } else {
+                command.option(optionFlags, description);
+              }
             }
-          } else if (option.type === 'array') {
-            const flags = `${combined} <values>`;
-            if (option.required) {
-              command.requiredOption(
-                flags,
-                String(option.description || `Set ${optionName}`),
-                (value: unknown) => String(value).split(','),
-              );
-            } else {
-              command.option(
-                flags,
-                String(option.description || `Set ${optionName}`),
-                (value: unknown) => String(value).split(','),
-              );
+          };
+
+          switch (option.type) {
+            case OptionType.BOOLEAN:
+              // boolean flags don't take a value placeholder or parser
+              addOption<boolean | undefined>(undefined, false);
+              break;
+            case OptionType.NUMBER:
+              addOption<number>((value) => parseFloat(value));
+              break;
+            case OptionType.ARRAY: {
+              const parseArray = (value: string) => String(value).split(',');
+              addOption<string[]>(parseArray);
+              break;
             }
-          } else {
-            const flags = `${combined} <value>`;
-            if (option.required) {
-              command.requiredOption(
-                flags,
-                String(option.description || `Set ${optionName}`),
-              );
-            } else {
-              command.option(
-                flags,
-                String(option.description || `Set ${optionName}`),
-              );
+            case OptionType.REPEATABLE: {
+              const parseRepeatable = (
+                value: string,
+                previous: string[] | undefined,
+              ) => {
+                const arr = previous ?? [];
+                arr.push(value);
+                return arr;
+              };
+              addOption<string[]>(parseRepeatable);
+              break;
             }
+            default:
+              // default to a simple string option (no parser)
+              addOption<string | undefined>();
           }
         }
       }
 
       // Set up action handler
       command.action(async (...args: unknown[]) => {
-        await this.executePluginCommand(plugin, commandSpec, args);
+        await this.executePluginCommand(
+          plugin,
+          commandSpec,
+          args,
+          skipConfirmation,
+        );
       });
     } catch (error) {
       // Use centralized error handler for consistent error formatting
@@ -353,6 +369,47 @@ export class PluginManager {
     }
   }
 
+  // Handle pre-execution confirmation if required by command spec.
+  private async handleConfirmation(
+    commandSpec: CommandSpec,
+    handlerArgs: CommandHandlerArgs,
+    skipConfirmation: boolean,
+  ): Promise<void> {
+    if (!commandSpec.requireConfirmation || skipConfirmation) {
+      return;
+    }
+
+    const format = this.coreApi.output.getFormat();
+    if (format !== 'human') {
+      return;
+    }
+
+    const skipConfirmations =
+      this.coreApi.config.getOption<boolean>('skip_confirmations');
+    if (skipConfirmations) {
+      this.logger.debug(
+        'Confirmation skipped due to skip_confirmations config',
+      );
+      return;
+    }
+
+    let message: string;
+    try {
+      const template = Handlebars.compile(commandSpec.requireConfirmation);
+      message = template(handlerArgs.args);
+    } catch (error) {
+      throw new Error(
+        `Failed to render confirmation template: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+
+    const confirmed = await requireConfirmation(message);
+    this.coreApi.output.emptyLine();
+    if (!confirmed) {
+      throw new Error('Operation cancelled by user');
+    }
+  }
+
   /**
    * Execute a plugin command
    */
@@ -360,6 +417,7 @@ export class PluginManager {
     _plugin: LoadedPlugin,
     commandSpec: CommandSpec,
     args: unknown[],
+    skipConfirmation: boolean,
   ): Promise<void> {
     const command = args[args.length - 1] as Command;
     const options = command.opts();
@@ -385,6 +443,8 @@ export class PluginManager {
       config: this.coreApi.config,
       logger: this.logger,
     };
+
+    await this.handleConfirmation(commandSpec, handlerArgs, skipConfirmation);
 
     // Validate that output spec is present (required per CommandSpec type)
     if (!commandSpec.output) {
@@ -441,5 +501,22 @@ export class PluginManager {
         );
       }
     }
+  }
+
+  private buildCommand(pluginCommand: Command, commandSpec: CommandSpec) {
+    const commandName = String(commandSpec.name);
+    let command = pluginCommand
+      .command(commandName)
+      .description(
+        String(
+          commandSpec.description ||
+            commandSpec.summary ||
+            `Execute ${commandName}`,
+        ),
+      );
+    if (commandSpec.excessArguments) {
+      command = command.allowUnknownOption(true).allowExcessArguments(true);
+    }
+    return command;
   }
 }

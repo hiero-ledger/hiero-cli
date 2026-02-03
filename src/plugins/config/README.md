@@ -76,9 +76,14 @@ hcli config list
       "name": "ed25519_support_enabled",
       "type": "boolean",
       "value": false
+    },
+    {
+      "name": "skip_confirmations",
+      "type": "boolean",
+      "value": false
     }
   ],
-  "totalCount": 3
+  "totalCount": 4
 }
 ```
 

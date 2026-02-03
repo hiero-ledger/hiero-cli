@@ -5,6 +5,7 @@
 
 import type { PublicKey } from '@hashgraph/sdk';
 import type { HederaTokenType } from '@/core/shared/constants';
+import type { SupplyType } from '@/core/types/shared.types';
 
 /**
  * Parameters for token transfer transactions
@@ -26,8 +27,6 @@ export interface CustomFee {
   collectorId?: string;
   exempt?: boolean;
 }
-
-export type SupplyType = 'FINITE' | 'INFINITE';
 
 /**
  * Parameters for token creation transactions
@@ -68,4 +67,14 @@ export interface TokenMintParams {
   tokenId: string;
   amount?: bigint; // Required for FT minting
   metadata?: Uint8Array; // Required for NFT minting
+}
+
+/**
+ * Parameters for NFT transfer transactions
+ */
+export interface NftTransferParams {
+  tokenId: string;
+  fromAccountId: string;
+  toAccountId: string;
+  serialNumbers: number[];
 }

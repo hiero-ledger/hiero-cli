@@ -1,3 +1,15 @@
+# --- CLI execution mode (local = from repo build, global = installed via npm) ---
+# Set HIERO_SCRIPT_CLI_MODE=global to use the globally installed hcli; default is local.
+export HIERO_SCRIPT_CLI_MODE="${HIERO_SCRIPT_CLI_MODE:-local}"
+
+run_hcli() {
+  if [[ "${HIERO_SCRIPT_CLI_MODE}" == "global" ]]; then
+    hcli --format json "$@"
+  else
+    (cd "${PROJECT_DIR}" && node dist/hiero-cli.js --format json "$@")
+  fi
+}
+
 # --- Helper for readable output ---
 print_step() {
   echo

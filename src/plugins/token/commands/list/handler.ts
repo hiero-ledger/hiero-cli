@@ -8,7 +8,6 @@ import type { ListTokensOutput } from './output';
 
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
-import { findTokenAlias } from '@/plugins/account/utils/balance-helpers';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { ListTokenInputSchema } from './input';
@@ -37,7 +36,11 @@ export async function listTokens(
     });
 
     const tokensList = tokens.map((token) => {
-      const alias = findTokenAlias(api, token.tokenId, token.network);
+      const alias = api.alias.resolve(
+        token.tokenId,
+        'token',
+        token.network,
+      )?.alias;
 
       return {
         tokenId: token.tokenId,

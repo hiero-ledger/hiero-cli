@@ -9,7 +9,7 @@
 import { z } from 'zod';
 
 import { HederaTokenType, KeyAlgorithm } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 
 // ======================================================
 // 1. ECDSA (secp256k1) Keys
@@ -79,7 +79,7 @@ export const HbarDecimalSchema = z
 export const TinybarSchema = z
   .union([
     z.string().regex(/^-?\d+$/, 'Tinybars must be integer string'),
-    z.number().int(),
+    z.int(),
     z.bigint(),
   ])
   .transform((val) => BigInt(val))
@@ -93,13 +93,13 @@ export const TinybarSchema = z
 // ======================================================
 
 // HTS decimals(immutable after token creation)
-export const HtsDecimalsSchema = z.number().int().min(0);
+export const HtsDecimalsSchema = z.int().min(0);
 
 // HTS base unit (integer form)
 export const HtsBaseUnitSchema = z
   .union([
     z.string().regex(/^\d+$/, 'Base unit must be integer string'),
-    z.number().int(),
+    z.int(),
     z.bigint(),
   ])
   .transform((val) => BigInt(val))
@@ -124,13 +124,13 @@ export const HtsDecimalSchema = z
 // ======================================================
 
 // Standard ERC-20 decimals: usually 18
-export const EvmDecimalsSchema = z.number().int().min(0).max(36);
+export const EvmDecimalsSchema = z.int().min(0).max(36);
 
 // Base unit (wei-like integer)
 export const EvmBaseUnitSchema = z
   .union([
     z.string().regex(/^\d+$/, 'Base unit must be integer string'),
-    z.number().int(),
+    z.int(),
     z.bigint(),
   ])
   .transform((val) => BigInt(val))
@@ -241,7 +241,7 @@ export const KeyTypeSchema = z
  * Token Supply Type
  */
 export const SupplyTypeSchema = z
-  .enum(['FINITE', 'INFINITE'])
+  .enum(SupplyType)
   .describe('Token supply type');
 
 /**
@@ -576,6 +576,23 @@ export const TokenSymbolSchema = z
   .max(20, 'Token symbol must be 20 characters or less')
   .describe('Token symbol');
 
+/**
+ * NFT Serial Numbers Input
+ * Comma-separated list of NFT serial numbers
+ * Transformed to array of positive integers
+ */
+export const NftSerialNumbersSchema = z
+  .string()
+  .trim()
+  .transform((val) => val.split(',').map((s) => parseInt(s.trim(), 10)))
+  .pipe(
+    z
+      .array(z.int().positive('Serial numbers must be positive integers'))
+      .min(1, 'At least one serial number is required')
+      .max(10, 'Maximum 10 serial numbers allowed'),
+  )
+  .describe('NFT serial numbers (comma-separated list)');
+
 // ======================================================
 // 10. Legacy Compatibility Exports
 // ======================================================
@@ -608,3 +625,29 @@ export const NonNegativeNumberOrBigintSchema = z
   .union([z.number(), z.bigint()])
   .transform((val) => BigInt(val))
   .pipe(z.bigint().nonnegative());
+
+/**
+ * Alias Name Input (Base Schema)
+ * Base schema for all entity aliases (alphanumeric, hyphens, underscores)
+ * Used as foundation for AccountNameSchema, TopicNameSchema, TokenAliasNameSchema
+ */
+export const ContractNameSchema = z
+  .string()
+  .trim()
+  .min(1, 'Contract name cannot be empty')
+  .regex(
+    /^[a-zA-Z0-9_-]+$/,
+    'Contract name must contain only letters, numbers, hyphens, and underscores',
+  )
+  .describe('Contract name');
+
+/**
+ * Solidity Compiler Version Input
+ * Optional solidity compiler version field for transactions
+ * Max 100 characters
+ */
+export const SolidityCompilerVersion = z
+  .string()
+  .trim()
+  .optional()
+  .describe('Optional Solidity compiler version');

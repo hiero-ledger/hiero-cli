@@ -143,7 +143,7 @@ describe('NetworkServiceImpl', () => {
       const config = networkService.getNetworkConfig(NETWORK_PREVIEWNET);
 
       expect(config.name).toBe(NETWORK_PREVIEWNET);
-      expect(config.chainId).toBe('0x128');
+      expect(config.chainId).toBe('0x129');
       expect(config.isTestnet).toBe(true);
     });
 
@@ -153,7 +153,7 @@ describe('NetworkServiceImpl', () => {
       expect(config.name).toBe(NETWORK_LOCALNET);
       expect(config.rpcUrl).toBe('http://localhost:7546');
       expect(config.mirrorNodeUrl).toBe('http://localhost:5551/api/v1');
-      expect(config.chainId).toBe('0x128');
+      expect(config.chainId).toBe('0x12a');
       expect(config.isTestnet).toBe(true);
     });
 
@@ -272,6 +272,57 @@ describe('NetworkServiceImpl', () => {
       expect(loggerMock.debug).toHaveBeenCalledWith(
         `[NETWORK] Getting operator for network ${NETWORK_PREVIEWNET}: none`,
       );
+    });
+  });
+
+  describe('hasAnyOperator', () => {
+    it('should return false when no operators are configured', () => {
+      stateMock.get.mockReturnValue(null);
+
+      const result = networkService.hasAnyOperator();
+
+      expect(result).toBe(false);
+    });
+
+    it('should return true when at least one operator is configured', () => {
+      const operator = {
+        accountId: OPERATOR_TEST_ACCOUNT_ID,
+        keyRefId: OPERATOR_TEST_KEY_REF_ID,
+      };
+      stateMock.get.mockImplementation((namespace, key) => {
+        if (key === TESTNET_OPERATOR_KEY) {
+          return operator;
+        }
+        return null;
+      });
+
+      const result = networkService.hasAnyOperator();
+
+      expect(result).toBe(true);
+    });
+
+    it('should return true when multiple operators are configured', () => {
+      const testnetOperator = {
+        accountId: OPERATOR_TEST_ACCOUNT_ID,
+        keyRefId: OPERATOR_TEST_KEY_REF_ID,
+      };
+      const mainnetOperator = {
+        accountId: OPERATOR_MAIN_ACCOUNT_ID,
+        keyRefId: OPERATOR_MAIN_KEY_REF_ID,
+      };
+      stateMock.get.mockImplementation((namespace, key) => {
+        if (key === TESTNET_OPERATOR_KEY) {
+          return testnetOperator;
+        }
+        if (key === MAINNET_OPERATOR_KEY) {
+          return mainnetOperator;
+        }
+        return null;
+      });
+
+      const result = networkService.hasAnyOperator();
+
+      expect(result).toBe(true);
     });
   });
 });

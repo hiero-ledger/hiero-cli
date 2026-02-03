@@ -8,6 +8,7 @@ import type { ConfigService } from '@/core/services/config/config-service.interf
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { Status } from '@/core/shared/constants';
+import type { OptionType } from '@/core/types/shared.types';
 import type { CommandHandlerArgs } from './plugin.interface';
 
 /**
@@ -18,11 +19,6 @@ export interface PluginManifest {
   version: string;
   displayName: string;
   description: string;
-  compatibility: {
-    cli: string;
-    core: string;
-    api: string;
-  };
   commands: CommandSpec[];
 }
 
@@ -47,6 +43,9 @@ export interface CommandSpec {
   options?: CommandOption[];
   handler: CommandHandler;
   output: CommandOutputSpec;
+  excessArguments?: boolean;
+  /** Handlebars template for pre-execution confirmation (human format only). Example: 'Delete account {{name}}?' */
+  requireConfirmation?: string;
 }
 
 /**
@@ -54,7 +53,7 @@ export interface CommandSpec {
  */
 export interface CommandOption {
   name: string;
-  type: 'string' | 'number' | 'boolean' | 'array';
+  type: OptionType;
   required: boolean;
   default?: unknown;
   description?: string;

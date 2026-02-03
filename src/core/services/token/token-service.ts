@@ -6,6 +6,7 @@ import type { CustomFee } from '@hashgraph/sdk';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type {
   CustomFee as CustomFeeParams,
+  NftTransferParams,
   TokenAssociationParams,
   TokenCreateParams,
   TokenMintParams,
@@ -17,6 +18,7 @@ import {
   AccountId,
   CustomFixedFee,
   Hbar,
+  NftId,
   TokenAssociateTransaction,
   TokenCreateTransaction,
   TokenId,
@@ -26,6 +28,7 @@ import {
 } from '@hashgraph/sdk';
 
 import { TokenTypeMap } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 
 export class TokenServiceImpl implements TokenService {
   private logger: Logger;
@@ -94,7 +97,7 @@ export class TokenServiceImpl implements TokenService {
 
     // Convert supply type string to enum
     const tokenSupplyType =
-      supplyType === 'FINITE'
+      supplyType === SupplyType.FINITE
         ? TokenSupplyType.Finite
         : TokenSupplyType.Infinite;
 
@@ -110,7 +113,7 @@ export class TokenServiceImpl implements TokenService {
       .setAdminKey(adminPublicKey);
 
     // Set max supply for finite supply tokens
-    if (supplyType === 'FINITE' && maxSupplyRaw !== undefined) {
+    if (supplyType === SupplyType.FINITE && maxSupplyRaw !== undefined) {
       tokenCreateTx.setMaxSupply(maxSupplyRaw);
       this.logger.debug(
         `[TOKEN SERVICE] Set max supply to ${maxSupplyRaw} for finite supply token`,
@@ -228,6 +231,34 @@ export class TokenServiceImpl implements TokenService {
     }
 
     return mintTx;
+  }
+
+  /**
+   * Create an NFT transfer transaction (without execution)
+   */
+  createNftTransferTransaction(params: NftTransferParams): TransferTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating NFT transfer transaction: ${params.serialNumbers.length} NFTs of token ${params.tokenId} from ${params.fromAccountId} to ${params.toAccountId}`,
+    );
+
+    const { tokenId, fromAccountId, toAccountId, serialNumbers } = params;
+
+    const transferTx = new TransferTransaction();
+
+    for (const serial of serialNumbers) {
+      const nftId = new NftId(TokenId.fromString(tokenId), serial);
+      transferTx.addNftTransfer(
+        nftId,
+        AccountId.fromString(fromAccountId),
+        AccountId.fromString(toAccountId),
+      );
+    }
+
+    this.logger.debug(
+      `[TOKEN SERVICE] Created NFT transfer transaction for ${serialNumbers.length} NFTs`,
+    );
+
+    return transferTx;
   }
 
   /**

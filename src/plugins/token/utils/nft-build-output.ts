@@ -1,5 +1,8 @@
 import type { NftInfo, TokenInfo } from '@/core/services/mirrornode/types';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { ViewTokenOutput } from '@/plugins/token/commands/view';
+
+import { SupplyType } from '@/core/types/shared.types';
 
 /**
  * Decode base64 metadata to UTF-8 string
@@ -47,17 +50,27 @@ function formatHederaTimestamp(timestamp?: string): string | undefined {
 export function buildOutput(
   tokenInfo: TokenInfo,
   nftInfo: NftInfo | null,
+  network: SupportedNetwork,
 ): ViewTokenOutput {
+  // Determine supply type based on max_supply
+  // If max_supply is "0", it's INFINITE, otherwise FINITE
+  const supplyType: SupplyType =
+    tokenInfo.max_supply === '0' ? SupplyType.INFINITE : SupplyType.FINITE;
+
   const base = {
     tokenId: tokenInfo.token_id,
     name: tokenInfo.name,
     symbol: tokenInfo.symbol,
     type: tokenInfo.type,
+    network,
     totalSupply: tokenInfo.total_supply,
     maxSupply: tokenInfo.max_supply,
+    supplyType,
     treasury: tokenInfo.treasury || undefined,
     memo: tokenInfo.memo || undefined,
     createdTimestamp: formatHederaTimestamp(tokenInfo.created_timestamp),
+    adminKey: tokenInfo.admin_key?.key || null,
+    supplyKey: tokenInfo.supply_key?.key || null,
   };
 
   // Add decimals only for Fungible Tokens

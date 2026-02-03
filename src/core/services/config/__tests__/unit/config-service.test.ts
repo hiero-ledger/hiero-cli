@@ -23,7 +23,7 @@ describe('ConfigServiceImpl', () => {
 
       const options = configService.listOptions();
 
-      expect(options).toHaveLength(3);
+      expect(options).toHaveLength(4);
       expect(options).toEqual(
         expect.arrayContaining([
           expect.objectContaining({

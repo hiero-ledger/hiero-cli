@@ -1,0 +1,13 @@
+import type {
+  ContractCreateFlowParams,
+  ContractCreateFlowResult,
+} from '@/core/services/contract-transaction/types';
+
+export interface ContractTransactionService {
+  /**
+   * Create a contract create transaction (without execution)
+   */
+  contractCreateFlowTransaction(
+    params: ContractCreateFlowParams,
+  ): ContractCreateFlowResult;
+}

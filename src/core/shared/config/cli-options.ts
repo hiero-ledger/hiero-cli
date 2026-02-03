@@ -2,6 +2,7 @@ import type { PluginManifest } from '@/core/plugins/plugin.types';
 
 import accountPluginManifest from '@/plugins/account/manifest';
 import configPluginManifest from '@/plugins/config/manifest';
+import contractPluginManifest from '@/plugins/contract/manifest';
 import credentialsPluginManifest from '@/plugins/credentials/manifest';
 import hbarPluginManifest from '@/plugins/hbar/manifest';
 import networkPluginManifest from '@/plugins/network/manifest';
@@ -22,6 +23,15 @@ export const RESERVED_LONG_OPTIONS = new Set<string>([
   'help',
   'version',
   'network',
+  'payer',
+  'confirm',
+]);
+
+export const RESERVED_SHORT_OPTIONS = new Set<string>([
+  'h', // help (Commander default)
+  'V', // version (Commander default)
+  'N', // network
+  'P', // Payer
 ]);
 
 export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
@@ -32,5 +42,6 @@ export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
   credentialsPluginManifest,
   topicPluginManifest,
   hbarPluginManifest,
+  contractPluginManifest,
   configPluginManifest,
 ];

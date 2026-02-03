@@ -15,7 +15,7 @@ import {
   TokenTypeSchema,
 } from '@/core/schemas';
 import { HederaTokenType } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Zod schema for token association
@@ -82,10 +82,8 @@ export const TokenDataSchema = z.object({
     },
   ),
 
-  supplyType: z.enum(['FINITE', 'INFINITE'], {
-    error: () => ({
-      message: 'Supply type must be either FINITE or INFINITE',
-    }),
+  supplyType: z.enum(SupplyType, {
+    message: `Supply type must be either ${SupplyType.FINITE} or ${SupplyType.INFINITE}`,
   }),
 
   maxSupply: z
@@ -141,7 +139,7 @@ export function safeParseTokenData(data: unknown) {
 export const TokenFileFixedFeeSchema = z
   .object({
     type: z.literal('fixed'),
-    amount: z.number().int().positive('Amount must be positive'),
+    amount: z.int().positive('Amount must be positive'),
     unitType: z.literal('HBAR').optional().default('HBAR'),
     collectorId: EntityIdSchema.optional(),
     exempt: z.boolean().optional(),
@@ -171,4 +169,53 @@ export const FungibleTokenFileSchema = z.object({
 
 export type FungibleTokenFileDefinition = z.infer<
   typeof FungibleTokenFileSchema
+>;
+
+function validateFileSupplyTypeAndMaxSupply<
+  Args extends {
+    maxSupply?: bigint | number;
+    supplyType?: 'finite' | 'infinite';
+  },
+>(args: Args, ctx: z.RefinementCtx) {
+  const isFinite = args.supplyType === 'finite';
+
+  if (isFinite && !args.maxSupply) {
+    ctx.addIssue({
+      message: 'maxSupply is required when supplyType is finite',
+      code: z.ZodIssueCode.custom,
+      path: ['maxSupply'],
+    });
+  }
+
+  if (!isFinite && args.maxSupply) {
+    ctx.addIssue({
+      message:
+        'maxSupply should not be provided when supplyType is infinite, set supplyType to finite to specify maxSupply',
+      code: z.ZodIssueCode.custom,
+      path: ['maxSupply'],
+    });
+  }
+}
+
+export const NonFungibleTokenFileSchema = z
+  .object({
+    name: TokenNameSchema,
+    symbol: TokenSymbolSchema,
+    supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
+    maxSupply: NonNegativeNumberOrBigintSchema.optional(),
+    treasuryKey: KeyOrAccountAliasSchema,
+    adminKey: KeyOrAccountAliasSchema,
+    supplyKey: KeyOrAccountAliasSchema,
+    wipeKey: KeyOrAccountAliasSchema.optional(),
+    kycKey: KeyOrAccountAliasSchema.optional(),
+    freezeKey: KeyOrAccountAliasSchema.optional(),
+    pauseKey: KeyOrAccountAliasSchema.optional(),
+    feeScheduleKey: KeyOrAccountAliasSchema.optional(),
+    associations: z.array(KeyOrAccountAliasSchema).default([]),
+    memo: MemoSchema.default(''),
+  })
+  .superRefine(validateFileSupplyTypeAndMaxSupply);
+
+export type NonFungibleTokenFileDefinition = z.infer<
+  typeof NonFungibleTokenFileSchema
 >;

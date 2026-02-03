@@ -1,6 +1,6 @@
 import { makeArgs } from '@/__tests__/mocks/mocks';
 import { HederaTokenType, Status } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import {
   listTokens,
   type ListTokensOutput,
@@ -195,21 +195,19 @@ describe('token plugin - list command', () => {
       stats: makeTokenStats({
         total: 1,
         byNetwork: { testnet: 1 },
-        bySupplyType: { INFINITE: 1 },
+        bySupplyType: { [SupplyType.INFINITE]: 1 },
       }),
     });
 
     const { api } = makeApiMocks({
       network: 'testnet',
       alias: {
-        list: jest.fn().mockReturnValue([
-          {
-            alias: 'my-token',
-            type: 'token',
-            network: 'testnet',
-            entityId: '0.0.1111',
-          },
-        ]),
+        resolve: jest.fn().mockReturnValue({
+          alias: 'my-token',
+          type: 'token',
+          network: 'testnet',
+          entityId: '0.0.1111',
+        }),
       },
     });
     const args = makeArgs(api, logger, {});
@@ -286,7 +284,7 @@ describe('token plugin - list command', () => {
 
     const output: ListTokensOutput = JSON.parse(result.outputJson!);
     expect(output.tokens).toHaveLength(1);
-    expect(output.tokens[0].supplyType).toBe('FINITE');
+    expect(output.tokens[0].supplyType).toBe(SupplyType.FINITE);
     expect(output.tokens[0].name).toBe('Finite Token');
     expect(output.tokens[0].symbol).toBe('FNT');
   });
@@ -314,7 +312,7 @@ describe('token plugin - list command', () => {
       stats: makeTokenStats({
         total: 2,
         byNetwork: { testnet: 2 },
-        bySupplyType: { INFINITE: 2 },
+        bySupplyType: { [SupplyType.INFINITE]: 2 },
         withKeys: 2,
       }),
     });

@@ -13,6 +13,7 @@ import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 import {
   createAccount,
   getAccountBalance,
@@ -79,7 +80,7 @@ describe('Mint FT Integration Tests', () => {
       symbol: 'TTM',
       treasury: 'account-mint-ft',
       initialSupply: '100',
-      supplyType: 'INFINITE',
+      supplyType: SupplyType.INFINITE,
       supplyKey: `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
       name: 'test-token-mint',
     };
@@ -101,7 +102,7 @@ describe('Mint FT Integration Tests', () => {
     expect(createTokenOutput.alias).toBe('test-token-mint');
     expect(createTokenOutput.treasuryId).toBe(createAccountOutput.accountId);
     expect(createTokenOutput.symbol).toBe('TTM');
-    expect(createTokenOutput.supplyType).toBe('INFINITE');
+    expect(createTokenOutput.supplyType).toBe(SupplyType.INFINITE);
 
     await delay(5000);
 

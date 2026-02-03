@@ -4,6 +4,8 @@
  */
 import type { PluginManifest } from '@/core';
 
+import { OptionType } from '@/core/types/shared.types';
+
 import {
   GET_CONFIG_TEMPLATE,
   getConfigOption,
@@ -25,11 +27,6 @@ export const configPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Configuration Plugin',
   description: 'Manage CLI configuration options',
-  compatibility: {
-    cli: '^1.0.0',
-    core: '^1.0.0',
-    api: '^1.0.0',
-  },
   commands: [
     {
       name: 'list',
@@ -50,7 +47,7 @@ export const configPluginManifest: PluginManifest = {
         {
           name: 'option',
           short: 'o',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description: 'Option name to read',
         },
@@ -69,7 +66,7 @@ export const configPluginManifest: PluginManifest = {
         {
           name: 'option',
           short: 'o',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Option name to set. Use `list` command to check what options could be set',
@@ -77,7 +74,7 @@ export const configPluginManifest: PluginManifest = {
         {
           name: 'value',
           short: 'v',
-          type: 'string',
+          type: OptionType.STRING,
           required: true,
           description:
             'Value to set (boolean|number|string). Booleans: true/false.',

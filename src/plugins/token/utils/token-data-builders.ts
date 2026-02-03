@@ -7,8 +7,12 @@ import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type {
   FungibleTokenFileDefinition,
+  NonFungibleTokenFileDefinition,
   TokenData,
 } from '@/plugins/token/schema';
+
+import { HederaTokenType as HederaTokenTypeValues } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 
 export function buildTokenData(
   result: TransactionResult,
@@ -33,9 +37,11 @@ export function buildTokenData(
     decimals: params.decimals,
     initialSupply: params.initialSupply,
     tokenType: params.tokenType,
-    supplyType: params.supplyType.toUpperCase() as 'FINITE' | 'INFINITE',
+    supplyType: params.supplyType.toUpperCase() as SupplyType,
     maxSupply:
-      params.supplyType.toUpperCase() === 'FINITE' ? params.initialSupply : 0n,
+      (params.supplyType.toUpperCase() as SupplyType) === SupplyType.FINITE
+        ? params.initialSupply
+        : 0n,
     adminPublicKey: params.adminPublicKey,
     supplyPublicKey: params?.supplyPublicKey,
     network: params.network,
@@ -76,9 +82,7 @@ export function buildTokenDataFromFile(
     decimals: tokenDefinition.decimals,
     initialSupply: tokenDefinition.initialSupply,
     tokenType: tokenDefinition.tokenType,
-    supplyType: tokenDefinition.supplyType.toUpperCase() as
-      | 'FINITE'
-      | 'INFINITE',
+    supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
     maxSupply: tokenDefinition.maxSupply,
     network,
     associations: [],
@@ -89,6 +93,39 @@ export function buildTokenDataFromFile(
       collectorId: fee.collectorId,
       exempt: fee.exempt,
     })),
+    memo: tokenDefinition.memo,
+  };
+}
+
+export function buildNftTokenDataFromFile(
+  result: TransactionResult,
+  tokenDefinition: NonFungibleTokenFileDefinition,
+  treasuryId: string,
+  adminPublicKey: string,
+  supplyPublicKey: string,
+  network: SupportedNetwork,
+  keys?: Omit<TokenKeyOptions, 'supplyPublicKey'>,
+): TokenData {
+  return {
+    tokenId: result.tokenId!,
+    name: tokenDefinition.name,
+    symbol: tokenDefinition.symbol,
+    treasuryId,
+    adminPublicKey,
+    supplyPublicKey,
+    wipePublicKey: keys?.wipePublicKey,
+    kycPublicKey: keys?.kycPublicKey,
+    freezePublicKey: keys?.freezePublicKey,
+    pausePublicKey: keys?.pausePublicKey,
+    feeSchedulePublicKey: keys?.feeSchedulePublicKey,
+    decimals: 0,
+    initialSupply: 0n,
+    tokenType: HederaTokenTypeValues.NON_FUNGIBLE_TOKEN,
+    supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
+    maxSupply: tokenDefinition.maxSupply ?? 0n,
+    network,
+    associations: [],
+    customFees: [],
     memo: tokenDefinition.memo,
   };
 }

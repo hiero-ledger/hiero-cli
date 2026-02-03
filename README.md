@@ -16,6 +16,7 @@ A key advantage of the Hiero CLI Tool is its potential to enhance your workflow.
   - [Installation](#installation)
 - [Video Guide](#video-guide)
 - [Plugins](#plugins)
+- [Global Flags](#global-flags)
 - [Configuration & State Storage](#configuration--state-storage)
   - [State directory location](#state-directory-location)
   - [Script mode](#script-mode)
@@ -40,7 +41,7 @@ Once installed, you can use the CLI with the `hcli` command:
 hcli --help
 
 # Example: Check account balance
-hcli account balance --account-id 0.0.123456
+hcli account balance --account 0.0.123456
 
 # Example: Transfer HBAR
 hcli hbar transfer --to 0.0.123456 --amount 10
@@ -134,7 +135,7 @@ node dist/hiero-cli.js network set-operator --operator 0.0.123456:302e0201003005
 node dist/hiero-cli.js network set-operator --operator 0.0.123456:302e020100300506032b657004220420... --network mainnet
 ```
 
-> **💡 Note**: The `--network` flag used above is a global flag available for all CLI commands. It allows you to execute commands on a specific network without changing the CLI's default network.
+> **💡 Note**: The `--network` flag used above is a global flag. See [Global Flags](#global-flags) section for more information.
 
 The operator credentials are stored in the CLI's state management system. Make sure that each operator account **contains at least 1 Hbar** for transaction fees.
 
@@ -162,9 +163,47 @@ You can also use the short form `-g`:
 node dist/hiero-cli.js network use -g mainnet
 ```
 
-> **💡 Global Network Flag**: You can execute any command on a different network without changing the CLI's default network by using the global `--network` or `-N` flag. For example: `hcli account list --network previewnet` will list accounts on previewnet without switching the default network.
+### 7. Global Flags
 
-### 7. Optional: Setting Up an Alias
+The CLI provides global flags that can be used with any command to override default behavior:
+
+#### `--network` / `-N` - Network Override
+
+Execute any command on a different network without changing the CLI's default network:
+
+```sh
+# Transfer HBAR on mainnet while default network is testnet
+hcli hbar transfer --amount 1 --to 0.0.789012 --network mainnet
+
+# Set operator for a specific network
+hcli network set-operator --operator 0.0.123456:302e... --network testnet
+```
+
+#### `--payer` / `-P` - Payer Override
+
+Override the default operator as the payer for all transactions in a command. The payer can be specified as:
+
+- **Account alias**: `--payer myaccount`
+- **Account ID with private key**: `--payer 0.0.123456:302e020100300506032b657004220420...`
+
+```sh
+# Transfer HBAR with a different account paying for the transaction
+hcli hbar transfer --amount 1 --to 0.0.789012 --payer myaccount
+
+# Create token with a specific account as payer
+hcli token create-ft --tokenName "MyToken" --symbol "MT" --payer 0.0.123456:302e...
+
+# Use payer flag with network flag together
+hcli hbar transfer --amount 1 --to 0.0.789012 --network testnet --payer myaccount
+```
+
+**Important Notes:**
+
+- The payer account must have sufficient HBAR to cover transaction fees
+- The payer is used for all transactions executed by the command
+- The payer account must be accessible (either as an alias or via the provided private key)
+
+### 8. Optional: Setting Up an Alias
 
 To avoid typing the full command each time, you can set an alias in your shell profile. Replace the path with the absolute path to your `hiero-cli` installation.
 
@@ -296,7 +335,7 @@ You can override the default key manager for specific operations by providing th
 
 ```bash
 # Import account with encrypted key storage
-hcli account import --id 0.0.123456 --key <private-key> --name myaccount --key-manager local_encrypted
+hcli account import --key 0.0.123456:<private-key> --name myaccount --key-manager local_encrypted
 
 # Set operator with plain text storage
 hcli network set-operator --operator 0.0.123456:302e... --network testnet --key-manager local

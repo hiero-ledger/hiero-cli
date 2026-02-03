@@ -6,6 +6,9 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
+import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
+import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
 import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
@@ -88,6 +91,9 @@ export const makeNetworkMock = (
     accountId: '0.0.100000',
     keyRefId: 'operator-key-ref-id',
   }),
+  setPayer: jest.fn(),
+  getPayer: jest.fn().mockReturnValue(null),
+  hasAnyOperator: jest.fn().mockReturnValue(false),
 });
 
 /**
@@ -110,6 +116,7 @@ export const makeKmsMock = (): jest.Mocked<KmsService> => ({
   remove: jest.fn(),
   createClient: jest.fn(),
   signTransaction: jest.fn(),
+  signContractCreateFlow: jest.fn(),
 });
 
 /**
@@ -199,6 +206,13 @@ export const makeSigningMock = (
       receipt: { status: { status: 'success' } },
     }),
   signAndExecuteWith:
+    options.signAndExecuteImpl ||
+    jest.fn().mockResolvedValue({
+      success: true,
+      transactionId: 'mock-tx-id',
+      receipt: { status: { status: 'success' } },
+    }),
+  signAndExecuteContractCreateFlowWith:
     options.signAndExecuteImpl ||
     jest.fn().mockResolvedValue({
       success: true,
@@ -344,6 +358,7 @@ const makeOutputMock = (): jest.Mocked<OutputService> => ({
   handleCommandOutput: jest.fn(),
   setFormat: jest.fn(),
   getFormat: jest.fn().mockReturnValue('human'),
+  emptyLine: jest.fn(),
 });
 
 const makePluginManagementServiceMock = (): PluginManagementService =>
@@ -356,6 +371,21 @@ const makePluginManagementServiceMock = (): PluginManagementService =>
     disablePlugin: jest.fn(),
     savePluginState: jest.fn(),
   }) as unknown as PluginManagementService;
+
+const makeContractTransactionServiceMock = (): ContractTransactionService =>
+  ({
+    contractCreateFlowTransaction: jest.fn(),
+  }) as unknown as ContractTransactionService;
+
+const makeContractVerifierServiceMock = (): ContractVerifierService =>
+  ({
+    verifyContract: jest.fn(),
+  }) as unknown as ContractVerifierService;
+
+const makeContractCompilerServiceMock = (): ContractCompilerService =>
+  ({
+    compileContract: jest.fn(),
+  }) as unknown as ContractCompilerService;
 
 /**
  * Create a mocked ConfigService
@@ -377,6 +407,11 @@ export const makeArgs = (
   const network = api.network || makeNetworkMock('testnet');
   const alias = api.alias || makeAliasMock();
   const kms = api.kms || makeKmsMock();
+  const contract = api.contract || makeContractTransactionServiceMock();
+  const contractCompiler =
+    api.contractCompiler || makeContractCompilerServiceMock();
+  const contractVerifier =
+    api.contractVerifier || makeContractVerifierServiceMock();
 
   // Exclude state and config from api spread since they're already mocked above
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -429,6 +464,9 @@ export const makeArgs = (
     hbar: makeHbarMock(),
     output: makeOutputMock(),
     pluginManagement: makePluginManagementServiceMock(),
+    contract,
+    contractCompiler,
+    contractVerifier,
     keyResolver: makeKeyResolverMock({ network, alias, kms }),
     ...restApi,
   } as unknown as CoreApi;

@@ -50,6 +50,11 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── transfer-nft/
+│   │   ├── handler.ts       # NFT transfer handler
+│   │   ├── input.ts         # Input validation schema
+│   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts         # Command exports
 │   ├── associate/
 │   │   ├── handler.ts       # Token association handler
 │   │   ├── input.ts         # Input schema
@@ -242,16 +247,16 @@ hcli token view --token my-collection --serial 1
 
 ### Token Associate
 
-Associate a fungible or non-fungible token with an account to enable transfers.
+Associate a fungible or non-fungible token with an account to enable transfers. Use `token associate` for both FT and NFT tokens.
 
 ```bash
 # Using account alias
-hcli token associate-ft \
+hcli token associate \
   --token mytoken-alias \
   --account alice
 
 # Using account-id:account-key pair
-hcli token associate-ft \
+hcli token associate \
   --token 0.0.123456 \
   --account 0.0.789012:302e020100300506032b657004220420...
 ```
@@ -275,6 +280,43 @@ hcli token transfer-ft \
   --to 0.0.222222 \
   --amount 100t
 ```
+
+### Token Transfer NFT
+
+Transfer one or more NFTs from one account to another.
+
+```bash
+# Using account alias for source
+hcli token transfer-nft \
+  --token mynft-alias \
+  --from alice \
+  --to bob \
+  --serials 1,2,3
+
+# Using account-id:private-key pair for source
+hcli token transfer-nft \
+  --token 0.0.123456 \
+  --from 0.0.111111:302e020100300506032b657004220420... \
+  --to 0.0.222222 \
+  --serials 5
+
+# Omitting --from uses operator account
+hcli token transfer-nft \
+  --token mynft-alias \
+  --to bob \
+  --serials 1,2,3
+```
+
+**Parameters:**
+
+- `--token` / `-T`: NFT token identifier (alias or token ID) - **Required**
+- `--to` / `-t`: Destination account (alias, account-id, or EVM address) - **Required**
+- `--from` / `-f`: Source account (alias or account-id:private-key pair) - **Optional** (defaults to operator)
+- `--serials` / `-s`: NFT serial numbers to transfer (comma-separated, max 10) - **Required**
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Note:** Maximum 10 serial numbers per transaction (Hedera limit). The command verifies NFT ownership before transfer.
 
 ### Token List
 
@@ -353,6 +395,55 @@ The token file supports aliases and raw keys with optional key type prefixes:
 
 **Note**: Token name is automatically registered as an alias after successful creation. Duplicate names are not allowed.
 
+### Token Create From File (Non-Fungible Token)
+
+Create a new non-fungible token from a JSON file definition with advanced features.
+
+```bash
+# Basic usage
+hcli token create-nft-from-file --file nft-definition.json
+
+# With specific key manager
+hcli token create-nft-from-file --file nft-definition.json --key-manager local_encrypted
+```
+
+**Token File Format:**
+
+The NFT file supports aliases and raw keys with optional key type prefixes:
+
+```json
+{
+  "name": "my-nft",
+  "symbol": "MNFT",
+  "supplyType": "finite",
+  "maxSupply": 1000,
+  "treasuryKey": "<alias or accountId:privateKey>",
+  "adminKey": "<alias or accountId:privateKey>",
+  "supplyKey": "<alias or accountId:privateKey>",
+  "wipeKey": "<alias or accountId:privateKey>",
+  "kycKey": "<alias or accountId:privateKey>",
+  "freezeKey": "<alias or accountId:privateKey>",
+  "pauseKey": "<alias or accountId:privateKey>",
+  "feeScheduleKey": "<alias or accountId:privateKey>",
+  "memo": "Optional NFT collection memo",
+  "associations": ["<alias or accountId:privateKey>", "..."]
+}
+```
+
+**Supported formats for treasury and keys:**
+
+- **Alias**: `"my-account"` - resolved via alias service
+- **Account with key**: `"0.0.123456:privateKey"`
+
+**Key Differences from Fungible Token:**
+
+- No `decimals` or `initialSupply` fields (NFT-specific)
+- `maxSupply` represents the maximum number of NFT instances in the collection
+- NFTs are minted individually with metadata via `mint-nft` command
+- No `customFees` field (planned for future versions)
+
+**Note**: NFT token name is automatically registered as an alias after successful creation. Duplicate names are not allowed. Token associations are created automatically for all specified accounts.
+
 ## 📝 Parameter Formats
 
 The plugin supports flexible parameter formats:
@@ -419,9 +510,10 @@ interface TokenData {
   name: string;
   symbol: string;
   treasuryId: string;
+  tokenType: 'FUNGIBLE_COMMON' | 'NON_FUNGIBLE_UNIQUE';
   decimals: number;
   initialSupply: number;
-  supplyType: 'FINITE' | 'INFINITE';
+  supplyType: SupplyType;
   maxSupply: number;
   memo?: string;
   keys: TokenKeys;
@@ -431,7 +523,7 @@ interface TokenData {
 }
 ```
 
-The schema is validated using Zod (`TokenDataSchema`) and stored as JSON Schema in the plugin manifest for runtime validation.
+The `tokenType` field discriminates fungible tokens (`FUNGIBLE_COMMON`) from NFT collections (`NON_FUNGIBLE_UNIQUE`). NFT tokens use zero for `decimals` and `initialSupply`; minted NFTs are tracked by serial number on the ledger. The schema is validated using Zod (`TokenDataSchema`) and stored as JSON Schema in the plugin manifest for runtime validation.
 
 ## 🧪 Testing
 

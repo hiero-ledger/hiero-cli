@@ -2,7 +2,10 @@
  * Unit tests for KmsServiceImpl
  * Verifies key creation, import, signer handling, removal, and signing logic
  */
-import type { Transaction as HederaTransaction } from '@hashgraph/sdk';
+import type {
+  ContractCreateFlow,
+  Transaction as HederaTransaction,
+} from '@hashgraph/sdk';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { Signer } from '@/core/services/kms/signers/signer.interface';
@@ -351,6 +354,42 @@ describe('KmsServiceImpl', () => {
     expect(PublicKey.fromString).toHaveBeenCalledWith('sign-public');
     expect(transaction.signWith).toHaveBeenCalled();
     expect(signerHandle.sign).toHaveBeenCalledWith(new Uint8Array([1]));
+  });
+
+  it('signContractCreateFlow delegates to signer handle', () => {
+    const { service } = setupService();
+    credentialStorageMockInstance.get.mockReturnValue({
+      keyRefId: 'kr_sign_flow',
+      keyManager: KEY_MANAGERS.local,
+      publicKey: 'sign-flow-public',
+      keyAlgorithm: KeyAlgorithm.ECDSA,
+    });
+    const signerHandle = {
+      getPublicKey: jest.fn().mockReturnValue('sign-flow-public'),
+      sign: jest.fn().mockResolvedValue(new Uint8Array([42])),
+    };
+    getLocalKeyManager(KEY_MANAGERS.local).createSigner.mockReturnValue(
+      signerHandle as Signer,
+    );
+    const contractCreateFlow = {
+      signWith: jest.fn(
+        async (
+          _: unknown,
+          signer: (msg: Uint8Array) => Promise<Uint8Array>,
+        ) => {
+          await signer(new Uint8Array([7]));
+        },
+      ),
+    };
+
+    service.signContractCreateFlow(
+      contractCreateFlow as unknown as ContractCreateFlow,
+      'kr_sign_flow',
+    );
+
+    expect(PublicKey.fromString).toHaveBeenCalledWith('sign-flow-public');
+    expect(contractCreateFlow.signWith).toHaveBeenCalled();
+    expect(signerHandle.sign).toHaveBeenCalledWith(new Uint8Array([7]));
   });
 
   it('createClient builds Hedera client using operator credentials', () => {

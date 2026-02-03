@@ -11,6 +11,7 @@ import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { TokenServiceImpl } from '@/core/services/token/token-service';
 import { HederaTokenType } from '@/core/shared/constants';
+import { SupplyType } from '@/core/types/shared.types';
 
 import {
   createMockCustomFixedFee,
@@ -236,7 +237,7 @@ describe('TokenServiceImpl', () => {
       decimals: TOKEN_DECIMALS,
       initialSupplyRaw: INITIAL_SUPPLY,
       tokenType: TOKEN_TYPE,
-      supplyType: 'INFINITE' as const,
+      supplyType: SupplyType.INFINITE,
       adminPublicKey: mockPublicKeyInstance as unknown as PublicKey,
     };
 
@@ -256,7 +257,7 @@ describe('TokenServiceImpl', () => {
         INITIAL_SUPPLY,
       );
       expect(mockTokenCreateTransaction.setSupplyType).toHaveBeenCalledWith(
-        'INFINITE',
+        SupplyType.INFINITE,
       );
       expect(mockTokenCreateTransaction.setTokenType).toHaveBeenCalledWith(
         TokenType.FungibleCommon,
@@ -273,14 +274,14 @@ describe('TokenServiceImpl', () => {
     it('should create token with FINITE supply type and max supply', () => {
       const params = {
         ...baseParams,
-        supplyType: 'FINITE' as const,
+        supplyType: SupplyType.FINITE,
         maxSupplyRaw: MAX_SUPPLY,
       };
 
       tokenService.createTokenTransaction(params);
 
       expect(mockTokenCreateTransaction.setSupplyType).toHaveBeenCalledWith(
-        'FINITE',
+        SupplyType.FINITE,
       );
       expect(mockTokenCreateTransaction.setMaxSupply).toHaveBeenCalledWith(
         MAX_SUPPLY,
@@ -293,7 +294,7 @@ describe('TokenServiceImpl', () => {
     it('should not set max supply for INFINITE supply type', () => {
       const params = {
         ...baseParams,
-        supplyType: 'INFINITE' as const,
+        supplyType: SupplyType.INFINITE,
       };
 
       tokenService.createTokenTransaction(params);

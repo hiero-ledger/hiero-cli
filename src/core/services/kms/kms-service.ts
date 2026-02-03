@@ -1,4 +1,7 @@
-import type { Transaction as HederaTransaction } from '@hashgraph/sdk';
+import type {
+  ContractCreateFlow,
+  Transaction as HederaTransaction,
+} from '@hashgraph/sdk';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
@@ -254,6 +257,7 @@ export class KmsServiceImpl implements KmsService {
 
   createClient(network: SupportedNetwork): Client {
     const operator = this.networkService.getOperator(network);
+
     if (!operator) {
       throw new Error(`[CRED] No operator configured for network: ${network}`);
     }
@@ -326,6 +330,20 @@ export class KmsServiceImpl implements KmsService {
     // Use the opaque signer handle for signing
     // eslint-disable-next-line @typescript-eslint/require-await
     await transaction.signWith(publicKey, async (message: Uint8Array) =>
+      handle.sign(message),
+    );
+  }
+
+  signContractCreateFlow(
+    transaction: ContractCreateFlow,
+    keyRefId: string,
+  ): void {
+    const handle = this.getSignerHandle(keyRefId);
+    const publicKey = PublicKey.fromString(handle.getPublicKey());
+
+    // Use the opaque signer handle for signing
+    // eslint-disable-next-line @typescript-eslint/require-await
+    transaction.signWith(publicKey, async (message: Uint8Array) =>
       handle.sign(message),
     );
   }
