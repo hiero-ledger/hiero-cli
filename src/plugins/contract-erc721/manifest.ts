@@ -10,6 +10,11 @@ import {
   CONTRACT_ERC721_CALL_BALANCE_OF_CREATE_TEMPLATE,
   ContractErc721CallBalanceOfOutputSchema,
 } from '@/plugins/contract-erc721/commands/balance-of';
+import {
+  CONTRACT_ERC721_CALL_TOKEN_URI_TEMPLATE,
+  ContractErc721CallTokenUriOutputSchema,
+  tokenUriFunctionCall,
+} from '@/plugins/contract-erc721/commands/token-uri';
 
 export const contractErc721PluginManifest: PluginManifest = {
   name: 'contract-erc721',
@@ -43,6 +48,34 @@ export const contractErc721PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc721CallBalanceOfOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_BALANCE_OF_CREATE_TEMPLATE,
+      },
+    },
+    {
+      name: 'token-uri',
+      summary: 'Call tokenURI function',
+      description:
+        'Command for calling ERC-721 tokenURI(uint256 tokenId) function (returns metadata URI for token)',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias or contract ID. Option required',
+        },
+        {
+          name: 'tokenId',
+          short: 't',
+          type: OptionType.NUMBER,
+          required: true,
+          description: 'Token ID (uint256) to query URI for. Option required',
+        },
+      ],
+      handler: tokenUriFunctionCall,
+      output: {
+        schema: ContractErc721CallTokenUriOutputSchema,
+        humanTemplate: CONTRACT_ERC721_CALL_TOKEN_URI_TEMPLATE,
       },
     },
   ],
