@@ -2,12 +2,17 @@
  * Unit tests for plugin-management disable command
  */
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import {
   PluginManagementDisableStatus,
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { Status } from '@/core/shared/constants';
 import { disablePlugin } from '@/plugins/plugin-management/commands/disable/handler';
+import {
+  type DisablePluginOutput,
+  RemovePluginOutputSchema as DisablePluginOutputSchema,
+} from '@/plugins/plugin-management/commands/disable/output';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 describe('plugin-management disable command', () => {
@@ -36,7 +41,10 @@ describe('plugin-management disable command', () => {
       'custom-plugin',
     );
 
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<DisablePluginOutput>(
+      result.outputJson!,
+      DisablePluginOutputSchema,
+    );
     expect(output.name).toBe('custom-plugin');
     expect(output.removed).toBe(true);
     expect(output.message).toContain('disabled successfully');

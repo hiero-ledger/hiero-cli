@@ -1,12 +1,4 @@
-import {
-  createMirrorNodeMock,
-  makeArgs,
-  makeLogger,
-  makeNetworkMock,
-  setupExitSpy,
-} from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
-import { useHandler } from '@/plugins/network/commands/use';
+import {\n  createMirrorNodeMock,\n  makeArgs,\n  makeLogger,\n  makeNetworkMock,\n  setupExitSpy,\n} from '@/__tests__/mocks/mocks';\nimport { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';\nimport { Status } from '@/core/shared/constants';\nimport {\n  UseNetworkOutputSchema,\n  type UseNetworkOutput,\n} from '@/plugins/network/commands/use/output';\nimport { useHandler } from '@/plugins/network/commands/use';
 
 let exitSpy: jest.SpyInstance;
 

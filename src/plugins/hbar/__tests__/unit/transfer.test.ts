@@ -1,11 +1,15 @@
+import type { TransferOutput } from '@/plugins/hbar/commands/transfer/output';
+
 import '@/core/utils/json-serialize';
 
 import { ZodError } from 'zod';
 
 import { makeArgs } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { transferHandler } from '@/plugins/hbar/commands/transfer';
 import { TransferInputSchema } from '@/plugins/hbar/commands/transfer/input';
+import { TransferOutputSchema } from '@/plugins/hbar/commands/transfer/output';
 
 import {
   mockAccountIdKeyPairs,
@@ -49,6 +53,12 @@ describe('hbar plugin - transfer command (unit)', () => {
     const result = await transferHandler(args);
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
+
+    const output = validateOutputSchema<TransferOutput>(
+      result.outputJson!,
+      TransferOutputSchema,
+    );
+    expect(output.transactionId).toBeDefined();
 
     expect(hbar.transferTinybar).toHaveBeenCalledWith({
       amount: mockParsedBalances.large,

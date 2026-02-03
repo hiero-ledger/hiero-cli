@@ -6,8 +6,13 @@ import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { getPluginInfo } from '@/plugins/plugin-management/commands/info/handler';
+import {
+  type PluginInfoOutput,
+  PluginInfoOutputSchema,
+} from '@/plugins/plugin-management/commands/info/output';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 /**
@@ -90,7 +95,10 @@ describe('plugin-management info command', () => {
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<PluginInfoOutput>(
+      result.outputJson!,
+      PluginInfoOutputSchema,
+    );
     expect(output.found).toBe(true);
     expect(output.plugin.name).toBe('topic');
     expect(output.plugin.version).toBe('2.0.0');
@@ -118,7 +126,10 @@ describe('plugin-management info command', () => {
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<PluginInfoOutput>(
+      result.outputJson!,
+      PluginInfoOutputSchema,
+    );
     expect(output.found).toBe(true);
     expect(output.plugin.name).toBe('custom-plugin');
     expect(output.plugin.version).toBe('unknown');

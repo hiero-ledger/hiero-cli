@@ -10,8 +10,10 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import { createTopic } from '@/plugins/topic/commands/create/handler';
+import { CreateTopicOutputSchema } from '@/plugins/topic/commands/create/output';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -119,7 +121,10 @@ describe('topic plugin - create command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: CreateTopicOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<CreateTopicOutput>(
+      result.outputJson!,
+      CreateTopicOutputSchema,
+    );
     expect(output.topicId).toBe('0.0.9999');
     expect(output.memo).toBe('Test topic memo');
     expect(output.network).toBe('testnet');
@@ -183,7 +188,10 @@ describe('topic plugin - create command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: CreateTopicOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<CreateTopicOutput>(
+      result.outputJson!,
+      CreateTopicOutputSchema,
+    );
     expect(output.topicId).toBe('0.0.8888');
     expect(output.adminKeyPresent).toBe(true);
     expect(output.submitKeyPresent).toBe(true);
@@ -252,7 +260,10 @@ describe('topic plugin - create command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: CreateTopicOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<CreateTopicOutput>(
+      result.outputJson!,
+      CreateTopicOutputSchema,
+    );
     expect(output.topicId).toBe('0.0.7777');
     expect(output.memo).toBeUndefined();
 

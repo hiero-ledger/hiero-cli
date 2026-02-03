@@ -3,7 +3,9 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { ClearAccountsOutput } from '@/plugins/account/commands/clear';
 
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
+import { ClearAccountsOutputSchema } from '@/plugins/account/commands/clear';
 import { clearAccounts } from '@/plugins/account/commands/clear/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -54,7 +56,10 @@ describe('account plugin - clear command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ClearAccountsOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<ClearAccountsOutput>(
+      result.outputJson!,
+      ClearAccountsOutputSchema,
+    );
     expect(output.clearedCount).toBe(2);
   });
 

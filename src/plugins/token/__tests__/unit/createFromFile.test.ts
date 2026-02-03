@@ -10,10 +10,12 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { HederaTokenType, Status } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
   type CreateFungibleTokenFromFileOutput,
+  CreateFungibleTokenFromFileOutputSchema,
   createTokenFromFile,
 } from '@/plugins/token/commands/create-ft-from-file';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -175,8 +177,9 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
+      const output = validateOutputSchema<CreateFungibleTokenFromFileOutput>(
         result.outputJson!,
+        CreateFungibleTokenFromFileOutputSchema,
       );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
@@ -232,8 +235,9 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
+      const output = validateOutputSchema<CreateFungibleTokenFromFileOutput>(
         result.outputJson!,
+        CreateFungibleTokenFromFileOutputSchema,
       );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
@@ -272,8 +276,9 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
+      const output = validateOutputSchema<CreateFungibleTokenFromFileOutput>(
         result.outputJson!,
+        CreateFungibleTokenFromFileOutputSchema,
       );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
@@ -357,8 +362,9 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
+      const output = validateOutputSchema<CreateFungibleTokenFromFileOutput>(
         result.outputJson!,
+        CreateFungibleTokenFromFileOutputSchema,
       );
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -466,8 +472,9 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
+      const output = validateOutputSchema<CreateFungibleTokenFromFileOutput>(
         result.outputJson!,
+        CreateFungibleTokenFromFileOutputSchema,
       );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.associations).toBeDefined();
@@ -899,8 +906,9 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
+      const output = validateOutputSchema<CreateFungibleTokenFromFileOutput>(
         result.outputJson!,
+        CreateFungibleTokenFromFileOutputSchema,
       );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
@@ -985,8 +993,9 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
+      const output = validateOutputSchema<CreateFungibleTokenFromFileOutput>(
         result.outputJson!,
+        CreateFungibleTokenFromFileOutputSchema,
       );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');

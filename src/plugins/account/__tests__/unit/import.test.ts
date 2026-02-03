@@ -14,7 +14,9 @@ import {
   makeNetworkMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { ImportAccountOutputSchema } from '@/plugins/account/commands/import';
 import { importAccount } from '@/plugins/account/commands/import/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -89,7 +91,10 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ImportAccountOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<ImportAccountOutput>(
+      result.outputJson!,
+      ImportAccountOutputSchema,
+    );
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('imported');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);

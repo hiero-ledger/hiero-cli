@@ -10,12 +10,25 @@ import type { TransferFungibleTokenOutput } from '@/plugins/token/commands/trans
 
 import '@/core/utils/json-serialize';
 
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { associateToken } from '@/plugins/token/commands/associate/handler';
-import { createToken } from '@/plugins/token/commands/create-ft/handler';
-import { listTokens } from '@/plugins/token/commands/list/handler';
-import { transferToken } from '@/plugins/token/commands/transfer-ft/handler';
+import {
+  associateToken,
+  AssociateTokenOutputSchema,
+} from '@/plugins/token/commands/associate';
+import {
+  CreateFungibleTokenOutputSchema,
+  createToken,
+} from '@/plugins/token/commands/create-ft';
+import {
+  listTokens,
+  ListTokensOutputSchema,
+} from '@/plugins/token/commands/list';
+import {
+  TransferFungibleTokenOutputSchema,
+  transferToken,
+} from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -94,9 +107,10 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(
+      const output = validateOutputSchema<CreateFungibleTokenOutput>(
         result.outputJson!,
-      ) as CreateFungibleTokenOutput;
+        CreateFungibleTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TTK');
@@ -166,9 +180,10 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(
+      const output = validateOutputSchema<TransferFungibleTokenOutput>(
         result.outputJson!,
-      ) as TransferFungibleTokenOutput;
+        TransferFungibleTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.transactionId).toBe('0.0.123@1700000000.123456789');
       expect(output.amount).toBe('100');
@@ -217,7 +232,10 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = validateOutputSchema<AssociateTokenOutput>(
+        result.outputJson!,
+        AssociateTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.associated).toBe(true);
       expect(output.transactionId).toBe('0.0.123@1700000000.123456789');
@@ -245,7 +263,10 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as ListTokensOutput;
+      const output = validateOutputSchema<ListTokensOutput>(
+        result.outputJson!,
+        ListTokensOutputSchema,
+      );
       expect(output.tokens).toEqual([]);
       expect(output.totalCount).toBe(0);
       expect(output.stats).toBeDefined();
@@ -292,7 +313,10 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as ListTokensOutput;
+      const output = validateOutputSchema<ListTokensOutput>(
+        result.outputJson!,
+        ListTokensOutputSchema,
+      );
       expect(output.tokens).toHaveLength(1);
       expect(output.tokens[0].tokenId).toBe('0.0.12345');
       expect(output.totalCount).toBe(1);

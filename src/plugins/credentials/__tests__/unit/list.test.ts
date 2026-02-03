@@ -1,8 +1,11 @@
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { ListCredentialsOutput } from '@/plugins/credentials/commands/list/output';
 
 import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { listCredentials } from '@/plugins/credentials/commands/list/handler';
+import { ListCredentialsOutputSchema } from '@/plugins/credentials/commands/list/output';
 
 // No process.exit usage in handler version
 
@@ -22,7 +25,10 @@ describe('credentials plugin - list command', () => {
     return listCredentials(args).then((result) => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
-      const output = JSON.parse(result.outputJson!);
+      const output = validateOutputSchema<ListCredentialsOutput>(
+        result.outputJson!,
+        ListCredentialsOutputSchema,
+      );
       expect(output.credentials).toHaveLength(0);
       expect(output.totalCount).toBe(0);
     });
@@ -53,7 +59,10 @@ describe('credentials plugin - list command', () => {
     return listCredentials(args).then((result) => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
-      const output = JSON.parse(result.outputJson!);
+      const output = validateOutputSchema<ListCredentialsOutput>(
+        result.outputJson!,
+        ListCredentialsOutputSchema,
+      );
       expect(output.totalCount).toBe(2);
       expect(output.credentials).toHaveLength(2);
       expect(output.credentials[0]).toEqual(

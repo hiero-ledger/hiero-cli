@@ -11,7 +11,9 @@ import {
   ED25519_HEX_PUBLIC_KEY,
 } from '@/__tests__/mocks/fixtures';
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { CreateAccountOutputSchema } from '@/plugins/account/commands/create';
 import { createAccount } from '@/plugins/account/commands/create/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -103,7 +105,10 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: CreateAccountOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<CreateAccountOutput>(
+      result.outputJson!,
+      CreateAccountOutputSchema,
+    );
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('myAccount');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
@@ -231,7 +236,10 @@ describe('account plugin - create command (ADR-003)', () => {
     );
 
     expect(result.status).toBe(Status.Success);
-    const output: CreateAccountOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<CreateAccountOutput>(
+      result.outputJson!,
+      CreateAccountOutputSchema,
+    );
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.evmAddress).toBe(ECDSA_EVM_ADDRESS);
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
@@ -286,7 +294,10 @@ describe('account plugin - create command (ADR-003)', () => {
     );
 
     expect(result.status).toBe(Status.Success);
-    const output: CreateAccountOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<CreateAccountOutput>(
+      result.outputJson!,
+      CreateAccountOutputSchema,
+    );
     expect(output.type).toBe(KeyAlgorithm.ED25519);
     expect(output.evmAddress).toBe(
       '0x0000000000000000000000000000000000001e61',

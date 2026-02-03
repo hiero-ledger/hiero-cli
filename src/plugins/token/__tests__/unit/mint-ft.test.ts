@@ -4,9 +4,14 @@
  */
 import '@/core/utils/json-serialize';
 
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { HederaTokenType, Status } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { mintFt, type MintFtOutput } from '@/plugins/token/commands/mint-ft';
+import {
+  mintFt,
+  type MintFtOutput,
+  MintFtOutputSchema,
+} from '@/plugins/token/commands/mint-ft';
 import { TOKEN_NAMESPACE } from '@/plugins/token/manifest';
 
 import { makeMintFtCommandArgs } from './helpers/fixtures';
@@ -41,7 +46,10 @@ describe('mintFtHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as MintFtOutput;
+      const output = validateOutputSchema<MintFtOutput>(
+        result.outputJson!,
+        MintFtOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
 
@@ -74,7 +82,10 @@ describe('mintFtHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as MintFtOutput;
+      const output = validateOutputSchema<MintFtOutput>(
+        result.outputJson!,
+        MintFtOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.amount).toBe('5000');
 
@@ -112,7 +123,10 @@ describe('mintFtHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as MintFtOutput;
+      const output = validateOutputSchema<MintFtOutput>(
+        result.outputJson!,
+        MintFtOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.amount).toBe('10000');
 

@@ -7,12 +7,17 @@ import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
 import * as fs from 'fs/promises';
 
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import {
   PluginManagementCreateStatus,
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { Status } from '@/core/shared/constants';
 import { addPlugin } from '@/plugins/plugin-management/commands/add/handler';
+import {
+  type AddPluginOutput,
+  AddPluginOutputSchema,
+} from '@/plugins/plugin-management/commands/add/output';
 
 import { CUSTOM_PLUGIN_ENTRY } from './helpers/fixtures';
 
@@ -83,7 +88,10 @@ describe('plugin-management add command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<AddPluginOutput>(
+      result.outputJson!,
+      AddPluginOutputSchema,
+    );
     expect(output.added).toBe(true);
     expect(output.message).toContain('added and enabled successfully');
 
@@ -116,7 +124,10 @@ describe('plugin-management add command', () => {
     expect(result.status).toBe(Status.Failure);
     expect(result.outputJson).toBeDefined();
 
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<AddPluginOutput>(
+      result.outputJson!,
+      AddPluginOutputSchema,
+    );
     expect(output.name).toBe('custom-plugin');
     expect(output.added).toBe(false);
     expect(output.message).toContain('already exists');

@@ -1,19 +1,4 @@
-import {
-  ECDSA_DER_PRIVATE_KEY,
-  MOCK_PUBLIC_KEY,
-} from '@/__tests__/mocks/fixtures';
-import {
-  makeAliasMock,
-  makeArgs,
-  makeKmsMock,
-  makeLogger,
-  makeNetworkMock,
-  setupExitSpy,
-} from '@/__tests__/mocks/mocks';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
-import { setOperatorHandler } from '@/plugins/network/commands/set-operator';
-import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
+import {\n  ECDSA_DER_PRIVATE_KEY,\n  MOCK_PUBLIC_KEY,\n} from '@/__tests__/mocks/fixtures';\nimport {\n  makeAliasMock,\n  makeArgs,\n  makeKmsMock,\n  makeLogger,\n  makeNetworkMock,\n  setupExitSpy,\n} from '@/__tests__/mocks/mocks';\nimport { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';\nimport { KeyAlgorithm, Status } from '@/core/shared/constants';\nimport { SupportedNetwork } from '@/core/types/shared.types';\nimport {\n  SetOperatorOutputSchema,\n  type SetOperatorOutput,\n} from '@/plugins/network/commands/set-operator/output';\nimport { setOperatorHandler } from '@/plugins/network/commands/set-operator';\nimport { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 
 let exitSpy: jest.SpyInstance;
 
@@ -46,7 +31,10 @@ describe('network plugin - set-operator command', () => {
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<SetOperatorOutput>(
+      result.outputJson!,
+      SetOperatorOutputSchema,
+    );
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
@@ -101,7 +89,10 @@ describe('network plugin - set-operator command', () => {
       keyRefId: 'kr_alias123',
     });
     expect(result.status).toBe(Status.Success);
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<SetOperatorOutput>(
+      result.outputJson!,
+      SetOperatorOutputSchema,
+    );
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.789012',
@@ -134,7 +125,10 @@ describe('network plugin - set-operator command', () => {
       keyRefId: 'kr_test123',
     });
     expect(result.status).toBe(Status.Success);
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<SetOperatorOutput>(
+      result.outputJson!,
+      SetOperatorOutputSchema,
+    );
     expect(output.network).toBe('mainnet');
   });
 
@@ -331,7 +325,10 @@ describe('network plugin - set-operator command', () => {
     const result = await setOperatorHandler(args);
 
     expect(result.status).toBe(Status.Success);
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<SetOperatorOutput>(
+      result.outputJson!,
+      SetOperatorOutputSchema,
+    );
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.123456',

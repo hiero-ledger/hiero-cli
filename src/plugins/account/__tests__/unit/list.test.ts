@@ -2,7 +2,9 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { ListAccountsOutput } from '@/plugins/account/commands/list';
 
 import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
+import { ListAccountsOutputSchema } from '@/plugins/account/commands/list';
 import { listAccounts } from '@/plugins/account/commands/list/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -34,7 +36,10 @@ describe('account plugin - list command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ListAccountsOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<ListAccountsOutput>(
+      result.outputJson!,
+      ListAccountsOutputSchema,
+    );
     expect(output.totalCount).toBe(0);
     expect(output.accounts).toEqual([]);
   });
@@ -58,7 +63,10 @@ describe('account plugin - list command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ListAccountsOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<ListAccountsOutput>(
+      result.outputJson!,
+      ListAccountsOutputSchema,
+    );
     expect(output.totalCount).toBe(2);
     expect(output.accounts).toHaveLength(2);
     expect(output.accounts[0].name).toBe('acc1');
@@ -85,7 +93,10 @@ describe('account plugin - list command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ListAccountsOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<ListAccountsOutput>(
+      result.outputJson!,
+      ListAccountsOutputSchema,
+    );
     expect(output.totalCount).toBe(1);
     expect(output.accounts).toHaveLength(1);
     expect(output.accounts[0].name).toBe('acc3');

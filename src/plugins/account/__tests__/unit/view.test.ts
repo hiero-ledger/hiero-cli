@@ -11,7 +11,9 @@ import {
   makeMirrorMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { ViewAccountOutputSchema } from '@/plugins/account/commands/view';
 import { viewAccount } from '@/plugins/account/commands/view/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -62,7 +64,10 @@ describe('account plugin - view command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ViewAccountOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<ViewAccountOutput>(
+      result.outputJson!,
+      ViewAccountOutputSchema,
+    );
     expect(output.accountId).toBe('0.0.1111');
     expect(output.balance).toBe('1000');
   });
@@ -107,7 +112,10 @@ describe('account plugin - view command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ViewAccountOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<ViewAccountOutput>(
+      result.outputJson!,
+      ViewAccountOutputSchema,
+    );
     expect(output.accountId).toBe('0.0.2222');
   });
 

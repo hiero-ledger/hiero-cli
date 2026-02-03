@@ -3,9 +3,11 @@ import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
 import type { TopicData } from '@/plugins/topic/schema';
 
 import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { listTopics } from '@/plugins/topic/commands/list/handler';
+import { ListTopicsOutputSchema } from '@/plugins/topic/commands/list/output';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -44,7 +46,10 @@ describe('topic plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ListTopicsOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<ListTopicsOutput>(
+      result.outputJson!,
+      ListTopicsOutputSchema,
+    );
     expect(output.totalCount).toBe(0);
     expect(output.topics).toEqual([]);
   });
@@ -68,7 +73,10 @@ describe('topic plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ListTopicsOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<ListTopicsOutput>(
+      result.outputJson!,
+      ListTopicsOutputSchema,
+    );
     expect(output.totalCount).toBe(2);
     expect(output.topics).toHaveLength(2);
     expect(output.topics[0].name).toBe('Topic 1');
@@ -104,7 +112,10 @@ describe('topic plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ListTopicsOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<ListTopicsOutput>(
+      result.outputJson!,
+      ListTopicsOutputSchema,
+    );
     expect(output.topics[0].adminKeyPresent).toBe(true);
     expect(output.topics[0].submitKeyPresent).toBe(true);
     expect(output.stats.withAdminKey).toBe(1);
@@ -140,7 +151,10 @@ describe('topic plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ListTopicsOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<ListTopicsOutput>(
+      result.outputJson!,
+      ListTopicsOutputSchema,
+    );
     // Should only include mainnet topic after filtering in handler
     expect(output.totalCount).toBe(1);
     expect(output.topics[0].name).toBe(MAINNET_TOPIC.name);
@@ -169,7 +183,10 @@ describe('topic plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ListTopicsOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<ListTopicsOutput>(
+      result.outputJson!,
+      ListTopicsOutputSchema,
+    );
     expect(output.totalCount).toBe(0);
     expect(output.topics).toEqual([]);
   });
@@ -211,7 +228,10 @@ describe('topic plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ListTopicsOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<ListTopicsOutput>(
+      result.outputJson!,
+      ListTopicsOutputSchema,
+    );
     expect(output.totalCount).toBe(3);
     expect(output.stats.withAdminKey).toBe(1);
     expect(output.stats.withSubmitKey).toBe(1);
@@ -241,7 +261,10 @@ describe('topic plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ListTopicsOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<ListTopicsOutput>(
+      result.outputJson!,
+      ListTopicsOutputSchema,
+    );
     expect(output.topics[0].memo).toBeNull();
   });
 

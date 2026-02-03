@@ -12,9 +12,11 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { submitMessage } from '@/plugins/topic/commands/submit-message/handler';
+import { SubmitMessageOutputSchema } from '@/plugins/topic/commands/submit-message/output';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -122,7 +124,10 @@ describe('topic plugin - message-submit command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: SubmitMessageOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<SubmitMessageOutput>(
+      result.outputJson!,
+      SubmitMessageOutputSchema,
+    );
     expect(output.topicId).toBe('0.0.1234');
     expect(output.message).toBe('Hello, World!');
     expect(output.sequenceNumber).toBe(5);
@@ -192,7 +197,10 @@ describe('topic plugin - message-submit command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: SubmitMessageOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema<SubmitMessageOutput>(
+      result.outputJson!,
+      SubmitMessageOutputSchema,
+    );
     expect(output.sequenceNumber).toBe(10);
 
     expect(signing.signAndExecuteWith).toHaveBeenCalledWith({}, [

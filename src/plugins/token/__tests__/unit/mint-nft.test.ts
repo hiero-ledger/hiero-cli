@@ -4,9 +4,14 @@
  */
 import '@/core/utils/json-serialize';
 
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { HederaTokenType, Status } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { mintNft, type MintNftOutput } from '@/plugins/token/commands/mint-nft';
+import {
+  mintNft,
+  type MintNftOutput,
+  MintNftOutputSchema,
+} from '@/plugins/token/commands/mint-nft';
 import { TOKEN_NAMESPACE } from '@/plugins/token/manifest';
 
 import { makeMintNftCommandArgs } from './helpers/fixtures';
@@ -41,7 +46,10 @@ describe('mintNftHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as MintNftOutput;
+      const output = validateOutputSchema<MintNftOutput>(
+        result.outputJson!,
+        MintNftOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
       expect(output.serialNumber).toBe('1');
@@ -86,7 +94,10 @@ describe('mintNftHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as MintNftOutput;
+      const output = validateOutputSchema<MintNftOutput>(
+        result.outputJson!,
+        MintNftOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.serialNumber).toBe('1');
 
@@ -169,7 +180,10 @@ describe('mintNftHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as MintNftOutput;
+      const output = validateOutputSchema<MintNftOutput>(
+        result.outputJson!,
+        MintNftOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(api.alias.resolve).toHaveBeenCalledWith(
         'my-nft-collection',
