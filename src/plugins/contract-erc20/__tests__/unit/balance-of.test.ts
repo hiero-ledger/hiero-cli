@@ -1,8 +1,8 @@
-import type { CoreApi } from '@/core';
+import type { CommandHandlerArgs, CoreApi } from '@/core';
 
 import { ZodError } from 'zod';
 
-import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import { balanceOfFunctionCall as erc20BalanceOfHandler } from '@/plugins/contract-erc20/commands/balance-of/handler';
 import { ContractErc20CallBalanceOfInputSchema } from '@/plugins/contract-erc20/commands/balance-of/input';
@@ -41,14 +41,16 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
       network: {
         getCurrentNetwork: jest.fn(() => 'testnet'),
       },
-      alias: {
-        resolveOrThrow: jest.fn().mockReturnValue({
-          entityId: '0.0.1234',
-          alias: 'some-alias-or-id',
-          type: 'contract',
-          network: 'testnet',
-          createdAt: '2024-01-01T00:00:00.000Z',
+      identityResolution: {
+        resolveReferenceToEntityOrEvmAddress: jest
+          .fn()
+          .mockReturnValue({ entityIdOrEvmAddress: '0.0.1234' }),
+        resolveAccount: jest.fn().mockResolvedValue({
+          accountId: '0.0.5678',
+          accountPublicKey: 'pub-key',
+          evmAddress: accountAddress,
         }),
+        resolveContract: jest.fn(),
       },
       contractQuery: {
         queryContractFunction: jest.fn().mockResolvedValue({
@@ -60,10 +62,16 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
   });
 
   test('calls ERC-20 balanceOf successfully and returns expected output', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'some-alias-or-id',
-      account: accountAddress,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'some-alias-or-id',
+        account: accountAddress,
+      },
+    } as unknown as CommandHandlerArgs;
 
     const result = await erc20BalanceOfHandler(args);
 
@@ -80,11 +88,14 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
     expect(parsed.balance).toBe('5000000000000000000');
     expect(parsed.network).toBe('testnet');
 
-    expect(args.api.alias.resolveOrThrow).toHaveBeenCalledWith(
-      'some-alias-or-id',
-      'contract',
-      'testnet',
-    );
+    expect(
+      args.api.identityResolution.resolveReferenceToEntityOrEvmAddress,
+    ).toHaveBeenCalledWith({
+      entityReference: 'some-alias-or-id',
+      referenceType: expect.any(String),
+      network: 'testnet',
+      aliasType: expect.any(String),
+    });
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({
         contractIdOrEvmAddress: '0.0.1234',
@@ -96,10 +107,24 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
 
   test('calls ERC-20 balanceOf with account as entity ID and resolves to EVM address', async () => {
     const accountId = '0.0.5678';
-    const args = makeArgs(api, logger, {
-      contract: 'some-alias-or-id',
-      account: accountId,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'some-alias-or-id',
+        account: accountId,
+      },
+    } as unknown as CommandHandlerArgs;
+
+    (args.api.identityResolution.resolveAccount as jest.Mock).mockResolvedValue(
+      {
+        accountId,
+        accountPublicKey: 'pub-key',
+        evmAddress: `0x${mockSolidityAddress}`,
+      },
+    );
 
     const result = await erc20BalanceOfHandler(args);
 
@@ -120,40 +145,33 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
   });
 
   test('calls ERC-20 balanceOf with account as alias and resolves to EVM address', async () => {
-    (api.alias.resolveOrThrow as jest.Mock).mockImplementation(
-      (alias: string, type: string) => {
-        if (type === 'account') {
-          return {
-            entityId: '0.0.9999',
-            alias,
-            type: 'account',
-            network: 'testnet',
-            createdAt: '2024-01-01T00:00:00.000Z',
-          };
-        }
-        return {
-          entityId: '0.0.1234',
-          alias: 'some-alias-or-id',
-          type: 'contract',
-          network: 'testnet',
-          createdAt: '2024-01-01T00:00:00.000Z',
-        };
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'some-alias-or-id',
+        account: 'my-account-alias',
+      },
+    } as unknown as CommandHandlerArgs;
+
+    (args.api.identityResolution.resolveAccount as jest.Mock).mockResolvedValue(
+      {
+        accountId: '0.0.9999',
+        accountPublicKey: 'pub-key-alias',
+        evmAddress: `0x${mockSolidityAddress}`,
       },
     );
-
-    const args = makeArgs(api, logger, {
-      contract: 'some-alias-or-id',
-      account: 'my-account-alias',
-    });
 
     const result = await erc20BalanceOfHandler(args);
 
     expect(result.status).toBe(Status.Success);
-    expect(api.alias.resolveOrThrow).toHaveBeenCalledWith(
-      'my-account-alias',
-      'account',
-      'testnet',
-    );
+    expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
+      accountReference: 'my-account-alias',
+      type: expect.any(String),
+      network: 'testnet',
+    });
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({
         args: [`0x${mockSolidityAddress}`],
@@ -162,10 +180,16 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
   });
 
   test('returns failure when contractQuery returns empty queryResult', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'some-alias-or-id',
-      account: accountAddress,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'some-alias-or-id',
+        account: accountAddress,
+      },
+    } as unknown as CommandHandlerArgs;
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockResolvedValue({
@@ -182,10 +206,16 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
   });
 
   test('returns failure when queryContractFunction throws', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'some-alias-or-id',
-      account: accountAddress,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'some-alias-or-id',
+        account: accountAddress,
+      },
+    } as unknown as CommandHandlerArgs;
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
