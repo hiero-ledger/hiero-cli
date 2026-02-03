@@ -22,6 +22,7 @@ export async function nameFunctionCall(
     const validArgs = ContractErc20CallNameInputSchema.parse(args.args);
     const contractRef = validArgs.contract;
     const network = api.network.getCurrentNetwork();
+
     const contractIdOrEvm =
       api.identityResolution.resolveReferenceToEntityOrEvmAddress({
         entityReference: contractRef.value,

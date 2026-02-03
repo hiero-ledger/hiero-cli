@@ -52,9 +52,8 @@ export class AliasServiceImpl implements AliasService {
     type: AliasType,
     network: SupportedNetwork,
   ): AliasRecord {
-    const key = this.composeKey(network, alias);
-    const rec = this.state.get<AliasRecord>(NAMESPACE, key);
-    if (!rec || rec.type !== type) {
+    const rec = this.resolve(alias, type, network);
+    if (!rec) {
       throw new Error(
         `Alias "${alias}" for ${type} on network "${network}" not found`,
       );
