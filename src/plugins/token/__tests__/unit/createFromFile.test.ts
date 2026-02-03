@@ -14,7 +14,6 @@ import { validateOutputSchema } from '@/__tests__/shared/output-validation.helpe
 import { HederaTokenType, Status } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  type CreateFungibleTokenFromFileOutput,
   CreateFungibleTokenFromFileOutputSchema,
   createTokenFromFile,
 } from '@/plugins/token/commands/create-ft-from-file';
@@ -177,7 +176,7 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateFungibleTokenFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateFungibleTokenFromFileOutputSchema,
       );
@@ -235,7 +234,7 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateFungibleTokenFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateFungibleTokenFromFileOutputSchema,
       );
@@ -276,7 +275,7 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateFungibleTokenFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateFungibleTokenFromFileOutputSchema,
       );
@@ -362,7 +361,7 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateFungibleTokenFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateFungibleTokenFromFileOutputSchema,
       );
@@ -472,7 +471,7 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateFungibleTokenFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateFungibleTokenFromFileOutputSchema,
       );
@@ -906,7 +905,7 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateFungibleTokenFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateFungibleTokenFromFileOutputSchema,
       );
@@ -993,7 +992,7 @@ describe('createTokenFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateFungibleTokenFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateFungibleTokenFromFileOutputSchema,
       );

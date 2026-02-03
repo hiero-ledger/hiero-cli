@@ -8,7 +8,6 @@ import {
   EvmAddressSchema,
   KeyTypeSchema,
   NetworkSchema,
-  TinybarSchema,
 } from '@/core/schemas/common-schemas';
 
 /**
@@ -20,7 +19,7 @@ export const ImportAccountOutputSchema = z.object({
   type: KeyTypeSchema,
   alias: z.string().describe('Account alias').optional(),
   network: NetworkSchema,
-  balance: TinybarSchema,
+  balance: z.string(),
   evmAddress: EvmAddressSchema,
 });
 

@@ -3,15 +3,11 @@
  * Tests that all command handlers return CommandExecutionResult according to ADR-003
  */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { AssociateTokenOutput } from '@/plugins/token/commands/associate';
-import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
-import type { ListTokensOutput } from '@/plugins/token/commands/list';
-import type { TransferFungibleTokenOutput } from '@/plugins/token/commands/transfer-ft';
 
 import '@/core/utils/json-serialize';
 
 import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
-import { Status } from '@/core/shared/constants';
+import { HederaTokenType, Status } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
   associateToken,
@@ -55,6 +51,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         total: 0,
         byNetwork: {},
         bySupplyType: {},
+        withKeys: 0,
         withAssociations: 0,
         totalAssociations: 0,
       }),
@@ -107,7 +104,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<CreateFungibleTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateFungibleTokenOutputSchema,
       );
@@ -180,7 +177,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<TransferFungibleTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         TransferFungibleTokenOutputSchema,
       );
@@ -232,7 +229,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<AssociateTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         AssociateTokenOutputSchema,
       );
@@ -263,7 +260,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<ListTokensOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         ListTokensOutputSchema,
       );
@@ -284,12 +281,14 @@ describe('ADR-003 Compliance - Token Plugin', () => {
             supplyType: SupplyType.INFINITE,
             treasuryId: '0.0.111',
             network: 'testnet',
+            tokenType: HederaTokenType.FUNGIBLE_COMMON,
           },
         ]),
         getTokensWithStats: jest.fn().mockReturnValue({
           total: 1,
           byNetwork: { testnet: 1 },
           bySupplyType: { [SupplyType.INFINITE]: 1 },
+          withKeys: 0,
           withAssociations: 0,
           totalAssociations: 0,
         }),
@@ -313,7 +312,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<ListTokensOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         ListTokensOutputSchema,
       );

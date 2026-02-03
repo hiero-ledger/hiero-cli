@@ -1,5 +1,4 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { ListAccountsOutput } from '@/plugins/account/commands/list';
 
 import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
@@ -36,7 +35,7 @@ describe('account plugin - list command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<ListAccountsOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListAccountsOutputSchema,
     );
@@ -63,7 +62,7 @@ describe('account plugin - list command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<ListAccountsOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListAccountsOutputSchema,
     );
@@ -93,7 +92,7 @@ describe('account plugin - list command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<ListAccountsOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListAccountsOutputSchema,
     );

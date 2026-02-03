@@ -1,10 +1,10 @@
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { makeArgs } from '@/__tests__/mocks/mocks';
 import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { HederaTokenType, Status } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import {
   listTokens,
-  type ListTokensOutput,
   ListTokensOutputSchema,
   type TokenListItem,
 } from '@/plugins/token/commands/list';
@@ -60,7 +60,7 @@ describe('token plugin - list command', () => {
     expect(result.errorMessage).toBeUndefined();
 
     // Parse and verify output JSON
-    const output = validateOutputSchema<ListTokensOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTokensOutputSchema,
     );
@@ -92,7 +92,7 @@ describe('token plugin - list command', () => {
     expect(result.errorMessage).toBeUndefined();
 
     // Parse and verify output JSON
-    const output = validateOutputSchema<ListTokensOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTokensOutputSchema,
     );
@@ -128,7 +128,7 @@ describe('token plugin - list command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    const output = validateOutputSchema<ListTokensOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTokensOutputSchema,
     );
@@ -143,7 +143,7 @@ describe('token plugin - list command', () => {
 
     // Verify keys are included in output when showKeys is true
     expect(output.tokens[0].keys).toBeDefined();
-    expect(output.tokens[0].keys?.adminKey).toBe('admin-key-123');
+    expect(output.tokens[0].keys?.adminKey).toBe(ECDSA_HEX_PUBLIC_KEY);
   });
 
   test('lists tokens from all networks', async () => {
@@ -168,7 +168,7 @@ describe('token plugin - list command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    const output = validateOutputSchema<ListTokensOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTokensOutputSchema,
     );
@@ -233,7 +233,7 @@ describe('token plugin - list command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    const output = validateOutputSchema<ListTokensOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTokensOutputSchema,
     );
@@ -266,7 +266,7 @@ describe('token plugin - list command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    const output = validateOutputSchema<ListTokensOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTokensOutputSchema,
     );
@@ -302,7 +302,7 @@ describe('token plugin - list command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    const output = validateOutputSchema<ListTokensOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTokensOutputSchema,
     );
@@ -355,7 +355,7 @@ describe('token plugin - list command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    const output = validateOutputSchema<ListTokensOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTokensOutputSchema,
     );

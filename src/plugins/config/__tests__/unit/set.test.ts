@@ -1,10 +1,7 @@
 import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { setConfigOption } from '@/plugins/config/commands/set/handler';
-import {
-  type SetConfigOutput,
-  SetConfigOutputSchema,
-} from '@/plugins/config/commands/set/output';
+import { SetConfigOutputSchema } from '@/plugins/config/commands/set/output';
 
 import { enumOption } from './helpers/fixtures';
 import {
@@ -32,13 +29,13 @@ describe('config plugin - set', () => {
 
     const result = await setConfigOption(args);
     expect(result.status).toBe(Status.Success);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      SetConfigOutputSchema,
+    );
     expect(configSvc.setOption).toHaveBeenCalledWith(
       'ed25519_support_enabled',
       true,
-    );
-    const output = validateOutputSchema<SetConfigOutput>(
-      result.outputJson!,
-      SetConfigOutputSchema,
     );
     expect(output.name).toBe('ed25519_support_enabled');
     expect(output.previousValue).toBe(false);
@@ -62,7 +59,7 @@ describe('config plugin - set', () => {
     const result = await setConfigOption(args);
     expect(result.status).toBe(Status.Success);
     expect(configSvc.setOption).toHaveBeenCalledWith('some_number', 42);
-    const output = validateOutputSchema<SetConfigOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       SetConfigOutputSchema,
     );

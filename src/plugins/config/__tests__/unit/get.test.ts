@@ -1,10 +1,7 @@
 import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { getConfigOption } from '@/plugins/config/commands/get/handler';
-import {
-  type GetConfigOutput,
-  GetConfigOutputSchema,
-} from '@/plugins/config/commands/get/output';
+import { GetConfigOutputSchema } from '@/plugins/config/commands/get/output';
 
 import { enumOption } from './helpers/fixtures';
 import {
@@ -27,7 +24,7 @@ describe('config plugin - get', () => {
 
     const result = await getConfigOption(args);
     expect(result.status).toBe(Status.Success);
-    const output = validateOutputSchema<GetConfigOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       GetConfigOutputSchema,
     );

@@ -12,7 +12,6 @@ import { HederaTokenType, Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   createNftFromFile,
-  type CreateNftFromFileOutput,
   CreateNftFromFileOutputSchema,
 } from '@/plugins/token/commands/create-nft-from-file';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -180,7 +179,7 @@ describe('createNftFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateNftFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateNftFromFileOutputSchema,
       );
@@ -235,7 +234,7 @@ describe('createNftFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateNftFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateNftFromFileOutputSchema,
       );
@@ -272,7 +271,7 @@ describe('createNftFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateNftFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateNftFromFileOutputSchema,
       );
@@ -354,7 +353,7 @@ describe('createNftFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateNftFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateNftFromFileOutputSchema,
       );
@@ -440,7 +439,7 @@ describe('createNftFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateNftFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateNftFromFileOutputSchema,
       );
@@ -543,7 +542,7 @@ describe('createNftFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateNftFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateNftFromFileOutputSchema,
       );
@@ -953,7 +952,7 @@ describe('createNftFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateNftFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateNftFromFileOutputSchema,
       );
@@ -1040,7 +1039,7 @@ describe('createNftFromFileHandler', () => {
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
 
-      const output = validateOutputSchema<CreateNftFromFileOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         CreateNftFromFileOutputSchema,
       );

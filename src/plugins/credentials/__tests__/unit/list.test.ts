@@ -1,6 +1,9 @@
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { ListCredentialsOutput } from '@/plugins/credentials/commands/list/output';
 
+import {
+  ECDSA_HEX_PUBLIC_KEY,
+  ED25519_HEX_PUBLIC_KEY,
+} from '@/__tests__/mocks/fixtures';
 import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
 import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
@@ -25,7 +28,7 @@ describe('credentials plugin - list command', () => {
     return listCredentials(args).then((result) => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
-      const output = validateOutputSchema<ListCredentialsOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         ListCredentialsOutputSchema,
       );
@@ -42,13 +45,13 @@ describe('credentials plugin - list command', () => {
       {
         keyRefId: 'kr_test123',
         keyManager: 'local' as KeyManagerName,
-        publicKey: 'pub-key-123',
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
         labels: ['test', 'dev'],
       },
       {
         keyRefId: 'kr_test456',
         keyManager: 'local_encrypted' as KeyManagerName,
-        publicKey: 'pub-key-456',
+        publicKey: ED25519_HEX_PUBLIC_KEY,
       },
     ];
 
@@ -59,7 +62,7 @@ describe('credentials plugin - list command', () => {
     return listCredentials(args).then((result) => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
-      const output = validateOutputSchema<ListCredentialsOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         ListCredentialsOutputSchema,
       );
@@ -68,13 +71,13 @@ describe('credentials plugin - list command', () => {
       expect(output.credentials[0]).toEqual(
         expect.objectContaining({
           keyRefId: 'kr_test123',
-          publicKey: 'pub-key-123',
+          publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
       );
       expect(output.credentials[1]).toEqual(
         expect.objectContaining({
           keyRefId: 'kr_test456',
-          publicKey: 'pub-key-456',
+          publicKey: ED25519_HEX_PUBLIC_KEY,
         }),
       );
     });

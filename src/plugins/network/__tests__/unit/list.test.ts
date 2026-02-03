@@ -1,4 +1,13 @@
-import {\n  makeArgs,\n  makeLogger,\n  makeNetworkMock,\n  setupExitSpy,\n} from '@/__tests__/mocks/mocks';\nimport { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';\nimport { Status } from '@/core/shared/constants';\nimport {\n  ListNetworksOutputSchema,\n  type ListNetworksOutput,\n} from '@/plugins/network/commands/list/output';\nimport { listHandler } from '@/plugins/network/commands/list';
+import {
+  makeArgs,
+  makeLogger,
+  makeNetworkMock,
+  setupExitSpy,
+} from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
+import { Status } from '@/core/shared/constants';
+import { listHandler } from '@/plugins/network/commands/list';
+import { ListNetworksOutputSchema } from '@/plugins/network/commands/list/output';
 import {
   checkMirrorNodeHealth,
   checkRpcHealth,
@@ -165,7 +174,7 @@ describe('network plugin - list command', () => {
     const result = await listHandler(args);
     expect(result.status).toBe(Status.Success);
 
-    const parsed = validateOutputSchema<ListNetworksOutput>(
+    const parsed = validateOutputSchema(
       result.outputJson as string,
       ListNetworksOutputSchema,
     );
@@ -185,7 +194,7 @@ describe('network plugin - list command', () => {
     const result = await listHandler(args);
     expect(result.status).toBe(Status.Success);
 
-    const parsed = validateOutputSchema<ListNetworksOutput>(
+    const parsed = validateOutputSchema(
       result.outputJson as string,
       ListNetworksOutputSchema,
     );

@@ -9,10 +9,7 @@ import {
 } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { Status } from '@/core/shared/constants';
 import { removePlugin } from '@/plugins/plugin-management/commands/remove/handler';
-import {
-  type RemovePluginOutput,
-  RemovePluginOutputSchema,
-} from '@/plugins/plugin-management/commands/remove/output';
+import { RemovePluginOutputSchema } from '@/plugins/plugin-management/commands/remove/output';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 describe('plugin-management remove command', () => {
@@ -37,7 +34,7 @@ describe('plugin-management remove command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<RemovePluginOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       RemovePluginOutputSchema,
     );

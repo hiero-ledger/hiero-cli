@@ -8,27 +8,16 @@ import type { StateService } from '@/core/services/state/state-service.interface
 
 import '@/core/utils/json-serialize';
 
-import { z } from 'zod';
-
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { HederaTokenType, Status } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { associateToken } from '@/plugins/token/commands/associate';
-import {
-  AssociateTokenOutputSchema,
-  type AssociateTokenOutput,
-} from '@/plugins/token/commands/associate/output';
+import { AssociateTokenOutputSchema } from '@/plugins/token/commands/associate/output';
 import { createToken } from '@/plugins/token/commands/create-ft';
-import {
-  CreateFungibleTokenOutputSchema,
-  type CreateFungibleTokenOutput,
-} from '@/plugins/token/commands/create-ft/output';
+import { CreateFungibleTokenOutputSchema } from '@/plugins/token/commands/create-ft/output';
 import { transferToken } from '@/plugins/token/commands/transfer-ft';
-import {
-  TransferFungibleTokenOutputSchema,
-  type TransferFungibleTokenOutput,
-} from '@/plugins/token/commands/transfer-ft/output';
+import { TransferFungibleTokenOutputSchema } from '@/plugins/token/commands/transfer-ft/output';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -159,7 +148,7 @@ describe('Token Lifecycle Integration', () => {
       expect(createResult.status).toBe(Status.Success);
       expect(createResult.outputJson).toBeDefined();
       expect(createResult.errorMessage).toBeUndefined();
-      const createOutput = validateOutputSchema<CreateFungibleTokenOutput>(
+      const createOutput = validateOutputSchema(
         createResult.outputJson!,
         CreateFungibleTokenOutputSchema,
       );
@@ -184,7 +173,7 @@ describe('Token Lifecycle Integration', () => {
       expect(associateResult.status).toBe(Status.Success);
       expect(associateResult.outputJson).toBeDefined();
       expect(associateResult.errorMessage).toBeUndefined();
-      const associateOutput = validateOutputSchema<AssociateTokenOutput>(
+      const associateOutput = validateOutputSchema(
         associateResult.outputJson!,
         AssociateTokenOutputSchema,
       );
@@ -212,7 +201,7 @@ describe('Token Lifecycle Integration', () => {
       expect(transferResult.status).toBe(Status.Success);
       expect(transferResult.outputJson).toBeDefined();
       expect(transferResult.errorMessage).toBeUndefined();
-      const transferOutput = validateOutputSchema<TransferFungibleTokenOutput>(
+      const transferOutput = validateOutputSchema(
         transferResult.outputJson!,
         TransferFungibleTokenOutputSchema,
       );
@@ -342,7 +331,7 @@ describe('Token Lifecycle Integration', () => {
       expect(createResult.status).toBe(Status.Success);
       expect(createResult.outputJson).toBeDefined();
       expect(createResult.errorMessage).toBeUndefined();
-      const createOutput = validateOutputSchema<CreateFungibleTokenOutput>(
+      const createOutput = validateOutputSchema(
         createResult.outputJson!,
         CreateFungibleTokenOutputSchema,
       );
@@ -367,7 +356,7 @@ describe('Token Lifecycle Integration', () => {
       expect(associateResult.status).toBe(Status.Success);
       expect(associateResult.outputJson).toBeDefined();
       expect(associateResult.errorMessage).toBeUndefined();
-      const associateOutput = validateOutputSchema<AssociateTokenOutput>(
+      const associateOutput = validateOutputSchema(
         associateResult.outputJson!,
         AssociateTokenOutputSchema,
       );
@@ -478,7 +467,7 @@ describe('Token Lifecycle Integration', () => {
       expect(createResult.status).toBe(Status.Success);
       expect(createResult.outputJson).toBeDefined();
       expect(createResult.errorMessage).toBeUndefined();
-      const createOutput = validateOutputSchema<CreateFungibleTokenOutput>(
+      const createOutput = validateOutputSchema(
         createResult.outputJson!,
         CreateFungibleTokenOutputSchema,
       );
@@ -503,7 +492,7 @@ describe('Token Lifecycle Integration', () => {
       expect(associateResult1.status).toBe('success');
       expect(associateResult1.outputJson).toBeDefined();
       expect(associateResult1.errorMessage).toBeUndefined();
-      const associateOutput1 = validateOutputSchema<AssociateTokenOutput>(
+      const associateOutput1 = validateOutputSchema(
         associateResult1.outputJson!,
         AssociateTokenOutputSchema,
       );
@@ -529,7 +518,7 @@ describe('Token Lifecycle Integration', () => {
       expect(associateResult2.status).toBe('success');
       expect(associateResult2.outputJson).toBeDefined();
       expect(associateResult2.errorMessage).toBeUndefined();
-      const associateOutput2 = validateOutputSchema<AssociateTokenOutput>(
+      const associateOutput2 = validateOutputSchema(
         associateResult2.outputJson!,
         AssociateTokenOutputSchema,
       );

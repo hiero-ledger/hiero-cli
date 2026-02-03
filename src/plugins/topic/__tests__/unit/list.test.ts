@@ -1,5 +1,4 @@
 import type { CoreApi } from '@/core';
-import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
 import type { TopicData } from '@/plugins/topic/schema';
 
 import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
@@ -46,7 +45,7 @@ describe('topic plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<ListTopicsOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTopicsOutputSchema,
     );
@@ -73,7 +72,7 @@ describe('topic plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<ListTopicsOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTopicsOutputSchema,
     );
@@ -112,7 +111,7 @@ describe('topic plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<ListTopicsOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTopicsOutputSchema,
     );
@@ -151,7 +150,7 @@ describe('topic plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<ListTopicsOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTopicsOutputSchema,
     );
@@ -183,7 +182,7 @@ describe('topic plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<ListTopicsOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTopicsOutputSchema,
     );
@@ -228,7 +227,7 @@ describe('topic plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<ListTopicsOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTopicsOutputSchema,
     );
@@ -261,7 +260,7 @@ describe('topic plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<ListTopicsOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListTopicsOutputSchema,
     );

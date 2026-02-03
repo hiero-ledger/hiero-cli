@@ -2,7 +2,6 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
-import type { SubmitMessageOutput } from '@/plugins/topic/commands/submit-message/output';
 import type { TopicData } from '@/plugins/topic/schema';
 
 import {
@@ -98,7 +97,7 @@ describe('topic plugin - message-submit command', () => {
         transaction: {},
       }),
       signAndExecuteImpl: jest.fn().mockResolvedValue({
-        transactionId: 'tx-123',
+        transactionId: '0.0.101@1234567890.123456789',
         success: true,
         topicSequenceNumber: 5,
         receipt: { status: { status: 'success' } },
@@ -124,14 +123,14 @@ describe('topic plugin - message-submit command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<SubmitMessageOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       SubmitMessageOutputSchema,
     );
     expect(output.topicId).toBe('0.0.1234');
     expect(output.message).toBe('Hello, World!');
     expect(output.sequenceNumber).toBe(5);
-    expect(output.transactionId).toBe('tx-123');
+    expect(output.transactionId).toBe('0.0.101@1234567890.123456789');
 
     expect(loadTopicMock).toHaveBeenCalledWith('0.0.1234');
     expect(topicTransactions.submitMessage).toHaveBeenCalledWith({
@@ -169,7 +168,7 @@ describe('topic plugin - message-submit command', () => {
         transaction: {},
       }),
       signAndExecuteWithImpl: jest.fn().mockResolvedValue({
-        transactionId: 'tx-456',
+        transactionId: '0.0.172@1234567890.123456789',
         success: true,
         topicSequenceNumber: 10,
         receipt: { status: { status: 'success' } },
@@ -197,7 +196,7 @@ describe('topic plugin - message-submit command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<SubmitMessageOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       SubmitMessageOutputSchema,
     );
@@ -247,7 +246,7 @@ describe('topic plugin - message-submit command', () => {
         transaction: {},
       }),
       signAndExecuteImpl: jest.fn().mockResolvedValue({
-        transactionId: 'tx-123',
+        transactionId: '0.0.250@1234567890.123456789',
         success: false,
         receipt: { status: { status: 'success' } },
       } as TransactionResult),

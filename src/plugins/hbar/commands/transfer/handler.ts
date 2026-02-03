@@ -109,7 +109,7 @@ export async function transferHandler(
       transactionId: result.transactionId || '',
       fromAccountId: from.accountId,
       toAccountId,
-      amountTinybar: BigInt(amount.toString()),
+      amountTinybar: String(amount),
       network: currentNetwork,
       ...(memo && { memo }),
       ...(result.receipt?.status && {

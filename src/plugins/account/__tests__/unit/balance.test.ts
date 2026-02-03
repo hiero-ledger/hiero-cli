@@ -1,7 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { AccountBalanceOutput } from '@/plugins/account/commands/balance';
 
 import '@/core/utils/json-serialize';
 
@@ -63,7 +62,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<AccountBalanceOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       AccountBalanceOutputSchema,
     );
@@ -123,7 +122,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<AccountBalanceOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       AccountBalanceOutputSchema,
     );
@@ -168,7 +167,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<AccountBalanceOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       AccountBalanceOutputSchema,
     );
@@ -214,7 +213,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<AccountBalanceOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       AccountBalanceOutputSchema,
     );
@@ -268,7 +267,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<AccountBalanceOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       AccountBalanceOutputSchema,
     );
@@ -302,7 +301,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<AccountBalanceOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       AccountBalanceOutputSchema,
     );
@@ -439,7 +438,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<AccountBalanceOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       AccountBalanceOutputSchema,
     );
@@ -494,7 +493,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<AccountBalanceOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       AccountBalanceOutputSchema,
     );

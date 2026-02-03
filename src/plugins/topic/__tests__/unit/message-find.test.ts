@@ -1,7 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { FindMessagesOutput } from '@/plugins/topic/commands/find-message/output';
 
 import { ZodError } from 'zod';
 
@@ -81,7 +80,7 @@ describe('topic plugin - message-find command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<FindMessagesOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       FindMessagesOutputSchema,
     );
@@ -135,7 +134,7 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output = validateOutputSchema<FindMessagesOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       FindMessagesOutputSchema,
     );
@@ -188,7 +187,7 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output = validateOutputSchema<FindMessagesOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       FindMessagesOutputSchema,
     );
@@ -232,7 +231,7 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output = validateOutputSchema<FindMessagesOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       FindMessagesOutputSchema,
     );
@@ -276,7 +275,7 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output = validateOutputSchema<FindMessagesOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       FindMessagesOutputSchema,
     );
@@ -326,7 +325,7 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output = validateOutputSchema<FindMessagesOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       FindMessagesOutputSchema,
     );
@@ -391,7 +390,7 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output = validateOutputSchema<FindMessagesOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       FindMessagesOutputSchema,
     );
@@ -476,7 +475,7 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output = validateOutputSchema<FindMessagesOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       FindMessagesOutputSchema,
     );
@@ -539,7 +538,7 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output = validateOutputSchema<FindMessagesOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       FindMessagesOutputSchema,
     );

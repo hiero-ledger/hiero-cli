@@ -9,10 +9,7 @@ import {
 } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { Status } from '@/core/shared/constants';
 import { enablePlugin } from '@/plugins/plugin-management/commands/enable/handler';
-import {
-  type EnablePluginOutput,
-  EnablePluginOutputSchema,
-} from '@/plugins/plugin-management/commands/enable/output';
+import { EnablePluginOutputSchema } from '@/plugins/plugin-management/commands/enable/output';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 describe('plugin-management enable command', () => {
@@ -38,7 +35,7 @@ describe('plugin-management enable command', () => {
     expect(result.outputJson).toBeDefined();
     expect(pluginManagement.enablePlugin).toHaveBeenCalledWith('custom-plugin');
 
-    const output = validateOutputSchema<EnablePluginOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       EnablePluginOutputSchema,
     );

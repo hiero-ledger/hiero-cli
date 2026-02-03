@@ -8,10 +8,7 @@ import { validateOutputSchema } from '@/__tests__/shared/output-validation.helpe
 import { Status } from '@/core/shared/constants';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createToken } from '@/plugins/token/commands/create-ft';
-import {
-  CreateFungibleTokenOutputSchema,
-  type CreateFungibleTokenOutput,
-} from '@/plugins/token/commands/create-ft/output';
+import { CreateFungibleTokenOutputSchema } from '@/plugins/token/commands/create-ft/output';
 import { createTokenFromFile } from '@/plugins/token/commands/create-ft-from-file';
 import { transferToken } from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -859,7 +856,7 @@ describe('Token Plugin Error Handling', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
       expect(result.errorMessage).toBeUndefined();
-      const createOutput = validateOutputSchema<CreateFungibleTokenOutput>(
+      const createOutput = validateOutputSchema(
         result.outputJson!,
         CreateFungibleTokenOutputSchema,
       );

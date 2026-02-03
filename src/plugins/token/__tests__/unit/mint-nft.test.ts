@@ -9,7 +9,6 @@ import { HederaTokenType, Status } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
   mintNft,
-  type MintNftOutput,
   MintNftOutputSchema,
 } from '@/plugins/token/commands/mint-nft';
 import { TOKEN_NAMESPACE } from '@/plugins/token/manifest';
@@ -46,7 +45,7 @@ describe('mintNftHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<MintNftOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         MintNftOutputSchema,
       );
@@ -94,7 +93,7 @@ describe('mintNftHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<MintNftOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         MintNftOutputSchema,
       );
@@ -180,7 +179,7 @@ describe('mintNftHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<MintNftOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         MintNftOutputSchema,
       );

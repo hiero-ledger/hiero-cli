@@ -1,10 +1,10 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
-import type { ImportAccountOutput } from '@/plugins/account/commands/import';
 
 import '@/core/utils/json-serialize';
 
+import { ECDSA_EVM_ADDRESS } from '@/__tests__/mocks/fixtures';
 import {
   makeAliasMock,
   makeArgs,
@@ -84,14 +84,14 @@ describe('account plugin - import command (ADR-003)', () => {
         accountId: '0.0.9999',
         network: 'testnet',
         keyRefId: 'kr_test123',
-        evmAddress: '0xabc',
+        evmAddress: ECDSA_EVM_ADDRESS,
       }),
     );
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<ImportAccountOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ImportAccountOutputSchema,
     );
@@ -100,7 +100,7 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.alias).toBe('imported');
     expect(output.network).toBe('testnet');
-    expect(output.evmAddress).toBe('0xabc');
+    expect(output.evmAddress).toBe(ECDSA_EVM_ADDRESS);
   });
 
   test('returns failure if account already exists', async () => {

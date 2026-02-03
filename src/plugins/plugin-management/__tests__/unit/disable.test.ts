@@ -9,10 +9,7 @@ import {
 } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { Status } from '@/core/shared/constants';
 import { disablePlugin } from '@/plugins/plugin-management/commands/disable/handler';
-import {
-  type DisablePluginOutput,
-  RemovePluginOutputSchema as DisablePluginOutputSchema,
-} from '@/plugins/plugin-management/commands/disable/output';
+import { RemovePluginOutputSchema as DisablePluginOutputSchema } from '@/plugins/plugin-management/commands/disable/output';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 describe('plugin-management disable command', () => {
@@ -41,7 +38,7 @@ describe('plugin-management disable command', () => {
       'custom-plugin',
     );
 
-    const output = validateOutputSchema<DisablePluginOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       DisablePluginOutputSchema,
     );

@@ -11,7 +11,6 @@ import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import {
-  type TransferFungibleTokenOutput,
   TransferFungibleTokenOutputSchema,
   transferToken,
 } from '@/plugins/token/commands/transfer-ft';
@@ -75,7 +74,7 @@ describe('transferTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<TransferFungibleTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         TransferFungibleTokenOutputSchema,
       );
@@ -158,7 +157,7 @@ describe('transferTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<TransferFungibleTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         TransferFungibleTokenOutputSchema,
       );

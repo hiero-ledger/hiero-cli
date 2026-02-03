@@ -1,6 +1,5 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { ClearAccountsOutput } from '@/plugins/account/commands/clear';
 
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
@@ -56,7 +55,7 @@ describe('account plugin - clear command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<ClearAccountsOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ClearAccountsOutputSchema,
     );

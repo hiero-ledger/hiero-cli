@@ -1,10 +1,7 @@
 import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { listConfigOptions } from '@/plugins/config/commands/list/handler';
-import {
-  type ListConfigOutput,
-  ListConfigOutputSchema,
-} from '@/plugins/config/commands/list/output';
+import { ListConfigOutputSchema } from '@/plugins/config/commands/list/output';
 
 import { booleanOption, enumOption } from './helpers/fixtures';
 import {
@@ -23,7 +20,7 @@ describe('config plugin - list', () => {
 
     const result = await listConfigOptions(args);
     expect(result.status).toBe(Status.Success);
-    const output = validateOutputSchema<ListConfigOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       ListConfigOutputSchema,
     );

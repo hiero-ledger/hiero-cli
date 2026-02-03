@@ -1,5 +1,3 @@
-import type { RemoveCredentialsOutput } from '@/plugins/credentials/commands/remove/output';
-
 import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
 import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
@@ -26,7 +24,7 @@ describe('credentials plugin - remove command', () => {
       expect(kmsService.getPublicKey).toHaveBeenCalledWith('kr_test123');
       expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
       expect(result.status).toBe(Status.Success);
-      const output = validateOutputSchema<RemoveCredentialsOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         RemoveCredentialsOutputSchema,
       );
@@ -50,7 +48,7 @@ describe('credentials plugin - remove command', () => {
       expect(result.errorMessage).toBe(
         "Credential with key reference ID 'kr_nonexistent' does not exist",
       );
-      const output = validateOutputSchema<RemoveCredentialsOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         RemoveCredentialsOutputSchema,
       );
@@ -72,7 +70,7 @@ describe('credentials plugin - remove command', () => {
       expect(kmsService.getPublicKey).toHaveBeenCalledWith('kr_test123');
       expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
       expect(result.status).toBe(Status.Success);
-      const output = validateOutputSchema<RemoveCredentialsOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         RemoveCredentialsOutputSchema,
       );
@@ -97,7 +95,7 @@ describe('credentials plugin - remove command', () => {
       expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
       expect(result.status).toBe(Status.Failure);
       expect(result.errorMessage).toContain('Failed to remove credentials');
-      const output = validateOutputSchema<RemoveCredentialsOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         RemoveCredentialsOutputSchema,
       );

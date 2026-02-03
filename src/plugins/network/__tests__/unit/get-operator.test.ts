@@ -1,4 +1,14 @@
-import {\n  makeArgs,\n  makeKmsMock,\n  makeLogger,\n  makeNetworkMock,\n  setupExitSpy,\n} from '@/__tests__/mocks/mocks';\nimport { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';\nimport { Status } from '@/core/shared/constants';\nimport {\n  GetOperatorOutputSchema,\n  type GetOperatorOutput,\n} from '@/plugins/network/commands/get-operator/output';\nimport { getOperatorHandler } from '@/plugins/network/commands/get-operator';
+import {
+  makeArgs,
+  makeKmsMock,
+  makeLogger,
+  makeNetworkMock,
+  setupExitSpy,
+} from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
+import { Status } from '@/core/shared/constants';
+import { getOperatorHandler } from '@/plugins/network/commands/get-operator';
+import { GetOperatorOutputSchema } from '@/plugins/network/commands/get-operator/output';
 
 let exitSpy: jest.SpyInstance;
 
@@ -37,7 +47,7 @@ describe('network plugin - get-operator command', () => {
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
-    const output = validateOutputSchema<GetOperatorOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       GetOperatorOutputSchema,
     );
@@ -73,7 +83,7 @@ describe('network plugin - get-operator command', () => {
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
-    const output = validateOutputSchema<GetOperatorOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       GetOperatorOutputSchema,
     );
@@ -105,7 +115,7 @@ describe('network plugin - get-operator command', () => {
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
-    const output = validateOutputSchema<GetOperatorOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       GetOperatorOutputSchema,
     );
@@ -137,7 +147,7 @@ describe('network plugin - get-operator command', () => {
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
-    const output = validateOutputSchema<GetOperatorOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       GetOperatorOutputSchema,
     );
@@ -247,7 +257,7 @@ describe('network plugin - get-operator command', () => {
     const result = await getOperatorHandler(args);
 
     expect(result.status).toBe(Status.Success);
-    const output = validateOutputSchema<GetOperatorOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       GetOperatorOutputSchema,
     );
@@ -279,7 +289,7 @@ describe('network plugin - get-operator command', () => {
     const result = await getOperatorHandler(args);
 
     expect(result.status).toBe(Status.Success);
-    const output = validateOutputSchema<GetOperatorOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       GetOperatorOutputSchema,
     );

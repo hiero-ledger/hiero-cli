@@ -72,7 +72,7 @@ export async function getAccountBalance(
 
     if (!tokenOnly) {
       const hbarBalanceRaw = await api.mirror.getAccountHBarBalance(accountId);
-      outputData.hbarBalance = hbarBalanceRaw;
+      outputData.hbarBalance = String(hbarBalanceRaw);
 
       if (!raw) {
         const hbarBalanceBigNumber = new BigNumber(hbarBalanceRaw);

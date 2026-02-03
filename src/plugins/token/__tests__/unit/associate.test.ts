@@ -10,7 +10,6 @@ import { validateOutputSchema } from '@/__tests__/shared/output-validation.helpe
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import {
   associateToken,
-  type AssociateTokenOutput,
   AssociateTokenOutputSchema,
 } from '@/plugins/token/commands/associate';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -99,7 +98,7 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<AssociateTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         AssociateTokenOutputSchema,
       );
@@ -172,7 +171,7 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<AssociateTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         AssociateTokenOutputSchema,
       );
@@ -234,7 +233,7 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<AssociateTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         AssociateTokenOutputSchema,
       );
@@ -312,7 +311,7 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<AssociateTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         AssociateTokenOutputSchema,
       );
@@ -382,7 +381,7 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<AssociateTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         AssociateTokenOutputSchema,
       );
@@ -588,7 +587,7 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<AssociateTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         AssociateTokenOutputSchema,
       );
@@ -681,7 +680,7 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = validateOutputSchema<AssociateTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         AssociateTokenOutputSchema,
       );

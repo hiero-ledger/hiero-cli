@@ -49,7 +49,7 @@ describe('contract plugin - list command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    const output: ContractListOutput = validateOutputSchema<ContractListOutput>(
+    const output: ContractListOutput = validateOutputSchema(
       result.outputJson!,
       ContractListOutputSchema,
     );
@@ -119,7 +119,7 @@ describe('contract plugin - list command', () => {
     expect(result.errorMessage).toBeUndefined();
 
     expect(MockedHelper).toHaveBeenCalledTimes(1);
-    const output: ContractListOutput = validateOutputSchema<ContractListOutput>(
+    const output: ContractListOutput = validateOutputSchema(
       result.outputJson!,
       ContractListOutputSchema,
     );

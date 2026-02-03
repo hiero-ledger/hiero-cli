@@ -5,6 +5,11 @@
 import type { AliasRecord } from '@/core/services/alias/alias-service.interface';
 import type { AccountData } from '@/plugins/account/schema';
 
+import {
+  ECDSA_EVM_ADDRESS,
+  ECDSA_HEX_PUBLIC_KEY,
+  ED25519_HEX_PUBLIC_KEY,
+} from '@/__tests__/mocks/fixtures';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -29,8 +34,8 @@ export const mockAccountData = {
     name: 'default',
     accountId: mockAccountIds.default,
     type: KeyAlgorithm.ECDSA,
-    publicKey: 'pk',
-    evmAddress: '0x0000000000000000000000000000000000000000',
+    publicKey: ECDSA_HEX_PUBLIC_KEY,
+    evmAddress: ECDSA_EVM_ADDRESS,
     network: SupportedNetwork.TESTNET,
   } satisfies AccountData,
   testAccount: {
@@ -38,8 +43,8 @@ export const mockAccountData = {
     name: 'test-account',
     accountId: mockAccountIds.testAccount,
     type: KeyAlgorithm.ECDSA,
-    publicKey: 'pk',
-    evmAddress: '0x0000000000000000000000000000000000000000',
+    publicKey: ECDSA_HEX_PUBLIC_KEY,
+    evmAddress: ECDSA_EVM_ADDRESS,
     network: SupportedNetwork.TESTNET,
   } satisfies AccountData,
   ed25519Account: {
@@ -47,8 +52,8 @@ export const mockAccountData = {
     name: 'acc3',
     accountId: mockAccountIds.account3,
     type: KeyAlgorithm.ED25519,
-    publicKey: 'pk',
-    evmAddress: '0x0000000000000000000000000000000000000000',
+    publicKey: ED25519_HEX_PUBLIC_KEY,
+    evmAddress: ECDSA_EVM_ADDRESS,
     network: SupportedNetwork.TESTNET,
   } satisfies AccountData,
 };
@@ -69,17 +74,33 @@ export const mockTokenBalances = {
  */
 export const mockTransactionResults = {
   success: {
-    transactionId: 'tx-123',
+    transactionId: '0.0.123@1234567890.123456789',
     success: true,
     accountId: '0.0.9999',
     receipt: { status: { status: 'success' } },
   },
   failure: {
-    transactionId: 'tx-456',
+    transactionId: '0.0.456@1234567890.123456789',
     success: false,
     receipt: { status: { status: 'failed' } },
   },
 };
+
+/**
+ * Factory to create transaction result with correct Hedera transaction ID format
+ * Format: 0.0.{accountId}@{timestamp}.{nanotime}
+ */
+export const makeTransactionResult = (
+  accountId: string,
+  success = true,
+  overrides?: Partial<Record<string, unknown>>,
+) => ({
+  transactionId: `0.0.${accountId}@1234567890.123456789`,
+  success,
+  accountId: `0.0.${accountId}`,
+  receipt: { status: { status: success ? 'success' : 'failed' } },
+  ...overrides,
+});
 
 /**
  * Mock Account Creation Responses

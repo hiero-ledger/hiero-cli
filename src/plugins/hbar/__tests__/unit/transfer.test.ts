@@ -1,5 +1,3 @@
-import type { TransferOutput } from '@/plugins/hbar/commands/transfer/output';
-
 import '@/core/utils/json-serialize';
 
 import { ZodError } from 'zod';
@@ -54,7 +52,7 @@ describe('hbar plugin - transfer command (unit)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<TransferOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       TransferOutputSchema,
     );

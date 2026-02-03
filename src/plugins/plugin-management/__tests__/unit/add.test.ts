@@ -14,10 +14,7 @@ import {
 } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { Status } from '@/core/shared/constants';
 import { addPlugin } from '@/plugins/plugin-management/commands/add/handler';
-import {
-  type AddPluginOutput,
-  AddPluginOutputSchema,
-} from '@/plugins/plugin-management/commands/add/output';
+import { AddPluginOutputSchema } from '@/plugins/plugin-management/commands/add/output';
 
 import { CUSTOM_PLUGIN_ENTRY } from './helpers/fixtures';
 
@@ -88,7 +85,7 @@ describe('plugin-management add command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<AddPluginOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       AddPluginOutputSchema,
     );
@@ -124,7 +121,7 @@ describe('plugin-management add command', () => {
     expect(result.status).toBe(Status.Failure);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<AddPluginOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       AddPluginOutputSchema,
     );

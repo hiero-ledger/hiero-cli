@@ -141,7 +141,7 @@ export async function transferToken(
         tokenId,
         from: fromAccountId,
         to: toAccountId,
-        amount: BigInt(rawAmount.toString()),
+        amount: String(rawAmount),
         network,
       };
 

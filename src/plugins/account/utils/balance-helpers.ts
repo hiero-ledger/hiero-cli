@@ -18,7 +18,7 @@ export interface TokenBalanceWithMetadata {
   name?: string;
   symbol?: string;
   alias?: string;
-  balance: bigint;
+  balance: string;
   balanceDisplay?: string;
   decimals?: number;
 }
@@ -79,7 +79,7 @@ export async function fetchAccountTokenBalances(
         name,
         symbol,
         alias,
-        balance: balanceRaw,
+        balance: String(balanceRaw),
         balanceDisplay,
         decimals,
       };

@@ -1,6 +1,5 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
-import type { DeleteAccountOutput } from '@/plugins/account/commands/delete';
 
 import { makeStateMock } from '@/__tests__/mocks/mocks';
 import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
@@ -61,7 +60,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<DeleteAccountOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       DeleteAccountOutputSchema,
     );
@@ -99,7 +98,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<DeleteAccountOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       DeleteAccountOutputSchema,
     );
@@ -284,7 +283,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = validateOutputSchema<DeleteAccountOutput>(
+    const output = validateOutputSchema(
       result.outputJson!,
       DeleteAccountOutputSchema,
     );

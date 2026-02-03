@@ -11,7 +11,6 @@ import {
 import { Status } from '@/core/shared/constants';
 import {
   viewToken,
-  type ViewTokenOutput,
   ViewTokenOutputSchema,
 } from '@/plugins/token/commands/view';
 
@@ -48,7 +47,7 @@ describe('viewToken', () => {
       expect(result.status).toBe(Status.Success);
       expect(api.mirror.getTokenInfo).toHaveBeenCalledWith(tokenId);
 
-      const output = validateOutputSchema<ViewTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         ViewTokenOutputSchema,
       );
@@ -87,7 +86,7 @@ describe('viewToken', () => {
 
       expect(result.status).toBe(Status.Success);
 
-      const output = validateOutputSchema<ViewTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         ViewTokenOutputSchema,
       );
@@ -135,7 +134,7 @@ describe('viewToken', () => {
       expect(api.mirror.getTokenInfo).toHaveBeenCalledWith(tokenId);
       expect(api.mirror.getNftInfo).toHaveBeenCalledWith(tokenId, serialNumber);
 
-      const output = validateOutputSchema<ViewTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         ViewTokenOutputSchema,
       );
@@ -172,7 +171,7 @@ describe('viewToken', () => {
       const result = await viewToken(args);
 
       expect(result.status).toBe(Status.Success);
-      const output = validateOutputSchema<ViewTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         ViewTokenOutputSchema,
       );
@@ -347,7 +346,7 @@ describe('viewToken', () => {
       );
       expect(api.mirror.getTokenInfo).toHaveBeenCalledWith(resolvedTokenId);
 
-      const output = validateOutputSchema<ViewTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         ViewTokenOutputSchema,
       );
@@ -383,7 +382,7 @@ describe('viewToken', () => {
       );
       expect(api.mirror.getTokenInfo).toHaveBeenCalledWith(resolvedTokenId);
 
-      const output = validateOutputSchema<ViewTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         ViewTokenOutputSchema,
       );
@@ -431,7 +430,7 @@ describe('viewToken', () => {
         serialNumber,
       );
 
-      const output = validateOutputSchema<ViewTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         ViewTokenOutputSchema,
       );
@@ -486,7 +485,7 @@ describe('viewToken', () => {
       expect(result.status).toBe(Status.Success);
       expect(api.mirror.getTokenInfo).toHaveBeenCalledWith(tokenId);
 
-      const output = validateOutputSchema<ViewTokenOutput>(
+      const output = validateOutputSchema(
         result.outputJson!,
         ViewTokenOutputSchema,
       );
