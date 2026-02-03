@@ -1,10 +1,12 @@
-import type { CommandHandlerArgs, CoreApi, Logger } from '@/core';
+import type { CoreApi, Logger } from '@/core';
 import type { ContractErc20CallApproveOutput } from '@/plugins/contract-erc20/commands/approve/output';
 
 import { ZodError } from 'zod';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
+import { makeContractErc20ExecuteCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
+import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { approveFunctionCall as erc20ApproveHandler } from '@/plugins/contract-erc20/commands/approve/handler';
 import { ContractErc20CallApproveInputSchema } from '@/plugins/contract-erc20/commands/approve/input';
 
@@ -33,17 +35,13 @@ const ACCOUNT_ID = '0.0.5678';
 const TX_ID = '0.0.1234@1234567890.123456789';
 
 describe('contract-erc20 plugin - approve command (unit)', () => {
-  let api: CoreApi;
+  let api: jest.Mocked<CoreApi>;
   let logger: jest.Mocked<Logger>;
 
   beforeEach(() => {
     jest.clearAllMocks();
     logger = makeLogger();
-
-    api = {
-      network: {
-        getCurrentNetwork: jest.fn(() => 'testnet'),
-      },
+    api = makeApiMocks({
       identityResolution: {
         resolveContract: jest.fn().mockResolvedValue({
           contractId: CONTRACT_ID,
@@ -67,22 +65,20 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
           transactionId: TX_ID,
         }),
       },
-    } as unknown as CoreApi;
+    }).api;
   });
 
   test('calls ERC-20 approve successfully and returns expected output', async () => {
-    const args = {
+    const args = makeContractErc20ExecuteCommandArgs({
       api,
       logger,
-      state: {} as unknown,
-      config: {} as unknown,
       args: {
-        contract: 'my-token',
+        contract: 'some-contract',
         spender: 'bob',
         gas: 100000,
         value: 100,
       },
-    } as unknown as CommandHandlerArgs;
+    });
 
     const result = await erc20ApproveHandler(args);
 
@@ -98,7 +94,7 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
     expect(parsed.transactionId).toBe(TX_ID);
 
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
-      contractReference: 'my-token',
+      contractReference: 'some-contract',
       type: expect.any(String),
       network: 'testnet',
     });
@@ -120,18 +116,16 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
   });
 
   test('uses entity ID when contract is entity ID (not alias)', async () => {
-    const args = {
+    const args = makeContractErc20ExecuteCommandArgs({
       api,
       logger,
-      state: {} as unknown,
-      config: {} as unknown,
       args: {
         contract: '0.0.9999',
         spender: '0.0.8888',
         gas: 200000,
         value: 50,
       },
-    } as unknown as CommandHandlerArgs;
+    });
 
     const result = await erc20ApproveHandler(args);
 
@@ -150,18 +144,16 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
 
   test('uses EVM address directly when spender is EVM address', async () => {
     const evmSpender = '0x' + 'b'.repeat(40);
-    const args = {
+    const args = makeContractErc20ExecuteCommandArgs({
       api,
       logger,
-      state: {} as unknown,
-      config: {} as unknown,
       args: {
         contract: '0.0.1234',
         spender: evmSpender,
         gas: 100000,
         value: 1,
       },
-    } as unknown as CommandHandlerArgs;
+    });
 
     const result = await erc20ApproveHandler(args);
 
@@ -171,18 +163,16 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
   });
 
   test('returns failure when signAndExecute returns success false', async () => {
-    const args = {
+    const args = makeContractErc20ExecuteCommandArgs({
       api,
       logger,
-      state: {} as unknown,
-      config: {} as unknown,
       args: {
-        contract: 'my-token',
+        contract: 'my-contract',
         spender: 'bob',
         gas: 100000,
         value: 100,
       },
-    } as unknown as CommandHandlerArgs;
+    });
     (args.api.txExecution.signAndExecute as jest.Mock).mockResolvedValue({
       success: false,
       receipt: { status: { status: 'FAILURE' } },
@@ -197,18 +187,16 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
   });
 
   test('returns failure when signAndExecute throws', async () => {
-    const args = {
+    const args = makeContractErc20ExecuteCommandArgs({
       api,
       logger,
-      state: {} as unknown,
-      config: {} as unknown,
       args: {
-        contract: 'my-token',
+        contract: 'my-contract',
         spender: 'bob',
         gas: 100000,
         value: 100,
       },
-    } as unknown as CommandHandlerArgs;
+    });
     (args.api.txExecution.signAndExecute as jest.Mock).mockRejectedValue(
       new Error('network error'),
     );
@@ -222,18 +210,16 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
   });
 
   test('returns failure when alias not found for contract', async () => {
-    const args = {
+    const args = makeContractErc20ExecuteCommandArgs({
       api,
       logger,
-      state: {} as unknown,
-      config: {} as unknown,
       args: {
         contract: 'missing-contract',
         spender: 'bob',
         gas: 100000,
         value: 100,
       },
-    } as unknown as CommandHandlerArgs;
+    });
 
     (
       args.api.identityResolution.resolveContract as jest.Mock
@@ -251,18 +237,16 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
   });
 
   test('returns failure when mirror.getAccount has no evmAddress', async () => {
-    const args = {
+    const args = makeContractErc20ExecuteCommandArgs({
       api,
       logger,
-      state: {} as unknown,
-      config: {} as unknown,
       args: {
         contract: '0.0.1234',
         spender: 'bob',
         gas: 100000,
         value: 100,
       },
-    } as unknown as CommandHandlerArgs;
+    });
 
     (args.api.identityResolution.resolveAccount as jest.Mock).mockResolvedValue(
       {
@@ -293,7 +277,7 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
   test('schema validation fails when value is negative', () => {
     expect(() => {
       ContractErc20CallApproveInputSchema.parse({
-        contract: 'my-token',
+        contract: 'my-contract',
         spender: 'bob',
         gas: 100000,
         value: -1,
