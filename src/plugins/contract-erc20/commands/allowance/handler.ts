@@ -1,12 +1,7 @@
 /**
  * Contract ERC20 allowance Command Handler
  */
-import type {
-  CommandExecutionResult,
-  CommandHandlerArgs,
-  CoreApi,
-} from '@/core';
-import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { ContractErc20CallAllowanceOutput } from '@/plugins/contract-erc20/commands/allowance/output';
 
 import { Interface } from 'ethers';
@@ -21,34 +16,6 @@ import { ERC20_ABI } from '@/plugins/contract-erc20/shared/erc20-abi';
 
 const ERC_20_FUNCTION_NAME = 'allowance';
 
-async function accountRefToEvmAddress(
-  api: CoreApi,
-  ref: { type: EntityReferenceType; value: string },
-  network: SupportedNetwork,
-  label: string,
-): Promise<string> {
-  const entityIdOrEvm =
-    ref.type === EntityReferenceType.ALIAS
-      ? api.alias.resolveOrThrow(ref.value, ALIAS_TYPE.Account, network)
-          .entityId
-      : ref.value;
-  if (!entityIdOrEvm) {
-    throw new Error(
-      `${label} ${ref.value} is missing an account ID in its alias record`,
-    );
-  }
-  const evmAddress =
-    ref.type === EntityReferenceType.EVM_ADDRESS
-      ? entityIdOrEvm
-      : (await api.mirror.getAccount(entityIdOrEvm)).evmAddress;
-  if (!evmAddress) {
-    throw new Error(
-      `Couldn't resolve EVM address for ${label} ${entityIdOrEvm}`,
-    );
-  }
-  return evmAddress;
-}
-
 export async function allowanceFunctionCall(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
@@ -61,23 +28,46 @@ export async function allowanceFunctionCall(
     const network = api.network.getCurrentNetwork();
 
     const contractIdOrEvm =
-      contractRef.type === EntityReferenceType.ALIAS
-        ? api.alias.resolveOrThrow(
-            contractRef.value,
-            ALIAS_TYPE.Contract,
-            network,
-          ).entityId
-        : contractRef.value;
-    if (!contractIdOrEvm) {
+      api.identityResolution.resolveReferenceToEntityOrEvmAddress({
+        entityReference: contractRef.value,
+        referenceType: contractRef.type,
+        network,
+        aliasType: ALIAS_TYPE.Contract,
+      }).entityIdOrEvmAddress;
+
+    const ownerEvmAddress =
+      ownerRef.type === EntityReferenceType.EVM_ADDRESS
+        ? ownerRef.value
+        : (
+            await api.identityResolution.resolveAccount({
+              accountReference: ownerRef.value,
+              type: ownerRef.type,
+              network,
+            })
+          ).evmAddress;
+
+    if (!ownerEvmAddress) {
       throw new Error(
-        `Contract ${contractRef.value} is missing an contract ID in its alias record`,
+        `Couldn't resolve EVM address for an account ${ownerRef.value}`,
       );
     }
 
-    const [ownerEvmAddress, spenderEvmAddress] = await Promise.all([
-      accountRefToEvmAddress(api, ownerRef, network, 'Owner'),
-      accountRefToEvmAddress(api, spenderRef, network, 'Spender'),
-    ]);
+    const spenderEvmAddress =
+      spenderRef.type === EntityReferenceType.EVM_ADDRESS
+        ? spenderRef.value
+        : (
+            await api.identityResolution.resolveAccount({
+              accountReference: spenderRef.value,
+              type: spenderRef.type,
+              network,
+            })
+          ).evmAddress;
+
+    if (!spenderEvmAddress) {
+      throw new Error(
+        `Couldn't resolve EVM address for an account ${spenderRef.value}`,
+      );
+    }
 
     const result = await api.contractQuery.queryContractFunction({
       abiInterface: new Interface(ERC20_ABI),

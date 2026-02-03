@@ -1,9 +1,9 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CommandHandlerArgs, CoreApi, Logger } from '@/core';
 import type { ContractErc20CallAllowanceOutput } from '@/plugins/contract-erc20/commands/allowance/output';
 
 import { ZodError } from 'zod';
 
-import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import { allowanceFunctionCall as erc20AllowanceHandler } from '@/plugins/contract-erc20/commands/allowance/handler';
 import { ContractErc20CallAllowanceInputSchema } from '@/plugins/contract-erc20/commands/allowance/input';
@@ -27,36 +27,16 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
       network: {
         getCurrentNetwork: jest.fn(() => 'testnet'),
       },
-      alias: {
-        resolveOrThrow: jest
-          .fn()
-          .mockImplementation((value: string, type: string) => {
-            if (type === 'contract') {
-              return {
-                entityId: CONTRACT_ID,
-                alias: value,
-                type: 'contract',
-                network: 'testnet',
-                createdAt: '2024-01-01T00:00:00.000Z',
-              };
-            }
-            const entityId =
-              value === 'owner-alias' ? OWNER_ACCOUNT_ID : SPENDER_ACCOUNT_ID;
-            return {
-              entityId,
-              alias: value,
-              type: 'account',
-              network: 'testnet',
-              createdAt: '2024-01-01T00:00:00.000Z',
-            };
-          }),
-      },
-      mirror: {
-        getContractInfo: jest.fn(),
-        getAccount: jest.fn().mockImplementation((accountId: string) => {
-          const evm = accountId === OWNER_ACCOUNT_ID ? OWNER_EVM : SPENDER_EVM;
-          return Promise.resolve({ evmAddress: evm });
+      identityResolution: {
+        resolveReferenceToEntityOrEvmAddress: jest.fn().mockReturnValue({
+          entityIdOrEvmAddress: CONTRACT_ID,
         }),
+        resolveAccount: jest.fn().mockResolvedValue({
+          accountId: OWNER_ACCOUNT_ID,
+          accountPublicKey: 'pub-key',
+          evmAddress: OWNER_EVM,
+        }),
+        resolveContract: jest.fn(),
       },
       contractQuery: {
         queryContractFunction: jest.fn().mockResolvedValue({
@@ -68,11 +48,17 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
   });
 
   test('calls ERC-20 allowance successfully with EVM addresses for owner and spender', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'some-contract',
-      owner: OWNER_EVM,
-      spender: SPENDER_EVM,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'some-contract',
+        owner: OWNER_EVM,
+        spender: SPENDER_EVM,
+      },
+    } as unknown as CommandHandlerArgs;
 
     const result = await erc20AllowanceHandler(args);
 
@@ -96,15 +82,33 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
         args: [OWNER_EVM, SPENDER_EVM],
       }),
     );
-    expect(args.api.mirror.getAccount).not.toHaveBeenCalled();
+    expect(args.api.identityResolution.resolveAccount).not.toHaveBeenCalled();
   });
 
   test('calls ERC-20 allowance successfully with aliases for owner and spender', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'some-contract',
-      owner: 'owner-alias',
-      spender: 'spender-alias',
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'some-contract',
+        owner: 'owner-alias',
+        spender: 'spender-alias',
+      },
+    } as unknown as CommandHandlerArgs;
+
+    (args.api.identityResolution.resolveAccount as jest.Mock)
+      .mockResolvedValueOnce({
+        accountId: OWNER_ACCOUNT_ID,
+        accountPublicKey: 'pub-key-owner',
+        evmAddress: OWNER_EVM,
+      })
+      .mockResolvedValueOnce({
+        accountId: SPENDER_ACCOUNT_ID,
+        accountPublicKey: 'pub-key-spender',
+        evmAddress: SPENDER_EVM,
+      });
 
     const result = await erc20AllowanceHandler(args);
 
@@ -119,18 +123,16 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
     expect(parsed.spender).toBe(SPENDER_EVM);
     expect(parsed.allowance).toBe('1000');
 
-    expect(args.api.alias.resolveOrThrow).toHaveBeenCalledWith(
-      'owner-alias',
-      'account',
-      'testnet',
-    );
-    expect(args.api.alias.resolveOrThrow).toHaveBeenCalledWith(
-      'spender-alias',
-      'account',
-      'testnet',
-    );
-    expect(args.api.mirror.getAccount).toHaveBeenCalledWith(OWNER_ACCOUNT_ID);
-    expect(args.api.mirror.getAccount).toHaveBeenCalledWith(SPENDER_ACCOUNT_ID);
+    expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
+      accountReference: 'owner-alias',
+      type: expect.any(String),
+      network: 'testnet',
+    });
+    expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
+      accountReference: 'spender-alias',
+      type: expect.any(String),
+      network: 'testnet',
+    });
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({
         args: [OWNER_EVM, SPENDER_EVM],
@@ -139,25 +141,57 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
   });
 
   test('calls ERC-20 allowance successfully with account IDs for owner and spender', async () => {
-    const args = makeArgs(api, logger, {
-      contract: '0.0.1234',
-      owner: OWNER_ACCOUNT_ID,
-      spender: SPENDER_ACCOUNT_ID,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: '0.0.1234',
+        owner: OWNER_ACCOUNT_ID,
+        spender: SPENDER_ACCOUNT_ID,
+      },
+    } as unknown as CommandHandlerArgs;
+
+    (args.api.identityResolution.resolveAccount as jest.Mock)
+      .mockResolvedValueOnce({
+        accountId: OWNER_ACCOUNT_ID,
+        accountPublicKey: 'pub-key-owner',
+        evmAddress: OWNER_EVM,
+      })
+      .mockResolvedValueOnce({
+        accountId: SPENDER_ACCOUNT_ID,
+        accountPublicKey: 'pub-key-spender',
+        evmAddress: SPENDER_EVM,
+      });
 
     const result = await erc20AllowanceHandler(args);
 
     expect(result.status).toBe(Status.Success);
-    expect(args.api.mirror.getAccount).toHaveBeenCalledWith(OWNER_ACCOUNT_ID);
-    expect(args.api.mirror.getAccount).toHaveBeenCalledWith(SPENDER_ACCOUNT_ID);
+    expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
+      accountReference: OWNER_ACCOUNT_ID,
+      type: expect.any(String),
+      network: 'testnet',
+    });
+    expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
+      accountReference: SPENDER_ACCOUNT_ID,
+      type: expect.any(String),
+      network: 'testnet',
+    });
   });
 
   test('returns failure when contractQuery returns empty queryResult', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'some-contract',
-      owner: OWNER_EVM,
-      spender: SPENDER_EVM,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'some-contract',
+        owner: OWNER_EVM,
+        spender: SPENDER_EVM,
+      },
+    } as unknown as CommandHandlerArgs;
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockResolvedValue({
@@ -175,11 +209,17 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
   });
 
   test('returns failure when queryContractFunction throws', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'some-contract',
-      owner: OWNER_EVM,
-      spender: SPENDER_EVM,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'some-contract',
+        owner: OWNER_EVM,
+        spender: SPENDER_EVM,
+      },
+    } as unknown as CommandHandlerArgs;
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));

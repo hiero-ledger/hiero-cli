@@ -1,9 +1,9 @@
-import type { CoreApi, Logger } from '@/core';
+import type { CommandHandlerArgs, CoreApi, Logger } from '@/core';
 import type { ContractErc20CallTransferFromOutput } from '@/plugins/contract-erc20/commands/transfer-from/output';
 
 import { ZodError } from 'zod';
 
-import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import { transferFromFunctionCall as erc20TransferFromHandler } from '@/plugins/contract-erc20/commands/transfer-from/handler';
 import { ContractErc20CallTransferFromInputSchema } from '@/plugins/contract-erc20/commands/transfer-from/input';
@@ -101,13 +101,19 @@ describe('contract-erc20 plugin - transfer-from command (unit)', () => {
   });
 
   test('calls ERC-20 transferFrom successfully and returns expected output', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'my-token',
-      from: 'alice',
-      to: 'bob',
-      gas: 100000,
-      value: 100,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'my-token',
+        from: 'alice',
+        to: 'bob',
+        gas: 100000,
+        value: 100,
+      },
+    } as unknown as CommandHandlerArgs;
 
     const result = await erc20TransferFromHandler(args);
 
@@ -118,7 +124,7 @@ describe('contract-erc20 plugin - transfer-from command (unit)', () => {
       result.outputJson as string,
     ) as ContractErc20CallTransferFromOutput;
 
-    expect(parsed.contractIdOrEvm).toBe(CONTRACT_ID);
+    expect(parsed.contractId).toBe(CONTRACT_ID);
     expect(parsed.network).toBe('testnet');
     expect(parsed.transactionId).toBe(TX_ID);
 
@@ -154,13 +160,19 @@ describe('contract-erc20 plugin - transfer-from command (unit)', () => {
   });
 
   test('uses entity ID when contract, from and to are entity IDs (not alias)', async () => {
-    const args = makeArgs(api, logger, {
-      contract: '0.0.9999',
-      from: '0.0.1111',
-      to: '0.0.2222',
-      gas: 200000,
-      value: 50,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: '0.0.9999',
+        from: '0.0.1111',
+        to: '0.0.2222',
+        gas: 200000,
+        value: 50,
+      },
+    } as unknown as CommandHandlerArgs;
 
     (args.api.mirror.getContractInfo as jest.Mock).mockResolvedValue({
       contract_id: '0.0.9999',
@@ -181,13 +193,19 @@ describe('contract-erc20 plugin - transfer-from command (unit)', () => {
   });
 
   test('uses EVM address directly when from is EVM address', async () => {
-    const args = makeArgs(api, logger, {
-      contract: '0.0.1234',
-      from: EVM_FROM,
-      to: 'bob',
-      gas: 100000,
-      value: 1,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: '0.0.1234',
+        from: EVM_FROM,
+        to: 'bob',
+        gas: 100000,
+        value: 1,
+      },
+    } as unknown as CommandHandlerArgs;
 
     (args.api.mirror.getContractInfo as jest.Mock).mockResolvedValue({
       contract_id: CONTRACT_ID,
@@ -206,13 +224,19 @@ describe('contract-erc20 plugin - transfer-from command (unit)', () => {
   });
 
   test('uses EVM address directly when to is EVM address', async () => {
-    const args = makeArgs(api, logger, {
-      contract: '0.0.1234',
-      from: 'alice',
-      to: EVM_TO,
-      gas: 100000,
-      value: 1,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: '0.0.1234',
+        from: 'alice',
+        to: EVM_TO,
+        gas: 100000,
+        value: 1,
+      },
+    } as unknown as CommandHandlerArgs;
 
     (args.api.mirror.getContractInfo as jest.Mock).mockResolvedValue({
       contract_id: CONTRACT_ID,
@@ -231,13 +255,19 @@ describe('contract-erc20 plugin - transfer-from command (unit)', () => {
   });
 
   test('returns failure when signAndExecute returns success false', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'my-token',
-      from: 'alice',
-      to: 'bob',
-      gas: 100000,
-      value: 100,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'my-token',
+        from: 'alice',
+        to: 'bob',
+        gas: 100000,
+        value: 100,
+      },
+    } as unknown as CommandHandlerArgs;
     (args.api.txExecution.signAndExecute as jest.Mock).mockResolvedValue({
       success: false,
       receipt: { status: { status: 'FAILURE' } },
@@ -252,13 +282,19 @@ describe('contract-erc20 plugin - transfer-from command (unit)', () => {
   });
 
   test('returns failure when signAndExecute throws', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'my-token',
-      from: 'alice',
-      to: 'bob',
-      gas: 100000,
-      value: 100,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'my-token',
+        from: 'alice',
+        to: 'bob',
+        gas: 100000,
+        value: 100,
+      },
+    } as unknown as CommandHandlerArgs;
     (args.api.txExecution.signAndExecute as jest.Mock).mockRejectedValue(
       new Error('network error'),
     );
@@ -272,13 +308,19 @@ describe('contract-erc20 plugin - transfer-from command (unit)', () => {
   });
 
   test('returns failure when alias not found for contract', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'missing-contract',
-      from: 'alice',
-      to: 'bob',
-      gas: 100000,
-      value: 100,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: 'missing-contract',
+        from: 'alice',
+        to: 'bob',
+        gas: 100000,
+        value: 100,
+      },
+    } as unknown as CommandHandlerArgs;
     (args.api.alias.resolveOrThrow as jest.Mock).mockImplementation(
       (alias: string, type: string) => {
         if (type === 'contract' && alias === 'missing-contract') {
@@ -315,13 +357,19 @@ describe('contract-erc20 plugin - transfer-from command (unit)', () => {
   });
 
   test('returns failure when mirror.getAccount has no evmAddress for from', async () => {
-    const args = makeArgs(api, logger, {
-      contract: '0.0.1234',
-      from: 'alice',
-      to: 'bob',
-      gas: 100000,
-      value: 100,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: '0.0.1234',
+        from: 'alice',
+        to: 'bob',
+        gas: 100000,
+        value: 100,
+      },
+    } as unknown as CommandHandlerArgs;
     (args.api.mirror.getContractInfo as jest.Mock).mockResolvedValue({
       contract_id: CONTRACT_ID,
     });
@@ -339,13 +387,19 @@ describe('contract-erc20 plugin - transfer-from command (unit)', () => {
   });
 
   test('returns failure when mirror.getAccount has no evmAddress for to', async () => {
-    const args = makeArgs(api, logger, {
-      contract: '0.0.1234',
-      from: 'alice',
-      to: 'bob',
-      gas: 100000,
-      value: 100,
-    });
+    const args = {
+      api,
+      logger,
+      state: {} as unknown,
+      config: {} as unknown,
+      args: {
+        contract: '0.0.1234',
+        from: 'alice',
+        to: 'bob',
+        gas: 100000,
+        value: 100,
+      },
+    } as unknown as CommandHandlerArgs;
     (args.api.mirror.getContractInfo as jest.Mock).mockResolvedValue({
       contract_id: CONTRACT_ID,
     });
