@@ -414,6 +414,30 @@ export const ContractReferenceObjectSchema = z
   .describe('Contract identifier (ID, EVM address, or alias)');
 
 /**
+ * Parsed account reference as a discriminated object by type (EVM address, entity ID, or alias).
+ * Use this when the handler needs to branch on which kind of reference was provided.
+ */
+export const AccountReferenceObjectSchema = z
+  .string()
+  .trim()
+  .min(1, 'Account identifier cannot be empty')
+  .transform((val): { type: EntityReferenceType; value: string } => {
+    if (EvmAddressSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.EVM_ADDRESS, value: val };
+    }
+    if (EntityIdSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ENTITY_ID, value: val };
+    }
+    if (AliasNameSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ALIAS, value: val };
+    }
+    throw new Error(
+      'Account reference must be a valid Hedera ID (0.0.xxx), alias name, or EVM address (0x...)',
+    );
+  })
+  .describe('Account identifier (ID, EVM address, or alias)');
+
+/**
  * Account Reference Input (ID or Name)
  * Extended schema for referencing accounts specifically
  * Supports: Hedera account ID (0.0.xxx), EVM address (0x...), or account name/alias
@@ -422,7 +446,7 @@ export const AccountReferenceSchema = z
   .union([EntityIdSchema, AccountNameSchema], {
     error: () => ({
       message:
-        'Account reference must be a valid Hedera ID (0.0.xxx), , or alias name',
+        'Account reference must be a valid Hedera ID (0.0.xxx) or alias name',
     }),
   })
   .describe('Account reference (ID, EVM address, or name)');
@@ -707,3 +731,5 @@ export const SolidityCompilerVersion = z
   .trim()
   .optional()
   .describe('Optional Solidity compiler version');
+
+export const GasInputSchema = z.number().min(0).default(100000);

@@ -1,5 +1,4 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc20CallSymbolOutput } from '@/plugins/contract-erc20/commands/symbol/output';
 
 import { ZodError } from 'zod';
 
@@ -7,8 +6,8 @@ import { makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
-import { symbolFunctionCall as erc20SymbolHandler } from '@/plugins/contract-erc20/commands/symbol/handler';
-import { ContractErc20CallSymbolInputSchema } from '@/plugins/contract-erc20/commands/symbol/input';
+import { totalSupplyFunctionCall as erc20TotalSupplyHandler } from '@/plugins/contract-erc20/commands/total-supply/handler';
+import { ContractErc20CallTotalSupplyInputSchema } from '@/plugins/contract-erc20/commands/total-supply/input';
 
 jest.mock('@hashgraph/sdk', () => ({
   ContractId: {
@@ -22,7 +21,7 @@ jest.mock('@hashgraph/sdk', () => ({
   },
 }));
 
-describe('contract-erc20 plugin - symbol command (unit)', () => {
+describe('contract-erc20 plugin - totalSupply command (unit)', () => {
   let api: jest.Mocked<CoreApi>;
   let logger: jest.Mocked<Logger>;
 
@@ -33,26 +32,27 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
       contractQuery: {
         queryContractFunction: jest.fn().mockResolvedValue({
           contractId: '0.0.1234',
-          queryResult: ['HBAR'],
+          queryResult: [1000000000000000000n],
         }),
       },
     }).api;
   });
 
-  test('calls ERC-20 symbol successfully and returns expected output', async () => {
+  test('calls ERC-20 totalSupply successfully and returns expected output', async () => {
     const args = makeContractErc20CallCommandArgs({ api, logger });
 
-    const result = await erc20SymbolHandler(args);
+    const result = await erc20TotalSupplyHandler(args);
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const parsed = JSON.parse(
-      result.outputJson as string,
-    ) as ContractErc20CallSymbolOutput;
+    if (result.outputJson === undefined) {
+      throw new Error('Expected outputJson to be defined');
+    }
+    const parsed = JSON.parse(result.outputJson);
 
     expect(parsed.contractId).toBe('0.0.1234');
-    expect(parsed.contractSymbol).toBe('HBAR');
+    expect(parsed.totalSupply).toBe('1000000000000000000');
     expect(parsed.network).toBe('testnet');
 
     expect(
@@ -66,7 +66,7 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({
         contractIdOrEvmAddress: '0.0.1234',
-        functionName: 'symbol',
+        functionName: 'totalSupply',
       }),
     );
   });
@@ -80,11 +80,11 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
       queryResult: [],
     });
 
-    const result = await erc20SymbolHandler(args);
+    const result = await erc20TotalSupplyHandler(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      'There was a problem with decoding contract 0.0.1234 "symbol" function result',
+      'There was a problem with decoding contract 0.0.1234 "totalSupply" function result',
     );
   });
 
@@ -94,17 +94,17 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    const result = await erc20SymbolHandler(args);
+    const result = await erc20TotalSupplyHandler(args);
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain(
-      'Failed to call symbol function: contract query error',
+      'Failed to call totalSupply function: contract query error',
     );
   });
 
   test('schema validation fails when contract is missing', () => {
     expect(() => {
-      ContractErc20CallSymbolInputSchema.parse({});
+      ContractErc20CallTotalSupplyInputSchema.parse({});
     }).toThrow(ZodError);
   });
 });

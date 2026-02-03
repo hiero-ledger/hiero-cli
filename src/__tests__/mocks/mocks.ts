@@ -11,6 +11,7 @@ import type { ContractQueryService } from '@/core/services/contract-query/contra
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
 import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
+import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
@@ -204,6 +205,16 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
 export const makeContractQueryServiceMock =
   (): jest.Mocked<ContractQueryService> => ({
     queryContractFunction: jest.fn(),
+  });
+
+/**
+ * Create a mocked IdentityResolutionService
+ */
+export const makeIdentityResolutionServiceMock =
+  (): jest.Mocked<IdentityResolutionService> => ({
+    resolveAccount: jest.fn(),
+    resolveContract: jest.fn(),
+    resolveReferenceToEntityOrEvmAddress: jest.fn(),
   });
 
 /**
@@ -430,10 +441,10 @@ export const makeArgs = (
   const contractVerifier =
     api.contractVerifier || makeContractVerifierServiceMock();
   const contractQuery = api.contractQuery || makeContractQueryServiceMock();
+  const identityResolution =
+    api.identityResolution || makeIdentityResolutionServiceMock();
 
-  // Exclude state and config from api spread since they're already mocked above
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { state, config, ...restApi } = api;
+  const restApi = api;
 
   const apiObject = {
     account: {} as unknown,
@@ -488,6 +499,7 @@ export const makeArgs = (
     contractVerifier,
     keyResolver: makeKeyResolverMock({ network, alias, kms }),
     contractQuery,
+    identityResolution,
     ...restApi,
   } as unknown as CoreApi;
 

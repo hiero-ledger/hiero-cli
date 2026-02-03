@@ -1,10 +1,12 @@
-import type { CommandHandlerArgs, CoreApi } from '@/core';
+import type { CoreApi, Logger } from '@/core';
 import type { ContractErc20CallNameOutput } from '@/plugins/contract-erc20/commands/name/output';
 
 import { ZodError } from 'zod';
 
-import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
+import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
+import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { nameFunctionCall as erc20NameHandler } from '@/plugins/contract-erc20/commands/name/handler';
 import { ContractErc20CallNameInputSchema } from '@/plugins/contract-erc20/commands/name/input';
 
@@ -21,40 +23,24 @@ jest.mock('@hashgraph/sdk', () => ({
 }));
 
 describe('contract-erc20 plugin - name command (unit)', () => {
-  let api: CommandHandlerArgs['api'];
-  let logger: ReturnType<typeof makeLogger>;
+  let api: jest.Mocked<CoreApi>;
+  let logger: jest.Mocked<Logger>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-
     logger = makeLogger();
-
-    api = {
-      network: {
-        getCurrentNetwork: jest.fn(() => 'testnet'),
-      },
-      alias: {
-        resolveOrThrow: jest.fn().mockReturnValue({
-          entityId: '0.0.1234',
-          alias: 'some-alias-or-id',
-          type: 'contract',
-          network: 'testnet',
-          createdAt: '2024-01-01T00:00:00.000Z',
-        }),
-      },
+    api = makeApiMocks({
       contractQuery: {
         queryContractFunction: jest.fn().mockResolvedValue({
           contractId: '0.0.1234',
           queryResult: ['MyToken'],
         }),
       },
-    } as unknown as CoreApi;
+    }).api;
   });
 
   test('calls ERC-20 name successfully and returns expected output', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'some-alias-or-id',
-    });
+    const args = makeContractErc20CallCommandArgs({ api, logger });
 
     const result = await erc20NameHandler(args);
 
@@ -69,11 +55,14 @@ describe('contract-erc20 plugin - name command (unit)', () => {
     expect(parsed.contractName).toBe('MyToken');
     expect(parsed.network).toBe('testnet');
 
-    expect(args.api.alias.resolveOrThrow).toHaveBeenCalledWith(
-      'some-alias-or-id',
-      'contract',
-      'testnet',
-    );
+    expect(
+      args.api.identityResolution.resolveReferenceToEntityOrEvmAddress,
+    ).toHaveBeenCalledWith({
+      entityReference: 'some-alias-or-id',
+      referenceType: expect.any(String),
+      network: 'testnet',
+      aliasType: expect.any(String),
+    });
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({
         contractIdOrEvmAddress: '0.0.1234',
@@ -83,9 +72,7 @@ describe('contract-erc20 plugin - name command (unit)', () => {
   });
 
   test('returns failure when contractQuery returns empty queryResult', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'some-alias-or-id',
-    });
+    const args = makeContractErc20CallCommandArgs({ api, logger });
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockResolvedValue({
@@ -102,9 +89,7 @@ describe('contract-erc20 plugin - name command (unit)', () => {
   });
 
   test('returns failure when queryContractFunction throws', async () => {
-    const args = makeArgs(api, logger, {
-      contract: 'some-alias-or-id',
-    });
+    const args = makeContractErc20CallCommandArgs({ api, logger });
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));

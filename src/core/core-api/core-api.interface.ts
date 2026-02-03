@@ -10,6 +10,7 @@ import type { ContractQueryService } from '@/core/services/contract-query/contra
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
 import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
+import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
@@ -101,4 +102,5 @@ export interface CoreApi {
   contractCompiler: ContractCompilerService;
   contractVerifier: ContractVerifierService;
   contractQuery: ContractQueryService;
+  identityResolution: IdentityResolutionService;
 }
