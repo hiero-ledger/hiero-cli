@@ -7,6 +7,7 @@ import type { AccountService } from '@/core/services/account/account-transaction
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
+import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
 import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
@@ -198,6 +199,7 @@ export const makeAliasServiceMock = (
     }
     return null;
   }),
+  resolveOrThrow: jest.fn(),
   list: jest.fn().mockReturnValue([]),
   remove: jest.fn(),
   clear: jest.fn(),
@@ -257,6 +259,7 @@ interface ApiMocksConfig {
   contract?: Partial<jest.Mocked<ContractTransactionService>>;
   contractCompiler?: Partial<jest.Mocked<ContractCompilerService>>;
   contractVerifier?: Partial<jest.Mocked<ContractVerifierService>>;
+  contractQuery?: Partial<jest.Mocked<ContractQueryService>>;
 }
 
 /**
@@ -351,6 +354,9 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     contractVerifier: {
       verifyContract: jest.fn(),
     } as ContractVerifierService,
+    contractQuery: {
+      queryContractFunction: jest.fn(),
+    } as ContractQueryService,
     keyResolver,
   };
 
