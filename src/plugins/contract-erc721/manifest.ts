@@ -10,6 +10,11 @@ import {
   CONTRACT_ERC721_CALL_BALANCE_OF_CREATE_TEMPLATE,
   ContractErc721CallBalanceOfOutputSchema,
 } from '@/plugins/contract-erc721/commands/balance-of';
+import {
+  CONTRACT_ERC721_CALL_SYMBOL_TEMPLATE,
+  ContractErc721CallSymbolOutputSchema,
+  symbolFunctionCall,
+} from '@/plugins/contract-erc721/commands/symbol';
 
 export const contractErc721PluginManifest: PluginManifest = {
   name: 'contract-erc721',
@@ -43,6 +48,27 @@ export const contractErc721PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc721CallBalanceOfOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_BALANCE_OF_CREATE_TEMPLATE,
+      },
+    },
+    {
+      name: 'symbol',
+      summary: 'Call symbol function',
+      description:
+        'Command for calling ERC-721 symbol() function (returns token symbol)',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias or contract ID. Option required',
+        },
+      ],
+      handler: symbolFunctionCall,
+      output: {
+        schema: ContractErc721CallSymbolOutputSchema,
+        humanTemplate: CONTRACT_ERC721_CALL_SYMBOL_TEMPLATE,
       },
     },
   ],
