@@ -414,7 +414,7 @@ export const ContractReferenceObjectSchema = z
   .describe('Contract identifier (ID, EVM address, or alias)');
 
 /**
- * Parsed contract reference as a discriminated object by type (EVM address, entity ID, or alias).
+ * Parsed account reference as a discriminated object by type (EVM address, entity ID, or alias).
  * Use this when the handler needs to branch on which kind of reference was provided.
  */
 export const AccountReferenceObjectSchema = z
