@@ -8,7 +8,6 @@ import { Interface } from 'ethers';
 
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
-import { EntityReferenceType } from '@/core/types/shared.types';
 import { formatError } from '@/core/utils/errors';
 import { ContractErc20CallTotalSupplyInputSchema } from '@/plugins/contract-erc20/commands/total-supply/input';
 import { ContractErc20CallTotalSupplyResultSchema } from '@/plugins/contract-erc20/commands/total-supply/result';
@@ -26,19 +25,12 @@ export async function totalSupplyFunctionCall(
     const network = api.network.getCurrentNetwork();
 
     const contractIdOrEvm =
-      contractRef.type === EntityReferenceType.ALIAS
-        ? api.alias.resolveOrThrow(
-            contractRef.value,
-            ALIAS_TYPE.Contract,
-            network,
-          ).entityId
-        : contractRef.value;
-
-    if (!contractIdOrEvm) {
-      throw new Error(
-        `Contract ${contractRef.value} is missing an contract ID in its alias record`,
-      );
-    }
+      api.identityResolution.resolveReferenceToEntityOrEvmAddress({
+        entityReference: contractRef.value,
+        referenceType: contractRef.type,
+        network,
+        aliasType: ALIAS_TYPE.Contract,
+      }).entityIdOrEvmAddress;
 
     const result = await api.contractQuery.queryContractFunction({
       abiInterface: new Interface(ERC20_ABI),

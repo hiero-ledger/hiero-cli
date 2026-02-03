@@ -6,6 +6,11 @@ import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
 import {
+  allowanceFunctionCall,
+  CONTRACT_ERC20_CALL_ALLOWANCE_CREATE_TEMPLATE,
+  ContractErc20CallAllowanceOutputSchema,
+} from '@/plugins/contract-erc20/commands/allowance';
+import {
   approveFunctionCall,
   CONTRACT_ERC20_CALL_APPROVE_TEMPLATE,
   ContractErc20CallApproveOutputSchema,
@@ -35,6 +40,11 @@ import {
   ContractErc20CallTransferOutputSchema,
   transferFunctionCall,
 } from '@/plugins/contract-erc20/commands/transfer';
+import {
+  CONTRACT_ERC20_CALL_TRANSFER_FROM_TEMPLATE,
+  ContractErc20CallTransferFromOutputSchema,
+  transferFromFunctionCall,
+} from '@/plugins/contract-erc20/commands/transfer-from';
 
 export const contractErc20PluginManifest: PluginManifest = {
   name: 'contract-erc20',
@@ -80,6 +90,42 @@ export const contractErc20PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc20CallSymbolOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_SYMBOL_CREATE_TEMPLATE,
+      },
+    },
+    {
+      name: 'allowance',
+      summary: 'Call allowance function',
+      description: 'Command for calling ERC-20 allowance function',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias or contract ID. Option required',
+        },
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Owner account represented by alias, account ID or EVM address. Option required',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Spender account represented by alias, account ID or EVM address. Option required',
+        },
+      ],
+      handler: allowanceFunctionCall,
+      output: {
+        schema: ContractErc20CallAllowanceOutputSchema,
+        humanTemplate: CONTRACT_ERC20_CALL_ALLOWANCE_CREATE_TEMPLATE,
       },
     },
     {
@@ -152,6 +198,58 @@ export const contractErc20PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc20CallTransferOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_TRANSFER_TEMPLATE,
+      },
+    },
+    {
+      name: 'transfer-from',
+      summary: 'Call transferFrom function',
+      description: 'Command for calling the ERC-20 transferFrom function',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+        },
+        {
+          name: 'gas',
+          short: 'g',
+          type: OptionType.NUMBER,
+          required: true,
+          default: 100000,
+          description: 'Gas for function call. Default: 100000',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "from" in transferFrom function represented by alias, account ID or EVM address. Option required',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "to" (recipient) in transferFrom function represented by alias, account ID or EVM address. Option required',
+        },
+        {
+          name: 'value',
+          short: 'v',
+          type: OptionType.NUMBER,
+          required: true,
+          description:
+            'Parameter "value" in transferFrom function represented by a number. Option required',
+        },
+      ],
+      handler: transferFromFunctionCall,
+      output: {
+        schema: ContractErc20CallTransferFromOutputSchema,
+        humanTemplate: CONTRACT_ERC20_CALL_TRANSFER_FROM_TEMPLATE,
       },
     },
     {
