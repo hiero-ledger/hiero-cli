@@ -1,9 +1,11 @@
-import type { CommandHandlerArgs, CoreApi } from '@/core';
+import type { CoreApi, Logger } from '@/core';
 
 import { ZodError } from 'zod';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
+import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
+import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { totalSupplyFunctionCall as erc20TotalSupplyHandler } from '@/plugins/contract-erc20/commands/total-supply/handler';
 import { ContractErc20CallTotalSupplyInputSchema } from '@/plugins/contract-erc20/commands/total-supply/input';
 
@@ -20,44 +22,24 @@ jest.mock('@hashgraph/sdk', () => ({
 }));
 
 describe('contract-erc20 plugin - totalSupply command (unit)', () => {
-  let api: CoreApi;
-  let logger: ReturnType<typeof makeLogger>;
+  let api: jest.Mocked<CoreApi>;
+  let logger: jest.Mocked<Logger>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-
     logger = makeLogger();
-
-    api = {
-      network: {
-        getCurrentNetwork: jest.fn(() => 'testnet'),
-      },
-      identityResolution: {
-        resolveReferenceToEntityOrEvmAddress: jest
-          .fn()
-          .mockReturnValue({ entityIdOrEvmAddress: '0.0.1234' }),
-        resolveAccount: jest.fn(),
-        resolveContract: jest.fn(),
-      },
+    api = makeApiMocks({
       contractQuery: {
         queryContractFunction: jest.fn().mockResolvedValue({
           contractId: '0.0.1234',
           queryResult: [1000000000000000000n],
         }),
       },
-    } as unknown as CoreApi;
+    }).api;
   });
 
   test('calls ERC-20 totalSupply successfully and returns expected output', async () => {
-    const args = {
-      api,
-      logger,
-      state: {} as unknown,
-      config: {} as unknown,
-      args: {
-        contract: 'some-alias-or-id',
-      },
-    } as unknown as CommandHandlerArgs;
+    const args = makeContractErc20CallCommandArgs({ api, logger });
 
     const result = await erc20TotalSupplyHandler(args);
 
@@ -90,15 +72,7 @@ describe('contract-erc20 plugin - totalSupply command (unit)', () => {
   });
 
   test('returns failure when contractQuery returns empty queryResult', async () => {
-    const args = {
-      api,
-      logger,
-      state: {} as unknown,
-      config: {} as unknown,
-      args: {
-        contract: 'some-alias-or-id',
-      },
-    } as unknown as CommandHandlerArgs;
+    const args = makeContractErc20CallCommandArgs({ api, logger });
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockResolvedValue({
@@ -115,15 +89,7 @@ describe('contract-erc20 plugin - totalSupply command (unit)', () => {
   });
 
   test('returns failure when queryContractFunction throws', async () => {
-    const args = {
-      api,
-      logger,
-      state: {} as unknown,
-      config: {} as unknown,
-      args: {
-        contract: 'some-alias-or-id',
-      },
-    } as unknown as CommandHandlerArgs;
+    const args = makeContractErc20CallCommandArgs({ api, logger });
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
