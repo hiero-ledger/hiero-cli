@@ -3,6 +3,9 @@
  * Entry point for the entire Core API
  */
 
+// Errors
+export * from './errors';
+
 // Core API
 export * from './core-api';
 
