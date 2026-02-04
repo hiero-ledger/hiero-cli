@@ -28,10 +28,16 @@ A key advantage of the Hiero CLI Tool is its potential to enhance your workflow.
 
 ## Quick Start
 
-The easiest way to get started with Hedera CLI is to install it globally via npm:
+The easiest way to get started with Hiero CLI is to install it globally via npm:
 
 ```sh
 npm install -g @hiero-ledger/hiero-cli
+```
+
+Or install the latest version of Hiero CLI using Homebrew (mac users):
+
+```sh
+brew install hiero-ledger/tools/hiero-cli
 ```
 
 Once installed, you can use the CLI with the `hcli` command:

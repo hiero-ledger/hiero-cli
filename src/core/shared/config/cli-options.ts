@@ -3,6 +3,8 @@ import type { PluginManifest } from '@/core/plugins/plugin.types';
 import accountPluginManifest from '@/plugins/account/manifest';
 import configPluginManifest from '@/plugins/config/manifest';
 import contractPluginManifest from '@/plugins/contract/manifest';
+import contractErc20PluginManifest from '@/plugins/contract-erc20/manifest';
+import contractErc721PluginManifest from '@/plugins/contract-erc721/manifest';
 import credentialsPluginManifest from '@/plugins/credentials/manifest';
 import hbarPluginManifest from '@/plugins/hbar/manifest';
 import networkPluginManifest from '@/plugins/network/manifest';
@@ -44,4 +46,6 @@ export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
   hbarPluginManifest,
   contractPluginManifest,
   configPluginManifest,
+  contractErc20PluginManifest,
+  contractErc721PluginManifest,
 ];

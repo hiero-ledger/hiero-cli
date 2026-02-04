@@ -29,6 +29,11 @@ export interface AliasService {
     expectation: AliasType | undefined,
     network: SupportedNetwork,
   ): AliasRecord | null;
+  resolveOrThrow(
+    alias: string,
+    type: AliasType,
+    network: SupportedNetwork,
+  ): AliasRecord;
   list(filter?: {
     network?: SupportedNetwork;
     type?: AliasType;

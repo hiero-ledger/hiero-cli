@@ -9,7 +9,11 @@
 import { z } from 'zod';
 
 import { HederaTokenType, KeyAlgorithm } from '@/core/shared/constants';
-import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
+import {
+  EntityReferenceType,
+  SupplyType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 
 // ======================================================
 // 1. ECDSA (secp256k1) Keys
@@ -373,6 +377,67 @@ export const EntityReferenceSchema = z
   .describe('Entity reference (ID or name)');
 
 /**
+ * Entity or EVM Address Reference Input
+ * Universal schema for referencing any Hedera entity by ID, EVM address, or alias name
+ */
+export const EntityOrEvmAddressReferenceSchema = z
+  .union([EntityIdSchema, AliasNameSchema, EvmAddressSchema], {
+    error: () => ({
+      message:
+        'Entity reference must be a valid Hedera ID (0.0.xxx), alias name, or EVM address (0x...)',
+    }),
+  })
+  .describe('Entity reference (ID, EVM address, or name)');
+
+/**
+ * Parsed contract reference as a discriminated object by type (EVM address, entity ID, or alias).
+ * Use this when the handler needs to branch on which kind of reference was provided.
+ */
+export const ContractReferenceObjectSchema = z
+  .string()
+  .trim()
+  .min(1, 'Contract identifier cannot be empty')
+  .transform((val): { type: EntityReferenceType; value: string } => {
+    if (EvmAddressSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.EVM_ADDRESS, value: val };
+    }
+    if (EntityIdSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ENTITY_ID, value: val };
+    }
+    if (AliasNameSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ALIAS, value: val };
+    }
+    throw new Error(
+      'Contract reference must be a valid Hedera ID (0.0.xxx), alias name, or EVM address (0x...)',
+    );
+  })
+  .describe('Contract identifier (ID, EVM address, or alias)');
+
+/**
+ * Parsed account reference as a discriminated object by type (EVM address, entity ID, or alias).
+ * Use this when the handler needs to branch on which kind of reference was provided.
+ */
+export const AccountReferenceObjectSchema = z
+  .string()
+  .trim()
+  .min(1, 'Account identifier cannot be empty')
+  .transform((val): { type: EntityReferenceType; value: string } => {
+    if (EvmAddressSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.EVM_ADDRESS, value: val };
+    }
+    if (EntityIdSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ENTITY_ID, value: val };
+    }
+    if (AliasNameSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ALIAS, value: val };
+    }
+    throw new Error(
+      'Account reference must be a valid Hedera ID (0.0.xxx), alias name, or EVM address (0x...)',
+    );
+  })
+  .describe('Account identifier (ID, EVM address, or alias)');
+
+/**
  * Account Reference Input (ID or Name)
  * Extended schema for referencing accounts specifically
  * Supports: Hedera account ID (0.0.xxx), EVM address (0x...), or account name/alias
@@ -381,7 +446,7 @@ export const AccountReferenceSchema = z
   .union([EntityIdSchema, AccountNameSchema], {
     error: () => ({
       message:
-        'Account reference must be a valid Hedera ID (0.0.xxx), , or alias name',
+        'Account reference must be a valid Hedera ID (0.0.xxx) or alias name',
     }),
   })
   .describe('Account reference (ID, EVM address, or name)');
@@ -627,9 +692,9 @@ export const NonNegativeNumberOrBigintSchema = z
   .pipe(z.bigint().nonnegative());
 
 /**
- * Alias Name Input (Base Schema)
- * Base schema for all entity aliases (alphanumeric, hyphens, underscores)
- * Used as foundation for AccountNameSchema, TopicNameSchema, TokenAliasNameSchema
+ * Contract Name Input (Base Schema)
+ * Base schema for all contract names (alphanumeric, hyphens, underscores)
+ * Used as foundation for ContractNameSchema
  */
 export const ContractNameSchema = z
   .string()
@@ -642,6 +707,21 @@ export const ContractNameSchema = z
   .describe('Contract name');
 
 /**
+ * Contract Symbol Input (Base Schema)
+ * Base schema for all contract symbols (alphanumeric, hyphens, underscores)
+ * Used as foundation for ContractSymbolSchema
+ */
+export const ContractSymbolSchema = z
+  .string()
+  .trim()
+  .min(1, 'Contract symbol cannot be empty')
+  .regex(
+    /^[a-zA-Z0-9_-]+$/,
+    'Contract symbol must contain only letters, numbers, hyphens, and underscores',
+  )
+  .describe('Contract symbol');
+
+/**
  * Solidity Compiler Version Input
  * Optional solidity compiler version field for transactions
  * Max 100 characters
@@ -651,3 +731,5 @@ export const SolidityCompilerVersion = z
   .trim()
   .optional()
   .describe('Optional Solidity compiler version');
+
+export const GasInputSchema = z.number().min(0).default(100000);

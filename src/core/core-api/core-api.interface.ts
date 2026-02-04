@@ -6,9 +6,11 @@ import type { AccountService } from '@/core/services/account/account-transaction
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
+import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
 import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
+import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
@@ -99,4 +101,6 @@ export interface CoreApi {
   contract: ContractTransactionService;
   contractCompiler: ContractCompilerService;
   contractVerifier: ContractVerifierService;
+  contractQuery: ContractQueryService;
+  identityResolution: IdentityResolutionService;
 }

@@ -4,6 +4,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
@@ -33,7 +34,13 @@ export const makeApiMock = (configSvc: jest.Mocked<ConfigService>) =>
     output: {
       handleCommandOutput: jest.fn(),
       getFormat: jest.fn().mockReturnValue('human'),
+      setFormat: jest.fn(),
+      emptyLine: jest.fn(),
     },
+    identityResolution: {
+      resolveAccount: jest.fn(),
+      resolveContract: jest.fn(),
+    } as unknown as IdentityResolutionService,
   }) as unknown as jest.Mocked<CoreApi>;
 
 export const makeCommandArgs = (params: {

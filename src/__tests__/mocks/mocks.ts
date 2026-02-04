@@ -7,9 +7,11 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
+import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
 import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
+import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
@@ -183,12 +185,37 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
     }
     return null;
   }),
+  resolveOrThrow: jest.fn().mockReturnValue({
+    entityId: '0.0.1234',
+    alias: 'default',
+    type: 'contract',
+    network: 'testnet',
+    createdAt: '2024-01-01T00:00:00.000Z',
+  }),
   list: jest.fn(),
   remove: jest.fn(),
   exists: jest.fn().mockReturnValue(false),
   availableOrThrow: jest.fn(),
   clear: jest.fn(),
 });
+
+/**
+ * Create a mocked ContractQueryService
+ */
+export const makeContractQueryServiceMock =
+  (): jest.Mocked<ContractQueryService> => ({
+    queryContractFunction: jest.fn(),
+  });
+
+/**
+ * Create a mocked IdentityResolutionService
+ */
+export const makeIdentityResolutionServiceMock =
+  (): jest.Mocked<IdentityResolutionService> => ({
+    resolveAccount: jest.fn(),
+    resolveContract: jest.fn(),
+    resolveReferenceToEntityOrEvmAddress: jest.fn(),
+  });
 
 /**
  * Create a mocked TxExecutionService
@@ -254,6 +281,7 @@ export const createMirrorNodeMock =
     getPendingAirdrops: jest.fn(),
     getOutstandingAirdrops: jest.fn(),
     getExchangeRate: jest.fn(),
+    postContractCall: jest.fn(),
   });
 
 /**
@@ -412,10 +440,11 @@ export const makeArgs = (
     api.contractCompiler || makeContractCompilerServiceMock();
   const contractVerifier =
     api.contractVerifier || makeContractVerifierServiceMock();
+  const contractQuery = api.contractQuery || makeContractQueryServiceMock();
+  const identityResolution =
+    api.identityResolution || makeIdentityResolutionServiceMock();
 
-  // Exclude state and config from api spread since they're already mocked above
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { state, config, ...restApi } = api;
+  const restApi = api;
 
   const apiObject = {
     account: {} as unknown,
@@ -455,6 +484,7 @@ export const makeArgs = (
       getPendingAirdrops: jest.fn(),
       getOutstandingAirdrops: jest.fn(),
       getExchangeRate: jest.fn(),
+      postContractCall: jest.fn(),
     } as HederaMirrornodeService,
     network,
     config: makeConfigMock(),
@@ -468,6 +498,8 @@ export const makeArgs = (
     contractCompiler,
     contractVerifier,
     keyResolver: makeKeyResolverMock({ network, alias, kms }),
+    contractQuery,
+    identityResolution,
     ...restApi,
   } as unknown as CoreApi;
 

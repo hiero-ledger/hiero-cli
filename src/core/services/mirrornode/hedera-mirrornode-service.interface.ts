@@ -4,6 +4,8 @@
  */
 import type {
   AccountResponse,
+  ContractCallRequest,
+  ContractCallResponse,
   ContractInfo,
   ExchangeRateResponse,
   NftInfo,
@@ -91,4 +93,11 @@ export interface HederaMirrornodeService {
    * Get exchange rate
    */
   getExchangeRate(timestamp?: string): Promise<ExchangeRateResponse>;
+
+  /**
+   * Execute a smart contract call via the Mirror Node.
+   *
+   * Wraps POST /api/v1/contracts/call.
+   */
+  postContractCall(request: ContractCallRequest): Promise<ContractCallResponse>;
 }
