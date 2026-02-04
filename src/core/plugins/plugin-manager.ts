@@ -6,6 +6,7 @@
 import type { Command, OptionValues } from 'commander';
 import type {
   CommandHandlerArgs,
+  CommandResult,
   CommandSpec,
   PluginManifest,
   PluginStateEntry,
@@ -16,7 +17,9 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 
 import * as Handlebars from 'handlebars';
 import * as path from 'path';
+import { ZodError } from 'zod';
 
+import { CliError, InternalError, ValidationError } from '@/core';
 import { Status } from '@/core/shared/constants';
 import { OptionType } from '@/core/types/shared.types';
 import { requireConfirmation } from '@/core/utils/confirmation';
@@ -409,6 +412,23 @@ export class PluginManager {
       throw new Error('Operation cancelled by user');
     }
   }
+  // @deprecated @todo - temporary function, remove after migration to thrown based error handling
+  private isNewCommandResult(
+    commandResult: unknown,
+  ): commandResult is CommandResult {
+    if (typeof commandResult !== 'object' || commandResult === null)
+      return false;
+
+    return 'result' in commandResult;
+  }
+
+  private exitWithCliError(error: CliError): void {
+    return this.coreApi.output.handleOutput({
+      status: Status.Failure,
+      template: error.getTemplate(),
+      result: error.toJSON(),
+    });
+  }
 
   /**
    * Execute a plugin command
@@ -446,60 +466,40 @@ export class PluginManager {
 
     await this.handleConfirmation(commandSpec, handlerArgs, skipConfirmation);
 
-    // Validate that output spec is present (required per CommandSpec type)
-    if (!commandSpec.output) {
-      this.exitWithError(
-        `Command ${commandSpec.name} configuration error`,
-        new Error('Command must define an output specification'),
-      );
-    }
-
-    // Execute command handler with error handling
-    let result;
+    // Mechanism that support both new and old Error handling
+    // @todo - replace as fast as handlers and services is migrated
     try {
-      result = await commandSpec.handler(handlerArgs);
-    } catch (error) {
-      this.exitWithError(`Command ${commandSpec.name} execution failed`, error);
-    }
-
-    // ADR-003: If command has output spec, expect handler to return result
-    if (!result) {
-      this.exitWithError(
-        `Command ${commandSpec.name} handler error`,
-        new Error(
-          'Handler must return CommandExecutionResult when output spec is defined',
-        ),
-      );
-    }
-
-    const executionResult = result;
-
-    // Handle non-success statuses
-    if (executionResult.status !== Status.Success) {
-      this.exitWithError(
-        `Command ${commandSpec.name} failed`,
-        new Error(
-          executionResult.errorMessage || `Status: ${executionResult.status}`,
-        ),
-      );
-    }
-
-    // Handle successful execution with output
-    if (executionResult.outputJson) {
-      try {
-        // Use OutputHandlerService to format and display output
-        this.coreApi.output.handleCommandOutput({
-          outputJson: executionResult.outputJson,
-          schema: commandSpec.output.schema,
-          template: commandSpec.output.humanTemplate,
-          format: this.coreApi.output.getFormat(),
-        });
-      } catch (error) {
-        this.exitWithError(
-          `Failed to format output for ${commandSpec.name}`,
-          error,
+      const result = await commandSpec.handler(handlerArgs);
+      // @deprecated @todo - temporary check, remove after migration to thrown based error handling
+      if (!this.isNewCommandResult(result)) {
+        throw new Error(
+          `Command ${commandSpec.name} is before migration to thrown based error handling`,
         );
       }
+
+      // Now we know its new CommandResult
+      this.coreApi.output.handleOutput({
+        status: Status.Success,
+        template: commandSpec.output.humanTemplate,
+        result,
+      });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = ValidationError.fromZod(error);
+        return this.exitWithCliError(validationError);
+      }
+
+      if (error instanceof CliError) {
+        return this.exitWithCliError(error);
+      }
+
+      if (error instanceof Error) {
+        const internalError = new InternalError(error.message);
+        return this.exitWithCliError(internalError);
+      }
+
+      const internalError = new InternalError('Unexpected unsupported Error');
+      return this.exitWithCliError(internalError);
     }
   }
 

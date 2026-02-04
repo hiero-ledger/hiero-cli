@@ -6,6 +6,7 @@ export {
 } from './cli-error';
 export { ConfigurationError } from './configuration-error';
 export { FileError } from './file-error';
+export { InternalError } from './internal-error';
 export { NetworkError } from './network-error';
 export { NotFoundError } from './not-found-error';
 export { StateError } from './state-error';

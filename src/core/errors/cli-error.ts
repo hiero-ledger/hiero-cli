@@ -8,6 +8,8 @@ export interface CliErrorOptions {
 
 export type SerializedCliError = Omit<CliErrorOptions, 'recoverable'>;
 
+export const DEFAULT_TEMPLATE = '{{{message}}}';
+
 export abstract class CliError extends Error {
   readonly code: string;
   readonly context?: Record<string, unknown>;
@@ -28,7 +30,7 @@ export abstract class CliError extends Error {
   }
 
   public getTemplate(): string {
-    return '{{message}}';
+    return DEFAULT_TEMPLATE;
   }
 
   protected formatCause(): unknown {
