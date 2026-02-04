@@ -1,4 +1,4 @@
-import { CliError } from '@/core';
+import { CliError } from './cli-error';
 
 export class StateError extends CliError {
   static readonly CODE = 'STATE_ERROR';

@@ -1,4 +1,4 @@
-import { CliError } from '@/core';
+import { CliError } from './cli-error';
 
 export class ConfigurationError extends CliError {
   static readonly CODE = 'CONFIGURATION_ERROR';

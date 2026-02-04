@@ -1,4 +1,4 @@
-import { CliError } from '@/core';
+import { CliError } from './cli-error';
 
 export class NetworkError extends CliError {
   static readonly CODE = 'NETWORK_ERROR';

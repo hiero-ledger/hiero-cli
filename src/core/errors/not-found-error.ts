@@ -1,4 +1,4 @@
-import { CliError } from '@/core';
+import { CliError } from './cli-error';
 
 export class NotFoundError extends CliError {
   static readonly CODE = 'NOT_FOUND';

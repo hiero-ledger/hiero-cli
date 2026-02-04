@@ -1,4 +1,4 @@
-import { CliError } from '@/core';
+import { CliError } from './cli-error';
 
 export class TransactionError extends CliError {
   static readonly CODE = 'TRANSACTION_ERROR';

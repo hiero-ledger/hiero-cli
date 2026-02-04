@@ -1,6 +1,6 @@
 import type { ZodError } from 'zod';
 
-import { CliError } from '@/core';
+import { CliError } from './cli-error';
 
 export class ValidationError extends CliError {
   static readonly CODE = 'VALIDATION_ERROR';

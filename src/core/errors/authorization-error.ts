@@ -1,4 +1,4 @@
-import { CliError } from '@/core';
+import { CliError } from './cli-error';
 
 export class AuthorizationError extends CliError {
   static readonly CODE = 'AUTHORIZATION_ERROR';
