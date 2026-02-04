@@ -11,6 +11,11 @@ import {
   ContractErc721CallBalanceOfOutputSchema,
 } from '@/plugins/contract-erc721/commands/balance-of';
 import {
+  CONTRACT_ERC721_CALL_NAME_TEMPLATE,
+  ContractErc721CallNameOutputSchema,
+  nameFunctionCall,
+} from '@/plugins/contract-erc721/commands/name';
+import {
   CONTRACT_ERC721_CALL_OWNER_OF_TEMPLATE,
   ContractErc721CallOwnerOfOutputSchema,
   ownerOfFunctionCall,
@@ -109,6 +114,27 @@ export const contractErc721PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc721CallTokenUriOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_TOKEN_URI_TEMPLATE,
+      },
+    },
+    {
+      name: 'name',
+      summary: 'Call name function',
+      description:
+        'Command for calling ERC-721 name() function (returns contract/token name)',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias or contract ID. Option required',
+        },
+      ],
+      handler: nameFunctionCall,
+      output: {
+        schema: ContractErc721CallNameOutputSchema,
+        humanTemplate: CONTRACT_ERC721_CALL_NAME_TEMPLATE,
       },
     },
   ],
