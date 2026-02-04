@@ -1,13 +1,16 @@
 import { z } from 'zod';
 
-import { EntityIdSchema } from '@/core/schemas';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import {
+  ContractErc721TokenIdSchema,
+  EntityIdSchema,
+  NetworkSchema,
+} from '@/core/schemas';
 
 export const ContractErc721CallTokenUriOutputSchema = z.object({
   contractId: EntityIdSchema,
-  tokenId: z.number().int().nonnegative(),
+  tokenId: ContractErc721TokenIdSchema,
   tokenURI: z.string(),
-  network: SupportedNetwork,
+  network: NetworkSchema,
 });
 
 export type ContractErc721CallTokenUriOutput = z.infer<

@@ -1,6 +1,9 @@
 import { z } from 'zod';
 
-import { ContractReferenceObjectSchema } from '@/core/schemas';
+import {
+  ContractErc721TokenIdSchema,
+  ContractReferenceObjectSchema,
+} from '@/core/schemas';
 
 /**
  * Input schema for contract erc721 call tokenURI command.
@@ -9,8 +12,5 @@ import { ContractReferenceObjectSchema } from '@/core/schemas';
  */
 export const ContractErc721CallTokenUriInputSchema = z.object({
   contract: ContractReferenceObjectSchema,
-  tokenId: z
-    .number()
-    .nonnegative('Token ID must be greater than or equal to 0')
-    .describe('Token ID (uint256) for tokenURI query'),
+  tokenId: ContractErc721TokenIdSchema,
 });
