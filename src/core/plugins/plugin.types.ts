@@ -71,9 +71,12 @@ export interface PluginContext {
 }
 
 /**
- * Command execution result
- * Returned by handlers that follow ADR-003 contract
+ * Command result
  */
+export interface CommandResult {
+  result: unknown;
+}
+
 export interface CommandExecutionResult {
   status: Status;
   /** Optional, present when status !== 'success'; intended for humans */
@@ -83,13 +86,12 @@ export interface CommandExecutionResult {
 }
 
 /**
- * Command handler function type
- * - All handlers are asynchronous and must return Promise<CommandExecutionResult>
- * - Enforces ADR-003 contract (structured status/error/output handling)
+ * Command handler
  */
 export type CommandHandler = (
   args: CommandHandlerArgs,
-) => Promise<CommandExecutionResult>;
+  // @deprecated @todo - we need to remove CommandExecutionResult after migration to thrown based error handling
+) => Promise<CommandResult | CommandExecutionResult>;
 
 /**
  * Plugin state schema
