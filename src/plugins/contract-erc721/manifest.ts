@@ -21,6 +21,11 @@ import {
   ownerOfFunctionCall,
 } from '@/plugins/contract-erc721/commands/owner-of';
 import {
+  CONTRACT_ERC721_CALL_SYMBOL_TEMPLATE,
+  ContractErc721CallSymbolOutputSchema,
+  symbolFunctionCall,
+} from '@/plugins/contract-erc721/commands/symbol';
+import {
   CONTRACT_ERC721_CALL_TOKEN_URI_TEMPLATE,
   ContractErc721CallTokenUriOutputSchema,
   tokenUriFunctionCall,
@@ -135,6 +140,27 @@ export const contractErc721PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc721CallNameOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_NAME_TEMPLATE,
+      },
+    },
+    {
+      name: 'symbol',
+      summary: 'Call symbol function',
+      description:
+        'Command for calling ERC-721 symbol() function (returns token symbol)',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias or contract ID. Option required',
+        },
+      ],
+      handler: symbolFunctionCall,
+      output: {
+        schema: ContractErc721CallSymbolOutputSchema,
+        humanTemplate: CONTRACT_ERC721_CALL_SYMBOL_TEMPLATE,
       },
     },
   ],
