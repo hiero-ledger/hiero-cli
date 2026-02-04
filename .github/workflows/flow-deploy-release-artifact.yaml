@@ -64,7 +64,7 @@ jobs:
         run: |
           npm install -g semantic-release@25.0.2 @semantic-release/git@10.0.1 @semantic-release/github@12.0.2 @semantic-release/exec@7.1.0 gradle-semantic-release-plugin@1.7.6
           npm install -g conventional-changelog-conventionalcommits@9.1.0 @commitlint/cli@18.6.0 @commitlint/config-conventional@18.6.0
-          npm install -g marked-mangle@1.1.6 marked-gfm-heading-id@3.1.2 semantic-release-conventional-commits@3.0.0
+          npm install -g marked-mangle@1.1.6 marked-gfm-heading-id@3.1.2 semantic-release-conventional-commits@3.0.0 @semantic-release/npm@12.0.2
 
       - name: Calculate Next Version (default branch)
         id: calculate-version
@@ -207,7 +207,7 @@ jobs:
         run: |
           npm install -g semantic-release@25.0.2 @semantic-release/git@10.0.1 @semantic-release/github@12.0.2 @semantic-release/exec@7.1.0 gradle-semantic-release-plugin@1.7.6
           npm install -g conventional-changelog-conventionalcommits@9.1.0 @commitlint/cli@18.6.0 @commitlint/config-conventional@18.6.0
-          npm install -g marked-mangle@1.1.6 marked-gfm-heading-id@3.1.2 semantic-release-conventional-commits@3.0.0 @semantic-release/npm@13.1.3
+          npm install -g marked-mangle@1.1.6 marked-gfm-heading-id@3.1.2 semantic-release-conventional-commits@3.0.0 @semantic-release/npm@12.0.2
 
       - name: Install Dependencies
         run: jf npm ci
