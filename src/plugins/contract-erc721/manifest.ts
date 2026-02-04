@@ -10,6 +10,11 @@ import {
   CONTRACT_ERC721_CALL_BALANCE_OF_CREATE_TEMPLATE,
   ContractErc721CallBalanceOfOutputSchema,
 } from '@/plugins/contract-erc721/commands/balance-of';
+import {
+  CONTRACT_ERC721_CALL_OWNER_OF_TEMPLATE,
+  ContractErc721CallOwnerOfOutputSchema,
+  ownerOfFunctionCall,
+} from '@/plugins/contract-erc721/commands/owner-of';
 
 export const contractErc721PluginManifest: PluginManifest = {
   name: 'contract-erc721',
@@ -43,6 +48,34 @@ export const contractErc721PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc721CallBalanceOfOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_BALANCE_OF_CREATE_TEMPLATE,
+      },
+    },
+    {
+      name: 'owner-of',
+      summary: 'Call ownerOf function',
+      description:
+        'Command for calling ERC-721 ownerOf(uint256 tokenId) function',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias or contract ID. Option required',
+        },
+        {
+          name: 'tokenId',
+          short: 't',
+          type: OptionType.NUMBER,
+          required: true,
+          description: 'Token ID (uint256) to query owner of. Option required',
+        },
+      ],
+      handler: ownerOfFunctionCall,
+      output: {
+        schema: ContractErc721CallOwnerOfOutputSchema,
+        humanTemplate: CONTRACT_ERC721_CALL_OWNER_OF_TEMPLATE,
       },
     },
   ],
