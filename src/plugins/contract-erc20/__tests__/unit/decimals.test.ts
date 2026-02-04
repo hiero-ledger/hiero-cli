@@ -1,6 +1,8 @@
 import type { CoreApi, Logger } from '@/core';
 import type { ContractErc20CallDecimalsOutput } from '@/plugins/contract-erc20/commands/decimals/output';
 
+import '@/core/utils/json-serialize';
+
 import { ZodError } from 'zod';
 
 import { Status } from '@/core/shared/constants';
@@ -47,7 +49,7 @@ describe('contract-erc20 plugin - decimals command (unit)', () => {
     ) as ContractErc20CallDecimalsOutput;
 
     expect(parsed.contractId).toBe('0.0.1234');
-    expect(parsed.decimals).toBe(18);
+    expect(parsed.decimals).toBe('18');
     expect(parsed.network).toBe('testnet');
 
     expect(

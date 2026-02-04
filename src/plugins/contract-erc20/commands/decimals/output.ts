@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-import { EntityIdSchema, EvmDecimalsSchema } from '@/core/schemas';
+import { EntityIdSchema, EvmBaseUnitSchema } from '@/core/schemas';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 export const ContractErc20CallDecimalsOutputSchema = z.object({
   contractId: EntityIdSchema,
-  decimals: EvmDecimalsSchema,
+  decimals: EvmBaseUnitSchema,
   network: SupportedNetwork,
 });
 
