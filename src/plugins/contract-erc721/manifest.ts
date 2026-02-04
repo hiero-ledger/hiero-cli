@@ -10,6 +10,11 @@ import {
   CONTRACT_ERC721_CALL_BALANCE_OF_CREATE_TEMPLATE,
   ContractErc721CallBalanceOfOutputSchema,
 } from '@/plugins/contract-erc721/commands/balance-of';
+import {
+  CONTRACT_ERC721_CALL_SET_APPROVAL_FOR_ALL_TEMPLATE,
+  ContractErc721CallSetApprovalForAllOutputSchema,
+  setApprovalForAllFunctionCall,
+} from '@/plugins/contract-erc721/commands/set-approval-for-all';
 
 export const contractErc721PluginManifest: PluginManifest = {
   name: 'contract-erc721',
@@ -43,6 +48,51 @@ export const contractErc721PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc721CallBalanceOfOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_BALANCE_OF_CREATE_TEMPLATE,
+      },
+    },
+    {
+      name: 'set-approval-for-all',
+      summary: 'Call setApprovalForAll function',
+      description:
+        'Command for calling ERC-721 setApprovalForAll(address operator, bool approved) function',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+        },
+        {
+          name: 'gas',
+          short: 'g',
+          type: OptionType.NUMBER,
+          required: true,
+          default: 100000,
+          description: 'Gas for function call. Default: 100000',
+        },
+        {
+          name: 'operator',
+          short: 'o',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "operator" in setApprovalForAll represented by alias, account ID or EVM address. Option required',
+        },
+        {
+          name: 'approved',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "approved" in setApprovalForAll. Value must be "true" or "false". Option required',
+        },
+      ],
+      handler: setApprovalForAllFunctionCall,
+      output: {
+        schema: ContractErc721CallSetApprovalForAllOutputSchema,
+        humanTemplate: CONTRACT_ERC721_CALL_SET_APPROVAL_FOR_ALL_TEMPLATE,
       },
     },
   ],
