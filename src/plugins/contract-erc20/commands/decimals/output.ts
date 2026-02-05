@@ -1,12 +1,15 @@
 import { z } from 'zod';
 
-import { EntityIdSchema, EvmDecimalsSchema } from '@/core/schemas';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import {
+  EntityIdSchema,
+  EvmDecimalsSchema,
+  NetworkSchema,
+} from '@/core/schemas';
 
 export const ContractErc20CallDecimalsOutputSchema = z.object({
   contractId: EntityIdSchema,
   decimals: EvmDecimalsSchema,
-  network: SupportedNetwork,
+  network: NetworkSchema,
 });
 
 export type ContractErc20CallDecimalsOutput = z.infer<
