@@ -6,6 +6,11 @@ import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
 import {
+  approveFunctionCall,
+  CONTRACT_ERC721_CALL_APPROVE_TEMPLATE,
+  ContractErc721CallApproveOutputSchema,
+} from '@/plugins/contract-erc721/commands/approve';
+import {
   balanceOfFunctionCall,
   CONTRACT_ERC721_CALL_BALANCE_OF_CREATE_TEMPLATE,
   ContractErc721CallBalanceOfOutputSchema,
@@ -53,6 +58,51 @@ export const contractErc721PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc721CallBalanceOfOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_BALANCE_OF_CREATE_TEMPLATE,
+      },
+    },
+    {
+      name: 'approve',
+      summary: 'Call approve function',
+      description:
+        'Command for calling ERC-721 approve(address to, uint256 tokenId) function',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+        },
+        {
+          name: 'gas',
+          short: 'g',
+          type: OptionType.NUMBER,
+          required: true,
+          default: 100000,
+          description: 'Gas for function call. Default: 100000',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "to" in approve - address to approve for token transfer. Alias, account ID or EVM address. Option required',
+        },
+        {
+          name: 'tokenId',
+          short: 'T',
+          type: OptionType.NUMBER,
+          required: true,
+          description:
+            'Parameter "tokenId" in approve - token ID (uint256) to approve. Option required',
+        },
+      ],
+      handler: approveFunctionCall,
+      output: {
+        schema: ContractErc721CallApproveOutputSchema,
+        humanTemplate: CONTRACT_ERC721_CALL_APPROVE_TEMPLATE,
       },
     },
     {
