@@ -24,19 +24,54 @@ export const TokenAssociationSchema = z.object({
   accountId: EntityIdSchema,
 });
 
-// Zod schema for custom fees
-export const CustomFeeSchema = z.object({
-  type: z.string(),
-  unitType: z.string().optional(),
-  amount: z.number().optional(),
-  denom: z.string().optional(),
-  numerator: z.number().optional(),
-  denominator: z.number().optional(),
-  min: z.number().optional(),
-  max: z.number().optional(),
-  collectorId: z.string().optional(),
-  exempt: z.boolean().optional(),
-});
+export const TokenFileFixedFeeSchema = z
+  .object({
+    type: z.literal('fixed'),
+    amount: z.int().positive('Amount must be positive'),
+    unitType: z.enum(['HBAR', 'TOKEN']).optional().default('HBAR'),
+    collectorId: EntityIdSchema,
+    exempt: z.boolean().optional(),
+  })
+  .strict();
+
+export const TokenFileFractionalFeeSchema = z
+  .object({
+    type: z.literal('fractional'),
+    numerator: z.int().positive('Numerator must be positive'),
+    denominator: z.int().positive('Denominator must be positive'),
+    min: z.int().nonnegative().optional(),
+    max: z.int().positive().optional(),
+    netOfTransfers: z.boolean(),
+    collectorId: EntityIdSchema,
+    exempt: z.boolean().optional(),
+  })
+  .strict()
+  .superRefine((data, ctx) => {
+    if (data.numerator > data.denominator) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          'Numerator must be less than or equal to denominator (fee cannot exceed 100%)',
+        path: ['numerator'],
+      });
+    }
+    if (
+      data.min !== undefined &&
+      data.max !== undefined &&
+      data.min > data.max
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Min must be less than or equal to max',
+        path: ['min'],
+      });
+    }
+  });
+
+export const TokenFileCustomFeeSchema = z.discriminatedUnion('type', [
+  TokenFileFixedFeeSchema,
+  TokenFileFractionalFeeSchema,
+]);
 
 // Main token data schema
 export const TokenDataSchema = z.object({
@@ -98,7 +133,7 @@ export const TokenDataSchema = z.object({
 
   associations: z.array(TokenAssociationSchema).default([]),
 
-  customFees: z.array(CustomFeeSchema).default([]),
+  customFees: z.array(TokenFileCustomFeeSchema).default([]),
 
   memo: z.string().max(100).optional(),
 });
@@ -136,16 +171,6 @@ export function safeParseTokenData(data: unknown) {
   return TokenDataSchema.safeParse(data);
 }
 
-export const TokenFileFixedFeeSchema = z
-  .object({
-    type: z.literal('fixed'),
-    amount: z.int().positive('Amount must be positive'),
-    unitType: z.literal('HBAR').optional().default('HBAR'),
-    collectorId: EntityIdSchema.optional(),
-    exempt: z.boolean().optional(),
-  })
-  .strict();
-
 export const FungibleTokenFileSchema = z.object({
   name: TokenNameSchema,
   symbol: TokenSymbolSchema,
@@ -162,7 +187,10 @@ export const FungibleTokenFileSchema = z.object({
   pauseKey: KeyOrAccountAliasSchema.optional(),
   feeScheduleKey: KeyOrAccountAliasSchema.optional(),
   associations: z.array(KeyOrAccountAliasSchema).default([]),
-  customFees: z.array(TokenFileFixedFeeSchema).default([]),
+  customFees: z
+    .array(TokenFileCustomFeeSchema)
+    .max(10, 'Maximum 10 custom fees allowed per token')
+    .default([]),
   memo: MemoSchema.default(''),
   tokenType: TokenTypeSchema,
 });
