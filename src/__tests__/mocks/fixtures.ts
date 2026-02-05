@@ -21,3 +21,11 @@ export const ED25519_HEX_PUBLIC_KEY_WITH_0X = `0x${ED25519_HEX_PUBLIC_KEY}`;
 export const ECDSA_EVM_ADDRESS = '0x48dfcb856aab92c0152c1de06b3263e3be3bde2c';
 export const MOCK_PUBLIC_KEY =
   '0000000000000000000000000000000000000000000000000000000000000000';
+
+export const MOCK_CONTRACT_ID = '0.0.1234';
+export const MOCK_ACCOUNT_ID = '0.0.5678';
+export const MOCK_ACCOUNT_ID_ALT = '0.0.5679';
+export const MOCK_EVM_ADDRESS = '0x' + 'a'.repeat(40);
+export const MOCK_EVM_ADDRESS_ALT = '0x' + 'b'.repeat(40);
+export const MOCK_EVM_ADDRESS_ALT_2 = '0x' + 'c'.repeat(40);
+export const MOCK_TX_ID = '0.0.1234@1234567890.123456789';

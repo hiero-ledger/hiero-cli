@@ -728,6 +728,19 @@ export const SolidityCompilerVersion = z
 
 export const GasInputSchema = z.number().min(0).default(100000);
 
+/**
+ * Approved Flag Input Schema
+ * Accepts string ("true"/"false") and transforms to boolean
+ */
+export const ApprovedFlagSchema = z
+  .stringbool({
+    truthy: ['true'],
+    falsy: ['false'],
+  })
+  .describe(
+    'Whether to approve or revoke the operator. Value must be "true" or "false"',
+  );
+
 export const ContractErc721TokenIdSchema = z
   .int()
   .nonnegative('Token ID must be greater than or equal to 0')
