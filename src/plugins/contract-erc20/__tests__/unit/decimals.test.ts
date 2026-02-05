@@ -49,7 +49,7 @@ describe('contract-erc20 plugin - decimals command (unit)', () => {
     ) as ContractErc20CallDecimalsOutput;
 
     expect(parsed.contractId).toBe('0.0.1234');
-    expect(parsed.decimals).toBe('18');
+    expect(parsed.decimals).toBe(18);
     expect(parsed.network).toBe('testnet');
 
     expect(

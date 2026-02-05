@@ -127,6 +127,11 @@ export const HtsDecimalSchema = z
 // 6. EVM Token Balances (ERC-20 style)
 // ======================================================
 
+export const EvmDecimalsSchema = z
+  .union([z.int(), z.bigint()])
+  .transform((val) => Number(val))
+  .pipe(z.number().int());
+
 // Base unit (wei-like integer)
 export const EvmBaseUnitSchema = z
   .union([
