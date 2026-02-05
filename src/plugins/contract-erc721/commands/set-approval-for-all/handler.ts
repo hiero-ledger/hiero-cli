@@ -34,7 +34,7 @@ export async function setApprovalForAllFunctionCall(
       network,
     });
 
-    let operatorEvmAddress: string | null | undefined;
+    let operatorEvmAddress: string | undefined;
     if (operatorRef.type === EntityReferenceType.EVM_ADDRESS) {
       operatorEvmAddress = operatorRef.value;
     } else {
