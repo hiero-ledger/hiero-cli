@@ -33,7 +33,10 @@ describe('Token Custom Fees Integration Tests', () => {
   });
 
   it('should create FT with fixed HBAR fee', async () => {
-    const operatorAccountId = coreApi.network.getOperatorAccountId();
+    const operator = coreApi.network.getCurrentOperatorOrThrow();
+    const operatorAccountId = operator.accountId;
+    const operatorKey = process.env.OPERATOR_KEY!;
+    const operatorWithKey = `${operatorAccountId}:${operatorKey}`;
 
     const tokenFile = {
       name: `FixedHbarFeeToken-${Date.now()}`,
@@ -41,8 +44,8 @@ describe('Token Custom Fees Integration Tests', () => {
       decimals: 8,
       supplyType: 'infinite',
       initialSupply: 1000000,
-      treasuryKey: operatorAccountId,
-      adminKey: operatorAccountId,
+      treasuryKey: operatorWithKey,
+      adminKey: operatorWithKey,
       customFees: [
         {
           type: 'fixed',
@@ -78,7 +81,10 @@ describe('Token Custom Fees Integration Tests', () => {
   });
 
   it('should create FT with fractional fee', async () => {
-    const operatorAccountId = coreApi.network.getOperatorAccountId();
+    const operator = coreApi.network.getCurrentOperatorOrThrow();
+    const operatorAccountId = operator.accountId;
+    const operatorKey = process.env.OPERATOR_KEY!;
+    const operatorWithKey = `${operatorAccountId}:${operatorKey}`;
 
     const tokenFile = {
       name: `FractionalFeeToken-${Date.now()}`,
@@ -86,8 +92,8 @@ describe('Token Custom Fees Integration Tests', () => {
       decimals: 8,
       supplyType: 'infinite',
       initialSupply: 1000000,
-      treasuryKey: operatorAccountId,
-      adminKey: operatorAccountId,
+      treasuryKey: operatorWithKey,
+      adminKey: operatorWithKey,
       customFees: [
         {
           type: 'fractional',
@@ -126,7 +132,10 @@ describe('Token Custom Fees Integration Tests', () => {
   });
 
   it('should create FT with fixed TOKEN fee', async () => {
-    const operatorAccountId = coreApi.network.getOperatorAccountId();
+    const operator = coreApi.network.getCurrentOperatorOrThrow();
+    const operatorAccountId = operator.accountId;
+    const operatorKey = process.env.OPERATOR_KEY!;
+    const operatorWithKey = `${operatorAccountId}:${operatorKey}`;
 
     const tokenFile = {
       name: `FixedTokenFeeToken-${Date.now()}`,
@@ -134,8 +143,8 @@ describe('Token Custom Fees Integration Tests', () => {
       decimals: 8,
       supplyType: 'infinite',
       initialSupply: 1000000,
-      treasuryKey: operatorAccountId,
-      adminKey: operatorAccountId,
+      treasuryKey: operatorWithKey,
+      adminKey: operatorWithKey,
       customFees: [
         {
           type: 'fixed',
