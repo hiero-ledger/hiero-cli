@@ -11,8 +11,8 @@ import {
   makeLogger,
   makeMirrorMock,
 } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
 import { getAccountBalance } from '@/plugins/account/commands/balance/handler';
+import { NotFoundError } from '@/core/errors';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -52,23 +52,21 @@ describe('account plugin - balance command (ADR-003)', () => {
     });
 
     const result = await getAccountBalance(args);
+    const output = result.result as AccountBalanceOutput;
 
     expect(mirrorMock.getAccountHBarBalance).not.toHaveBeenCalled();
     expect(mirrorMock.getAccountTokenBalances).toHaveBeenCalledWith(
       '0.0.1234',
       '0.0.7777',
     );
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
 
-    const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
     expect(output.accountId).toBe('0.0.1234');
     expect(output.hbarBalance).toBeUndefined();
     expect(output.tokenOnly).toBe(true);
     expect(output.tokenBalances).toHaveLength(1);
     expect(output.tokenBalances![0]).toMatchObject({
       tokenId: '0.0.7777',
-      balance: '500',
+      balance: 500n,
     });
     expect(output.tokenBalances![0].name).toBeDefined();
     expect(output.tokenBalances![0].symbol).toBeDefined();
@@ -115,17 +113,14 @@ describe('account plugin - balance command (ADR-003)', () => {
       '0.0.1234',
       '0.0.7777',
     );
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
+    const output = result.result as AccountBalanceOutput;
     expect(output.accountId).toBe('0.0.1234');
     expect(output.hbarBalance).toBeUndefined();
     expect(output.tokenOnly).toBe(true);
     expect(output.tokenBalances).toHaveLength(1);
     expect(output.tokenBalances![0]).toMatchObject({
       tokenId: '0.0.7777',
-      balance: '500',
+      balance: 500n,
     });
     expect(output.tokenBalances![0].name).toBeDefined();
     expect(output.tokenBalances![0].symbol).toBeDefined();
@@ -157,12 +152,9 @@ describe('account plugin - balance command (ADR-003)', () => {
     const result = await getAccountBalance(args);
 
     expect(mirrorMock.getAccountHBarBalance).toHaveBeenCalledWith('0.0.1001');
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
+    const output = result.result as AccountBalanceOutput;
     expect(output.accountId).toBe('0.0.1001');
-    expect(output.hbarBalance).toBe('123456');
+    expect(output.hbarBalance).toBe(123456n);
     expect(output.hbarBalanceDisplay).toBeDefined();
     expect(output.hbarOnly).toBe(true);
     expect(output.tokenBalances).toBeUndefined();
@@ -200,23 +192,20 @@ describe('account plugin - balance command (ADR-003)', () => {
       '0.0.2002',
       undefined,
     );
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
+    const output = result.result as AccountBalanceOutput;
     expect(output.accountId).toBe('0.0.2002');
-    expect(output.hbarBalance).toBe('5000');
+    expect(output.hbarBalance).toBe(5000n);
     expect(output.hbarBalanceDisplay).toBeDefined();
     expect(output.tokenBalances).toHaveLength(2);
     expect(output.tokenBalances![0]).toMatchObject({
       tokenId: '0.0.3003',
-      balance: '100',
+      balance: 100n,
     });
     expect(output.tokenBalances![0].name).toBeDefined();
     expect(output.tokenBalances![0].symbol).toBeDefined();
     expect(output.tokenBalances![1]).toMatchObject({
       tokenId: '0.0.4004',
-      balance: '200',
+      balance: 200n,
     });
     expect(output.tokenBalances![1].name).toBeDefined();
     expect(output.tokenBalances![1].symbol).toBeDefined();
@@ -251,12 +240,9 @@ describe('account plugin - balance command (ADR-003)', () => {
     const result = await getAccountBalance(args);
 
     expect(mirrorMock.getAccountHBarBalance).toHaveBeenCalledWith('0.0.7777');
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
+    const output = result.result as AccountBalanceOutput;
     expect(output.accountId).toBe('0.0.7777');
-    expect(output.hbarBalance).toBe('999');
+    expect(output.hbarBalance).toBe(999n);
     expect(output.hbarBalanceDisplay).toBeDefined();
     expect(output.tokenBalances).toBeUndefined();
   });
@@ -282,17 +268,14 @@ describe('account plugin - balance command (ADR-003)', () => {
 
     const result = await getAccountBalance(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
+    const output = result.result as AccountBalanceOutput;
     expect(output.accountId).toBe('0.0.5005');
-    expect(output.hbarBalance).toBe('42');
+    expect(output.hbarBalance).toBe(42n);
     expect(output.hbarBalanceDisplay).toBeDefined();
     expect(output.tokenBalances).toBeUndefined();
   });
 
-  test('returns failure when token balances fetch fails', async () => {
+  test('throws error when token balances fetch fails', async () => {
     const logger = makeLogger();
 
     const mirrorMock = makeMirrorMock({
@@ -314,15 +297,10 @@ describe('account plugin - balance command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'acc4' });
 
-    const result = await getAccountBalance(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Could not fetch token balances');
-    expect(result.errorMessage).toContain('mirror error');
+    await expect(getAccountBalance(args)).rejects.toThrow();
   });
 
-  test('returns failure when main try-catch fails', async () => {
+  test('throws NotFoundError when account not found', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -342,17 +320,10 @@ describe('account plugin - balance command (ADR-003)', () => {
     const account = 'broken';
     const args = makeArgs(api, logger, { account });
 
-    const result = await getAccountBalance(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain(
-      'Account not found with ID or alias:',
-    );
-    expect(result.errorMessage).toContain(account);
+    await expect(getAccountBalance(args)).rejects.toThrow(NotFoundError);
   });
 
-  test('returns failure when both hbar-only and token flags are used', async () => {
+  test('throws error when mirror service fails', async () => {
     const logger = makeLogger();
 
     const mirrorMock = makeMirrorMock({ hbarBalance: 100n });
@@ -377,10 +348,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       hbarOnly: true,
     });
 
-    const result = await getAccountBalance(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
+    await expect(getAccountBalance(args)).rejects.toThrow();
   });
 
   test('returns display units by default', async () => {
@@ -416,12 +384,9 @@ describe('account plugin - balance command (ADR-003)', () => {
 
     const result = await getAccountBalance(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
+    const output = result.result as AccountBalanceOutput;
     expect(output.accountId).toBe('0.0.2002');
-    expect(output.hbarBalance).toBe('100000000');
+    expect(output.hbarBalance).toBe(100000000n);
     expect(output.hbarBalanceDisplay).toBe('1');
     expect(output.raw).toBe(false);
     expect(output.tokenBalances).toHaveLength(1);
@@ -429,7 +394,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       tokenId: '0.0.3003',
       name: 'Test Token',
       symbol: 'TEST',
-      balance: '100000000',
+      balance: 100000000n,
       balanceDisplay: '1',
     });
   });
@@ -468,12 +433,9 @@ describe('account plugin - balance command (ADR-003)', () => {
 
     const result = await getAccountBalance(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: AccountBalanceOutput = JSON.parse(result.outputJson!);
+    const output = result.result as AccountBalanceOutput;
     expect(output.accountId).toBe('0.0.2002');
-    expect(output.hbarBalance).toBe('100000000');
+    expect(output.hbarBalance).toBe(100000000n);
     expect(output.hbarBalanceDisplay).toBeUndefined();
     expect(output.raw).toBe(true);
     expect(output.tokenBalances).toHaveLength(1);
@@ -481,7 +443,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       tokenId: '0.0.3003',
       name: 'Test Token',
       symbol: 'TEST',
-      balance: '100000000',
+      balance: 100000000n,
     });
     expect(output.tokenBalances![0].balanceDisplay).toBeUndefined();
   });

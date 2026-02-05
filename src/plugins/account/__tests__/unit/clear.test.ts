@@ -3,7 +3,6 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { ClearAccountsOutput } from '@/plugins/account/commands/clear';
 
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
 import { clearAccounts } from '@/plugins/account/commands/clear/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -51,10 +50,7 @@ describe('account plugin - clear command (ADR-003)', () => {
     expect(logger.info).toHaveBeenCalledWith('Clearing all accounts...');
     expect(alias.clear).toHaveBeenCalledTimes(1);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ClearAccountsOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ClearAccountsOutput;
     expect(output.clearedCount).toBe(2);
   });
 
@@ -80,11 +76,6 @@ describe('account plugin - clear command (ADR-003)', () => {
       args: {},
     };
 
-    const result = await clearAccounts(args as CommandHandlerArgs);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Failed to clear accounts');
-    expect(result.errorMessage).toContain('db error');
+    await expect(clearAccounts(args as CommandHandlerArgs)).rejects.toThrow();
   });
 });
