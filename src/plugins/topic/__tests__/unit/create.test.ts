@@ -1,6 +1,5 @@
 import type { CoreApi, TransactionResult } from '@/core';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
-import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
 
 import { ED25519_DER_PRIVATE_KEY } from '@/__tests__/mocks/fixtures';
 import {
@@ -10,8 +9,10 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import { createTopic } from '@/plugins/topic/commands/create/handler';
+import { CreateTopicOutputSchema } from '@/plugins/topic/commands/create/output';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -94,10 +95,11 @@ describe('topic plugin - create command', () => {
           transaction: {},
         }),
         signAndExecuteImpl: jest.fn().mockResolvedValue({
-          transactionId: 'tx-123',
+          transactionId: '0.0.100@1234567890.123456789',
           success: true,
           topicId: '0.0.9999',
           receipt: { status: { status: 'success' } },
+          consensusTimestamp: '2024-01-01T00:00:00.000Z',
         } as TransactionResult),
       });
 
@@ -119,11 +121,14 @@ describe('topic plugin - create command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: CreateTopicOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      CreateTopicOutputSchema,
+    );
     expect(output.topicId).toBe('0.0.9999');
     expect(output.memo).toBe('Test topic memo');
     expect(output.network).toBe('testnet');
-    expect(output.transactionId).toBe('tx-123');
+    expect(output.transactionId).toBe('0.0.100@1234567890.123456789');
 
     expect(topicTransactions.createTopic).toHaveBeenCalledWith({
       memo: 'Test topic memo',
@@ -156,10 +161,11 @@ describe('topic plugin - create command', () => {
           transaction: {},
         }),
         signAndExecuteWithImpl: jest.fn().mockResolvedValue({
-          transactionId: 'tx-456',
+          transactionId: '0.0.164@1234567890.123456789',
           success: true,
           topicId: '0.0.8888',
           receipt: { status: { status: 'success' } },
+          consensusTimestamp: '2024-01-01T00:00:00.000Z',
         } as TransactionResult),
       });
 
@@ -183,7 +189,10 @@ describe('topic plugin - create command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: CreateTopicOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      CreateTopicOutputSchema,
+    );
     expect(output.topicId).toBe('0.0.8888');
     expect(output.adminKeyPresent).toBe(true);
     expect(output.submitKeyPresent).toBe(true);
@@ -229,10 +238,11 @@ describe('topic plugin - create command', () => {
           transaction: {},
         }),
         signAndExecuteImpl: jest.fn().mockResolvedValue({
-          transactionId: 'tx-789',
+          transactionId: '0.0.240@1234567890.123456789',
           success: true,
           topicId: '0.0.7777',
           receipt: { status: { status: 'success' } },
+          consensusTimestamp: '2024-01-01T00:00:00.000Z',
         } as TransactionResult),
       });
 
@@ -252,7 +262,10 @@ describe('topic plugin - create command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: CreateTopicOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      CreateTopicOutputSchema,
+    );
     expect(output.topicId).toBe('0.0.7777');
     expect(output.memo).toBeUndefined();
 
@@ -281,9 +294,10 @@ describe('topic plugin - create command', () => {
           transaction: {},
         }),
         signAndExecuteImpl: jest.fn().mockResolvedValue({
-          transactionId: 'tx-123',
+          transactionId: '0.0.297@1234567890.123456789',
           success: false,
           receipt: { status: { status: 'success' } },
+          consensusTimestamp: '2024-01-01T00:00:00.000Z',
         } as TransactionResult),
       });
 

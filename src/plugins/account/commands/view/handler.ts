@@ -60,7 +60,7 @@ export async function viewAccount(
     // Prepare output data
     const outputData: ViewAccountOutput = {
       accountId: accountInfo.accountId,
-      balance: BigInt(accountInfo.balance.balance.toString()),
+      balance: String(accountInfo.balance.balance),
       ...(accountInfo.evmAddress && { evmAddress: accountInfo.evmAddress }),
       ...(accountInfo.accountPublicKey && {
         publicKey: accountInfo.accountPublicKey,

@@ -1,6 +1,8 @@
 import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { removeCredentials } from '@/plugins/credentials/commands/remove/handler';
+import { RemoveCredentialsOutputSchema } from '@/plugins/credentials/commands/remove/output';
 
 // No process.exit usage in handler version
 
@@ -22,7 +24,10 @@ describe('credentials plugin - remove command', () => {
       expect(kmsService.getPublicKey).toHaveBeenCalledWith('kr_test123');
       expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
       expect(result.status).toBe(Status.Success);
-      const output = JSON.parse(result.outputJson!);
+      const output = validateOutputSchema(
+        result.outputJson!,
+        RemoveCredentialsOutputSchema,
+      );
       expect(output).toEqual({ keyRefId: 'kr_test123', removed: true });
     });
   });
@@ -43,7 +48,10 @@ describe('credentials plugin - remove command', () => {
       expect(result.errorMessage).toBe(
         "Credential with key reference ID 'kr_nonexistent' does not exist",
       );
-      const output = JSON.parse(result.outputJson!);
+      const output = validateOutputSchema(
+        result.outputJson!,
+        RemoveCredentialsOutputSchema,
+      );
       expect(output).toEqual({
         keyRefId: 'kr_nonexistent',
         removed: false,
@@ -62,7 +70,10 @@ describe('credentials plugin - remove command', () => {
       expect(kmsService.getPublicKey).toHaveBeenCalledWith('kr_test123');
       expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
       expect(result.status).toBe(Status.Success);
-      const output = JSON.parse(result.outputJson!);
+      const output = validateOutputSchema(
+        result.outputJson!,
+        RemoveCredentialsOutputSchema,
+      );
       expect(output.removed).toBe(true);
     });
   });
@@ -84,7 +95,10 @@ describe('credentials plugin - remove command', () => {
       expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
       expect(result.status).toBe(Status.Failure);
       expect(result.errorMessage).toContain('Failed to remove credentials');
-      const output = JSON.parse(result.outputJson!);
+      const output = validateOutputSchema(
+        result.outputJson!,
+        RemoveCredentialsOutputSchema,
+      );
       expect(output.removed).toBe(false);
     });
   });

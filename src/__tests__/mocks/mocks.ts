@@ -28,7 +28,7 @@ import type {
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
-import { MOCK_PUBLIC_KEY } from './fixtures';
+import { ECDSA_EVM_ADDRESS, MOCK_PUBLIC_KEY } from './fixtures';
 
 /**
  * Alias account data structure
@@ -332,8 +332,8 @@ export const makeMirrorMock = (
     jest.fn().mockResolvedValue(
       options.accountInfo ?? {
         accountId: '0.0.1234',
-        balance: { balance: 1000, timestamp: '1234567890' },
-        evmAddress: '0xabc',
+        balance: { balance: 1000, timestamp: '1234567890.123456789' },
+        evmAddress: ECDSA_EVM_ADDRESS,
         accountPublicKey: 'pubKey',
         keyAlgorithm: KeyAlgorithm.ECDSA,
       },

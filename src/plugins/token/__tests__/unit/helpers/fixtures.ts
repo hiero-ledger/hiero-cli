@@ -6,6 +6,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 
@@ -589,22 +590,30 @@ export const makeTokenData = (
     customFees: Array<unknown>;
     tokenType: HederaTokenType;
   }> = {},
-) => ({
-  tokenId: '0.0.1234',
-  name: 'Test Token',
-  symbol: 'TST',
-  treasuryId: '0.0.5678',
-  decimals: 2,
-  initialSupply: 1000000,
-  supplyType: SupplyType.INFINITE,
-  maxSupply: 0,
-  adminPublicKey: 'test-admin-key',
-  network: SupportedNetwork.TESTNET,
-  associations: [],
-  customFees: [],
-  tokenType: HederaTokenType.FUNGIBLE_COMMON,
-  ...overrides,
-});
+) => {
+  const supplyType = overrides.supplyType ?? SupplyType.INFINITE;
+  const maxSupply =
+    supplyType === SupplyType.FINITE
+      ? (overrides.maxSupply ?? 1000000)
+      : undefined;
+
+  return {
+    tokenId: '0.0.1234',
+    name: 'Test Token',
+    symbol: 'TST',
+    treasuryId: '0.0.5678',
+    decimals: 2,
+    initialSupply: 1000000,
+    supplyType,
+    maxSupply,
+    adminPublicKey: 'test-admin-key',
+    network: SupportedNetwork.TESTNET,
+    associations: [],
+    customFees: [],
+    tokenType: HederaTokenType.FUNGIBLE_COMMON,
+    ...overrides,
+  };
+};
 
 export const tokenAssociatedWithAccountFixture = makeTokenData({
   tokenId: '0.0.123456',
@@ -684,7 +693,7 @@ export const mockListTokens = {
       name: 'Token 3',
       symbol: 'TK3',
       network: 'testnet',
-      adminPublicKey: 'admin-key-123',
+      adminPublicKey: ECDSA_HEX_PUBLIC_KEY,
     }),
   ],
   multiNetwork: [

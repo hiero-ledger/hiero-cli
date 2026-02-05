@@ -3,12 +3,16 @@
  * Tests the token view functionality for both Fungible and Non-Fungible tokens
  */
 import { makeArgs } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import {
   createMockNftInfo,
   createMockTokenInfo,
 } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { Status } from '@/core/shared/constants';
-import { viewToken, type ViewTokenOutput } from '@/plugins/token/commands/view';
+import {
+  viewToken,
+  ViewTokenOutputSchema,
+} from '@/plugins/token/commands/view';
 
 import { makeApiMocks, makeLogger } from './helpers/mocks';
 
@@ -43,7 +47,10 @@ describe('viewToken', () => {
       expect(result.status).toBe(Status.Success);
       expect(api.mirror.getTokenInfo).toHaveBeenCalledWith(tokenId);
 
-      const output: ViewTokenOutput = JSON.parse(result.outputJson!);
+      const output = validateOutputSchema(
+        result.outputJson!,
+        ViewTokenOutputSchema,
+      );
       expect(output.tokenId).toBe(tokenId);
       expect(output.type).toBe('FUNGIBLE_COMMON');
       expect(output.decimals).toBe(6);
@@ -79,7 +86,10 @@ describe('viewToken', () => {
 
       expect(result.status).toBe(Status.Success);
 
-      const output: ViewTokenOutput = JSON.parse(result.outputJson!);
+      const output = validateOutputSchema(
+        result.outputJson!,
+        ViewTokenOutputSchema,
+      );
       expect(output.tokenId).toBe(tokenId);
       expect(output.type).toBe('NON_FUNGIBLE_UNIQUE');
       expect(output.totalSupply).toBe('10');
@@ -124,7 +134,10 @@ describe('viewToken', () => {
       expect(api.mirror.getTokenInfo).toHaveBeenCalledWith(tokenId);
       expect(api.mirror.getNftInfo).toHaveBeenCalledWith(tokenId, serialNumber);
 
-      const output: ViewTokenOutput = JSON.parse(result.outputJson!);
+      const output = validateOutputSchema(
+        result.outputJson!,
+        ViewTokenOutputSchema,
+      );
       expect(output.tokenId).toBe(tokenId);
       expect(output.type).toBe('NON_FUNGIBLE_UNIQUE');
       expect(output.nftSerial).toBeDefined();
@@ -158,7 +171,10 @@ describe('viewToken', () => {
       const result = await viewToken(args);
 
       expect(result.status).toBe(Status.Success);
-      const output: ViewTokenOutput = JSON.parse(result.outputJson!);
+      const output = validateOutputSchema(
+        result.outputJson!,
+        ViewTokenOutputSchema,
+      );
       expect(output.nftSerial!.metadata).toBeUndefined();
       expect(output.nftSerial!.metadataRaw).toBeUndefined();
     });
@@ -330,7 +346,10 @@ describe('viewToken', () => {
       );
       expect(api.mirror.getTokenInfo).toHaveBeenCalledWith(resolvedTokenId);
 
-      const output: ViewTokenOutput = JSON.parse(result.outputJson!);
+      const output = validateOutputSchema(
+        result.outputJson!,
+        ViewTokenOutputSchema,
+      );
       expect(output.tokenId).toBe(resolvedTokenId);
     });
 
@@ -363,7 +382,10 @@ describe('viewToken', () => {
       );
       expect(api.mirror.getTokenInfo).toHaveBeenCalledWith(resolvedTokenId);
 
-      const output: ViewTokenOutput = JSON.parse(result.outputJson!);
+      const output = validateOutputSchema(
+        result.outputJson!,
+        ViewTokenOutputSchema,
+      );
       expect(output.tokenId).toBe(resolvedTokenId);
     });
 
@@ -408,7 +430,10 @@ describe('viewToken', () => {
         serialNumber,
       );
 
-      const output: ViewTokenOutput = JSON.parse(result.outputJson!);
+      const output = validateOutputSchema(
+        result.outputJson!,
+        ViewTokenOutputSchema,
+      );
       expect(output.tokenId).toBe(resolvedTokenId);
       expect(output.nftSerial?.serialNumber).toBe(serialNumber);
     });
@@ -460,7 +485,10 @@ describe('viewToken', () => {
       expect(result.status).toBe(Status.Success);
       expect(api.mirror.getTokenInfo).toHaveBeenCalledWith(tokenId);
 
-      const output: ViewTokenOutput = JSON.parse(result.outputJson!);
+      const output = validateOutputSchema(
+        result.outputJson!,
+        ViewTokenOutputSchema,
+      );
       expect(output.tokenId).toBe(tokenId);
     });
   });

@@ -131,7 +131,7 @@ export async function mintFt(
     const outputData: MintFtOutput = {
       transactionId: result.transactionId,
       tokenId,
-      amount: rawAmount,
+      amount: String(rawAmount),
       network,
     };
 

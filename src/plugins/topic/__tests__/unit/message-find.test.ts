@@ -1,7 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { FindMessagesOutput } from '@/plugins/topic/commands/find-message/output';
 
 import { ZodError } from 'zod';
 
@@ -12,8 +11,10 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { findMessage } from '@/plugins/topic/commands/find-message/handler';
+import { FindMessagesOutputSchema } from '@/plugins/topic/commands/find-message/output';
 
 const makeTopicMessage = (sequenceNumber: number, message: string) => ({
   consensus_timestamp: '1234567890.123456789',
@@ -79,7 +80,10 @@ describe('topic plugin - message-find command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      FindMessagesOutputSchema,
+    );
     expect(output.totalCount).toBe(3);
     expect(output.messages).toHaveLength(3);
 
@@ -130,7 +134,10 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      FindMessagesOutputSchema,
+    );
     expect(output.totalCount).toBe(2);
     expect(output.messages).toHaveLength(2);
 
@@ -180,7 +187,10 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      FindMessagesOutputSchema,
+    );
     expect(output.totalCount).toBe(2);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
@@ -221,7 +231,10 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      FindMessagesOutputSchema,
+    );
     expect(output.totalCount).toBe(1);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
@@ -262,7 +275,10 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      FindMessagesOutputSchema,
+    );
     expect(output.totalCount).toBe(1);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
@@ -309,7 +325,10 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      FindMessagesOutputSchema,
+    );
     expect(output.totalCount).toBe(3);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
@@ -371,7 +390,10 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      FindMessagesOutputSchema,
+    );
     expect(output.totalCount).toBe(0);
     expect(output.messages).toEqual([]);
   });
@@ -453,7 +475,10 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      FindMessagesOutputSchema,
+    );
     expect(output.totalCount).toBe(3);
     expect(output.messages).toHaveLength(3);
 
@@ -513,7 +538,10 @@ describe('topic plugin - message-find command', () => {
     const result = await findMessage(args);
 
     expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      FindMessagesOutputSchema,
+    );
     expect(output.totalCount).toBe(3);
 
     // Should contain messages 5, 6, 7 (filtered by API)

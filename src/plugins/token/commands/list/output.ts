@@ -43,7 +43,11 @@ const TokenListItemSchema = z.object({
   network: NetworkSchema,
   keys: TokenKeysSchema.optional(),
   alias: z.string().describe('Token alias').optional(),
-  maxSupply: z.int().nonnegative().describe('Maximum supply for finite tokens'),
+  maxSupply: z
+    .int()
+    .nonnegative()
+    .describe('Maximum supply for finite tokens')
+    .optional(),
   associationCount: z
     .number()
     .int()

@@ -3,19 +3,14 @@
  */
 import { z } from 'zod';
 
-import {
-  EntityIdSchema,
-  HtsBaseUnitSchema,
-  NetworkSchema,
-  TinybarSchema,
-} from '@/core/schemas';
+import { EntityIdSchema, NetworkSchema } from '@/core/schemas';
 
 /**
  * Account Balance Command Output Schema
  */
 export const AccountBalanceOutputSchema = z.object({
   accountId: EntityIdSchema,
-  hbarBalance: TinybarSchema.optional(),
+  hbarBalance: z.string().optional(),
   hbarBalanceDisplay: z.string().optional(),
   hbarOnly: z.boolean().optional(),
   tokenOnly: z.boolean().optional(),
@@ -28,7 +23,7 @@ export const AccountBalanceOutputSchema = z.object({
         name: z.string().optional(),
         symbol: z.string().optional(),
         alias: z.string().optional(),
-        balance: HtsBaseUnitSchema,
+        balance: z.string(),
         balanceDisplay: z.string().optional(),
         decimals: z.number().optional(),
       }),

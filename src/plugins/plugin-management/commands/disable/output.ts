@@ -6,7 +6,8 @@ import type { z } from 'zod';
 
 import { RemovePluginOutputSchema } from '@/plugins/plugin-management/schema';
 
-// Export the schema
+// Export the schema with both names for compatibility
+export { RemovePluginOutputSchema };
 export { RemovePluginOutputSchema as DisablePluginOutputSchema };
 
 // Human-readable template for disable

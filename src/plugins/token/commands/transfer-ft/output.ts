@@ -6,7 +6,6 @@ import { z } from 'zod';
 import {
   EntityIdSchema,
   NetworkSchema,
-  TokenAmountSchema,
   TransactionIdSchema,
 } from '@/core/schemas/common-schemas';
 
@@ -18,7 +17,7 @@ export const TransferFungibleTokenOutputSchema = z.object({
   tokenId: EntityIdSchema,
   from: EntityIdSchema,
   to: EntityIdSchema,
-  amount: TokenAmountSchema.describe('Amount transferred in base units'),
+  amount: z.string().describe('Amount transferred in base units'),
   network: NetworkSchema,
 });
 

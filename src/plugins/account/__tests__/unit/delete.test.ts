@@ -1,11 +1,12 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
-import type { DeleteAccountOutput } from '@/plugins/account/commands/delete';
 
 import { makeStateMock } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
+import { DeleteAccountOutputSchema } from '@/plugins/account/commands/delete';
 import { deleteAccount } from '@/plugins/account/commands/delete/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -59,7 +60,10 @@ describe('account plugin - delete command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: DeleteAccountOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      DeleteAccountOutputSchema,
+    );
     expect(output.deletedAccount.name).toBe('acc1');
     expect(output.deletedAccount.accountId).toBe('0.0.1111');
   });
@@ -94,7 +98,10 @@ describe('account plugin - delete command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: DeleteAccountOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      DeleteAccountOutputSchema,
+    );
     expect(output.deletedAccount.name).toBe('acc2');
     expect(output.deletedAccount.accountId).toBe('0.0.2222');
   });
@@ -276,7 +283,10 @@ describe('account plugin - delete command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: DeleteAccountOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      DeleteAccountOutputSchema,
+    );
     expect(output.deletedAccount.name).toBe('acc-alias');
     expect(output.deletedAccount.accountId).toBe('0.0.7777');
     expect(output.removedAliases).toBeDefined();

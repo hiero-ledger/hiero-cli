@@ -1,9 +1,11 @@
 import type { ContractListOutput } from '@/plugins/contract/commands/list/output';
 
 import { makeArgs } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { listContracts } from '@/plugins/contract/commands/list/handler';
+import { ContractListOutputSchema } from '@/plugins/contract/commands/list/output';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 import {
   makeApiMocks,
@@ -47,7 +49,10 @@ describe('contract plugin - list command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    const output: ContractListOutput = JSON.parse(result.outputJson!);
+    const output: ContractListOutput = validateOutputSchema(
+      result.outputJson!,
+      ContractListOutputSchema,
+    );
     expect(output.contracts).toHaveLength(0);
     expect(output.totalCount).toBe(0);
   });
@@ -114,7 +119,10 @@ describe('contract plugin - list command', () => {
     expect(result.errorMessage).toBeUndefined();
 
     expect(MockedHelper).toHaveBeenCalledTimes(1);
-    const output: ContractListOutput = JSON.parse(result.outputJson!);
+    const output: ContractListOutput = validateOutputSchema(
+      result.outputJson!,
+      ContractListOutputSchema,
+    );
 
     expect(output.contracts).toHaveLength(2);
     expect(output.totalCount).toBe(2);

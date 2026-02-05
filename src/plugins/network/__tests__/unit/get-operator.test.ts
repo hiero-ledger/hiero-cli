@@ -5,8 +5,10 @@ import {
   makeNetworkMock,
   setupExitSpy,
 } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { getOperatorHandler } from '@/plugins/network/commands/get-operator';
+import { GetOperatorOutputSchema } from '@/plugins/network/commands/get-operator/output';
 
 let exitSpy: jest.SpyInstance;
 
@@ -45,7 +47,10 @@ describe('network plugin - get-operator command', () => {
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      GetOperatorOutputSchema,
+    );
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
@@ -78,7 +83,10 @@ describe('network plugin - get-operator command', () => {
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      GetOperatorOutputSchema,
+    );
     expect(output.network).toBe('mainnet');
     expect(output.operator).toEqual({
       accountId: '0.0.789012',
@@ -107,7 +115,10 @@ describe('network plugin - get-operator command', () => {
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      GetOperatorOutputSchema,
+    );
     expect(output.network).toBe('testnet');
     expect(output.operator).toBeUndefined();
     expect(networkService.getOperator).toHaveBeenCalledWith('testnet');
@@ -136,7 +147,10 @@ describe('network plugin - get-operator command', () => {
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      GetOperatorOutputSchema,
+    );
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
@@ -243,7 +257,10 @@ describe('network plugin - get-operator command', () => {
     const result = await getOperatorHandler(args);
 
     expect(result.status).toBe(Status.Success);
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      GetOperatorOutputSchema,
+    );
     expect(networkService.isNetworkAvailable).toHaveBeenCalledWith(
       'previewnet',
     );
@@ -272,7 +289,10 @@ describe('network plugin - get-operator command', () => {
     const result = await getOperatorHandler(args);
 
     expect(result.status).toBe(Status.Success);
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      GetOperatorOutputSchema,
+    );
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.999999',

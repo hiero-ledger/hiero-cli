@@ -8,9 +8,10 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import '@/core/utils/json-serialize';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import {
-  type TransferFungibleTokenOutput,
+  TransferFungibleTokenOutputSchema,
   transferToken,
 } from '@/plugins/token/commands/transfer-ft';
 
@@ -73,9 +74,10 @@ describe('transferTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(
+      const output = validateOutputSchema(
         result.outputJson!,
-      ) as TransferFungibleTokenOutput;
+        TransferFungibleTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.from).toBe('0.0.345678');
       expect(output.to).toBe('0.0.789012');
@@ -155,9 +157,10 @@ describe('transferTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(
+      const output = validateOutputSchema(
         result.outputJson!,
-      ) as TransferFungibleTokenOutput;
+        TransferFungibleTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.from).toBe('0.0.345678');
       expect(output.to).toBe('0.0.789012');

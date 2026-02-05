@@ -1,9 +1,11 @@
+import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { makeArgs } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { HederaTokenType, Status } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import {
   listTokens,
-  type ListTokensOutput,
+  ListTokensOutputSchema,
   type TokenListItem,
 } from '@/plugins/token/commands/list';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -58,7 +60,10 @@ describe('token plugin - list command', () => {
     expect(result.errorMessage).toBeUndefined();
 
     // Parse and verify output JSON
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      ListTokensOutputSchema,
+    );
     expect(output.tokens).toHaveLength(0);
     expect(output.totalCount).toBe(0);
   });
@@ -87,7 +92,10 @@ describe('token plugin - list command', () => {
     expect(result.errorMessage).toBeUndefined();
 
     // Parse and verify output JSON
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      ListTokensOutputSchema,
+    );
     expect(output.tokens).toHaveLength(2);
     expect(output.totalCount).toBe(2);
     expect(output.tokens[0].name).toBe('Token 1');
@@ -120,7 +128,10 @@ describe('token plugin - list command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    const output: ListTokensOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      ListTokensOutputSchema,
+    );
     expect(output.tokens).toHaveLength(1);
     expect(output.totalCount).toBe(1);
     expect(output.tokens[0].name).toBe('Token 3');
@@ -132,7 +143,7 @@ describe('token plugin - list command', () => {
 
     // Verify keys are included in output when showKeys is true
     expect(output.tokens[0].keys).toBeDefined();
-    expect(output.tokens[0].keys?.adminKey).toBe('admin-key-123');
+    expect(output.tokens[0].keys?.adminKey).toBe(ECDSA_HEX_PUBLIC_KEY);
   });
 
   test('lists tokens from all networks', async () => {
@@ -157,7 +168,10 @@ describe('token plugin - list command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    const output: ListTokensOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      ListTokensOutputSchema,
+    );
     expect(output.tokens).toHaveLength(2);
     expect(output.totalCount).toBe(2);
 
@@ -219,7 +233,10 @@ describe('token plugin - list command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    const output: ListTokensOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      ListTokensOutputSchema,
+    );
     expect(output.tokens).toHaveLength(1);
     expect(output.tokens[0].alias).toBe('my-token');
     expect(output.tokens[0].name).toBe('My Token');
@@ -249,7 +266,10 @@ describe('token plugin - list command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    const output: ListTokensOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      ListTokensOutputSchema,
+    );
     expect(output.stats).toBeDefined();
     expect(output.stats?.total).toBe(2);
     expect(output.stats?.bySupplyType).toEqual({
@@ -282,7 +302,10 @@ describe('token plugin - list command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    const output: ListTokensOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      ListTokensOutputSchema,
+    );
     expect(output.tokens).toHaveLength(1);
     expect(output.tokens[0].supplyType).toBe(SupplyType.FINITE);
     expect(output.tokens[0].name).toBe('Finite Token');
@@ -332,7 +355,10 @@ describe('token plugin - list command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    const output: ListTokensOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      ListTokensOutputSchema,
+    );
     expect(output.tokens).toHaveLength(2);
 
     const fungibleToken = output.tokens.find((t) => t.tokenId === '0.0.1111');

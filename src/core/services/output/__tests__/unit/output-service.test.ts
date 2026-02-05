@@ -5,6 +5,8 @@
 import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { OutputFormat } from '@/core/shared/types/output-format';
 
+import { z, ZodError } from 'zod';
+
 import { OutputServiceImpl } from '@/core/services/output/output-service';
 import { OutputFormatterFactory } from '@/core/services/output/strategies';
 import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
@@ -59,6 +61,7 @@ describe('OutputServiceImpl', () => {
     overrides: Partial<OutputHandlerOptions> = {},
   ): OutputHandlerOptions => ({
     outputJson: '{"foo":"bar"}',
+    schema: z.any(),
     format: 'human',
     ...overrides,
   });
@@ -305,6 +308,104 @@ describe('OutputServiceImpl', () => {
       expect(() => service.handleCommandOutput(options)).toThrow(
         'formatting failed',
       );
+    });
+  });
+
+  describe('Output schema validation', () => {
+    it('should validate data matching schema without errors', () => {
+      const schema = z.object({ name: z.string(), count: z.number() });
+      const outputJson = JSON.stringify({ name: 'test', count: 42 });
+      const mockFormatter = { format: jest.fn().mockReturnValue('output') };
+      getStrategyMock.mockReturnValue(mockFormatter);
+
+      expect(() =>
+        service.handleCommandOutput({
+          outputJson,
+          schema,
+          format: 'json',
+        }),
+      ).not.toThrow();
+    });
+
+    it('should throw ZodError when data violates schema', () => {
+      const schema = z.object({ name: z.string(), count: z.number() });
+      const outputJson = JSON.stringify({ name: 'test', count: 'invalid' });
+
+      expect(() =>
+        service.handleCommandOutput({
+          outputJson,
+          schema,
+          format: 'json',
+        }),
+      ).toThrow(ZodError);
+    });
+
+    it('should include field names in ZodError for debugging', () => {
+      expect.assertions(3);
+      const schema = z.object({ email: z.string().email() });
+      const outputJson = JSON.stringify({ email: 'not-an-email' });
+
+      try {
+        service.handleCommandOutput({ outputJson, schema, format: 'json' });
+      } catch (error) {
+        expect(error).toBeInstanceOf(ZodError);
+        const zodError = error as ZodError;
+        expect(zodError.issues[0].path).toContain('email');
+        expect(zodError.issues[0].message).toBeTruthy();
+      }
+    });
+
+    it('should transform data when schema has transforms', () => {
+      const schema = z.object({
+        timestamp: z.string().transform((str) => new Date(str)),
+      });
+      const outputJson = JSON.stringify({ timestamp: '2024-01-01T00:00:00Z' });
+      const mockFormatter = { format: jest.fn().mockReturnValue('output') };
+      getStrategyMock.mockReturnValue(mockFormatter);
+
+      service.handleCommandOutput({ outputJson, schema, format: 'json' });
+
+      expect(mockFormatter.format).toHaveBeenCalledWith(
+        expect.objectContaining({
+          timestamp: expect.any(Date),
+        }),
+        expect.anything(),
+      );
+    });
+
+    it('should validate BEFORE formatting (order test)', () => {
+      const schema = z.object({ value: z.number() });
+      const outputJson = JSON.stringify({ value: 'invalid' });
+      const mockFormatter = { format: jest.fn() };
+      getStrategyMock.mockReturnValue(mockFormatter);
+
+      expect(() =>
+        service.handleCommandOutput({ outputJson, schema, format: 'json' }),
+      ).toThrow(ZodError);
+
+      expect(mockFormatter.format).not.toHaveBeenCalled();
+    });
+
+    it('should handle multiple validation issues in ZodError', () => {
+      expect.assertions(2);
+      const schema = z.object({
+        name: z.string().min(3),
+        age: z.number().positive(),
+        email: z.string().email(),
+      });
+      const outputJson = JSON.stringify({
+        name: 'ab',
+        age: -5,
+        email: 'invalid',
+      });
+
+      try {
+        service.handleCommandOutput({ outputJson, schema, format: 'json' });
+      } catch (error) {
+        expect(error).toBeInstanceOf(ZodError);
+        const zodError = error as ZodError;
+        expect(zodError.issues.length).toBeGreaterThanOrEqual(3);
+      }
     });
   });
 });

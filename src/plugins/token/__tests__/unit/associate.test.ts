@@ -6,10 +6,11 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
 
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import {
   associateToken,
-  type AssociateTokenOutput,
+  AssociateTokenOutputSchema,
 } from '@/plugins/token/commands/associate';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -97,7 +98,10 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = validateOutputSchema(
+        result.outputJson!,
+        AssociateTokenOutputSchema,
+      );
       expect(output.tokenId).toBe(tokenId);
       expect(output.accountId).toBe(accountId);
       expect(output.associated).toBe(true);
@@ -167,7 +171,10 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = validateOutputSchema(
+        result.outputJson!,
+        AssociateTokenOutputSchema,
+      );
       expect(output.tokenId).toBe(tokenId);
       expect(output.accountId).toBe(accountId);
       expect(output.associated).toBe(true);
@@ -226,7 +233,10 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = validateOutputSchema(
+        result.outputJson!,
+        AssociateTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -301,7 +311,10 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = validateOutputSchema(
+        result.outputJson!,
+        AssociateTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -368,7 +381,10 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = validateOutputSchema(
+        result.outputJson!,
+        AssociateTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -571,7 +587,10 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = validateOutputSchema(
+        result.outputJson!,
+        AssociateTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -661,7 +680,10 @@ describe('associateTokenHandler', () => {
       expect(result.status).toBe(Status.Success);
       expect(result.outputJson).toBeDefined();
 
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = validateOutputSchema(
+        result.outputJson!,
+        AssociateTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);

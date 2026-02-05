@@ -106,7 +106,7 @@ export async function importAccount(
       type: account.type,
       ...(alias && { alias }),
       network: account.network,
-      balance: BigInt(accountInfo.balance.balance.toString()),
+      balance: String(accountInfo.balance.balance),
       evmAddress,
     };
 

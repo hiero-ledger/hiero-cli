@@ -9,11 +9,15 @@ import type { StateService } from '@/core/services/state/state-service.interface
 import '@/core/utils/json-serialize';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { HederaTokenType, Status } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { associateToken } from '@/plugins/token/commands/associate';
+import { AssociateTokenOutputSchema } from '@/plugins/token/commands/associate/output';
 import { createToken } from '@/plugins/token/commands/create-ft';
+import { CreateFungibleTokenOutputSchema } from '@/plugins/token/commands/create-ft/output';
 import { transferToken } from '@/plugins/token/commands/transfer-ft';
+import { TransferFungibleTokenOutputSchema } from '@/plugins/token/commands/transfer-ft/output';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -144,6 +148,11 @@ describe('Token Lifecycle Integration', () => {
       expect(createResult.status).toBe(Status.Success);
       expect(createResult.outputJson).toBeDefined();
       expect(createResult.errorMessage).toBeUndefined();
+      const createOutput = validateOutputSchema(
+        createResult.outputJson!,
+        CreateFungibleTokenOutputSchema,
+      );
+      expect(createOutput.tokenId).toBeDefined();
 
       // Act - Step 2: Associate Token
       const associateArgs: CommandHandlerArgs = {
@@ -164,6 +173,12 @@ describe('Token Lifecycle Integration', () => {
       expect(associateResult.status).toBe(Status.Success);
       expect(associateResult.outputJson).toBeDefined();
       expect(associateResult.errorMessage).toBeUndefined();
+      const associateOutput = validateOutputSchema(
+        associateResult.outputJson!,
+        AssociateTokenOutputSchema,
+      );
+      expect(associateOutput.tokenId).toBeDefined();
+      expect(associateOutput.accountId).toBeDefined();
 
       // Act - Step 3: Transfer Token
       const transferArgs: CommandHandlerArgs = {
@@ -186,6 +201,13 @@ describe('Token Lifecycle Integration', () => {
       expect(transferResult.status).toBe(Status.Success);
       expect(transferResult.outputJson).toBeDefined();
       expect(transferResult.errorMessage).toBeUndefined();
+      const transferOutput = validateOutputSchema(
+        transferResult.outputJson!,
+        TransferFungibleTokenOutputSchema,
+      );
+      expect(transferOutput.tokenId).toBeDefined();
+      expect(transferOutput.from).toBeDefined();
+      expect(transferOutput.to).toBeDefined();
 
       // Assert - Verify all operations were called correctly
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith({
@@ -309,6 +331,11 @@ describe('Token Lifecycle Integration', () => {
       expect(createResult.status).toBe(Status.Success);
       expect(createResult.outputJson).toBeDefined();
       expect(createResult.errorMessage).toBeUndefined();
+      const createOutput = validateOutputSchema(
+        createResult.outputJson!,
+        CreateFungibleTokenOutputSchema,
+      );
+      expect(createOutput.tokenId).toBeDefined();
 
       // Act - Step 2: Associate Token (success)
       const associateArgs: CommandHandlerArgs = {
@@ -329,6 +356,12 @@ describe('Token Lifecycle Integration', () => {
       expect(associateResult.status).toBe(Status.Success);
       expect(associateResult.outputJson).toBeDefined();
       expect(associateResult.errorMessage).toBeUndefined();
+      const associateOutput = validateOutputSchema(
+        associateResult.outputJson!,
+        AssociateTokenOutputSchema,
+      );
+      expect(associateOutput.tokenId).toBeDefined();
+      expect(associateOutput.accountId).toBeDefined();
 
       // Assert - Operations were attempted but failed due to process.exit(1)
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalled();
@@ -434,6 +467,11 @@ describe('Token Lifecycle Integration', () => {
       expect(createResult.status).toBe(Status.Success);
       expect(createResult.outputJson).toBeDefined();
       expect(createResult.errorMessage).toBeUndefined();
+      const createOutput = validateOutputSchema(
+        createResult.outputJson!,
+        CreateFungibleTokenOutputSchema,
+      );
+      expect(createOutput.tokenId).toBeDefined();
 
       // Act - Step 2: Associate with first user
       const associateArgs1: CommandHandlerArgs = {
@@ -454,6 +492,12 @@ describe('Token Lifecycle Integration', () => {
       expect(associateResult1.status).toBe('success');
       expect(associateResult1.outputJson).toBeDefined();
       expect(associateResult1.errorMessage).toBeUndefined();
+      const associateOutput1 = validateOutputSchema(
+        associateResult1.outputJson!,
+        AssociateTokenOutputSchema,
+      );
+      expect(associateOutput1.tokenId).toBeDefined();
+      expect(associateOutput1.accountId).toBeDefined();
 
       // Act - Step 3: Associate with second user
       const associateArgs2: CommandHandlerArgs = {
@@ -474,6 +518,12 @@ describe('Token Lifecycle Integration', () => {
       expect(associateResult2.status).toBe('success');
       expect(associateResult2.outputJson).toBeDefined();
       expect(associateResult2.errorMessage).toBeUndefined();
+      const associateOutput2 = validateOutputSchema(
+        associateResult2.outputJson!,
+        AssociateTokenOutputSchema,
+      );
+      expect(associateOutput2.tokenId).toBeDefined();
+      expect(associateOutput2.accountId).toBeDefined();
 
       // Assert - Operations were attempted
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalled();

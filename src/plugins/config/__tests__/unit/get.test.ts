@@ -1,5 +1,7 @@
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { getConfigOption } from '@/plugins/config/commands/get/handler';
+import { GetConfigOutputSchema } from '@/plugins/config/commands/get/output';
 
 import { enumOption } from './helpers/fixtures';
 import {
@@ -22,11 +24,14 @@ describe('config plugin - get', () => {
 
     const result = await getConfigOption(args);
     expect(result.status).toBe(Status.Success);
-    const parsed = JSON.parse(result.outputJson as string);
-    expect(parsed.name).toBe('default_key_manager');
-    expect(parsed.type).toBe('enum');
-    expect(parsed.value).toBe('local');
-    expect(parsed.allowedValues).toEqual(['local', 'local_encrypted']);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      GetConfigOutputSchema,
+    );
+    expect(output.name).toBe('default_key_manager');
+    expect(output.type).toBe('enum');
+    expect(output.value).toBe('local');
+    expect(output.allowedValues).toEqual(['local', 'local_encrypted']);
   });
 
   test('fails when option param missing', async () => {

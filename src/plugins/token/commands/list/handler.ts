@@ -52,7 +52,9 @@ export async function listTokens(
         treasuryId: token.treasuryId,
         network: token.network,
         alias,
-        maxSupply: Number(token.maxSupply),
+        ...(token.maxSupply !== undefined && {
+          maxSupply: Number(token.maxSupply),
+        }),
         associationCount: token.associations?.length || 0,
         ...(showKeys &&
           token.adminPublicKey && {

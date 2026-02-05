@@ -1,7 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
-import type { CreateAccountOutput } from '@/plugins/account/commands/create';
 
 import '@/core/utils/json-serialize';
 
@@ -11,10 +10,13 @@ import {
   ED25519_HEX_PUBLIC_KEY,
 } from '@/__tests__/mocks/fixtures';
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { CreateAccountOutputSchema } from '@/plugins/account/commands/create';
 import { createAccount } from '@/plugins/account/commands/create/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
+import { makeTransactionResult } from './helpers/fixtures';
 import { makeApiMocksForAccountCreate } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -39,12 +41,11 @@ describe('account plugin - create command (ADR-003)', () => {
           transaction: {},
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
-        signAndExecuteImpl: jest.fn().mockResolvedValue({
-          transactionId: 'tx-123',
-          success: true,
-          accountId: '0.0.9999',
-          receipt: { status: { status: 'success' } },
-        } as Partial<TransactionResult>),
+        signAndExecuteImpl: jest
+          .fn()
+          .mockResolvedValue(
+            makeTransactionResult('9999') as Partial<TransactionResult>,
+          ),
       });
 
     const api: Partial<CoreApi> = {
@@ -103,12 +104,15 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: CreateAccountOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      CreateAccountOutputSchema,
+    );
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('myAccount');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.network).toBe('testnet');
-    expect(output.transactionId).toBe('tx-123');
+    expect(output.transactionId).toBe('0.0.9999@1234567890.123456789');
     expect(output.evmAddress).toBe(ECDSA_EVM_ADDRESS);
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
   });
@@ -124,11 +128,11 @@ describe('account plugin - create command (ADR-003)', () => {
           privateKey: 'priv',
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
-        signAndExecuteImpl: jest.fn().mockResolvedValue({
-          transactionId: 'tx-123',
-          success: false,
-          receipt: { status: { status: 'failed' } },
-        } as Partial<TransactionResult>),
+        signAndExecuteImpl: jest
+          .fn()
+          .mockResolvedValue(
+            makeTransactionResult('9999', false) as Partial<TransactionResult>,
+          ),
       });
 
     const api: Partial<CoreApi> = {
@@ -193,12 +197,11 @@ describe('account plugin - create command (ADR-003)', () => {
           transaction: {},
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
-        signAndExecuteImpl: jest.fn().mockResolvedValue({
-          transactionId: 'tx-ecdsa',
-          success: true,
-          accountId: '0.0.8888',
-          receipt: { status: { status: 'success' } },
-        } as Partial<TransactionResult>),
+        signAndExecuteImpl: jest
+          .fn()
+          .mockResolvedValue(
+            makeTransactionResult('8888') as Partial<TransactionResult>,
+          ),
       });
 
     const api: Partial<CoreApi> = {
@@ -231,7 +234,10 @@ describe('account plugin - create command (ADR-003)', () => {
     );
 
     expect(result.status).toBe(Status.Success);
-    const output: CreateAccountOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      CreateAccountOutputSchema,
+    );
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.evmAddress).toBe(ECDSA_EVM_ADDRESS);
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
@@ -248,12 +254,11 @@ describe('account plugin - create command (ADR-003)', () => {
           transaction: {},
           publicKey: ED25519_HEX_PUBLIC_KEY,
         }),
-        signAndExecuteImpl: jest.fn().mockResolvedValue({
-          transactionId: 'tx-ed25519',
-          success: true,
-          accountId: '0.0.7777',
-          receipt: { status: { status: 'success' } },
-        } as Partial<TransactionResult>),
+        signAndExecuteImpl: jest
+          .fn()
+          .mockResolvedValue(
+            makeTransactionResult('7777') as Partial<TransactionResult>,
+          ),
       });
 
     const api: Partial<CoreApi> = {
@@ -286,7 +291,10 @@ describe('account plugin - create command (ADR-003)', () => {
     );
 
     expect(result.status).toBe(Status.Success);
-    const output: CreateAccountOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      CreateAccountOutputSchema,
+    );
     expect(output.type).toBe(KeyAlgorithm.ED25519);
     expect(output.evmAddress).toBe(
       '0x0000000000000000000000000000000000001e61',

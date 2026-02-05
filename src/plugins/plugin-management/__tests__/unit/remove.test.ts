@@ -2,12 +2,14 @@
  * Unit tests for plugin-management remove command
  */
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import {
   PluginManagementRemoveStatus,
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { Status } from '@/core/shared/constants';
 import { removePlugin } from '@/plugins/plugin-management/commands/remove/handler';
+import { RemovePluginOutputSchema } from '@/plugins/plugin-management/commands/remove/output';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 describe('plugin-management remove command', () => {
@@ -32,7 +34,10 @@ describe('plugin-management remove command', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      RemovePluginOutputSchema,
+    );
     expect(output.name).toBe('custom-plugin');
     expect(output.removed).toBe(true);
     expect(output.message).toContain('removed from plugin-management state');

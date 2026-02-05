@@ -6,7 +6,6 @@ import { z } from 'zod';
 import {
   EntityIdSchema,
   NetworkSchema,
-  TokenAmountSchema,
   TransactionIdSchema,
 } from '@/core/schemas/common-schemas';
 
@@ -16,7 +15,7 @@ import {
 export const MintFtOutputSchema = z.object({
   transactionId: TransactionIdSchema,
   tokenId: EntityIdSchema,
-  amount: TokenAmountSchema.describe('Amount minted in base units'),
+  amount: z.string().describe('Amount minted in base units'),
   network: NetworkSchema,
 });
 

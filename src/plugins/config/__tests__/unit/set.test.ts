@@ -1,5 +1,7 @@
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { setConfigOption } from '@/plugins/config/commands/set/handler';
+import { SetConfigOutputSchema } from '@/plugins/config/commands/set/output';
 
 import { enumOption } from './helpers/fixtures';
 import {
@@ -27,14 +29,17 @@ describe('config plugin - set', () => {
 
     const result = await setConfigOption(args);
     expect(result.status).toBe(Status.Success);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      SetConfigOutputSchema,
+    );
     expect(configSvc.setOption).toHaveBeenCalledWith(
       'ed25519_support_enabled',
       true,
     );
-    const parsed = JSON.parse(result.outputJson as string);
-    expect(parsed.name).toBe('ed25519_support_enabled');
-    expect(parsed.previousValue).toBe(false);
-    expect(parsed.newValue).toBe(true);
+    expect(output.name).toBe('ed25519_support_enabled');
+    expect(output.previousValue).toBe(false);
+    expect(output.newValue).toBe(true);
   });
 
   test('parses numeric value and sets', async () => {
@@ -54,8 +59,11 @@ describe('config plugin - set', () => {
     const result = await setConfigOption(args);
     expect(result.status).toBe(Status.Success);
     expect(configSvc.setOption).toHaveBeenCalledWith('some_number', 42);
-    const parsed = JSON.parse(result.outputJson as string);
-    expect(parsed.newValue).toBe(42);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      SetConfigOutputSchema,
+    );
+    expect(output.newValue).toBe(42);
   });
 
   test('validates enum values', async () => {
@@ -87,5 +95,6 @@ describe('config plugin - set', () => {
       'default_key_manager',
       'local_encrypted',
     );
+    expect(ok.outputJson).toBeDefined();
   });
 });

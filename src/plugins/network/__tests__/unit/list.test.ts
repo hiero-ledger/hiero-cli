@@ -4,8 +4,10 @@ import {
   makeNetworkMock,
   setupExitSpy,
 } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { Status } from '@/core/shared/constants';
 import { listHandler } from '@/plugins/network/commands/list';
+import { ListNetworksOutputSchema } from '@/plugins/network/commands/list/output';
 import {
   checkMirrorNodeHealth,
   checkRpcHealth,
@@ -172,7 +174,10 @@ describe('network plugin - list command', () => {
     const result = await listHandler(args);
     expect(result.status).toBe(Status.Success);
 
-    const parsed = JSON.parse(result.outputJson as string);
+    const parsed = validateOutputSchema(
+      result.outputJson as string,
+      ListNetworksOutputSchema,
+    );
     expect(
       parsed.networks.some(
         (n: Record<string, unknown>) => n.operatorId === '0.0.1001',
@@ -189,7 +194,10 @@ describe('network plugin - list command', () => {
     const result = await listHandler(args);
     expect(result.status).toBe(Status.Success);
 
-    const parsed = JSON.parse(result.outputJson as string);
+    const parsed = validateOutputSchema(
+      result.outputJson as string,
+      ListNetworksOutputSchema,
+    );
     expect(
       parsed.networks.some((n: Record<string, unknown>) => !n.operatorId),
     ).toBe(true);

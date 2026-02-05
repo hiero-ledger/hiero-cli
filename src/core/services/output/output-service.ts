@@ -42,10 +42,7 @@ export class OutputServiceImpl implements OutputService {
       );
     }
 
-    // TODO: Validate against schema if provided
-    // if (options.schema) {
-    //   this.validateOutput(data, options.schema);
-    // }
+    data = options.schema.parse(data);
 
     // Format the data using the appropriate strategy
     const formatter = OutputFormatterFactory.getStrategy(format);

@@ -1,9 +1,12 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { ViewAccountOutput } from '@/plugins/account/commands/view';
 
 import '@/core/utils/json-serialize';
 
+import {
+  ECDSA_EVM_ADDRESS,
+  ECDSA_HEX_PUBLIC_KEY,
+} from '@/__tests__/mocks/fixtures';
 import {
   makeAliasMock,
   makeArgs,
@@ -11,7 +14,9 @@ import {
   makeMirrorMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
+import { validateOutputSchema } from '@/__tests__/shared/output-validation.helper';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { ViewAccountOutputSchema } from '@/plugins/account/commands/view';
 import { viewAccount } from '@/plugins/account/commands/view/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -32,9 +37,9 @@ describe('account plugin - view command (ADR-003)', () => {
     const mirrorMock = makeMirrorMock({
       accountInfo: {
         accountId: '0.0.1111',
-        balance: { balance: 1000, timestamp: '1234567890' },
-        evmAddress: '0xabc',
-        accountPublicKey: 'pubKey',
+        balance: { balance: 1000, timestamp: '1234567890.123456789' },
+        evmAddress: ECDSA_EVM_ADDRESS,
+        accountPublicKey: ECDSA_HEX_PUBLIC_KEY,
         keyAlgorithm: KeyAlgorithm.ECDSA,
       },
     });
@@ -62,7 +67,10 @@ describe('account plugin - view command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ViewAccountOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      ViewAccountOutputSchema,
+    );
     expect(output.accountId).toBe('0.0.1111');
     expect(output.balance).toBe('1000');
   });
@@ -77,9 +85,9 @@ describe('account plugin - view command (ADR-003)', () => {
     const mirrorMock = makeMirrorMock({
       accountInfo: {
         accountId: '0.0.2222',
-        balance: { balance: 2000, timestamp: '1234567890' },
-        evmAddress: '0xdef',
-        accountPublicKey: 'pubKey2',
+        balance: { balance: 2000, timestamp: '1234567890.123456789' },
+        evmAddress: ECDSA_EVM_ADDRESS,
+        accountPublicKey: ECDSA_HEX_PUBLIC_KEY,
         keyAlgorithm: KeyAlgorithm.ECDSA,
       },
     });
@@ -107,7 +115,10 @@ describe('account plugin - view command (ADR-003)', () => {
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
-    const output: ViewAccountOutput = JSON.parse(result.outputJson!);
+    const output = validateOutputSchema(
+      result.outputJson!,
+      ViewAccountOutputSchema,
+    );
     expect(output.accountId).toBe('0.0.2222');
   });
 
