@@ -736,18 +736,13 @@ export const GasInputSchema = z.number().min(0).default(100000);
 
 /**
  * Approved Flag Input Schema
- * Accepts boolean or string ("true"/"false") and transforms to boolean
+ * Accepts string ("true"/"false") and transforms to boolean
  */
 export const ApprovedFlagSchema = z
-  .union([
-    z.string().transform((val) => {
-      const lower = val.toLowerCase();
-      if (lower === 'true') return true;
-      if (lower === 'false') return false;
-      throw new Error('approved must be "true" or "false"');
-    }),
-    z.boolean(),
-  ])
+  .stringbool({
+    truthy: ['true'],
+    falsy: ['false'],
+  })
   .describe(
     'Whether to approve or revoke the operator. Value must be "true" or "false"',
   );

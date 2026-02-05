@@ -79,7 +79,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
         contract: 'some-contract',
         operator: 'bob',
         gas: 100000,
-        approved: true,
+        approved: 'true',
       },
     });
 
@@ -126,7 +126,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
         contract: '0.0.9999',
         operator: '0.0.8888',
         gas: 200000,
-        approved: false,
+        approved: 'false',
       },
     });
 
@@ -145,7 +145,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
         contract: '0.0.1234',
         operator: evmOperator,
         gas: 100000,
-        approved: true,
+        approved: 'true',
       },
     });
 
@@ -215,7 +215,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
         contract: 'my-contract',
         operator: 'bob',
         gas: 100000,
-        approved: true,
+        approved: 'true',
       },
     });
     (args.api.txExecution.signAndExecute as jest.Mock).mockResolvedValue({
@@ -239,7 +239,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
         contract: 'my-contract',
         operator: 'bob',
         gas: 100000,
-        approved: true,
+        approved: 'true',
       },
     });
     (args.api.txExecution.signAndExecute as jest.Mock).mockRejectedValue(
@@ -262,7 +262,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
         contract: 'missing-contract',
         operator: 'bob',
         gas: 100000,
-        approved: true,
+        approved: 'true',
       },
     });
 
@@ -291,7 +291,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
         contract: '0.0.1234',
         operator: 'bob',
         gas: 100000,
-        approved: true,
+        approved: 'true',
       },
     });
 
@@ -349,6 +349,6 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
         gas: 100000,
         approved: 'yes',
       });
-    }).toThrow('approved must be "true" or "false"');
+    }).toThrow();
   });
 });
