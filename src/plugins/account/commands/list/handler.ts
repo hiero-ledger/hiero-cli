@@ -3,19 +3,19 @@
  * Handles listing all accounts using the Core API
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
-import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { CommandExecutionResult } from '@/core/plugins/plugin.types';
+import type {
+  CommandHandlerArgs,
+  CommandResult,
+} from '@/core/plugins/plugin.interface';
 import type { ListAccountsOutput } from './output';
 
-import { Status } from '@/core/shared/constants';
-import { formatError } from '@/core/utils/errors';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { ListAccountsInputSchema } from './input';
 
 export async function listAccounts(
   args: CommandHandlerArgs,
-): Promise<CommandExecutionResult> {
+): Promise<CommandResult> {
   const { api, logger } = args;
 
   // Initialize Zustand state helper
@@ -28,31 +28,21 @@ export async function listAccounts(
 
   logger.info('Listing all accounts...');
 
-  try {
-    const accounts = accountState.listAccounts();
+  const accounts = accountState.listAccounts();
 
-    // Prepare output data
-    const outputData: ListAccountsOutput = {
-      accounts: accounts.map((account) => ({
-        name: account.name,
-        accountId: account.accountId,
-        type: account.type,
-        network: account.network,
-        evmAddress: account.evmAddress,
-        // Only include keyRefId when --private flag is used
-        ...(showPrivateKeys && { keyRefId: account.keyRefId }),
-      })),
-      totalCount: accounts.length,
-    };
+  // Prepare output data
+  const outputData: ListAccountsOutput = {
+    accounts: accounts.map((account) => ({
+      name: account.name,
+      accountId: account.accountId,
+      type: account.type,
+      network: account.network,
+      evmAddress: account.evmAddress,
+      // Only include keyRefId when --private flag is used
+      ...(showPrivateKeys && { keyRefId: account.keyRefId }),
+    })),
+    totalCount: accounts.length,
+  };
 
-    return {
-      status: Status.Success,
-      outputJson: JSON.stringify(outputData),
-    };
-  } catch (error: unknown) {
-    return {
-      status: Status.Failure,
-      errorMessage: formatError('Failed to list accounts', error),
-    };
-  }
+  return { result: outputData };
 }
