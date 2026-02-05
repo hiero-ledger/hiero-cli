@@ -733,3 +733,8 @@ export const SolidityCompilerVersion = z
   .describe('Optional Solidity compiler version');
 
 export const GasInputSchema = z.number().min(0).default(100000);
+
+export const ContractErc721TokenIdSchema = z
+  .int()
+  .nonnegative('Token ID must be greater than or equal to 0')
+  .describe('Token ID (uint256) for tokenURI query');

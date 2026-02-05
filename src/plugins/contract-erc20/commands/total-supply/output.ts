@@ -1,14 +1,13 @@
 import { z } from 'zod';
 
-import { EntityIdSchema } from '@/core/schemas';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { EntityIdSchema, NetworkSchema } from '@/core/schemas';
 
 export const ContractErc20CallTotalSupplyOutputSchema = z.object({
   contractId: EntityIdSchema,
   totalSupply: z
     .string()
     .regex(/^\d+$/, 'Total supply must be a non-negative integer string'),
-  network: SupportedNetwork,
+  network: NetworkSchema,
 });
 
 export type ContractErc20CallTotalSupplyOutput = z.infer<
