@@ -3,8 +3,16 @@ import type { ContractErc721CallSetApprovalForAllOutput } from '@/plugins/contra
 
 import { ZodError } from 'zod';
 
+import {
+  MOCK_ACCOUNT_ID,
+  MOCK_CONTRACT_ID,
+  MOCK_EVM_ADDRESS,
+  MOCK_EVM_ADDRESS_ALT,
+  MOCK_TX_ID,
+} from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { makeContractErc721ExecuteCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 import { setApprovalForAllFunctionCall as setApprovalForAllHandler } from '@/plugins/contract-erc721/commands/set-approval-for-all/handler';
@@ -29,11 +37,6 @@ jest.mock('@hashgraph/sdk', () => ({
   },
 }));
 
-const EVM_ADDRESS = '0x' + 'a'.repeat(40);
-const CONTRACT_ID = '0.0.1234';
-const ACCOUNT_ID = '0.0.5678';
-const TX_ID = '0.0.1234@1234567890.123456789';
-
 describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
   let api: jest.Mocked<CoreApi>;
   let logger: jest.Mocked<Logger>;
@@ -44,13 +47,13 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
     api = makeApiMocks({
       identityResolution: {
         resolveContract: jest.fn().mockResolvedValue({
-          contractId: CONTRACT_ID,
-          evmAddress: EVM_ADDRESS,
+          contractId: MOCK_CONTRACT_ID,
+          evmAddress: MOCK_EVM_ADDRESS,
         }),
         resolveAccount: jest.fn().mockResolvedValue({
-          accountId: ACCOUNT_ID,
+          accountId: MOCK_ACCOUNT_ID,
           accountPublicKey: 'pub-key',
-          evmAddress: EVM_ADDRESS,
+          evmAddress: MOCK_EVM_ADDRESS,
         }),
         resolveReferenceToEntityOrEvmAddress: jest.fn(),
       },
@@ -62,7 +65,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       txExecution: {
         signAndExecute: jest.fn().mockResolvedValue({
           success: true,
-          transactionId: TX_ID,
+          transactionId: MOCK_TX_ID,
         }),
       },
     }).api;
@@ -89,25 +92,25 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       result.outputJson as string,
     ) as ContractErc721CallSetApprovalForAllOutput;
 
-    expect(parsed.contractId).toBe(CONTRACT_ID);
-    expect(parsed.network).toBe('testnet');
-    expect(parsed.transactionId).toBe(TX_ID);
+    expect(parsed.contractId).toBe(MOCK_CONTRACT_ID);
+    expect(parsed.network).toBe(SupportedNetwork.TESTNET);
+    expect(parsed.transactionId).toBe(MOCK_TX_ID);
 
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
       contractReference: 'some-contract',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: 'bob',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
-    expect(mockAddAddress).toHaveBeenCalledWith(EVM_ADDRESS);
+    expect(mockAddAddress).toHaveBeenCalledWith(MOCK_EVM_ADDRESS);
     expect(mockAddBool).toHaveBeenCalledWith(true);
     expect(args.api.contract.contractExecuteTransaction).toHaveBeenCalledWith(
       expect.objectContaining({
-        contractId: CONTRACT_ID,
+        contractId: MOCK_CONTRACT_ID,
         gas: 100000,
         functionName: 'setApprovalForAll',
       }),
@@ -134,7 +137,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
   });
 
   test('uses EVM address directly when operator is EVM address', async () => {
-    const evmOperator = '0x' + 'b'.repeat(40);
+    const evmOperator = MOCK_EVM_ADDRESS_ALT;
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -267,7 +270,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       args.api.identityResolution.resolveContract as jest.Mock
     ).mockRejectedValue(
       new Error(
-        'Alias "missing-contract" for contract on network "testnet" not found',
+        `Alias "missing-contract" for contract on network "${SupportedNetwork.TESTNET}" not found`,
       ),
     );
 
@@ -294,7 +297,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
 
     (args.api.identityResolution.resolveAccount as jest.Mock).mockResolvedValue(
       {
-        accountId: ACCOUNT_ID,
+        accountId: MOCK_ACCOUNT_ID,
         accountPublicKey: 'pub-key',
         evmAddress: undefined,
       },
