@@ -1,12 +1,15 @@
 import { z } from 'zod';
 
-import { ContractNameSchema, EntityIdSchema } from '@/core/schemas';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import {
+  ContractNameSchema,
+  EntityIdSchema,
+  NetworkSchema,
+} from '@/core/schemas';
 
 export const ContractErc20CallNameOutputSchema = z.object({
   contractId: EntityIdSchema,
   contractName: ContractNameSchema,
-  network: SupportedNetwork,
+  network: NetworkSchema,
 });
 
 export type ContractErc20CallNameOutput = z.infer<
