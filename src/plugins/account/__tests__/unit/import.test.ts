@@ -14,7 +14,8 @@ import {
   makeNetworkMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { KeyAlgorithm } from '@/core/shared/constants';
+import { ValidationError } from '@/core/errors';
 import { importAccount } from '@/plugins/account/commands/import/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -86,10 +87,7 @@ describe('account plugin - import command (ADR-003)', () => {
       }),
     );
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ImportAccountOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ImportAccountOutput;
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('imported');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
@@ -125,16 +123,10 @@ describe('account plugin - import command (ADR-003)', () => {
       alias: 'test',
     });
 
-    const result = await importAccount(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain(
-      "Account with name 'imported-0-0-1111' already exists",
-    );
+    await expect(importAccount(args)).rejects.toThrow(ValidationError);
   });
 
-  test('returns failure when mirror.getAccount throws', async () => {
+  test('throws error when mirror.getAccount fails', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -162,10 +154,6 @@ describe('account plugin - import command (ADR-003)', () => {
       key: '0.0.2222:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
     });
 
-    const result = await importAccount(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('mirror down');
+    await expect(importAccount(args)).rejects.toThrow();
   });
 });
