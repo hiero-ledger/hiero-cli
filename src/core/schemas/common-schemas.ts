@@ -127,8 +127,10 @@ export const HtsDecimalSchema = z
 // 6. EVM Token Balances (ERC-20 style)
 // ======================================================
 
-// Standard ERC-20 decimals: usually 18
-export const EvmDecimalsSchema = z.int().min(0).max(36);
+export const EvmDecimalsSchema = z
+  .union([z.int(), z.bigint()])
+  .transform((val) => Number(val))
+  .pipe(z.number().int());
 
 // Base unit (wei-like integer)
 export const EvmBaseUnitSchema = z
@@ -139,14 +141,6 @@ export const EvmBaseUnitSchema = z
   ])
   .transform((val) => BigInt(val))
   .refine((val) => val >= 0n, 'EVM base unit cannot be negative');
-
-// Decimal number (human-readable, e.g. 1.5 tokens)
-export const EvmDecimalSchema = z
-  .object({
-    amount: z.number().nonnegative(),
-    decimals: EvmDecimalsSchema,
-  })
-  .refine(({ decimals }) => decimals <= 36, 'Too many decimals for EVM token');
 
 // ======================================================
 // 7. Legacy Schemas (for backward compatibility)
