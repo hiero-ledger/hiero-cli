@@ -745,3 +745,15 @@ export const ContractErc721TokenIdSchema = z
   .int()
   .nonnegative('Token ID must be greater than or equal to 0')
   .describe('Token ID (uint256) for tokenURI query');
+
+/**
+ * Hex encoded data validation
+ * Format: 0x followed by 40 hexadecimal characters
+ */
+export const HexEncodedDataSchema = z
+  .string()
+  .regex(
+    /^0x[0-9a-fA-F]+$/,
+    'Data must be a hex encoded string starting in format "0x12abfe456123"',
+  )
+  .describe('HEX encoded data format');
