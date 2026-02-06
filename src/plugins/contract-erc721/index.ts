@@ -3,6 +3,7 @@
  * Exports the config plugin manifest
  */
 export { balanceOfFunctionCall } from './commands/balance-of';
+export { isApprovedForAllFunctionCall } from './commands/is-approved-for-all';
 export { nameFunctionCall } from './commands/name';
 export { ownerOfFunctionCall } from './commands/owner-of';
 export { setApprovalForAllFunctionCall } from './commands/set-approval-for-all';
