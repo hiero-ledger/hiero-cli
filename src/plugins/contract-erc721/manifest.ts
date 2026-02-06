@@ -11,6 +11,11 @@ import {
   ContractErc721CallBalanceOfOutputSchema,
 } from '@/plugins/contract-erc721/commands/balance-of';
 import {
+  CONTRACT_ERC721_CALL_IS_APPROVED_FOR_ALL_TEMPLATE,
+  ContractErc721CallIsApprovedForAllOutputSchema,
+  isApprovedForAllFunctionCall,
+} from '@/plugins/contract-erc721/commands/is-approved-for-all';
+import {
   CONTRACT_ERC721_CALL_NAME_TEMPLATE,
   ContractErc721CallNameOutputSchema,
   nameFunctionCall,
@@ -113,6 +118,43 @@ export const contractErc721PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc721CallSetApprovalForAllOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_SET_APPROVAL_FOR_ALL_TEMPLATE,
+      },
+    },
+    {
+      name: 'is-approved-for-all',
+      summary: 'Call isApprovedForAll function',
+      description:
+        'Command for calling ERC-721 isApprovedForAll(address owner, address operator) function',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+        },
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "owner" represented by alias, account ID or EVM address. Option required',
+        },
+        {
+          name: 'operator',
+          short: 'p',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "operator" represented by alias, account ID or EVM address. Option required',
+        },
+      ],
+      handler: isApprovedForAllFunctionCall,
+      output: {
+        schema: ContractErc721CallIsApprovedForAllOutputSchema,
+        humanTemplate: CONTRACT_ERC721_CALL_IS_APPROVED_FOR_ALL_TEMPLATE,
       },
     },
     {
