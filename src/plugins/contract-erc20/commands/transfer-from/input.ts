@@ -12,7 +12,9 @@ import {
  */
 export const ContractErc20CallTransferFromInputSchema = z.object({
   contract: ContractReferenceObjectSchema,
-  gas: GasInputSchema.describe('Gas for contract call. Default: 100000'),
+  gas: GasInputSchema.optional()
+    .default(100000)
+    .describe('Gas for contract call. Default: 100000'),
   from: AccountReferenceObjectSchema,
   to: AccountReferenceObjectSchema,
   value: z
