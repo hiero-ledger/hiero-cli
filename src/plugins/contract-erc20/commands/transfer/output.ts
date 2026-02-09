@@ -2,13 +2,13 @@ import { z } from 'zod';
 
 import {
   EntityOrEvmAddressReferenceSchema,
+  NetworkSchema,
   TransactionIdSchema,
 } from '@/core/schemas';
-import { SupportedNetwork } from '@/core/types/shared.types';
 
 export const ContractErc20CallTransferOutputSchema = z.object({
   contractId: EntityOrEvmAddressReferenceSchema,
-  network: SupportedNetwork,
+  network: NetworkSchema,
   transactionId: TransactionIdSchema,
 });
 

@@ -81,7 +81,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     ...makeContractQueryServiceMock(),
     queryContractFunction: jest.fn().mockResolvedValue({
       contractId: '0.0.1234',
-      queryResult: [18],
+      queryResult: [18n],
     }),
   };
   const contractQuery = {

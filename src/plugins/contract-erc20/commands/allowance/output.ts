@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
-import { EntityIdSchema, EvmAddressSchema } from '@/core/schemas';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import {
+  EntityIdSchema,
+  EvmAddressSchema,
+  NetworkSchema,
+} from '@/core/schemas';
 
 export const ContractErc20CallAllowanceOutputSchema = z.object({
   contractId: EntityIdSchema,
@@ -10,7 +13,7 @@ export const ContractErc20CallAllowanceOutputSchema = z.object({
   allowance: z
     .string()
     .regex(/^\d+$/, 'Allowance must be a non-negative integer string'),
-  network: SupportedNetwork,
+  network: NetworkSchema,
 });
 
 export type ContractErc20CallAllowanceOutput = z.infer<

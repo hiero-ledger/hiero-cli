@@ -34,16 +34,17 @@ export async function setApprovalForAllFunctionCall(
       network,
     });
 
-    const operatorEvmAddress =
-      operatorRef.type === EntityReferenceType.EVM_ADDRESS
-        ? operatorRef.value
-        : (
-            await api.identityResolution.resolveAccount({
-              accountReference: operatorRef.value,
-              type: operatorRef.type,
-              network,
-            })
-          ).evmAddress;
+    let operatorEvmAddress: string | undefined;
+    if (operatorRef.type === EntityReferenceType.EVM_ADDRESS) {
+      operatorEvmAddress = operatorRef.value;
+    } else {
+      const accountInfo = await api.identityResolution.resolveAccount({
+        accountReference: operatorRef.value,
+        type: operatorRef.type,
+        network,
+      });
+      operatorEvmAddress = accountInfo.evmAddress;
+    }
 
     if (!operatorEvmAddress) {
       throw new Error(
