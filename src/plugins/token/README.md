@@ -60,6 +60,11 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── delete/
+│   │   ├── handler.ts       # Token delete handler (local state only)
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts         # Command exports
 │   ├── list/
 │   │   ├── handler.ts       # Token list handler
 │   │   ├── input.ts         # Input schema
@@ -317,6 +322,25 @@ hcli token transfer-nft \
   - `local` or `local_encrypted`
 
 **Note:** Maximum 10 serial numbers per transaction (Hedera limit). The command verifies NFT ownership before transfer.
+
+### Token Delete
+
+Delete a token from local state. This only removes the token from the local address book, not from the Hedera network.
+
+```bash
+# Delete by token alias
+hcli token delete --name mytoken-alias
+
+# Delete by token ID
+hcli token delete --id 0.0.123456
+```
+
+**Parameters:**
+
+- `--name` / `-n`: Token alias name to delete from state
+- `--id` / `-i`: Token ID to delete from state (format: `0.0.xxx`)
+
+At least one of `--name` or `--id` must be provided. Any aliases associated with the token on the current network will also be removed.
 
 ### Token List
 
