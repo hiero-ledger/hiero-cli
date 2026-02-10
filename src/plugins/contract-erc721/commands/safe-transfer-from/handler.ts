@@ -36,16 +36,17 @@ export async function safeTransferFromFunctionCall(
       network,
     });
 
-    const fromEvmAddress =
-      fromRef.type === EntityReferenceType.EVM_ADDRESS
-        ? fromRef.value
-        : (
-            await api.identityResolution.resolveAccount({
-              accountReference: fromRef.value,
-              type: fromRef.type,
-              network,
-            })
-          ).evmAddress;
+    let fromEvmAddress: string | undefined;
+    if (fromRef.type === EntityReferenceType.EVM_ADDRESS) {
+      fromEvmAddress = fromRef.value;
+    } else {
+      const accountInfo = await api.identityResolution.resolveAccount({
+        accountReference: fromRef.value,
+        type: fromRef.type,
+        network,
+      });
+      fromEvmAddress = accountInfo.evmAddress;
+    }
 
     if (!fromEvmAddress) {
       throw new Error(
@@ -53,16 +54,17 @@ export async function safeTransferFromFunctionCall(
       );
     }
 
-    const toEvmAddress =
-      toRef.type === EntityReferenceType.EVM_ADDRESS
-        ? toRef.value
-        : (
-            await api.identityResolution.resolveAccount({
-              accountReference: toRef.value,
-              type: toRef.type,
-              network,
-            })
-          ).evmAddress;
+    let toEvmAddress: string | undefined;
+    if (toRef.type === EntityReferenceType.EVM_ADDRESS) {
+      toEvmAddress = toRef.value;
+    } else {
+      const accountInfo = await api.identityResolution.resolveAccount({
+        accountReference: toRef.value,
+        type: toRef.type,
+        network,
+      });
+      toEvmAddress = accountInfo.evmAddress;
+    }
 
     if (!toEvmAddress) {
       throw new Error(
