@@ -16,25 +16,10 @@
       }
     ],
     [
-      "@semantic-release/npm",
-      {
-        "npmPublish": false
-      }
-    ],
-    "@semantic-release/git",
-    "@semantic-release/github"
-  ],
-  "verifyRelease": [
-    [
       "@semantic-release/exec",
-      { "cmd": "echo ${nextRelease.version} > VERSION" }
-    ]
-  ],
-  "prepare": [
-    [
-      "@semantic-release/npm",
       {
-        "npmPublish": false
+        "verifyReleaseCmd": "echo ${nextRelease.version} > VERSION",
+        "prepareCmd": "npm version ${nextRelease.version} --no-git-tag-version"
       }
     ],
     [
@@ -46,7 +31,8 @@
         ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\nSigned-off-by: Hedera Eng Automation <eng-automation@hashgraph.com>"
       }
-    ]
+    ],
+    "@semantic-release/github"
   ],
   "branches":[
     {
