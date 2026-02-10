@@ -10,7 +10,6 @@ import { TransferInputSchema } from '@/plugins/hbar/commands/transfer/input';
 import {
   mockAccountIdKeyPairs,
   mockAccountIds,
-  mockAccounts,
   mockAmounts,
   mockDefaultCredentials,
   mockParsedBalances,
@@ -18,10 +17,6 @@ import {
   mockTransferTransactionResults,
 } from './helpers/fixtures';
 import { setupTransferTest } from './helpers/mocks';
-
-jest.mock('../../../account/zustand-state-helper', () => ({
-  ZustandAccountStateHelper: jest.fn(),
-}));
 
 describe('hbar plugin - transfer command (unit)', () => {
   beforeEach(() => {
@@ -36,7 +31,6 @@ describe('hbar plugin - transfer command (unit)', () => {
       signAndExecuteImpl: jest
         .fn()
         .mockResolvedValue(mockTransactionResults.success),
-      accounts: [mockAccounts.sender, mockAccounts.receiver],
     });
 
     const args = makeArgs(api, logger, {
@@ -86,7 +80,7 @@ describe('hbar plugin - transfer command (unit)', () => {
   });
 
   test('returns failure when balance is zero', async () => {
-    const { api, logger } = setupTransferTest({ accounts: [] });
+    const { api, logger } = setupTransferTest();
 
     const args = makeArgs(api, logger, {
       amount: mockAmounts.zero,
@@ -104,7 +98,6 @@ describe('hbar plugin - transfer command (unit)', () => {
 
   test('succeeds when valid params provided (no default accounts check)', async () => {
     const { api, logger } = setupTransferTest({
-      accounts: [],
       transferImpl: jest
         .fn()
         .mockResolvedValue(mockTransferTransactionResults.empty),
@@ -127,9 +120,7 @@ describe('hbar plugin - transfer command (unit)', () => {
   });
 
   test('returns failure when from equals to', async () => {
-    const { api, logger, alias } = setupTransferTest({
-      accounts: [mockAccounts.sameAccount],
-    });
+    const { api, logger, alias } = setupTransferTest();
 
     // Mock alias resolution for 'same-account'
     (alias.resolve as jest.Mock).mockImplementation((aliasName) => {
@@ -159,7 +150,6 @@ describe('hbar plugin - transfer command (unit)', () => {
       transferImpl: jest
         .fn()
         .mockRejectedValue(new Error('Network connection failed')),
-      accounts: [mockAccounts.sender, mockAccounts.receiver],
     });
 
     const args = makeArgs(api, logger, {
@@ -193,7 +183,6 @@ describe('hbar plugin - transfer command (unit)', () => {
       signAndExecuteImpl: jest
         .fn()
         .mockResolvedValue(mockTransactionResults.successDefault),
-      accounts: [mockAccounts.receiver],
       defaultCredentials: mockDefaultCredentials.testnet,
     });
 

@@ -1,14 +1,16 @@
+import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { ContractListOutput } from '@/plugins/contract/commands/list/output';
 
-import { makeArgs } from '@/__tests__/mocks/mocks';
+import {
+  makeAliasMock,
+  makeArgs,
+  makeLogger,
+  makeNetworkMock,
+} from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { listContracts } from '@/plugins/contract/commands/list/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
-import {
-  makeApiMocks,
-  makeLogger,
-} from '@/plugins/token/__tests__/unit/helpers/mocks';
 
 jest.mock('@/plugins/contract/zustand-state-helper', () => ({
   ZustandContractStateHelper: jest.fn(),
@@ -31,12 +33,13 @@ describe('contract plugin - list command', () => {
       listContracts: jest.fn().mockReturnValue([]),
     }));
 
-    const { api } = makeApiMocks({
-      network: 'testnet',
-      alias: {
-        list: jest.fn().mockReturnValue([]),
-      },
-    });
+    const alias = makeAliasMock();
+    alias.list = jest.fn().mockReturnValue([]);
+    const api: Partial<CoreApi> = {
+      alias,
+      network: makeNetworkMock('testnet'),
+      logger: makeLogger(),
+    };
 
     const args = makeArgs(api, logger, {});
 
@@ -75,35 +78,32 @@ describe('contract plugin - list command', () => {
       listContracts: jest.fn().mockReturnValue(contracts),
     }));
 
-    const { api } = makeApiMocks({
-      network: SupportedNetwork.TESTNET,
-      alias: {
-        resolve: jest
-          .fn()
-          .mockImplementation(
-            (
-              ref: string,
-              type: string | undefined,
-              network: SupportedNetwork,
-            ) => {
-              if (ref === '0.0.1001' && type === 'contract') {
-                if (network === SupportedNetwork.TESTNET) {
-                  return {
-                    alias: 'contract-alias-one',
-                    type: 'contract',
-                    network: SupportedNetwork.TESTNET,
-                    entityId: '0.0.1001',
-                  };
-                }
-                if (network === SupportedNetwork.MAINNET) {
-                  return null;
-                }
-              }
+    const alias = makeAliasMock();
+    alias.resolve = jest
+      .fn()
+      .mockImplementation(
+        (ref: string, type: string | undefined, network: SupportedNetwork) => {
+          if (ref === '0.0.1001' && type === 'contract') {
+            if (network === SupportedNetwork.TESTNET) {
+              return {
+                alias: 'contract-alias-one',
+                type: 'contract',
+                network: SupportedNetwork.TESTNET,
+                entityId: '0.0.1001',
+              };
+            }
+            if (network === SupportedNetwork.MAINNET) {
               return null;
-            },
-          ),
-      },
-    });
+            }
+          }
+          return null;
+        },
+      );
+    const api: Partial<CoreApi> = {
+      alias,
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
+      logger: makeLogger(),
+    };
     const args = makeArgs(api, logger, {});
 
     const result = await listContracts(args);
@@ -147,12 +147,13 @@ describe('contract plugin - list command', () => {
       }),
     }));
 
-    const { api } = makeApiMocks({
-      network: SupportedNetwork.TESTNET,
-      alias: {
-        list: jest.fn().mockReturnValue([]),
-      },
-    });
+    const alias = makeAliasMock();
+    alias.list = jest.fn().mockReturnValue([]);
+    const api: Partial<CoreApi> = {
+      alias,
+      network: makeNetworkMock(SupportedNetwork.TESTNET),
+      logger: makeLogger(),
+    };
     const args = makeArgs(api, logger, {});
 
     const result = await listContracts(args);
