@@ -5,6 +5,13 @@
   "main": "hiero-cli.js",
   "target": "esnext",
   "module": "esnext",
+  "types": "./dist/core/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/core/index.d.ts",
+      "default": "./dist/core/index.js"
+    }
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -54,11 +61,12 @@
   "dependencies": {
     "@clack/prompts": "0.11.0",
     "@hashgraph/sdk": "2.78.0",
-    "ansi-escapes": "^4.3.2",
+    "ansi-escapes": "4.3.2",
     "bignumber.js": "9.3.1",
     "commander": "14.0.2",
     "ethers": "6.16.0",
     "handlebars": "4.7.8",
+    "jiti": "2.4.2",
     "supports-hyperlinks": "3.0.0",
     "solc": "0.8.33",
     "zod": "4.2.1",

@@ -7,6 +7,8 @@
     "allowJs": true,
     "strict": true,
     "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
     "removeComments": false,
     "typeRoots": ["./types", "./node_modules/@types"],
     "skipLibCheck": true,

@@ -6,13 +6,11 @@ import {
 } from '@/core/schemas';
 
 /**
- * Input schema for contract erc721 call ownerOf command.
+ * Input schema for contract erc721 call getApproved command.
  * Parsed contract is a discriminated object: { type: EntityReferenceType, value: string }.
  * tokenId is uint256 (non-negative integer).
  */
-export const ContractErc721CallOwnerOfInputSchema = z.object({
+export const ContractErc721CallGetApprovedInputSchema = z.object({
   contract: ContractReferenceObjectSchema,
-  tokenId: ContractErc721TokenIdSchema.describe(
-    'Token ID (uint256) for ownerOf query',
-  ),
+  tokenId: ContractErc721TokenIdSchema,
 });

@@ -6,7 +6,6 @@
 import type {
   CommandExecutionResult,
   CommandHandlerArgs,
-  PluginManifest,
   PluginStateEntry,
 } from '@/core';
 import type { PluginInfoOutput } from './output';
@@ -15,6 +14,7 @@ import * as path from 'path';
 
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
+import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 import { PluginInfoInputSchema } from './input';
@@ -48,18 +48,7 @@ export async function getPluginInfo(
 
     logger.info(`🔍 Loading plugin manifest for info from: ${manifestPath}`);
 
-    const manifestModule = (await import(manifestPath)) as {
-      default: PluginManifest;
-    };
-
-    const manifest = manifestModule.default;
-
-    if (!manifest) {
-      return {
-        status: Status.Failure,
-        errorMessage: `No valid manifest found at ${manifestPath}`,
-      };
-    }
+    const manifest = await loadPluginManifest(manifestPath);
 
     const pluginInfo = {
       name: manifest.name,
