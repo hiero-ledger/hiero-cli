@@ -4,6 +4,7 @@
  */
 export { balanceOfFunctionCall } from './commands/balance-of';
 export { getApprovedFunctionCall } from './commands/get-approved';
+export { isApprovedForAllFunctionCall } from './commands/is-approved-for-all';
 export { nameFunctionCall } from './commands/name';
 export { ownerOfFunctionCall } from './commands/owner-of';
 export { setApprovalForAllFunctionCall } from './commands/set-approval-for-all';
