@@ -2,6 +2,7 @@
  * Config Plugin Index
  * Exports the config plugin manifest
  */
+export { approveFunctionCall } from './commands/approve';
 export { balanceOfFunctionCall } from './commands/balance-of';
 export { getApprovedFunctionCall } from './commands/get-approved';
 export { isApprovedForAllFunctionCall } from './commands/is-approved-for-all';
