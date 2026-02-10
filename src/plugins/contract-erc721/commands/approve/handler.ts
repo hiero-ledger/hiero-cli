@@ -32,16 +32,17 @@ export async function approveFunctionCall(
       network,
     });
 
-    const toEvmAddress =
-      toRef.type === EntityReferenceType.EVM_ADDRESS
-        ? toRef.value
-        : (
-            await api.identityResolution.resolveAccount({
-              accountReference: toRef.value,
-              type: toRef.type,
-              network,
-            })
-          ).evmAddress;
+    let toEvmAddress: string | undefined;
+    if (toRef.type === EntityReferenceType.EVM_ADDRESS) {
+      toEvmAddress = toRef.value;
+    } else {
+      const accountInfo = await api.identityResolution.resolveAccount({
+        accountReference: toRef.value,
+        type: toRef.type,
+        network,
+      });
+      toEvmAddress = accountInfo.evmAddress;
+    }
 
     if (!toEvmAddress) {
       throw new Error(
