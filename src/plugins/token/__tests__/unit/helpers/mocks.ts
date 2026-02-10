@@ -576,6 +576,22 @@ export const setupZustandHelperMock = (
 };
 
 /**
+ * Setup mock implementation for ZustandTokenStateHelper for delete tests
+ */
+export const setupDeleteZustandHelperMock = (
+  MockedHelperClass: jest.Mock,
+  config: {
+    getToken?: jest.Mock;
+    removeToken?: jest.Mock;
+  },
+) => {
+  MockedHelperClass.mockImplementation(() => ({
+    getToken: config.getToken ?? jest.fn().mockReturnValue(null),
+    removeToken: config.removeToken ?? jest.fn(),
+  }));
+};
+
+/**
  * Create API mocks configured for successful mint-ft operations
  * Provides default mocks for token minting with configurable overrides
  */
