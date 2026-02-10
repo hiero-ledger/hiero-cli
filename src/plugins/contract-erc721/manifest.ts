@@ -21,6 +21,11 @@ import {
   getApprovedFunctionCall,
 } from '@/plugins/contract-erc721/commands/get-approved';
 import {
+  CONTRACT_ERC721_CALL_IS_APPROVED_FOR_ALL_TEMPLATE,
+  ContractErc721CallIsApprovedForAllOutputSchema,
+  isApprovedForAllFunctionCall,
+} from '@/plugins/contract-erc721/commands/is-approved-for-all';
+import {
   CONTRACT_ERC721_CALL_NAME_TEMPLATE,
   ContractErc721CallNameOutputSchema,
   nameFunctionCall,
@@ -30,6 +35,11 @@ import {
   ContractErc721CallOwnerOfOutputSchema,
   ownerOfFunctionCall,
 } from '@/plugins/contract-erc721/commands/owner-of';
+import {
+  CONTRACT_ERC721_CALL_SAFE_TRANSFER_FROM_TEMPLATE,
+  ContractErc721CallSafeTransferFromOutputSchema,
+  safeTransferFromFunctionCall,
+} from '@/plugins/contract-erc721/commands/safe-transfer-from';
 import {
   CONTRACT_ERC721_CALL_SET_APPROVAL_FOR_ALL_TEMPLATE,
   ContractErc721CallSetApprovalForAllOutputSchema,
@@ -123,6 +133,43 @@ export const contractErc721PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc721CallSetApprovalForAllOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_SET_APPROVAL_FOR_ALL_TEMPLATE,
+      },
+    },
+    {
+      name: 'is-approved-for-all',
+      summary: 'Call isApprovedForAll function',
+      description:
+        'Command for calling ERC-721 isApprovedForAll(address owner, address operator) function',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+        },
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "owner" represented by alias, account ID or EVM address. Option required',
+        },
+        {
+          name: 'operator',
+          short: 'p',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "operator" represented by alias, account ID or EVM address. Option required',
+        },
+      ],
+      handler: isApprovedForAllFunctionCall,
+      output: {
+        schema: ContractErc721CallIsApprovedForAllOutputSchema,
+        humanTemplate: CONTRACT_ERC721_CALL_IS_APPROVED_FOR_ALL_TEMPLATE,
       },
     },
     {
@@ -250,6 +297,66 @@ export const contractErc721PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc721CallSymbolOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_SYMBOL_TEMPLATE,
+      },
+    },
+    {
+      name: 'safe-transfer-from',
+      summary: 'Call safeTransferFrom function',
+      description:
+        'Command for calling ERC-721 safeTransferFrom(address from, address to, uint256 tokenId) or safeTransferFrom(address from, address to, uint256 tokenId, bytes data)',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+        },
+        {
+          name: 'gas',
+          short: 'g',
+          type: OptionType.NUMBER,
+          required: false,
+          default: 100000,
+          description: 'Gas for function call. Default: 100000',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "from" (current owner) represented by alias, account ID or EVM address. Option required',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "to" (new owner) represented by alias, account ID or EVM address. Option required',
+        },
+        {
+          name: 'tokenId',
+          short: 'i',
+          type: OptionType.NUMBER,
+          required: true,
+          description: 'Token ID (uint256) to transfer. Option required',
+        },
+        {
+          name: 'data',
+          short: 'd',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional arbitrary data for safeTransferFrom(address,address,uint256,bytes)',
+        },
+      ],
+      handler: safeTransferFromFunctionCall,
+      output: {
+        schema: ContractErc721CallSafeTransferFromOutputSchema,
+        humanTemplate: CONTRACT_ERC721_CALL_SAFE_TRANSFER_FROM_TEMPLATE,
       },
     },
     {
