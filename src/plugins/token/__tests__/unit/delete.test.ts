@@ -8,7 +8,7 @@ import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { mockDeleteAliasRecords, mockDeleteTokens } from './helpers/fixtures';
 import {
-  makeApiMocks,
+  makeDeleteApiMocks,
   makeLogger,
   setupDeleteZustandHelperMock,
 } from './helpers/mocks';
@@ -33,10 +33,7 @@ describe('token plugin - delete command', () => {
       removeToken: removeTokenMock,
     });
 
-    const { api } = makeApiMocks({
-      network: 'testnet',
-      alias: { list: jest.fn().mockReturnValue([]) },
-    });
+    const { api } = makeDeleteApiMocks({ entityId: '0.0.1111' });
     const args = makeArgs(api, logger, { id: '0.0.1111' });
 
     const result = await deleteToken(args);
@@ -63,18 +60,7 @@ describe('token plugin - delete command', () => {
       removeToken: removeTokenMock,
     });
 
-    const { api } = makeApiMocks({
-      network: 'testnet',
-      alias: {
-        resolve: jest.fn().mockReturnValue({
-          alias: 'my-token',
-          entityId: '0.0.2222',
-          type: 'token',
-          network: 'testnet',
-        }),
-        list: jest.fn().mockReturnValue([]),
-      },
-    });
+    const { api } = makeDeleteApiMocks({ entityId: '0.0.2222' });
     const args = makeArgs(api, logger, { name: 'my-token' });
 
     const result = await deleteToken(args);
@@ -96,7 +82,7 @@ describe('token plugin - delete command', () => {
 
     setupDeleteZustandHelperMock(MockedHelper, {});
 
-    const { api } = makeApiMocks({ network: 'testnet' });
+    const { api } = makeDeleteApiMocks();
     const args = makeArgs(api, logger, {});
 
     const result = await deleteToken(args);
@@ -114,10 +100,7 @@ describe('token plugin - delete command', () => {
       getToken: jest.fn().mockReturnValue(null),
     });
 
-    const { api } = makeApiMocks({
-      network: 'testnet',
-      alias: { list: jest.fn().mockReturnValue([]) },
-    });
+    const { api } = makeDeleteApiMocks({ entityId: '0.0.9999' });
     const args = makeArgs(api, logger, { id: '0.0.9999' });
 
     const result = await deleteToken(args);
@@ -136,12 +119,10 @@ describe('token plugin - delete command', () => {
 
     setupDeleteZustandHelperMock(MockedHelper, {});
 
-    const { api } = makeApiMocks({
-      network: 'testnet',
-      alias: {
-        resolve: jest.fn().mockReturnValue(null),
-        list: jest.fn().mockReturnValue([]),
-      },
+    const { api } = makeDeleteApiMocks({
+      resolveEntityReferenceError: new Error(
+        'Alias "nonexistent-token" for token on network "testnet" not found',
+      ),
     });
     const args = makeArgs(api, logger, { name: 'nonexistent-token' });
 
@@ -150,9 +131,7 @@ describe('token plugin - delete command', () => {
     expect(result).toBeDefined();
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain(
-      "Token with name 'nonexistent-token' not found",
-    );
+    expect(result.errorMessage).toContain('Failed to delete token');
     expect(result.outputJson).toBeUndefined();
   });
 
@@ -166,10 +145,7 @@ describe('token plugin - delete command', () => {
       }),
     });
 
-    const { api } = makeApiMocks({
-      network: 'testnet',
-      alias: { list: jest.fn().mockReturnValue([]) },
-    });
+    const { api } = makeDeleteApiMocks({ entityId: '0.0.1111' });
     const args = makeArgs(api, logger, { id: '0.0.1111' });
 
     const result = await deleteToken(args);
@@ -192,8 +168,8 @@ describe('token plugin - delete command', () => {
     });
 
     const removeMock = jest.fn();
-    const { api } = makeApiMocks({
-      network: 'testnet',
+    const { api } = makeDeleteApiMocks({
+      entityId: '0.0.4444',
       alias: {
         list: jest.fn().mockReturnValue(mockDeleteAliasRecords.mixedEntities),
         remove: removeMock,
@@ -226,10 +202,7 @@ describe('token plugin - delete command', () => {
       removeToken: jest.fn(),
     });
 
-    const { api } = makeApiMocks({
-      network: 'testnet',
-      alias: { list: jest.fn().mockReturnValue([]) },
-    });
+    const { api } = makeDeleteApiMocks({ entityId: '0.0.1111' });
     const args = makeArgs(api, logger, { id: '0.0.1111' });
 
     const result = await deleteToken(args);
@@ -252,10 +225,7 @@ describe('token plugin - delete command', () => {
       removeToken: removeTokenMock,
     });
 
-    const { api } = makeApiMocks({
-      network: 'testnet',
-      alias: { list: jest.fn().mockReturnValue([]) },
-    });
+    const { api } = makeDeleteApiMocks({ entityId: '0.0.1111' });
     const args = makeArgs(api, logger, { id: '0.0.1111', name: 'some-alias' });
 
     const result = await deleteToken(args);

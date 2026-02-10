@@ -28,32 +28,25 @@ export async function deleteToken(
     const name = validArgs.name;
     const tokenId = validArgs.id;
 
-    let tokenToDelete;
+    const currentNetwork = api.network.getCurrentNetwork();
 
-    if (tokenId) {
-      tokenToDelete = tokenState.getToken(tokenId);
-      if (!tokenToDelete) {
-        throw new Error(`Token with ID '${tokenId}' not found in state`);
-      }
-    } else if (name) {
-      const currentNetwork = api.network.getCurrentNetwork();
-      const aliasRecord = api.alias.resolve(name, 'token', currentNetwork);
-      if (!aliasRecord || !aliasRecord.entityId) {
-        throw new Error(
-          `Token with name '${name}' not found for network ${currentNetwork}`,
-        );
-      }
-      tokenToDelete = tokenState.getToken(aliasRecord.entityId);
-      if (!tokenToDelete) {
-        throw new Error(
-          `Token with name '${name}' (ID: ${aliasRecord.entityId}) not found in state`,
-        );
-      }
-    } else {
+    const tokenReference = name ?? tokenId;
+    if (!tokenReference) {
       throw new Error('Either name or id must be provided');
     }
 
-    const currentNetwork = api.network.getCurrentNetwork();
+    const resolvedToken = api.identityResolution.resolveEntityReference({
+      entityReference: tokenReference,
+      network: currentNetwork,
+      aliasType: ALIAS_TYPE.Token,
+    });
+
+    const tokenToDelete = tokenState.getToken(resolvedToken.entityId);
+    if (!tokenToDelete) {
+      throw new Error(
+        `Token with ${name ? `name '${name}'` : `ID '${tokenId}'`} not found in state`,
+      );
+    }
 
     const aliasesForToken = api.alias
       .list({ network: currentNetwork, type: ALIAS_TYPE.Token })

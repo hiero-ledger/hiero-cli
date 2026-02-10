@@ -3,12 +3,15 @@ import type { IdentityResolutionService } from '@/core/services/identity-resolut
 import type {
   AccountResolutionParams,
   AccountResolutionResult,
+  AutoResolveEntityReferenceParams,
+  AutoResolveEntityReferenceResult,
   ContractResolutionParams,
   ContractResolutionResult,
   ReferenceResolutionParams,
   ReferenceResolutionResult,
 } from '@/core/services/identity-resolution/types';
 
+import { EntityIdSchema } from '@/core/schemas';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { EntityReferenceType } from '@/core/types/shared.types';
 
@@ -80,5 +83,26 @@ export class IdentityResolutionServiceImpl implements IdentityResolutionService 
       );
     }
     return { entityIdOrEvmAddress };
+  }
+
+  resolveEntityReference(
+    params: AutoResolveEntityReferenceParams,
+  ): AutoResolveEntityReferenceResult {
+    const entityIdParseResult = EntityIdSchema.safeParse(
+      params.entityReference,
+    );
+
+    if (entityIdParseResult.success) {
+      return { entityId: entityIdParseResult.data };
+    }
+
+    const result = this.resolveReferenceToEntityOrEvmAddress({
+      entityReference: params.entityReference,
+      referenceType: EntityReferenceType.ALIAS,
+      network: params.network,
+      aliasType: params.aliasType,
+    });
+
+    return { entityId: result.entityIdOrEvmAddress };
   }
 }
