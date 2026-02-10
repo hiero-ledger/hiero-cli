@@ -601,21 +601,14 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'delete',
       summary: 'Delete a token from state',
       description:
-        'Delete a token from local state. You need to specify name or id to delete the token. This only removes the token from the local address book, not from the Hedera network.',
+        'Delete a token from local state. This only removes the token from the local address book, not from the Hedera network.',
       options: [
         {
-          name: 'name',
-          short: 'n',
+          name: 'token',
+          short: 'T',
           type: OptionType.STRING,
-          required: false,
-          description: 'Token alias name to be deleted from the store',
-        },
-        {
-          name: 'id',
-          short: 'i',
-          type: OptionType.STRING,
-          required: false,
-          description: 'Token ID to be deleted from the store',
+          required: true,
+          description: 'Token identifier: either a token alias or token-id',
         },
       ],
       handler: deleteToken,

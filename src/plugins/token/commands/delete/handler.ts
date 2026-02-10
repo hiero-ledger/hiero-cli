@@ -25,18 +25,10 @@ export async function deleteToken(
   try {
     const validArgs = DeleteTokenInputSchema.parse(args.args);
 
-    const name = validArgs.name;
-    const tokenId = validArgs.id;
-
     const currentNetwork = api.network.getCurrentNetwork();
 
-    const tokenReference = name ?? tokenId;
-    if (!tokenReference) {
-      throw new Error('Either name or id must be provided');
-    }
-
     const resolvedToken = api.identityResolution.resolveEntityReference({
-      entityReference: tokenReference,
+      entityReference: validArgs.token,
       network: currentNetwork,
       aliasType: ALIAS_TYPE.Token,
     });
@@ -44,7 +36,7 @@ export async function deleteToken(
     const tokenToDelete = tokenState.getToken(resolvedToken.entityId);
     if (!tokenToDelete) {
       throw new Error(
-        `Token with ${name ? `name '${name}'` : `ID '${tokenId}'`} not found in state`,
+        `Token with identifier '${validArgs.token}' not found in state`,
       );
     }
 

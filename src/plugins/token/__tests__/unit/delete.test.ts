@@ -34,7 +34,7 @@ describe('token plugin - delete command', () => {
     });
 
     const { api } = makeDeleteApiMocks({ entityId: '0.0.1111' });
-    const args = makeArgs(api, logger, { id: '0.0.1111' });
+    const args = makeArgs(api, logger, { token: '0.0.1111' });
 
     const result = await deleteToken(args);
 
@@ -61,7 +61,7 @@ describe('token plugin - delete command', () => {
     });
 
     const { api } = makeDeleteApiMocks({ entityId: '0.0.2222' });
-    const args = makeArgs(api, logger, { name: 'my-token' });
+    const args = makeArgs(api, logger, { token: 'my-token' });
 
     const result = await deleteToken(args);
 
@@ -77,7 +77,7 @@ describe('token plugin - delete command', () => {
     expect(output.deletedToken.tokenId).toBe('0.0.2222');
   });
 
-  test('returns failure when no name or id provided', async () => {
+  test('returns failure when token parameter is missing', async () => {
     const logger = makeLogger();
 
     setupDeleteZustandHelperMock(MockedHelper, {});
@@ -101,7 +101,7 @@ describe('token plugin - delete command', () => {
     });
 
     const { api } = makeDeleteApiMocks({ entityId: '0.0.9999' });
-    const args = makeArgs(api, logger, { id: '0.0.9999' });
+    const args = makeArgs(api, logger, { token: '0.0.9999' });
 
     const result = await deleteToken(args);
 
@@ -109,7 +109,7 @@ describe('token plugin - delete command', () => {
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toBeDefined();
     expect(result.errorMessage).toContain(
-      "Token with ID '0.0.9999' not found in state",
+      "Token with identifier '0.0.9999' not found in state",
     );
     expect(result.outputJson).toBeUndefined();
   });
@@ -124,7 +124,7 @@ describe('token plugin - delete command', () => {
         'Alias "nonexistent-token" for token on network "testnet" not found',
       ),
     });
-    const args = makeArgs(api, logger, { name: 'nonexistent-token' });
+    const args = makeArgs(api, logger, { token: 'nonexistent-token' });
 
     const result = await deleteToken(args);
 
@@ -146,7 +146,7 @@ describe('token plugin - delete command', () => {
     });
 
     const { api } = makeDeleteApiMocks({ entityId: '0.0.1111' });
-    const args = makeArgs(api, logger, { id: '0.0.1111' });
+    const args = makeArgs(api, logger, { token: '0.0.1111' });
 
     const result = await deleteToken(args);
 
@@ -175,7 +175,7 @@ describe('token plugin - delete command', () => {
         remove: removeMock,
       },
     });
-    const args = makeArgs(api, logger, { id: '0.0.4444' });
+    const args = makeArgs(api, logger, { token: '0.0.4444' });
 
     const result = await deleteToken(args);
 
@@ -203,7 +203,7 @@ describe('token plugin - delete command', () => {
     });
 
     const { api } = makeDeleteApiMocks({ entityId: '0.0.1111' });
-    const args = makeArgs(api, logger, { id: '0.0.1111' });
+    const args = makeArgs(api, logger, { token: '0.0.1111' });
 
     const result = await deleteToken(args);
 
@@ -214,30 +214,5 @@ describe('token plugin - delete command', () => {
 
     const output: DeleteTokenOutput = JSON.parse(result.outputJson!);
     expect(output.removedAliases).toBeUndefined();
-  });
-
-  test('prefers id over name when both are provided', async () => {
-    const logger = makeLogger();
-    const removeTokenMock = jest.fn();
-
-    setupDeleteZustandHelperMock(MockedHelper, {
-      getToken: jest.fn().mockReturnValue(mockDeleteTokens.basic),
-      removeToken: removeTokenMock,
-    });
-
-    const { api } = makeDeleteApiMocks({ entityId: '0.0.1111' });
-    const args = makeArgs(api, logger, { id: '0.0.1111', name: 'some-alias' });
-
-    const result = await deleteToken(args);
-
-    expect(result).toBeDefined();
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-    expect(result.errorMessage).toBeUndefined();
-
-    expect(removeTokenMock).toHaveBeenCalledWith('0.0.1111');
-
-    const output: DeleteTokenOutput = JSON.parse(result.outputJson!);
-    expect(output.deletedToken.tokenId).toBe('0.0.1111');
   });
 });

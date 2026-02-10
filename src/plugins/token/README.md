@@ -329,18 +329,17 @@ Delete a token from local state. This only removes the token from the local addr
 
 ```bash
 # Delete by token alias
-hcli token delete --name mytoken-alias
+hcli token delete --token mytoken-alias
 
 # Delete by token ID
-hcli token delete --id 0.0.123456
+hcli token delete --token 0.0.123456
 ```
 
 **Parameters:**
 
-- `--name` / `-n`: Token alias name to delete from state
-- `--id` / `-i`: Token ID to delete from state (format: `0.0.xxx`)
+- `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
 
-At least one of `--name` or `--id` must be provided. Any aliases associated with the token on the current network will also be removed.
+Any aliases associated with the token on the current network will also be removed.
 
 ### Token List
 
