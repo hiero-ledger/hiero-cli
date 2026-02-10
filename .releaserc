@@ -3,7 +3,10 @@
     [
       "@semantic-release/commit-analyzer",
       {
-        "preset": "conventionalcommits"
+        "preset": "conventionalcommits",
+        "releaseRules": [
+          { "breaking": true, "release": "minor" }
+        ]
       }
     ],
     [
@@ -21,9 +24,6 @@
     "@semantic-release/git",
     "@semantic-release/github"
   ],
-  "releaseRules": [
-    { "breaking": "true", "release": "minor" }
-  ],
   "verifyRelease": [
     [
       "@semantic-release/exec",
@@ -32,22 +32,20 @@
   ],
   "prepare": [
     [
-      [
-        "@semantic-release/npm",
-        {
-          "npmPublish": false
-        }
-      ],
-      [
-        "@semantic-release/git",
-        {
-          "assets": [
-            "package.json",
-            "package-lock.json"
-          ],
-          "message": "chore(release): ${nextRelease.version} [skip ci]\n\nSigned-off-by: Hedera Eng Automation <eng-automation@hashgraph.com>"
-        }
-      ]
+      "@semantic-release/npm",
+      {
+        "npmPublish": false
+      }
+    ],
+    [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "package.json",
+          "package-lock.json"
+        ],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\nSigned-off-by: Hedera Eng Automation <eng-automation@hashgraph.com>"
+      }
     ]
   ],
   "branches":[
