@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { EntityIdSchema } from '@/core/schemas';
+import { EntityIdSchema, TokenAliasNameSchema } from '@/core/schemas';
 
 /**
  * Input schema for token delete command
@@ -8,10 +8,9 @@ import { EntityIdSchema } from '@/core/schemas';
  */
 export const DeleteTokenInputSchema = z
   .object({
-    name: z
-      .string()
-      .optional()
-      .describe('Token alias name to delete from state'),
+    name: TokenAliasNameSchema.optional().describe(
+      'Token alias name to delete from state',
+    ),
     id: EntityIdSchema.optional().describe(
       'Token ID to delete from state (format: 0.0.xxx)',
     ),
