@@ -12,7 +12,6 @@
 import type {
   CommandExecutionResult,
   CommandHandlerArgs,
-  PluginManifest,
   PluginStateEntry,
 } from '@/core';
 import type { AddPluginOutput } from './output';
@@ -20,6 +19,7 @@ import type { AddPluginOutput } from './output';
 import { PluginManagementCreateStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
+import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
 import { validatePluginPath } from '@/plugins/plugin-management/utils/plugin-path-validator';
 
 import { AddPluginInputSchema } from './input';
@@ -44,19 +44,7 @@ export async function addPlugin(
 
     logger.info(`🔍 Loading plugin manifest from: ${manifestPath}`);
 
-    const manifestModule = (await import(manifestPath)) as {
-      default: PluginManifest;
-    };
-
-    const manifest = manifestModule.default;
-
-    if (!manifest || !manifest.name) {
-      return {
-        status: Status.Failure,
-        errorMessage: `No valid manifest found at ${manifestPath}`,
-      };
-    }
-
+    const manifest = await loadPluginManifest(manifestPath);
     const pluginName = manifest.name;
 
     const newEntry: PluginStateEntry = {

@@ -2,10 +2,6 @@
  * Test Fixtures for HBAR Transfer Tests
  * Reusable test data and constants
  */
-import type { AccountData } from '@/plugins/account/schema';
-
-import { SupportedNetwork } from '@/core/types/shared.types';
-import { makeAccountData } from '@/plugins/account/__tests__/unit/helpers/mocks';
 
 /**
  * Mock Account IDs
@@ -34,27 +30,6 @@ export const mockPrivateKeys = {
 export const mockAccountIdKeyPairs = {
   sender: `${mockAccountIds.sender}:${mockPrivateKeys.sender}`,
   default: `${mockAccountIds.default}:${mockPrivateKeys.default}`,
-};
-
-/**
- * Common Test Accounts
- */
-export const mockAccounts = {
-  sender: makeAccountData({
-    name: 'sender',
-    accountId: mockAccountIds.sender,
-    network: SupportedNetwork.TESTNET,
-  }),
-  receiver: makeAccountData({
-    name: 'receiver',
-    accountId: mockAccountIds.receiver,
-    network: SupportedNetwork.TESTNET,
-  }),
-  sameAccount: makeAccountData({
-    name: 'same-account',
-    accountId: mockAccountIds.sender,
-    network: SupportedNetwork.TESTNET,
-  }),
 };
 
 /**
@@ -125,16 +100,6 @@ export const mockAmounts = {
   zero: '0',
   negative: '-100',
   invalid: 'invalid',
-};
-
-/**
- * Mock Account Lists
- */
-export const mockAccountLists = {
-  empty: [] as AccountData[],
-  senderOnly: [mockAccounts.sender],
-  receiverOnly: [mockAccounts.receiver],
-  senderAndReceiver: [mockAccounts.sender, mockAccounts.receiver],
 };
 
 /**

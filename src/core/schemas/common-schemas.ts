@@ -127,8 +127,10 @@ export const HtsDecimalSchema = z
 // 6. EVM Token Balances (ERC-20 style)
 // ======================================================
 
-// Standard ERC-20 decimals: usually 18
-export const EvmDecimalsSchema = z.int().min(0).max(36);
+export const EvmDecimalsSchema = z
+  .union([z.int(), z.bigint()])
+  .transform((val) => Number(val))
+  .pipe(z.number().int());
 
 // Base unit (wei-like integer)
 export const EvmBaseUnitSchema = z
@@ -139,14 +141,6 @@ export const EvmBaseUnitSchema = z
   ])
   .transform((val) => BigInt(val))
   .refine((val) => val >= 0n, 'EVM base unit cannot be negative');
-
-// Decimal number (human-readable, e.g. 1.5 tokens)
-export const EvmDecimalSchema = z
-  .object({
-    amount: z.number().nonnegative(),
-    decimals: EvmDecimalsSchema,
-  })
-  .refine(({ decimals }) => decimals <= 36, 'Too many decimals for EVM token');
 
 // ======================================================
 // 7. Legacy Schemas (for backward compatibility)
@@ -733,3 +727,33 @@ export const SolidityCompilerVersion = z
   .describe('Optional Solidity compiler version');
 
 export const GasInputSchema = z.number().min(0).default(100000);
+
+/**
+ * Approved Flag Input Schema
+ * Accepts string ("true"/"false") and transforms to boolean
+ */
+export const ApprovedFlagSchema = z
+  .stringbool({
+    truthy: ['true'],
+    falsy: ['false'],
+  })
+  .describe(
+    'Whether to approve or revoke the operator. Value must be "true" or "false"',
+  );
+
+export const ContractErc721TokenIdSchema = z
+  .int()
+  .nonnegative('Token ID must be greater than or equal to 0')
+  .describe('Token ID (uint256) for tokenURI query');
+
+/**
+ * Hex encoded data validation
+ * Format: 0x followed by 40 hexadecimal characters
+ */
+export const HexEncodedDataSchema = z
+  .string()
+  .regex(
+    /^0x[0-9a-fA-F]+$/,
+    'Data must be a hex encoded string starting in format "0x12abfe456123"',
+  )
+  .describe('HEX encoded data format');

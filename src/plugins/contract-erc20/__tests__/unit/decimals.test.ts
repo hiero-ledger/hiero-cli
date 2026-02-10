@@ -1,6 +1,8 @@
 import type { CoreApi, Logger } from '@/core';
 import type { ContractErc20CallDecimalsOutput } from '@/plugins/contract-erc20/commands/decimals/output';
 
+import '@/core/utils/json-serialize';
+
 import { ZodError } from 'zod';
 
 import { Status } from '@/core/shared/constants';

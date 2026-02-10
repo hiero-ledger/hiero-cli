@@ -1,7 +1,10 @@
 import { z } from 'zod';
 
-import { EntityIdSchema, EvmAddressSchema } from '@/core/schemas';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import {
+  EntityIdSchema,
+  EvmAddressSchema,
+  NetworkSchema,
+} from '@/core/schemas';
 
 export const ContractErc721CallBalanceOfOutputSchema = z.object({
   contractId: EntityIdSchema,
@@ -9,7 +12,7 @@ export const ContractErc721CallBalanceOfOutputSchema = z.object({
   balance: z
     .string()
     .regex(/^\d+$/, 'Balance must be a non-negative integer string'),
-  network: SupportedNetwork,
+  network: NetworkSchema,
 });
 
 export type ContractErc721CallBalanceOfOutput = z.infer<
