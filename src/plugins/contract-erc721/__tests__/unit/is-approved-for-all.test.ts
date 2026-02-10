@@ -2,6 +2,10 @@ import type { CoreApi, Logger } from '@/core';
 
 import { ZodError } from 'zod';
 
+import {
+  MOCK_EVM_ADDRESS,
+  MOCK_EVM_ADDRESS_ALT,
+} from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
 import { makeContractErc721CallCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
@@ -24,7 +28,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
         resolveAccount: jest.fn().mockResolvedValue({
           accountId: '0.0.5678',
           accountPublicKey: 'pub-key',
-          evmAddress: ownerAddress,
+          evmAddress: MOCK_EVM_ADDRESS,
         }),
       },
       contractQuery: {
@@ -36,17 +40,14 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
     }).api;
   });
 
-  const ownerAddress = '0x1234567890123456789012345678901234567890';
-  const operatorAddress = '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd';
-
   test('calls ERC-721 isApprovedForAll successfully and returns expected output', async () => {
     const args = makeContractErc721CallCommandArgs({
       api,
       logger,
       args: {
         contract: 'some-alias-or-id',
-        owner: ownerAddress,
-        operator: operatorAddress,
+        owner: MOCK_EVM_ADDRESS,
+        operator: MOCK_EVM_ADDRESS_ALT,
       },
     });
 
@@ -61,8 +62,8 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
     const parsed = JSON.parse(result.outputJson);
 
     expect(parsed.contractId).toBe('0.0.1234');
-    expect(parsed.owner).toBe(ownerAddress);
-    expect(parsed.operator).toBe(operatorAddress);
+    expect(parsed.owner).toBe(MOCK_EVM_ADDRESS);
+    expect(parsed.operator).toBe(MOCK_EVM_ADDRESS_ALT);
     expect(parsed.isApprovedForAll).toBe(true);
     expect(parsed.network).toBe('testnet');
 
@@ -78,7 +79,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
       expect.objectContaining({
         contractIdOrEvmAddress: '0.0.1234',
         functionName: 'isApprovedForAll',
-        args: [ownerAddress, operatorAddress],
+        args: [MOCK_EVM_ADDRESS, MOCK_EVM_ADDRESS_ALT],
       }),
     );
   });
@@ -128,8 +129,8 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
       logger,
       args: {
         contract: 'some-alias-or-id',
-        owner: ownerAddress,
-        operator: operatorAddress,
+        owner: MOCK_EVM_ADDRESS,
+        operator: MOCK_EVM_ADDRESS_ALT,
       },
     });
     (
@@ -153,8 +154,8 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
       logger,
       args: {
         contract: 'some-alias-or-id',
-        owner: ownerAddress,
-        operator: operatorAddress,
+        owner: MOCK_EVM_ADDRESS,
+        operator: MOCK_EVM_ADDRESS_ALT,
       },
     });
     (
@@ -176,7 +177,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
       args: {
         contract: 'some-alias-or-id',
         owner: 'owner-alias',
-        operator: operatorAddress,
+        operator: MOCK_EVM_ADDRESS_ALT,
       },
     });
 
@@ -189,7 +190,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
       .mockResolvedValueOnce({
         accountId: '0.0.2222',
         accountPublicKey: 'pub-key-operator',
-        evmAddress: operatorAddress,
+        evmAddress: MOCK_EVM_ADDRESS_ALT,
       });
 
     const result = await erc721IsApprovedForAllHandler(args);
@@ -215,7 +216,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
       .mockResolvedValueOnce({
         accountId: '0.0.1111',
         accountPublicKey: 'pub-key-owner',
-        evmAddress: ownerAddress,
+        evmAddress: MOCK_EVM_ADDRESS,
       })
       .mockResolvedValueOnce({
         accountId: '0.0.2222',
@@ -234,8 +235,8 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
   test('schema validation fails when contract is missing', () => {
     expect(() => {
       ContractErc721CallIsApprovedForAllInputSchema.parse({
-        owner: ownerAddress,
-        operator: operatorAddress,
+        owner: MOCK_EVM_ADDRESS,
+        operator: MOCK_EVM_ADDRESS_ALT,
       });
     }).toThrow(ZodError);
   });
@@ -244,7 +245,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
     expect(() => {
       ContractErc721CallIsApprovedForAllInputSchema.parse({
         contract: 'some-alias-or-id',
-        operator: operatorAddress,
+        operator: MOCK_EVM_ADDRESS_ALT,
       });
     }).toThrow(ZodError);
   });
@@ -253,7 +254,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
     expect(() => {
       ContractErc721CallIsApprovedForAllInputSchema.parse({
         contract: 'some-alias-or-id',
-        owner: ownerAddress,
+        owner: MOCK_EVM_ADDRESS,
       });
     }).toThrow(ZodError);
   });
