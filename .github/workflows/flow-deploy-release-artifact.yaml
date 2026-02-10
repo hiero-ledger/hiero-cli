@@ -252,6 +252,16 @@ jobs:
         run: |
           npm pack --pack-destination ./dist
 
+      - name: Verify Package
+        run: |
+          EXPECTED="./dist/${{ steps.set-publish-data.outputs.artifact-name }}"
+          if [[ ! -f "${EXPECTED}" ]]; then
+            echo "::error::Expected package not found: ${EXPECTED}"
+            ls -la ./dist/
+            exit 1
+          fi
+          echo "Package verified: ${EXPECTED} ($(du -h "${EXPECTED}" | cut -f1))"
+
       # Upload the artifact
       - name: Upload Hiero CLI Package Artifact
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
