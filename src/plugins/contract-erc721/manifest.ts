@@ -5,6 +5,11 @@
 import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
+import { transferFromFunctionCall } from '@/plugins/contract-erc20';
+import {
+  CONTRACT_ERC20_CALL_TRANSFER_FROM_TEMPLATE,
+  ContractErc20CallTransferFromOutputSchema,
+} from '@/plugins/contract-erc20/commands/transfer-from';
 import {
   balanceOfFunctionCall,
   CONTRACT_ERC721_CALL_BALANCE_OF_CREATE_TEMPLATE,
@@ -352,6 +357,58 @@ export const contractErc721PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc721CallSafeTransferFromOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_SAFE_TRANSFER_FROM_TEMPLATE,
+      },
+    },
+    {
+      name: 'transfer-from',
+      summary: 'Call transferFrom function',
+      description: 'Command for calling the ERC-721 transferFrom function',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+        },
+        {
+          name: 'gas',
+          short: 'g',
+          type: OptionType.NUMBER,
+          required: false,
+          default: 100000,
+          description: 'Gas for function call. Default: 100000',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "from" in transferFrom function represented by alias, account ID or EVM address. Option required',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "to" (recipient) in transferFrom function represented by alias, account ID or EVM address. Option required',
+        },
+        {
+          name: 'tokenId',
+          short: 'T',
+          type: OptionType.NUMBER,
+          required: true,
+          description:
+            'Parameter "tokenId" in transferFrom function represented by a number. Option required',
+        },
+      ],
+      handler: transferFromFunctionCall,
+      output: {
+        schema: ContractErc20CallTransferFromOutputSchema,
+        humanTemplate: CONTRACT_ERC20_CALL_TRANSFER_FROM_TEMPLATE,
       },
     },
   ],
