@@ -7,71 +7,30 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { Status } from '@/core/shared/constants';
+import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
 import { getPluginInfo } from '@/plugins/plugin-management/commands/info/handler';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
-/**
- * Mock path.resolve to redirect manifest.js imports to test fixtures.
- * This is necessary because Jest 30 doesn't properly handle virtual mocks
- * with dynamic imports (await import()).
- */
+jest.mock('@/core/utils/load-plugin-manifest', () => ({
+  loadPluginManifest: jest.fn(),
+}));
+
 jest.mock('path', () => {
   const actualPath = jest.requireActual<typeof path>('path');
   return {
     ...actualPath,
-    resolve: jest.fn((...segments: string[]) => {
-      const joined = segments.join('/');
-
-      // Redirect plugin manifests to test fixtures
-      // Handler calls: path.resolve(basePath, 'manifest.js')
-      // where basePath is 'dist/plugins/topic' or 'dist/plugins/custom-plugin'
-      if (
-        joined.includes('dist/plugins/topic') &&
-        joined.endsWith('manifest.js')
-      ) {
-        return actualPath.resolve(__dirname, '../fixtures/topic-manifest.js');
-      }
-      if (
-        joined.includes('dist/plugins/custom-plugin') &&
-        joined.endsWith('manifest.js')
-      ) {
-        return actualPath.resolve(
-          __dirname,
-          '../fixtures/custom-plugin-manifest.js',
-        );
-      }
-
-      return joined;
-    }),
+    resolve: jest.fn((...segments: string[]) => segments.join('/')),
     join: jest.fn(),
   };
 });
 
-jest.mock(
-  'dist/plugins/topic/manifest.js',
-  () => ({
-    default: {
-      name: 'topic',
-      version: '2.0.0',
-      displayName: 'Topic Plugin',
-      description: 'Manage Hedera topics',
-      commands: [{ name: 'list' }, { name: 'create' }],
-    },
-  }),
-  { virtual: true },
-);
-
-jest.mock(
-  'dist/plugins/custom-plugin/manifest.js',
-  () => ({
-    default: {
-      name: 'custom-plugin',
-    },
-  }),
-  { virtual: true },
-);
+const mockLoadPluginManifest = loadPluginManifest as jest.Mock;
 
 describe('plugin-management info command', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should return plugin information loaded from manifest', async () => {
     const logger = makeLogger();
     const entry: PluginStateEntry = {
@@ -83,6 +42,14 @@ describe('plugin-management info command', () => {
       getPlugin: jest.fn().mockReturnValue(entry),
     } as unknown as PluginManagementService;
     const api = { pluginManagement };
+
+    mockLoadPluginManifest.mockResolvedValue({
+      name: 'topic',
+      version: '2.0.0',
+      displayName: 'Topic Plugin',
+      description: 'Manage Hedera topics',
+      commands: [{ name: 'list' }, { name: 'create' }],
+    });
 
     const args = makeArgs(api, logger, { name: 'topic' });
 
@@ -111,6 +78,10 @@ describe('plugin-management info command', () => {
       getPlugin: jest.fn().mockReturnValue(entry),
     } as unknown as PluginManagementService;
     const api = { pluginManagement };
+
+    mockLoadPluginManifest.mockResolvedValue({
+      name: 'custom-plugin',
+    });
 
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
