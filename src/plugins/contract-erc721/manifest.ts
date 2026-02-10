@@ -11,6 +11,11 @@ import {
   ContractErc721CallBalanceOfOutputSchema,
 } from '@/plugins/contract-erc721/commands/balance-of';
 import {
+  CONTRACT_ERC721_CALL_GET_APPROVED_TEMPLATE,
+  ContractErc721CallGetApprovedOutputSchema,
+  getApprovedFunctionCall,
+} from '@/plugins/contract-erc721/commands/get-approved';
+import {
   CONTRACT_ERC721_CALL_NAME_TEMPLATE,
   ContractErc721CallNameOutputSchema,
   nameFunctionCall,
@@ -146,6 +151,35 @@ export const contractErc721PluginManifest: PluginManifest = {
       output: {
         schema: ContractErc721CallOwnerOfOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_OWNER_OF_TEMPLATE,
+      },
+    },
+    {
+      name: 'get-approved',
+      summary: 'Call getApproved function',
+      description:
+        'Command for calling ERC-721 getApproved(uint256 tokenId) function (returns approved address for a token)',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias or contract ID. Option required',
+        },
+        {
+          name: 'tokenId',
+          short: 't',
+          type: OptionType.NUMBER,
+          required: true,
+          description:
+            'Token ID (uint256) to query approved address for. Option required',
+        },
+      ],
+      handler: getApprovedFunctionCall,
+      output: {
+        schema: ContractErc721CallGetApprovedOutputSchema,
+        humanTemplate: CONTRACT_ERC721_CALL_GET_APPROVED_TEMPLATE,
       },
     },
     {

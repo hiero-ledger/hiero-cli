@@ -5,7 +5,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
-import type { AccountData } from '@/plugins/account/schema';
 
 import {
   makeAliasMock,
@@ -16,7 +15,6 @@ import {
   makeSigningMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { mockTransferTransactionResults } from './fixtures';
 
@@ -39,7 +37,6 @@ interface ApiMocksConfig {
   transferImpl?: jest.Mock;
   signAndExecuteImpl?: jest.Mock;
   network?: 'testnet' | 'mainnet' | 'previewnet';
-  accounts?: AccountData[];
 }
 
 /**
@@ -59,11 +56,6 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
   const kms = makeKmsMock();
   const alias = makeAliasMock();
 
-  const MockedHelper = ZustandAccountStateHelper as jest.Mock;
-  MockedHelper.mockImplementation(() => ({
-    getAccountsByNetwork: jest.fn().mockReturnValue(config?.accounts || []),
-  }));
-
   return { hbar, signing, networkMock, kms, alias };
 };
 
@@ -73,7 +65,6 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
 interface SetupTransferTestOptions {
   transferImpl?: jest.Mock;
   signAndExecuteImpl?: jest.Mock;
-  accounts?: AccountData[];
   defaultCredentials?: {
     accountId: string;
     privateKey: string;
@@ -91,12 +82,9 @@ export const setupTransferTest = (options: SetupTransferTestOptions = {}) => {
   const { hbar, signing, networkMock, kms, alias } = makeApiMocks({
     transferImpl: options.transferImpl,
     signAndExecuteImpl: options.signAndExecuteImpl,
-    accounts: options.accounts || [],
   });
 
-  const stateMock = makeStateMock({
-    listData: options.accounts || [],
-  });
+  const stateMock = makeStateMock();
 
   const api: Partial<CoreApi> = {
     hbar,
@@ -120,21 +108,4 @@ export const setupTransferTest = (options: SetupTransferTestOptions = {}) => {
   }
 
   return { api, logger, hbar, signing, kms, alias, stateMock };
-};
-
-/**
- * Mock ZustandAccountStateHelper
- * Provides a mocked implementation of the account state helper
- */
-export const mockZustandAccountStateHelper = (
-  ZustandAccountStateHelperClass: jest.Mock,
-  config?: {
-    accounts?: AccountData[];
-  },
-) => {
-  ZustandAccountStateHelperClass.mockClear();
-  ZustandAccountStateHelperClass.mockImplementation(() => ({
-    getAccountsByNetwork: jest.fn().mockReturnValue(config?.accounts || []),
-  }));
-  return ZustandAccountStateHelperClass;
 };
