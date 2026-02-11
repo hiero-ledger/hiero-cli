@@ -1,15 +1,17 @@
 export interface ContractVerificationParams {
-  contractFilename: string;
-  contractContent: string;
+  contractFile: string;
   metadataContent: string;
   contractEvmAddress: string;
 }
 
 export interface ContractVerificationResult {
-  address: string;
-  chainId: string;
-  status: string;
-  message: string;
+  success: boolean;
+  address?: string;
+  chainId?: string;
+  status?: string;
+  message?: string;
+  /** When success is false, contains the API or error message. */
+  errorMessage?: string;
 }
 
 export interface SmartContractVerifyApiOkResponse {

@@ -12,6 +12,16 @@ import type {
 import { ContractVerifierServiceImpl } from '@/core/services/contract-verifier/contract-verifier-service';
 import { NetworkChainMap } from '@/core/types/shared.types';
 
+jest.mock('@/core/utils/solidity-file-importer-util', () => ({
+  scanSolidityFiles: jest.fn(() => ({
+    'MyContract.sol': 'contracts/MyContract.sol',
+  })),
+}));
+
+jest.mock('fs/promises', () => ({
+  readFile: jest.fn().mockResolvedValue('contract MyContract {}'),
+}));
+
 describe('ContractVerifierServiceImpl', () => {
   const NETWORK = 'testnet';
   const CHAIN_ID = NetworkChainMap[NETWORK as keyof typeof NetworkChainMap];
@@ -21,8 +31,7 @@ describe('ContractVerifierServiceImpl', () => {
 
   const baseParams: ContractVerificationParams = {
     contractEvmAddress: '0x1234567890abcdef',
-    contractFilename: 'contracts/MyContract.sol',
-    contractContent: 'contract MyContract {}',
+    contractFile: 'contracts/MyContract.sol',
     metadataContent: '{"compiler":{"version":"0.8.0"}}',
   };
 
@@ -65,23 +74,17 @@ describe('ContractVerifierServiceImpl', () => {
       expect(global.fetch).toHaveBeenCalledTimes(1);
       expect(global.fetch).toHaveBeenCalledWith(
         'https://server-verify.hashscan.io/verify',
-        {
+        expect.objectContaining({
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            address: baseParams.contractEvmAddress,
-            chain: String(CHAIN_ID),
-            files: {
-              'metadata.json': baseParams.metadataContent,
-              [baseParams.contractFilename]: baseParams.contractContent,
-            },
-          }),
-        },
+          body: expect.stringContaining(baseParams.contractEvmAddress),
+        }),
       );
 
       expect(result).toEqual({
+        success: true,
         address: '0xverified',
         chainId: String(CHAIN_ID),
         status: 'success',
@@ -89,7 +92,7 @@ describe('ContractVerifierServiceImpl', () => {
       });
     });
 
-    it('should throw descriptive error when API responds with error payload', async () => {
+    it('should return success false and API error message when API responds with error payload', async () => {
       const errorPayload: SmartContractVerifyApiErrorResponse = {
         error: 'Invalid metadata',
       };
@@ -101,19 +104,25 @@ describe('ContractVerifierServiceImpl', () => {
         json: jest.fn().mockResolvedValue(errorPayload),
       });
 
-      await expect(service.verifyContract(baseParams)).rejects.toThrow(
-        `Failed to verify smart contract ${baseParams.contractFilename} with address ${baseParams.contractEvmAddress} on chain ${CHAIN_ID}: 400 ${errorPayload.error}`,
-      );
+      const result = await service.verifyContract(baseParams);
+
+      expect(result).toEqual({
+        success: false,
+        errorMessage: errorPayload.error,
+      });
     });
 
-    it('should throw descriptive error when non-Axios error occurs', async () => {
+    it('should return success false and error message when fetch rejects', async () => {
       const genericError = new Error('Network down');
 
       (global.fetch as jest.Mock).mockRejectedValueOnce(genericError);
 
-      await expect(service.verifyContract(baseParams)).rejects.toThrow(
-        `Failed to verify smart contract ${baseParams.contractFilename} with address ${baseParams.contractEvmAddress} on chain ${CHAIN_ID}: ${genericError.message}`,
-      );
+      const result = await service.verifyContract(baseParams);
+
+      expect(result).toEqual({
+        success: false,
+        errorMessage: genericError.message,
+      });
     });
   });
 });

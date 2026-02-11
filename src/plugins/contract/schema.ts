@@ -24,6 +24,7 @@ export const ContractDataSchema = z.object({
   }),
 
   memo: z.string().max(100).optional(),
+  verified: z.boolean().optional(),
 });
 
 // TypeScript type inferred from Zod schema

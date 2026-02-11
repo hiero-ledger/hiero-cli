@@ -6,6 +6,7 @@ import { z } from 'zod';
 import {
   AliasNameSchema,
   ContractNameSchema,
+  ContractVerifiedSchema,
   EntityIdSchema,
   EvmAddressSchema,
 } from '@/core/schemas/common-schemas';
@@ -29,6 +30,7 @@ const ContractListItemSchema = z.object({
       message: 'Network must be mainnet, testnet, previewnet, or localnet',
     }),
   }),
+  verified: ContractVerifiedSchema,
 });
 
 /**
@@ -66,6 +68,7 @@ export const CONTRACT_LIST_TEMPLATE = `
    Admin public key: {{adminPublicKey}}
 {{/if}}
    Network: {{network}}
+   Contract Verified: {{#if verified}}Yes{{else}}No{{/if}}
 
 {{/each}}
 {{/if}}

@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { CommandExecutionResult } from '@/core/plugins/plugin.types';
+import type { ContractVerificationResult } from '@/core/services/contract-verifier/types';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { ContractCreateOutput } from '@/plugins/contract/commands/create/output';
 
@@ -10,7 +11,10 @@ import { Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { formatError } from '@/core/utils/errors';
 import { ContractCreateSchema } from '@/plugins/contract/commands/create/input';
-import { readContractFile } from '@/plugins/contract/utils/contract-file-helpers';
+import {
+  readContractFile,
+  readContractNameFromFileContent,
+} from '@/plugins/contract/utils/contract-file-helpers';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
 export async function createContract(
@@ -32,7 +36,6 @@ export async function createContract(
     const network = api.network.getCurrentNetwork();
 
     api.alias.availableOrThrow(alias, network);
-    const contractFilename = path.basename(filename);
 
     // Get keyManager from args or fallback to config
     const keyManager =
@@ -53,21 +56,17 @@ export async function createContract(
       );
     }
 
-    const contractFileContent = await readContractFile(filename, logger);
-    if (!contractFileContent) {
-      throw new Error(`Could not read contract file ${validArgs.file}`);
-    }
-    const match = contractFileContent.match(/\bcontract\s+(\w+)/);
-    const contractName = match ? match[1] : null;
-    if (!contractName) {
-      throw new Error(
-        `Could not find contract name from the given file ${contractFilename}`,
-      );
-    }
+    const contractBasename = path.basename(filename);
+    const contractFileContent = readContractFile(filename);
+    const contractName = readContractNameFromFileContent(
+      contractBasename,
+      contractFileContent,
+    );
+
     const compilationResult = await api.contractCompiler.compileContract({
       contractName: contractName,
       contractContent: contractFileContent,
-      contractFilename: contractFilename,
+      contractFilename: filename,
       basePath: basePath,
       solidityVersion: solidityVersion,
     });
@@ -98,25 +97,34 @@ export async function createContract(
     const contractId = ContractId.fromString(
       contractCreateFlowResult.contractId,
     );
+    let verificationResult: ContractVerificationResult = {
+      success: false,
+    };
     if (SupportedNetwork.LOCALNET === network) {
       logger.warn(
         `Skipping contract verification as the selected network ${network} is not supported `,
       );
     } else {
-      await api.contractVerifier.verifyContract({
-        contractFilename: contractFilename,
-        contractContent: contractFileContent,
+      verificationResult = await api.contractVerifier.verifyContract({
+        contractFile: filename,
         metadataContent: compilationResult.metadata,
         contractEvmAddress: contractId.toEvmAddress(),
       });
+      if (!verificationResult.success && verificationResult.errorMessage) {
+        logger.warn(
+          `Contract verification failed: ${verificationResult.errorMessage}`,
+        );
+      }
     }
+    const contractEvmAddress = `0x${contractId.toEvmAddress()}`;
     const contractData = {
       contractId: contractCreateFlowResult.contractId,
       contractName,
-      contractEvmAddress: contractId.toEvmAddress(),
+      contractEvmAddress,
       adminPublicKey,
       network,
       memo,
+      verified: verificationResult.success,
     };
     contractState.saveContract(
       contractCreateFlowResult.contractId,
@@ -135,11 +143,12 @@ export async function createContract(
     const output: ContractCreateOutput = {
       contractId: contractCreateFlowResult.contractId,
       contractName: contractName,
-      contractEvmAddress: `0x${contractId.toEvmAddress()}`,
-      network: network,
+      contractEvmAddress,
+      network,
       alias: alias,
       transactionId: contractCreateFlowResult.transactionId,
       adminPublicKey: adminPublicKey,
+      verified: verificationResult.success,
     };
     return {
       status: Status.Success,
