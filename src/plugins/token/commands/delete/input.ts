@@ -1,12 +1,12 @@
 import { z } from 'zod';
 
-import { EntityReferenceSchema } from '@/core/schemas/common-schemas';
+import { TokenReferenceObjectSchema } from '@/core/schemas/common-schemas';
 
 /**
  * Input schema for token delete command
  */
 export const DeleteTokenInputSchema = z.object({
-  token: EntityReferenceSchema.describe(
+  token: TokenReferenceObjectSchema.describe(
     'Token identifier: either a token alias or token-id',
   ),
 });

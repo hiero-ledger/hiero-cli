@@ -36,7 +36,7 @@ export async function deleteToken(
     const tokenToDelete = tokenState.getToken(resolvedToken.entityId);
     if (!tokenToDelete) {
       throw new Error(
-        `Token with identifier '${validArgs.token}' not found in state`,
+        `Token with identifier '${validArgs.token.value}' not found in state`,
       );
     }
 

@@ -11,7 +11,6 @@ import type {
   ReferenceResolutionResult,
 } from '@/core/services/identity-resolution/types';
 
-import { EntityIdSchema } from '@/core/schemas';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { EntityReferenceType } from '@/core/types/shared.types';
 
@@ -88,16 +87,12 @@ export class IdentityResolutionServiceImpl implements IdentityResolutionService 
   resolveEntityReference(
     params: AutoResolveEntityReferenceParams,
   ): AutoResolveEntityReferenceResult {
-    const entityIdParseResult = EntityIdSchema.safeParse(
-      params.entityReference,
-    );
-
-    if (entityIdParseResult.success) {
-      return { entityId: entityIdParseResult.data };
+    if (params.entityReference.type === EntityReferenceType.ENTITY_ID) {
+      return { entityId: params.entityReference.value };
     }
 
     const result = this.resolveReferenceToEntityOrEvmAddress({
-      entityReference: params.entityReference,
+      entityReference: params.entityReference.value,
       referenceType: EntityReferenceType.ALIAS,
       network: params.network,
       aliasType: params.aliasType,

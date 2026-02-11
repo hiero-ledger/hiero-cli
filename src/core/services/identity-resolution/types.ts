@@ -38,8 +38,13 @@ export interface ReferenceResolutionResult {
   entityIdOrEvmAddress: string;
 }
 
+export interface EntityReferenceObject {
+  type: EntityReferenceType;
+  value: string;
+}
+
 export interface AutoResolveEntityReferenceParams {
-  entityReference: string;
+  entityReference: EntityReferenceObject;
   network: SupportedNetwork;
   aliasType: AliasType;
 }
