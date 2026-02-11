@@ -1,6 +1,6 @@
 /**
- * Config Plugin Index
- * Exports the config plugin manifest
+ * Contract ERC-20 Plugin Index
+ * Exports the Contract ERC-20 plugin manifest
  */
 export { allowanceFunctionCall } from './commands/allowance';
 export { approveFunctionCall } from './commands/approve';
