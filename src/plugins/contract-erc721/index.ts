@@ -1,6 +1,6 @@
 /**
- * Config Plugin Index
- * Exports the config plugin manifest
+ * Contract ERC-721 Plugin Index
+ * Exports the contract-erc721 plugin manifest
  */
 export { approveFunctionCall } from './commands/approve';
 export { balanceOfFunctionCall } from './commands/balance-of';

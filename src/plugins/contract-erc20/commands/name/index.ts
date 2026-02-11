@@ -1,5 +1,5 @@
 /**
- * Contract List Command Exports
+ * Contract ERC20 Name Command Exports
  * For use by tests and external consumers
  */
 export { nameFunctionCall } from './handler';
