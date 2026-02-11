@@ -33,6 +33,11 @@ import {
   CreateNftFromFileOutputSchema,
 } from './commands/create-nft-from-file';
 import {
+  DELETE_TOKEN_TEMPLATE,
+  deleteToken,
+  DeleteTokenOutputSchema,
+} from './commands/delete';
+import {
   LIST_TOKENS_TEMPLATE,
   listTokens,
   ListTokensOutputSchema,
@@ -590,6 +595,26 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: ViewTokenOutputSchema,
         humanTemplate: VIEW_TOKEN_TEMPLATE,
+      },
+    },
+    {
+      name: 'delete',
+      summary: 'Delete a token from state',
+      description:
+        'Delete a token from local state. This only removes the token from the local address book, not from the Hedera network.',
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token identifier: either a token alias or token-id',
+        },
+      ],
+      handler: deleteToken,
+      output: {
+        schema: DeleteTokenOutputSchema,
+        humanTemplate: DELETE_TOKEN_TEMPLATE,
       },
     },
   ],

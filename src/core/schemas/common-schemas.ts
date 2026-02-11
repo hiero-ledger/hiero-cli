@@ -432,6 +432,26 @@ export const AccountReferenceObjectSchema = z
   .describe('Account identifier (ID, EVM address, or alias)');
 
 /**
+ * Parsed token reference as a discriminated object by type (entity ID or alias).
+ */
+export const TokenReferenceObjectSchema = z
+  .string()
+  .trim()
+  .min(1, 'Token identifier cannot be empty')
+  .transform((val): { type: EntityReferenceType; value: string } => {
+    if (EntityIdSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ENTITY_ID, value: val };
+    }
+    if (AliasNameSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ALIAS, value: val };
+    }
+    throw new Error(
+      'Token reference must be a valid Hedera ID (0.0.xxx) or alias name',
+    );
+  })
+  .describe('Token identifier (ID or alias)');
+
+/**
  * Account Reference Input (ID or Name)
  * Extended schema for referencing accounts specifically
  * Supports: Hedera account ID (0.0.xxx), EVM address (0x...), or account name/alias
