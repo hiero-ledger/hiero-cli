@@ -5,11 +5,6 @@
 import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
-import { transferFromFunctionCall } from '@/plugins/contract-erc20';
-import {
-  CONTRACT_ERC20_CALL_TRANSFER_FROM_TEMPLATE,
-  ContractErc20CallTransferFromOutputSchema,
-} from '@/plugins/contract-erc20/commands/transfer-from';
 import {
   approveFunctionCall,
   CONTRACT_ERC721_CALL_APPROVE_TEMPLATE,
@@ -30,6 +25,11 @@ import {
   ContractErc721CallIsApprovedForAllOutputSchema,
   isApprovedForAllFunctionCall,
 } from '@/plugins/contract-erc721/commands/is-approved-for-all';
+import {
+  CONTRACT_ERC721_CALL_MINT_TEMPLATE,
+  ContractErc721CallMintOutputSchema,
+  mintFunctionCall,
+} from '@/plugins/contract-erc721/commands/mint';
 import {
   CONTRACT_ERC721_CALL_NAME_TEMPLATE,
   ContractErc721CallNameOutputSchema,
@@ -60,6 +60,11 @@ import {
   ContractErc721CallTokenUriOutputSchema,
   tokenUriFunctionCall,
 } from '@/plugins/contract-erc721/commands/token-uri';
+import {
+  CONTRACT_ERC721_CALL_TRANSFER_FROM_TEMPLATE,
+  ContractErc721CallTransferFromOutputSchema,
+  transferFromFunctionCall,
+} from '@/plugins/contract-erc721/commands/transfer-from';
 
 export const contractErc721PluginManifest: PluginManifest = {
   name: 'contract-erc721',
@@ -410,6 +415,51 @@ export const contractErc721PluginManifest: PluginManifest = {
       },
     },
     {
+      name: 'mint',
+      summary: 'Call mint function (experimental)',
+      description:
+        "⚠️ EXPERIMENTAL: Command for calling custom ERC-721 mint(address to, uint256 tokenId) function based on internal _mint. This is an experimental function designed for testing token minting in ERC721 contracts. It relies on a custom implementation of the mint method in the ERC721 contract, which internally uses OpenZeppelin's _mint function.",
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+        },
+        {
+          name: 'gas',
+          short: 'g',
+          type: OptionType.NUMBER,
+          required: false,
+          default: 100000,
+          description: 'Gas for function call. Default: 100000',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "to" - address to mint token to. Alias, account ID or EVM address. Option required',
+        },
+        {
+          name: 'tokenId',
+          short: 'T',
+          type: OptionType.NUMBER,
+          required: true,
+          description:
+            'Parameter "tokenId" - token ID (uint256) to mint. Option required',
+        },
+      ],
+      handler: mintFunctionCall,
+      output: {
+        schema: ContractErc721CallMintOutputSchema,
+        humanTemplate: CONTRACT_ERC721_CALL_MINT_TEMPLATE,
+      },
+    },
+    {
       name: 'transfer-from',
       summary: 'Call transferFrom function',
       description: 'Command for calling the ERC-721 transferFrom function',
@@ -457,8 +507,8 @@ export const contractErc721PluginManifest: PluginManifest = {
       ],
       handler: transferFromFunctionCall,
       output: {
-        schema: ContractErc20CallTransferFromOutputSchema,
-        humanTemplate: CONTRACT_ERC20_CALL_TRANSFER_FROM_TEMPLATE,
+        schema: ContractErc721CallTransferFromOutputSchema,
+        humanTemplate: CONTRACT_ERC721_CALL_TRANSFER_FROM_TEMPLATE,
       },
     },
   ],
