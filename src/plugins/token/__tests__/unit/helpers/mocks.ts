@@ -362,7 +362,10 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     contractQuery: {
       queryContractFunction: jest.fn(),
     } as ContractQueryService,
-    identityResolution: makeGlobalIdentityResolutionServiceMock(),
+    identityResolution: {
+      ...makeGlobalIdentityResolutionServiceMock(),
+      ...(config?.identityResolution || {}),
+    },
     keyResolver,
   };
 
@@ -573,6 +576,55 @@ export const setupZustandHelperMock = (
       },
     ),
   }));
+};
+
+/**
+ * Setup mock implementation for ZustandTokenStateHelper for delete tests
+ */
+export const setupDeleteZustandHelperMock = (
+  MockedHelperClass: jest.Mock,
+  config: {
+    getToken?: jest.Mock;
+    removeToken?: jest.Mock;
+  },
+) => {
+  MockedHelperClass.mockImplementation(() => ({
+    getToken: config.getToken ?? jest.fn().mockReturnValue(null),
+    removeToken: config.removeToken ?? jest.fn(),
+  }));
+};
+
+/**
+ * Create API mocks specifically for delete token tests
+ * Provides sensible defaults for identityResolution and alias services
+ */
+export const makeDeleteApiMocks = (
+  config?: ApiMocksConfig & {
+    entityId?: string;
+    resolveReferenceToEntityOrEvmAddressError?: Error;
+  },
+) => {
+  const entityId = config?.entityId;
+  const resolveError = config?.resolveReferenceToEntityOrEvmAddressError;
+
+  return makeApiMocks({
+    network: 'testnet',
+    alias: {
+      list: jest.fn().mockReturnValue([]),
+      ...config?.alias,
+    },
+    identityResolution: {
+      resolveReferenceToEntityOrEvmAddress: jest.fn().mockImplementation(() => {
+        if (resolveError) {
+          throw resolveError;
+        }
+        const id = entityId ?? '0.0.1111';
+        return { entityIdOrEvmAddress: id };
+      }),
+      ...config?.identityResolution,
+    },
+    ...config,
+  });
 };
 
 /**

@@ -1,6 +1,6 @@
 /**
  * Plugin Management Plugin Index
- * Exports the plugin manifest and command handlers
+ * Exports the plugin management manifest and command handlers
  */
 import { addPlugin } from './commands/add/handler';
 import { disablePlugin } from './commands/disable/handler';

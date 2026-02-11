@@ -952,3 +952,52 @@ export const makeCreateNftFromFileCommandArgs = (params: {
     logger: params.logger,
   };
 };
+
+/**
+ * Pre-configured token fixtures for delete command tests
+ */
+export const mockDeleteTokens = {
+  basic: makeTokenData({
+    tokenId: '0.0.1111',
+    name: 'TestToken',
+    symbol: 'TST',
+  }),
+  aliased: makeTokenData({
+    tokenId: '0.0.2222',
+    name: 'MyToken',
+    symbol: 'MTK',
+  }),
+  withAlias: makeTokenData({
+    tokenId: '0.0.4444',
+    name: 'AliasedToken',
+    symbol: 'ALT',
+  }),
+};
+
+/**
+ * Pre-configured alias records for delete command tests
+ */
+export const mockDeleteAliasRecords = {
+  matching: [
+    {
+      alias: 'my-token-alias',
+      entityId: '0.0.4444',
+      type: 'token' as const,
+      network: SupportedNetwork.TESTNET,
+    },
+  ],
+  mixedEntities: [
+    {
+      alias: 'my-token-alias',
+      entityId: '0.0.4444',
+      type: 'token' as const,
+      network: SupportedNetwork.TESTNET,
+    },
+    {
+      alias: 'other-token-alias',
+      entityId: '0.0.5555',
+      type: 'token' as const,
+      network: SupportedNetwork.TESTNET,
+    },
+  ],
+};

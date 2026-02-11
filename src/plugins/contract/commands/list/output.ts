@@ -53,9 +53,9 @@ export type ContractListItem = z.infer<typeof ContractListItemSchema>;
  */
 export const CONTRACT_LIST_TEMPLATE = `
 {{#if (eq totalCount 0)}}
-📝 No tokens found
+📝 No contracts found
 {{else}}
-📝 Found {{totalCount}} token(s):
+📝 Found {{totalCount}} contract(s):
 
 {{#each contracts}}
 {{add1 @index}}. Contract ID: {{hashscanLink contractId "contract" network}}
