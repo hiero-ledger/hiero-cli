@@ -27,13 +27,17 @@ export async function deleteToken(
 
     const currentNetwork = api.network.getCurrentNetwork();
 
-    const resolvedToken = api.identityResolution.resolveEntityReference({
-      entityReference: validArgs.token,
-      network: currentNetwork,
-      aliasType: ALIAS_TYPE.Token,
-    });
+    const resolvedToken =
+      api.identityResolution.resolveReferenceToEntityOrEvmAddress({
+        entityReference: validArgs.token.value,
+        referenceType: validArgs.token.type,
+        network: currentNetwork,
+        aliasType: ALIAS_TYPE.Token,
+      });
 
-    const tokenToDelete = tokenState.getToken(resolvedToken.entityId);
+    const tokenToDelete = tokenState.getToken(
+      resolvedToken.entityIdOrEvmAddress,
+    );
     if (!tokenToDelete) {
       throw new Error(
         `Token with identifier '${validArgs.token.value}' not found in state`,

@@ -120,7 +120,7 @@ describe('token plugin - delete command', () => {
     setupDeleteZustandHelperMock(MockedHelper, {});
 
     const { api } = makeDeleteApiMocks({
-      resolveEntityReferenceError: new Error(
+      resolveReferenceToEntityOrEvmAddressError: new Error(
         'Alias "nonexistent-token" for token on network "testnet" not found',
       ),
     });

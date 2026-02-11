@@ -1,8 +1,6 @@
 import type {
   AccountResolutionParams,
   AccountResolutionResult,
-  AutoResolveEntityReferenceParams,
-  AutoResolveEntityReferenceResult,
   ContractResolutionParams,
   ContractResolutionResult,
   ReferenceResolutionParams,
@@ -21,8 +19,4 @@ export interface IdentityResolutionService {
   resolveReferenceToEntityOrEvmAddress(
     params: ReferenceResolutionParams,
   ): ReferenceResolutionResult;
-
-  resolveEntityReference(
-    params: AutoResolveEntityReferenceParams,
-  ): AutoResolveEntityReferenceResult;
 }

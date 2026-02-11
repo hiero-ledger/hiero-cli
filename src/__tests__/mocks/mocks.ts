@@ -215,7 +215,6 @@ export const makeIdentityResolutionServiceMock =
     resolveAccount: jest.fn(),
     resolveContract: jest.fn(),
     resolveReferenceToEntityOrEvmAddress: jest.fn(),
-    resolveEntityReference: jest.fn(),
   });
 
 /**

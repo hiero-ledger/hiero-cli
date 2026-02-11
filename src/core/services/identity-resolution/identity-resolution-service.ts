@@ -3,8 +3,6 @@ import type { IdentityResolutionService } from '@/core/services/identity-resolut
 import type {
   AccountResolutionParams,
   AccountResolutionResult,
-  AutoResolveEntityReferenceParams,
-  AutoResolveEntityReferenceResult,
   ContractResolutionParams,
   ContractResolutionResult,
   ReferenceResolutionParams,
@@ -82,22 +80,5 @@ export class IdentityResolutionServiceImpl implements IdentityResolutionService 
       );
     }
     return { entityIdOrEvmAddress };
-  }
-
-  resolveEntityReference(
-    params: AutoResolveEntityReferenceParams,
-  ): AutoResolveEntityReferenceResult {
-    if (params.entityReference.type === EntityReferenceType.ENTITY_ID) {
-      return { entityId: params.entityReference.value };
-    }
-
-    const result = this.resolveReferenceToEntityOrEvmAddress({
-      entityReference: params.entityReference.value,
-      referenceType: EntityReferenceType.ALIAS,
-      network: params.network,
-      aliasType: params.aliasType,
-    });
-
-    return { entityId: result.entityIdOrEvmAddress };
   }
 }

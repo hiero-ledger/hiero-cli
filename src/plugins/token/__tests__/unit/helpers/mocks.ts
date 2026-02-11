@@ -601,11 +601,11 @@ export const setupDeleteZustandHelperMock = (
 export const makeDeleteApiMocks = (
   config?: ApiMocksConfig & {
     entityId?: string;
-    resolveEntityReferenceError?: Error;
+    resolveReferenceToEntityOrEvmAddressError?: Error;
   },
 ) => {
   const entityId = config?.entityId;
-  const resolveEntityReferenceError = config?.resolveEntityReferenceError;
+  const resolveError = config?.resolveReferenceToEntityOrEvmAddressError;
 
   return makeApiMocks({
     network: 'testnet',
@@ -614,14 +614,12 @@ export const makeDeleteApiMocks = (
       ...config?.alias,
     },
     identityResolution: {
-      resolveEntityReference: jest.fn().mockImplementation(() => {
-        if (resolveEntityReferenceError) {
-          throw resolveEntityReferenceError;
+      resolveReferenceToEntityOrEvmAddress: jest.fn().mockImplementation(() => {
+        if (resolveError) {
+          throw resolveError;
         }
-        if (entityId) {
-          return { entityId };
-        }
-        return { entityId: '0.0.1111' };
+        const id = entityId ?? '0.0.1111';
+        return { entityIdOrEvmAddress: id };
       }),
       ...config?.identityResolution,
     },
