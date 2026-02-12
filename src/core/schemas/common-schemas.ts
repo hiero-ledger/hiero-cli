@@ -720,6 +720,11 @@ export const ContractNameSchema = z
   )
   .describe('Contract name');
 
+export const ContractVerifiedSchema = z
+  .boolean()
+  .optional()
+  .describe('Contract verification status');
+
 /**
  * Contract Symbol Input (Base Schema)
  * Base schema for all contract symbols (alphanumeric, hyphens, underscores)

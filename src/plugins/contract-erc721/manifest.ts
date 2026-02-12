@@ -131,7 +131,7 @@ export const contractErc721PluginManifest: PluginManifest = {
             'Parameter "to" in approve - address to approve for token transfer. Alias, account ID or EVM address. Option required',
         },
         {
-          name: 'tokenId',
+          name: 'token-id',
           short: 'T',
           type: OptionType.NUMBER,
           required: true,
@@ -242,7 +242,7 @@ export const contractErc721PluginManifest: PluginManifest = {
             'Smart contract ID represented by alias or contract ID. Option required',
         },
         {
-          name: 'tokenId',
+          name: 'token-id',
           short: 't',
           type: OptionType.NUMBER,
           required: true,
@@ -270,7 +270,7 @@ export const contractErc721PluginManifest: PluginManifest = {
             'Smart contract ID represented by alias or contract ID. Option required',
         },
         {
-          name: 'tokenId',
+          name: 'token-id',
           short: 't',
           type: OptionType.NUMBER,
           required: true,
@@ -299,7 +299,7 @@ export const contractErc721PluginManifest: PluginManifest = {
             'Smart contract ID represented by alias or contract ID. Option required',
         },
         {
-          name: 'tokenId',
+          name: 'token-id',
           short: 't',
           type: OptionType.NUMBER,
           required: true,
@@ -393,8 +393,8 @@ export const contractErc721PluginManifest: PluginManifest = {
             'Parameter "to" (new owner) represented by alias, account ID or EVM address. Option required',
         },
         {
-          name: 'tokenId',
-          short: 'i',
+          name: 'token-id',
+          short: 'T',
           type: OptionType.NUMBER,
           required: true,
           description: 'Token ID (uint256) to transfer. Option required',
@@ -445,7 +445,7 @@ export const contractErc721PluginManifest: PluginManifest = {
             'Parameter "to" - address to mint token to. Alias, account ID or EVM address. Option required',
         },
         {
-          name: 'tokenId',
+          name: 'token-id',
           short: 'T',
           type: OptionType.NUMBER,
           required: true,
@@ -497,7 +497,7 @@ export const contractErc721PluginManifest: PluginManifest = {
             'Parameter "to" (recipient) in transferFrom function represented by alias, account ID or EVM address. Option required',
         },
         {
-          name: 'tokenId',
+          name: 'token-id',
           short: 'T',
           type: OptionType.NUMBER,
           required: true,

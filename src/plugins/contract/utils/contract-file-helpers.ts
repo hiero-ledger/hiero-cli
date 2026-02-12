@@ -1,10 +1,4 @@
-/**
- * Token File Helpers
- * Utility functions for reading and validating token definition files
- */
-import type { Logger } from '@/core';
-
-import * as fs from 'fs/promises';
+import * as fs from 'fs';
 import * as path from 'path';
 
 export function resolveContractFilePath(filename: string): string {
@@ -17,11 +11,23 @@ export function resolveContractFilePath(filename: string): string {
   return path.resolve(filename);
 }
 
-export async function readContractFile(
-  filename: string,
-  logger: Logger,
-): Promise<string> {
+export function readContractFile(filename: string): string {
   const filepath = resolveContractFilePath(filename);
-  logger.debug(`Reading contract file from: ${filepath}`);
-  return await fs.readFile(filepath, 'utf-8');
+  if (!fs.existsSync(filepath)) {
+    throw new Error(`File ${filename} does not exist`);
+  }
+  return fs.readFileSync(filepath, 'utf8');
+}
+
+export function readContractNameFromFileContent(
+  contractBasename: string,
+  contractFileContent: string,
+): string {
+  const match = contractFileContent.match(/\bcontract\s+(\w+)/);
+  if (!match) {
+    throw new Error(
+      `Could not resolve contract name from file: ${contractBasename} `,
+    );
+  }
+  return match[1];
 }
