@@ -23,6 +23,7 @@ import { requireConfirmation } from '@/core/utils/confirmation';
 import { ensureCliInitialized } from '@/core/utils/ensure-cli-initialized';
 import { formatAndExitWithError } from '@/core/utils/error-handler';
 import { filterReservedOptions } from '@/core/utils/filter-reserved-options';
+import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
 import { registerDisabledPlugin } from '@/core/utils/register-disabled-plugin';
 
 interface LoadedPlugin {
@@ -194,18 +195,7 @@ export class PluginManager {
     try {
       // Load manifest
       const manifestPath = path.resolve(pluginPath, 'manifest.js');
-      const manifestModule = (await import(manifestPath)) as {
-        default: PluginManifest;
-      };
-      const manifest = manifestModule.default;
-
-      if (!manifest) {
-        // Use centralized error handler for consistent error formatting
-        return this.exitWithError(
-          'Plugin initialization failed',
-          new Error(`No manifest found in ${pluginPath}`),
-        );
-      }
+      const manifest = await loadPluginManifest(manifestPath);
 
       const loadedPlugin: LoadedPlugin = {
         manifest,

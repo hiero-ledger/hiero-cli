@@ -432,6 +432,26 @@ export const AccountReferenceObjectSchema = z
   .describe('Account identifier (ID, EVM address, or alias)');
 
 /**
+ * Parsed token reference as a discriminated object by type (entity ID or alias).
+ */
+export const TokenReferenceObjectSchema = z
+  .string()
+  .trim()
+  .min(1, 'Token identifier cannot be empty')
+  .transform((val): { type: EntityReferenceType; value: string } => {
+    if (EntityIdSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ENTITY_ID, value: val };
+    }
+    if (AliasNameSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ALIAS, value: val };
+    }
+    throw new Error(
+      'Token reference must be a valid Hedera ID (0.0.xxx) or alias name',
+    );
+  })
+  .describe('Token identifier (ID or alias)');
+
+/**
  * Account Reference Input (ID or Name)
  * Extended schema for referencing accounts specifically
  * Supports: Hedera account ID (0.0.xxx), EVM address (0x...), or account name/alias
@@ -700,6 +720,11 @@ export const ContractNameSchema = z
   )
   .describe('Contract name');
 
+export const ContractVerifiedSchema = z
+  .boolean()
+  .optional()
+  .describe('Contract verification status');
+
 /**
  * Contract Symbol Input (Base Schema)
  * Base schema for all contract symbols (alphanumeric, hyphens, underscores)
@@ -745,3 +770,15 @@ export const ContractErc721TokenIdSchema = z
   .int()
   .nonnegative('Token ID must be greater than or equal to 0')
   .describe('Token ID (uint256) for tokenURI query');
+
+/**
+ * Hex encoded data validation
+ * Format: 0x followed by 40 hexadecimal characters
+ */
+export const HexEncodedDataSchema = z
+  .string()
+  .regex(
+    /^0x[0-9a-fA-F]+$/,
+    'Data must be a hex encoded string starting in format "0x12abfe456123"',
+  )
+  .describe('HEX encoded data format');

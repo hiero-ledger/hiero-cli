@@ -5,6 +5,13 @@
   "main": "hiero-cli.js",
   "target": "esnext",
   "module": "esnext",
+  "types": "./dist/core/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/core/index.d.ts",
+      "default": "./dist/core/index.js"
+    }
+  },
   "publishConfig": {
     "access": "public"
   },
@@ -51,15 +58,20 @@
   ],
   "author": "Michiel Mulders",
   "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hiero-ledger/hiero-cli.git"
+  },
   "dependencies": {
     "@clack/prompts": "0.11.0",
     "@hashgraph/sdk": "2.80.0",
-    "ansi-escapes": "^7.2.0",
+    "ansi-escapes": "7.2.0",
     "bignumber.js": "9.3.1",
     "commander": "14.0.2",
     "ethers": "6.16.0",
     "handlebars": "4.7.8",
     "supports-hyperlinks": "4.4.0",
+    "jiti": "2.4.2",
     "solc": "0.8.33",
     "zod": "4.3.6",
     "zustand": "5.0.10"

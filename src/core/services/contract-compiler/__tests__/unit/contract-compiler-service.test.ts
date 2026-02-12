@@ -38,8 +38,31 @@ jest.mock('fs', () => ({
 }));
 
 jest.mock('path', () => ({
+  basename: jest.fn((p: string) => p.split('/').pop() ?? p),
+  dirname: jest.fn((p: string) => p.split('/').slice(0, -1).join('/')),
   resolve: jest.fn((...segments: string[]) => segments.join('/')),
 }));
+
+const CONTRACT_BASENAME = 'MyContract.sol';
+
+jest.mock('@/core/utils/solidity-file-importer', () => {
+  return {
+    createFindImports: jest.fn((baseDir: string) => (importPath: string) => {
+      const normalized = importPath.replace(/\\/g, '/');
+      try {
+        const localPath = path.resolve(baseDir, normalized);
+        return { contents: fs.readFileSync(localPath, 'utf8') };
+      } catch {
+        try {
+          const nodePath = path.resolve(baseDir, 'node_modules', normalized);
+          return { contents: fs.readFileSync(nodePath, 'utf8') };
+        } catch {
+          return { error: `Import not found: ${importPath}` };
+        }
+      }
+    }),
+  };
+});
 
 const mockReadFileSync = fs.readFileSync as jest.Mock;
 const mockPathResolve = path.resolve as jest.Mock;
@@ -68,7 +91,7 @@ describe('ContractCompilerServiceImpl', () => {
 
       const solcOutput = {
         contracts: {
-          [CONTRACT_FILENAME]: {
+          [CONTRACT_BASENAME]: {
             [CONTRACT_NAME]: {
               evm: {
                 bytecode: {
@@ -101,7 +124,7 @@ describe('ContractCompilerServiceImpl', () => {
       const parsedInput = JSON.parse(rawInput);
 
       expect(parsedInput.language).toBe('Solidity');
-      expect(parsedInput.sources[CONTRACT_FILENAME].content).toBe(
+      expect(parsedInput.sources[CONTRACT_BASENAME].content).toBe(
         CONTRACT_CONTENT,
       );
       expect(parsedInput.settings.outputSelection).toEqual({
@@ -131,7 +154,7 @@ describe('ContractCompilerServiceImpl', () => {
       mockSolcModule.compile.mockImplementationOnce(() => {
         return JSON.stringify({
           contracts: {
-            [CONTRACT_FILENAME]: {
+            [CONTRACT_BASENAME]: {
               [CONTRACT_NAME]: {
                 evm: { bytecode: { object: '0x0' } },
                 abi: JSON.stringify([]),
@@ -142,8 +165,12 @@ describe('ContractCompilerServiceImpl', () => {
         });
       });
 
-      mockReadFileSync.mockReturnValueOnce('imported content');
-      mockReadFileSync.mockReturnValueOnce('node module content');
+      mockReadFileSync
+        .mockReturnValueOnce('imported content')
+        .mockImplementationOnce(() => {
+          throw new Error('ENOENT');
+        })
+        .mockReturnValueOnce('node module content');
 
       await service.compileContract(params);
 
@@ -181,7 +208,7 @@ describe('ContractCompilerServiceImpl', () => {
       mockSolcModule.compile.mockImplementationOnce(() => {
         return JSON.stringify({
           contracts: {
-            [CONTRACT_FILENAME]: {
+            [CONTRACT_BASENAME]: {
               [CONTRACT_NAME]: {
                 evm: { bytecode: { object: '0x0' } },
                 abi: JSON.stringify([]),
@@ -208,7 +235,7 @@ describe('ContractCompilerServiceImpl', () => {
       const missingPath = 'contracts/Missing.sol';
       const result = importFn(missingPath);
 
-      expect(result).toEqual({ error: `File not found: ${missingPath}` });
+      expect(result).toEqual({ error: `Import not found: ${missingPath}` });
     });
   });
 });

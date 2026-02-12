@@ -1,5 +1,5 @@
 /**
- * List Command Exports
+ * Memo Command Exports
  */
 export { createMemo } from './handler';
 export type { MemoTestOutput } from './output';

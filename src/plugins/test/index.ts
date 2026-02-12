@@ -1,6 +1,6 @@
 /**
- * Config Plugin Index
- * Exports the config plugin manifest
+ * Test Plugin Index
+ * Exports the test plugin manifest
  */
 export { fooTestOptions } from './commands/foo';
 export { createMemo } from './commands/memo';

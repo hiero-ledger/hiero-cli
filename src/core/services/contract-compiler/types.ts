@@ -55,11 +55,18 @@ export interface SolcContract {
   metadata: string;
 }
 
+export interface SolcError {
+  severity: string;
+  message: string;
+  formattedMessage: string;
+}
+
 export interface SolcOutput {
-  contracts: {
+  contracts?: {
     // output contracts, each contract is represented by a file name and a contract name in each file
     [fileName: string]: {
       [contractName: string]: SolcContract;
     };
   };
+  errors?: SolcError[];
 }

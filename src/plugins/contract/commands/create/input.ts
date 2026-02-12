@@ -23,7 +23,7 @@ export const ContractCreateSchema = z
     gas: GasInputSchema.default(1000000).describe(
       'Gas for contract creation. Default: 1000000',
     ),
-    basePath: FilePathSchema.describe(
+    basePath: FilePathSchema.optional().describe(
       'Base path to main directory of smart contract path',
     ),
     adminKey: KeyOrAccountAliasSchema.optional().describe(
@@ -32,7 +32,7 @@ export const ContractCreateSchema = z
     memo: MemoSchema.describe(
       'Optional memo for the contract (max 100 characters)',
     ),
-    solidityCompiler: SolidityCompilerVersion,
+    solidityVersion: SolidityCompilerVersion,
     constructorParameter: z
       .array(z.string())
       .optional()
@@ -49,7 +49,7 @@ export const ContractCreateSchema = z
     basePath: data.basePath,
     adminKey: data.adminKey,
     memo: data.memo,
-    solidityVersion: data.solidityCompiler,
+    solidityVersion: data.solidityVersion,
     constructorParameters: data.constructorParameter,
     keyManager: data.keyManager,
   }));

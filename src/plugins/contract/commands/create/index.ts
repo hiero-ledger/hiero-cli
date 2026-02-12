@@ -1,5 +1,5 @@
 /**
- * List Command Exports
+ * Contract Create Command Exports
  */
 export { createContract } from './handler';
 export type { ContractCreateOutput } from './output';
