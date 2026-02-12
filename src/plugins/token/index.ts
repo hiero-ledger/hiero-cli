@@ -8,6 +8,7 @@ export { tokenPluginManifest } from './manifest';
 export { associateToken } from './commands/associate';
 export { createToken } from './commands/create-ft';
 export { createTokenFromFile } from './commands/create-ft-from-file';
+export { deleteToken } from './commands/delete';
 export { listTokens } from './commands/list';
 export { mintFt } from './commands/mint-ft';
 export { mintNft } from './commands/mint-nft';
