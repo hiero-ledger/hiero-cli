@@ -97,24 +97,24 @@ hcli contract-erc721 balance-of --contract my-nft --owner alice
 ### owner-of
 
 ```bash
-hcli contract-erc721 owner-of --contract my-nft --tokenId 1
+hcli contract-erc721 owner-of --contract my-nft --token-id 1
 ```
 
 | Option     | Short | Required | Description          |
 | ---------- | ----- | -------- | -------------------- |
 | `contract` | `c`   | Yes      | Contract alias or ID |
-| `tokenId`  | `t`   | Yes      | Token ID (uint256)   |
+| `token-id` | `T`   | Yes      | Token ID (uint256)   |
 
 ### get-approved
 
 ```bash
-hcli contract-erc721 get-approved --contract my-nft --tokenId 1
+hcli contract-erc721 get-approved --contract my-nft --token-id 1
 ```
 
 | Option     | Short | Required | Description          |
 | ---------- | ----- | -------- | -------------------- |
 | `contract` | `c`   | Yes      | Contract alias or ID |
-| `tokenId`  | `t`   | Yes      | Token ID to query    |
+| `token-id` | `T`   | Yes      | Token ID to query    |
 
 ### is-approved-for-all
 
@@ -131,27 +131,27 @@ hcli contract-erc721 is-approved-for-all --contract my-nft --owner alice --opera
 ### token-uri
 
 ```bash
-hcli contract-erc721 token-uri --contract my-nft --tokenId 1
+hcli contract-erc721 token-uri --contract my-nft --token-id 1
 ```
 
 | Option     | Short | Required | Description          |
 | ---------- | ----- | -------- | -------------------- |
 | `contract` | `c`   | Yes      | Contract alias or ID |
-| `tokenId`  | `t`   | Yes      | Token ID to query    |
+| `token-id` | `T`   | Yes      | Token ID to query    |
 
 ### approve
 
 Approves an address to transfer a specific token. Operator must be the token owner.
 
 ```bash
-hcli contract-erc721 approve --contract my-nft --to bob --tokenId 1
+hcli contract-erc721 approve --contract my-nft --to bob --token-id 1
 ```
 
 | Option     | Short | Required | Description                                   | Default |
 | ---------- | ----- | -------- | --------------------------------------------- | ------- |
 | `contract` | `c`   | Yes      | Contract alias, ID or EVM address             | -       |
 | `to`       | `t`   | Yes      | Address to approve (alias, ID or EVM address) | -       |
-| `tokenId`  | `T`   | Yes      | Token ID to approve                           | -       |
+| `token-id` | `T`   | Yes      | Token ID to approve                           | -       |
 | `gas`      | `g`   | No       | Gas for function call                         | 100000  |
 
 ### set-approval-for-all
@@ -174,7 +174,7 @@ hcli contract-erc721 set-approval-for-all --contract my-nft --operator bob --app
 Transfers a token from one address to another. Caller must be owner, approved, or approved for all.
 
 ```bash
-hcli contract-erc721 transfer-from --contract my-nft --from alice --to bob --tokenId 1
+hcli contract-erc721 transfer-from --contract my-nft --from alice --to bob --token-id 1
 ```
 
 | Option     | Short | Required | Description                              | Default |
@@ -182,7 +182,7 @@ hcli contract-erc721 transfer-from --contract my-nft --from alice --to bob --tok
 | `contract` | `c`   | Yes      | Contract alias, ID or EVM address        | -       |
 | `from`     | `f`   | Yes      | Current owner (alias, ID or EVM address) | -       |
 | `to`       | `t`   | Yes      | Recipient (alias, ID or EVM address)     | -       |
-| `tokenId`  | `T`   | Yes      | Token ID to transfer                     | -       |
+| `token-id` | `T`   | Yes      | Token ID to transfer                     | -       |
 | `gas`      | `g`   | No       | Gas for function call                    | 100000  |
 
 ### safe-transfer-from
@@ -190,8 +190,8 @@ hcli contract-erc721 transfer-from --contract my-nft --from alice --to bob --tok
 Safe transfer with optional data. Reverts if recipient is a contract that does not implement the receiver interface.
 
 ```bash
-hcli contract-erc721 safe-transfer-from --contract my-nft --from alice --to bob --tokenId 1
-hcli contract-erc721 safe-transfer-from -c my-nft -f alice -t bob -i 1 -d 0x1234
+hcli contract-erc721 safe-transfer-from --contract my-nft --from alice --to bob --token-id 1
+hcli contract-erc721 safe-transfer-from -c my-nft -f alice -t bob -T 1 -d 0x1234
 ```
 
 | Option     | Short | Required | Description                                  | Default |
@@ -199,7 +199,7 @@ hcli contract-erc721 safe-transfer-from -c my-nft -f alice -t bob -i 1 -d 0x1234
 | `contract` | `c`   | Yes      | Contract alias, ID or EVM address            | -       |
 | `from`     | `f`   | Yes      | Current owner (alias, ID or EVM address)     | -       |
 | `to`       | `t`   | Yes      | Recipient (alias, ID or EVM address)         | -       |
-| `tokenId`  | `i`   | Yes      | Token ID to transfer                         | -       |
+| `token-id` | `T`   | Yes      | Token ID to transfer                         | -       |
 | `data`     | `d`   | No       | Optional hex-encoded data for 4-arg overload | -       |
 | `gas`      | `g`   | No       | Gas for function call                        | 100000  |
 
@@ -208,14 +208,14 @@ hcli contract-erc721 safe-transfer-from -c my-nft -f alice -t bob -i 1 -d 0x1234
 **⚠️ EXPERIMENTAL** – Calls custom `mint(address to, uint256 tokenId)`. Requires contract to implement this function (e.g. via OpenZeppelin `_mint`).
 
 ```bash
-hcli contract-erc721 mint --contract my-nft --to alice --tokenId 1
+hcli contract-erc721 mint --contract my-nft --to alice --token-id 1
 ```
 
 | Option     | Short | Required | Description                                  | Default |
 | ---------- | ----- | -------- | -------------------------------------------- | ------- |
 | `contract` | `c`   | Yes      | Contract alias, ID or EVM address            | -       |
 | `to`       | `t`   | Yes      | Recipient address (alias, ID or EVM address) | -       |
-| `tokenId`  | `T`   | Yes      | Token ID to mint                             | -       |
+| `token-id` | `T`   | Yes      | Token ID to mint                             | -       |
 | `gas`      | `g`   | No       | Gas for function call                        | 100000  |
 
 ## 🔧 Core API Integration
