@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   AliasNameSchema,
   ContractNameSchema,
+  ContractVerifiedSchema,
   EntityIdSchema,
   EvmAddressSchema,
   NetworkSchema,
@@ -18,6 +19,7 @@ export const ContractCreateOutputSchema = z.object({
   network: NetworkSchema,
   transactionId: TransactionIdSchema,
   adminPublicKey: PublicKeySchema.optional(),
+  verified: ContractVerifiedSchema,
 });
 
 export type ContractCreateOutput = z.infer<typeof ContractCreateOutputSchema>;
@@ -32,6 +34,7 @@ export const CONTRACT_CREATE_TEMPLATE = `
 {{#if adminPublicKey}}
    Admin public key: {{adminPublicKey}}
 {{/if}}
+   Contract Verified: {{#if verified}}Yes{{else}}No{{/if}}
    Network: {{network}}
    Transaction ID: {{hashscanLink transactionId "transaction" network}}
 `.trim();

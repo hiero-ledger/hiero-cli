@@ -2,33 +2,26 @@ import type { ContractCompilerService } from '@/core/services/contract-compiler/
 import type {
   CompilationParams,
   CompilationResult,
-  SolcImportResult,
   SolcInput,
   SolcOutput,
 } from '@/core/services/contract-compiler/types';
 
-import * as fs from 'fs';
 import * as path from 'path';
 
 import { loadSolcVersion } from '@/core/utils/solc-loader';
+import { createFindImports } from '@/core/utils/solidity-file-importer';
 
 export class ContractCompilerServiceImpl implements ContractCompilerService {
   public async compileContract(
     params: CompilationParams,
   ): Promise<CompilationResult> {
+    const contractBasename = path.basename(params.contractFilename);
     const solc = await loadSolcVersion(params.solidityVersion);
-    if (!params.contractContent.trim()) {
-      throw new Error('Contract content is empty');
-    }
-
-    if (!params.contractName) {
-      throw new Error('Contract name is required');
-    }
 
     const input: SolcInput = {
       language: 'Solidity',
       sources: {
-        [params.contractFilename]: {
+        [contractBasename]: {
           content: params.contractContent,
         },
       },
@@ -40,14 +33,22 @@ export class ContractCompilerServiceImpl implements ContractCompilerService {
         },
       },
     };
-
+    const findImports = createFindImports(
+      path.resolve(params.basePath),
+      path.dirname(params.contractFilename),
+    );
     const output = JSON.parse(
       solc.compile(JSON.stringify(input), {
-        import: this.createImportPath(params.basePath),
+        import: findImports,
       }),
     ) as SolcOutput;
+    if (!output.contracts && output.errors && output.errors?.length > 0) {
+      throw new Error(
+        `Contract ${params.contractName} compilation with error ${output.errors[0].formattedMessage}`,
+      );
+    }
 
-    if (!output.contracts?.[params.contractFilename]?.[params.contractName]) {
+    if (!output.contracts?.[contractBasename]?.[params.contractName]) {
       throw new Error(
         `Contract ${params.contractName} not found in compilation output`,
       );
@@ -55,25 +56,11 @@ export class ContractCompilerServiceImpl implements ContractCompilerService {
 
     // Solidity compiler output structure: output.contracts[filename][contractName]
     // Example: output.contracts['MyContract.sol']['MyContract'] contains the compiled contract data
-    const contract =
-      output.contracts[params.contractFilename][params.contractName];
+    const contract = output.contracts[contractBasename][params.contractName];
     return {
       bytecode: contract.evm.bytecode.object,
       abiDefinition: contract.abi,
       metadata: contract.metadata,
-    };
-  }
-  private createImportPath(basePath: string) {
-    return function findImports(importPath: string): SolcImportResult {
-      try {
-        const fullPath = importPath.startsWith('@')
-          ? path.resolve(basePath, 'node_modules', importPath)
-          : path.resolve(basePath, importPath);
-        const contents = fs.readFileSync(fullPath, 'utf8');
-        return { contents };
-      } catch {
-        return { error: `File not found: ${importPath}` };
-      }
     };
   }
 }
