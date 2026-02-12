@@ -1,6 +1,6 @@
 /**
  * Contract ERC721 Plugin Manifest
- * Provides commands to list, get and set configuration options
+ * Provides commands to call ERC-721 contract functions
  */
 import type { PluginManifest } from '@/core';
 
@@ -118,7 +118,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           name: 'gas',
           short: 'g',
           type: OptionType.NUMBER,
-          required: true,
+          required: false,
           default: 100000,
           description: 'Gas for function call. Default: 100000',
         },
