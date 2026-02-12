@@ -33,17 +33,28 @@ export function scanSolidityFiles(
   rootDir: string,
   map: SoliditySourceMap = {},
 ): SoliditySourceMap {
-  for (const entry of fs.readdirSync(dir)) {
-    const fullPath = path.join(dir, entry);
+  try {
+    for (const entry of fs.readdirSync(dir)) {
+      const fullPath = path.join(dir, entry);
 
-    if (fs.statSync(fullPath).isDirectory()) {
-      scanSolidityFiles(fullPath, rootDir, map);
-    } else if (entry.endsWith('.sol')) {
-      const relativePath = path.relative(rootDir, fullPath).replace(/\\/g, '/');
+      if (fs.statSync(fullPath).isDirectory()) {
+        scanSolidityFiles(fullPath, rootDir, map);
+      } else if (entry.endsWith('.sol')) {
+        const relativePath = path
+          .relative(rootDir, fullPath)
+          .replace(/\\/g, '/');
 
-      map[`./${relativePath}`] = fullPath;
-      map[relativePath] = fullPath;
+        map[`./${relativePath}`] = fullPath;
+        map[relativePath] = fullPath;
+      }
     }
+
+    return map;
+  } catch (error) {
+    throw new Error(
+      `Failed to scan Solidity files under "${rootDir}": ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
   }
-  return map;
 }

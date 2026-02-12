@@ -11,7 +11,7 @@ import fs from 'fs/promises';
 import path from 'path';
 
 import { NetworkChainMap } from '@/core/types/shared.types';
-import { scanSolidityFiles } from '@/core/utils/solidity-file-importer-util';
+import { scanSolidityFiles } from '@/core/utils/solidity-file-importer';
 
 export class ContractVerifierServiceImpl implements ContractVerifierService {
   private static readonly BASE_URL = 'https://server-verify.hashscan.io/verify';

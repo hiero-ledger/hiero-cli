@@ -45,7 +45,7 @@ jest.mock('path', () => ({
 
 const CONTRACT_BASENAME = 'MyContract.sol';
 
-jest.mock('@/core/utils/solidity-file-importer-util', () => {
+jest.mock('@/core/utils/solidity-file-importer', () => {
   return {
     createFindImports: jest.fn((baseDir: string) => (importPath: string) => {
       const normalized = importPath.replace(/\\/g, '/');

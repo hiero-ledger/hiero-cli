@@ -28,7 +28,7 @@ export async function createContract(
     const alias = validArgs.name;
     const filename = validArgs.file;
     const gas = validArgs.gas;
-    const basePath = validArgs.basePath;
+    let basePath = validArgs.basePath;
     const memo = validArgs.memo;
     const solidityVersion = validArgs.solidityVersion;
     const constructorParameters = validArgs.constructorParameters;
@@ -36,6 +36,10 @@ export async function createContract(
     const network = api.network.getCurrentNetwork();
 
     api.alias.availableOrThrow(alias, network);
+    if (!basePath) {
+      // Default to the current working directory when basePath is not provided
+      basePath = process.cwd();
+    }
 
     // Get keyManager from args or fallback to config
     const keyManager =

@@ -23,7 +23,7 @@ export const ContractCreateSchema = z
     gas: GasInputSchema.default(1000000).describe(
       'Gas for contract creation. Default: 1000000',
     ),
-    basePath: FilePathSchema.describe(
+    basePath: FilePathSchema.optional().describe(
       'Base path to main directory of smart contract path',
     ),
     adminKey: KeyOrAccountAliasSchema.optional().describe(

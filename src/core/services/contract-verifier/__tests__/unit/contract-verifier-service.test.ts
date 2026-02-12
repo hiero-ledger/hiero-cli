@@ -12,7 +12,7 @@ import type {
 import { ContractVerifierServiceImpl } from '@/core/services/contract-verifier/contract-verifier-service';
 import { NetworkChainMap } from '@/core/types/shared.types';
 
-jest.mock('@/core/utils/solidity-file-importer-util', () => ({
+jest.mock('@/core/utils/solidity-file-importer', () => ({
   scanSolidityFiles: jest.fn(() => ({
     'MyContract.sol': 'contracts/MyContract.sol',
   })),

@@ -9,7 +9,7 @@ import type {
 import * as path from 'path';
 
 import { loadSolcVersion } from '@/core/utils/solc-loader';
-import { createFindImports } from '@/core/utils/solidity-file-importer-util';
+import { createFindImports } from '@/core/utils/solidity-file-importer';
 
 export class ContractCompilerServiceImpl implements ContractCompilerService {
   public async compileContract(
