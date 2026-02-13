@@ -204,6 +204,7 @@ export const makeAliasServiceMock = (
     return null;
   }),
   resolveOrThrow: jest.fn(),
+  resolveByEvmAddress: jest.fn().mockReturnValue(null),
   list: jest.fn().mockReturnValue([]),
   remove: jest.fn(),
   clear: jest.fn(),

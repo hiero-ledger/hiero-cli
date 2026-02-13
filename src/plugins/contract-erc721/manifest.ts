@@ -118,7 +118,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           name: 'gas',
           short: 'g',
           type: OptionType.NUMBER,
-          required: true,
+          required: false,
           default: 100000,
           description: 'Gas for function call. Default: 100000',
         },
