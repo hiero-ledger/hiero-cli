@@ -751,7 +751,7 @@ export const SolidityCompilerVersion = z
   .optional()
   .describe('Optional Solidity compiler version');
 
-export const GasInputSchema = z.number().min(0).default(100000);
+export const GasInputSchema = z.number().min(0).optional().default(100000);
 
 /**
  * Approved Flag Input Schema

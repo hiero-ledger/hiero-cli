@@ -192,6 +192,7 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
     network: 'testnet',
     createdAt: '2024-01-01T00:00:00.000Z',
   }),
+  resolveByEvmAddress: jest.fn().mockReturnValue(null),
   list: jest.fn(),
   remove: jest.fn(),
   exists: jest.fn().mockReturnValue(false),
