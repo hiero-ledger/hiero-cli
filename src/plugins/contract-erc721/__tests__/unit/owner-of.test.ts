@@ -49,6 +49,14 @@ describe('contract-erc721 plugin - ownerOf command (unit)', () => {
           queryResult: [mockOwnerAddress],
         }),
       },
+      alias: {
+        resolveByEvmAddress: jest.fn().mockReturnValue({
+          alias: 'owner-alias',
+          entityId: '0.0.5678',
+          type: 'account',
+          network: 'testnet',
+        }),
+      },
     }).api;
   });
 
@@ -75,6 +83,8 @@ describe('contract-erc721 plugin - ownerOf command (unit)', () => {
 
     expect(parsed.contractId).toBe('0.0.1234');
     expect(parsed.owner).toBe(mockOwnerAddress);
+    expect(parsed.ownerAlias).toBe('owner-alias');
+    expect(parsed.ownerEntityId).toBe('0.0.5678');
     expect(parsed.network).toBe('testnet');
 
     expect(
