@@ -63,13 +63,7 @@ export async function createAccount(
     keyManagerArg ||
     api.config.getOption<KeyManagerName>('default_key_manager');
 
-  const operator = api.network.getOperator(network);
-  if (!operator) {
-    throw new Error(
-      'No operator account configured. ' +
-        'Please configure operator credentials before creating accounts.',
-    );
-  }
+  const operator = api.network.getCurrentOperatorOrThrow();
 
   const operatorBalance = await api.mirror.getAccountHBarBalance(
     operator.accountId,

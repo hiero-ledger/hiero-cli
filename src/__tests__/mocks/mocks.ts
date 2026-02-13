@@ -602,11 +602,8 @@ export const makeKeyResolverMock = (
   getOrInitKeyWithFallback: jest
     .fn()
     .mockImplementation(async (keyOrAlias, keyManager, labels) => {
-      // undefined -> fallback do operatora
       if (!keyOrAlias && options.network) {
-        const network = options.network.getCurrentNetwork();
-        const operator = options.network.getOperator(network);
-        if (!operator) throw new Error('No operator set');
+        const operator = options.network.getCurrentOperatorOrThrow();
         // Always use default valid public key for mocking
         const publicKey = '302a300506032b6570032100' + '0'.repeat(64);
         return {
