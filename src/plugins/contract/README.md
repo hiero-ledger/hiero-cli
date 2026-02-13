@@ -136,8 +136,9 @@ interface ContractData {
   contractName: string; // Contract name from Solidity source
   contractEvmAddress: string; // Deployed EVM address
   adminPublicKey?: string; // Optional admin public key
-  network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
+  network: SupportedNetwork; // Network
   memo?: string; // Optional memo (max 100 chars)
+  verified?: boolean; // Contract verification status
 }
 ```
 

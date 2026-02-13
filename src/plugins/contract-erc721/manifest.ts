@@ -1,6 +1,6 @@
 /**
  * Contract ERC721 Plugin Manifest
- * Provides commands to list, get and set configuration options
+ * Provides commands to call ERC-721 contract functions
  */
 import type { PluginManifest } from '@/core';
 
@@ -136,7 +136,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           type: OptionType.NUMBER,
           required: true,
           description:
-            'Parameter "tokenId" in approve - token ID (uint256) to approve. Option required',
+            'Parameter "token-id" in approve - token ID (uint256) to approve. Option required',
         },
       ],
       handler: approveFunctionCall,
@@ -243,7 +243,7 @@ export const contractErc721PluginManifest: PluginManifest = {
         },
         {
           name: 'token-id',
-          short: 't',
+          short: 'T',
           type: OptionType.NUMBER,
           required: true,
           description: 'Token ID (uint256) to query owner of. Option required',
@@ -271,7 +271,7 @@ export const contractErc721PluginManifest: PluginManifest = {
         },
         {
           name: 'token-id',
-          short: 't',
+          short: 'T',
           type: OptionType.NUMBER,
           required: true,
           description:
@@ -300,7 +300,7 @@ export const contractErc721PluginManifest: PluginManifest = {
         },
         {
           name: 'token-id',
-          short: 't',
+          short: 'T',
           type: OptionType.NUMBER,
           required: true,
           description: 'Token ID (uint256) to query URI for. Option required',
@@ -450,7 +450,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           type: OptionType.NUMBER,
           required: true,
           description:
-            'Parameter "tokenId" - token ID (uint256) to mint. Option required',
+            'Parameter "token-id" - token ID (uint256) to mint. Option required',
         },
       ],
       handler: mintFunctionCall,
@@ -502,7 +502,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           type: OptionType.NUMBER,
           required: true,
           description:
-            'Parameter "tokenId" in transferFrom function represented by a number. Option required',
+            'Parameter "token-id" in transferFrom function represented by a number. Option required',
         },
       ],
       handler: transferFromFunctionCall,
