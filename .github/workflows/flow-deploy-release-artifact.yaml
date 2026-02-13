@@ -187,6 +187,8 @@ jobs:
 
       - name: Setup JFrog CLI
         uses: jfrog/setup-jfrog-cli@c32bf10843e4071112c4ea3abf622d3b27cd8c17 # v4.7.0
+        env:
+          JF_URL: ${{ vars.JF_URL }}
         with:
           oidc-provider-name: hiero-ledger
 
