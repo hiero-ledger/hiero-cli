@@ -127,7 +127,6 @@ export class NetworkServiceImpl implements NetworkService {
     return operator || null;
   }
 
-  //@TODO Replace everywhere where the current network is manually retrieved and manually checked whether the operator exists.
   getCurrentOperatorOrThrow(): NetworkOperator {
     const currentNetwork = this.getCurrentNetwork();
     const operator = this.getOperator(currentNetwork);
