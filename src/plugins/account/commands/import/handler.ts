@@ -65,25 +65,25 @@ export async function importAccount(
       };
     }
 
-    // Register name if provided
-    if (alias) {
-      api.alias.register({
-        alias,
-        type: 'account',
-        network: api.network.getCurrentNetwork(),
-        entityId: accountId,
-        publicKey,
-        keyRefId,
-        createdAt: new Date().toISOString(),
-      });
-    }
-
     const evmAddress = buildAccountEvmAddress({
       accountId,
       publicKey,
       keyType: accountInfo.keyAlgorithm,
       existingEvmAddress: accountInfo.evmAddress,
     });
+
+    if (alias) {
+      api.alias.register({
+        alias,
+        type: 'account',
+        network: api.network.getCurrentNetwork(),
+        entityId: accountId,
+        evmAddress,
+        publicKey,
+        keyRefId,
+        createdAt: new Date().toISOString(),
+      });
+    }
 
     // Create account object (no private key in plugin state)
     const account: AccountData = {

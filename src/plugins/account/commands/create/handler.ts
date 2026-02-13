@@ -100,18 +100,6 @@ export async function createAccount(
     );
 
     if (result.success) {
-      if (alias) {
-        api.alias.register({
-          alias,
-          type: ALIAS_TYPE.Account,
-          network,
-          entityId: result.accountId,
-          publicKey,
-          keyRefId,
-          createdAt: result.consensusTimestamp,
-        });
-      }
-
       if (!result.accountId) {
         throw new Error(
           'Transaction completed but did not return an account ID, unable to derive addresses',
@@ -123,6 +111,19 @@ export async function createAccount(
         publicKey: accountCreateResult.publicKey,
         keyType,
       });
+
+      if (alias) {
+        api.alias.register({
+          alias,
+          type: ALIAS_TYPE.Account,
+          network,
+          entityId: result.accountId,
+          evmAddress,
+          publicKey,
+          keyRefId,
+          createdAt: result.consensusTimestamp,
+        });
+      }
 
       const accountData: AccountData = {
         name,

@@ -50,9 +50,13 @@ export async function ownerOfFunctionCall(
 
     const owner = ContractErc721CallOwnerOfResultSchema.parse(queryResult[0]);
 
+    const ownerAlias = api.alias.resolveByEvmAddress(owner, network);
+
     const outputData: ContractErc721CallOwnerOfOutput = {
       contractId,
       owner,
+      ownerAlias: ownerAlias?.alias,
+      ownerEntityId: ownerAlias?.entityId,
       network,
     };
 

@@ -185,6 +185,7 @@ export const makeAliasServiceMock = (options?: {
     register: jest.fn(),
     resolve: jest.fn().mockReturnValue(null),
     resolveOrThrow: jest.fn(),
+    resolveByEvmAddress: jest.fn().mockReturnValue(null),
     list: jest
       .fn()
       .mockImplementation((filter?: { network?: string; type?: string }) => {
