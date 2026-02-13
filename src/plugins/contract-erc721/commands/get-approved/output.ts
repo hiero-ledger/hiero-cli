@@ -3,14 +3,16 @@ import { z } from 'zod';
 import {
   ContractErc721TokenIdSchema,
   EntityIdSchema,
+  EvmAddressSchema,
   NetworkSchema,
 } from '@/core/schemas';
 
 export const ContractErc721CallGetApprovedOutputSchema = z.object({
   contractId: EntityIdSchema,
   tokenId: ContractErc721TokenIdSchema,
-  approved: z.string(),
+  approved: EvmAddressSchema,
   approvedAlias: z.string().optional(),
+  approvedEntityId: EntityIdSchema.optional(),
   network: NetworkSchema,
 });
 
@@ -24,5 +26,8 @@ export const CONTRACT_ERC721_CALL_GET_APPROVED_TEMPLATE = `
    Approved address: {{approved}}
 {{#if approvedAlias}}
    Known as: {{approvedAlias}}
+{{/if}}
+{{#if approvedEntityId}}
+   Account ID: {{hashscanLink approvedEntityId "account" network}}
 {{/if}}
 `.trim();
