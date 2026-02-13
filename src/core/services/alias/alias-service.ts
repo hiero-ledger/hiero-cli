@@ -61,6 +61,23 @@ export class AliasServiceImpl implements AliasService {
     return rec;
   }
 
+  resolveByEvmAddress(
+    evmAddress: string,
+    network: SupportedNetwork,
+  ): AliasRecord | null {
+    const all = this.state.list<AliasRecord>(NAMESPACE) || [];
+    const normalizedAddress = evmAddress.toLowerCase();
+
+    return (
+      all.find(
+        (aliasRecord) =>
+          aliasRecord &&
+          aliasRecord.network === network &&
+          aliasRecord.evmAddress?.toLowerCase() === normalizedAddress,
+      ) ?? null
+    );
+  }
+
   list(filter?: {
     network?: SupportedNetwork;
     type?: AliasType;
