@@ -55,7 +55,7 @@ export async function ownerOfFunctionCall(
     const outputData: ContractErc721CallOwnerOfOutput = {
       contractId,
       owner,
-      ...(ownerAlias && { ownerAlias }),
+      ownerAlias,
       network,
     };
 

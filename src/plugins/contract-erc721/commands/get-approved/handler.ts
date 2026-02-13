@@ -59,7 +59,7 @@ export async function getApprovedFunctionCall(
       contractId,
       tokenId,
       approved,
-      ...(approvedAlias && { approvedAlias }),
+      approvedAlias,
       network,
     };
 
