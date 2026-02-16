@@ -1,0 +1,5 @@
+to,amount,memo
+0.0.12345,10,payment-batch-1
+0.0.67890,5.5,payment-batch-1
+alice,2,tip
+bob,1.25,refund
