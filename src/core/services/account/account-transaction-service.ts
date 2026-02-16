@@ -18,6 +18,7 @@ import {
   PublicKey,
 } from '@hashgraph/sdk';
 
+import { ValidationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 
 export class AccountServiceImpl implements AccountService {
@@ -29,86 +30,99 @@ export class AccountServiceImpl implements AccountService {
   /**
    * Create a new Hedera account
    */
-  createAccount(params: CreateAccountParams): Promise<AccountCreateResult> {
+  createAccount(params: CreateAccountParams): AccountCreateResult {
     this.logger.debug(
       `[ACCOUNT TX] Creating account with params: ${JSON.stringify(params)}`,
     );
 
-    const balance = Hbar.fromTinybars(params.balanceRaw.toString());
+    try {
+      const balance = Hbar.fromTinybars(params.balanceRaw.toString());
 
-    // Create the account creation transaction
-    const publicKey = PublicKey.fromString(params.publicKey);
-    const transaction = new AccountCreateTransaction().setInitialBalance(
-      balance || 0,
-    );
+      const publicKey = PublicKey.fromString(params.publicKey);
+      const transaction = new AccountCreateTransaction().setInitialBalance(
+        balance || 0,
+      );
 
-    // Set the key based on the keyType parameter (defaults to ecdsa if not specified)
-    const keyType = params.keyType || KeyAlgorithm.ECDSA;
-    if (keyType === KeyAlgorithm.ECDSA) {
-      transaction.setECDSAKeyWithAlias(publicKey);
-    } else {
-      transaction.setKeyWithoutAlias(publicKey);
+      const keyType = params.keyType || KeyAlgorithm.ECDSA;
+      if (keyType === KeyAlgorithm.ECDSA) {
+        transaction.setECDSAKeyWithAlias(publicKey);
+      } else {
+        transaction.setKeyWithoutAlias(publicKey);
+      }
+
+      if (params.maxAutoAssociations && params.maxAutoAssociations > 0) {
+        transaction.setMaxAutomaticTokenAssociations(
+          params.maxAutoAssociations,
+        );
+      }
+
+      this.logger.debug(
+        `[ACCOUNT TX] Created transaction for account with key: ${params.publicKey}`,
+      );
+
+      return {
+        transaction,
+        publicKey: params.publicKey,
+      };
+    } catch (error) {
+      throw new ValidationError('Invalid account creation parameters', {
+        context: { publicKey: params.publicKey, balance: params.balanceRaw },
+        cause: error,
+      });
     }
-
-    // Set max automatic token associations if specified
-    if (params.maxAutoAssociations && params.maxAutoAssociations > 0) {
-      transaction.setMaxAutomaticTokenAssociations(params.maxAutoAssociations);
-    }
-
-    this.logger.debug(
-      `[ACCOUNT TX] Created transaction for account with key: ${params.publicKey}`,
-    );
-
-    return Promise.resolve({
-      transaction,
-      publicKey: params.publicKey,
-    });
   }
 
   /**
    * Get account information
    */
-  getAccountInfo(accountId: string): Promise<AccountInfoQuery> {
+  getAccountInfo(accountId: string): AccountInfoQuery {
     this.logger.debug(`[ACCOUNT TX] Getting account info for: ${accountId}`);
 
-    // Create account info query
-    const query = new AccountInfoQuery().setAccountId(
-      AccountId.fromString(accountId),
-    );
+    try {
+      const query = new AccountInfoQuery().setAccountId(
+        AccountId.fromString(accountId),
+      );
 
-    this.logger.debug(
-      `[ACCOUNT TX] Created account info query for: ${accountId}`,
-    );
-    return Promise.resolve(query);
+      this.logger.debug(
+        `[ACCOUNT TX] Created account info query for: ${accountId}`,
+      );
+      return query;
+    } catch (error) {
+      throw new ValidationError('Invalid account ID format', {
+        context: { accountId },
+        cause: error,
+      });
+    }
   }
 
   /**
    * Get account balance
    */
-  getAccountBalance(
-    accountId: string,
-    tokenId?: string,
-  ): Promise<AccountBalanceQuery> {
+  getAccountBalance(accountId: string, tokenId?: string): AccountBalanceQuery {
     this.logger.debug(
       `[ACCOUNT TX] Getting account balance for: ${accountId}${tokenId ? `, token: ${tokenId}` : ''}`,
     );
 
-    // Create account balance query
-    const query = new AccountBalanceQuery().setAccountId(
-      AccountId.fromString(accountId),
-    );
-
-    // Note: AccountBalanceQuery doesn't support token-specific queries
-    // Token balances are included in the general account balance response
-    if (tokenId) {
-      this.logger.debug(
-        `[ACCOUNT TX] Note: Token ID ${tokenId} specified but AccountBalanceQuery returns all token balances`,
+    try {
+      const query = new AccountBalanceQuery().setAccountId(
+        AccountId.fromString(accountId),
       );
-    }
 
-    this.logger.debug(
-      `[ACCOUNT TX] Created account balance query for: ${accountId}`,
-    );
-    return Promise.resolve(query);
+      if (tokenId) {
+        this.logger.debug(
+          `[ACCOUNT TX] Note: Token ID ${tokenId} specified but AccountBalanceQuery returns all token balances`,
+        );
+      }
+
+      this.logger.debug(
+        `[ACCOUNT TX] Created account balance query for: ${accountId}`,
+      );
+      return query;
+    } catch (error) {
+      throw new ValidationError('Invalid account ID format', {
+        context: { accountId, tokenId },
+        cause: error,
+      });
+    }
   }
 }

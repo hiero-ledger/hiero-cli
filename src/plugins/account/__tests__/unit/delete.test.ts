@@ -3,9 +3,9 @@ import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { DeleteAccountOutput } from '@/plugins/account/commands/delete';
 
 import { makeStateMock } from '@/__tests__/mocks/mocks';
+import { NotFoundError } from '@/core/errors';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { NotFoundError } from '@/core/errors';
 import { deleteAccount } from '@/plugins/account/commands/delete/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 

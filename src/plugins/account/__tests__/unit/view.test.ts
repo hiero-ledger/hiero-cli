@@ -11,8 +11,8 @@ import {
   makeMirrorMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { KeyAlgorithm } from '@/core/shared/constants';
 import { NotFoundError } from '@/core/errors';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { viewAccount } from '@/plugins/account/commands/view/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 

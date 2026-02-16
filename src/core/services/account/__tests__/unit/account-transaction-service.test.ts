@@ -10,6 +10,7 @@ import { AccountId, Hbar, PublicKey } from '@hashgraph/sdk';
 
 import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { ValidationError } from '@/core/errors';
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
 import { KeyAlgorithm } from '@/core/shared/constants';
 
@@ -61,14 +62,14 @@ describe('AccountServiceImpl', () => {
   });
 
   describe('createAccount', () => {
-    it('should create account with ECDSA key type', async () => {
+    it('should create account with ECDSA key type', () => {
       const params = {
         balanceRaw: 100_000_000n,
         publicKey: ECDSA_HEX_PUBLIC_KEY,
         keyType: KeyAlgorithm.ECDSA,
       };
 
-      const result = await accountService.createAccount(params);
+      const result = accountService.createAccount(params);
 
       expect(Hbar.fromTinybars).toHaveBeenCalledWith('100000000');
       expect(PublicKey.fromString).toHaveBeenCalledWith(ECDSA_HEX_PUBLIC_KEY);
@@ -83,14 +84,14 @@ describe('AccountServiceImpl', () => {
       expect(result.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
     });
 
-    it('should create account with ED25519 key type', async () => {
+    it('should create account with ED25519 key type', () => {
       const params = {
         balanceRaw: 50_000_000n,
         publicKey: ECDSA_HEX_PUBLIC_KEY,
         keyType: KeyAlgorithm.ED25519,
       };
 
-      const result = await accountService.createAccount(params);
+      const result = accountService.createAccount(params);
 
       expect(mockTransaction.setKeyWithoutAlias).toHaveBeenCalledWith(
         mockPublicKeyInstance,
@@ -100,66 +101,66 @@ describe('AccountServiceImpl', () => {
       expect(result.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
     });
 
-    it('should default to ECDSA when keyType is not specified', async () => {
+    it('should default to ECDSA when keyType is not specified', () => {
       const params = {
         balanceRaw: 100_000_000n,
         publicKey: ECDSA_HEX_PUBLIC_KEY,
       };
 
-      await accountService.createAccount(params);
+      accountService.createAccount(params);
 
       expect(mockTransaction.setECDSAKeyWithAlias).toHaveBeenCalled();
       expect(mockTransaction.setKeyWithoutAlias).not.toHaveBeenCalled();
     });
 
-    it('should set max auto associations when specified', async () => {
+    it('should set max auto associations when specified', () => {
       const params = {
         balanceRaw: 100_000_000n,
         publicKey: ECDSA_HEX_PUBLIC_KEY,
         maxAutoAssociations: 10,
       };
 
-      await accountService.createAccount(params);
+      accountService.createAccount(params);
 
       expect(
         mockTransaction.setMaxAutomaticTokenAssociations,
       ).toHaveBeenCalledWith(10);
     });
 
-    it('should not set max auto associations when not specified', async () => {
+    it('should not set max auto associations when not specified', () => {
       const params = {
         balanceRaw: 100_000_000n,
         publicKey: ECDSA_HEX_PUBLIC_KEY,
       };
 
-      await accountService.createAccount(params);
+      accountService.createAccount(params);
 
       expect(
         mockTransaction.setMaxAutomaticTokenAssociations,
       ).not.toHaveBeenCalled();
     });
 
-    it('should not set max auto associations when value is 0', async () => {
+    it('should not set max auto associations when value is 0', () => {
       const params = {
         balanceRaw: 100_000_000n,
         publicKey: ECDSA_HEX_PUBLIC_KEY,
         maxAutoAssociations: 0,
       };
 
-      await accountService.createAccount(params);
+      accountService.createAccount(params);
 
       expect(
         mockTransaction.setMaxAutomaticTokenAssociations,
       ).not.toHaveBeenCalled();
     });
 
-    it('should log debug messages during account creation', async () => {
+    it('should log debug messages during account creation', () => {
       const params = {
         balanceRaw: 100_000_000n,
         publicKey: ECDSA_HEX_PUBLIC_KEY,
       };
 
-      await accountService.createAccount(params);
+      accountService.createAccount(params);
 
       expect(logger.debug).toHaveBeenCalledWith(
         expect.stringContaining('[ACCOUNT TX] Creating account with params:'),
@@ -171,7 +172,7 @@ describe('AccountServiceImpl', () => {
       );
     });
 
-    it('should handle zero balance by using 0 as fallback', async () => {
+    it('should handle zero balance by using 0 as fallback', () => {
       const { Hbar: HbarMock } = jest.requireMock('@hashgraph/sdk');
       HbarMock.fromTinybars.mockReturnValueOnce(null);
 
@@ -180,17 +181,57 @@ describe('AccountServiceImpl', () => {
         publicKey: ECDSA_HEX_PUBLIC_KEY,
       };
 
-      await accountService.createAccount(params);
+      accountService.createAccount(params);
 
       expect(mockTransaction.setInitialBalance).toHaveBeenCalledWith(0);
+    });
+
+    it('should throw ValidationError when PublicKey.fromString fails', () => {
+      const { PublicKey: PublicKeyMock } = jest.requireMock('@hashgraph/sdk');
+      const sdkError = new Error('Invalid public key format');
+      PublicKeyMock.fromString.mockImplementation(() => {
+        throw sdkError;
+      });
+
+      const params = {
+        balanceRaw: 100_000_000n,
+        publicKey: 'invalid-key',
+      };
+
+      expect(accountService.createAccount(params)).rejects.toThrow(
+        expect.objectContaining({
+          message: 'Invalid account creation parameters',
+        }),
+      );
+
+      PublicKeyMock.fromString.mockReturnValue(mockPublicKeyInstance);
+    });
+
+    it('should throw ValidationError when Hbar.fromTinybars fails', async () => {
+      const { Hbar: HbarMock } = jest.requireMock('@hashgraph/sdk');
+      const sdkError = new Error('Invalid balance value');
+      HbarMock.fromTinybars.mockImplementation(() => {
+        throw sdkError;
+      });
+
+      const params = {
+        balanceRaw: -100n,
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
+      };
+
+      await expect(accountService.createAccount(params)).rejects.toThrow(
+        ValidationError,
+      );
+
+      HbarMock.fromTinybars.mockReturnValue(mockHbarInstance);
     });
   });
 
   describe('getAccountInfo', () => {
-    it('should create account info query with correct account ID', async () => {
+    it('should create account info query with correct account ID', () => {
       const accountId = '0.0.1234';
 
-      const result = await accountService.getAccountInfo(accountId);
+      const result = accountService.getAccountInfo(accountId);
 
       expect(AccountId.fromString).toHaveBeenCalledWith(accountId);
       expect(mockInfoQuery.setAccountId).toHaveBeenCalledWith(
@@ -199,10 +240,10 @@ describe('AccountServiceImpl', () => {
       expect(result).toBe(mockInfoQuery);
     });
 
-    it('should log debug messages when getting account info', async () => {
+    it('should log debug messages when getting account info', () => {
       const accountId = '0.0.5678';
 
-      await accountService.getAccountInfo(accountId);
+      accountService.getAccountInfo(accountId);
 
       expect(logger.debug).toHaveBeenCalledWith(
         '[ACCOUNT TX] Getting account info for: 0.0.5678',
@@ -211,13 +252,31 @@ describe('AccountServiceImpl', () => {
         '[ACCOUNT TX] Created account info query for: 0.0.5678',
       );
     });
+
+    it('should throw ValidationError when AccountId.fromString fails', async () => {
+      const { AccountId: AccountIdMock } = jest.requireMock('@hashgraph/sdk');
+      const sdkError = new Error('Invalid account ID format');
+      AccountIdMock.fromString.mockImplementation(() => {
+        throw sdkError;
+      });
+
+      await expect(
+        accountService.getAccountInfo('invalid-account-id'),
+      ).rejects.toThrow(
+        expect.objectContaining({
+          message: 'Invalid account ID format',
+        }),
+      );
+
+      AccountIdMock.fromString.mockReturnValue(mockAccountIdInstance);
+    });
   });
 
   describe('getAccountBalance', () => {
-    it('should create account balance query with correct account ID', async () => {
+    it('should create account balance query with correct account ID', () => {
       const accountId = '0.0.1234';
 
-      const result = await accountService.getAccountBalance(accountId);
+      const result = accountService.getAccountBalance(accountId);
 
       expect(AccountId.fromString).toHaveBeenCalledWith(accountId);
       expect(mockBalanceQuery.setAccountId).toHaveBeenCalledWith(
@@ -226,10 +285,10 @@ describe('AccountServiceImpl', () => {
       expect(result).toBe(mockBalanceQuery);
     });
 
-    it('should log debug messages when getting account balance', async () => {
+    it('should log debug messages when getting account balance', () => {
       const accountId = '0.0.9999';
 
-      await accountService.getAccountBalance(accountId);
+      accountService.getAccountBalance(accountId);
 
       expect(logger.debug).toHaveBeenCalledWith(
         '[ACCOUNT TX] Getting account balance for: 0.0.9999',
@@ -239,11 +298,11 @@ describe('AccountServiceImpl', () => {
       );
     });
 
-    it('should log token ID note when token ID is provided', async () => {
+    it('should log token ID note when token ID is provided', () => {
       const accountId = '0.0.1234';
       const tokenId = '0.0.5555';
 
-      await accountService.getAccountBalance(accountId, tokenId);
+      accountService.getAccountBalance(accountId, tokenId);
 
       expect(logger.debug).toHaveBeenCalledWith(
         '[ACCOUNT TX] Getting account balance for: 0.0.1234, token: 0.0.5555',
@@ -253,14 +312,49 @@ describe('AccountServiceImpl', () => {
       );
     });
 
-    it('should not log token note when token ID is not provided', async () => {
+    it('should not log token note when token ID is not provided', () => {
       const accountId = '0.0.1234';
 
-      await accountService.getAccountBalance(accountId);
+      accountService.getAccountBalance(accountId);
 
       expect(logger.debug).not.toHaveBeenCalledWith(
         expect.stringContaining('Token ID'),
       );
+    });
+
+    it('should throw ValidationError when AccountId.fromString fails', () => {
+      const { AccountId: AccountIdMock } = jest.requireMock('@hashgraph/sdk');
+      const sdkError = new Error('Invalid account ID format');
+      AccountIdMock.fromString.mockImplementation(() => {
+        throw sdkError;
+      });
+
+      expect(
+        accountService.getAccountBalance('invalid-account-id'),
+      ).rejects.toThrow(
+        expect.objectContaining({
+          message: 'Invalid account ID format',
+        }),
+      );
+
+      AccountIdMock.fromString.mockReturnValue(mockAccountIdInstance);
+    });
+
+    it('should throw ValidationError with token context when provided', async () => {
+      const { AccountId: AccountIdMock } = jest.requireMock('@hashgraph/sdk');
+      const sdkError = new Error('Invalid account ID format');
+      AccountIdMock.fromString.mockImplementation(() => {
+        throw sdkError;
+      });
+
+      const accountId = 'invalid-account-id';
+      const tokenId = '0.0.5555';
+
+      await expect(
+        accountService.getAccountBalance(accountId, tokenId),
+      ).rejects.toThrow(ValidationError);
+
+      AccountIdMock.fromString.mockReturnValue(mockAccountIdInstance);
     });
   });
 });
