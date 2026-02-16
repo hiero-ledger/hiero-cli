@@ -76,7 +76,7 @@ export async function createAccount(
     ['account:create', `account:${name}`],
   );
 
-  const accountCreateResult = await api.account.createAccount({
+  const accountCreateResult = api.account.createAccount({
     balanceRaw: balance,
     maxAutoAssociations,
     publicKey,

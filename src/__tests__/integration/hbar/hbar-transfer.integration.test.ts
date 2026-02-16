@@ -41,7 +41,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
 
     expect(createAccountResult.status).toBe(Status.Success);
     const createAccountOutput: CreateAccountOutput = JSON.parse(
-      createAccountResult.outputJson!,
+      createAccountResult.outputJson,
     );
     expect(createAccountOutput.name).toBe('account-transfer');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
@@ -86,7 +86,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     });
     expect(viewAccountResult.status).toBe(Status.Success);
     const viewAccountOutput: ViewAccountOutput = JSON.parse(
-      viewAccountResult.outputJson!,
+      viewAccountResult.outputJson,
     );
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
     expect(viewAccountOutput.balance).toBe('200000000'); // result in tinybars
@@ -111,7 +111,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
 
     expect(accountFromResult.status).toBe(Status.Success);
     const accountFromOutput: CreateAccountOutput = JSON.parse(
-      accountFromResult.outputJson!,
+      accountFromResult.outputJson,
     );
     expect(accountFromOutput.name).toBe('account-transfer-from');
     expect(accountFromOutput.type).toBe(KeyAlgorithm.ECDSA);
@@ -133,7 +133,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
 
     expect(accountToResult.status).toBe(Status.Success);
     const accountToOutput: CreateAccountOutput = JSON.parse(
-      accountToResult.outputJson!,
+      accountToResult.outputJson,
     );
     expect(accountToOutput.name).toBe('account-transfer-to');
     expect(accountToOutput.type).toBe(KeyAlgorithm.ECDSA);
@@ -177,7 +177,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     });
     expect(viewAccountFromResult.status).toBe(Status.Success);
     const viewAccountFromOutput: ViewAccountOutput = JSON.parse(
-      viewAccountFromResult.outputJson!,
+      viewAccountFromResult.outputJson,
     );
     expect(viewAccountFromOutput.accountId).toBe(accountFromOutput.accountId);
     expect(viewAccountFromOutput.publicKey).toBe(accountFromOutput.publicKey);
@@ -194,7 +194,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     });
     expect(viewAccountToResult.status).toBe(Status.Success);
     const viewAccountToOutput: ViewAccountOutput = JSON.parse(
-      viewAccountToResult.outputJson!,
+      viewAccountToResult.outputJson,
     );
     expect(viewAccountToOutput.accountId).toBe(accountToOutput.accountId);
     expect(viewAccountToOutput.balance).toBe('200000000'); // result in tinybars

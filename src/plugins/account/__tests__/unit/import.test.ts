@@ -14,8 +14,8 @@ import {
   makeNetworkMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { KeyAlgorithm } from '@/core/shared/constants';
 import { ValidationError } from '@/core/errors';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { importAccount } from '@/plugins/account/commands/import/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 

@@ -12,7 +12,6 @@ import {
 } from '@/__tests__/mocks/fixtures';
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { ValidationError, TransactionError } from '@/core/errors';
 import { createAccount } from '@/plugins/account/commands/create/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
