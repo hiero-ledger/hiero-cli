@@ -67,8 +67,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           short: 'c',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Smart contract ID represented by alias or contract ID. Option required',
+          description: 'Smart contract ID represented by alias or contract ID',
         },
       ],
       handler: nameFunctionCall,
@@ -87,8 +86,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           short: 'c',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Smart contract ID represented by alias or contract ID. Option required',
+          description: 'Smart contract ID represented by alias or contract ID',
         },
       ],
       handler: symbolFunctionCall,
@@ -107,8 +105,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           short: 'c',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Smart contract ID represented by alias or contract ID. Option required',
+          description: 'Smart contract ID represented by alias or contract ID',
         },
       ],
       handler: decimalsFunctionCall,
@@ -127,8 +124,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           short: 'c',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Smart contract ID represented by alias or contract ID. Option required',
+          description: 'Smart contract ID represented by alias or contract ID',
         },
         {
           name: 'owner',
@@ -136,7 +132,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Owner account represented by alias, account ID or EVM address. Option required',
+            'Owner account represented by alias, account ID or EVM address',
         },
         {
           name: 'spender',
@@ -144,7 +140,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Spender account represented by alias, account ID or EVM address. Option required',
+            'Spender account represented by alias, account ID or EVM address',
         },
       ],
       handler: allowanceFunctionCall,
@@ -163,8 +159,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           short: 'c',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Smart contract ID represented by alias or contract ID. Option required',
+          description: 'Smart contract ID represented by alias or contract ID',
         },
         {
           name: 'account',
@@ -172,7 +167,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Account represented by alias, account ID, or EVM address. Option required',
+            'Account represented by alias, account ID, or EVM address',
         },
       ],
       handler: balanceOfFunctionCall,
@@ -192,7 +187,23 @@ export const contractErc20PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+            'Smart contract ID represented by alias, contract ID or EVM address',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "to" in transfer function represented by alias, account ID or EVM address',
+        },
+        {
+          name: 'value',
+          short: 'v',
+          type: OptionType.NUMBER,
+          required: true,
+          description:
+            'Parameter "value" in transfer function represented by a number',
         },
         {
           name: 'gas',
@@ -201,22 +212,6 @@ export const contractErc20PluginManifest: PluginManifest = {
           required: false,
           default: 100000,
           description: 'Gas for function call. Default: 100000',
-        },
-        {
-          name: 'to',
-          short: 't',
-          type: OptionType.STRING,
-          required: true,
-          description:
-            'Parameter "to" in transfer function represented by alias, account ID or EVM address. Option required',
-        },
-        {
-          name: 'value',
-          short: 'v',
-          type: OptionType.NUMBER,
-          required: true,
-          description:
-            'Parameter "value" in transfer function represented by a number. Option required',
         },
       ],
       handler: transferFunctionCall,
@@ -236,7 +231,31 @@ export const contractErc20PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+            'Smart contract ID represented by alias, contract ID or EVM address',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "from" in transferFrom function represented by alias, account ID or EVM address',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "to" (recipient) in transferFrom function represented by alias, account ID or EVM address',
+        },
+        {
+          name: 'value',
+          short: 'v',
+          type: OptionType.NUMBER,
+          required: true,
+          description:
+            'Parameter "value" in transferFrom function represented by a number',
         },
         {
           name: 'gas',
@@ -245,30 +264,6 @@ export const contractErc20PluginManifest: PluginManifest = {
           required: false,
           default: 100000,
           description: 'Gas for function call. Default: 100000',
-        },
-        {
-          name: 'from',
-          short: 'f',
-          type: OptionType.STRING,
-          required: true,
-          description:
-            'Parameter "from" in transferFrom function represented by alias, account ID or EVM address. Option required',
-        },
-        {
-          name: 'to',
-          short: 't',
-          type: OptionType.STRING,
-          required: true,
-          description:
-            'Parameter "to" (recipient) in transferFrom function represented by alias, account ID or EVM address. Option required',
-        },
-        {
-          name: 'value',
-          short: 'v',
-          type: OptionType.NUMBER,
-          required: true,
-          description:
-            'Parameter "value" in transferFrom function represented by a number. Option required',
         },
       ],
       handler: transferFromFunctionCall,
@@ -288,7 +283,23 @@ export const contractErc20PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+            'Smart contract ID represented by alias, contract ID or EVM address',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "spender" in approve function represented by alias, account ID or EVM address',
+        },
+        {
+          name: 'value',
+          short: 'v',
+          type: OptionType.NUMBER,
+          required: true,
+          description:
+            'Parameter "value" in approve function represented by a number',
         },
         {
           name: 'gas',
@@ -297,22 +308,6 @@ export const contractErc20PluginManifest: PluginManifest = {
           required: false,
           default: 100000,
           description: 'Gas for function call. Default: 100000',
-        },
-        {
-          name: 'spender',
-          short: 's',
-          type: OptionType.STRING,
-          required: true,
-          description:
-            'Parameter "spender" in approve function represented by alias, account ID or EVM address. Option required',
-        },
-        {
-          name: 'value',
-          short: 'v',
-          type: OptionType.NUMBER,
-          required: true,
-          description:
-            'Parameter "value" in approve function represented by a number. Option required',
         },
       ],
       handler: approveFunctionCall,
@@ -331,8 +326,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           short: 'c',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Smart contract ID represented by alias or contract ID. Option required',
+          description: 'Smart contract ID represented by alias or contract ID',
         },
       ],
       handler: totalSupplyFunctionCall,
