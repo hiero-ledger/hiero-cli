@@ -142,8 +142,7 @@ export const pluginManagementManifest: PluginManifest = {
           short: 'n',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Name of the plugin for information display. Option required.',
+          description: 'Name of the plugin for information display',
         },
       ],
       handler: getPluginInfo,

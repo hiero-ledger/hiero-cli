@@ -181,20 +181,20 @@ export const tokenPluginManifest: PluginManifest = {
           description: 'Destination account: either an alias or account-id',
         },
         {
-          name: 'from',
-          short: 'f',
-          type: OptionType.STRING,
-          required: false,
-          description:
-            'Source account: either a stored alias or account-id:private-key or account-id:key-type:private-key pair',
-        },
-        {
           name: 'amount',
           short: 'a',
           type: OptionType.STRING,
           required: true,
           description:
             'Amount to transfer. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "100t")',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Source account: either a stored alias or account-id:private-key or account-id:key-type:private-key pair',
         },
         {
           name: 'key-manager',
@@ -231,20 +231,20 @@ export const tokenPluginManifest: PluginManifest = {
           description: 'Destination account: either an alias or account-id',
         },
         {
-          name: 'from',
-          short: 'f',
-          type: OptionType.STRING,
-          required: false,
-          description:
-            'Source account: either a stored alias or account-id:private-key pair',
-        },
-        {
           name: 'serials',
           short: 's',
           type: OptionType.STRING,
           required: true,
           description:
             'NFT serial numbers to transfer (comma-separated list, e.g., "1,2,3")',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Source account: either a stored alias or account-id:private-key pair',
         },
         {
           name: 'key-manager',
@@ -271,14 +271,14 @@ export const tokenPluginManifest: PluginManifest = {
           short: 'T',
           type: OptionType.STRING,
           required: true,
-          description: 'Fungible token name. Option required.',
+          description: 'Fungible token name',
         },
         {
           name: 'symbol',
           short: 'Y',
           type: OptionType.STRING,
           required: true,
-          description: 'Fungible token symbol. Option required.',
+          description: 'Fungible token symbol',
         },
         {
           name: 'treasury',
@@ -378,14 +378,14 @@ export const tokenPluginManifest: PluginManifest = {
           short: 'T',
           type: OptionType.STRING,
           required: true,
-          description: 'Token name. Option required.',
+          description: 'Token name',
         },
         {
           name: 'symbol',
           short: 'Y',
           type: OptionType.STRING,
           required: true,
-          description: 'Token symbol. Option required.',
+          description: 'Token symbol',
         },
         {
           name: 'treasury',
