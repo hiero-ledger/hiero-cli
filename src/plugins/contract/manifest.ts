@@ -37,8 +37,7 @@ export const contractPluginManifest: PluginManifest = {
           short: 'n',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Smart contract name represented in the state. Option required',
+          description: 'Smart contract name represented in the state',
         },
         {
           name: 'file',
@@ -46,7 +45,7 @@ export const contractPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Smart contract definition file path (absolute or relative) to a Solidity file. Option required',
+            'Smart contract definition file path (absolute or relative) to a Solidity file',
         },
         {
           name: 'base-path',
