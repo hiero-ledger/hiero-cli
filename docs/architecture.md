@@ -39,6 +39,9 @@ The Hiero CLI is built on a plugin-based architecture designed to be extensible,
 │  ├── Credentials Plugin                                     │
 │  ├── Config Plugin                                          │
 │  ├── Plugin Management Plugin                               │
+│  ├── Contract Plugin                                        │
+│  ├── Contract ERC-20 Plugin                                 │
+│  ├── Contract ERC-721 Plugin                                │
 │  └── [Custom Plugins]                                       │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -51,7 +54,7 @@ The plugin architecture follows these key principles:
 
 1. **Stateless Plugins**: Plugins are functionally stateless
 2. **Dependency Injection**: Services are injected into command handlers
-3. **Manifest-Driven**: Plugins declare their capabilities via manifests
+3. **Manifest-Driven**: Plugins declare commands and output specs via manifests
 4. **Namespace Isolation**: Each plugin has its own state namespace
 5. **Type Safety**: Full TypeScript support throughout
 
@@ -69,7 +72,7 @@ Plugins are regular TypeScript modules located under `src/plugins/<plugin-name>/
 
 ```
 plugin/
-├── manifest.ts              # Plugin manifest (name, capabilities, commands, output specs)
+├── manifest.ts              # Plugin manifest (name, commands, output specs)
 ├── schema.ts                # State/output schemas (Zod + JSON Schema)
 ├── commands/                # One folder per command
 │   ├── create/
@@ -104,7 +107,7 @@ For a detailed, step‑by‑step plugin development guide, see [`PLUGIN_ARCHITEC
 
 ```typescript
 interface AccountService {
-  createAccount(params: CreateAccountParams): Promise<AccountCreationResult>;
+  createAccount(params: CreateAccountParams): Promise<AccountCreateResult>;
   // ... other methods
 }
 ```
@@ -224,7 +227,7 @@ The service supports the following option types:
 Configuration options include:
 
 - `ed25519_support_enabled` (boolean, default: false)
-- `default_key_manager` (enum: 'local' | 'encrypted_local', default: 'local')
+- `default_key_manager` (enum: 'local' | 'local_encrypted', default: 'local')
 - `log_level` (enum: 'silent' | 'error' | 'warn' | 'info' | 'debug', default: 'silent')
 - `skip_confirmations` (boolean, default: false)
 
@@ -342,7 +345,6 @@ Core API
 
 - Plugins cannot access other plugins' state
 - Namespace-based isolation
-- Capability-based access control
 
 ### 3. Network Security
 
@@ -352,11 +354,11 @@ Core API
 
 ## 📊 Performance Considerations
 
-### 1. Lazy Loading
+### 1. Plugin Loading
 
-- Plugins are loaded on-demand
-- Services are initialized only when needed
-- Command handlers are loaded per execution
+- All enabled plugins are loaded at CLI startup
+- Services are initialized when the Core API is created
+- Command handlers are invoked per execution
 
 ### 2. State Management
 
@@ -431,7 +433,6 @@ Core API
 
 - Easy to add new plugins
 - Plugin isolation prevents conflicts
-- Capability-based access control
 
 ### 2. Service Architecture
 
@@ -444,26 +445,6 @@ Core API
 - Namespace isolation
 - Schema validation
 - Efficient storage and retrieval
-
-## 🎯 Future Enhancements
-
-### 1. Plugin Marketplace
-
-- Plugin discovery and installation
-- Version management
-- Dependency resolution
-
-### 2. Enhanced Security
-
-- Plugin sandboxing
-- Capability restrictions
-- Audit logging
-
-### 3. Performance Improvements
-
-- Plugin hot-reloading
-- Service caching
-- Network optimization
 
 ## 📚 Related Documentation
 

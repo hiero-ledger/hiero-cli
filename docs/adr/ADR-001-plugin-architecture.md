@@ -39,8 +39,8 @@ Non-goals (v1):
 
 ## Architecture Sketch
 
-- `@hedera/cli` (binary): boot, config/profile, plugin discovery, command registry
-- `@hedera/cli-core` (types/runtime contracts):
+- `@hiero-ledger/hiero-cli` (binary): boot, config/profile, plugin discovery, command registry
+- Core (types/runtime contracts):
   - Types for `PluginManifest`, `CommandSpec`, `CommandHandlerArgs`
   - Loader responsibilities: discovery, validation, capability gating, lifecycle (`init/teardown`)
 
@@ -124,7 +124,7 @@ export interface PluginContext {
 
 ## Testing
 
-- Provide `@hedera/cli-core/testing` mocks for `api/state/signer`.
+- Provide testing mocks for `api`, `state`, `logger`, and related services (see `src/__tests__/mocks/mocks.ts`). Plugin-specific mocks live in `src/plugins/<plugin>/__tests__/unit/helpers/mocks.ts`.
 - Expect unit tests with mocks and a happy-path integration suite against localnet.
 - Plugin lifecycle methods should be testable in isolation with mocked context objects.
 

@@ -118,7 +118,7 @@ Users can disable encryption entirely for development and testing scenarios:
 **Configuration Method:**
 
 - First-run wizard will prompt: "Enable key encryption? (Recommended for production, can be disabled for local development)"
-- In the future, it can be toggled via: `hedera config set encryption true|false`
+- Key storage mode is configurable via: `hcli config set -o default_key_manager -v local|local_encrypted`
 
 **When Encryption is Disabled:**
 
