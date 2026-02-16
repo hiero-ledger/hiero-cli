@@ -622,6 +622,8 @@ Define clear, descriptive command options. Each option can have both a long form
 }
 ```
 
+When an option has `required: true`, the CLI automatically appends `(required)` to its description in help output.
+
 **Usage in CLI:**
 Both long and short forms can be used interchangeably:
 
