@@ -5,6 +5,7 @@
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { ValidationError } from '@/core/errors';
 import { HbarServiceImpl } from '@/core/services/hbar/hbar-service';
 
 const ACCOUNT_ID_FROM_1 = '0.0.1111';
@@ -158,6 +159,78 @@ describe('HbarServiceImpl', () => {
 
       expect(Hbar).toHaveBeenCalledWith('-100000000000000', HbarUnit.Tinybar);
       expect(Hbar).toHaveBeenCalledWith('100000000000000', HbarUnit.Tinybar);
+    });
+
+    it('should throw ValidationError when from account ID is invalid', async () => {
+      expect.assertions(2);
+
+      (AccountId.fromString as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('Invalid account ID format');
+      });
+
+      const params = {
+        amount: 100_000_000n,
+        from: 'invalid-account',
+        to: ACCOUNT_ID_TO_1,
+      };
+
+      try {
+        await hbarService.transferTinybar(params);
+      } catch (error) {
+        expect(error).toBeInstanceOf(ValidationError);
+        if (error instanceof ValidationError) {
+          expect(error.message).toBe('Invalid transfer parameters');
+        }
+      }
+    });
+
+    it('should throw ValidationError when to account ID is invalid', async () => {
+      expect.assertions(1);
+
+      (AccountId.fromString as jest.Mock)
+        .mockReturnValueOnce({})
+        .mockImplementationOnce(() => {
+          throw new Error('Invalid account ID format');
+        });
+
+      const params = {
+        amount: 100_000_000n,
+        from: ACCOUNT_ID_FROM_1,
+        to: 'invalid-account',
+      };
+
+      try {
+        await hbarService.transferTinybar(params);
+      } catch (error) {
+        expect(error).toBeInstanceOf(ValidationError);
+      }
+    });
+
+    it('should throw ValidationError with context when transfer fails', async () => {
+      expect.assertions(2);
+
+      (AccountId.fromString as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('Invalid format');
+      });
+
+      const params = {
+        amount: 100_000_000n,
+        from: 'bad-format',
+        to: ACCOUNT_ID_TO_1,
+      };
+
+      try {
+        await hbarService.transferTinybar(params);
+      } catch (error) {
+        expect(error).toBeInstanceOf(ValidationError);
+        if (error instanceof ValidationError) {
+          expect(error.context).toEqual({
+            from: 'bad-format',
+            to: ACCOUNT_ID_TO_1,
+            amount: '100000000',
+          });
+        }
+      }
     });
   });
 });
