@@ -5,6 +5,7 @@
 import type { StateService } from '@/core/services/state/state-service.interface';
 
 import { makeStateMock } from '@/__tests__/mocks/mocks';
+import { ValidationError } from '@/core/errors';
 import { ConfigServiceImpl } from '@/core/services/config/config-service';
 
 describe('ConfigServiceImpl', () => {
@@ -109,7 +110,7 @@ describe('ConfigServiceImpl', () => {
 
     it('should throw error for unknown option', () => {
       expect(() => configService.getOption('unknown_option')).toThrow(
-        'Unknown config option: unknown_option',
+        ValidationError,
       );
     });
 
@@ -151,14 +152,14 @@ describe('ConfigServiceImpl', () => {
 
     it('should throw error for unknown option', () => {
       expect(() => configService.setOption('unknown_option', 'value')).toThrow(
-        'Unknown config option: unknown_option',
+        ValidationError,
       );
     });
 
     it('should throw error when setting non-boolean for boolean option', () => {
       expect(() =>
         configService.setOption('ed25519_support_enabled', 'not_boolean'),
-      ).toThrow('Invalid value for ed25519_support_enabled: expected boolean');
+      ).toThrow(ValidationError);
     });
 
     it('should set enum option with valid value', () => {
@@ -173,13 +174,13 @@ describe('ConfigServiceImpl', () => {
 
     it('should throw error for invalid enum value', () => {
       expect(() => configService.setOption('log_level', 'invalid')).toThrow(
-        'Invalid value for log_level: expected one of (silent, error, warn, info, debug)',
+        ValidationError,
       );
     });
 
     it('should throw error when setting non-string for enum option', () => {
       expect(() => configService.setOption('log_level', 123)).toThrow(
-        'Invalid value for log_level: expected one of (silent, error, warn, info, debug)',
+        ValidationError,
       );
     });
 
