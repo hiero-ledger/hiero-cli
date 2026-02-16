@@ -136,7 +136,7 @@ Each plugin manifest now includes `output` specifications for commands. Use Zod 
 #### Using Zod Schemas (Recommended)
 
 ```typescript
-import { EntityIdSchema, NetworkSchema, KeyTypeSchema } from '../../core/schemas/common-schemas';
+import { EntityIdSchema, NetworkSchema, KeyTypeSchema } from '@/core/schemas';
 import { z } from 'zod';
 
 // Define your output schema using Zod
@@ -152,7 +152,7 @@ const CreateAccountOutputSchema = z.object({
   name: 'create',
   summary: 'Create a new account',
   // ... options ...
-  handler: './index',
+  handler: createHandler, // Function reference, not string
   output: {
     schema: CreateAccountOutputSchema, // Use Zod schema directly
     humanTemplate: '✅ Account created: {{accountId}}\n   Name: {{name}}'
@@ -759,7 +759,7 @@ import {
   TransactionIdSchema,
   NetworkSchema,
   // ... other schemas
-} from '../../core/schemas/common-schemas';
+} from '@/core/schemas';
 
 // Define your output schema using Zod
 const MyCommandOutputSchema = z.object({
@@ -787,7 +787,7 @@ const MY_COMMAND_OUTPUT_SCHEMA = zodToJsonSchema(MyCommandOutputSchema);
 
 ```typescript
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { EntityIdSchema, NetworkSchema, TransactionIdSchema } from '../../core/schemas/common-schemas';
+import { EntityIdSchema, NetworkSchema, TransactionIdSchema } from '@/core/schemas';
 import { z } from 'zod';
 
 // Generate JSON schemas on-demand
@@ -823,7 +823,7 @@ const TRANSACTION_ID_JSON_SCHEMA = zodToJsonSchema(TransactionIdSchema);
 
 ```typescript
 import { MyCommandOutputSchema } from './output';
-import { Status } from '../../core/shared/constants';
+import { Status } from '@/core/shared/constants';
 
 export async function myCommandHandler(args: CommandHandlerArgs) {
   // ... command logic ...
@@ -892,10 +892,7 @@ The CLI (when implemented) will:
 
 ```typescript
 import { z } from 'zod';
-import {
-  EntityIdSchema,
-  NetworkSchema,
-} from '../../core/schemas/common-schemas';
+import { EntityIdSchema, NetworkSchema } from '@/core/schemas';
 
 // Define schema
 const MyOutputSchema = z.object({
@@ -936,7 +933,7 @@ try {
 1. Add `output` field to all command specifications in manifest
 2. Define JSON schema for command outputs (or use Zod with conversion)
 3. Provide human-readable templates (optional but recommended)
-4. Update command handlers to return `CommandExecutionResult` (future)
+4. Update command handlers to return `CommandExecutionResult` (implemented per ADR-003)
 5. Test schemas with sample outputs
 
 #### Example Migration
@@ -945,10 +942,7 @@ try {
 
 ```typescript
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import {
-  EntityIdSchema,
-  NetworkSchema,
-} from '../../core/schemas/common-schemas';
+import { EntityIdSchema, NetworkSchema } from '@/core/schemas';
 
 // Generate JSON schemas on-demand
 const ENTITY_ID_JSON_SCHEMA = zodToJsonSchema(EntityIdSchema);
@@ -970,7 +964,7 @@ const schema = {
 ```typescript
 import { z } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
-import { EntityIdSchema } from '../../core/schemas/common-schemas';
+import { EntityIdSchema } from '@/core/schemas';
 
 const MyOutputSchema = z.object({
   accountId: EntityIdSchema,

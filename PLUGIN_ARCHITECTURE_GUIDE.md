@@ -54,24 +54,18 @@ my-plugin/
 Every plugin must have a `manifest.ts` file that declares its capabilities:
 
 ```typescript
-import { PluginManifest } from '../../core/plugins/plugin.interface';
+import type { PluginManifest } from '@/core';
 import {
   MyPluginCreateOutputSchema,
   MY_PLUGIN_CREATE_TEMPLATE,
 } from './commands/create';
 import { createHandler } from './commands/create/handler';
-import { MY_PLUGIN_NAMESPACE, MY_PLUGIN_JSON_SCHEMA } from './schema';
 
 export const myPluginManifest: PluginManifest = {
   name: 'my-plugin',
   version: '1.0.0',
   displayName: 'My Plugin',
   description: 'A custom plugin for Hiero CLI',
-  capabilities: [
-    'state:namespace:my-plugin-data',
-    'network:read',
-    'signing:use',
-  ],
   commands: [
     {
       name: 'create',
@@ -100,20 +94,6 @@ export const myPluginManifest: PluginManifest = {
       },
     },
   ],
-  stateSchemas: [
-    {
-      namespace: MY_PLUGIN_NAMESPACE,
-      version: 1,
-      jsonSchema: MY_PLUGIN_JSON_SCHEMA,
-      scope: 'profile',
-    },
-  ],
-  init: async (context) => {
-    console.log('[MY PLUGIN] Initializing...');
-  },
-  teardown: async (context) => {
-    console.log('[MY PLUGIN] Cleaning up...');
-  },
 };
 ```
 
@@ -390,44 +370,23 @@ import { createHandler } from '../commands/create/handler';
 import { listHandler } from '../commands/list/handler';
 import { CommandHandlerArgs } from '../../../core/plugins/plugin.interface';
 import { Status } from '../../../core/shared/constants';
-import {
-  makeLogger,
-  makeArgs,
-} from '../../../core/shared/__tests__/helpers/mocks';
+import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { makeApiMocks } from './helpers/mocks';
 
 describe('Handler Integration', () => {
   it('should create and list items together', async () => {
     const logger = makeLogger();
     const api = makeApiMocks();
-    const state = {
-      set: jest.fn(),
-      get: jest.fn(),
-      has: jest.fn(),
-    };
-
-    const createArgs: CommandHandlerArgs = {
-      args: { name: 'test-item' },
-      api,
-      state,
-      logger,
-    };
+    const createArgs = makeArgs(api, logger, { name: 'test-item' });
 
     // Create an item
     const createResult = await createHandler(createArgs);
     expect(createResult.status).toBe(Status.Success);
-    expect(state.set).toHaveBeenCalled();
+    expect(createArgs.state.set).toHaveBeenCalled();
 
-    // List items
-    const listArgs: CommandHandlerArgs = {
-      args: {},
-      api,
-      state: {
-        ...state,
-        list: jest.fn().mockReturnValue([{ name: 'test-item' }]),
-      },
-      logger,
-    };
+    // List items (state mock returns list data)
+    const listArgs = makeArgs(api, logger, {});
+    (listArgs.state.list as jest.Mock).mockReturnValue([{ name: 'test-item' }]);
 
     const listResult = await listHandler(listArgs);
     expect(listResult.status).toBe(Status.Success);
@@ -542,51 +501,26 @@ npm publish
 
 ## 🚀 Advanced Plugin Development
 
-### 1. Plugin Dependencies
+### 1. State Management
 
-Plugins can depend on other plugins:
-
-```typescript
-// In manifest.ts
-export const myPluginManifest: PluginManifest = {
-  // ... other properties
-  dependencies: ['account', 'credentials'],
-  // ...
-};
-```
-
-### 2. Custom Services
-
-Plugins can provide their own services:
+Plugins access state via `args.state` (or `api.state`) injected into handlers. Use `state.set` and `state.get` with a plugin-specific namespace for persistence:
 
 ```typescript
-// In manifest.ts
-export const myPluginManifest: PluginManifest = {
-  // ... other properties
-  services: [
-    {
-      name: 'my-service',
-      interface: 'MyServiceInterface',
-      implementation: './services/my-service',
-    },
-  ],
-  // ...
-};
+// In handler.ts
+const { state } = args;
+state.set('my-plugin-data', key, data);
+const data = state.get<MyData>('my-plugin-data', key);
 ```
 
-### 3. Plugin Events
+For more complex state operations (list, getKeys, etc.), use `StateService` methods. See existing plugins (e.g. `account`, `token`, `contract`) for patterns using `zustand-state-helper` or direct state access.
 
-Plugins can emit and listen to events:
+### 2. Reusing Core Services
 
-```typescript
-// Emit events
-api.events.emit('my-plugin:item-created', { itemId: '123' });
+Handlers receive `api` (CoreApi) with all Hedera services. Use `api.account`, `api.token`, `api.mirror`, `api.network`, etc. instead of creating SDK clients manually. For contract operations, use `api.contractCompiler`, `api.contractTransaction`, `api.contractVerifier`, and `api.contractQuery`.
 
-// Listen to events
-api.events.on('account:created', (data) => {
-  console.log('Account created:', data);
-});
-```
+### 3. External Plugin Support
+
+Plugins can be distributed as separate npm packages. Use `hcli plugin add <path-or-url>` to load them. See [Plugin Distribution](#-plugin-distribution) for package structure and [Contributing Guide](../CONTRIBUTING.md) for development workflow.
 
 ## 📚 Best Practices
 
@@ -688,6 +622,8 @@ Define clear, descriptive command options. Each option can have both a long form
 }
 ```
 
+When an option has `required: true`, the CLI automatically appends `(required)` to its description in help output.
+
 **Usage in CLI:**
 Both long and short forms can be used interchangeably:
 
@@ -780,6 +716,6 @@ Get-Content .hiero-cli/state/my-plugin-data-storage.json | ConvertFrom-Json | Co
 
 - [Architecture Overview](docs/architecture.md)
 - [Core API Reference](docs/core-api.md)
-- [Contributing Guide](docs/contributing.md)
+- [Contributing Guide](../CONTRIBUTING.md)
 - [Architecture Decision Records](docs/adr/) - ADRs for interested developers
 - Plugin-specific READMEs: `src/plugins/<plugin-name>/README.md`

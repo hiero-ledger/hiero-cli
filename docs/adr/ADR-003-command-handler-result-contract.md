@@ -59,27 +59,24 @@ Extend `CommandSpec` with output metadata:
 
 ```ts
 export interface CommandOutputSpec {
-  /** JSON Schema for the command's output */
-  schema: unknown;
-  /** Optional human-readable template name or inline template */
-  humanTemplate?: { name?: string; inline?: string };
+  /** Zod schema for the command's output */
+  schema: z.ZodTypeAny;
+  /** Optional human-readable Handlebars template string */
+  humanTemplate?: string;
 }
 
 export interface CommandSpec {
   name: string;
-  summary?: string;
-  description?: string;
-  options?: Array<{
-    name: string;
-    type: 'string' | 'number' | 'boolean' | 'array';
-    required?: boolean;
-    default?: unknown;
-  }>;
-  handler: string;
-  /** New: describes the handler's output */
-  output?: CommandOutputSpec;
+  summary: string;
+  description: string;
+  options?: CommandOption[];
+  handler: CommandHandler;
+  /** Required: describes the handler's output */
+  output: CommandOutputSpec;
 }
 ```
+
+Implementation: See `src/core/plugins/plugin.types.ts` for the current type definitions.
 
 ### Core Error Taxonomy
 
