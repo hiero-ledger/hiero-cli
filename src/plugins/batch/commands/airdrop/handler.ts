@@ -1,14 +1,23 @@
 /**
- * Batch Transfer FT Command Handler
+ * Batch Airdrop Command Handler
  *
  * Reads a CSV file with columns: to, amount
- * Executes fungible token transfers sequentially and reports results.
+ * Uses Hedera's native TokenAirdropTransaction to distribute tokens.
+ *
+ * Unlike a plain transfer, airdrop handles association automatically:
+ *   - Already-associated accounts receive tokens immediately
+ *   - Accounts with auto-association slots get associated + receive immediately
+ *   - Other accounts get a pending airdrop they can claim later
+ *
+ * Only the sender needs to sign — no recipient keys required.
  *
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { BatchTransferFtOutput } from './output';
+import type { BatchAirdropOutput } from './output';
+
+import { TokenAirdropTransaction } from '@hashgraph/sdk';
 
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
@@ -24,21 +33,21 @@ import {
 } from '@/plugins/token/resolver-helper';
 import { isRawUnits } from '@/plugins/token/utils/token-amount-helpers';
 
-import { BatchTransferFtInputSchema } from './input';
+import { BatchAirdropInputSchema } from './input';
 
-interface FtTransferRow {
+interface AirdropRow {
   to: string;
   amount: string;
 }
 
 const REQUIRED_HEADERS = ['to', 'amount'];
 
-export async function batchTransferFt(
+export async function batchAirdrop(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  const validArgs = BatchTransferFtInputSchema.parse(args.args);
+  const validArgs = BatchAirdropInputSchema.parse(args.args);
 
   const keyManagerArg = validArgs.keyManager;
   const keyManager =
@@ -70,7 +79,7 @@ export async function batchTransferFt(
 
   const tokenId = resolvedToken.tokenId;
 
-  // Look up token decimals for display-unit conversion
+  // Look up token decimals
   let tokenDecimals = 0;
   try {
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
@@ -79,16 +88,16 @@ export async function batchTransferFt(
     return {
       status: Status.Failure,
       errorMessage: formatError(
-        `Failed to fetch token decimals for ${tokenId}`,
+        `Failed to fetch token info for ${tokenId}`,
         error,
       ),
     };
   }
 
   // Parse CSV
-  let rows: FtTransferRow[];
+  let rows: AirdropRow[];
   try {
-    const csv = parseCsvFile<FtTransferRow>(validArgs.file, REQUIRED_HEADERS);
+    const csv = parseCsvFile<AirdropRow>(validArgs.file, REQUIRED_HEADERS);
     rows = csv.rows;
   } catch (error) {
     return {
@@ -97,9 +106,7 @@ export async function batchTransferFt(
     };
   }
 
-  logger.info(
-    `Parsed ${rows.length} transfer(s) from CSV for token ${tokenId}`,
-  );
+  logger.info(`Parsed ${rows.length} airdrop(s) from CSV for token ${tokenId}`);
 
   // Resolve source account
   const from = await api.keyResolver.getOrInitKeyWithFallback(
@@ -147,7 +154,7 @@ export async function batchTransferFt(
       amount: row.amount,
     }));
 
-    const output: BatchTransferFtOutput = {
+    const output: BatchAirdropOutput = {
       total: rows.length,
       succeeded: rows.length,
       failed: 0,
@@ -164,10 +171,10 @@ export async function batchTransferFt(
     };
   }
 
-  // Execute transfers
+  // Execute airdrops using Hedera's native TokenAirdropTransaction
   const summary = await executeBatch(
     rows,
-    async (row: FtTransferRow): Promise<Omit<BatchRowResult, 'row'>> => {
+    async (row: AirdropRow): Promise<Omit<BatchRowResult, 'row'>> => {
       // Resolve destination
       const resolvedTo = resolveDestinationAccountParameter(
         row.to,
@@ -187,22 +194,23 @@ export async function batchTransferFt(
       const decimals = isRawUnits(row.amount) ? 0 : tokenDecimals;
       const rawAmount = processBalanceInput(row.amount, decimals);
 
-      const transferTransaction = api.token.createTransferTransaction({
-        tokenId,
-        fromAccountId,
-        toAccountId,
-        amount: rawAmount,
-      });
+      // Build a TokenAirdropTransaction
+      // This handles association automatically:
+      //   - Already associated → immediate transfer
+      //   - Has auto-association slots → auto-associate + transfer
+      //   - Otherwise → pending airdrop (recipient claims later)
+      const airdropTx = new TokenAirdropTransaction()
+        .addTokenTransfer(tokenId, fromAccountId, -rawAmount)
+        .addTokenTransfer(tokenId, toAccountId, rawAmount);
 
-      const result = await api.txExecution.signAndExecuteWith(
-        transferTransaction,
-        [from.keyRefId],
-      );
+      const result = await api.txExecution.signAndExecuteWith(airdropTx, [
+        from.keyRefId,
+      ]);
 
       if (!result.success) {
         return {
           status: 'failed',
-          errorMessage: 'Token transfer failed',
+          errorMessage: `Airdrop failed: ${result.receipt?.status?.status ?? 'UNKNOWN'}`,
           details: { to: row.to, amount: row.amount },
         };
       }
@@ -225,7 +233,7 @@ export async function batchTransferFt(
     errorMessage: r.errorMessage,
   }));
 
-  const output: BatchTransferFtOutput = {
+  const output: BatchAirdropOutput = {
     total: summary.total,
     succeeded: summary.succeeded,
     failed: summary.failed,
@@ -241,7 +249,7 @@ export async function batchTransferFt(
     outputJson: JSON.stringify(output),
     ...(summary.failed > 0 && summary.failed < summary.total
       ? {
-          errorMessage: `${summary.failed} of ${summary.total} transfers failed. See results for details.`,
+          errorMessage: `${summary.failed} of ${summary.total} airdrops failed. See results for details.`,
         }
       : {}),
   };

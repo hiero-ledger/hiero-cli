@@ -5,11 +5,12 @@ or mints in a single command instead of running them one at a time.
 
 ## Commands
 
-| Command               | Description                                    |
-| --------------------- | ---------------------------------------------- |
-| `batch transfer-hbar` | Batch HBAR transfers from a CSV file           |
-| `batch transfer-ft`   | Batch fungible token transfers from a CSV file |
-| `batch mint-nft`      | Batch mint NFTs from a CSV file                |
+| Command               | Description                                                            |
+| --------------------- | ---------------------------------------------------------------------- |
+| `batch transfer-hbar` | Batch HBAR transfers from a CSV file                                   |
+| `batch transfer-ft`   | Batch fungible token transfers from a CSV file                         |
+| `batch mint-nft`      | Batch mint NFTs from a CSV file                                        |
+| `batch airdrop`       | Batch airdrop tokens from a CSV (auto-handles association via HIP-904) |
 
 ## Quick Start
 
@@ -168,6 +169,90 @@ Total: 3 | Succeeded: 3 | Failed: 0
   Row 3: success — Serial #3 — https://hashscan.io/testnet/transaction/...
 ```
 
+## batch airdrop
+
+Airdrop fungible tokens to multiple recipients using Hedera's native
+`TokenAirdropTransaction` (HIP-904). Unlike `transfer-ft`, airdrop
+**auto-handles token association** — recipients do NOT need to pre-associate.
+
+How it works:
+
+- **Already associated** accounts receive tokens immediately
+- Accounts with **auto-association slots** get associated + receive immediately
+- Other accounts get a **pending airdrop** they can claim later via the Hedera portal
+
+Only the sender signs — no recipient keys required.
+
+### CSV Format
+
+| Column   | Required | Description                                                  |
+| -------- | -------- | ------------------------------------------------------------ |
+| `to`     | Yes      | Destination account (ID or alias)                            |
+| `amount` | Yes      | Token amount. `100` = display units, `100t` = raw base units |
+
+### Example CSV
+
+```csv
+to,amount
+0.0.12345,5000
+alice,2500
+bob,1000
+```
+
+### Usage
+
+```bash
+# Dry run
+hiero batch airdrop --file airdrop.csv --token my-token --dry-run
+
+# Execute airdrop (recipients auto-associated if possible)
+hiero batch airdrop --file airdrop.csv --token my-token
+
+# From a specific account
+hiero batch airdrop --file airdrop.csv --token 0.0.98765 --from treasury
+```
+
+### Example Output
+
+```
+✅ Batch airdrop complete!
+
+Token: https://hashscan.io/testnet/token/0.0.98765
+From: 0.0.100000
+Network: testnet
+Total: 3 | Succeeded: 3 | Failed: 0
+
+  Row 1: success — https://hashscan.io/testnet/transaction/...
+  Row 2: success — https://hashscan.io/testnet/transaction/...
+  Row 3: success — https://hashscan.io/testnet/transaction/...
+```
+
+### When to use `airdrop` vs `transfer-ft`
+
+| Scenario                                     | Use           |
+| -------------------------------------------- | ------------- |
+| Recipients are already associated with token | `transfer-ft` |
+| Recipients may NOT be associated yet         | `airdrop`     |
+| You don't have recipients' private keys      | `airdrop`     |
+| Token distribution to new community members  | `airdrop`     |
+| Internal transfers between your own accounts | `transfer-ft` |
+
+## Demo Script
+
+A full end-to-end demo script is available at `examples/scripts/batch-operations-demo.sh`.
+It creates accounts, performs batch HBAR transfers, creates a token, and runs a batch airdrop
+— all from CSV files.
+
+```bash
+# Set your testnet operator credentials
+export HEDERA_OPERATOR_ACCOUNT_ID=0.0.XXXXX
+export HEDERA_OPERATOR_KEY=302e...
+
+# Build and run
+npm run build
+./examples/scripts/batch-operations-demo.sh
+```
+
 ## Features
 
 - **CSV input**: Simple, spreadsheet-friendly format for bulk data
@@ -179,6 +264,7 @@ Total: 3 | Succeeded: 3 | Failed: 0
 - **Retry guidance**: Failed rows are clearly identified for re-run
 - **JSON output**: Machine-readable output with `--format json` for CI/CD pipelines
 - **Supply validation**: NFT mints check max supply capacity before starting
+- **Native airdrop**: Uses Hedera's `TokenAirdropTransaction` (HIP-904) for auto-association
 
 ## Error Handling
 

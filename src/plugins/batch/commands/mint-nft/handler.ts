@@ -43,7 +43,18 @@ export async function batchMintNft(
   const network = api.network.getCurrentNetwork();
 
   // Resolve token
-  const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+  let resolvedToken;
+  try {
+    resolvedToken = resolveTokenParameter(validArgs.token, api, network);
+  } catch (error) {
+    return {
+      status: Status.Failure,
+      errorMessage: formatError(
+        `Failed to resolve token: ${validArgs.token}`,
+        error,
+      ),
+    };
+  }
 
   if (!resolvedToken) {
     return {

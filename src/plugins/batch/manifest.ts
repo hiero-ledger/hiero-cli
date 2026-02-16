@@ -6,11 +6,17 @@
  *   batch transfer-hbar  — Batch HBAR transfers from CSV
  *   batch transfer-ft    — Batch fungible token transfers from CSV
  *   batch mint-nft       — Batch NFT mints from CSV
+ *   batch airdrop        — Batch airdrop tokens from CSV (auto-handles association)
  */
 import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
 import { OptionType } from '@/core/types/shared.types';
 
+import {
+  BATCH_AIRDROP_TEMPLATE,
+  batchAirdrop,
+  BatchAirdropOutputSchema,
+} from './commands/airdrop';
 import {
   BATCH_MINT_NFT_TEMPLATE,
   batchMintNft,
@@ -194,6 +200,61 @@ export const batchPluginManifest: PluginManifest = {
       output: {
         schema: BatchMintNftOutputSchema,
         humanTemplate: BATCH_MINT_NFT_TEMPLATE,
+      },
+    },
+    {
+      name: 'airdrop',
+      summary: 'Batch airdrop fungible tokens from a CSV file',
+      description:
+        'Read a CSV file with columns "to" and "amount", then airdrop a fungible token ' +
+        "using Hedera's native TokenAirdropTransaction. Unlike transfer-ft, airdrop " +
+        'auto-handles association: recipients do NOT need to pre-associate with the token. ' +
+        'Only the sender signs. Use --dry-run to validate.',
+      options: [
+        {
+          name: 'file',
+          short: 'f',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Path to CSV file. Required columns: to, amount',
+        },
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token to airdrop: either a token alias or token-id',
+        },
+        {
+          name: 'from',
+          short: 'F',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Source account: alias or AccountID:privateKey pair (defaults to operator)',
+        },
+        {
+          name: 'dry-run',
+          short: 'd',
+          type: OptionType.BOOLEAN,
+          required: false,
+          default: false,
+          description:
+            'Validate CSV and resolve accounts without executing transactions',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: batchAirdrop,
+      output: {
+        schema: BatchAirdropOutputSchema,
+        humanTemplate: BATCH_AIRDROP_TEMPLATE,
       },
     },
   ],
