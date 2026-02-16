@@ -7,6 +7,8 @@ import type {
   AliasType,
 } from './alias-service.interface';
 
+import { NotFoundError, ValidationError } from '@/core/errors';
+
 const NAMESPACE = 'aliases';
 
 export class AliasServiceImpl implements AliasService {
@@ -20,8 +22,9 @@ export class AliasServiceImpl implements AliasService {
 
   register(record: AliasRecord): void {
     if (this.exists(record.alias, record.network)) {
-      throw new Error(
+      throw new ValidationError(
         `Alias already exists for network=${record.network}: ${record.alias}`,
+        { context: { alias: record.alias, network: record.network } },
       );
     }
     const key = this.composeKey(record.network, record.alias);
@@ -54,8 +57,9 @@ export class AliasServiceImpl implements AliasService {
   ): AliasRecord {
     const rec = this.resolve(alias, type, network);
     if (!rec) {
-      throw new Error(
+      throw new NotFoundError(
         `Alias "${alias}" for ${type} on network "${network}" not found`,
+        { context: { alias, type, network } },
       );
     }
     return rec;
@@ -104,8 +108,9 @@ export class AliasServiceImpl implements AliasService {
 
     const exists = this.exists(alias, network);
     if (exists) {
-      throw new Error(
+      throw new ValidationError(
         `Alias "${alias}" already exists on network "${network}"`,
+        { context: { alias, network } },
       );
     }
   }
