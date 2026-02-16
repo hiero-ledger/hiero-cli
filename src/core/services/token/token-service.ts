@@ -31,6 +31,7 @@ import {
 
 import { TokenTypeMap } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
+import { CustomFeeType, FixedFeeUnitType } from '@/core/types/token.types';
 
 export class TokenServiceImpl implements TokenService {
   private logger: Logger;
@@ -274,10 +275,10 @@ export class TokenServiceImpl implements TokenService {
     const hederaCustomFees: CustomFee[] = [];
 
     for (const fee of customFees) {
-      if (fee.type === 'fixed') {
+      if (fee.type === CustomFeeType.FIXED) {
         const fixedFee = new CustomFixedFee();
 
-        if (fee.unitType === 'TOKEN') {
+        if (fee.unitType === FixedFeeUnitType.TOKEN) {
           fixedFee.setDenominatingTokenToSameToken();
           fixedFee.setAmount(fee.amount || 0);
           this.logger.debug(
@@ -294,12 +295,10 @@ export class TokenServiceImpl implements TokenService {
           AccountId.fromString(fee.collectorId),
         );
 
-        if (fee.exempt !== undefined) {
-          fixedFee.setAllCollectorsAreExempt(fee.exempt);
-        }
+        fixedFee.setAllCollectorsAreExempt(fee.exempt);
 
         hederaCustomFees.push(fixedFee);
-      } else if (fee.type === 'fractional') {
+      } else if (fee.type === CustomFeeType.FRACTIONAL) {
         const fractionalFee = new CustomFractionalFee()
           .setNumerator(fee.numerator)
           .setDenominator(fee.denominator);
@@ -321,9 +320,7 @@ export class TokenServiceImpl implements TokenService {
           AccountId.fromString(fee.collectorId),
         );
 
-        if (fee.exempt !== undefined) {
-          fractionalFee.setAllCollectorsAreExempt(fee.exempt);
-        }
+        fractionalFee.setAllCollectorsAreExempt(fee.exempt);
 
         this.logger.debug(
           `[TOKEN SERVICE] Added fractional fee: ${fee.numerator}/${fee.denominator}, netOfTransfers=${fee.netOfTransfers}`,

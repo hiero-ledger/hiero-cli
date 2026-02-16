@@ -12,6 +12,11 @@ import { makeLogger } from '@/__tests__/mocks/mocks';
 import { TokenServiceImpl } from '@/core/services/token/token-service';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
+import {
+  type CustomFee,
+  CustomFeeType,
+  FixedFeeUnitType,
+} from '@/core/types/token.types';
 
 import {
   createMockCustomFixedFee,
@@ -333,11 +338,13 @@ describe('TokenServiceImpl', () => {
     });
 
     it('should set custom fees when provided', () => {
-      const customFees = [
+      const customFees: CustomFee[] = [
         {
-          type: 'fixed' as const,
+          type: CustomFeeType.FIXED,
           amount: 100,
+          unitType: FixedFeeUnitType.HBAR,
           collectorId: FEE_COLLECTOR_ID,
+          exempt: false,
         },
       ];
       const params = {
@@ -369,11 +376,13 @@ describe('TokenServiceImpl', () => {
     });
 
     it('should set fee collector when provided in custom fee', () => {
-      const customFees = [
+      const customFees: CustomFee[] = [
         {
-          type: 'fixed' as const,
+          type: CustomFeeType.FIXED,
           amount: 100,
+          unitType: FixedFeeUnitType.HBAR,
           collectorId: FEE_COLLECTOR_ID,
+          exempt: false,
         },
       ];
       const params = {
@@ -389,10 +398,11 @@ describe('TokenServiceImpl', () => {
     });
 
     it('should set exempt flag when provided in custom fee', () => {
-      const customFees = [
+      const customFees: CustomFee[] = [
         {
-          type: 'fixed' as const,
+          type: CustomFeeType.FIXED,
           amount: 100,
+          unitType: FixedFeeUnitType.HBAR,
           collectorId: FEE_COLLECTOR_ID,
           exempt: true,
         },
@@ -410,15 +420,18 @@ describe('TokenServiceImpl', () => {
     });
 
     it('should handle multiple custom fees', () => {
-      const customFees = [
+      const customFees: CustomFee[] = [
         {
-          type: 'fixed' as const,
+          type: CustomFeeType.FIXED,
           amount: 100,
+          unitType: FixedFeeUnitType.HBAR,
           collectorId: FEE_COLLECTOR_ID,
+          exempt: false,
         },
         {
-          type: 'fixed' as const,
+          type: CustomFeeType.FIXED,
           amount: 200,
+          unitType: FixedFeeUnitType.HBAR,
           collectorId: FEE_COLLECTOR_ID,
           exempt: true,
         },
@@ -475,12 +488,13 @@ describe('TokenServiceImpl', () => {
     });
 
     it('should set fixed TOKEN fee with setDenominatingTokenToSameToken', () => {
-      const customFees = [
+      const customFees: CustomFee[] = [
         {
-          type: 'fixed' as const,
+          type: CustomFeeType.FIXED,
           amount: 50,
-          unitType: 'TOKEN' as const,
+          unitType: FixedFeeUnitType.TOKEN,
           collectorId: FEE_COLLECTOR_ID,
+          exempt: false,
         },
       ];
       const params = { ...baseParams, customFees };
@@ -495,13 +509,14 @@ describe('TokenServiceImpl', () => {
     });
 
     it('should create fractional fee with numerator and denominator', () => {
-      const customFees = [
+      const customFees: CustomFee[] = [
         {
-          type: 'fractional' as const,
+          type: CustomFeeType.FRACTIONAL,
           numerator: 1,
           denominator: 10,
           netOfTransfers: true,
           collectorId: FEE_COLLECTOR_ID,
+          exempt: false,
         },
       ];
       const params = { ...baseParams, customFees };
@@ -516,15 +531,16 @@ describe('TokenServiceImpl', () => {
     });
 
     it('should set min and max for fractional fee when provided', () => {
-      const customFees = [
+      const customFees: CustomFee[] = [
         {
-          type: 'fractional' as const,
+          type: CustomFeeType.FRACTIONAL,
           numerator: 1,
           denominator: 10,
           min: 10,
           max: 1000,
           netOfTransfers: false,
           collectorId: FEE_COLLECTOR_ID,
+          exempt: false,
         },
       ];
       const params = { ...baseParams, customFees };
@@ -539,9 +555,9 @@ describe('TokenServiceImpl', () => {
     });
 
     it('should set exempt flag for fractional fee', () => {
-      const customFees = [
+      const customFees: CustomFee[] = [
         {
-          type: 'fractional' as const,
+          type: CustomFeeType.FRACTIONAL,
           numerator: 1,
           denominator: 10,
           netOfTransfers: true,

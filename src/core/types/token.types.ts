@@ -20,25 +20,33 @@ export interface TokenTransferParams {
 /**
  * Custom fee configuration for tokens
  */
-export type FixedFeeUnitType = 'HBAR' | 'TOKEN';
+export enum CustomFeeType {
+  FIXED = 'fixed',
+  FRACTIONAL = 'fractional',
+}
+
+export enum FixedFeeUnitType {
+  HBAR = 'HBAR',
+  TOKEN = 'TOKEN',
+}
 
 export interface FixedFee {
-  type: 'fixed';
+  type: CustomFeeType.FIXED;
   amount: number;
-  unitType?: FixedFeeUnitType;
+  unitType: FixedFeeUnitType;
   collectorId: string;
-  exempt?: boolean;
+  exempt: boolean;
 }
 
 export interface FractionalFee {
-  type: 'fractional';
+  type: CustomFeeType.FRACTIONAL;
   numerator: number;
   denominator: number;
   min?: number;
   max?: number;
   netOfTransfers: boolean;
   collectorId: string;
-  exempt?: boolean;
+  exempt: boolean;
 }
 
 export type CustomFee = FixedFee | FractionalFee;

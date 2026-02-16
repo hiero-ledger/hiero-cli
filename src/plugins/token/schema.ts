@@ -28,9 +28,9 @@ export const TokenFileFixedFeeSchema = z
   .object({
     type: z.literal('fixed'),
     amount: z.int().positive('Amount must be positive'),
-    unitType: z.enum(['HBAR', 'TOKEN']).optional().default('HBAR'),
+    unitType: z.enum(['HBAR', 'TOKEN']).default('HBAR'),
     collectorId: EntityIdSchema,
-    exempt: z.boolean().optional(),
+    exempt: z.boolean().default(false),
   })
   .strict();
 
@@ -43,7 +43,7 @@ export const TokenFileFractionalFeeSchema = z
     max: z.int().positive().optional(),
     netOfTransfers: z.boolean(),
     collectorId: EntityIdSchema,
-    exempt: z.boolean().optional(),
+    exempt: z.boolean().default(false),
   })
   .strict()
   .superRefine((data, ctx) => {
