@@ -6,6 +6,7 @@
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { DeleteTopicOutput } from './output';
 
+import { EntityIdSchema } from '@/core/schemas';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
@@ -24,23 +25,21 @@ export async function deleteTopic(
 
   try {
     const validArgs = DeleteTopicInputSchema.parse(args.args);
-    const name = validArgs.name;
-    const topicId = validArgs.id;
+    const topicRef = validArgs.topic;
+    const isEntityId = EntityIdSchema.safeParse(topicRef).success;
     let topicToDelete;
 
-    if (name) {
-      const topics = topicState.listTopics();
-      topicToDelete = topics.find((t) => t.name === name);
+    if (isEntityId) {
+      topicToDelete = topicState.findTopicByTopicId(topicRef);
       if (!topicToDelete) {
-        throw new Error(`Topic with name '${name}' not found`);
-      }
-    } else if (topicId) {
-      topicToDelete = topicState.findTopicByTopicId(topicId);
-      if (!topicToDelete) {
-        throw new Error(`Topic with ID '${topicId}' not found`);
+        throw new Error(`Topic with ID '${topicRef}' not found`);
       }
     } else {
-      throw new Error('Either name or id must be provided');
+      const topics = topicState.listTopics();
+      topicToDelete = topics.find((t) => t.name === topicRef);
+      if (!topicToDelete) {
+        throw new Error(`Topic with name '${topicRef}' not found`);
+      }
     }
 
     const currentNetwork = api.network.getCurrentNetwork();

@@ -51,7 +51,7 @@ describe('account plugin - delete command (ADR-003)', () => {
       network,
       kms: kms as unknown as KmsService,
     };
-    const args = makeArgs(api, logger, { name: 'acc1' });
+    const args = makeArgs(api, logger, { account: 'acc1' });
 
     const result = await deleteAccount(args);
 
@@ -86,7 +86,7 @@ describe('account plugin - delete command (ADR-003)', () => {
       network,
       kms: kms as unknown as KmsService,
     };
-    const args = makeArgs(api, logger, { id: '0.0.2222' });
+    const args = makeArgs(api, logger, { account: '0.0.2222' });
 
     const result = await deleteAccount(args);
 
@@ -99,7 +99,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     expect(output.deletedAccount.accountId).toBe('0.0.2222');
   });
 
-  test('returns failure when no name or id provided', async () => {
+  test('returns failure when account param is missing', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -117,7 +117,7 @@ describe('account plugin - delete command (ADR-003)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, { name: 'nonexistent' });
+    const args = makeArgs(api, logger, {});
 
     const result = await deleteAccount(args);
 
@@ -143,7 +143,7 @@ describe('account plugin - delete command (ADR-003)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, { name: 'missingAcc' });
+    const args = makeArgs(api, logger, { account: 'missingAcc' });
 
     const result = await deleteAccount(args);
 
@@ -174,7 +174,7 @@ describe('account plugin - delete command (ADR-003)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, { id: '0.0.4444' });
+    const args = makeArgs(api, logger, { account: '0.0.4444' });
 
     const result = await deleteAccount(args);
 
@@ -206,7 +206,7 @@ describe('account plugin - delete command (ADR-003)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, { name: 'acc5' });
+    const args = makeArgs(api, logger, { account: 'acc5' });
 
     const result = await deleteAccount(args);
 
@@ -244,7 +244,7 @@ describe('account plugin - delete command (ADR-003)', () => {
       network,
       kms: kms as unknown as KmsService,
     };
-    const args = makeArgs(api, logger, { name: 'acc-alias' });
+    const args = makeArgs(api, logger, { account: 'acc-alias' });
 
     const result = await deleteAccount(args);
 

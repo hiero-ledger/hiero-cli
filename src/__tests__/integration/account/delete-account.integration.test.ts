@@ -80,7 +80,7 @@ describe('Delete Account Integration Tests', () => {
 
       //delete
       const deleteAccountArgs: Record<string, unknown> = {
-        name: 'account-to-be-deleted',
+        account: 'account-to-be-deleted',
       };
       const deleteAccountResult = await deleteAccount({
         args: deleteAccountArgs,

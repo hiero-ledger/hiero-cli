@@ -150,21 +150,14 @@ export const topicPluginManifest: PluginManifest = {
       name: 'delete',
       summary: 'Delete a topic',
       description:
-        'Delete a topic from state. You need to specify name or id to delete the topic',
+        'Delete a topic from state. Specify topic by name or topic ID',
       options: [
         {
-          name: 'name',
-          short: 'n',
+          name: 'topic',
+          short: 't',
           type: OptionType.STRING,
-          required: false,
-          description: 'Topic name to be deleted from state',
-        },
-        {
-          name: 'id',
-          short: 'i',
-          type: OptionType.STRING,
-          required: false,
-          description: 'Topic ID to be deleted from state',
+          required: true,
+          description: 'Topic name or topic ID to delete from state',
         },
       ],
       handler: deleteTopic,
@@ -173,7 +166,7 @@ export const topicPluginManifest: PluginManifest = {
         humanTemplate: DELETE_TOPIC_TEMPLATE,
       },
       requireConfirmation:
-        'Are you sure you want to delete topic {{name}}{{id}}? This action cannot be undone.',
+        'Are you sure you want to delete topic {{topic}}? This action cannot be undone.',
     },
     {
       name: 'find-message',

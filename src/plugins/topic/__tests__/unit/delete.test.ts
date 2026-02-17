@@ -58,7 +58,7 @@ describe('topic plugin - delete command (ADR-003)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, { name: 'topic1' });
+    const args = makeArgs(api, logger, { topic: 'topic1' });
 
     const result = await deleteTopic(args);
 
@@ -92,7 +92,7 @@ describe('topic plugin - delete command (ADR-003)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, { id: '0.0.2222' });
+    const args = makeArgs(api, logger, { topic: '0.0.2222' });
 
     const result = await deleteTopic(args);
 
@@ -105,7 +105,7 @@ describe('topic plugin - delete command (ADR-003)', () => {
     expect(output.deletedTopic.topicId).toBe('0.0.2222');
   });
 
-  test('returns failure when no name or id provided', async () => {
+  test('returns failure when topic param is missing', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -155,7 +155,7 @@ describe('topic plugin - delete command (ADR-003)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, { name: 'missingTopic' });
+    const args = makeArgs(api, logger, { topic: 'missingTopic' });
 
     const result = await deleteTopic(args);
 
@@ -185,7 +185,7 @@ describe('topic plugin - delete command (ADR-003)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, { id: '0.0.4444' });
+    const args = makeArgs(api, logger, { topic: '0.0.4444' });
 
     const result = await deleteTopic(args);
 
@@ -216,7 +216,7 @@ describe('topic plugin - delete command (ADR-003)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, { name: 'topic5' });
+    const args = makeArgs(api, logger, { topic: 'topic5' });
 
     const result = await deleteTopic(args);
 
@@ -250,7 +250,7 @@ describe('topic plugin - delete command (ADR-003)', () => {
       alias,
       network,
     };
-    const args = makeArgs(api, logger, { name: 'topic-alias' });
+    const args = makeArgs(api, logger, { topic: 'topic-alias' });
 
     const result = await deleteTopic(args);
 
