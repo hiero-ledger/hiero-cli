@@ -1,7 +1,3 @@
-/**
- * Output Service Implementation
- * Handles command output formatting and rendering using the strategy pattern
- */
 import type { OutputFormat } from '@/core/shared/types/output-format';
 import type { OutputService } from './output-service.interface';
 import type { FormatStrategyOptions } from './strategies';
@@ -10,6 +6,7 @@ import type { OutputHandlerOptions, OutputOptions } from './types';
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { FileError, InternalError } from '@/core/errors';
 import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
 
 import { OutputFormatterFactory } from './strategies';
@@ -46,14 +43,11 @@ export class OutputServiceImpl implements OutputService {
   handleCommandOutput(options: OutputOptions): void {
     const { outputJson, template, format, outputPath } = options;
 
-    // Parse the JSON output
     let data: unknown;
     try {
       data = JSON.parse(outputJson);
     } catch (error) {
-      throw new Error(
-        `Failed to parse output JSON: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      throw new InternalError('Failed to parse output JSON', { cause: error });
     }
 
     // TODO: Validate against schema if provided
@@ -90,9 +84,11 @@ export class OutputServiceImpl implements OutputService {
       }
       fs.writeFileSync(filePath, content, 'utf8');
     } catch (error) {
-      throw new Error(
-        `Failed to write output to file ${filePath}: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      if (error instanceof FileError) throw error;
+      throw new FileError(`Failed to write output to file ${filePath}`, {
+        context: { path: filePath },
+        cause: error,
+      });
     }
   }
 }
