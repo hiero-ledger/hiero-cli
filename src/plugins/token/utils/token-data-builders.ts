@@ -13,6 +13,7 @@ import type {
 
 import { HederaTokenType as HederaTokenTypeValues } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
+import { CustomFeeType } from '@/core/types/token.types';
 
 export function buildTokenData(
   result: TransactionResult,
@@ -87,7 +88,7 @@ export function buildTokenDataFromFile(
     network,
     associations: [],
     customFees: tokenDefinition.customFees.map((fee) => {
-      if (fee.type === 'fixed') {
+      if (fee.type === CustomFeeType.FIXED) {
         return {
           type: fee.type,
           amount: fee.amount,

@@ -12,7 +12,7 @@ import type { CreateFungibleTokenFromFileOutput } from './output';
 import { PublicKey } from '@hashgraph/sdk';
 
 import { Status } from '@/core/shared/constants';
-import { CustomFeeType, FixedFeeUnitType } from '@/core/types/token.types';
+import { CustomFeeType } from '@/core/types/token.types';
 import { formatError } from '@/core/utils/errors';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
 import { buildTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
@@ -121,14 +121,11 @@ export async function createTokenFromFile(
       pausePublicKey: toPublicKey(pauseKey),
       feeSchedulePublicKey: toPublicKey(feeScheduleKey),
       customFees: tokenDefinition.customFees.map((fee): CustomFee => {
-        if (fee.type === 'fixed') {
+        if (fee.type === CustomFeeType.FIXED) {
           return {
             type: CustomFeeType.FIXED,
             amount: fee.amount,
-            unitType:
-              fee.unitType === 'HBAR'
-                ? FixedFeeUnitType.HBAR
-                : FixedFeeUnitType.TOKEN,
+            unitType: fee.unitType,
             collectorId: fee.collectorId,
             exempt: fee.exempt,
           };

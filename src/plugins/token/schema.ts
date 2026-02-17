@@ -16,6 +16,7 @@ import {
 } from '@/core/schemas';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
+import { CustomFeeType, FixedFeeUnitType } from '@/core/types/token.types';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Zod schema for token association
@@ -26,9 +27,9 @@ export const TokenAssociationSchema = z.object({
 
 export const TokenFileFixedFeeSchema = z
   .object({
-    type: z.literal('fixed'),
+    type: z.literal(CustomFeeType.FIXED),
     amount: z.int().positive('Amount must be positive'),
-    unitType: z.enum(['HBAR', 'TOKEN']).default('HBAR'),
+    unitType: z.nativeEnum(FixedFeeUnitType).default(FixedFeeUnitType.HBAR),
     collectorId: EntityIdSchema,
     exempt: z.boolean().default(false),
   })
@@ -36,7 +37,7 @@ export const TokenFileFixedFeeSchema = z
 
 export const TokenFileFractionalFeeSchema = z
   .object({
-    type: z.literal('fractional'),
+    type: z.literal(CustomFeeType.FRACTIONAL),
     numerator: z.int().positive('Numerator must be positive'),
     denominator: z.int().positive('Denominator must be positive'),
     min: z.int().nonnegative().optional(),
