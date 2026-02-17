@@ -8,12 +8,7 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { AccountData } from '@/plugins/account/schema';
 import type { CreateAccountOutput } from './output';
 
-import {
-  ConfigurationError,
-  StateError,
-  TransactionError,
-  ValidationError,
-} from '@/core/errors';
+import { StateError, TransactionError, ValidationError } from '@/core/errors';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { HBAR_DECIMALS, KeyAlgorithm } from '@/core/shared/constants';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
