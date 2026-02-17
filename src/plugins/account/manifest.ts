@@ -222,21 +222,14 @@ export const accountPluginManifest: PluginManifest = {
       name: 'delete',
       summary: 'Delete an account',
       description:
-        'Delete an account from the address book. You need to specify name or id to delete the account',
+        'Delete an account from state. Specify account by name or account ID',
       options: [
         {
-          name: 'name',
-          short: 'n',
+          name: 'account',
+          short: 'a',
           type: OptionType.STRING,
-          required: false,
-          description: 'Account name to be deleted from the store',
-        },
-        {
-          name: 'id',
-          short: 'i',
-          type: OptionType.STRING,
-          required: false,
-          description: 'Account ID to be deleted from the store',
+          required: true,
+          description: 'Account name or account ID to delete from state',
         },
       ],
       handler: deleteAccount,
@@ -245,7 +238,7 @@ export const accountPluginManifest: PluginManifest = {
         humanTemplate: DELETE_ACCOUNT_TEMPLATE,
       },
       requireConfirmation:
-        'Are you sure you want to delete account {{name}}{{id}}? This action cannot be undone.',
+        'Are you sure you want to delete account {{account}}? This action cannot be undone.',
     },
     {
       name: 'view',
