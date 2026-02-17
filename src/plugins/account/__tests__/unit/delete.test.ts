@@ -9,7 +9,7 @@ import { SupportedNetwork } from '@/core/types/shared.types';
 import { deleteAccount } from '@/plugins/account/commands/delete/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
-import { mockAliasLists } from './helpers/fixtures';
+import { mockAliasLists, mockAliasRecords } from './helpers/fixtures';
 import {
   makeAccountData,
   makeAliasServiceMock,
@@ -248,31 +248,30 @@ describe('account plugin - delete command (ADR-003)', () => {
 
     const result = await deleteAccount(args);
 
-    // Ensure list was requested with the correct filters
     expect(alias.list).toHaveBeenCalledWith({
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
       type: ALIAS_TYPE.Account,
     });
 
-    // Only the matching testnet+account type alias for the same entity should be removed
     expect(alias.remove).toHaveBeenCalledTimes(1);
-    expect(alias.remove).toHaveBeenCalledWith('acc-alias-testnet', 'testnet');
-
-    // Ensure non-matching ones are NOT removed
-    expect(alias.remove).not.toHaveBeenCalledWith(
-      'acc-alias-mainnet',
-      'mainnet',
-    );
-    expect(alias.remove).not.toHaveBeenCalledWith(
-      'token-alias-testnet',
-      'testnet',
-    );
-    expect(alias.remove).not.toHaveBeenCalledWith(
-      'other-acc-testnet',
-      'testnet',
+    expect(alias.remove).toHaveBeenCalledWith(
+      mockAliasRecords.accountTestnet.alias,
+      SupportedNetwork.TESTNET,
     );
 
-    // Verify ADR-003 result
+    expect(alias.remove).not.toHaveBeenCalledWith(
+      mockAliasRecords.accountMainnet.alias,
+      SupportedNetwork.MAINNET,
+    );
+    expect(alias.remove).not.toHaveBeenCalledWith(
+      mockAliasRecords.tokenTestnet.alias,
+      SupportedNetwork.TESTNET,
+    );
+    expect(alias.remove).not.toHaveBeenCalledWith(
+      mockAliasRecords.otherAccountTestnet.alias,
+      SupportedNetwork.TESTNET,
+    );
+
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
 
@@ -281,6 +280,8 @@ describe('account plugin - delete command (ADR-003)', () => {
     expect(output.deletedAccount.accountId).toBe('0.0.7777');
     expect(output.removedAliases).toBeDefined();
     expect(output.removedAliases).toHaveLength(1);
-    expect(output.removedAliases![0]).toBe('acc-alias-testnet (testnet)');
+    expect(output.removedAliases![0]).toBe(
+      `${mockAliasRecords.accountTestnet.alias} (${SupportedNetwork.TESTNET})`,
+    );
   });
 });

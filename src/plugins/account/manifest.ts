@@ -222,21 +222,21 @@ export const accountPluginManifest: PluginManifest = {
       name: 'delete',
       summary: 'Delete an account',
       description:
-        'Delete an account from the address book. You need to specify name or id to delete the account',
+        'Delete an account from state. You need to specify name or id to delete the account',
       options: [
         {
           name: 'name',
           short: 'n',
           type: OptionType.STRING,
           required: false,
-          description: 'Account name to be deleted from the store',
+          description: 'Account name to be deleted from state',
         },
         {
           name: 'id',
           short: 'i',
           type: OptionType.STRING,
           required: false,
-          description: 'Account ID to be deleted from the store',
+          description: 'Account ID to be deleted from state',
         },
       ],
       handler: deleteAccount,

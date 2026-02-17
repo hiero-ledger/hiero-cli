@@ -12,6 +12,11 @@ import {
   CreateTopicOutputSchema,
 } from './commands/create';
 import {
+  DELETE_TOPIC_TEMPLATE,
+  deleteTopic,
+  DeleteTopicOutputSchema,
+} from './commands/delete';
+import {
   FIND_MESSAGES_TEMPLATE,
   findMessage,
   FindMessagesOutputSchema,
@@ -140,6 +145,35 @@ export const topicPluginManifest: PluginManifest = {
         schema: SubmitMessageOutputSchema,
         humanTemplate: SUBMIT_MESSAGE_TEMPLATE,
       },
+    },
+    {
+      name: 'delete',
+      summary: 'Delete a topic',
+      description:
+        'Delete a topic from state. You need to specify name or id to delete the topic',
+      options: [
+        {
+          name: 'name',
+          short: 'n',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Topic name to be deleted from state',
+        },
+        {
+          name: 'id',
+          short: 'i',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Topic ID to be deleted from state',
+        },
+      ],
+      handler: deleteTopic,
+      output: {
+        schema: DeleteTopicOutputSchema,
+        humanTemplate: DELETE_TOPIC_TEMPLATE,
+      },
+      requireConfirmation:
+        'Are you sure you want to delete topic {{name}}{{id}}? This action cannot be undone.',
     },
     {
       name: 'find-message',
