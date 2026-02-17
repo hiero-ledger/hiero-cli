@@ -41,7 +41,7 @@ describe('Create NFT Integration Tests', () => {
 
     expect(createAccountResult.status).toBe(Status.Success);
     const createAccountOutput: CreateAccountOutput = JSON.parse(
-      createAccountResult.outputJson!,
+      createAccountResult.outputJson,
     );
     expect(createAccountOutput.name).toBe('account-create-nft');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
@@ -61,7 +61,7 @@ describe('Create NFT Integration Tests', () => {
     });
     expect(viewAccountResult.status).toBe(Status.Success);
     const viewAccountOutput: ViewAccountOutput = JSON.parse(
-      viewAccountResult.outputJson!,
+      viewAccountResult.outputJson,
     );
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
     expect(viewAccountOutput.balance).toBe('100000000'); // result in tinybars

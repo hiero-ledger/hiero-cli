@@ -60,36 +60,36 @@ export async function importAccount(
     throw new ValidationError(`Account with name '${name}' already exists`);
   }
 
-    const evmAddress = buildAccountEvmAddress({
-      accountId,
-      publicKey,
-      keyType: accountInfo.keyAlgorithm,
-      existingEvmAddress: accountInfo.evmAddress,
-    });
+  const evmAddress = buildAccountEvmAddress({
+    accountId,
+    publicKey,
+    keyType: accountInfo.keyAlgorithm,
+    existingEvmAddress: accountInfo.evmAddress,
+  });
 
-    if (alias) {
-      api.alias.register({
-        alias,
-        type: 'account',
-        network: api.network.getCurrentNetwork(),
-        entityId: accountId,
-        evmAddress,
-        publicKey,
-        keyRefId,
-        createdAt: new Date().toISOString(),
-      });
-    }
-
-    // Create account object (no private key in plugin state)
-    const account: AccountData = {
-      name,
-      accountId,
-      type: accountInfo.keyAlgorithm,
-      publicKey: publicKey,
-      evmAddress,
-      keyRefId,
+  if (alias) {
+    api.alias.register({
+      alias,
+      type: 'account',
       network: api.network.getCurrentNetwork(),
-    };
+      entityId: accountId,
+      evmAddress,
+      publicKey,
+      keyRefId,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  // Create account object (no private key in plugin state)
+  const account: AccountData = {
+    name,
+    accountId,
+    type: accountInfo.keyAlgorithm,
+    publicKey: publicKey,
+    evmAddress,
+    keyRefId,
+    network: api.network.getCurrentNetwork(),
+  };
 
   // Store account in state using the helper
   accountState.saveAccount(name, account);

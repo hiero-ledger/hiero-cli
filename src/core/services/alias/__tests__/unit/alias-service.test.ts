@@ -7,6 +7,7 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import { NotFoundError, ValidationError } from '@/core/errors';
 import { AliasServiceImpl } from '@/core/services/alias/alias-service';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -66,9 +67,7 @@ describe('AliasServiceImpl', () => {
 
       const record = createAliasRecord();
 
-      expect(() => aliasService.register(record)).toThrow(
-        'Alias already exists for network=testnet: test-alias',
-      );
+      expect(() => aliasService.register(record)).toThrow(ValidationError);
       expect(stateMock.set).not.toHaveBeenCalled();
     });
 
@@ -205,9 +204,7 @@ describe('AliasServiceImpl', () => {
           ALIAS_TYPE.Contract,
           SupportedNetwork.TESTNET,
         ),
-      ).toThrow(
-        'Alias "non-existent" for contract on network "testnet" not found',
-      );
+      ).toThrow(NotFoundError);
       expect(stateMock.get).toHaveBeenCalledWith(
         'aliases',
         'testnet:non-existent',
@@ -227,9 +224,7 @@ describe('AliasServiceImpl', () => {
           ALIAS_TYPE.Contract,
           SupportedNetwork.TESTNET,
         ),
-      ).toThrow(
-        'Alias "test-alias" for contract on network "testnet" not found',
-      );
+      ).toThrow(NotFoundError);
     });
 
     it('should use correct key for different networks', () => {
@@ -449,7 +444,7 @@ describe('AliasServiceImpl', () => {
 
       expect(() =>
         aliasService.availableOrThrow('existing', SupportedNetwork.TESTNET),
-      ).toThrow('Alias "existing" already exists on network "testnet"');
+      ).toThrow(ValidationError);
     });
   });
 

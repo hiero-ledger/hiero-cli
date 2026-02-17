@@ -46,7 +46,7 @@ describe('Create Token Integration Tests', () => {
 
     expect(createAccountResult.status).toBe(Status.Success);
     const createAccountOutput: CreateAccountOutput = JSON.parse(
-      createAccountResult.outputJson!,
+      createAccountResult.outputJson,
     );
     expect(createAccountOutput.name).toBe('account-create-token');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
@@ -66,7 +66,7 @@ describe('Create Token Integration Tests', () => {
     });
     expect(viewAccountResult.status).toBe(Status.Success);
     const viewAccountOutput: ViewAccountOutput = JSON.parse(
-      viewAccountResult.outputJson!,
+      viewAccountResult.outputJson,
     );
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
     expect(viewAccountOutput.balance).toBe('100000000'); // result in tinybars
@@ -119,7 +119,7 @@ describe('Create Token Integration Tests', () => {
     });
     expect(accountBalanceResult.status).toBe(Status.Success);
     const accountBalanceOutput: AccountBalanceOutput = JSON.parse(
-      accountBalanceResult.outputJson!,
+      accountBalanceResult.outputJson,
     );
     expect(accountBalanceOutput.tokenBalances?.length).toBe(1);
     expect(accountBalanceOutput.tokenBalances?.at(0)?.tokenId).toBe(
