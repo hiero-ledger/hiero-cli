@@ -6,11 +6,13 @@
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/shared.types';
+import type { CustomFee } from '@/core/types/token.types';
 import type { CreateFungibleTokenFromFileOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
 
 import { Status } from '@/core/shared/constants';
+import { CustomFeeType } from '@/core/types/token.types';
 import { formatError } from '@/core/utils/errors';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
 import { buildTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
@@ -118,7 +120,28 @@ export async function createTokenFromFile(
       freezePublicKey: toPublicKey(freezeKey),
       pausePublicKey: toPublicKey(pauseKey),
       feeSchedulePublicKey: toPublicKey(feeScheduleKey),
-      customFees: tokenDefinition.customFees,
+      customFees: tokenDefinition.customFees.map((fee): CustomFee => {
+        if (fee.type === CustomFeeType.FIXED) {
+          return {
+            type: CustomFeeType.FIXED,
+            amount: fee.amount,
+            unitType: fee.unitType,
+            collectorId: fee.collectorId,
+            exempt: fee.exempt,
+          };
+        } else {
+          return {
+            type: CustomFeeType.FRACTIONAL,
+            numerator: fee.numerator,
+            denominator: fee.denominator,
+            min: fee.min,
+            max: fee.max,
+            netOfTransfers: fee.netOfTransfers,
+            collectorId: fee.collectorId,
+            exempt: fee.exempt,
+          };
+        }
+      }),
       memo: tokenDefinition.memo,
     });
 

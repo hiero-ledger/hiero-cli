@@ -34,6 +34,18 @@ export const createMockTokenAssociateTransaction = () => ({
 
 export const createMockCustomFixedFee = () => ({
   setHbarAmount: jest.fn().mockReturnThis(),
+  setAmount: jest.fn().mockReturnThis(),
+  setDenominatingTokenToSameToken: jest.fn().mockReturnThis(),
+  setFeeCollectorAccountId: jest.fn().mockReturnThis(),
+  setAllCollectorsAreExempt: jest.fn().mockReturnThis(),
+});
+
+export const createMockCustomFractionalFee = () => ({
+  setNumerator: jest.fn().mockReturnThis(),
+  setDenominator: jest.fn().mockReturnThis(),
+  setMin: jest.fn().mockReturnThis(),
+  setMax: jest.fn().mockReturnThis(),
+  setAssessmentMethod: jest.fn().mockReturnThis(),
   setFeeCollectorAccountId: jest.fn().mockReturnThis(),
   setAllCollectorsAreExempt: jest.fn().mockReturnThis(),
 });

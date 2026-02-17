@@ -8,6 +8,7 @@ import type { TransactionResult } from '@/core/services/tx-execution/tx-executio
 
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
+import { CustomFeeType, FixedFeeUnitType } from '@/core/types/token.types';
 
 /**
  * Mock Account IDs
@@ -96,10 +97,11 @@ export const validTokenFile = {
   associations: [`${mockAccountIds.association}:${mockKeys.association}`],
   customFees: [
     {
-      type: 'fixed' as const,
+      type: CustomFeeType.FIXED,
       amount: 10,
-      unitType: 'HBAR' as const,
+      unitType: FixedFeeUnitType.HBAR,
       collectorId: mockAccountIds.collector,
+      exempt: false,
     },
   ],
   memo: 'Test token created from file',
@@ -298,10 +300,11 @@ export const validTokenDataForSchema = {
   network: SupportedNetwork.TESTNET,
   customFees: [
     {
-      type: 'fixed' as const,
+      type: CustomFeeType.FIXED,
       amount: 10,
-      unitType: 'HBAR' as const,
+      unitType: FixedFeeUnitType.HBAR,
       collectorId: '0.0.999999',
+      exempt: false,
     },
   ],
   tokenType: HederaTokenType.FUNGIBLE_COMMON,
@@ -530,11 +533,11 @@ export const expectedTokenTransactionParamsFromFile = {
   adminPublicKey: expect.any(Object), // PublicKey object from keyResolver
   customFees: [
     {
-      type: 'fixed',
+      type: CustomFeeType.FIXED,
       amount: 10,
-      unitType: 'HBAR',
+      unitType: FixedFeeUnitType.HBAR,
       collectorId: '0.0.999999',
-      exempt: undefined,
+      exempt: false,
     },
   ],
   tokenType: HederaTokenType.FUNGIBLE_COMMON,
