@@ -4,6 +4,7 @@ import type {
   ConfigService,
 } from './config-service.interface';
 
+import { InternalError, ValidationError } from '@/core/errors';
 import { isStringifiable } from '@/core/utils/is-stringifiable';
 
 import { CONFIG_NAMESPACE, CONFIG_OPTIONS } from './config-service.interface';
@@ -39,7 +40,9 @@ export class ConfigServiceImpl implements ConfigService {
   getOption<T = boolean | number | string>(name: string): T {
     const spec = CONFIG_OPTIONS[name];
     if (!spec) {
-      throw new Error(`Unknown config option: ${name}`);
+      throw new ValidationError(`Unknown config option: ${name}`, {
+        context: { optionName: name },
+      });
     }
     const raw = this.state.get<unknown>(CONFIG_NAMESPACE, name);
     if (raw === undefined || raw === null) {
@@ -80,25 +83,42 @@ export class ConfigServiceImpl implements ConfigService {
   setOption(name: string, value: boolean | number | string): void {
     const spec = CONFIG_OPTIONS[name];
     if (!spec) {
-      throw new Error(`Unknown config option: ${name}`);
+      throw new ValidationError(`Unknown config option: ${name}`, {
+        context: { optionName: name },
+      });
     }
     switch (spec.type) {
       case 'boolean':
         if (typeof value !== 'boolean') {
-          throw new Error(`Invalid value for ${name}: expected boolean`);
+          throw new ValidationError(
+            `Invalid value for ${name}: expected boolean`,
+            {
+              context: { optionName: name, value, expectedType: 'boolean' },
+            },
+          );
         }
         this.state.set<boolean>(CONFIG_NAMESPACE, name, value);
         return;
       case 'number': {
         if (typeof value !== 'number' || Number.isNaN(value)) {
-          throw new Error(`Invalid value for ${name}: expected number`);
+          throw new ValidationError(
+            `Invalid value for ${name}: expected number`,
+            {
+              context: { optionName: name, value, expectedType: 'number' },
+            },
+          );
         }
         this.state.set<number>(CONFIG_NAMESPACE, name, value);
         return;
       }
       case 'string': {
         if (typeof value !== 'string') {
-          throw new Error(`Invalid value for ${name}: expected string`);
+          throw new ValidationError(
+            `Invalid value for ${name}: expected string`,
+            {
+              context: { optionName: name, value, expectedType: 'string' },
+            },
+          );
         }
         this.state.set<string>(CONFIG_NAMESPACE, name, value);
         return;
@@ -106,15 +126,25 @@ export class ConfigServiceImpl implements ConfigService {
       case 'enum': {
         if (typeof value !== 'string' || !spec.allowedValues.includes(value)) {
           const allowed = spec.allowedValues.join(', ');
-          throw new Error(
+          throw new ValidationError(
             `Invalid value for ${name}: expected one of (${allowed})`,
+            {
+              context: {
+                optionName: name,
+                value,
+                expectedType: 'enum',
+                allowedValues: [...spec.allowedValues],
+              },
+            },
           );
         }
         this.state.set<string>(CONFIG_NAMESPACE, name, value);
         return;
       }
       default:
-        throw new Error(`Unsupported option type for ${name}`);
+        throw new InternalError(`Unsupported option type for ${name}`, {
+          context: { optionName: name },
+        });
     }
   }
 }

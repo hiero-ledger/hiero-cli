@@ -2,7 +2,7 @@
  * Unit tests for OutputServiceImpl
  * Tests format management, JSON parsing, formatting strategies and file/console output
  */
-import type { OutputHandlerOptions } from '@/core/services/output/types';
+import type { OutputOptions } from '@/core/services/output/types';
 import type { OutputFormat } from '@/core/shared/types/output-format';
 
 import { OutputServiceImpl } from '@/core/services/output/output-service';
@@ -56,8 +56,8 @@ describe('OutputServiceImpl', () => {
   let getStrategyMock: jest.Mock;
 
   const createOptions = (
-    overrides: Partial<OutputHandlerOptions> = {},
-  ): OutputHandlerOptions => ({
+    overrides: Partial<OutputOptions> = {},
+  ): OutputOptions => ({
     outputJson: '{"foo":"bar"}',
     format: 'human',
     ...overrides,

@@ -52,7 +52,7 @@ describe('Delete Account Integration Tests', () => {
 
       expect(importAccountResult.status).toBe(Status.Success);
       const importAccountOutput: ImportAccountOutput = JSON.parse(
-        importAccountResult.outputJson!,
+        importAccountResult.outputJson,
       );
       expect(importAccountOutput.accountId).toBe(accountId);
       expect(importAccountOutput.name).toBe('account-to-be-deleted');
@@ -73,7 +73,7 @@ describe('Delete Account Integration Tests', () => {
       });
       expect(viewAccountResult.status).toBe(Status.Success);
       const viewAccountOutput: ViewAccountOutput = JSON.parse(
-        viewAccountResult.outputJson!,
+        viewAccountResult.outputJson,
       );
       expect(viewAccountOutput.accountId).toBe(importAccountOutput.accountId);
       expect(viewAccountOutput.evmAddress).toBe(importAccountOutput.evmAddress);
@@ -91,7 +91,7 @@ describe('Delete Account Integration Tests', () => {
       });
       expect(deleteAccountResult.status).toBe(Status.Success);
       const deleteAccountOutput: DeleteAccountOutput = JSON.parse(
-        deleteAccountResult.outputJson!,
+        deleteAccountResult.outputJson,
       );
       expect(deleteAccountOutput.deletedAccount.accountId).toBe(accountId);
       expect(deleteAccountOutput.deletedAccount.name).toBe(

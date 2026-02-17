@@ -48,7 +48,7 @@ describe('Mint FT Integration Tests', () => {
 
     expect(createAccountResult.status).toBe(Status.Success);
     const createAccountOutput: CreateAccountOutput = JSON.parse(
-      createAccountResult.outputJson!,
+      createAccountResult.outputJson,
     );
     expect(createAccountOutput.name).toBe('account-mint-ft');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
@@ -68,7 +68,7 @@ describe('Mint FT Integration Tests', () => {
     });
     expect(viewAccountResult.status).toBe(Status.Success);
     const viewAccountOutput: ViewAccountOutput = JSON.parse(
-      viewAccountResult.outputJson!,
+      viewAccountResult.outputJson,
     );
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
     expect(viewAccountOutput.balance).toBe('100000000');
@@ -120,7 +120,7 @@ describe('Mint FT Integration Tests', () => {
     });
     expect(accountBalanceBeforeMintResult.status).toBe(Status.Success);
     const accountBalanceBeforeMintOutput: AccountBalanceOutput = JSON.parse(
-      accountBalanceBeforeMintResult.outputJson!,
+      accountBalanceBeforeMintResult.outputJson,
     );
     expect(accountBalanceBeforeMintOutput.tokenBalances?.length).toBe(1);
     expect(accountBalanceBeforeMintOutput.tokenBalances?.at(0)?.tokenId).toBe(
@@ -167,7 +167,7 @@ describe('Mint FT Integration Tests', () => {
     });
     expect(accountBalanceAfterMintResult.status).toBe(Status.Success);
     const accountBalanceAfterMintOutput: AccountBalanceOutput = JSON.parse(
-      accountBalanceAfterMintResult.outputJson!,
+      accountBalanceAfterMintResult.outputJson,
     );
     expect(accountBalanceAfterMintOutput.tokenBalances?.length).toBe(1);
     expect(accountBalanceAfterMintOutput.tokenBalances?.at(0)?.tokenId).toBe(

@@ -2,7 +2,6 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { ListAccountsOutput } from '@/plugins/account/commands/list';
 
 import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
 import { listAccounts } from '@/plugins/account/commands/list/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -31,10 +30,7 @@ describe('account plugin - list command (ADR-003)', () => {
 
     const result = await listAccounts(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ListAccountsOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ListAccountsOutput;
     expect(output.totalCount).toBe(0);
     expect(output.accounts).toEqual([]);
   });
@@ -55,10 +51,7 @@ describe('account plugin - list command (ADR-003)', () => {
 
     const result = await listAccounts(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ListAccountsOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ListAccountsOutput;
     expect(output.totalCount).toBe(2);
     expect(output.accounts).toHaveLength(2);
     expect(output.accounts[0].name).toBe('acc1');
@@ -82,10 +75,7 @@ describe('account plugin - list command (ADR-003)', () => {
 
     const result = await listAccounts(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ListAccountsOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ListAccountsOutput;
     expect(output.totalCount).toBe(1);
     expect(output.accounts).toHaveLength(1);
     expect(output.accounts[0].name).toBe('acc3');
@@ -94,7 +84,7 @@ describe('account plugin - list command (ADR-003)', () => {
     expect(output.accounts[0].keyRefId).toBe('kr_test123');
   });
 
-  test('returns failure when listAccounts throws', async () => {
+  test('throws error when listAccounts fails', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -106,11 +96,6 @@ describe('account plugin - list command (ADR-003)', () => {
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
-    const result = await listAccounts(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Failed to list accounts');
-    expect(result.errorMessage).toContain('db error');
+    await expect(listAccounts(args)).rejects.toThrow();
   });
 });

@@ -1,17 +1,17 @@
 /**
  * Account Balance Command Handler
  * Handles account balance retrieval using the Core API
- * Follows ADR-003 contract: returns CommandExecutionResult
+ * Follows ADR-003 contract: returns CommandResult
  */
-import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { AccountBalanceOutput } from './output';
 
 import BigNumber from 'bignumber.js';
 
+import { NotFoundError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
-import { HBAR_DECIMALS, Status } from '@/core/shared/constants';
-import { formatError } from '@/core/utils/errors';
+import { HBAR_DECIMALS } from '@/core/shared/constants';
 import { normalizeBalance } from '@/core/utils/normalize-balance';
 import { fetchAccountTokenBalances } from '@/plugins/account/utils/balance-helpers';
 
@@ -19,10 +19,9 @@ import { AccountBalanceInputSchema, TokenEntityType } from './input';
 
 export async function getAccountBalance(
   args: CommandHandlerArgs,
-): Promise<CommandExecutionResult> {
+): Promise<CommandResult> {
   const { api, logger } = args;
 
-  // Parse and validate command arguments
   const validArgs = AccountBalanceInputSchema.parse(args.args);
 
   const accountIdOrNameOrAlias = validArgs.account;
@@ -33,102 +32,80 @@ export async function getAccountBalance(
 
   logger.info(`Getting balance for account: ${accountIdOrNameOrAlias}`);
 
-  try {
-    // Resolve account identifier (could be name, account ID, or alias)
-    let accountId = accountIdOrNameOrAlias;
+  const network = args.api.network.getCurrentNetwork();
+  let accountId = accountIdOrNameOrAlias;
 
-    // First check if it's a stored account name (alias)
-    const network = args.api.network.getCurrentNetwork();
-    const account = args.api.alias.resolve(
+  const account = args.api.alias.resolve(
+    accountIdOrNameOrAlias,
+    ALIAS_TYPE.Account,
+    network,
+  );
+  if (account && account.entityId) {
+    accountId = account.entityId;
+    logger.info(`Found account in state: ${account.alias} -> ${accountId}`);
+  } else {
+    const accountIdParseResult = EntityIdSchema.safeParse(
       accountIdOrNameOrAlias,
-      ALIAS_TYPE.Account,
-      network,
     );
-    if (account && account.entityId) {
-      accountId = account.entityId;
-      logger.info(`Found account in state: ${account.alias} -> ${accountId}`);
-    } else {
-      const accountIdParseResult = EntityIdSchema.safeParse(
-        accountIdOrNameOrAlias,
+
+    if (!accountIdParseResult.success) {
+      throw new NotFoundError(
+        `Account not found with ID or alias: ${accountIdOrNameOrAlias}`,
       );
-
-      if (!accountIdParseResult.success) {
-        return {
-          status: Status.Failure,
-          errorMessage: `Account not found with ID or alias: ${accountIdOrNameOrAlias}`,
-        };
-      }
-
-      accountId = accountIdParseResult.data;
     }
 
-    const outputData: AccountBalanceOutput = {
-      accountId,
-      hbarOnly,
-      tokenOnly,
-      raw,
-      network,
-    };
+    accountId = accountIdParseResult.data;
+  }
 
-    if (!tokenOnly) {
-      const hbarBalanceRaw = await api.mirror.getAccountHBarBalance(accountId);
-      outputData.hbarBalance = hbarBalanceRaw;
+  const outputData: AccountBalanceOutput = {
+    accountId,
+    hbarOnly,
+    tokenOnly,
+    raw,
+    network,
+  };
 
-      if (!raw) {
-        const hbarBalanceBigNumber = new BigNumber(hbarBalanceRaw);
-        outputData.hbarBalanceDisplay = normalizeBalance(
-          hbarBalanceBigNumber,
-          HBAR_DECIMALS,
-        );
-      }
+  if (!tokenOnly) {
+    const hbarBalanceRaw = await api.mirror.getAccountHBarBalance(accountId);
+    outputData.hbarBalance = hbarBalanceRaw;
+
+    if (!raw) {
+      const hbarBalanceBigNumber = new BigNumber(hbarBalanceRaw);
+      outputData.hbarBalanceDisplay = normalizeBalance(
+        hbarBalanceBigNumber,
+        HBAR_DECIMALS,
+      );
     }
+  }
 
-    if (!hbarOnly) {
-      /* TODO: move this fetching of token ID to separate function when we will have domain error handling
-      as it will increase readability of this code */
-      let tokenId: string | undefined;
-      if (token) {
-        if (token.type === TokenEntityType.Alias) {
-          const resolved = api.alias.resolve(
-            token.value,
-            ALIAS_TYPE.Token,
-            network,
-          );
-          if (!resolved || !resolved.entityId) {
-            return {
-              status: Status.Failure,
-              errorMessage: `Token not found with ID or alias: ${token.value}`,
-            };
-          }
-          tokenId = resolved.entityId;
-        } else {
-          tokenId = token.value;
-        }
-      }
-      try {
-        outputData.tokenBalances = await fetchAccountTokenBalances(
-          api,
-          accountId,
-          tokenId,
-          raw,
+  if (!hbarOnly) {
+    let tokenId: string | undefined;
+    if (token) {
+      if (token.type === TokenEntityType.Alias) {
+        const resolved = api.alias.resolve(
+          token.value,
+          ALIAS_TYPE.Token,
           network,
         );
-      } catch (error: unknown) {
-        return {
-          status: Status.Failure,
-          errorMessage: formatError('Could not fetch token balances', error),
-        };
+        if (!resolved || !resolved.entityId) {
+          throw new NotFoundError(
+            `Token not found with ID or alias: ${token.value}`,
+          );
+        }
+        tokenId = resolved.entityId;
+      } else {
+        tokenId = token.value;
       }
     }
 
-    return {
-      status: Status.Success,
-      outputJson: JSON.stringify(outputData),
-    };
-  } catch (error: unknown) {
-    return {
-      status: Status.Failure,
-      errorMessage: formatError('Failed to get account balance', error),
-    };
+    outputData.tokenBalances = await fetchAccountTokenBalances(
+      api,
+      accountId,
+      tokenId,
+      raw,
+      network,
+    );
   }
+
+  return { result: outputData };
 }
