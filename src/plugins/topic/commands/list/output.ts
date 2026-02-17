@@ -22,7 +22,7 @@ export const ListTopicsOutputSchema = z.object({
       memo: z.string().describe('Topic memo').nullable(),
       adminKeyPresent: z.boolean().describe('Whether admin key is set'),
       submitKeyPresent: z.boolean().describe('Whether submit key is set'),
-      createdAt: IsoTimestampSchema,
+      createdAt: IsoTimestampSchema.optional(),
     }),
   ),
   totalCount: z.number().describe('Total number of topics'),

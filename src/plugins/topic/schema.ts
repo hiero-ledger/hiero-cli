@@ -40,17 +40,7 @@ export const TopicDataSchema = z.object({
     }),
   }),
 
-  createdAt: z
-    .string()
-    .datetime()
-    .default(() => new Date().toISOString())
-    .describe('Creation timestamp'),
-
-  updatedAt: z
-    .string()
-    .datetime()
-    .default(() => new Date().toISOString())
-    .describe('Last update timestamp'),
+  createdAt: z.iso.datetime().optional().describe('Creation timestamp'),
 });
 
 // TypeScript type inferred from Zod schema

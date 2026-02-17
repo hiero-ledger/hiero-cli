@@ -102,7 +102,6 @@ export async function createTopic(
         submitKeyRefId: submitKey?.keyRefId,
         network: api.network.getCurrentNetwork(),
         createdAt: result.consensusTimestamp,
-        updatedAt: result.consensusTimestamp,
       };
 
       // Step 6: Register alias if provided

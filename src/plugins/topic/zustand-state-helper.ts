@@ -26,13 +26,7 @@ export class ZustandTopicStateHelper {
   saveTopic(name: string, topicData: TopicData): void {
     this.logger.debug(`[ZUSTAND TOPIC STATE] Saving topic: ${name}`);
 
-    // Update timestamps
-    const updatedData = {
-      ...topicData,
-      updatedAt: new Date().toISOString(),
-    };
-
-    const validation = safeParseTopicData(updatedData);
+    const validation = safeParseTopicData(topicData);
     if (!validation.success) {
       const errors = validation.error.issues
         .map((e) => `${e.path.join('.')}: ${e.message}`)
@@ -40,7 +34,7 @@ export class ZustandTopicStateHelper {
       throw new Error(`Invalid topic data: ${errors}`);
     }
 
-    this.state.set(this.namespace, name, updatedData);
+    this.state.set(this.namespace, name, topicData);
     this.logger.debug(`[ZUSTAND TOPIC STATE] Topic saved: ${name}`);
   }
 
