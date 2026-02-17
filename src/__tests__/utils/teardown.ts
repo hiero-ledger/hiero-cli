@@ -26,7 +26,7 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
   });
   if (accountListResult.status == Status.Success) {
     const accountOutput: ListAccountsOutput = JSON.parse(
-      accountListResult.outputJson!,
+      accountListResult.outputJson,
     );
     const accounts = accountOutput.accounts;
 
@@ -52,7 +52,7 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
       });
       if (viewAccountResult.status == Status.Success) {
         const viewAccountOutput: ViewAccountOutput = JSON.parse(
-          viewAccountResult.outputJson!,
+          viewAccountResult.outputJson,
         );
         const args: Record<string, unknown> = {
           amount: String(Number(viewAccountOutput.balance) / 100000000),

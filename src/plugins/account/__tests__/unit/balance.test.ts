@@ -11,8 +11,8 @@ import {
   makeLogger,
   makeMirrorMock,
 } from '@/__tests__/mocks/mocks';
-import { getAccountBalance } from '@/plugins/account/commands/balance/handler';
 import { NotFoundError } from '@/core/errors';
+import { getAccountBalance } from '@/plugins/account/commands/balance/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({

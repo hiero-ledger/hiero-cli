@@ -3,7 +3,6 @@ import type { ListAccountsOutput } from '@/plugins/account/commands/list';
 
 import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { listAccounts } from '@/plugins/account/commands/list/handler';
-import { ConfigurationError } from '@/core/errors';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { makeAccountData } from './helpers/mocks';

@@ -50,7 +50,7 @@ describe('Import Account Integration Tests', () => {
 
       expect(importAccountResult.status).toBe(Status.Success);
       const importAccountOutput: ImportAccountOutput = JSON.parse(
-        importAccountResult.outputJson!,
+        importAccountResult.outputJson,
       );
       expect(importAccountOutput.accountId).toBe(accountId);
       expect(importAccountOutput.name).toBe('account-imported');
@@ -70,7 +70,7 @@ describe('Import Account Integration Tests', () => {
       });
       expect(viewAccountResult.status).toBe(Status.Success);
       const viewAccountOutput: ViewAccountOutput = JSON.parse(
-        viewAccountResult.outputJson!,
+        viewAccountResult.outputJson,
       );
       expect(viewAccountOutput.accountId).toBe(importAccountOutput.accountId);
       expect(viewAccountOutput.evmAddress).toBe(importAccountOutput.evmAddress);

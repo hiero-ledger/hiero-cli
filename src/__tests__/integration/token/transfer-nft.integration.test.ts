@@ -50,7 +50,7 @@ describe('Transfer NFT Integration Tests', () => {
 
       expect(createSourceAccountResult.status).toBe(Status.Success);
       const createSourceAccountOutput: CreateAccountOutput = JSON.parse(
-        createSourceAccountResult.outputJson!,
+        createSourceAccountResult.outputJson,
       );
       expect(createSourceAccountOutput.name).toBe(
         'account-nft-transfer-source',
@@ -76,7 +76,7 @@ describe('Transfer NFT Integration Tests', () => {
 
       expect(createDestinationAccountResult.status).toBe(Status.Success);
       const createDestinationAccountOutput: CreateAccountOutput = JSON.parse(
-        createDestinationAccountResult.outputJson!,
+        createDestinationAccountResult.outputJson,
       );
       expect(createDestinationAccountOutput.name).toBe(
         'account-nft-transfer-destination',
@@ -276,7 +276,7 @@ describe('Transfer NFT Integration Tests', () => {
 
       expect(createAccountResult.status).toBe(Status.Success);
       const createAccountOutput: CreateAccountOutput = JSON.parse(
-        createAccountResult.outputJson!,
+        createAccountResult.outputJson,
       );
       expect(createAccountOutput.name).toBe('account-nft-not-owned-test');
       expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
