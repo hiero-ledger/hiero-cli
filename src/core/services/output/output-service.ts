@@ -5,7 +5,7 @@
 import type { OutputFormat } from '@/core/shared/types/output-format';
 import type { OutputService } from './output-service.interface';
 import type { FormatStrategyOptions } from './strategies';
-import type { OutputHandlerOptions } from './types';
+import type { OutputHandlerOptions, OutputOptions } from './types';
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -29,7 +29,21 @@ export class OutputServiceImpl implements OutputService {
     return this.currentFormat;
   }
 
-  handleCommandOutput(options: OutputHandlerOptions): void {
+  handleOutput(options: OutputHandlerOptions): void {
+    const { result, template, status } = options;
+    const outputFormat = this.getFormat();
+
+    const data = { status, ...result };
+
+    const formatter = OutputFormatterFactory.getStrategy(outputFormat);
+    const formatOptions: FormatStrategyOptions = { template, pretty: true };
+
+    const formattedOutput = formatter.format(data, formatOptions);
+
+    console.log(formattedOutput);
+  }
+
+  handleCommandOutput(options: OutputOptions): void {
     const { outputJson, template, format, outputPath } = options;
 
     // Parse the JSON output
