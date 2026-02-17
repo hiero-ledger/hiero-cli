@@ -5,6 +5,7 @@ import type { KeyManager } from './key-manager.interface';
 
 import { PrivateKey } from '@hashgraph/sdk';
 
+import { NotFoundError } from '@/core/errors';
 import { PrivateKeySigner } from '@/core/services/kms/signers/private-key-signer';
 import { KeyAlgorithm } from '@/core/shared/constants';
 
@@ -56,7 +57,9 @@ export class LocalKeyManager implements KeyManager {
   ): Signer {
     const secret = this.readSecret(keyRefId);
     if (!secret) {
-      throw new Error(`Secret not found for keyRefId: ${keyRefId}`);
+      throw new NotFoundError(`Secret not found for keyRefId: ${keyRefId}`, {
+        context: { keyRefId },
+      });
     }
 
     return new PrivateKeySigner(publicKey, secret, algorithm);

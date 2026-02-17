@@ -8,6 +8,7 @@ import type {
 
 import * as path from 'path';
 
+import { NotFoundError, ValidationError } from '@/core/errors';
 import { loadSolcVersion } from '@/core/utils/solc-loader';
 import { createFindImports } from '@/core/utils/solidity-file-importer';
 
@@ -43,14 +44,16 @@ export class ContractCompilerServiceImpl implements ContractCompilerService {
       }),
     ) as SolcOutput;
     if (!output.contracts && output.errors && output.errors?.length > 0) {
-      throw new Error(
-        `Contract ${params.contractName} compilation with error ${output.errors[0].formattedMessage}`,
+      throw new ValidationError(
+        `Contract ${params.contractName} compilation failed: ${output.errors[0].formattedMessage}`,
+        { context: { contractName: params.contractName } },
       );
     }
 
     if (!output.contracts?.[contractBasename]?.[params.contractName]) {
-      throw new Error(
+      throw new NotFoundError(
         `Contract ${params.contractName} not found in compilation output`,
+        { context: { contractName: params.contractName, contractBasename } },
       );
     }
 

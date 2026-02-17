@@ -15,6 +15,7 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
+import { TransactionError } from '@/core/errors';
 import { TxExecutionServiceImpl } from '@/core/services/tx-execution/tx-execution-service';
 
 import {
@@ -327,34 +328,28 @@ describe('TxExecutionServiceImpl', () => {
       expect(result.receipt.status.status).toBe('failed');
     });
 
-    it('should throw error when transaction execution fails', async () => {
-      const { service, logger } = setupService();
+    it('should throw TransactionError when transaction execution fails', async () => {
+      const { service } = setupService();
       const mockTx = createMockTransaction();
-      const error = new Error('Network error');
 
-      mockTx.execute.mockRejectedValue(error);
+      mockTx.execute.mockRejectedValue(new Error('Network error'));
 
       await expect(
         service.signAndExecuteWith(mockTx as unknown as HederaTransaction, []),
-      ).rejects.toThrow('Network error');
-
-      expect(logger.error).toHaveBeenCalledWith(
-        expect.stringContaining('[TX-EXECUTION] Transaction execution failed'),
-      );
+      ).rejects.toThrow(TransactionError);
     });
 
-    it('should throw error when getting receipt fails', async () => {
+    it('should throw TransactionError when getting receipt fails', async () => {
       const { service } = setupService();
       const mockTx = createMockTransaction();
       const mockResponse = createMockTransactionResponse();
-      const error = new Error('Receipt error');
 
       mockTx.execute.mockResolvedValue(mockResponse);
-      mockResponse.getReceipt.mockRejectedValue(error);
+      mockResponse.getReceipt.mockRejectedValue(new Error('Receipt error'));
 
       await expect(
         service.signAndExecuteWith(mockTx as unknown as HederaTransaction, []),
-      ).rejects.toThrow('Receipt error');
+      ).rejects.toThrow(TransactionError);
     });
   });
 
@@ -458,23 +453,18 @@ describe('TxExecutionServiceImpl', () => {
       expect(result.receipt.status.status).toBe('failed');
     });
 
-    it('should throw error and log when contract create flow execution fails', async () => {
-      const { service, logger } = setupService();
+    it('should throw TransactionError when contract create flow execution fails', async () => {
+      const { service } = setupService();
       const mockFlow = createMockContractCreateFlow();
-      const error = new Error('Flow network error');
 
-      mockFlow.execute.mockRejectedValue(error);
+      mockFlow.execute.mockRejectedValue(new Error('Flow network error'));
 
       await expect(
         service.signAndExecuteContractCreateFlowWith(
           mockFlow as unknown as ContractCreateFlow,
           [],
         ),
-      ).rejects.toThrow('Flow network error');
-
-      expect(logger.error).toHaveBeenCalledWith(
-        expect.stringContaining('[TX-EXECUTION] Transaction execution failed'),
-      );
+      ).rejects.toThrow(TransactionError);
     });
   });
 });

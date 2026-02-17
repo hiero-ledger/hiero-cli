@@ -5,6 +5,8 @@ import type {
   QueryContractFunctionResult,
 } from '@/core/services/contract-query/types';
 
+import { NetworkError, NotFoundError, StateError } from '@/core/errors';
+
 export class ContractQueryServiceImpl implements ContractQueryService {
   private mirrorService: HederaMirrornodeService;
   private logger: Logger;
@@ -21,12 +23,19 @@ export class ContractQueryServiceImpl implements ContractQueryService {
       params.contractIdOrEvmAddress,
     );
     if (!contractInfo) {
-      throw new Error(`Contract ${params.contractIdOrEvmAddress} not found`);
+      throw new NotFoundError(
+        `Contract ${params.contractIdOrEvmAddress} not found`,
+      );
     }
     const contractId = contractInfo.contract_id;
     const contractEvmAddress = contractInfo.evm_address;
     if (!contractEvmAddress) {
-      throw new Error(`Contract ${contractId} does not have an EVM address`);
+      throw new StateError(
+        `Contract ${contractId} does not have an EVM address`,
+        {
+          context: { contractId },
+        },
+      );
     }
     const data = params.abiInterface.encodeFunctionData(
       params.functionName,
@@ -41,8 +50,12 @@ export class ContractQueryServiceImpl implements ContractQueryService {
     });
 
     if (!response || !response.result) {
-      throw new Error(
-        `There was a problem with calling contract ${contractId} "${params.functionName}" function`,
+      throw new NetworkError(
+        `Contract call failed: ${contractId} "${params.functionName}"`,
+        {
+          context: { contractId, functionName: params.functionName },
+          recoverable: true,
+        },
       );
     }
 
