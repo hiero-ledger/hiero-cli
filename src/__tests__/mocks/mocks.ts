@@ -385,6 +385,7 @@ const makeHbarMock = (): jest.Mocked<HbarService> => ({
  */
 const makeOutputMock = (): jest.Mocked<OutputService> => ({
   handleCommandOutput: jest.fn(),
+  handleOutput: jest.fn(),
   setFormat: jest.fn(),
   getFormat: jest.fn().mockReturnValue('human'),
   emptyLine: jest.fn(),
