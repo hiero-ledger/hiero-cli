@@ -105,8 +105,8 @@ hcli account view --account 0.0.123456
 ### Account Delete
 
 ```bash
-hcli account delete --name myaccount
-hcli account delete --id 0.0.123456
+hcli account delete --account myaccount
+hcli account delete --account 0.0.123456
 ```
 
 ### Account Clear
