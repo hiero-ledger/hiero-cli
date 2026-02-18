@@ -1,3 +1,5 @@
+import type { UseNetworkOutput } from '@/plugins/network/commands/use/output';
+
 import {
   createMirrorNodeMock,
   makeArgs,
@@ -5,7 +7,6 @@ import {
   makeNetworkMock,
   setupExitSpy,
 } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
 import { useHandler } from '@/plugins/network/commands/use';
 
 let exitSpy: jest.SpyInstance;
@@ -41,10 +42,11 @@ describe('network plugin - use command', () => {
     const result = await useHandler(args);
 
     expect(networkService.switchNetwork).toHaveBeenCalledWith('mainnet');
-    expect(result.status).toBe(Status.Success);
+    const output = result.result as UseNetworkOutput;
+    expect(output.activeNetwork).toBe('mainnet');
   });
 
-  test('returns failure for invalid network', async () => {
+  test('throws when switchNetwork fails', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     networkService.switchNetwork = jest.fn().mockImplementation(() => {
@@ -55,13 +57,12 @@ describe('network plugin - use command', () => {
       global: 'testnet',
     });
 
-    const result = await useHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Failed to switch network');
+    await expect(useHandler(args)).rejects.toThrow(
+      'Network not available: testnet',
+    );
   });
 
-  test('returns JSON output when requested', async () => {
+  test('returns output with activeNetwork when requested', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     networkService.switchNetwork = jest.fn();
@@ -79,8 +80,8 @@ describe('network plugin - use command', () => {
     const result = await useHandler(args);
 
     expect(networkService.switchNetwork).toHaveBeenCalledWith('previewnet');
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    const output = result.result as UseNetworkOutput;
+    expect(output.activeNetwork).toBe('previewnet');
   });
 
   test('logs info message', async () => {
@@ -98,8 +99,7 @@ describe('network plugin - use command', () => {
       },
     );
 
-    const result = await useHandler(args);
-    expect(result.status).toBe(Status.Success);
+    await useHandler(args);
 
     expect(logger.info).toHaveBeenCalledWith('Switching to network: mainnet');
   });
@@ -120,8 +120,7 @@ describe('network plugin - use command', () => {
     );
 
     const res1 = await useHandler(argsToMainnet);
-    expect(res1.status).toBe(Status.Success);
-
+    expect((res1.result as UseNetworkOutput).activeNetwork).toBe('mainnet');
     expect(networkService.switchNetwork).toHaveBeenCalledWith('mainnet');
 
     jest.clearAllMocks();
@@ -135,8 +134,7 @@ describe('network plugin - use command', () => {
     );
 
     const res2 = await useHandler(argsToPreviewnet);
-    expect(res2.status).toBe(Status.Success);
-
+    expect((res2.result as UseNetworkOutput).activeNetwork).toBe('previewnet');
     expect(networkService.switchNetwork).toHaveBeenCalledWith('previewnet');
   });
 });
