@@ -25,6 +25,7 @@ export const MOCK_PUBLIC_KEY =
 export const MOCK_CONTRACT_ID = '0.0.1234';
 export const MOCK_ACCOUNT_ID = '0.0.5678';
 export const MOCK_ACCOUNT_ID_ALT = '0.0.5679';
+export const MOCK_TOPIC_ID = '0.0.7777';
 export const MOCK_EVM_ADDRESS = '0x' + 'a'.repeat(40);
 export const MOCK_EVM_ADDRESS_ALT = '0x' + 'b'.repeat(40);
 export const MOCK_EVM_ADDRESS_ALT_2 = '0x' + 'c'.repeat(40);

@@ -6,6 +6,7 @@
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { DeleteAccountOutput } from './output';
 
+import { EntityIdSchema } from '@/core/schemas';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
@@ -18,34 +19,27 @@ export async function deleteAccount(
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  // Initialize Zustand state helper
   const accountState = new ZustandAccountStateHelper(api.state, logger);
-
-  // Parse and validate command arguments
-  const validArgs = DeleteAccountInputSchema.parse(args.args);
-
-  const name = validArgs.name;
-  const accountId = validArgs.id;
 
   logger.info(`Deleting account...`);
 
   try {
+    const validArgs = DeleteAccountInputSchema.parse(args.args);
+    const accountRef = validArgs.account;
+    const isEntityId = EntityIdSchema.safeParse(accountRef).success;
     let accountToDelete;
 
-    // Find account by name or ID
-    if (name) {
-      accountToDelete = accountState.loadAccount(name);
-      if (!accountToDelete) {
-        throw new Error(`Account with name '${name}' not found`);
-      }
-    } else if (accountId) {
+    if (isEntityId) {
       const accounts = accountState.listAccounts();
-      accountToDelete = accounts.find((acc) => acc.accountId === accountId);
+      accountToDelete = accounts.find((acc) => acc.accountId === accountRef);
       if (!accountToDelete) {
-        throw new Error(`Account with ID '${accountId}' not found`);
+        throw new Error(`Account with ID '${accountRef}' not found`);
       }
     } else {
-      throw new Error('Either name or id must be provided');
+      accountToDelete = accountState.loadAccount(accountRef);
+      if (!accountToDelete) {
+        throw new Error(`Account with name '${accountRef}' not found`);
+      }
     }
 
     // Remove any names associated with this account on the current network
@@ -84,7 +78,7 @@ export async function deleteAccount(
         name: accountToDelete.name,
         accountId: accountToDelete.accountId,
       },
-      ...(removedAliases.length > 0 && { removedAliases }),
+      removedAliases,
       network: currentNetwork,
     };
 
