@@ -126,8 +126,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       const response: TransactionResponse = await transaction.execute(client);
       return await this.processTransactionResponse(response, client);
     } catch (error) {
-      throw new TransactionError('Transaction execution failed', {
-        recoverable: false,
+      throw new TransactionError('Transaction execution failed', false, {
         cause: error,
       });
     } finally {
@@ -144,10 +143,13 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       const response: TransactionResponse = await transaction.execute(client);
       return await this.processTransactionResponse(response, client);
     } catch (error) {
-      throw new TransactionError('Contract create flow execution failed', {
-        recoverable: false,
-        cause: error,
-      });
+      throw new TransactionError(
+        'Contract create flow execution failed',
+        false,
+        {
+          cause: error,
+        },
+      );
     } finally {
       client.close();
     }
