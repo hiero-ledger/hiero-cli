@@ -3,8 +3,10 @@
  */
 import type {
   AccountAPIResponse,
+  AccountListItemAPIResponse,
   ContractInfo,
   ExchangeRateResponse,
+  GetAccountsAPIResponse,
   NftInfo,
   TokenAirdropsResponse,
   TokenBalancesResponse,
@@ -32,6 +34,34 @@ export const createMockAccountAPIResponse = (
   max_automatic_token_associations: 0,
   memo: '',
   receiver_sig_required: false,
+  ...overrides,
+});
+
+export const createMockAccountListItemAPIResponse = (
+  overrides: Partial<AccountListItemAPIResponse> = {},
+): AccountListItemAPIResponse => ({
+  account: '0.0.1234',
+  created_timestamp: '2024-01-01T12:00:00.000Z',
+  balance: {
+    timestamp: '2024-01-01T12:00:00.000Z',
+    balance: 1000000,
+    tokens: [{ token_id: '0.0.2000', balance: 100 }],
+  },
+  evm_address: '0x1234567890123456789012345678901234567890',
+  key: {
+    _type: 'ED25519',
+    key: 'ed25519_abcd1234',
+  },
+  memo: 'test memo',
+  ...overrides,
+});
+
+export const createMockGetAccountsAPIResponse = (
+  accounts: AccountListItemAPIResponse[] = [],
+  overrides: Partial<GetAccountsAPIResponse> = {},
+): GetAccountsAPIResponse => ({
+  accounts,
+  links: undefined,
   ...overrides,
 });
 

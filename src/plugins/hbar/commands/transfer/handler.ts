@@ -41,6 +41,12 @@ export async function transferHandler(
       keyManager,
       ['hbar:transfer'],
     );
+    if (!from.accountId) {
+      throw new Error(
+        `Could not resolve account ID for passed "from" argument ${validArgs.from?.type} from value ${validArgs.from?.rawValue}`,
+      );
+    }
+
     let amount: bigint;
 
     try {
@@ -72,10 +78,7 @@ export async function transferHandler(
 
     // Check if from and to are the same account
     if (from.accountId === toAccountId) {
-      return {
-        status: Status.Failure,
-        errorMessage: 'Cannot transfer to the same account',
-      };
+      logger.warn(`You are making self transfer on account ${from.accountId}`);
     }
 
     logger.info(

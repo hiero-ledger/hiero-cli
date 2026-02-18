@@ -56,6 +56,11 @@ export async function createNft(
     keyManager,
     ['token:treasury'],
   );
+  if (!treasury.accountId) {
+    throw new Error(
+      `Could not resolve account ID for passed "treasury" argument for type ${validArgs.treasury?.type} from value ${validArgs.treasury?.rawValue}`,
+    );
+  }
 
   const admin = await api.keyResolver.getOrInitKeyWithFallback(
     validArgs.adminKey,
@@ -153,7 +158,9 @@ export async function createNft(
       supplyType,
       transactionId: result.transactionId,
       adminAccountId: admin.accountId,
+      adminPublicKey: admin.publicKey,
       supplyAccountId: supply.accountId,
+      supplyPublicKey: supply.publicKey,
       alias,
       network: network,
     };

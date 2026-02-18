@@ -69,7 +69,8 @@ export const contractPluginManifest: PluginManifest = {
           short: 'a',
           type: OptionType.STRING,
           required: false,
-          description: 'Smart contract admin key.',
+          description:
+            'Smart contract admin key as account ID with private key in {accountId}:{private_key} format, account public key, account private key, account ID, account name/alias or account key reference.',
         },
         {
           name: 'memo',

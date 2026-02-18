@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   EntityReferenceSchema,
   KeyManagerTypeSchema,
-  KeyOrAccountAliasSchema,
+  PrivateKeySchema,
 } from '@/core/schemas';
 
 /**
@@ -17,8 +17,8 @@ export const SubmitMessageInputSchema = z.object({
     .trim()
     .min(1, 'Message cannot be empty')
     .describe('Message to submit to the topic'),
-  signer: KeyOrAccountAliasSchema.optional().describe(
-    'Account to use for signing the message. Required for public topics (without submit keys). For topics with submit keys, must be one of the authorized signers.',
+  signer: PrivateKeySchema.optional().describe(
+    'Key to sign the message with. Can be {accountId}:{privateKey} pair, account private key, key reference or account name.',
   ),
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type for storing private keys (defaults to config setting)',

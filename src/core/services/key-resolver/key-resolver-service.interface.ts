@@ -1,23 +1,18 @@
+import type { ResolvedKey } from '@/core/services/key-resolver/types';
 import type {
+  Credential,
   KeyManagerName,
-  KeyOrAccountAlias,
 } from '@/core/services/kms/kms-types.interface';
-
-export type ResolvedKey = {
-  publicKey: string;
-  accountId: string;
-  keyRefId: string;
-};
 
 export interface KeyResolverService {
   getOrInitKey(
-    keyOrAlias: KeyOrAccountAlias,
+    credential: Credential,
     keyManager: KeyManagerName,
     labels?: string[],
   ): Promise<ResolvedKey>;
 
   getOrInitKeyWithFallback(
-    keyOrAlias: KeyOrAccountAlias | undefined,
+    credential: Credential | undefined,
     keyManager: KeyManagerName,
     labels?: string[],
   ): Promise<ResolvedKey>;

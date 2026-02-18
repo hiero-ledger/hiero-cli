@@ -5,7 +5,7 @@ import {
   FilePathSchema,
   GasInputSchema,
   KeyManagerTypeSchema,
-  KeyOrAccountAliasSchema,
+  KeySchema,
   MemoSchema,
   SolidityCompilerVersion,
 } from '@/core/schemas';
@@ -26,8 +26,8 @@ export const ContractCreateSchema = z
     basePath: FilePathSchema.optional().describe(
       'Base path to main directory of smart contract path',
     ),
-    adminKey: KeyOrAccountAliasSchema.optional().describe(
-      'Admin key as account name or {accountId}:{private_key} format.',
+    adminKey: KeySchema.optional().describe(
+      'Admin key as account ID with private key in {accountId}:{private_key} format, account public key, account private key, account ID, account name/alias or account key reference.',
     ),
     memo: MemoSchema.describe(
       'Optional memo for the contract (max 100 characters)',

@@ -119,8 +119,15 @@ describe('hbar plugin - transfer command (unit)', () => {
     expect(logger.info).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
   });
 
-  test('returns failure when from equals to', async () => {
-    const { api, logger, alias } = setupTransferTest();
+  test('logs warning when from equals to (self-transfer allowed)', async () => {
+    const { api, logger, alias } = setupTransferTest({
+      transferImpl: jest
+        .fn()
+        .mockResolvedValue(mockTransferTransactionResults.empty),
+      signAndExecuteImpl: jest
+        .fn()
+        .mockResolvedValue(mockTransactionResults.success),
+    });
 
     // Mock alias resolution for 'same-account'
     (alias.resolve as jest.Mock).mockImplementation((aliasName) => {
@@ -141,8 +148,10 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const result = await transferHandler(args);
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Cannot transfer');
+    expect(result.status).toBe(Status.Success);
+    expect(logger.warn).toHaveBeenCalledWith(
+      expect.stringContaining('self transfer'),
+    );
   });
 
   test('returns failure when transferTinybar fails', async () => {
@@ -165,14 +174,16 @@ describe('hbar plugin - transfer command (unit)', () => {
   });
 
   test('returns failure when from is just account ID without private key', () => {
-    // SIMPLE validation → test schema directly
+    // SIMPLE validation → test schema directly (PrivateKeyWithAccountIdSchema throws Error in transform)
     expect(() => {
       TransferInputSchema.parse({
         amount: mockAmounts.small,
         from: mockAccountIds.sender, // Just account ID, no private key
         to: mockAccountIds.receiver,
       });
-    }).toThrow(ZodError);
+    }).toThrow(
+      'Private key with account ID must be a valid account ID and private key pair in {account-id:private-key} format, key reference or alias name',
+    );
   });
 
   test('uses default credentials as from when not provided', async () => {

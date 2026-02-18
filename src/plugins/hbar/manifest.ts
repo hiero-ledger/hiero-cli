@@ -44,7 +44,7 @@ export const hbarPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'AccountID:privateKey pair, AccountID:keyType:privateKey format, or account name to transfer from (defaults to operator). Key type can be "ecdsa" or "ed25519" (defaults to ecdsa if not specified).',
+            'Account to transfer from. Format as accountId:privateKey pair, key reference or account name to transfer from. Defaults to operator.',
         },
         {
           name: 'memo',

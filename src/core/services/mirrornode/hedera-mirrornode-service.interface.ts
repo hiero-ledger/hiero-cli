@@ -8,6 +8,8 @@ import type {
   ContractCallResponse,
   ContractInfo,
   ExchangeRateResponse,
+  GetAccountsQueryParams,
+  GetAccountsResponse,
   NftInfo,
   TokenAirdropsResponse,
   TokenBalancesResponse,
@@ -38,6 +40,13 @@ export interface HederaMirrornodeService {
     accountId: string,
     tokenId?: string,
   ): Promise<TokenBalancesResponse>;
+
+  /**
+   * List account entities on network with optional filters and pagination
+   */
+  getAccounts(
+    queryParams?: GetAccountsQueryParams,
+  ): Promise<GetAccountsResponse>;
 
   /**
    * Get topic messages with pagination support

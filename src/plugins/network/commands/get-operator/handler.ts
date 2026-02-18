@@ -36,7 +36,7 @@ export async function getOperatorHandler(
 
     let publicKey: string | undefined;
     if (operator) {
-      publicKey = api.kms.getPublicKey(operator.keyRefId) || undefined;
+      publicKey = api.kms.get(operator.keyRefId)?.publicKey;
     }
 
     const output: GetOperatorOutput = operator

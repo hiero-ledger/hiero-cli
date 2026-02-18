@@ -36,16 +36,20 @@ export async function readAndValidateTokenFile(
   const fileContent = await fs.readFile(filepath, 'utf-8');
   const raw = JSON.parse(fileContent) as unknown;
 
-  const parsed = FungibleTokenFileSchema.safeParse(raw);
-  if (!parsed.success) {
-    logger.error('Token file validation failed');
-    parsed.error.issues.forEach((issue) => {
-      logger.error(`${issue.path.join('.') || '<root>'}: ${issue.message}`);
-    });
+  try {
+    const parsed = FungibleTokenFileSchema.safeParse(raw);
+    if (!parsed.success) {
+      logger.error('Token file validation failed');
+      parsed.error.issues.forEach((issue) => {
+        logger.error(`${issue.path.join('.') || '<root>'}: ${issue.message}`);
+      });
+      throw new Error('Invalid token definition file');
+    }
+
+    return parsed.data;
+  } catch {
     throw new Error('Invalid token definition file');
   }
-
-  return parsed.data;
 }
 
 export async function readAndValidateNftTokenFile(
@@ -58,14 +62,18 @@ export async function readAndValidateNftTokenFile(
   const fileContent = await fs.readFile(filepath, 'utf-8');
   const raw = JSON.parse(fileContent) as unknown;
 
-  const parsed = NonFungibleTokenFileSchema.safeParse(raw);
-  if (!parsed.success) {
-    logger.error('NFT token file validation failed');
-    parsed.error.issues.forEach((issue) => {
-      logger.error(`${issue.path.join('.') || '<root>'}: ${issue.message}`);
-    });
+  try {
+    const parsed = NonFungibleTokenFileSchema.safeParse(raw);
+    if (!parsed.success) {
+      logger.error('NFT token file validation failed');
+      parsed.error.issues.forEach((issue) => {
+        logger.error(`${issue.path.join('.') || '<root>'}: ${issue.message}`);
+      });
+      throw new Error('Invalid NFT token definition file');
+    }
+
+    return parsed.data;
+  } catch {
     throw new Error('Invalid NFT token definition file');
   }
-
-  return parsed.data;
 }

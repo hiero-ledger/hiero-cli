@@ -35,6 +35,11 @@ export async function setOperatorHandler(
       keyManager,
       ['network:operator', `network:${targetNetwork}`],
     );
+    if (!operator.accountId) {
+      throw new Error(
+        `Could not resolve account ID for passed "operator" argument ${validArgs.operator?.type} from value ${validArgs.operator?.rawValue}`,
+      );
+    }
     if (networkArg && !api.network.isNetworkAvailable(networkArg)) {
       const available = api.network.getAvailableNetworks().join(', ');
       return {

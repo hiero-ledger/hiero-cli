@@ -73,9 +73,6 @@ describe('Token Plugin Error Handling', () => {
             throw new Error('Network timeout');
           }),
         },
-        kms: {
-          getPublicKey: jest.fn().mockReturnValue('test-public-key'),
-        },
         alias: makeTestAliasService(),
       });
 
@@ -262,9 +259,6 @@ describe('Token Plugin Error Handling', () => {
               },
             },
           }),
-        },
-        kms: {
-          getPublicKey: jest.fn().mockReturnValue('invalid-public-key'),
         },
         alias: makeTestAliasService(),
       });
@@ -498,9 +492,6 @@ describe('Token Plugin Error Handling', () => {
             receipt: { status: { status: 'failed', transactionId: '' } },
           }),
         },
-        kms: {
-          getPublicKey: jest.fn().mockReturnValue('test-public-key'),
-        },
         alias: makeTestAliasService(),
       });
 
@@ -646,9 +637,6 @@ describe('Token Plugin Error Handling', () => {
             },
           }),
         },
-        kms: {
-          getPublicKey: jest.fn().mockReturnValue('test-public-key'),
-        },
         alias: makeTestAliasService(),
       });
 
@@ -686,9 +674,6 @@ describe('Token Plugin Error Handling', () => {
           createTokenTransaction: jest.fn().mockImplementation(() => {
             throw new Error('Rate limit exceeded');
           }),
-        },
-        kms: {
-          getPublicKey: jest.fn().mockReturnValue('test-public-key'),
         },
         alias: makeTestAliasService(),
       });
@@ -790,9 +775,6 @@ describe('Token Plugin Error Handling', () => {
         signing: {
           signAndExecute: jest.fn().mockResolvedValue(_mockSignResult),
           signAndExecuteWith: jest.fn().mockResolvedValue(_mockSignResult),
-        },
-        kms: {
-          getPublicKey: jest.fn().mockReturnValue('test-public-key'),
         },
         alias: makeTestAliasService(),
       });

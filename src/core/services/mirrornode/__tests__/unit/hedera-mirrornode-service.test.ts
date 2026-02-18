@@ -5,12 +5,18 @@
 
 import { makeNetworkMock } from '@/__tests__/mocks/mocks';
 import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { AccountBalanceOperator } from '@/core/services/mirrornode/types';
+import {
+  MirrorNodeRequestOrderParameter,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 
 import {
   createMockAccountAPIResponse,
+  createMockAccountListItemAPIResponse,
   createMockContractInfo,
   createMockExchangeRateResponse,
+  createMockGetAccountsAPIResponse,
   createMockNftInfo,
   createMockTokenAirdropsResponse,
   createMockTokenBalancesResponse,
@@ -333,6 +339,234 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       ).rejects.toThrow(
         `Failed to fetch balance for an account ${TEST_ACCOUNT_ID}: 404 Not Found`,
       );
+    });
+  });
+
+  describe('getAccounts', () => {
+    it('should fetch accounts without params and return mapped DTO', async () => {
+      const { service } = setupService();
+      const mockAccount = createMockAccountListItemAPIResponse();
+      const mockResponse = createMockGetAccountsAPIResponse([mockAccount]);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccounts();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_URL}/accounts?balance=false&limit=25&order=asc`,
+      );
+      expect(result.accounts).toHaveLength(1);
+      expect(result.accounts[0].accountId).toBe('0.0.1234');
+      expect(result.accounts[0].createdTimestamp).toBe(
+        mockAccount.created_timestamp,
+      );
+      expect(result.accounts[0].accountPublicKey).toBe('ed25519_abcd1234');
+      expect(result.accounts[0].evmAddress).toBe(
+        '0x1234567890123456789012345678901234567890',
+      );
+      expect(result.accounts[0].balance?.balance).toBe(1000000);
+      expect(result.accounts[0].balance?.tokens).toEqual([
+        { tokenId: '0.0.2000', balance: 100 },
+      ]);
+    });
+
+    it('should build correct query string with all params', async () => {
+      const { service } = setupService();
+      const mockResponse = createMockGetAccountsAPIResponse([]);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      await service.getAccounts({
+        accountBalance: { operator: AccountBalanceOperator.GTE, value: 1000 },
+        accountId: '0.0.1234',
+        accountPublicKey:
+          '3c3d546321ff6f63d701d2ec5c277095874e19f4a235bee1e6bb19258bf362be',
+        balance: false,
+        limit: 10,
+        order: MirrorNodeRequestOrderParameter.DESC,
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_URL}/accounts?account.balance=gte:1000&account.id=0.0.1234&account.publickey=3c3d546321ff6f63d701d2ec5c277095874e19f4a235bee1e6bb19258bf362be&balance=false&limit=10&order=desc`,
+      );
+    });
+
+    it('should handle single page response (no links.next)', async () => {
+      const { service } = setupService();
+      const mockAccount = createMockAccountListItemAPIResponse();
+      const mockResponse = createMockGetAccountsAPIResponse([mockAccount], {
+        links: undefined,
+      });
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccounts();
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(result.accounts).toHaveLength(1);
+    });
+
+    it('should handle pagination with links.next', async () => {
+      const { service } = setupService();
+      const acc1 = createMockAccountListItemAPIResponse({
+        account: '0.0.1',
+      });
+      const acc2 = createMockAccountListItemAPIResponse({
+        account: '0.0.2',
+      });
+
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            accounts: [acc1],
+            links: { next: '/accounts?limit=25&order=asc' },
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            accounts: [acc2],
+            links: undefined,
+          }),
+        });
+
+      const result = await service.getAccounts();
+
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+      expect(result.accounts).toHaveLength(2);
+      expect(result.accounts[0].accountId).toBe('0.0.1');
+      expect(result.accounts[1].accountId).toBe('0.0.2');
+    });
+
+    it('should stop pagination at 100 pages', async () => {
+      const { service } = setupService();
+
+      (global.fetch as jest.Mock).mockImplementation(() =>
+        Promise.resolve({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            accounts: [createMockAccountListItemAPIResponse()],
+            links: { next: '/accounts?next=page' },
+          }),
+        }),
+      );
+
+      const result = await service.getAccounts();
+
+      expect(global.fetch).toHaveBeenCalledTimes(100);
+      expect(result.accounts).toHaveLength(100);
+    });
+
+    it('should construct next URL correctly: baseUrl + links.next', async () => {
+      const { service } = setupService();
+      const nextPath = '/accounts?limit=25&order=asc&next=token';
+
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            accounts: [createMockAccountListItemAPIResponse()],
+            links: { next: nextPath },
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            accounts: [createMockAccountListItemAPIResponse()],
+            links: undefined,
+          }),
+        });
+
+      await service.getAccounts();
+
+      expect(global.fetch).toHaveBeenNthCalledWith(
+        2,
+        `${TESTNET_URL}${nextPath}`,
+      );
+    });
+
+    it('should throw error on HTTP 404', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      await expect(service.getAccounts()).rejects.toThrow(
+        'Failed to get accounts: 404 Not Found',
+      );
+    });
+
+    it('should log error to console.error before rethrowing', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+
+      await expect(service.getAccounts()).rejects.toThrow();
+
+      expect(console.error).toHaveBeenCalledWith(
+        'Failed to fetch accounts. Error:',
+        expect.any(Error),
+      );
+    });
+
+    it('should handle empty accounts array', async () => {
+      const { service } = setupService();
+      const mockResponse = createMockGetAccountsAPIResponse([]);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccounts();
+
+      expect(result.accounts).toHaveLength(0);
+    });
+
+    it('should map account with null key correctly', async () => {
+      const { service } = setupService();
+      const mockAccount = createMockAccountListItemAPIResponse({
+        key: null,
+      });
+      const mockResponse = createMockGetAccountsAPIResponse([mockAccount]);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccounts();
+
+      expect(result.accounts[0].accountId).toBe('0.0.1234');
+      expect(result.accounts[0].accountPublicKey).toBeUndefined();
+      expect(result.accounts[0].keyAlgorithm).toBeUndefined();
+    });
+
+    it('should map account with key and keyAlgorithm', async () => {
+      const { service } = setupService();
+      const mockAccount = createMockAccountListItemAPIResponse({
+        key: { _type: 'ECDSA_SECP256K1', key: 'ecdsa_key_123' },
+      });
+      const mockResponse = createMockGetAccountsAPIResponse([mockAccount]);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccounts();
+
+      expect(result.accounts[0].accountPublicKey).toBe('ecdsa_key_123');
+      expect(result.accounts[0].keyAlgorithm).toBeDefined();
     });
   });
 

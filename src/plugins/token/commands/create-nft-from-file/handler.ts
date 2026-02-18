@@ -52,6 +52,11 @@ export async function createNftFromFile(
       keyManager,
       ['token:treasury'],
     );
+    if (!treasury.accountId) {
+      throw new Error(
+        `Could not resolve account ID for passed "treasury" field`,
+      );
+    }
 
     const adminKey = await api.keyResolver.getOrInitKey(
       tokenDefinition.adminKey,
@@ -181,7 +186,9 @@ export async function createNftFromFile(
       symbol: tokenDefinition.symbol,
       treasuryId: treasury.accountId,
       adminAccountId: adminKey.accountId,
+      adminPublicKey: adminKey.publicKey,
       supplyAccountId: supplyKey.accountId,
+      supplyPublicKey: supplyKey.publicKey,
       supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
       transactionId: result.transactionId,
       network,

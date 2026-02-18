@@ -8,7 +8,7 @@ import {
   EvmAddressSchema,
   KeyTypeSchema,
   NetworkSchema,
-  PublicKeySchema,
+  PublicKeyDefinitionSchema,
   TransactionIdSchema,
 } from '@/core/schemas/common-schemas';
 
@@ -22,7 +22,7 @@ export const CreateAccountOutputSchema = z.object({
   network: NetworkSchema,
   transactionId: TransactionIdSchema,
   evmAddress: EvmAddressSchema,
-  publicKey: PublicKeySchema,
+  publicKey: PublicKeyDefinitionSchema,
 });
 
 export type CreateAccountOutput = z.infer<typeof CreateAccountOutputSchema>;

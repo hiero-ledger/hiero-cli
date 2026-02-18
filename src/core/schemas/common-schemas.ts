@@ -6,8 +6,11 @@
  *
  * Based on ADR-003: Result-Oriented Command Handler Contract
  */
+import type { Credential } from '@/core/services/kms/kms-types.interface';
+
 import { z } from 'zod';
 
+import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType, KeyAlgorithm } from '@/core/shared/constants';
 import {
   EntityReferenceType,
@@ -15,48 +18,58 @@ import {
   SupportedNetwork,
 } from '@/core/types/shared.types';
 
+// Raw key patterns (without prefix) for validation
+const PUBLIC_KEY_PATTERN =
+  /^(?:0[2-3][0-9a-fA-F]{64}|[0-9a-fA-F]{64}|30[0-9a-fA-F]{60,150})$/;
+const PRIVATE_KEY_PATTERN =
+  /^(?:(?:0x)?[0-9a-fA-F]{64}|(?:0x)?[0-9a-fA-F]{128}|(?:0x)?30[0-9a-fA-F]{80,180})$/;
+
 // ======================================================
 // 1. ECDSA (secp256k1) Keys
 // ======================================================
 
-// Public key — 33 bytes (compressed) or DER (~70 bytes)
+// Public key — ecdsa:<key> or raw 33 bytes (compressed) or DER (~70 bytes)
 export const EcdsaPublicKeySchema = z
   .string()
   .trim()
-  .regex(
-    /^(?:0[2-3][0-9a-fA-F]{64}|30[0-9a-fA-F]{68,150})$/,
-    'Invalid ECDSA public key: must be 33-byte compressed hex or valid DER encoding',
+  .transform((s) => (s.startsWith('ecdsa:') ? s.slice(6) : s))
+  .refine(
+    (s) => PUBLIC_KEY_PATTERN.test(s),
+    'Invalid ECDSA public key: use ecdsa:<key> or 33-byte compressed hex / DER encoding',
   );
 
-// Private key — 32 bytes (hex) or DER (~120 bytes)
+// Private key — ecdsa:<key> or raw 32 bytes (hex) or DER (~120 bytes)
 export const EcdsaPrivateKeySchema = z
   .string()
   .trim()
-  .regex(
-    /^(?:(?:0x)?[0-9a-fA-F]{64}|(?:0x)?30[0-9a-fA-F]{100,180})$/,
-    'Invalid ECDSA private key: must be 32-byte hex or DER encoding',
+  .transform((s) => (s.startsWith('ecdsa:') ? s.slice(6) : s))
+  .refine(
+    (s) => PRIVATE_KEY_PATTERN.test(s),
+    'Invalid ECDSA private key: use ecdsa:<key> or 32-byte hex / DER encoding',
   );
 
 // ======================================================
 // 2. Ed25519 Keys
 // ======================================================
 
-// Public key — 32 bytes (hex) or DER (~44 bytes)
+// Public key — ed25519:<key> or raw 32 bytes (hex) or DER (~44 bytes)
 export const Ed25519PublicKeySchema = z
   .string()
   .trim()
-  .regex(
-    /^(?:[0-9a-fA-F]{64}|30[0-9a-fA-F]{60,120})$/,
-    'Invalid Ed25519 public key: must be 32-byte hex or DER encoding',
+  .transform((s) => (s.startsWith('ed25519:') ? s.slice(8) : s))
+  .refine(
+    (s) => PUBLIC_KEY_PATTERN.test(s),
+    'Invalid Ed25519 public key: use ed25519:<key> or 32-byte hex / DER encoding',
   );
 
-// Private key — 32 or 64 bytes (hex) or DER (~80 bytes)
+// Private key — ed25519:<key> or raw 32/64 bytes (hex) or DER (~80 bytes)
 export const Ed25519PrivateKeySchema = z
   .string()
   .trim()
-  .regex(
-    /^(?:(?:0x)?[0-9a-fA-F]{64}|(?:0x)?[0-9a-fA-F]{128}|(?:0x)?30[0-9a-fA-F]{80,160})$/,
-    'Invalid Ed25519 private key: must be 32/64-byte hex or DER encoding',
+  .transform((s) => (s.startsWith('ed25519:') ? s.slice(8) : s))
+  .refine(
+    (s) => PRIVATE_KEY_PATTERN.test(s),
+    'Invalid Ed25519 private key: use ed25519:<key> or 32/64-byte hex / DER encoding',
   );
 
 // ======================================================
@@ -67,15 +80,6 @@ export const Ed25519PrivateKeySchema = z
 // Safe 64-bit signed tinybar limit = 9,223,372,036,854,775,807 tinybars
 const MAX_TINYBARS = 9_223_372_036_854_775_807n;
 const MIN_TINYBARS = -9_223_372_036_854_775_808n;
-
-export const HbarDecimalSchema = z
-  .number()
-  .min(Number(MIN_TINYBARS / 100_000_000n))
-  .max(Number(MAX_TINYBARS / 100_000_000n))
-  .refine(
-    (val) => Number.isFinite(val),
-    'Invalid HBAR value: must be finite number',
-  );
 
 // ======================================================
 // 4. Tinybar balances (base unit integer)
@@ -110,17 +114,6 @@ export const HtsBaseUnitSchema = z
   .refine(
     (val) => val >= 0n && val <= MAX_TINYBARS,
     `HTS base unit out of int64 range`,
-  );
-
-// HTS decimal number (human-readable, e.g. 1.23 tokens)
-export const HtsDecimalSchema = z
-  .object({
-    amount: z.number().nonnegative(),
-    decimals: HtsDecimalsSchema,
-  })
-  .refine(
-    ({ amount, decimals }) => amount * 10 ** decimals <= Number(MAX_TINYBARS),
-    'HTS token amount exceeds int64 base unit range',
   );
 
 // ======================================================
@@ -224,7 +217,7 @@ export const AccountIdWithPrivateKeySchema = z
  * Supported Hedera network names
  */
 export const NetworkSchema = z
-  .nativeEnum(SupportedNetwork)
+  .enum(SupportedNetwork)
   .describe('Hedera network identifier');
 
 /**
@@ -256,24 +249,6 @@ export const IsoTimestampSchema = z
 // ======================================================
 
 /**
- * Account Data (Full)
- * Complete account information
- */
-export const AccountDataSchema = z
-  .object({
-    accountId: EntityIdSchema,
-    name: z.string().describe('Account name or alias'),
-    type: KeyTypeSchema,
-    network: NetworkSchema,
-    evmAddress: EvmAddressSchema.nullable(),
-    publicKey: z
-      .union([EcdsaPublicKeySchema, Ed25519PublicKeySchema])
-      .nullable(),
-    balance: TinybarSchema.nullable(),
-  })
-  .describe('Complete account information');
-
-/**
  * Token Data (Full)
  * Complete token information
  */
@@ -289,32 +264,6 @@ export const TokenDataSchema = z
     network: NetworkSchema,
   })
   .describe('Complete token information');
-
-/**
- * Topic Data (Full)
- * Complete topic information
- */
-export const TopicDataSchema = z
-  .object({
-    topicId: EntityIdSchema,
-    name: z.string().describe('Topic name or alias'),
-    memo: z.string().describe('Topic memo').nullable(),
-    network: NetworkSchema,
-    createdAt: IsoTimestampSchema,
-  })
-  .describe('Complete topic information');
-
-/**
- * Transaction Result (Common)
- * Standard transaction execution result
- */
-export const TransactionResultSchema = z
-  .object({
-    transactionId: TransactionIdSchema,
-    status: z.string().describe('Transaction status'),
-    timestamp: TimestampSchema,
-  })
-  .describe('Standard transaction execution result');
 
 // ======================================================
 // 9. Input Schemas (Command Arguments - Reusable)
@@ -548,6 +497,173 @@ export const KeyOrAccountAliasSchema = z
     'Account ID with private key in format {accountId}:{private_key} or account name/alias',
   );
 
+export const KeyReferenceSchema = z
+  .string()
+  .trim()
+  .regex(
+    /^kr_[A-Za-z0-9]+$/,
+    'Key reference must start with "kr_" and contain only alphanumeric characters after the prefix',
+  )
+  .describe(
+    'Key reference identifier (kr_ prefix + alphanumeric) managed by the key manager',
+  );
+
+export const KeySchema = z
+  .string()
+  .transform((val): Credential => {
+    const accountKeypair = AccountIdWithPrivateKeySchema.safeParse(val);
+    if (accountKeypair.success) {
+      return {
+        type: CredentialType.ACCOUNT_KEY_PAIR,
+        accountId: accountKeypair.data.accountId,
+        privateKey: accountKeypair.data.privateKey,
+        rawValue: val,
+      };
+    }
+
+    const privateKey = PrivateKeyDefinitionWithTypeSchema.safeParse(val);
+    if (privateKey.success) {
+      return {
+        type: CredentialType.PRIVATE_KEY,
+        privateKey: privateKey.data.privateKey,
+        keyType: privateKey.data.keyType,
+        rawValue: val,
+      };
+    }
+
+    const publicKey = PublicKeyDefintionWithTypeSchema.safeParse(val);
+    if (publicKey.success) {
+      return {
+        type: CredentialType.PUBLIC_KEY,
+        publicKey: publicKey.data.publicKey,
+        keyType: publicKey.data.keyType,
+        rawValue: val,
+      };
+    }
+
+    const accountId = EntityIdSchema.safeParse(val);
+    if (accountId.success) {
+      return {
+        type: CredentialType.ACCOUNT_ID,
+        accountId: accountId.data,
+        rawValue: val,
+      };
+    }
+
+    const keyRef = KeyReferenceSchema.safeParse(val);
+    if (keyRef.success) {
+      return {
+        type: CredentialType.KEY_REFERENCE,
+        keyReference: keyRef.data,
+        rawValue: val,
+      };
+    }
+
+    const alias = AliasNameSchema.safeParse(val);
+    if (alias.success) {
+      return {
+        type: CredentialType.ALIAS,
+        alias: alias.data,
+        rawValue: val,
+      };
+    }
+
+    throw new Error(
+      'Key must be a valid account ID and private key pair in format {account-id:private-key}, account ID, private key, public key, key reference or alias name',
+    );
+  })
+  .describe(
+    'Account ID with private key in {accountId}:{private_key} format, account public key, account private key, account ID, account name/alias or account key reference',
+  );
+
+export const PrivateKeySchema = z
+  .string()
+  .transform((val): Credential => {
+    const accountKeypair = AccountIdWithPrivateKeySchema.safeParse(val);
+    if (accountKeypair.success) {
+      return {
+        type: CredentialType.ACCOUNT_KEY_PAIR,
+        accountId: accountKeypair.data.accountId,
+        privateKey: accountKeypair.data.privateKey,
+        rawValue: val,
+      };
+    }
+
+    const privateKey = PrivateKeyDefinitionWithTypeSchema.safeParse(val);
+    if (privateKey.success) {
+      return {
+        type: CredentialType.PRIVATE_KEY,
+        privateKey: privateKey.data.privateKey,
+        keyType: privateKey.data.keyType,
+        rawValue: val,
+      };
+    }
+
+    const keyRef = KeyReferenceSchema.safeParse(val);
+    if (keyRef.success) {
+      return {
+        type: CredentialType.KEY_REFERENCE,
+        keyReference: keyRef.data,
+        rawValue: val,
+      };
+    }
+
+    const alias = AliasNameSchema.safeParse(val);
+    if (alias.success) {
+      return {
+        type: CredentialType.ALIAS,
+        alias: alias.data,
+        rawValue: val,
+      };
+    }
+
+    throw new Error(
+      'Private key must be a valid account ID and private key pair in {account-id:private-key} format, private key, key reference or alias name',
+    );
+  })
+  .describe(
+    'Account ID and private key pair in {account-id:private-key} format, account private key, account key reference or alias name',
+  );
+
+export const PrivateKeyWithAccountIdSchema = z
+  .string()
+  .transform((val): Credential => {
+    const accountKeypair = AccountIdWithPrivateKeySchema.safeParse(val);
+    if (accountKeypair.success) {
+      return {
+        type: CredentialType.ACCOUNT_KEY_PAIR,
+        accountId: accountKeypair.data.accountId,
+        privateKey: accountKeypair.data.privateKey,
+        rawValue: val,
+      };
+    }
+
+    const keyRef = KeyReferenceSchema.safeParse(val);
+    if (keyRef.success) {
+      return {
+        type: CredentialType.KEY_REFERENCE,
+        keyReference: keyRef.data,
+        rawValue: val,
+      };
+    }
+
+    const alias = AliasNameSchema.safeParse(val);
+    if (alias.success) {
+      return {
+        type: CredentialType.ALIAS,
+        alias: alias.data,
+        rawValue: val,
+      };
+    }
+
+    throw new Error(
+      'Private key with account ID must be a valid account ID and private key pair in {account-id:private-key} format, key reference or alias name',
+    );
+  })
+  .describe(
+    'Account ID and private key pair in {account-id:private-key} format, account key reference or alias name',
+  );
+
 /**
  * Configuration Option Name
  * Name of a configuration option (alphanumeric, hyphens, underscores)
@@ -689,15 +805,37 @@ export const TokenBalanceSchema = z
 export const TinybarBalanceSchema = TinybarSchema;
 
 // Generic public key schema for backward compatibility
-export const PublicKeySchema = z.union([
+export const PublicKeyDefinitionSchema = z.union([
   EcdsaPublicKeySchema,
   Ed25519PublicKeySchema,
 ]);
 
+export const PublicKeyDefintionWithTypeSchema = z.union([
+  EcdsaPublicKeySchema.transform((key) => ({
+    keyType: KeyAlgorithm.ECDSA,
+    publicKey: key,
+  })),
+  Ed25519PublicKeySchema.transform((key) => ({
+    keyType: KeyAlgorithm.ED25519,
+    publicKey: key,
+  })),
+]);
+
 // Generic private key schema (ECDSA or ED25519)
-export const PrivateKeySchema = z.union([
+export const PrivateKeyDefinitionSchema = z.union([
   EcdsaPrivateKeySchema,
   Ed25519PrivateKeySchema,
+]);
+
+export const PrivateKeyDefinitionWithTypeSchema = z.union([
+  EcdsaPrivateKeySchema.transform((key) => ({
+    keyType: KeyAlgorithm.ECDSA,
+    privateKey: key,
+  })),
+  Ed25519PrivateKeySchema.transform((key) => ({
+    keyType: KeyAlgorithm.ED25519,
+    privateKey: key,
+  })),
 ]);
 
 export const NonNegativeNumberOrBigintSchema = z

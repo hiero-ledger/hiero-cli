@@ -1,18 +1,22 @@
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { ResolvedKey } from '@/core/services/key-resolver/types';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type {
-  AccountIdWithPrivateKey,
+  AccountIdCredential,
+  AliasCredential,
+  Credential,
   KeyManagerName,
-  KeyOrAccountAlias,
+  KeypairCredential,
+  KeyReferenceCredential,
+  PrivateKeyCredential,
+  PublicKeyCredential,
 } from '@/core/services/kms/kms-types.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
-import type {
-  KeyResolverService,
-  ResolvedKey,
-} from './key-resolver-service.interface';
+import type { KeyResolverService } from './key-resolver-service.interface';
 
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { CredentialType } from '@/core/services/kms/kms-types.interface';
 
 import { ERROR_MESSAGES } from './error-messages';
 
@@ -35,28 +39,35 @@ export class KeyResolverServiceImpl implements KeyResolverService {
   }
 
   public async getOrInitKey(
-    keyOrAlias: KeyOrAccountAlias,
+    credential: Credential,
     keyManager: KeyManagerName,
     labels?: string[],
   ): Promise<ResolvedKey> {
-    const argType = keyOrAlias.type;
-
-    if (argType === 'keypair') {
-      return this.resolveKeypair(keyOrAlias, keyManager, labels);
+    switch (credential.type) {
+      case CredentialType.ACCOUNT_ID:
+        return this.resolveAccountId(credential, keyManager, labels);
+      case CredentialType.ACCOUNT_KEY_PAIR:
+        return this.resolveAccountKeyPair(credential, keyManager, labels);
+      case CredentialType.PRIVATE_KEY:
+        return this.resolvePrivateKey(credential, keyManager, labels);
+      case CredentialType.PUBLIC_KEY:
+        return this.resolvePublicKey(credential, keyManager, labels);
+      case CredentialType.KEY_REFERENCE:
+        return this.resolveKeyReference(credential);
+      case CredentialType.ALIAS:
+        return this.resolveAlias(credential);
     }
-
-    return this.resolveAlias(keyOrAlias.alias);
   }
 
   public async getOrInitKeyWithFallback(
-    keyOrAlias: KeyOrAccountAlias | undefined,
+    credential: Credential | undefined,
     keyManager: KeyManagerName,
     labels?: string[],
   ): Promise<ResolvedKey> {
-    if (!keyOrAlias) {
+    if (!credential) {
       const operator = this.network.getCurrentOperatorOrThrow();
 
-      const operatorPublicKey = this.kms.getPublicKey(operator.keyRefId);
+      const operatorPublicKey = this.kms.get(operator.keyRefId)?.publicKey;
 
       if (!operatorPublicKey) {
         throw new Error(ERROR_MESSAGES.invalidOperatorInState);
@@ -69,35 +80,39 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       };
     }
 
-    return this.getOrInitKey(keyOrAlias, keyManager, labels);
+    return this.getOrInitKey(credential, keyManager, labels);
   }
 
-  private resolveAlias(accountAlias: string): ResolvedKey {
-    const currentNetwork = this.network.getCurrentNetwork();
+  private async resolveAccountId(
+    accountIdCredential: AccountIdCredential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<ResolvedKey> {
+    const { accountId } = accountIdCredential;
 
-    const account = this.alias.resolve(
-      accountAlias,
-      ALIAS_TYPE.Account,
-      currentNetwork,
+    const { keyAlgorithm, accountPublicKey } =
+      await this.mirror.getAccount(accountId);
+
+    if (!keyAlgorithm || !accountPublicKey) {
+      throw new Error(ERROR_MESSAGES.unableToGetKeyAlgorithm);
+    }
+
+    const { keyRefId, publicKey } = this.kms.importPublicKey(
+      keyAlgorithm,
+      accountPublicKey,
+      keyManager,
+      labels,
     );
 
-    if (!account) {
-      throw new Error(ERROR_MESSAGES.noAccountAssociatedWithName);
-    }
-
-    if (!account.publicKey || !account.keyRefId || !account.entityId) {
-      throw new Error(ERROR_MESSAGES.accountMissingPrivatePublicKey);
-    }
-
     return {
-      accountId: account.entityId,
-      publicKey: account.publicKey,
-      keyRefId: account.keyRefId,
+      accountId,
+      publicKey,
+      keyRefId,
     };
   }
 
-  private async resolveKeypair(
-    keyPair: AccountIdWithPrivateKey,
+  private async resolveAccountKeyPair(
+    keyPair: KeypairCredential,
     keyManager: KeyManagerName,
     labels?: string[],
   ): Promise<ResolvedKey> {
@@ -122,6 +137,94 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       accountId,
       publicKey,
       keyRefId,
+    };
+  }
+
+  private async resolveKeyReference(
+    keyReferenceCredential: KeyReferenceCredential,
+  ): Promise<ResolvedKey> {
+    const keyReference = this.kms.get(keyReferenceCredential.keyReference);
+    if (!keyReference) {
+      throw new Error(
+        `Key reference with id ${keyReferenceCredential.keyReference} not found in state`,
+      );
+    }
+    const { accounts } = await this.mirror.getAccounts({
+      accountPublicKey: keyReference.publicKey,
+    });
+
+    return {
+      accountId: accounts[0]?.accountId,
+      publicKey: keyReference.publicKey,
+      keyRefId: keyReference.keyRefId,
+    };
+  }
+
+  private async resolvePrivateKey(
+    publicKeyCredential: PrivateKeyCredential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<ResolvedKey> {
+    const keyReference = this.kms.importPrivateKey(
+      publicKeyCredential.keyType,
+      publicKeyCredential.privateKey,
+      keyManager,
+      labels,
+    );
+    const { accounts } = await this.mirror.getAccounts({
+      accountPublicKey: keyReference.publicKey,
+    });
+
+    return {
+      accountId: accounts[0]?.accountId,
+      publicKey: keyReference.publicKey,
+      keyRefId: keyReference.keyRefId,
+    };
+  }
+
+  private async resolvePublicKey(
+    publicKeyCredential: PublicKeyCredential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<ResolvedKey> {
+    const keyReference = this.kms.importPublicKey(
+      publicKeyCredential.keyType,
+      publicKeyCredential.publicKey,
+      keyManager,
+      labels,
+    );
+    const { accounts } = await this.mirror.getAccounts({
+      accountPublicKey: keyReference.publicKey,
+    });
+
+    return {
+      accountId: accounts[0]?.accountId,
+      publicKey: keyReference.publicKey,
+      keyRefId: keyReference.keyRefId,
+    };
+  }
+
+  private resolveAlias(aliasCredential: AliasCredential): ResolvedKey {
+    const currentNetwork = this.network.getCurrentNetwork();
+
+    const account = this.alias.resolve(
+      aliasCredential.alias,
+      ALIAS_TYPE.Account,
+      currentNetwork,
+    );
+
+    if (!account) {
+      throw new Error(ERROR_MESSAGES.noAccountAssociatedWithName);
+    }
+
+    if (!account.publicKey || !account.keyRefId || !account.entityId) {
+      throw new Error(ERROR_MESSAGES.accountMissingPrivatePublicKey);
+    }
+
+    return {
+      accountId: account.entityId,
+      publicKey: account.publicKey,
+      keyRefId: account.keyRefId,
     };
   }
 }
