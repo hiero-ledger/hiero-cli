@@ -7,6 +7,7 @@ import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { TopicData } from '@/plugins/topic/schema';
 import type { ImportTopicOutput } from './output';
 
+import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { entityIdToAliasSafeFormat } from '@/core/utils/entity-id-to-alias-format';
 import { formatError } from '@/core/utils/errors';
@@ -49,7 +50,7 @@ export async function importTopic(
     if (alias) {
       api.alias.register({
         alias,
-        type: 'topic',
+        type: ALIAS_TYPE.Topic,
         network,
         entityId: topicId,
         createdAt: new Date().toISOString(),
@@ -64,7 +65,7 @@ export async function importTopic(
       adminKeyRefId: undefined,
       submitKeyRefId: undefined,
       network,
-      createdAt: createdAt ?? undefined,
+      createdAt,
     };
 
     topicState.saveTopic(topicId, topicData);

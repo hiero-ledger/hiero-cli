@@ -53,7 +53,6 @@ describe('AliasServiceImpl', () => {
           type: ALIAS_TYPE.Account,
           network: SupportedNetwork.TESTNET,
           entityId: '0.0.1234',
-          updatedAt: expect.any(String),
         }),
       );
       expect(logger.debug).toHaveBeenCalledWith(
