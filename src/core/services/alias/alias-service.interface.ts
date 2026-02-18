@@ -20,7 +20,6 @@ export interface AliasRecord {
   keyRefId?: string;
   metadata?: Record<string, unknown>;
   createdAt: string;
-  updatedAt?: string;
 }
 
 export interface AliasService {

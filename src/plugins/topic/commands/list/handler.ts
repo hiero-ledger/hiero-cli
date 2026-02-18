@@ -55,7 +55,6 @@ export async function listTopics(
       ),
     };
 
-    // Step 4: Transform topics into output format
     const topicsOutput = topics.map((topic) => ({
       name: topic.name,
       topicId: topic.topicId,

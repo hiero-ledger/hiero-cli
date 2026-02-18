@@ -25,11 +25,7 @@ export class AliasServiceImpl implements AliasService {
       );
     }
     const key = this.composeKey(record.network, record.alias);
-    const value: AliasRecord = {
-      ...record,
-      updatedAt: new Date().toISOString(),
-    };
-    this.state.set<AliasRecord>(NAMESPACE, key, value);
+    this.state.set<AliasRecord>(NAMESPACE, key, record);
     this.logger.debug(
       `[ALIAS] Registered ${record.alias} (${record.type}) on ${record.network}`,
     );

@@ -22,6 +22,11 @@ import {
   FindMessagesOutputSchema,
 } from './commands/find-message';
 import {
+  IMPORT_TOPIC_TEMPLATE,
+  importTopic,
+  ImportTopicOutputSchema,
+} from './commands/import';
+import {
   LIST_TOPICS_TEMPLATE,
   listTopics,
   ListTopicsOutputSchema,
@@ -91,6 +96,33 @@ export const topicPluginManifest: PluginManifest = {
       output: {
         schema: CreateTopicOutputSchema,
         humanTemplate: CREATE_TOPIC_TEMPLATE,
+      },
+    },
+    {
+      name: 'import',
+      summary: 'Import an existing topic',
+      description:
+        'Import an existing topic into state. Provide topic ID (e.g., 0.0.123456).',
+      options: [
+        {
+          name: 'topic',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Topic ID to import (e.g., 0.0.123456)',
+        },
+        {
+          name: 'name',
+          short: 'n',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Name/alias for the topic',
+        },
+      ],
+      handler: importTopic,
+      output: {
+        schema: ImportTopicOutputSchema,
+        humanTemplate: IMPORT_TOPIC_TEMPLATE,
       },
     },
     {
