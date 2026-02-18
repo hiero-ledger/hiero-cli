@@ -12,6 +12,7 @@ import type { CreateTopicOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
 
+import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -108,7 +109,7 @@ export async function createTopic(
       if (alias) {
         api.alias.register({
           alias,
-          type: 'topic',
+          type: ALIAS_TYPE.Topic,
           network: api.network.getCurrentNetwork(),
           entityId: result.topicId,
           createdAt: result.consensusTimestamp,

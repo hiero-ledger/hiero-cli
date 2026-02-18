@@ -246,8 +246,7 @@ export const SupplyTypeSchema = z
  * ISO 8601 Timestamp
  * Standard date-time format
  */
-export const IsoTimestampSchema = z
-  .string()
+export const IsoTimestampSchema = z.iso
   .datetime()
   .describe('ISO 8601 timestamp');
 
