@@ -29,7 +29,6 @@ const makeTopicData = (overrides: Partial<TopicData> = {}): TopicData => ({
   memo: 'Test topic',
   network: SupportedNetwork.TESTNET,
   createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
   ...overrides,
 });
 

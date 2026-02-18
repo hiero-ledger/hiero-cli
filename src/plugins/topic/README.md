@@ -161,7 +161,6 @@ interface TopicData {
   expirationTime?: string;
   network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
   createdAt: string;
-  updatedAt: string;
 }
 ```
 

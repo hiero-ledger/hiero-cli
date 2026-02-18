@@ -25,8 +25,7 @@ export const CredentialsDataSchema = z.object({
 
   isDefault: z.boolean().describe('Whether this is the default credential set'),
 
-  createdAt: z
-    .string()
+  createdAt: z.iso
     .datetime()
     .describe('ISO timestamp when credentials were created'),
 });
