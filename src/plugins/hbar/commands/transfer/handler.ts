@@ -74,7 +74,7 @@ export async function transferHandler(
   if (!result.success) {
     throw new TransactionError(
       `Transfer failed: ${result.receipt?.status?.status ?? 'UNKNOWN'}`,
-      { recoverable: false },
+      false,
     );
   }
 

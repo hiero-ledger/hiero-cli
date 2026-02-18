@@ -11,7 +11,6 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { Status } from '@/core/shared/constants';
 import {
   createTopic,
   findMessage,
@@ -40,10 +39,7 @@ describe('Topic Messages Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(createTopicResult.status).toBe(Status.Success);
-    const createTopicOutput: CreateTopicOutput = JSON.parse(
-      createTopicResult.outputJson!,
-    );
+    const createTopicOutput = createTopicResult.result as CreateTopicOutput;
     expect(createTopicOutput.name).toBe('test-topic-submit');
     expect(createTopicOutput.network).toBe(network);
     expect(createTopicOutput.adminKeyPresent).toBe(false);
@@ -59,10 +55,7 @@ describe('Topic Messages Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(listTopicResult.status).toBe(Status.Success);
-    const listTopicOutput: ListTopicsOutput = JSON.parse(
-      listTopicResult.outputJson!,
-    );
+    const listTopicOutput = listTopicResult.result as ListTopicsOutput;
     const topic = listTopicOutput.topics.find(
       (topic) => topic.name == 'test-topic-submit',
     );
@@ -86,10 +79,8 @@ describe('Topic Messages Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(submitMessageResult.status).toBe(Status.Success);
-      const submitMessageOutput: SubmitMessageOutput = JSON.parse(
-        submitMessageResult.outputJson!,
-      );
+      const submitMessageOutput =
+        submitMessageResult.result as SubmitMessageOutput;
       expect(submitMessageOutput.topicId).toBe(createTopicOutput.topicId);
       expect(submitMessageOutput.message).toBe(`Test message ${i + 1}`);
     }
@@ -107,10 +98,8 @@ describe('Topic Messages Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(findMessageEqResult.status).toBe(Status.Success);
-    const findMessageEqOutput: FindMessagesOutput = JSON.parse(
-      findMessageEqResult.outputJson!,
-    );
+    const findMessageEqOutput =
+      findMessageEqResult.result as FindMessagesOutput;
     expect(findMessageEqOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageEqOutput.messages?.at(0)?.message).toBe(`Test message 3`);
 
@@ -125,10 +114,8 @@ describe('Topic Messages Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(findMessageGtResult.status).toBe(Status.Success);
-    const findMessageGtOutput: FindMessagesOutput = JSON.parse(
-      findMessageGtResult.outputJson!,
-    );
+    const findMessageGtOutput =
+      findMessageGtResult.result as FindMessagesOutput;
     expect(findMessageGtOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageGtOutput.messages.length).toBe(3);
 
@@ -143,10 +130,8 @@ describe('Topic Messages Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(findMessageGteResult.status).toBe(Status.Success);
-    const findMessageGteOutput: FindMessagesOutput = JSON.parse(
-      findMessageGteResult.outputJson!,
-    );
+    const findMessageGteOutput =
+      findMessageGteResult.result as FindMessagesOutput;
     expect(findMessageGteOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageGteOutput.messages.length).toBe(4);
 
@@ -161,10 +146,8 @@ describe('Topic Messages Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(findMessageLtResult.status).toBe(Status.Success);
-    const findMessageLtOutput: FindMessagesOutput = JSON.parse(
-      findMessageLtResult.outputJson!,
-    );
+    const findMessageLtOutput =
+      findMessageLtResult.result as FindMessagesOutput;
     expect(findMessageLtOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageLtOutput.messages.length).toBe(3);
 
@@ -179,10 +162,8 @@ describe('Topic Messages Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(findMessageLteResult.status).toBe(Status.Success);
-    const findMessageLteOutput: FindMessagesOutput = JSON.parse(
-      findMessageLteResult.outputJson!,
-    );
+    const findMessageLteOutput =
+      findMessageLteResult.result as FindMessagesOutput;
     expect(findMessageLteOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageLteOutput.messages.length).toBe(4);
   });

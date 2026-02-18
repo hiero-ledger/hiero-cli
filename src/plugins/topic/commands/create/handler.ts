@@ -1,10 +1,6 @@
-/**
- * Topic Create Command Handler
- * Handles topic creation using the Core API
- */
 import type {
-  CommandExecutionResult,
   CommandHandlerArgs,
+  CommandResult,
   TransactionResult,
 } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
@@ -12,26 +8,17 @@ import type { CreateTopicOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
 
-import { Status } from '@/core/shared/constants';
-import { formatError } from '@/core/utils/errors';
+import { TransactionError } from '@/core/errors';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { CreateTopicInputSchema } from './input';
 
-/**
- * Default export handler function for topic creation
- * @param args - Command handler arguments from CLI core
- * @returns Promise resolving to CommandExecutionResult with structured output
- */
 export async function createTopic(
   args: CommandHandlerArgs,
-): Promise<CommandExecutionResult> {
+): Promise<CommandResult> {
   const { api, logger } = args;
 
-  // Initialize Zustand state helper for topic state management
   const topicState = new ZustandTopicStateHelper(api.state, logger);
-
-  // Extract and validate command arguments
   const validArgs = CreateTopicInputSchema.parse(args.args);
 
   const memo = validArgs.memo;
@@ -40,19 +27,14 @@ export async function createTopic(
   const alias = validArgs.name;
   const keyManagerArg = validArgs.keyManager;
 
-  // Check if alias already exists on the current network
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(alias, network);
 
-  // Get keyManager from args or fallback to config
   const keyManager =
     keyManagerArg ||
     api.config.getOption<KeyManagerName>('default_key_manager');
-
-  // Generate default name if alias not provided
   const name = alias || `topic-${Date.now()}`;
 
-  // Log progress indicator (not final output)
   if (memo) {
     logger.info(`Creating topic with memo: ${memo}`);
   }
@@ -71,83 +53,62 @@ export async function createTopic(
       `topic:${name}`,
     ]));
 
-  try {
-    // Step 2: Create topic transaction using Core API
-    const topicCreateResult = api.topic.createTopic({
-      memo,
-      adminKey: adminKey && PublicKey.fromString(adminKey.publicKey),
-      submitKey: submitKey && PublicKey.fromString(submitKey.publicKey),
-    });
+  const topicCreateResult = api.topic.createTopic({
+    memo,
+    adminKey: adminKey && PublicKey.fromString(adminKey.publicKey),
+    submitKey: submitKey && PublicKey.fromString(submitKey.publicKey),
+  });
 
-    let result: TransactionResult;
+  let result: TransactionResult;
 
-    if (adminKey) {
-      result = await api.txExecution.signAndExecuteWith(
-        topicCreateResult.transaction,
-        [adminKey.keyRefId],
-      );
-    } else {
-      result = await api.txExecution.signAndExecute(
-        topicCreateResult.transaction,
-      );
-    }
-
-    if (result.success) {
-      // Step 5: Store topic metadata in state
-      const topicData = {
-        name,
-        topicId: result.topicId || '(unknown)',
-        memo: memo || '(No memo)',
-        adminKeyRefId: adminKey?.keyRefId,
-        submitKeyRefId: submitKey?.keyRefId,
-        network: api.network.getCurrentNetwork(),
-        createdAt: result.consensusTimestamp,
-        updatedAt: result.consensusTimestamp,
-      };
-
-      // Step 6: Register alias if provided
-      if (alias) {
-        api.alias.register({
-          alias,
-          type: 'topic',
-          network: api.network.getCurrentNetwork(),
-          entityId: result.topicId,
-          createdAt: result.consensusTimestamp,
-        });
-      }
-
-      // Step 7: Save topic to state
-      topicState.saveTopic(String(result.topicId), topicData);
-
-      // Step 8: Prepare structured output data
-      const outputData: CreateTopicOutput = {
-        topicId: topicData.topicId,
-        name: topicData.name,
-        network: topicData.network,
-        memo: memo, // Only include if present
-        adminKeyPresent: Boolean(topicData.adminKeyRefId),
-        submitKeyPresent: Boolean(topicData.submitKeyRefId),
-        transactionId: result.transactionId || '',
-        createdAt: topicData.createdAt,
-      };
-
-      // Return success result with JSON output
-      return {
-        status: Status.Success,
-        outputJson: JSON.stringify(outputData),
-      };
-    } else {
-      // Transaction execution failed
-      return {
-        status: Status.Failure,
-        errorMessage: 'Failed to create topic',
-      };
-    }
-  } catch (error: unknown) {
-    // Catch and format any errors
-    return {
-      status: Status.Failure,
-      errorMessage: formatError('Failed to create topic', error),
-    };
+  if (adminKey) {
+    result = await api.txExecution.signAndExecuteWith(
+      topicCreateResult.transaction,
+      [adminKey.keyRefId],
+    );
+  } else {
+    result = await api.txExecution.signAndExecute(
+      topicCreateResult.transaction,
+    );
   }
+
+  if (!result.success) {
+    throw new TransactionError('Failed to create topic', false);
+  }
+
+  const topicData = {
+    name,
+    topicId: result.topicId || '(unknown)',
+    memo: memo || '(No memo)',
+    adminKeyRefId: adminKey?.keyRefId,
+    submitKeyRefId: submitKey?.keyRefId,
+    network: api.network.getCurrentNetwork(),
+    createdAt: result.consensusTimestamp,
+    updatedAt: result.consensusTimestamp,
+  };
+
+  if (alias) {
+    api.alias.register({
+      alias,
+      type: 'topic',
+      network: api.network.getCurrentNetwork(),
+      entityId: result.topicId,
+      createdAt: result.consensusTimestamp,
+    });
+  }
+
+  topicState.saveTopic(String(result.topicId), topicData);
+
+  const outputData: CreateTopicOutput = {
+    topicId: topicData.topicId,
+    name: topicData.name,
+    network: topicData.network,
+    memo,
+    adminKeyPresent: Boolean(topicData.adminKeyRefId),
+    submitKeyPresent: Boolean(topicData.submitKeyRefId),
+    transactionId: result.transactionId || '',
+    createdAt: topicData.createdAt,
+  };
+
+  return { result: outputData };
 }
