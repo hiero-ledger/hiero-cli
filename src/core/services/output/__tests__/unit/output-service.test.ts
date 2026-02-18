@@ -1,10 +1,7 @@
-/**
- * Unit tests for OutputServiceImpl
- * Tests format management, JSON parsing, formatting strategies and file/console output
- */
 import type { OutputOptions } from '@/core/services/output/types';
 import type { OutputFormat } from '@/core/shared/types/output-format';
 
+import { FileError, InternalError } from '@/core/errors';
 import { OutputServiceImpl } from '@/core/services/output/output-service';
 import { OutputFormatterFactory } from '@/core/services/output/strategies';
 import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
@@ -131,9 +128,7 @@ describe('OutputServiceImpl', () => {
         outputJson: 'invalid-json',
       });
 
-      expect(() => service.handleCommandOutput(options)).toThrow(
-        'Failed to parse output JSON:',
-      );
+      expect(() => service.handleCommandOutput(options)).toThrow(InternalError);
     });
 
     it('should throw error when outputJson is empty string', () => {
@@ -141,9 +136,7 @@ describe('OutputServiceImpl', () => {
         outputJson: '',
       });
 
-      expect(() => service.handleCommandOutput(options)).toThrow(
-        'Failed to parse output JSON:',
-      );
+      expect(() => service.handleCommandOutput(options)).toThrow(InternalError);
     });
 
     it('should throw error when outputJson is null', () => {
@@ -264,9 +257,7 @@ describe('OutputServiceImpl', () => {
         outputPath: '/tmp/output/result.txt',
       });
 
-      expect(() => service.handleCommandOutput(options)).toThrow(
-        'Failed to write output to file /tmp/output/result.txt: disk full',
-      );
+      expect(() => service.handleCommandOutput(options)).toThrow(FileError);
     });
 
     it('should throw error when creating directory fails', () => {
@@ -284,9 +275,7 @@ describe('OutputServiceImpl', () => {
         outputPath: '/tmp/output/result.txt',
       });
 
-      expect(() => service.handleCommandOutput(options)).toThrow(
-        'Failed to write output to file /tmp/output/result.txt: permission denied',
-      );
+      expect(() => service.handleCommandOutput(options)).toThrow(FileError);
     });
 
     it('should throw error when formatter.format fails', () => {

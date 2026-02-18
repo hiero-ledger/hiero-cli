@@ -11,7 +11,7 @@ import * as path from 'path';
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
-import { formatError } from '@/core/utils/errors';
+import { FileError } from '@/core/errors';
 
 /**
  * Namespace Store Interface
@@ -116,13 +116,10 @@ function createNamespaceStore(
                 }
                 return null;
               } catch (error) {
-                logger.error(
-                  formatError(
-                    '[ZUSTAND:${namespace}] Failed to load: ${error}',
-                    error,
-                  ),
-                );
-                return null;
+                throw new FileError(`Failed to load state: ${name}`, {
+                  context: { namespace, name },
+                  cause: error,
+                });
               }
             },
             setItem: (name, value) => {
@@ -137,12 +134,10 @@ function createNamespaceStore(
                 fs.writeFileSync(filePath, prettyJson);
                 logger.debug(`[ZUSTAND:${namespace}] Saved to: ${filePath}`);
               } catch (error) {
-                logger.error(
-                  formatError(
-                    '[ZUSTAND:${namespace}] Failed to save: ${error}',
-                    error,
-                  ),
-                );
+                throw new FileError(`Failed to save state: ${name}`, {
+                  context: { namespace, name },
+                  cause: error,
+                });
               }
             },
             removeItem: (name) => {
@@ -153,12 +148,10 @@ function createNamespaceStore(
                   logger.debug(`[ZUSTAND:${namespace}] Removed: ${filePath}`);
                 }
               } catch (error) {
-                logger.error(
-                  formatError(
-                    '[ZUSTAND:${namespace}] Failed to remove: ${error}',
-                    error,
-                  ),
-                );
+                throw new FileError(`Failed to remove state: ${name}`, {
+                  context: { namespace, name },
+                  cause: error,
+                });
               }
             },
           })),
@@ -219,9 +212,10 @@ export class ZustandGenericStateServiceImpl implements StateService {
         );
       }
     } catch (error) {
-      this.logger.debug(
-        `[ZUSTAND STATE] Failed to discover existing namespaces: ${String(error)}`,
-      );
+      throw new FileError('Failed to discover existing namespaces', {
+        context: { storageDir: this.storageDir },
+        cause: error,
+      });
     }
   }
 
@@ -297,10 +291,17 @@ export class ZustandGenericStateServiceImpl implements StateService {
 
   private ensureStorageDir(): void {
     if (!fs.existsSync(this.storageDir)) {
-      fs.mkdirSync(this.storageDir, { recursive: true });
-      this.logger.debug(
-        `[ZUSTAND STATE] Created storage directory: ${this.storageDir}`,
-      );
+      try {
+        fs.mkdirSync(this.storageDir, { recursive: true });
+        this.logger.debug(
+          `[ZUSTAND STATE] Created storage directory: ${this.storageDir}`,
+        );
+      } catch (error) {
+        throw new FileError('Failed to create storage directory', {
+          context: { storageDir: this.storageDir },
+          cause: error,
+        });
+      }
     }
   }
 
