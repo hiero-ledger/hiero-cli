@@ -61,7 +61,7 @@ describe('Import Topic Integration Tests', () => {
 
     expect(importTopicResult.status).toBe(Status.Success);
     const importTopicOutput: ImportTopicOutput = JSON.parse(
-      importTopicResult.outputJson,
+      importTopicResult.outputJson as string,
     );
     expect(importTopicOutput.topicId).toBe(topicId);
     expect(importTopicOutput.name).toBe(
@@ -109,7 +109,7 @@ describe('Import Topic Integration Tests', () => {
 
     expect(importTopicResult.status).toBe(Status.Success);
     const importTopicOutput: ImportTopicOutput = JSON.parse(
-      importTopicResult.outputJson,
+      importTopicResult.outputJson as string,
     );
     expect(importTopicOutput.topicId).toBe(topicId);
     expect(importTopicOutput.name).toBe(alias);
