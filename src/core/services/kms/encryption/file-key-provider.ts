@@ -6,6 +6,8 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 
+import { ConfigurationError, NotFoundError } from '@/core/errors';
+
 /**
  * Auto-generates and stores encryption key in .hiero-cli/.secret-{algorithm}
  *
@@ -50,9 +52,15 @@ export class FileKeyProvider implements KeyProvider {
 
     // Validate key length matches algorithm requirements
     if (key.length !== this.config.keyLengthBytes) {
-      throw new Error(
-        `Invalid key length for ${this.config.identifier}: ` +
-          `expected ${this.config.keyLengthBytes} bytes, got ${key.length} bytes`,
+      throw new ConfigurationError(
+        `Invalid key length for ${this.config.identifier}: expected ${this.config.keyLengthBytes} bytes, got ${key.length} bytes`,
+        {
+          context: {
+            identifier: this.config.identifier,
+            expected: this.config.keyLengthBytes,
+            got: key.length,
+          },
+        },
       );
     }
 
@@ -92,9 +100,9 @@ export class FileKeyProvider implements KeyProvider {
       return existingKey;
     }
 
-    throw new Error(
-      `Encryption key not found at ${this.secretFilePath}. ` +
-        `Cannot decrypt without existing key.`,
+    throw new NotFoundError(
+      `Encryption key not found at ${this.secretFilePath}`,
+      { context: { secretFilePath: this.secretFilePath } },
     );
   }
 }

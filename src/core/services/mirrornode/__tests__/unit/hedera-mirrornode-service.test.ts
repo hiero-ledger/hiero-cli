@@ -4,6 +4,7 @@
  */
 
 import { makeNetworkMock } from '@/__tests__/mocks/mocks';
+import { NetworkError, NotFoundError } from '@/core/errors';
 import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -54,15 +55,8 @@ const setupService = (network: SupportedNetwork = SupportedNetwork.TESTNET) => {
 };
 
 describe('HederaMirrornodeServiceDefaultImpl', () => {
-  let consoleErrorSpy: jest.SpyInstance;
-
   beforeEach(() => {
     jest.clearAllMocks();
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-  });
-
-  afterEach(() => {
-    consoleErrorSpy.mockRestore();
   });
 
   describe('constructor', () => {
@@ -150,7 +144,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getAccount(TEST_ACCOUNT_ID)).rejects.toThrow(
-        'No key is associated with the specified account.',
+        NotFoundError,
       );
     });
 
@@ -178,7 +172,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getAccount(TEST_ACCOUNT_ID)).rejects.toThrow(
-        `Failed to fetch account ${TEST_ACCOUNT_ID}: 404 Not Found`,
+        NotFoundError,
       );
     });
 
@@ -191,7 +185,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getAccount(TEST_ACCOUNT_ID)).rejects.toThrow(
-        `Failed to fetch account ${TEST_ACCOUNT_ID}: 500 Internal Server Error`,
+        NetworkError,
       );
     });
 
@@ -206,7 +200,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getAccount(TEST_ACCOUNT_ID)).rejects.toThrow(
-        `Account ${TEST_ACCOUNT_ID} not found`,
+        NotFoundError,
       );
     });
   });
@@ -258,7 +252,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       expect(result).toBe(0n);
     });
 
-    it('should throw error with formatError wrapper when getAccount fails', async () => {
+    it('should throw error when getAccount fails', async () => {
       const { service } = setupService();
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: false,
@@ -268,9 +262,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await expect(
         service.getAccountHBarBalance(TEST_ACCOUNT_ID),
-      ).rejects.toThrow(
-        `Failed to fetch hbar balance for ${TEST_ACCOUNT_ID}: : Failed to fetch account ${TEST_ACCOUNT_ID}: 404 Not Found`,
-      );
+      ).rejects.toThrow(NotFoundError);
     });
   });
 
@@ -330,9 +322,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await expect(
         service.getAccountTokenBalances(TEST_ACCOUNT_ID),
-      ).rejects.toThrow(
-        `Failed to fetch balance for an account ${TEST_ACCOUNT_ID}: 404 Not Found`,
-      );
+      ).rejects.toThrow(NotFoundError);
     });
   });
 
@@ -499,29 +489,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await expect(
         service.getTopicMessages({ topicId: TEST_TOPIC_ID }),
-      ).rejects.toThrow(
-        `Failed to get topic messages for ${TEST_TOPIC_ID}: 404 Not Found`,
-      );
-    });
-
-    it('should log error to console.error before rethrowing', async () => {
-      const { service } = setupService();
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: false,
-        status: 500,
-        statusText: 'Internal Server Error',
-      });
-
-      await expect(
-        service.getTopicMessages({ topicId: TEST_TOPIC_ID }),
-      ).rejects.toThrow();
-
-      expect(console.error).toHaveBeenCalledWith(
-        expect.stringContaining(
-          `Failed to fetch topic messages for ${TEST_TOPIC_ID}`,
-        ),
-        expect.any(Error),
-      );
+      ).rejects.toThrow(NetworkError);
     });
 
     it('should handle empty messages array', async () => {
@@ -565,7 +533,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getTokenInfo(TEST_TOKEN_ID)).rejects.toThrow(
-        `Failed to get token info for a token ${TEST_TOKEN_ID}: 404 Not Found`,
+        NotFoundError,
       );
     });
   });
@@ -602,9 +570,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await expect(
         service.getNftInfo(TEST_TOKEN_ID, TEST_SERIAL_NUMBER),
-      ).rejects.toThrow(
-        `Failed to get NFT info for token ${TEST_TOKEN_ID} serial ${TEST_SERIAL_NUMBER}: 404 Not Found`,
-      );
+      ).rejects.toThrow(NotFoundError);
     });
 
     it('should work with mainnet network', async () => {
@@ -649,7 +615,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getTopicInfo(TEST_TOPIC_ID)).rejects.toThrow(
-        `Failed to get topic info for ${TEST_TOPIC_ID}: 404 Not Found`,
+        NotFoundError,
       );
     });
   });
@@ -710,7 +676,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getTransactionRecord(TEST_TX_ID)).rejects.toThrow(
-        `Failed to get transaction record for ${TEST_TX_ID}: 404 Not Found`,
+        NotFoundError,
       );
     });
   });
@@ -741,7 +707,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getContractInfo(TEST_CONTRACT_ID)).rejects.toThrow(
-        `Failed to get contract info for ${TEST_CONTRACT_ID}: 404 Not Found`,
+        NotFoundError,
       );
     });
   });
@@ -785,7 +751,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getPendingAirdrops(TEST_ACCOUNT_ID)).rejects.toThrow(
-        `Failed to fetch pending airdrops for an account ${TEST_ACCOUNT_ID}: 404 Not Found`,
+        NotFoundError,
       );
     });
   });
@@ -830,9 +796,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await expect(
         service.getOutstandingAirdrops(TEST_ACCOUNT_ID),
-      ).rejects.toThrow(
-        `Failed to fetch outstanding airdrops for an account ${TEST_ACCOUNT_ID}: 404 Not Found`,
-      );
+      ).rejects.toThrow(NotFoundError);
     });
   });
 
@@ -892,9 +856,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         statusText: 'Not Found',
       });
 
-      await expect(service.getExchangeRate()).rejects.toThrow(
-        'HTTP error! status: 404. Message: Not Found',
-      );
+      await expect(service.getExchangeRate()).rejects.toThrow(NetworkError);
     });
   });
 
@@ -941,7 +903,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.postContractCall(requestBody)).rejects.toThrow(
-        'Failed to call contract via mirror node: 500 Internal Server Error',
+        NetworkError,
       );
     });
   });

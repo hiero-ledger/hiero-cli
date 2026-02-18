@@ -9,6 +9,7 @@ import type {
   ReferenceResolutionResult,
 } from '@/core/services/identity-resolution/types';
 
+import { StateError } from '@/core/errors';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { EntityReferenceType } from '@/core/types/shared.types';
 
@@ -75,8 +76,14 @@ export class IdentityResolutionServiceImpl implements IdentityResolutionService 
           ).entityId
         : params.entityReference;
     if (!entityIdOrEvmAddress) {
-      throw new Error(
-        `Entity ${params.entityReference} with type ${params.aliasType} is missing an entity ID in its alias record`,
+      throw new StateError(
+        `Entity ${params.entityReference} is missing an entity ID in its alias record`,
+        {
+          context: {
+            entityReference: params.entityReference,
+            aliasType: params.aliasType,
+          },
+        },
       );
     }
     return { entityIdOrEvmAddress };

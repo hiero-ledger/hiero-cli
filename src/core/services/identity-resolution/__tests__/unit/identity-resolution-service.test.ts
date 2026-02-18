@@ -4,6 +4,7 @@ import type {
   ContractResolutionParams,
 } from '@/core/services/identity-resolution/types';
 
+import { StateError } from '@/core/errors';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { IdentityResolutionServiceImpl } from '@/core/services/identity-resolution/identity-resolution-service';
 import {
@@ -237,9 +238,7 @@ describe('IdentityResolutionServiceImpl', () => {
           network: SupportedNetwork.TESTNET,
           aliasType: ALIAS_TYPE.Account,
         });
-      }).toThrow(
-        'Entity broken-alias with type account is missing an entity ID in its alias record',
-      );
+      }).toThrow(StateError);
     });
 
     it('returns the original reference when type is ENTITY_ID without alias lookup', () => {

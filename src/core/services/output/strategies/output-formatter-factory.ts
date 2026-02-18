@@ -5,6 +5,8 @@
 import type { OutputFormat } from '@/core/shared/types/output-format';
 import type { OutputFormatterStrategy } from './output-formatter-strategy.interface';
 
+import { ValidationError } from '@/core/errors';
+
 import { JsonOutputStrategy } from './json-output-strategy';
 import { TemplateOutputStrategy } from './template-output-strategy';
 
@@ -32,7 +34,9 @@ export class OutputFormatterFactory {
       case 'human':
         return new TemplateOutputStrategy();
       default:
-        throw new Error(`Unsupported output format: ${String(format)}`);
+        throw new ValidationError(
+          `Unsupported output format: ${String(format)}`,
+        );
     }
   }
 }

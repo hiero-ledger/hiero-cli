@@ -12,6 +12,7 @@ import type {
   NetworkService,
 } from './network-service.interface';
 
+import { ConfigurationError, ValidationError } from '@/core/errors';
 import { HASHSCAN_BASE_URL } from '@/core/shared/constants';
 import {
   NetworkChainMap,
@@ -66,7 +67,9 @@ export class NetworkServiceImpl implements NetworkService {
 
   switchNetwork(network: SupportedNetwork): void {
     if (!this.isNetworkAvailable(network)) {
-      throw new Error(`Network not available: ${network}`);
+      throw new ValidationError(`Network not available: ${network}`, {
+        context: { network },
+      });
     }
     this.setNetwork(network);
     this.state.set<string>(NAMESPACE, CURRENT_NETWORK_KEY, network);
@@ -76,7 +79,10 @@ export class NetworkServiceImpl implements NetworkService {
     const config = DEFAULT_NETWORKS[network];
 
     if (!config) {
-      throw new Error(`Network configuration not found: ${network}`);
+      throw new ConfigurationError(
+        `Network configuration not found: ${network}`,
+        { context: { network } },
+      );
     }
 
     const chainId = NetworkChainMap[network as SupportedNetwork];
@@ -132,7 +138,10 @@ export class NetworkServiceImpl implements NetworkService {
     const operator = this.getOperator(currentNetwork);
 
     if (!operator) {
-      throw new Error('The network operator is not set.');
+      throw new ConfigurationError(
+        'No operator configured for current network',
+        { context: { network: currentNetwork } },
+      );
     }
 
     return operator;

@@ -6,6 +6,7 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import { ConfigurationError, ValidationError } from '@/core/errors';
 import { DEFAULT_NETWORK } from '@/core/services/network/network.config';
 import { NetworkServiceImpl } from '@/core/services/network/network-service';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -21,10 +22,6 @@ const NETWORK_PREVIEWNET = SupportedNetwork.PREVIEWNET;
 const NETWORK_LOCALNET = SupportedNetwork.LOCALNET;
 const NETWORK_INVALID = 'invalid';
 const NETWORK_UNKNOWN = 'unknown';
-
-const ERROR_NETWORK_NOT_AVAILABLE = 'Network not available: invalid';
-const ERROR_NETWORK_CONFIG_NOT_FOUND =
-  'Network configuration not found: unknown';
 
 const OPERATOR_TEST_ACCOUNT_ID = '0.0.1001';
 const OPERATOR_TEST_KEY_REF_ID = 'kr_test';
@@ -104,10 +101,10 @@ describe('NetworkServiceImpl', () => {
       );
     });
 
-    it('should throw error for unavailable network', () => {
+    it('should throw ValidationError for unavailable network', () => {
       expect(() =>
         networkService.switchNetwork(NETWORK_INVALID as SupportedNetwork),
-      ).toThrow(ERROR_NETWORK_NOT_AVAILABLE);
+      ).toThrow(ValidationError);
       expect(stateMock.set).not.toHaveBeenCalled();
     });
   });
@@ -157,9 +154,9 @@ describe('NetworkServiceImpl', () => {
       expect(config.isTestnet).toBe(true);
     });
 
-    it('should throw error for unknown network', () => {
+    it('should throw ConfigurationError for unknown network', () => {
       expect(() => networkService.getNetworkConfig(NETWORK_UNKNOWN)).toThrow(
-        ERROR_NETWORK_CONFIG_NOT_FOUND,
+        ConfigurationError,
       );
     });
   });

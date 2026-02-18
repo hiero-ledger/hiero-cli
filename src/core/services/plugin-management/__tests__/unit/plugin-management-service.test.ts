@@ -1,7 +1,3 @@
-/**
- * Unit tests for PluginManagementServiceImpl
- * Tests plugin listing, CRUD, enable/disable and state persistence
- */
 import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
