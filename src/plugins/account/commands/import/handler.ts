@@ -9,6 +9,7 @@ import type { AccountData } from '@/plugins/account/schema';
 import type { ImportAccountOutput } from './output';
 
 import { Status } from '@/core/shared/constants';
+import { entityIdToAliasSafeFormat } from '@/core/utils/entity-id-to-alias-format';
 import { formatError } from '@/core/utils/errors';
 import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -54,7 +55,7 @@ export async function importAccount(
     );
 
     // Generate a unique name for the account
-    const name = alias || `imported-${accountId.replace(/\./g, '-')}`;
+    const name = alias || `imported-${entityIdToAliasSafeFormat(accountId)}`;
     logger.info(`Importing account: ${name} (${accountId})`);
 
     // Check if account name already exists

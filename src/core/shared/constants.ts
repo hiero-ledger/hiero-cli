@@ -30,3 +30,8 @@ export const TokenTypeMap = {
   [HederaTokenType.NON_FUNGIBLE_TOKEN]: TokenType.NonFungibleUnique,
   [HederaTokenType.FUNGIBLE_COMMON]: TokenType.FungibleCommon,
 } satisfies Record<HederaTokenType, TokenType>;
+
+export const MirrorTokenTypeToHederaTokenType = {
+  [TokenType.FungibleCommon.toString()]: HederaTokenType.FUNGIBLE_COMMON,
+  [TokenType.NonFungibleUnique.toString()]: HederaTokenType.NON_FUNGIBLE_TOKEN,
+} satisfies Record<string, HederaTokenType>;

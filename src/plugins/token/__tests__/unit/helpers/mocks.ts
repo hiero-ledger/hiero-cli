@@ -726,7 +726,7 @@ export const makeMintNftSuccessMocks = (overrides?: {
     mirror: {
       getTokenInfo: jest.fn().mockResolvedValue({
         decimals: overrides?.tokenInfo?.decimals ?? '0',
-        type: overrides?.tokenInfo?.type ?? 'NON_FUNGIBLE_TOKEN',
+        type: overrides?.tokenInfo?.type ?? 'NON_FUNGIBLE_UNIQUE',
         supply_key: overrides?.tokenInfo?.supply_key ?? {
           key: defaultSupplyKeyPublicKey,
         },

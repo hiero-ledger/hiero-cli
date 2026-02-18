@@ -11,6 +11,7 @@ import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { Status } from '@/core/shared/constants';
+import { entityIdToAliasSafeFormat } from '@/core/utils/entity-id-to-alias-format';
 import { createTopic, importTopic, listTopics } from '@/plugins/topic';
 import { TOPIC_NAMESPACE } from '@/plugins/topic/manifest';
 
@@ -64,7 +65,7 @@ describe('Import Topic Integration Tests', () => {
     );
     expect(importTopicOutput.topicId).toBe(topicId);
     expect(importTopicOutput.name).toBe(
-      `imported-${topicId.replace(/\./g, '-')}`,
+      `imported-${entityIdToAliasSafeFormat(topicId)}`,
     );
     expect(importTopicOutput.network).toBe(network);
     expect(importTopicOutput.alias).toBeUndefined();
