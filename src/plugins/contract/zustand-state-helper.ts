@@ -20,6 +20,13 @@ export class ZustandContractStateHelper {
   }
 
   /**
+   * Check if a contract exists in the state
+   */
+  hasContract(contractId: string): boolean {
+    return this.state.has(CONTRACT_NAMESPACE, contractId);
+  }
+
+  /**
    * Save a contract to the state
    */
   saveContract(contractId: string, contractData: ContractData): void {

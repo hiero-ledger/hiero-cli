@@ -17,7 +17,7 @@ import { SupportedNetwork } from '@/core/types/shared.types';
  */
 const ContractListItemSchema = z.object({
   contractId: EntityIdSchema.describe('Contract ID'),
-  contractName: ContractNameSchema,
+  contractName: ContractNameSchema.optional(),
 
   contractEvmAddress: EvmAddressSchema.describe(
     'Deployed contract EVM address',
@@ -59,7 +59,9 @@ export const CONTRACT_LIST_TEMPLATE = `
 
 {{#each contracts}}
 {{add1 @index}}. Contract ID: {{hashscanLink contractId "contract" network}}
+{{#if contractName}}
    Contract name: {{contractName}}
+{{/if}}
    Contract EVM address: {{contractEvmAddress}}
 {{#if alias}}
    Alias: {{alias}}

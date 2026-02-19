@@ -16,6 +16,11 @@ import {
   ContractCreateOutputSchema,
   createContract,
 } from './commands/create';
+import {
+  IMPORT_CONTRACT_TEMPLATE,
+  importContract,
+  ImportContractOutputSchema,
+} from './commands/import';
 
 export const CONTRACT_NAMESPACE = 'contract-contracts';
 
@@ -116,6 +121,49 @@ export const contractPluginManifest: PluginManifest = {
       output: {
         schema: ContractListOutputSchema,
         humanTemplate: CONTRACT_LIST_TEMPLATE,
+      },
+    },
+    {
+      name: 'import',
+      summary: 'Import existing contract',
+      description:
+        'Import contract from Hedera network by contract ID or EVM address',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Contract ID (0.0.xxx) or EVM address (0x...) to import from Hedera network',
+        },
+        {
+          name: 'alias',
+          short: 'a',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Optional alias for the imported contract',
+        },
+        {
+          name: 'name',
+          short: 'n',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Optional name of the imported contract',
+        },
+        {
+          name: 'verified',
+          short: 'v',
+          type: OptionType.BOOLEAN,
+          required: false,
+          default: false,
+          description: 'Whether the contract is verified on Hashscan',
+        },
+      ],
+      handler: importContract,
+      output: {
+        schema: ImportContractOutputSchema,
+        humanTemplate: IMPORT_CONTRACT_TEMPLATE,
       },
     },
   ],

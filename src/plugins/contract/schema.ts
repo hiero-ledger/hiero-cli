@@ -10,7 +10,7 @@ import { SupportedNetwork } from '@/core/types/shared.types';
 
 export const ContractDataSchema = z.object({
   contractId: EntityIdSchema.describe('Contract ID'),
-  contractName: ContractNameSchema,
+  contractName: ContractNameSchema.optional(),
 
   contractEvmAddress: EvmAddressSchema.describe(
     'Deployed contract EVM address',
