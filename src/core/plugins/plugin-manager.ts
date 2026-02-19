@@ -419,7 +419,7 @@ export class PluginManager {
     return this.coreApi.output.handleOutput({
       status: Status.Failure,
       template: error.getTemplate(),
-      result: error.toJSON(),
+      data: error.toJSON(),
     });
   }
 
@@ -463,6 +463,7 @@ export class PluginManager {
     // @todo - replace as fast as handlers and services is migrated
     try {
       const result = await commandSpec.handler(handlerArgs);
+
       // @deprecated @todo - temporary check, remove after migration to thrown based error handling
       if (!this.isNewCommandResult(result)) {
         throw new Error(
@@ -470,12 +471,12 @@ export class PluginManager {
         );
       }
 
-      // Now we know its new CommandResult
-      this.coreApi.output.handleOutput({
-        status: Status.Success,
-        template: commandSpec.output.humanTemplate,
-        result,
-      });
+      this.coreApi.output // Now we know its new CommandResult
+        .handleOutput({
+          status: Status.Success,
+          template: commandSpec.output.humanTemplate,
+          data: result.result,
+        });
     } catch (error) {
       if (error instanceof ZodError) {
         const validationError = ValidationError.fromZod(error);

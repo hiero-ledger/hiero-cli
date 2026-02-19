@@ -74,7 +74,7 @@ export interface PluginContext {
  * Command result
  */
 export interface CommandResult {
-  result: unknown;
+  result: object;
 }
 
 export interface CommandExecutionResult {
