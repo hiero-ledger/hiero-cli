@@ -15,11 +15,11 @@ export interface AliasRecord {
   type: AliasType;
   network: SupportedNetwork;
   entityId?: string;
+  evmAddress?: string;
   publicKey?: string;
   keyRefId?: string;
   metadata?: Record<string, unknown>;
   createdAt: string;
-  updatedAt?: string;
 }
 
 export interface AliasService {
@@ -34,6 +34,10 @@ export interface AliasService {
     type: AliasType,
     network: SupportedNetwork,
   ): AliasRecord;
+  resolveByEvmAddress(
+    evmAddress: string,
+    network: SupportedNetwork,
+  ): AliasRecord | null;
   list(filter?: {
     network?: SupportedNetwork;
     type?: AliasType;

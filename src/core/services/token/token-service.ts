@@ -17,6 +17,8 @@ import type { TokenService } from './token-service.interface';
 import {
   AccountId,
   CustomFixedFee,
+  CustomFractionalFee,
+  FeeAssessmentMethod,
   Hbar,
   NftId,
   TokenAssociateTransaction,
@@ -29,6 +31,7 @@ import {
 
 import { TokenTypeMap } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
+import { CustomFeeType, FixedFeeUnitType } from '@/core/types/token.types';
 
 export class TokenServiceImpl implements TokenService {
   private logger: Logger;
@@ -272,27 +275,58 @@ export class TokenServiceImpl implements TokenService {
     const hederaCustomFees: CustomFee[] = [];
 
     for (const fee of customFees) {
-      if (fee.type === 'fixed') {
-        // Only support HBAR fixed fees
+      if (fee.type === CustomFeeType.FIXED) {
         const fixedFee = new CustomFixedFee();
 
-        // Set HBAR amount (default unitType is HBAR)
-        fixedFee.setHbarAmount(Hbar.fromTinybars(fee.amount || 0));
-        this.logger.debug(
-          `[TOKEN SERVICE] Added fixed HBAR fee: ${fee.amount} tinybars`,
-        );
-
-        if (fee.collectorId) {
-          fixedFee.setFeeCollectorAccountId(
-            AccountId.fromString(fee.collectorId),
+        if (fee.unitType === FixedFeeUnitType.TOKEN) {
+          fixedFee.setDenominatingTokenToSameToken();
+          fixedFee.setAmount(fee.amount || 0);
+          this.logger.debug(
+            `[TOKEN SERVICE] Added fixed TOKEN fee: ${fee.amount} units`,
+          );
+        } else {
+          fixedFee.setHbarAmount(Hbar.fromTinybars(fee.amount || 0));
+          this.logger.debug(
+            `[TOKEN SERVICE] Added fixed HBAR fee: ${fee.amount} tinybars`,
           );
         }
 
-        if (fee.exempt !== undefined) {
-          fixedFee.setAllCollectorsAreExempt(fee.exempt);
-        }
+        fixedFee.setFeeCollectorAccountId(
+          AccountId.fromString(fee.collectorId),
+        );
+
+        fixedFee.setAllCollectorsAreExempt(fee.exempt);
 
         hederaCustomFees.push(fixedFee);
+      } else if (fee.type === CustomFeeType.FRACTIONAL) {
+        const fractionalFee = new CustomFractionalFee()
+          .setNumerator(fee.numerator)
+          .setDenominator(fee.denominator);
+
+        if (fee.min !== undefined) {
+          fractionalFee.setMin(fee.min);
+        }
+
+        if (fee.max !== undefined) {
+          fractionalFee.setMax(fee.max);
+        }
+
+        const assessmentMethod = fee.netOfTransfers
+          ? FeeAssessmentMethod.Inclusive
+          : FeeAssessmentMethod.Exclusive;
+        fractionalFee.setAssessmentMethod(assessmentMethod);
+
+        fractionalFee.setFeeCollectorAccountId(
+          AccountId.fromString(fee.collectorId),
+        );
+
+        fractionalFee.setAllCollectorsAreExempt(fee.exempt);
+
+        this.logger.debug(
+          `[TOKEN SERVICE] Added fractional fee: ${fee.numerator}/${fee.denominator}, netOfTransfers=${fee.netOfTransfers}`,
+        );
+
+        hederaCustomFees.push(fractionalFee);
       }
     }
 

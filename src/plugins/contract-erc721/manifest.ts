@@ -1,6 +1,6 @@
 /**
  * Contract ERC721 Plugin Manifest
- * Provides commands to list, get and set configuration options
+ * Provides commands to call ERC-721 contract functions
  */
 import type { PluginManifest } from '@/core';
 
@@ -82,8 +82,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           short: 'c',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Smart contract ID represented by alias or contract ID. Option required',
+          description: 'Smart contract ID represented by alias or contract ID',
         },
         {
           name: 'owner',
@@ -91,7 +90,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Account represented by alias, account ID, or EVM address. Option required',
+            'Account represented by alias, account ID, or EVM address',
         },
       ],
       handler: balanceOfFunctionCall,
@@ -112,15 +111,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
-        },
-        {
-          name: 'gas',
-          short: 'g',
-          type: OptionType.NUMBER,
-          required: true,
-          default: 100000,
-          description: 'Gas for function call. Default: 100000',
+            'Smart contract ID represented by alias, contract ID or EVM address',
         },
         {
           name: 'to',
@@ -128,7 +119,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Parameter "to" in approve - address to approve for token transfer. Alias, account ID or EVM address. Option required',
+            'Parameter "to" in approve - address to approve for token transfer. Alias, account ID or EVM address',
         },
         {
           name: 'token-id',
@@ -136,7 +127,15 @@ export const contractErc721PluginManifest: PluginManifest = {
           type: OptionType.NUMBER,
           required: true,
           description:
-            'Parameter "tokenId" in approve - token ID (uint256) to approve. Option required',
+            'Parameter "token-id" in approve - token ID (uint256) to approve',
+        },
+        {
+          name: 'gas',
+          short: 'g',
+          type: OptionType.NUMBER,
+          required: false,
+          default: 100000,
+          description: 'Gas for function call. Default: 100000',
         },
       ],
       handler: approveFunctionCall,
@@ -157,7 +156,23 @@ export const contractErc721PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+            'Smart contract ID represented by alias, contract ID or EVM address',
+        },
+        {
+          name: 'operator',
+          short: 'o',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "operator" in setApprovalForAll represented by alias, account ID or EVM address',
+        },
+        {
+          name: 'approved',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "approved" in setApprovalForAll. Value must be "true" or "false"',
         },
         {
           name: 'gas',
@@ -166,22 +181,6 @@ export const contractErc721PluginManifest: PluginManifest = {
           required: false,
           default: 100000,
           description: 'Gas for function call. Default: 100000',
-        },
-        {
-          name: 'operator',
-          short: 'o',
-          type: OptionType.STRING,
-          required: true,
-          description:
-            'Parameter "operator" in setApprovalForAll represented by alias, account ID or EVM address. Option required',
-        },
-        {
-          name: 'approved',
-          short: 'a',
-          type: OptionType.STRING,
-          required: true,
-          description:
-            'Parameter "approved" in setApprovalForAll. Value must be "true" or "false". Option required',
         },
       ],
       handler: setApprovalForAllFunctionCall,
@@ -202,7 +201,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+            'Smart contract ID represented by alias, contract ID or EVM address',
         },
         {
           name: 'owner',
@@ -210,7 +209,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Parameter "owner" represented by alias, account ID or EVM address. Option required',
+            'Parameter "owner" represented by alias, account ID or EVM address',
         },
         {
           name: 'operator',
@@ -218,7 +217,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Parameter "operator" represented by alias, account ID or EVM address. Option required',
+            'Parameter "operator" represented by alias, account ID or EVM address',
         },
       ],
       handler: isApprovedForAllFunctionCall,
@@ -238,15 +237,14 @@ export const contractErc721PluginManifest: PluginManifest = {
           short: 'c',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Smart contract ID represented by alias or contract ID. Option required',
+          description: 'Smart contract ID represented by alias or contract ID',
         },
         {
           name: 'token-id',
-          short: 't',
+          short: 'T',
           type: OptionType.NUMBER,
           required: true,
-          description: 'Token ID (uint256) to query owner of. Option required',
+          description: 'Token ID (uint256) to query owner of',
         },
       ],
       handler: ownerOfFunctionCall,
@@ -266,16 +264,14 @@ export const contractErc721PluginManifest: PluginManifest = {
           short: 'c',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Smart contract ID represented by alias or contract ID. Option required',
+          description: 'Smart contract ID represented by alias or contract ID',
         },
         {
           name: 'token-id',
-          short: 't',
+          short: 'T',
           type: OptionType.NUMBER,
           required: true,
-          description:
-            'Token ID (uint256) to query approved address for. Option required',
+          description: 'Token ID (uint256) to query approved address for',
         },
       ],
       handler: getApprovedFunctionCall,
@@ -295,15 +291,14 @@ export const contractErc721PluginManifest: PluginManifest = {
           short: 'c',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Smart contract ID represented by alias or contract ID. Option required',
+          description: 'Smart contract ID represented by alias or contract ID',
         },
         {
           name: 'token-id',
-          short: 't',
+          short: 'T',
           type: OptionType.NUMBER,
           required: true,
-          description: 'Token ID (uint256) to query URI for. Option required',
+          description: 'Token ID (uint256) to query URI for',
         },
       ],
       handler: tokenUriFunctionCall,
@@ -323,8 +318,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           short: 'c',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Smart contract ID represented by alias or contract ID. Option required',
+          description: 'Smart contract ID represented by alias or contract ID',
         },
       ],
       handler: nameFunctionCall,
@@ -344,8 +338,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           short: 'c',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Smart contract ID represented by alias or contract ID. Option required',
+          description: 'Smart contract ID represented by alias or contract ID',
         },
       ],
       handler: symbolFunctionCall,
@@ -366,7 +359,30 @@ export const contractErc721PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+            'Smart contract ID represented by alias, contract ID or EVM address',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "from" (current owner) represented by alias, account ID or EVM address',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "to" (new owner) represented by alias, account ID or EVM address',
+        },
+        {
+          name: 'token-id',
+          short: 'T',
+          type: OptionType.NUMBER,
+          required: true,
+          description: 'Token ID (uint256) to transfer',
         },
         {
           name: 'gas',
@@ -375,29 +391,6 @@ export const contractErc721PluginManifest: PluginManifest = {
           required: false,
           default: 100000,
           description: 'Gas for function call. Default: 100000',
-        },
-        {
-          name: 'from',
-          short: 'f',
-          type: OptionType.STRING,
-          required: true,
-          description:
-            'Parameter "from" (current owner) represented by alias, account ID or EVM address. Option required',
-        },
-        {
-          name: 'to',
-          short: 't',
-          type: OptionType.STRING,
-          required: true,
-          description:
-            'Parameter "to" (new owner) represented by alias, account ID or EVM address. Option required',
-        },
-        {
-          name: 'token-id',
-          short: 'T',
-          type: OptionType.NUMBER,
-          required: true,
-          description: 'Token ID (uint256) to transfer. Option required',
         },
         {
           name: 'data',
@@ -426,7 +419,22 @@ export const contractErc721PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+            'Smart contract ID represented by alias, contract ID or EVM address',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "to" - address to mint token to. Alias, account ID or EVM address',
+        },
+        {
+          name: 'token-id',
+          short: 'T',
+          type: OptionType.NUMBER,
+          required: true,
+          description: 'Parameter "token-id" - token ID (uint256) to mint',
         },
         {
           name: 'gas',
@@ -435,22 +443,6 @@ export const contractErc721PluginManifest: PluginManifest = {
           required: false,
           default: 100000,
           description: 'Gas for function call. Default: 100000',
-        },
-        {
-          name: 'to',
-          short: 't',
-          type: OptionType.STRING,
-          required: true,
-          description:
-            'Parameter "to" - address to mint token to. Alias, account ID or EVM address. Option required',
-        },
-        {
-          name: 'token-id',
-          short: 'T',
-          type: OptionType.NUMBER,
-          required: true,
-          description:
-            'Parameter "tokenId" - token ID (uint256) to mint. Option required',
         },
       ],
       handler: mintFunctionCall,
@@ -470,7 +462,31 @@ export const contractErc721PluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Smart contract ID represented by alias, contract ID or EVM address. Option required',
+            'Smart contract ID represented by alias, contract ID or EVM address',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "from" in transferFrom function represented by alias, account ID or EVM address',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Parameter "to" (recipient) in transferFrom function represented by alias, account ID or EVM address',
+        },
+        {
+          name: 'token-id',
+          short: 'T',
+          type: OptionType.NUMBER,
+          required: true,
+          description:
+            'Parameter "token-id" in transferFrom function represented by a number',
         },
         {
           name: 'gas',
@@ -479,30 +495,6 @@ export const contractErc721PluginManifest: PluginManifest = {
           required: false,
           default: 100000,
           description: 'Gas for function call. Default: 100000',
-        },
-        {
-          name: 'from',
-          short: 'f',
-          type: OptionType.STRING,
-          required: true,
-          description:
-            'Parameter "from" in transferFrom function represented by alias, account ID or EVM address. Option required',
-        },
-        {
-          name: 'to',
-          short: 't',
-          type: OptionType.STRING,
-          required: true,
-          description:
-            'Parameter "to" (recipient) in transferFrom function represented by alias, account ID or EVM address. Option required',
-        },
-        {
-          name: 'token-id',
-          short: 'T',
-          type: OptionType.NUMBER,
-          required: true,
-          description:
-            'Parameter "tokenId" in transferFrom function represented by a number. Option required',
         },
       ],
       handler: transferFromFunctionCall,

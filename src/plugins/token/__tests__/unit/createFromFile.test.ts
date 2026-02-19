@@ -412,7 +412,7 @@ describe('createTokenFromFileHandler', () => {
             amount: 10,
             unitType: 'HBAR',
             collectorId: '0.0.999999',
-            exempt: undefined,
+            exempt: false,
           },
         ],
         memo: 'Test token created from file',

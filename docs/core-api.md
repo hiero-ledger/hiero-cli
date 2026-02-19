@@ -43,7 +43,7 @@ interface AccountService {
 }
 
 interface CreateAccountParams {
-  balanceRaw: number;
+  balanceRaw: bigint;
   maxAutoAssociations?: number;
   publicKey: string;
   keyType?: 'ECDSA' | 'ED25519';
@@ -59,7 +59,7 @@ interface AccountCreateResult {
 
 ```typescript
 const result = await api.account.createAccount({
-  balanceRaw: 100000000, // tinybars
+  balanceRaw: 100000000n, // tinybars (bigint)
   publicKey: '302e020100300506032b6570...',
   keyType: 'ECDSA',
   maxAutoAssociations: 10,
@@ -198,8 +198,7 @@ type SignerRef = {
 **Usage Example:**
 
 ```typescript
-const receipt = await api.txExecution.signAndExecute(transaction);
-const status = await api.txExecution.getTransactionStatus(transactionId);
+const result = await api.txExecution.signAndExecute(transaction);
 ```
 
 ### State Service
@@ -379,24 +378,29 @@ const isInitialized = api.network.hasAnyOperator();
 
 ### Config Service
 
-Provides read-only access to CLI configuration.
+Provides type-safe access to CLI configuration options.
 
 ```typescript
 interface ConfigService {
-  getCurrentNetwork(): string;
-  getNetworkConfig(network: string): NetworkConfig;
-  getAvailableNetworks(): string[];
-  getOperatorId(): string;
-  getOperatorKey(): string;
+  listOptions(): ConfigOptionDescriptor[];
+  getOption<T = boolean | number | string>(name: string): T;
+  setOption(name: string, value: boolean | number | string): void;
+}
+
+interface ConfigOptionDescriptor {
+  name: string;
+  type: 'boolean' | 'number' | 'string' | 'enum';
+  value: boolean | number | string;
+  allowedValues?: string[];
 }
 ```
 
 **Usage Example:**
 
 ```typescript
-const config = api.config.getConfig();
-const network = api.config.getValue('network');
-const hasCustomSetting = api.config.hasValue('custom.setting');
+const options = api.config.listOptions();
+const keyManager = api.config.getOption<string>('default_key_manager');
+api.config.setOption('log_level', 'debug');
 ```
 
 ### Logger Service

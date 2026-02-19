@@ -38,6 +38,11 @@ import {
   DeleteTokenOutputSchema,
 } from './commands/delete';
 import {
+  IMPORT_TOKEN_TEMPLATE,
+  importToken,
+  ImportTokenOutputSchema,
+} from './commands/import';
+import {
   LIST_TOKENS_TEMPLATE,
   listTokens,
   ListTokensOutputSchema,
@@ -271,14 +276,14 @@ export const tokenPluginManifest: PluginManifest = {
           short: 'T',
           type: OptionType.STRING,
           required: true,
-          description: 'Fungible token name. Option required.',
+          description: 'Fungible token name',
         },
         {
           name: 'symbol',
           short: 'Y',
           type: OptionType.STRING,
           required: true,
-          description: 'Fungible token symbol. Option required.',
+          description: 'Fungible token symbol',
         },
         {
           name: 'treasury',
@@ -378,14 +383,14 @@ export const tokenPluginManifest: PluginManifest = {
           short: 'T',
           type: OptionType.STRING,
           required: true,
-          description: 'Token name. Option required.',
+          description: 'Token name',
         },
         {
           name: 'symbol',
           short: 'Y',
           type: OptionType.STRING,
           required: true,
-          description: 'Token symbol. Option required.',
+          description: 'Token symbol',
         },
         {
           name: 'treasury',
@@ -615,6 +620,33 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: DeleteTokenOutputSchema,
         humanTemplate: DELETE_TOKEN_TEMPLATE,
+      },
+    },
+    {
+      name: 'import',
+      summary: 'Import an existing token',
+      description:
+        'Import an existing token into state. Provide token ID (e.g., 0.0.123456).',
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token ID to import (e.g., 0.0.123456)',
+        },
+        {
+          name: 'name',
+          short: 'n',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Name/alias for the token',
+        },
+      ],
+      handler: importToken,
+      output: {
+        schema: ImportTokenOutputSchema,
+        humanTemplate: IMPORT_TOKEN_TEMPLATE,
       },
     },
   ],

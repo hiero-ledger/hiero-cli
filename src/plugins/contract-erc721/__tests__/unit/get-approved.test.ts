@@ -28,6 +28,14 @@ describe('contract-erc721 plugin - getApproved command (unit)', () => {
           queryResult: ['0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'],
         }),
       },
+      alias: {
+        resolveByEvmAddress: jest.fn().mockReturnValue({
+          alias: 'approved-alias',
+          entityId: '0.0.5678',
+          type: 'account',
+          network: 'testnet',
+        }),
+      },
     }).api;
   });
 
@@ -55,6 +63,8 @@ describe('contract-erc721 plugin - getApproved command (unit)', () => {
     expect(parsed.contractId).toBe('0.0.1234');
     expect(parsed.tokenId).toBe(tokenId);
     expect(parsed.approved).toBe('0xabcdefabcdefabcdefabcdefabcdefabcdefabcd');
+    expect(parsed.approvedAlias).toBe('approved-alias');
+    expect(parsed.approvedEntityId).toBe('0.0.5678');
     expect(parsed.network).toBe('testnet');
 
     expect(

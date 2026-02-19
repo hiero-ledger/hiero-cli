@@ -13,6 +13,7 @@ import type {
 
 import { HederaTokenType as HederaTokenTypeValues } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
+import { CustomFeeType } from '@/core/types/token.types';
 
 export function buildTokenData(
   result: TransactionResult,
@@ -86,13 +87,27 @@ export function buildTokenDataFromFile(
     maxSupply: tokenDefinition.maxSupply,
     network,
     associations: [],
-    customFees: tokenDefinition.customFees.map((fee) => ({
-      type: fee.type,
-      amount: fee.amount,
-      unitType: fee.unitType,
-      collectorId: fee.collectorId,
-      exempt: fee.exempt,
-    })),
+    customFees: tokenDefinition.customFees.map((fee) => {
+      if (fee.type === CustomFeeType.FIXED) {
+        return {
+          type: fee.type,
+          amount: fee.amount,
+          unitType: fee.unitType,
+          collectorId: fee.collectorId,
+          exempt: fee.exempt,
+        };
+      }
+      return {
+        type: fee.type,
+        numerator: fee.numerator,
+        denominator: fee.denominator,
+        min: fee.min,
+        max: fee.max,
+        netOfTransfers: fee.netOfTransfers,
+        collectorId: fee.collectorId,
+        exempt: fee.exempt,
+      };
+    }),
     memo: tokenDefinition.memo,
   };
 }

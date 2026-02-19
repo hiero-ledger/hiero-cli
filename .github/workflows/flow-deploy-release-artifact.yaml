@@ -45,6 +45,11 @@ jobs:
       version: ${{ steps.set-outputs.outputs.version }}
       need-release: ${{ steps.set-outputs.outputs.need-release }}
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
       - name: Prepare Job
         uses: pandaswhocode/initialize-github-job@ffb7446339e8e6007b942312ac95457d1a20b6cf # 1.0.4
         with:
@@ -52,7 +57,7 @@ jobs:
           checkout-ref: '${{ github.ref }}'
           checkout-token: '${{ secrets.GH_ACCESS_TOKEN }}'
           setup-node: 'true'
-          node-version: '20'
+          node-version: '22'
           node-registry: 'https://registry.npmjs.org/'
 
       - name: Setup JQ
@@ -148,6 +153,11 @@ jobs:
     outputs:
       npm-artifact-name: ${{ steps.set-publish-data.outputs.artifact-name }}
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
       - name: Prepare Job
         uses: pandaswhocode/initialize-github-job@ffb7446339e8e6007b942312ac95457d1a20b6cf # 1.0.4
         with:
@@ -155,7 +165,7 @@ jobs:
           checkout-ref: '${{ github.ref }}'
           checkout-token: '${{ secrets.GH_ACCESS_TOKEN }}'
           setup-node: 'true'
-          node-version: '20'
+          node-version: '22'
           node-registry: 'https://registry.npmjs.org/'
 
       - name: Install GnuPG Tools
@@ -187,6 +197,8 @@ jobs:
 
       - name: Setup JFrog CLI
         uses: jfrog/setup-jfrog-cli@c32bf10843e4071112c4ea3abf622d3b27cd8c17 # v4.7.0
+        env:
+          JF_URL: ${{ vars.JF_URL }}
         with:
           oidc-provider-name: hiero-ledger
 
@@ -234,7 +246,7 @@ jobs:
           fi
 
       - name: Update Version for Dry Run
-        if: ${{ inputs.dry-run-enabled == 'true' }}
+        if: ${{ inputs.dry-run-enabled == true }}
         run: |
           npm version ${{ needs.prepare-release.outputs.version }} --no-git-tag-version
 
@@ -271,19 +283,24 @@ jobs:
           if-no-files-found: error
 
       - name: Deploy to JFrog Registry
-        if: ${{ inputs.dry-run-enabled != 'true' && !cancelled() && !failure() }}
+        if: ${{ inputs.dry-run-enabled != true && !cancelled() && !failure() }}
         run: jf npm publish
 
   # Add a publishing job for Hiero CLI to npmjs
   publish-npm-package:
     name: Publish Hiero CLI NPM Package
-    if: ${{ needs.prepare-release.outputs.need-release == 'true' }}
+    if: ${{ needs.prepare-release.outputs.need-release == 'true' && inputs.dry-run-enabled != true }}
     runs-on: ubuntu-latest
     needs:
       - create-github-release
       - prepare-release
       - safety-checks
     steps:
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
       - name: Prepare Release
         uses: pandaswhocode/initialize-github-job@ffb7446339e8e6007b942312ac95457d1a20b6cf # 1.0.4
         with:

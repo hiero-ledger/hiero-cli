@@ -65,7 +65,7 @@ Before proceeding with the installation and setup of the Hiero CLI Tool, ensure 
 
 ### 1. Node.js Installation
 
-The Hiero CLI Tool requires Node.js (version LTS 16.20.2 or higher). You can check your current version by running `node -v` in your terminal. If you do not have Node.js installed, you can download it from [Node.js official website](https://nodejs.org/en).
+The Hiero CLI Tool requires Node.js (version 18.0.0 or higher). You can check your current version by running `node -v` in your terminal. If you do not have Node.js installed, you can download it from [Node.js official website](https://nodejs.org/en).
 
 ### 2. Hedera Account Setup
 
@@ -301,6 +301,9 @@ The Hiero CLI is built on a plugin architecture. The following default plugins a
 - **[Plugin Management Plugin](src/plugins/plugin-management/README.md)** - Add, remove, enable/disable, and inspect plugins
 - **[Topic Plugin](src/plugins/topic/README.md)** - Create topics and manage topic messages
 - **[Config Plugin](src/plugins/config/README.md)** - Inspect and update CLI configuration values
+- **[Contract Plugin](src/plugins/contract/README.md)** - Compile, deploy, and verify Solidity smart contracts on Hedera
+- **[Contract ERC-20 Plugin](src/plugins/contract-erc20/README.md)** - Call ERC-20 token contract functions (name, balance, transfer, etc.)
+- **[Contract ERC-721 Plugin](src/plugins/contract-erc721/README.md)** - Call ERC-721 (NFT) contract functions (transfer, approve, etc.)
 
 Each plugin has its own README with detailed documentation about available commands, usage examples, and architecture details. Click on the plugin name above to learn more.
 
@@ -312,7 +315,7 @@ The CLI externalizes both its immutable base configuration and mutable runtime s
 
 By default, the CLI stores plugin state in your home directory:
 
-- **Default location**: `~/.hiero-cli/state/` (in the current working directory)
+- **Default location**: `~/.hiero-cli/state/` (in your home directory)
 
 Each plugin (or state namespace) uses its own JSON file inside this directory. These files are managed by the CLI; you typically should not edit them manually.
 

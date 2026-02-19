@@ -258,6 +258,7 @@ export const makeAliasServiceMock = (
     return null;
   }),
   resolveOrThrow: jest.fn(),
+  resolveByEvmAddress: jest.fn().mockReturnValue(null),
   list: jest.fn().mockReturnValue([]),
   remove: jest.fn(),
   clear: jest.fn(),
@@ -335,16 +336,19 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
   const state = makeStateServiceMock(config?.state);
   const account = makeAccountTransactionServiceMock();
 
+  const networkMock = {
+    getCurrentNetwork: jest.fn().mockReturnValue(config?.network || 'testnet'),
+    getOperator: jest.fn().mockReturnValue({
+      accountId: '0.0.100000',
+      keyRefId: 'operator-key-ref-id',
+    }),
+    getCurrentOperatorOrThrow: jest.fn().mockReturnValue({
+      accountId: '0.0.100000',
+      keyRefId: 'operator-key-ref-id',
+    }),
+  };
   const keyResolver = makeGlobalKeyResolverMock({
-    network: {
-      getCurrentNetwork: jest
-        .fn()
-        .mockReturnValue(config?.network || 'testnet'),
-      getOperator: jest.fn().mockReturnValue({
-        accountId: '0.0.100000',
-        keyRefId: 'operator-key-ref-id',
-      }),
-    } as unknown as NetworkService,
+    network: networkMock as unknown as NetworkService,
     alias,
     kms,
   });
@@ -365,13 +369,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       ...(config?.mirror || {}),
     } as unknown as HederaMirrornodeService,
     network: {
-      getCurrentNetwork: jest
-        .fn()
-        .mockReturnValue(config?.network || 'testnet'),
-      getOperator: jest.fn().mockReturnValue({
-        accountId: '0.0.100000',
-        keyRefId: 'operator-key-ref-id',
-      }),
+      ...networkMock,
       setOperator: jest.fn(),
     } as unknown as NetworkService,
     config: {
@@ -782,7 +780,7 @@ export const makeMintNftSuccessMocks = (overrides?: {
     mirror: {
       getTokenInfo: jest.fn().mockResolvedValue({
         decimals: overrides?.tokenInfo?.decimals ?? '0',
-        type: overrides?.tokenInfo?.type ?? 'NON_FUNGIBLE_TOKEN',
+        type: overrides?.tokenInfo?.type ?? 'NON_FUNGIBLE_UNIQUE',
         supply_key: overrides?.tokenInfo?.supply_key ?? {
           key: defaultSupplyKeyPublicKey,
         },

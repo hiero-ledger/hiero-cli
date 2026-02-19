@@ -50,10 +50,17 @@ export async function getApprovedFunctionCall(
       queryResult[0],
     );
 
+    const approvedAliasRecord = api.alias.resolveByEvmAddress(
+      approved,
+      network,
+    );
+
     const outputData: ContractErc721CallGetApprovedOutput = {
       contractId,
       tokenId,
       approved,
+      approvedAlias: approvedAliasRecord?.alias,
+      approvedEntityId: approvedAliasRecord?.entityId,
       network,
     };
 

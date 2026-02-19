@@ -4,6 +4,7 @@
  */
 import type { AccountService } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
@@ -53,6 +54,7 @@ export interface ApiMocksConfig {
   contract?: Partial<jest.Mocked<ContractTransactionService>>;
   txExecution?: Partial<jest.Mocked<TxExecutionService>>;
   network?: SupportedNetwork;
+  alias?: Partial<jest.Mocked<AliasService>>;
 }
 
 /**
@@ -61,7 +63,10 @@ export interface ApiMocksConfig {
  */
 export const makeApiMocks = (config?: ApiMocksConfig) => {
   const network = makeNetworkMock(config?.network ?? 'testnet');
-  const alias = makeAliasMock();
+  const alias = {
+    ...makeAliasMock(),
+    ...config?.alias,
+  };
   const kms = makeKmsMock();
   const mirror = createMirrorNodeMock();
   const keyResolver = makeKeyResolverMock({ network, alias, kms });

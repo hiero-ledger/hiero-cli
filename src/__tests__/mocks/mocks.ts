@@ -4,7 +4,10 @@
  */
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type {
+  AliasRecord,
+  AliasService,
+} from '@/core/services/alias/alias-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
@@ -25,11 +28,12 @@ import type {
   TxExecutionService,
 } from '@/core/services/tx-execution/tx-execution-service.interface';
 
+import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
-import { MOCK_PUBLIC_KEY } from './fixtures';
+import { MOCK_PUBLIC_KEY, MOCK_TOPIC_ID } from './fixtures';
 
 /**
  * Alias account data structure
@@ -66,7 +70,12 @@ export const makeLogger = (): jest.Mocked<Logger> => ({
  * Create a mocked NetworkService
  */
 export const makeNetworkMock = (
-  network: 'testnet' | 'mainnet' | 'previewnet' | 'localnet' = 'testnet',
+  network:
+    | SupportedNetwork
+    | 'testnet'
+    | 'mainnet'
+    | 'previewnet'
+    | 'localnet' = SupportedNetwork.TESTNET,
 ): jest.Mocked<NetworkService> => ({
   getCurrentNetwork: jest.fn().mockReturnValue(network),
   setNetwork: jest.fn(),
@@ -197,12 +206,21 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
     network: 'testnet',
     createdAt: '2024-01-01T00:00:00.000Z',
   }),
+  resolveByEvmAddress: jest.fn().mockReturnValue(null),
   list: jest.fn(),
   remove: jest.fn(),
   exists: jest.fn().mockReturnValue(false),
   availableOrThrow: jest.fn(),
   clear: jest.fn(),
 });
+
+export const mockTopicAliasRecord: AliasRecord = {
+  alias: 'topic-alias-testnet',
+  type: ALIAS_TYPE.Topic,
+  network: SupportedNetwork.TESTNET,
+  entityId: MOCK_TOPIC_ID,
+  createdAt: '2024-01-01T00:00:00.000Z',
+};
 
 /**
  * Create a mocked ContractQueryService
@@ -438,7 +456,7 @@ export const makeArgs = (
   logger: jest.Mocked<Logger>,
   args: Record<string, unknown>,
 ): CommandHandlerArgs => {
-  const network = api.network || makeNetworkMock('testnet');
+  const network = api.network || makeNetworkMock(SupportedNetwork.TESTNET);
   const alias = api.alias || makeAliasMock();
   const kms = api.kms || makeKmsMock();
   const contract = api.contract || makeContractTransactionServiceMock();
@@ -609,11 +627,8 @@ export const makeKeyResolverMock = (
   getOrInitKeyWithFallback: jest
     .fn()
     .mockImplementation(async (keyOrAlias, keyManager, labels) => {
-      // undefined -> fallback do operatora
       if (!keyOrAlias && options.network) {
-        const network = options.network.getCurrentNetwork();
-        const operator = options.network.getOperator(network);
-        if (!operator) throw new Error('No operator set');
+        const operator = options.network.getCurrentOperatorOrThrow();
         // Always use default valid public key for mocking
         const publicKey = '302a300506032b6570032100' + '0'.repeat(64);
         return {

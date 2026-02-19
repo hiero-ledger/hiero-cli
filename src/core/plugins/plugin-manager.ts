@@ -286,7 +286,10 @@ export class PluginManager {
           const long = `--${optionName}`;
           const combined = short ? `${short}, ${long}` : long;
           const flags = `${combined} <value>`;
-          const description = String(option.description || `Set ${optionName}`);
+          const baseDescription = option.description || `Set ${optionName}`;
+          const description = option.required
+            ? `${baseDescription} (required)`
+            : baseDescription;
 
           const addOption = <T>(
             parser?: (value: string, previous: T) => T,

@@ -12,10 +12,20 @@ import {
   CreateTopicOutputSchema,
 } from './commands/create';
 import {
+  DELETE_TOPIC_TEMPLATE,
+  deleteTopic,
+  DeleteTopicOutputSchema,
+} from './commands/delete';
+import {
   FIND_MESSAGES_TEMPLATE,
   findMessage,
   FindMessagesOutputSchema,
 } from './commands/find-message';
+import {
+  IMPORT_TOPIC_TEMPLATE,
+  importTopic,
+  ImportTopicOutputSchema,
+} from './commands/import';
 import {
   LIST_TOPICS_TEMPLATE,
   listTopics,
@@ -89,6 +99,33 @@ export const topicPluginManifest: PluginManifest = {
       },
     },
     {
+      name: 'import',
+      summary: 'Import an existing topic',
+      description:
+        'Import an existing topic into state. Provide topic ID (e.g., 0.0.123456).',
+      options: [
+        {
+          name: 'topic',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Topic ID to import (e.g., 0.0.123456)',
+        },
+        {
+          name: 'name',
+          short: 'n',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Name/alias for the topic',
+        },
+      ],
+      handler: importTopic,
+      output: {
+        schema: ImportTopicOutputSchema,
+        humanTemplate: IMPORT_TOPIC_TEMPLATE,
+      },
+    },
+    {
       name: 'list',
       summary: 'List all topics',
       description: 'List all topics stored in the state',
@@ -140,6 +177,28 @@ export const topicPluginManifest: PluginManifest = {
         schema: SubmitMessageOutputSchema,
         humanTemplate: SUBMIT_MESSAGE_TEMPLATE,
       },
+    },
+    {
+      name: 'delete',
+      summary: 'Delete a topic',
+      description:
+        'Delete a topic from state. Specify topic by name or topic ID',
+      options: [
+        {
+          name: 'topic',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Topic name or topic ID to delete from state',
+        },
+      ],
+      handler: deleteTopic,
+      output: {
+        schema: DeleteTopicOutputSchema,
+        humanTemplate: DELETE_TOPIC_TEMPLATE,
+      },
+      requireConfirmation:
+        'Are you sure you want to delete topic {{topic}}? This action cannot be undone.',
     },
     {
       name: 'find-message',

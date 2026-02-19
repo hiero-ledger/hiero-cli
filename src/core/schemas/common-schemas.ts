@@ -239,8 +239,7 @@ export const SupplyTypeSchema = z
  * ISO 8601 Timestamp
  * Standard date-time format
  */
-export const IsoTimestampSchema = z
-  .string()
+export const IsoTimestampSchema = z.iso
   .datetime()
   .describe('ISO 8601 timestamp');
 
@@ -736,20 +735,6 @@ export const FilePathSchema = z
   .describe('Filesystem path (absolute or relative)');
 
 /**
- * State Namespace Name
- * Name of a state namespace (alphanumeric, hyphens, underscores)
- */
-export const StateNamespaceSchema = z
-  .string()
-  .trim()
-  .min(1, 'Namespace name cannot be empty')
-  .regex(
-    /^[a-zA-Z0-9_-]+$/,
-    'Namespace name must contain only letters, numbers, hyphens, and underscores',
-  )
-  .describe('State namespace name');
-
-/**
  * Token Name
  * Name of a token (alphanumeric, spaces, hyphens)
  */
@@ -889,7 +874,7 @@ export const SolidityCompilerVersion = z
   .optional()
   .describe('Optional Solidity compiler version');
 
-export const GasInputSchema = z.number().min(0).default(100000);
+export const GasInputSchema = z.number().min(0).optional().default(100000);
 
 /**
  * Approved Flag Input Schema

@@ -29,7 +29,10 @@ hiero-cli/
 │   │   ├── credentials/        # Credentials plugin
 │   │   ├── config/             # CLI configuration plugin
 │   │   ├── plugin-management/  # Plugin management plugin
-│   │   └── topic/              # Topic management plugin
+│   │   ├── topic/              # Topic management plugin
+│   │   ├── contract/           # Smart contract plugin
+│   │   ├── contract-erc20/     # ERC-20 contract plugin
+│   │   └── contract-erc721/    # ERC-721 (NFT) contract plugin
 │   └── hiero-cli.ts           # Main CLI entry point
 ├── docs/                       # Technical documentation
 └── coverage/                   # Test coverage reports

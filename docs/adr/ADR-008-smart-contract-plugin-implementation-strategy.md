@@ -43,8 +43,7 @@ Contract plugin will consist of two commands:
       short: 'n',
       type: 'string',
       required: true,
-      description:
-              'Smart contract name represented in the state. Option required',
+      description: 'Smart contract name represented in the state',
     },
     {
       name: 'file',
@@ -52,7 +51,7 @@ Contract plugin will consist of two commands:
       type: 'string',
       required: true,
       description:
-              'Smart contract definition file path (absolute or relative) to a Solidity file. Option required',
+              'Smart contract definition file path (absolute or relative) to a Solidity file',
     },
     {
       name: 'base-path',
