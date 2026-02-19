@@ -657,11 +657,11 @@ export const PrivateKeyWithAccountIdSchema = z
     }
 
     throw new Error(
-      'Private key with account ID must be a valid account ID and private key pair in {account-id:private-key} format, private key in format {ed25519|ecdsa}:{private-key}, key reference or alias name',
+      'Private key with account ID must be a valid account ID and private key pair in {account-id:private-key} format, key reference or alias name',
     );
   })
   .describe(
-    'Account ID and private key pair in {account-id:private-key} format, account private key in format {ed25519|ecdsa}:{private-key}, account key reference or alias name',
+    'Account ID and private key pair in {account-id:private-key} format, account key reference or alias name',
   );
 
 /**
