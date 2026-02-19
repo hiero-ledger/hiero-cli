@@ -27,15 +27,15 @@ export class OutputServiceImpl implements OutputService {
   }
 
   handleOutput(options: OutputHandlerOptions): void {
-    const { result, template, status } = options;
+    const { data, template, status } = options;
     const outputFormat = this.getFormat();
 
-    const data = { status, ...result };
+    const outputData = { status, ...data };
 
     const formatter = OutputFormatterFactory.getStrategy(outputFormat);
     const formatOptions: FormatStrategyOptions = { template, pretty: true };
 
-    const formattedOutput = formatter.format(data, formatOptions);
+    const formattedOutput = formatter.format(outputData, formatOptions);
 
     console.log(formattedOutput);
   }

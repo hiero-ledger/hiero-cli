@@ -10,7 +10,7 @@ export interface ErrorOutput extends SerializedCliError {
 }
 
 export interface OutputHandlerOptions {
-  result: object;
+  data: object;
   template?: string;
   status: Status;
 }
