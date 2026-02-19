@@ -1,6 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { FileError } from '@/core/errors';
+
 export function resolveContractFilePath(filename: string): string {
   const hasPathSeparator = filename.includes('/') || filename.includes('\\');
 
@@ -14,7 +16,9 @@ export function resolveContractFilePath(filename: string): string {
 export function readContractFile(filename: string): string {
   const filepath = resolveContractFilePath(filename);
   if (!fs.existsSync(filepath)) {
-    throw new Error(`File ${filename} does not exist`);
+    throw new FileError(`File ${filename} does not exist`, {
+      context: { path: filepath },
+    });
   }
   return fs.readFileSync(filepath, 'utf8');
 }
@@ -25,8 +29,11 @@ export function readContractNameFromFileContent(
 ): string {
   const match = contractFileContent.match(/\bcontract\s+(\w+)/);
   if (!match) {
-    throw new Error(
-      `Could not resolve contract name from file: ${contractBasename} `,
+    throw new FileError(
+      `Could not resolve contract name from file: ${contractBasename}`,
+      {
+        context: { filename: contractBasename },
+      },
     );
   }
   return match[1];
