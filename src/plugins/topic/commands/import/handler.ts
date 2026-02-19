@@ -9,6 +9,7 @@ import type { ImportTopicOutput } from './output';
 
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
+import { entityIdToAliasSafeFormat } from '@/core/utils/entity-id-to-alias-format';
 import { formatError } from '@/core/utils/errors';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -36,7 +37,7 @@ export async function importTopic(
 
     const topicInfo = await api.mirror.getTopicInfo(topicId);
 
-    const name = alias || `imported-${topicId.replace(/\./g, '-')}`;
+    const name = alias || `imported-${entityIdToAliasSafeFormat(topicId)}`;
     logger.info(`Importing topic: ${name} (${topicId})`);
 
     if (topicState.findTopicByTopicId(topicId)) {

@@ -63,6 +63,7 @@ export {
   HBAR_DECIMALS,
   HederaTokenType,
   KeyAlgorithm,
+  MirrorTokenTypeToHederaTokenType,
   PLUGIN_MANAGEMENT_NAMESPACE,
   Status,
   TOKEN_BALANCE_LIMIT,
