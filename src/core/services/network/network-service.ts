@@ -2,7 +2,7 @@
  * Network Service Implementation
  * Manages network configuration using StateService with namespace
  */
-import type { ResolvedKey } from '@/core/services/key-resolver/key-resolver-service.interface';
+import type { ResolvedKey } from '@/core/services/key-resolver/types';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type {

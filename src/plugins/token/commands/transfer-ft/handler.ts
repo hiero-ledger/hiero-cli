@@ -86,8 +86,12 @@ export async function transferToken(
     ['token:account'],
   );
 
-  // Use resolved from account from alias or account-id:private-key
   const fromAccountId = resolvedFromAccount.accountId;
+  if (!fromAccountId) {
+    throw new Error(
+      `Could not resolve account ID for passed "from" argument ${validArgs.from?.type} from value ${validArgs.from?.rawValue}`,
+    );
+  }
   const signerKeyRefId = resolvedFromAccount.keyRefId;
 
   logger.info(`🔑 Using from account: ${fromAccountId}`);

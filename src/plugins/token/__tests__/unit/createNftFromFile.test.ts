@@ -73,10 +73,6 @@ describe('createNftFromFileHandler', () => {
           if (key === 'admin-key') return 'admin-key-ref-id';
           return undefined;
         }),
-        getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-          if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-          return 'mock-public-key';
-        }),
       },
     });
   };
@@ -152,12 +148,22 @@ describe('createNftFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -317,12 +323,22 @@ describe('createNftFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -400,12 +416,22 @@ describe('createNftFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -500,12 +526,22 @@ describe('createNftFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -826,12 +862,22 @@ describe('createNftFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -907,12 +953,22 @@ describe('createNftFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -991,12 +1047,22 @@ describe('createNftFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });

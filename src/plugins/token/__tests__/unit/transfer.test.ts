@@ -129,7 +129,10 @@ describe('transferTokenHandler', () => {
           getTokenInfo: jest.fn().mockResolvedValue({ decimals: 6 }),
         },
         kms: {
-          getPublicKey: jest.fn().mockReturnValue('alias-public-key'),
+          get: jest.fn().mockReturnValue({
+            keyRefId: 'alias-key-ref-id',
+            publicKey: 'alias-public-key',
+          }),
         },
       });
 
@@ -309,9 +312,10 @@ describe('transferTokenHandler', () => {
             keyRefId: 'imported-key-ref-id',
             publicKey: 'imported-public-key',
           }),
-          getPublicKey: jest
-            .fn()
-            .mockReturnValue('302a300506032b6570032100' + '0'.repeat(64)),
+          get: jest.fn().mockReturnValue({
+            keyRefId: 'imported-key-ref-id',
+            publicKey: '302a300506032b6570032100' + '0'.repeat(64),
+          }),
         },
       });
 

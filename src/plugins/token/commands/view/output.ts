@@ -6,7 +6,7 @@ import { z } from 'zod';
 import {
   EntityIdSchema,
   NetworkSchema,
-  PublicKeySchema,
+  PublicKeyDefinitionSchema,
   SupplyTypeSchema,
 } from '@/core/schemas/common-schemas';
 
@@ -35,8 +35,8 @@ export const ViewTokenOutputSchema = z.object({
   createdTimestamp: z.string().optional(),
 
   // === Token keys ===
-  adminKey: PublicKeySchema.nullable().optional(),
-  supplyKey: PublicKeySchema.nullable().optional(),
+  adminKey: PublicKeyDefinitionSchema.nullable().optional(),
+  supplyKey: PublicKeyDefinitionSchema.nullable().optional(),
 
   // === Specific NFT instance (when --serial provided) ===
   nftSerial: z

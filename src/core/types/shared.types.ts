@@ -132,3 +132,8 @@ export enum EntityReferenceType {
   ENTITY_ID = 'entity_id',
   EVM_ADDRESS = 'evm_address',
 }
+
+export enum MirrorNodeRequestOrderParameter {
+  ASC = 'asc',
+  DESC = 'desc',
+}

@@ -24,10 +24,12 @@ import type { TokenService } from '@/core/services/token/token-service.interface
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
 import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
 
+import { ED25519_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import {
   makeIdentityResolutionServiceMock as makeGlobalIdentityResolutionServiceMock,
   makeKeyResolverMock as makeGlobalKeyResolverMock,
 } from '@/__tests__/mocks/mocks';
+import { KeyAlgorithm } from '@/core';
 
 import { mockTransactionResults } from './fixtures';
 
@@ -87,6 +89,10 @@ export const makeKmsMock = (
     keyRefId: 'mock-key-ref-id',
     publicKey: 'mock-public-key',
   }),
+  importPublicKey: jest.fn().mockReturnValue({
+    keyRefId: 'mock-key-ref-id',
+    publicKey: 'mock-public-key',
+  }),
   importPrivateKey: jest.fn().mockReturnValue({
     keyRefId: 'mock-key-ref-id',
     publicKey: 'mock-public-key',
@@ -95,27 +101,75 @@ export const makeKmsMock = (
     keyRefId: 'mock-key-ref-id',
     publicKey: 'mock-public-key',
   }),
-  getPublicKey: jest.fn().mockReturnValue('mock-public-key'),
   getSignerHandle: jest.fn(),
   findByPublicKey: jest.fn().mockImplementation((publicKey) => {
     // Return a keyRefId for any public key by default
     // Tests can override this behavior as needed
     if (publicKey === 'operator-public-key') {
-      return 'operator-key-ref-id';
+      return {
+        keyRefId: 'operator-key-ref-id',
+        keyManager: 'local',
+        publicKey: ED25519_HEX_PUBLIC_KEY,
+        labels: ['operator:public-key'],
+        keyAlgorithm: KeyAlgorithm.ED25519,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
     }
     if (publicKey === 'admin-key') {
-      return 'admin-key-ref-id';
+      return {
+        keyRefId: 'admin-key-ref-id',
+        keyManager: 'local',
+        publicKey: ED25519_HEX_PUBLIC_KEY,
+        labels: ['account:create'],
+        keyAlgorithm: KeyAlgorithm.ED25519,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
     }
     if (publicKey === 'test-admin-key') {
-      return 'admin-key-ref-id';
+      return {
+        keyRefId: 'admin-key-ref-id',
+        keyManager: 'local',
+        publicKey: ED25519_HEX_PUBLIC_KEY,
+        labels: ['account:update'],
+        keyAlgorithm: KeyAlgorithm.ED25519,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
     }
     if (publicKey === 'test-public-key') {
-      return 'test-key-ref-id';
+      return {
+        keyRefId: 'test-key-ref-id',
+        keyManager: 'local',
+        publicKey: ED25519_HEX_PUBLIC_KEY,
+        labels: ['token:test'],
+        keyAlgorithm: KeyAlgorithm.ED25519,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
     }
     if (publicKey === 'treasury-public-key') {
-      return 'treasury-key-ref-id';
+      return {
+        keyRefId: 'treasury-key-ref-id',
+        keyManager: 'local',
+        publicKey: ED25519_HEX_PUBLIC_KEY,
+        labels: ['token:treasury'],
+        keyAlgorithm: KeyAlgorithm.ED25519,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
     }
     return undefined;
+  }),
+  get: jest.fn().mockReturnValue({
+    keyRefId: 'treasury-key-ref-id',
+    keyManager: 'local',
+    publicKey: ED25519_HEX_PUBLIC_KEY,
+    labels: ['token:treasury'],
+    keyAlgorithm: KeyAlgorithm.ED25519,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
   }),
   list: jest.fn().mockReturnValue([]),
   remove: jest.fn(),

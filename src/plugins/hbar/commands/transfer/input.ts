@@ -4,8 +4,8 @@ import {
   AccountReferenceSchema,
   AmountInputSchema,
   KeyManagerTypeSchema,
-  KeyOrAccountAliasSchema,
   MemoSchema,
+  PrivateKeyWithAccountIdSchema,
 } from '@/core/schemas';
 
 /**
@@ -25,8 +25,8 @@ export const TransferInputSchema = z.object({
   to: AccountReferenceSchema.describe(
     'Account ID, EVM address, or name to transfer to',
   ),
-  from: KeyOrAccountAliasSchema.optional().describe(
-    'Account to transfer from. Can be AccountID:privateKey pair or account name. Defaults to operator.',
+  from: PrivateKeyWithAccountIdSchema.optional().describe(
+    'Account to transfer from. Can be accountId:privateKey pair, key reference or account alias. Defaults to operator.',
   ),
   memo: MemoSchema.describe('Optional memo for the transfer'),
   keyManager: KeyManagerTypeSchema.optional().describe(

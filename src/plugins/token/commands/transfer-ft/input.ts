@@ -5,7 +5,7 @@ import {
   AmountInputSchema,
   EntityReferenceSchema,
   KeyManagerTypeSchema,
-  KeyOrAccountAliasSchema,
+  PrivateKeyWithAccountIdSchema,
 } from '@/core/schemas';
 
 /**
@@ -17,8 +17,8 @@ export const TransferFungibleTokenInputSchema = z.object({
   to: AccountReferenceSchema.describe(
     'Destination account (ID, EVM address, or name)',
   ),
-  from: KeyOrAccountAliasSchema.optional().describe(
-    'Source account. Can be alias or AccountID:privateKey pair. Defaults to operator.',
+  from: PrivateKeyWithAccountIdSchema.optional().describe(
+    'Account to transfer from. Can be {accountId}:{privateKey pair}, key reference or account alias. Defaults to operator.',
   ),
   amount: AmountInputSchema.describe(
     'Amount to transfer (display units or base units with "t" suffix)',

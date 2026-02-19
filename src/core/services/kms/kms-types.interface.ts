@@ -1,6 +1,6 @@
-import { z } from 'zod';
+import type { KeyAlgorithm } from '@/core/shared/constants';
 
-import { KeyAlgorithm } from '@/core/shared/constants';
+import { z } from 'zod';
 
 // KEY MANAGERS - SINGLE SOURCE OF TRUTH
 
@@ -34,16 +34,6 @@ export const KEY_MANAGERS = KEY_MANAGER_VALUES.reduce(
   {} as Record<KeyManagerName, KeyManagerName>,
 );
 
-// KEY ALGORITHMS
-
-/**
- * Zod schema for key algorithm validation at IO boundaries
- */
-export const keyAlgorithmSchema = z.enum([
-  KeyAlgorithm.ED25519,
-  KeyAlgorithm.ECDSA,
-]);
-
 // CREDENTIAL RECORD (Metadata)
 
 /**
@@ -57,6 +47,7 @@ export interface KmsCredentialRecord {
   labels?: string[];
   keyAlgorithm: KeyAlgorithm;
   createdAt: string; // ISO timestamp
+  updatedAt: string; // ISO timestamp
 }
 
 // CREDENTIAL SECRET (Sensitive data)
@@ -76,22 +67,79 @@ export interface KmsCredentialSecret {
 
 // EXPLICIT DOMAIN TYPES (ADR-005)
 
+export enum CredentialType {
+  ACCOUNT_KEY_PAIR = 'account_key_pair',
+  ACCOUNT_ID = 'account_id',
+  PRIVATE_KEY = 'private_key',
+  PUBLIC_KEY = 'public_key',
+  KEY_REFERENCE = 'key_reference',
+  ALIAS = 'alias',
+}
+
 /**
  * Credential using account ID + private key pair
  */
 export type KeypairCredential = {
-  type: 'keypair';
+  type: CredentialType.ACCOUNT_KEY_PAIR;
   accountId: string;
   privateKey: string;
+  rawValue: string;
+};
+
+/**
+ * Credential using account id from key manager
+ */
+export type AccountIdCredential = {
+  type: CredentialType.ACCOUNT_ID;
+  accountId: string;
+  rawValue: string;
+};
+
+/**
+ * Credential using public key from key manager
+ */
+export type PublicKeyCredential = {
+  type: CredentialType.PUBLIC_KEY;
+  keyType: KeyAlgorithm;
+  publicKey: string;
+  rawValue: string;
+};
+
+/**
+ * Credential using private key from key manager
+ */
+export type PrivateKeyCredential = {
+  type: CredentialType.PRIVATE_KEY;
+  keyType: KeyAlgorithm;
+  privateKey: string;
+  rawValue: string;
+};
+
+/**
+ * Credential using key reference from key manager
+ */
+export type KeyReferenceCredential = {
+  type: CredentialType.KEY_REFERENCE;
+  keyReference: string;
+  rawValue: string;
 };
 
 /**
  * Credential using account alias from key manager
  */
 export type AliasCredential = {
-  type: 'alias';
+  type: CredentialType.ALIAS;
   alias: string;
+  rawValue: string;
 };
+
+export type Credential =
+  | KeypairCredential
+  | AccountIdCredential
+  | PrivateKeyCredential
+  | PublicKeyCredential
+  | KeyReferenceCredential
+  | AliasCredential;
 
 /**
  * Key resolution - explicit keypair or alias reference

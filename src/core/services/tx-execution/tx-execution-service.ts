@@ -66,7 +66,7 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       );
     }
 
-    if (payer && !transaction.isFrozen()) {
+    if (payer && payer.accountId && !transaction.isFrozen()) {
       const payerAccountId = AccountId.fromString(payer.accountId);
       const transactionId = TransactionId.generate(payerAccountId);
       transaction.setTransactionId(transactionId);

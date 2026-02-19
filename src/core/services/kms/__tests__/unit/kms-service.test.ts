@@ -206,15 +206,12 @@ describe('KmsServiceImpl', () => {
     );
 
     expect(logger.debug).toHaveBeenCalledWith(
-      '[CRED] Passed key already exists, keyRefId: kr_existing',
+      '[CRED] Passed key already exists, updating it with new private key, keyRefId: kr_existing',
     );
     expect(result).toEqual({
       keyRefId: 'kr_existing',
       publicKey: 'existing-public',
     });
-    expect(
-      getLocalKeyManager(KEY_MANAGERS.local).writeSecret,
-    ).not.toHaveBeenCalled();
   });
 
   it('imports new private key and stores secret and metadata', () => {

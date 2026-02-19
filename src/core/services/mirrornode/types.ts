@@ -2,6 +2,7 @@
  * Type definitions for Hedera Mirror Node API responses
  */
 import type { KeyAlgorithm } from '@/core/shared/constants';
+import type { MirrorNodeRequestOrderParameter } from '@/core/types/shared.types';
 
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -278,6 +279,75 @@ export interface Filter {
   field: string;
   operation: 'gt' | 'lt' | 'gte' | 'lte' | 'eq' | 'ne';
   value: number | string;
+}
+
+// Get Accounts (list endpoint)
+export enum AccountBalanceOperator {
+  EQ = 'eq',
+  GTE = 'gte',
+  GT = ' gt',
+  LTE = 'lte',
+  LT = 'lt',
+  NE = 'ne',
+}
+
+export interface AccountBalanceFilter {
+  operator: AccountBalanceOperator;
+  value: number;
+}
+
+export interface GetAccountsQueryParams {
+  accountBalance?: AccountBalanceFilter;
+  accountId?: string;
+  accountPublicKey?: string;
+  balance?: boolean;
+  limit?: number;
+  order?: MirrorNodeRequestOrderParameter;
+}
+
+export interface AccountListItemAPIResponse {
+  account: string;
+  alias?: string;
+  balance?: {
+    timestamp: string;
+    balance: number;
+    tokens?: Array<{ token_id: string; balance: number }>;
+  };
+  created_timestamp: string;
+  evm_address?: string;
+  key?: { _type: MirrorNodeKeyType; key: string } | null;
+  deleted?: boolean;
+  memo?: string;
+}
+
+export interface GetAccountsAPIResponse {
+  accounts: AccountListItemAPIResponse[];
+  links?: {
+    next?: string | null;
+  };
+}
+
+export interface AccountListItemDto {
+  accountId: string;
+  alias?: string;
+  balance?: {
+    timestamp: string;
+    balance: number;
+    tokens?: Array<{
+      tokenId: string;
+      balance: number;
+    }>;
+  };
+  createdTimestamp: string;
+  evmAddress?: string;
+  accountPublicKey?: string;
+  keyAlgorithm?: KeyAlgorithm;
+  deleted?: boolean;
+  memo?: string;
+}
+
+export interface GetAccountsResponse {
+  accounts: AccountListItemDto[];
 }
 
 export interface ContractCallRequest {

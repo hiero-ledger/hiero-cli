@@ -27,7 +27,7 @@ export async function associateToken(
   const validArgs = AssociateTokenInputSchema.parse(args.args);
 
   const tokenIdOrAlias = validArgs.token;
-  const accountIdOrAlias = validArgs.account;
+  const accountReference = validArgs.account;
   const providedKeyManager = validArgs.keyManager;
 
   const keyManager =
@@ -48,10 +48,15 @@ export async function associateToken(
   const tokenId = resolvedToken.tokenId;
 
   const account = await api.keyResolver.getOrInitKey(
-    accountIdOrAlias,
+    accountReference,
     keyManager,
     ['token:associate'],
   );
+  if (!account.accountId) {
+    throw new Error(
+      `Could not resolve account ID for passed "account" argument for type ${validArgs.account?.type} from value ${validArgs.account?.rawValue}`,
+    );
+  }
 
   logger.info(`🔑 Using account: ${account.accountId}`);
   logger.info(`🔑 Will sign with account key`);

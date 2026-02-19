@@ -276,9 +276,6 @@ describe('associateTokenHandler', () => {
             keyRefId: 'alias-key-ref-id',
           }),
         },
-        kms: {
-          getPublicKey: jest.fn().mockReturnValue('alias-public-key'),
-        },
       });
 
       const logger = makeLogger();
@@ -635,9 +632,6 @@ describe('associateTokenHandler', () => {
             publicKey: '302a300506032b6570032100' + '0'.repeat(64),
             keyRefId: 'alias-key-ref-id',
           }),
-        },
-        kms: {
-          getPublicKey: jest.fn().mockReturnValue('alias-public-key'),
         },
       });
 

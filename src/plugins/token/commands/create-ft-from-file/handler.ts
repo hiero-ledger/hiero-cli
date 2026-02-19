@@ -54,6 +54,11 @@ export async function createTokenFromFile(
       keyManager,
       ['token:treasury'],
     );
+    if (!treasury.accountId) {
+      throw new Error(
+        `Could not resolve account ID for passed "treasury" field`,
+      );
+    }
 
     const adminKey = await api.keyResolver.getOrInitKey(
       tokenDefinition.adminKey,

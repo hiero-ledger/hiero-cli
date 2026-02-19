@@ -6,11 +6,16 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import type { HederaMirrornodeService } from './hedera-mirrornode-service.interface';
 import type {
   AccountAPIResponse,
+  AccountListItemAPIResponse,
+  AccountListItemDto,
   AccountResponse,
   ContractCallRequest,
   ContractCallResponse,
   ContractInfo,
   ExchangeRateResponse,
+  GetAccountsAPIResponse,
+  GetAccountsQueryParams,
+  GetAccountsResponse,
   MirrorNodeKeyType,
   NftInfo,
   TokenAirdropsResponse,
@@ -105,6 +110,97 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
 
     const data = (await response.json()) as TokenBalancesResponse;
     return data;
+  }
+
+  async getAccounts(
+    queryParams?: GetAccountsQueryParams,
+  ): Promise<GetAccountsResponse> {
+    const params = queryParams ?? {};
+    const queryParts: string[] = [];
+
+    if (params.accountBalance) {
+      queryParts.push(
+        `account.balance=${params.accountBalance.operator}:${params.accountBalance.value}`,
+      );
+    }
+    if (params.accountId) {
+      queryParts.push(`account.id=${params.accountId}`);
+    }
+    if (params.accountPublicKey) {
+      queryParts.push(`account.publickey=${params.accountPublicKey}`);
+    }
+    queryParts.push(`balance=${params.balance ?? false}`);
+    queryParts.push(`limit=${params.limit ?? 25}`);
+    queryParts.push(`order=${params.order ?? 'asc'}`);
+
+    const queryString = queryParts.join('&');
+    let url: string | null = `${this.getBaseUrl()}/accounts?${queryString}`;
+    const allAccounts: AccountListItemAPIResponse[] = [];
+    let fetchedPages = 0;
+
+    try {
+      while (url) {
+        fetchedPages += 1;
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to get accounts: ${response.status} ${response.statusText}`,
+          );
+        }
+
+        const data = (await response.json()) as GetAccountsAPIResponse;
+
+        allAccounts.push(...(data.accounts ?? []));
+        if (fetchedPages >= 100) {
+          break;
+        }
+
+        url = data.links?.next ? this.getBaseUrl() + data.links.next : null;
+      }
+    } catch (error) {
+      console.error('Failed to fetch accounts. Error:', error);
+      throw error;
+    }
+
+    const accounts: AccountListItemDto[] = allAccounts.map((a) =>
+      this.mapAccountToDto(a),
+    );
+    return { accounts };
+  }
+
+  private mapAccountToDto(
+    apiAccount: AccountListItemAPIResponse,
+  ): AccountListItemDto {
+    const dto: AccountListItemDto = {
+      accountId: apiAccount.account,
+      createdTimestamp: apiAccount.created_timestamp,
+    };
+    if (apiAccount.alias !== undefined) dto.alias = apiAccount.alias;
+    if (apiAccount.deleted !== undefined) dto.deleted = apiAccount.deleted;
+    if (apiAccount.memo !== undefined) dto.memo = apiAccount.memo;
+    if (apiAccount.evm_address !== undefined)
+      dto.evmAddress = apiAccount.evm_address;
+
+    if (apiAccount.balance) {
+      dto.balance = {
+        timestamp: apiAccount.balance.timestamp,
+        balance: apiAccount.balance.balance,
+      };
+      if (apiAccount.balance.tokens) {
+        dto.balance.tokens = apiAccount.balance.tokens.map((t) => ({
+          tokenId: t.token_id,
+          balance: t.balance,
+        }));
+      }
+    }
+
+    if (apiAccount.key && apiAccount.key.key) {
+      dto.accountPublicKey = apiAccount.key.key;
+      dto.keyAlgorithm = this.getKeyAlgorithm(apiAccount.key._type);
+    }
+
+    return dto;
   }
 
   async getTopicMessage(

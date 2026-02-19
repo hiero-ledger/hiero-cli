@@ -7,7 +7,7 @@ import {
   EntityIdSchema,
   EvmAddressSchema,
   NetworkSchema,
-  PublicKeySchema,
+  PublicKeyDefinitionSchema,
   TimestampSchema,
   TinybarSchema,
 } from '@/core/schemas/common-schemas';
@@ -19,7 +19,7 @@ export const ViewAccountOutputSchema = z.object({
   accountId: EntityIdSchema,
   balance: TinybarSchema,
   evmAddress: EvmAddressSchema.optional(),
-  publicKey: PublicKeySchema.optional(),
+  publicKey: PublicKeyDefinitionSchema.optional(),
   balanceTimestamp: TimestampSchema,
   network: NetworkSchema,
 });

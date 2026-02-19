@@ -21,7 +21,7 @@ export async function removeCredentials(
   logger.info(`🗑️  Removing credentials for id: ${id}`);
 
   try {
-    const publicKey = api.kms.getPublicKey(id);
+    const publicKey = api.kms.get(id)?.publicKey;
     if (!publicKey) {
       const outputData: RemoveCredentialsOutput = {
         keyRefId: id,

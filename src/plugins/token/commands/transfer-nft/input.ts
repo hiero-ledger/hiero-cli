@@ -4,8 +4,8 @@ import {
   AccountReferenceSchema,
   EntityReferenceSchema,
   KeyManagerTypeSchema,
-  KeyOrAccountAliasSchema,
   NftSerialNumbersSchema,
+  PrivateKeyWithAccountIdSchema,
 } from '@/core/schemas';
 
 export const TransferNftInputSchema = z.object({
@@ -13,8 +13,8 @@ export const TransferNftInputSchema = z.object({
   to: AccountReferenceSchema.describe(
     'Destination account (ID, EVM address, or name)',
   ),
-  from: KeyOrAccountAliasSchema.optional().describe(
-    'Source account. Can be alias or AccountID:privateKey pair. Defaults to operator.',
+  from: PrivateKeyWithAccountIdSchema.optional().describe(
+    'Source account. Can be {accountID}:{privateKey} pair, key reference or account alias. Defaults to operator.',
   ),
   serials: NftSerialNumbersSchema,
   keyManager: KeyManagerTypeSchema.optional().describe(

@@ -111,6 +111,52 @@ export class KmsServiceImpl implements KmsService {
       labels,
       keyAlgorithm: keyType,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+
+    return { keyRefId, publicKey };
+  }
+
+  importPublicKey(
+    keyType: KeyAlgorithm,
+    publicKeyRaw: string,
+    keyManager: KeyManagerName = KEY_MANAGERS.local,
+    labels?: string[],
+  ): { keyRefId: string; publicKey: string } {
+    // Check if ED25519 support is enabled when using ED25519 key type
+    if (keyType === KeyAlgorithm.ED25519) {
+      const ed25519SupportEnabled = this.configService.getOption<boolean>(
+        'ed25519_support_enabled',
+      );
+      if (!ed25519SupportEnabled) {
+        throw new Error(
+          'ED25519 key type is not enabled. Please enable it by setting the config option ed25519_support_enabled to true.',
+        );
+      }
+    }
+    const pk: PublicKey =
+      keyType === KeyAlgorithm.ECDSA
+        ? PublicKey.fromStringECDSA(publicKeyRaw)
+        : PublicKey.fromStringED25519(publicKeyRaw);
+    const publicKey = pk.toStringRaw();
+    // Check if key already exists
+    const existingKeyRef = this.findByPublicKey(publicKey);
+    if (existingKeyRef) {
+      this.logger.debug(
+        `[CRED] Passed key already exists, keyRefId: ${existingKeyRef.keyRefId}`,
+      );
+      return { keyRefId: existingKeyRef.keyRefId, publicKey };
+    }
+    const keyRefId = this.generateId('kr');
+    // Save metadata
+    this.saveRecord({
+      keyRefId,
+      keyManager,
+      publicKey,
+      labels,
+      keyAlgorithm: keyType,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
 
     return { keyRefId, publicKey };
@@ -133,8 +179,6 @@ export class KmsServiceImpl implements KmsService {
         );
       }
     }
-
-    const keyRefId = this.generateId('kr');
     // Parse the key based on the specified type
     const pk: PrivateKey =
       keyType === KeyAlgorithm.ECDSA
@@ -142,13 +186,14 @@ export class KmsServiceImpl implements KmsService {
         : PrivateKey.fromStringED25519(privateKey);
     const publicKey = pk.publicKey.toStringRaw();
 
+    let keyRefId = this.generateId('kr');
     // Check if key already exists
-    const existingKeyRefId = this.findByPublicKey(publicKey);
-    if (existingKeyRefId) {
+    const existingKeyRef = this.findByPublicKey(publicKey);
+    if (existingKeyRef) {
       this.logger.debug(
-        `[CRED] Passed key already exists, keyRefId: ${existingKeyRefId}`,
+        `[CRED] Passed key already exists, updating it with new private key, keyRefId: ${existingKeyRef.keyRefId}`,
       );
-      return { keyRefId: existingKeyRefId, publicKey };
+      keyRefId = existingKeyRef.keyRefId;
     }
 
     const manager = this.getKeyManager(keyManager);
@@ -170,7 +215,8 @@ export class KmsServiceImpl implements KmsService {
       publicKey,
       labels,
       keyAlgorithm: keyType,
-      createdAt: new Date().toISOString(),
+      createdAt: existingKeyRef?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     });
 
     return { keyRefId, publicKey };
@@ -193,13 +239,9 @@ export class KmsServiceImpl implements KmsService {
     return this.importPrivateKey(keyType, privateKeyRaw, keyManager, labels);
   }
 
-  getPublicKey(keyRefId: string): string | null {
-    return this.getRecord(keyRefId)?.publicKey || null;
-  }
-
   getSignerHandle(keyRefId: string): Signer {
     // 1. Get metadata to know which manager owns this key
-    const record = this.getRecord(keyRefId);
+    const record = this.get(keyRefId);
     if (!record) {
       throw new Error(`Credential not found: ${keyRefId}`);
     }
@@ -215,10 +257,9 @@ export class KmsServiceImpl implements KmsService {
     );
   }
 
-  findByPublicKey(publicKey: string): string | null {
+  findByPublicKey(publicKey: string): KmsCredentialRecord | undefined {
     const records = this.credentialStorage.list();
-    const record = records.find((r) => r.publicKey === publicKey);
-    return record?.keyRefId || null;
+    return records.find((r) => r.publicKey === publicKey);
   }
 
   list(): Array<{
@@ -237,7 +278,7 @@ export class KmsServiceImpl implements KmsService {
   }
 
   remove(keyRefId: string): void {
-    const record = this.getRecord(keyRefId);
+    const record = this.get(keyRefId);
     if (!record) {
       this.logger.debug(`[CRED] KeyRefId not found: ${keyRefId}`);
       return;
@@ -251,6 +292,10 @@ export class KmsServiceImpl implements KmsService {
     this.credentialStorage.remove(keyRefId);
 
     this.logger.debug(`[CRED] Removed keyRefId=${keyRefId}`);
+  }
+
+  get(keyRefId: string): KmsCredentialRecord | undefined {
+    return this.credentialStorage.get(keyRefId);
   }
 
   // Removed registerProvider - no longer needed
@@ -269,7 +314,7 @@ export class KmsServiceImpl implements KmsService {
     }
 
     // Get the key algorithm from the record
-    const record = this.getRecord(keyRefId);
+    const record = this.get(keyRefId);
     if (!record) {
       throw new Error('[CRED] Default operator keyRef record not found');
     }
@@ -357,7 +402,7 @@ export class KmsServiceImpl implements KmsService {
   }
 
   private getPrivateKeyString(keyRefId: string): string | null {
-    const record = this.getRecord(keyRefId);
+    const record = this.get(keyRefId);
     if (!record) return null;
 
     const manager = this.getKeyManager(record.keyManager);
@@ -374,10 +419,6 @@ export class KmsServiceImpl implements KmsService {
     this.logger.debug(
       `[CRED] Saved keyRefId=${record.keyRefId} keyManager=${record.keyManager}`,
     );
-  }
-
-  private getRecord(keyRefId: string): KmsCredentialRecord | undefined {
-    return this.credentialStorage.get(keyRefId);
   }
 
   private getKeyManager(name: KeyManagerName): KeyManager {

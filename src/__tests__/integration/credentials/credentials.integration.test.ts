@@ -25,6 +25,7 @@ describe('Credentials Integration Tests', () => {
       labels: ['label1', 'label2'],
       keyAlgorithm: KeyAlgorithm.ECDSA,
       createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     coreApi.state.set('kms-credentials', record.keyRefId, record);
     const listCredentialsResult = await listCredentials({
