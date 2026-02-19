@@ -87,7 +87,7 @@ export const networkPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Operator credentials: name or account-id:private-key pair',
+            'Operator credentials. Can be accountId:privateKey pair, key reference or account alias',
         },
         {
           name: 'key-manager',

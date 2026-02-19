@@ -55,7 +55,7 @@ export const topicPluginManifest: PluginManifest = {
           required: false,
           default: false,
           description:
-            'Admin key as account name or {accountId}:{private_key} format',
+            'Admin key of topic. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias',
           short: 'a',
         },
         {
@@ -63,7 +63,7 @@ export const topicPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Submit key as account name or {accountId}:{private_key} format',
+            'Submit key of topic. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:{public-key} format, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias.',
           short: 's',
         },
         {
@@ -123,7 +123,7 @@ export const topicPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Account to use for signing the message. Can be an alias or {accountId}:{private_key}. Required for public topics (without submit keys). For topics with submit keys, must be one of the authorized signers.',
+            'Key to sign the message with. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias.',
           short: 's',
         },
         {

@@ -18,7 +18,7 @@ export const TransferFungibleTokenInputSchema = z.object({
     'Destination account (ID, EVM address, or name)',
   ),
   from: PrivateKeyWithAccountIdSchema.optional().describe(
-    'Account to transfer from. Can be accountId:privateKey pair, key reference or account name. Defaults to operator.',
+    'Account to transfer from. Can be {accountId}:{privateKey pair}, key reference or account alias. Defaults to operator.',
   ),
   amount: AmountInputSchema.describe(
     'Amount to transfer (display units or base units with "t" suffix)',

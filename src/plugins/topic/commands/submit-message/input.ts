@@ -18,7 +18,7 @@ export const SubmitMessageInputSchema = z.object({
     .min(1, 'Message cannot be empty')
     .describe('Message to submit to the topic'),
   signer: PrivateKeySchema.optional().describe(
-    'Key to sign the message with. Can be {accountId}:{privateKey} pair, account private key, key reference or account name.',
+    'Key to sign the message with. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias.',
   ),
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type for storing private keys (defaults to config setting)',

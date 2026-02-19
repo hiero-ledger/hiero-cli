@@ -70,7 +70,7 @@ export const contractPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Smart contract admin key as account ID with private key in {accountId}:{private_key} format, account public key, account private key, account ID, account name/alias or account key reference.',
+            'Smart contract admin key as account ID with private key in {accountId}:{private_key} format, account public key in {ed25519|ecdsa}:{public-key} format, account private key in {ed25519|ecdsa}:{private-key} format, account ID, account name/alias or account key reference.',
         },
         {
           name: 'memo',

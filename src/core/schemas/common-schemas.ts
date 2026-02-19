@@ -569,11 +569,11 @@ export const KeySchema = z
     }
 
     throw new Error(
-      'Key must be a valid account ID and private key pair in format {account-id:private-key}, account ID, private key, public key, key reference or alias name',
+      'Key must be a valid account ID and private key pair in format {account-id:private-key}, account ID, private key in format {ed25519|ecdsa}:{private-key}, public key in format {ed25519|ecdsa}:{public-key}, key reference or alias name',
     );
   })
   .describe(
-    'Account ID with private key in {accountId}:{private_key} format, account public key, account private key, account ID, account name/alias or account key reference',
+    'Account ID with private key in {accountId}:{private_key} format, account public key in {ed25519|ecdsa}:{public-key} format, account private key in {ed25519|ecdsa}:{private-key} format, account ID, account name/alias or account key reference',
   );
 
 export const PrivateKeySchema = z
@@ -618,11 +618,11 @@ export const PrivateKeySchema = z
     }
 
     throw new Error(
-      'Private key must be a valid account ID and private key pair in {account-id:private-key} format, private key, key reference or alias name',
+      'Private key must be a valid account ID and private key pair in {account-id:private-key} format, private key in format {ed25519|ecdsa}:{private-key}, key reference or alias name',
     );
   })
   .describe(
-    'Account ID and private key pair in {account-id:private-key} format, account private key, account key reference or alias name',
+    'Account ID and private key pair in {account-id:private-key} format, account private key in format {ed25519|ecdsa}:{private-key}, account key reference or alias name',
   );
 
 export const PrivateKeyWithAccountIdSchema = z
@@ -657,11 +657,11 @@ export const PrivateKeyWithAccountIdSchema = z
     }
 
     throw new Error(
-      'Private key with account ID must be a valid account ID and private key pair in {account-id:private-key} format, key reference or alias name',
+      'Private key with account ID must be a valid account ID and private key pair in {account-id:private-key} format, private key in format {ed25519|ecdsa}:{private-key}, key reference or alias name',
     );
   })
   .describe(
-    'Account ID and private key pair in {account-id:private-key} format, account key reference or alias name',
+    'Account ID and private key pair in {account-id:private-key} format, account private key in format {ed25519|ecdsa}:{private-key}, account key reference or alias name',
   );
 
 /**

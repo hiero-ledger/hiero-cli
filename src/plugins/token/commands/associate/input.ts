@@ -13,7 +13,7 @@ import {
 export const AssociateTokenInputSchema = z.object({
   token: EntityReferenceSchema.describe('Token identifier (ID or name)'),
   account: PrivateKeyWithAccountIdSchema.describe(
-    'Account to associate. Can be accountId:privateKey pair, key reference or account name.',
+    'Account to associate. Can be {accountId}:{privateKey pair}, key reference or account alias.',
   ),
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type (defaults to config setting)',

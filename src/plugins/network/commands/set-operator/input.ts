@@ -12,7 +12,7 @@ import {
  */
 export const SetOperatorInputSchema = z.object({
   operator: PrivateKeyWithAccountIdSchema.describe(
-    'Operator credentials. Can be accountId:privateKey pair, key reference or account name',
+    'Operator credentials. Can be accountId:privateKey pair, key reference or account alias.',
   ),
   network: NetworkSchema.optional().describe(
     'Target network (defaults to current network)',

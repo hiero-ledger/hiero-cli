@@ -25,7 +25,7 @@ export const CreateFungibleTokenInputSchema = z
     tokenName: TokenNameSchema.describe('Token name'),
     symbol: TokenSymbolSchema.describe('Token symbol/ticker'),
     treasury: PrivateKeyWithAccountIdSchema.optional().describe(
-      'Treasury account of token. Can be {accountId}:{privateKey} pair, key reference or account name. Defaults to operator key.',
+      'Treasury account of token. Can be {accountId}:{privateKey} pair, key reference or account alias. Defaults to operator.',
     ),
     decimals: HtsDecimalsSchema.default(0).describe(
       'Token decimals (0-18). Default: 0',
@@ -43,10 +43,10 @@ export const CreateFungibleTokenInputSchema = z
       'Maximum supply (required for FINITE supply type)',
     ),
     adminKey: PrivateKeySchema.optional().describe(
-      'Admin key of token. Can be {accountId}:{privateKey} pair, account private key, key reference or account name. Defaults to operator key.',
+      'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias. Defaults to operator key.',
     ),
     supplyKey: KeySchema.optional().describe(
-      'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key, account private key, key reference or account name.',
+      'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:{public-key} format, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias.',
     ),
     name: TokenAliasNameSchema.optional().describe(
       'Optional alias to register for the token',

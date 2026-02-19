@@ -26,7 +26,7 @@ export const TransferInputSchema = z.object({
     'Account ID, EVM address, or name to transfer to',
   ),
   from: PrivateKeyWithAccountIdSchema.optional().describe(
-    'Account to transfer from. Can be accountId:privateKey pair, key reference or account name. Defaults to operator.',
+    'Account to transfer from. Can be accountId:privateKey pair, key reference or account alias. Defaults to operator.',
   ),
   memo: MemoSchema.describe('Optional memo for the transfer'),
   keyManager: KeyManagerTypeSchema.optional().describe(

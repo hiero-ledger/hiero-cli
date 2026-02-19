@@ -14,7 +14,7 @@ export const TransferNftInputSchema = z.object({
     'Destination account (ID, EVM address, or name)',
   ),
   from: PrivateKeyWithAccountIdSchema.optional().describe(
-    'Source account. Can be alias or AccountID:privateKey pair. Defaults to operator.',
+    'Source account. Can be {accountID}:{privateKey} pair, key reference or account alias. Defaults to operator.',
   ),
   serials: NftSerialNumbersSchema,
   keyManager: KeyManagerTypeSchema.optional().describe(
