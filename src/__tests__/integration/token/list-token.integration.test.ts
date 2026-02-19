@@ -38,7 +38,7 @@ describe('List Token Integration Tests', () => {
     });
     expect(createTokenResult.status).toBe(Status.Success);
     const createTokenOutput: CreateFungibleTokenOutput = JSON.parse(
-      createTokenResult.outputJson!,
+      createTokenResult.outputJson,
     );
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
@@ -61,7 +61,7 @@ describe('List Token Integration Tests', () => {
     });
     expect(listTokenResult.status).toBe(Status.Success);
     const listTokenOutput: ListTokensOutput = JSON.parse(
-      listTokenResult.outputJson!,
+      listTokenResult.outputJson,
     );
     const tokenNames = listTokenOutput.tokens.map((token) => token.tokenId);
     expect(tokenNames).toContain(createTokenOutput.tokenId);

@@ -92,7 +92,7 @@ describe('Mint NFT Integration Tests', () => {
     });
     expect(createNftResult.status).toBe(Status.Success);
     const createNftOutput: CreateNftOutput = JSON.parse(
-      createNftResult.outputJson!,
+      createNftResult.outputJson,
     );
     expect(createNftOutput.network).toBe(network);
     expect(createNftOutput.name).toBe('Test NFT Collection');
@@ -118,7 +118,7 @@ describe('Mint NFT Integration Tests', () => {
       config: coreApi.config,
     });
     expect(mintNftResult.status).toBe(Status.Success);
-    const mintNftOutput: MintNftOutput = JSON.parse(mintNftResult.outputJson!);
+    const mintNftOutput: MintNftOutput = JSON.parse(mintNftResult.outputJson);
     expect(mintNftOutput.tokenId).toBe(createNftOutput.tokenId);
     expect(mintNftOutput.serialNumber).toBeDefined();
     expect(mintNftOutput.network).toBe(network);
@@ -139,7 +139,7 @@ describe('Mint NFT Integration Tests', () => {
     });
     expect(viewTokenResult.status).toBe(Status.Success);
     const viewTokenOutput: ViewTokenOutput = JSON.parse(
-      viewTokenResult.outputJson!,
+      viewTokenResult.outputJson,
     );
     expect(viewTokenOutput.tokenId).toBe(createNftOutput.tokenId);
     expect(viewTokenOutput.name).toBe('Test NFT Collection');

@@ -1,14 +1,8 @@
-/**
- * Fungible Token Transfer Command Handler
- * Handles fungible token transfer operations using the Core API
- * Follows ADR-003 contract: returns CommandExecutionResult
- */
-import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { TransferFungibleTokenOutput } from './output';
 
-import { Status } from '@/core/shared/constants';
-import { formatError } from '@/core/utils/errors';
+import { NotFoundError, TransactionError } from '@/core/errors';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 import {
   resolveDestinationAccountParameter,
@@ -21,35 +15,30 @@ import { TransferFungibleTokenInputSchema } from './input';
 
 export async function transferToken(
   args: CommandHandlerArgs,
-): Promise<CommandExecutionResult> {
+): Promise<CommandResult> {
   const { api, logger } = args;
 
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
-  // Validate command parameters
   const validArgs = TransferFungibleTokenInputSchema.parse(args.args);
 
-  // Use validated parameters
   const tokenIdOrAlias = validArgs.token;
   const from = validArgs.from;
   const to = validArgs.to;
   const keyManagerArg = validArgs.keyManager;
 
-  // Get keyManager from args or fallback to config
   const keyManager =
     keyManagerArg ||
     api.config.getOption<KeyManagerName>('default_key_manager');
 
   const network = api.network.getCurrentNetwork();
 
-  // Resolve token ID from alias if provided
   const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
 
   if (!resolvedToken) {
-    throw new Error(
-      `Failed to resolve fungible token parameter: ${tokenIdOrAlias}. ` +
-        `Expected format: token-name OR token-id`,
-    );
+    throw new NotFoundError(`Token not found: ${tokenIdOrAlias}`, {
+      context: { tokenIdOrAlias },
+    });
   }
 
   const tokenId = resolvedToken.tokenId;
@@ -58,23 +47,13 @@ export async function transferToken(
 
   let tokenDecimals = 0;
   if (!isRawUnits(userAmountInput)) {
-    try {
-      const tokenInfoStorage = tokenState.getToken(tokenId);
+    const tokenInfoStorage = tokenState.getToken(tokenId);
 
-      if (tokenInfoStorage) {
-        tokenDecimals = tokenInfoStorage.decimals;
-      } else {
-        const tokenInfoMirror = await api.mirror.getTokenInfo(tokenId);
-        tokenDecimals = parseInt(tokenInfoMirror.decimals) || 0;
-      }
-    } catch (error) {
-      return {
-        status: Status.Failure,
-        errorMessage: formatError(
-          `Failed to fetch fungible token decimals for ${tokenId}`,
-          error,
-        ),
-      };
+    if (tokenInfoStorage) {
+      tokenDecimals = tokenInfoStorage.decimals;
+    } else {
+      const tokenInfoMirror = await api.mirror.getTokenInfo(tokenId);
+      tokenDecimals = parseInt(tokenInfoMirror.decimals) || 0;
     }
   }
 
@@ -86,26 +65,22 @@ export async function transferToken(
     ['token:account'],
   );
 
-  // Use resolved from account from alias or account-id:private-key
   const fromAccountId = resolvedFromAccount.accountId;
   const signerKeyRefId = resolvedFromAccount.keyRefId;
 
   logger.info(`🔑 Using from account: ${fromAccountId}`);
   logger.info(`🔑 Will sign with from account key`);
 
-  // Resolve to parameter (alias or account-id)
   const resolvedToAccount = resolveDestinationAccountParameter(
     to,
     api,
     network,
   );
 
-  // To account was explicitly provided - it MUST resolve or fail
   if (!resolvedToAccount) {
-    throw new Error(
-      `Failed to resolve to account parameter: ${to}. ` +
-        `Expected format: account-name OR account-id`,
-    );
+    throw new NotFoundError(`Destination account not found: ${to}`, {
+      context: { to },
+    });
   }
 
   const toAccountId = resolvedToAccount.accountId;
@@ -114,51 +89,32 @@ export async function transferToken(
     `Transferring ${rawAmount.toString()} tokens of ${tokenId} from ${fromAccountId} to ${toAccountId}`,
   );
 
-  try {
-    // 1. Create transfer transaction using Core API
-    // Convert display units to base token units
-    const transferTransaction = api.token.createTransferTransaction({
-      tokenId,
-      fromAccountId,
-      toAccountId,
-      amount: rawAmount,
+  const transferTransaction = api.token.createTransferTransaction({
+    tokenId,
+    fromAccountId,
+    toAccountId,
+    amount: rawAmount,
+  });
+
+  logger.debug(`Using key ${signerKeyRefId} for signing transaction`);
+  const result = await api.txExecution.signAndExecuteWith(transferTransaction, [
+    signerKeyRefId,
+  ]);
+
+  if (!result.success) {
+    throw new TransactionError('Fungible token transfer failed', false, {
+      context: { tokenId, from: fromAccountId, to: toAccountId },
     });
-
-    // Sign and execute using the from account key
-    logger.debug(`Using key ${signerKeyRefId} for signing transaction`);
-    const result = await api.txExecution.signAndExecuteWith(
-      transferTransaction,
-      [signerKeyRefId],
-    );
-
-    if (result.success) {
-      // 3. Optionally update token state if needed
-      // (e.g., update associations, balances, etc.)
-
-      // Prepare output data
-      const outputData: TransferFungibleTokenOutput = {
-        transactionId: result.transactionId,
-        tokenId,
-        from: fromAccountId,
-        to: toAccountId,
-        amount: BigInt(rawAmount.toString()),
-        network,
-      };
-
-      return {
-        status: Status.Success,
-        outputJson: JSON.stringify(outputData),
-      };
-    } else {
-      return {
-        status: Status.Failure,
-        errorMessage: 'Fungible token transfer failed',
-      };
-    }
-  } catch (error: unknown) {
-    return {
-      status: Status.Failure,
-      errorMessage: formatError('Failed to transfer fungible token', error),
-    };
   }
+
+  const outputData: TransferFungibleTokenOutput = {
+    transactionId: result.transactionId,
+    tokenId,
+    from: fromAccountId,
+    to: toAccountId,
+    amount: BigInt(rawAmount.toString()),
+    network,
+  };
+
+  return { result: outputData };
 }

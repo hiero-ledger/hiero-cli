@@ -92,7 +92,7 @@ describe('Create Token Integration Tests', () => {
     });
     expect(createTokenResult.status).toBe(Status.Success);
     const createTokenOutput: CreateFungibleTokenOutput = JSON.parse(
-      createTokenResult.outputJson!,
+      createTokenResult.outputJson,
     );
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
