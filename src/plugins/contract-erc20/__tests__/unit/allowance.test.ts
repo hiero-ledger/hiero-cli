@@ -4,7 +4,7 @@ import type { ContractErc20CallAllowanceOutput } from '@/plugins/contract-erc20/
 import { ZodError } from 'zod';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
+import { NotFoundError, StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { allowanceFunctionCall as erc20AllowanceHandler } from '@/plugins/contract-erc20/commands/allowance/handler';
@@ -57,12 +57,9 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
 
     const result = await erc20AllowanceHandler(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    expect(result.result).toBeDefined();
 
-    const parsed = JSON.parse(
-      result.outputJson as string,
-    ) as ContractErc20CallAllowanceOutput;
+    const parsed = result.result as ContractErc20CallAllowanceOutput;
 
     expect(parsed.contractId).toBe(CONTRACT_ID);
     expect(parsed.owner).toBe(OWNER_EVM);
@@ -105,12 +102,9 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
 
     const result = await erc20AllowanceHandler(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    expect(result.result).toBeDefined();
 
-    const parsed = JSON.parse(
-      result.outputJson as string,
-    ) as ContractErc20CallAllowanceOutput;
+    const parsed = result.result as ContractErc20CallAllowanceOutput;
 
     expect(parsed.owner).toBe(OWNER_EVM);
     expect(parsed.spender).toBe(SPENDER_EVM);
@@ -158,7 +152,8 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
 
     const result = await erc20AllowanceHandler(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
+
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: OWNER_ACCOUNT_ID,
       type: expect.any(String),
@@ -171,7 +166,7 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
     });
   });
 
-  test('returns failure when contractQuery returns empty queryResult', async () => {
+  test('throws StateError when contractQuery returns empty queryResult', async () => {
     const args = makeContractErc20CallCommandArgs({
       api,
       logger,
@@ -188,16 +183,10 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
       queryResult: [],
     });
 
-    const result = await erc20AllowanceHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'There was a problem with decoding contract',
-    );
-    expect(result.errorMessage).toContain('allowance');
+    await expect(erc20AllowanceHandler(args)).rejects.toThrow(StateError);
   });
 
-  test('returns failure when queryContractFunction throws', async () => {
+  test('throws when queryContractFunction throws', async () => {
     const args = makeContractErc20CallCommandArgs({
       api,
       logger,
@@ -211,12 +200,53 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    const result = await erc20AllowanceHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call allowance function: contract query error',
+    await expect(erc20AllowanceHandler(args)).rejects.toThrow(
+      'contract query error',
     );
+  });
+
+  test('throws NotFoundError when owner address cannot be resolved', async () => {
+    const args = makeContractErc20CallCommandArgs({
+      api,
+      logger,
+      args: {
+        contract: 'some-contract',
+        owner: 'owner-alias',
+        spender: SPENDER_EVM,
+      },
+    });
+
+    (
+      args.api.identityResolution.resolveAccount as jest.Mock
+    ).mockResolvedValueOnce({
+      accountId: OWNER_ACCOUNT_ID,
+      accountPublicKey: 'pub-key',
+      evmAddress: null, // Evm address not found
+    });
+
+    await expect(erc20AllowanceHandler(args)).rejects.toThrow(NotFoundError);
+  });
+
+  test('throws NotFoundError when spender address cannot be resolved', async () => {
+    const args = makeContractErc20CallCommandArgs({
+      api,
+      logger,
+      args: {
+        contract: 'some-contract',
+        owner: OWNER_EVM,
+        spender: 'spender-alias',
+      },
+    });
+
+    (
+      args.api.identityResolution.resolveAccount as jest.Mock
+    ).mockResolvedValueOnce({
+      accountId: SPENDER_ACCOUNT_ID,
+      accountPublicKey: 'pub-key',
+      evmAddress: null, // Evm address not found
+    });
+
+    await expect(erc20AllowanceHandler(args)).rejects.toThrow(NotFoundError);
   });
 
   test('schema validation fails when owner is missing', () => {

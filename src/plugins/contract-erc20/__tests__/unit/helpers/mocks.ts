@@ -129,6 +129,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     } as jest.Mocked<HbarService>,
     output: {
       handleCommandOutput: jest.fn(),
+      handleOutput: jest.fn(),
       getFormat: jest.fn().mockReturnValue('human'),
       setFormat: jest.fn(),
       emptyLine: jest.fn(),
