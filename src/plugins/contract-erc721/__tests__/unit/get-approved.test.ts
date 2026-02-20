@@ -1,12 +1,15 @@
 import type { CoreApi, Logger } from '@/core';
+import type { ContractErc721CallGetApprovedOutput } from '@/plugins/contract-erc721/commands/get-approved/output';
 
 import { ZodError } from 'zod';
 
+import { MOCK_ACCOUNT_ID, MOCK_CONTRACT_ID } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
+import { StateError } from '@/core/errors';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { makeContractErc721CallCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { getApprovedFunctionCall as erc721GetApprovedHandler } from '@/plugins/contract-erc721/commands/get-approved/handler';
+import { getApprovedFunctionCall } from '@/plugins/contract-erc721/commands/get-approved/handler';
 import { ContractErc721CallGetApprovedInputSchema } from '@/plugins/contract-erc721/commands/get-approved/input';
 
 describe('contract-erc721 plugin - getApproved command (unit)', () => {
@@ -20,20 +23,20 @@ describe('contract-erc721 plugin - getApproved command (unit)', () => {
       identityResolution: {
         resolveReferenceToEntityOrEvmAddress: jest
           .fn()
-          .mockReturnValue({ entityIdOrEvmAddress: '0.0.1234' }),
+          .mockReturnValue({ entityIdOrEvmAddress: MOCK_CONTRACT_ID }),
       },
       contractQuery: {
         queryContractFunction: jest.fn().mockResolvedValue({
-          contractId: '0.0.1234',
+          contractId: MOCK_CONTRACT_ID,
           queryResult: ['0xabcdefabcdefabcdefabcdefabcdefabcdefabcd'],
         }),
       },
       alias: {
         resolveByEvmAddress: jest.fn().mockReturnValue({
           alias: 'approved-alias',
-          entityId: '0.0.5678',
+          entityId: MOCK_ACCOUNT_ID,
           type: 'account',
-          network: 'testnet',
+          network: SupportedNetwork.TESTNET,
         }),
       },
     }).api;
@@ -50,41 +53,35 @@ describe('contract-erc721 plugin - getApproved command (unit)', () => {
       },
     });
 
-    const result = await erc721GetApprovedHandler(args);
+    const result = await getApprovedFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    if (result.outputJson === undefined) {
-      throw new Error('Expected outputJson to be defined');
-    }
-    const parsed = JSON.parse(result.outputJson);
-
-    expect(parsed.contractId).toBe('0.0.1234');
-    expect(parsed.tokenId).toBe(tokenId);
-    expect(parsed.approved).toBe('0xabcdefabcdefabcdefabcdefabcdefabcdefabcd');
-    expect(parsed.approvedAlias).toBe('approved-alias');
-    expect(parsed.approvedEntityId).toBe('0.0.5678');
-    expect(parsed.network).toBe('testnet');
+    expect(result.result).toBeDefined();
+    const output = result.result as ContractErc721CallGetApprovedOutput;
+    expect(output.contractId).toBe(MOCK_CONTRACT_ID);
+    expect(output.tokenId).toBe(tokenId);
+    expect(output.approved).toBe('0xabcdefabcdefabcdefabcdefabcdefabcdefabcd');
+    expect(output.approvedAlias).toBe('approved-alias');
+    expect(output.approvedEntityId).toBe(MOCK_ACCOUNT_ID);
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
 
     expect(
       args.api.identityResolution.resolveReferenceToEntityOrEvmAddress,
     ).toHaveBeenCalledWith({
       entityReference: 'some-alias-or-id',
       referenceType: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
       aliasType: expect.any(String),
     });
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({
-        contractIdOrEvmAddress: '0.0.1234',
+        contractIdOrEvmAddress: MOCK_CONTRACT_ID,
         functionName: 'getApproved',
         args: [tokenId],
       }),
     );
   });
 
-  test('returns failure when contractQuery returns empty queryResult', async () => {
+  test('throws StateError when contractQuery returns empty queryResult', async () => {
     const tokenId = 7;
     const args = makeContractErc721CallCommandArgs({
       api,
@@ -97,19 +94,17 @@ describe('contract-erc721 plugin - getApproved command (unit)', () => {
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockResolvedValue({
-      contractId: '0.0.1234',
+      contractId: MOCK_CONTRACT_ID,
       queryResult: [],
     });
 
-    const result = await erc721GetApprovedHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'There was a problem with decoding contract 0.0.1234 "getApproved" function result',
+    await expect(getApprovedFunctionCall(args)).rejects.toThrow(StateError);
+    await expect(getApprovedFunctionCall(args)).rejects.toThrow(
+      `There was a problem with decoding contract ${MOCK_CONTRACT_ID} "getApproved" function result`,
     );
   });
 
-  test('returns failure when queryContractFunction throws', async () => {
+  test('propagates error when queryContractFunction throws', async () => {
     const tokenId = 1;
     const args = makeContractErc721CallCommandArgs({
       api,
@@ -123,11 +118,8 @@ describe('contract-erc721 plugin - getApproved command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    const result = await erc721GetApprovedHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call getApproved function: contract query error',
+    await expect(getApprovedFunctionCall(args)).rejects.toThrow(
+      'contract query error',
     );
   });
 

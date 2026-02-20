@@ -1,14 +1,29 @@
 import type { CoreApi, Logger } from '@/core';
+import type { ContractErc721CallTransferFromOutput } from '@/plugins/contract-erc721/commands/transfer-from/output';
 
 import { ZodError } from 'zod';
 
-import { Status } from '@/core/shared/constants';
-import { makeContractErc721ExecuteCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
+import {
+  MOCK_ACCOUNT_ID,
+  MOCK_CONTRACT_ID,
+  MOCK_EVM_ADDRESS,
+  MOCK_EVM_ADDRESS_ALT,
+  MOCK_EVM_ADDRESS_ALT_2,
+  MOCK_TX_ID,
+} from '@/__tests__/mocks/fixtures';
+import { NotFoundError, TransactionError } from '@/core/errors';
+import { SupportedNetwork } from '@/core/types/shared.types';
+import {
+  makeContractErc721ExecuteCommandArgs,
+  MOCK_ACCOUNT_ID_FROM,
+  MOCK_ACCOUNT_ID_TO,
+  MOCK_CONTRACT_ID_ALT,
+} from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import {
   makeApiMocks,
   makeLogger,
 } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { transferFromFunctionCall as erc721TransferFromHandler } from '@/plugins/contract-erc721/commands/transfer-from/handler';
+import { transferFromFunctionCall } from '@/plugins/contract-erc721/commands/transfer-from/handler';
 import { ContractErc721CallTransferFromInputSchema } from '@/plugins/contract-erc721/commands/transfer-from/input';
 
 const mockAddAddress = jest.fn().mockReturnThis();
@@ -30,11 +45,6 @@ jest.mock('@hashgraph/sdk', () => ({
   },
 }));
 
-const EVM_ADDRESS = '0x' + 'a'.repeat(40);
-const CONTRACT_ID = '0.0.1234';
-const ACCOUNT_ID = '0.0.5678';
-const TX_ID = '0.0.1234@1234567890.123456789';
-
 describe('contract-erc721 plugin - transferFrom command (unit)', () => {
   let api: jest.Mocked<CoreApi>;
   let logger: jest.Mocked<Logger>;
@@ -45,13 +55,13 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
     api = makeApiMocks({
       identityResolution: {
         resolveContract: jest.fn().mockResolvedValue({
-          contractId: CONTRACT_ID,
-          evmAddress: EVM_ADDRESS,
+          contractId: MOCK_CONTRACT_ID,
+          evmAddress: MOCK_EVM_ADDRESS,
         }),
         resolveAccount: jest.fn().mockResolvedValue({
-          accountId: ACCOUNT_ID,
+          accountId: MOCK_ACCOUNT_ID,
           accountPublicKey: 'pub-key',
-          evmAddress: EVM_ADDRESS,
+          evmAddress: MOCK_EVM_ADDRESS,
         }),
         resolveReferenceToEntityOrEvmAddress: jest.fn(),
       },
@@ -63,7 +73,7 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       txExecution: {
         signAndExecute: jest.fn().mockResolvedValue({
           success: true,
-          transactionId: TX_ID,
+          transactionId: MOCK_TX_ID,
         }),
       },
     }).api;
@@ -82,38 +92,35 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       },
     });
 
-    const result = await erc721TransferFromHandler(args);
+    const result = await transferFromFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const parsed = JSON.parse(result.outputJson as string);
-
-    expect(parsed.contractId).toBe(CONTRACT_ID);
-    expect(parsed.network).toBe('testnet');
-    expect(parsed.transactionId).toBe(TX_ID);
+    expect(result.result).toBeDefined();
+    const output = result.result as ContractErc721CallTransferFromOutput;
+    expect(output.contractId).toBe(MOCK_CONTRACT_ID);
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
+    expect(output.transactionId).toBe(MOCK_TX_ID);
 
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
       contractReference: 'my-contract',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: 'alice',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: 'bob',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
-    expect(mockAddAddress).toHaveBeenNthCalledWith(1, EVM_ADDRESS);
-    expect(mockAddAddress).toHaveBeenNthCalledWith(2, EVM_ADDRESS);
+    expect(mockAddAddress).toHaveBeenNthCalledWith(1, MOCK_EVM_ADDRESS);
+    expect(mockAddAddress).toHaveBeenNthCalledWith(2, MOCK_EVM_ADDRESS);
     expect(mockAddUint256).toHaveBeenCalledWith(100);
     expect(args.api.contract.contractExecuteTransaction).toHaveBeenCalledWith(
       expect.objectContaining({
-        contractId: CONTRACT_ID,
+        contractId: MOCK_CONTRACT_ID,
         gas: 100000,
         functionName: 'transferFrom',
       }),
@@ -126,41 +133,41 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       api,
       logger,
       args: {
-        contract: '0.0.9999',
-        from: '0.0.1111',
-        to: '0.0.8888',
+        contract: MOCK_CONTRACT_ID_ALT,
+        from: MOCK_ACCOUNT_ID_FROM,
+        to: MOCK_ACCOUNT_ID_TO,
         gas: 7210000,
         tokenId: 50,
       },
     });
 
-    const result = await erc721TransferFromHandler(args);
+    const result = await transferFromFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
-      contractReference: '0.0.9999',
+      contractReference: MOCK_CONTRACT_ID_ALT,
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
-      accountReference: '0.0.1111',
+      accountReference: MOCK_ACCOUNT_ID_FROM,
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
-      accountReference: '0.0.8888',
+      accountReference: MOCK_ACCOUNT_ID_TO,
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
   });
 
   test('uses EVM address directly when from is EVM address', async () => {
-    const fromEvm = '0x' + 'b'.repeat(40);
+    const fromEvm = MOCK_EVM_ADDRESS_ALT;
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
       args: {
-        contract: '0.0.1234',
+        contract: MOCK_CONTRACT_ID,
         from: fromEvm,
         to: 'bob',
         gas: 100000,
@@ -168,9 +175,9 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       },
     });
 
-    const result = await erc721TransferFromHandler(args);
+    const result = await transferFromFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveAccount).not.toHaveBeenCalledWith(
       expect.objectContaining({ accountReference: fromEvm }),
     );
@@ -178,12 +185,12 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
   });
 
   test('uses EVM address directly when to is EVM address', async () => {
-    const toEvm = '0x' + 'c'.repeat(40);
+    const toEvm = MOCK_EVM_ADDRESS_ALT_2;
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
       args: {
-        contract: '0.0.1234',
+        contract: MOCK_CONTRACT_ID,
         from: 'alice',
         to: toEvm,
         gas: 100000,
@@ -191,16 +198,16 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       },
     });
 
-    const result = await erc721TransferFromHandler(args);
+    const result = await transferFromFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveAccount).not.toHaveBeenCalledWith(
       expect.objectContaining({ accountReference: toEvm }),
     );
     expect(mockAddAddress).toHaveBeenNthCalledWith(2, toEvm);
   });
 
-  test('returns failure when signAndExecute returns success false', async () => {
+  test('throws TransactionError when signAndExecute returns success false', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -217,15 +224,15 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       receipt: { status: { status: 'FAILURE' } },
     });
 
-    const result = await erc721TransferFromHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
+    await expect(transferFromFunctionCall(args)).rejects.toThrow(
+      TransactionError,
+    );
+    await expect(transferFromFunctionCall(args)).rejects.toThrow(
       'Failed to call transferFrom function: FAILURE',
     );
   });
 
-  test('returns failure when signAndExecute throws', async () => {
+  test('propagates error when signAndExecute throws', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -241,15 +248,12 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       new Error('network error'),
     );
 
-    const result = await erc721TransferFromHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call transferFrom function: network error',
+    await expect(transferFromFunctionCall(args)).rejects.toThrow(
+      'network error',
     );
   });
 
-  test('returns failure when alias not found for contract', async () => {
+  test('propagates error when alias not found for contract', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -266,25 +270,19 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       args.api.identityResolution.resolveContract as jest.Mock
     ).mockRejectedValue(
       new Error(
-        'Alias "missing-contract" for contract on network "testnet" not found',
+        `Alias "missing-contract" for contract on network "${SupportedNetwork.TESTNET}" not found`,
       ),
     );
 
-    const result = await erc721TransferFromHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call transferFrom function',
-    );
-    expect(result.errorMessage).toContain('not found');
+    await expect(transferFromFunctionCall(args)).rejects.toThrow('not found');
   });
 
-  test('returns failure when resolveAccount for from has no evmAddress', async () => {
+  test('throws NotFoundError when resolveAccount for from has no evmAddress', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
       args: {
-        contract: '0.0.1234',
+        contract: MOCK_CONTRACT_ID,
         from: 'alice',
         to: 'bob',
         gas: 100000,
@@ -294,31 +292,30 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
 
     (args.api.identityResolution.resolveAccount as jest.Mock)
       .mockResolvedValueOnce({
-        accountId: ACCOUNT_ID,
+        accountId: MOCK_ACCOUNT_ID,
         accountPublicKey: 'pub-key',
         evmAddress: undefined,
       })
-      .mockResolvedValue({
-        accountId: ACCOUNT_ID,
+      .mockResolvedValueOnce({
+        accountId: MOCK_ACCOUNT_ID,
         accountPublicKey: 'pub-key',
-        evmAddress: EVM_ADDRESS,
+        evmAddress: MOCK_EVM_ADDRESS,
       });
 
-    const result = await erc721TransferFromHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
+    const promise = transferFromFunctionCall(args);
+    await expect(promise).rejects.toThrow(NotFoundError);
+    await expect(promise).rejects.toThrow(
       "Couldn't resolve EVM address for an account",
     );
-    expect(result.errorMessage).toContain('alice');
+    await expect(promise).rejects.toThrow('alice');
   });
 
-  test('returns failure when resolveAccount for to has no evmAddress', async () => {
+  test('throws NotFoundError when resolveAccount for to has no evmAddress', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
       args: {
-        contract: '0.0.1234',
+        contract: MOCK_CONTRACT_ID,
         from: 'alice',
         to: 'bob',
         gas: 100000,
@@ -328,23 +325,22 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
 
     (args.api.identityResolution.resolveAccount as jest.Mock)
       .mockResolvedValueOnce({
-        accountId: ACCOUNT_ID,
+        accountId: MOCK_ACCOUNT_ID,
         accountPublicKey: 'pub-key',
-        evmAddress: EVM_ADDRESS,
+        evmAddress: MOCK_EVM_ADDRESS,
       })
-      .mockResolvedValue({
-        accountId: ACCOUNT_ID,
+      .mockResolvedValueOnce({
+        accountId: MOCK_ACCOUNT_ID,
         accountPublicKey: 'pub-key',
         evmAddress: undefined,
       });
 
-    const result = await erc721TransferFromHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
+    const promise = transferFromFunctionCall(args);
+    await expect(promise).rejects.toThrow(NotFoundError);
+    await expect(promise).rejects.toThrow(
       "Couldn't resolve EVM address for an account",
     );
-    expect(result.errorMessage).toContain('bob');
+    await expect(promise).rejects.toThrow('bob');
   });
 
   test('schema validation fails when contract is missing', () => {

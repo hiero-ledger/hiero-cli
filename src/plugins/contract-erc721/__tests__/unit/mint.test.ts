@@ -11,10 +11,15 @@ import {
   MOCK_TX_ID,
 } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
-import { makeContractErc721ExecuteCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
+import { NotFoundError, TransactionError } from '@/core/errors';
+import { SupportedNetwork } from '@/core/types/shared.types';
+import {
+  makeContractErc721ExecuteCommandArgs,
+  MOCK_ACCOUNT_ID_TO,
+  MOCK_CONTRACT_ID_ALT,
+} from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { mintFunctionCall as mintHandler } from '@/plugins/contract-erc721/commands/mint/handler';
+import { mintFunctionCall } from '@/plugins/contract-erc721/commands/mint/handler';
 import { ContractErc721CallMintInputSchema } from '@/plugins/contract-erc721/commands/mint/input';
 
 const mockAddAddress = jest.fn().mockReturnThis();
@@ -82,28 +87,23 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       },
     });
 
-    const result = await mintHandler(args);
+    const result = await mintFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const parsed = JSON.parse(
-      result.outputJson as string,
-    ) as ContractErc721CallMintOutput;
-
-    expect(parsed.contractId).toBe(MOCK_CONTRACT_ID);
-    expect(parsed.network).toBe('testnet');
-    expect(parsed.transactionId).toBe(MOCK_TX_ID);
+    expect(result.result).toBeDefined();
+    const output = result.result as ContractErc721CallMintOutput;
+    expect(output.contractId).toBe(MOCK_CONTRACT_ID);
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
+    expect(output.transactionId).toBe(MOCK_TX_ID);
 
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
       contractReference: 'some-contract',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: 'bob',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(mockAddAddress).toHaveBeenCalledWith(MOCK_EVM_ADDRESS);
     expect(mockAddUint256).toHaveBeenCalledWith(42);
@@ -122,25 +122,25 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       api,
       logger,
       args: {
-        contract: '0.0.9999',
-        to: '0.0.8888',
+        contract: MOCK_CONTRACT_ID_ALT,
+        to: MOCK_ACCOUNT_ID_TO,
         gas: 200000,
         tokenId: 1,
       },
     });
 
-    const result = await mintHandler(args);
+    const result = await mintFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
-      contractReference: '0.0.9999',
+      contractReference: MOCK_CONTRACT_ID_ALT,
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
-      accountReference: '0.0.8888',
+      accountReference: MOCK_ACCOUNT_ID_TO,
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
   });
 
@@ -150,22 +150,22 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       api,
       logger,
       args: {
-        contract: '0.0.1234',
+        contract: MOCK_CONTRACT_ID,
         to: evmTo,
         gas: 100000,
         tokenId: 100,
       },
     });
 
-    const result = await mintHandler(args);
+    const result = await mintFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveAccount).not.toHaveBeenCalled();
     expect(mockAddAddress).toHaveBeenCalledWith(evmTo);
     expect(mockAddUint256).toHaveBeenCalledWith(100);
   });
 
-  test('returns failure when signAndExecute returns success false', async () => {
+  test('throws TransactionError when signAndExecute returns success false', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -181,15 +181,13 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       receipt: { status: { status: 'FAILURE' } },
     });
 
-    const result = await mintHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
+    await expect(mintFunctionCall(args)).rejects.toThrow(TransactionError);
+    await expect(mintFunctionCall(args)).rejects.toThrow(
       'Failed to call mint function: FAILURE',
     );
   });
 
-  test('returns failure when signAndExecute throws', async () => {
+  test('propagates error when signAndExecute throws', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -204,15 +202,10 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       new Error('network error'),
     );
 
-    const result = await mintHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call mint function: network error',
-    );
+    await expect(mintFunctionCall(args)).rejects.toThrow('network error');
   });
 
-  test('returns failure when contract not found', async () => {
+  test('propagates error when contract not found', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -232,19 +225,15 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       ),
     );
 
-    const result = await mintHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Failed to call mint function');
-    expect(result.errorMessage).toContain('not found');
+    await expect(mintFunctionCall(args)).rejects.toThrow('not found');
   });
 
-  test('returns failure when to has no evmAddress', async () => {
+  test('throws NotFoundError when to has no evmAddress', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
       args: {
-        contract: '0.0.1234',
+        contract: MOCK_CONTRACT_ID,
         to: 'bob',
         gas: 100000,
         tokenId: 1,
@@ -259,10 +248,8 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       },
     );
 
-    const result = await mintHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
+    await expect(mintFunctionCall(args)).rejects.toThrow(NotFoundError);
+    await expect(mintFunctionCall(args)).rejects.toThrow(
       "Couldn't resolve EVM address for an account",
     );
   });

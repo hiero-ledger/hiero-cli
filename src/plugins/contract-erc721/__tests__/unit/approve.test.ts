@@ -11,10 +11,15 @@ import {
   MOCK_TX_ID,
 } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
-import { makeContractErc721ExecuteCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
+import { NotFoundError, TransactionError } from '@/core/errors';
+import { SupportedNetwork } from '@/core/types/shared.types';
+import {
+  makeContractErc721ExecuteCommandArgs,
+  MOCK_ACCOUNT_ID_TO,
+  MOCK_CONTRACT_ID_ALT,
+} from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { approveFunctionCall as approveHandler } from '@/plugins/contract-erc721/commands/approve/handler';
+import { approveFunctionCall } from '@/plugins/contract-erc721/commands/approve/handler';
 import { ContractErc721CallApproveInputSchema } from '@/plugins/contract-erc721/commands/approve/input';
 
 const mockAddAddress = jest.fn().mockReturnThis();
@@ -82,28 +87,23 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
       },
     });
 
-    const result = await approveHandler(args);
+    const result = await approveFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const parsed = JSON.parse(
-      result.outputJson as string,
-    ) as ContractErc721CallApproveOutput;
-
-    expect(parsed.contractId).toBe(MOCK_CONTRACT_ID);
-    expect(parsed.network).toBe('testnet');
-    expect(parsed.transactionId).toBe(MOCK_TX_ID);
+    expect(result.result).toBeDefined();
+    const output = result.result as ContractErc721CallApproveOutput;
+    expect(output.contractId).toBe(MOCK_CONTRACT_ID);
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
+    expect(output.transactionId).toBe(MOCK_TX_ID);
 
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
       contractReference: 'some-contract',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: 'bob',
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(mockAddAddress).toHaveBeenCalledWith(MOCK_EVM_ADDRESS);
     expect(mockAddUint256).toHaveBeenCalledWith(42);
@@ -122,25 +122,25 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
       api,
       logger,
       args: {
-        contract: '0.0.9999',
-        to: '0.0.8888',
+        contract: MOCK_CONTRACT_ID_ALT,
+        to: MOCK_ACCOUNT_ID_TO,
         gas: 200000,
         tokenId: 1,
       },
     });
 
-    const result = await approveHandler(args);
+    const result = await approveFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
-      contractReference: '0.0.9999',
+      contractReference: MOCK_CONTRACT_ID_ALT,
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
-      accountReference: '0.0.8888',
+      accountReference: MOCK_ACCOUNT_ID_TO,
       type: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
     });
   });
 
@@ -150,22 +150,22 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
       api,
       logger,
       args: {
-        contract: '0.0.1234',
+        contract: MOCK_CONTRACT_ID,
         to: evmTo,
         gas: 100000,
         tokenId: 100,
       },
     });
 
-    const result = await approveHandler(args);
+    const result = await approveFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveAccount).not.toHaveBeenCalled();
     expect(mockAddAddress).toHaveBeenCalledWith(evmTo);
     expect(mockAddUint256).toHaveBeenCalledWith(100);
   });
 
-  test('returns failure when signAndExecute returns success false', async () => {
+  test('throws TransactionError when signAndExecute returns success false', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -181,15 +181,13 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
       receipt: { status: { status: 'FAILURE' } },
     });
 
-    const result = await approveHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
+    await expect(approveFunctionCall(args)).rejects.toThrow(TransactionError);
+    await expect(approveFunctionCall(args)).rejects.toThrow(
       'Failed to call approve function: FAILURE',
     );
   });
 
-  test('returns failure when signAndExecute throws', async () => {
+  test('propagates error when signAndExecute throws', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -204,15 +202,10 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
       new Error('network error'),
     );
 
-    const result = await approveHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call approve function: network error',
-    );
+    await expect(approveFunctionCall(args)).rejects.toThrow('network error');
   });
 
-  test('returns failure when contract not found', async () => {
+  test('propagates error when contract not found', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -228,23 +221,19 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
       args.api.identityResolution.resolveContract as jest.Mock
     ).mockRejectedValue(
       new Error(
-        'Alias "missing-contract" for contract on network "testnet" not found',
+        `Alias "missing-contract" for contract on network "${SupportedNetwork.TESTNET}" not found`,
       ),
     );
 
-    const result = await approveHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Failed to call approve function');
-    expect(result.errorMessage).toContain('not found');
+    await expect(approveFunctionCall(args)).rejects.toThrow('not found');
   });
 
-  test('returns failure when to has no evmAddress', async () => {
+  test('throws NotFoundError when to has no evmAddress', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
       args: {
-        contract: '0.0.1234',
+        contract: MOCK_CONTRACT_ID,
         to: 'bob',
         gas: 100000,
         tokenId: 1,
@@ -259,10 +248,8 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
       },
     );
 
-    const result = await approveHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
+    await expect(approveFunctionCall(args)).rejects.toThrow(NotFoundError);
+    await expect(approveFunctionCall(args)).rejects.toThrow(
       "Couldn't resolve EVM address for an account",
     );
   });
