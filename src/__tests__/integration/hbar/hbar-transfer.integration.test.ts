@@ -63,7 +63,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     });
     expect(transferHbarResult.status).toBe(Status.Success);
     const transferHbarOutput: TransferOutput = JSON.parse(
-      transferHbarResult.outputJson!,
+      transferHbarResult.outputJson,
     );
     expect(transferHbarOutput.status).toBe('success');
     expect(transferHbarOutput.fromAccountId).toBe(process.env.OPERATOR_ID);
@@ -155,7 +155,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     });
     expect(transferHbarResult.status).toBe(Status.Success);
     const transferHbarOutput: TransferOutput = JSON.parse(
-      transferHbarResult.outputJson!,
+      transferHbarResult.outputJson,
     );
     expect(transferHbarOutput.status).toBe('success');
     expect(transferHbarOutput.fromAccountId).toBe(accountFromOutput.accountId);
