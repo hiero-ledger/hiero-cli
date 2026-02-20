@@ -105,7 +105,7 @@ describe('Transfer NFT Integration Tests', () => {
       });
       expect(createNftResult.status).toBe(Status.Success);
       const createNftOutput: CreateNftOutput = JSON.parse(
-        createNftResult.outputJson!,
+        createNftResult.outputJson,
       );
       expect(createNftOutput.network).toBe(network);
       expect(createNftOutput.name).toBe('Test NFT Transfer Collection');
@@ -137,9 +137,7 @@ describe('Transfer NFT Integration Tests', () => {
         config: coreApi.config,
       });
       expect(mintNftResult.status).toBe(Status.Success);
-      const mintNftOutput: MintNftOutput = JSON.parse(
-        mintNftResult.outputJson!,
-      );
+      const mintNftOutput: MintNftOutput = JSON.parse(mintNftResult.outputJson);
       expect(mintNftOutput.tokenId).toBe(createNftOutput.tokenId);
       expect(mintNftOutput.serialNumber).toBeDefined();
       expect(mintNftOutput.network).toBe(network);
@@ -160,7 +158,7 @@ describe('Transfer NFT Integration Tests', () => {
       });
       expect(associateTokenResult.status).toBe(Status.Success);
       const associateTokenOutput: AssociateTokenOutput = JSON.parse(
-        associateTokenResult.outputJson!,
+        associateTokenResult.outputJson,
       );
       expect(associateTokenOutput.tokenId).toBe(createNftOutput.tokenId);
       expect(associateTokenOutput.accountId).toBe(
@@ -183,7 +181,7 @@ describe('Transfer NFT Integration Tests', () => {
       });
       expect(viewTokenBeforeTransferResult.status).toBe(Status.Success);
       const viewTokenBeforeTransferOutput: ViewTokenOutput = JSON.parse(
-        viewTokenBeforeTransferResult.outputJson!,
+        viewTokenBeforeTransferResult.outputJson,
       );
       expect(viewTokenBeforeTransferOutput.tokenId).toBe(
         createNftOutput.tokenId,
@@ -213,7 +211,7 @@ describe('Transfer NFT Integration Tests', () => {
       });
       expect(transferNftResult.status).toBe(Status.Success);
       const transferNftOutput: TransferNftOutput = JSON.parse(
-        transferNftResult.outputJson!,
+        transferNftResult.outputJson,
       );
       expect(transferNftOutput.tokenId).toBe(createNftOutput.tokenId);
       expect(transferNftOutput.from).toBe(createSourceAccountOutput.accountId);
@@ -241,7 +239,7 @@ describe('Transfer NFT Integration Tests', () => {
       });
       expect(viewTokenAfterTransferResult.status).toBe(Status.Success);
       const viewTokenAfterTransferOutput: ViewTokenOutput = JSON.parse(
-        viewTokenAfterTransferResult.outputJson!,
+        viewTokenAfterTransferResult.outputJson,
       );
       expect(viewTokenAfterTransferOutput.tokenId).toBe(
         createNftOutput.tokenId,
@@ -303,7 +301,7 @@ describe('Transfer NFT Integration Tests', () => {
       });
       expect(createNftResult.status).toBe(Status.Success);
       const createNftOutput: CreateNftOutput = JSON.parse(
-        createNftResult.outputJson!,
+        createNftResult.outputJson,
       );
 
       await delay(5000);
@@ -321,9 +319,7 @@ describe('Transfer NFT Integration Tests', () => {
         config: coreApi.config,
       });
       expect(mintNftResult.status).toBe(Status.Success);
-      const mintNftOutput: MintNftOutput = JSON.parse(
-        mintNftResult.outputJson!,
-      );
+      const mintNftOutput: MintNftOutput = JSON.parse(mintNftResult.outputJson);
 
       await delay(5000);
 

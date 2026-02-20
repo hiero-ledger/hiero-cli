@@ -91,7 +91,7 @@ describe('Transfer Token Integration Tests', () => {
     });
     expect(createTokenResult.status).toBe(Status.Success);
     const createTokenOutput: CreateFungibleTokenOutput = JSON.parse(
-      createTokenResult.outputJson!,
+      createTokenResult.outputJson,
     );
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
@@ -117,7 +117,7 @@ describe('Transfer Token Integration Tests', () => {
     });
     expect(associateTokenResult.status).toBe(Status.Success);
     const associateTokenOutput: AssociateTokenOutput = JSON.parse(
-      associateTokenResult.outputJson!,
+      associateTokenResult.outputJson,
     );
     expect(associateTokenOutput.tokenId).toBe(createTokenOutput.tokenId);
     expect(associateTokenOutput.accountId).toBe(createAccountOutput.accountId);
@@ -141,7 +141,7 @@ describe('Transfer Token Integration Tests', () => {
     });
     expect(transferTokenResult.status).toBe(Status.Success);
     const transferTokenOutput: TransferFungibleTokenOutput = JSON.parse(
-      transferTokenResult.outputJson!,
+      transferTokenResult.outputJson,
     );
     expect(transferTokenOutput.tokenId).toBe(createTokenOutput.tokenId);
     expect(transferTokenOutput.from).toBe(process.env.OPERATOR_ID);

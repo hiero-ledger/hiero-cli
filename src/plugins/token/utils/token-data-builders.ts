@@ -1,7 +1,3 @@
-/**
- * Token Data Builders
- * Utility functions for building token data objects for state storage
- */
 import type { TransactionResult } from '@/core';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
@@ -11,6 +7,7 @@ import type {
   TokenData,
 } from '@/plugins/token/schema';
 
+import { ValidationError } from '@/core/errors';
 import { HederaTokenType as HederaTokenTypeValues } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 
@@ -136,8 +133,9 @@ export function determineFiniteMaxSupply(
 ): bigint {
   if (maxSupply !== undefined) {
     if (maxSupply < initialSupply) {
-      throw new Error(
-        `Max supply (${maxSupply}) cannot be less than initial supply (${initialSupply})`,
+      throw new ValidationError(
+        'Max supply cannot be less than initial supply',
+        { context: { maxSupply, initialSupply } },
       );
     }
     return maxSupply;
