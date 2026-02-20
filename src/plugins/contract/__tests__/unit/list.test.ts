@@ -64,6 +64,7 @@ describe('contract plugin - list command', () => {
         contractName: 'ContractOne',
         contractEvmAddress: '0x1111111111111111111111111111111111111111',
         adminPublicKey: 'admin-key-1',
+        alias: 'contract-alias-one',
         network: NETWORK_TESTNET,
       },
       {
@@ -79,26 +80,6 @@ describe('contract plugin - list command', () => {
     }));
 
     const alias = makeAliasMock();
-    alias.resolve = jest
-      .fn()
-      .mockImplementation(
-        (ref: string, type: string | undefined, network: SupportedNetwork) => {
-          if (ref === '0.0.1001' && type === 'contract') {
-            if (network === SupportedNetwork.TESTNET) {
-              return {
-                alias: 'contract-alias-one',
-                type: 'contract',
-                network: SupportedNetwork.TESTNET,
-                entityId: '0.0.1001',
-              };
-            }
-            if (network === SupportedNetwork.MAINNET) {
-              return null;
-            }
-          }
-          return null;
-        },
-      );
     const api: Partial<CoreApi> = {
       alias,
       network: makeNetworkMock(SupportedNetwork.TESTNET),
@@ -148,7 +129,6 @@ describe('contract plugin - list command', () => {
     }));
 
     const alias = makeAliasMock();
-    alias.list = jest.fn().mockReturnValue([]);
     const api: Partial<CoreApi> = {
       alias,
       network: makeNetworkMock(SupportedNetwork.TESTNET),

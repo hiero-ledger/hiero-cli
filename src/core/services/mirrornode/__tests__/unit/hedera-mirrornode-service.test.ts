@@ -3,13 +3,16 @@
  * Tests all public methods with success paths, error paths, and edge cases
  */
 
-import { makeNetworkMock } from '@/__tests__/mocks/mocks';
+import { MOCK_CONTRACT_ID } from '@/__tests__/mocks/fixtures';
+import {
+  createMockContractInfo,
+  makeNetworkMock,
+} from '@/__tests__/mocks/mocks';
 import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 import {
   createMockAccountAPIResponse,
-  createMockContractInfo,
   createMockExchangeRateResponse,
   createMockNftInfo,
   createMockTokenAirdropsResponse,
@@ -32,7 +35,6 @@ const TEST_ACCOUNT_ID = '0.0.1234';
 const TEST_TOKEN_ID = '0.0.2000';
 const TEST_SERIAL_NUMBER = 1;
 const TEST_TOPIC_ID = '0.0.3000';
-const TEST_CONTRACT_ID = '0.0.4000';
 const TEST_TX_ID = '0.0.1234-1700000000-000000000';
 
 // Network URLs
@@ -724,12 +726,12 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         json: jest.fn().mockResolvedValue(mockContractInfo),
       });
 
-      const result = await service.getContractInfo(TEST_CONTRACT_ID);
+      const result = await service.getContractInfo(MOCK_CONTRACT_ID);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/contracts/${TEST_CONTRACT_ID}`,
+        `${TESTNET_URL}/contracts/${MOCK_CONTRACT_ID}`,
       );
-      expect(result.contract_id).toBe(TEST_CONTRACT_ID);
+      expect(result.contract_id).toBe(MOCK_CONTRACT_ID);
     });
 
     it('should throw error on HTTP 404', async () => {
@@ -740,8 +742,8 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         statusText: 'Not Found',
       });
 
-      await expect(service.getContractInfo(TEST_CONTRACT_ID)).rejects.toThrow(
-        `Failed to get contract info for ${TEST_CONTRACT_ID}: 404 Not Found`,
+      await expect(service.getContractInfo(MOCK_CONTRACT_ID)).rejects.toThrow(
+        `Failed to get contract info for ${MOCK_CONTRACT_ID}: 404 Not Found`,
       );
     });
   });
