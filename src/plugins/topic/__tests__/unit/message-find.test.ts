@@ -12,7 +12,6 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
 import { findMessage } from '@/plugins/topic/commands/find-message/handler';
 
 const makeTopicMessage = (sequenceNumber: number, message: string) => ({
@@ -76,14 +75,10 @@ describe('topic plugin - message-find command', () => {
 
     const result = await findMessage(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = result.result as FindMessagesOutput;
     expect(output.totalCount).toBe(3);
     expect(output.messages).toHaveLength(3);
 
-    // Check that all expected messages are present (order may vary)
     const sequenceNumbers = output.messages.map((m) => m.sequenceNumber);
     expect(sequenceNumbers).toContain(6);
     expect(sequenceNumbers).toContain(7);
@@ -129,12 +124,10 @@ describe('topic plugin - message-find command', () => {
 
     const result = await findMessage(args);
 
-    expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = result.result as FindMessagesOutput;
     expect(output.totalCount).toBe(2);
     expect(output.messages).toHaveLength(2);
 
-    // Check that expected messages are present (order may vary)
     const sequenceNumbers = output.messages.map((m) => m.sequenceNumber);
     expect(sequenceNumbers).toContain(5);
     expect(sequenceNumbers).toContain(6);
@@ -179,8 +172,7 @@ describe('topic plugin - message-find command', () => {
 
     const result = await findMessage(args);
 
-    expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = result.result as FindMessagesOutput;
     expect(output.totalCount).toBe(2);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
@@ -220,8 +212,7 @@ describe('topic plugin - message-find command', () => {
 
     const result = await findMessage(args);
 
-    expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = result.result as FindMessagesOutput;
     expect(output.totalCount).toBe(1);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
@@ -261,8 +252,7 @@ describe('topic plugin - message-find command', () => {
 
     const result = await findMessage(args);
 
-    expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = result.result as FindMessagesOutput;
     expect(output.totalCount).toBe(1);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
@@ -276,9 +266,6 @@ describe('topic plugin - message-find command', () => {
       ],
     });
   });
-
-  // NOTE: Validation for missing sequence parameters is now handled by Zod schema (FindMessageInputSchema)
-  // This test is no longer needed as the validation happens at the schema level before reaching the handler
 
   test('find all messages when no filter provided', async () => {
     const logger = makeLogger();
@@ -308,8 +295,7 @@ describe('topic plugin - message-find command', () => {
 
     const result = await findMessage(args);
 
-    expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = result.result as FindMessagesOutput;
     expect(output.totalCount).toBe(3);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
@@ -318,7 +304,7 @@ describe('topic plugin - message-find command', () => {
     });
   });
 
-  test('returns failure when getTopicMessages throws', async () => {
+  test('throws when getTopicMessages throws', async () => {
     const logger = makeLogger();
 
     const { mirror, networkMock, alias } = makeApiMocks({
@@ -339,11 +325,7 @@ describe('topic plugin - message-find command', () => {
       sequenceGte: 5,
     });
 
-    const result = await findMessage(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Failed to find messages');
-    expect(result.errorMessage).toContain('network error');
+    await expect(findMessage(args)).rejects.toThrow('network error');
   });
 
   test('handles empty message list', async () => {
@@ -370,8 +352,7 @@ describe('topic plugin - message-find command', () => {
 
     const result = await findMessage(args);
 
-    expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = result.result as FindMessagesOutput;
     expect(output.totalCount).toBe(0);
     expect(output.messages).toEqual([]);
   });
@@ -390,7 +371,6 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
-    // Test: sequenceEq cannot be combined with other filters
     const args1 = makeArgs(api, logger, {
       topic: '0.0.5678',
       sequenceEq: 5,
@@ -400,7 +380,6 @@ describe('topic plugin - message-find command', () => {
     await expect(findMessage(args1)).rejects.toThrow(ZodError);
     expect(mirror.getTopicMessages).not.toHaveBeenCalled();
 
-    // Test: lower bound greater than upper bound
     const args2 = makeArgs(api, logger, {
       topic: '0.0.5678',
       sequenceGt: 10,
@@ -410,7 +389,6 @@ describe('topic plugin - message-find command', () => {
     await expect(findMessage(args2)).rejects.toThrow(ZodError);
     expect(mirror.getTopicMessages).not.toHaveBeenCalled();
 
-    // Test: lower bound equal to upper bound with strict operators
     const args3 = makeArgs(api, logger, {
       topic: '0.0.5678',
       sequenceGt: 5,
@@ -443,7 +421,6 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
-    // Test: gt and lt filters (should filter to 6, 7, 8)
     const args = makeArgs(api, logger, {
       topic: '0.0.5678',
       sequenceGt: 5,
@@ -452,18 +429,15 @@ describe('topic plugin - message-find command', () => {
 
     const result = await findMessage(args);
 
-    expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = result.result as FindMessagesOutput;
     expect(output.totalCount).toBe(3);
     expect(output.messages).toHaveLength(3);
 
-    // Should contain only messages 6, 7, 8 (filtered by API)
     const sequenceNumbers = output.messages.map((m) => m.sequenceNumber);
     expect(sequenceNumbers).toContain(6);
     expect(sequenceNumbers).toContain(7);
     expect(sequenceNumbers).toContain(8);
 
-    // API should be called with both filters
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
       topicId: '0.0.5678',
       filters: [
@@ -503,7 +477,6 @@ describe('topic plugin - message-find command', () => {
       logger,
     };
 
-    // Test: gte and lte filters (API filters to 5, 6, 7)
     const args = makeArgs(api, logger, {
       topic: '0.0.5678',
       sequenceGte: 5,
@@ -512,17 +485,14 @@ describe('topic plugin - message-find command', () => {
 
     const result = await findMessage(args);
 
-    expect(result.status).toBe(Status.Success);
-    const output: FindMessagesOutput = JSON.parse(result.outputJson!);
+    const output = result.result as FindMessagesOutput;
     expect(output.totalCount).toBe(3);
 
-    // Should contain messages 5, 6, 7 (filtered by API)
     const sequenceNumbers = output.messages.map((m) => m.sequenceNumber);
     expect(sequenceNumbers).toContain(5);
     expect(sequenceNumbers).toContain(6);
     expect(sequenceNumbers).toContain(7);
 
-    // API should be called with both filters
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
       topicId: '0.0.5678',
       filters: [
