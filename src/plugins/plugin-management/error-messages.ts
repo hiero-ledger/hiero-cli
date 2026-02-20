@@ -6,6 +6,8 @@
 export const ERROR_MESSAGES = {
   pluginNotFound: (name: string) =>
     `Plugin ${name} not found in plugin-management state`,
+  pluginAlreadyExists: (name: string) =>
+    `Plugin '${name}' already exists in plugin-management state`,
   pluginAlreadyEnabled: (name: string) => `Plugin ${name} is already enabled`,
   pluginAlreadyDisabled: (name: string) => `Plugin ${name} is already disabled`,
   pluginProtectedCannotDisable: (name: string) =>

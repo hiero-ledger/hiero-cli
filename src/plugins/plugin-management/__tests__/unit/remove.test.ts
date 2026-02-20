@@ -1,14 +1,15 @@
 /**
  * Unit tests for plugin-management remove command
  */
+import type { RemovePluginOutput } from '@/plugins/plugin-management/commands/remove/output';
+
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { NotFoundError, StateError } from '@/core/errors';
 import {
   PluginManagementRemoveStatus,
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
-import { Status } from '@/core/shared/constants';
 import { removePlugin } from '@/plugins/plugin-management/commands/remove/handler';
-import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 describe('plugin-management remove command', () => {
   it('should remove an existing plugin from state', async () => {
@@ -28,11 +29,9 @@ describe('plugin-management remove command', () => {
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
     const result = await removePlugin(args);
+    const output = result.result as RemovePluginOutput;
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output = JSON.parse(result.outputJson!);
+    expect(output).toBeDefined();
     expect(output.name).toBe('custom-plugin');
     expect(output.removed).toBe(true);
     expect(output.message).toContain('removed from plugin-management state');
@@ -40,7 +39,7 @@ describe('plugin-management remove command', () => {
     expect(pluginManagement.removePlugin).toHaveBeenCalledWith('custom-plugin');
   });
 
-  it('should return failure when plugin does not exist', async () => {
+  it('should throw NotFoundError when plugin does not exist', async () => {
     const logger = makeLogger();
     const pluginManagement = {
       removePlugin: jest.fn().mockReturnValue({
@@ -51,16 +50,13 @@ describe('plugin-management remove command', () => {
 
     const args = makeArgs(api, logger, { name: 'unknown-plugin' });
 
-    const result = await removePlugin(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBe(
-      ERROR_MESSAGES.pluginNotFound('unknown-plugin'),
+    await expect(removePlugin(args)).rejects.toThrow(NotFoundError);
+    await expect(removePlugin(args)).rejects.toThrow(
+      /Plugin unknown-plugin not found in plugin-management state/,
     );
-    expect(result.outputJson).toBeUndefined();
   });
 
-  it('should return failure when trying to remove protected plugin', async () => {
+  it('should throw StateError when trying to remove protected plugin', async () => {
     const logger = makeLogger();
     const pluginManagement = {
       removePlugin: jest.fn().mockReturnValue({
@@ -71,13 +67,10 @@ describe('plugin-management remove command', () => {
 
     const args = makeArgs(api, logger, { name: 'plugin-management' });
 
-    const result = await removePlugin(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBe(
-      ERROR_MESSAGES.pluginProtectedCannotRemove('plugin-management'),
+    await expect(removePlugin(args)).rejects.toThrow(StateError);
+    await expect(removePlugin(args)).rejects.toThrow(
+      /plugin-management is a core plugin and cannot be removed from state via CLI/,
     );
-    expect(result.outputJson).toBeUndefined();
 
     expect(pluginManagement.removePlugin).toHaveBeenCalledWith(
       'plugin-management',

@@ -1,14 +1,15 @@
 /**
  * Unit tests for plugin-management enable command
  */
+import type { EnablePluginOutput } from '@/plugins/plugin-management/commands/enable/output';
+
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { NotFoundError, StateError } from '@/core/errors';
 import {
   PluginManagementEnableStatus,
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
-import { Status } from '@/core/shared/constants';
 import { enablePlugin } from '@/plugins/plugin-management/commands/enable/handler';
-import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 describe('plugin-management enable command', () => {
   it('should enable a disabled plugin', async () => {
@@ -28,18 +29,17 @@ describe('plugin-management enable command', () => {
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
     const result = await enablePlugin(args);
+    const output = result.result as EnablePluginOutput;
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-    expect(pluginManagement.enablePlugin).toHaveBeenCalledWith('custom-plugin');
-
-    const output = JSON.parse(result.outputJson!);
+    expect(output).toBeDefined();
     expect(output.name).toBe('custom-plugin');
     expect(output.enabled).toBe(true);
     expect(output.message).toContain('enabled successfully');
+
+    expect(pluginManagement.enablePlugin).toHaveBeenCalledWith('custom-plugin');
   });
 
-  it('should return failure when plugin is already enabled', async () => {
+  it('should throw StateError when plugin is already enabled', async () => {
     const logger = makeLogger();
     const pluginManagement = {
       enablePlugin: jest.fn().mockReturnValue({
@@ -55,17 +55,14 @@ describe('plugin-management enable command', () => {
 
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
-    const result = await enablePlugin(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBe(
-      ERROR_MESSAGES.pluginAlreadyEnabled('custom-plugin'),
+    await expect(enablePlugin(args)).rejects.toThrow(StateError);
+    await expect(enablePlugin(args)).rejects.toThrow(
+      /Plugin custom-plugin is already enabled/,
     );
-    expect(result.outputJson).toBeUndefined();
     expect(pluginManagement.enablePlugin).toHaveBeenCalledWith('custom-plugin');
   });
 
-  it('should return failure when plugin does not exist in state', async () => {
+  it('should throw NotFoundError when plugin does not exist in state', async () => {
     const logger = makeLogger();
     const pluginManagement = {
       enablePlugin: jest
@@ -76,13 +73,10 @@ describe('plugin-management enable command', () => {
 
     const args = makeArgs(api, logger, { name: 'unknown-plugin' });
 
-    const result = await enablePlugin(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBe(
-      ERROR_MESSAGES.pluginNotFound('unknown-plugin'),
+    await expect(enablePlugin(args)).rejects.toThrow(NotFoundError);
+    await expect(enablePlugin(args)).rejects.toThrow(
+      /Plugin unknown-plugin not found in plugin-management state/,
     );
-    expect(result.outputJson).toBeUndefined();
     expect(pluginManagement.enablePlugin).toHaveBeenCalledWith(
       'unknown-plugin',
     );

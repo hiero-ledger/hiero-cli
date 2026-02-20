@@ -19,8 +19,8 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
 import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 
+import { MOCK_CONTRACT_ID } from '@/__tests__/mocks/fixtures';
 import {
   createMirrorNodeMock,
   makeAliasMock,
@@ -33,6 +33,7 @@ import {
   makeSigningMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 /**
  * Create a mocked Logger
@@ -62,7 +63,7 @@ export interface ApiMocksConfig {
  * identityResolution, contractQuery, and contract. Pass overrides in config to customize.
  */
 export const makeApiMocks = (config?: ApiMocksConfig) => {
-  const network = makeNetworkMock(config?.network ?? 'testnet');
+  const network = makeNetworkMock(config?.network ?? SupportedNetwork.TESTNET);
   const alias = {
     ...makeAliasMock(),
     ...config?.alias,
@@ -75,7 +76,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     ...makeIdentityResolutionServiceMock(),
     resolveReferenceToEntityOrEvmAddress: jest
       .fn()
-      .mockReturnValue({ entityIdOrEvmAddress: '0.0.1234' }),
+      .mockReturnValue({ entityIdOrEvmAddress: MOCK_CONTRACT_ID }),
   };
   const identityResolution = {
     ...defaultIdentityResolution,
@@ -85,7 +86,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
   const defaultContractQuery = {
     ...makeContractQueryServiceMock(),
     queryContractFunction: jest.fn().mockResolvedValue({
-      contractId: '0.0.1234',
+      contractId: MOCK_CONTRACT_ID,
       queryResult: [18],
     }),
   };
@@ -134,6 +135,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     } as jest.Mocked<HbarService>,
     output: {
       handleCommandOutput: jest.fn(),
+      handleOutput: jest.fn(),
       getFormat: jest.fn().mockReturnValue('human'),
       setFormat: jest.fn(),
       emptyLine: jest.fn(),
