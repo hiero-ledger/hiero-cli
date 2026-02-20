@@ -93,7 +93,7 @@ describe('Mint FT Integration Tests', () => {
     });
     expect(createTokenResult.status).toBe(Status.Success);
     const createTokenOutput: CreateFungibleTokenOutput = JSON.parse(
-      createTokenResult.outputJson!,
+      createTokenResult.outputJson,
     );
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
@@ -145,7 +145,7 @@ describe('Mint FT Integration Tests', () => {
       config: coreApi.config,
     });
     expect(mintFtResult.status).toBe(Status.Success);
-    const mintFtOutput: MintFtOutput = JSON.parse(mintFtResult.outputJson!);
+    const mintFtOutput: MintFtOutput = JSON.parse(mintFtResult.outputJson);
     expect(mintFtOutput.tokenId).toBe(createTokenOutput.tokenId);
     expect(mintFtOutput.amount).toBe('50');
     expect(mintFtOutput.network).toBe(network);

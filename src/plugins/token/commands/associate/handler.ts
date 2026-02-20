@@ -1,25 +1,31 @@
-/**
- * Token Associate Command Handler
- * Handles token association operations using the Core API
- * Follows ADR-003 contract: returns CommandExecutionResult
- */
-import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { AssociateTokenOutput } from './output';
 
 import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
 
-import { Status } from '@/core/shared/constants';
-import { formatError } from '@/core/utils/errors';
+import { NotFoundError, TransactionError } from '@/core/errors';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { saveAssociationToState } from '@/plugins/token/utils/token-associations';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { AssociateTokenInputSchema } from './input';
 
+function isTokenAlreadyAssociatedError(error: unknown): boolean {
+  if (!(error instanceof TransactionError)) {
+    return false;
+  }
+
+  const cause = error.cause;
+  return (
+    cause instanceof ReceiptStatusError &&
+    cause.status === HederaStatus.TokenAlreadyAssociatedToAccount
+  );
+}
+
 export async function associateToken(
   args: CommandHandlerArgs,
-): Promise<CommandExecutionResult> {
+): Promise<CommandResult> {
   const { api, logger } = args;
 
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
@@ -39,10 +45,9 @@ export async function associateToken(
   const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
 
   if (!resolvedToken) {
-    throw new Error(
-      `Failed to resolve token parameter: ${tokenIdOrAlias}. ` +
-        `Expected format: token-name OR token-id`,
-    );
+    throw new NotFoundError('Token not found', {
+      context: { token: tokenIdOrAlias },
+    });
   }
 
   const tokenId = resolvedToken.tokenId;
@@ -57,97 +62,75 @@ export async function associateToken(
   logger.info(`🔑 Will sign with account key`);
   logger.info(`Associating token ${tokenId} with account ${account.accountId}`);
 
-  let alreadyAssociated = false;
-  let transactionId: string | undefined;
+  const tokenBalances = await api.mirror.getAccountTokenBalances(
+    account.accountId,
+    tokenId,
+  );
+  const isAlreadyAssociated = tokenBalances.tokens.some(
+    (token) => token.token_id === tokenId,
+  );
 
-  try {
-    const tokenBalances = await api.mirror.getAccountTokenBalances(
-      account.accountId,
+  if (isAlreadyAssociated) {
+    logger.info(
+      `Token ${tokenId} is already associated with account ${account.accountId}`,
+    );
+
+    saveAssociationToState(tokenState, tokenId, account.accountId, logger);
+
+    const outputData: AssociateTokenOutput = {
+      accountId: account.accountId,
       tokenId,
-    );
-    const isAssociated = tokenBalances.tokens.some(
-      (token) => token.token_id === tokenId,
-    );
-
-    if (isAssociated) {
-      logger.info(
-        `Token ${tokenId} is already associated with account ${account.accountId}`,
-      );
-
-      saveAssociationToState(tokenState, tokenId, account.accountId, logger);
-      alreadyAssociated = true;
-    }
-  } catch (mirrorError) {
-    logger.debug(
-      `Failed to check token association via Mirror Node: ${formatError('', mirrorError)}. Proceeding with transaction.`,
-    );
-  }
-
-  if (!alreadyAssociated) {
-    try {
-      const associateTransaction = api.token.createTokenAssociationTransaction({
-        tokenId,
-        accountId: account.accountId,
-      });
-
-      logger.debug(`Using key ${account.keyRefId} for signing transaction`);
-      const result = await api.txExecution.signAndExecuteWith(
-        associateTransaction,
-        [account.keyRefId],
-      );
-
-      if (result.success) {
-        transactionId = result.transactionId;
-        saveAssociationToState(tokenState, tokenId, account.accountId, logger);
-      } else {
-        return {
-          status: Status.Failure,
-          errorMessage: 'Token association failed',
-        };
-      }
-    } catch (error: unknown) {
-      if (
-        error instanceof ReceiptStatusError &&
-        error.status === HederaStatus.TokenAlreadyAssociatedToAccount
-      ) {
-        logger.info(
-          `Token ${tokenId} is already associated with account ${account.accountId}`,
-        );
-        saveAssociationToState(tokenState, tokenId, account.accountId, logger);
-        alreadyAssociated = true;
-      } else {
-        return {
-          status: Status.Failure,
-          errorMessage: formatError('Failed to associate token', error),
-        };
-      }
-    }
-  }
-
-  if (!alreadyAssociated && !transactionId) {
-    return {
-      status: Status.Failure,
-      errorMessage: 'Failed to associate token',
+      associated: true,
+      alreadyAssociated: true,
+      network,
     };
+
+    return { result: outputData };
   }
+
+  const associateTransaction = api.token.createTokenAssociationTransaction({
+    tokenId,
+    accountId: account.accountId,
+  });
+
+  let result;
+  try {
+    logger.debug(`Using key ${account.keyRefId} for signing transaction`);
+    result = await api.txExecution.signAndExecuteWith(associateTransaction, [
+      account.keyRefId,
+    ]);
+  } catch (error) {
+    if (isTokenAlreadyAssociatedError(error)) {
+      saveAssociationToState(tokenState, tokenId, account.accountId, logger);
+      return {
+        result: {
+          accountId: account.accountId,
+          tokenId,
+          associated: true,
+          alreadyAssociated: true,
+          network,
+        } satisfies AssociateTokenOutput,
+      };
+    }
+
+    throw error;
+  }
+
+  if (!result.success) {
+    throw new TransactionError('Token association failed', false, {
+      context: { tokenId, accountId: account.accountId },
+    });
+  }
+
+  saveAssociationToState(tokenState, tokenId, account.accountId, logger);
 
   const outputData: AssociateTokenOutput = {
     accountId: account.accountId,
     tokenId,
     associated: true,
+    transactionId: result.transactionId,
     network,
   };
 
-  if (transactionId) {
-    outputData.transactionId = transactionId;
-  }
-
-  if (alreadyAssociated) {
-    outputData.alreadyAssociated = true;
-  }
-
-  return {
-    status: Status.Success,
-    outputJson: JSON.stringify(outputData),
-  };
+  return { result: outputData };
 }

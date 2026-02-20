@@ -87,7 +87,7 @@ describe('Create NFT Integration Tests', () => {
     });
     expect(createNftResult.status).toBe(Status.Success);
     const createNftOutput: CreateNftOutput = JSON.parse(
-      createNftResult.outputJson!,
+      createNftResult.outputJson,
     );
     expect(createNftOutput.network).toBe(network);
     expect(createNftOutput.name).toBe('Test NFT');
