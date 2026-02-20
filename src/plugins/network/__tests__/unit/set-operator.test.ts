@@ -1,3 +1,5 @@
+import type { SetOperatorOutput } from '@/plugins/network/commands/set-operator/output';
+
 import {
   ECDSA_DER_PRIVATE_KEY,
   MOCK_PUBLIC_KEY,
@@ -10,10 +12,10 @@ import {
   makeNetworkMock,
   setupExitSpy,
 } from '@/__tests__/mocks/mocks';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { ValidationError } from '@/core/errors';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { setOperatorHandler } from '@/plugins/network/commands/set-operator';
-import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 
 let exitSpy: jest.SpyInstance;
 
@@ -44,9 +46,7 @@ describe('network plugin - set-operator command', () => {
 
     const result = await setOperatorHandler(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-    const output = JSON.parse(result.outputJson!);
+    const output = result.result as SetOperatorOutput;
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
@@ -71,7 +71,6 @@ describe('network plugin - set-operator command', () => {
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
-    // Mock alias resolution
     aliasService.resolve.mockReturnValue({
       alias: 'testnet1',
       type: 'account',
@@ -100,8 +99,7 @@ describe('network plugin - set-operator command', () => {
       accountId: '0.0.789012',
       keyRefId: 'kr_alias123',
     });
-    expect(result.status).toBe(Status.Success);
-    const output = JSON.parse(result.outputJson!);
+    const output = result.result as SetOperatorOutput;
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.789012',
@@ -133,8 +131,7 @@ describe('network plugin - set-operator command', () => {
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
     });
-    expect(result.status).toBe(Status.Success);
-    const output = JSON.parse(result.outputJson!);
+    const output = result.result as SetOperatorOutput;
     expect(output.network).toBe('mainnet');
   });
 
@@ -144,7 +141,6 @@ describe('network plugin - set-operator command', () => {
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
-    // Mock existing operator
     networkService.getOperator.mockReturnValue({
       accountId: '0.0.999999',
       keyRefId: 'kr_old123',
@@ -161,7 +157,8 @@ describe('network plugin - set-operator command', () => {
 
     const result = await setOperatorHandler(args);
 
-    expect(result.status).toBe(Status.Success);
+    const output = result.result as SetOperatorOutput;
+    expect(output.network).toBe('testnet');
     expect(networkService.setOperator).toHaveBeenCalledWith('testnet', {
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
@@ -174,7 +171,6 @@ describe('network plugin - set-operator command', () => {
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
-    // Mock no existing operator
     networkService.getOperator.mockReturnValue(null);
 
     const args = makeArgs(
@@ -188,20 +184,20 @@ describe('network plugin - set-operator command', () => {
 
     const result = await setOperatorHandler(args);
 
-    expect(result.status).toBe(Status.Success);
+    const output = result.result as SetOperatorOutput;
+    expect(output.network).toBe('testnet');
     expect(networkService.setOperator).toHaveBeenCalledWith('testnet', {
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
     });
   });
 
-  test('returns failure when alias is not found', async () => {
+  test('throws when alias is not found', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
-    // Mock alias not found
     aliasService.resolve.mockReturnValue(null);
 
     const args = makeArgs(
@@ -214,21 +210,17 @@ describe('network plugin - set-operator command', () => {
       { operator: 'nonexistent' },
     );
 
-    const result = await setOperatorHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'No account is associated with the name provided',
+    await expect(setOperatorHandler(args)).rejects.toThrow(
+      'No account is associated with the name provided.',
     );
   });
 
-  test('returns failure when alias has no key', async () => {
+  test('throws when alias has no key', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
-    // Mock alias with no key
     aliasService.resolve.mockReturnValue({
       alias: 'testnet1',
       type: 'account',
@@ -249,21 +241,17 @@ describe('network plugin - set-operator command', () => {
       { operator: 'testnet1' },
     );
 
-    const result = await setOperatorHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      ERROR_MESSAGES.accountMissingPrivatePublicKey,
+    await expect(setOperatorHandler(args)).rejects.toThrow(
+      'The account associated with the alias does not have an associated private/public key or accountId',
     );
   });
 
-  test('handles KMS importPrivateKey errors', async () => {
+  test('throws when KMS importPrivateKey fails', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
-    // Mock KMS error
     kmsService.importPrivateKey.mockImplementation(() => {
       throw new Error('Invalid private key format');
     });
@@ -281,19 +269,17 @@ describe('network plugin - set-operator command', () => {
       },
     );
 
-    const result = await setOperatorHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Failed to set operator');
+    await expect(setOperatorHandler(args)).rejects.toThrow(
+      'Invalid private key format',
+    );
   });
 
-  test('handles network service errors', async () => {
+  test('throws when network service fails', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
     const aliasService = makeAliasMock();
 
-    // Mock network service error
     networkService.setOperator.mockImplementation(() => {
       throw new Error('Network service error');
     });
@@ -307,10 +293,35 @@ describe('network plugin - set-operator command', () => {
       },
     );
 
-    const result = await setOperatorHandler(args);
+    await expect(setOperatorHandler(args)).rejects.toThrow(
+      'Network service error',
+    );
+  });
 
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Failed to set operator');
+  test('throws ValidationError when network is not available', async () => {
+    const logger = makeLogger();
+    const networkService = makeNetworkMock('testnet');
+    const kmsService = makeKmsMock();
+    const aliasService = makeAliasMock();
+
+    networkService.isNetworkAvailable.mockReturnValue(false);
+    networkService.getAvailableNetworks.mockReturnValue([
+      'testnet',
+      'mainnet',
+      'previewnet',
+    ]);
+
+    const args = makeArgs(
+      { network: networkService, kms: kmsService, alias: aliasService },
+      logger,
+      {
+        operator:
+          '0.0.123456:2222222222222222222222222222222222222222222222222222222222222222',
+        network: 'mainnet',
+      },
+    );
+
+    await expect(setOperatorHandler(args)).rejects.toThrow(ValidationError);
   });
 
   test('displays all operator information after successful set', async () => {
@@ -330,8 +341,7 @@ describe('network plugin - set-operator command', () => {
 
     const result = await setOperatorHandler(args);
 
-    expect(result.status).toBe(Status.Success);
-    const output = JSON.parse(result.outputJson!);
+    const output = result.result as SetOperatorOutput;
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
