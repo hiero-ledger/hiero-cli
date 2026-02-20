@@ -7,7 +7,6 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { listContracts } from '@/plugins/contract/commands/list/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
@@ -45,12 +44,7 @@ describe('contract plugin - list command', () => {
 
     const result = await listContracts(args);
 
-    expect(result).toBeDefined();
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-    expect(result.errorMessage).toBeUndefined();
-
-    const output: ContractListOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ContractListOutput;
     expect(output.contracts).toHaveLength(0);
     expect(output.totalCount).toBe(0);
   });
@@ -108,13 +102,8 @@ describe('contract plugin - list command', () => {
 
     const result = await listContracts(args);
 
-    expect(result).toBeDefined();
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-    expect(result.errorMessage).toBeUndefined();
-
     expect(MockedHelper).toHaveBeenCalledTimes(1);
-    const output: ContractListOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ContractListOutput;
 
     expect(output.contracts).toHaveLength(2);
     expect(output.totalCount).toBe(2);
@@ -138,7 +127,7 @@ describe('contract plugin - list command', () => {
     expect(output.contracts[1].alias).toBe(undefined);
   });
 
-  test('returns failure when listing contracts throws an error', async () => {
+  test('throws when listing contracts fails', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -156,12 +145,6 @@ describe('contract plugin - list command', () => {
     };
     const args = makeArgs(api, logger, {});
 
-    const result = await listContracts(args);
-
-    expect(result).toBeDefined();
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Failed to list contracts');
-    expect(result.outputJson).toBeUndefined();
+    await expect(listContracts(args)).rejects.toThrow('database error');
   });
 });
