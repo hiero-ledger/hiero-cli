@@ -3,7 +3,6 @@ import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
 import type { TopicData } from '@/plugins/topic/schema';
 
 import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { listTopics } from '@/plugins/topic/commands/list/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -41,10 +40,7 @@ describe('topic plugin - list command', () => {
 
     const result = await listTopics(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ListTopicsOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ListTopicsOutput;
     expect(output.totalCount).toBe(0);
     expect(output.topics).toEqual([]);
   });
@@ -65,17 +61,13 @@ describe('topic plugin - list command', () => {
 
     const result = await listTopics(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ListTopicsOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ListTopicsOutput;
     expect(output.totalCount).toBe(2);
     expect(output.topics).toHaveLength(2);
     expect(output.topics[0].name).toBe('Topic 1');
     expect(output.topics[0].topicId).toBe('0.0.1111');
     expect(output.topics[1].name).toBe('Topic 2');
     expect(output.topics[1].topicId).toBe('0.0.2222');
-    // Verify stats are calculated
     expect(output.stats.withAdminKey).toBe(0);
     expect(output.stats.withSubmitKey).toBe(0);
   });
@@ -101,10 +93,7 @@ describe('topic plugin - list command', () => {
 
     const result = await listTopics(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ListTopicsOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ListTopicsOutput;
     expect(output.topics[0].adminKeyPresent).toBe(true);
     expect(output.topics[0].submitKeyPresent).toBe(true);
     expect(output.stats.withAdminKey).toBe(1);
@@ -137,11 +126,7 @@ describe('topic plugin - list command', () => {
 
     const result = await listTopics(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ListTopicsOutput = JSON.parse(result.outputJson!);
-    // Should only include mainnet topic after filtering in handler
+    const output = result.result as ListTopicsOutput;
     expect(output.totalCount).toBe(1);
     expect(output.topics[0].name).toBe(MAINNET_TOPIC.name);
     expect(output.topics[0].network).toBe(MAINNET_TOPIC.network);
@@ -166,10 +151,7 @@ describe('topic plugin - list command', () => {
 
     const result = await listTopics(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ListTopicsOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ListTopicsOutput;
     expect(output.totalCount).toBe(0);
     expect(output.topics).toEqual([]);
   });
@@ -208,14 +190,11 @@ describe('topic plugin - list command', () => {
 
     const result = await listTopics(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ListTopicsOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ListTopicsOutput;
     expect(output.totalCount).toBe(3);
     expect(output.stats.withAdminKey).toBe(1);
     expect(output.stats.withSubmitKey).toBe(1);
-    expect(output.stats.withMemo).toBe(2); // Only counts real memos, not "(No memo)"
+    expect(output.stats.withMemo).toBe(2);
     expect(output.stats.byNetwork).toEqual({ testnet: 2, mainnet: 1 });
   });
 
@@ -238,14 +217,11 @@ describe('topic plugin - list command', () => {
 
     const result = await listTopics(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ListTopicsOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ListTopicsOutput;
     expect(output.topics[0].memo).toBeNull();
   });
 
-  test('returns error when listTopics throws', async () => {
+  test('throws when listTopics throws', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -257,10 +233,6 @@ describe('topic plugin - list command', () => {
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
-    const result = await listTopics(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Failed to list topics');
-    expect(result.errorMessage).toContain('db error');
+    await expect(listTopics(args)).rejects.toThrow('db error');
   });
 });

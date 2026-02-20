@@ -12,7 +12,11 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
+import {
+  NotFoundError,
+  TransactionError,
+  ValidationError,
+} from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { submitMessage } from '@/plugins/topic/commands/submit-message/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -119,10 +123,7 @@ describe('topic plugin - message-submit command', () => {
 
     const result = await submitMessage(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: SubmitMessageOutput = JSON.parse(result.outputJson!);
+    const output = result.result as SubmitMessageOutput;
     expect(output.topicId).toBe('0.0.1234');
     expect(output.message).toBe('Hello, World!');
     expect(output.sequenceNumber).toBe(5);
@@ -189,10 +190,7 @@ describe('topic plugin - message-submit command', () => {
 
     const result = await submitMessage(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: SubmitMessageOutput = JSON.parse(result.outputJson!);
+    const output = result.result as SubmitMessageOutput;
     expect(output.sequenceNumber).toBe(10);
 
     expect(signing.signAndExecuteWith).toHaveBeenCalledWith({}, [
@@ -200,7 +198,7 @@ describe('topic plugin - message-submit command', () => {
     ]);
   });
 
-  test('returns failure when topic not found', async () => {
+  test('throws NotFoundError when topic not found', async () => {
     const logger = makeLogger();
     const loadTopicMock = jest.fn().mockReturnValue(null);
     MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
@@ -220,13 +218,48 @@ describe('topic plugin - message-submit command', () => {
       message: 'Test message',
     });
 
-    const result = await submitMessage(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Topic not found');
+    await expect(submitMessage(args)).rejects.toThrow(NotFoundError);
   });
 
-  test('returns failure when signAndExecute returns failure', async () => {
+  test('throws ValidationError when signer is not authorized', async () => {
+    const logger = makeLogger();
+    const topicData = makeTopicData({
+      topicId: '0.0.1234',
+      submitKeyRefId: 'kr_correct_submit',
+    });
+    const loadTopicMock = jest.fn().mockReturnValue(topicData);
+    MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
+
+    const keyResolverMock = {
+      getOrInitKey: jest.fn().mockResolvedValue({
+        publicKey: '02abc123',
+        accountId: '0.0.999',
+        keyRefId: 'kr_wrong_submit',
+      }),
+    };
+
+    const { topicTransactions, signing, networkMock, alias } = makeApiMocks({});
+
+    const api: Partial<CoreApi> = {
+      topic: topicTransactions,
+      txExecution: signing,
+      network: networkMock,
+      alias: alias as AliasService,
+      logger,
+      keyResolver: keyResolverMock as KeyResolverService,
+      config: makeConfigMock(),
+    };
+
+    const args = makeArgs(api, logger, {
+      topic: '0.0.1234',
+      message: 'Test message',
+      signer: 'wrong-signer',
+    });
+
+    await expect(submitMessage(args)).rejects.toThrow(ValidationError);
+  });
+
+  test('throws TransactionError when signAndExecute returns failure', async () => {
     const logger = makeLogger();
     const topicData = makeTopicData({
       topicId: '0.0.1234',
@@ -258,13 +291,10 @@ describe('topic plugin - message-submit command', () => {
       message: 'Failed message',
     });
 
-    const result = await submitMessage(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBe('Failed to submit message');
+    await expect(submitMessage(args)).rejects.toThrow(TransactionError);
   });
 
-  test('returns failure when submitMessage throws', async () => {
+  test('throws when submitMessage throws', async () => {
     const logger = makeLogger();
     const topicData = makeTopicData({
       topicId: '0.0.1234',
@@ -291,10 +321,6 @@ describe('topic plugin - message-submit command', () => {
       message: 'Error message',
     });
 
-    const result = await submitMessage(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Failed to submit message');
-    expect(result.errorMessage).toContain('network error');
+    await expect(submitMessage(args)).rejects.toThrow('network error');
   });
 });
