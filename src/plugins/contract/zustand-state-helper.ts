@@ -27,6 +27,33 @@ export class ZustandContractStateHelper {
   }
 
   /**
+   * Get a contract from the state by contract ID
+   */
+  getContract(contractId: string): ContractData | undefined {
+    return this.state.get<ContractData>(CONTRACT_NAMESPACE, contractId);
+  }
+
+  /**
+   * Delete a contract from the state
+   */
+  deleteContract(contractId: string): void {
+    try {
+      this.logger.debug(
+        `[CONTRACT STATE] Deleting contract ${contractId} from state`,
+      );
+      this.state.delete(CONTRACT_NAMESPACE, contractId);
+      this.logger.debug(
+        `[CONTRACT STATE] Successfully deleted contract ${contractId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `[CONTRACT STATE] Failed to delete contract ${contractId}: ${toErrorMessage(error)}`,
+      );
+      throw error;
+    }
+  }
+
+  /**
    * Save a contract to the state
    */
   saveContract(contractId: string, contractData: ContractData): void {
