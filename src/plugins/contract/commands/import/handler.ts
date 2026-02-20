@@ -2,6 +2,7 @@ import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import type { ContractData } from '@/plugins/contract/schema';
 import type { ImportContractOutput } from './output';
 
+import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
@@ -47,11 +48,10 @@ export async function importContract(
     }
 
     logger.info(`Importing contract ${contractId} ${contractName}`);
-
     if (alias) {
       api.alias.register({
         alias,
-        type: 'contract',
+        type: ALIAS_TYPE.Contract,
         network,
         entityId: contractId,
         evmAddress: contractEvmAddress,
@@ -75,7 +75,7 @@ export async function importContract(
       contractId,
       contractName: contractName,
       contractEvmAddress,
-      ...(alias && { alias }),
+      alias,
       network,
       memo: contractInfo.memo || undefined,
       verified: verified,

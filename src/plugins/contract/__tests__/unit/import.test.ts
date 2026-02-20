@@ -12,10 +12,10 @@ import {
 } from '@/__tests__/mocks/fixtures';
 import {
   createMirrorNodeMock,
+  createMockContractInfo,
   makeArgs,
   makeLogger,
 } from '@/__tests__/mocks/mocks';
-import { createMockContractInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { Status } from '@/core/shared/constants';
 import { importContract } from '@/plugins/contract/commands/import/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
@@ -26,9 +26,6 @@ jest.mock('@/plugins/contract/zustand-state-helper', () => ({
 }));
 
 const MockedHelper = ZustandContractStateHelper as jest.Mock;
-
-const CONTRACT_ID = '0.0.4000';
-const EVM_ADDRESS = '0x1234567890123456789012345678901234567890';
 
 describe('contract plugin - import command', () => {
   let api: jest.Mocked<CoreApi>;
@@ -83,7 +80,7 @@ describe('contract plugin - import command', () => {
       },
       logger,
       {
-        contract: CONTRACT_ID,
+        contract: MOCK_CONTRACT_ID,
         name: 'ImportedContract',
         alias: 'imported-contract',
         verified: true,
@@ -92,22 +89,22 @@ describe('contract plugin - import command', () => {
 
     const result = await importContract(args);
 
-    expect(mirrorMock.getContractInfo).toHaveBeenCalledWith(CONTRACT_ID);
+    expect(mirrorMock.getContractInfo).toHaveBeenCalledWith(MOCK_CONTRACT_ID);
     expect(api.alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
         alias: 'imported-contract',
         type: 'contract',
         network: 'testnet',
-        entityId: CONTRACT_ID,
-        evmAddress: EVM_ADDRESS,
+        entityId: MOCK_CONTRACT_ID,
+        evmAddress: MOCK_EVM_ADDRESS,
       }),
     );
     expect(saveContractMock).toHaveBeenCalledWith(
-      CONTRACT_ID,
+      MOCK_CONTRACT_ID,
       expect.objectContaining({
-        contractId: CONTRACT_ID,
+        contractId: MOCK_CONTRACT_ID,
         contractName: 'ImportedContract',
-        contractEvmAddress: EVM_ADDRESS,
+        contractEvmAddress: MOCK_EVM_ADDRESS,
         network: 'testnet',
         memo: 'test contract',
       }),
@@ -117,9 +114,9 @@ describe('contract plugin - import command', () => {
     expect(result.outputJson).toBeDefined();
 
     const output: ImportContractOutput = JSON.parse(result.outputJson!);
-    expect(output.contractId).toBe(CONTRACT_ID);
+    expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.contractName).toBe('ImportedContract');
-    expect(output.contractEvmAddress).toBe(EVM_ADDRESS);
+    expect(output.contractEvmAddress).toBe(MOCK_EVM_ADDRESS);
     expect(output.alias).toBe('imported-contract');
     expect(output.network).toBe('testnet');
     expect(output.memo).toBe('test contract');
@@ -145,16 +142,16 @@ describe('contract plugin - import command', () => {
       },
       logger,
       {
-        contract: EVM_ADDRESS,
+        contract: MOCK_EVM_ADDRESS,
       },
     );
 
     const result = await importContract(args);
 
-    expect(mirrorMock.getContractInfo).toHaveBeenCalledWith(EVM_ADDRESS);
+    expect(mirrorMock.getContractInfo).toHaveBeenCalledWith(MOCK_EVM_ADDRESS);
     expect(api.alias.register).not.toHaveBeenCalled();
     expect(saveContractMock).toHaveBeenCalledWith(
-      CONTRACT_ID,
+      MOCK_CONTRACT_ID,
       expect.objectContaining({
         verified: false,
       }),
@@ -162,7 +159,7 @@ describe('contract plugin - import command', () => {
 
     expect(result.status).toBe(Status.Success);
     const output: ImportContractOutput = JSON.parse(result.outputJson!);
-    expect(output.contractId).toBe(CONTRACT_ID);
+    expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.verified).toBe(false);
   });
 
@@ -183,7 +180,7 @@ describe('contract plugin - import command', () => {
       },
       logger,
       {
-        contract: CONTRACT_ID,
+        contract: MOCK_CONTRACT_ID,
         alias: 'my-contract',
         name: 'MyContract',
       },
@@ -194,7 +191,7 @@ describe('contract plugin - import command', () => {
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toBeDefined();
     expect(result.errorMessage).toContain(
-      `Contract with ID '${CONTRACT_ID}' already exists in state`,
+      `Contract with ID '${MOCK_CONTRACT_ID}' already exists in state`,
     );
   });
 
@@ -214,7 +211,7 @@ describe('contract plugin - import command', () => {
       },
       logger,
       {
-        contract: CONTRACT_ID,
+        contract: MOCK_CONTRACT_ID,
       },
     );
 
