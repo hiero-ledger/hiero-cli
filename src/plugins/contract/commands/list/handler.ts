@@ -30,21 +30,8 @@ export async function listContracts(
       );
     });
 
-    const contractAliases = contracts.map((contract) => {
-      const alias = api.alias.resolve(
-        contract.contractId,
-        'contract',
-        contract.network,
-      )?.alias;
-
-      return {
-        ...contract,
-        alias,
-      };
-    });
-
     const outputData: ContractListOutput = {
-      contracts: contractAliases,
+      contracts: contracts,
       totalCount: contracts.length,
     };
 

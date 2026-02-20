@@ -125,6 +125,7 @@ export async function createContract(
     const contractEvmAddress = `0x${contractId.toEvmAddress()}`;
     const contractData = {
       contractId: contractCreateFlowResult.contractId,
+      alias,
       contractName,
       contractEvmAddress,
       adminPublicKey,
@@ -151,7 +152,7 @@ export async function createContract(
       contractName: contractName,
       contractEvmAddress,
       network,
-      alias: alias,
+      alias,
       transactionId: contractCreateFlowResult.transactionId,
       adminPublicKey: adminPublicKey,
       verified: verificationResult.success,

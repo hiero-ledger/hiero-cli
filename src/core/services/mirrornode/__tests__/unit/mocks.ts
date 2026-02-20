@@ -3,7 +3,6 @@
  */
 import type {
   AccountAPIResponse,
-  ContractInfo,
   ExchangeRateResponse,
   NftInfo,
   TokenAirdropsResponse,
@@ -126,20 +125,6 @@ export const createMockTransactionDetailsResponse = (
       ],
     },
   ],
-  ...overrides,
-});
-
-export const createMockContractInfo = (
-  overrides: Partial<ContractInfo> = {},
-): ContractInfo => ({
-  contract_id: '0.0.4000',
-  account: '0.0.1234',
-  created_timestamp: '2024-01-01T12:00:00.000Z',
-  deleted: false,
-  memo: 'test contract',
-  evm_address: '0x1234567890123456789012345678901234567890',
-  auto_renew_period: 7776000,
-  max_automatic_token_associations: 0,
   ...overrides,
 });
 
