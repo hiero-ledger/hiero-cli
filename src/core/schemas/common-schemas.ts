@@ -465,6 +465,19 @@ export const AccountReferenceSchema = z
   .describe('Account reference (ID, EVM address, or name)');
 
 /**
+ * Contract Reference Input (ID or Alias)
+ * Supports: Hedera contract ID (0.0.xxx) or alias name
+ */
+export const ContractReferenceSchema = z
+  .union([EntityIdSchema, AliasNameSchema], {
+    error: () => ({
+      message:
+        'Contract reference must be a valid Hedera ID (0.0.xxx) or alias name',
+    }),
+  })
+  .describe('Contract reference (ID or alias)');
+
+/**
  * Amount Input
  * Accepts amount as string in format:
  * - "100" (integer amount)

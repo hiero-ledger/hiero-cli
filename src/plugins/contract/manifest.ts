@@ -17,6 +17,11 @@ import {
   createContract,
 } from './commands/create';
 import {
+  DELETE_CONTRACT_TEMPLATE,
+  deleteContract,
+  DeleteContractOutputSchema,
+} from './commands/delete';
+import {
   IMPORT_CONTRACT_TEMPLATE,
   importContract,
   ImportContractOutputSchema,
@@ -164,6 +169,26 @@ export const contractPluginManifest: PluginManifest = {
       output: {
         schema: ImportContractOutputSchema,
         humanTemplate: IMPORT_CONTRACT_TEMPLATE,
+      },
+    },
+    {
+      name: 'delete',
+      summary: 'Delete contract from state',
+      description:
+        'Remove contract information from state by contract ID or alias',
+      options: [
+        {
+          name: 'contract',
+          short: 'c',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Contract ID (0.0.xxx) or alias to delete from state',
+        },
+      ],
+      handler: deleteContract,
+      output: {
+        schema: DeleteContractOutputSchema,
+        humanTemplate: DELETE_CONTRACT_TEMPLATE,
       },
     },
   ],
