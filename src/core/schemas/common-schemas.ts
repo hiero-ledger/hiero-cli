@@ -549,12 +549,24 @@ export const TokenTypeSchema = z
  * - keypair input → { type: 'keypair', accountId: string, privateKey: string }
  * The keyType must be fetched from mirror node when keypair is provided
  */
+const KEY_OR_ALIAS_REFINE_MESSAGE =
+  'Operator must be an account alias (e.g. my-operator) or accountId:privateKey (e.g. 0.0.123:302e02...). Account ID alone (e.g. 0.0.7982140) is not valid.';
+
 export const KeyOrAccountAliasSchema = z
-  .union([AccountIdWithPrivateKeySchema, AccountNameSchema])
-  .transform((val) =>
-    typeof val === 'string'
-      ? { type: 'alias' as const, alias: val }
-      : { type: 'keypair' as const, ...val },
+  .string()
+  .trim()
+  .min(1, 'Operator cannot be empty')
+  .refine((val) => !(/^0\.0\.[1-9]\d*$/.test(val) && !val.includes(':')), {
+    message: KEY_OR_ALIAS_REFINE_MESSAGE,
+  })
+  .pipe(
+    z
+      .union([AccountIdWithPrivateKeySchema, AccountNameSchema])
+      .transform((val) =>
+        typeof val === 'string'
+          ? { type: 'alias' as const, alias: val }
+          : { type: 'keypair' as const, ...val },
+      ),
   )
   .describe(
     'Account ID with private key in format {accountId}:{private_key} or account name/alias',

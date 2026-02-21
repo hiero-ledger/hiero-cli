@@ -311,8 +311,12 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       const body = await response.text();
       let detail = body;
       try {
-        const json = JSON.parse(body) as { _status?: { messages?: Array<{ message?: string }> } };
-        const messages = json._status?.messages?.map((m) => m.message).filter(Boolean);
+        const json = JSON.parse(body) as {
+          _status?: { messages?: Array<{ message?: string }> };
+        };
+        const messages = json._status?.messages
+          ?.map((m) => m.message)
+          .filter(Boolean);
         if (messages?.length) detail = messages.join('; ');
       } catch {
         // use raw body if not JSON

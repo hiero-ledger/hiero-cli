@@ -38,7 +38,8 @@ const TEST_TOPIC_ID = '0.0.3000';
 const TEST_TX_ID = '0.0.1234-1700000000-000000000';
 
 // Network URLs
-const TESTNET_URL = 'https://testnet.mirrornode.hedera.com/api/v1';
+const TESTNET_URL =
+  'https://testnet.hedera.validationcloud.io/v1/MtxToj_lTWpHFpYDHBw33G3M5Qs4rBJr9nK39V07dbQ/api/v1';
 const MAINNET_URL = 'https://mainnet-public.mirrornode.hedera.com/api/v1';
 
 // Timestamps & Values

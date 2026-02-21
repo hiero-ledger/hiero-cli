@@ -10,9 +10,10 @@ import {
   ContractFunctionParameters,
   ContractId,
   Hbar,
+  Long,
 } from '@hashgraph/sdk';
 
-import { Interface } from 'ethers';
+import { getBytes, Interface } from 'ethers';
 
 import { EntityReferenceType } from '@/core/types/shared.types';
 import { Status } from '@/core/shared/constants';
@@ -21,8 +22,12 @@ import {
   DEFAULT_POOL_FEE_TIER,
   getQuoterId,
   getRouterId,
+  getTokenContractId,
+  getWhbarHelperId,
   getWhbarTokenId,
+  POOL_FEE_TIER_30_BP,
   QUOTER_ABI,
+  ROUTER_ABI,
 } from '@/plugins/saucerswap/constants';
 import {
   encodePath,
@@ -33,12 +38,15 @@ import { SwapExecuteInputSchema } from './input';
 
 const ROUTER_GAS = 400_000;
 
-/** Hedera SDK addUint256 expects number | Long | BigNumber; bigint is not in the type def but works at runtime. */
-function toUint256Param(value: bigint): number {
-  if (value > BigInt(Number.MAX_SAFE_INTEGER) || value < 0n) {
-    return Number(value); // may lose precision for very large values
-  }
-  return Number(value);
+/**
+ * Convert bigint to Long for Hedera SDK addUint256.
+ * Long is a 64-bit integer type re-exported by @hashgraph/sdk and is an
+ * accepted overload of addUint256. This avoids the silent precision loss
+ * of Number() for values over 2^53 (~90k HBAR in tinybar units).
+ * Long handles up to 2^63-1, which is sufficient for all realistic swap amounts.
+ */
+function toLong(value: bigint): Long {
+  return Long.fromString(value.toString());
 }
 
 export async function swapExecuteHandler(
@@ -71,38 +79,123 @@ export async function swapExecuteHandler(
     };
   }
 
-  const slippagePercent = parseFloat(validArgs.slippage ?? '0.5');
-  const slippageMultiplier = 1 - slippagePercent / 100;
+  // ── HBAR → WHBAR: wrap via WhbarHelper.deposit() ──────────────────────────
+  if (inForPath === outForPath && inForPath === whbarTokenId) {
+    if (tokenIn.toUpperCase() === 'HBAR') {
+      const operator = api.network.getOperator(network);
+      if (!operator) {
+        return {
+          status: Status.Failure,
+          errorMessage: 'No operator set. Use hcli network set-operator.',
+        };
+      }
+      const whbarHelperId = getWhbarHelperId(network);
+      const payableHbar = Number(amountInWei) / 1e8;
+      const tx = new ContractExecuteTransaction()
+        .setContractId(ContractId.fromString(whbarHelperId))
+        .setGas(100_000)
+        .setPayableAmount(new Hbar(payableHbar))
+        .setFunction('deposit');
 
-  const pathHex = encodePathHex(
-    inForPath,
-    outForPath,
-    DEFAULT_POOL_FEE_TIER,
-    whbarTokenId,
-  );
-  const pathBytes = pathHex.startsWith('0x') ? pathHex : `0x${pathHex}`;
-
-  const abiInterface = new Interface(QUOTER_ABI);
-  let amountOutWei: bigint;
-  try {
-    const quoteResult = await api.contractQuery.queryContractFunction({
-      abiInterface,
-      contractIdOrEvmAddress: quoterId,
-      functionName: 'quoteExactInput',
-      args: [pathBytes, amountInWei],
-    });
-    amountOutWei = BigInt(String(quoteResult.queryResult[0]));
-  } catch (e) {
+      const result = await api.txExecution.signAndExecute(tx);
+      if (!result.success) {
+        return {
+          status: Status.Failure,
+          errorMessage:
+            result.receipt?.status?.status?.toString() ?? 'Wrap failed',
+        };
+      }
+      const outputData: SwapExecuteOutput = {
+        network,
+        transactionId: result.transactionId ?? '',
+        tokenIn: validArgs.in,
+        tokenOut: validArgs.out,
+        amountIn: validArgs.amount,
+        amountOut: String(amountInWei),
+      };
+      return { status: Status.Success, outputJson: JSON.stringify(outputData) };
+    }
     return {
       status: Status.Failure,
-      errorMessage: formatError('Quote failed (check pair/liquidity)', e),
+      errorMessage:
+        'WHBAR→HBAR (unwrap) is not supported. Use a wallet or SaucerSwap UI.',
     };
   }
 
-  const amountOutMinimum = BigInt(
-    Math.floor(Number(amountOutWei) * slippageMultiplier),
-  );
+  if (inForPath === outForPath) {
+    return {
+      status: Status.Failure,
+      errorMessage: `Swap failed: Input and output are the same token (${inForPath}). No pool exists.`,
+    };
+  }
 
+  // ── Quote (try 0.05% then 0.30% fee tier; some pairs only have one) ─────────
+  const slippagePercent = parseFloat(validArgs.slippage ?? '0.5');
+  const slippageMultiplier = 1 - slippagePercent / 100;
+
+  const whbarPathEntityId =
+    getTokenContractId(network, whbarTokenId) ?? whbarTokenId;
+  const abiInterface = new Interface(QUOTER_ABI);
+  const feeTiersToTry = [DEFAULT_POOL_FEE_TIER, POOL_FEE_TIER_30_BP];
+  let amountOutWei: bigint = 0n;
+  let resolvedFeeTier: number | null = null;
+
+  for (const feeTier of feeTiersToTry) {
+    const pathHex = encodePathHex(
+      inForPath,
+      outForPath,
+      feeTier,
+      whbarTokenId,
+      whbarPathEntityId,
+    );
+    const pathBytes = pathHex.startsWith('0x') ? pathHex : `0x${pathHex}`;
+    try {
+      const quoteResult = await api.contractQuery.queryContractFunction({
+        abiInterface,
+        contractIdOrEvmAddress: quoterId,
+        functionName: 'quoteExactInput',
+        args: [pathBytes, amountInWei],
+      });
+      amountOutWei = BigInt(String(quoteResult.queryResult[0]));
+      resolvedFeeTier = feeTier;
+      break;
+    } catch {
+      continue;
+    }
+  }
+
+  if (resolvedFeeTier == null) {
+    return {
+      status: Status.Failure,
+      errorMessage: formatError(
+        'Quote failed (check pair/liquidity or fee tier)',
+        new Error('CONTRACT_REVERT_EXECUTED'),
+      ),
+    };
+  }
+
+  const pathBytesUint8 = encodePath(
+    inForPath,
+    outForPath,
+    resolvedFeeTier,
+    whbarTokenId,
+    whbarPathEntityId,
+  );
+  const pathHex = encodePathHex(
+    inForPath,
+    outForPath,
+    resolvedFeeTier,
+    whbarTokenId,
+    whbarPathEntityId,
+  );
+  const pathBytes = pathHex.startsWith('0x') ? pathHex : `0x${pathHex}`;
+
+  // FIX: use bigint arithmetic throughout — avoid Number() for financial values.
+  // slippageMultiplier is a float so we scale to basis points (10000) to stay in integers.
+  const slippageBps = BigInt(Math.round(slippageMultiplier * 10_000));
+  const amountOutMinimum = (amountOutWei * slippageBps) / 10_000n;
+
+  // ── Operator / recipient ───────────────────────────────────────────────────
   const operator = api.network.getOperator(network);
   if (!operator) {
     return {
@@ -126,27 +219,33 @@ export async function swapExecuteHandler(
     : `0x${recipientEvm}`;
   const deadline = Math.floor(Date.now() / 1000) + 1200;
 
-  const pathBytesUint8 = encodePath(
-    inForPath,
-    outForPath,
-    DEFAULT_POOL_FEE_TIER,
-    whbarTokenId,
-  );
-
-  const functionParams = new ContractFunctionParameters()
-    .addBytes(pathBytesUint8)
-    .addAddress(recipientHex)
-    .addUint256(deadline)
-    .addUint256(toUint256Param(amountInWei))
-    .addUint256(toUint256Param(amountOutMinimum));
-
+  // ── HBAR → token: use multicall(exactInput, refundETH) per SaucerSwap docs ───
   if (tokenIn.toUpperCase() === 'HBAR') {
     const payableHbar = Number(amountInWei) / 1e8;
+    const routerInterface = new Interface(ROUTER_ABI);
+    const exactInputEncoded = routerInterface.encodeFunctionData('exactInput', [
+      {
+        path: pathBytes,
+        recipient: recipientHex,
+        deadline,
+        amountIn: amountInWei,
+        amountOutMinimum,
+      },
+    ]);
+    const refundETHEncoded = routerInterface.encodeFunctionData(
+      'refundETH',
+      [],
+    );
+    const multicallEncoded = routerInterface.encodeFunctionData('multicall', [
+      [exactInputEncoded, refundETHEncoded],
+    ]);
+    const multicallBytes = getBytes(multicallEncoded);
+
     const tx = new ContractExecuteTransaction()
       .setContractId(ContractId.fromString(routerId))
       .setGas(ROUTER_GAS)
       .setPayableAmount(new Hbar(payableHbar))
-      .setFunction('exactInput', functionParams);
+      .setFunctionParameters(multicallBytes);
 
     const result = await api.txExecution.signAndExecute(tx);
     if (!result.success) {
@@ -162,14 +261,14 @@ export async function swapExecuteHandler(
       tokenIn: validArgs.in,
       tokenOut: validArgs.out,
       amountIn: validArgs.amount,
-      amountOut: String(amountOutWei),
+      // Report the minimum guaranteed output so the user isn't misled
+      // by the optimistic pre-slippage quote value.
+      amountOut: String(amountOutMinimum),
     };
-    return {
-      status: Status.Success,
-      outputJson: JSON.stringify(outputData),
-    };
+    return { status: Status.Success, outputJson: JSON.stringify(outputData) };
   }
 
+  // ── token → HBAR: approve then swap (exactInput, no multicall) ───────────────
   const routerInfo = await api.mirror.getContractInfo(routerId);
   const routerEvm = routerInfo.evm_address;
   if (!routerEvm) {
@@ -187,7 +286,7 @@ export async function swapExecuteHandler(
 
   const approveParams = new ContractFunctionParameters()
     .addAddress(routerEvm.startsWith('0x') ? routerEvm : `0x${routerEvm}`)
-    .addUint256(toUint256Param(amountInWei));
+    .addUint256(toLong(amountInWei));
 
   const approveTx = api.contract.contractExecuteTransaction({
     contractId: contractInfo.contractId,
@@ -208,11 +307,18 @@ export async function swapExecuteHandler(
     };
   }
 
+  const exactInputParams = new ContractFunctionParameters()
+    .addBytes(pathBytesUint8)
+    .addAddress(recipientHex)
+    .addUint256(deadline)
+    .addUint256(toLong(amountInWei))
+    .addUint256(toLong(amountOutMinimum));
+
   const swapTx = api.contract.contractExecuteTransaction({
     contractId: routerId,
     gas: ROUTER_GAS,
     functionName: 'exactInput',
-    functionParameters: functionParams,
+    functionParameters: exactInputParams,
   });
   const swapResult = await api.txExecution.signAndExecute(swapTx.transaction);
   if (!swapResult.success) {
@@ -229,10 +335,7 @@ export async function swapExecuteHandler(
     tokenIn: validArgs.in,
     tokenOut: validArgs.out,
     amountIn: validArgs.amount,
-    amountOut: String(amountOutWei),
+    amountOut: String(amountOutMinimum),
   };
-  return {
-    status: Status.Success,
-    outputJson: JSON.stringify(outputData),
-  };
+  return { status: Status.Success, outputJson: JSON.stringify(outputData) };
 }
