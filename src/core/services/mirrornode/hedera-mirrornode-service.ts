@@ -308,8 +308,17 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
     });
 
     if (!response.ok) {
+      const body = await response.text();
+      let detail = body;
+      try {
+        const json = JSON.parse(body) as { _status?: { messages?: Array<{ message?: string }> } };
+        const messages = json._status?.messages?.map((m) => m.message).filter(Boolean);
+        if (messages?.length) detail = messages.join('; ');
+      } catch {
+        // use raw body if not JSON
+      }
       throw new Error(
-        `Failed to call contract via mirror node: ${response.status} ${response.statusText}`,
+        `Failed to call contract via mirror node: ${response.status} ${response.statusText}${detail ? ` - ${detail}` : ''}`,
       );
     }
 
