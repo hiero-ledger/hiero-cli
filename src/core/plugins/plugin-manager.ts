@@ -72,30 +72,35 @@ export class PluginManager {
    */
   initializePluginState(defaultState: PluginManifest[]): PluginStateEntry[] {
     const existingEntries = this.pluginManagement.listPlugins();
+    const existingNames = new Set(existingEntries.map((e) => e.name));
 
     if (existingEntries.length === 0) {
       this.logger.info(
         '[PLUGIN-MANAGEMENT] Initializing default plugin state (first run)...',
       );
+    }
 
-      const initialState: PluginStateEntry[] = defaultState.map((manifest) => {
-        const pluginName = manifest.name;
-
-        return {
-          name: pluginName,
+    // Add any default plugins not yet in state (e.g. newly added plugins)
+    const newEntries: PluginStateEntry[] = [];
+    for (const manifest of defaultState) {
+      if (!existingNames.has(manifest.name)) {
+        const entry: PluginStateEntry = {
+          name: manifest.name,
           enabled: true,
           description: manifest.description,
         };
-      });
-
-      for (const plugin of initialState) {
-        this.pluginManagement.savePluginState(plugin);
+        this.pluginManagement.savePluginState(entry);
+        newEntries.push(entry);
+        existingNames.add(manifest.name);
       }
-
-      return initialState;
+    }
+    if (newEntries.length > 0) {
+      this.logger.info(
+        `[PLUGIN-MANAGEMENT] Registered ${newEntries.length} new default plugin(s): ${newEntries.map((e) => e.name).join(', ')}`,
+      );
     }
 
-    return existingEntries;
+    return existingEntries.concat(newEntries);
   }
 
   /**
