@@ -7,8 +7,7 @@ const ExportEntrySchema = z.object({
   commitmentHash: z.string(),
   timestamp: z.string(),
   sequenceNumber: z.number().int().nonnegative(),
-  cantonRef: z.string(),
-  adiTx: z.string(),
+  metadata: z.string(),
   nonce: z.string(),
 });
 
@@ -23,6 +22,7 @@ export const ExportOutputSchema = z.object({
   entryCount: z.number().int().nonnegative(),
   entries: z.array(ExportEntrySchema),
   filePath: z.string().optional(),
+  redacted: z.boolean(),
 });
 
 export type ExportOutput = z.infer<typeof ExportOutputSchema>;
@@ -32,6 +32,7 @@ export const EXPORT_TEMPLATE = `
 
    Topic: {{hashscanLink topicId "topic" network}}
    Format: {{exportFormat}}
+{{#if redacted}}   Mode: REDACTED (nonces and metadata omitted){{else}}   ⚠️  Contains sensitive data — treat as confidential{{/if}}
 {{#if filePath}}   File: {{filePath}}{{/if}}
 
 Timeline:

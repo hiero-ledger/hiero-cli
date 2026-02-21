@@ -1,25 +1,53 @@
 import { Status } from '@/core/shared/constants';
 import { publishCommitment } from '../../commands/publish/handler';
-import type { CommandHandlerArgs } from '@/core';
 
-// ─── Mock helpers ──────────────────────────────────────────────────────────────
+import {
+  makeArgs,
+  makeLogger,
+} from '@/__tests__/mocks/mocks';
 
-function makeArgs(
-  args: Record<string, unknown>,
-  overrides: Partial<CommandHandlerArgs> = {},
-): CommandHandlerArgs {
-  const stateStore = new Map<string, unknown>();
+// ─── Helpers ────────────────────────────────────────────────────────────────────
 
+function makeStateStore(entries: Record<string, unknown> = {}) {
+  const store = new Map<string, unknown>(Object.entries(entries));
   return {
-    args,
-    api: {
+    get: jest.fn((ns: string, key: string) => store.get(`${ns}:${key}`)),
+    set: jest.fn((ns: string, key: string, val: unknown) =>
+      store.set(`${ns}:${key}`, val),
+    ),
+    getKeys: jest.fn((ns: string) => {
+      const prefix = `${ns}:`;
+      return [...store.keys()]
+        .filter((k) => k.startsWith(prefix))
+        .map((k) => k.slice(prefix.length));
+    }),
+    list: jest.fn(),
+    delete: jest.fn(),
+    clear: jest.fn(),
+    has: jest.fn(),
+    getNamespaces: jest.fn(),
+    subscribe: jest.fn(),
+    getActions: jest.fn(),
+    getState: jest.fn(),
+    getStorageDirectory: jest.fn(),
+    isInitialized: jest.fn().mockReturnValue(true),
+  };
+}
+
+// ─── Tests ──────────────────────────────────────────────────────────────────────
+
+describe('auctionlog publish', () => {
+  it('should publish a commitment and return success', async () => {
+    const logger = makeLogger();
+
+    const api = {
       network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
       topic: {
         createTopic: jest.fn().mockReturnValue({
-          transaction: { /* mock transaction */ },
+          transaction: {},
         }),
         submitMessage: jest.fn().mockReturnValue({
-          transaction: { /* mock transaction */ },
+          transaction: {},
         }),
       },
       txExecution: {
@@ -29,45 +57,18 @@ function makeArgs(
           topicSequenceNumber: 1,
         }),
       },
-      alias: { resolve: jest.fn() },
-      ...overrides.api,
-    } as any,
-    state: {
-      get: jest.fn((ns: string, key: string) => stateStore.get(`${ns}:${key}`)),
-      set: jest.fn((ns: string, key: string, val: unknown) =>
-        stateStore.set(`${ns}:${key}`, val),
-      ),
-      getKeys: jest.fn().mockReturnValue([]),
-      ...overrides.state,
-    } as any,
-    config: {
-      getConfig: jest.fn(),
-      getValue: jest.fn(),
-      getOption: jest.fn(),
-      ...overrides.config,
-    } as any,
-    logger: {
-      info: jest.fn(),
-      warn: jest.fn(),
-      error: jest.fn(),
-      debug: jest.fn(),
-      ...overrides.logger,
-    } as any,
-  };
-}
+    };
 
-// ─── Tests ──────────────────────────────────────────────────────────────────────
-
-describe('auctionlog publish', () => {
-  it('should publish a commitment and return success', async () => {
-    const handlerArgs = makeArgs({
+    const stateStore = makeStateStore({});
+    const args = makeArgs(api as any, logger, {
       auctionId: 'AUCTION-TEST-001',
       stage: 'created',
-      cantonRef: 'CANTON-TX-001',
-      adiTx: '0xabc123',
+      metadata: 'canton-tx-abc123',
     });
+    (args as any).state = stateStore;
+    (args as any).api = api;
 
-    const result = await publishCommitment(handlerArgs);
+    const result = await publishCommitment(args);
 
     expect(result.status).toBe(Status.Success);
     expect(result.outputJson).toBeDefined();
@@ -79,73 +80,286 @@ describe('auctionlog publish', () => {
     expect(output.topicId).toBe('0.0.9999999');
     expect(output.sequenceNumber).toBe(1);
     expect(output.network).toBe('testnet');
+    // Nonce should be a proper crypto nonce (32 hex chars + 0x prefix)
+    expect(output.nonce).toMatch(/^0x[a-f0-9]{32}$/);
   });
 
   it('should create a new topic if none exists', async () => {
-    const handlerArgs = makeArgs({
+    const logger = makeLogger();
+
+    const api = {
+      network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
+      topic: {
+        createTopic: jest.fn().mockReturnValue({
+          transaction: {},
+        }),
+        submitMessage: jest.fn().mockReturnValue({
+          transaction: {},
+        }),
+      },
+      txExecution: {
+        signAndExecute: jest.fn().mockResolvedValue({
+          success: true,
+          topicId: '0.0.9999999',
+          topicSequenceNumber: 1,
+        }),
+      },
+    };
+
+    const stateStore = makeStateStore({});
+    const args = makeArgs(api as any, logger, {
       auctionId: 'AUCTION-NEW-001',
       stage: 'created',
     });
+    (args as any).state = stateStore;
+    (args as any).api = api;
 
-    const result = await publishCommitment(handlerArgs);
+    const result = await publishCommitment(args);
 
     expect(result.status).toBe(Status.Success);
-    expect(handlerArgs.api.topic.createTopic).toHaveBeenCalledWith({
-      memo: 'BlindBid audit: AUCTION-NEW-001',
+    expect(api.topic.createTopic).toHaveBeenCalledWith({
+      memo: 'auctionlog: AUCTION-NEW-001',
     });
   });
 
   it('should reuse existing topic from state', async () => {
-    const handlerArgs = makeArgs({
-      auctionId: 'AUCTION-REUSE-001',
-      stage: 'bidding-closed',
+    const logger = makeLogger();
+
+    const api = {
+      network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
+      topic: {
+        createTopic: jest.fn().mockReturnValue({
+          transaction: {},
+        }),
+        submitMessage: jest.fn().mockReturnValue({
+          transaction: {},
+        }),
+      },
+      txExecution: {
+        signAndExecute: jest.fn().mockResolvedValue({
+          success: true,
+          topicId: '0.0.1111111',
+          topicSequenceNumber: 2,
+        }),
+      },
+    };
+
+    // Pre-populate state with existing auction (created stage done)
+    const stateStore = makeStateStore({
+      'auctionlog-data:AUCTION-REUSE-001': {
+        topicId: '0.0.1111111',
+        lastStage: 'created',
+        lastUpdated: '2026-02-21T00:00:00.000Z',
+      },
+      'auctionlog-data:AUCTION-REUSE-001:created': {
+        auctionId: 'AUCTION-REUSE-001',
+        stage: 'created',
+        topicId: '0.0.1111111',
+      },
     });
 
-    // Pre-populate state with existing topic
-    (handlerArgs.state.get as jest.Mock).mockImplementation(
-      (ns: string, key: string) => {
-        if (key === 'AUCTION-REUSE-001') {
-          return { topicId: '0.0.1111111', lastStage: 'created' };
-        }
-        return undefined;
-      },
-    );
+    const args = makeArgs(api as any, logger, {
+      auctionId: 'AUCTION-REUSE-001',
+      stage: 'bidding-open',
+    });
+    (args as any).state = stateStore;
+    (args as any).api = api;
 
-    const result = await publishCommitment(handlerArgs);
+    const result = await publishCommitment(args);
 
     expect(result.status).toBe(Status.Success);
-    expect(handlerArgs.api.topic.createTopic).not.toHaveBeenCalled();
+    // Should NOT create a new topic
+    expect(api.topic.createTopic).not.toHaveBeenCalled();
   });
 
   it('should reject invalid stage', async () => {
-    const handlerArgs = makeArgs({
+    const logger = makeLogger();
+
+    const api = {
+      network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
+    };
+
+    const stateStore = makeStateStore({});
+    const args = makeArgs(api as any, logger, {
       auctionId: 'AUCTION-BAD-001',
       stage: 'invalid-stage',
     });
+    (args as any).state = stateStore;
+    (args as any).api = api;
 
-    await expect(publishCommitment(handlerArgs)).rejects.toThrow();
+    await expect(publishCommitment(args)).rejects.toThrow();
   });
 
   it('should reject missing auctionId', async () => {
-    const handlerArgs = makeArgs({
+    const logger = makeLogger();
+
+    const api = {
+      network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
+    };
+
+    const stateStore = makeStateStore({});
+    const args = makeArgs(api as any, logger, {
       stage: 'created',
     });
+    (args as any).state = stateStore;
+    (args as any).api = api;
 
-    await expect(publishCommitment(handlerArgs)).rejects.toThrow();
+    await expect(publishCommitment(args)).rejects.toThrow();
   });
 
   it('should return failure when topic creation fails', async () => {
-    const handlerArgs = makeArgs({
+    const logger = makeLogger();
+
+    const api = {
+      network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
+      topic: {
+        createTopic: jest.fn().mockReturnValue({
+          transaction: {},
+        }),
+        submitMessage: jest.fn().mockReturnValue({
+          transaction: {},
+        }),
+      },
+      txExecution: {
+        signAndExecute: jest.fn().mockResolvedValue({
+          success: false,
+        }),
+      },
+    };
+
+    const stateStore = makeStateStore({});
+    const args = makeArgs(api as any, logger, {
       auctionId: 'AUCTION-FAIL-001',
       stage: 'created',
     });
+    (args as any).state = stateStore;
+    (args as any).api = api;
 
-    (handlerArgs.api.txExecution.signAndExecute as jest.Mock).mockResolvedValueOnce({
-      success: false,
-    });
-
-    const result = await publishCommitment(handlerArgs);
+    const result = await publishCommitment(args);
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain('Failed to create HCS topic');
+  });
+
+  it('should reject duplicate stage publication', async () => {
+    const logger = makeLogger();
+
+    const api = {
+      network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
+    };
+
+    const stateStore = makeStateStore({
+      'auctionlog-data:AUCTION-DUP-001': {
+        topicId: '0.0.5555',
+        lastStage: 'created',
+        lastUpdated: '2026-02-21T00:00:00.000Z',
+      },
+      'auctionlog-data:AUCTION-DUP-001:created': {
+        auctionId: 'AUCTION-DUP-001',
+        stage: 'created',
+        topicId: '0.0.5555',
+      },
+    });
+
+    const args = makeArgs(api as any, logger, {
+      auctionId: 'AUCTION-DUP-001',
+      stage: 'created',
+    });
+    (args as any).state = stateStore;
+    (args as any).api = api;
+
+    const result = await publishCommitment(args);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('already been published');
+  });
+
+  it('should enforce stage ordering — reject out-of-order stages', async () => {
+    const logger = makeLogger();
+
+    const api = {
+      network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
+    };
+
+    // Only 'created' exists — skip directly to 'awarded'
+    const stateStore = makeStateStore({
+      'auctionlog-data:AUCTION-ORDER-001': {
+        topicId: '0.0.5555',
+        lastStage: 'created',
+        lastUpdated: '2026-02-21T00:00:00.000Z',
+      },
+      'auctionlog-data:AUCTION-ORDER-001:created': {
+        auctionId: 'AUCTION-ORDER-001',
+        stage: 'created',
+        topicId: '0.0.5555',
+      },
+    });
+
+    const args = makeArgs(api as any, logger, {
+      auctionId: 'AUCTION-ORDER-001',
+      stage: 'awarded',
+    });
+    (args as any).state = stateStore;
+    (args as any).api = api;
+
+    const result = await publishCommitment(args);
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('bidding-closed');
+    expect(result.errorMessage).toContain('has not been published yet');
+  });
+
+  it('should allow disputed at any time after auction exists', async () => {
+    const logger = makeLogger();
+
+    const api = {
+      network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
+      topic: {
+        createTopic: jest.fn().mockReturnValue({ transaction: {} }),
+        submitMessage: jest.fn().mockReturnValue({ transaction: {} }),
+      },
+      txExecution: {
+        signAndExecute: jest.fn().mockResolvedValue({
+          success: true,
+          topicId: '0.0.5555',
+          topicSequenceNumber: 2,
+        }),
+      },
+    };
+
+    const stateStore = makeStateStore({
+      'auctionlog-data:AUCTION-DISPUTE-001': {
+        topicId: '0.0.5555',
+        lastStage: 'created',
+        lastUpdated: '2026-02-21T00:00:00.000Z',
+      },
+      'auctionlog-data:AUCTION-DISPUTE-001:created': {
+        auctionId: 'AUCTION-DISPUTE-001',
+        stage: 'created',
+        topicId: '0.0.5555',
+      },
+    });
+
+    const args = makeArgs(api as any, logger, {
+      auctionId: 'AUCTION-DISPUTE-001',
+      stage: 'disputed',
+    });
+    (args as any).state = stateStore;
+    (args as any).api = api;
+
+    const result = await publishCommitment(args);
+    expect(result.status).toBe(Status.Success);
+  });
+
+  it('should produce deterministic hashes for same inputs', async () => {
+    const { buildCommitmentHash } = require('../../commands/publish/handler');
+    const hash1 = buildCommitmentHash('A-001', 'created', 'meta', '2026-01-01T00:00:00Z', '0xabc');
+    const hash2 = buildCommitmentHash('A-001', 'created', 'meta', '2026-01-01T00:00:00Z', '0xabc');
+    expect(hash1).toBe(hash2);
+    expect(hash1).toMatch(/^0x[a-f0-9]{64}$/);
+  });
+
+  it('should produce different hashes for different inputs', async () => {
+    const { buildCommitmentHash } = require('../../commands/publish/handler');
+    const hash1 = buildCommitmentHash('A-001', 'created', 'meta', '2026-01-01T00:00:00Z', '0xabc');
+    const hash2 = buildCommitmentHash('A-001', 'created', 'meta', '2026-01-01T00:00:00Z', '0xdef');
+    expect(hash1).not.toBe(hash2);
   });
 });

@@ -8,7 +8,7 @@ import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 
 import { AUCTIONLOG_NAMESPACE } from '../../manifest';
-import type { AuditLogEntry } from '../../types';
+import type { AuditLogEntry, AuctionMeta } from '../../types';
 import { VALID_STAGES } from '../../types';
 import { ListOutputSchema, type ListOutput } from './output';
 
@@ -34,11 +34,7 @@ export async function listAuctions(
     }> = [];
 
     for (const key of auctionKeys) {
-      const meta = state.get<{
-        topicId: string;
-        lastStage: string;
-        lastUpdated: string;
-      }>(AUCTIONLOG_NAMESPACE, key);
+      const meta = state.get<AuctionMeta>(AUCTIONLOG_NAMESPACE, key);
 
       if (meta && meta.topicId) {
         // Count stages published for this auction

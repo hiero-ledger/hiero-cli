@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 /**
  * Input schema for auctionlog verify command.
- * Verifies the integrity of an audit commitment.
+ * Verifies the integrity of audit commitments.
  */
 export const VerifyInputSchema = z.object({
   auctionId: z
@@ -21,6 +21,13 @@ export const VerifyInputSchema = z.object({
     .optional()
     .describe(
       'Specific stage to verify. If omitted, verifies the entire timeline.',
+    ),
+  onChain: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe(
+      'Enable on-chain verification: fetch HCS messages from the mirror node and compare against local state.',
     ),
 });
 

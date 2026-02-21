@@ -60,9 +60,6 @@ describe('auctionlog list', () => {
 
     const api = {
       network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
-      topic: { createTopic: jest.fn(), submitMessage: jest.fn() },
-      txExecution: { signAndExecute: jest.fn() },
-      alias: { resolve: jest.fn() },
     };
 
     const args = makeArgs(api as any, logger, {});
@@ -85,9 +82,6 @@ describe('auctionlog list', () => {
 
     const api = {
       network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
-      topic: { createTopic: jest.fn(), submitMessage: jest.fn() },
-      txExecution: { signAndExecute: jest.fn() },
-      alias: { resolve: jest.fn() },
     };
 
     const args = makeArgs(api as any, logger, {});
@@ -99,5 +93,48 @@ describe('auctionlog list', () => {
     const output = JSON.parse(result.outputJson!);
     expect(output.totalAuctions).toBe(0);
     expect(output.auctions).toEqual([]);
+  });
+
+  it('should list multiple auctions', async () => {
+    const logger = makeLogger();
+
+    const stateStore = makeStateStore({
+      'auctionlog-data:AUCTION-L-001': {
+        topicId: '0.0.8888',
+        lastStage: 'awarded',
+        lastUpdated: '2026-02-21T00:00:00.000Z',
+      },
+      'auctionlog-data:AUCTION-L-001:created': {
+        auctionId: 'AUCTION-L-001',
+        stage: 'created',
+        topicId: '0.0.8888',
+      },
+      'auctionlog-data:AUCTION-L-002': {
+        topicId: '0.0.9999',
+        lastStage: 'created',
+        lastUpdated: '2026-02-21T01:00:00.000Z',
+      },
+      'auctionlog-data:AUCTION-L-002:created': {
+        auctionId: 'AUCTION-L-002',
+        stage: 'created',
+        topicId: '0.0.9999',
+      },
+    });
+
+    const api = {
+      network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
+    };
+
+    const args = makeArgs(api as any, logger, {});
+    (args as any).state = stateStore;
+
+    const result = await listAuctions(args);
+
+    expect(result.status).toBe(Status.Success);
+    const output = JSON.parse(result.outputJson!);
+    expect(output.totalAuctions).toBe(2);
+    const ids = output.auctions.map((a: any) => a.auctionId);
+    expect(ids).toContain('AUCTION-L-001');
+    expect(ids).toContain('AUCTION-L-002');
   });
 });

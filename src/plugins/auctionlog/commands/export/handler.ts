@@ -5,17 +5,32 @@
  * This produces an artifact that procurement teams, auditors, or
  * regulators can review — it proves fairness and timing without
  * revealing any confidential bid data.
+ *
+ * ⚠️  SENSITIVE: The export includes nonces and private metadata that
+ * are NOT published on-chain. Treat the exported file as confidential.
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
 import * as fs from 'fs';
+import * as path from 'path';
 
 import { AUCTIONLOG_NAMESPACE } from '../../manifest';
-import type { AuditLogEntry } from '../../types';
+import type { AuditLogEntry, AuctionMeta } from '../../types';
 import { VALID_STAGES } from '../../types';
 import { ExportInputSchema } from './input';
 import { ExportOutputSchema, type ExportOutput } from './output';
+
+/**
+ * Escape a CSV field value to handle commas, quotes, and newlines.
+ */
+function escapeCsvField(value: string | number): string {
+  const str = String(value);
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
 
 export async function exportAuditLog(
   args: CommandHandlerArgs,
@@ -24,14 +39,16 @@ export async function exportAuditLog(
 
   const validArgs = ExportInputSchema.parse(args.args);
   const currentNetwork = args.api.network.getCurrentNetwork();
+  const exportFormat = validArgs.type ?? 'json';
+  const redact = validArgs.redact === true;
 
   logger.info(
-    `Exporting audit log for auction ${validArgs.auctionId} as ${validArgs.type}`,
+    `Exporting audit log for auction ${validArgs.auctionId} as ${exportFormat}`,
   );
 
   try {
     // Load auction metadata
-    const auctionMeta = state.get<{ topicId: string }>(
+    const auctionMeta = state.get<AuctionMeta>(
       AUCTIONLOG_NAMESPACE,
       validArgs.auctionId,
     );
@@ -49,8 +66,7 @@ export async function exportAuditLog(
       commitmentHash: string;
       timestamp: string;
       sequenceNumber: number;
-      cantonRef: string;
-      adiTx: string;
+      metadata: string;
       nonce: string;
     }> = [];
 
@@ -63,9 +79,8 @@ export async function exportAuditLog(
           commitmentHash: entry.commitmentHash,
           timestamp: entry.timestamp,
           sequenceNumber: entry.sequenceNumber,
-          cantonRef: entry.cantonRef,
-          adiTx: entry.adiTx,
-          nonce: entry.nonce,
+          metadata: redact ? '[REDACTED]' : (entry.metadata ?? ''),
+          nonce: redact ? '[REDACTED]' : entry.nonce,
         });
       }
     }
@@ -82,7 +97,6 @@ export async function exportAuditLog(
 
     // Generate export content
     let fileContent: string;
-    const exportFormat = validArgs.type ?? 'json';
 
     if (exportFormat === 'csv') {
       const headers = [
@@ -90,19 +104,17 @@ export async function exportAuditLog(
         'stage',
         'timestamp',
         'commitmentHash',
-        'cantonRef',
-        'adiTx',
+        'metadata',
         'nonce',
       ];
       const rows = entries.map((e) =>
         [
-          e.sequenceNumber,
-          e.stage,
-          e.timestamp,
-          e.commitmentHash,
-          e.cantonRef,
-          e.adiTx,
-          e.nonce,
+          escapeCsvField(e.sequenceNumber),
+          escapeCsvField(e.stage),
+          escapeCsvField(e.timestamp),
+          escapeCsvField(e.commitmentHash),
+          escapeCsvField(e.metadata),
+          escapeCsvField(e.nonce),
         ].join(','),
       );
       fileContent = [headers.join(','), ...rows].join('\n');
@@ -113,6 +125,7 @@ export async function exportAuditLog(
           topicId: auctionMeta.topicId,
           network: currentNetwork,
           exportedAt: new Date().toISOString(),
+          sensitive: !redact,
           entries,
         },
         null,
@@ -123,9 +136,35 @@ export async function exportAuditLog(
     // Write to file if path provided
     let filePath: string | undefined;
     if (validArgs.file) {
-      fs.writeFileSync(validArgs.file, fileContent, 'utf8');
-      filePath = validArgs.file;
-      logger.info(`Written to ${filePath}`);
+      try {
+        // Resolve to absolute path and ensure parent directory exists
+        const resolvedPath = path.resolve(validArgs.file);
+        const parentDir = path.dirname(resolvedPath);
+
+        if (!fs.existsSync(parentDir)) {
+          return {
+            status: Status.Failure,
+            errorMessage: `Output directory does not exist: ${parentDir}`,
+          };
+        }
+
+        fs.writeFileSync(resolvedPath, fileContent, 'utf8');
+        filePath = resolvedPath;
+        logger.info(`Audit log written to ${filePath}`);
+        if (!redact) {
+          logger.warn(
+            'This export contains sensitive data (nonces, metadata). Treat the file as confidential.',
+          );
+        }
+      } catch (writeError: unknown) {
+        return {
+          status: Status.Failure,
+          errorMessage: formatError(
+            `Failed to write export file to ${validArgs.file}`,
+            writeError,
+          ),
+        };
+      }
     }
 
     const output: ExportOutput = ExportOutputSchema.parse({
@@ -136,6 +175,7 @@ export async function exportAuditLog(
       entryCount: entries.length,
       entries,
       filePath,
+      redacted: redact,
     });
 
     return {

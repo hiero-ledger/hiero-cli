@@ -5,13 +5,14 @@
  * audit commitments for B2B blind auction workflows.
  *
  * Each critical auction stage (created, bidding-open, bidding-closed, awarded,
- * settled, disputed) is recorded as a commitment hash on a Hedera Consensus
- * Service (HCS) topic. The hash proves timing and sequence without revealing
- * any business-sensitive data like bid values, delivery terms, or identities.
+ * settled, disputed) is recorded as a SHA-256 commitment hash on a Hedera
+ * Consensus Service (HCS) topic. The hash proves timing and sequence without
+ * revealing any business-sensitive data like bid values, delivery terms, or
+ * identities.
  *
  * Commands:
  *   publish  — Publish a commitment for an auction stage
- *   verify   — Verify the integrity of published commitments
+ *   verify   — Verify the integrity of published commitments (local + on-chain)
  *   export   — Export the audit trail as JSON or CSV
  *   list     — List all tracked auctions
  */
@@ -46,13 +47,13 @@ export const auctionlogPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Auction Audit Log',
   description:
-    'Privacy-preserving audit trail for B2B blind auctions. Publishes commitment hashes to HCS that prove fairness and timing without revealing business data.',
+    'Privacy-preserving audit trail for B2B blind auctions. Publishes SHA-256 commitment hashes to HCS that prove fairness and timing without revealing business data.',
   commands: [
     {
       name: 'publish',
       summary: 'Publish an audit commitment for an auction stage',
       description:
-        'Publish a commitment hash to an HCS topic for a specific auction stage. The commitment is keccak256(auctionId, stage, cantonRef, adiTx, timestamp, nonce). No business data is revealed.',
+        'Publish a SHA-256 commitment hash to an HCS topic for a specific auction stage. The commitment is SHA-256(auctionId, stage, metadata, timestamp, nonce). No business data is revealed on-chain.',
       options: [
         {
           name: 'auction-id',
@@ -78,18 +79,12 @@ export const auctionlogPluginManifest: PluginManifest = {
             'Existing HCS topic ID (e.g. 0.0.123456). If omitted, creates a new topic.',
         },
         {
-          name: 'canton-ref',
-          short: 'c',
+          name: 'metadata',
+          short: 'm',
           type: OptionType.STRING,
           required: false,
-          description: 'Canton Network transaction reference',
-        },
-        {
-          name: 'adi-tx',
-          short: 'd',
-          type: OptionType.STRING,
-          required: false,
-          description: 'ADI Network transaction hash',
+          description:
+            'Private metadata included in the commitment hash but NOT published on-chain (e.g. external tx references)',
         },
       ],
       handler: publishCommitment,
@@ -102,7 +97,7 @@ export const auctionlogPluginManifest: PluginManifest = {
       name: 'verify',
       summary: 'Verify audit commitments for an auction',
       description:
-        'Re-computes commitment hashes from stored fields and checks them against published values. Detects any tampering.',
+        'Verify commitment integrity. By default performs local hash re-computation. With --on-chain, also fetches HCS messages from the mirror node to verify on-chain publication.',
       options: [
         {
           name: 'auction-id',
@@ -119,6 +114,14 @@ export const auctionlogPluginManifest: PluginManifest = {
           description:
             'Specific stage to verify. If omitted, verifies all stages.',
         },
+        {
+          name: 'on-chain',
+          short: 'o',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description:
+            'Also verify against on-chain HCS messages via the mirror node',
+        },
       ],
       handler: verifyCommitments,
       output: {
@@ -130,7 +133,7 @@ export const auctionlogPluginManifest: PluginManifest = {
       name: 'export',
       summary: 'Export audit trail as JSON or CSV',
       description:
-        'Export the full audit timeline for an auction. Produces a JSON or CSV artifact suitable for compliance review, legal discovery, or regulatory audit.',
+        'Export the full audit timeline for an auction. Produces a JSON or CSV artifact suitable for compliance review, legal discovery, or regulatory audit. Use --redact to strip sensitive fields.',
       options: [
         {
           name: 'auction-id',
@@ -153,6 +156,14 @@ export const auctionlogPluginManifest: PluginManifest = {
           required: false,
           description:
             'Output file path. If omitted, prints to stdout.',
+        },
+        {
+          name: 'redact',
+          short: 'r',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description:
+            'Redact sensitive fields (nonces, metadata) from the export',
         },
       ],
       handler: exportAuditLog,

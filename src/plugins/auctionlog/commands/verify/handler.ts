@@ -1,12 +1,21 @@
 /**
  * Auctionlog Verify Command Handler
  *
- * Verifies the integrity of auction audit commitments by:
- * 1. Loading stored entries from local state
- * 2. Re-computing the commitment hash from the stored fields
- * 3. Comparing against the originally published hash
+ * Performs two-layer verification of auction audit commitments:
  *
- * This proves that no fields have been tampered with since publication.
+ * Layer 1 — Local integrity check:
+ *   Re-computes the commitment hash from stored fields and compares
+ *   against the locally stored hash.
+ *
+ * Layer 2 — On-chain verification (when --on-chain flag is set):
+ *   Fetches the actual HCS topic messages from the Hedera mirror node
+ *   and verifies that the commitment hash published on-chain matches
+ *   the locally stored hash. This proves the local data hasn't been
+ *   altered since publication.
+ *
+ * Together, these two layers provide a full tamper-evidence guarantee:
+ *   - Layer 1 proves internal consistency (hash matches preimage)
+ *   - Layer 2 proves the hash was actually published to HCS
  */
 import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
 import { Status } from '@/core/shared/constants';
@@ -14,32 +23,69 @@ import { formatError } from '@/core/utils/errors';
 import { createHash } from 'crypto';
 
 import { AUCTIONLOG_NAMESPACE } from '../../manifest';
-import type { AuditLogEntry, AuctionStage } from '../../types';
+import type { AuditLogEntry, AuctionMeta, AuctionStage } from '../../types';
 import { VALID_STAGES } from '../../types';
 import { VerifyInputSchema } from './input';
 import { VerifyOutputSchema, type VerifyOutput } from './output';
 
+/**
+ * Recompute the SHA-256 commitment hash from an audit log entry's fields.
+ * This must use the exact same canonical JSON format as buildCommitmentHash
+ * in the publish handler.
+ */
 function recomputeHash(entry: AuditLogEntry): string {
   const payload = JSON.stringify({
     auctionId: entry.auctionId,
     stage: entry.stage,
-    cantonRef: entry.cantonRef,
-    adiTx: entry.adiTx,
+    metadata: entry.metadata,
     timestamp: entry.timestamp,
     nonce: entry.nonce,
   });
   return `0x${createHash('sha256').update(payload).digest('hex')}`;
 }
 
+/**
+ * Parse an on-chain HCS message and extract the commitment hash.
+ * Returns null if the message is not a valid auctionlog commitment.
+ */
+function parseOnChainMessage(base64Message: string): {
+  commitmentHash: string;
+  auctionId: string;
+  stage: string;
+} | null {
+  try {
+    const decoded = Buffer.from(base64Message, 'base64').toString('utf8');
+    const parsed = JSON.parse(decoded) as Record<string, unknown>;
+    if (
+      typeof parsed.commitmentHash === 'string' &&
+      typeof parsed.auctionId === 'string' &&
+      typeof parsed.stage === 'string'
+    ) {
+      return {
+        commitmentHash: parsed.commitmentHash as string,
+        auctionId: parsed.auctionId as string,
+        stage: parsed.stage as string,
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function verifyCommitments(
   args: CommandHandlerArgs,
 ): Promise<CommandExecutionResult> {
-  const { logger, state } = args;
+  const { api, logger, state } = args;
 
   const validArgs = VerifyInputSchema.parse(args.args);
-  const currentNetwork = args.api.network.getCurrentNetwork();
+  const currentNetwork = api.network.getCurrentNetwork();
+  const onChain = validArgs.onChain === true;
 
   logger.info(`Verifying audit log for auction: ${validArgs.auctionId}`);
+  if (onChain) {
+    logger.info('On-chain verification enabled — will fetch HCS messages');
+  }
 
   try {
     // Determine which stages to verify
@@ -48,7 +94,7 @@ export async function verifyCommitments(
       : VALID_STAGES;
 
     // Load auction metadata to get topicId
-    const auctionMeta = state.get<{ topicId: string }>(
+    const auctionMeta = state.get<AuctionMeta>(
       AUCTIONLOG_NAMESPACE,
       validArgs.auctionId,
     );
@@ -60,10 +106,38 @@ export async function verifyCommitments(
       };
     }
 
+    // If on-chain verification is requested, fetch all topic messages up front
+    const onChainMessages = new Map<string, string>(); // stage → commitmentHash
+    if (onChain) {
+      try {
+        logger.info(
+          `Fetching messages from topic ${auctionMeta.topicId}...`,
+        );
+        const response = await api.mirror.getTopicMessages({
+          topicId: auctionMeta.topicId,
+        });
+
+        for (const msg of response.messages) {
+          const parsed = parseOnChainMessage(msg.message);
+          if (parsed && parsed.auctionId === validArgs.auctionId) {
+            onChainMessages.set(parsed.stage, parsed.commitmentHash);
+          }
+        }
+        logger.info(
+          `Found ${onChainMessages.size} on-chain commitment(s) for this auction`,
+        );
+      } catch (mirrorError: unknown) {
+        logger.warn(
+          `Mirror node query failed: ${mirrorError instanceof Error ? mirrorError.message : String(mirrorError)}. Falling back to local-only verification.`,
+        );
+      }
+    }
+
     const entries: Array<{
       stage: string;
       commitmentHash: string;
-      verified: boolean;
+      localVerified: boolean;
+      onChainVerified: boolean | null;
       timestamp: string;
       sequenceNumber: number;
       reason?: string;
@@ -78,18 +152,45 @@ export async function verifyCommitments(
         continue;
       }
 
+      // Layer 1: Local integrity check
       const recomputed = recomputeHash(entry);
-      const verified = recomputed === entry.commitmentHash;
+      const localVerified = recomputed === entry.commitmentHash;
+
+      // Layer 2: On-chain verification (if available)
+      let onChainVerified: boolean | null = null;
+      const reasons: string[] = [];
+
+      if (!localVerified) {
+        reasons.push(
+          `Local hash mismatch: expected ${entry.commitmentHash}, recomputed ${recomputed}. Local data may have been tampered with.`,
+        );
+      }
+
+      if (onChain) {
+        const onChainHash = onChainMessages.get(stage);
+        if (onChainHash === undefined) {
+          onChainVerified = false;
+          reasons.push(
+            `On-chain: no matching message found for stage '${stage}' in topic ${auctionMeta.topicId}.`,
+          );
+        } else if (onChainHash === entry.commitmentHash) {
+          onChainVerified = true;
+        } else {
+          onChainVerified = false;
+          reasons.push(
+            `On-chain hash mismatch: local has ${entry.commitmentHash}, chain has ${onChainHash}. Local state may have been altered after publication.`,
+          );
+        }
+      }
 
       entries.push({
         stage,
         commitmentHash: entry.commitmentHash,
-        verified,
+        localVerified,
+        onChainVerified,
         timestamp: entry.timestamp,
         sequenceNumber: entry.sequenceNumber,
-        reason: verified
-          ? undefined
-          : `Hash mismatch: expected ${entry.commitmentHash}, got ${recomputed}. Data may have been tampered with.`,
+        reason: reasons.length > 0 ? reasons.join(' ') : undefined,
       });
     }
 
@@ -100,15 +201,26 @@ export async function verifyCommitments(
       };
     }
 
-    const verifiedCount = entries.filter((e) => e.verified).length;
+    const localVerifiedCount = entries.filter((e) => e.localVerified).length;
+    const onChainVerifiedCount = onChain
+      ? entries.filter((e) => e.onChainVerified === true).length
+      : null;
+
+    const allLocalValid = localVerifiedCount === entries.length;
+    const allOnChainValid = onChain
+      ? onChainVerifiedCount === entries.length
+      : null;
 
     const output: VerifyOutput = VerifyOutputSchema.parse({
       auctionId: validArgs.auctionId,
       topicId: auctionMeta.topicId,
       network: currentNetwork,
       totalStages: entries.length,
-      verifiedCount,
-      allValid: verifiedCount === entries.length,
+      localVerifiedCount,
+      onChainVerifiedCount,
+      allLocalValid,
+      allOnChainValid,
+      onChainEnabled: onChain,
       entries,
     });
 

@@ -26,16 +26,12 @@ export const PublishInputSchema = z.object({
   topic: EntityReferenceSchema.optional().describe(
     'Existing HCS topic ID (e.g. 0.0.123456). If omitted, a new topic is created.',
   ),
-  cantonRef: z
+  metadata: z
     .string()
     .optional()
-    .default('CANTON-PENDING')
-    .describe('Canton Network transaction reference'),
-  adiTx: z
-    .string()
-    .optional()
-    .default('ADI-PENDING')
-    .describe('ADI Network transaction hash'),
+    .describe(
+      'Private metadata to include in the commitment hash (e.g. external transaction references). Not published on-chain.',
+    ),
 });
 
 export type PublishInput = z.infer<typeof PublishInputSchema>;

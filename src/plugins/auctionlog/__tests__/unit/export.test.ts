@@ -33,8 +33,7 @@ function makeEntry(stage: string, seq: number) {
   return {
     auctionId: 'AUCTION-E-001',
     stage,
-    cantonRef: `CANTON-${stage}`,
-    adiTx: `0x${stage}`,
+    metadata: `meta-${stage}`,
     timestamp: `2026-02-21T0${seq}:00:00.000Z`,
     nonce: `0x${stage}nonce`,
     commitmentHash: `0x${stage}hash`,
@@ -58,9 +57,6 @@ describe('auctionlog export', () => {
 
     const api = {
       network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
-      topic: { createTopic: jest.fn(), submitMessage: jest.fn() },
-      txExecution: { signAndExecute: jest.fn() },
-      alias: { resolve: jest.fn() },
     };
 
     const args = makeArgs(api as any, logger, {
@@ -76,6 +72,7 @@ describe('auctionlog export', () => {
     expect(output.entryCount).toBe(2);
     expect(output.entries[0].stage).toBe('created');
     expect(output.entries[1].stage).toBe('awarded');
+    expect(output.redacted).toBe(false);
   });
 
   it('should export as CSV when requested', async () => {
@@ -88,9 +85,6 @@ describe('auctionlog export', () => {
 
     const api = {
       network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
-      topic: { createTopic: jest.fn(), submitMessage: jest.fn() },
-      txExecution: { signAndExecute: jest.fn() },
-      alias: { resolve: jest.fn() },
     };
 
     const args = makeArgs(api as any, logger, {
@@ -116,9 +110,6 @@ describe('auctionlog export', () => {
 
     const api = {
       network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
-      topic: { createTopic: jest.fn(), submitMessage: jest.fn() },
-      txExecution: { signAndExecute: jest.fn() },
-      alias: { resolve: jest.fn() },
     };
 
     const args = makeArgs(api as any, logger, {
@@ -130,5 +121,57 @@ describe('auctionlog export', () => {
 
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toContain('No published stages found');
+  });
+
+  it('should redact sensitive fields when --redact is set', async () => {
+    const logger = makeLogger();
+
+    const stateStore = makeStateStore({
+      'auctionlog-data:AUCTION-E-004': { topicId: '0.0.7777' },
+      'auctionlog-data:AUCTION-E-004:created': {
+        ...makeEntry('created', 1),
+        auctionId: 'AUCTION-E-004',
+      },
+    });
+
+    const api = {
+      network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
+    };
+
+    const args = makeArgs(api as any, logger, {
+      auctionId: 'AUCTION-E-004',
+      redact: true,
+    });
+    (args as any).state = stateStore;
+
+    const result = await exportAuditLog(args);
+
+    expect(result.status).toBe(Status.Success);
+    const output = JSON.parse(result.outputJson!);
+    expect(output.redacted).toBe(true);
+    expect(output.entries[0].nonce).toBe('[REDACTED]');
+    expect(output.entries[0].metadata).toBe('[REDACTED]');
+    // Commitment hash should still be visible
+    expect(output.entries[0].commitmentHash).not.toBe('[REDACTED]');
+  });
+
+  it('should fail if no audit log found at all', async () => {
+    const logger = makeLogger();
+
+    const stateStore = makeStateStore({});
+
+    const api = {
+      network: { getCurrentNetwork: jest.fn().mockReturnValue('testnet') },
+    };
+
+    const args = makeArgs(api as any, logger, {
+      auctionId: 'AUCTION-NOPE',
+    });
+    (args as any).state = stateStore;
+
+    const result = await exportAuditLog(args);
+
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toContain('No audit log found');
   });
 });

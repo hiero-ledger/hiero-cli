@@ -20,6 +20,13 @@ export const ExportInputSchema = z.object({
     .describe(
       'Output file path. If omitted, prints to stdout.',
     ),
+  redact: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe(
+      'Redact sensitive fields (nonces, metadata) from the export. Use for sharing without revealing commitment preimages.',
+    ),
 });
 
 export type ExportInput = z.infer<typeof ExportInputSchema>;

@@ -5,7 +5,8 @@ import { NetworkSchema } from '@/core/schemas';
 const VerifyEntrySchema = z.object({
   stage: z.string(),
   commitmentHash: z.string(),
-  verified: z.boolean(),
+  localVerified: z.boolean(),
+  onChainVerified: z.boolean().nullable(),
   timestamp: z.string(),
   sequenceNumber: z.number().int().nonnegative(),
   reason: z.string().optional(),
@@ -20,22 +21,27 @@ export const VerifyOutputSchema = z.object({
   topicId: z.string(),
   network: NetworkSchema,
   totalStages: z.number().int().nonnegative(),
-  verifiedCount: z.number().int().nonnegative(),
-  allValid: z.boolean(),
+  localVerifiedCount: z.number().int().nonnegative(),
+  onChainVerifiedCount: z.number().int().nonnegative().nullable(),
+  allLocalValid: z.boolean(),
+  allOnChainValid: z.boolean().nullable(),
+  onChainEnabled: z.boolean(),
   entries: z.array(VerifyEntrySchema),
 });
 
 export type VerifyOutput = z.infer<typeof VerifyOutputSchema>;
 
 export const VERIFY_TEMPLATE = `
-{{#if allValid}}✅ All commitments verified for auction {{auctionId}}{{else}}⚠️  Some commitments FAILED verification for auction {{auctionId}}{{/if}}
+{{#if allLocalValid}}✅ All local commitments verified for auction {{auctionId}}{{else}}⚠️  Some commitments FAILED local verification for auction {{auctionId}}{{/if}}
+{{#if onChainEnabled}}{{#if allOnChainValid}}✅ All on-chain commitments match{{else}}⚠️  Some on-chain commitments do NOT match{{/if}}{{/if}}
 
    Topic: {{hashscanLink topicId "topic" network}}
-   Stages verified: {{verifiedCount}} / {{totalStages}}
+   Local verified: {{localVerifiedCount}} / {{totalStages}}
+{{#if onChainEnabled}}   On-chain verified: {{onChainVerifiedCount}} / {{totalStages}}{{/if}}
 
 {{#each entries}}
-   {{#if verified}}✅{{else}}❌{{/if}} {{stage}} — seq #{{sequenceNumber}} — {{timestamp}}
+   {{#if localVerified}}✅{{else}}❌{{/if}}{{#if ../onChainEnabled}} {{#if onChainVerified}}🔗{{else}}{{#unless onChainVerified}}⛓️‍💥{{/unless}}{{/if}}{{/if}} {{stage}} — seq #{{sequenceNumber}} — {{timestamp}}
       Hash: {{commitmentHash}}
-      {{#unless verified}}Reason: {{reason}}{{/unless}}
+{{#if reason}}      Reason: {{reason}}{{/if}}
 {{/each}}
 `.trim();
