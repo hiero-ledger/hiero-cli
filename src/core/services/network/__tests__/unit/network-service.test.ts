@@ -119,7 +119,7 @@ describe('NetworkServiceImpl', () => {
       expect(config.name).toBe(NETWORK_TESTNET);
       expect(config.rpcUrl).toBe('https://testnet.hashio.io/api');
       expect(config.mirrorNodeUrl).toBe(
-        'https://testnet.mirrornode.hedera.com/api/v1',
+        'https://testnet.hedera.validationcloud.io/v1/MtxToj_lTWpHFpYDHBw33G3M5Qs4rBJr9nK39V07dbQ/api/v1',
       );
       expect(config.chainId).toBe('0x128');
       expect(config.explorerUrl).toBe(`https://hashscan.io/${NETWORK_TESTNET}`);
