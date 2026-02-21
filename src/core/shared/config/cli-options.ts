@@ -11,6 +11,7 @@ import networkPluginManifest from '@/plugins/network/manifest';
 import pluginManagementManifest from '@/plugins/plugin-management/manifest';
 import saucerswapPluginManifest from '@/plugins/saucerswap/manifest';
 import splitPaymentsPluginManifest from '@/plugins/split-payments/manifest';
+import subgraphPluginManifest from '@/plugins/subgraph/manifest';
 import tokenPluginManifest from '@/plugins/token/manifest';
 import topicPluginManifest from '@/plugins/topic/manifest';
 
@@ -47,6 +48,7 @@ export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
   topicPluginManifest,
   hbarPluginManifest,
   splitPaymentsPluginManifest,
+  subgraphPluginManifest,
   saucerswapPluginManifest,
   contractPluginManifest,
   configPluginManifest,
