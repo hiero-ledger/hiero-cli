@@ -198,7 +198,7 @@ describe('AccountServiceImpl', () => {
         publicKey: 'invalid-key',
       };
 
-      expect(accountService.createAccount(params)).rejects.toThrow(
+      expect(() => accountService.createAccount(params)).toThrow(
         expect.objectContaining({
           message: 'Invalid account creation parameters',
         }),
@@ -207,7 +207,7 @@ describe('AccountServiceImpl', () => {
       PublicKeyMock.fromString.mockReturnValue(mockPublicKeyInstance);
     });
 
-    it('should throw ValidationError when Hbar.fromTinybars fails', async () => {
+    it('should throw ValidationError when Hbar.fromTinybars fails', () => {
       const { Hbar: HbarMock } = jest.requireMock('@hashgraph/sdk');
       const sdkError = new Error('Invalid balance value');
       HbarMock.fromTinybars.mockImplementation(() => {
@@ -219,7 +219,7 @@ describe('AccountServiceImpl', () => {
         publicKey: ECDSA_HEX_PUBLIC_KEY,
       };
 
-      await expect(accountService.createAccount(params)).rejects.toThrow(
+      expect(() => accountService.createAccount(params)).toThrow(
         ValidationError,
       );
 
@@ -253,16 +253,14 @@ describe('AccountServiceImpl', () => {
       );
     });
 
-    it('should throw ValidationError when AccountId.fromString fails', async () => {
+    it('should throw ValidationError when AccountId.fromString fails', () => {
       const { AccountId: AccountIdMock } = jest.requireMock('@hashgraph/sdk');
       const sdkError = new Error('Invalid account ID format');
       AccountIdMock.fromString.mockImplementation(() => {
         throw sdkError;
       });
 
-      await expect(
-        accountService.getAccountInfo('invalid-account-id'),
-      ).rejects.toThrow(
+      expect(() => accountService.getAccountInfo('invalid-account-id')).toThrow(
         expect.objectContaining({
           message: 'Invalid account ID format',
         }),
@@ -329,9 +327,9 @@ describe('AccountServiceImpl', () => {
         throw sdkError;
       });
 
-      expect(
+      expect(() =>
         accountService.getAccountBalance('invalid-account-id'),
-      ).rejects.toThrow(
+      ).toThrow(
         expect.objectContaining({
           message: 'Invalid account ID format',
         }),
@@ -340,7 +338,7 @@ describe('AccountServiceImpl', () => {
       AccountIdMock.fromString.mockReturnValue(mockAccountIdInstance);
     });
 
-    it('should throw ValidationError with token context when provided', async () => {
+    it('should throw ValidationError with token context when provided', () => {
       const { AccountId: AccountIdMock } = jest.requireMock('@hashgraph/sdk');
       const sdkError = new Error('Invalid account ID format');
       AccountIdMock.fromString.mockImplementation(() => {
@@ -350,9 +348,9 @@ describe('AccountServiceImpl', () => {
       const accountId = 'invalid-account-id';
       const tokenId = '0.0.5555';
 
-      await expect(
+      expect(() =>
         accountService.getAccountBalance(accountId, tokenId),
-      ).rejects.toThrow(ValidationError);
+      ).toThrow(ValidationError);
 
       AccountIdMock.fromString.mockReturnValue(mockAccountIdInstance);
     });

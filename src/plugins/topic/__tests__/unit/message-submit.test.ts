@@ -235,6 +235,7 @@ describe('topic plugin - message-submit command', () => {
         accountId: '0.0.999',
         keyRefId: 'kr_wrong_submit',
       }),
+      getOrInitKeyWithFallback: jest.fn(),
     };
 
     const { topicTransactions, signing, networkMock, alias } = makeApiMocks({});

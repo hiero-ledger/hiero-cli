@@ -35,7 +35,7 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const { account, signing, networkMock, kms, alias, mirror } =
       makeApiMocksForAccountCreate({
-        createAccountImpl: jest.fn().mockResolvedValue({
+        createAccountImpl: jest.fn().mockReturnValue({
           transaction: {},
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
@@ -116,9 +116,8 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const { account, signing, networkMock, kms, mirror, alias } =
       makeApiMocksForAccountCreate({
-        createAccountImpl: jest.fn().mockResolvedValue({
+        createAccountImpl: jest.fn().mockReturnValue({
           transaction: {},
-          privateKey: 'priv',
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
         signAndExecuteImpl: jest.fn().mockResolvedValue({
@@ -149,9 +148,9 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const { account, signing, networkMock, kms, mirror, alias } =
       makeApiMocksForAccountCreate({
-        createAccountImpl: jest
-          .fn()
-          .mockRejectedValue(new Error('network error')),
+        createAccountImpl: jest.fn().mockImplementation(() => {
+          throw new Error('network error');
+        }),
       });
 
     const api: Partial<CoreApi> = {
@@ -179,7 +178,7 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const { account, signing, networkMock, kms, alias, mirror } =
       makeApiMocksForAccountCreate({
-        createAccountImpl: jest.fn().mockResolvedValue({
+        createAccountImpl: jest.fn().mockReturnValue({
           transaction: {},
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
@@ -233,7 +232,7 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const { account, signing, networkMock, kms, alias, mirror } =
       makeApiMocksForAccountCreate({
-        createAccountImpl: jest.fn().mockResolvedValue({
+        createAccountImpl: jest.fn().mockReturnValue({
           transaction: {},
           publicKey: ED25519_HEX_PUBLIC_KEY,
         }),
