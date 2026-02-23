@@ -9,8 +9,6 @@ import type {
 } from '@/core/services/kms/kms-types.interface';
 import type { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { toErrorMessage } from '@/core/utils/errors';
-
 export function saveAssociationToState(
   tokenState: ZustandTokenStateHelper,
   tokenId: string,
@@ -65,13 +63,13 @@ export async function processTokenAssociations(
       } else {
         logger.warn(`   ⚠️  Failed to associate account ${account.accountId}`);
       }
-    } catch (error) {
+    } catch {
       const associationIdentifier =
         association.type === 'keypair'
           ? association.accountId
           : association.alias;
       logger.warn(
-        `   ⚠️  Failed to associate account ${associationIdentifier}: ${toErrorMessage(error)}`,
+        `   ⚠️  Failed to associate account ${associationIdentifier}`,
       );
     }
   }

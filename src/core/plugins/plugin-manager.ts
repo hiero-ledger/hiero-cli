@@ -5,6 +5,7 @@
  */
 import type { Command, OptionValues } from 'commander';
 import type {
+  CliError,
   CommandHandlerArgs,
   CommandSpec,
   PluginManifest,
@@ -16,14 +17,13 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 
 import * as Handlebars from 'handlebars';
 import * as path from 'path';
-import { ZodError } from 'zod';
 
-import { CliError, InternalError, ValidationError } from '@/core';
+import { ConfigurationError, InternalError } from '@/core/errors';
 import { Status } from '@/core/shared/constants';
 import { OptionType } from '@/core/types/shared.types';
 import { requireConfirmation } from '@/core/utils/confirmation';
 import { ensureCliInitialized } from '@/core/utils/ensure-cli-initialized';
-import { formatAndExitWithError } from '@/core/utils/error-handler';
+import { toCliError } from '@/core/utils/error-handler';
 import { filterReservedOptions } from '@/core/utils/filter-reserved-options';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
 import { registerDisabledPlugin } from '@/core/utils/register-disabled-plugin';
@@ -179,18 +179,6 @@ export class PluginManager {
   }
 
   /**
-   * Exit with formatted error using the current output format
-   * Wrapper for formatAndExitWithError with automatic format detection
-   */
-  private exitWithError(context: string, error: unknown): never {
-    return formatAndExitWithError(
-      context,
-      error,
-      this.coreApi.output.getFormat(),
-    );
-  }
-
-  /**
    * Load a plugin from path
    */
   private async loadPluginFromPath(pluginPath: string): Promise<LoadedPlugin> {
@@ -208,11 +196,11 @@ export class PluginManager {
       this.loadedPlugins.set(manifest.name, loadedPlugin);
       return loadedPlugin;
     } catch (error) {
-      // Use centralized error handler for consistent error formatting
-      return this.exitWithError(
-        `Failed to load plugin from ${pluginPath}`,
+      const cliError = toCliError(
         error,
+        `Failed to load plugin from ${pluginPath}`,
       );
+      this.exitWithCliError(cliError);
     }
   }
 
@@ -277,7 +265,7 @@ export class PluginManager {
           const shortDesc = filteredShort.map((s) => `-${s}`).join(', ');
           const combined = [longDesc, shortDesc].filter(Boolean).join(', ');
 
-          throw new Error(
+          throw new ConfigurationError(
             `Plugin ${plugin.manifest.name} command ${commandName} uses reserved option(s): ${combined}. These are reserved by the core CLI.`,
           );
         }
@@ -357,10 +345,11 @@ export class PluginManager {
       });
     } catch (error) {
       // Use centralized error handler for consistent error formatting
-      this.exitWithError(
-        `Failed to register command ${commandSpec.name} from plugin ${plugin.manifest.name}`,
+      const cliError = toCliError(
         error,
+        `Failed to register command ${commandSpec.name} from plugin ${plugin.manifest.name}`,
       );
+      this.exitWithCliError(cliError);
     }
   }
 
@@ -393,19 +382,19 @@ export class PluginManager {
       const template = Handlebars.compile(commandSpec.requireConfirmation);
       message = template(handlerArgs.args);
     } catch (error) {
-      throw new Error(
-        `Failed to render confirmation template: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      throw new InternalError('Failed to render confirmation template', {
+        cause: error,
+      });
     }
 
     const confirmed = await requireConfirmation(message);
     this.coreApi.output.emptyLine();
     if (!confirmed) {
-      throw new Error('Operation cancelled by user');
+      throw new InternalError('Operation cancelled by user');
     }
   }
 
-  private exitWithCliError(error: CliError): void {
+  private exitWithCliError(error: CliError): never {
     return this.coreApi.output.handleOutput({
       status: Status.Failure,
       template: error.getTemplate(),
@@ -459,22 +448,8 @@ export class PluginManager {
           data: result.result,
         });
     } catch (error) {
-      if (error instanceof ZodError) {
-        const validationError = ValidationError.fromZod(error);
-        return this.exitWithCliError(validationError);
-      }
-
-      if (error instanceof CliError) {
-        return this.exitWithCliError(error);
-      }
-
-      if (error instanceof Error) {
-        const internalError = new InternalError(error.message);
-        return this.exitWithCliError(internalError);
-      }
-
-      const internalError = new InternalError('Unexpected unsupported Error');
-      return this.exitWithCliError(internalError);
+      const cliError = toCliError(error);
+      this.exitWithCliError(cliError);
     }
   }
 

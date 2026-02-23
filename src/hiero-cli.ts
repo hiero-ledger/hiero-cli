@@ -6,16 +6,15 @@ import { program } from 'commander';
 
 import pkg from '../package.json';
 
-import { createCoreApi } from './core';
+import { createCoreApi, Status } from './core';
 import { PluginManager } from './core/plugins/plugin-manager';
 import { DEFAULT_PLUGIN_STATE } from './core/shared/config/cli-options';
 import { validateNetwork } from './core/shared/validation/validate-network.zod';
 import { validateOutputFormat } from './core/shared/validation/validate-output-format.zod';
 import { addDisabledPluginsHelp } from './core/utils/add-disabled-plugins-help';
 import {
-  formatAndExitWithError,
-  setGlobalOutputFormat,
   setupGlobalErrorHandlers,
+  toCliError,
 } from './core/utils/error-handler';
 import { resolvePayer } from './core/utils/resolve-payer';
 
@@ -61,8 +60,7 @@ async function initializeCLI() {
     }
 
     // Setup global error handlers with validated format
-    setGlobalOutputFormat(format);
-    setupGlobalErrorHandlers();
+    setupGlobalErrorHandlers(coreApi.output);
 
     const pluginManager = new PluginManager(coreApi);
 
@@ -84,7 +82,12 @@ async function initializeCLI() {
     await program.parseAsync(process.argv);
     process.exit(0);
   } catch (error) {
-    formatAndExitWithError('CLI initialization failed', error);
+    const cliError = toCliError(error);
+    coreApi.output.handleOutput({
+      status: Status.Failure,
+      template: cliError.getTemplate(),
+      data: cliError.toJSON(),
+    });
   }
 }
 

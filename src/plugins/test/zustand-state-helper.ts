@@ -6,7 +6,7 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { MemoData } from './schema';
 
-import { toErrorMessage } from '@/core/utils/errors';
+import { ValidationError } from '@/core/errors';
 
 import { MEMO_NAMESPACE } from './manifest';
 import { safeParseMemoData } from './schema';
@@ -32,7 +32,7 @@ export class ZustandMemoStateHelper {
         const errors = validation.error.issues
           .map((e) => `${e.path.join('.')}: ${e.message}`)
           .join(', ');
-        throw new Error(`Invalid memo data: ${errors}`);
+        throw new ValidationError(`Invalid memo data: ${errors}`);
       }
       // Use the state service to save data in the memo namespace
       this.state.set(MEMO_NAMESPACE, accountId, memoData);
@@ -42,7 +42,7 @@ export class ZustandMemoStateHelper {
       );
     } catch (error) {
       this.logger.error(
-        `[MEMO STATE] Failed to save memo for ${accountId}: ${toErrorMessage(error)}`,
+        `[MEMO STATE] Failed to save memo for ${accountId}: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }
@@ -66,7 +66,7 @@ export class ZustandMemoStateHelper {
       }
     } catch (error) {
       this.logger.error(
-        `[MEMO STATE] Failed to get memo ${account}: ${toErrorMessage(error)}`,
+        `[MEMO STATE] Failed to get memo ${account}: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }

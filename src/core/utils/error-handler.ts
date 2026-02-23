@@ -2,124 +2,65 @@
  * Centralized Error Handler
  * Handles all error formatting, output, and process termination
  */
-import type { OutputFormat } from '@/core/shared/types/output-format';
+import type { OutputService } from '@/core';
 
 import { ZodError } from 'zod';
 
+import { CliError, InternalError, ValidationError } from '@/core';
 import { Status } from '@/core/shared/constants';
-import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
 
-import { formatError } from './errors';
+export function toCliError(error: unknown, message?: string): CliError {
+  if (error instanceof CliError) {
+    return error;
+  }
 
-// Global output format state for error handlers
-let globalOutputFormat: OutputFormat = DEFAULT_OUTPUT_FORMAT;
+  if (error instanceof ZodError) {
+    return ValidationError.fromZod(error);
+  }
 
-/**
- * Set the global output format for error handlers
- */
-export function setGlobalOutputFormat(format: OutputFormat): void {
-  globalOutputFormat = format;
+  if (error instanceof Error) {
+    return new InternalError(message ?? error.message);
+  }
+
+  return new InternalError(message ?? 'Unexpected unsupported Error');
 }
 
-/**
- * Format error message for output
- */
-function formatErrorOutput(
-  errorMessage: string,
-  format: OutputFormat,
+export function exitWithError(
+  output: OutputService,
+  message: string,
   error?: unknown,
-): string {
-  if (format === 'json') {
-    // Special handling for ZodError in JSON format
-    if (error instanceof ZodError) {
-      return JSON.stringify(
-        {
-          status: Status.Failure,
-          errorMessage: errorMessage,
-          errors: error.issues.map((issue) => issue.message),
-        },
-        null,
-        2,
-      );
-    }
+) {
+  const cliError = toCliError(error, message);
 
-    // Default JSON format for other errors
-    return JSON.stringify(
-      {
-        status: Status.Failure,
-        errorMessage: errorMessage,
-      },
-      null,
-      2,
-    );
-  }
-
-  return `Error: ${errorMessage}`;
-}
-
-/**
- * Format error and exit process
- * Uses provided format or falls back to global format
- * Outputs to stdout for consistent error handling
- */
-export function formatAndExitWithError(
-  context: string,
-  error: unknown,
-  format?: OutputFormat,
-): never {
-  const errorMessage = formatError(context, error);
-  const outputFormat = format ?? globalOutputFormat;
-  const output = formatErrorOutput(errorMessage, outputFormat, error);
-
-  console.log(output);
-  process.exit(1);
-}
-
-/**
- * Handle termination signals (SIGINT, SIGTERM)
- * Formats output and exits with specified code
- */
-function handleTerminationSignal(message: string, exitCode: number): void {
-  const format = globalOutputFormat;
-
-  if (format === 'json') {
-    const output = JSON.stringify(
-      {
-        status: Status.Failure,
-        errorMessage: message,
-      },
-      null,
-      2,
-    );
-    console.log(output);
-  } else {
-    console.log(`\n${message}`);
-  }
-  process.exit(exitCode);
+  return output.handleOutput({
+    status: Status.Failure,
+    template: cliError.getTemplate(),
+    data: cliError.toJSON(),
+  });
 }
 
 /**
  * Setup global error handlers for uncaught exceptions and signals
  * Should be called once at application startup
  */
-export function setupGlobalErrorHandlers(): void {
+export function setupGlobalErrorHandlers(output: OutputService): void {
   // Handle uncaught exceptions
   process.on('uncaughtException', (error: Error) => {
-    formatAndExitWithError('Uncaught exception', error);
+    exitWithError(output, 'Uncaught exception', error);
   });
 
   // Handle unhandled promise rejections
   process.on('unhandledRejection', (reason: unknown) => {
-    formatAndExitWithError('Unhandled promise rejection', reason);
+    exitWithError(output, 'Unhandled promise rejection', reason);
   });
 
   // Handle SIGINT (Ctrl+C) - user cancellation
   process.on('SIGINT', () => {
-    handleTerminationSignal('Operation cancelled by user', 1);
+    exitWithError(output, 'Unhandled promise rejection');
   });
 
   // Handle SIGTERM - graceful shutdown requested by system
   process.on('SIGTERM', () => {
-    handleTerminationSignal('Process terminated', 0);
+    exitWithError(output, 'Process terminated');
   });
 }
