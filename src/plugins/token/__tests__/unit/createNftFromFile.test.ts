@@ -844,7 +844,7 @@ describe('createNftFromFileHandler', () => {
       expect(output.name).toBe(validNftTokenFile.name);
 
       expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  Failed to associate account 0.0.789012:'),
+        expect.stringContaining('⚠️  Failed to associate account 0.0.789012'),
       );
     });
   });

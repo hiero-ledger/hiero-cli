@@ -1,34 +1,10 @@
-import type { OutputOptions } from '@/core/services/output/types';
+import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { OutputFormat } from '@/core/shared/types/output-format';
 
-import { FileError, InternalError } from '@/core/errors';
+import { Status } from '@/core';
 import { OutputServiceImpl } from '@/core/services/output/output-service';
 import { OutputFormatterFactory } from '@/core/services/output/strategies';
 import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
-
-import { setupFileMocks } from './mocks';
-
-jest.mock('fs', () => ({
-  existsSync: jest.fn(),
-  mkdirSync: jest.fn(),
-  writeFileSync: jest.fn(),
-}));
-
-jest.mock('path', () => ({
-  dirname: jest.fn(),
-}));
-
-jest.mock('ansi-escapes', () => ({
-  default: {
-    link: jest.fn((text: string, url: string) => `[LINK:${text}](${url})`),
-  },
-}));
-
-jest.mock('supports-hyperlinks', () => ({
-  default: {
-    stdout: true,
-  },
-}));
 
 jest.mock('@hashgraph/sdk', () => ({
   TokenType: {
@@ -50,13 +26,14 @@ jest.mock('../../strategies', () => {
 describe('OutputServiceImpl', () => {
   let service: OutputServiceImpl;
   let consoleLogSpy: jest.SpyInstance;
+  let processExitSpy: jest.SpyInstance;
   let getStrategyMock: jest.Mock;
 
   const createOptions = (
-    overrides: Partial<OutputOptions> = {},
-  ): OutputOptions => ({
-    outputJson: '{"foo":"bar"}',
-    format: 'human',
+    overrides: Partial<OutputHandlerOptions> = {},
+  ): OutputHandlerOptions => ({
+    data: { foo: 'bar' },
+    status: Status.Success,
     ...overrides,
   });
 
@@ -66,10 +43,14 @@ describe('OutputServiceImpl', () => {
     getStrategyMock =
       OutputFormatterFactory.getStrategy as unknown as jest.Mock;
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+    processExitSpy = jest
+      .spyOn(process, 'exit')
+      .mockImplementation(() => undefined as never);
   });
 
   afterEach(() => {
     consoleLogSpy.mockRestore();
+    processExitSpy.mockRestore();
   });
 
   describe('constructor and format management', () => {
@@ -99,199 +80,78 @@ describe('OutputServiceImpl', () => {
     });
   });
 
-  describe('handleCommandOutput', () => {
-    it('should parse JSON and pass data to formatter strategy', () => {
+  describe('handleOutput', () => {
+    it('should merge status into data and pass to formatter', () => {
       const formatter = { format: jest.fn().mockReturnValue('formatted') };
       getStrategyMock.mockReturnValue(formatter);
 
       const options = createOptions({
-        outputJson: '{"foo":"bar"}',
+        data: { foo: 'bar' },
         template: 'tmpl',
-        format: 'json',
+        status: Status.Success,
       });
 
-      service.handleCommandOutput(options);
+      service.handleOutput(options);
 
-      expect(getStrategyMock).toHaveBeenCalledWith('json');
+      expect(getStrategyMock).toHaveBeenCalledWith(DEFAULT_OUTPUT_FORMAT);
       expect(formatter.format).toHaveBeenCalledWith(
-        { foo: 'bar' },
-        {
-          template: 'tmpl',
-          pretty: true,
-        },
+        { status: Status.Success, foo: 'bar' },
+        { template: 'tmpl', pretty: true },
       );
       expect(consoleLogSpy).toHaveBeenCalledWith('formatted');
     });
 
-    it('should throw error when JSON parsing fails', () => {
-      const options = createOptions({
-        outputJson: 'invalid-json',
+    it('should call process.exit(0) on Success status', () => {
+      getStrategyMock.mockReturnValue({
+        format: jest.fn().mockReturnValue(''),
       });
 
-      expect(() => service.handleCommandOutput(options)).toThrow(InternalError);
+      service.handleOutput(createOptions({ status: Status.Success }));
+
+      expect(processExitSpy).toHaveBeenCalledWith(0);
     });
 
-    it('should throw error when outputJson is empty string', () => {
-      const options = createOptions({
-        outputJson: '',
+    it('should call process.exit(1) on Failure status', () => {
+      getStrategyMock.mockReturnValue({
+        format: jest.fn().mockReturnValue(''),
       });
 
-      expect(() => service.handleCommandOutput(options)).toThrow(InternalError);
+      service.handleOutput(createOptions({ status: Status.Failure }));
+
+      expect(processExitSpy).toHaveBeenCalledWith(1);
     });
 
-    it('should throw error when outputJson is null', () => {
-      const options = createOptions({
-        outputJson: 'null',
+    it('should use service current format for formatter selection', () => {
+      getStrategyMock.mockReturnValue({
+        format: jest.fn().mockReturnValue(''),
       });
+      service.setFormat('json');
 
-      service.handleCommandOutput(options);
+      service.handleOutput(createOptions());
 
-      expect(getStrategyMock).toHaveBeenCalled();
+      expect(getStrategyMock).toHaveBeenCalledWith('json');
     });
 
     it('should handle undefined template', () => {
-      const formatter = { format: jest.fn().mockReturnValue('formatted') };
+      const formatter = { format: jest.fn().mockReturnValue('') };
       getStrategyMock.mockReturnValue(formatter);
 
-      const options = createOptions({
-        outputJson: '{"foo":"bar"}',
+      service.handleOutput(createOptions({ template: undefined }));
+
+      expect(formatter.format).toHaveBeenCalledWith(expect.any(Object), {
         template: undefined,
-        format: 'json',
+        pretty: true,
       });
-
-      service.handleCommandOutput(options);
-
-      expect(formatter.format).toHaveBeenCalledWith(
-        { foo: 'bar' },
-        {
-          template: undefined,
-          pretty: true,
-        },
-      );
     });
 
-    it('should write formatted output to file when outputPath is provided', () => {
-      const formatter = { format: jest.fn().mockReturnValue('file-output') };
-      getStrategyMock.mockReturnValue(formatter);
-      const { fs } = setupFileMocks({
-        dirExists: false,
-        dirname: '/tmp/output',
-      });
-
-      const options = createOptions({
-        outputJson: '{"foo":"bar"}',
-        format: 'human',
-        outputPath: '/tmp/output/result.txt',
-      });
-
-      service.handleCommandOutput(options);
-
-      expect(getStrategyMock).toHaveBeenCalledWith('human');
-      expect(fs.existsSync).toHaveBeenCalledWith('/tmp/output');
-      expect(fs.mkdirSync).toHaveBeenCalledWith('/tmp/output', {
-        recursive: true,
-      });
-      expect(fs.writeFileSync).toHaveBeenCalledWith(
-        '/tmp/output/result.txt',
-        'file-output',
-        'utf8',
-      );
-      expect(consoleLogSpy).not.toHaveBeenCalled();
-    });
-
-    it('should not create directory when it already exists', () => {
-      const formatter = { format: jest.fn().mockReturnValue('file-output') };
-      getStrategyMock.mockReturnValue(formatter);
-      const { fs } = setupFileMocks({
-        dirExists: true,
-        dirname: '/tmp/output',
-      });
-
-      const options = createOptions({
-        outputJson: '{"foo":"bar"}',
-        format: 'human',
-        outputPath: '/tmp/output/result.txt',
-      });
-
-      service.handleCommandOutput(options);
-
-      expect(fs.existsSync).toHaveBeenCalledWith('/tmp/output');
-      expect(fs.mkdirSync).not.toHaveBeenCalled();
-      expect(fs.writeFileSync).toHaveBeenCalledTimes(1);
-    });
-
-    it('should handle root directory path', () => {
-      const formatter = { format: jest.fn().mockReturnValue('file-output') };
-      getStrategyMock.mockReturnValue(formatter);
-      const { fs } = setupFileMocks({ dirExists: true, dirname: '/' });
-
-      const options = createOptions({
-        outputJson: '{"foo":"bar"}',
-        format: 'human',
-        outputPath: '/result.txt',
-      });
-
-      service.handleCommandOutput(options);
-
-      expect(fs.existsSync).toHaveBeenCalledWith('/');
-      expect(fs.mkdirSync).not.toHaveBeenCalled();
-      expect(fs.writeFileSync).toHaveBeenCalledWith(
-        '/result.txt',
-        'file-output',
-        'utf8',
-      );
-    });
-
-    it('should throw error when writing to file fails', () => {
-      const formatter = { format: jest.fn().mockReturnValue('file-output') };
-      getStrategyMock.mockReturnValue(formatter);
-      setupFileMocks({
-        dirExists: true,
-        dirname: '/tmp/output',
-        writeFileSyncError: new Error('disk full'),
-      });
-
-      const options = createOptions({
-        outputJson: '{"foo":"bar"}',
-        format: 'human',
-        outputPath: '/tmp/output/result.txt',
-      });
-
-      expect(() => service.handleCommandOutput(options)).toThrow(FileError);
-    });
-
-    it('should throw error when creating directory fails', () => {
-      const formatter = { format: jest.fn().mockReturnValue('file-output') };
-      getStrategyMock.mockReturnValue(formatter);
-      setupFileMocks({
-        dirExists: false,
-        dirname: '/tmp/output',
-        mkdirSyncError: new Error('permission denied'),
-      });
-
-      const options = createOptions({
-        outputJson: '{"foo":"bar"}',
-        format: 'human',
-        outputPath: '/tmp/output/result.txt',
-      });
-
-      expect(() => service.handleCommandOutput(options)).toThrow(FileError);
-    });
-
-    it('should throw error when formatter.format fails', () => {
-      const formatter = {
+    it('should propagate error when formatter.format throws', () => {
+      getStrategyMock.mockReturnValue({
         format: jest.fn().mockImplementation(() => {
           throw new Error('formatting failed');
         }),
-      };
-      getStrategyMock.mockReturnValue(formatter);
-
-      const options = createOptions({
-        outputJson: '{"foo":"bar"}',
-        format: 'json',
       });
 
-      expect(() => service.handleCommandOutput(options)).toThrow(
+      expect(() => service.handleOutput(createOptions())).toThrow(
         'formatting failed',
       );
     });

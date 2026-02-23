@@ -755,7 +755,7 @@ describe('createTokenFromFileHandler', () => {
 
       // Should continue despite association failure
       expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  Failed to associate account 0.0.789012:'),
+        expect.stringContaining('⚠️  Failed to associate account 0.0.789012'),
       );
     });
   });
