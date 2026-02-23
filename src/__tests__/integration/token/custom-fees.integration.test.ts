@@ -43,7 +43,7 @@ describe('Token Custom Fees Integration Tests', () => {
       symbol: 'FHBAR',
       decimals: 8,
       supplyType: 'infinite',
-      initialSupply: 1000000,
+      initialSupply: '1000000',
       treasuryKey: operatorWithKey,
       adminKey: operatorWithKey,
       customFees: [
@@ -91,7 +91,7 @@ describe('Token Custom Fees Integration Tests', () => {
       symbol: 'FFRAC',
       decimals: 8,
       supplyType: 'infinite',
-      initialSupply: 1000000,
+      initialSupply: '1000000',
       treasuryKey: operatorWithKey,
       adminKey: operatorWithKey,
       customFees: [
@@ -142,7 +142,7 @@ describe('Token Custom Fees Integration Tests', () => {
       symbol: 'FTOK',
       decimals: 8,
       supplyType: 'infinite',
-      initialSupply: 1000000,
+      initialSupply: '1000000',
       treasuryKey: operatorWithKey,
       adminKey: operatorWithKey,
       customFees: [
