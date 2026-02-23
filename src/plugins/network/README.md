@@ -9,7 +9,7 @@ This plugin follows the plugin architecture principles:
 - **Stateless**: Plugin is functionally stateless
 - **Dependency Injection**: Services are injected into command handlers
 - **Manifest-Driven**: Capabilities declared via manifest with output specifications
-- **Structured Output**: All command handlers return `CommandExecutionResult` with standardized output
+- **Structured Output**: All command handlers return `CommandResult` with standardized output
 - **Type Safety**: Full TypeScript support
 
 ## 📁 Structure
@@ -42,11 +42,7 @@ src/plugins/network/
 
 ## 🚀 Commands
 
-All commands return `CommandExecutionResult` with structured output that includes:
-
-- `status`: Success or failure status
-- `errorMessage`: Optional error message (present when status is not 'success')
-- `outputJson`: JSON string conforming to the output schema defined in `output.ts`
+All commands return `CommandResult` with structured output data in the `result` field. Errors are thrown as typed `CliError` instances and handled uniformly by the core framework.
 
 Each command defines a Zod schema for output validation and a Handlebars template for human-readable formatting.
 
@@ -130,13 +126,11 @@ hcli network set-operator --operator 0.0.123456:302e020100300506032b657004220420
 
 ## 📤 Output Formatting
 
-All commands return structured output through the `CommandExecutionResult` interface:
+All commands return structured output through the `CommandResult` interface:
 
 ```typescript
-interface CommandExecutionResult {
-  status: 'success' | 'failure';
-  errorMessage?: string; // Present when status !== 'success'
-  outputJson?: string; // JSON string conforming to the output schema
+interface CommandResult {
+  result: object;
 }
 ```
 
@@ -147,7 +141,7 @@ interface CommandExecutionResult {
 - **Error Handling**: All errors are returned in the result structure, ensuring consistent error handling
 - **Format Selection**: Output format is controlled by the CLI's `--format` option (default: `human`, or `json` for machine-readable output)
 
-The `outputJson` field contains a JSON string that conforms to the Zod schema defined in each command's `output.ts` file, ensuring type safety and consistent output structure.
+The `result` field contains a structured object conforming to the Zod schema defined in each command's `output.ts` file, ensuring type safety and consistent output structure.
 
 ## 🔧 Core API Integration
 

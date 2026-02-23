@@ -823,7 +823,6 @@ const TRANSACTION_ID_JSON_SCHEMA = zodToJsonSchema(TransactionIdSchema);
 
 ```typescript
 import { MyCommandOutputSchema } from './output';
-import { Status } from '@/core/shared/constants';
 
 export async function myCommandHandler(args: CommandHandlerArgs) {
   // ... command logic ...
@@ -834,20 +833,10 @@ export async function myCommandHandler(args: CommandHandlerArgs) {
     network: 'testnet',
   };
 
-  // Validate output against schema (optional)
-  try {
-    const validatedResult = MyCommandOutputSchema.parse(result);
-    return {
-      status: Status.Success,
-      outputJson: JSON.stringify(validatedResult),
-    };
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      console.error('Output validation failed:', error.errors);
-      throw new Error('Invalid output format');
-    }
-    throw error;
-  }
+  // Validate output against schema (optional but recommended)
+  const validatedResult = MyCommandOutputSchema.parse(result);
+
+  return { result: validatedResult };
 }
 ```
 
@@ -881,12 +870,12 @@ function processOutput(output: MyCommandOutput) {
 
 ## Schema Validation
 
-The CLI (when implemented) will:
+The CLI will:
 
-1. Parse `outputJson` from command handlers
+1. Receive `{ result: object }` from command handlers
 2. Validate against the declared schema (Zod or JSON Schema)
 3. Reject invalid outputs with a distinct exit code
-4. Format valid outputs according to `--format` flag
+4. Format valid outputs according to `--format` flag via `OutputService`
 
 ### Runtime Validation with Zod
 
@@ -933,7 +922,7 @@ try {
 1. Add `output` field to all command specifications in manifest
 2. Define JSON schema for command outputs (or use Zod with conversion)
 3. Provide human-readable templates (optional but recommended)
-4. Update command handlers to return `CommandExecutionResult` (implemented per ADR-003)
+4. Update command handlers to return `CommandResult` (`{ result: data }`) per ADR-007
 5. Test schemas with sample outputs
 
 #### Example Migration
@@ -977,7 +966,7 @@ export const MY_OUTPUT_SCHEMA = zodToJsonSchema(MyOutputSchema);
 
 ### For CLI Core
 
-1. Implement `CommandExecutionResult` parsing
+1. Receive `CommandResult` from handlers; serialize `result` field
 2. Add JSON Schema validation (with Zod support)
 3. Implement template rendering (Handlebars)
 4. Add format serializers (JSON, YAML, XML)
