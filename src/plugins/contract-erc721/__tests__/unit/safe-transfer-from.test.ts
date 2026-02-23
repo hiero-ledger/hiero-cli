@@ -11,11 +11,14 @@ import {
   MOCK_TX_ID,
 } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
+import { NotFoundError, TransactionError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { makeContractErc721ExecuteCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
+import {
+  makeContractErc721ExecuteCommandArgs,
+  MOCK_CONTRACT_ID_ALT,
+} from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { safeTransferFromFunctionCall as safeTransferFromHandler } from '@/plugins/contract-erc721/commands/safe-transfer-from/handler';
+import { safeTransferFromFunctionCall } from '@/plugins/contract-erc721/commands/safe-transfer-from/handler';
 import { ContractErc721CallSafeTransferFromInputSchema } from '@/plugins/contract-erc721/commands/safe-transfer-from/input';
 
 const mockAddAddress = jest.fn().mockReturnThis();
@@ -86,18 +89,13 @@ describe('contract-erc721 plugin - safeTransferFrom command (unit)', () => {
       },
     });
 
-    const result = await safeTransferFromHandler(args);
+    const result = await safeTransferFromFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const parsed = JSON.parse(
-      result.outputJson as string,
-    ) as ContractErc721CallSafeTransferFromOutput;
-
-    expect(parsed.contractId).toBe(MOCK_CONTRACT_ID);
-    expect(parsed.network).toBe(SupportedNetwork.TESTNET);
-    expect(parsed.transactionId).toBe(MOCK_TX_ID);
+    expect(result.result).toBeDefined();
+    const output = result.result as ContractErc721CallSafeTransferFromOutput;
+    expect(output.contractId).toBe(MOCK_CONTRACT_ID);
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
+    expect(output.transactionId).toBe(MOCK_TX_ID);
 
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
       contractReference: 'some-contract',
@@ -124,7 +122,7 @@ describe('contract-erc721 plugin - safeTransferFrom command (unit)', () => {
       api,
       logger,
       args: {
-        contract: '0.0.9999',
+        contract: MOCK_CONTRACT_ID_ALT,
         from: 'alice',
         to: 'bob',
         tokenId: 1,
@@ -133,9 +131,9 @@ describe('contract-erc721 plugin - safeTransferFrom command (unit)', () => {
       },
     });
 
-    const result = await safeTransferFromHandler(args);
+    const result = await safeTransferFromFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
     expect(mockAddBytes).toHaveBeenCalledWith(expect.any(Buffer));
     const bufferArg = mockAddBytes.mock.calls[0][0];
     expect(Buffer.isBuffer(bufferArg)).toBe(true);
@@ -149,7 +147,7 @@ describe('contract-erc721 plugin - safeTransferFrom command (unit)', () => {
       api,
       logger,
       args: {
-        contract: '0.0.1234',
+        contract: MOCK_CONTRACT_ID,
         from: fromEvm,
         to: toEvm,
         tokenId: 5,
@@ -157,16 +155,16 @@ describe('contract-erc721 plugin - safeTransferFrom command (unit)', () => {
       },
     });
 
-    const result = await safeTransferFromHandler(args);
+    const result = await safeTransferFromFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveAccount).not.toHaveBeenCalled();
     expect(mockAddAddress).toHaveBeenNthCalledWith(1, fromEvm);
     expect(mockAddAddress).toHaveBeenNthCalledWith(2, toEvm);
     expect(mockAddUint256).toHaveBeenCalledWith(5);
   });
 
-  test('returns failure when signAndExecute returns success false', async () => {
+  test('throws TransactionError when signAndExecute returns success false', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -183,15 +181,15 @@ describe('contract-erc721 plugin - safeTransferFrom command (unit)', () => {
       receipt: { status: { status: 'FAILURE' } },
     });
 
-    const result = await safeTransferFromHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
+    await expect(safeTransferFromFunctionCall(args)).rejects.toThrow(
+      TransactionError,
+    );
+    await expect(safeTransferFromFunctionCall(args)).rejects.toThrow(
       'Failed to call safeTransferFrom function: FAILURE',
     );
   });
 
-  test('returns failure when signAndExecute throws', async () => {
+  test('propagates error when signAndExecute throws', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -207,15 +205,12 @@ describe('contract-erc721 plugin - safeTransferFrom command (unit)', () => {
       new Error('network error'),
     );
 
-    const result = await safeTransferFromHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call safeTransferFrom function: network error',
+    await expect(safeTransferFromFunctionCall(args)).rejects.toThrow(
+      'network error',
     );
   });
 
-  test('returns failure when contract not found', async () => {
+  test('propagates error when contract not found', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -236,21 +231,17 @@ describe('contract-erc721 plugin - safeTransferFrom command (unit)', () => {
       ),
     );
 
-    const result = await safeTransferFromHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call safeTransferFrom function',
+    await expect(safeTransferFromFunctionCall(args)).rejects.toThrow(
+      'not found',
     );
-    expect(result.errorMessage).toContain('not found');
   });
 
-  test('returns failure when from has no evmAddress', async () => {
+  test('throws NotFoundError when from has no evmAddress', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
       args: {
-        contract: '0.0.1234',
+        contract: MOCK_CONTRACT_ID,
         from: 'alice',
         to: 'bob',
         tokenId: 1,
@@ -270,20 +261,19 @@ describe('contract-erc721 plugin - safeTransferFrom command (unit)', () => {
         evmAddress: MOCK_EVM_ADDRESS,
       });
 
-    const result = await safeTransferFromHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
+    const promise = safeTransferFromFunctionCall(args);
+    await expect(promise).rejects.toThrow(NotFoundError);
+    await expect(promise).rejects.toThrow(
       "Couldn't resolve EVM address for an account",
     );
   });
 
-  test('returns failure when to has no evmAddress', async () => {
+  test('throws NotFoundError when to has no evmAddress', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
       args: {
-        contract: '0.0.1234',
+        contract: MOCK_CONTRACT_ID,
         from: 'alice',
         to: 'bob',
         tokenId: 1,
@@ -303,10 +293,9 @@ describe('contract-erc721 plugin - safeTransferFrom command (unit)', () => {
         evmAddress: undefined,
       });
 
-    const result = await safeTransferFromHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
+    const promise = safeTransferFromFunctionCall(args);
+    await expect(promise).rejects.toThrow(NotFoundError);
+    await expect(promise).rejects.toThrow(
       "Couldn't resolve EVM address for an account",
     );
   });

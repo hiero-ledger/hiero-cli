@@ -11,11 +11,15 @@ import {
   MOCK_TX_ID,
 } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
+import { NotFoundError, TransactionError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { makeContractErc721ExecuteCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
+import {
+  makeContractErc721ExecuteCommandArgs,
+  MOCK_ACCOUNT_ID_TO,
+  MOCK_CONTRACT_ID_ALT,
+} from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { setApprovalForAllFunctionCall as setApprovalForAllHandler } from '@/plugins/contract-erc721/commands/set-approval-for-all/handler';
+import { setApprovalForAllFunctionCall } from '@/plugins/contract-erc721/commands/set-approval-for-all/handler';
 import { ContractErc721CallSetApprovalForAllInputSchema } from '@/plugins/contract-erc721/commands/set-approval-for-all/input';
 
 const mockAddAddress = jest.fn().mockReturnThis();
@@ -83,18 +87,13 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       },
     });
 
-    const result = await setApprovalForAllHandler(args);
+    const result = await setApprovalForAllFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const parsed = JSON.parse(
-      result.outputJson as string,
-    ) as ContractErc721CallSetApprovalForAllOutput;
-
-    expect(parsed.contractId).toBe(MOCK_CONTRACT_ID);
-    expect(parsed.network).toBe(SupportedNetwork.TESTNET);
-    expect(parsed.transactionId).toBe(MOCK_TX_ID);
+    expect(result.result).toBeDefined();
+    const output = result.result as ContractErc721CallSetApprovalForAllOutput;
+    expect(output.contractId).toBe(MOCK_CONTRACT_ID);
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
+    expect(output.transactionId).toBe(MOCK_TX_ID);
 
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
       contractReference: 'some-contract',
@@ -123,16 +122,16 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       api,
       logger,
       args: {
-        contract: '0.0.9999',
-        operator: '0.0.8888',
+        contract: MOCK_CONTRACT_ID_ALT,
+        operator: MOCK_ACCOUNT_ID_TO,
         gas: 200000,
         approved: 'false',
       },
     });
 
-    const result = await setApprovalForAllHandler(args);
+    const result = await setApprovalForAllFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
     expect(mockAddBool).toHaveBeenCalledWith(false);
   });
 
@@ -142,16 +141,16 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       api,
       logger,
       args: {
-        contract: '0.0.1234',
+        contract: MOCK_CONTRACT_ID,
         operator: evmOperator,
         gas: 100000,
         approved: 'true',
       },
     });
 
-    const result = await setApprovalForAllHandler(args);
+    const result = await setApprovalForAllFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveAccount).not.toHaveBeenCalled();
     expect(mockAddAddress).toHaveBeenCalledWith(evmOperator);
   });
@@ -168,8 +167,8 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       },
     });
 
-    const result = await setApprovalForAllHandler(args);
-    expect(result.status).toBe(Status.Success);
+    const result = await setApprovalForAllFunctionCall(args);
+    expect(result.result).toBeDefined();
     expect(mockAddBool).toHaveBeenCalledWith(true);
   });
 
@@ -185,8 +184,8 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       },
     });
 
-    const result = await setApprovalForAllHandler(args);
-    expect(result.status).toBe(Status.Success);
+    const result = await setApprovalForAllFunctionCall(args);
+    expect(result.result).toBeDefined();
     expect(mockAddBool).toHaveBeenCalledWith(true);
   });
 
@@ -202,12 +201,12 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       },
     });
 
-    const result = await setApprovalForAllHandler(args);
-    expect(result.status).toBe(Status.Success);
+    const result = await setApprovalForAllFunctionCall(args);
+    expect(result.result).toBeDefined();
     expect(mockAddBool).toHaveBeenCalledWith(false);
   });
 
-  test('returns failure when signAndExecute returns success false', async () => {
+  test('throws TransactionError when signAndExecute returns success false', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -223,15 +222,15 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       receipt: { status: { status: 'FAILURE' } },
     });
 
-    const result = await setApprovalForAllHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
+    await expect(setApprovalForAllFunctionCall(args)).rejects.toThrow(
+      TransactionError,
+    );
+    await expect(setApprovalForAllFunctionCall(args)).rejects.toThrow(
       'Failed to call setApprovalForAll function: FAILURE',
     );
   });
 
-  test('returns failure when signAndExecute throws', async () => {
+  test('propagates error when signAndExecute throws', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -246,15 +245,12 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       new Error('network error'),
     );
 
-    const result = await setApprovalForAllHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call setApprovalForAll function: network error',
+    await expect(setApprovalForAllFunctionCall(args)).rejects.toThrow(
+      'network error',
     );
   });
 
-  test('returns failure when contract not found', async () => {
+  test('propagates error when contract not found', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -274,21 +270,17 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       ),
     );
 
-    const result = await setApprovalForAllHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call setApprovalForAll function',
+    await expect(setApprovalForAllFunctionCall(args)).rejects.toThrow(
+      'not found',
     );
-    expect(result.errorMessage).toContain('not found');
   });
 
-  test('returns failure when operator has no evmAddress', async () => {
+  test('throws NotFoundError when operator has no evmAddress', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
       args: {
-        contract: '0.0.1234',
+        contract: MOCK_CONTRACT_ID,
         operator: 'bob',
         gas: 100000,
         approved: 'true',
@@ -303,10 +295,10 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       },
     );
 
-    const result = await setApprovalForAllHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
+    await expect(setApprovalForAllFunctionCall(args)).rejects.toThrow(
+      NotFoundError,
+    );
+    await expect(setApprovalForAllFunctionCall(args)).rejects.toThrow(
       "Couldn't resolve EVM address for an account",
     );
   });

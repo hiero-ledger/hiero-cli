@@ -114,11 +114,11 @@ export async function createAccount(
   const accountData: AccountData = {
     name,
     accountId: result.accountId,
-    type: keyType as KeyAlgorithm,
+    type: keyType,
     publicKey: accountCreateResult.publicKey,
     evmAddress,
     keyRefId,
-    network: api.network.getCurrentNetwork() as AccountData['network'],
+    network: api.network.getCurrentNetwork(),
   };
 
   accountState.saveAccount(name, accountData);
@@ -127,7 +127,7 @@ export async function createAccount(
     accountId: accountData.accountId,
     name: accountData.name,
     type: accountData.type,
-    ...(alias && { alias }),
+    alias,
     network: accountData.network,
     transactionId: result.transactionId || '',
     evmAddress,
