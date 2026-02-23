@@ -17,6 +17,7 @@ import {
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { CustomFeeType, FixedFeeUnitType } from '@/core/types/token.types';
+import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Zod schema for token association
@@ -73,6 +74,14 @@ export const TokenFileCustomFeeSchema = z.discriminatedUnion('type', [
   TokenFileFixedFeeSchema,
   TokenFileFractionalFeeSchema,
 ]);
+
+const TokenFileSupplyInputSchema = z
+  .string()
+  .trim()
+  .regex(
+    /^(?:\d+\.\d+|\d+t|\d+)$/,
+    'Supply must be string: "100" (display units) or "100t" (base units)',
+  );
 
 // Main token data schema
 export const TokenDataSchema = z.object({
@@ -172,37 +181,43 @@ export function safeParseTokenData(data: unknown) {
   return TokenDataSchema.safeParse(data);
 }
 
-export const FungibleTokenFileSchema = z.object({
-  name: TokenNameSchema,
-  symbol: TokenSymbolSchema,
-  decimals: HtsDecimalsSchema,
-  supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
-  initialSupply: NonNegativeNumberOrBigintSchema,
-  maxSupply: NonNegativeNumberOrBigintSchema.default(0n),
-  treasuryKey: KeyOrAccountAliasSchema,
-  adminKey: KeyOrAccountAliasSchema,
-  supplyKey: KeyOrAccountAliasSchema.optional(),
-  wipeKey: KeyOrAccountAliasSchema.optional(),
-  kycKey: KeyOrAccountAliasSchema.optional(),
-  freezeKey: KeyOrAccountAliasSchema.optional(),
-  pauseKey: KeyOrAccountAliasSchema.optional(),
-  feeScheduleKey: KeyOrAccountAliasSchema.optional(),
-  associations: z.array(KeyOrAccountAliasSchema).default([]),
-  customFees: z
-    .array(TokenFileCustomFeeSchema)
-    .max(10, 'Maximum 10 custom fees allowed per token')
-    .default([]),
-  memo: MemoSchema.default(''),
-  tokenType: TokenTypeSchema,
-});
+export const FungibleTokenFileSchema = z
+  .object({
+    name: TokenNameSchema,
+    symbol: TokenSymbolSchema,
+    decimals: HtsDecimalsSchema,
+    supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
+    initialSupply: TokenFileSupplyInputSchema,
+    maxSupply: TokenFileSupplyInputSchema.default('0'),
+    treasuryKey: KeyOrAccountAliasSchema,
+    adminKey: KeyOrAccountAliasSchema,
+    supplyKey: KeyOrAccountAliasSchema.optional(),
+    wipeKey: KeyOrAccountAliasSchema.optional(),
+    kycKey: KeyOrAccountAliasSchema.optional(),
+    freezeKey: KeyOrAccountAliasSchema.optional(),
+    pauseKey: KeyOrAccountAliasSchema.optional(),
+    feeScheduleKey: KeyOrAccountAliasSchema.optional(),
+    associations: z.array(KeyOrAccountAliasSchema).default([]),
+    customFees: z
+      .array(TokenFileCustomFeeSchema)
+      .max(10, 'Maximum 10 custom fees allowed per token')
+      .default([]),
+    memo: MemoSchema.default(''),
+    tokenType: TokenTypeSchema,
+  })
+  .transform((data) => ({
+    ...data,
+    initialSupply: processTokenBalanceInput(data.initialSupply, data.decimals),
+    maxSupply: processTokenBalanceInput(data.maxSupply ?? '0', data.decimals),
+  }));
 
-export type FungibleTokenFileDefinition = z.infer<
+export type FungibleTokenFileDefinition = z.output<
   typeof FungibleTokenFileSchema
 >;
 
 function validateFileSupplyTypeAndMaxSupply<
   Args extends {
-    maxSupply?: bigint | number;
+    maxSupply?: string | number | bigint;
     supplyType?: 'finite' | 'infinite';
   },
 >(args: Args, ctx: z.RefinementCtx) {

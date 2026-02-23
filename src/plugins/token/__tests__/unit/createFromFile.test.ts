@@ -21,6 +21,10 @@ import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 import {
   expectedTokenTransactionParamsFromFile,
   infiniteSupplyTokenFile,
+  invalidTokenFileInvalidSupplyType,
+  invalidTokenFileInvalidTreasury,
+  invalidTokenFileMissingName,
+  invalidTokenFileNegativeSupply,
   mockKeys,
   mockTransactionResults,
   mockTransactions,
@@ -590,20 +594,9 @@ describe('createTokenFromFileHandler', () => {
 
   describe('validation scenarios', () => {
     test('should handle missing required fields', async () => {
-      // Arrange
-      const invalidFile = {
-        // name missing
-        symbol: 'TEST',
-        decimals: 2,
-        supplyType: 'finite',
-        initialSupply: 1000,
-        treasury: '0.0.123456:treasury-key',
-        keys: {
-          adminKey: 'admin-key',
-        },
-      };
-
-      mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
+      mockFs.readFile.mockResolvedValue(
+        JSON.stringify(invalidTokenFileMissingName),
+      );
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
@@ -633,13 +626,9 @@ describe('createTokenFromFileHandler', () => {
     });
 
     test('should handle invalid treasury format', async () => {
-      // Arrange
-      const invalidFile = {
-        ...validTokenFile,
-        treasuryKey: '', // Empty treasury string
-      };
-
-      mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
+      mockFs.readFile.mockResolvedValue(
+        JSON.stringify(invalidTokenFileInvalidTreasury),
+      );
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
@@ -669,13 +658,9 @@ describe('createTokenFromFileHandler', () => {
     });
 
     test('should handle invalid supply type', async () => {
-      // Arrange
-      const invalidFile = {
-        ...validTokenFile,
-        supplyType: 'invalid-type',
-      };
-
-      mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
+      mockFs.readFile.mockResolvedValue(
+        JSON.stringify(invalidTokenFileInvalidSupplyType),
+      );
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
@@ -705,13 +690,9 @@ describe('createTokenFromFileHandler', () => {
     });
 
     test('should handle negative initial supply', async () => {
-      // Arrange
-      const invalidFile = {
-        ...validTokenFile,
-        initialSupply: -100,
-      };
-
-      mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
+      mockFs.readFile.mockResolvedValue(
+        JSON.stringify(invalidTokenFileNegativeSupply),
+      );
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
