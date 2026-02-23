@@ -124,16 +124,16 @@ export abstract class CliError extends Error {
 
 ### Error Type Hierarchy
 
-| Class                | Static `CODE`         | Recoverable       | Use Case                                                 |
-| -------------------- | --------------------- | ----------------- | -------------------------------------------------------- |
-| `ValidationError`    | `VALIDATION_ERROR`    | No                | Input validation, Zod errors                             |
-| `NotFoundError`      | `NOT_FOUND`           | No                | Entity not found (account, token, alias)                 |
-| `NetworkError`       | `NETWORK_ERROR`       | Yes               | HTTP 5xx, timeouts, connection errors                    |
-| `AuthorizationError` | `AUTHORIZATION_ERROR` | No                | Permission denied, invalid keys, HTTP 401/403            |
-| `ConfigurationError` | `CONFIGURATION_ERROR` | No                | Missing config, invalid settings                         |
-| `TransactionError`   | `TRANSACTION_ERROR`   | Depends on status | Hedera transaction failures (BUSY_NETWORK → recoverable) |
-| `StateError`         | `STATE_ERROR`         | No                | State corruption, invalid state                          |
-| `FileError`          | `FILE_ERROR`          | No                | File I/O errors                                          |
+| Class                | Static `CODE`         | Recoverable          | Use Case                                                 |
+| -------------------- | --------------------- | -------------------- | -------------------------------------------------------- |
+| `ValidationError`    | `VALIDATION_ERROR`    | No                   | Input validation, Zod errors                             |
+| `NotFoundError`      | `NOT_FOUND`           | No                   | Entity not found (account, token, alias)                 |
+| `NetworkError`       | `NETWORK_ERROR`       | Yes                  | HTTP 5xx, timeouts, connection errors                    |
+| `AuthorizationError` | `AUTHORIZATION_ERROR` | No                   | Permission denied, invalid keys, HTTP 401/403            |
+| `ConfigurationError` | `CONFIGURATION_ERROR` | No                   | Missing config, invalid settings                         |
+| `TransactionError`   | `TRANSACTION_ERROR`   | explicit (2nd param) | Hedera transaction failures (BUSY_NETWORK → recoverable) |
+| `StateError`         | `STATE_ERROR`         | No                   | State corruption, invalid state                          |
+| `FileError`          | `FILE_ERROR`          | No                   | File I/O errors                                          |
 
 **Note**: All errors exit with code 1. Scripts should use the JSON `code` field to differentiate error types. Human output uses `CliError.getTemplate()`; by default it renders `{{message}}`.
 
@@ -274,52 +274,52 @@ Error thrown → ErrorAdapter → OutputService.format({ status: 'failure', ...e
 - `--format` only affects `OutputService` and is queried via `coreApi.output.getFormat()`.
 - `OutputService` accepts structured objects (not pre-stringified JSON). JSON stringification happens only inside the JSON strategy.
 
-**OutputService contract (proposed)**:
+**OutputService contract**:
 
 ```typescript
 interface OutputService {
-  handleResult(options: {
-    data: Record<string, unknown>;
+  handleOutput(options: {
+    data: object;
     template?: string;
-    format?: OutputFormat;
-    outputPath?: string;
-  }): void;
-
-  handleError(options: {
-    error: CliError | ZodError | unknown;
-    format?: OutputFormat;
-    outputPath?: string;
+    status: Status;
   }): never;
+
+  getFormat(): OutputFormat;
+  setFormat(format: OutputFormat): void;
+  emptyLine(): void;
 }
 ```
 
-**Error adapter (proposed)**:
+**Error adapter** (`error-handler.ts`):
 
 ```typescript
-function mapErrorToOutput(error: unknown): {
-  status: 'failure';
-  code: string;
-  message: string;
-  context?: unknown;
-  cause?: unknown;
-} {
-  if (error instanceof CliError)
-    return { status: 'failure', ...error.toJSON() };
-  if (error instanceof ZodError)
-    return { status: 'failure', ...ValidationError.fromZod(error).toJSON() };
-  return {
-    status: 'failure',
-    code: INTERNAL_ERROR_CODE,
-    message: formatUnknownError(error),
-  };
+export function toCliError(error: unknown, message?: string): CliError {
+  if (error instanceof CliError) return error;
+  if (error instanceof ZodError) return ValidationError.fromZod(error);
+  if (error instanceof Error)
+    return new InternalError(message ?? error.message);
+  return new InternalError(message ?? 'Unexpected unsupported Error');
+}
+
+export function exitWithError(
+  output: OutputService,
+  message: string,
+  error?: unknown,
+): never {
+  const cliError = toCliError(error, message);
+  return output.handleOutput({
+    status: Status.Failure,
+    template: cliError.getTemplate(),
+    data: cliError.toJSON(),
+  });
 }
 ```
 
 **Notes**:
 
-- `OutputService.handleResult` is used in `plugin-manager.ts` for successful command results.
-- `OutputService.handleError` is used in `error-handler.ts` and error boundaries to keep all formatting consistent.
-- `OutputService` is the only place that knows about the `format` option.
+- `OutputService.handleOutput` is used for both success and error paths — `status` field discriminates them.
+- `error-handler.ts` converts any thrown value to `CliError` via `toCliError`, then delegates to `handleOutput`.
+- `OutputService` is the only place that knows about format and output rendering.
 
 ### Handler Migration
 
@@ -470,8 +470,8 @@ esac
 - **~11 mirrornode service methods** need NetworkError/NotFoundError throwing
 - **All handlers** switch from `return {status: Failure}` to `throw new XxxError()`
 - **All handlers** change return type to updated `CommandExecutionResult<T>` (`{ result: T }`)
-- **Core plugin-manager** must route success output through `OutputService.handleResult`
-- **Error handler** must delegate formatting to `OutputService.handleError`
+- **Core plugin-manager** must route success output through `OutputService.handleOutput` with `status: Status.Success`
+- **Error handler** must delegate formatting to `OutputService.handleOutput` with `status: Status.Failure`
 - **Tests** must verify structured error output from the unified pipeline
 
 ## Implementation Notes
@@ -516,7 +516,7 @@ export * from './errors';
 
 - `error-handler.ts` becomes a thin wrapper for global process errors (unhandled rejections/exceptions).
 - Handlers and services throw structured errors; they do not call formatting utilities directly.
-- `OutputService.handleError` is the single point responsible for JSON/human formatting and process exit.
+- `OutputService.handleOutput` is the single point responsible for JSON/human formatting and process exit.
 
 ## Alternatives Considered
 
