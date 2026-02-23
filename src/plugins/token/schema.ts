@@ -217,7 +217,7 @@ export type FungibleTokenFileDefinition = z.output<
 
 function validateFileSupplyTypeAndMaxSupply<
   Args extends {
-    maxSupply?: string | number | bigint;
+    maxSupply?: number | bigint;
     supplyType?: 'finite' | 'infinite';
   },
 >(args: Args, ctx: z.RefinementCtx) {
