@@ -6,7 +6,6 @@
 import type { Command, OptionValues } from 'commander';
 import type {
   CommandHandlerArgs,
-  CommandResult,
   CommandSpec,
   PluginManifest,
   PluginStateEntry,
@@ -405,15 +404,6 @@ export class PluginManager {
       throw new Error('Operation cancelled by user');
     }
   }
-  // @deprecated @todo - temporary function, remove after migration to thrown based error handling
-  private isNewCommandResult(
-    commandResult: unknown,
-  ): commandResult is CommandResult {
-    if (typeof commandResult !== 'object' || commandResult === null)
-      return false;
-
-    return 'result' in commandResult;
-  }
 
   private exitWithCliError(error: CliError): void {
     return this.coreApi.output.handleOutput({
@@ -459,17 +449,8 @@ export class PluginManager {
 
     await this.handleConfirmation(commandSpec, handlerArgs, skipConfirmation);
 
-    // Mechanism that support both new and old Error handling
-    // @todo - replace as fast as handlers and services is migrated
     try {
       const result = await commandSpec.handler(handlerArgs);
-
-      // @deprecated @todo - temporary check, remove after migration to thrown based error handling
-      if (!this.isNewCommandResult(result)) {
-        throw new Error(
-          `Command ${commandSpec.name} is before migration to thrown based error handling`,
-        );
-      }
 
       this.coreApi.output // Now we know its new CommandResult
         .handleOutput({

@@ -90,10 +90,10 @@ export { zodToJsonSchema } from './utils/zod-to-json-schema';
 // Plugin Types
 // ============================================================================
 export type {
-  CommandExecutionResult,
   CommandHandler,
   CommandOption,
   CommandOutputSpec,
+  CommandResult,
   CommandSpec,
   PluginContext,
   PluginManifest,

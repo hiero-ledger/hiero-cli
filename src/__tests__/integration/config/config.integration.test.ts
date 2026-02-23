@@ -32,7 +32,7 @@ describe('Config Integration Tests', () => {
 
     expect(listConfigResult.status).toBe(Status.Success);
     const listConfigOutput: ListConfigOutput = JSON.parse(
-      listConfigResult.outputJson!,
+      listConfigResult.outputJson,
     );
     expect(listConfigOutput.totalCount).toBe(4);
     const optionNames = listConfigOutput.options.map((option) => option.name);
@@ -59,7 +59,7 @@ describe('Config Integration Tests', () => {
     });
     expect(setConfigResult.status).toBe(Status.Success);
     const setConfigOutput: SetConfigOutput = JSON.parse(
-      setConfigResult.outputJson!,
+      setConfigResult.outputJson,
     );
     expect(setConfigOutput.previousValue).toBe(false);
     expect(setConfigOutput.newValue).toBe(true);
@@ -76,7 +76,7 @@ describe('Config Integration Tests', () => {
     });
     expect(getConfigResult.status).toBe(Status.Success);
     const getConfigOutput: GetConfigOutput = JSON.parse(
-      getConfigResult.outputJson!,
+      getConfigResult.outputJson,
     );
     expect(getConfigOutput.name).toBe('ed25519_support_enabled');
     expect(getConfigOutput.value).toBe(true);

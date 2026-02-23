@@ -7,7 +7,6 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
-import type { Status } from '@/core/shared/constants';
 import type { OptionType } from '@/core/types/shared.types';
 import type { CommandHandlerArgs } from './plugin.interface';
 
@@ -77,21 +76,12 @@ export interface CommandResult {
   result: object;
 }
 
-export interface CommandExecutionResult {
-  status: Status;
-  /** Optional, present when status !== 'success'; intended for humans */
-  errorMessage?: string;
-  /** JSON string conforming to the manifest-declared output schema */
-  outputJson?: string;
-}
-
 /**
  * Command handler
  */
 export type CommandHandler = (
   args: CommandHandlerArgs,
-  // @deprecated @todo - we need to remove CommandExecutionResult after migration to thrown based error handling
-) => Promise<CommandResult | CommandExecutionResult>;
+) => Promise<CommandResult>;
 
 /**
  * Plugin state schema
