@@ -46,7 +46,8 @@ describe('Transfer Token Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const createAccountOutput = createAccountResult.result as CreateAccountOutput;
+    const createAccountOutput =
+      createAccountResult.result as CreateAccountOutput;
     expect(createAccountOutput.name).toBe('account-transfer-token');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -83,7 +84,8 @@ describe('Transfer Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const createTokenOutput = createTokenResult.result as CreateFungibleTokenOutput;
+    const createTokenOutput =
+      createTokenResult.result as CreateFungibleTokenOutput;
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('10');
@@ -106,7 +108,8 @@ describe('Transfer Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const associateTokenOutput = associateTokenResult.result as AssociateTokenOutput;
+    const associateTokenOutput =
+      associateTokenResult.result as AssociateTokenOutput;
     expect(associateTokenOutput.tokenId).toBe(createTokenOutput.tokenId);
     expect(associateTokenOutput.accountId).toBe(createAccountOutput.accountId);
     expect(associateTokenOutput.associated).toBe(true);
@@ -127,7 +130,8 @@ describe('Transfer Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const transferTokenOutput = transferTokenResult.result as TransferFungibleTokenOutput;
+    const transferTokenOutput =
+      transferTokenResult.result as TransferFungibleTokenOutput;
     expect(transferTokenOutput.tokenId).toBe(createTokenOutput.tokenId);
     expect(transferTokenOutput.from).toBe(process.env.OPERATOR_ID);
     expect(transferTokenOutput.to).toBe(createAccountOutput.accountId);
@@ -147,11 +151,12 @@ describe('Transfer Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const accountBalanceOutput = accountBalanceResult.result as AccountBalanceOutput;
+    const accountBalanceOutput =
+      accountBalanceResult.result as AccountBalanceOutput;
     expect(accountBalanceOutput.tokenBalances?.length).toBe(1);
     expect(accountBalanceOutput.tokenBalances?.at(0)?.tokenId).toBe(
       createTokenOutput.tokenId,
     );
     expect(accountBalanceOutput.tokenBalances?.at(0)?.balance).toBe(5n);
-  });
+  }, 90000);
 });

@@ -48,8 +48,11 @@ describe('Transfer NFT Integration Tests', () => {
         config: coreApi.config,
       });
 
-      const createSourceAccountOutput = createSourceAccountResult.result as CreateAccountOutput;
-      expect(createSourceAccountOutput.name).toBe('account-nft-transfer-source');
+      const createSourceAccountOutput =
+        createSourceAccountResult.result as CreateAccountOutput;
+      expect(createSourceAccountOutput.name).toBe(
+        'account-nft-transfer-source',
+      );
       expect(createSourceAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
       expect(createSourceAccountOutput.network).toBe(network);
 
@@ -69,8 +72,11 @@ describe('Transfer NFT Integration Tests', () => {
         config: coreApi.config,
       });
 
-      const createDestinationAccountOutput = createDestinationAccountResult.result as CreateAccountOutput;
-      expect(createDestinationAccountOutput.name).toBe('account-nft-transfer-destination');
+      const createDestinationAccountOutput =
+        createDestinationAccountResult.result as CreateAccountOutput;
+      expect(createDestinationAccountOutput.name).toBe(
+        'account-nft-transfer-destination',
+      );
       expect(createDestinationAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
       expect(createDestinationAccountOutput.network).toBe(network);
 
@@ -97,9 +103,15 @@ describe('Transfer NFT Integration Tests', () => {
       expect(createNftOutput.network).toBe(network);
       expect(createNftOutput.name).toBe('Test NFT Transfer Collection');
       expect(createNftOutput.alias).toBe('test-nft-transfer-collection');
-      expect(createNftOutput.treasuryId).toBe(createSourceAccountOutput.accountId);
-      expect(createNftOutput.adminAccountId).toBe(createSourceAccountOutput.accountId);
-      expect(createNftOutput.supplyAccountId).toBe(createSourceAccountOutput.accountId);
+      expect(createNftOutput.treasuryId).toBe(
+        createSourceAccountOutput.accountId,
+      );
+      expect(createNftOutput.adminAccountId).toBe(
+        createSourceAccountOutput.accountId,
+      );
+      expect(createNftOutput.supplyAccountId).toBe(
+        createSourceAccountOutput.accountId,
+      );
       expect(createNftOutput.symbol).toBe('TNFTC');
       expect(createNftOutput.supplyType).toBe(SupplyType.FINITE);
 
@@ -136,9 +148,12 @@ describe('Transfer NFT Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const associateTokenOutput = associateTokenResult.result as AssociateTokenOutput;
+      const associateTokenOutput =
+        associateTokenResult.result as AssociateTokenOutput;
       expect(associateTokenOutput.tokenId).toBe(createNftOutput.tokenId);
-      expect(associateTokenOutput.accountId).toBe(createDestinationAccountOutput.accountId);
+      expect(associateTokenOutput.accountId).toBe(
+        createDestinationAccountOutput.accountId,
+      );
       expect(associateTokenOutput.associated).toBe(true);
 
       await delay(5000);
@@ -154,13 +169,20 @@ describe('Transfer NFT Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const viewTokenBeforeTransferOutput = viewTokenBeforeTransferResult.result as ViewTokenOutput;
-      expect(viewTokenBeforeTransferOutput.tokenId).toBe(createNftOutput.tokenId);
+      const viewTokenBeforeTransferOutput =
+        viewTokenBeforeTransferResult.result as ViewTokenOutput;
+      expect(viewTokenBeforeTransferOutput.tokenId).toBe(
+        createNftOutput.tokenId,
+      );
       expect(viewTokenBeforeTransferOutput.nftSerial?.serialNumber).toBe(
         parseInt(mintNftOutput.serialNumber, 10),
       );
-      expect(viewTokenBeforeTransferOutput.nftSerial?.owner).toBe(createSourceAccountOutput.accountId);
-      expect(viewTokenBeforeTransferOutput.nftSerial?.metadata).toBe('Test NFT Transfer Metadata');
+      expect(viewTokenBeforeTransferOutput.nftSerial?.owner).toBe(
+        createSourceAccountOutput.accountId,
+      );
+      expect(viewTokenBeforeTransferOutput.nftSerial?.metadata).toBe(
+        'Test NFT Transfer Metadata',
+      );
 
       const transferNftArgs: Record<string, unknown> = {
         token: createNftOutput.tokenId,
@@ -178,7 +200,9 @@ describe('Transfer NFT Integration Tests', () => {
       const transferNftOutput = transferNftResult.result as TransferNftOutput;
       expect(transferNftOutput.tokenId).toBe(createNftOutput.tokenId);
       expect(transferNftOutput.from).toBe(createSourceAccountOutput.accountId);
-      expect(transferNftOutput.to).toBe(createDestinationAccountOutput.accountId);
+      expect(transferNftOutput.to).toBe(
+        createDestinationAccountOutput.accountId,
+      );
       expect(transferNftOutput.serials).toEqual([
         parseInt(mintNftOutput.serialNumber, 10),
       ]);
@@ -198,13 +222,20 @@ describe('Transfer NFT Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const viewTokenAfterTransferOutput = viewTokenAfterTransferResult.result as ViewTokenOutput;
-      expect(viewTokenAfterTransferOutput.tokenId).toBe(createNftOutput.tokenId);
+      const viewTokenAfterTransferOutput =
+        viewTokenAfterTransferResult.result as ViewTokenOutput;
+      expect(viewTokenAfterTransferOutput.tokenId).toBe(
+        createNftOutput.tokenId,
+      );
       expect(viewTokenAfterTransferOutput.nftSerial?.serialNumber).toBe(
         parseInt(mintNftOutput.serialNumber, 10),
       );
-      expect(viewTokenAfterTransferOutput.nftSerial?.owner).toBe(createDestinationAccountOutput.accountId);
-      expect(viewTokenAfterTransferOutput.nftSerial?.metadata).toBe('Test NFT Transfer Metadata');
+      expect(viewTokenAfterTransferOutput.nftSerial?.owner).toBe(
+        createDestinationAccountOutput.accountId,
+      );
+      expect(viewTokenAfterTransferOutput.nftSerial?.metadata).toBe(
+        'Test NFT Transfer Metadata',
+      );
     }, 120000);
   });
 
@@ -224,7 +255,8 @@ describe('Transfer NFT Integration Tests', () => {
         config: coreApi.config,
       });
 
-      const createAccountOutput = createAccountResult.result as CreateAccountOutput;
+      const createAccountOutput =
+        createAccountResult.result as CreateAccountOutput;
       expect(createAccountOutput.name).toBe('account-nft-not-owned-test');
       expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
       expect(createAccountOutput.network).toBe(network);

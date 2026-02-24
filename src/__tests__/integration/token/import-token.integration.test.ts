@@ -39,7 +39,8 @@ describe('Import Token Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const createTokenOutput = createTokenResult.result as CreateFungibleTokenOutput;
+    const createTokenOutput =
+      createTokenResult.result as CreateFungibleTokenOutput;
     tokenId = createTokenOutput.tokenId;
 
     coreApi.state.delete(TOKEN_NAMESPACE, tokenId);

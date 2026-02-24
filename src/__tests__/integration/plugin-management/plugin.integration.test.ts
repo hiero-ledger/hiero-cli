@@ -80,7 +80,8 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const disablePluginOutput = disablePluginResult.result as DisablePluginOutput;
+    const disablePluginOutput =
+      disablePluginResult.result as DisablePluginOutput;
     expect(disablePluginOutput.name).toBe('test');
     expect(disablePluginOutput.message).toBe(
       'Plugin test disabled successfully',
@@ -126,7 +127,8 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const viewPluginEnabledOutput = viewPluginEnabledResult.result as PluginInfoOutput;
+    const viewPluginEnabledOutput =
+      viewPluginEnabledResult.result as PluginInfoOutput;
     expect(viewPluginEnabledOutput.found).toBe(true);
     expect(viewPluginEnabledOutput.message).toBe(
       'Plugin test information retrieved successfully',

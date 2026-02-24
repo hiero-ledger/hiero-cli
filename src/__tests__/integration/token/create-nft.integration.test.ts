@@ -39,7 +39,8 @@ describe('Create NFT Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const createAccountOutput = createAccountResult.result as CreateAccountOutput;
+    const createAccountOutput =
+      createAccountResult.result as CreateAccountOutput;
     expect(createAccountOutput.name).toBe('account-create-nft');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);

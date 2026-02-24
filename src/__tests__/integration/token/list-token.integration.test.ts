@@ -35,7 +35,8 @@ describe('List Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const createTokenOutput = createTokenResult.result as CreateFungibleTokenOutput;
+    const createTokenOutput =
+      createTokenResult.result as CreateFungibleTokenOutput;
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('10');

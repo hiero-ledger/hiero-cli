@@ -67,7 +67,9 @@ describe('Delete Topic Integration Tests', () => {
       });
       const deleteTopicOutput = deleteTopicResult.result as DeleteTopicOutput;
       expect(deleteTopicOutput.deletedTopic.name).toBe('topic-to-be-deleted');
-      expect(deleteTopicOutput.deletedTopic.topicId).toBe(createTopicOutput.topicId);
+      expect(deleteTopicOutput.deletedTopic.topicId).toBe(
+        createTopicOutput.topicId,
+      );
       expect(deleteTopicOutput.network).toBe(network);
 
       const listAfterDeleteResult = await listTopics({
@@ -77,7 +79,8 @@ describe('Delete Topic Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const listAfterDeleteOutput = listAfterDeleteResult.result as ListTopicsOutput;
+      const listAfterDeleteOutput =
+        listAfterDeleteResult.result as ListTopicsOutput;
       const topicAfterDelete = listAfterDeleteOutput.topics.find(
         (t) => t.name === 'topic-to-be-deleted',
       );
@@ -110,7 +113,9 @@ describe('Delete Topic Integration Tests', () => {
         config: coreApi.config,
       });
       const deleteTopicOutput = deleteTopicResult.result as DeleteTopicOutput;
-      expect(deleteTopicOutput.deletedTopic.topicId).toBe(createTopicOutput.topicId);
+      expect(deleteTopicOutput.deletedTopic.topicId).toBe(
+        createTopicOutput.topicId,
+      );
       expect(deleteTopicOutput.deletedTopic.name).toBe('topic-to-delete-by-id');
 
       const listTopicArgs: Record<string, unknown> = {
@@ -123,7 +128,8 @@ describe('Delete Topic Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const listAfterDeleteOutput = listAfterDeleteResult.result as ListTopicsOutput;
+      const listAfterDeleteOutput =
+        listAfterDeleteResult.result as ListTopicsOutput;
       const topicAfterDelete = listAfterDeleteOutput.topics.find(
         (t) => t.topicId === createTopicOutput.topicId,
       );

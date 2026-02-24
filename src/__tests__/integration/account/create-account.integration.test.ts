@@ -38,7 +38,8 @@ describe('Create Account Integration Tests', () => {
         config: coreApi.config,
       });
 
-      const createAccountOutput = createAccountResult.result as CreateAccountOutput;
+      const createAccountOutput =
+        createAccountResult.result as CreateAccountOutput;
       expect(createAccountOutput.name).toBe('account-test');
       expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
       expect(createAccountOutput.network).toBe(network);

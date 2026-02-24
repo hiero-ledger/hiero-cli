@@ -48,7 +48,8 @@ describe('Import Account Integration Tests', () => {
         config: coreApi.config,
       });
 
-      const importAccountOutput = importAccountResult.result as ImportAccountOutput;
+      const importAccountOutput =
+        importAccountResult.result as ImportAccountOutput;
       expect(importAccountOutput.accountId).toBe(accountId);
       expect(importAccountOutput.name).toBe('account-imported');
       expect(importAccountOutput.type).toBe(KeyAlgorithm.ECDSA);

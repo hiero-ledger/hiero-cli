@@ -39,7 +39,8 @@ describe('HBAR Transfer Account Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const createAccountOutput = createAccountResult.result as CreateAccountOutput;
+    const createAccountOutput =
+      createAccountResult.result as CreateAccountOutput;
     expect(createAccountOutput.name).toBe('account-transfer');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -83,7 +84,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     expect(viewAccountOutput.balance).toBe(200000000n); // result in tinybars
     expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
     expect(viewAccountOutput.publicKey).toBe(createAccountOutput.publicKey);
-  });
+  }, 60000);
 
   it('should transfer HBAR from defined account to account and then verify it with account view method', async () => {
     const accountFromArgs: Record<string, unknown> = {
@@ -157,7 +158,8 @@ describe('HBAR Transfer Account Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const viewAccountFromOutput = viewAccountFromResult.result as ViewAccountOutput;
+    const viewAccountFromOutput =
+      viewAccountFromResult.result as ViewAccountOutput;
     expect(viewAccountFromOutput.accountId).toBe(accountFromOutput.accountId);
     expect(viewAccountFromOutput.publicKey).toBe(accountFromOutput.publicKey);
 
@@ -175,5 +177,5 @@ describe('HBAR Transfer Account Integration Tests', () => {
     expect(viewAccountToOutput.accountId).toBe(accountToOutput.accountId);
     expect(viewAccountToOutput.balance).toBe(200000000n); // result in tinybars
     expect(viewAccountToOutput.publicKey).toBe(accountToOutput.publicKey);
-  });
+  }, 90000);
 });

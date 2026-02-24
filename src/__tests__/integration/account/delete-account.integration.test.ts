@@ -49,7 +49,8 @@ describe('Delete Account Integration Tests', () => {
         config: coreApi.config,
       });
 
-      const importAccountOutput = importAccountResult.result as ImportAccountOutput;
+      const importAccountOutput =
+        importAccountResult.result as ImportAccountOutput;
       expect(importAccountOutput.accountId).toBe(accountId);
       expect(importAccountOutput.name).toBe('account-to-be-deleted');
       expect(importAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
@@ -80,7 +81,8 @@ describe('Delete Account Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const deleteAccountOutput = deleteAccountResult.result as DeleteAccountOutput;
+      const deleteAccountOutput =
+        deleteAccountResult.result as DeleteAccountOutput;
       expect(deleteAccountOutput.deletedAccount.accountId).toBe(accountId);
       expect(deleteAccountOutput.deletedAccount.name).toBe(
         'account-to-be-deleted',
@@ -94,7 +96,9 @@ describe('Delete Account Integration Tests', () => {
           logger: coreApi.logger,
           config: coreApi.config,
         }),
-      ).rejects.toThrow('Account not found with ID or alias: account-to-be-deleted');
+      ).rejects.toThrow(
+        'Account not found with ID or alias: account-to-be-deleted',
+      );
     });
   });
 });

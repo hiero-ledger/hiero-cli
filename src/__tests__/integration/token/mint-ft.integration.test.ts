@@ -46,7 +46,8 @@ describe('Mint FT Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const createAccountOutput = createAccountResult.result as CreateAccountOutput;
+    const createAccountOutput =
+      createAccountResult.result as CreateAccountOutput;
     expect(createAccountOutput.name).toBe('account-mint-ft');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -85,7 +86,8 @@ describe('Mint FT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const createTokenOutput = createTokenResult.result as CreateFungibleTokenOutput;
+    const createTokenOutput =
+      createTokenResult.result as CreateFungibleTokenOutput;
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('100');
@@ -115,7 +117,9 @@ describe('Mint FT Integration Tests', () => {
     expect(accountBalanceBeforeMintOutput.tokenBalances?.at(0)?.tokenId).toBe(
       createTokenOutput.tokenId,
     );
-    expect(accountBalanceBeforeMintOutput.tokenBalances?.at(0)?.balance).toBe(100n);
+    expect(accountBalanceBeforeMintOutput.tokenBalances?.at(0)?.balance).toBe(
+      100n,
+    );
 
     await delay(5000);
 
@@ -157,6 +161,8 @@ describe('Mint FT Integration Tests', () => {
     expect(accountBalanceAfterMintOutput.tokenBalances?.at(0)?.tokenId).toBe(
       createTokenOutput.tokenId,
     );
-    expect(accountBalanceAfterMintOutput.tokenBalances?.at(0)?.balance).toBe(150n);
+    expect(accountBalanceAfterMintOutput.tokenBalances?.at(0)?.balance).toBe(
+      150n,
+    );
   });
 });

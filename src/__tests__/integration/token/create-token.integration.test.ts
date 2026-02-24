@@ -44,7 +44,8 @@ describe('Create Token Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const createAccountOutput = createAccountResult.result as CreateAccountOutput;
+    const createAccountOutput =
+      createAccountResult.result as CreateAccountOutput;
     expect(createAccountOutput.name).toBe('account-create-token');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -84,7 +85,8 @@ describe('Create Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const createTokenOutput = createTokenResult.result as CreateFungibleTokenOutput;
+    const createTokenOutput =
+      createTokenResult.result as CreateFungibleTokenOutput;
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('10');
@@ -108,7 +110,8 @@ describe('Create Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const accountBalanceOutput = accountBalanceResult.result as AccountBalanceOutput;
+    const accountBalanceOutput =
+      accountBalanceResult.result as AccountBalanceOutput;
     expect(accountBalanceOutput.tokenBalances?.length).toBe(1);
     expect(accountBalanceOutput.tokenBalances?.at(0)?.tokenId).toBe(
       createTokenOutput.tokenId,
