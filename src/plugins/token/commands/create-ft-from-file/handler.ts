@@ -97,46 +97,46 @@ export async function createTokenFromFile(
     'token:feeSchedule',
   );
 
-    const tokenCreateTransaction = api.token.createTokenTransaction({
-      name: tokenDefinition.name,
-      symbol: tokenDefinition.symbol,
-      treasuryId: treasury.accountId,
-      decimals: tokenDefinition.decimals,
-      initialSupplyRaw: tokenDefinition.initialSupply,
-      tokenType: tokenDefinition.tokenType,
-      supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
-      maxSupplyRaw: tokenDefinition.maxSupply,
-      adminPublicKey: PublicKey.fromString(adminKey.publicKey),
-      supplyPublicKey: toPublicKey(supplyKey),
-      wipePublicKey: toPublicKey(wipeKey),
-      kycPublicKey: toPublicKey(kycKey),
-      freezePublicKey: toPublicKey(freezeKey),
-      pausePublicKey: toPublicKey(pauseKey),
-      feeSchedulePublicKey: toPublicKey(feeScheduleKey),
-      customFees: tokenDefinition.customFees.map((fee): CustomFee => {
-        if (fee.type === CustomFeeType.FIXED) {
-          return {
-            type: CustomFeeType.FIXED,
-            amount: fee.amount,
-            unitType: fee.unitType,
-            collectorId: fee.collectorId,
-            exempt: fee.exempt,
-          };
-        } else {
-          return {
-            type: CustomFeeType.FRACTIONAL,
-            numerator: fee.numerator,
-            denominator: fee.denominator,
-            min: fee.min,
-            max: fee.max,
-            netOfTransfers: fee.netOfTransfers,
-            collectorId: fee.collectorId,
-            exempt: fee.exempt,
-          };
-        }
-      }),
-      memo: tokenDefinition.memo,
-    });
+  const tokenCreateTransaction = api.token.createTokenTransaction({
+    name: tokenDefinition.name,
+    symbol: tokenDefinition.symbol,
+    treasuryId: treasury.accountId,
+    decimals: tokenDefinition.decimals,
+    initialSupplyRaw: tokenDefinition.initialSupply,
+    tokenType: tokenDefinition.tokenType,
+    supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
+    maxSupplyRaw: tokenDefinition.maxSupply,
+    adminPublicKey: PublicKey.fromString(adminKey.publicKey),
+    supplyPublicKey: toPublicKey(supplyKey),
+    wipePublicKey: toPublicKey(wipeKey),
+    kycPublicKey: toPublicKey(kycKey),
+    freezePublicKey: toPublicKey(freezeKey),
+    pausePublicKey: toPublicKey(pauseKey),
+    feeSchedulePublicKey: toPublicKey(feeScheduleKey),
+    customFees: tokenDefinition.customFees.map((fee): CustomFee => {
+      if (fee.type === CustomFeeType.FIXED) {
+        return {
+          type: CustomFeeType.FIXED,
+          amount: fee.amount,
+          unitType: fee.unitType,
+          collectorId: fee.collectorId,
+          exempt: fee.exempt,
+        };
+      } else {
+        return {
+          type: CustomFeeType.FRACTIONAL,
+          numerator: fee.numerator,
+          denominator: fee.denominator,
+          min: fee.min,
+          max: fee.max,
+          netOfTransfers: fee.netOfTransfers,
+          collectorId: fee.collectorId,
+          exempt: fee.exempt,
+        };
+      }
+    }),
+    memo: tokenDefinition.memo,
+  });
 
   const signingKeys = [adminKey.keyRefId, treasury.keyRefId];
   logger.info(

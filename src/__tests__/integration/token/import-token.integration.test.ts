@@ -42,7 +42,7 @@ describe('Import Token Integration Tests', () => {
 
     expect(createTokenResult.status).toBe(Status.Success);
     const createTokenOutput: CreateFungibleTokenOutput = JSON.parse(
-      createTokenResult.outputJson!,
+      createTokenResult.outputJson,
     );
     tokenId = createTokenOutput.tokenId;
 
@@ -65,7 +65,7 @@ describe('Import Token Integration Tests', () => {
 
     expect(importTokenResult.status).toBe(Status.Success);
     const importTokenOutput: ImportTokenOutput = JSON.parse(
-      importTokenResult.outputJson!,
+      importTokenResult.outputJson,
     );
     expect(importTokenOutput.tokenId).toBe(tokenId);
     expect(importTokenOutput.name).toContain('Token Import');
@@ -82,7 +82,7 @@ describe('Import Token Integration Tests', () => {
     });
     expect(listTokenResult.status).toBe(Status.Success);
     const listTokenOutput: ListTokensOutput = JSON.parse(
-      listTokenResult.outputJson!,
+      listTokenResult.outputJson,
     );
     const token = listTokenOutput.tokens.find((t) => t.tokenId === tokenId);
     expect(token).not.toBeNull();
@@ -108,7 +108,7 @@ describe('Import Token Integration Tests', () => {
 
     expect(importTokenResult.status).toBe(Status.Success);
     const importTokenOutput: ImportTokenOutput = JSON.parse(
-      importTokenResult.outputJson!,
+      importTokenResult.outputJson,
     );
     expect(importTokenOutput.tokenId).toBe(tokenId);
     expect(importTokenOutput.name).toBe(alias);
@@ -125,7 +125,7 @@ describe('Import Token Integration Tests', () => {
     });
     expect(listTokenResult.status).toBe(Status.Success);
     const listTokenOutput: ListTokensOutput = JSON.parse(
-      listTokenResult.outputJson!,
+      listTokenResult.outputJson,
     );
     const token = listTokenOutput.tokens.find((t) => t.tokenId === tokenId);
     expect(token).not.toBeNull();

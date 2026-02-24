@@ -71,7 +71,7 @@ describe('Token Custom Fees Integration Tests', () => {
 
     expect(result.status).toBe(Status.Success);
     const output: CreateFungibleTokenFromFileOutput = JSON.parse(
-      result.outputJson!,
+      result.outputJson,
     );
     expect(output.tokenId).toBeDefined();
     expect(output.name).toBe(tokenFile.name);
@@ -122,7 +122,7 @@ describe('Token Custom Fees Integration Tests', () => {
 
     expect(result.status).toBe(Status.Success);
     const output: CreateFungibleTokenFromFileOutput = JSON.parse(
-      result.outputJson!,
+      result.outputJson,
     );
     expect(output.tokenId).toBeDefined();
     expect(output.name).toBe(tokenFile.name);
@@ -170,7 +170,7 @@ describe('Token Custom Fees Integration Tests', () => {
 
     expect(result.status).toBe(Status.Success);
     const output: CreateFungibleTokenFromFileOutput = JSON.parse(
-      result.outputJson!,
+      result.outputJson,
     );
     expect(output.tokenId).toBeDefined();
     expect(output.name).toBe(tokenFile.name);

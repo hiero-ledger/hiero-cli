@@ -46,7 +46,7 @@ export class ZustandContractStateHelper {
       );
     } catch (error) {
       this.logger.error(
-        `[CONTRACT STATE] Failed to delete contract ${contractId}: ${toErrorMessage(error)}`,
+        `[CONTRACT STATE] Failed to delete contract ${contractId}: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }

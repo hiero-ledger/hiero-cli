@@ -38,7 +38,7 @@ describe('Import Topic Integration Tests', () => {
 
     expect(createTopicResult.status).toBe(Status.Success);
     const createTopicOutput: CreateTopicOutput = JSON.parse(
-      createTopicResult.outputJson!,
+      createTopicResult.outputJson,
     );
     topicId = createTopicOutput.topicId;
 
@@ -82,7 +82,7 @@ describe('Import Topic Integration Tests', () => {
     });
     expect(listTopicResult.status).toBe(Status.Success);
     const listTopicOutput: ListTopicsOutput = JSON.parse(
-      listTopicResult.outputJson!,
+      listTopicResult.outputJson,
     );
     const topic = listTopicOutput.topics.find((t) => t.topicId === topicId);
     expect(topic).not.toBeNull();
@@ -128,7 +128,7 @@ describe('Import Topic Integration Tests', () => {
     });
     expect(listTopicResult.status).toBe(Status.Success);
     const listTopicOutput: ListTopicsOutput = JSON.parse(
-      listTopicResult.outputJson!,
+      listTopicResult.outputJson,
     );
     const topic = listTopicOutput.topics.find((t) => t.topicId === topicId);
     expect(topic).not.toBeNull();

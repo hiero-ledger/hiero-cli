@@ -37,7 +37,7 @@ describe('Delete Topic Integration Tests', () => {
 
       expect(createTopicResult.status).toBe(Status.Success);
       const createTopicOutput: CreateTopicOutput = JSON.parse(
-        createTopicResult.outputJson!,
+        createTopicResult.outputJson,
       );
       expect(createTopicOutput.name).toBe('topic-to-be-deleted');
       expect(createTopicOutput.network).toBe(network);
@@ -54,7 +54,7 @@ describe('Delete Topic Integration Tests', () => {
       });
       expect(listTopicResult.status).toBe(Status.Success);
       const listTopicOutput: ListTopicsOutput = JSON.parse(
-        listTopicResult.outputJson!,
+        listTopicResult.outputJson,
       );
       const topicBeforeDelete = listTopicOutput.topics.find(
         (t) => t.name === 'topic-to-be-deleted',
@@ -74,7 +74,7 @@ describe('Delete Topic Integration Tests', () => {
       });
       expect(deleteTopicResult.status).toBe(Status.Success);
       const deleteTopicOutput: DeleteTopicOutput = JSON.parse(
-        deleteTopicResult.outputJson!,
+        deleteTopicResult.outputJson,
       );
       expect(deleteTopicOutput.deletedTopic.name).toBe('topic-to-be-deleted');
       expect(deleteTopicOutput.deletedTopic.topicId).toBe(
@@ -91,7 +91,7 @@ describe('Delete Topic Integration Tests', () => {
       });
       expect(listAfterDeleteResult.status).toBe(Status.Success);
       const listAfterDeleteOutput: ListTopicsOutput = JSON.parse(
-        listAfterDeleteResult.outputJson!,
+        listAfterDeleteResult.outputJson,
       );
       const topicAfterDelete = listAfterDeleteOutput.topics.find(
         (t) => t.name === 'topic-to-be-deleted',
@@ -113,7 +113,7 @@ describe('Delete Topic Integration Tests', () => {
 
       expect(createTopicResult.status).toBe(Status.Success);
       const createTopicOutput: CreateTopicOutput = JSON.parse(
-        createTopicResult.outputJson!,
+        createTopicResult.outputJson,
       );
       expect(createTopicOutput.name).toBe('topic-to-delete-by-id');
 
@@ -129,7 +129,7 @@ describe('Delete Topic Integration Tests', () => {
       });
       expect(deleteTopicResult.status).toBe(Status.Success);
       const deleteTopicOutput: DeleteTopicOutput = JSON.parse(
-        deleteTopicResult.outputJson!,
+        deleteTopicResult.outputJson,
       );
       expect(deleteTopicOutput.deletedTopic.topicId).toBe(
         createTopicOutput.topicId,
@@ -148,7 +148,7 @@ describe('Delete Topic Integration Tests', () => {
       });
       expect(listAfterDeleteResult.status).toBe(Status.Success);
       const listAfterDeleteOutput: ListTopicsOutput = JSON.parse(
-        listAfterDeleteResult.outputJson!,
+        listAfterDeleteResult.outputJson,
       );
       const topicAfterDelete = listAfterDeleteOutput.topics.find(
         (t) => t.topicId === createTopicOutput.topicId,

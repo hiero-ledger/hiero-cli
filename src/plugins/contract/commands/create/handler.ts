@@ -86,8 +86,8 @@ export async function createContract(
     solidityVersion: solidityVersion,
   });
 
-    const txSigners = admin ? [admin.keyRefId] : [];
-    const adminPublicKey = admin ? admin.publicKey : undefined;
+  const txSigners = admin ? [admin.keyRefId] : [];
+  const adminPublicKey = admin ? admin.publicKey : undefined;
 
   const contractCreateFlowTx = api.contract.contractCreateFlowTransaction({
     bytecode: compilationResult.bytecode,
