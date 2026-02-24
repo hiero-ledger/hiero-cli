@@ -4,7 +4,6 @@ import type { ViewAccountOutput } from '@/plugins/account/commands/view';
 
 import * as fs from 'fs';
 
-import { Status } from '@/core/shared/constants';
 import { importAccount, listAccounts, viewAccount } from '@/plugins/account';
 import { transferHandler } from '@/plugins/hbar/commands/transfer';
 
@@ -17,43 +16,43 @@ export const deleteStateFiles = (dir: string): void => {
 export const returnFundsFromCreatedAccountsToMainAccount = async (
   coreApi: CoreApi,
 ): Promise<void> => {
-  const accountListResult = await listAccounts({
-    args: {},
-    api: coreApi,
-    state: coreApi.state,
-    logger: coreApi.logger,
-    config: coreApi.config,
-  });
-  if (accountListResult.status == Status.Success) {
-    const accountOutput: ListAccountsOutput = JSON.parse(
-      accountListResult.outputJson,
-    );
+  try {
+    const accountListResult = await listAccounts({
+      args: {},
+      api: coreApi,
+      state: coreApi.state,
+      logger: coreApi.logger,
+      config: coreApi.config,
+    });
+    const accountOutput = accountListResult.result as ListAccountsOutput;
     const accounts = accountOutput.accounts;
 
     const importAccountArgs: Record<string, unknown> = {
       name: 'main-account',
       key: `${process.env.OPERATOR_ID as string}:${process.env.OPERATOR_KEY as string}`,
     };
-    await importAccount({
-      args: importAccountArgs,
-      api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
-    });
-    await delay(5000);
-    for (const account of accounts) {
-      const viewAccountResult = await viewAccount({
-        args: { account: account.name },
+    try {
+      await importAccount({
+        args: importAccountArgs,
         api: coreApi,
         state: coreApi.state,
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      if (viewAccountResult.status == Status.Success) {
-        const viewAccountOutput: ViewAccountOutput = JSON.parse(
-          viewAccountResult.outputJson,
-        );
+    } catch {
+      // main-account may already exist
+    }
+    await delay(5000);
+    for (const account of accounts) {
+      try {
+        const viewAccountResult = await viewAccount({
+          args: { account: account.name },
+          api: coreApi,
+          state: coreApi.state,
+          logger: coreApi.logger,
+          config: coreApi.config,
+        });
+        const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
         const args: Record<string, unknown> = {
           amount: String(Number(viewAccountOutput.balance) / 100000000),
           to: 'main-account',
@@ -66,7 +65,11 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
           logger: coreApi.logger,
           config: coreApi.config,
         });
+      } catch {
+        // skip accounts that cannot be viewed or transferred
       }
     }
+  } catch {
+    // if listing fails, skip cleanup
   }
 };

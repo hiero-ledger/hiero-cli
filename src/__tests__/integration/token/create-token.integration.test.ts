@@ -11,7 +11,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
   createAccount,
@@ -44,10 +44,7 @@ describe('Create Token Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(createAccountResult.status).toBe(Status.Success);
-    const createAccountOutput: CreateAccountOutput = JSON.parse(
-      createAccountResult.outputJson,
-    );
+    const createAccountOutput = createAccountResult.result as CreateAccountOutput;
     expect(createAccountOutput.name).toBe('account-create-token');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -64,12 +61,9 @@ describe('Create Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(viewAccountResult.status).toBe(Status.Success);
-    const viewAccountOutput: ViewAccountOutput = JSON.parse(
-      viewAccountResult.outputJson,
-    );
+    const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
-    expect(viewAccountOutput.balance).toBe('100000000'); // result in tinybars
+    expect(viewAccountOutput.balance).toBe(100000000n); // result in tinybars
     expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
     expect(viewAccountOutput.publicKey).toBe(createAccountOutput.publicKey);
 
@@ -90,10 +84,7 @@ describe('Create Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(createTokenResult.status).toBe(Status.Success);
-    const createTokenOutput: CreateFungibleTokenOutput = JSON.parse(
-      createTokenResult.outputJson,
-    );
+    const createTokenOutput = createTokenResult.result as CreateFungibleTokenOutput;
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('10');
@@ -117,16 +108,13 @@ describe('Create Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(accountBalanceResult.status).toBe(Status.Success);
-    const accountBalanceOutput: AccountBalanceOutput = JSON.parse(
-      accountBalanceResult.outputJson,
-    );
+    const accountBalanceOutput = accountBalanceResult.result as AccountBalanceOutput;
     expect(accountBalanceOutput.tokenBalances?.length).toBe(1);
     expect(accountBalanceOutput.tokenBalances?.at(0)?.tokenId).toBe(
       createTokenOutput.tokenId,
     );
     expect(accountBalanceOutput.tokenBalances?.at(0)?.balance).toBe(
-      createTokenOutput.initialSupply,
+      BigInt(createTokenOutput.initialSupply),
     );
   });
 });

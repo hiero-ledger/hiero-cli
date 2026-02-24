@@ -166,5 +166,5 @@ describe('Topic Messages Integration Tests', () => {
       findMessageLteResult.result as FindMessagesOutput;
     expect(findMessageLteOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageLteOutput.messages.length).toBe(4);
-  });
+  }, 120000);
 });

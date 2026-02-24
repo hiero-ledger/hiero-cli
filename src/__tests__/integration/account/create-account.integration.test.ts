@@ -9,7 +9,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { createAccount, viewAccount } from '@/plugins/account';
 
 describe('Create Account Integration Tests', () => {
@@ -38,10 +38,7 @@ describe('Create Account Integration Tests', () => {
         config: coreApi.config,
       });
 
-      expect(createAccountResult.status).toBe(Status.Success);
-      const createAccountOutput: CreateAccountOutput = JSON.parse(
-        createAccountResult.outputJson,
-      );
+      const createAccountOutput = createAccountResult.result as CreateAccountOutput;
       expect(createAccountOutput.name).toBe('account-test');
       expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
       expect(createAccountOutput.network).toBe(network);
@@ -58,12 +55,9 @@ describe('Create Account Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(viewAccountResult.status).toBe(Status.Success);
-      const viewAccountOutput: ViewAccountOutput = JSON.parse(
-        viewAccountResult.outputJson,
-      );
+      const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
       expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
-      expect(viewAccountOutput.balance).toBe('100000000'); // result in tinybars
+      expect(viewAccountOutput.balance).toBe(100000000n); // result in tinybars
       expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
       expect(viewAccountOutput.publicKey).toBe(createAccountOutput.publicKey);
     });

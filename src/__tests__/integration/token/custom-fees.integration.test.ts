@@ -11,7 +11,6 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { Status } from '@/core/shared/constants';
 import { createTokenFromFile } from '@/plugins/token';
 
 const TEMP_DIR = path.join(__dirname, 'temp-token-files');
@@ -69,10 +68,7 @@ describe('Token Custom Fees Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(result.status).toBe(Status.Success);
-    const output: CreateFungibleTokenFromFileOutput = JSON.parse(
-      result.outputJson,
-    );
+    const output = result.result as CreateFungibleTokenFromFileOutput;
     expect(output.tokenId).toBeDefined();
     expect(output.name).toBe(tokenFile.name);
     expect(output.network).toBe(network);
@@ -120,10 +116,7 @@ describe('Token Custom Fees Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(result.status).toBe(Status.Success);
-    const output: CreateFungibleTokenFromFileOutput = JSON.parse(
-      result.outputJson,
-    );
+    const output = result.result as CreateFungibleTokenFromFileOutput;
     expect(output.tokenId).toBeDefined();
     expect(output.name).toBe(tokenFile.name);
     expect(output.network).toBe(network);
@@ -168,10 +161,7 @@ describe('Token Custom Fees Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(result.status).toBe(Status.Success);
-    const output: CreateFungibleTokenFromFileOutput = JSON.parse(
-      result.outputJson,
-    );
+    const output = result.result as CreateFungibleTokenFromFileOutput;
     expect(output.tokenId).toBeDefined();
     expect(output.name).toBe(tokenFile.name);
     expect(output.network).toBe(network);

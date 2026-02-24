@@ -10,7 +10,6 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { Status } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { createToken, importToken, listTokens } from '@/plugins/token';
 import { TOKEN_NAMESPACE } from '@/plugins/token/manifest';
@@ -40,10 +39,7 @@ describe('Import Token Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(createTokenResult.status).toBe(Status.Success);
-    const createTokenOutput: CreateFungibleTokenOutput = JSON.parse(
-      createTokenResult.outputJson,
-    );
+    const createTokenOutput = createTokenResult.result as CreateFungibleTokenOutput;
     tokenId = createTokenOutput.tokenId;
 
     coreApi.state.delete(TOKEN_NAMESPACE, tokenId);
@@ -63,10 +59,7 @@ describe('Import Token Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(importTokenResult.status).toBe(Status.Success);
-    const importTokenOutput: ImportTokenOutput = JSON.parse(
-      importTokenResult.outputJson,
-    );
+    const importTokenOutput = importTokenResult.result as ImportTokenOutput;
     expect(importTokenOutput.tokenId).toBe(tokenId);
     expect(importTokenOutput.name).toContain('Token Import');
     expect(importTokenOutput.network).toBe(network);
@@ -80,10 +73,7 @@ describe('Import Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(listTokenResult.status).toBe(Status.Success);
-    const listTokenOutput: ListTokensOutput = JSON.parse(
-      listTokenResult.outputJson,
-    );
+    const listTokenOutput = listTokenResult.result as ListTokensOutput;
     const token = listTokenOutput.tokens.find((t) => t.tokenId === tokenId);
     expect(token).not.toBeNull();
     expect(token?.tokenId).toBe(tokenId);
@@ -106,10 +96,7 @@ describe('Import Token Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(importTokenResult.status).toBe(Status.Success);
-    const importTokenOutput: ImportTokenOutput = JSON.parse(
-      importTokenResult.outputJson,
-    );
+    const importTokenOutput = importTokenResult.result as ImportTokenOutput;
     expect(importTokenOutput.tokenId).toBe(tokenId);
     expect(importTokenOutput.name).toBe(alias);
     expect(importTokenOutput.alias).toBe(alias);
@@ -123,10 +110,7 @@ describe('Import Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(listTokenResult.status).toBe(Status.Success);
-    const listTokenOutput: ListTokensOutput = JSON.parse(
-      listTokenResult.outputJson,
-    );
+    const listTokenOutput = listTokenResult.result as ListTokensOutput;
     const token = listTokenOutput.tokens.find((t) => t.tokenId === tokenId);
     expect(token).not.toBeNull();
     expect(token?.name).toBe(alias);

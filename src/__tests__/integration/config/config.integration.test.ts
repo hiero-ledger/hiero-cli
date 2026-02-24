@@ -8,7 +8,6 @@ import '@/core/utils/json-serialize';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { Status } from '@/core/shared/constants';
 import { getConfigOption } from '@/plugins/config/commands/get/handler';
 import { listConfigOptions } from '@/plugins/config/commands/list/handler';
 import { setConfigOption } from '@/plugins/config/commands/set/handler';
@@ -30,10 +29,7 @@ describe('Config Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(listConfigResult.status).toBe(Status.Success);
-    const listConfigOutput: ListConfigOutput = JSON.parse(
-      listConfigResult.outputJson,
-    );
+    const listConfigOutput = listConfigResult.result as ListConfigOutput;
     expect(listConfigOutput.totalCount).toBe(4);
     const optionNames = listConfigOutput.options.map((option) => option.name);
     expect(optionNames).toEqual(
@@ -57,10 +53,7 @@ describe('Config Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(setConfigResult.status).toBe(Status.Success);
-    const setConfigOutput: SetConfigOutput = JSON.parse(
-      setConfigResult.outputJson,
-    );
+    const setConfigOutput = setConfigResult.result as SetConfigOutput;
     expect(setConfigOutput.previousValue).toBe(false);
     expect(setConfigOutput.newValue).toBe(true);
 
@@ -74,10 +67,7 @@ describe('Config Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(getConfigResult.status).toBe(Status.Success);
-    const getConfigOutput: GetConfigOutput = JSON.parse(
-      getConfigResult.outputJson,
-    );
+    const getConfigOutput = getConfigResult.result as GetConfigOutput;
     expect(getConfigOutput.name).toBe('ed25519_support_enabled');
     expect(getConfigOutput.value).toBe(true);
     expect(getConfigOutput.type).toBe('boolean');
