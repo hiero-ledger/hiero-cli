@@ -11,12 +11,14 @@ import {
 } from '@/core/schemas/common-schemas';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Zod schema for runtime validation
 export const AccountDataSchema = z.object({
   keyRefId: z.string().min(1, 'Key reference ID is required'),
-  name: AliasNameSchema.max(50, 'Name must be 50 characters or less'),
+  name: AliasNameSchema.max(
+    50,
+    'Name must be 50 characters or less',
+  ).optional(),
   accountId: EntityIdSchema,
   type: z.enum([KeyAlgorithm.ECDSA, KeyAlgorithm.ED25519], {
     error: () => ({ message: 'Type must be either ecdsa or ed25519' }),
@@ -32,28 +34,6 @@ export const AccountDataSchema = z.object({
 
 // TypeScript type inferred from Zod schema
 export type AccountData = z.infer<typeof AccountDataSchema>;
-
-// JSON Schema for manifest (automatically generated from Zod schema)
-export const ACCOUNT_JSON_SCHEMA = zodToJsonSchema(AccountDataSchema);
-
-/**
- * Validate account data using Zod schema
- */
-export function validateAccountData(data: unknown): data is AccountData {
-  try {
-    AccountDataSchema.parse(data);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-/**
- * Parse and validate account data with detailed error messages
- */
-export function parseAccountData(data: unknown): AccountData {
-  return AccountDataSchema.parse(data);
-}
 
 /**
  * Safe parse account data (returns success/error instead of throwing)

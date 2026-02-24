@@ -2,7 +2,7 @@
  * Token Associations
  * Utility functions for processing token associations
  */
-import type { CoreApi, Logger } from '@/core';
+import type { CoreApi, Logger, SupportedNetwork } from '@/core';
 import type {
   KeyManagerName,
   KeyOrAccountAlias,
@@ -10,16 +10,19 @@ import type {
 import type { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { toErrorMessage } from '@/core/utils/errors';
+import { composeKey } from '@/core/utils/key-composer';
 
 export function saveAssociationToState(
   tokenState: ZustandTokenStateHelper,
   tokenId: string,
   accountId: string,
+  network: SupportedNetwork,
   logger: Logger,
 ): void {
-  const tokenData = tokenState.getToken(tokenId);
+  const tokenKey = composeKey(network, tokenId);
+  const tokenData = tokenState.getToken(tokenKey);
   if (tokenData) {
-    tokenState.addTokenAssociation(tokenId, accountId, accountId);
+    tokenState.addTokenAssociation(tokenKey, accountId, accountId);
     logger.info(`   Association saved to token state`);
   }
 }

@@ -22,32 +22,30 @@ export class ZustandContractStateHelper {
   /**
    * Check if a contract exists in the state
    */
-  hasContract(contractId: string): boolean {
-    return this.state.has(CONTRACT_NAMESPACE, contractId);
+  hasContract(key: string): boolean {
+    return this.state.has(CONTRACT_NAMESPACE, key);
   }
 
   /**
    * Get a contract from the state by contract ID
    */
-  getContract(contractId: string): ContractData | undefined {
-    return this.state.get<ContractData>(CONTRACT_NAMESPACE, contractId);
+  getContract(key: string): ContractData | undefined {
+    return this.state.get<ContractData>(CONTRACT_NAMESPACE, key);
   }
 
   /**
    * Delete a contract from the state
    */
-  deleteContract(contractId: string): void {
+  deleteContract(key: string): void {
     try {
+      this.logger.debug(`[CONTRACT STATE] Deleting contract ${key} from state`);
+      this.state.delete(CONTRACT_NAMESPACE, key);
       this.logger.debug(
-        `[CONTRACT STATE] Deleting contract ${contractId} from state`,
-      );
-      this.state.delete(CONTRACT_NAMESPACE, contractId);
-      this.logger.debug(
-        `[CONTRACT STATE] Successfully deleted contract ${contractId}`,
+        `[CONTRACT STATE] Successfully deleted contract ${key}`,
       );
     } catch (error) {
       this.logger.error(
-        `[CONTRACT STATE] Failed to delete contract ${contractId}: ${toErrorMessage(error)}`,
+        `[CONTRACT STATE] Failed to delete contract ${key}: ${toErrorMessage(error)}`,
       );
       throw error;
     }
@@ -56,21 +54,17 @@ export class ZustandContractStateHelper {
   /**
    * Save a contract to the state
    */
-  saveContract(contractId: string, contractData: ContractData): void {
+  saveContract(key: string, contractData: ContractData): void {
     try {
-      this.logger.debug(
-        `[CONTRACT STATE] Saving contract ${contractId} to state`,
-      );
+      this.logger.debug(`[CONTRACT STATE] Saving contract ${key} to state`);
 
       // Use the state service to save data in the contract namespace
-      this.state.set(CONTRACT_NAMESPACE, contractId, contractData);
+      this.state.set(CONTRACT_NAMESPACE, key, contractData);
 
-      this.logger.debug(
-        `[CONTRACT STATE] Successfully saved contract ${contractId}`,
-      );
+      this.logger.debug(`[CONTRACT STATE] Successfully saved contract ${key}`);
     } catch (error) {
       this.logger.error(
-        `[CONTRACT STATE] Failed to save contract ${contractId}: ${toErrorMessage(error)}`,
+        `[CONTRACT STATE] Failed to save contract ${key}: ${toErrorMessage(error)}`,
       );
       throw error;
     }

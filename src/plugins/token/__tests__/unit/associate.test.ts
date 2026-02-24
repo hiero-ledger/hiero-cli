@@ -6,6 +6,7 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
 
+import { SupportedNetwork } from '@/core';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import {
   associateToken,
@@ -582,7 +583,7 @@ describe('associateTokenHandler', () => {
 
       // Assert - Verify association was saved to state
       expect(mockAddTokenAssociation).toHaveBeenCalledWith(
-        '0.0.123456',
+        `${SupportedNetwork.TESTNET}:0.0.123456`,
         '0.0.789012',
         '0.0.789012', // accountName = accountId when using account-id:key format
       );
@@ -672,7 +673,7 @@ describe('associateTokenHandler', () => {
 
       // Assert - Verify association was saved with account ID
       expect(mockAddTokenAssociation).toHaveBeenCalledWith(
-        '0.0.123456',
+        `${SupportedNetwork.TESTNET}:0.0.123456`,
         '0.0.789012',
         '0.0.789012', // accountName = accountId (resolved from alias)
       );

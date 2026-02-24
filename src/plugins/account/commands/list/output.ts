@@ -16,7 +16,7 @@ import {
 export const ListAccountsOutputSchema = z.object({
   accounts: z.array(
     z.object({
-      name: z.string().describe('Account name or alias'),
+      name: z.string().describe('Account name').optional(),
       accountId: EntityIdSchema,
       type: KeyTypeSchema,
       network: NetworkSchema,

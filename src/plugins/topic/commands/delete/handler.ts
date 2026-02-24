@@ -10,6 +10,7 @@ import { EntityIdSchema } from '@/core/schemas';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
+import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { DeleteTopicInputSchema } from './input';
@@ -27,31 +28,38 @@ export async function deleteTopic(
     const validArgs = DeleteTopicInputSchema.parse(args.args);
     const topicRef = validArgs.topic;
     const isEntityId = EntityIdSchema.safeParse(topicRef).success;
-    let topicToDelete;
+    const network = api.network.getCurrentNetwork();
+    let key;
 
     if (isEntityId) {
-      topicToDelete = topicState.findTopicByTopicId(topicRef);
-      if (!topicToDelete) {
-        throw new Error(`Topic with ID '${topicRef}' not found`);
-      }
+      key = composeKey(network, topicRef);
     } else {
-      const topics = topicState.listTopics();
-      topicToDelete = topics.find((t) => t.name === topicRef);
-      if (!topicToDelete) {
-        throw new Error(`Topic with name '${topicRef}' not found`);
+      const topicAlias = api.alias.resolveOrThrow(
+        topicRef,
+        ALIAS_TYPE.Topic,
+        network,
+      );
+      if (!topicAlias.entityId) {
+        throw new Error(
+          `Alias for topic ${topicRef} is missing entity ID in its record`,
+        );
       }
+      key = composeKey(network, topicAlias.entityId);
+    }
+    const topicToDelete = topicState.loadTopic(key);
+    if (!topicToDelete) {
+      throw new Error(`Topic with identifier '${topicRef}' not found`);
     }
 
-    const currentNetwork = api.network.getCurrentNetwork();
     const aliasesForTopic = api.alias
-      .list({ network: currentNetwork, type: ALIAS_TYPE.Topic })
+      .list({ network: network, type: ALIAS_TYPE.Topic })
       .filter((rec) => rec.entityId === topicToDelete.topicId);
 
     const removedAliases: string[] = [];
     for (const rec of aliasesForTopic) {
-      api.alias.remove(rec.alias, currentNetwork);
-      removedAliases.push(`${rec.alias} (${currentNetwork})`);
-      logger.info(`🧹 Removed alias '${rec.alias}' on ${currentNetwork}`);
+      api.alias.remove(rec.alias, network);
+      removedAliases.push(`${rec.alias} (${network})`);
+      logger.info(`🧹 Removed alias '${rec.alias}' on ${network}`);
     }
 
     topicState.deleteTopic(topicToDelete.topicId);
@@ -62,7 +70,7 @@ export async function deleteTopic(
         topicId: topicToDelete.topicId,
       },
       removedAliases,
-      network: currentNetwork,
+      network,
     };
 
     return {

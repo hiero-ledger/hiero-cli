@@ -10,6 +10,7 @@ import { EntityIdSchema } from '@/core/schemas';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
+import { composeKey } from '@/core/utils/key-composer';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { DeleteAccountInputSchema } from './input';
@@ -27,38 +28,51 @@ export async function deleteAccount(
     const validArgs = DeleteAccountInputSchema.parse(args.args);
     const accountRef = validArgs.account;
     const isEntityId = EntityIdSchema.safeParse(accountRef).success;
+    const network = api.network.getCurrentNetwork();
     let accountToDelete;
+    let key;
 
     if (isEntityId) {
-      const accounts = accountState.listAccounts();
-      accountToDelete = accounts.find((acc) => acc.accountId === accountRef);
+      key = composeKey(network, accountRef);
+      accountToDelete = accountState.getAccount(key);
       if (!accountToDelete) {
         throw new Error(`Account with ID '${accountRef}' not found`);
       }
     } else {
-      accountToDelete = accountState.loadAccount(accountRef);
+      const alias = api.alias.resolveOrThrow(
+        accountRef,
+        ALIAS_TYPE.Account,
+        network,
+      );
+      if (!alias.entityId) {
+        throw new Error(
+          `Alias for account ${accountRef} is missing account ID in its record`,
+        );
+      }
+      key = composeKey(network, alias.entityId);
+      accountToDelete = accountState.getAccount(key);
       if (!accountToDelete) {
         throw new Error(`Account with name '${accountRef}' not found`);
       }
     }
 
     // Remove any names associated with this account on the current network
-    const currentNetwork = api.network.getCurrentNetwork();
     const aliasesForAccount = api.alias
-      .list({ network: currentNetwork, type: ALIAS_TYPE.Account })
+      .list({ network: network, type: ALIAS_TYPE.Account })
       .filter((rec) => rec.entityId === accountToDelete.accountId);
 
     const removedAliases: string[] = [];
     for (const rec of aliasesForAccount) {
-      api.alias.remove(rec.alias, currentNetwork);
-      removedAliases.push(`${rec.alias} (${currentNetwork})`);
-      logger.info(`🧹 Removed alias '${rec.alias}' on ${currentNetwork}`);
+      api.alias.remove(rec.alias, network);
+      removedAliases.push(`${rec.alias} (${network})`);
+      logger.info(`🧹 Removed alias '${rec.alias}' on ${network}`);
     }
 
     // Delete account from state
-    accountState.deleteAccount(accountToDelete.name);
+    accountState.deleteAccount(key);
 
     // Delete credential if no other account uses the same keyRefId
+    //@TODO decide if deleting key ref associated with account should be expected behaviour
     const accountsWithSameKeyRef = accountState
       .listAccounts()
       .filter((acc) => acc.keyRefId === accountToDelete.keyRefId);
@@ -79,7 +93,7 @@ export async function deleteAccount(
         accountId: accountToDelete.accountId,
       },
       removedAliases,
-      network: currentNetwork,
+      network: network,
     };
 
     return {

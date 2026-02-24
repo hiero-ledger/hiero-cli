@@ -9,6 +9,7 @@ import type { DeleteTokenOutput } from './output';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
+import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { DeleteTokenInputSchema } from './input';
@@ -34,10 +35,10 @@ export async function deleteToken(
         network: currentNetwork,
         aliasType: ALIAS_TYPE.Token,
       });
+    const tokenId = resolvedToken.entityIdOrEvmAddress;
+    const key = composeKey(currentNetwork, tokenId);
 
-    const tokenToDelete = tokenState.getToken(
-      resolvedToken.entityIdOrEvmAddress,
-    );
+    const tokenToDelete = tokenState.getToken(key);
     if (!tokenToDelete) {
       throw new Error(
         `Token with identifier '${validArgs.token.value}' not found in state`,
@@ -55,7 +56,7 @@ export async function deleteToken(
       logger.info(`🧹 Removed alias '${rec.alias}' on ${currentNetwork}`);
     }
 
-    tokenState.removeToken(tokenToDelete.tokenId);
+    tokenState.removeToken(key);
 
     const outputData: DeleteTokenOutput = {
       deletedToken: {

@@ -74,7 +74,13 @@ export async function associateToken(
         `Token ${tokenId} is already associated with account ${account.accountId}`,
       );
 
-      saveAssociationToState(tokenState, tokenId, account.accountId, logger);
+      saveAssociationToState(
+        tokenState,
+        tokenId,
+        account.accountId,
+        network,
+        logger,
+      );
       alreadyAssociated = true;
     }
   } catch (mirrorError) {
@@ -98,7 +104,13 @@ export async function associateToken(
 
       if (result.success) {
         transactionId = result.transactionId;
-        saveAssociationToState(tokenState, tokenId, account.accountId, logger);
+        saveAssociationToState(
+          tokenState,
+          tokenId,
+          account.accountId,
+          network,
+          logger,
+        );
       } else {
         return {
           status: Status.Failure,
@@ -113,7 +125,13 @@ export async function associateToken(
         logger.info(
           `Token ${tokenId} is already associated with account ${account.accountId}`,
         );
-        saveAssociationToState(tokenState, tokenId, account.accountId, logger);
+        saveAssociationToState(
+          tokenState,
+          tokenId,
+          account.accountId,
+          network,
+          logger,
+        );
         alreadyAssociated = true;
       } else {
         return {

@@ -9,8 +9,8 @@ import type { AccountData } from '@/plugins/account/schema';
 import type { ImportAccountOutput } from './output';
 
 import { Status } from '@/core/shared/constants';
-import { entityIdToAliasSafeFormat } from '@/core/utils/entity-id-to-alias-format';
 import { formatError } from '@/core/utils/errors';
+import { composeKey } from '@/core/utils/key-composer';
 import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -55,14 +55,14 @@ export async function importAccount(
     );
 
     // Generate a unique name for the account
-    const name = alias || `imported-${entityIdToAliasSafeFormat(accountId)}`;
-    logger.info(`Importing account: ${name} (${accountId})`);
+    const accountKey = composeKey(network, accountId);
+    logger.info(`Importing account: ${accountKey} (${accountId})`);
 
     // Check if account name already exists
-    if (accountState.hasAccount(name)) {
+    if (accountState.hasAccount(accountKey)) {
       return {
         status: Status.Failure,
-        errorMessage: `Account with name '${name}' already exists`,
+        errorMessage: `Account with name '${accountKey}' already exists`,
       };
     }
 
@@ -88,7 +88,7 @@ export async function importAccount(
 
     // Create account object (no private key in plugin state)
     const account: AccountData = {
-      name,
+      name: alias,
       accountId,
       type: accountInfo.keyAlgorithm,
       publicKey: publicKey,
@@ -98,14 +98,13 @@ export async function importAccount(
     };
 
     // Store account in state using the helper
-    accountState.saveAccount(name, account);
+    accountState.saveAccount(accountKey, account);
 
     // Prepare output data
     const outputData: ImportAccountOutput = {
       accountId,
-      name: account.name,
+      name: alias,
       type: account.type,
-      ...(alias && { alias }),
       network: account.network,
       balance: BigInt(accountInfo.balance.balance.toString()),
       evmAddress,

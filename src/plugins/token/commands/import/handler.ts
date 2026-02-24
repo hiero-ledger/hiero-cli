@@ -12,8 +12,8 @@ import {
   Status,
 } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { entityIdToAliasSafeFormat } from '@/core/utils/entity-id-to-alias-format';
 import { formatError } from '@/core/utils/errors';
+import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { ImportTokenInputSchema } from './input';
@@ -32,19 +32,20 @@ export async function importToken(
 
   const network = api.network.getCurrentNetwork();
 
+  const key = composeKey(network, tokenId);
   try {
     if (alias) {
       api.alias.availableOrThrow(alias, network);
     }
 
-    if (tokenState.getToken(tokenId)) {
+    if (tokenState.getToken(key)) {
       return {
         status: Status.Failure,
         errorMessage: `Token with ID '${tokenId}' already exists in state`,
       };
     }
 
-    const tokenInfo = await api.mirror.getTokenInfo(tokenId);
+    const tokenInfo = await api.mirror.getTokenInfo(key);
 
     const tokenType = MirrorTokenTypeToHederaTokenType[tokenInfo.type];
     if (!tokenType) {
@@ -53,12 +54,6 @@ export async function importToken(
         errorMessage: `Unsupported token type: ${tokenInfo.type}. Only FUNGIBLE_COMMON and NON_FUNGIBLE_UNIQUE are supported.`,
       };
     }
-
-    const name =
-      alias ||
-      tokenInfo.name ||
-      `imported-${entityIdToAliasSafeFormat(tokenId)}`;
-    logger.info(`Importing token: ${name} (${tokenId})`);
 
     if (alias) {
       api.alias.register({
@@ -75,7 +70,7 @@ export async function importToken(
 
     const tokenData: TokenData = {
       tokenId,
-      name,
+      name: tokenInfo.name,
       symbol: tokenInfo.symbol,
       treasuryId: tokenInfo.treasury,
       adminPublicKey: tokenInfo.admin_key?.key,
@@ -96,7 +91,7 @@ export async function importToken(
       memo: tokenInfo.memo || undefined,
     };
 
-    tokenState.saveToken(tokenId, tokenData);
+    tokenState.saveToken(key, tokenData);
 
     const outputData: ImportTokenOutput = {
       tokenId,

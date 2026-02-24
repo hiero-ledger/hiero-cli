@@ -178,7 +178,7 @@ describe('contract plugin - delete command', () => {
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toBeDefined();
     expect(result.errorMessage).toContain(
-      "Contract with ID '0.0.9999' not found",
+      "Failed to delete contract: Contract '0.0.9999' not found",
     );
   });
 
@@ -228,7 +228,7 @@ describe('contract plugin - delete command', () => {
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toBeDefined();
     expect(result.errorMessage).toContain(
-      "Contract with alias 'my-contract' not found",
+      "Failed to delete contract: Contract 'my-contract' not found",
     );
   });
 

@@ -15,6 +15,7 @@ import { PublicKey } from '@hashgraph/sdk';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
+import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { CreateTopicInputSchema } from './input';
@@ -50,9 +51,6 @@ export async function createTopic(
     keyManagerArg ||
     api.config.getOption<KeyManagerName>('default_key_manager');
 
-  // Generate default name if alias not provided
-  const name = alias || `topic-${Date.now()}`;
-
   // Log progress indicator (not final output)
   if (memo) {
     logger.info(`Creating topic with memo: ${memo}`);
@@ -62,14 +60,12 @@ export async function createTopic(
     adminKeyArg &&
     (await api.keyResolver.getOrInitKey(adminKeyArg, keyManager, [
       'topic:admin',
-      `topic:${name}`,
     ]));
 
   const submitKey =
     submitKeyArg &&
     (await api.keyResolver.getOrInitKey(submitKeyArg, keyManager, [
       'topic:submit',
-      `topic:${name}`,
     ]));
 
   try {
@@ -93,10 +89,10 @@ export async function createTopic(
       );
     }
 
-    if (result.success) {
+    if (result.success && result.topicId) {
       // Step 5: Store topic metadata in state
       const topicData = {
-        name,
+        name: alias,
         topicId: result.topicId || '(unknown)',
         memo: memo || '(No memo)',
         adminKeyRefId: adminKey?.keyRefId,
@@ -116,8 +112,9 @@ export async function createTopic(
         });
       }
 
+      const key = composeKey(network, result.topicId);
       // Step 7: Save topic to state
-      topicState.saveTopic(String(result.topicId), topicData);
+      topicState.saveTopic(key, topicData);
 
       // Step 8: Prepare structured output data
       const outputData: CreateTopicOutput = {

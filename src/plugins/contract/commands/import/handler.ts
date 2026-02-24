@@ -5,6 +5,7 @@ import type { ImportContractOutput } from './output';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
+import { composeKey } from '@/core/utils/key-composer';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
 import { ImportContractInputSchema } from './input';
@@ -68,8 +69,9 @@ export async function importContract(
       memo: contractInfo.memo || undefined,
       verified: false,
     };
+    const contractKey = composeKey(network, contractId);
 
-    contractState.saveContract(contractId, contractData);
+    contractState.saveContract(contractKey, contractData);
 
     const outputData: ImportContractOutput = {
       contractId,

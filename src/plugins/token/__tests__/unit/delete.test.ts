@@ -1,4 +1,5 @@
 import { makeArgs } from '@/__tests__/mocks/mocks';
+import { SupportedNetwork } from '@/core';
 import { Status } from '@/core/shared/constants';
 import {
   deleteToken,
@@ -43,7 +44,9 @@ describe('token plugin - delete command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    expect(removeTokenMock).toHaveBeenCalledWith('0.0.1111');
+    expect(removeTokenMock).toHaveBeenCalledWith(
+      `${SupportedNetwork.TESTNET}:0.0.1111`,
+    );
 
     const output: DeleteTokenOutput = JSON.parse(result.outputJson!);
     expect(output.deletedToken.name).toBe('TestToken');
@@ -70,7 +73,9 @@ describe('token plugin - delete command', () => {
     expect(result.outputJson).toBeDefined();
     expect(result.errorMessage).toBeUndefined();
 
-    expect(removeTokenMock).toHaveBeenCalledWith('0.0.2222');
+    expect(removeTokenMock).toHaveBeenCalledWith(
+      `${SupportedNetwork.TESTNET}:0.0.2222`,
+    );
 
     const output: DeleteTokenOutput = JSON.parse(result.outputJson!);
     expect(output.deletedToken.name).toBe('MyToken');

@@ -11,7 +11,6 @@ import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { Status } from '@/core/shared/constants';
-import { entityIdToAliasSafeFormat } from '@/core/utils/entity-id-to-alias-format';
 import { createTopic, importTopic, listTopics } from '@/plugins/topic';
 import { TOPIC_NAMESPACE } from '@/plugins/topic/manifest';
 
@@ -64,11 +63,7 @@ describe('Import Topic Integration Tests', () => {
       importTopicResult.outputJson as string,
     );
     expect(importTopicOutput.topicId).toBe(topicId);
-    expect(importTopicOutput.name).toBe(
-      `imported-${entityIdToAliasSafeFormat(topicId)}`,
-    );
     expect(importTopicOutput.network).toBe(network);
-    expect(importTopicOutput.alias).toBeUndefined();
 
     const listTopicArgs: Record<string, unknown> = {
       network,
@@ -113,7 +108,6 @@ describe('Import Topic Integration Tests', () => {
     );
     expect(importTopicOutput.topicId).toBe(topicId);
     expect(importTopicOutput.name).toBe(alias);
-    expect(importTopicOutput.alias).toBe(alias);
     expect(importTopicOutput.network).toBe(network);
 
     const listTopicArgs: Record<string, unknown> = {

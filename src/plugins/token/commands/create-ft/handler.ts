@@ -12,6 +12,7 @@ import { PublicKey } from '@hashgraph/sdk';
 import { HederaTokenType, Status } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { formatError } from '@/core/utils/errors';
+import { composeKey } from '@/core/utils/key-composer';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import {
   buildTokenData,
@@ -138,7 +139,8 @@ export async function createToken(
       network: api.network.getCurrentNetwork(),
     });
 
-    tokenState.saveToken(result.tokenId, tokenData);
+    const key = composeKey(network, result.tokenId);
+    tokenState.saveToken(key, tokenData);
     logger.info(`   Token data saved to state`);
 
     if (alias) {

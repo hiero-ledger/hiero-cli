@@ -14,6 +14,7 @@ import {
   makeNetworkMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
+import { SupportedNetwork } from '@/core';
 import { KeyAlgorithm, Status } from '@/core/shared/constants';
 import { importAccount } from '@/plugins/account/commands/import/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -76,7 +77,7 @@ describe('account plugin - import command (ADR-003)', () => {
       }),
     );
     expect(saveAccountMock).toHaveBeenCalledWith(
-      'imported',
+      `${SupportedNetwork.TESTNET}:0.0.9999`,
       expect.objectContaining({
         name: 'imported',
         accountId: '0.0.9999',
@@ -93,7 +94,6 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('imported');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
-    expect(output.alias).toBe('imported');
     expect(output.network).toBe('testnet');
     expect(output.evmAddress).toBe('0xabc');
   });
@@ -130,7 +130,7 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toBeDefined();
     expect(result.errorMessage).toContain(
-      "Account with name 'imported-0-0-1111' already exists",
+      "Account with name 'testnet:0.0.1111' already exists",
     );
   });
 
