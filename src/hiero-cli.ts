@@ -33,7 +33,10 @@ program
     'Payer account (alias or account-id:private-key format)',
   )
   .option('--confirm', 'Skip confirmation prompts')
-  .showHelpAfterError('use --help for available options');
+  .showHelpAfterError('use --help for available options')
+  .configureHelp({
+    showGlobalOptions: true,
+  });
 
 // Initialize the simplified plugin system
 async function initializeCLI() {
