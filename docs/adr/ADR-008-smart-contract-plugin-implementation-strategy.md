@@ -49,9 +49,17 @@ Contract plugin will consist of two commands:
       name: 'file',
       short: 'f',
       type: 'string',
-      required: true,
+      required: false,
       description:
               'Smart contract definition file path (absolute or relative) to a Solidity file',
+    },
+    {
+      name: 'default',
+      short: 'd',
+      type: 'string',
+      required: false,
+      description:
+              'Use built-in contract template: erc20 or erc721 (mutually exclusive with file)',
     },
     {
       name: 'base-path',
@@ -108,19 +116,32 @@ Contract plugin will consist of two commands:
 },
 ```
 
-The `create` command will take five options:
+The `create` command will take the following options:
 
 - option `name` - it will be used for representing contract in the state as alias
-- option `file` - it will be pointing to the smart contract file definition you want to deploy to Hedera network.
-- option `base-path` - it will be pointing to the directory in which you want to execute compilation of smart contract so that all imports will be searched from the level of this directory. It will default to the current directory you are executing your command when this option is not provided.
+- option `file` - it will be pointing to the smart contract file definition you want to deploy to Hedera network. Either `file` or `default` must be provided, but not both.
+- option `default` - use a built-in contract template (`erc20` or `erc721`) instead of a custom file. When used, the contract source is loaded from the CLI package and constructor parameters default to predefined values (FungibleToken/FTK/1000000 for erc20, NonFungibleToken/NFTK for erc721) unless overridden with `constructor-parameter`. Either `file` or `default` must be provided, but not both.
+- option `base-path` - it will be pointing to the directory in which you want to execute compilation of smart contract so that all imports will be searched from the level of this directory. It will default to the current directory when using `file`, or to the CLI package root when using `default`.
 - option `admin-key` - it will be used for setting up an admin key for smart contract
-- option `constructor-parameter` - a new type of parameter `repeatable`. The `repeatable` parameter can be set many set and each assign results in putting new value to the list of this option. This `constructor-parameter` will be a list consisting of parameters that are needed for constructor of deployed smart contract.
+- option `constructor-parameter` - a new type of parameter `repeatable`. The `repeatable` parameter can be set many times and each assign results in putting new value to the list of this option. This `constructor-parameter` will be a list consisting of parameters that are needed for constructor of deployed smart contract. When using `default`, constructor parameters are optional and default values are applied if omitted.
 - option `memo` - it will be used to pass string field as contract memo
 - option `key-manager` - points to the key manager for using in the command execution
 
-The example of this command execution will look like this:
+Examples of this command execution:
 
-`hcli contract create --name test-contract --file ../directory/contracts/Contract.sol --base-path '../directory --constuctor-parameter Alice -c 11111`
+```bash
+# Deploy custom contract from file
+hcli contract create --name test-contract --file ../directory/contracts/Contract.sol --base-path ../directory --constructor-parameter Alice -c 11111
+
+# Deploy built-in ERC20 template with default constructor params (FungibleToken, FTK, 1000000)
+hcli contract create --name my-token --default erc20
+
+# Deploy built-in ERC721 template with default constructor params (NonFungibleToken, NFTK)
+hcli contract create --name my-nft --default erc721
+
+# Deploy built-in ERC20 with custom constructor params
+hcli contract create --name my-token --default erc20 -c "CustomToken" -c "CTK" -c "500000"
+```
 
 - `list` - command responsible for listing deployed contracts
 

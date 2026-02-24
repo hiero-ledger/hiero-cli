@@ -9,16 +9,16 @@ import {
   MemoSchema,
   SolidityCompilerVersion,
 } from '@/core/schemas';
+import { DefaultTemplateSchema } from '@/plugins/contract/utils/contract-file-helpers';
 
-/**
- * Input schema for plugin-management add command
- * Validates arguments for adding a plugin from filesystem path
- */
 export const ContractCreateSchema = z
   .object({
     name: AliasNameSchema.describe('Optional name/alias for the contract'),
-    file: FilePathSchema.describe(
+    file: FilePathSchema.optional().describe(
       'Filesystem path to Solidity file containing smart contract definition',
+    ),
+    default: DefaultTemplateSchema.optional().describe(
+      'Use built-in contract template: erc20 or erc721',
     ),
     gas: GasInputSchema.default(1000000).describe(
       'Gas for contract creation. Default: 1000000',
@@ -42,9 +42,13 @@ export const ContractCreateSchema = z
       'Key manager type for storing private keys (defaults to config setting)',
     ),
   })
+  .refine((data) => (data.file ? !data.default : !!data.default), {
+    message: 'Either --file or --default must be provided, but not both',
+  })
   .transform((data) => ({
     name: data.name,
     file: data.file,
+    defaultTemplate: data.default,
     gas: data.gas,
     basePath: data.basePath,
     adminKey: data.adminKey,
