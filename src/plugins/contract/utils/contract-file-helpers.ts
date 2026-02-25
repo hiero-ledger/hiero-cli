@@ -2,19 +2,19 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { z } from 'zod';
 
-export const DEFAULT_CONTRACT_TEMPLATES = ['erc20', 'erc721'] as const;
+export enum DefaultContractTemplate {
+  Erc20 = 'erc20',
+  Erc721 = 'erc721',
+}
 
-export type DefaultContractTemplate =
-  (typeof DEFAULT_CONTRACT_TEMPLATES)[number];
-
-export const DefaultTemplateSchema = z.enum(DEFAULT_CONTRACT_TEMPLATES);
+export const DefaultTemplateSchema = z.enum(DefaultContractTemplate);
 
 export const DEFAULT_CONSTRUCTOR_PARAMS: Record<
   DefaultContractTemplate,
   string[]
 > = {
-  erc20: ['FungibleToken', 'FTK', '1000000'],
-  erc721: ['NonFungibleToken', 'NFTK'],
+  [DefaultContractTemplate.Erc20]: ['FungibleToken', 'FTK', '1000000'],
+  [DefaultContractTemplate.Erc721]: ['NonFungibleToken', 'NFTK'],
 };
 
 export function resolveContractFilePath(filename: string): string {
@@ -58,6 +58,7 @@ export function getDefaultContractFilePath(
   template: DefaultContractTemplate,
 ): string {
   const packageRoot = getRepositoryBasePath();
-  const filename = template === 'erc20' ? 'ERC20.sol' : 'ERC721.sol';
+  const filename =
+    template === DefaultContractTemplate.Erc20 ? 'ERC20.sol' : 'ERC721.sol';
   return path.join(packageRoot, 'dist', 'contracts', template, filename);
 }
