@@ -5,7 +5,6 @@ import { ContractFunctionParameters } from '@hashgraph/sdk';
 
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { EntityReferenceType } from '@/core/types/shared.types';
-import { ERROR_MESSAGES } from '@/plugins/contract-erc721/error-messages';
 
 import { ContractErc721CallSafeTransferFromInputSchema } from './input';
 
@@ -47,7 +46,7 @@ export async function safeTransferFromFunctionCall(
 
   if (!fromEvmAddress) {
     throw new NotFoundError(
-      ERROR_MESSAGES.couldNotResolveEvmAddress(fromRef.value),
+      `Couldn't resolve EVM address for an account ${fromRef.value}`,
       { context: { accountRef: fromRef.value } },
     );
   }
@@ -66,7 +65,7 @@ export async function safeTransferFromFunctionCall(
 
   if (!toEvmAddress) {
     throw new NotFoundError(
-      ERROR_MESSAGES.couldNotResolveEvmAddress(toRef.value),
+      `Couldn't resolve EVM address for an account ${toRef.value}`,
       { context: { accountRef: toRef.value } },
     );
   }
@@ -93,10 +92,7 @@ export async function safeTransferFromFunctionCall(
 
   if (!result.success) {
     throw new TransactionError(
-      ERROR_MESSAGES.failedToCallFunction(
-        ERC_721_FUNCTION_NAME,
-        result.receipt?.status?.status ?? 'UNKNOWN',
-      ),
+      `Failed to call ${ERC_721_FUNCTION_NAME} function: ${result.receipt?.status?.status ?? 'UNKNOWN'}`,
       false,
       {
         context: { contractId: contractInfo.contractId },

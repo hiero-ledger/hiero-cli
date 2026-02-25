@@ -8,7 +8,6 @@ import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { EntityReferenceType } from '@/core/types/shared.types';
 import { ContractErc721CallBalanceOfInputSchema } from '@/plugins/contract-erc721/commands/balance-of/input';
 import { ContractErc721CallBalanceOfResultSchema } from '@/plugins/contract-erc721/commands/balance-of/result';
-import { ERROR_MESSAGES } from '@/plugins/contract-erc721/error-messages';
 import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';
 
 const ERC_721_FUNCTION_NAME = 'balanceOf';
@@ -44,7 +43,7 @@ export async function balanceOfFunctionCall(
 
   if (!ownerEvmAddress) {
     throw new NotFoundError(
-      ERROR_MESSAGES.couldNotResolveEvmAddress(ownerRef.value),
+      `Couldn't resolve EVM address for an account ${ownerRef.value}`,
       { context: { accountRef: ownerRef.value } },
     );
   }
@@ -60,10 +59,7 @@ export async function balanceOfFunctionCall(
 
   if (queryResult.length === 0) {
     throw new StateError(
-      ERROR_MESSAGES.contractQueryDecodeError(
-        contractIdOrEvm,
-        ERC_721_FUNCTION_NAME,
-      ),
+      `There was a problem with decoding contract ${contractIdOrEvm} "${ERC_721_FUNCTION_NAME}" function result`,
       { context: { contractIdOrEvm, functionName: ERC_721_FUNCTION_NAME } },
     );
   }

@@ -7,7 +7,6 @@ import { StateError } from '@/core/errors';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { ContractErc721CallGetApprovedInputSchema } from '@/plugins/contract-erc721/commands/get-approved/input';
 import { ContractErc721CallGetApprovedResultSchema } from '@/plugins/contract-erc721/commands/get-approved/result';
-import { ERROR_MESSAGES } from '@/plugins/contract-erc721/error-messages';
 import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';
 
 const ERC_721_FUNCTION_NAME = 'getApproved';
@@ -42,10 +41,7 @@ export async function getApprovedFunctionCall(
 
   if (queryResult.length === 0) {
     throw new StateError(
-      ERROR_MESSAGES.contractQueryDecodeError(
-        contractIdOrEvm,
-        ERC_721_FUNCTION_NAME,
-      ),
+      `There was a problem with decoding contract ${contractIdOrEvm} "${ERC_721_FUNCTION_NAME}" function result`,
       { context: { contractIdOrEvm, functionName: ERC_721_FUNCTION_NAME } },
     );
   }

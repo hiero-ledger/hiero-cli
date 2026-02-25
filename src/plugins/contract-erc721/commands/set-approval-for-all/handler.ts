@@ -5,7 +5,6 @@ import { ContractFunctionParameters } from '@hashgraph/sdk';
 
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { EntityReferenceType } from '@/core/types/shared.types';
-import { ERROR_MESSAGES } from '@/plugins/contract-erc721/error-messages';
 
 import { ContractErc721CallSetApprovalForAllInputSchema } from './input';
 
@@ -45,7 +44,7 @@ export async function setApprovalForAllFunctionCall(
 
   if (!operatorEvmAddress) {
     throw new NotFoundError(
-      ERROR_MESSAGES.couldNotResolveEvmAddress(operatorRef.value),
+      `Couldn't resolve EVM address for an account ${operatorRef.value}`,
       { context: { accountRef: operatorRef.value } },
     );
   }
@@ -67,10 +66,7 @@ export async function setApprovalForAllFunctionCall(
 
   if (!result.success) {
     throw new TransactionError(
-      ERROR_MESSAGES.failedToCallFunction(
-        ERC_721_FUNCTION_NAME,
-        result.receipt?.status?.status ?? 'UNKNOWN',
-      ),
+      `Failed to call ${ERC_721_FUNCTION_NAME} function: ${result.receipt?.status?.status ?? 'UNKNOWN'}`,
       false,
       {
         context: { contractId: contractInfo.contractId },
