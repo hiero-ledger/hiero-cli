@@ -68,34 +68,38 @@ export class PluginManager {
 
   /**
    * Initialize plugin-management state with default plugins if not present.
+   * Adds new default plugins when they appear in DEFAULT_PLUGIN_STATE.
+   * Does not re-add default plugins that user explicitly removed.
    * Returns the current list of plugin state entries.
    */
   initializePluginState(defaultState: PluginManifest[]): PluginStateEntry[] {
-    const existingEntries = this.pluginManagement.listPlugins();
+    const initializedDefaults = this.pluginManagement.getInitializedDefaults();
+    const hasNewDefaults = defaultState.some(
+      (m) => !initializedDefaults.includes(m.name),
+    );
 
-    if (existingEntries.length === 0) {
-      this.logger.info(
-        '[PLUGIN-MANAGEMENT] Initializing default plugin state (first run)...',
-      );
+    if (hasNewDefaults) {
+      this.pluginManagement.setInitializedDefaults(initializedDefaults);
+    }
 
-      const initialState: PluginStateEntry[] = defaultState.map((manifest) => {
-        const pluginName = manifest.name;
+    for (const manifest of defaultState) {
+      const pluginName = manifest.name;
+      const isInInitialized = initializedDefaults.includes(pluginName);
 
-        return {
+      if (!isInInitialized) {
+        this.logger.info(
+          `[PLUGIN-MANAGEMENT] Adding new default plugin: ${pluginName}`,
+        );
+        this.pluginManagement.savePluginState({
           name: pluginName,
           enabled: true,
           description: manifest.description,
-        };
-      });
-
-      for (const plugin of initialState) {
-        this.pluginManagement.savePluginState(plugin);
+        });
+        this.pluginManagement.addToInitializedDefaults(pluginName);
       }
-
-      return initialState;
     }
 
-    return existingEntries;
+    return this.pluginManagement.listPlugins();
   }
 
   /**

@@ -146,6 +146,9 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       enablePlugin: jest.fn(),
       disablePlugin: jest.fn(),
       savePluginState: jest.fn(),
+      getInitializedDefaults: jest.fn().mockReturnValue([]),
+      setInitializedDefaults: jest.fn(),
+      addToInitializedDefaults: jest.fn(),
     } as PluginManagementService,
     contract,
     contractCompiler: {

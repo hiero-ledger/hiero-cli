@@ -47,16 +47,21 @@ describe('PluginManagementServiceImpl', () => {
           path: 'dist/plugins/bar-plugin',
         }),
       ];
-      stateMock.list.mockReturnValue(entries);
+      stateMock.getKeys.mockReturnValue([PLUGIN_NAME_FOO, PLUGIN_NAME_BAR]);
+      stateMock.get
+        .mockReturnValueOnce(entries[0])
+        .mockReturnValueOnce(entries[1]);
 
       const result = service.listPlugins();
 
-      expect(stateMock.list).toHaveBeenCalledWith(PLUGIN_MANAGEMENT_NAMESPACE);
+      expect(stateMock.getKeys).toHaveBeenCalledWith(
+        PLUGIN_MANAGEMENT_NAMESPACE,
+      );
       expect(result).toEqual(entries);
     });
 
     it('should return empty list when state has no plugins', () => {
-      stateMock.list.mockReturnValue([]);
+      stateMock.getKeys.mockReturnValue([]);
 
       const result = service.listPlugins();
 

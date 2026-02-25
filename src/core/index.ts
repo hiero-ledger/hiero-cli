@@ -64,6 +64,7 @@ export {
   HederaTokenType,
   KeyAlgorithm,
   MirrorTokenTypeToHederaTokenType,
+  PLUGIN_INITIALIZED_DEFAULTS_KEY,
   PLUGIN_MANAGEMENT_NAMESPACE,
   Status,
   TOKEN_BALANCE_LIMIT,
