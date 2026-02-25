@@ -379,6 +379,11 @@ hcli token create-ft-from-file --file token-definition.json --key-manager local_
 
 **Token File Format:**
 
+`initialSupply` and `maxSupply` must be strings. Supported formats (same as other token commands):
+
+- Display units: `"100"` or `"100.5"` (multiplied by decimals)
+- Base units: `"100t"` (raw amount, no decimals applied)
+
 The token file supports aliases and raw keys with optional key type prefixes:
 
 ```json
@@ -387,8 +392,8 @@ The token file supports aliases and raw keys with optional key type prefixes:
   "symbol": "MTK",
   "decimals": 8,
   "supplyType": "finite",
-  "initialSupply": 1000000,
-  "maxSupply": 10000000,
+  "initialSupply": "1000000",
+  "maxSupply": "10000000",
   "treasuryKey": "<alias or accountId:privateKey>",
   "adminKey": "<alias or accountId:privateKey>",
   "supplyKey": "<alias or accountId:privateKey>",

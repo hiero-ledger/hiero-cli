@@ -90,8 +90,8 @@ export const validTokenFile = {
   symbol: 'TEST',
   decimals: 2,
   supplyType: 'finite' as const,
-  initialSupply: 1000,
-  maxSupply: 10000,
+  initialSupply: '10',
+  maxSupply: '100',
   treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
   adminKey: `${mockAccountIds.operator}:${mockKeys.admin}`,
   associations: [`${mockAccountIds.association}:${mockKeys.association}`],
@@ -108,27 +108,12 @@ export const validTokenFile = {
 };
 
 /**
- * Valid Token Creation Parameters
- */
-export const validTokenParams = {
-  name: 'TestToken',
-  symbol: 'TEST',
-  decimals: 2,
-  initialSupply: 1000,
-  supplyType: SupplyType.FINITE,
-  maxSupply: 10000,
-  treasuryId: mockAccountIds.treasury,
-  adminKey: mockKeys.admin,
-  treasuryKey: mockKeys.treasury,
-};
-
-/**
  * Infinite Supply Token File
  */
 export const infiniteSupplyTokenFile = {
   ...validTokenFile,
   supplyType: 'infinite' as const,
-  maxSupply: 0,
+  maxSupply: '0',
 };
 
 /**
@@ -138,7 +123,7 @@ export const invalidTokenFileMissingName = {
   symbol: 'TEST',
   decimals: 2,
   supplyType: 'finite' as const,
-  initialSupply: 1000,
+  initialSupply: '10',
   treasuryKey: `${mockAccountIds.treasury}:${mockKeys.treasury}`,
   adminKey: `${mockAccountIds.operator}:${mockKeys.admin}`,
 };
@@ -164,7 +149,7 @@ export const invalidTokenFileInvalidSupplyType = {
  */
 export const invalidTokenFileNegativeSupply = {
   ...validTokenFile,
-  initialSupply: -100,
+  initialSupply: '-100',
 };
 
 /**

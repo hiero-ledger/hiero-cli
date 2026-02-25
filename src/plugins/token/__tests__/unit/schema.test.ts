@@ -323,7 +323,7 @@ describe('Token Schema Validation', () => {
       symbol: 'TST',
       decimals: 8,
       supplyType: 'infinite',
-      initialSupply: 1000,
+      initialSupply: '1000',
       treasuryKey: 'my-treasury',
       adminKey: 'my-admin',
       memo: '',

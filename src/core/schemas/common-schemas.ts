@@ -485,16 +485,18 @@ export const ContractReferenceSchema = z
  * - "100t" (integer in base units / tinybars)
  * NOTE: Float with "t" suffix (e.g., "100.5t") is NOT allowed
  * Handler is responsible for parsing and converting to appropriate unit
- * Used for HBAR, tokens, and other balance inputs
+ * Used for amounts, supply, balance, and other numeric inputs
  */
 export const AmountInputSchema = z.coerce
   .string()
   .trim()
   .regex(
     /^(?:\d+\.\d+|\d+t|\d+)$/,
-    'Amount must be: integer, float, or integer with "t" for base units (float with "t" is not allowed)',
+    'Must be: integer, float, or integer with "t" for base units (float with "t" is not allowed)',
   )
-  .describe('Amount input (integer, float, or integer with "t" suffix)');
+  .describe(
+    'Numeric value (integer, float, or integer with "t" suffix for base units)',
+  );
 
 /**
  * Key Manager Type
