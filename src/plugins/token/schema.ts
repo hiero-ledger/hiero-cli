@@ -5,6 +5,7 @@
 import { z } from 'zod';
 
 import {
+  AmountInputSchema,
   EntityIdSchema,
   HtsDecimalsSchema,
   KeyOrAccountAliasSchema,
@@ -74,14 +75,6 @@ export const TokenFileCustomFeeSchema = z.discriminatedUnion('type', [
   TokenFileFixedFeeSchema,
   TokenFileFractionalFeeSchema,
 ]);
-
-const TokenFileSupplyInputSchema = z
-  .string()
-  .trim()
-  .regex(
-    /^(?:\d+\.\d+|\d+t|\d+)$/,
-    'Supply must be string: "100" (display units) or "100t" (base units)',
-  );
 
 // Main token data schema
 export const TokenDataSchema = z.object({
@@ -187,8 +180,8 @@ export const FungibleTokenFileSchema = z
     symbol: TokenSymbolSchema,
     decimals: HtsDecimalsSchema,
     supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
-    initialSupply: TokenFileSupplyInputSchema,
-    maxSupply: TokenFileSupplyInputSchema.default('0'),
+    initialSupply: AmountInputSchema,
+    maxSupply: AmountInputSchema.default('0'),
     treasuryKey: KeyOrAccountAliasSchema,
     adminKey: KeyOrAccountAliasSchema,
     supplyKey: KeyOrAccountAliasSchema.optional(),
