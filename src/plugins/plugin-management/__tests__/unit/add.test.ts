@@ -3,17 +3,18 @@
  */
 import type * as path from 'path';
 import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
-import type { AddPluginOutput } from '@/plugins/plugin-management/commands/add/output';
 
 import * as fs from 'fs/promises';
 
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { FileError, StateError } from '@/core/errors';
 import {
   PluginManagementCreateStatus,
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
+import { AddPluginOutputSchema } from '@/plugins/plugin-management/commands/add';
 import { addPlugin } from '@/plugins/plugin-management/commands/add/handler';
 
 import { CUSTOM_PLUGIN_ENTRY } from './helpers/fixtures';
@@ -65,7 +66,7 @@ describe('plugin-management add command', () => {
     });
 
     const result = await addPlugin(args);
-    const output = result.result as AddPluginOutput;
+    const output = assertOutput(result.result, AddPluginOutputSchema);
 
     expect(output).toBeDefined();
     expect(output.added).toBe(true);

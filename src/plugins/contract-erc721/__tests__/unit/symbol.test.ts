@@ -1,15 +1,18 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc721CallSymbolOutput } from '@/plugins/contract-erc721/commands/symbol/output';
 
 import { ZodError } from 'zod';
 
 import { MOCK_CONTRACT_ID } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { makeContractErc721CallCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { symbolFunctionCall } from '@/plugins/contract-erc721/commands/symbol/handler';
+import {
+  ContractErc721CallSymbolOutputSchema,
+  symbolFunctionCall,
+} from '@/plugins/contract-erc721/commands/symbol';
 import { ContractErc721CallSymbolInputSchema } from '@/plugins/contract-erc721/commands/symbol/input';
 
 const mockSymbol = 'MYNFT';
@@ -67,7 +70,10 @@ describe('contract-erc721 plugin - symbol command (unit)', () => {
     const result = await symbolFunctionCall(args);
 
     expect(result.result).toBeDefined();
-    const output = result.result as ContractErc721CallSymbolOutput;
+    const output = assertOutput(
+      result.result,
+      ContractErc721CallSymbolOutputSchema,
+    );
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.symbol).toBe(mockSymbol);
     expect(output.network).toBe(SupportedNetwork.TESTNET);

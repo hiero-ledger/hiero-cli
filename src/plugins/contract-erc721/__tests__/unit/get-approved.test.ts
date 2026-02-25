@@ -1,15 +1,18 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc721CallGetApprovedOutput } from '@/plugins/contract-erc721/commands/get-approved/output';
 
 import { ZodError } from 'zod';
 
 import { MOCK_ACCOUNT_ID, MOCK_CONTRACT_ID } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { makeContractErc721CallCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { getApprovedFunctionCall } from '@/plugins/contract-erc721/commands/get-approved/handler';
+import {
+  ContractErc721CallGetApprovedOutputSchema,
+  getApprovedFunctionCall,
+} from '@/plugins/contract-erc721/commands/get-approved';
 import { ContractErc721CallGetApprovedInputSchema } from '@/plugins/contract-erc721/commands/get-approved/input';
 
 describe('contract-erc721 plugin - getApproved command (unit)', () => {
@@ -56,7 +59,10 @@ describe('contract-erc721 plugin - getApproved command (unit)', () => {
     const result = await getApprovedFunctionCall(args);
 
     expect(result.result).toBeDefined();
-    const output = result.result as ContractErc721CallGetApprovedOutput;
+    const output = assertOutput(
+      result.result,
+      ContractErc721CallGetApprovedOutputSchema,
+    );
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.tokenId).toBe(tokenId);
     expect(output.approved).toBe('0xabcdefabcdefabcdefabcdefabcdefabcdefabcd');

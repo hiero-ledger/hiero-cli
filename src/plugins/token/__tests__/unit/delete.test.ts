@@ -2,11 +2,12 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
 
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupportedNetwork } from '@/core';
 import { NotFoundError } from '@/core/errors';
 import {
   deleteToken,
-  type DeleteTokenOutput,
+  DeleteTokenOutputSchema,
 } from '@/plugins/token/commands/delete';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -67,7 +68,7 @@ describe('deleteTokenHandler', () => {
 
       const result = await deleteToken(args);
 
-      const output = result.result as DeleteTokenOutput;
+      const output = assertOutput(result.result, DeleteTokenOutputSchema);
       expect(output.deletedToken.tokenId).toBe('0.0.123456');
       expect(output.deletedToken.name).toBe('TestToken');
       expect(output.network).toBe('testnet');
@@ -105,7 +106,7 @@ describe('deleteTokenHandler', () => {
 
       const result = await deleteToken(args);
 
-      const output = result.result as DeleteTokenOutput;
+      const output = assertOutput(result.result, DeleteTokenOutputSchema);
       expect(output.deletedToken.tokenId).toBe('0.0.123456');
       expect(output.deletedToken.name).toBe('TestToken');
       expect(output.removedAliases).toBeUndefined();

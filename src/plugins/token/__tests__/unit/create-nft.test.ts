@@ -1,8 +1,12 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { createNft } from '@/plugins/token/commands/create-nft';
+import {
+  createNft,
+  CreateNftOutputSchema,
+} from '@/plugins/token/commands/create-nft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -105,7 +109,7 @@ describe('createNftHandler', () => {
         expect.arrayContaining(['admin-key-ref-id', 'treasury-key-ref-id']),
       );
       expect(mockSaveToken).toHaveBeenCalled();
-      expect(result.result).toBeDefined();
+      assertOutput(result.result, CreateNftOutputSchema);
     });
 
     test('should use default credentials when treasury not provided', async () => {
@@ -164,7 +168,7 @@ describe('createNftHandler', () => {
         ['operator-key-ref-id'],
       );
       expect(mockSaveToken).toHaveBeenCalled();
-      expect(result.result).toBeDefined();
+      assertOutput(result.result, CreateNftOutputSchema);
     });
   });
 

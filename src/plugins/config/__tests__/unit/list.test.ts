@@ -1,6 +1,8 @@
-import type { ListConfigOutput } from '@/plugins/config/commands/list/output';
-
-import { listConfigOptions } from '@/plugins/config/commands/list/handler';
+import { assertOutput } from '@/__tests__/utils/assert-output';
+import {
+  listConfigOptions,
+  ListConfigOutputSchema,
+} from '@/plugins/config/commands/list';
 
 import { booleanOption, enumOption } from './helpers/fixtures';
 import {
@@ -18,7 +20,7 @@ describe('config plugin - list', () => {
     const args = makeCommandArgs({ api });
 
     const result = await listConfigOptions(args);
-    const output = result.result as ListConfigOutput;
+    const output = assertOutput(result.result, ListConfigOutputSchema);
 
     expect(output.totalCount).toBe(2);
     expect(output.options).toEqual(

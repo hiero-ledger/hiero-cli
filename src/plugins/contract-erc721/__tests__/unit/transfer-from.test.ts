@@ -1,5 +1,4 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc721CallTransferFromOutput } from '@/plugins/contract-erc721/commands/transfer-from/output';
 
 import { ZodError } from 'zod';
 
@@ -11,6 +10,7 @@ import {
   MOCK_EVM_ADDRESS_ALT_2,
   MOCK_TX_ID,
 } from '@/__tests__/mocks/fixtures';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
@@ -23,7 +23,10 @@ import {
   makeApiMocks,
   makeLogger,
 } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { transferFromFunctionCall } from '@/plugins/contract-erc721/commands/transfer-from/handler';
+import {
+  ContractErc721CallTransferFromOutputSchema,
+  transferFromFunctionCall,
+} from '@/plugins/contract-erc721/commands/transfer-from';
 import { ContractErc721CallTransferFromInputSchema } from '@/plugins/contract-erc721/commands/transfer-from/input';
 
 const mockAddAddress = jest.fn().mockReturnThis();
@@ -95,7 +98,10 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
     const result = await transferFromFunctionCall(args);
 
     expect(result.result).toBeDefined();
-    const output = result.result as ContractErc721CallTransferFromOutput;
+    const output = assertOutput(
+      result.result,
+      ContractErc721CallTransferFromOutputSchema,
+    );
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.transactionId).toBe(MOCK_TX_ID);

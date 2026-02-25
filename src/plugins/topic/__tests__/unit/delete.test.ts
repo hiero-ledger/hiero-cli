@@ -1,5 +1,4 @@
 import type { CoreApi } from '@/core';
-import type { DeleteTopicOutput } from '@/plugins/topic/commands/delete';
 import type { TopicData } from '@/plugins/topic/schema';
 
 import {
@@ -10,9 +9,11 @@ import {
   makeStateMock,
   mockTopicAliasRecord,
 } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
+import { DeleteTopicOutputSchema } from '@/plugins/topic/commands/delete';
 import { deleteTopic } from '@/plugins/topic/commands/delete/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -69,7 +70,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     expect(deleteTopicMock).toHaveBeenCalledWith(
       `${SupportedNetwork.TESTNET}:0.0.1111`,
     );
-    const output = result.result as DeleteTopicOutput;
+    const output = assertOutput(result.result, DeleteTopicOutputSchema);
     expect(output.deletedTopic.name).toBe('topic1');
     expect(output.deletedTopic.topicId).toBe('0.0.1111');
   });
@@ -102,7 +103,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     expect(deleteTopicMock).toHaveBeenCalledWith(
       `${SupportedNetwork.TESTNET}:0.0.2222`,
     );
-    const output = result.result as DeleteTopicOutput;
+    const output = assertOutput(result.result, DeleteTopicOutputSchema);
     expect(output.deletedTopic.name).toBe('topic2');
     expect(output.deletedTopic.topicId).toBe('0.0.2222');
   });
@@ -253,7 +254,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
       SupportedNetwork.TESTNET,
     );
 
-    const output = result.result as DeleteTopicOutput;
+    const output = assertOutput(result.result, DeleteTopicOutputSchema);
     expect(output.deletedTopic.name).toBe('topic-alias');
     expect(output.deletedTopic.topicId).toBe('0.0.7777');
     expect(output.removedAliases).toBeDefined();

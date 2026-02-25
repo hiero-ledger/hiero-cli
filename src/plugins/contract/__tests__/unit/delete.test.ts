@@ -1,6 +1,5 @@
 import type { Logger } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { DeleteContractOutput } from '@/plugins/contract/commands/delete';
 import type { ContractData } from '@/plugins/contract/schema';
 
 import {
@@ -9,6 +8,7 @@ import {
   MOCK_EVM_ADDRESS,
   MOCK_TX_ID,
 } from '@/__tests__/mocks/fixtures';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -17,6 +17,7 @@ import {
   makeArgs,
   makeLogger,
 } from '@/plugins/account/__tests__/unit/helpers/mocks';
+import { DeleteContractOutputSchema } from '@/plugins/contract/commands/delete';
 import { deleteContract } from '@/plugins/contract/commands/delete/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
@@ -91,7 +92,7 @@ describe('contract plugin - delete command', () => {
     const result = await deleteContract(args);
 
     expect(deleteContractMock).toHaveBeenCalledWith(MOCK_CONTRACT_ID);
-    const output = result.result as DeleteContractOutput;
+    const output = assertOutput(result.result, DeleteContractOutputSchema);
     expect(output.deletedContract.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.deletedContract.contractName).toBe('MyContract');
   });
@@ -141,7 +142,7 @@ describe('contract plugin - delete command', () => {
       'my-contract',
       SupportedNetwork.TESTNET,
     );
-    const output = result.result as DeleteContractOutput;
+    const output = assertOutput(result.result, DeleteContractOutputSchema);
     expect(output.deletedContract.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.deletedContract.contractName).toBe('ImportedContract');
   });

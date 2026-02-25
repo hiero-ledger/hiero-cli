@@ -1,10 +1,14 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, StateError } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { createToken } from '@/plugins/token/commands/create-ft';
+import {
+  CreateFungibleTokenOutputSchema,
+  createToken,
+} from '@/plugins/token/commands/create-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -103,7 +107,7 @@ describe('createTokenHandler', () => {
         expect.arrayContaining(['admin-key-ref-id', 'treasury-key-ref-id']),
       );
       expect(mockSaveToken).toHaveBeenCalled();
-      expect(result.result).toBeDefined();
+      assertOutput(result.result, CreateFungibleTokenOutputSchema);
     });
 
     test('should use default credentials when treasury not provided', async () => {
@@ -163,7 +167,7 @@ describe('createTokenHandler', () => {
         ['operator-key-ref-id'],
       );
       expect(mockSaveToken).toHaveBeenCalled();
-      expect(result.result).toBeDefined();
+      assertOutput(result.result, CreateFungibleTokenOutputSchema);
     });
   });
 

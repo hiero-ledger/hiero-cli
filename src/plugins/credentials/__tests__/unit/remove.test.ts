@@ -1,9 +1,10 @@
 import type { KmsCredentialRecord } from '@/core/services/kms/kms-types.interface';
-import type { RemoveCredentialsOutput } from '@/plugins/credentials/commands/remove/output';
 
 import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { RemoveCredentialsOutputSchema } from '@/plugins/credentials/commands/remove';
 import { removeCredentials } from '@/plugins/credentials/commands/remove/handler';
 
 describe('credentials plugin - remove command', () => {
@@ -28,7 +29,7 @@ describe('credentials plugin - remove command', () => {
     const args = makeArgs({ kms: kmsService }, logger, { id: 'kr_test123' });
 
     const result = await removeCredentials(args);
-    const output = result.result as RemoveCredentialsOutput;
+    const output = assertOutput(result.result, RemoveCredentialsOutputSchema);
 
     expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
     expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
@@ -57,7 +58,7 @@ describe('credentials plugin - remove command', () => {
     const args = makeArgs({ kms: kmsService }, logger, { id: 'kr_test123' });
 
     const result = await removeCredentials(args);
-    const output = result.result as RemoveCredentialsOutput;
+    const output = assertOutput(result.result, RemoveCredentialsOutputSchema);
 
     expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
     expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');

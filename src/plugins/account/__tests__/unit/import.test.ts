@@ -1,7 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
-import type { ImportAccountOutput } from '@/plugins/account/commands/import';
 
 import '@/core/utils/json-serialize';
 
@@ -14,9 +13,11 @@ import {
   makeNetworkMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupportedNetwork } from '@/core';
 import { StateError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { ImportAccountOutputSchema } from '@/plugins/account/commands/import';
 import { importAccount } from '@/plugins/account/commands/import/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -64,7 +65,7 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(kms.importAndValidatePrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
       'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
-      'pubKey',
+      '0230a1f42abc4794541e4a4389ec7e822666b8a7693c4cc3dedd2746b32f9c015b',
       'local',
     );
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.9999');
@@ -85,16 +86,18 @@ describe('account plugin - import command (ADR-003)', () => {
         accountId: '0.0.9999',
         network: 'testnet',
         keyRefId: 'kr_test123',
-        evmAddress: '0xabc',
+        evmAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
       }),
     );
 
-    const output = result.result as ImportAccountOutput;
+    const output = assertOutput(result.result, ImportAccountOutputSchema);
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('imported');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.network).toBe('testnet');
-    expect(output.evmAddress).toBe('0xabc');
+    expect(output.evmAddress).toBe(
+      '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+    );
   });
 
   test('returns failure if account with same name already exists', async () => {

@@ -1,5 +1,3 @@
-import type { ListNetworksOutput } from '@/plugins/network/commands/list/output';
-
 import {
   makeArgs,
   makeLogger,
@@ -7,7 +5,11 @@ import {
   setupExitSpy,
 } from '@/__tests__/mocks/mocks';
 import { NetworkError } from '@/core';
-import { listHandler } from '@/plugins/network/commands/list';
+import { assertOutput } from '@/__tests__/utils/assert-output';
+import {
+  listHandler,
+  ListNetworksOutputSchema,
+} from '@/plugins/network/commands/list';
 import {
   checkMirrorNodeHealth,
   checkRpcHealth,
@@ -44,7 +46,7 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    const output = result.result as ListNetworksOutput;
+    const output = assertOutput(result.result, ListNetworksOutputSchema);
     expect(output.networks).toBeDefined();
     expect(output.activeNetwork).toBe('testnet');
   });
@@ -107,7 +109,7 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    const output = result.result as ListNetworksOutput;
+    const output = assertOutput(result.result, ListNetworksOutputSchema);
     expect(output.networks).toHaveLength(4);
     expect(output.activeNetwork).toBe('mainnet');
   });
@@ -142,7 +144,7 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    const output = result.result as ListNetworksOutput;
+    const output = assertOutput(result.result, ListNetworksOutputSchema);
     expect(output.networks).toBeDefined();
   });
 
@@ -153,7 +155,7 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    const output = result.result as ListNetworksOutput;
+    const output = assertOutput(result.result, ListNetworksOutputSchema);
     expect(output.activeNetwork).toBe('testnet');
   });
 
@@ -173,7 +175,7 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    const output = result.result as ListNetworksOutput;
+    const output = assertOutput(result.result, ListNetworksOutputSchema);
     expect(output.networks.some((n) => n.operatorId === '0.0.1001')).toBe(true);
   });
 
@@ -185,7 +187,7 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    const output = result.result as ListNetworksOutput;
+    const output = assertOutput(result.result, ListNetworksOutputSchema);
     expect(output.networks.some((n) => !n.operatorId)).toBe(true);
   });
 });

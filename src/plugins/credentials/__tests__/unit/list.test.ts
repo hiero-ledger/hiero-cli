@@ -1,7 +1,8 @@
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { ListCredentialsOutput } from '@/plugins/credentials/commands/list/output';
 
 import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
+import { ListCredentialsOutputSchema } from '@/plugins/credentials/commands/list';
 import { InternalError } from '@/core';
 import { listCredentials } from '@/plugins/credentials/commands/list/handler';
 
@@ -18,7 +19,7 @@ describe('credentials plugin - list command', () => {
     const args = makeArgs({ kms: kmsService }, logger, {});
 
     const result = await listCredentials(args);
-    const output = result.result as ListCredentialsOutput;
+    const output = assertOutput(result.result, ListCredentialsOutputSchema);
 
     expect(output.credentials).toHaveLength(0);
     expect(output.totalCount).toBe(0);
@@ -32,13 +33,15 @@ describe('credentials plugin - list command', () => {
       {
         keyRefId: 'kr_test123',
         keyManager: 'local' as KeyManagerName,
-        publicKey: 'pub-key-123',
+        publicKey:
+          '02aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         labels: ['test', 'dev'],
       },
       {
         keyRefId: 'kr_test456',
         keyManager: 'local_encrypted' as KeyManagerName,
-        publicKey: 'pub-key-456',
+        publicKey:
+          '02bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
       },
     ];
 
@@ -47,20 +50,22 @@ describe('credentials plugin - list command', () => {
     const args = makeArgs({ kms: kmsService }, logger, {});
 
     const result = await listCredentials(args);
-    const output = result.result as ListCredentialsOutput;
+    const output = assertOutput(result.result, ListCredentialsOutputSchema);
 
     expect(output.totalCount).toBe(2);
     expect(output.credentials).toHaveLength(2);
     expect(output.credentials[0]).toEqual(
       expect.objectContaining({
         keyRefId: 'kr_test123',
-        publicKey: 'pub-key-123',
+        publicKey:
+          '02aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
       }),
     );
     expect(output.credentials[1]).toEqual(
       expect.objectContaining({
         keyRefId: 'kr_test456',
-        publicKey: 'pub-key-456',
+        publicKey:
+          '02bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
       }),
     );
   });

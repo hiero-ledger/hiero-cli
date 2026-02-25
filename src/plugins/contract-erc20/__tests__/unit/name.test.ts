@@ -1,12 +1,13 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc20CallNameOutput } from '@/plugins/contract-erc20/commands/name/output';
 
 import { ZodError } from 'zod';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
+import { ContractErc20CallNameOutputSchema } from '@/plugins/contract-erc20/commands/name';
 import { nameFunctionCall as erc20NameHandler } from '@/plugins/contract-erc20/commands/name/handler';
 import { ContractErc20CallNameInputSchema } from '@/plugins/contract-erc20/commands/name/input';
 
@@ -46,7 +47,10 @@ describe('contract-erc20 plugin - name command (unit)', () => {
 
     expect(result.result).toBeDefined();
 
-    const parsed = result.result as ContractErc20CallNameOutput;
+    const parsed = assertOutput(
+      result.result,
+      ContractErc20CallNameOutputSchema,
+    );
 
     expect(parsed.contractId).toBe('0.0.1234');
     expect(parsed.contractName).toBe('MyToken');

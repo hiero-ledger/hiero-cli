@@ -402,6 +402,7 @@ export class PluginManager {
     await this.handleConfirmation(commandSpec, handlerArgs, skipConfirmation);
 
     const result = await commandSpec.handler(handlerArgs);
+    commandSpec.output.schema.parse(result.result);
 
     this.coreApi.output.handleOutput({
       status: Status.Success,

@@ -48,7 +48,7 @@ export const mockTransactionResults = {
   },
   successGeneric: {
     success: true,
-    transactionId: 'test-tx',
+    transactionId: '0.0.1234@1234567890.000000000',
     receipt: { status: { status: 'success' } },
   },
   failure: {
