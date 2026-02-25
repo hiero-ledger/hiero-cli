@@ -12,6 +12,9 @@ import { SupportedNetwork } from '@/core/types/shared.types';
 import { formatError } from '@/core/utils/errors';
 import { ContractCreateSchema } from '@/plugins/contract/commands/create/input';
 import {
+  DEFAULT_CONSTRUCTOR_PARAMS,
+  getDefaultContractFilePath,
+  getRepositoryBasePath,
   readContractFile,
   readContractNameFromFileContent,
 } from '@/plugins/contract/utils/contract-file-helpers';
@@ -26,22 +29,32 @@ export async function createContract(
   const validArgs = ContractCreateSchema.parse(args.args);
 
   try {
-    // Parse and validate args
     const alias = validArgs.name;
-    const filename = validArgs.file;
+    const defaultTemplate = validArgs.defaultTemplate;
     const gas = validArgs.gas;
     let basePath = validArgs.basePath;
     const memo = validArgs.memo;
     const solidityVersion = validArgs.solidityVersion;
-    const constructorParameters = validArgs.constructorParameters;
     const keyManagerArg = validArgs.keyManager;
     const network = api.network.getCurrentNetwork();
+    let constructorParameters = validArgs.constructorParameters;
+
+    if (defaultTemplate && constructorParameters.length === 0) {
+      constructorParameters = DEFAULT_CONSTRUCTOR_PARAMS[defaultTemplate];
+    }
+
+    let filename: string;
+    if (defaultTemplate) {
+      filename = getDefaultContractFilePath(defaultTemplate);
+      basePath = getRepositoryBasePath();
+    } else {
+      filename = validArgs.file!;
+      if (!basePath) {
+        basePath = process.cwd();
+      }
+    }
 
     api.alias.availableOrThrow(alias, network);
-    if (!basePath) {
-      // Default to the current working directory when basePath is not provided
-      basePath = process.cwd();
-    }
 
     // Get keyManager from args or fallback to config
     const keyManager =

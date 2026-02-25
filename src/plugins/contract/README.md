@@ -47,32 +47,29 @@ All commands return `CommandExecutionResult` with structured output that include
 
 Compiles a Solidity file, deploys the contract to Hedera, and verifies it on HashScan (skipped for localnet).
 
-```bash
-hcli contract create \
-  --name my-contract \
-  --file ./contracts/MyContract.sol
-```
+Either `--file` or `--default` must be provided (mutually exclusive).
 
 **Required options:**
 
-| Option | Short | Description                                  |
-| ------ | ----- | -------------------------------------------- |
-| `name` | `n`   | Smart contract name/alias in the state       |
-| `file` | `f`   | Path to Solidity file (absolute or relative) |
+| Option    | Short | Description                                                                       |
+| --------- | ----- | --------------------------------------------------------------------------------- |
+| `name`    | `n`   | Smart contract name/alias in the state                                            |
+| `file`    | `f`   | Path to Solidity file (absolute or relative). Required when not using `--default` |
+| `default` | `d`   | Use built-in template: `erc20` or `erc721`. Required when not using `--file`      |
 
 **Optional options:**
 
-| Option                  | Short | Description                           | Default           |
-| ----------------------- | ----- | ------------------------------------- | ----------------- |
-| `base-path`             | `b`   | Base path for contract imports        | Current directory |
-| `gas`                   | `g`   | Gas for contract creation             | 1000000           |
-| `admin-key`             | `a`   | Admin key for the contract            | -                 |
-| `memo`                  | `m`   | Contract memo (max 100 chars)         | -                 |
-| `solidity-version`      | `v`   | Solidity compiler version             | -                 |
-| `constructor-parameter` | `c`   | Repeatable constructor arguments      | -                 |
-| `key-manager`           | `k`   | Key manager: local or local_encrypted | Config setting    |
+| Option                  | Short | Description                                                                   | Default                                                            |
+| ----------------------- | ----- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `base-path`             | `b`   | Base path for contract imports                                                | Current directory (with `--file`), package root (with `--default`) |
+| `gas`                   | `g`   | Gas for contract creation                                                     | 1000000                                                            |
+| `admin-key`             | `a`   | Admin key for the contract                                                    | -                                                                  |
+| `memo`                  | `m`   | Contract memo (max 100 chars)                                                 | -                                                                  |
+| `solidity-version`      | `v`   | Solidity compiler version                                                     | -                                                                  |
+| `constructor-parameter` | `c`   | Repeatable constructor arguments. With `--default`, optional (defaults apply) | -                                                                  |
+| `key-manager`           | `k`   | Key manager: local or local_encrypted                                         | Config setting                                                     |
 
-**Example with constructor parameters:**
+**Example with custom file:**
 
 ```bash
 hcli contract create \
@@ -82,6 +79,24 @@ hcli contract create \
   --constructor-parameter "MyToken" \
   --constructor-parameter "MTK" \
   --admin-key operator-name
+```
+
+**Example with built-in ERC20 template (default constructor params: FungibleToken, FTK, 1000000):**
+
+```bash
+hcli contract create --name my-token --default erc20
+```
+
+**Example with built-in ERC721 template (default constructor params: NonFungibleToken, NFTK):**
+
+```bash
+hcli contract create --name my-nft --default erc721
+```
+
+**Example with built-in template and custom constructor params:**
+
+```bash
+hcli contract create --name my-token --default erc20 -c "CustomToken" -c "CTK" -c "500000"
 ```
 
 ### Contract List

@@ -53,9 +53,17 @@ export const contractPluginManifest: PluginManifest = {
           name: 'file',
           short: 'f',
           type: OptionType.STRING,
-          required: true,
+          required: false,
           description:
             'Smart contract definition file path (absolute or relative) to a Solidity file',
+        },
+        {
+          name: 'default',
+          short: 'd',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Use built-in contract template: erc20 or erc721 (mutually exclusive with --file)',
         },
         {
           name: 'base-path',
