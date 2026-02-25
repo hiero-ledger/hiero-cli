@@ -5,13 +5,13 @@
  */
 import type { Command, OptionValues } from 'commander';
 import type {
-  CliError,
   CommandHandlerArgs,
   CommandSpec,
   PluginManifest,
   PluginStateEntry,
 } from '@/core';
 import type { CoreApi } from '@/core/core-api';
+import type { ErrorBoundaryService } from '@/core/services/error-boundary/error-boundary-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 
@@ -23,7 +23,6 @@ import { Status } from '@/core/shared/constants';
 import { OptionType } from '@/core/types/shared.types';
 import { requireConfirmation } from '@/core/utils/confirmation';
 import { ensureCliInitialized } from '@/core/utils/ensure-cli-initialized';
-import { toCliError } from '@/core/utils/error-handler';
 import { filterReservedOptions } from '@/core/utils/filter-reserved-options';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
 import { registerDisabledPlugin } from '@/core/utils/register-disabled-plugin';
@@ -40,11 +39,13 @@ export class PluginManager {
   private defaultPlugins: string[] = [];
   private logger: Logger;
   private pluginManagement: PluginManagementService;
+  private errorBoundary: ErrorBoundaryService;
 
-  constructor(coreApi: CoreApi) {
+  constructor(coreApi: CoreApi, errorBoundary: ErrorBoundaryService) {
     this.coreApi = coreApi;
     this.logger = coreApi.logger;
     this.pluginManagement = coreApi.pluginManagement;
+    this.errorBoundary = errorBoundary;
   }
 
   /**
@@ -196,11 +197,9 @@ export class PluginManager {
       this.loadedPlugins.set(manifest.name, loadedPlugin);
       return loadedPlugin;
     } catch (error) {
-      const cliError = toCliError(
-        error,
-        `Failed to load plugin from ${pluginPath}`,
-      );
-      this.exitWithCliError(cliError);
+      this.errorBoundary.handle(error, {
+        message: `Failed to load plugin from ${pluginPath}`,
+      });
     }
   }
 
@@ -344,12 +343,9 @@ export class PluginManager {
         );
       });
     } catch (error) {
-      // Use centralized error handler for consistent error formatting
-      const cliError = toCliError(
-        error,
-        `Failed to register command ${commandSpec.name} from plugin ${plugin.manifest.name}`,
-      );
-      this.exitWithCliError(cliError);
+      this.errorBoundary.handle(error, {
+        message: `Failed to register command ${commandSpec.name} from plugin ${plugin.manifest.name}`,
+      });
     }
   }
 
@@ -392,14 +388,6 @@ export class PluginManager {
     if (!confirmed) {
       throw new InternalError('Operation cancelled by user');
     }
-  }
-
-  private exitWithCliError(error: CliError): never {
-    return this.coreApi.output.handleOutput({
-      status: Status.Failure,
-      template: error.getTemplate(),
-      data: error.toJSON(),
-    });
   }
 
   /**
@@ -448,8 +436,7 @@ export class PluginManager {
           data: result.result,
         });
     } catch (error) {
-      const cliError = toCliError(error);
-      this.exitWithCliError(cliError);
+      this.errorBoundary.handle(error);
     }
   }
 

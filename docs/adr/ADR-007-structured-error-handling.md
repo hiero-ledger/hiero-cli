@@ -3,7 +3,7 @@
 - Status: Proposed
 - Date: 2025-01-12
 - Owner: Tech Lead, Hiero CLI
-- Related: `src/core/utils/error-handler.ts`, `src/core/plugins/plugin-manager.ts`, `docs/adr/ADR-003-command-handler-result-contract.md`
+- Related: `src/core/services/error-boundary/error-boundary-service.ts`, `src/core/plugins/plugin-manager.ts`, `docs/adr/ADR-003-command-handler-result-contract.md`
 
 ## Context
 
@@ -55,7 +55,7 @@ Replace the return-based error handling with a throw-based model using a structu
 
 5. **Services throw `CliError` directly**: Removes the need for handlers to catch and transform service errors.
 
-6. **Single output boundary**: Both success and errors flow through `OutputService`. `error-handler.ts` becomes a thin adapter that converts thrown errors into structured error output and delegates formatting to `OutputService`.
+6. **Single output boundary**: Both success and errors flow through `OutputService`. `ErrorBoundaryService` becomes a thin adapter that converts thrown errors into structured error output and delegates formatting to `OutputService`.
 
 7. **Single format source of truth**: `OutputService` owns `OutputFormat` state. All error formatting uses `coreApi.output.getFormat()` (or an injected output service), removing global format state.
 
@@ -270,7 +270,7 @@ Error thrown → ErrorAdapter → OutputService.format({ status: 'failure', ...e
 **Rules**:
 
 - `OutputService` owns format state; no other module keeps global format.
-- `error-handler.ts` does not format output; it maps exceptions to structured error objects and delegates to `OutputService`.
+- `ErrorBoundaryService` does not format output; it maps exceptions to structured error objects and delegates to `OutputService`.
 - `--format` only affects `OutputService` and is queried via `coreApi.output.getFormat()`.
 - `OutputService` accepts structured objects (not pre-stringified JSON). JSON stringification happens only inside the JSON strategy.
 
@@ -290,35 +290,35 @@ interface OutputService {
 }
 ```
 
-**Error adapter** (`error-handler.ts`):
+**Error adapter** (`ErrorBoundaryService`):
 
 ```typescript
-export function toCliError(error: unknown, message?: string): CliError {
-  if (error instanceof CliError) return error;
-  if (error instanceof ZodError) return ValidationError.fromZod(error);
-  if (error instanceof Error)
-    return new InternalError(message ?? error.message);
-  return new InternalError(message ?? 'Unexpected unsupported Error');
-}
+class ErrorBoundaryServiceImpl {
+  constructor(private readonly output: OutputService) {}
 
-export function exitWithError(
-  output: OutputService,
-  message: string,
-  error?: unknown,
-): never {
-  const cliError = toCliError(error, message);
-  return output.handleOutput({
-    status: Status.Failure,
-    template: cliError.getTemplate(),
-    data: cliError.toJSON(),
-  });
+  toCliError(error: unknown, message?: string): CliError {
+    if (error instanceof CliError) return error;
+    if (error instanceof ZodError) return ValidationError.fromZod(error);
+    if (error instanceof Error)
+      return new InternalError(message ?? error.message);
+    return new InternalError(message ?? 'Unexpected unsupported Error');
+  }
+
+  handle(error: unknown, options?: { message?: string }): never {
+    const cliError = this.toCliError(error, options?.message);
+    return this.output.handleOutput({
+      status: Status.Failure,
+      template: cliError.getTemplate(),
+      data: cliError.toJSON(),
+    });
+  }
 }
 ```
 
 **Notes**:
 
 - `OutputService.handleOutput` is used for both success and error paths — `status` field discriminates them.
-- `error-handler.ts` converts any thrown value to `CliError` via `toCliError`, then delegates to `handleOutput`.
+- `ErrorBoundaryService` converts any thrown value to `CliError` via `toCliError`, then delegates to `handleOutput`.
 - `OutputService` is the only place that knows about format and output rendering.
 
 ### Handler Migration
@@ -510,11 +510,12 @@ export * from './errors';
 
 ### Global Error Boundary
 
-`error-handler.ts` serves as a "last resort" global catch-all. It captures any unhandled exceptions at the process level, ensures they are mapped to structured output, and delegates final formatting to `OutputService`.
+`ErrorBoundaryService` serves as a "last resort" global catch-all. It captures any unhandled exceptions at the process level, ensures they are mapped to structured output, and delegates final formatting to `OutputService`.
 
 **Notes**:
 
-- `error-handler.ts` becomes a thin wrapper for global process errors (unhandled rejections/exceptions).
+- `ErrorBoundaryService` becomes a thin wrapper for global process errors (unhandled rejections/exceptions).
+- `SIGINT` is treated as a user-interrupt failure path and returns structured error output with exit code `1`.
 - Handlers and services throw structured errors; they do not call formatting utilities directly.
 - `OutputService.handleOutput` is the single point responsible for JSON/human formatting and process exit.
 

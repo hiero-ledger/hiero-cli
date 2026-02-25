@@ -6,16 +6,13 @@ import { program } from 'commander';
 
 import pkg from '../package.json';
 
-import { createCoreApi, Status } from './core';
+import { createCoreApi } from './core';
 import { PluginManager } from './core/plugins/plugin-manager';
+import { ErrorBoundaryServiceImpl } from './core/services/error-boundary/error-boundary-service';
 import { DEFAULT_PLUGIN_STATE } from './core/shared/config/cli-options';
 import { validateNetwork } from './core/shared/validation/validate-network.zod';
 import { validateOutputFormat } from './core/shared/validation/validate-output-format.zod';
 import { addDisabledPluginsHelp } from './core/utils/add-disabled-plugins-help';
-import {
-  setupGlobalErrorHandlers,
-  toCliError,
-} from './core/utils/error-handler';
 import { resolvePayer } from './core/utils/resolve-payer';
 
 program
@@ -40,6 +37,10 @@ program
 // Initialize the simplified plugin system
 async function initializeCLI() {
   const coreApi = createCoreApi();
+  const errorBoundary = new ErrorBoundaryServiceImpl(
+    coreApi.output,
+    coreApi.logger,
+  );
 
   try {
     program.parseOptions(process.argv.slice(2));
@@ -60,9 +61,9 @@ async function initializeCLI() {
     }
 
     // Setup global error handlers with validated format
-    setupGlobalErrorHandlers(coreApi.output);
+    errorBoundary.registerGlobalHandlers();
 
-    const pluginManager = new PluginManager(coreApi);
+    const pluginManager = new PluginManager(coreApi, errorBoundary);
 
     // Initialize plugins, register disabled stubs, and load all manifests
     const pluginState = await pluginManager.initializePlugins(
@@ -82,12 +83,7 @@ async function initializeCLI() {
     await program.parseAsync(process.argv);
     process.exit(0);
   } catch (error) {
-    const cliError = toCliError(error);
-    coreApi.output.handleOutput({
-      status: Status.Failure,
-      template: cliError.getTemplate(),
-      data: cliError.toJSON(),
-    });
+    errorBoundary.handle(error);
   }
 }
 
