@@ -33,7 +33,7 @@ Remove a plugin from the system.
 **Example:**
 
 ```bash
-hedera plugin-management remove --name my-plugin
+hcli plugin-management remove --name my-plugin
 ```
 
 ### `list`
@@ -43,7 +43,7 @@ List all available plugins in the system.
 **Example:**
 
 ```bash
-hedera plugin-management list
+hcli plugin-management list
 ```
 
 ### `info`
@@ -57,7 +57,7 @@ Get detailed information about a specific plugin.
 **Example:**
 
 ```bash
-hedera plugin-management info --name account
+hcli plugin-management info --name account
 ```
 
 ### `enable`
@@ -71,7 +71,7 @@ Enable a plugin that exists in the plugin-management state.
 **Example:**
 
 ```bash
-hedera plugin-management enable --name account
+hcli plugin-management enable --name account
 ```
 
 ### `disable`
@@ -110,12 +110,7 @@ The plugin-management state is stored in `~/.hiero-cli/state/plugin-management-s
 
 - `name`, `enabled`, `description`, and optionally `path` for custom plugins
 
-<<<<<<< HEAD
 **`initialized-defaults`** – metadata key (always first in the file) listing default plugin names that have been initialized at least once. Used to:
-=======
-**`initialized-defaults`** – metadata key listing default plugin names that have been initialized at least once. Used to:
-
-> > > > > > > origin/main
 
 - Add new default plugins when they appear in `DEFAULT_PLUGIN_STATE` (e.g. after a CLI update)
 - Avoid re-adding default plugins that the user explicitly removed
