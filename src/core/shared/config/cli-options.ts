@@ -11,6 +11,7 @@ import networkPluginManifest from '@/plugins/network/manifest';
 import pluginManagementManifest from '@/plugins/plugin-management/manifest';
 import tokenPluginManifest from '@/plugins/token/manifest';
 import topicPluginManifest from '@/plugins/topic/manifest';
+import auctionlogPluginManifest from '@/plugins/auctionlog/manifest';
 
 export const RESERVED_LONG_OPTIONS = new Set<string>([
   'format',
@@ -48,4 +49,5 @@ export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
   configPluginManifest,
   contractErc20PluginManifest,
   contractErc721PluginManifest,
+  auctionlogPluginManifest,
 ];
