@@ -60,7 +60,6 @@ export const PluginInfoOutputSchema = z.object({
 export const ResetPluginsOutputSchema = z.object({
   reset: z.boolean().describe('Whether reset was successful'),
   message: z.string().describe('Result message'),
-  removedCustomCount: z.number().describe('Number of custom plugins removed'),
 });
 
 // Type exports

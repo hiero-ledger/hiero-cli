@@ -225,8 +225,9 @@ describe('Plugin Management Integration Tests', () => {
     expect(resetResult.status).toBe(Status.Success);
     const resetOutput: ResetPluginsOutput = JSON.parse(resetResult.outputJson!);
     expect(resetOutput.reset).toBe(true);
-    expect(resetOutput.removedCustomCount).toBeGreaterThanOrEqual(1);
-    expect(resetOutput.message).toContain('custom plugin');
+    expect(resetOutput.message).toBe(
+      'Plugin state has been reset successfully.',
+    );
 
     const listAfterReset = await getPluginList({
       args: {},

@@ -90,7 +90,7 @@ hcli plugin-management disable --name account
 
 ### `reset`
 
-Clear plugin-management state. All default plugins will be restored on next CLI run. Custom plugins will be removed. This is a destructive operation and requires confirmation.
+Clear plugin-management state. Custom plugins will be removed. This is a destructive operation and requires confirmation.
 
 **Options:**
 

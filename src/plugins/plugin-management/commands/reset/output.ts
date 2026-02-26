@@ -10,10 +10,6 @@ export { ResetPluginsOutputSchema };
 
 export const RESET_PLUGINS_TEMPLATE = `{{#if reset}}
 ✅ Plugin state reset successfully
-   {{message}}
-{{#if (gt removedCustomCount 0)}}
-   Custom plugins removed: {{removedCustomCount}}
-{{/if}}
 {{else}}
 ❌ Failed to reset plugin state
    Error: {{message}}
