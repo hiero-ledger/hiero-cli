@@ -279,6 +279,14 @@ describe('PluginManagementServiceImpl', () => {
     });
   });
 
+  describe('resetPlugins', () => {
+    it('should call state.clear with PLUGIN_MANAGEMENT_NAMESPACE', () => {
+      service.resetPlugins();
+
+      expect(stateMock.clear).toHaveBeenCalledWith(PLUGIN_MANAGEMENT_NAMESPACE);
+    });
+  });
+
   describe('savePluginState', () => {
     it('should save plugin state to StateService', () => {
       const entry = makePluginEntry();

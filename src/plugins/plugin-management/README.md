@@ -88,6 +88,20 @@ Disable a plugin that exists in the plugin-management state.
 hcli plugin-management disable --name account
 ```
 
+### `reset`
+
+Clear plugin-management state. All default plugins will be restored on next CLI run. Custom plugins will be removed. This is a destructive operation and requires confirmation.
+
+**Options:**
+
+- None
+
+**Example:**
+
+```bash
+hcli plugin-management reset
+```
+
 ## Plugin Management State
 
 The plugin-management state is stored in `~/.hiero-cli/state/plugin-management-storage.json`. It contains:
@@ -139,10 +153,16 @@ The `outputJson` field contains a JSON string that conforms to the Zod schema de
 src/plugins/plugin-management/
 ├── commands/
 │   ├── add/
-│   │   ├── handler.ts      # Command handler
-│   │   ├── output.ts       # Output schema and template
-│   │   └── index.ts        # Export
+│   │   ├── input.ts
+│   │   ├── handler.ts
+│   │   ├── output.ts
+│   │   └── index.ts
 │   ├── remove/
+│   │   ├── input.ts
+│   │   ├── handler.ts
+│   │   ├── output.ts
+│   │   └── index.ts
+│   ├── reset/
 │   │   ├── handler.ts
 │   │   ├── output.ts
 │   │   └── index.ts
@@ -150,7 +170,18 @@ src/plugins/plugin-management/
 │   │   ├── handler.ts
 │   │   ├── output.ts
 │   │   └── index.ts
+│   ├── enable/
+│   │   ├── input.ts
+│   │   ├── handler.ts
+│   │   ├── output.ts
+│   │   └── index.ts
+│   ├── disable/
+│   │   ├── input.ts
+│   │   ├── handler.ts
+│   │   ├── output.ts
+│   │   └── index.ts
 │   └── info/
+│       ├── input.ts
 │       ├── handler.ts
 │       ├── output.ts
 │       └── index.ts

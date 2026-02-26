@@ -56,6 +56,13 @@ export const PluginInfoOutputSchema = z.object({
   message: z.string().describe('Result message'),
 });
 
+// Reset plugins output schema
+export const ResetPluginsOutputSchema = z.object({
+  reset: z.boolean().describe('Whether reset was successful'),
+  message: z.string().describe('Result message'),
+  removedCustomCount: z.number().describe('Number of custom plugins removed'),
+});
+
 // Type exports
 export type PluginInfo = z.infer<typeof PluginInfoSchema>;
 export type PluginListItem = z.infer<typeof PluginListItemSchema>;
@@ -64,3 +71,4 @@ export type EnablePluginOutput = z.infer<typeof EnablePluginOutputSchema>;
 export type RemovePluginOutput = z.infer<typeof RemovePluginOutputSchema>;
 export type ListPluginsOutput = z.infer<typeof ListPluginsOutputSchema>;
 export type PluginInfoOutput = z.infer<typeof PluginInfoOutputSchema>;
+export type ResetPluginsOutput = z.infer<typeof ResetPluginsOutputSchema>;

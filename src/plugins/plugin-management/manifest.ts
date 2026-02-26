@@ -36,6 +36,11 @@ import {
   removePlugin,
   RemovePluginOutputSchema,
 } from './commands/remove';
+import {
+  RESET_PLUGINS_TEMPLATE,
+  resetPlugins,
+  ResetPluginsOutputSchema,
+} from './commands/reset';
 
 export const pluginManagementManifest: PluginManifest = {
   name: 'plugin-management',
@@ -131,6 +136,20 @@ export const pluginManagementManifest: PluginManifest = {
         schema: ListPluginsOutputSchema,
         humanTemplate: LIST_PLUGINS_TEMPLATE,
       },
+    },
+    {
+      name: 'reset',
+      summary: 'Reset plugin state to defaults',
+      description:
+        'Clear plugin-management state. All default plugins will be restored on next CLI run. Custom plugins will be removed.',
+      options: [],
+      handler: resetPlugins,
+      output: {
+        schema: ResetPluginsOutputSchema,
+        humanTemplate: RESET_PLUGINS_TEMPLATE,
+      },
+      requireConfirmation:
+        'Are you sure you want to reset plugin state? All default plugins will be restored on next CLI run. Custom plugins will be removed.',
     },
     {
       name: 'info',

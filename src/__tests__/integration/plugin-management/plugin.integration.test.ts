@@ -5,6 +5,7 @@ import type { EnablePluginOutput } from '@/plugins/plugin-management/commands/en
 import type { PluginInfoOutput } from '@/plugins/plugin-management/commands/info/output';
 import type { ListPluginsOutput } from '@/plugins/plugin-management/commands/list/output';
 import type { RemovePluginOutput } from '@/plugins/plugin-management/commands/remove/output';
+import type { ResetPluginsOutput } from '@/plugins/plugin-management/commands/reset/output';
 
 import '@/core/utils/json-serialize';
 
@@ -19,6 +20,7 @@ import {
   getPluginInfo,
   getPluginList,
   removePlugin,
+  resetPlugins,
 } from '@/plugins/plugin-management';
 
 describe('Plugin Management Integration Tests', () => {
@@ -185,5 +187,59 @@ describe('Plugin Management Integration Tests', () => {
     expect(removePluginOutput.message).toBe(
       'Plugin test removed from plugin-management state',
     );
+  });
+
+  it('reset clears plugin state and removes custom plugins', async () => {
+    const addPluginArgs: Record<string, unknown> = {
+      path: 'dist/plugins/test',
+    };
+    const addPluginResult = await addPlugin({
+      args: addPluginArgs,
+      api: coreApi,
+      state: coreApi.state,
+      logger: coreApi.logger,
+      config: coreApi.config,
+    });
+    expect(addPluginResult.status).toBe(Status.Success);
+
+    const listBeforeReset = await getPluginList({
+      args: {},
+      api: coreApi,
+      state: coreApi.state,
+      logger: coreApi.logger,
+      config: coreApi.config,
+    });
+    expect(listBeforeReset.status).toBe(Status.Success);
+    const listBeforeOutput: ListPluginsOutput = JSON.parse(
+      listBeforeReset.outputJson!,
+    );
+    expect(listBeforeOutput.plugins.some((p) => p.name === 'test')).toBe(true);
+
+    const resetResult = await resetPlugins({
+      args: {},
+      api: coreApi,
+      state: coreApi.state,
+      logger: coreApi.logger,
+      config: coreApi.config,
+    });
+    expect(resetResult.status).toBe(Status.Success);
+    const resetOutput: ResetPluginsOutput = JSON.parse(resetResult.outputJson!);
+    expect(resetOutput.reset).toBe(true);
+    expect(resetOutput.removedCustomCount).toBeGreaterThanOrEqual(1);
+    expect(resetOutput.message).toContain('custom plugin');
+
+    const listAfterReset = await getPluginList({
+      args: {},
+      api: coreApi,
+      state: coreApi.state,
+      logger: coreApi.logger,
+      config: coreApi.config,
+    });
+    expect(listAfterReset.status).toBe(Status.Success);
+    const listAfterOutput: ListPluginsOutput = JSON.parse(
+      listAfterReset.outputJson!,
+    );
+    expect(listAfterOutput.plugins.some((p) => p.name === 'test')).toBe(false);
+    expect(listAfterOutput.count).toBe(0);
   });
 });
