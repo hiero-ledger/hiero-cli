@@ -145,5 +145,8 @@ hiero-cli.config.*.local.json
 #AI agents
 .claude
 CLAUDE.md
+swap-quote.md
+swap-HBAR-token.md
+
 
 pnpm-lock.yaml
