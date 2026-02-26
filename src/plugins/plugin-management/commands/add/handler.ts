@@ -3,7 +3,8 @@
  * Adds a new plugin entry to the plugin-management state and enables it.
  *
  * Behavior:
- * - Reads the plugin manifest from the provided path to determine the plugin name.
+ * - With --path: reads manifest from filesystem path.
+ * - With --name: adds a default plugin by name (path resolved from CLI plugins dir).
  * - Fails if a plugin with the same name already exists in state.
  * - On success, creates a new PluginStateEntry with enabled = true.
  *
@@ -17,9 +18,12 @@ import type {
 import type { AddPluginOutput } from './output';
 
 import { PluginManagementCreateStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
+import { DEFAULT_PLUGIN_STATE } from '@/core/shared/config/cli-options';
 import { Status } from '@/core/shared/constants';
 import { formatError } from '@/core/utils/errors';
+import { getDefaultPluginPath } from '@/core/utils/get-default-plugin-path';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
+import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 import { validatePluginPath } from '@/plugins/plugin-management/utils/plugin-path-validator';
 
 import { AddPluginInputSchema } from './input';
@@ -29,17 +33,25 @@ export async function addPlugin(
 ): Promise<CommandExecutionResult> {
   const { api, logger } = args;
 
-  // Parse and validate ars
   const validArgs = AddPluginInputSchema.parse(args.args);
 
-  const pluginPath = validArgs.path;
-
-  logger.info('➕ Adding plugin from path...');
+  let pluginPath: string;
+  if (validArgs.name) {
+    const defaultPluginNames = new Set(DEFAULT_PLUGIN_STATE.map((m) => m.name));
+    if (!defaultPluginNames.has(validArgs.name)) {
+      return {
+        status: Status.Failure,
+        errorMessage: ERROR_MESSAGES.pluginNotDefault(validArgs.name),
+      };
+    }
+    pluginPath = getDefaultPluginPath(validArgs.name);
+    logger.info(`➕ Adding default plugin: ${validArgs.name}...`);
+  } else {
+    pluginPath = validArgs.path!;
+    logger.info('➕ Adding plugin from path...');
+  }
 
   try {
-    // @TODO: Normalize plugin paths (relative vs absolute) once CLI packaging
-    // as an npm package is finalized, so built-in and user-added plugins use
-    // a consistent path format.
     const { resolvedPath, manifestPath } = await validatePluginPath(pluginPath);
 
     logger.info(`🔍 Loading plugin manifest from: ${manifestPath}`);

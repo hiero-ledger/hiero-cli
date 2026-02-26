@@ -10,16 +10,23 @@ This plugin provides functionality to add, remove, list, and get information abo
 
 ### `add`
 
-Add a new plugin to the system from a plugin directory path.
+Add a new plugin to the system. Use `--path` for custom plugins or `--name` for default plugins.
 
 **Options:**
 
-- `--path, -p` (required): Filesystem path to the plugin directory containing `manifest.js`
+- `--path, -p` (optional): Filesystem path to the plugin directory containing `manifest.js`
+- `--name, -n` (optional): Name of a default plugin to add (e.g. account, token). Use `--path` for custom plugins.
 
-**Example:**
+Exactly one of `--path` or `--name` must be provided.
+
+**Examples:**
 
 ```bash
+# Add a custom plugin from path
 hcli plugin-management add --path ./dist/plugins/my-plugin
+
+# Add a default plugin by name
+hcli plugin-management add --name account
 ```
 
 ### `remove`
