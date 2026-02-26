@@ -35,9 +35,21 @@ export class ContractQueryServiceImpl implements ContractQueryService {
     this.logger.info(
       `Calling contract ${params.contractIdOrEvmAddress} "${params.functionName}" function on mirror node`,
     );
+    // Normalize to lowercase hex; some mirror node validators require it
+    const toHex = (
+      contractEvmAddress.startsWith('0x')
+        ? contractEvmAddress
+        : `0x${contractEvmAddress}`
+    ).toLowerCase();
+    const dataHex = (data.startsWith('0x') ? data : `0x${data}`).toLowerCase();
+    // Mirror node may require "from"; use zero address for read-only queries (same as Hedera SDK behavior when sender is unset)
+    const fromHex = '0x0000000000000000000000000000000000000000';
     const response = await this.mirrorService.postContractCall({
-      to: contractEvmAddress,
-      data: data,
+      block: 'latest',
+      from: fromHex,
+      to: toHex,
+      data: dataHex,
+      gas: 2_000_000,
     });
 
     if (!response || !response.result) {

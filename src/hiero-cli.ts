@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import './core/utils/register-path-aliases';
 import './core/utils/json-serialize';
 
 import { program } from 'commander';

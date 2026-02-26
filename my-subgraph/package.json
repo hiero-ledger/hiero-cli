@@ -1,0 +1,17 @@
+{
+  "name": "hedera-subgraph-greeter",
+  "version": "1.0.0",
+  "description": "Hedera subgraph on testnet - scaffolded by hiero-cli",
+  "scripts": {
+    "codegen": "graph codegen",
+    "build": "graph build",
+    "create-local": "graph create --node http://localhost:8020/ Greeter",
+    "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 Greeter",
+    "graph-node": "docker-compose -f ./graph-node/docker-compose.yaml up -d",
+    "graph-node-down": "docker-compose -f ./graph-node/docker-compose.yaml down"
+  },
+  "dependencies": {
+    "@graphprotocol/graph-cli": "0.33.0",
+    "@graphprotocol/graph-ts": "0.27.0"
+  }
+}

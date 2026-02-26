@@ -24,7 +24,8 @@ export const DEFAULT_NETWORKS: Record<string, DefaultNetworkConfig> = {
   },
   testnet: {
     rpcUrl: 'https://testnet.hashio.io/api',
-    mirrorNodeUrl: 'https://testnet.mirrornode.hedera.com/api/v1',
+    mirrorNodeUrl:
+      'https://testnet.hedera.validationcloud.io/v1/MtxToj_lTWpHFpYDHBw33G3M5Qs4rBJr9nK39V07dbQ/api/v1',
   },
   previewnet: {
     rpcUrl: 'https://previewnet.hashio.io/api',

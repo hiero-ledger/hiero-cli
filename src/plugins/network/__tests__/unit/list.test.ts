@@ -63,7 +63,7 @@ describe('network plugin - list command', () => {
     expect(result.status).toBe(Status.Success);
 
     expect(mockedCheckMirrorNodeHealth).toHaveBeenCalledWith(
-      'https://testnet.mirrornode.hedera.com/api/v1',
+      'https://testnet.hedera.validationcloud.io/v1/MtxToj_lTWpHFpYDHBw33G3M5Qs4rBJr9nK39V07dbQ/api/v1',
     );
     expect(mockedCheckRpcHealth).toHaveBeenCalledWith(
       'https://testnet.hashio.io/api',

@@ -11,7 +11,10 @@ export const NetworkToBaseUrl = new Map<SupportedNetwork, string>([
     SupportedNetwork.MAINNET,
     'https://mainnet-public.mirrornode.hedera.com/api/v1',
   ],
-  [SupportedNetwork.TESTNET, 'https://testnet.mirrornode.hedera.com/api/v1'],
+  [
+    SupportedNetwork.TESTNET,
+    'https://testnet.hedera.validationcloud.io/v1/MtxToj_lTWpHFpYDHBw33G3M5Qs4rBJr9nK39V07dbQ/api/v1',
+  ],
   [
     SupportedNetwork.PREVIEWNET,
     'https://previewnet.mirrornode.hedera.com/api/v1',
