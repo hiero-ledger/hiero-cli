@@ -88,6 +88,23 @@ Disable a plugin that exists in the plugin-management state.
 hcli plugin-management disable --name account
 ```
 
+## Plugin Management State
+
+The plugin-management state is stored in `~/.hiero-cli/state/plugin-management-storage.json`. It contains:
+
+**Plugin entries** – one key per plugin (e.g. `account`, `token`, `network`), each with:
+
+- `name`, `enabled`, `description`, and optionally `path` for custom plugins
+
+**`initialized-defaults`** – metadata key listing default plugin names that have been initialized at least once. Used to:
+
+- Add new default plugins when they appear in `DEFAULT_PLUGIN_STATE` (e.g. after a CLI update)
+- Avoid re-adding default plugins that the user explicitly removed
+
+**Auto-initialization:** On each CLI start, any default plugin from `DEFAULT_PLUGIN_STATE` that is not in `initialized-defaults` is added to the state and to `initialized-defaults`. Default plugins removed by the user stay removed.
+
+**Custom plugins** are never added to `initialized-defaults`; they are fully removed from state when the user runs `remove`.
+
 ## Output Formats
 
 All commands support both JSON and human-readable output formats:

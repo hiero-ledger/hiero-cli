@@ -58,4 +58,7 @@ export interface PluginManagementService {
   enablePlugin(name: string): PluginManagementEnableResult;
   disablePlugin(name: string): PluginManagementDisableResult;
   savePluginState(entry: PluginStateEntry): void;
+  getInitializedDefaults(): string[];
+  setInitializedDefaults(names: string[]): void;
+  addToInitializedDefaults(name: string): void;
 }

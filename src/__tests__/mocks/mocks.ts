@@ -422,6 +422,9 @@ const makePluginManagementServiceMock = (): PluginManagementService =>
     enablePlugin: jest.fn(),
     disablePlugin: jest.fn(),
     savePluginState: jest.fn(),
+    getInitializedDefaults: jest.fn().mockReturnValue([]),
+    setInitializedDefaults: jest.fn(),
+    addToInitializedDefaults: jest.fn(),
   }) as unknown as PluginManagementService;
 
 const makeContractTransactionServiceMock = (): ContractTransactionService =>
