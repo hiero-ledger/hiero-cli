@@ -2,7 +2,7 @@
 
 import './core/utils/json-serialize';
 
-import { program } from 'commander';
+import { CommanderError, program } from 'commander';
 
 import pkg from '../package.json';
 
@@ -32,7 +32,9 @@ program
   .showHelpAfterError('use --help for available options')
   .configureHelp({
     showGlobalOptions: true,
-  });
+  })
+  .exitOverride()
+  .configureOutput({ outputError: () => {} });
 
 // Initialize the simplified plugin system
 async function initializeCLI() {
@@ -48,6 +50,10 @@ async function initializeCLI() {
     const format = validateOutputFormat(opts.format);
 
     coreApi.output.setFormat(format);
+
+    if (format !== 'json') {
+      program.showHelpAfterError('use --help for available options');
+    }
 
     const networkOverride = validateNetwork(opts.network || opts.N);
 
@@ -83,6 +89,9 @@ async function initializeCLI() {
     await program.parseAsync(process.argv);
     process.exit(0);
   } catch (error) {
+    if (error instanceof CommanderError && error.exitCode === 0) {
+      process.exit(0);
+    }
     errorBoundary.handle(error);
     process.exit(1);
   }
