@@ -11,7 +11,6 @@ import type {
   PluginStateEntry,
 } from '@/core';
 import type { CoreApi } from '@/core/core-api';
-import type { ErrorBoundaryService } from '@/core/services/error-boundary/error-boundary-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 
@@ -39,13 +38,11 @@ export class PluginManager {
   private defaultPlugins: string[] = [];
   private logger: Logger;
   private pluginManagement: PluginManagementService;
-  private errorBoundary: ErrorBoundaryService;
 
-  constructor(coreApi: CoreApi, errorBoundary: ErrorBoundaryService) {
+  constructor(coreApi: CoreApi) {
     this.coreApi = coreApi;
     this.logger = coreApi.logger;
     this.pluginManagement = coreApi.pluginManagement;
-    this.errorBoundary = errorBoundary;
   }
 
   /**
@@ -183,24 +180,17 @@ export class PluginManager {
    * Load a plugin from path
    */
   private async loadPluginFromPath(pluginPath: string): Promise<LoadedPlugin> {
-    try {
-      // Load manifest
-      const manifestPath = path.resolve(pluginPath, 'manifest.js');
-      const manifest = await loadPluginManifest(manifestPath);
+    const manifestPath = path.resolve(pluginPath, 'manifest.js');
+    const manifest = await loadPluginManifest(manifestPath);
 
-      const loadedPlugin: LoadedPlugin = {
-        manifest,
-        path: pluginPath,
-        status: 'loaded',
-      };
+    const loadedPlugin: LoadedPlugin = {
+      manifest,
+      path: pluginPath,
+      status: 'loaded',
+    };
 
-      this.loadedPlugins.set(manifest.name, loadedPlugin);
-      return loadedPlugin;
-    } catch (error) {
-      this.errorBoundary.handle(error, {
-        message: `Failed to load plugin from ${pluginPath}`,
-      });
-    }
+    this.loadedPlugins.set(manifest.name, loadedPlugin);
+    return loadedPlugin;
   }
 
   private getDefaultPluginPath(name: string): string {
@@ -240,113 +230,103 @@ export class PluginManager {
     this.logger.info(`✅ Registered commands for: ${pluginName}`);
   }
 
-  /**
-   * Register a single command
-   * Uses centralized error handler on failure to ensure consistent error formatting
-   */
   private registerSingleCommand(
     pluginCommand: Command,
     plugin: LoadedPlugin,
     commandSpec: CommandSpec,
     skipConfirmation: boolean,
   ): void {
-    try {
-      const commandName = String(commandSpec.name);
-      const command = this.buildCommand(pluginCommand, commandSpec);
-      // Add options
-      if (commandSpec.options) {
-        const { allowed, filteredLong, filteredShort } = filterReservedOptions(
-          commandSpec.options,
+    const commandName = String(commandSpec.name);
+    const command = this.buildCommand(pluginCommand, commandSpec);
+    // Add options
+    if (commandSpec.options) {
+      const { allowed, filteredLong, filteredShort } = filterReservedOptions(
+        commandSpec.options,
+      );
+
+      if (filteredLong.length > 0 || filteredShort.length > 0) {
+        const longDesc = filteredLong.map((n) => `--${n}`).join(', ');
+        const shortDesc = filteredShort.map((s) => `-${s}`).join(', ');
+        const combined = [longDesc, shortDesc].filter(Boolean).join(', ');
+
+        throw new ConfigurationError(
+          `Plugin ${plugin.manifest.name} command ${commandName} uses reserved option(s): ${combined}. These are reserved by the core CLI.`,
         );
-
-        if (filteredLong.length > 0 || filteredShort.length > 0) {
-          const longDesc = filteredLong.map((n) => `--${n}`).join(', ');
-          const shortDesc = filteredShort.map((s) => `-${s}`).join(', ');
-          const combined = [longDesc, shortDesc].filter(Boolean).join(', ');
-
-          throw new ConfigurationError(
-            `Plugin ${plugin.manifest.name} command ${commandName} uses reserved option(s): ${combined}. These are reserved by the core CLI.`,
-          );
-        }
-
-        for (const option of allowed) {
-          const optionName = String(option.name);
-          const short = option.short ? `-${String(option.short)}` : '';
-          const long = `--${optionName}`;
-          const combined = short ? `${short}, ${long}` : long;
-          const flags = `${combined} <value>`;
-          const baseDescription = option.description || `Set ${optionName}`;
-          const description = option.required
-            ? `${baseDescription} (required)`
-            : baseDescription;
-
-          const addOption = <T>(
-            parser?: (value: string, previous: T) => T,
-            useValueFlag = true,
-          ) => {
-            const optionFlags = useValueFlag ? flags : combined;
-            if (option.required) {
-              // Commander treats the third argument as an optional parser/transform function
-              if (parser) {
-                command.requiredOption(optionFlags, description, parser);
-              } else {
-                command.requiredOption(optionFlags, description);
-              }
-            } else {
-              if (parser) {
-                command.option(optionFlags, description, parser);
-              } else {
-                command.option(optionFlags, description);
-              }
-            }
-          };
-
-          switch (option.type) {
-            case OptionType.BOOLEAN:
-              // boolean flags don't take a value placeholder or parser
-              addOption<boolean | undefined>(undefined, false);
-              break;
-            case OptionType.NUMBER:
-              addOption<number>((value) => parseFloat(value));
-              break;
-            case OptionType.ARRAY: {
-              const parseArray = (value: string) => String(value).split(',');
-              addOption<string[]>(parseArray);
-              break;
-            }
-            case OptionType.REPEATABLE: {
-              const parseRepeatable = (
-                value: string,
-                previous: string[] | undefined,
-              ) => {
-                const arr = previous ?? [];
-                arr.push(value);
-                return arr;
-              };
-              addOption<string[]>(parseRepeatable);
-              break;
-            }
-            default:
-              // default to a simple string option (no parser)
-              addOption<string | undefined>();
-          }
-        }
       }
 
-      // Set up action handler
-      command.action(async (...args: unknown[]) => {
-        await this.executePluginCommand(
-          plugin,
-          commandSpec,
-          args,
-          skipConfirmation,
-        );
-      });
-    } catch (error) {
-      this.errorBoundary.handle(error, {
-        message: `Failed to register command ${commandSpec.name} from plugin ${plugin.manifest.name}`,
-      });
+      for (const option of allowed) {
+        const optionName = String(option.name);
+        const short = option.short ? `-${String(option.short)}` : '';
+        const long = `--${optionName}`;
+        const combined = short ? `${short}, ${long}` : long;
+        const flags = `${combined} <value>`;
+        const baseDescription = option.description || `Set ${optionName}`;
+        const description = option.required
+          ? `${baseDescription} (required)`
+          : baseDescription;
+
+        const addOption = <T>(
+          parser?: (value: string, previous: T) => T,
+          useValueFlag = true,
+        ) => {
+          const optionFlags = useValueFlag ? flags : combined;
+          if (option.required) {
+            // Commander treats the third argument as an optional parser/transform function
+            if (parser) {
+              command.requiredOption(optionFlags, description, parser);
+            } else {
+              command.requiredOption(optionFlags, description);
+            }
+          } else {
+            if (parser) {
+              command.option(optionFlags, description, parser);
+            } else {
+              command.option(optionFlags, description);
+            }
+          }
+        };
+
+        switch (option.type) {
+          case OptionType.BOOLEAN:
+            // boolean flags don't take a value placeholder or parser
+            addOption<boolean | undefined>(undefined, false);
+            break;
+          case OptionType.NUMBER:
+            addOption<number>((value) => parseFloat(value));
+            break;
+          case OptionType.ARRAY: {
+            const parseArray = (value: string) => String(value).split(',');
+            addOption<string[]>(parseArray);
+            break;
+          }
+          case OptionType.REPEATABLE: {
+            const parseRepeatable = (
+              value: string,
+              previous: string[] | undefined,
+            ) => {
+              const arr = previous ?? [];
+              arr.push(value);
+              return arr;
+            };
+            addOption<string[]>(parseRepeatable);
+            break;
+          }
+          default:
+            // default to a simple string option (no parser)
+            addOption<string | undefined>();
+        }
+      }
     }
+
+    // Set up action handler
+    command.action(async (...args: unknown[]) => {
+      await this.executePluginCommand(
+        plugin,
+        commandSpec,
+        args,
+        skipConfirmation,
+      );
+    });
   }
 
   // Handle pre-execution confirmation if required by command spec.
@@ -426,18 +406,13 @@ export class PluginManager {
 
     await this.handleConfirmation(commandSpec, handlerArgs, skipConfirmation);
 
-    try {
-      const result = await commandSpec.handler(handlerArgs);
+    const result = await commandSpec.handler(handlerArgs);
 
-      this.coreApi.output // Now we know its new CommandResult
-        .handleOutput({
-          status: Status.Success,
-          template: commandSpec.output.humanTemplate,
-          data: result.result,
-        });
-    } catch (error) {
-      this.errorBoundary.handle(error);
-    }
+    this.coreApi.output.handleOutput({
+      status: Status.Success,
+      template: commandSpec.output.humanTemplate,
+      data: result.result,
+    });
   }
 
   private buildCommand(pluginCommand: Command, commandSpec: CommandSpec) {

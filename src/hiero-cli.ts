@@ -63,7 +63,7 @@ async function initializeCLI() {
     // Setup global error handlers with validated format
     errorBoundary.registerGlobalHandlers();
 
-    const pluginManager = new PluginManager(coreApi, errorBoundary);
+    const pluginManager = new PluginManager(coreApi);
 
     // Initialize plugins, register disabled stubs, and load all manifests
     const pluginState = await pluginManager.initializePlugins(
@@ -84,6 +84,7 @@ async function initializeCLI() {
     process.exit(0);
   } catch (error) {
     errorBoundary.handle(error);
+    process.exit(1);
   }
 }
 

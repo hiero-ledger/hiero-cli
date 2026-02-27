@@ -9,7 +9,7 @@ export interface OutputService {
   /**
    * Handle a successful command result
    */
-  handleOutput(options: OutputHandlerOptions): never;
+  handleOutput(options: OutputHandlerOptions): void;
 
   /**
    * Get the current output format

@@ -20,20 +20,24 @@ export class ErrorBoundaryServiceImpl implements ErrorBoundaryService {
     error: unknown,
   ) => {
     this.handle(error, { message: 'Uncaught exception' });
+    process.exit(1);
   };
 
   private readonly unhandledRejectionListener: ProcessListener = (
     reason: unknown,
   ) => {
     this.handle(reason, { message: 'Unhandled promise rejection' });
+    process.exit(1);
   };
 
   private readonly sigintListener: ProcessListener = () => {
     this.handle(new InternalError('Interrupted by user'));
+    process.exit(1);
   };
 
   private readonly sigtermListener: ProcessListener = () => {
     this.handle(new InternalError('Process terminated'));
+    process.exit(1);
   };
 
   constructor(
@@ -59,11 +63,11 @@ export class ErrorBoundaryServiceImpl implements ErrorBoundaryService {
     });
   }
 
-  handle(error: unknown, options?: HandleErrorOptions): never {
+  handle(error: unknown, options?: HandleErrorOptions): void {
     const cliError = this.toCliError(error, options?.message);
 
     try {
-      return this.output.handleOutput({
+      this.output.handleOutput({
         status: Status.Failure,
         template: cliError.getTemplate(),
         data: cliError.toJSON(),

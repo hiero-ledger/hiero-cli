@@ -6,7 +6,7 @@ interface HandleErrorOptions {
 
 export interface ErrorBoundaryService {
   toCliError(error: unknown, message?: string): CliError;
-  handle(error: unknown, options?: HandleErrorOptions): never;
+  handle(error: unknown, options?: HandleErrorOptions): void;
   registerGlobalHandlers(): void;
   dispose(): void;
 }
