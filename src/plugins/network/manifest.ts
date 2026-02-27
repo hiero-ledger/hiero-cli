@@ -32,6 +32,7 @@ export const networkPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Network Plugin',
   description: 'Plugin for managing Hedera network configurations',
+  skipWizardInitialization: true,
   commands: [
     {
       name: 'list',

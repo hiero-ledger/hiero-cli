@@ -27,6 +27,7 @@ export const configPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Configuration Plugin',
   description: 'Manage CLI configuration options',
+  skipWizardInitialization: true,
   commands: [
     {
       name: 'list',

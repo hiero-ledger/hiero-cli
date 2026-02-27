@@ -53,6 +53,7 @@ export interface PluginManifest {
   displayName: string;
   description: string;
   commands: CommandSpec[];
+  skipWizardInitialization?: boolean;
 }
 
 export interface CommandSpec {

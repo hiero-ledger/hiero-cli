@@ -97,6 +97,10 @@ export const myPluginManifest: PluginManifest = {
 };
 ```
 
+#### Optional manifest fields
+
+- **`skipWizardInitialization`** (boolean): When `true`, the CLI skips the setup wizard (`ensureCliInitialized`) before running this plugin's commands. Use this for plugins that must run before the CLI is fully set up (e.g. `network`, `config`, `plugin-management`), since they are used to configure the network, options, or manage plugins before the user has completed the initial setup.
+
 Each entry in `commands` **must** provide an `output` block that references a Zod schema and (optionally) a template for human-readable output. The CLI relies on this metadata to validate `outputJson` and render results in line with [ADR-003](../docs/adr/ADR-003-command-handler-result-contract.md).
 
 Human-readable output templates use [Handlebars](https://handlebarsjs.com/) syntax for variable interpolation, conditionals, and iteration. Handlebars allows you to create flexible, readable output formats using expressions like `{{variable}}` for interpolation, `{{#if condition}}...{{/if}}` for conditionals, and `{{#each items}}...{{/each}}` for loops.
