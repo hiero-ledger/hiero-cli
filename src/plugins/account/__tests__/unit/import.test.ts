@@ -34,6 +34,7 @@ describe('account plugin - import command (ADR-003)', () => {
     const saveAccountMock = jest.fn().mockReturnValue(undefined);
 
     MockedHelper.mockImplementation(() => ({
+      hasAccountById: jest.fn().mockReturnValue(false),
       hasAccount: jest.fn().mockReturnValue(false),
       saveAccount: saveAccountMock,
     }));
@@ -98,10 +99,47 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(output.evmAddress).toBe('0xabc');
   });
 
-  test('returns failure if account already exists', async () => {
+  test('returns failure if account with same ID already exists in state', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
+      hasAccountById: jest.fn().mockReturnValue(true),
+      hasAccount: jest.fn().mockReturnValue(false),
+      saveAccount: jest.fn(),
+    }));
+
+    const mirrorMock = makeMirrorMock();
+    const networkMock = makeNetworkMock();
+    const kms = makeKmsMock();
+    const alias = makeAliasMock();
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      network: networkMock as NetworkService,
+      kms,
+      alias,
+      logger,
+      state: makeStateMock(),
+    };
+
+    const args = makeArgs(api, logger, {
+      key: '0.0.1111:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+      name: 'operator2',
+    });
+
+    const result = await importAccount(args);
+
+    expect(result.status).toBe(Status.Failure);
+    expect(result.errorMessage).toBe(
+      'Account with this ID is already saved in state',
+    );
+  });
+
+  test('returns failure if account with same name already exists', async () => {
+    const logger = makeLogger();
+
+    MockedHelper.mockImplementation(() => ({
+      hasAccountById: jest.fn().mockReturnValue(false),
       hasAccount: jest.fn().mockReturnValue(true),
       saveAccount: jest.fn(),
     }));
@@ -122,7 +160,6 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const args = makeArgs(api, logger, {
       key: '0.0.1111:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-      alias: 'test',
     });
 
     const result = await importAccount(args);
@@ -138,6 +175,7 @@ describe('account plugin - import command (ADR-003)', () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
+      hasAccountById: jest.fn().mockReturnValue(false),
       hasAccount: jest.fn().mockReturnValue(false),
       saveAccount: jest.fn(),
     }));
