@@ -65,7 +65,7 @@ export async function transferFunctionCall(
 
   if (!result.success) {
     throw new TransactionError(
-      `Failed to call ${ERC_20_FUNCTION_NAME} function: ${result.receipt?.status?.status ?? 'UNKNOWN'}`,
+      `Failed to call ${ERC_20_FUNCTION_NAME} on contract ${contractInfo.contractId} (txId: ${result.transactionId}, status: ${result.receipt?.status?.status ?? 'UNKNOWN'})`,
       false,
       { context: { status: result.receipt?.status?.status } },
     );

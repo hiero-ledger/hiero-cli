@@ -74,7 +74,10 @@ export async function createTopic(
   }
 
   if (!result.success) {
-    throw new TransactionError('Failed to create topic', false);
+    throw new TransactionError(
+      `Failed to create topic (txId: ${result.transactionId})`,
+      false,
+    );
   }
 
   const topicData = {

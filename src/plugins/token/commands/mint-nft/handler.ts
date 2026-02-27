@@ -115,9 +115,10 @@ export async function mintNft(
   ]);
 
   if (!result.success) {
-    throw new TransactionError('NFT mint failed', false, {
-      context: { tokenId },
-    });
+    throw new TransactionError(
+      `NFT mint failed (tokenId: ${tokenId}, txId: ${result.transactionId})`,
+      false,
+    );
   }
 
   const serialNumber = result.receipt.serials![0];

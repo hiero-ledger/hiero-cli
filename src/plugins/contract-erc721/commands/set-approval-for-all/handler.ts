@@ -66,7 +66,7 @@ export async function setApprovalForAllFunctionCall(
 
   if (!result.success) {
     throw new TransactionError(
-      `Failed to call ${ERC_721_FUNCTION_NAME} function: ${result.receipt?.status?.status ?? 'UNKNOWN'}`,
+      `Failed to call ${ERC_721_FUNCTION_NAME} on contract ${contractInfo.contractId} (txId: ${result.transactionId}, status: ${result.receipt?.status?.status ?? 'UNKNOWN'})`,
       false,
       {
         context: { contractId: contractInfo.contractId },

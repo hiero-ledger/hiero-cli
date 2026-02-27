@@ -117,9 +117,11 @@ export async function associateToken(
   }
 
   if (!result.success) {
-    throw new TransactionError('Token association failed', false, {
-      context: { tokenId, accountId: account.accountId },
-    });
+    throw new TransactionError(
+      `Token association failed (tokenId: ${tokenId}, accountId: ${account.accountId}, txId: ${result.transactionId})`,
+      false,
+      { context: { tokenId, accountId: account.accountId } },
+    );
   }
 
   saveAssociationToState(tokenState, tokenId, account.accountId, logger);

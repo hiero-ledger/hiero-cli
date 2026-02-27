@@ -109,7 +109,10 @@ export async function transferNft(
   ]);
 
   if (!result.success) {
-    throw new TransactionError('NFT transfer failed', false);
+    throw new TransactionError(
+      `NFT transfer failed (tokenId: ${tokenId}, from: ${fromAccountId}, to: ${toAccountId}, txId: ${result.transactionId})`,
+      false,
+    );
   }
 
   const outputData: TransferNftOutput = {

@@ -102,9 +102,10 @@ export async function transferToken(
   ]);
 
   if (!result.success) {
-    throw new TransactionError('Fungible token transfer failed', false, {
-      context: { tokenId, from: fromAccountId, to: toAccountId },
-    });
+    throw new TransactionError(
+      `Fungible token transfer failed (tokenId: ${tokenId}, from: ${fromAccountId}, to: ${toAccountId}, txId: ${result.transactionId})`,
+      false,
+    );
   }
 
   const outputData: TransferFungibleTokenOutput = {

@@ -9,13 +9,10 @@ import type {
   TransactionReceipt,
   TransactionResponse,
 } from '@hashgraph/sdk';
+import type { TransactionResult, TxExecutionService } from '@/core';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
-import type {
-  TransactionResult,
-  TxExecutionService,
-} from './tx-execution-service.interface';
 
 import { AccountId, Status, TransactionId } from '@hashgraph/sdk';
 
@@ -126,9 +123,11 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       const response: TransactionResponse = await transaction.execute(client);
       return await this.processTransactionResponse(response, client);
     } catch (error) {
-      throw new TransactionError('Transaction execution failed', false, {
-        cause: error,
-      });
+      throw new TransactionError(
+        `Transaction execution failed (txId: ${transaction.transactionId?.toString() ?? 'unknown'})`,
+        false,
+        { cause: error },
+      );
     } finally {
       client.close();
     }
@@ -144,11 +143,9 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       return await this.processTransactionResponse(response, client);
     } catch (error) {
       throw new TransactionError(
-        'Contract create flow execution failed',
+        `Contract create flow execution failed`,
         false,
-        {
-          cause: error,
-        },
+        { cause: error },
       );
     } finally {
       client.close();

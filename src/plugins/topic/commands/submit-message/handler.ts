@@ -85,7 +85,10 @@ export async function submitMessage(
     : await api.txExecution.signAndExecute(messageSubmitTx.transaction);
 
   if (!txResult.success) {
-    throw new TransactionError('Failed to submit message', false);
+    throw new TransactionError(
+      `Failed to submit message (topicId: ${topicId}, txId: ${txResult.transactionId})`,
+      false,
+    );
   }
 
   const outputData: SubmitMessageOutput = {

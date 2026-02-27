@@ -73,7 +73,7 @@ export async function transferHandler(
 
   if (!result.success) {
     throw new TransactionError(
-      `Transfer failed: ${result.receipt?.status?.status ?? 'UNKNOWN'}`,
+      `Transfer failed from ${from.accountId} to ${toAccountId} (txId: ${result.transactionId}, status: ${result.receipt?.status?.status ?? 'UNKNOWN'})`,
       false,
     );
   }

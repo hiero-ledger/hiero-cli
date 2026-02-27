@@ -113,9 +113,10 @@ export async function mintFt(args: CommandHandlerArgs): Promise<CommandResult> {
   ]);
 
   if (!result.success) {
-    throw new TransactionError('Token mint failed', false, {
-      context: { tokenId },
-    });
+    throw new TransactionError(
+      `Token mint failed (tokenId: ${tokenId}, txId: ${result.transactionId})`,
+      false,
+    );
   }
 
   const outputData: MintFtOutput = {

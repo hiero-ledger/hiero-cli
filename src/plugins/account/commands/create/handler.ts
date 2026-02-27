@@ -83,7 +83,10 @@ export async function createAccount(
   );
 
   if (!result.success) {
-    throw new TransactionError('Failed to create account', false);
+    throw new TransactionError(
+      `Failed to create account (txId: ${result.transactionId})`,
+      false,
+    );
   }
 
   if (!result.accountId) {
