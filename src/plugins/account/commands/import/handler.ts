@@ -32,7 +32,13 @@ export async function importAccount(
   const keyManagerArg = validArgs.keyManager;
   const accountId = key.accountId;
 
-  // Check if name already exists on the current network
+  if (accountState.hasAccountById(accountId)) {
+    return {
+      status: Status.Failure,
+      errorMessage: 'Account with this ID is already saved in state',
+    };
+  }
+
   const network = api.network.getCurrentNetwork();
 
   // Get keyManager from args or fallback to config

@@ -85,13 +85,21 @@ export class ZustandAccountStateHelper {
   }
 
   /**
-   * Check if account exists
+   * Check if account exists by name
    */
   hasAccount(name: string): boolean {
     this.logger.debug(
       `[ZUSTAND ACCOUNT STATE] Checking if account exists: ${name}`,
     );
     return this.state.has(this.namespace, name);
+  }
+
+  /**
+   * Check if account with given ID already exists in state
+   */
+  hasAccountById(accountId: string): boolean {
+    const accounts = this.listAccounts();
+    return accounts.some((account) => account.accountId === accountId);
   }
 
   /**
