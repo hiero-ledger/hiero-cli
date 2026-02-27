@@ -228,7 +228,7 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       TransactionError,
     );
     await expect(transferFromFunctionCall(args)).rejects.toThrow(
-      'Failed to call transferFrom function: FAILURE',
+      'Failed to call transferFrom on contract 0.0.1234 (txId: undefined, status: FAILURE)',
     );
   });
 

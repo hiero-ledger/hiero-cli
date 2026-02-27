@@ -16,13 +16,12 @@ const PROCESS_EVENTS = [
 ] as const;
 
 type OutputServiceMock = OutputService & {
-  handleOutput: jest.MockedFunction<(options: OutputHandlerOptions) => never>;
+  handleOutput: jest.MockedFunction<(options: OutputHandlerOptions) => void>;
 };
 
 const makeOutputMock = (): OutputServiceMock => ({
   handleOutput: jest.fn((options: OutputHandlerOptions) => {
     void options;
-    return undefined as never;
   }),
   getFormat: jest.fn().mockReturnValue('human'),
   setFormat: jest.fn(),
@@ -196,6 +195,9 @@ describe('ErrorBoundaryServiceImpl', () => {
         listeners.set(event, listener);
         return process;
       }) as unknown as typeof process.on);
+      const processExitSpy = jest
+        .spyOn(process, 'exit')
+        .mockImplementation(() => undefined as never);
 
       service.registerGlobalHandlers();
 
@@ -223,7 +225,11 @@ describe('ErrorBoundaryServiceImpl', () => {
         }),
       );
 
+      expect(processExitSpy).toHaveBeenCalledTimes(2);
+      expect(processExitSpy).toHaveBeenCalledWith(1);
+
       processOnSpy.mockRestore();
+      processExitSpy.mockRestore();
     });
   });
 });

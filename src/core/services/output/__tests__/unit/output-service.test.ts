@@ -26,7 +26,6 @@ jest.mock('../../strategies', () => {
 describe('OutputServiceImpl', () => {
   let service: OutputServiceImpl;
   let consoleLogSpy: jest.SpyInstance;
-  let processExitSpy: jest.SpyInstance;
   let getStrategyMock: jest.Mock;
 
   const createOptions = (
@@ -43,14 +42,10 @@ describe('OutputServiceImpl', () => {
     getStrategyMock =
       OutputFormatterFactory.getStrategy as unknown as jest.Mock;
     consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    processExitSpy = jest
-      .spyOn(process, 'exit')
-      .mockImplementation(() => undefined as never);
   });
 
   afterEach(() => {
     consoleLogSpy.mockRestore();
-    processExitSpy.mockRestore();
   });
 
   describe('constructor and format management', () => {
@@ -99,26 +94,6 @@ describe('OutputServiceImpl', () => {
         { template: 'tmpl', pretty: true },
       );
       expect(consoleLogSpy).toHaveBeenCalledWith('formatted');
-    });
-
-    it('should call process.exit(0) on Success status', () => {
-      getStrategyMock.mockReturnValue({
-        format: jest.fn().mockReturnValue(''),
-      });
-
-      service.handleOutput(createOptions({ status: Status.Success }));
-
-      expect(processExitSpy).toHaveBeenCalledWith(0);
-    });
-
-    it('should call process.exit(1) on Failure status', () => {
-      getStrategyMock.mockReturnValue({
-        format: jest.fn().mockReturnValue(''),
-      });
-
-      service.handleOutput(createOptions({ status: Status.Failure }));
-
-      expect(processExitSpy).toHaveBeenCalledWith(1);
     });
 
     it('should use service current format for formatter selection', () => {

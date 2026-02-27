@@ -185,7 +185,7 @@ describe('contract-erc721 plugin - safeTransferFrom command (unit)', () => {
       TransactionError,
     );
     await expect(safeTransferFromFunctionCall(args)).rejects.toThrow(
-      'Failed to call safeTransferFrom function: FAILURE',
+      'Failed to call safeTransferFrom on contract 0.0.1234 (txId: undefined, status: FAILURE)',
     );
   });
 

@@ -183,7 +183,7 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
 
     await expect(approveFunctionCall(args)).rejects.toThrow(TransactionError);
     await expect(approveFunctionCall(args)).rejects.toThrow(
-      'Failed to call approve function: FAILURE',
+      'Failed to call approve on contract 0.0.1234 (txId: undefined, status: FAILURE)',
     );
   });
 

@@ -226,7 +226,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       TransactionError,
     );
     await expect(setApprovalForAllFunctionCall(args)).rejects.toThrow(
-      'Failed to call setApprovalForAll function: FAILURE',
+      'Failed to call setApprovalForAll on contract 0.0.1234 (txId: undefined, status: FAILURE)',
     );
   });
 

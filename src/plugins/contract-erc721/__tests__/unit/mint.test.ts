@@ -183,7 +183,7 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
 
     await expect(mintFunctionCall(args)).rejects.toThrow(TransactionError);
     await expect(mintFunctionCall(args)).rejects.toThrow(
-      'Failed to call mint function: FAILURE',
+      'Failed to call mint on contract 0.0.1234 (txId: undefined, status: FAILURE)',
     );
   });
 
