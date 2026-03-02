@@ -347,6 +347,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       removePlugin: jest.fn(),
       enablePlugin: jest.fn(),
       disablePlugin: jest.fn(),
+      resetPlugins: jest.fn(),
       savePluginState: jest.fn(),
       getInitializedDefaults: jest.fn().mockReturnValue([]),
       setInitializedDefaults: jest.fn(),
