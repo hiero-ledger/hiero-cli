@@ -3,6 +3,8 @@ import type { EncryptionService } from './encryption-service.interface';
 
 import * as crypto from 'crypto';
 
+import { InternalError, ValidationError } from '@/core/errors';
+
 import { FileKeyProvider } from './file-key-provider';
 
 /**
@@ -44,9 +46,7 @@ export class EncryptionServiceImpl implements EncryptionService {
       // Format: initVector:authTag:ciphertext (all hex)
       return `${initVector.toString('hex')}:${authTag.toString('hex')}:${encrypted}`;
     } catch (error) {
-      throw new Error(
-        `Encryption failed: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      throw new InternalError('Encryption failed', { cause: error });
     }
   }
 
@@ -54,7 +54,7 @@ export class EncryptionServiceImpl implements EncryptionService {
     try {
       const parts = ciphertext.split(':');
       if (parts.length !== 3) {
-        throw new Error(
+        throw new ValidationError(
           'Invalid ciphertext format (expected initVector:authTag:data)',
         );
       }
@@ -77,9 +77,8 @@ export class EncryptionServiceImpl implements EncryptionService {
 
       return decrypted;
     } catch (error) {
-      throw new Error(
-        `Decryption failed: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      if (error instanceof ValidationError) throw error;
+      throw new InternalError('Decryption failed', { cause: error });
     }
   }
 }

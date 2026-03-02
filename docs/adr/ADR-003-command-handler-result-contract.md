@@ -1,6 +1,6 @@
 ### ADR-003: Result-Oriented Command Handler Contract and CLI Output Control
 
-- Status: Proposed
+- Status: Superseded by [ADR-007](ADR-007-structured-error-handling.md)
 - Date: 2025-10-17
 - Owner: Tech Lead, Hiero CLI
 - Related: `src/hiero-cli.ts`, `src/core/*`, `src/plugins/*`, `docs/adr/ADR-001-plugin-architecture.md`

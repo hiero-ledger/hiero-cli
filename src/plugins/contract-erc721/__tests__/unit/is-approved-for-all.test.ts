@@ -1,16 +1,24 @@
 import type { CoreApi, Logger } from '@/core';
+import type { ContractErc721CallIsApprovedForAllOutput } from '@/plugins/contract-erc721/commands/is-approved-for-all/output';
 
 import { ZodError } from 'zod';
 
 import {
+  MOCK_ACCOUNT_ID,
+  MOCK_CONTRACT_ID,
   MOCK_EVM_ADDRESS,
   MOCK_EVM_ADDRESS_ALT,
 } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
-import { makeContractErc721CallCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
+import { NotFoundError, StateError } from '@/core/errors';
+import { SupportedNetwork } from '@/core/types/shared.types';
+import {
+  makeContractErc721CallCommandArgs,
+  MOCK_ACCOUNT_ID_FROM,
+  MOCK_ACCOUNT_ID_TO,
+} from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { isApprovedForAllFunctionCall as erc721IsApprovedForAllHandler } from '@/plugins/contract-erc721/commands/is-approved-for-all/handler';
+import { isApprovedForAllFunctionCall } from '@/plugins/contract-erc721/commands/is-approved-for-all/handler';
 import { ContractErc721CallIsApprovedForAllInputSchema } from '@/plugins/contract-erc721/commands/is-approved-for-all/input';
 
 describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
@@ -24,16 +32,16 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
       identityResolution: {
         resolveReferenceToEntityOrEvmAddress: jest
           .fn()
-          .mockReturnValue({ entityIdOrEvmAddress: '0.0.1234' }),
+          .mockReturnValue({ entityIdOrEvmAddress: MOCK_CONTRACT_ID }),
         resolveAccount: jest.fn().mockResolvedValue({
-          accountId: '0.0.5678',
+          accountId: MOCK_ACCOUNT_ID,
           accountPublicKey: 'pub-key',
           evmAddress: MOCK_EVM_ADDRESS,
         }),
       },
       contractQuery: {
         queryContractFunction: jest.fn().mockResolvedValue({
-          contractId: '0.0.1234',
+          contractId: MOCK_CONTRACT_ID,
           queryResult: [true],
         }),
       },
@@ -51,33 +59,27 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
       },
     });
 
-    const result = await erc721IsApprovedForAllHandler(args);
+    const result = await isApprovedForAllFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    if (result.outputJson === undefined) {
-      throw new Error('Expected outputJson to be defined');
-    }
-    const parsed = JSON.parse(result.outputJson);
-
-    expect(parsed.contractId).toBe('0.0.1234');
-    expect(parsed.owner).toBe(MOCK_EVM_ADDRESS);
-    expect(parsed.operator).toBe(MOCK_EVM_ADDRESS_ALT);
-    expect(parsed.isApprovedForAll).toBe(true);
-    expect(parsed.network).toBe('testnet');
+    expect(result.result).toBeDefined();
+    const output = result.result as ContractErc721CallIsApprovedForAllOutput;
+    expect(output.contractId).toBe(MOCK_CONTRACT_ID);
+    expect(output.owner).toBe(MOCK_EVM_ADDRESS);
+    expect(output.operator).toBe(MOCK_EVM_ADDRESS_ALT);
+    expect(output.isApprovedForAll).toBe(true);
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
 
     expect(
       args.api.identityResolution.resolveReferenceToEntityOrEvmAddress,
     ).toHaveBeenCalledWith({
       entityReference: 'some-alias-or-id',
       referenceType: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
       aliasType: expect.any(String),
     });
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({
-        contractIdOrEvmAddress: '0.0.1234',
+        contractIdOrEvmAddress: MOCK_CONTRACT_ID,
         functionName: 'isApprovedForAll',
         args: [MOCK_EVM_ADDRESS, MOCK_EVM_ADDRESS_ALT],
       }),
@@ -85,36 +87,34 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
   });
 
   test('resolves owner and operator from entity IDs to EVM addresses', async () => {
-    const ownerId = '0.0.1111';
-    const operatorId = '0.0.2222';
-    const resolvedOwner = '0x' + 'a'.repeat(40);
-    const resolvedOperator = '0x' + 'b'.repeat(40);
+    const resolvedOwner = MOCK_EVM_ADDRESS;
+    const resolvedOperator = MOCK_EVM_ADDRESS_ALT;
 
     const args = makeContractErc721CallCommandArgs({
       api,
       logger,
       args: {
         contract: 'some-alias-or-id',
-        owner: ownerId,
-        operator: operatorId,
+        owner: MOCK_ACCOUNT_ID_FROM,
+        operator: MOCK_ACCOUNT_ID_TO,
       },
     });
 
     (args.api.identityResolution.resolveAccount as jest.Mock)
       .mockResolvedValueOnce({
-        accountId: ownerId,
+        accountId: MOCK_ACCOUNT_ID_FROM,
         accountPublicKey: 'pub-key-owner',
         evmAddress: resolvedOwner,
       })
       .mockResolvedValueOnce({
-        accountId: operatorId,
+        accountId: MOCK_ACCOUNT_ID_TO,
         accountPublicKey: 'pub-key-operator',
         evmAddress: resolvedOperator,
       });
 
-    const result = await erc721IsApprovedForAllHandler(args);
+    const result = await isApprovedForAllFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledTimes(2);
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -123,7 +123,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
     );
   });
 
-  test('returns failure when contractQuery returns empty queryResult', async () => {
+  test('throws StateError when contractQuery returns empty queryResult', async () => {
     const args = makeContractErc721CallCommandArgs({
       api,
       logger,
@@ -136,19 +136,19 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockResolvedValue({
-      contractId: '0.0.1234',
+      contractId: MOCK_CONTRACT_ID,
       queryResult: [],
     });
 
-    const result = await erc721IsApprovedForAllHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'There was a problem with decoding contract 0.0.1234 "isApprovedForAll" function result',
+    await expect(isApprovedForAllFunctionCall(args)).rejects.toThrow(
+      StateError,
+    );
+    await expect(isApprovedForAllFunctionCall(args)).rejects.toThrow(
+      `There was a problem with decoding contract ${MOCK_CONTRACT_ID} "isApprovedForAll" function result`,
     );
   });
 
-  test('returns failure when queryContractFunction throws', async () => {
+  test('propagates error when queryContractFunction throws', async () => {
     const args = makeContractErc721CallCommandArgs({
       api,
       logger,
@@ -162,15 +162,12 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    const result = await erc721IsApprovedForAllHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call isApprovedForAll function: contract query error',
+    await expect(isApprovedForAllFunctionCall(args)).rejects.toThrow(
+      'contract query error',
     );
   });
 
-  test('returns failure when owner has no evmAddress', async () => {
+  test('throws NotFoundError when owner has no evmAddress', async () => {
     const args = makeContractErc721CallCommandArgs({
       api,
       logger,
@@ -183,25 +180,24 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
 
     (args.api.identityResolution.resolveAccount as jest.Mock)
       .mockResolvedValueOnce({
-        accountId: '0.0.1111',
+        accountId: MOCK_ACCOUNT_ID_FROM,
         accountPublicKey: 'pub-key-owner',
         evmAddress: undefined,
       })
       .mockResolvedValueOnce({
-        accountId: '0.0.2222',
+        accountId: MOCK_ACCOUNT_ID_TO,
         accountPublicKey: 'pub-key-operator',
         evmAddress: MOCK_EVM_ADDRESS_ALT,
       });
 
-    const result = await erc721IsApprovedForAllHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      "Couldn't resolve EVM address for an account",
+    const promise = isApprovedForAllFunctionCall(args);
+    await expect(promise).rejects.toThrow(NotFoundError);
+    await expect(promise).rejects.toThrow(
+      /Couldn't resolve EVM address for an account/,
     );
   });
 
-  test('returns failure when operator has no evmAddress', async () => {
+  test('throws NotFoundError when operator has no evmAddress', async () => {
     const args = makeContractErc721CallCommandArgs({
       api,
       logger,
@@ -214,20 +210,19 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
 
     (args.api.identityResolution.resolveAccount as jest.Mock)
       .mockResolvedValueOnce({
-        accountId: '0.0.1111',
+        accountId: MOCK_ACCOUNT_ID_FROM,
         accountPublicKey: 'pub-key-owner',
         evmAddress: MOCK_EVM_ADDRESS,
       })
       .mockResolvedValueOnce({
-        accountId: '0.0.2222',
+        accountId: MOCK_ACCOUNT_ID_TO,
         accountPublicKey: 'pub-key-operator',
         evmAddress: undefined,
       });
 
-    const result = await erc721IsApprovedForAllHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
+    const promise = isApprovedForAllFunctionCall(args);
+    await expect(promise).rejects.toThrow(NotFoundError);
+    await expect(promise).rejects.toThrow(
       "Couldn't resolve EVM address for an account",
     );
   });

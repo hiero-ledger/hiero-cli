@@ -4,12 +4,12 @@
 import type * as path from 'path';
 import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { PluginInfoOutput } from '@/plugins/plugin-management/commands/info/output';
 
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
+import { NotFoundError } from '@/core/errors';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
 import { getPluginInfo } from '@/plugins/plugin-management/commands/info/handler';
-import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
 jest.mock('@/core/utils/load-plugin-manifest', () => ({
   loadPluginManifest: jest.fn(),
@@ -54,17 +54,17 @@ describe('plugin-management info command', () => {
     const args = makeArgs(api, logger, { name: 'topic' });
 
     const result = await getPluginInfo(args);
+    const output = result.result as PluginInfoOutput;
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-    const output = JSON.parse(result.outputJson!);
+    expect(output).toBeDefined();
     expect(output.found).toBe(true);
-    expect(output.plugin.name).toBe('topic');
-    expect(output.plugin.version).toBe('2.0.0');
-    expect(output.plugin.displayName).toBe('Topic Plugin');
-    expect(output.plugin.enabled).toBe(true);
-    expect(output.plugin.description).toContain('Manage Hedera topics');
-    expect(output.plugin.commands).toEqual(['list', 'create']);
+    expect(output.plugin).toBeDefined();
+    expect(output.plugin!.name).toBe('topic');
+    expect(output.plugin!.version).toBe('2.0.0');
+    expect(output.plugin!.displayName).toBe('Topic Plugin');
+    expect(output.plugin!.enabled).toBe(true);
+    expect(output.plugin!.description).toContain('Manage Hedera topics');
+    expect(output.plugin!.commands).toEqual(['list', 'create']);
   });
 
   it('should use fallback values when optional metadata missing', async () => {
@@ -86,19 +86,19 @@ describe('plugin-management info command', () => {
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
     const result = await getPluginInfo(args);
+    const output = result.result as PluginInfoOutput;
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-    const output = JSON.parse(result.outputJson!);
+    expect(output).toBeDefined();
     expect(output.found).toBe(true);
-    expect(output.plugin.name).toBe('custom-plugin');
-    expect(output.plugin.version).toBe('unknown');
-    expect(output.plugin.displayName).toBe('custom-plugin');
-    expect(output.plugin.description).toContain('No description available');
-    expect(output.plugin.commands).toEqual([]);
+    expect(output.plugin).toBeDefined();
+    expect(output.plugin!.name).toBe('custom-plugin');
+    expect(output.plugin!.version).toBe('unknown');
+    expect(output.plugin!.displayName).toBe('custom-plugin');
+    expect(output.plugin!.description).toContain('No description available');
+    expect(output.plugin!.commands).toEqual([]);
   });
 
-  it('should return failure when plugin does not exist', async () => {
+  it('should throw NotFoundError when plugin does not exist', async () => {
     const logger = makeLogger();
     const pluginManagement = {
       getPlugin: jest.fn().mockReturnValue(undefined),
@@ -107,12 +107,9 @@ describe('plugin-management info command', () => {
 
     const args = makeArgs(api, logger, { name: 'missing-plugin' });
 
-    const result = await getPluginInfo(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBe(
-      ERROR_MESSAGES.pluginNotFound('missing-plugin'),
+    await expect(getPluginInfo(args)).rejects.toThrow(NotFoundError);
+    await expect(getPluginInfo(args)).rejects.toThrow(
+      /Plugin missing-plugin not found in plugin-management state/,
     );
-    expect(result.outputJson).toBeUndefined();
   });
 });

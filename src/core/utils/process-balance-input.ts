@@ -1,5 +1,6 @@
 import BigNumber from 'bignumber.js';
 
+import { ValidationError } from '@/core/errors';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
 
 /**
@@ -18,7 +19,7 @@ import { HBAR_DECIMALS } from '@/core/shared/constants';
  * @param decimals - Number of decimal places (default: 8 for HBAR)
  * @returns Raw amount as BigNumber (ready for API calls)
  *
- * @throws Error if format is invalid (fractional raw units, wrong case, etc.)
+ * @throws ValidationError if format is invalid (fractional raw units, wrong case, etc.)
  *
  * @example
  * // Display units (default) - multiply by 10^decimals
@@ -33,9 +34,9 @@ import { HBAR_DECIMALS } from '@/core/shared/constants';
  *
  * @example
  * // Errors
- * processBalanceInput('1.5t', 8)   // Error: "Invalid raw units: fractional value not allowed"
- * processBalanceInput('100T', 8)   // Error: "Invalid format: 't' suffix must be lowercase"
- * processBalanceInput('-100', 8)   // Error: "Invalid balance: cannot be negative"
+ * processBalanceInput('1.5t', 8)   // ValidationError: "Invalid raw units: fractional value not allowed"
+ * processBalanceInput('100T', 8)   // ValidationError: "Invalid format: 't' suffix must be lowercase"
+ * processBalanceInput('-100', 8)   // ValidationError: "Invalid balance: cannot be negative"
  */
 export function processBalanceInput(
   input: string | number,
@@ -56,7 +57,7 @@ function parseWholeNumber(balance: string) {
 
   // Validate it's a valid integer (no decimals allowed for raw units)
   if (!/^[0-9]+$/.test(rawValue)) {
-    throw new Error(
+    throw new ValidationError(
       `Invalid raw units: "${balance}". Must be an integer without decimals (fractional raw units not allowed).`,
     );
   }
@@ -66,28 +67,28 @@ function parseWholeNumber(balance: string) {
 function parseDecimalNumber(balance: string, decimals: number): bigint {
   // Validate decimals
   if (decimals < 0) {
-    throw new Error(
+    throw new ValidationError(
       `Invalid decimals: ${decimals}. Must be a non-negative integer.`,
     );
   }
 
   // Check for NaN string
   if (balance === 'NaN') {
-    throw new Error(
+    throw new ValidationError(
       `Unable to parse balance: "${balance}", balance after parsing is Not a Number.`,
     );
   }
 
   // Check for negative
   if (balance.startsWith('-')) {
-    throw new Error(
+    throw new ValidationError(
       `Invalid balance: "${balance}". Balance cannot be negative.`,
     );
   }
 
   // Check format for valid decimal number
   if (!/^\d+(\.\d+)?$/.test(balance)) {
-    throw new Error(`Invalid balance: "${balance}".`);
+    throw new ValidationError(`Invalid balance: "${balance}".`);
   }
 
   // Parse into BigNumber
@@ -95,13 +96,13 @@ function parseDecimalNumber(balance: string, decimals: number): bigint {
 
   // Validate using BigNumber methods
   if (bn.isNaN()) {
-    throw new Error(
+    throw new ValidationError(
       `Unable to parse balance: "${balance}", balance after parsing is Not a Number.`,
     );
   }
 
   if (bn.isNegative()) {
-    throw new Error(
+    throw new ValidationError(
       `Invalid balance: "${balance}". Balance cannot be negative.`,
     );
   }
@@ -109,7 +110,9 @@ function parseDecimalNumber(balance: string, decimals: number): bigint {
   // Check decimal places don't exceed allowed
   const actualDecimals = bn.decimalPlaces();
   if (actualDecimals !== null && actualDecimals > decimals) {
-    throw new Error(`Invalid balance: "${balance}". Too many decimal places.`);
+    throw new ValidationError(
+      `Invalid balance: "${balance}". Too many decimal places.`,
+    );
   }
 
   // Convert to raw units by multiplying by 10^decimals

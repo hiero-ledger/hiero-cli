@@ -1,9 +1,10 @@
 import type { CoreApi, Logger } from '@/core';
+import type { ContractErc20CallTotalSupplyOutput } from '@/plugins/contract-erc20/commands/total-supply/output';
 
 import { ZodError } from 'zod';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
+import { StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { totalSupplyFunctionCall as erc20TotalSupplyHandler } from '@/plugins/contract-erc20/commands/total-supply/handler';
@@ -43,13 +44,9 @@ describe('contract-erc20 plugin - totalSupply command (unit)', () => {
 
     const result = await erc20TotalSupplyHandler(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    expect(result.result).toBeDefined();
 
-    if (result.outputJson === undefined) {
-      throw new Error('Expected outputJson to be defined');
-    }
-    const parsed = JSON.parse(result.outputJson);
+    const parsed = result.result as ContractErc20CallTotalSupplyOutput;
 
     expect(parsed.contractId).toBe('0.0.1234');
     expect(parsed.totalSupply).toBe('1000000000000000000');
@@ -71,7 +68,7 @@ describe('contract-erc20 plugin - totalSupply command (unit)', () => {
     );
   });
 
-  test('returns failure when contractQuery returns empty queryResult', async () => {
+  test('throws StateError when contractQuery returns empty queryResult', async () => {
     const args = makeContractErc20CallCommandArgs({ api, logger });
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
@@ -80,25 +77,17 @@ describe('contract-erc20 plugin - totalSupply command (unit)', () => {
       queryResult: [],
     });
 
-    const result = await erc20TotalSupplyHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'There was a problem with decoding contract 0.0.1234 "totalSupply" function result',
-    );
+    await expect(erc20TotalSupplyHandler(args)).rejects.toThrow(StateError);
   });
 
-  test('returns failure when queryContractFunction throws', async () => {
+  test('throws when queryContractFunction throws', async () => {
     const args = makeContractErc20CallCommandArgs({ api, logger });
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    const result = await erc20TotalSupplyHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call totalSupply function: contract query error',
+    await expect(erc20TotalSupplyHandler(args)).rejects.toThrow(
+      'contract query error',
     );
   });
 

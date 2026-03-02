@@ -12,7 +12,6 @@ import {
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
-import { Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { importTopic } from '@/plugins/topic/commands/import/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -23,7 +22,7 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandTopicStateHelper as jest.Mock;
 
-describe('topic plugin - import command (ADR-003)', () => {
+describe('topic plugin - import command (ADR-007)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -85,10 +84,7 @@ describe('topic plugin - import command (ADR-003)', () => {
       }),
     );
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ImportTopicOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ImportTopicOutput;
     expect(output.topicId).toBe('0.0.123456');
     expect(output.name).toBe('my-topic');
     expect(output.network).toBe(SupportedNetwork.TESTNET);
@@ -143,16 +139,13 @@ describe('topic plugin - import command (ADR-003)', () => {
       }),
     );
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ImportTopicOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ImportTopicOutput;
     expect(output.topicId).toBe('0.0.999999');
     expect(output.name).toBe('imported-0-0-999999');
     expect(output.alias).toBeUndefined();
   });
 
-  test('returns failure when topic already exists in state', async () => {
+  test('throws when topic already exists in state', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -186,16 +179,12 @@ describe('topic plugin - import command (ADR-003)', () => {
       name: 'new-topic',
     });
 
-    const result = await importTopic(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain(
+    await expect(importTopic(args)).rejects.toThrow(
       "Topic with ID '0.0.123456' already exists in state",
     );
   });
 
-  test('returns failure when mirror.getTopicInfo throws', async () => {
+  test('throws when mirror.getTopicInfo throws', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -222,10 +211,6 @@ describe('topic plugin - import command (ADR-003)', () => {
       topic: '0.0.123456',
     });
 
-    const result = await importTopic(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Topic not found');
+    await expect(importTopic(args)).rejects.toThrow('Topic not found');
   });
 });

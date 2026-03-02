@@ -1,48 +1,33 @@
-/**
- * Contract List Command Handler
- * Handles listing all deployed contracts from state for all networks
- */
-import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { CommandHandlerArgs } from '@/core';
+import type { CommandResult } from '@/core/plugins/plugin.types';
 import type { ContractListOutput } from '@/plugins/contract/commands/list/output';
 
-import { Status } from '@/core/shared/constants';
-import { formatError } from '@/core/utils/errors';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
 export async function listContracts(
   args: CommandHandlerArgs,
-): Promise<CommandExecutionResult> {
+): Promise<CommandResult> {
   const { api, logger } = args;
 
   const contractState = new ZustandContractStateHelper(api.state, logger);
 
   logger.info('Listing contracts...');
 
-  try {
-    const contracts = contractState.listContracts();
+  const contracts = contractState.listContracts();
+  logger.debug(
+    `[CONTRACT LIST] Retrieved ${contracts.length} contracts from state`,
+  );
+
+  contracts.forEach((contract, index) => {
     logger.debug(
-      `[CONTRACT LIST] Retrieved ${contracts.length} contracts from state`,
+      `[CONTRACT LIST]   ${index + 1}. ${contract.contractName} - ${contract.contractId} on ${contract.network}`,
     );
+  });
 
-    contracts.forEach((contract, index) => {
-      logger.debug(
-        `[CONTRACT LIST]   ${index + 1}. ${contract.contractName} - ${contract.contractId} on ${contract.network}`,
-      );
-    });
+  const outputData: ContractListOutput = {
+    contracts: contracts,
+    totalCount: contracts.length,
+  };
 
-    const outputData: ContractListOutput = {
-      contracts: contracts,
-      totalCount: contracts.length,
-    };
-
-    return {
-      status: Status.Success,
-      outputJson: JSON.stringify(outputData),
-    };
-  } catch (error: unknown) {
-    return {
-      status: Status.Failure,
-      errorMessage: formatError('Failed to list contracts', error),
-    };
-  }
+  return { result: outputData };
 }

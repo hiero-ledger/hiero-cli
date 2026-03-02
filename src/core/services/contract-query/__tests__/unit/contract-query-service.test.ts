@@ -7,6 +7,7 @@ import type { QueryContractFunctionParams } from '@/core/services/contract-query
 import type { ContractInfo } from '@/core/services/mirrornode/types';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { NetworkError, NotFoundError, StateError } from '@/core/errors';
 import { ContractQueryServiceImpl } from '@/core/services/contract-query/contract-query-service';
 
 const CONTRACT_ID = '0.0.1234';
@@ -108,16 +109,16 @@ describe('ContractQueryServiceImpl', () => {
       expect(mirrorService.getContractInfo).toHaveBeenCalledWith(EVM_ADDRESS);
     });
 
-    it('throws when getContractInfo returns null', async () => {
+    it('throws NotFoundError when getContractInfo returns null', async () => {
       (mirrorService.getContractInfo as jest.Mock).mockResolvedValue(null);
 
       await expect(service.queryContractFunction(baseParams)).rejects.toThrow(
-        `Contract ${CONTRACT_ID} not found`,
+        NotFoundError,
       );
       expect(mirrorService.postContractCall).not.toHaveBeenCalled();
     });
 
-    it('throws when contract has no evm_address', async () => {
+    it('throws StateError when contract has no evm_address', async () => {
       const contractInfoNoEvm: ContractInfo = {
         contract_id: CONTRACT_ID,
         account: '0.0.100',
@@ -131,28 +132,28 @@ describe('ContractQueryServiceImpl', () => {
       mirrorService.getContractInfo.mockResolvedValue(contractInfoNoEvm);
 
       await expect(service.queryContractFunction(baseParams)).rejects.toThrow(
-        `Contract ${CONTRACT_ID} does not have an EVM address`,
+        StateError,
       );
       expect(mirrorService.postContractCall).not.toHaveBeenCalled();
     });
 
-    it('throws when postContractCall returns no result', async () => {
+    it('throws NetworkError when postContractCall returns no result', async () => {
       mirrorService.postContractCall.mockResolvedValue(
         {} as { result: string },
       );
 
       await expect(service.queryContractFunction(baseParams)).rejects.toThrow(
-        `There was a problem with calling contract ${CONTRACT_ID} "name" function`,
+        NetworkError,
       );
     });
 
-    it('throws when postContractCall returns empty result', async () => {
+    it('throws NetworkError when postContractCall returns empty result', async () => {
       mirrorService.postContractCall.mockResolvedValue({
         result: '',
       });
 
       await expect(service.queryContractFunction(baseParams)).rejects.toThrow(
-        `There was a problem with calling contract ${CONTRACT_ID} "name" function`,
+        NetworkError,
       );
     });
 

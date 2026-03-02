@@ -1,5 +1,6 @@
 import { AccountId, PublicKey } from '@hashgraph/sdk';
 
+import { ValidationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 
 interface BuildAccountEvmAddressParams {
@@ -23,7 +24,9 @@ export function buildAccountEvmAddress({
   existingEvmAddress,
 }: BuildAccountEvmAddressParams): string {
   if (!accountId) {
-    throw new Error('accountId is required to derive account addresses');
+    throw new ValidationError(
+      'accountId is required to derive account addresses',
+    );
   }
 
   const solidityAddress = AccountId.fromString(accountId).toSolidityAddress();
@@ -40,7 +43,7 @@ export function buildAccountEvmAddress({
 
   if (keyType === KeyAlgorithm.ECDSA) {
     if (!publicKey) {
-      throw new Error(
+      throw new ValidationError(
         'publicKey is required to derive EVM address for ECDSA keys',
       );
     }

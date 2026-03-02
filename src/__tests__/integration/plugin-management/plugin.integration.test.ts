@@ -12,7 +12,6 @@ import '@/core/utils/json-serialize';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { Status } from '@/core/shared/constants';
 import {
   addPlugin,
   disablePlugin,
@@ -43,17 +42,7 @@ describe('Plugin Management Integration Tests', () => {
       config: coreApi.config,
     });
 
-    if (addPluginResult.status !== Status.Success) {
-      console.log(
-        'Add plugin failed:',
-        addPluginResult.errorMessage || addPluginResult.outputJson,
-      );
-    }
-
-    expect(addPluginResult.status).toBe(Status.Success);
-    const addPluginOutput: AddPluginOutput = JSON.parse(
-      addPluginResult.outputJson!,
-    );
+    const addPluginOutput = addPluginResult.result as AddPluginOutput;
     expect(addPluginOutput.path).toContain('dist/plugins/test');
     expect(addPluginOutput.name).toBe('test');
     expect(addPluginOutput.added).toBe(true);
@@ -71,10 +60,7 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(viewPluginResult.status).toBe(Status.Success);
-    const viewPluginOutput: PluginInfoOutput = JSON.parse(
-      viewPluginResult.outputJson!,
-    );
+    const viewPluginOutput = viewPluginResult.result as PluginInfoOutput;
     expect(viewPluginOutput.found).toBe(true);
     expect(viewPluginOutput.message).toBe(
       'Plugin test information retrieved successfully',
@@ -96,10 +82,8 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(disablePluginResult.status).toBe(Status.Success);
-    const disablePluginOutput: DisablePluginOutput = JSON.parse(
-      disablePluginResult.outputJson!,
-    );
+    const disablePluginOutput =
+      disablePluginResult.result as DisablePluginOutput;
     expect(disablePluginOutput.name).toBe('test');
     expect(disablePluginOutput.message).toBe(
       'Plugin test disabled successfully',
@@ -113,10 +97,7 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(listPluginResult.status).toBe(Status.Success);
-    const listPluginOutput: ListPluginsOutput = JSON.parse(
-      listPluginResult.outputJson!,
-    );
+    const listPluginOutput = listPluginResult.result as ListPluginsOutput;
     const testPlugin = listPluginOutput.plugins.find(
       (plugin) => plugin.name == 'test',
     );
@@ -133,10 +114,7 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(enablePluginResult.status).toBe(Status.Success);
-    const enablePluginOutput: EnablePluginOutput = JSON.parse(
-      enablePluginResult.outputJson!,
-    );
+    const enablePluginOutput = enablePluginResult.result as EnablePluginOutput;
     expect(enablePluginOutput.name).toBe('test');
     expect(enablePluginOutput.message).toBe('Plugin test enabled successfully');
     expect(enablePluginOutput.enabled).toBe(true);
@@ -151,10 +129,8 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(viewPluginEnabledResult.status).toBe(Status.Success);
-    const viewPluginEnabledOutput: PluginInfoOutput = JSON.parse(
-      viewPluginEnabledResult.outputJson!,
-    );
+    const viewPluginEnabledOutput =
+      viewPluginEnabledResult.result as PluginInfoOutput;
     expect(viewPluginEnabledOutput.found).toBe(true);
     expect(viewPluginEnabledOutput.message).toBe(
       'Plugin test information retrieved successfully',
@@ -178,10 +154,7 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(removePluginResult.status).toBe(Status.Success);
-    const removePluginOutput: RemovePluginOutput = JSON.parse(
-      removePluginResult.outputJson!,
-    );
+    const removePluginOutput = removePluginResult.result as RemovePluginOutput;
     expect(removePluginOutput.name).toBe('test');
     expect(removePluginOutput.removed).toBe(true);
     expect(removePluginOutput.message).toBe(
@@ -200,7 +173,8 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(addPluginResult.status).toBe(Status.Success);
+    const addOutput = addPluginResult.result as AddPluginOutput;
+    expect(addOutput.added).toBe(true);
 
     const listBeforeReset = await getPluginList({
       args: {},
@@ -209,10 +183,7 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(listBeforeReset.status).toBe(Status.Success);
-    const listBeforeOutput: ListPluginsOutput = JSON.parse(
-      listBeforeReset.outputJson!,
-    );
+    const listBeforeOutput = listBeforeReset.result as ListPluginsOutput;
     expect(listBeforeOutput.plugins.some((p) => p.name === 'test')).toBe(true);
 
     const resetResult = await resetPlugins({
@@ -222,8 +193,7 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(resetResult.status).toBe(Status.Success);
-    const resetOutput: ResetPluginsOutput = JSON.parse(resetResult.outputJson!);
+    const resetOutput = resetResult.result as ResetPluginsOutput;
     expect(resetOutput.reset).toBe(true);
     expect(resetOutput.message).toBe(
       'Plugin state has been reset successfully.',
@@ -236,10 +206,7 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(listAfterReset.status).toBe(Status.Success);
-    const listAfterOutput: ListPluginsOutput = JSON.parse(
-      listAfterReset.outputJson!,
-    );
+    const listAfterOutput = listAfterReset.result as ListPluginsOutput;
     expect(listAfterOutput.plugins.some((p) => p.name === 'test')).toBe(false);
     expect(listAfterOutput.count).toBe(0);
   });

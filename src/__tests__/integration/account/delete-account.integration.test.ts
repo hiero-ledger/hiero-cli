@@ -8,7 +8,7 @@ import '@/core/utils/json-serialize';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { deleteAccount, importAccount, viewAccount } from '@/plugins/account';
 
@@ -37,7 +37,6 @@ describe('Delete Account Integration Tests', () => {
 
   describe('Valid Delete Account Scenarios', () => {
     it('should delete imported account by name and verify empty result with view method', async () => {
-      //import account
       const importAccountArgs: Record<string, unknown> = {
         name: 'account-to-be-deleted',
         key: `${accountId}:${accountKey}`,
@@ -50,17 +49,14 @@ describe('Delete Account Integration Tests', () => {
         config: coreApi.config,
       });
 
-      expect(importAccountResult.status).toBe(Status.Success);
-      const importAccountOutput: ImportAccountOutput = JSON.parse(
-        importAccountResult.outputJson!,
-      );
+      const importAccountOutput =
+        importAccountResult.result as ImportAccountOutput;
       expect(importAccountOutput.accountId).toBe(accountId);
       expect(importAccountOutput.name).toBe('account-to-be-deleted');
       expect(importAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
       expect(importAccountOutput.network).toBe(network);
       expect(importAccountOutput.evmAddress).toBe(evmAddress);
 
-      // view
       const viewAccountArgs: Record<string, unknown> = {
         account: 'account-to-be-deleted',
       };
@@ -71,14 +67,10 @@ describe('Delete Account Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(viewAccountResult.status).toBe(Status.Success);
-      const viewAccountOutput: ViewAccountOutput = JSON.parse(
-        viewAccountResult.outputJson!,
-      );
+      const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
       expect(viewAccountOutput.accountId).toBe(importAccountOutput.accountId);
       expect(viewAccountOutput.evmAddress).toBe(importAccountOutput.evmAddress);
 
-      //delete
       const deleteAccountArgs: Record<string, unknown> = {
         account: 'account-to-be-deleted',
       };
@@ -89,24 +81,22 @@ describe('Delete Account Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(deleteAccountResult.status).toBe(Status.Success);
-      const deleteAccountOutput: DeleteAccountOutput = JSON.parse(
-        deleteAccountResult.outputJson!,
-      );
+      const deleteAccountOutput =
+        deleteAccountResult.result as DeleteAccountOutput;
       expect(deleteAccountOutput.deletedAccount.accountId).toBe(accountId);
       expect(deleteAccountOutput.deletedAccount.name).toBe(
         'account-to-be-deleted',
       );
 
-      const viewDeletedAccountResult = await viewAccount({
-        args: viewAccountArgs,
-        api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
-      });
-      expect(viewDeletedAccountResult.status).toBe(Status.Failure);
-      expect(viewDeletedAccountResult.errorMessage).toContain(
+      await expect(
+        viewAccount({
+          args: viewAccountArgs,
+          api: coreApi,
+          state: coreApi.state,
+          logger: coreApi.logger,
+          config: coreApi.config,
+        }),
+      ).rejects.toThrow(
         'Account not found with ID or alias: account-to-be-deleted',
       );
     });
