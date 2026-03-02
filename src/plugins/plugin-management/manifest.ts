@@ -50,17 +50,25 @@ export const pluginManagementManifest: PluginManifest = {
   commands: [
     {
       name: 'add',
-      summary: 'Add a plugin from path',
+      summary: 'Add a plugin from path or by name',
       description:
-        'Add a new plugin to the plugin-management state and enable it',
+        'Add a new plugin to the plugin-management state and enable it. Use --path for custom plugins, --name for default plugins.',
       options: [
         {
           name: 'path',
           short: 'p',
           type: OptionType.STRING,
-          required: true,
+          required: false,
           description:
             'Filesystem path to the plugin directory containing manifest.js',
+        },
+        {
+          name: 'name',
+          short: 'n',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Name of a default plugin to add (e.g. account, token). Use --path for custom plugins.',
         },
       ],
       handler: addPlugin,

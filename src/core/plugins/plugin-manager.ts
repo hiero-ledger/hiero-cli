@@ -23,6 +23,7 @@ import { OptionType } from '@/core/types/shared.types';
 import { requireConfirmation } from '@/core/utils/confirmation';
 import { ensureCliInitialized } from '@/core/utils/ensure-cli-initialized';
 import { filterReservedOptions } from '@/core/utils/filter-reserved-options';
+import { getDefaultPluginPath } from '@/core/utils/get-default-plugin-path';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
 import { registerDisabledPlugin } from '@/core/utils/register-disabled-plugin';
 
@@ -118,7 +119,7 @@ export class PluginManager {
           (entry) => entry.name === state.name,
         );
         if (defaultEntry) {
-          return this.getDefaultPluginPath(state.name);
+          return getDefaultPluginPath(state.name);
         } else {
           return state.path;
         }
@@ -195,10 +196,6 @@ export class PluginManager {
 
     this.loadedPlugins.set(manifest.name, loadedPlugin);
     return loadedPlugin;
-  }
-
-  private getDefaultPluginPath(name: string): string {
-    return path.resolve(__dirname, '../../plugins', name);
   }
 
   private shouldSkipConfirmation(opts: OptionValues): boolean {

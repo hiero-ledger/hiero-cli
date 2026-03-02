@@ -516,7 +516,7 @@ Handlers receive `api` (CoreApi) with all Hedera services. Use `api.account`, `a
 
 ### 3. External Plugin Support
 
-Plugins can be distributed as separate npm packages. Use `hcli plugin add <path-or-url>` to load them. See [Plugin Distribution](#-plugin-distribution) for package structure and [Contributing Guide](../CONTRIBUTING.md) for development workflow.
+Plugins can be distributed as separate npm packages. Use `hcli plugin-management add --path <path>` for custom plugins or `hcli plugin-management add --name <name>` for default plugins (e.g. account, token). See [Plugin Distribution](#-plugin-distribution) for package structure and [Contributing Guide](../CONTRIBUTING.md) for development workflow.
 
 ## 📚 Best Practices
 

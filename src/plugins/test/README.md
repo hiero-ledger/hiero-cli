@@ -131,6 +131,8 @@ npm run build
 hcli plugin-management add --path <path_to_your_manifest_file>
 ```
 
+For default plugins (e.g. account, token), you can use `hcli plugin-management add --name account` instead of `--path`.
+
 For example for adding this `test` plugin that its already built this command will look like this:
 
 ```bash
