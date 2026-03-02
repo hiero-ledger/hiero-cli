@@ -15,13 +15,12 @@ import type {
 } from '@/core';
 import type { AddPluginOutput } from './output';
 
-import { StateError, ValidationError } from '@/core/errors';
+import { StateError } from '@/core/errors';
 import { PluginManagementCreateStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
-import { DEFAULT_PLUGIN_STATE } from '@/core/shared/config/cli-options';
-import { getDefaultPluginPath } from '@/core/utils/get-default-plugin-path';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 import { validatePluginPath } from '@/plugins/plugin-management/utils/plugin-path-validator';
+import { resolveDefaultPluginPath } from '@/plugins/plugin-management/utils/resolve-default-plugin-path';
 
 import { AddPluginInputSchema } from './input';
 
@@ -34,16 +33,7 @@ export async function addPlugin(
 
   let pluginPath: string;
   if (validArgs.name) {
-    const defaultPluginNames = new Set(DEFAULT_PLUGIN_STATE.map((m) => m.name));
-    if (!defaultPluginNames.has(validArgs.name)) {
-      throw new ValidationError(
-        ERROR_MESSAGES.pluginNotDefault(validArgs.name),
-        {
-          context: { pluginName: validArgs.name },
-        },
-      );
-    }
-    pluginPath = getDefaultPluginPath(validArgs.name);
+    pluginPath = resolveDefaultPluginPath(validArgs.name);
     logger.info(`➕ Adding default plugin: ${validArgs.name}...`);
   } else {
     pluginPath = validArgs.path!;
