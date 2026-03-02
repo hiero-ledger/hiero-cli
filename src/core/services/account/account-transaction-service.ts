@@ -10,7 +10,6 @@ import type {
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 
 import {
-  AccountBalanceQuery,
   AccountCreateTransaction,
   AccountId,
   AccountInfoQuery,
@@ -90,37 +89,6 @@ export class AccountServiceImpl implements AccountService {
     } catch (error) {
       throw new ValidationError('Invalid account ID format', {
         context: { accountId },
-        cause: error,
-      });
-    }
-  }
-
-  /**
-   * Get account balance
-   */
-  getAccountBalance(accountId: string, tokenId?: string): AccountBalanceQuery {
-    this.logger.debug(
-      `[ACCOUNT TX] Getting account balance for: ${accountId}${tokenId ? `, token: ${tokenId}` : ''}`,
-    );
-
-    try {
-      const query = new AccountBalanceQuery().setAccountId(
-        AccountId.fromString(accountId),
-      );
-
-      if (tokenId) {
-        this.logger.debug(
-          `[ACCOUNT TX] Note: Token ID ${tokenId} specified but AccountBalanceQuery returns all token balances`,
-        );
-      }
-
-      this.logger.debug(
-        `[ACCOUNT TX] Created account balance query for: ${accountId}`,
-      );
-      return query;
-    } catch (error) {
-      throw new ValidationError('Invalid account ID format', {
-        context: { accountId, tokenId },
         cause: error,
       });
     }

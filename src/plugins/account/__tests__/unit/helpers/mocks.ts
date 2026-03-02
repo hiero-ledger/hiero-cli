@@ -83,7 +83,6 @@ export const makeAccountTransactionServiceMock = (
 ): jest.Mocked<AccountService> => ({
   createAccount: jest.fn(),
   getAccountInfo: jest.fn(),
-  getAccountBalance: jest.fn(),
   ...overrides,
 });
 
@@ -259,7 +258,6 @@ export const makeApiMocksForAccountCreate = ({
   const account: jest.Mocked<AccountService> = {
     createAccount: createAccountImpl || jest.fn(),
     getAccountInfo: jest.fn(),
-    getAccountBalance: jest.fn(),
   };
 
   const signing = makeGlobalSigningMock({ signAndExecuteImpl });
