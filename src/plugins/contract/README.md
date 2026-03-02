@@ -37,11 +37,7 @@ src/plugins/contract/
 
 ## 🚀 Commands
 
-All commands return `CommandExecutionResult` with structured output that includes:
-
-- `status`: Success or failure status
-- `errorMessage`: Optional error message (present when status is not 'success')
-- `outputJson`: JSON string conforming to the output schema defined in `output.ts`
+All commands return `CommandResult` with structured output data in the `result` field. Errors are thrown as typed `CliError` instances and handled uniformly by the core framework.
 
 ### Contract Create
 
@@ -62,7 +58,7 @@ Either `--file` or `--default` must be provided (mutually exclusive).
 | Option                  | Short | Description                                                                   | Default                                                            |
 | ----------------------- | ----- | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | `base-path`             | `b`   | Base path for contract imports                                                | Current directory (with `--file`), package root (with `--default`) |
-| `gas`                   | `g`   | Gas for contract creation                                                     | 1000000                                                            |
+| `gas`                   | `g`   | Gas for contract creation                                                     | 2000000                                                            |
 | `admin-key`             | `a`   | Admin key for the contract                                                    | -                                                                  |
 | `memo`                  | `m`   | Contract memo (max 100 chars)                                                 | -                                                                  |
 | `solidity-version`      | `v`   | Solidity compiler version                                                     | -                                                                  |
@@ -124,13 +120,11 @@ The plugin uses the Core API services:
 
 ## 📤 Output Formatting
 
-All commands return structured output through the `CommandExecutionResult` interface:
+All commands return structured output through the `CommandResult` interface:
 
 ```typescript
-interface CommandExecutionResult {
-  status: 'success' | 'failure';
-  errorMessage?: string; // Present when status !== 'success'
-  outputJson?: string; // JSON string conforming to the output schema
+interface CommandResult {
+  result: object;
 }
 ```
 

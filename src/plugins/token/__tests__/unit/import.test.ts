@@ -12,7 +12,6 @@ import {
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { createMockTokenInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
-import { Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { importToken } from '@/plugins/token/commands/import/handler';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -23,7 +22,7 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
 
-describe('token plugin - import command (ADR-003)', () => {
+describe('token plugin - import command (ADR-007)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -94,10 +93,7 @@ describe('token plugin - import command (ADR-003)', () => {
       }),
     );
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ImportTokenOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ImportTokenOutput;
     expect(output.tokenId).toBe('0.0.123456');
     expect(output.name).toBe('my-token');
     expect(output.symbol).toBe('TEST');
@@ -157,10 +153,7 @@ describe('token plugin - import command (ADR-003)', () => {
       }),
     );
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ImportTokenOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ImportTokenOutput;
     expect(output.tokenId).toBe('0.0.999999');
     expect(output.name).toBe('Existing Token');
     expect(output.alias).toBeUndefined();
@@ -204,7 +197,8 @@ describe('token plugin - import command (ADR-003)', () => {
 
     const result = await importToken(args);
 
-    expect(result.status).toBe(Status.Success);
+    const output = result.result as ImportTokenOutput;
+    expect(output.tokenId).toBe('0.0.555555');
     expect(saveTokenMock).toHaveBeenCalledWith(
       '0.0.555555',
       expect.objectContaining({
@@ -215,7 +209,7 @@ describe('token plugin - import command (ADR-003)', () => {
     );
   });
 
-  test('returns failure when token already exists in state', async () => {
+  test('throws when token already exists in state', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -226,18 +220,8 @@ describe('token plugin - import command (ADR-003)', () => {
       saveToken: jest.fn(),
     }));
 
-    const tokenInfo = createMockTokenInfo({
-      token_id: '0.0.123456',
-      type: 'FUNGIBLE_COMMON',
-    });
-
-    const mirrorMock = makeMirrorMock() as Partial<HederaMirrornodeService> & {
-      getTokenInfo: jest.Mock;
-    };
-    mirrorMock.getTokenInfo = jest.fn().mockResolvedValue(tokenInfo);
-
     const api: Partial<CoreApi> = {
-      mirror: mirrorMock as HederaMirrornodeService,
+      mirror: makeMirrorMock() as HederaMirrornodeService,
       network: makeNetworkMock(SupportedNetwork.TESTNET) as NetworkService,
       alias: makeAliasMock(),
       logger,
@@ -249,16 +233,12 @@ describe('token plugin - import command (ADR-003)', () => {
       name: 'new-token',
     });
 
-    const result = await importToken(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain(
+    await expect(importToken(args)).rejects.toThrow(
       "Token with ID '0.0.123456' already exists in state",
     );
   });
 
-  test('returns failure when mirror.getTokenInfo throws', async () => {
+  test('throws when mirror.getTokenInfo throws', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -285,10 +265,6 @@ describe('token plugin - import command (ADR-003)', () => {
       token: '0.0.123456',
     });
 
-    const result = await importToken(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Token not found');
+    await expect(importToken(args)).rejects.toThrow('Token not found');
   });
 });

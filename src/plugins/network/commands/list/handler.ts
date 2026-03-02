@@ -1,11 +1,8 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { CommandExecutionResult } from '@/core/plugins/plugin.types';
+import type { CommandResult } from '@/core/plugins/plugin.types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { ListNetworksOutput } from './output';
 
-import { Status } from '@/core/shared/constants';
-import { formatError } from '@/core/utils/errors';
-import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 import {
   checkMirrorNodeHealth,
   checkRpcHealth,
@@ -13,56 +10,42 @@ import {
 
 export async function listHandler(
   args: CommandHandlerArgs,
-): Promise<CommandExecutionResult> {
+): Promise<CommandResult> {
   const { api } = args;
 
-  try {
-    const networkNames = api.network.getAvailableNetworks();
-    const currentNetwork = api.network.getCurrentNetwork();
+  const networkNames = api.network.getAvailableNetworks();
+  const currentNetwork = api.network.getCurrentNetwork();
 
-    const networks = await Promise.all(
-      networkNames.map(async (name) => {
-        const networkName = name as SupportedNetwork;
-        const config = api.network.getNetworkConfig(networkName);
-        const operator = api.network.getOperator(networkName);
+  const networks = await Promise.all(
+    networkNames.map(async (name) => {
+      const networkName = name as SupportedNetwork;
+      const config = api.network.getNetworkConfig(networkName);
+      const operator = api.network.getOperator(networkName);
 
-        let mirrorNodeHealth;
-        let rpcHealth;
+      let mirrorNodeHealth;
+      let rpcHealth;
 
-        if (networkName === currentNetwork) {
-          mirrorNodeHealth = await checkMirrorNodeHealth(config.mirrorNodeUrl);
-          rpcHealth = await checkRpcHealth(config.rpcUrl);
-        }
+      if (networkName === currentNetwork) {
+        mirrorNodeHealth = await checkMirrorNodeHealth(config.mirrorNodeUrl);
+        rpcHealth = await checkRpcHealth(config.rpcUrl);
+      }
 
-        return {
-          name: networkName,
-          isActive: networkName === currentNetwork,
-          mirrorNodeUrl: config.mirrorNodeUrl,
-          rpcUrl: config.rpcUrl,
-          operatorId: operator?.accountId || '',
-          mirrorNodeHealth,
-          rpcHealth,
-        };
-      }),
-    );
+      return {
+        name: networkName,
+        isActive: networkName === currentNetwork,
+        mirrorNodeUrl: config.mirrorNodeUrl,
+        rpcUrl: config.rpcUrl,
+        operatorId: operator?.accountId || '',
+        mirrorNodeHealth,
+        rpcHealth,
+      };
+    }),
+  );
 
-    const output: ListNetworksOutput = {
-      networks,
-      activeNetwork: currentNetwork,
-    };
+  const output: ListNetworksOutput = {
+    networks,
+    activeNetwork: currentNetwork,
+  };
 
-    return {
-      status: Status.Success,
-      outputJson: JSON.stringify(output),
-    };
-  } catch (error) {
-    const errorMessage = formatError(
-      ERROR_MESSAGES.failedToListNetworks,
-      error,
-    );
-    return {
-      status: Status.Failure,
-      errorMessage,
-    };
-  }
+  return { result: output };
 }

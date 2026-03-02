@@ -11,7 +11,7 @@ This plugin follows the plugin architecture principles:
 - **Manifest-Driven**: Capabilities declared via manifest with output specifications
 - **Namespace Isolation**: Own state namespace (`token-tokens`)
 - **Type Safety**: Full TypeScript support
-- **Structured Output**: All command handlers return `CommandExecutionResult` with standardized output
+- **Structured Output**: All command handlers return `CommandResult` with standardized output
 
 ## 📁 Structure
 
@@ -83,7 +83,7 @@ src/plugins/token/
 ├── resolver-helper.ts       # Token and account resolver utilities
 ├── __tests__/               # Comprehensive test suite
 │   ├── unit/
-│   │   ├── adr003-compliance.test.ts  # Output structure compliance tests
+│   │   ├── adr007-compliance.test.ts  # Output structure compliance tests
 │   │   └── [other test files...]
 │   └── integration/
 │       └── [integration test files...]
@@ -92,11 +92,7 @@ src/plugins/token/
 
 ## 🚀 Commands
 
-All commands return `CommandExecutionResult` with structured output that includes:
-
-- `status`: Success or failure status
-- `errorMessage`: Optional error message (present when status is not 'success')
-- `outputJson`: JSON string conforming to the output schema defined in `output.ts`
+All commands return `CommandResult` with structured output data in the `result` field. Errors are thrown as typed `CliError` instances and handled uniformly by the core framework.
 
 Each command defines a Zod schema for output validation and a Handlebars template for human-readable formatting.
 
@@ -510,13 +506,11 @@ The plugin uses the Core API services:
 
 ## 📤 Output Formatting
 
-All commands return structured output through the `CommandExecutionResult` interface:
+All commands return structured output through the `CommandResult` interface:
 
 ```typescript
-interface CommandExecutionResult {
-  status: 'success' | 'failure';
-  errorMessage?: string; // Present when status !== 'success'
-  outputJson?: string; // JSON string conforming to the output schema
+interface CommandResult {
+  result: object;
 }
 ```
 
@@ -526,7 +520,7 @@ interface CommandExecutionResult {
 - **Human Templates**: Handlebars templates provide human-readable output formatting
 - **Error Handling**: All errors are returned in the result structure, ensuring consistent error handling
 
-The `outputJson` field contains a JSON string that conforms to the Zod schema defined in each command's `output.ts` file, ensuring type safety and consistent output structure.
+The `result` field contains a structured object conforming to the Zod schema defined in each command's `output.ts` file, ensuring type safety and consistent output structure.
 
 ## 📊 State Management
 
@@ -560,17 +554,16 @@ The plugin includes comprehensive tests for output structure:
 ```typescript
 import { Status } from '../../../core/shared/constants';
 
-// Example test verifying CommandExecutionResult structure
+// Example test verifying CommandResult structure
 describe('Token Plugin Output Structure', () => {
-  test('fungible token create command returns CommandExecutionResult', async () => {
+  test('fungible token create command returns CommandResult', async () => {
     const result = await createToken(mockArgs);
 
     // Assert structure
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    expect(result.result).toBeDefined();
 
     // Assert output format
-    const output = JSON.parse(result.outputJson) as CreateFungibleTokenOutput;
+    const output = result.result as CreateFungibleTokenOutput;
     expect(output.tokenId).toBe('0.0.12345');
     expect(output.name).toBe('TestToken');
   });
@@ -579,7 +572,7 @@ describe('Token Plugin Output Structure', () => {
 
 ### Test Structure
 
-- **Output Compliance**: `adr003-compliance.test.ts` - Tests all handlers return proper `CommandExecutionResult`
+- **Output Compliance**: `adr007-compliance.test.ts` - Tests all handlers return proper `CommandResult`
 - **Unit Tests**: Individual command handler tests with mocks and fixtures
 - **Integration Tests**: End-to-end token lifecycle tests
 - **Schema Tests**: Validation of input/output schemas

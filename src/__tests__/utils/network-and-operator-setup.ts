@@ -8,7 +8,6 @@ import {
   Ed25519PrivateKeySchema,
   EntityIdSchema,
 } from '@/core/schemas/common-schemas';
-import { Status } from '@/core/shared/constants';
 import { getOperatorHandler } from '@/plugins/network/commands/get-operator';
 import { setOperatorHandler } from '@/plugins/network/commands/set-operator';
 import { useHandler } from '@/plugins/network/commands/use';
@@ -70,21 +69,17 @@ export const setDefaultOperatorForNetwork = async (
     logger: coreApi.logger,
     config: coreApi.config,
   });
-  if (getOperatorResult.status == Status.Success) {
-    const getOperatorOutput: GetOperatorOutput = JSON.parse(
-      getOperatorResult.outputJson!,
-    );
-    if (getOperatorOutput.operator?.accountId != env.OPERATOR_ID) {
-      const setOperatorArgs: Record<string, unknown> = {
-        operator: `${env.OPERATOR_ID}:${env.OPERATOR_KEY}`,
-      };
-      await setOperatorHandler({
-        args: setOperatorArgs,
-        api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
-      });
-    }
+  const getOperatorOutput = getOperatorResult.result as GetOperatorOutput;
+  if (getOperatorOutput.operator?.accountId != env.OPERATOR_ID) {
+    const setOperatorArgs: Record<string, unknown> = {
+      operator: `${env.OPERATOR_ID}:${env.OPERATOR_KEY}`,
+    };
+    await setOperatorHandler({
+      args: setOperatorArgs,
+      api: coreApi,
+      state: coreApi.state,
+      logger: coreApi.logger,
+      config: coreApi.config,
+    });
   }
 };

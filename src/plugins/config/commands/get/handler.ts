@@ -1,49 +1,28 @@
-import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { GetConfigOutput } from './output';
 
-import { Status } from '@/core/shared/constants';
-import { formatError } from '@/core/utils/errors';
 import { inferConfigOptionType } from '@/plugins/config/schema';
 
 import { GetConfigInputSchema } from './input';
 
 export async function getConfigOption(
   args: CommandHandlerArgs,
-): Promise<CommandExecutionResult> {
+): Promise<CommandResult> {
   const { api } = args;
 
-  // Parse and validate arguments
   const validArgs = GetConfigInputSchema.parse(args.args);
   const name = validArgs.option;
 
-  if (!name) {
-    return {
-      status: Status.Failure,
-      errorMessage: 'Missing required --option parameter',
-    };
-  }
+  const value = api.config.getOption(name);
+  const descriptor = api.config.listOptions().find((o) => o.name === name);
+  const type = inferConfigOptionType(descriptor?.type, value);
 
-  try {
-    const value = api.config.getOption(name);
-    // Try to detect type against listOptions
-    const descriptor = api.config.listOptions().find((o) => o.name === name);
-    const type = inferConfigOptionType(descriptor?.type, value);
+  const output: GetConfigOutput = {
+    name,
+    type,
+    value,
+    allowedValues: descriptor?.allowedValues,
+  };
 
-    const output: GetConfigOutput = {
-      name,
-      type,
-      value: value,
-      allowedValues: descriptor?.allowedValues,
-    };
-
-    return {
-      status: Status.Success,
-      outputJson: JSON.stringify(output),
-    };
-  } catch (error) {
-    return {
-      status: Status.Failure,
-      errorMessage: formatError(`Failed to get option "${name}"`, error),
-    };
-  }
+  return { result: output };
 }

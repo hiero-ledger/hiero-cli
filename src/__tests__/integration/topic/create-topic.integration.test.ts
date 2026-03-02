@@ -8,7 +8,6 @@ import '@/core/utils/json-serialize';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { Status } from '@/core/shared/constants';
 import { createTopic, listTopics } from '@/plugins/topic';
 
 describe('Create Topic Integration Tests', () => {
@@ -35,10 +34,7 @@ describe('Create Topic Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(createTopicResult.status).toBe(Status.Success);
-    const createTopicOutput: CreateTopicOutput = JSON.parse(
-      createTopicResult.outputJson!,
-    );
+    const createTopicOutput = createTopicResult.result as CreateTopicOutput;
     expect(createTopicOutput.name).toBe('test-topic');
     expect(createTopicOutput.network).toBe(network);
     expect(createTopicOutput.memo).toBe('Test topic');
@@ -55,10 +51,7 @@ describe('Create Topic Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(listTopicResult.status).toBe(Status.Success);
-    const listTopicOutput: ListTopicsOutput = JSON.parse(
-      listTopicResult.outputJson!,
-    );
+    const listTopicOutput = listTopicResult.result as ListTopicsOutput;
     const topic = listTopicOutput.topics.find(
       (topic) => topic.name == 'test-topic',
     );

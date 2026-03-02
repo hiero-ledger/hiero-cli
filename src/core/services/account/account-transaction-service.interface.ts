@@ -8,20 +8,17 @@ export interface AccountService {
   /**
    * Create a new Hedera account
    */
-  createAccount(params: CreateAccountParams): Promise<AccountCreateResult>;
+  createAccount(params: CreateAccountParams): AccountCreateResult;
 
   /**
    * Get account information (creates a transaction to query account info)
    */
-  getAccountInfo(accountId: string): Promise<AccountInfoQuery>;
+  getAccountInfo(accountId: string): AccountInfoQuery;
 
   /**
    * Get account balance (creates a transaction to query balance)
    */
-  getAccountBalance(
-    accountId: string,
-    tokenId?: string,
-  ): Promise<AccountBalanceQuery>;
+  getAccountBalance(accountId: string, tokenId?: string): AccountBalanceQuery;
 }
 
 export interface AccountCreateResult {

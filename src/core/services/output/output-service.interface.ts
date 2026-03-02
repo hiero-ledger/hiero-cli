@@ -7,9 +7,9 @@ import type { OutputHandlerOptions } from './types';
 
 export interface OutputService {
   /**
-   * Handle command output - parse, validate, format, and output
+   * Handle a successful command result
    */
-  handleCommandOutput(options: OutputHandlerOptions): void;
+  handleOutput(options: OutputHandlerOptions): void;
 
   /**
    * Get the current output format

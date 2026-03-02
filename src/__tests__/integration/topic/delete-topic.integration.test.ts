@@ -9,7 +9,6 @@ import '@/core/utils/json-serialize';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { Status } from '@/core/shared/constants';
 import { createTopic, deleteTopic, listTopics } from '@/plugins/topic';
 
 describe('Delete Topic Integration Tests', () => {
@@ -35,10 +34,7 @@ describe('Delete Topic Integration Tests', () => {
         config: coreApi.config,
       });
 
-      expect(createTopicResult.status).toBe(Status.Success);
-      const createTopicOutput: CreateTopicOutput = JSON.parse(
-        createTopicResult.outputJson!,
-      );
+      const createTopicOutput = createTopicResult.result as CreateTopicOutput;
       expect(createTopicOutput.name).toBe('topic-to-be-deleted');
       expect(createTopicOutput.network).toBe(network);
 
@@ -52,10 +48,7 @@ describe('Delete Topic Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(listTopicResult.status).toBe(Status.Success);
-      const listTopicOutput: ListTopicsOutput = JSON.parse(
-        listTopicResult.outputJson!,
-      );
+      const listTopicOutput = listTopicResult.result as ListTopicsOutput;
       const topicBeforeDelete = listTopicOutput.topics.find(
         (t) => t.name === 'topic-to-be-deleted',
       );
@@ -72,10 +65,7 @@ describe('Delete Topic Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(deleteTopicResult.status).toBe(Status.Success);
-      const deleteTopicOutput: DeleteTopicOutput = JSON.parse(
-        deleteTopicResult.outputJson!,
-      );
+      const deleteTopicOutput = deleteTopicResult.result as DeleteTopicOutput;
       expect(deleteTopicOutput.deletedTopic.name).toBe('topic-to-be-deleted');
       expect(deleteTopicOutput.deletedTopic.topicId).toBe(
         createTopicOutput.topicId,
@@ -89,10 +79,8 @@ describe('Delete Topic Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(listAfterDeleteResult.status).toBe(Status.Success);
-      const listAfterDeleteOutput: ListTopicsOutput = JSON.parse(
-        listAfterDeleteResult.outputJson!,
-      );
+      const listAfterDeleteOutput =
+        listAfterDeleteResult.result as ListTopicsOutput;
       const topicAfterDelete = listAfterDeleteOutput.topics.find(
         (t) => t.name === 'topic-to-be-deleted',
       );
@@ -111,10 +99,7 @@ describe('Delete Topic Integration Tests', () => {
         config: coreApi.config,
       });
 
-      expect(createTopicResult.status).toBe(Status.Success);
-      const createTopicOutput: CreateTopicOutput = JSON.parse(
-        createTopicResult.outputJson!,
-      );
+      const createTopicOutput = createTopicResult.result as CreateTopicOutput;
       expect(createTopicOutput.name).toBe('topic-to-delete-by-id');
 
       const deleteTopicArgs: Record<string, unknown> = {
@@ -127,10 +112,7 @@ describe('Delete Topic Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(deleteTopicResult.status).toBe(Status.Success);
-      const deleteTopicOutput: DeleteTopicOutput = JSON.parse(
-        deleteTopicResult.outputJson!,
-      );
+      const deleteTopicOutput = deleteTopicResult.result as DeleteTopicOutput;
       expect(deleteTopicOutput.deletedTopic.topicId).toBe(
         createTopicOutput.topicId,
       );
@@ -146,10 +128,8 @@ describe('Delete Topic Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(listAfterDeleteResult.status).toBe(Status.Success);
-      const listAfterDeleteOutput: ListTopicsOutput = JSON.parse(
-        listAfterDeleteResult.outputJson!,
-      );
+      const listAfterDeleteOutput =
+        listAfterDeleteResult.result as ListTopicsOutput;
       const topicAfterDelete = listAfterDeleteOutput.topics.find(
         (t) => t.topicId === createTopicOutput.topicId,
       );
@@ -159,37 +139,27 @@ describe('Delete Topic Integration Tests', () => {
 
   describe('Invalid Delete Topic Scenarios', () => {
     it('should fail when deleting non-existent topic by name', async () => {
-      const deleteTopicArgs: Record<string, unknown> = {
-        topic: 'non-existent-topic-name',
-      };
-      const deleteTopicResult = await deleteTopic({
-        args: deleteTopicArgs,
-        api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
-      });
-      expect(deleteTopicResult.status).toBe(Status.Failure);
-      expect(deleteTopicResult.errorMessage).toContain(
-        "Topic with name 'non-existent-topic-name' not found",
-      );
+      await expect(
+        deleteTopic({
+          args: { topic: 'non-existent-topic-name' },
+          api: coreApi,
+          state: coreApi.state,
+          logger: coreApi.logger,
+          config: coreApi.config,
+        }),
+      ).rejects.toThrow("Topic with name 'non-existent-topic-name' not found");
     });
 
     it('should fail when deleting non-existent topic by topicId', async () => {
-      const deleteTopicArgs: Record<string, unknown> = {
-        topic: '0.0.999999999',
-      };
-      const deleteTopicResult = await deleteTopic({
-        args: deleteTopicArgs,
-        api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
-      });
-      expect(deleteTopicResult.status).toBe(Status.Failure);
-      expect(deleteTopicResult.errorMessage).toContain(
-        "Topic with ID '0.0.999999999' not found",
-      );
+      await expect(
+        deleteTopic({
+          args: { topic: '0.0.999999999' },
+          api: coreApi,
+          state: coreApi.state,
+          logger: coreApi.logger,
+          config: coreApi.config,
+        }),
+      ).rejects.toThrow("Topic with ID '0.0.999999999' not found");
     });
   });
 });

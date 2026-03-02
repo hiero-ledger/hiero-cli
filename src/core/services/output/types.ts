@@ -1,17 +1,15 @@
 /**
  * Output Handler Service Types
  */
-import type { OutputFormat } from '@/core/shared/types/output-format';
+import type { SerializedCliError } from '@/core';
+import type { Status } from '@/core/shared/constants';
 
-export interface FormatOptions {
-  format: OutputFormat;
-  pretty?: boolean;
+export interface ErrorOutput extends SerializedCliError {
+  status: 'failure';
 }
 
 export interface OutputHandlerOptions {
-  outputJson: string;
-  schema?: unknown;
+  data: object;
   template?: string;
-  format: OutputFormat;
-  outputPath?: string;
+  status: Status;
 }

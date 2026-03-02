@@ -1,20 +1,13 @@
-/**
- * Token List Command Handler
- * Handles listing all tokens (FT and NFT) from state for all networks
- * Follows ADR-003 contract: returns CommandExecutionResult
- */
-import type { CommandExecutionResult, CommandHandlerArgs } from '@/core';
+import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { ListTokensOutput } from './output';
 
-import { Status } from '@/core/shared/constants';
-import { formatError } from '@/core/utils/errors';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { ListTokenInputSchema } from './input';
 
 export async function listTokens(
   args: CommandHandlerArgs,
-): Promise<CommandExecutionResult> {
+): Promise<CommandResult> {
   const { api, logger } = args;
 
   const tokenState = new ZustandTokenStateHelper(api.state, logger);
@@ -25,74 +18,64 @@ export async function listTokens(
 
   logger.info('Listing tokens...');
 
-  try {
-    const tokens = tokenState.listTokens();
-    logger.debug(`[TOKEN LIST] Retrieved ${tokens.length} tokens from state`);
+  const tokens = tokenState.listTokens();
+  logger.debug(`[TOKEN LIST] Retrieved ${tokens.length} tokens from state`);
 
-    tokens.forEach((token, index) => {
-      logger.debug(
-        `[TOKEN LIST]   ${index + 1}. ${token.name} (${token.symbol}) - ${token.tokenId} on ${token.network}`,
-      );
-    });
+  tokens.forEach((token, index) => {
+    logger.debug(
+      `[TOKEN LIST]   ${index + 1}. ${token.name} (${token.symbol}) - ${token.tokenId} on ${token.network}`,
+    );
+  });
 
-    const tokensList = tokens.map((token) => {
-      const alias = api.alias.resolve(
-        token.tokenId,
-        'token',
-        token.network,
-      )?.alias;
-
-      return {
-        tokenId: token.tokenId,
-        name: token.name,
-        symbol: token.symbol,
-        decimals: token.decimals,
-        supplyType: token.supplyType,
-        tokenType: token.tokenType,
-        treasuryId: token.treasuryId,
-        network: token.network,
-        alias,
-        maxSupply: Number(token.maxSupply),
-        associationCount: token.associations?.length || 0,
-        ...(showKeys &&
-          token.adminPublicKey && {
-            keys: {
-              adminKey: token.adminPublicKey,
-              supplyKey: null,
-              wipeKey: null,
-              kycKey: null,
-              freezeKey: null,
-              pauseKey: null,
-              feeScheduleKey: null,
-              treasuryKey: null,
-            },
-          }),
-      };
-    });
-
-    const stats = tokenState.getTokensWithStats();
-
-    const outputData: ListTokensOutput = {
-      tokens: tokensList,
-      totalCount: tokens.length,
-      stats: {
-        total: stats.total,
-        withKeys: stats.withKeys,
-        byNetwork: stats.byNetwork,
-        bySupplyType: stats.bySupplyType,
-        withAssociations: stats.withAssociations,
-        totalAssociations: stats.totalAssociations,
-      },
-    };
+  const tokensList = tokens.map((token) => {
+    const alias = api.alias.resolve(
+      token.tokenId,
+      'token',
+      token.network,
+    )?.alias;
 
     return {
-      status: Status.Success,
-      outputJson: JSON.stringify(outputData),
+      tokenId: token.tokenId,
+      name: token.name,
+      symbol: token.symbol,
+      decimals: token.decimals,
+      supplyType: token.supplyType,
+      tokenType: token.tokenType,
+      treasuryId: token.treasuryId,
+      network: token.network,
+      alias,
+      maxSupply: Number(token.maxSupply),
+      associationCount: token.associations?.length || 0,
+      ...(showKeys &&
+        token.adminPublicKey && {
+          keys: {
+            adminKey: token.adminPublicKey,
+            supplyKey: null,
+            wipeKey: null,
+            kycKey: null,
+            freezeKey: null,
+            pauseKey: null,
+            feeScheduleKey: null,
+            treasuryKey: null,
+          },
+        }),
     };
-  } catch (error: unknown) {
-    return {
-      status: Status.Failure,
-      errorMessage: formatError('Failed to list tokens', error),
-    };
-  }
+  });
+
+  const stats = tokenState.getTokensWithStats();
+
+  const outputData: ListTokensOutput = {
+    tokens: tokensList,
+    totalCount: tokens.length,
+    stats: {
+      total: stats.total,
+      withKeys: stats.withKeys,
+      byNetwork: stats.byNetwork,
+      bySupplyType: stats.bySupplyType,
+      withAssociations: stats.withAssociations,
+      totalAssociations: stats.totalAssociations,
+    },
+  };
+
+  return { result: outputData };
 }

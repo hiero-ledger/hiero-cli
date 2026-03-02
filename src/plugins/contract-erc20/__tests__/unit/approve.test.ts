@@ -4,7 +4,7 @@ import type { ContractErc20CallApproveOutput } from '@/plugins/contract-erc20/co
 import { ZodError } from 'zod';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
+import { NotFoundError, TransactionError } from '@/core/errors';
 import { makeContractErc20ExecuteCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { approveFunctionCall as erc20ApproveHandler } from '@/plugins/contract-erc20/commands/approve/handler';
@@ -82,12 +82,9 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
 
     const result = await erc20ApproveHandler(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    expect(result.result).toBeDefined();
 
-    const parsed = JSON.parse(
-      result.outputJson as string,
-    ) as ContractErc20CallApproveOutput;
+    const parsed = result.result as ContractErc20CallApproveOutput;
 
     expect(parsed.contractId).toBe(CONTRACT_ID);
     expect(parsed.network).toBe('testnet');
@@ -129,7 +126,8 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
 
     const result = await erc20ApproveHandler(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
+
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
       contractReference: '0.0.9999',
       type: expect.any(String),
@@ -157,12 +155,13 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
 
     const result = await erc20ApproveHandler(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
+
     expect(args.api.identityResolution.resolveAccount).not.toHaveBeenCalled();
     expect(mockAddAddress).toHaveBeenCalledWith(evmSpender);
   });
 
-  test('returns failure when signAndExecute returns success false', async () => {
+  test('throws TransactionError when signAndExecute returns success false', async () => {
     const args = makeContractErc20ExecuteCommandArgs({
       api,
       logger,
@@ -178,15 +177,11 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
       receipt: { status: { status: 'FAILURE' } },
     });
 
-    const result = await erc20ApproveHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call approve function: FAILURE',
-    );
+    await expect(erc20ApproveHandler(args)).rejects.toThrow(TransactionError);
+    await expect(erc20ApproveHandler(args)).rejects.toThrow('FAILURE');
   });
 
-  test('returns failure when signAndExecute throws', async () => {
+  test('throws when signAndExecute throws', async () => {
     const args = makeContractErc20ExecuteCommandArgs({
       api,
       logger,
@@ -201,15 +196,10 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
       new Error('network error'),
     );
 
-    const result = await erc20ApproveHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call approve function: network error',
-    );
+    await expect(erc20ApproveHandler(args)).rejects.toThrow('network error');
   });
 
-  test('returns failure when alias not found for contract', async () => {
+  test('throws when alias not found for contract', async () => {
     const args = makeContractErc20ExecuteCommandArgs({
       api,
       logger,
@@ -229,14 +219,12 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
       ),
     );
 
-    const result = await erc20ApproveHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Failed to call approve function');
-    expect(result.errorMessage).toContain('not found');
+    await expect(erc20ApproveHandler(args)).rejects.toThrow(
+      'Alias "missing-contract" for contract on network "testnet" not found',
+    );
   });
 
-  test('returns failure when mirror.getAccount has no evmAddress', async () => {
+  test('throws NotFoundError when mirror.getAccount has no evmAddress', async () => {
     const args = makeContractErc20ExecuteCommandArgs({
       api,
       logger,
@@ -256,10 +244,8 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
       },
     );
 
-    const result = await erc20ApproveHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
+    await expect(erc20ApproveHandler(args)).rejects.toThrow(NotFoundError);
+    await expect(erc20ApproveHandler(args)).rejects.toThrow(
       "Couldn't resolve EVM address for an account",
     );
   });

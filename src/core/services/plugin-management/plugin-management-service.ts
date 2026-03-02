@@ -124,6 +124,10 @@ export class PluginManagementServiceImpl implements PluginManagementService {
     return { status: PluginManagementDisableStatus.Disabled, entry: updated };
   }
 
+  resetPlugins(): void {
+    this.state.clear(PLUGIN_MANAGEMENT_NAMESPACE);
+  }
+
   savePluginState(entry: PluginStateEntry): void {
     this.state.set<PluginStateEntry>(
       PLUGIN_MANAGEMENT_NAMESPACE,
