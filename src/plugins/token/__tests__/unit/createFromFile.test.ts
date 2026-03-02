@@ -751,7 +751,7 @@ describe('createTokenFromFileHandler', () => {
           createTokenAssociationTransaction: jest
             .fn()
             .mockImplementation(() => {
-              throw new Error('Association failed');
+              throw new StateError('Association failed');
             }),
         },
         signing: {

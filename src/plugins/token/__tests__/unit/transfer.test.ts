@@ -4,6 +4,7 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import '@/core/utils/json-serialize';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
+import { NetworkError } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
   type TransferFungibleTokenOutput,
@@ -363,7 +364,7 @@ describe('transferTokenHandler', () => {
       const { api } = makeApiMocks({
         tokens: {
           createTransferTransaction: jest.fn().mockImplementation(() => {
-            throw new Error('Network error');
+            throw new NetworkError('Network error');
           }),
         },
         kms: {

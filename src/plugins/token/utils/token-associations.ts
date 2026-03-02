@@ -9,6 +9,8 @@ import type {
 } from '@/core/services/kms/kms-types.interface';
 import type { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
+import { StateError } from '@/core';
+
 export function saveAssociationToState(
   tokenState: ZustandTokenStateHelper,
   tokenId: string,
@@ -44,7 +46,7 @@ export async function processTokenAssociations(
         ['token:associate'],
       );
       if (!account.accountId) {
-        throw new Error(
+        throw new StateError(
           `Could not resolve account ID for passed "association" field for type ${association?.type} from value ${association?.rawValue}`,
         );
       }

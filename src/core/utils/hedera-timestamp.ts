@@ -1,3 +1,5 @@
+import { ValidationError } from '@/core';
+
 /**
  * Converts Hedera Mirror Node timestamp to ISO 8601 format.
  * Mirror Node returns timestamps as "seconds.nanoseconds" (e.g. "1768898341.551352532").
@@ -8,7 +10,7 @@ export function hederaTimestampToIso(timestamp: string): string {
   const match = timestamp.match(regex);
 
   if (!match) {
-    throw new Error(
+    throw new ValidationError(
       `Invalid Hedera timestamp format: expected "seconds.nanoseconds", got "${timestamp}"`,
     );
   }

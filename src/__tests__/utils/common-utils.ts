@@ -1,3 +1,5 @@
+import { InternalError } from '@/core';
+
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -16,5 +18,5 @@ export async function waitFor<T>(
     if (condition(result)) return result;
     await delay(interval);
   }
-  throw new Error(`waitFor timed out after ${timeout}ms`);
+  throw new InternalError(`waitFor timed out after ${timeout}ms`);
 }

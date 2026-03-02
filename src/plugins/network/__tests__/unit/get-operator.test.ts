@@ -8,7 +8,7 @@ import {
   makeNetworkMock,
   setupExitSpy,
 } from '@/__tests__/mocks/mocks';
-import { ValidationError } from '@/core/errors';
+import { InternalError, ValidationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { getOperatorHandler } from '@/plugins/network/commands/get-operator';
 
@@ -183,7 +183,7 @@ describe('network plugin - get-operator command', () => {
     const kmsService = makeKmsMock();
 
     networkService.getOperator.mockImplementation(() => {
-      throw new Error('Network service error');
+      throw new InternalError('Network service error');
     });
 
     const args = makeArgs(
@@ -207,7 +207,7 @@ describe('network plugin - get-operator command', () => {
       keyRefId: 'kr_test123',
     });
     kmsService.get.mockImplementation(() => {
-      throw new Error('KMS service error');
+      throw new InternalError('KMS service error');
     });
 
     const args = makeArgs(

@@ -1,7 +1,7 @@
 import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { OutputFormat } from '@/core/shared/types/output-format';
 
-import { Status } from '@/core';
+import { InternalError, Status } from '@/core';
 import { OutputServiceImpl } from '@/core/services/output/output-service';
 import { OutputFormatterFactory } from '@/core/services/output/strategies';
 import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
@@ -122,7 +122,7 @@ describe('OutputServiceImpl', () => {
     it('should propagate error when formatter.format throws', () => {
       getStrategyMock.mockReturnValue({
         format: jest.fn().mockImplementation(() => {
-          throw new Error('formatting failed');
+          throw new InternalError('formatting failed');
         }),
       });
 

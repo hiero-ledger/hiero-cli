@@ -2,6 +2,7 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { TransferFungibleTokenOutput } from './output';
 
+import { StateError } from '@/core';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 import {
@@ -67,7 +68,7 @@ export async function transferToken(
 
   const fromAccountId = resolvedFromAccount.accountId;
   if (!fromAccountId) {
-    throw new Error(
+    throw new StateError(
       `Could not resolve account ID for passed "from" argument ${validArgs.from?.type} from value ${validArgs.from?.rawValue}`,
     );
   }

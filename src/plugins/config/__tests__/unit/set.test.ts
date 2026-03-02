@@ -1,5 +1,6 @@
 import type { SetConfigOutput } from '@/plugins/config/commands/set/output';
 
+import { ConfigurationError } from '@/core';
 import { setConfigOption } from '@/plugins/config/commands/set/handler';
 
 import { enumOption } from './helpers/fixtures';
@@ -63,7 +64,7 @@ describe('config plugin - set', () => {
       listOptions: jest.fn().mockReturnValue([enumOption]),
       setOption: jest.fn().mockImplementation((_name, val) => {
         if (val !== 'local' && val !== 'local_encrypted') {
-          throw new Error('Invalid value for default_key_manager');
+          throw new ConfigurationError('Invalid value for default_key_manager');
         }
       }),
     });

@@ -52,7 +52,7 @@ export async function createNft(
     ['token:treasury'],
   );
   if (!treasury.accountId) {
-    throw new Error(
+    throw new StateError(
       `Could not resolve account ID for passed "treasury" argument for type ${validArgs.treasury?.type} from value ${validArgs.treasury?.rawValue}`,
     );
   }

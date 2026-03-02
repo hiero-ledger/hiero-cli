@@ -7,6 +7,7 @@ import type { CompilationParams } from '@/core/services/contract-compiler/types'
 import * as fs from 'fs';
 import * as path from 'path';
 
+import { InternalError } from '@/core';
 import { ContractCompilerServiceImpl } from '@/core/services/contract-compiler/contract-compiler-service';
 
 // Use a global object to store the mock compile function
@@ -168,7 +169,7 @@ describe('ContractCompilerServiceImpl', () => {
       mockReadFileSync
         .mockReturnValueOnce('imported content')
         .mockImplementationOnce(() => {
-          throw new Error('ENOENT');
+          throw new InternalError('ENOENT');
         })
         .mockReturnValueOnce('node module content');
 

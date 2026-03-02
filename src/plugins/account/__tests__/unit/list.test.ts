@@ -2,6 +2,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { ListAccountsOutput } from '@/plugins/account/commands/list';
 
 import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import { InternalError } from '@/core';
 import { listAccounts } from '@/plugins/account/commands/list/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -89,7 +90,7 @@ describe('account plugin - list command (ADR-003)', () => {
 
     MockedHelper.mockImplementation(() => ({
       listAccounts: jest.fn().mockImplementation(() => {
-        throw new Error('db error');
+        throw new InternalError('db error');
       }),
     }));
 

@@ -1,6 +1,13 @@
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
-import { StateError, TransactionError } from '@/core/errors';
+import {
+  InternalError,
+  NetworkError,
+  NotFoundError,
+  StateError,
+  TransactionError,
+  ValidationError,
+} from '@/core/errors';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createToken } from '@/plugins/token/commands/create-ft';
 import { createTokenFromFile } from '@/plugins/token/commands/create-ft-from-file';
@@ -63,7 +70,7 @@ describe('Token Plugin Error Handling', () => {
       const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest.fn().mockImplementation(() => {
-            throw new Error('Network timeout');
+            throw new NetworkError('Network timeout');
           }),
         },
         alias: makeTestAliasService(),
@@ -93,7 +100,7 @@ describe('Token Plugin Error Handling', () => {
           createTokenAssociationTransaction: jest
             .fn()
             .mockImplementation(() => {
-              throw new Error('Connection refused');
+              throw new NetworkError('Connection refused');
             }),
         },
         mirror: {
@@ -123,7 +130,7 @@ describe('Token Plugin Error Handling', () => {
       const { api } = makeApiMocks({
         tokenTransactions: {
           createTransferTransaction: jest.fn().mockImplementation(() => {
-            throw new Error('Network unreachable');
+            throw new NetworkError('Network unreachable');
           }),
         },
         mirror: {
@@ -168,7 +175,7 @@ describe('Token Plugin Error Handling', () => {
                 privateKey ===
                 '9999999999999999999999999999999999999999999999999999999999999999'
               ) {
-                throw new Error('Invalid private key format');
+                throw new ValidationError('Invalid private key format');
               }
               return {
                 keyRefId: 'valid-key-ref-id',
@@ -350,7 +357,7 @@ describe('Token Plugin Error Handling', () => {
           createTokenAssociationTransaction: jest
             .fn()
             .mockImplementation(() => {
-              throw new Error('Token not found');
+              throw new NotFoundError('Token not found');
             }),
         },
         mirror: {
@@ -519,7 +526,7 @@ describe('Token Plugin Error Handling', () => {
     test('should handle state service failures', async () => {
       // Arrange
       const mockSaveToken = jest.fn().mockImplementation(() => {
-        throw new Error('State service unavailable');
+        throw new InternalError('State service unavailable');
       });
 
       mockZustandTokenStateHelper(MockedHelper, {
@@ -587,7 +594,7 @@ describe('Token Plugin Error Handling', () => {
       const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest.fn().mockImplementation(() => {
-            throw new Error('Rate limit exceeded');
+            throw new InternalError('Rate limit exceeded');
           }),
         },
         alias: makeTestAliasService(),

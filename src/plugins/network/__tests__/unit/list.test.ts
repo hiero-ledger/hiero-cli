@@ -6,6 +6,7 @@ import {
   makeNetworkMock,
   setupExitSpy,
 } from '@/__tests__/mocks/mocks';
+import { NetworkError } from '@/core';
 import { listHandler } from '@/plugins/network/commands/list';
 import {
   checkMirrorNodeHealth,
@@ -115,7 +116,7 @@ describe('network plugin - list command', () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     networkService.getAvailableNetworks = jest.fn().mockImplementation(() => {
-      throw new Error('Network service error');
+      throw new NetworkError('Network service error');
     });
     const args = makeArgs({ network: networkService }, logger, {});
 

@@ -30,6 +30,7 @@ import type {
   TxExecutionService,
 } from '@/core/services/tx-execution/tx-execution-service.interface';
 
+import { ValidationError } from '@/core';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
@@ -618,9 +619,11 @@ export const makeKeyResolverMock = (
           network,
         );
         if (!resolved)
-          throw new Error('No account is associated with the name provided.');
+          throw new ValidationError(
+            'No account is associated with the name provided.',
+          );
         if (!resolved.publicKey || !resolved.keyRefId || !resolved.entityId) {
-          throw new Error(
+          throw new ValidationError(
             'The account associated with the alias does not have an associated private/public key or accountId',
           );
         }
@@ -631,7 +634,7 @@ export const makeKeyResolverMock = (
         };
       }
 
-      throw new Error('Invalid keyOrAlias');
+      throw new ValidationError('Invalid keyOrAlias');
     }),
 
   getOrInitKeyWithFallback: jest

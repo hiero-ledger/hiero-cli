@@ -1,7 +1,7 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
-import { StateError } from '@/core/errors';
+import { InternalError, StateError } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { createToken } from '@/plugins/token/commands/create-ft';
@@ -257,7 +257,7 @@ describe('createTokenHandler', () => {
       const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest.fn().mockImplementation(() => {
-            throw new Error('Service error');
+            throw new InternalError('Service error');
           }),
         },
         kms: {

@@ -12,7 +12,7 @@ import {
   makeNetworkMock,
   setupExitSpy,
 } from '@/__tests__/mocks/mocks';
-import { ValidationError } from '@/core/errors';
+import { NetworkError, ValidationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { setOperatorHandler } from '@/plugins/network/commands/set-operator';
@@ -253,7 +253,7 @@ describe('network plugin - set-operator command', () => {
     const aliasService = makeAliasMock();
 
     kmsService.importPrivateKey.mockImplementation(() => {
-      throw new Error('Invalid private key format');
+      throw new ValidationError('Invalid private key format');
     });
 
     const args = makeArgs(
@@ -281,7 +281,7 @@ describe('network plugin - set-operator command', () => {
     const aliasService = makeAliasMock();
 
     networkService.setOperator.mockImplementation(() => {
-      throw new Error('Network service error');
+      throw new NetworkError('Network service error');
     });
 
     const args = makeArgs(

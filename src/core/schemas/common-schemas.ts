@@ -29,7 +29,7 @@ const PRIVATE_KEY_PATTERN =
 // 1. ECDSA (secp256k1) Keys
 // ======================================================
 
-// Public key — ecdsa:<key> or raw 33 bytes (compressed) or DER (~70 bytes)
+// Public key — ecdsa:<key>, raw 33 bytes (compressed) or DER (~70 bytes)
 export const EcdsaPublicKeySchema = z
   .string()
   .trim()
@@ -39,7 +39,7 @@ export const EcdsaPublicKeySchema = z
     'Invalid ECDSA public key: use ecdsa:<key> or 33-byte compressed hex / DER encoding',
   );
 
-// Private key — ecdsa:<key> or raw 32 bytes (hex) or DER (~120 bytes)
+// Private key — ecdsa:<key>, raw 32 bytes (hex) or DER (~120 bytes)
 export const EcdsaPrivateKeySchema = z
   .string()
   .trim()
