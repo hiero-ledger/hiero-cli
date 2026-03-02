@@ -4,7 +4,7 @@ import type { ContractErc20CallSymbolOutput } from '@/plugins/contract-erc20/com
 import { ZodError } from 'zod';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
+import { StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { symbolFunctionCall as erc20SymbolHandler } from '@/plugins/contract-erc20/commands/symbol/handler';
@@ -44,12 +44,9 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
 
     const result = await erc20SymbolHandler(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    expect(result.result).toBeDefined();
 
-    const parsed = JSON.parse(
-      result.outputJson as string,
-    ) as ContractErc20CallSymbolOutput;
+    const parsed = result.result as ContractErc20CallSymbolOutput;
 
     expect(parsed.contractId).toBe('0.0.1234');
     expect(parsed.contractSymbol).toBe('HBAR');
@@ -71,7 +68,7 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
     );
   });
 
-  test('returns failure when contractQuery returns empty queryResult', async () => {
+  test('throws StateError when contractQuery returns empty queryResult', async () => {
     const args = makeContractErc20CallCommandArgs({ api, logger });
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
@@ -80,25 +77,17 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
       queryResult: [],
     });
 
-    const result = await erc20SymbolHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'There was a problem with decoding contract 0.0.1234 "symbol" function result',
-    );
+    await expect(erc20SymbolHandler(args)).rejects.toThrow(StateError);
   });
 
-  test('returns failure when queryContractFunction throws', async () => {
+  test('throws when queryContractFunction throws', async () => {
     const args = makeContractErc20CallCommandArgs({ api, logger });
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    const result = await erc20SymbolHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call symbol function: contract query error',
+    await expect(erc20SymbolHandler(args)).rejects.toThrow(
+      'contract query error',
     );
   });
 

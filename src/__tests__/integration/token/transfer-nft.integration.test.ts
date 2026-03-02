@@ -13,7 +13,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { createAccount } from '@/plugins/account';
 import { associateToken } from '@/plugins/token/commands/associate';
@@ -48,10 +48,8 @@ describe('Transfer NFT Integration Tests', () => {
         config: coreApi.config,
       });
 
-      expect(createSourceAccountResult.status).toBe(Status.Success);
-      const createSourceAccountOutput: CreateAccountOutput = JSON.parse(
-        createSourceAccountResult.outputJson!,
-      );
+      const createSourceAccountOutput =
+        createSourceAccountResult.result as CreateAccountOutput;
       expect(createSourceAccountOutput.name).toBe(
         'account-nft-transfer-source',
       );
@@ -74,10 +72,8 @@ describe('Transfer NFT Integration Tests', () => {
         config: coreApi.config,
       });
 
-      expect(createDestinationAccountResult.status).toBe(Status.Success);
-      const createDestinationAccountOutput: CreateAccountOutput = JSON.parse(
-        createDestinationAccountResult.outputJson!,
-      );
+      const createDestinationAccountOutput =
+        createDestinationAccountResult.result as CreateAccountOutput;
       expect(createDestinationAccountOutput.name).toBe(
         'account-nft-transfer-destination',
       );
@@ -103,10 +99,7 @@ describe('Transfer NFT Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(createNftResult.status).toBe(Status.Success);
-      const createNftOutput: CreateNftOutput = JSON.parse(
-        createNftResult.outputJson!,
-      );
+      const createNftOutput = createNftResult.result as CreateNftOutput;
       expect(createNftOutput.network).toBe(network);
       expect(createNftOutput.name).toBe('Test NFT Transfer Collection');
       expect(createNftOutput.alias).toBe('test-nft-transfer-collection');
@@ -136,10 +129,7 @@ describe('Transfer NFT Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(mintNftResult.status).toBe(Status.Success);
-      const mintNftOutput: MintNftOutput = JSON.parse(
-        mintNftResult.outputJson!,
-      );
+      const mintNftOutput = mintNftResult.result as MintNftOutput;
       expect(mintNftOutput.tokenId).toBe(createNftOutput.tokenId);
       expect(mintNftOutput.serialNumber).toBeDefined();
       expect(mintNftOutput.network).toBe(network);
@@ -158,10 +148,8 @@ describe('Transfer NFT Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(associateTokenResult.status).toBe(Status.Success);
-      const associateTokenOutput: AssociateTokenOutput = JSON.parse(
-        associateTokenResult.outputJson!,
-      );
+      const associateTokenOutput =
+        associateTokenResult.result as AssociateTokenOutput;
       expect(associateTokenOutput.tokenId).toBe(createNftOutput.tokenId);
       expect(associateTokenOutput.accountId).toBe(
         createDestinationAccountOutput.accountId,
@@ -181,10 +169,8 @@ describe('Transfer NFT Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(viewTokenBeforeTransferResult.status).toBe(Status.Success);
-      const viewTokenBeforeTransferOutput: ViewTokenOutput = JSON.parse(
-        viewTokenBeforeTransferResult.outputJson!,
-      );
+      const viewTokenBeforeTransferOutput =
+        viewTokenBeforeTransferResult.result as ViewTokenOutput;
       expect(viewTokenBeforeTransferOutput.tokenId).toBe(
         createNftOutput.tokenId,
       );
@@ -211,10 +197,7 @@ describe('Transfer NFT Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(transferNftResult.status).toBe(Status.Success);
-      const transferNftOutput: TransferNftOutput = JSON.parse(
-        transferNftResult.outputJson!,
-      );
+      const transferNftOutput = transferNftResult.result as TransferNftOutput;
       expect(transferNftOutput.tokenId).toBe(createNftOutput.tokenId);
       expect(transferNftOutput.from).toBe(createSourceAccountOutput.accountId);
       expect(transferNftOutput.to).toBe(
@@ -239,10 +222,8 @@ describe('Transfer NFT Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(viewTokenAfterTransferResult.status).toBe(Status.Success);
-      const viewTokenAfterTransferOutput: ViewTokenOutput = JSON.parse(
-        viewTokenAfterTransferResult.outputJson!,
-      );
+      const viewTokenAfterTransferOutput =
+        viewTokenAfterTransferResult.result as ViewTokenOutput;
       expect(viewTokenAfterTransferOutput.tokenId).toBe(
         createNftOutput.tokenId,
       );
@@ -255,7 +236,7 @@ describe('Transfer NFT Integration Tests', () => {
       expect(viewTokenAfterTransferOutput.nftSerial?.metadata).toBe(
         'Test NFT Transfer Metadata',
       );
-    }, 60000);
+    }, 120000);
   });
 
   describe('Invalid Transfer NFT Scenarios', () => {
@@ -274,10 +255,8 @@ describe('Transfer NFT Integration Tests', () => {
         config: coreApi.config,
       });
 
-      expect(createAccountResult.status).toBe(Status.Success);
-      const createAccountOutput: CreateAccountOutput = JSON.parse(
-        createAccountResult.outputJson!,
-      );
+      const createAccountOutput =
+        createAccountResult.result as CreateAccountOutput;
       expect(createAccountOutput.name).toBe('account-nft-not-owned-test');
       expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
       expect(createAccountOutput.network).toBe(network);
@@ -301,10 +280,7 @@ describe('Transfer NFT Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(createNftResult.status).toBe(Status.Success);
-      const createNftOutput: CreateNftOutput = JSON.parse(
-        createNftResult.outputJson!,
-      );
+      const createNftOutput = createNftResult.result as CreateNftOutput;
 
       await delay(5000);
 
@@ -320,10 +296,7 @@ describe('Transfer NFT Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(mintNftResult.status).toBe(Status.Success);
-      const mintNftOutput: MintNftOutput = JSON.parse(
-        mintNftResult.outputJson!,
-      );
+      const mintNftOutput = mintNftResult.result as MintNftOutput;
 
       await delay(5000);
 
@@ -333,14 +306,13 @@ describe('Transfer NFT Integration Tests', () => {
         'key-type': 'ecdsa',
         'auto-associations': 10,
       };
-      const createAnotherAccountResult = await createAccount({
+      await createAccount({
         args: createAnotherAccountArgs,
         api: coreApi,
         state: coreApi.state,
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(createAnotherAccountResult.status).toBe(Status.Success);
 
       await delay(5000);
 
@@ -350,16 +322,16 @@ describe('Transfer NFT Integration Tests', () => {
         to: 'account-nft-not-owned-test',
         serials: mintNftOutput.serialNumber,
       };
-      const transferNftResult = await transferNft({
-        args: transferNftArgs,
-        api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
-      });
-      expect(transferNftResult.status).toBe(Status.Failure);
-      expect(transferNftResult.errorMessage).toContain('is not owned by');
-    });
+      await expect(
+        transferNft({
+          args: transferNftArgs,
+          api: coreApi,
+          state: coreApi.state,
+          logger: coreApi.logger,
+          config: coreApi.config,
+        }),
+      ).rejects.toThrow('NFT not owned by sender');
+    }, 90000);
 
     it('should fail validation when trying to transfer more than 10 serials', async () => {
       const transferNftArgs: Record<string, unknown> = {

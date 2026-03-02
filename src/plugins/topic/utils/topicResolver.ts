@@ -5,6 +5,7 @@
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
+import { NotFoundError, StateError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
 
 /**
@@ -33,14 +34,16 @@ export function resolveTopicId(
   );
 
   if (!topicAliasResult) {
-    throw new Error(
+    throw new NotFoundError(
       `Topic alias "${topicIdOrAlias}" not found for network ${currentNetwork}. Please provide either a valid topic alias or topic ID.`,
+      { context: { alias: topicIdOrAlias, network: currentNetwork } },
     );
   }
 
   if (!topicAliasResult.entityId) {
-    throw new Error(
+    throw new StateError(
       `Topic alias "${topicIdOrAlias}" does not have an associated topic ID.`,
+      { context: { alias: topicIdOrAlias } },
     );
   }
 

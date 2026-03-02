@@ -6,7 +6,7 @@ import type { RemoveCredentialsOutput } from '@/plugins/credentials/commands/rem
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { listCredentials, removeCredentials } from '@/plugins/credentials';
 
 describe('Credentials Integration Tests', () => {
@@ -27,52 +27,40 @@ describe('Credentials Integration Tests', () => {
       createdAt: new Date().toISOString(),
     };
     coreApi.state.set('kms-credentials', record.keyRefId, record);
-    const listCredentialsResult = await listCredentials({
+
+    const listResult = await listCredentials({
       args: {},
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(listCredentialsResult.status).toBe(Status.Success);
-    const listCredentialsOutput: ListCredentialsOutput = JSON.parse(
-      listCredentialsResult.outputJson!,
-    );
-    const credentialNames = listCredentialsOutput.credentials.map(
-      (credential) => credential.keyRefId,
-    );
+    const listOutput = listResult.result as ListCredentialsOutput;
+    const credentialNames = listOutput.credentials.map((c) => c.keyRefId);
     expect(credentialNames).toContain('test-key');
-    const removeCredentialsArgs: Record<string, unknown> = {
-      id: 'test-key',
-    };
-    const removeCredentialsResult = await removeCredentials({
-      args: removeCredentialsArgs,
+
+    const removeResult = await removeCredentials({
+      args: { id: 'test-key' },
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(removeCredentialsResult.status).toBe(Status.Success);
-    const removeCredentialsOutput: RemoveCredentialsOutput = JSON.parse(
-      removeCredentialsResult.outputJson!,
-    );
-    expect(removeCredentialsOutput.keyRefId).toBe('test-key');
-    expect(removeCredentialsOutput.removed).toBe(true);
-    const listCredentialsAfterRemovalResult = await listCredentials({
+    const removeOutput = removeResult.result as RemoveCredentialsOutput;
+    expect(removeOutput.keyRefId).toBe('test-key');
+    expect(removeOutput.removed).toBe(true);
+
+    const listAfterResult = await listCredentials({
       args: {},
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(listCredentialsAfterRemovalResult.status).toBe(Status.Success);
-    const listCredentialsAfterRemovalOutput: ListCredentialsOutput = JSON.parse(
-      listCredentialsAfterRemovalResult.outputJson!,
+    const listAfterOutput = listAfterResult.result as ListCredentialsOutput;
+    const credentialNamesAfterRemoval = listAfterOutput.credentials.map(
+      (c) => c.keyRefId,
     );
-    const credentialNamesAfterRemoval =
-      listCredentialsAfterRemovalOutput.credentials.map(
-        (credential) => credential.keyRefId,
-      );
     expect(credentialNamesAfterRemoval).not.toContain('test-key');
   });
 });

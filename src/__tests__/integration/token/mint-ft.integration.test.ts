@@ -9,10 +9,10 @@ import type { MintFtOutput } from '@/plugins/token/commands/mint-ft';
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
-import { delay } from '@/__tests__/utils/common-utils';
+import { delay, waitFor } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
   createAccount,
@@ -46,10 +46,8 @@ describe('Mint FT Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(createAccountResult.status).toBe(Status.Success);
-    const createAccountOutput: CreateAccountOutput = JSON.parse(
-      createAccountResult.outputJson!,
-    );
+    const createAccountOutput =
+      createAccountResult.result as CreateAccountOutput;
     expect(createAccountOutput.name).toBe('account-mint-ft');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -66,12 +64,9 @@ describe('Mint FT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(viewAccountResult.status).toBe(Status.Success);
-    const viewAccountOutput: ViewAccountOutput = JSON.parse(
-      viewAccountResult.outputJson!,
-    );
+    const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
-    expect(viewAccountOutput.balance).toBe('100000000');
+    expect(viewAccountOutput.balance).toBe(100000000n);
     expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
     expect(viewAccountOutput.publicKey).toBe(createAccountOutput.publicKey);
 
@@ -91,10 +86,8 @@ describe('Mint FT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(createTokenResult.status).toBe(Status.Success);
-    const createTokenOutput: CreateFungibleTokenOutput = JSON.parse(
-      createTokenResult.outputJson!,
-    );
+    const createTokenOutput =
+      createTokenResult.result as CreateFungibleTokenOutput;
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('100');
@@ -104,31 +97,29 @@ describe('Mint FT Integration Tests', () => {
     expect(createTokenOutput.symbol).toBe('TTM');
     expect(createTokenOutput.supplyType).toBe(SupplyType.INFINITE);
 
-    await delay(5000);
-
     const accountBalanceBeforeMintArgs: Record<string, unknown> = {
       account: 'account-mint-ft',
       hbarOnly: false,
       token: createTokenOutput.tokenId,
     };
-    const accountBalanceBeforeMintResult = await getAccountBalance({
-      args: accountBalanceBeforeMintArgs,
-      api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
-    });
-    expect(accountBalanceBeforeMintResult.status).toBe(Status.Success);
-    const accountBalanceBeforeMintOutput: AccountBalanceOutput = JSON.parse(
-      accountBalanceBeforeMintResult.outputJson!,
+    const accountBalanceBeforeMintOutput = await waitFor(
+      () =>
+        getAccountBalance({
+          args: accountBalanceBeforeMintArgs,
+          api: coreApi,
+          state: coreApi.state,
+          logger: coreApi.logger,
+          config: coreApi.config,
+        }).then((r) => r.result as AccountBalanceOutput),
+      (output) => (output.tokenBalances?.length ?? 0) > 0,
     );
     expect(accountBalanceBeforeMintOutput.tokenBalances?.length).toBe(1);
     expect(accountBalanceBeforeMintOutput.tokenBalances?.at(0)?.tokenId).toBe(
       createTokenOutput.tokenId,
     );
-    const balanceBeforeMint =
-      accountBalanceBeforeMintOutput.tokenBalances?.at(0)?.balance;
-    expect(balanceBeforeMint).toBe('100');
+    expect(accountBalanceBeforeMintOutput.tokenBalances?.at(0)?.balance).toBe(
+      100n,
+    );
 
     await delay(5000);
 
@@ -144,37 +135,34 @@ describe('Mint FT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(mintFtResult.status).toBe(Status.Success);
-    const mintFtOutput: MintFtOutput = JSON.parse(mintFtResult.outputJson!);
+    const mintFtOutput = mintFtResult.result as MintFtOutput;
     expect(mintFtOutput.tokenId).toBe(createTokenOutput.tokenId);
-    expect(mintFtOutput.amount).toBe('50');
+    expect(mintFtOutput.amount).toBe(50n);
     expect(mintFtOutput.network).toBe(network);
     expect(mintFtOutput.transactionId).toBeDefined();
-
-    await delay(5000);
 
     const accountBalanceAfterMintArgs: Record<string, unknown> = {
       account: 'account-mint-ft',
       hbarOnly: false,
       token: createTokenOutput.tokenId,
     };
-    const accountBalanceAfterMintResult = await getAccountBalance({
-      args: accountBalanceAfterMintArgs,
-      api: coreApi,
-      state: coreApi.state,
-      logger: coreApi.logger,
-      config: coreApi.config,
-    });
-    expect(accountBalanceAfterMintResult.status).toBe(Status.Success);
-    const accountBalanceAfterMintOutput: AccountBalanceOutput = JSON.parse(
-      accountBalanceAfterMintResult.outputJson!,
+    const accountBalanceAfterMintOutput = await waitFor(
+      () =>
+        getAccountBalance({
+          args: accountBalanceAfterMintArgs,
+          api: coreApi,
+          state: coreApi.state,
+          logger: coreApi.logger,
+          config: coreApi.config,
+        }).then((r) => r.result as AccountBalanceOutput),
+      (output) => output.tokenBalances?.at(0)?.balance === 150n,
     );
     expect(accountBalanceAfterMintOutput.tokenBalances?.length).toBe(1);
     expect(accountBalanceAfterMintOutput.tokenBalances?.at(0)?.tokenId).toBe(
       createTokenOutput.tokenId,
     );
-    const balanceAfterMint =
-      accountBalanceAfterMintOutput.tokenBalances?.at(0)?.balance;
-    expect(balanceAfterMint).toBe('150');
+    expect(accountBalanceAfterMintOutput.tokenBalances?.at(0)?.balance).toBe(
+      150n,
+    );
   });
 });

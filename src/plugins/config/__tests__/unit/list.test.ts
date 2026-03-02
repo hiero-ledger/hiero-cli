@@ -1,4 +1,5 @@
-import { Status } from '@/core/shared/constants';
+import type { ListConfigOutput } from '@/plugins/config/commands/list/output';
+
 import { listConfigOptions } from '@/plugins/config/commands/list/handler';
 
 import { booleanOption, enumOption } from './helpers/fixtures';
@@ -17,11 +18,10 @@ describe('config plugin - list', () => {
     const args = makeCommandArgs({ api });
 
     const result = await listConfigOptions(args);
-    expect(result.status).toBe(Status.Success);
-    const parsed = JSON.parse(result.outputJson as string);
+    const output = result.result as ListConfigOutput;
 
-    expect(parsed.totalCount).toBe(2);
-    expect(parsed.options).toEqual(
+    expect(output.totalCount).toBe(2);
+    expect(output.options).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           name: 'default_key_manager',

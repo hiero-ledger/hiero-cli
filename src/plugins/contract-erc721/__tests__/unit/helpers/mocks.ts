@@ -15,12 +15,13 @@ import type { IdentityResolutionService } from '@/core/services/identity-resolut
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
+import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
 import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 
+import { MOCK_CONTRACT_ID } from '@/__tests__/mocks/fixtures';
 import {
   createMirrorNodeMock,
   makeAliasMock,
@@ -33,6 +34,7 @@ import {
   makeSigningMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 /**
  * Create a mocked Logger
@@ -62,7 +64,7 @@ export interface ApiMocksConfig {
  * identityResolution, contractQuery, and contract. Pass overrides in config to customize.
  */
 export const makeApiMocks = (config?: ApiMocksConfig) => {
-  const network = makeNetworkMock(config?.network ?? 'testnet');
+  const network = makeNetworkMock(config?.network ?? SupportedNetwork.TESTNET);
   const alias = {
     ...makeAliasMock(),
     ...config?.alias,
@@ -75,7 +77,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     ...makeIdentityResolutionServiceMock(),
     resolveReferenceToEntityOrEvmAddress: jest
       .fn()
-      .mockReturnValue({ entityIdOrEvmAddress: '0.0.1234' }),
+      .mockReturnValue({ entityIdOrEvmAddress: MOCK_CONTRACT_ID }),
   };
   const identityResolution = {
     ...defaultIdentityResolution,
@@ -85,7 +87,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
   const defaultContractQuery = {
     ...makeContractQueryServiceMock(),
     queryContractFunction: jest.fn().mockResolvedValue({
-      contractId: '0.0.1234',
+      contractId: MOCK_CONTRACT_ID,
       queryResult: [18],
     }),
   };
@@ -133,7 +135,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       transferTinybar: jest.fn(),
     } as jest.Mocked<HbarService>,
     output: {
-      handleCommandOutput: jest.fn(),
+      handleOutput: jest.fn<never, [OutputHandlerOptions]>(),
       getFormat: jest.fn().mockReturnValue('human'),
       setFormat: jest.fn(),
       emptyLine: jest.fn(),

@@ -54,11 +54,7 @@ src/plugins/account/
 
 ## 🚀 Commands
 
-All commands return `CommandExecutionResult` with structured output that includes:
-
-- `status`: Success or failure status
-- `errorMessage`: Optional error message (present when status is not 'success')
-- `outputJson`: JSON string conforming to the output schema defined in `output.ts`
+All commands return `CommandResult` with structured output data in the `result` field. Errors are thrown as typed `CliError` instances and handled uniformly by the core framework.
 
 Each command defines a Zod schema for output validation and a Handlebars template for human-readable formatting.
 
@@ -130,13 +126,11 @@ The plugin uses the Core API services:
 
 ## 📤 Output Formatting
 
-All commands return structured output through the `CommandExecutionResult` interface:
+All commands return structured output through the `CommandResult` interface:
 
 ```typescript
-interface CommandExecutionResult {
-  status: 'success' | 'failure';
-  errorMessage?: string; // Present when status !== 'success'
-  outputJson?: string; // JSON string conforming to the output schema
+interface CommandResult {
+  result: object;
 }
 ```
 
@@ -146,7 +140,7 @@ interface CommandExecutionResult {
 - **Human Templates**: Handlebars templates provide human-readable output formatting
 - **Error Handling**: All errors are returned in the result structure, ensuring consistent error handling
 
-The `outputJson` field contains a JSON string that conforms to the Zod schema defined in each command's `output.ts` file, ensuring type safety and consistent output structure.
+The `result` field contains a structured object conforming to the Zod schema defined in each command's `output.ts` file, ensuring type safety and consistent output structure.
 
 Example output schema:
 

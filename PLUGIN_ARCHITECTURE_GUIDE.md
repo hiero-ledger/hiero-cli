@@ -154,62 +154,56 @@ Command handlers validate input **at the beginning**, before business logic. Val
 
 ```typescript
 import { CommandHandlerArgs } from '../../../core/plugins/plugin.interface';
-import { CommandExecutionResult } from '../../../core/plugins/plugin.types';
-import { Status } from '../../../core/shared/constants';
+import { CommandResult } from '../../../core/plugins/plugin.types';
+import { NotFoundError } from '@/core';
 import { MyPluginCreateInputSchema } from './input';
 import { MyPluginCreateOutputSchema } from './output';
 
 export async function createHandler(
   args: CommandHandlerArgs,
-): Promise<CommandExecutionResult> {
+): Promise<CommandResult> {
   const { api, logger, state } = args;
 
-  // Validate input FIRST, before try-catch
-  // ZodError is thrown if validation fails and caught by plugin manager
+  // Validate input FIRST - ZodError propagates to plugin manager automatically
   const validArgs = MyPluginCreateInputSchema.parse(args.args);
 
   logger.info(`Creating item: ${validArgs.name}`);
 
-  try {
-    // Business logic with validated data
-    const result = await api.account.createAccount({
-      name: validArgs.name,
-      balance: 1000,
-    });
+  // Business logic - throw CliError subclasses on failure, no try-catch needed
+  const result = await api.account.createAccount({
+    name: validArgs.name,
+    balance: 1000,
+  });
 
-    const output = MyPluginCreateOutputSchema.parse({
-      name: validArgs.name,
-      value: validArgs.value,
-      accountId: result.accountId,
-      createdAt: new Date().toISOString(),
-    });
-
-    state.set('my-plugin-data', validArgs.name, output);
-
-    return {
-      status: Status.Success,
-      outputJson: JSON.stringify(output),
-    };
-  } catch (error) {
-    return {
-      status: Status.Failure,
-      errorMessage: `Failed to create item: ${String(error)}`,
-    };
+  if (!result.accountId) {
+    throw new NotFoundError(`Failed to create account for: ${validArgs.name}`);
   }
+
+  const output = MyPluginCreateOutputSchema.parse({
+    name: validArgs.name,
+    value: validArgs.value,
+    accountId: result.accountId,
+    createdAt: new Date().toISOString(),
+  });
+
+  state.set('my-plugin-data', validArgs.name, output);
+
+  return { result: output };
 }
 ```
 
 **Validation flow:**
 
 1. Handler calls `InputSchema.parse(args.args)` **before** business logic
-2. If validation fails, Zod throws `ZodError`
-3. Plugin manager catches `ZodError` in try-catch around handler execution
-4. Error handler formats validation errors:
-   - **Text format**: Bulletpoint list of all validation errors
-   - **JSON format**: `{ status: "failure", errorMessage: "...", errors: [...] }`
-5. CLI exits with error code 1
+2. If validation fails, Zod throws `ZodError` — caught by plugin manager, formatted automatically
+3. CLI exits with error code 1
 
-**Never catch ZodError in handlers** - let it propagate to the plugin manager for consistent error formatting.
+**Error handling:**
+
+- Throw `CliError` subclasses (`NotFoundError`, `ValidationError`, `NetworkError`, etc.) for domain errors
+- The core framework catches all errors and formats them via `OutputService`
+- **Never catch ZodError** — let it propagate
+- **Never return `{status: Failure}`** — throw instead
 
 ### 4. State Management
 
@@ -290,19 +284,21 @@ Plugins interact with the Hedera network exclusively through the Core API. Comma
 - structured logging
 - output formatting
 
-- **How to use**: extract `api` from `CommandHandlerArgs` and call the service you need (e.g. `api.token.createTokenAssociationTransaction`, `api.mirror.getAccount`, `api.output.handleCommandOutput`).
+- **How to use**: extract `api` from `CommandHandlerArgs` and call the service you need (e.g. `api.token.createTokenAssociationTransaction`, `api.mirror.getAccount`, `api.output.handleOutput`).
 - **Best practice**: keep service usage close to business logic; avoid recreating SDK clients manually—Core API already manages credentials, network selection, and output handling.
 
 For a complete reference (interfaces, return types, advanced usage patterns), see [`docs/core-api.md`](docs/core-api.md).
 
 ## 🖨️ Output Formatting Pipeline
 
-Command handlers hand off their structured results to the Core API’s output service. Under the hood, `api.output.handleCommandOutput`:
+Handlers return `{ result: data }` — the core framework handles all serialization and formatting via `OutputService.handleOutput`. Under the hood:
 
-- parses `outputJson` (throws if the payload is not valid JSON);
-- selects the correct formatter strategy (`human` → template renderer, `json` → serializer) via `OutputFormatterFactory`;
-- applies the optional Handlebars-like template when rendering human output;
-- writes the final string either to stdout or to `--output <path>`.
+- On success: core calls `OutputService.handleOutput({ status: Success, data: result, template })`
+- On error: core catches thrown `CliError`, calls `OutputService.handleOutput({ status: Failure, data: error.toJSON(), template: error.getTemplate() })`
+- `OutputService` selects the formatter strategy (`human` → Handlebars template, `json` → serializer)
+- Final string written to stdout or `--output <path>`
+
+Handlers **never** call `OutputService` directly — they just return data or throw errors.
 
 ## 🧪 Testing Plugins
 
@@ -381,7 +377,7 @@ describe('Handler Integration', () => {
 
     // Create an item
     const createResult = await createHandler(createArgs);
-    expect(createResult.status).toBe(Status.Success);
+    expect(createResult.result).toBeDefined();
     expect(createArgs.state.set).toHaveBeenCalled();
 
     // List items (state mock returns list data)
@@ -389,19 +385,19 @@ describe('Handler Integration', () => {
     (listArgs.state.list as jest.Mock).mockReturnValue([{ name: 'test-item' }]);
 
     const listResult = await listHandler(listArgs);
-    expect(listResult.status).toBe(Status.Success);
-    expect(listResult.outputJson).toContain('test-item');
+    expect(listResult.result).toBeDefined();
   });
 });
 ```
 
 ### 3. Output Structure Compliance
 
-Ensure your plugins comply with the [ADR-003 command handler result contract](../docs/adr/ADR-003-command-handler-result-contract.md). This contract defines the structure that command handlers must return.
+Ensure your plugins comply with the [ADR-007 structured error handling contract](../docs/adr/ADR-007-structured-error-handling.md).
 
-- Write focused tests that assert every handler returns a `CommandExecutionResult` for both success and failure paths. See [`src/plugins/token/__tests__/unit/adr003-compliance.test.ts`](../src/plugins/token/__tests__/unit/adr003-compliance.test.ts) for a reusable pattern.
-- Mock the services injected via `CommandHandlerArgs` so you can inspect `status`, `errorMessage`, and `outputJson` without hitting the network or filesystem.
-- Treat regression tests for reserved option filtering and output schema validation as part of the output structure compliance test suite.
+- Write focused tests that assert every handler returns `{ result: ... }` on success and throws a `CliError` subclass on failure.
+- Mock the services injected via `CommandHandlerArgs` and assert `result` shape without hitting the network or filesystem.
+- For error paths, use `await expect(handler(args)).rejects.toThrow(XxxError)` pattern.
+- Treat reserved option filtering and output schema validation as part of the compliance test suite.
 
 ## 📦 Plugin Distribution
 
@@ -531,49 +527,53 @@ Always validate input using Zod schemas:
 ```typescript
 export async function myHandler(
   args: CommandHandlerArgs,
-): Promise<CommandExecutionResult> {
-  // Validate FIRST, before any business logic
+): Promise<CommandResult> {
+  const { logger } = args;
+
+  // Validate FIRST - ZodError propagates automatically, no try-catch needed
   const validArgs = MyInputSchema.parse(args.args);
 
   // Now use validated data with full type safety
   logger.info(`Processing ${validArgs.name}`);
 
   // ... business logic with validArgs
+
+  return { result: output };
 }
 ```
 
 **Important:**
 
-- Call `.parse()` **before** the try-catch block for business logic
-- Don't catch `ZodError` - let it propagate to plugin manager
+- Call `.parse()` **before** any business logic
+- Don't catch `ZodError` — let it propagate to plugin manager
 - Use common schemas from `src/core/schemas/common-schemas.ts`
 - Add descriptive validation messages
 
 ### 2. Error Handling
 
-Always handle errors gracefully:
+Throw typed `CliError` subclasses — no try-catch needed in handlers:
 
 ```typescript
+import { NotFoundError, NetworkError, ValidationError } from '@/core';
+
 export async function myHandler(
   args: CommandHandlerArgs,
-): Promise<CommandExecutionResult> {
-  const { logger } = args;
-
-  // Input validation (outside try-catch)
+): Promise<CommandResult> {
   const validArgs = MyInputSchema.parse(args.args);
 
-  try {
-    // Plugin business logic
-    return { status: Status.Success };
-  } catch (error) {
-    logger.error(`❌ Plugin error: ${String(error)}`);
-    return {
-      status: Status.Failure,
-      errorMessage: 'Operation failed – see logs for details',
-    };
+  const entity = await api.someService.find(validArgs.id);
+  if (!entity) {
+    throw new NotFoundError(`Entity not found: ${validArgs.id}`);
   }
+
+  // Service errors (NetworkError, etc.) propagate automatically
+  const result = await api.someService.execute(entity);
+
+  return { result };
 }
 ```
+
+**Available error types** (from `@/core`): `ValidationError`, `NotFoundError`, `NetworkError`, `AuthorizationError`, `ConfigurationError`, `TransactionError`, `StateError`, `FileError`.
 
 ### 3. State Management
 

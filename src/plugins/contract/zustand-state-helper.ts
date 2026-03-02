@@ -5,7 +5,6 @@
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
-import { toErrorMessage } from '@/core/utils/errors';
 import { CONTRACT_NAMESPACE } from '@/plugins/contract/manifest';
 
 import { type ContractData } from './schema';
@@ -47,7 +46,7 @@ export class ZustandContractStateHelper {
       );
     } catch (error) {
       this.logger.error(
-        `[CONTRACT STATE] Failed to delete contract ${contractId}: ${toErrorMessage(error)}`,
+        `[CONTRACT STATE] Failed to delete contract ${contractId}: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }
@@ -70,7 +69,7 @@ export class ZustandContractStateHelper {
       );
     } catch (error) {
       this.logger.error(
-        `[CONTRACT STATE] Failed to save contract ${contractId}: ${toErrorMessage(error)}`,
+        `[CONTRACT STATE] Failed to save contract ${contractId}`,
       );
       throw error;
     }
@@ -117,9 +116,7 @@ export class ZustandContractStateHelper {
       );
       return validContracts;
     } catch (error) {
-      this.logger.error(
-        `[CONTRACT STATE] Failed to list contracts: ${toErrorMessage(error)}`,
-      );
+      this.logger.error(`[CONTRACT STATE] Failed to list contracts`);
       throw error;
     }
   }

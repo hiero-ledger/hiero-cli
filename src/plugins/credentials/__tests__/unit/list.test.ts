@@ -1,34 +1,29 @@
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { ListCredentialsOutput } from '@/plugins/credentials/commands/list/output';
 
 import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
 import { listCredentials } from '@/plugins/credentials/commands/list/handler';
-
-// No process.exit usage in handler version
 
 describe('credentials plugin - list command', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  test('displays message when no credentials are stored', () => {
+  test('displays message when no credentials are stored', async () => {
     const logger = makeLogger();
     const kmsService = makeKmsMock();
-
     kmsService.list.mockReturnValue([]);
 
     const args = makeArgs({ kms: kmsService }, logger, {});
 
-    return listCredentials(args).then((result) => {
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      const output = JSON.parse(result.outputJson!);
-      expect(output.credentials).toHaveLength(0);
-      expect(output.totalCount).toBe(0);
-    });
+    const result = await listCredentials(args);
+    const output = result.result as ListCredentialsOutput;
+
+    expect(output.credentials).toHaveLength(0);
+    expect(output.totalCount).toBe(0);
   });
 
-  test('displays credentials when available', () => {
+  test('displays credentials when available', async () => {
     const logger = makeLogger();
     const kmsService = makeKmsMock();
 
@@ -50,40 +45,34 @@ describe('credentials plugin - list command', () => {
 
     const args = makeArgs({ kms: kmsService }, logger, {});
 
-    return listCredentials(args).then((result) => {
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      const output = JSON.parse(result.outputJson!);
-      expect(output.totalCount).toBe(2);
-      expect(output.credentials).toHaveLength(2);
-      expect(output.credentials[0]).toEqual(
-        expect.objectContaining({
-          keyRefId: 'kr_test123',
-          publicKey: 'pub-key-123',
-        }),
-      );
-      expect(output.credentials[1]).toEqual(
-        expect.objectContaining({
-          keyRefId: 'kr_test456',
-          publicKey: 'pub-key-456',
-        }),
-      );
-    });
+    const result = await listCredentials(args);
+    const output = result.result as ListCredentialsOutput;
+
+    expect(output.totalCount).toBe(2);
+    expect(output.credentials).toHaveLength(2);
+    expect(output.credentials[0]).toEqual(
+      expect.objectContaining({
+        keyRefId: 'kr_test123',
+        publicKey: 'pub-key-123',
+      }),
+    );
+    expect(output.credentials[1]).toEqual(
+      expect.objectContaining({
+        keyRefId: 'kr_test456',
+        publicKey: 'pub-key-456',
+      }),
+    );
   });
 
-  test('handles KMS service errors', () => {
+  test('propagates KMS service errors', async () => {
     const logger = makeLogger();
     const kmsService = makeKmsMock();
-
     kmsService.list.mockImplementation(() => {
       throw new Error('KMS service error');
     });
 
     const args = makeArgs({ kms: kmsService }, logger, {});
 
-    return listCredentials(args).then((result) => {
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to list credentials');
-    });
+    await expect(listCredentials(args)).rejects.toThrow('KMS service error');
   });
 });

@@ -7,20 +7,17 @@
  * - With --name: adds a default plugin by name (path resolved from CLI plugins dir).
  * - Fails if a plugin with the same name already exists in state.
  * - On success, creates a new PluginStateEntry with enabled = true.
- *
- * Follows ADR-003 contract: returns CommandExecutionResult.
  */
 import type {
-  CommandExecutionResult,
   CommandHandlerArgs,
+  CommandResult,
   PluginStateEntry,
 } from '@/core';
 import type { AddPluginOutput } from './output';
 
+import { StateError, ValidationError } from '@/core/errors';
 import { PluginManagementCreateStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { DEFAULT_PLUGIN_STATE } from '@/core/shared/config/cli-options';
-import { Status } from '@/core/shared/constants';
-import { formatError } from '@/core/utils/errors';
 import { getDefaultPluginPath } from '@/core/utils/get-default-plugin-path';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
@@ -30,7 +27,7 @@ import { AddPluginInputSchema } from './input';
 
 export async function addPlugin(
   args: CommandHandlerArgs,
-): Promise<CommandExecutionResult> {
+): Promise<CommandResult> {
   const { api, logger } = args;
 
   const validArgs = AddPluginInputSchema.parse(args.args);
@@ -39,10 +36,12 @@ export async function addPlugin(
   if (validArgs.name) {
     const defaultPluginNames = new Set(DEFAULT_PLUGIN_STATE.map((m) => m.name));
     if (!defaultPluginNames.has(validArgs.name)) {
-      return {
-        status: Status.Failure,
-        errorMessage: ERROR_MESSAGES.pluginNotDefault(validArgs.name),
-      };
+      throw new ValidationError(
+        ERROR_MESSAGES.pluginNotDefault(validArgs.name),
+        {
+          context: { pluginName: validArgs.name },
+        },
+      );
     }
     pluginPath = getDefaultPluginPath(validArgs.name);
     logger.info(`➕ Adding default plugin: ${validArgs.name}...`);
@@ -51,50 +50,32 @@ export async function addPlugin(
     logger.info('➕ Adding plugin from path...');
   }
 
-  try {
-    const { resolvedPath, manifestPath } = await validatePluginPath(pluginPath);
+  const { resolvedPath, manifestPath } = await validatePluginPath(pluginPath);
 
-    logger.info(`🔍 Loading plugin manifest from: ${manifestPath}`);
+  logger.info(`🔍 Loading plugin manifest from: ${manifestPath}`);
 
-    const manifest = await loadPluginManifest(manifestPath);
-    const pluginName = manifest.name;
+  const manifest = await loadPluginManifest(manifestPath);
+  const pluginName = manifest.name;
 
-    const newEntry: PluginStateEntry = {
-      name: pluginName,
-      path: resolvedPath,
-      enabled: true,
-    };
-    const result = api.pluginManagement.addPlugin(newEntry);
+  const newEntry: PluginStateEntry = {
+    name: pluginName,
+    path: resolvedPath,
+    enabled: true,
+  };
+  const result = api.pluginManagement.addPlugin(newEntry);
 
-    if (result.status === PluginManagementCreateStatus.Duplicate) {
-      const outputData: AddPluginOutput = {
-        name: pluginName,
-        path: resolvedPath,
-        added: false,
-        message: `Plugin '${pluginName}' already exists in plugin-management state`,
-      };
-
-      return {
-        status: Status.Failure,
-        outputJson: JSON.stringify(outputData),
-      };
-    }
-
-    const outputData: AddPluginOutput = {
-      name: pluginName,
-      path: resolvedPath,
-      added: true,
-      message: `Plugin '${pluginName}' added and enabled successfully`,
-    };
-
-    return {
-      status: Status.Success,
-      outputJson: JSON.stringify(outputData),
-    };
-  } catch (error: unknown) {
-    return {
-      status: Status.Failure,
-      errorMessage: formatError('Failed to add plugin', error),
-    };
+  if (result.status === PluginManagementCreateStatus.Duplicate) {
+    throw new StateError(ERROR_MESSAGES.pluginAlreadyExists(pluginName), {
+      context: { pluginName, path: resolvedPath },
+    });
   }
+
+  const outputData: AddPluginOutput = {
+    name: pluginName,
+    path: resolvedPath,
+    added: true,
+    message: `Plugin '${pluginName}' added and enabled successfully`,
+  };
+
+  return { result: outputData };
 }
