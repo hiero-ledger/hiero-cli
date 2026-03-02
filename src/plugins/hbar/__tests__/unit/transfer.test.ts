@@ -1,9 +1,11 @@
+import type { TransferOutput } from '@/plugins/hbar/commands/transfer/output';
+
 import '@/core/utils/json-serialize';
 
 import { ZodError } from 'zod';
 
 import { makeArgs } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
+import { ValidationError } from '@/core/errors';
 import { transferHandler } from '@/plugins/hbar/commands/transfer';
 import { TransferInputSchema } from '@/plugins/hbar/commands/transfer/input';
 
@@ -41,8 +43,12 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const result = await transferHandler(args);
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    const output = result.result as TransferOutput;
+
+    expect(output.transactionId).toBe(
+      mockTransactionResults.success.transactionId,
+    );
+    expect(output.toAccountId).toBe(mockAccountIds.receiver);
 
     expect(hbar.transferTinybar).toHaveBeenCalledWith({
       amount: mockParsedBalances.large,
@@ -88,12 +94,7 @@ describe('hbar plugin - transfer command (unit)', () => {
       to: mockAccountIds.receiver,
     });
 
-    // Zod schema validation should reject amount=0
-    const result = await transferHandler(args);
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Transfer amount must be greater than zero',
-    );
+    await expect(transferHandler(args)).rejects.toThrow(ZodError);
   });
 
   test('succeeds when valid params provided (no default accounts check)', async () => {
@@ -113,9 +114,9 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const result = await transferHandler(args);
-    expect(result.status).toBe(Status.Success);
+    const output = result.result as TransferOutput;
 
-    // This test should actually succeed now since we're providing valid parameters
+    expect(output).toBeDefined();
     expect(logger.info).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
   });
 
@@ -140,9 +141,7 @@ describe('hbar plugin - transfer command (unit)', () => {
       to: 'same-account',
     });
 
-    const result = await transferHandler(args);
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Cannot transfer');
+    await expect(transferHandler(args)).rejects.toThrow(ValidationError);
   });
 
   test('returns failure when transferTinybar fails', async () => {
@@ -159,9 +158,9 @@ describe('hbar plugin - transfer command (unit)', () => {
       memo: 'test-transfer',
     });
 
-    const result = await transferHandler(args);
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Network connection failed');
+    await expect(transferHandler(args)).rejects.toThrow(
+      'Network connection failed',
+    );
   });
 
   test('returns failure when from is just account ID without private key', () => {
@@ -193,9 +192,10 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const result = await transferHandler(args);
-    expect(result.status).toBe(Status.Success);
+    const output = result.result as TransferOutput;
 
-    // The transfer command uses the default operator from the signing service
+    expect(output).toBeDefined();
+
     expect(hbar.transferTinybar).toHaveBeenCalledWith({
       amount: mockParsedBalances.medium,
       from: mockAccountIds.default,

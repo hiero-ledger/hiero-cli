@@ -8,7 +8,6 @@ import '@/core/utils/json-serialize';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { Status } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { createToken, listTokens } from '@/plugins/token';
 
@@ -36,10 +35,8 @@ describe('List Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(createTokenResult.status).toBe(Status.Success);
-    const createTokenOutput: CreateFungibleTokenOutput = JSON.parse(
-      createTokenResult.outputJson!,
-    );
+    const createTokenOutput =
+      createTokenResult.result as CreateFungibleTokenOutput;
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('10');
@@ -59,10 +56,7 @@ describe('List Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(listTokenResult.status).toBe(Status.Success);
-    const listTokenOutput: ListTokensOutput = JSON.parse(
-      listTokenResult.outputJson!,
-    );
+    const listTokenOutput = listTokenResult.result as ListTokensOutput;
     const tokenNames = listTokenOutput.tokens.map((token) => token.tokenId);
     expect(tokenNames).toContain(createTokenOutput.tokenId);
   });

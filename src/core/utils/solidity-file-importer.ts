@@ -3,6 +3,8 @@ import type { SolcImportResult } from '@/core/services/contract-compiler/types';
 import fs from 'fs';
 import path from 'path';
 
+import { FileError } from '@/core/errors';
+
 type SoliditySourceMap = Record<string, string>;
 
 export function createFindImports(baseDir: string, contractRoot: string) {
@@ -51,10 +53,9 @@ export function scanSolidityFiles(
 
     return map;
   } catch (error) {
-    throw new Error(
-      `Failed to scan Solidity files under "${rootDir}": ${
-        error instanceof Error ? error.message : String(error)
-      }`,
-    );
+    throw new FileError(`Failed to scan Solidity files under "${rootDir}"`, {
+      cause: error,
+      context: { rootDir },
+    });
   }
 }

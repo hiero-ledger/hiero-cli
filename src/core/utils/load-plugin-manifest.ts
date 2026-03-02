@@ -2,6 +2,8 @@ import type { PluginManifest } from '@/core/plugins/plugin.types';
 
 import { createJiti } from 'jiti';
 
+import { ConfigurationError } from '@/core/errors';
+
 const jitiInstance = createJiti(__filename, {
   interopDefault: true,
 });
@@ -29,7 +31,7 @@ function extractManifest(moduleExports: unknown): PluginManifest {
     }
   }
 
-  throw new Error('No valid plugin manifest found.');
+  throw new ConfigurationError('No valid plugin manifest found.');
 }
 
 /**
@@ -46,9 +48,10 @@ export async function loadPluginManifest(
     const moduleExports = await jitiInstance.import(manifestPath);
     return extractManifest(moduleExports);
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      `Failed to load plugin manifest from ${manifestPath}: ${errorMessage}`,
+    if (error instanceof ConfigurationError) throw error;
+    throw new ConfigurationError(
+      `Failed to load plugin manifest from ${manifestPath}`,
+      { cause: error, context: { manifestPath } },
     );
   }
 }

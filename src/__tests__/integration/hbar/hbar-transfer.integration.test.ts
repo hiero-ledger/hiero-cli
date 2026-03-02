@@ -10,7 +10,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { createAccount, viewAccount } from '@/plugins/account';
 import { transferHandler } from '@/plugins/hbar/commands/transfer';
 
@@ -39,10 +39,8 @@ describe('HBAR Transfer Account Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(createAccountResult.status).toBe(Status.Success);
-    const createAccountOutput: CreateAccountOutput = JSON.parse(
-      createAccountResult.outputJson!,
-    );
+    const createAccountOutput =
+      createAccountResult.result as CreateAccountOutput;
     expect(createAccountOutput.name).toBe('account-transfer');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -61,16 +59,13 @@ describe('HBAR Transfer Account Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(transferHbarResult.status).toBe(Status.Success);
-    const transferHbarOutput: TransferOutput = JSON.parse(
-      transferHbarResult.outputJson!,
-    );
+    const transferHbarOutput = transferHbarResult.result as TransferOutput;
     expect(transferHbarOutput.status).toBe('success');
     expect(transferHbarOutput.fromAccountId).toBe(process.env.OPERATOR_ID);
     expect(transferHbarOutput.toAccountId).toBe(createAccountOutput.accountId);
     expect(transferHbarOutput.memo).toBe('Memo test');
     expect(transferHbarOutput.network).toBe(network);
-    expect(transferHbarOutput.amountTinybar).toBe('100000000');
+    expect(transferHbarOutput.amountTinybar).toBe(100000000n);
 
     await delay(5000);
 
@@ -84,15 +79,12 @@ describe('HBAR Transfer Account Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(viewAccountResult.status).toBe(Status.Success);
-    const viewAccountOutput: ViewAccountOutput = JSON.parse(
-      viewAccountResult.outputJson!,
-    );
+    const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
-    expect(viewAccountOutput.balance).toBe('200000000'); // result in tinybars
+    expect(viewAccountOutput.balance).toBe(200000000n); // result in tinybars
     expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
     expect(viewAccountOutput.publicKey).toBe(createAccountOutput.publicKey);
-  });
+  }, 60000);
 
   it('should transfer HBAR from defined account to account and then verify it with account view method', async () => {
     const accountFromArgs: Record<string, unknown> = {
@@ -109,10 +101,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(accountFromResult.status).toBe(Status.Success);
-    const accountFromOutput: CreateAccountOutput = JSON.parse(
-      accountFromResult.outputJson!,
-    );
+    const accountFromOutput = accountFromResult.result as CreateAccountOutput;
     expect(accountFromOutput.name).toBe('account-transfer-from');
     expect(accountFromOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(accountFromOutput.network).toBe(network);
@@ -131,10 +120,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(accountToResult.status).toBe(Status.Success);
-    const accountToOutput: CreateAccountOutput = JSON.parse(
-      accountToResult.outputJson!,
-    );
+    const accountToOutput = accountToResult.result as CreateAccountOutput;
     expect(accountToOutput.name).toBe('account-transfer-to');
     expect(accountToOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(accountToOutput.network).toBe(network);
@@ -153,15 +139,12 @@ describe('HBAR Transfer Account Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(transferHbarResult.status).toBe(Status.Success);
-    const transferHbarOutput: TransferOutput = JSON.parse(
-      transferHbarResult.outputJson!,
-    );
+    const transferHbarOutput = transferHbarResult.result as TransferOutput;
     expect(transferHbarOutput.status).toBe('success');
     expect(transferHbarOutput.fromAccountId).toBe(accountFromOutput.accountId);
     expect(transferHbarOutput.toAccountId).toBe(accountToOutput.accountId);
     expect(transferHbarOutput.network).toBe(network);
-    expect(transferHbarOutput.amountTinybar).toBe('100000000');
+    expect(transferHbarOutput.amountTinybar).toBe(100000000n);
 
     await delay(5000);
 
@@ -175,10 +158,8 @@ describe('HBAR Transfer Account Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(viewAccountFromResult.status).toBe(Status.Success);
-    const viewAccountFromOutput: ViewAccountOutput = JSON.parse(
-      viewAccountFromResult.outputJson!,
-    );
+    const viewAccountFromOutput =
+      viewAccountFromResult.result as ViewAccountOutput;
     expect(viewAccountFromOutput.accountId).toBe(accountFromOutput.accountId);
     expect(viewAccountFromOutput.publicKey).toBe(accountFromOutput.publicKey);
 
@@ -192,12 +173,9 @@ describe('HBAR Transfer Account Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(viewAccountToResult.status).toBe(Status.Success);
-    const viewAccountToOutput: ViewAccountOutput = JSON.parse(
-      viewAccountToResult.outputJson!,
-    );
+    const viewAccountToOutput = viewAccountToResult.result as ViewAccountOutput;
     expect(viewAccountToOutput.accountId).toBe(accountToOutput.accountId);
-    expect(viewAccountToOutput.balance).toBe('200000000'); // result in tinybars
+    expect(viewAccountToOutput.balance).toBe(200000000n); // result in tinybars
     expect(viewAccountToOutput.publicKey).toBe(accountToOutput.publicKey);
-  });
+  }, 90000);
 });

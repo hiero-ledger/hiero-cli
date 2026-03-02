@@ -1,7 +1,3 @@
-/**
- * Token File Helpers
- * Utility functions for reading and validating token definition files
- */
 import type { Logger } from '@/core';
 import type {
   FungibleTokenFileDefinition,
@@ -11,6 +7,7 @@ import type {
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
+import { FileError, ValidationError } from '@/core/errors';
 import {
   FungibleTokenFileSchema,
   NonFungibleTokenFileSchema,
@@ -33,8 +30,16 @@ export async function readAndValidateTokenFile(
   const filepath = resolveTokenFilePath(filename);
   logger.debug(`Reading token file from: ${filepath}`);
 
-  const fileContent = await fs.readFile(filepath, 'utf-8');
-  const raw = JSON.parse(fileContent) as unknown;
+  let raw: unknown;
+  try {
+    const fileContent = await fs.readFile(filepath, 'utf-8');
+    raw = JSON.parse(fileContent) as unknown;
+  } catch (error) {
+    throw new FileError(`Cannot read token file: ${filepath}`, {
+      context: { filepath },
+      cause: error,
+    });
+  }
 
   const parsed = FungibleTokenFileSchema.safeParse(raw);
   if (!parsed.success) {
@@ -42,7 +47,9 @@ export async function readAndValidateTokenFile(
     parsed.error.issues.forEach((issue) => {
       logger.error(`${issue.path.join('.') || '<root>'}: ${issue.message}`);
     });
-    throw new Error('Invalid token definition file');
+    throw new ValidationError('Invalid token definition file', {
+      context: { filepath },
+    });
   }
 
   return parsed.data;
@@ -55,8 +62,16 @@ export async function readAndValidateNftTokenFile(
   const filepath = resolveTokenFilePath(filename);
   logger.debug(`Reading NFT token file from: ${filepath}`);
 
-  const fileContent = await fs.readFile(filepath, 'utf-8');
-  const raw = JSON.parse(fileContent) as unknown;
+  let raw: unknown;
+  try {
+    const fileContent = await fs.readFile(filepath, 'utf-8');
+    raw = JSON.parse(fileContent) as unknown;
+  } catch (error) {
+    throw new FileError(`Cannot read NFT token file: ${filepath}`, {
+      context: { filepath },
+      cause: error,
+    });
+  }
 
   const parsed = NonFungibleTokenFileSchema.safeParse(raw);
   if (!parsed.success) {
@@ -64,7 +79,9 @@ export async function readAndValidateNftTokenFile(
     parsed.error.issues.forEach((issue) => {
       logger.error(`${issue.path.join('.') || '<root>'}: ${issue.message}`);
     });
-    throw new Error('Invalid NFT token definition file');
+    throw new ValidationError('Invalid NFT token definition file', {
+      context: { filepath },
+    });
   }
 
   return parsed.data;

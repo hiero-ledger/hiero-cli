@@ -11,6 +11,7 @@ import type {
 
 import * as Handlebars from 'handlebars';
 
+import { InternalError } from '@/core/errors';
 import { createHashscanLink } from '@/core/utils/hashscan-link';
 import { isStringifiable } from '@/core/utils/is-stringifiable';
 
@@ -145,9 +146,7 @@ export class TemplateOutputStrategy implements OutputFormatterStrategy {
       const template = Handlebars.compile(templateString);
       return template(data);
     } catch (error) {
-      throw new Error(
-        `Failed to render template: ${error instanceof Error ? error.message : String(error)}`,
-      );
+      throw new InternalError('Failed to render template', { cause: error });
     }
   }
 

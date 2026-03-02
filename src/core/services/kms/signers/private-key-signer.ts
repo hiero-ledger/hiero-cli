@@ -3,6 +3,7 @@ import type { Signer } from './signer.interface';
 
 import { PrivateKey } from '@hashgraph/sdk';
 
+import { ConfigurationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 
 /**
@@ -18,7 +19,7 @@ export class PrivateKeySigner implements Signer {
 
   sign(bytes: Uint8Array): Uint8Array {
     if (!this.secret.privateKey) {
-      throw new Error('Missing private key in secret');
+      throw new ConfigurationError('Missing private key in secret');
     }
 
     const privateKey =

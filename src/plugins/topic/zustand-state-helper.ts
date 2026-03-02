@@ -5,6 +5,8 @@
 import type { Logger, StateService } from '@/core';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
+import { ValidationError } from '@/core/errors';
+
 import { TOPIC_NAMESPACE } from './manifest';
 import { safeParseTopicData, type TopicData } from './schema';
 
@@ -31,7 +33,7 @@ export class ZustandTopicStateHelper {
       const errors = validation.error.issues
         .map((e) => `${e.path.join('.')}: ${e.message}`)
         .join(', ');
-      throw new Error(`Invalid topic data: ${errors}`);
+      throw new ValidationError(`Invalid topic data: ${errors}`);
     }
 
     this.state.set(this.namespace, name, topicData);

@@ -1,5 +1,7 @@
 import type BigNumber from 'bignumber.js';
 
+import { ValidationError } from '@/core/errors';
+
 /**
  * Converts a raw integer balance to human-readable decimal format.
  *
@@ -18,14 +20,16 @@ export function normalizeBalance(
 ): string {
   // Validate decimals parameter
   if (!Number.isInteger(decimals) || decimals < 0) {
-    throw new Error(
+    throw new ValidationError(
       `Decimals must be a non-negative integer, got: ${decimals}`,
     );
   }
 
   // Check for negative balance using BigNumber method
   if (balance.isNegative()) {
-    throw new Error(`Balance cannot be negative: ${balance.toString()}`);
+    throw new ValidationError(
+      `Balance cannot be negative: ${balance.toString()}`,
+    );
   }
 
   // Convert from raw units to decimal by dividing by 10^decimals

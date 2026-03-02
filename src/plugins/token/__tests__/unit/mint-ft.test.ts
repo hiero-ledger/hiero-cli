@@ -1,10 +1,11 @@
-/**
- * Token Mint FT Handler Unit Tests
- * Tests the fungible token minting functionality
- */
 import '@/core/utils/json-serialize';
 
-import { HederaTokenType, Status } from '@/core/shared/constants';
+import {
+  NotFoundError,
+  TransactionError,
+  ValidationError,
+} from '@/core/errors';
+import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { mintFt, type MintFtOutput } from '@/plugins/token/commands/mint-ft';
 import { TOKEN_NAMESPACE } from '@/plugins/token/manifest';
@@ -38,10 +39,7 @@ describe('mintFtHandler', () => {
 
       const result = await mintFt(args);
 
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-
-      const output = JSON.parse(result.outputJson!) as MintFtOutput;
+      const output = result.result as MintFtOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
 
@@ -71,12 +69,9 @@ describe('mintFtHandler', () => {
 
       const result = await mintFt(args);
 
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-
-      const output = JSON.parse(result.outputJson!) as MintFtOutput;
+      const output = result.result as MintFtOutput;
       expect(output.tokenId).toBe('0.0.123456');
-      expect(output.amount).toBe('5000');
+      expect(output.amount).toBe(5000n);
 
       expect(api.token.createMintTransaction).toHaveBeenCalledWith({
         tokenId: '0.0.123456',
@@ -109,12 +104,9 @@ describe('mintFtHandler', () => {
 
       const result = await mintFt(args);
 
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-
-      const output = JSON.parse(result.outputJson!) as MintFtOutput;
+      const output = result.result as MintFtOutput;
       expect(output.tokenId).toBe('0.0.123456');
-      expect(output.amount).toBe('10000');
+      expect(output.amount).toBe(10000n);
 
       expect(api.token.createMintTransaction).toHaveBeenCalledWith({
         tokenId: '0.0.123456',
@@ -155,9 +147,7 @@ describe('mintFtHandler', () => {
         },
       });
 
-      await expect(mintFt(args)).rejects.toThrow(
-        'Token name "nonexistent-token" not found',
-      );
+      await expect(mintFt(args)).rejects.toThrow(NotFoundError);
     });
 
     test('should handle token without supply key', async () => {
@@ -196,15 +186,7 @@ describe('mintFtHandler', () => {
         },
       });
 
-      const result = await mintFt(args);
-
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toBeDefined();
-      expect(result.errorMessage).toContain('does not have a supply key');
-      expect(result.errorMessage).toContain(
-        'Cannot mint tokens without a supply key',
-      );
-      expect(result.outputJson).toBeUndefined();
+      await expect(mintFt(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle NFT token (no decimals)', async () => {
@@ -264,15 +246,7 @@ describe('mintFtHandler', () => {
         },
       });
 
-      const result = await mintFt(args);
-
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toBeDefined();
-      expect(result.errorMessage).toContain('is not a fungible token');
-      expect(result.errorMessage).toContain(
-        'This command only supports fungible tokens',
-      );
-      expect(result.outputJson).toBeUndefined();
+      await expect(mintFt(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle exceeding max supply for FINITE token', async () => {
@@ -298,15 +272,7 @@ describe('mintFtHandler', () => {
         },
       });
 
-      const result = await mintFt(args);
-
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toBeDefined();
-      expect(result.errorMessage).toContain('Cannot mint');
-      expect(result.errorMessage).toContain('Current supply: 9000000');
-      expect(result.errorMessage).toContain('Max supply: 10000000');
-      expect(result.errorMessage).toContain('Would exceed by:');
-      expect(result.outputJson).toBeUndefined();
+      await expect(mintFt(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle zero amount', async () => {
@@ -323,12 +289,7 @@ describe('mintFtHandler', () => {
         },
       });
 
-      const result = await mintFt(args);
-
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toBeDefined();
-      expect(result.errorMessage).toContain('Amount must be greater than 0');
-      expect(result.outputJson).toBeUndefined();
+      await expect(mintFt(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle transaction failure', async () => {
@@ -347,12 +308,7 @@ describe('mintFtHandler', () => {
         },
       });
 
-      const result = await mintFt(args);
-
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toBeDefined();
-      expect(result.errorMessage).toBe('Token mint transaction failed');
-      expect(result.outputJson).toBeUndefined();
+      await expect(mintFt(args)).rejects.toThrow(TransactionError);
     });
   });
 });

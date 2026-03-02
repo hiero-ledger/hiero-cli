@@ -1,4 +1,5 @@
-import { Status } from '@/core/shared/constants';
+import type { GetConfigOutput } from '@/plugins/config/commands/get/output';
+
 import { getConfigOption } from '@/plugins/config/commands/get/handler';
 
 import { enumOption } from './helpers/fixtures';
@@ -21,15 +22,14 @@ describe('config plugin - get', () => {
     });
 
     const result = await getConfigOption(args);
-    expect(result.status).toBe(Status.Success);
-    const parsed = JSON.parse(result.outputJson as string);
-    expect(parsed.name).toBe('default_key_manager');
-    expect(parsed.type).toBe('enum');
-    expect(parsed.value).toBe('local');
-    expect(parsed.allowedValues).toEqual(['local', 'local_encrypted']);
+    const output = result.result as GetConfigOutput;
+    expect(output.name).toBe('default_key_manager');
+    expect(output.type).toBe('enum');
+    expect(output.value).toBe('local');
+    expect(output.allowedValues).toEqual(['local', 'local_encrypted']);
   });
 
-  test('fails when option param missing', async () => {
+  test('throws when getOption fails', async () => {
     const configSvc = makeConfigServiceMock({
       getOption: jest.fn().mockImplementation(() => {
         throw new Error('Option not found');
@@ -41,7 +41,7 @@ describe('config plugin - get', () => {
       api,
       args: { option: 'nonexistent_option' },
     });
-    const result = await getConfigOption(args);
-    expect(result.status).toBe(Status.Failure);
+
+    await expect(getConfigOption(args)).rejects.toThrow('Option not found');
   });
 });

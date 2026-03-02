@@ -1,3 +1,4 @@
+import { ValidationError } from '@/core/errors';
 import { HBAR_DECIMALS, TOKEN_BALANCE_LIMIT } from '@/core/shared/constants';
 
 import { processBalanceInput } from './process-balance-input';
@@ -8,7 +9,7 @@ export function processTokenBalanceInput(
 ): bigint {
   const balance = processBalanceInput(input, decimals);
   if (balance > TOKEN_BALANCE_LIMIT) {
-    throw new Error(
+    throw new ValidationError(
       `Maximum balance for token exceeded. Token balance cannot be greater than ${TOKEN_BALANCE_LIMIT}`,
     );
   }
