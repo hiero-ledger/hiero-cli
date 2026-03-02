@@ -6,6 +6,7 @@ import type { CreateNftFromFileOutput } from './output';
 import { PublicKey } from '@hashgraph/sdk';
 
 import { StateError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { composeKey } from '@/core/utils/key-composer';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
@@ -166,7 +167,7 @@ export async function createNftFromFile(
 
   api.alias.register({
     alias: tokenDefinition.name,
-    type: 'token',
+    type: AliasType.Token,
     network,
     entityId: result.tokenId,
     createdAt: result.consensusTimestamp,

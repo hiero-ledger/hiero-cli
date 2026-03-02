@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
@@ -68,21 +69,21 @@ describe('createNftHandler', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            if (type === 'account' && alias === 'treasury-account') {
+            if (type === AliasType.Account && alias === 'treasury-account') {
               return {
                 entityId: '0.0.123456',
                 publicKey: '302a300506032b6570032100' + '1'.repeat(64),
                 keyRefId: 'treasury-key-ref-id',
               };
             }
-            if (type === 'account' && alias === 'test-admin-key') {
+            if (type === AliasType.Account && alias === 'test-admin-key') {
               return {
                 entityId: '0.0.100000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),
                 keyRefId: 'admin-key-ref-id',
               };
             }
-            if (type === 'account' && alias === 'test-supply-key') {
+            if (type === AliasType.Account && alias === 'test-supply-key') {
               return {
                 entityId: '0.0.200000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),
@@ -225,21 +226,21 @@ describe('createNftHandler', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            if (type === 'account' && alias === 'treasury-account') {
+            if (type === AliasType.Account && alias === 'treasury-account') {
               return {
                 entityId: '0.0.123456',
                 publicKey: '302a300506032b6570032100' + '1'.repeat(64),
                 keyRefId: 'treasury-key-ref-id',
               };
             }
-            if (type === 'account' && alias === 'test-admin-key') {
+            if (type === AliasType.Account && alias === 'test-admin-key') {
               return {
                 entityId: '0.0.100000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),
                 keyRefId: 'admin-key-ref-id',
               };
             }
-            if (type === 'account' && alias === 'test-supply-key') {
+            if (type === AliasType.Account && alias === 'test-supply-key') {
               return {
                 entityId: '0.0.100000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),

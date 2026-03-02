@@ -10,6 +10,7 @@ import {
   makeNetworkMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -70,7 +71,7 @@ describe('topic plugin - import command (ADR-007)', () => {
     expect(alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
         alias: 'my-topic',
-        type: 'topic',
+        type: AliasType.Topic,
         network: SupportedNetwork.TESTNET,
         entityId: '0.0.123456',
       }),

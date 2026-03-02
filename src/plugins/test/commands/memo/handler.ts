@@ -2,6 +2,7 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { MemoTestOutput } from './output';
 
 import { NotFoundError, StateError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { MemoTestInputSchema } from '@/plugins/test/commands/memo/input';
 import { ZustandMemoStateHelper } from '@/plugins/test/zustand-state-helper';
 
@@ -17,7 +18,11 @@ export async function createMemo(
   const accountAlias = validArgs.account;
 
   const currentNetwork = api.network.getCurrentNetwork();
-  const account = api.alias.resolve(accountAlias, 'account', currentNetwork);
+  const account = api.alias.resolve(
+    accountAlias,
+    AliasType.Account,
+    currentNetwork,
+  );
 
   if (!account) {
     throw new NotFoundError(

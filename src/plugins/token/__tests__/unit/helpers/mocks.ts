@@ -30,6 +30,7 @@ import {
   makeIdentityResolutionServiceMock as makeGlobalIdentityResolutionServiceMock,
   makeKeyResolverMock as makeGlobalKeyResolverMock,
 } from '@/__tests__/mocks/mocks';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { InternalError, KeyAlgorithm } from '@/core';
 
 import { mockTransactionResults } from './fixtures';
@@ -199,7 +200,7 @@ export const makeAliasServiceMock = (
 ): jest.Mocked<AliasService> => ({
   register: jest.fn(),
   resolve: jest.fn().mockImplementation((alias, type) => {
-    if (type === 'account') {
+    if (type === AliasType.Account) {
       const accountAliases: Record<string, AliasAccountData> = {
         'admin-key': {
           entityId: '0.0.100000',
@@ -249,7 +250,7 @@ export const makeAliasServiceMock = (
       };
       return accountAliases[alias] || null;
     }
-    if (type === 'token') {
+    if (type === AliasType.Token) {
       const tokenAliases: Record<string, { entityId: string }> = {
         'my-token': { entityId: '0.0.12345' },
         'my-nft-collection': { entityId: '0.0.54321' },

@@ -2,7 +2,7 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { DeleteTokenOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -26,7 +26,7 @@ export async function deleteToken(
       entityReference: validArgs.token.value,
       referenceType: validArgs.token.type,
       network: currentNetwork,
-      aliasType: ALIAS_TYPE.Token,
+      aliasType: AliasType.Token,
     });
   const tokenId = resolvedToken.entityIdOrEvmAddress;
   const key = composeKey(currentNetwork, tokenId);
@@ -39,7 +39,7 @@ export async function deleteToken(
   }
 
   const aliasesForToken = api.alias
-    .list({ network: currentNetwork, type: ALIAS_TYPE.Token })
+    .list({ network: currentNetwork, type: AliasType.Token })
     .filter((rec) => rec.entityId === tokenToDelete.tokenId);
 
   const removedAliases: string[] = [];

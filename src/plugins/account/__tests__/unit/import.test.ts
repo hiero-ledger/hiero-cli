@@ -16,6 +16,7 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupportedNetwork } from '@/core';
 import { StateError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { ImportAccountOutputSchema } from '@/plugins/account/commands/import';
 import { importAccount } from '@/plugins/account/commands/import/handler';
@@ -72,7 +73,7 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
         alias: 'imported',
-        type: 'account',
+        type: AliasType.Account,
         network: 'testnet',
         entityId: '0.0.9999',
         publicKey: 'pub-key-test',

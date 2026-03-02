@@ -12,6 +12,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, ValidationError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
@@ -75,7 +76,7 @@ describe('network plugin - set-operator command', () => {
 
     aliasService.resolve.mockReturnValue({
       alias: 'testnet1',
-      type: 'account',
+      type: AliasType.Account,
       network: SupportedNetwork.TESTNET,
       entityId: '0.0.789012',
       keyRefId: 'kr_alias123',
@@ -94,7 +95,7 @@ describe('network plugin - set-operator command', () => {
 
     expect(aliasService.resolve).toHaveBeenCalledWith(
       'testnet1',
-      'account',
+      AliasType.Account,
       'testnet',
     );
     expect(networkService.setOperator).toHaveBeenCalledWith('testnet', {
@@ -225,7 +226,7 @@ describe('network plugin - set-operator command', () => {
 
     aliasService.resolve.mockReturnValue({
       alias: 'testnet1',
-      type: 'account',
+      type: AliasType.Account,
       network: SupportedNetwork.TESTNET,
       entityId: '0.0.789012',
       keyRefId: undefined,

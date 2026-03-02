@@ -3,7 +3,7 @@ import type { TopicData } from '@/plugins/topic/schema';
 import type { ImportTopicOutput } from './output';
 
 import { ValidationError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -42,7 +42,7 @@ export async function importTopic(
   if (alias) {
     api.alias.register({
       alias,
-      type: ALIAS_TYPE.Topic,
+      type: AliasType.Topic,
       network,
       entityId: topicId,
       createdAt: new Date().toISOString(),

@@ -12,6 +12,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError, StateError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { AccountBalanceOutputSchema } from '@/plugins/account/commands/balance';
 import { getAccountBalance } from '@/plugins/account/commands/balance/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -41,7 +42,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'token-account',
-          type: 'account',
+          type: AliasType.Account,
           network: 'testnet',
           entityId: '0.0.1234',
         }),
@@ -90,13 +91,13 @@ describe('account plugin - balance command (ADR-003)', () => {
           .fn()
           .mockReturnValueOnce({
             alias: 'token-account',
-            type: 'account',
+            type: AliasType.Account,
             network: 'testnet',
             entityId: '0.0.1234',
           })
           .mockReturnValueOnce({
             alias: 'token-alias',
-            type: 'token',
+            type: AliasType.Token,
             network: 'testnet',
             entityId: '0.0.7777',
           }),
@@ -139,7 +140,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'test-account',
-          type: 'account',
+          type: AliasType.Account,
           network: 'testnet',
           entityId: '0.0.1001',
         }),
@@ -178,7 +179,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc2',
-          type: 'account',
+          type: AliasType.Account,
           network: 'testnet',
           entityId: '0.0.2002',
         }),
@@ -225,7 +226,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     const alias = makeAliasMock();
     (alias.resolve as jest.Mock).mockReturnValue({
       alias: 'acc777',
-      type: 'account',
+      type: AliasType.Account,
       network: 'testnet',
       entityId: '0.0.7777',
       createdAt: new Date().toISOString(),
@@ -259,7 +260,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc3',
-          type: 'account',
+          type: AliasType.Account,
           network: 'testnet',
           entityId: '0.0.5005',
         }),
@@ -290,7 +291,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'acc4',
-          type: 'account',
+          type: AliasType.Account,
           network: 'testnet',
           entityId: '0.0.6006',
         }),
@@ -338,7 +339,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'test-acc',
-          type: 'account',
+          type: AliasType.Account,
           network: 'testnet',
           entityId: '0.0.1111',
         }),
@@ -373,7 +374,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'test-acc',
-          type: 'account',
+          type: AliasType.Account,
           network: 'testnet',
           entityId: '0.0.2002',
         }),
@@ -421,7 +422,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       alias: {
         resolve: jest.fn().mockReturnValue({
           alias: 'test-acc',
-          type: 'account',
+          type: AliasType.Account,
           network: 'testnet',
           entityId: '0.0.2002',
         }),

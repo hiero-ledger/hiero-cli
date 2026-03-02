@@ -3,7 +3,7 @@ import type { ContractData } from '@/plugins/contract/schema';
 import type { ImportContractOutput } from './output';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
@@ -51,7 +51,7 @@ export async function importContract(
   if (alias) {
     api.alias.register({
       alias,
-      type: ALIAS_TYPE.Contract,
+      type: AliasType.Contract,
       network,
       entityId: contractId,
       evmAddress: contractEvmAddress,

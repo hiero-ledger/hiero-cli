@@ -8,7 +8,7 @@ import type { DeleteAccountOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -49,7 +49,7 @@ export async function deleteAccount(
   }
 
   const aliasesForAccount = api.alias
-    .list({ network, type: ALIAS_TYPE.Account })
+    .list({ network, type: AliasType.Account })
     .filter((rec) => rec.entityId === accountToDelete.accountId);
 
   const removedAliases: string[] = [];

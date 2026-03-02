@@ -2,6 +2,7 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
 
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   viewToken,
@@ -121,7 +122,7 @@ describe('viewTokenHandler', () => {
 
       expect(alias.resolve).toHaveBeenCalledWith(
         'my-token',
-        'token',
+        AliasType.Token,
         'testnet',
       );
     });

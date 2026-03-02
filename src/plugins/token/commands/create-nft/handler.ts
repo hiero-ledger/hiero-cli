@@ -5,6 +5,7 @@ import type { CreateNftOutput } from '@/plugins/token/commands/create-nft/output
 import { PublicKey } from '@hashgraph/sdk';
 
 import { StateError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
@@ -135,7 +136,7 @@ export async function createNft(
   if (alias) {
     api.alias.register({
       alias,
-      type: 'token',
+      type: AliasType.Token,
       network: api.network.getCurrentNetwork(),
       entityId: result.tokenId,
       createdAt: result.consensusTimestamp,

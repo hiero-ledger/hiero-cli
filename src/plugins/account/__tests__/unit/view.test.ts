@@ -12,6 +12,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { ViewAccountOutputSchema } from '@/plugins/account/commands/view';
 import { viewAccount } from '@/plugins/account/commands/view/handler';
@@ -49,7 +50,7 @@ describe('account plugin - view command (ADR-003)', () => {
         ...makeAliasMock(),
         resolve: jest.fn().mockReturnValue({
           alias: 'acc1',
-          type: 'account',
+          type: AliasType.Account,
           network: 'testnet',
           entityId: '0.0.1111',
         }),
@@ -87,7 +88,7 @@ describe('account plugin - view command (ADR-003)', () => {
     const alias = makeAliasMock();
     (alias.resolve as jest.Mock).mockReturnValue({
       alias: 'acc2',
-      type: 'account',
+      type: AliasType.Account,
       network: 'testnet',
       entityId: '0.0.2222',
       createdAt: new Date().toISOString(),

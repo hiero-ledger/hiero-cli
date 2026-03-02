@@ -11,7 +11,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { DeleteTopicOutputSchema } from '@/plugins/topic/commands/delete';
 import { deleteTopic } from '@/plugins/topic/commands/delete/handler';
@@ -245,7 +245,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
 
     expect(alias.list).toHaveBeenCalledWith({
       network: SupportedNetwork.TESTNET,
-      type: ALIAS_TYPE.Topic,
+      type: AliasType.Topic,
     });
 
     expect(alias.remove).toHaveBeenCalledTimes(1);

@@ -9,6 +9,7 @@ import type { AccountData } from '@/plugins/account/schema';
 import type { ImportAccountOutput } from './output';
 
 import { StateError, ValidationError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -74,7 +75,7 @@ export async function importAccount(
   if (alias) {
     api.alias.register({
       alias,
-      type: 'account',
+      type: AliasType.Account,
       network: api.network.getCurrentNetwork(),
       entityId: accountId,
       evmAddress,

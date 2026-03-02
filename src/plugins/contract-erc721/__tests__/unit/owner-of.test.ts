@@ -11,6 +11,7 @@ import {
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { makeContractErc721CallCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
@@ -62,7 +63,7 @@ describe('contract-erc721 plugin - ownerOf command (unit)', () => {
         resolveByEvmAddress: jest.fn().mockReturnValue({
           alias: 'owner-alias',
           entityId: MOCK_ACCOUNT_ID,
-          type: 'account',
+          type: AliasType.Account,
           network: SupportedNetwork.TESTNET,
         }),
       },

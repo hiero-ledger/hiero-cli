@@ -11,6 +11,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -37,7 +38,7 @@ export async function submitMessage(
   let topicId = topicIdOrAlias;
   const topicAliasResult = api.alias.resolve(
     topicIdOrAlias,
-    'topic',
+    AliasType.Topic,
     currentNetwork,
   );
   if (topicAliasResult?.entityId) {

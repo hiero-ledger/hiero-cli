@@ -10,6 +10,7 @@ import {
   ED25519_HEX_PUBLIC_KEY,
 } from '@/__tests__/mocks/fixtures';
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, SupportedNetwork } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
@@ -82,7 +83,7 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
         alias: 'myAccount',
-        type: 'account',
+        type: AliasType.Account,
         network: 'testnet',
         entityId: '0.0.9999',
         publicKey: 'pub-key-test',
