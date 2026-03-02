@@ -33,10 +33,10 @@ export const CreateNftInputSchema = z
       'Maximum supply (required for FINITE supply type)',
     ),
     adminKey: PrivateKeySchema.optional().describe(
-      'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias. Defaults to operator key.',
+      'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Defaults to operator key.',
     ),
     supplyKey: KeySchema.optional().describe(
-      'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:{public-key} format, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias. Defaults to operator key.',
+      'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Defaults to operator key.',
     ),
     name: TokenAliasNameSchema.optional().describe(
       'Optional alias to register for the token',

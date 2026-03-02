@@ -29,48 +29,48 @@ const PRIVATE_KEY_PATTERN =
 // 1. ECDSA (secp256k1) Keys
 // ======================================================
 
-// Public key — ecdsa:<key>, raw 33 bytes (compressed) or DER (~70 bytes)
+// Public key — ecdsa:public:<key>, raw 33 bytes (compressed) or DER (~70 bytes)
 export const EcdsaPublicKeySchema = z
   .string()
   .trim()
-  .transform((s) => (s.startsWith('ecdsa:') ? s.slice(6) : s))
+  .transform((s) => (s.startsWith('ecdsa:public') ? s.slice(13) : s))
   .refine(
     (s) => PUBLIC_KEY_PATTERN.test(s),
-    'Invalid ECDSA public key: use ecdsa:<key> or 33-byte compressed hex / DER encoding',
+    'Invalid ECDSA public key: use ecdsa:public:<key> or 33-byte compressed hex / DER encoding',
   );
 
-// Private key — ecdsa:<key>, raw 32 bytes (hex) or DER (~120 bytes)
+// Private key — ecdsa:private:<key>, raw 32 bytes (hex) or DER (~120 bytes)
 export const EcdsaPrivateKeySchema = z
   .string()
   .trim()
-  .transform((s) => (s.startsWith('ecdsa:') ? s.slice(6) : s))
+  .transform((s) => (s.startsWith('ecdsa:private') ? s.slice(14) : s))
   .refine(
     (s) => PRIVATE_KEY_PATTERN.test(s),
-    'Invalid ECDSA private key: use ecdsa:<key> or 32-byte hex / DER encoding',
+    'Invalid ECDSA private key: use ecdsa:private:<key> or 32-byte hex / DER encoding',
   );
 
 // ======================================================
 // 2. Ed25519 Keys
 // ======================================================
 
-// Public key — ed25519:<key> or raw 32 bytes (hex) or DER (~44 bytes)
+// Public key — ed25519:public:<key> or raw 32 bytes (hex) or DER (~44 bytes)
 export const Ed25519PublicKeySchema = z
   .string()
   .trim()
-  .transform((s) => (s.startsWith('ed25519:') ? s.slice(8) : s))
+  .transform((s) => (s.startsWith('ed25519:public') ? s.slice(15) : s))
   .refine(
     (s) => PUBLIC_KEY_PATTERN.test(s),
-    'Invalid Ed25519 public key: use ed25519:<key> or 32-byte hex / DER encoding',
+    'Invalid Ed25519 public key: use ed25519:public:<key> or 32-byte hex / DER encoding',
   );
 
-// Private key — ed25519:<key> or raw 32/64 bytes (hex) or DER (~80 bytes)
+// Private key — ed25519:private:<key> or raw 32/64 bytes (hex) or DER (~80 bytes)
 export const Ed25519PrivateKeySchema = z
   .string()
   .trim()
-  .transform((s) => (s.startsWith('ed25519:') ? s.slice(8) : s))
+  .transform((s) => (s.startsWith('ed25519:private') ? s.slice(16) : s))
   .refine(
     (s) => PRIVATE_KEY_PATTERN.test(s),
-    'Invalid Ed25519 private key: use ed25519:<key> or 32/64-byte hex / DER encoding',
+    'Invalid Ed25519 private key: use ed25519:private:<key> or 32/64-byte hex / DER encoding',
   );
 
 // ======================================================
