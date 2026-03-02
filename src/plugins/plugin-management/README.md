@@ -4,7 +4,7 @@ A plugin for managing other plugins in the Hiero CLI system.
 
 ## Overview
 
-This plugin provides functionality to add, remove, list, and get information about plugins in the system. All commands return structured `CommandExecutionResult` with both JSON and human-readable output formats.
+This plugin provides functionality to add, remove, list, and get information about plugins in the system. All commands return structured `CommandResult` with both JSON and human-readable output formats.
 
 ## Commands
 
@@ -88,6 +88,23 @@ Disable a plugin that exists in the plugin-management state.
 hcli plugin-management disable --name account
 ```
 
+## Plugin Management State
+
+The plugin-management state is stored in `~/.hiero-cli/state/plugin-management-storage.json`. It contains:
+
+**Plugin entries** – one key per plugin (e.g. `account`, `token`, `network`), each with:
+
+- `name`, `enabled`, `description`, and optionally `path` for custom plugins
+
+**`initialized-defaults`** – metadata key listing default plugin names that have been initialized at least once. Used to:
+
+- Add new default plugins when they appear in `DEFAULT_PLUGIN_STATE` (e.g. after a CLI update)
+- Avoid re-adding default plugins that the user explicitly removed
+
+**Auto-initialization:** On each CLI start, any default plugin from `DEFAULT_PLUGIN_STATE` that is not in `initialized-defaults` is added to the state and to `initialized-defaults`. Default plugins removed by the user stay removed.
+
+**Custom plugins** are never added to `initialized-defaults`; they are fully removed from state when the user runs `remove`.
+
 ## Output Formats
 
 All commands support both JSON and human-readable output formats:
@@ -97,24 +114,22 @@ All commands support both JSON and human-readable output formats:
 
 ## Architecture
 
-All commands return structured output through the `CommandExecutionResult` interface:
+All commands return structured output through the `CommandResult` interface:
 
 ```typescript
-interface CommandExecutionResult {
-  status: 'success' | 'failure';
-  errorMessage?: string; // Present when status !== 'success'
-  outputJson?: string; // JSON string conforming to the output schema
+interface CommandResult {
+  result: object;
 }
 ```
 
 **Output Structure:**
 
-- **Command Handlers**: Return `CommandExecutionResult` objects
+- **Command Handlers**: Return `CommandResult` objects
 - **Output Schemas**: Defined using Zod for validation and type safety
 - **Templates**: Handlebars templates for human-readable output
 - **Error Handling**: Consistent error handling across all commands
 
-The `outputJson` field contains a JSON string that conforms to the Zod schema defined in each command's `output.ts` file, ensuring type safety and consistent output structure.
+The `result` field contains a structured object conforming to the Zod schema defined in each command's `output.ts` file, ensuring type safety and consistent output structure.
 
 ## Directory Structure
 
@@ -145,7 +160,7 @@ src/plugins/plugin-management/
 
 ## Implementation Notes
 
-- All handlers return `CommandExecutionResult` objects
+- All handlers return `CommandResult` objects
 - Output schemas are defined using Zod for runtime validation
 - Human-readable templates use Handlebars syntax
 - Mock data is used for demonstration purposes

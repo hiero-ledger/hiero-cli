@@ -17,7 +17,8 @@ import {
  */
 export const CreateAccountOutputSchema = z.object({
   accountId: EntityIdSchema,
-  name: z.string().describe('Account name'),
+  name: z.string().describe('Account name or alias'),
+  alias: z.string().describe('Account alias').optional(),
   type: KeyTypeSchema,
   network: NetworkSchema,
   transactionId: TransactionIdSchema,

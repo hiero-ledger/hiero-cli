@@ -1,10 +1,10 @@
 import type { KmsCredentialRecord } from '@/core/services/kms/kms-types.interface';
+import type { RemoveCredentialsOutput } from '@/plugins/credentials/commands/remove/output';
 
 import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { NotFoundError } from '@/core/errors';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { removeCredentials } from '@/plugins/credentials/commands/remove/handler';
-
-// No process.exit usage in handler version
 
 describe('credentials plugin - remove command', () => {
   beforeEach(() => {
@@ -20,25 +20,22 @@ describe('credentials plugin - remove command', () => {
     updatedAt: new Date().toISOString(),
   };
 
-  test('removes credentials successfully', () => {
+  test('removes credentials successfully', async () => {
     const logger = makeLogger();
     const kmsService = makeKmsMock();
     kmsService.get.mockReturnValue(mockCredentials);
 
-    const args = makeArgs({ kms: kmsService }, logger, {
-      id: 'kr_test123',
-    });
+    const args = makeArgs({ kms: kmsService }, logger, { id: 'kr_test123' });
 
-    return removeCredentials(args).then((result) => {
-      expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
-      expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
-      expect(result.status).toBe(Status.Success);
-      const output = JSON.parse(result.outputJson!);
-      expect(output).toEqual({ keyRefId: 'kr_test123', removed: true });
-    });
+    const result = await removeCredentials(args);
+    const output = result.result as RemoveCredentialsOutput;
+
+    expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
+    expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
+    expect(output).toEqual({ keyRefId: 'kr_test123', removed: true });
   });
 
-  test('returns failure when credential does not exist', () => {
+  test('throws NotFoundError when credential does not exist', async () => {
     const logger = makeLogger();
     const kmsService = makeKmsMock();
     kmsService.get.mockReturnValue(undefined);
@@ -47,38 +44,27 @@ describe('credentials plugin - remove command', () => {
       id: 'kr_nonexistent',
     });
 
-    return removeCredentials(args).then((result) => {
-      expect(kmsService.get).toHaveBeenCalledWith('kr_nonexistent');
-      expect(kmsService.remove).not.toHaveBeenCalled();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toBe(
-        "Credential with key reference ID 'kr_nonexistent' does not exist",
-      );
-      const output = JSON.parse(result.outputJson!);
-      expect(output).toEqual({
-        keyRefId: 'kr_nonexistent',
-        removed: false,
-      });
-    });
+    await expect(removeCredentials(args)).rejects.toThrow(NotFoundError);
+    expect(kmsService.get).toHaveBeenCalledWith('kr_nonexistent');
+    expect(kmsService.remove).not.toHaveBeenCalled();
   });
 
-  test('removes credentials with valid id', () => {
+  test('removes credentials with valid id', async () => {
     const logger = makeLogger();
     const kmsService = makeKmsMock();
     kmsService.get.mockReturnValue(mockCredentials);
 
     const args = makeArgs({ kms: kmsService }, logger, { id: 'kr_test123' });
 
-    return removeCredentials(args).then((result) => {
-      expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
-      expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
-      expect(result.status).toBe(Status.Success);
-      const output = JSON.parse(result.outputJson!);
-      expect(output.removed).toBe(true);
-    });
+    const result = await removeCredentials(args);
+    const output = result.result as RemoveCredentialsOutput;
+
+    expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
+    expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
+    expect(output.removed).toBe(true);
   });
 
-  test('handles KMS service errors', () => {
+  test('propagates KMS service errors', async () => {
     const logger = makeLogger();
     const kmsService = makeKmsMock();
     kmsService.get.mockReturnValue(mockCredentials);
@@ -86,17 +72,10 @@ describe('credentials plugin - remove command', () => {
       throw new Error('KMS service error');
     });
 
-    const args = makeArgs({ kms: kmsService }, logger, {
-      id: 'kr_test123',
-    });
+    const args = makeArgs({ kms: kmsService }, logger, { id: 'kr_test123' });
 
-    return removeCredentials(args).then((result) => {
-      expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
-      expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to remove credentials');
-      const output = JSON.parse(result.outputJson!);
-      expect(output.removed).toBe(false);
-    });
+    await expect(removeCredentials(args)).rejects.toThrow('KMS service error');
+    expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
+    expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
   });
 });

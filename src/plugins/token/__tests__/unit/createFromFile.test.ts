@@ -1,7 +1,3 @@
-/**
- * Token Create From File Handler Unit Tests
- * Tests the token creation from file functionality of the token plugin
- */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
@@ -10,7 +6,8 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
-import { HederaTokenType, Status } from '@/core/shared/constants';
+import { FileError, StateError } from '@/core/errors';
+import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
   type CreateFungibleTokenFromFileOutput,
@@ -21,14 +18,16 @@ import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 import {
   expectedTokenTransactionParamsFromFile,
   infiniteSupplyTokenFile,
+  invalidTokenFileInvalidSupplyType,
+  invalidTokenFileInvalidTreasury,
+  invalidTokenFileMissingName,
+  invalidTokenFileNegativeSupply,
   mockKeys,
   mockTransactionResults,
   mockTransactions,
   validTokenFile,
 } from './helpers/fixtures';
 import { makeApiMocks, makeLogger } from './helpers/mocks';
-
-// ADR-003 compliance: handlers now return CommandExecutionResult instead of calling process.exit()
 
 // Mock fs/promises
 jest.mock('fs/promises', () => ({
@@ -188,16 +187,7 @@ describe('createTokenFromFileHandler', () => {
 
       // Act
       const result = await createTokenFromFile(args);
-
-      // Assert - ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
-        result.outputJson!,
-      );
+      const output = result.result as CreateFungibleTokenFromFileOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -248,13 +238,7 @@ describe('createTokenFromFileHandler', () => {
 
       const result = await createTokenFromFile(args);
 
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
-        result.outputJson!,
-      );
+      const output = result.result as CreateFungibleTokenFromFileOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -288,13 +272,7 @@ describe('createTokenFromFileHandler', () => {
 
       const result = await createTokenFromFile(args);
 
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
-        result.outputJson!,
-      );
+      const output = result.result as CreateFungibleTokenFromFileOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -380,16 +358,7 @@ describe('createTokenFromFileHandler', () => {
 
       // Act
       const result = await createTokenFromFile(args);
-
-      // Assert - ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
-        result.outputJson!,
-      );
+      const output = result.result as CreateFungibleTokenFromFileOutput;
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
       expect(output.treasuryId).toBe('0.0.123456');
@@ -499,16 +468,7 @@ describe('createTokenFromFileHandler', () => {
 
       // Act
       const result = await createTokenFromFile(args);
-
-      // Assert - ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
-        result.outputJson!,
-      );
+      const output = result.result as CreateFungibleTokenFromFileOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.associations).toBeDefined();
       expect(output.associations.length).toBeGreaterThan(0);
@@ -541,20 +501,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      const result = await createTokenFromFile(args);
-
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain(
-        'Failed to create fungible token from file',
-      );
-      expect(result.outputJson).toBeUndefined();
-
-      // ADR-003 compliance: logger.error calls are no longer expected
-      // expect(logger.error).toHaveBeenCalledWith(
-      //   expect.stringContaining('❌ Failed to create token from file:'),
-      // );
+      await expect(createTokenFromFile(args)).rejects.toThrow(FileError);
     });
 
     test('should handle file read error', async () => {
@@ -576,20 +523,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      const result = await createTokenFromFile(args);
-
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain(
-        'Failed to create fungible token from file',
-      );
-      expect(result.outputJson).toBeUndefined();
-
-      // ADR-003 compliance: logger.error calls are no longer expected
-      // expect(logger.error).toHaveBeenCalledWith(
-      //   expect.stringContaining('❌ Failed to create token from file:'),
-      // );
+      await expect(createTokenFromFile(args)).rejects.toThrow(FileError);
     });
 
     test('should handle invalid JSON', async () => {
@@ -611,39 +545,15 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      const result = await createTokenFromFile(args);
-
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain(
-        'Failed to create fungible token from file',
-      );
-      expect(result.outputJson).toBeUndefined();
-
-      // ADR-003 compliance: logger.error calls are no longer expected
-      // expect(logger.error).toHaveBeenCalledWith(
-      //   expect.stringContaining('❌ Failed to create token from file:'),
-      // );
+      await expect(createTokenFromFile(args)).rejects.toThrow(FileError);
     });
   });
 
   describe('validation scenarios', () => {
     test('should handle missing required fields', async () => {
-      // Arrange
-      const invalidFile = {
-        // name missing
-        symbol: 'TEST',
-        decimals: 2,
-        supplyType: 'finite',
-        initialSupply: 1000,
-        treasury: '0.0.123456:treasury-key',
-        keys: {
-          adminKey: 'admin-key',
-        },
-      };
-
-      mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
+      mockFs.readFile.mockResolvedValue(
+        JSON.stringify(invalidTokenFileMissingName),
+      );
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
@@ -660,26 +570,15 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      const result = await createTokenFromFile(args);
-
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Invalid token definition file');
-      expect(result.outputJson).toBeUndefined();
-
-      // ADR-003 compliance: logger.error calls are no longer expected
-      // expect(logger.error).toHaveBeenCalledWith('Token file validation failed');
+      await expect(createTokenFromFile(args)).rejects.toThrow(
+        'Invalid token definition file',
+      );
     });
 
     test('should handle invalid treasury format', async () => {
-      // Arrange
-      const invalidFile = {
-        ...validTokenFile,
-        treasuryKey: '', // Empty treasury string
-      };
-
-      mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
+      mockFs.readFile.mockResolvedValue(
+        JSON.stringify(invalidTokenFileInvalidTreasury),
+      );
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
@@ -696,26 +595,15 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      const result = await createTokenFromFile(args);
-
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Invalid token definition file');
-      expect(result.outputJson).toBeUndefined();
-
-      // ADR-003 compliance: logger.error calls are no longer expected
-      // expect(logger.error).toHaveBeenCalledWith('Token file validation failed');
+      await expect(createTokenFromFile(args)).rejects.toThrow(
+        'Private key with account ID must be a valid account ID and private key pair in {account-id:private-key} format, key reference or alias name',
+      );
     });
 
     test('should handle invalid supply type', async () => {
-      // Arrange
-      const invalidFile = {
-        ...validTokenFile,
-        supplyType: 'invalid-type',
-      };
-
-      mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
+      mockFs.readFile.mockResolvedValue(
+        JSON.stringify(invalidTokenFileInvalidSupplyType),
+      );
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
@@ -732,26 +620,15 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      const result = await createTokenFromFile(args);
-
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Invalid token definition file');
-      expect(result.outputJson).toBeUndefined();
-
-      // ADR-003 compliance: logger.error calls are no longer expected
-      // expect(logger.error).toHaveBeenCalledWith('Token file validation failed');
+      await expect(createTokenFromFile(args)).rejects.toThrow(
+        'Invalid token definition file',
+      );
     });
 
     test('should handle negative initial supply', async () => {
-      // Arrange
-      const invalidFile = {
-        ...validTokenFile,
-        initialSupply: -100,
-      };
-
-      mockFs.readFile.mockResolvedValue(JSON.stringify(invalidFile));
+      mockFs.readFile.mockResolvedValue(
+        JSON.stringify(invalidTokenFileNegativeSupply),
+      );
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/token.test.json');
 
@@ -768,16 +645,9 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      const result = await createTokenFromFile(args);
-
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Invalid token definition file');
-      expect(result.outputJson).toBeUndefined();
-
-      // ADR-003 compliance: logger.error calls are no longer expected
-      // expect(logger.error).toHaveBeenCalledWith('Token file validation failed');
+      await expect(createTokenFromFile(args)).rejects.toThrow(
+        'Invalid token definition file',
+      );
     });
   });
 
@@ -856,20 +726,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      const result = await createTokenFromFile(args);
-
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain(
-        'Failed to create fungible token from file',
-      );
-      expect(result.outputJson).toBeUndefined();
-
-      // ADR-003 compliance: logger.error calls are no longer expected
-      // expect(logger.error).toHaveBeenCalledWith(
-      //   expect.stringContaining('❌ Failed to create token from file:'),
-      // );
+      await expect(createTokenFromFile(args)).rejects.toThrow(StateError);
     });
 
     test('should handle association failure gracefully', async () => {
@@ -952,22 +809,13 @@ describe('createTokenFromFileHandler', () => {
 
       // Act
       const result = await createTokenFromFile(args);
-
-      // Assert - ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
-        result.outputJson!,
-      );
+      const output = result.result as CreateFungibleTokenFromFileOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
 
       // Should continue despite association failure
       expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  Failed to associate account 0.0.789012:'),
+        expect.stringContaining('⚠️  Failed to associate account 0.0.789012'),
       );
     });
   });
@@ -1048,16 +896,7 @@ describe('createTokenFromFileHandler', () => {
 
       // Act
       const result = await createTokenFromFile(args);
-
-      // Assert - ADR-003 compliance: check CommandExecutionResult
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateFungibleTokenFromFileOutput = JSON.parse(
-        result.outputJson!,
-      );
+      const output = result.result as CreateFungibleTokenFromFileOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
 

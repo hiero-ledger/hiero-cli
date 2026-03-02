@@ -1,12 +1,15 @@
 import type { CoreApi, Logger } from '@/core';
+import type { ContractErc721CallNameOutput } from '@/plugins/contract-erc721/commands/name/output';
 
 import { ZodError } from 'zod';
 
+import { MOCK_CONTRACT_ID } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
+import { StateError } from '@/core/errors';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { makeContractErc721CallCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { nameFunctionCall as erc721NameHandler } from '@/plugins/contract-erc721/commands/name/handler';
+import { nameFunctionCall } from '@/plugins/contract-erc721/commands/name/handler';
 import { ContractErc721CallNameInputSchema } from '@/plugins/contract-erc721/commands/name/input';
 
 const mockName = 'My-NFT-Collection';
@@ -39,13 +42,13 @@ describe('contract-erc721 plugin - name command (unit)', () => {
       identityResolution: {
         resolveReferenceToEntityOrEvmAddress: jest
           .fn()
-          .mockReturnValue({ entityIdOrEvmAddress: '0.0.1234' }),
+          .mockReturnValue({ entityIdOrEvmAddress: MOCK_CONTRACT_ID }),
         resolveAccount: jest.fn(),
         resolveContract: jest.fn(),
       },
       contractQuery: {
         queryContractFunction: jest.fn().mockResolvedValue({
-          contractId: '0.0.1234',
+          contractId: MOCK_CONTRACT_ID,
           queryResult: [mockName],
         }),
       },
@@ -61,31 +64,25 @@ describe('contract-erc721 plugin - name command (unit)', () => {
       },
     });
 
-    const result = await erc721NameHandler(args);
+    const result = await nameFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    if (result.outputJson === undefined) {
-      throw new Error('Expected outputJson to be defined');
-    }
-    const parsed = JSON.parse(result.outputJson);
-
-    expect(parsed.contractId).toBe('0.0.1234');
-    expect(parsed.contractName).toBe(mockName);
-    expect(parsed.network).toBe('testnet');
+    expect(result.result).toBeDefined();
+    const output = result.result as ContractErc721CallNameOutput;
+    expect(output.contractId).toBe(MOCK_CONTRACT_ID);
+    expect(output.contractName).toBe(mockName);
+    expect(output.network).toBe(SupportedNetwork.TESTNET);
 
     expect(
       args.api.identityResolution.resolveReferenceToEntityOrEvmAddress,
     ).toHaveBeenCalledWith({
       entityReference: 'some-alias-or-id',
       referenceType: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
       aliasType: expect.any(String),
     });
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({
-        contractIdOrEvmAddress: '0.0.1234',
+        contractIdOrEvmAddress: MOCK_CONTRACT_ID,
         functionName: 'name',
         args: [],
       }),
@@ -97,31 +94,31 @@ describe('contract-erc721 plugin - name command (unit)', () => {
       api,
       logger,
       args: {
-        contract: '0.0.1234',
+        contract: MOCK_CONTRACT_ID,
       },
     });
 
-    const result = await erc721NameHandler(args);
+    const result = await nameFunctionCall(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
     expect(
       args.api.identityResolution.resolveReferenceToEntityOrEvmAddress,
     ).toHaveBeenCalledWith({
-      entityReference: '0.0.1234',
+      entityReference: MOCK_CONTRACT_ID,
       referenceType: expect.any(String),
-      network: 'testnet',
+      network: SupportedNetwork.TESTNET,
       aliasType: expect.any(String),
     });
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({
-        contractIdOrEvmAddress: '0.0.1234',
+        contractIdOrEvmAddress: MOCK_CONTRACT_ID,
         functionName: 'name',
         args: [],
       }),
     );
   });
 
-  test('returns failure when contractQuery returns empty queryResult', async () => {
+  test('throws StateError when contractQuery returns empty queryResult', async () => {
     const args = makeContractErc721CallCommandArgs({
       api,
       logger,
@@ -132,19 +129,17 @@ describe('contract-erc721 plugin - name command (unit)', () => {
     (
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockResolvedValue({
-      contractId: '0.0.1234',
+      contractId: MOCK_CONTRACT_ID,
       queryResult: [],
     });
 
-    const result = await erc721NameHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'There was a problem with decoding contract 0.0.1234 "name" function result',
+    await expect(nameFunctionCall(args)).rejects.toThrow(StateError);
+    await expect(nameFunctionCall(args)).rejects.toThrow(
+      `There was a problem with decoding contract ${MOCK_CONTRACT_ID} "name" function result`,
     );
   });
 
-  test('returns failure when queryContractFunction throws', async () => {
+  test('propagates error when queryContractFunction throws', async () => {
     const args = makeContractErc721CallCommandArgs({
       api,
       logger,
@@ -156,11 +151,8 @@ describe('contract-erc721 plugin - name command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    const result = await erc721NameHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call name function: contract query error',
+    await expect(nameFunctionCall(args)).rejects.toThrow(
+      'contract query error',
     );
   });
 

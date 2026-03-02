@@ -19,8 +19,10 @@ import type { KeyResolverService } from '@/core/services/key-resolver/key-resolv
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
+import type { ContractInfo } from '@/core/services/mirrornode/types';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
+import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type {
@@ -33,7 +35,12 @@ import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
-import { MOCK_PUBLIC_KEY, MOCK_TOPIC_ID } from './fixtures';
+import {
+  MOCK_CONTRACT_ID,
+  MOCK_EVM_ADDRESS,
+  MOCK_PUBLIC_KEY,
+  MOCK_TOPIC_ID,
+} from './fixtures';
 
 /**
  * Alias account data structure
@@ -407,7 +414,7 @@ const makeHbarMock = (): jest.Mocked<HbarService> => ({
  * Create a mocked OutputService
  */
 const makeOutputMock = (): jest.Mocked<OutputService> => ({
-  handleCommandOutput: jest.fn(),
+  handleOutput: jest.fn<never, [OutputHandlerOptions]>(),
   setFormat: jest.fn(),
   getFormat: jest.fn().mockReturnValue('human'),
   emptyLine: jest.fn(),
@@ -422,6 +429,9 @@ const makePluginManagementServiceMock = (): PluginManagementService =>
     enablePlugin: jest.fn(),
     disablePlugin: jest.fn(),
     savePluginState: jest.fn(),
+    getInitializedDefaults: jest.fn().mockReturnValue([]),
+    setInitializedDefaults: jest.fn(),
+    addToInitializedDefaults: jest.fn(),
   }) as unknown as PluginManagementService;
 
 const makeContractTransactionServiceMock = (): ContractTransactionService =>
@@ -642,4 +652,18 @@ export const makeKeyResolverMock = (
       const resolver = makeKeyResolverMock(options);
       return resolver.getOrInitKey(keyOrAlias, keyManager, labels || []);
     }),
+});
+
+export const createMockContractInfo = (
+  overrides: Partial<ContractInfo> = {},
+): ContractInfo => ({
+  contract_id: MOCK_CONTRACT_ID,
+  account: '0.0.1234',
+  created_timestamp: '2024-01-01T12:00:00.000Z',
+  deleted: false,
+  memo: 'test contract',
+  evm_address: MOCK_EVM_ADDRESS,
+  auto_renew_period: 7776000,
+  max_automatic_token_associations: 0,
+  ...overrides,
 });

@@ -15,10 +15,9 @@ import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { KeyResolverService } from './key-resolver-service.interface';
 
+import { NotFoundError, StateError } from '@/core/errors';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
-
-import { ERROR_MESSAGES } from './error-messages';
 
 export class KeyResolverServiceImpl implements KeyResolverService {
   private readonly mirror: HederaMirrornodeService;
@@ -70,7 +69,15 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       const operatorPublicKey = this.kms.get(operator.keyRefId)?.publicKey;
 
       if (!operatorPublicKey) {
-        throw new Error(ERROR_MESSAGES.invalidOperatorInState);
+        throw new StateError(
+          'Operator exists in state but missing public key',
+          {
+            context: {
+              accountId: operator.accountId,
+              keyRefId: operator.keyRefId,
+            },
+          },
+        );
       }
 
       return {
@@ -94,7 +101,16 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       await this.mirror.getAccount(accountId);
 
     if (!keyAlgorithm || !accountPublicKey) {
-      throw new Error(ERROR_MESSAGES.unableToGetKeyAlgorithm);
+      throw new StateError(
+        'Mirror node returned account but missing key data',
+        {
+          context: {
+            accountId,
+            hasKeyAlgorithm: !!keyAlgorithm,
+            hasAccountPublicKey: !!accountPublicKey,
+          },
+        },
+      );
     }
 
     const { keyRefId, publicKey } = this.kms.importPublicKey(
@@ -118,14 +134,24 @@ export class KeyResolverServiceImpl implements KeyResolverService {
   ): Promise<ResolvedKey> {
     const { accountId, privateKey } = keyPair;
 
-    const { keyAlgorithm, accountPublicKey } =
-      await this.mirror.getAccount(accountId);
+    const accountData = await this.mirror.getAccount(accountId);
+
+    const { keyAlgorithm, accountPublicKey } = accountData;
 
     if (!keyAlgorithm || !accountPublicKey) {
-      throw new Error(ERROR_MESSAGES.unableToGetKeyAlgorithm);
+      throw new StateError(
+        'Mirror node returned account but missing key data',
+        {
+          context: {
+            accountId,
+            hasKeyAlgorithm: !!keyAlgorithm,
+            hasAccountPublicKey: !!accountPublicKey,
+          },
+        },
+      );
     }
 
-    const { keyRefId, publicKey } = this.kms.importAndValidatePrivateKey(
+    const keyData = this.kms.importAndValidatePrivateKey(
       keyAlgorithm,
       privateKey,
       accountPublicKey,
@@ -135,8 +161,8 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
     return {
       accountId,
-      publicKey,
-      keyRefId,
+      publicKey: keyData.publicKey,
+      keyRefId: keyData.keyRefId,
     };
   }
 
@@ -214,11 +240,26 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     );
 
     if (!account) {
-      throw new Error(ERROR_MESSAGES.noAccountAssociatedWithName);
+      throw new NotFoundError(
+        `Account alias not found: ${aliasCredential.alias}`,
+        {
+          context: { alias: aliasCredential.alias, network: currentNetwork },
+        },
+      );
     }
 
     if (!account.publicKey || !account.keyRefId || !account.entityId) {
-      throw new Error(ERROR_MESSAGES.accountMissingPrivatePublicKey);
+      throw new StateError(
+        'Account alias exists but missing required key data',
+        {
+          context: {
+            alias: aliasCredential.alias,
+            hasPublicKey: !!account.publicKey,
+            hasKeyRefId: !!account.keyRefId,
+            hasEntityId: !!account.entityId,
+          },
+        },
+      );
     }
 
     return {

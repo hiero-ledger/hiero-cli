@@ -1,0 +1,10 @@
+{
+  "name": "token-base-units-example",
+  "symbol": "TBU",
+  "decimals": 6,
+  "supplyType": "finite",
+  "initialSupply": "100t",
+  "maxSupply": "1000",
+  "treasuryKey": "<alias or accountId:privateKey>",
+  "adminKey": "<alias or accountId:privateKey>"
+}

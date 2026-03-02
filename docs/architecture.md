@@ -238,7 +238,24 @@ Configuration options include:
 - Returns default values if options are not explicitly set
 - Throws descriptive errors for invalid option names or values
 
-### 7. Logger Service
+### 7. Plugin Management Service
+
+**Purpose**: Manages plugin registration state (add, remove, enable, disable) and tracks which default plugins have been initialized.
+
+**Key Features**:
+
+- Plugin CRUD operations (add, remove, enable, disable)
+- Auto-initialization of new default plugins when they appear in `DEFAULT_PLUGIN_STATE`
+- Respects user preference: default plugins explicitly removed stay removed
+
+**Implementation Details**:
+
+- Uses State Service with `'plugin-management'` namespace
+- State file: `~/.hiero-cli/state/plugin-management-storage.json`
+- `initialized-defaults` key: metadata listing default plugin names ever initialized; ensures new defaults are added on CLI updates while user-removed defaults are not re-added
+- Custom plugins are never tracked in `initialized-defaults`; they are fully removed when the user runs `remove`
+
+### 8. Logger Service
 
 **Purpose**: Provides structured logging capabilities.
 
@@ -248,7 +265,7 @@ Configuration options include:
 - Structured output
 - Plugin-specific logging
 
-### 8. KMS Service (Key Management Service)
+### 9. KMS Service (Key Management Service)
 
 **Purpose**: Manages operator credentials and cryptographic keys securely.
 

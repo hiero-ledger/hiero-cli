@@ -2,6 +2,7 @@
 import { z } from 'zod';
 
 import {
+  AliasNameSchema,
   ContractNameSchema,
   EntityIdSchema,
   EvmAddressSchema,
@@ -10,7 +11,8 @@ import { SupportedNetwork } from '@/core/types/shared.types';
 
 export const ContractDataSchema = z.object({
   contractId: EntityIdSchema.describe('Contract ID'),
-  contractName: ContractNameSchema,
+  alias: AliasNameSchema.optional(),
+  contractName: ContractNameSchema.optional(),
 
   contractEvmAddress: EvmAddressSchema.describe(
     'Deployed contract EVM address',

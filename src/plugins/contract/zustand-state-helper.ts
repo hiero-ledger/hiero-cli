@@ -5,7 +5,6 @@
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
-import { toErrorMessage } from '@/core/utils/errors';
 import { CONTRACT_NAMESPACE } from '@/plugins/contract/manifest';
 
 import { type ContractData } from './schema';
@@ -17,6 +16,40 @@ export class ZustandContractStateHelper {
   constructor(state: StateService, logger: Logger) {
     this.state = state;
     this.logger = logger;
+  }
+
+  /**
+   * Check if a contract exists in the state
+   */
+  hasContract(contractId: string): boolean {
+    return this.state.has(CONTRACT_NAMESPACE, contractId);
+  }
+
+  /**
+   * Get a contract from the state by contract ID
+   */
+  getContract(contractId: string): ContractData | undefined {
+    return this.state.get<ContractData>(CONTRACT_NAMESPACE, contractId);
+  }
+
+  /**
+   * Delete a contract from the state
+   */
+  deleteContract(contractId: string): void {
+    try {
+      this.logger.debug(
+        `[CONTRACT STATE] Deleting contract ${contractId} from state`,
+      );
+      this.state.delete(CONTRACT_NAMESPACE, contractId);
+      this.logger.debug(
+        `[CONTRACT STATE] Successfully deleted contract ${contractId}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `[CONTRACT STATE] Failed to delete contract ${contractId}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw error;
+    }
   }
 
   /**
@@ -36,7 +69,7 @@ export class ZustandContractStateHelper {
       );
     } catch (error) {
       this.logger.error(
-        `[CONTRACT STATE] Failed to save contract ${contractId}: ${toErrorMessage(error)}`,
+        `[CONTRACT STATE] Failed to save contract ${contractId}`,
       );
       throw error;
     }
@@ -83,9 +116,7 @@ export class ZustandContractStateHelper {
       );
       return validContracts;
     } catch (error) {
-      this.logger.error(
-        `[CONTRACT STATE] Failed to list contracts: ${toErrorMessage(error)}`,
-      );
+      this.logger.error(`[CONTRACT STATE] Failed to list contracts`);
       throw error;
     }
   }

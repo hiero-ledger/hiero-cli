@@ -17,6 +17,11 @@ import type { Signer } from './signers/signer.interface';
 import { AccountId, Client, PrivateKey, PublicKey } from '@hashgraph/sdk';
 import { randomBytes } from 'crypto';
 
+import {
+  ConfigurationError,
+  NotFoundError,
+  ValidationError,
+} from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -91,8 +96,8 @@ export class KmsServiceImpl implements KmsService {
         'ed25519_support_enabled',
       );
       if (!ed25519SupportEnabled) {
-        throw new Error(
-          'ED25519 key type is not enabled. Please enable it by setting the config option ed25519_support_enabled to true.',
+        throw new ConfigurationError(
+          'ED25519 support is disabled. Enable via ed25519_support_enabled config option.',
         );
       }
     }
@@ -174,16 +179,23 @@ export class KmsServiceImpl implements KmsService {
         'ed25519_support_enabled',
       );
       if (!ed25519SupportEnabled) {
-        throw new Error(
-          'ED25519 key type is not enabled. Please enable it by setting the config option ed25519_support_enabled to true.',
+        throw new ConfigurationError(
+          'ED25519 support is disabled. Enable via ed25519_support_enabled config option.',
         );
       }
     }
     // Parse the key based on the specified type
-    const pk: PrivateKey =
-      keyType === KeyAlgorithm.ECDSA
-        ? PrivateKey.fromStringECDSA(privateKey)
-        : PrivateKey.fromStringED25519(privateKey);
+    let pk: PrivateKey;
+    try {
+      pk =
+        keyType === KeyAlgorithm.ECDSA
+          ? PrivateKey.fromStringECDSA(privateKey)
+          : PrivateKey.fromStringED25519(privateKey);
+    } catch (error) {
+      throw new ValidationError(`Invalid ${keyType} private key format`, {
+        cause: error,
+      });
+    }
     const publicKey = pk.publicKey.toStringRaw();
 
     let keyRefId = this.generateId('kr');
@@ -233,7 +245,9 @@ export class KmsServiceImpl implements KmsService {
     const publicKeyRaw = privateKey.publicKey.toStringRaw();
 
     if (validationPublicKey !== publicKeyRaw) {
-      throw new Error("Given accountId doesn't correspond with private key");
+      throw new ValidationError(
+        "Given accountId doesn't correspond with private key",
+      );
     }
 
     return this.importPrivateKey(keyType, privateKeyRaw, keyManager, labels);
@@ -243,7 +257,7 @@ export class KmsServiceImpl implements KmsService {
     // 1. Get metadata to know which manager owns this key
     const record = this.get(keyRefId);
     if (!record) {
-      throw new Error(`Credential not found: ${keyRefId}`);
+      throw new NotFoundError(`Credential not found: ${keyRefId}`);
     }
 
     // 2. Get the appropriate manager
@@ -304,19 +318,21 @@ export class KmsServiceImpl implements KmsService {
     const operator = this.networkService.getOperator(network);
 
     if (!operator) {
-      throw new Error(`[CRED] No operator configured for network: ${network}`);
+      throw new ConfigurationError(
+        `No operator configured for network: ${network}`,
+      );
     }
 
     const { accountId, keyRefId } = operator;
     const privateKeyString = this.getPrivateKeyString(keyRefId);
     if (!privateKeyString) {
-      throw new Error('[CRED] Default operator keyRef missing private key');
+      throw new ConfigurationError('Operator keyRef missing private key');
     }
 
     // Get the key algorithm from the record
     const record = this.get(keyRefId);
     if (!record) {
-      throw new Error('[CRED] Default operator keyRef record not found');
+      throw new ConfigurationError('Operator keyRef record not found');
     }
 
     // Create client and set operator with credentials
@@ -348,7 +364,7 @@ export class KmsServiceImpl implements KmsService {
         break;
       }
       default:
-        throw new Error(`[CRED] Unsupported network: ${String(network)}`);
+        throw new ConfigurationError(`Unsupported network: ${String(network)}`);
     }
 
     const accountIdObj = AccountId.fromString(accountId);
@@ -394,11 +410,16 @@ export class KmsServiceImpl implements KmsService {
   }
 
   private createPrivateKey(keyAlgorithm: KeyAlgorithm, privateKey: string) {
-    if (keyAlgorithm === KeyAlgorithm.ECDSA) {
-      return PrivateKey.fromStringECDSA(privateKey);
+    try {
+      if (keyAlgorithm === KeyAlgorithm.ECDSA) {
+        return PrivateKey.fromStringECDSA(privateKey);
+      }
+      return PrivateKey.fromStringED25519(privateKey);
+    } catch (error) {
+      throw new ValidationError(`Invalid ${keyAlgorithm} private key format`, {
+        cause: error,
+      });
     }
-
-    return PrivateKey.fromStringED25519(privateKey);
   }
 
   private getPrivateKeyString(keyRefId: string): string | null {
@@ -424,7 +445,7 @@ export class KmsServiceImpl implements KmsService {
   private getKeyManager(name: KeyManagerName): KeyManager {
     const manager = this.keyManagers.get(name);
     if (!manager) {
-      throw new Error(`Key manager not registered: ${name}`);
+      throw new ConfigurationError(`Key manager not registered: ${name}`);
     }
     return manager;
   }

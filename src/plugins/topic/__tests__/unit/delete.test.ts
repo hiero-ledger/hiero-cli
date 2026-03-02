@@ -11,7 +11,6 @@ import {
   mockTopicAliasRecord,
 } from '@/__tests__/mocks/mocks';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
-import { Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { deleteTopic } from '@/plugins/topic/commands/delete/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -31,7 +30,7 @@ const makeTopicData = (overrides: Partial<TopicData> = {}): TopicData => ({
   ...overrides,
 });
 
-describe('topic plugin - delete command (ADR-003)', () => {
+describe('topic plugin - delete command (ADR-007)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -62,10 +61,7 @@ describe('topic plugin - delete command (ADR-003)', () => {
     const result = await deleteTopic(args);
 
     expect(deleteTopicMock).toHaveBeenCalledWith('0.0.1111');
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: DeleteTopicOutput = JSON.parse(result.outputJson!);
+    const output = result.result as DeleteTopicOutput;
     expect(output.deletedTopic.name).toBe('topic1');
     expect(output.deletedTopic.topicId).toBe('0.0.1111');
   });
@@ -96,15 +92,12 @@ describe('topic plugin - delete command (ADR-003)', () => {
     const result = await deleteTopic(args);
 
     expect(deleteTopicMock).toHaveBeenCalledWith('0.0.2222');
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: DeleteTopicOutput = JSON.parse(result.outputJson!);
+    const output = result.result as DeleteTopicOutput;
     expect(output.deletedTopic.name).toBe('topic2');
     expect(output.deletedTopic.topicId).toBe('0.0.2222');
   });
 
-  test('returns failure when topic param is missing', async () => {
+  test('throws when topic param is missing', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -125,13 +118,10 @@ describe('topic plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, {});
 
-    const result = await deleteTopic(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
+    await expect(deleteTopic(args)).rejects.toThrow();
   });
 
-  test('returns failure when topic with given name not found', async () => {
+  test('throws when topic with given name not found', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -156,16 +146,12 @@ describe('topic plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { topic: 'missingTopic' });
 
-    const result = await deleteTopic(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain(
+    await expect(deleteTopic(args)).rejects.toThrow(
       "Topic with name 'missingTopic' not found",
     );
   });
 
-  test('returns failure when topic with given id not found', async () => {
+  test('throws when topic with given id not found', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -186,14 +172,12 @@ describe('topic plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { topic: '0.0.4444' });
 
-    const result = await deleteTopic(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain("Topic with ID '0.0.4444' not found");
+    await expect(deleteTopic(args)).rejects.toThrow(
+      "Topic with ID '0.0.4444' not found",
+    );
   });
 
-  test('returns failure when deleteTopic throws', async () => {
+  test('throws when deleteTopic throws', async () => {
     const logger = makeLogger();
     const topic = makeTopicData({ name: 'topic5', topicId: '0.0.5555' });
 
@@ -217,12 +201,7 @@ describe('topic plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { topic: 'topic5' });
 
-    const result = await deleteTopic(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Failed to delete topic');
-    expect(result.errorMessage).toContain('db error');
+    await expect(deleteTopic(args)).rejects.toThrow('db error');
   });
 
   test('removes aliases of the topic for current network and type', async () => {
@@ -264,10 +243,7 @@ describe('topic plugin - delete command (ADR-003)', () => {
       SupportedNetwork.TESTNET,
     );
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: DeleteTopicOutput = JSON.parse(result.outputJson!);
+    const output = result.result as DeleteTopicOutput;
     expect(output.deletedTopic.name).toBe('topic-alias');
     expect(output.deletedTopic.topicId).toBe('0.0.7777');
     expect(output.removedAliases).toBeDefined();

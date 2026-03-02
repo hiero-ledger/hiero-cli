@@ -14,6 +14,7 @@ import type { IdentityResolutionService } from '@/core/services/identity-resolut
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
+import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
@@ -128,7 +129,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       transferTinybar: jest.fn(),
     } as jest.Mocked<HbarService>,
     output: {
-      handleCommandOutput: jest.fn(),
+      handleOutput: jest.fn<never, [OutputHandlerOptions]>(),
       getFormat: jest.fn().mockReturnValue('human'),
       setFormat: jest.fn(),
       emptyLine: jest.fn(),
@@ -141,6 +142,9 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       enablePlugin: jest.fn(),
       disablePlugin: jest.fn(),
       savePluginState: jest.fn(),
+      getInitializedDefaults: jest.fn().mockReturnValue([]),
+      setInitializedDefaults: jest.fn(),
+      addToInitializedDefaults: jest.fn(),
     } as PluginManagementService,
     contract,
     contractCompiler: {

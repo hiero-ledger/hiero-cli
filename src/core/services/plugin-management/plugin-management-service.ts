@@ -8,7 +8,10 @@ import type {
   PluginManagementService,
 } from './plugin-management-service.interface';
 
-import { PLUGIN_MANAGEMENT_NAMESPACE } from '@/core/shared/constants';
+import {
+  PLUGIN_INITIALIZED_DEFAULTS_KEY,
+  PLUGIN_MANAGEMENT_NAMESPACE,
+} from '@/core/shared/constants';
 
 import {
   PluginManagementCreateStatus,
@@ -25,7 +28,15 @@ export class PluginManagementServiceImpl implements PluginManagementService {
   }
 
   listPlugins(): PluginStateEntry[] {
-    return this.state.list<PluginStateEntry>(PLUGIN_MANAGEMENT_NAMESPACE);
+    const keys = this.state.getKeys(PLUGIN_MANAGEMENT_NAMESPACE);
+    const pluginKeys = keys.filter(
+      (k) => k !== PLUGIN_INITIALIZED_DEFAULTS_KEY,
+    );
+    return pluginKeys
+      .map((k) =>
+        this.state.get<PluginStateEntry>(PLUGIN_MANAGEMENT_NAMESPACE, k),
+      )
+      .filter((e): e is PluginStateEntry => e !== undefined);
   }
 
   getPlugin(name: string): PluginStateEntry | undefined {
@@ -118,6 +129,34 @@ export class PluginManagementServiceImpl implements PluginManagementService {
       PLUGIN_MANAGEMENT_NAMESPACE,
       entry.name,
       entry,
+    );
+  }
+
+  getInitializedDefaults(): string[] {
+    const value = this.state.get<string[]>(
+      PLUGIN_MANAGEMENT_NAMESPACE,
+      PLUGIN_INITIALIZED_DEFAULTS_KEY as string,
+    );
+    return Array.isArray(value) ? value : [];
+  }
+
+  setInitializedDefaults(names: string[]): void {
+    this.state.set<string[]>(
+      PLUGIN_MANAGEMENT_NAMESPACE,
+      PLUGIN_INITIALIZED_DEFAULTS_KEY as string,
+      names,
+    );
+  }
+
+  addToInitializedDefaults(name: string): void {
+    const current = this.getInitializedDefaults();
+    if (current.includes(name)) {
+      return;
+    }
+    this.state.set<string[]>(
+      PLUGIN_MANAGEMENT_NAMESPACE,
+      PLUGIN_INITIALIZED_DEFAULTS_KEY as string,
+      [...current, name],
     );
   }
 }

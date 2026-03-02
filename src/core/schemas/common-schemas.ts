@@ -10,6 +10,7 @@ import type { Credential } from '@/core/services/kms/kms-types.interface';
 
 import { z } from 'zod';
 
+import { ValidationError } from '@/core/errors';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType, KeyAlgorithm } from '@/core/shared/constants';
 import {
@@ -349,7 +350,7 @@ export const ContractReferenceObjectSchema = z
     if (AliasNameSchema.safeParse(val).success) {
       return { type: EntityReferenceType.ALIAS, value: val };
     }
-    throw new Error(
+    throw new ValidationError(
       'Contract reference must be a valid Hedera ID (0.0.xxx), alias name, or EVM address (0x...)',
     );
   })
@@ -373,7 +374,7 @@ export const AccountReferenceObjectSchema = z
     if (AliasNameSchema.safeParse(val).success) {
       return { type: EntityReferenceType.ALIAS, value: val };
     }
-    throw new Error(
+    throw new ValidationError(
       'Account reference must be a valid Hedera ID (0.0.xxx), alias name, or EVM address (0x...)',
     );
   })
@@ -393,7 +394,7 @@ export const TokenReferenceObjectSchema = z
     if (AliasNameSchema.safeParse(val).success) {
       return { type: EntityReferenceType.ALIAS, value: val };
     }
-    throw new Error(
+    throw new ValidationError(
       'Token reference must be a valid Hedera ID (0.0.xxx) or alias name',
     );
   })
@@ -414,6 +415,19 @@ export const AccountReferenceSchema = z
   .describe('Account reference (ID, EVM address, or name)');
 
 /**
+ * Contract Reference Input (ID or Alias)
+ * Supports: Hedera contract ID (0.0.xxx) or alias name
+ */
+export const ContractReferenceSchema = z
+  .union([EntityIdSchema, AliasNameSchema], {
+    error: () => ({
+      message:
+        'Contract reference must be a valid Hedera ID (0.0.xxx) or alias name',
+    }),
+  })
+  .describe('Contract reference (ID or alias)');
+
+/**
  * Amount Input
  * Accepts amount as string in format:
  * - "100" (integer amount)
@@ -421,16 +435,18 @@ export const AccountReferenceSchema = z
  * - "100t" (integer in base units / tinybars)
  * NOTE: Float with "t" suffix (e.g., "100.5t") is NOT allowed
  * Handler is responsible for parsing and converting to appropriate unit
- * Used for HBAR, tokens, and other balance inputs
+ * Used for amounts, supply, balance, and other numeric inputs
  */
 export const AmountInputSchema = z.coerce
   .string()
   .trim()
   .regex(
     /^(?:\d+\.\d+|\d+t|\d+)$/,
-    'Amount must be: integer, float, or integer with "t" for base units (float with "t" is not allowed)',
+    'Must be: integer, float, or integer with "t" for base units (float with "t" is not allowed)',
   )
-  .describe('Amount input (integer, float, or integer with "t" suffix)');
+  .describe(
+    'Numeric value (integer, float, or integer with "t" suffix for base units)',
+  );
 
 /**
  * Key Manager Type
@@ -567,7 +583,7 @@ export const KeySchema = z
       };
     }
 
-    throw new Error(
+    throw new ValidationError(
       'Key must be a valid account ID and private key pair in format {account-id:private-key}, account ID, private key in format {ed25519|ecdsa}:{private-key}, public key in format {ed25519|ecdsa}:{public-key}, key reference or alias name',
     );
   })
@@ -616,7 +632,7 @@ export const PrivateKeySchema = z
       };
     }
 
-    throw new Error(
+    throw new ValidationError(
       'Private key must be a valid account ID and private key pair in {account-id:private-key} format, private key in format {ed25519|ecdsa}:{private-key}, key reference or alias name',
     );
   })
@@ -655,7 +671,7 @@ export const PrivateKeyWithAccountIdSchema = z
       };
     }
 
-    throw new Error(
+    throw new ValidationError(
       'Private key with account ID must be a valid account ID and private key pair in {account-id:private-key} format, key reference or alias name',
     );
   })
