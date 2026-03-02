@@ -160,6 +160,7 @@ export const makeAccountStateHelperMock = (overrides?: {
   listAccounts?: jest.Mock;
   clearAccounts?: jest.Mock;
   hasAccount?: jest.Mock;
+  hasAccountById?: jest.Mock;
 }) => ({
   loadAccount: jest.fn(),
   saveAccount: jest.fn(),
@@ -167,6 +168,7 @@ export const makeAccountStateHelperMock = (overrides?: {
   listAccounts: jest.fn().mockReturnValue([]),
   clearAccounts: jest.fn(),
   hasAccount: jest.fn().mockReturnValue(false),
+  hasAccountById: jest.fn().mockReturnValue(false),
   ...overrides,
 });
 

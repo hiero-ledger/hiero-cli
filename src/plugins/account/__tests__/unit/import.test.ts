@@ -14,7 +14,7 @@ import {
   makeNetworkMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { ValidationError } from '@/core/errors';
+import { StateError, ValidationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { importAccount } from '@/plugins/account/commands/import/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -35,6 +35,7 @@ describe('account plugin - import command (ADR-003)', () => {
     const saveAccountMock = jest.fn().mockReturnValue(undefined);
 
     MockedHelper.mockImplementation(() => ({
+      hasAccountById: jest.fn().mockReturnValue(false),
       hasAccount: jest.fn().mockReturnValue(false),
       saveAccount: saveAccountMock,
     }));
@@ -96,10 +97,44 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(output.evmAddress).toBe('0xabc');
   });
 
-  test('returns failure if account already exists', async () => {
+  test('throws StateError if account with same ID already exists in state', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
+      hasAccountById: jest.fn().mockReturnValue(true),
+      hasAccount: jest.fn().mockReturnValue(false),
+      saveAccount: jest.fn(),
+    }));
+
+    const mirrorMock = makeMirrorMock();
+    const networkMock = makeNetworkMock();
+    const kms = makeKmsMock();
+    const alias = makeAliasMock();
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      network: networkMock as NetworkService,
+      kms,
+      alias,
+      logger,
+      state: makeStateMock(),
+    };
+
+    const args = makeArgs(api, logger, {
+      key: '0.0.1111:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
+      name: 'operator2',
+    });
+
+    await expect(importAccount(args)).rejects.toThrow(
+      new StateError('Account with this ID is already saved in state'),
+    );
+  });
+
+  test('returns failure if account with same name already exists', async () => {
+    const logger = makeLogger();
+
+    MockedHelper.mockImplementation(() => ({
+      hasAccountById: jest.fn().mockReturnValue(false),
       hasAccount: jest.fn().mockReturnValue(true),
       saveAccount: jest.fn(),
     }));
@@ -120,7 +155,6 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const args = makeArgs(api, logger, {
       key: '0.0.1111:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-      alias: 'test',
     });
 
     await expect(importAccount(args)).rejects.toThrow(ValidationError);
@@ -130,6 +164,7 @@ describe('account plugin - import command (ADR-003)', () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
+      hasAccountById: jest.fn().mockReturnValue(false),
       hasAccount: jest.fn().mockReturnValue(false),
       saveAccount: jest.fn(),
     }));
