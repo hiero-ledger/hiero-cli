@@ -166,13 +166,15 @@ describe('Plugin Management Integration Tests', () => {
     const addPluginArgs: Record<string, unknown> = {
       path: 'dist/plugins/test',
     };
-    await addPlugin({
+    const addPluginResult = await addPlugin({
       args: addPluginArgs,
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
+    const addOutput = addPluginResult.result as AddPluginOutput;
+    expect(addOutput.added).toBe(true);
 
     const listBeforeReset = await getPluginList({
       args: {},

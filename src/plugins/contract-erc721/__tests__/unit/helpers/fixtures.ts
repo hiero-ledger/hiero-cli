@@ -37,7 +37,7 @@ export const makeContractErc721ExecuteCommandArgs = (params: {
   return {
     args: {
       contract: 'some-alias-or-id',
-      gas: 1000000,
+      gas: 2000000,
       ...params.args,
     },
     api,

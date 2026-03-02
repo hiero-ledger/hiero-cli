@@ -78,8 +78,8 @@ export const contractPluginManifest: PluginManifest = {
           short: 'g',
           type: OptionType.NUMBER,
           required: false,
-          default: 1000000,
-          description: 'Gas for smart contract creation. Default: 1000000',
+          default: 2000000,
+          description: 'Gas for smart contract creation. Default: 2000000',
         },
         {
           name: 'admin-key',

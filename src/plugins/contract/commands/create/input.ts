@@ -20,8 +20,8 @@ export const ContractCreateSchema = z
     default: DefaultTemplateSchema.optional().describe(
       'Use built-in contract template: erc20 or erc721',
     ),
-    gas: GasInputSchema.default(1000000).describe(
-      'Gas for contract creation. Default: 1000000',
+    gas: GasInputSchema.default(2000000).describe(
+      'Gas for contract creation. Default: 2000000',
     ),
     basePath: FilePathSchema.optional().describe(
       'Base path to main directory of smart contract path',

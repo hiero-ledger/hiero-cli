@@ -149,7 +149,7 @@ export const pluginManagementManifest: PluginManifest = {
       name: 'reset',
       summary: 'Reset plugin state to defaults',
       description:
-        'Clear plugin-management state. All default plugins will be restored on next CLI run. Custom plugins will be removed.',
+        'Clear plugin-management state. Custom plugins will be removed.',
       options: [],
       handler: resetPlugins,
       output: {
@@ -157,7 +157,7 @@ export const pluginManagementManifest: PluginManifest = {
         humanTemplate: RESET_PLUGINS_TEMPLATE,
       },
       requireConfirmation:
-        'Are you sure you want to reset plugin state? All default plugins will be restored on next CLI run. Custom plugins will be removed.',
+        'Are you sure you want to reset plugin state? Custom plugins will be removed.',
     },
     {
       name: 'info',
