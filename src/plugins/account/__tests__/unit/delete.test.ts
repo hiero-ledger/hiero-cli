@@ -150,7 +150,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     expect(result.status).toBe(Status.Failure);
     expect(result.errorMessage).toBeDefined();
     expect(result.errorMessage).toContain(
-      "Account with name 'missingAcc' not found",
+      'Account not found with ID or alias: missingAcc',
     );
   });
 

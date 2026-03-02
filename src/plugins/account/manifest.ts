@@ -229,7 +229,8 @@ export const accountPluginManifest: PluginManifest = {
           short: 'a',
           type: OptionType.STRING,
           required: true,
-          description: 'Account name or account ID to delete from state',
+          description:
+            'Account ID, alias or name of the account present in state',
         },
       ],
       handler: deleteAccount,
