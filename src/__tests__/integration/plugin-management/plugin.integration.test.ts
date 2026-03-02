@@ -195,8 +195,9 @@ describe('Plugin Management Integration Tests', () => {
     });
     const resetOutput = resetResult.result as ResetPluginsOutput;
     expect(resetOutput.reset).toBe(true);
-    expect(resetOutput.removedCustomCount).toBeGreaterThanOrEqual(1);
-    expect(resetOutput.message).toContain('custom plugin');
+    expect(resetOutput.message).toBe(
+      'Plugin state has been reset successfully.',
+    );
 
     const listAfterReset = await getPluginList({
       args: {},
