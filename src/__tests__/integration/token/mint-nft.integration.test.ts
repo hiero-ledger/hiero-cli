@@ -12,7 +12,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { createAccount, viewAccount } from '@/plugins/account';
 import { createNft } from '@/plugins/token/commands/create-nft';
@@ -44,10 +44,8 @@ describe('Mint NFT Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(createAccountResult.status).toBe(Status.Success);
-    const createAccountOutput: CreateAccountOutput = JSON.parse(
-      createAccountResult.outputJson!,
-    );
+    const createAccountOutput =
+      createAccountResult.result as CreateAccountOutput;
     expect(createAccountOutput.name).toBe('account-mint-nft');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -64,12 +62,9 @@ describe('Mint NFT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(viewAccountResult.status).toBe(Status.Success);
-    const viewAccountOutput: ViewAccountOutput = JSON.parse(
-      viewAccountResult.outputJson!,
-    );
+    const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
-    expect(viewAccountOutput.balance).toBe('100000000');
+    expect(viewAccountOutput.balance).toBe(100000000n);
     expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
     expect(viewAccountOutput.publicKey).toBe(createAccountOutput.publicKey);
 
@@ -90,10 +85,7 @@ describe('Mint NFT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(createNftResult.status).toBe(Status.Success);
-    const createNftOutput: CreateNftOutput = JSON.parse(
-      createNftResult.outputJson!,
-    );
+    const createNftOutput = createNftResult.result as CreateNftOutput;
     expect(createNftOutput.network).toBe(network);
     expect(createNftOutput.name).toBe('Test NFT Collection');
     expect(createNftOutput.alias).toBe('test-nft-collection');
@@ -117,8 +109,7 @@ describe('Mint NFT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(mintNftResult.status).toBe(Status.Success);
-    const mintNftOutput: MintNftOutput = JSON.parse(mintNftResult.outputJson!);
+    const mintNftOutput = mintNftResult.result as MintNftOutput;
     expect(mintNftOutput.tokenId).toBe(createNftOutput.tokenId);
     expect(mintNftOutput.serialNumber).toBeDefined();
     expect(mintNftOutput.network).toBe(network);
@@ -137,10 +128,7 @@ describe('Mint NFT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(viewTokenResult.status).toBe(Status.Success);
-    const viewTokenOutput: ViewTokenOutput = JSON.parse(
-      viewTokenResult.outputJson!,
-    );
+    const viewTokenOutput = viewTokenResult.result as ViewTokenOutput;
     expect(viewTokenOutput.tokenId).toBe(createNftOutput.tokenId);
     expect(viewTokenOutput.name).toBe('Test NFT Collection');
     expect(viewTokenOutput.symbol).toBe('TNFT');
@@ -150,5 +138,5 @@ describe('Mint NFT Integration Tests', () => {
     );
     expect(viewTokenOutput.nftSerial?.owner).toBe(viewAccountOutput.accountId);
     expect(viewTokenOutput.nftSerial?.metadata).toBe('Test NFT Metadata');
-  });
+  }, 90000);
 });

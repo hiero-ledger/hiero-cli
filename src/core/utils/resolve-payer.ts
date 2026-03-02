@@ -15,20 +15,14 @@ export async function resolvePayer(
   payerString: string,
   coreApi: CoreApi,
 ): Promise<void> {
-  try {
-    const keyManager =
-      coreApi.config.getOption<KeyManagerName>('default_key_manager') ||
-      'local';
-    const parsedPayer = KeyOrAccountAliasSchema.parse(payerString);
-    const resolvedPayer = await coreApi.keyResolver.getOrInitKey(
-      parsedPayer,
-      keyManager,
-      ['payer:override'],
-    );
-    coreApi.network.setPayer(resolvedPayer);
-    coreApi.logger.debug(`[CLI] Resolved payer: ${resolvedPayer.accountId}`);
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new Error(`Failed to resolve payer: ${payerString}. ${errorMessage}`);
-  }
+  const keyManager =
+    coreApi.config.getOption<KeyManagerName>('default_key_manager') || 'local';
+  const parsedPayer = KeyOrAccountAliasSchema.parse(payerString);
+  const resolvedPayer = await coreApi.keyResolver.getOrInitKey(
+    parsedPayer,
+    keyManager,
+    ['payer:override'],
+  );
+  coreApi.network.setPayer(resolvedPayer);
+  coreApi.logger.debug(`[CLI] Resolved payer: ${resolvedPayer.accountId}`);
 }

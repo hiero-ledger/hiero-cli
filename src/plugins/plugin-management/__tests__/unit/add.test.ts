@@ -3,15 +3,16 @@
  */
 import type * as path from 'path';
 import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
+import type { AddPluginOutput } from '@/plugins/plugin-management/commands/add/output';
 
 import * as fs from 'fs/promises';
 
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { FileError, StateError } from '@/core/errors';
 import {
   PluginManagementCreateStatus,
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
-import { Status } from '@/core/shared/constants';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
 import { addPlugin } from '@/plugins/plugin-management/commands/add/handler';
 
@@ -64,11 +65,9 @@ describe('plugin-management add command', () => {
     });
 
     const result = await addPlugin(args);
+    const output = result.result as AddPluginOutput;
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output = JSON.parse(result.outputJson!);
+    expect(output).toBeDefined();
     expect(output.added).toBe(true);
     expect(output.message).toContain('added and enabled successfully');
 
@@ -81,7 +80,7 @@ describe('plugin-management add command', () => {
     );
   });
 
-  it('should fail when plugin with the same name already exists in state', async () => {
+  it('should throw StateError when plugin with the same name already exists in state', async () => {
     const logger = makeLogger();
     const existingEntry: PluginStateEntry = { ...CUSTOM_PLUGIN_ENTRY };
     const pluginManagement = {
@@ -96,22 +95,15 @@ describe('plugin-management add command', () => {
       path: 'dist/plugins/custom-plugin',
     });
 
-    const result = await addPlugin(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.outputJson).toBeDefined();
-
-    const output = JSON.parse(result.outputJson!);
-    expect(output.name).toBe('custom-plugin');
-    expect(output.added).toBe(false);
-    expect(output.message).toContain('already exists');
+    await expect(addPlugin(args)).rejects.toThrow(StateError);
+    await expect(addPlugin(args)).rejects.toThrow(/already exists/);
 
     expect(pluginManagement.addPlugin).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'custom-plugin' }),
     );
   });
 
-  it('should fail when manifest.js does not exist', async () => {
+  it('should throw FileError when manifest.js does not exist', async () => {
     const logger = makeLogger();
     const pluginManagement = {
       addPlugin: jest.fn(),
@@ -126,13 +118,13 @@ describe('plugin-management add command', () => {
     (error as NodeJS.ErrnoException).code = 'ENOENT';
     mockFs.access.mockRejectedValue(error);
 
-    const result = await addPlugin(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Plugin manifest not found at');
-    expect(result.errorMessage).toContain('manifest.js');
-    expect(result.errorMessage).toContain(
-      'Make sure the plugin directory contains a manifest.js file',
+    await expect(addPlugin(args)).rejects.toThrow(FileError);
+    await expect(addPlugin(args)).rejects.toThrow(
+      /Plugin manifest not found at/,
+    );
+    await expect(addPlugin(args)).rejects.toThrow(/manifest.js/);
+    await expect(addPlugin(args)).rejects.toThrow(
+      /Make sure the plugin directory contains a manifest.js file/,
     );
     expect(pluginManagement.addPlugin).not.toHaveBeenCalled();
   });

@@ -10,7 +10,8 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { TransactionError } from '@/core/errors';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { createTopic } from '@/plugins/topic/commands/create/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -52,7 +53,6 @@ const makeApiMocks = ({
   const networkMock = makeNetworkMock(network);
   const kms = makeKmsMock();
   kms.importPrivateKey.mockImplementation((keyType: string, key: string) => {
-    // Deterministic mapping for known test keys
     const keyMap: Record<string, string> = {
       [ED25519_DER_PRIVATE_KEY]: 'kr_admin',
       '302e020100300506032b6570042204201111111111111111111111111111111111111111111111111111111111111111':
@@ -116,10 +116,7 @@ describe('topic plugin - create command', () => {
 
     const result = await createTopic(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: CreateTopicOutput = JSON.parse(result.outputJson!);
+    const output = result.result as CreateTopicOutput;
     expect(output.topicId).toBe('0.0.9999');
     expect(output.memo).toBe('Test topic memo');
     expect(output.network).toBe('testnet');
@@ -180,10 +177,7 @@ describe('topic plugin - create command', () => {
 
     const result = await createTopic(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: CreateTopicOutput = JSON.parse(result.outputJson!);
+    const output = result.result as CreateTopicOutput;
     expect(output.topicId).toBe('0.0.8888');
     expect(output.adminKeyPresent).toBe(true);
     expect(output.submitKeyPresent).toBe(true);
@@ -249,10 +243,7 @@ describe('topic plugin - create command', () => {
 
     const result = await createTopic(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: CreateTopicOutput = JSON.parse(result.outputJson!);
+    const output = result.result as CreateTopicOutput;
     expect(output.topicId).toBe('0.0.7777');
     expect(output.memo).toBeUndefined();
 
@@ -271,7 +262,7 @@ describe('topic plugin - create command', () => {
     );
   });
 
-  test('returns failure when signAndExecute returns failure', async () => {
+  test('throws TransactionError when signAndExecute returns failure', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({ saveTopic: jest.fn() }));
 
@@ -298,13 +289,10 @@ describe('topic plugin - create command', () => {
 
     const args = makeArgs(api, logger, { memo: 'Failed topic' });
 
-    const result = await createTopic(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBe('Failed to create topic');
+    await expect(createTopic(args)).rejects.toThrow(TransactionError);
   });
 
-  test('returns failure when createTopic throws', async () => {
+  test('throws when createTopic throws', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({ saveTopic: jest.fn() }));
 
@@ -326,10 +314,6 @@ describe('topic plugin - create command', () => {
 
     const args = makeArgs(api, logger, { memo: 'Error topic' });
 
-    const result = await createTopic(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Failed to create topic');
-    expect(result.errorMessage).toContain('network error');
+    await expect(createTopic(args)).rejects.toThrow('network error');
   });
 });

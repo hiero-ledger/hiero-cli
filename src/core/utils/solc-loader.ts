@@ -2,6 +2,8 @@ import type { SolcCompiler } from '@/core/types/shared.types';
 
 import solc from 'solc';
 
+import { ConfigurationError } from '@/core/errors';
+
 export function loadSolcVersion(
   version: string | undefined,
 ): Promise<SolcCompiler> {
@@ -11,11 +13,13 @@ export function loadSolcVersion(
         version,
         (err: Error | null, solcSpecific: unknown) => {
           if (err) {
-            reject(err);
-            throw new Error(
-              `There was a problem with using Solidity compiler in version ${version}`,
-              err,
+            reject(
+              new ConfigurationError(
+                `Problem with Solidity compiler version ${version}`,
+                { cause: err },
+              ),
             );
+            return;
           }
           resolve(solcSpecific as SolcCompiler);
         },

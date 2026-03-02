@@ -22,6 +22,7 @@ import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-
 import type { ContractInfo } from '@/core/services/mirrornode/types';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
+import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type {
@@ -407,7 +408,7 @@ const makeHbarMock = (): jest.Mocked<HbarService> => ({
  * Create a mocked OutputService
  */
 const makeOutputMock = (): jest.Mocked<OutputService> => ({
-  handleCommandOutput: jest.fn(),
+  handleOutput: jest.fn<never, [OutputHandlerOptions]>(),
   setFormat: jest.fn(),
   getFormat: jest.fn().mockReturnValue('human'),
   emptyLine: jest.fn(),

@@ -10,7 +10,6 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { Status } from '@/core/shared/constants';
 import { entityIdToAliasSafeFormat } from '@/core/utils/entity-id-to-alias-format';
 import { createTopic, importTopic, listTopics } from '@/plugins/topic';
 import { TOPIC_NAMESPACE } from '@/plugins/topic/manifest';
@@ -36,10 +35,7 @@ describe('Import Topic Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(createTopicResult.status).toBe(Status.Success);
-    const createTopicOutput: CreateTopicOutput = JSON.parse(
-      createTopicResult.outputJson!,
-    );
+    const createTopicOutput = createTopicResult.result as CreateTopicOutput;
     topicId = createTopicOutput.topicId;
 
     coreApi.state.delete(TOPIC_NAMESPACE, topicId);
@@ -59,10 +55,7 @@ describe('Import Topic Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(importTopicResult.status).toBe(Status.Success);
-    const importTopicOutput: ImportTopicOutput = JSON.parse(
-      importTopicResult.outputJson as string,
-    );
+    const importTopicOutput = importTopicResult.result as ImportTopicOutput;
     expect(importTopicOutput.topicId).toBe(topicId);
     expect(importTopicOutput.name).toBe(
       `imported-${entityIdToAliasSafeFormat(topicId)}`,
@@ -80,10 +73,7 @@ describe('Import Topic Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(listTopicResult.status).toBe(Status.Success);
-    const listTopicOutput: ListTopicsOutput = JSON.parse(
-      listTopicResult.outputJson!,
-    );
+    const listTopicOutput = listTopicResult.result as ListTopicsOutput;
     const topic = listTopicOutput.topics.find((t) => t.topicId === topicId);
     expect(topic).not.toBeNull();
     expect(topic?.topicId).toBe(topicId);
@@ -107,10 +97,7 @@ describe('Import Topic Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(importTopicResult.status).toBe(Status.Success);
-    const importTopicOutput: ImportTopicOutput = JSON.parse(
-      importTopicResult.outputJson as string,
-    );
+    const importTopicOutput = importTopicResult.result as ImportTopicOutput;
     expect(importTopicOutput.topicId).toBe(topicId);
     expect(importTopicOutput.name).toBe(alias);
     expect(importTopicOutput.alias).toBe(alias);
@@ -126,10 +113,7 @@ describe('Import Topic Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(listTopicResult.status).toBe(Status.Success);
-    const listTopicOutput: ListTopicsOutput = JSON.parse(
-      listTopicResult.outputJson!,
-    );
+    const listTopicOutput = listTopicResult.result as ListTopicsOutput;
     const topic = listTopicOutput.topics.find((t) => t.topicId === topicId);
     expect(topic).not.toBeNull();
     expect(topic?.name).toBe(alias);

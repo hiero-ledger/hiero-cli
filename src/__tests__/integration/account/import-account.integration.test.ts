@@ -7,7 +7,7 @@ import '@/core/utils/json-serialize';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { importAccount, viewAccount } from '@/plugins/account';
 
@@ -48,10 +48,8 @@ describe('Import Account Integration Tests', () => {
         config: coreApi.config,
       });
 
-      expect(importAccountResult.status).toBe(Status.Success);
-      const importAccountOutput: ImportAccountOutput = JSON.parse(
-        importAccountResult.outputJson!,
-      );
+      const importAccountOutput =
+        importAccountResult.result as ImportAccountOutput;
       expect(importAccountOutput.accountId).toBe(accountId);
       expect(importAccountOutput.name).toBe('account-imported');
       expect(importAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
@@ -68,10 +66,7 @@ describe('Import Account Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      expect(viewAccountResult.status).toBe(Status.Success);
-      const viewAccountOutput: ViewAccountOutput = JSON.parse(
-        viewAccountResult.outputJson!,
-      );
+      const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
       expect(viewAccountOutput.accountId).toBe(importAccountOutput.accountId);
       expect(viewAccountOutput.evmAddress).toBe(importAccountOutput.evmAddress);
     });

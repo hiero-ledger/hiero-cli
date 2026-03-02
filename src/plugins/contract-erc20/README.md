@@ -36,7 +36,7 @@ Each command folder contains: `handler.ts`, `input.ts`, `output.ts`, `index.ts`,
 
 ## 🚀 Commands
 
-All commands return `CommandExecutionResult` with structured output. Contract and account references accept **alias**, **Hedera entity ID** (0.0.xxx), or **EVM address** (0x...).
+All commands return `CommandResult` with structured output. Contract and account references accept **alias**, **Hedera entity ID** (0.0.xxx), or **EVM address** (0x...).
 
 ### View Functions (read-only, no transaction)
 
@@ -182,7 +182,7 @@ The plugin uses the Core API services:
 
 ## 📤 Output Formatting
 
-All commands return structured output through the `CommandExecutionResult` interface. View functions return query results; state-changing functions return `contractId`, `network`, and `transactionId`.
+All commands return structured output through the `CommandResult` interface. View functions return query results; state-changing functions return `contractId`, `network`, and `transactionId`.
 
 Human-readable output uses Handlebars templates with HashScan links for contract and transaction IDs.
 

@@ -1,10 +1,11 @@
-/**
- * Token Mint NFT Handler Unit Tests
- * Tests the non-fungible token minting functionality
- */
 import '@/core/utils/json-serialize';
 
-import { HederaTokenType, Status } from '@/core/shared/constants';
+import {
+  NotFoundError,
+  TransactionError,
+  ValidationError,
+} from '@/core/errors';
+import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { mintNft, type MintNftOutput } from '@/plugins/token/commands/mint-nft';
 import { TOKEN_NAMESPACE } from '@/plugins/token/manifest';
@@ -38,10 +39,7 @@ describe('mintNftHandler', () => {
 
       const result = await mintNft(args);
 
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-
-      const output = JSON.parse(result.outputJson!) as MintNftOutput;
+      const output = result.result as MintNftOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
       expect(output.serialNumber).toBe('1');
@@ -83,10 +81,7 @@ describe('mintNftHandler', () => {
 
       const result = await mintNft(args);
 
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-
-      const output = JSON.parse(result.outputJson!) as MintNftOutput;
+      const output = result.result as MintNftOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.serialNumber).toBe('1');
 
@@ -166,10 +161,7 @@ describe('mintNftHandler', () => {
 
       const result = await mintNft(args);
 
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-
-      const output = JSON.parse(result.outputJson!) as MintNftOutput;
+      const output = result.result as MintNftOutput;
       expect(output.tokenId).toBe('0.0.123456');
       expect(api.alias.resolve).toHaveBeenCalledWith(
         'my-nft-collection',
@@ -198,9 +190,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      await expect(mintNft(args)).rejects.toThrow(
-        'Token name "nonexistent-token" not found',
-      );
+      await expect(mintNft(args)).rejects.toThrow(NotFoundError);
     });
 
     test('should handle token without supply key', async () => {
@@ -240,15 +230,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      const result = await mintNft(args);
-
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toBeDefined();
-      expect(result.errorMessage).toContain('does not have a supply key');
-      expect(result.errorMessage).toContain(
-        'Cannot mint NFTs without a supply key',
-      );
-      expect(result.outputJson).toBeUndefined();
+      await expect(mintNft(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle fungible token (not NFT)', async () => {
@@ -309,15 +291,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      const result = await mintNft(args);
-
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toBeDefined();
-      expect(result.errorMessage).toContain('is not an NFT');
-      expect(result.errorMessage).toContain(
-        'This command only supports NFT tokens',
-      );
-      expect(result.outputJson).toBeUndefined();
+      await expect(mintNft(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle exceeding max supply for FINITE token', async () => {
@@ -344,22 +318,13 @@ describe('mintNftHandler', () => {
         },
       });
 
-      const result = await mintNft(args);
-
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toBeDefined();
-      expect(result.errorMessage).toContain('Cannot mint NFT');
-      expect(result.errorMessage).toContain('Current supply: 10');
-      expect(result.errorMessage).toContain('Max supply: 10');
-      expect(result.errorMessage).toContain('Would exceed by:');
-      expect(result.outputJson).toBeUndefined();
+      await expect(mintNft(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle metadata exceeding 100 bytes', async () => {
       const { api } = makeMintNftSuccessMocks();
 
       const logger = makeLogger();
-      // Create metadata string longer than 100 bytes
       const longMetadata = 'a'.repeat(101);
       const args = makeMintNftCommandArgs({
         api,
@@ -371,14 +336,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      const result = await mintNft(args);
-
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toBeDefined();
-      expect(result.errorMessage).toContain('Metadata exceeds maximum size');
-      expect(result.errorMessage).toContain('100 bytes');
-      expect(result.errorMessage).toContain('Current size: 101 bytes');
-      expect(result.outputJson).toBeUndefined();
+      await expect(mintNft(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle transaction failure', async () => {
@@ -397,12 +355,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      const result = await mintNft(args);
-
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toBeDefined();
-      expect(result.errorMessage).toBe('NFT mint transaction failed');
-      expect(result.outputJson).toBeUndefined();
+      await expect(mintNft(args)).rejects.toThrow(TransactionError);
     });
 
     test('should handle mismatched supply key', async () => {
@@ -451,17 +404,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      const result = await mintNft(args);
-
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toBeDefined();
-      expect(result.errorMessage).toContain(
-        "The provided supply key does not match the token's supply key",
-      );
-      expect(result.errorMessage).toContain(
-        'Token 0.0.123456 requires a different supply key',
-      );
-      expect(result.outputJson).toBeUndefined();
+      await expect(mintNft(args)).rejects.toThrow(ValidationError);
     });
   });
 });

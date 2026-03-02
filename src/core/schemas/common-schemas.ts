@@ -8,6 +8,7 @@
  */
 import { z } from 'zod';
 
+import { ValidationError } from '@/core/errors';
 import { HederaTokenType, KeyAlgorithm } from '@/core/shared/constants';
 import {
   EntityReferenceType,
@@ -400,7 +401,7 @@ export const ContractReferenceObjectSchema = z
     if (AliasNameSchema.safeParse(val).success) {
       return { type: EntityReferenceType.ALIAS, value: val };
     }
-    throw new Error(
+    throw new ValidationError(
       'Contract reference must be a valid Hedera ID (0.0.xxx), alias name, or EVM address (0x...)',
     );
   })
@@ -424,7 +425,7 @@ export const AccountReferenceObjectSchema = z
     if (AliasNameSchema.safeParse(val).success) {
       return { type: EntityReferenceType.ALIAS, value: val };
     }
-    throw new Error(
+    throw new ValidationError(
       'Account reference must be a valid Hedera ID (0.0.xxx), alias name, or EVM address (0x...)',
     );
   })
@@ -444,7 +445,7 @@ export const TokenReferenceObjectSchema = z
     if (AliasNameSchema.safeParse(val).success) {
       return { type: EntityReferenceType.ALIAS, value: val };
     }
-    throw new Error(
+    throw new ValidationError(
       'Token reference must be a valid Hedera ID (0.0.xxx) or alias name',
     );
   })

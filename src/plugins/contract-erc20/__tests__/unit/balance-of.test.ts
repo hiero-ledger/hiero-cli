@@ -1,15 +1,17 @@
 import type { CoreApi, Logger } from '@/core';
+import type { ContractErc20CallBalanceOfOutput } from '@/plugins/contract-erc20/commands/balance-of/output';
 
 import { ZodError } from 'zod';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
+import { NotFoundError, StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { balanceOfFunctionCall as erc20BalanceOfHandler } from '@/plugins/contract-erc20/commands/balance-of/handler';
 import { ContractErc20CallBalanceOfInputSchema } from '@/plugins/contract-erc20/commands/balance-of/input';
 
 const mockSolidityAddress = '1234567890123456789012345678901234567890';
+const accountAddress = '0x1234567890123456789012345678901234567890';
 
 jest.mock('@hashgraph/sdk', () => ({
   ContractId: {
@@ -56,8 +58,6 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
     }).api;
   });
 
-  const accountAddress = '0x1234567890123456789012345678901234567890';
-
   test('calls ERC-20 balanceOf successfully and returns expected output', async () => {
     const args = makeContractErc20CallCommandArgs({
       api,
@@ -70,13 +70,9 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
 
     const result = await erc20BalanceOfHandler(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    expect(result.result).toBeDefined();
 
-    if (result.outputJson === undefined) {
-      throw new Error('Expected outputJson to be defined');
-    }
-    const parsed = JSON.parse(result.outputJson);
+    const parsed = result.result as ContractErc20CallBalanceOfOutput;
 
     expect(parsed.contractId).toBe('0.0.1234');
     expect(parsed.account).toBe(accountAddress);
@@ -121,13 +117,9 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
 
     const result = await erc20BalanceOfHandler(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    expect(result.result).toBeDefined();
 
-    if (result.outputJson === undefined) {
-      throw new Error('Expected outputJson to be defined');
-    }
-    const parsed = JSON.parse(result.outputJson);
+    const parsed = result.result as ContractErc20CallBalanceOfOutput;
 
     expect(parsed.account).toBe(`0x${mockSolidityAddress}`);
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
@@ -157,7 +149,8 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
 
     const result = await erc20BalanceOfHandler(args);
 
-    expect(result.status).toBe(Status.Success);
+    expect(result.result).toBeDefined();
+
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
       accountReference: 'my-account-alias',
       type: expect.any(String),
@@ -170,7 +163,7 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
     );
   });
 
-  test('returns failure when contractQuery returns empty queryResult', async () => {
+  test('throws StateError when contractQuery returns empty queryResult', async () => {
     const args = makeContractErc20CallCommandArgs({
       api,
       logger,
@@ -186,15 +179,10 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
       queryResult: [],
     });
 
-    const result = await erc20BalanceOfHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'There was a problem with decoding contract 0.0.1234 "balanceOf" function result',
-    );
+    await expect(erc20BalanceOfHandler(args)).rejects.toThrow(StateError);
   });
 
-  test('returns failure when queryContractFunction throws', async () => {
+  test('throws when queryContractFunction throws', async () => {
     const args = makeContractErc20CallCommandArgs({
       api,
       logger,
@@ -207,12 +195,30 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    const result = await erc20BalanceOfHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain(
-      'Failed to call balanceOf function: contract query error',
+    await expect(erc20BalanceOfHandler(args)).rejects.toThrow(
+      'contract query error',
     );
+  });
+
+  test('throws NotFoundError when accountEvmAddress is not found', async () => {
+    const args = makeContractErc20CallCommandArgs({
+      api,
+      logger,
+      args: {
+        contract: 'some-alias-or-id',
+        account: 'my-account-alias',
+      },
+    });
+
+    (args.api.identityResolution.resolveAccount as jest.Mock).mockResolvedValue(
+      {
+        accountId: '0.0.9999',
+        accountPublicKey: 'pub-key-alias',
+        evmAddress: null,
+      },
+    );
+
+    await expect(erc20BalanceOfHandler(args)).rejects.toThrow(NotFoundError);
   });
 
   test('schema validation fails when contract is missing', () => {
