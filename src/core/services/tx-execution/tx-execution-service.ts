@@ -9,15 +9,14 @@ import type {
   TransactionReceipt,
   TransactionResponse,
 } from '@hashgraph/sdk';
+import type { TransactionResult, TxExecutionService } from '@/core';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
-import type {
-  TransactionResult,
-  TxExecutionService,
-} from './tx-execution-service.interface';
 
 import { AccountId, Status, TransactionId } from '@hashgraph/sdk';
+
+import { StateError, TransactionError } from '@/core/errors';
 
 export class TxExecutionServiceImpl implements TxExecutionService {
   private logger: Logger;
@@ -61,12 +60,13 @@ export class TxExecutionServiceImpl implements TxExecutionService {
     // If payer is set but transaction is already frozen, we cannot set TransactionId
     // This would result in transaction being executed with operator instead of payer
     if (payer && transaction.isFrozen()) {
-      throw new Error(
-        `[TX-EXECUTION] Transaction is already frozen before setting requested payer of the transaction`,
+      throw new StateError(
+        'Transaction is already frozen before setting requested payer',
+        { context: { payerAccountId: payer.accountId } },
       );
     }
 
-    if (payer && !transaction.isFrozen()) {
+    if (payer && payer.accountId && !transaction.isFrozen()) {
       const payerAccountId = AccountId.fromString(payer.accountId);
       const transactionId = TransactionId.generate(payerAccountId);
       transaction.setTransactionId(transactionId);
@@ -123,10 +123,11 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       const response: TransactionResponse = await transaction.execute(client);
       return await this.processTransactionResponse(response, client);
     } catch (error) {
-      this.logger.error(
-        `[TX-EXECUTION] Transaction execution failed: ${error?.toString()}`,
+      throw new TransactionError(
+        `Transaction execution failed (txId: ${transaction.transactionId?.toString() ?? 'unknown'})`,
+        false,
+        { cause: error },
       );
-      throw error;
     } finally {
       client.close();
     }
@@ -141,10 +142,11 @@ export class TxExecutionServiceImpl implements TxExecutionService {
       const response: TransactionResponse = await transaction.execute(client);
       return await this.processTransactionResponse(response, client);
     } catch (error) {
-      this.logger.error(
-        `[TX-EXECUTION] Transaction execution failed: ${error?.toString()}`,
+      throw new TransactionError(
+        `Contract create flow execution failed`,
+        false,
+        { cause: error },
       );
-      throw error;
     } finally {
       client.close();
     }

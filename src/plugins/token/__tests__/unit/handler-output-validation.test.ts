@@ -1,7 +1,3 @@
-/**
- * ADR-003 Compliance Tests for Token Plugin
- * Tests that all command handlers return CommandExecutionResult according to ADR-003
- */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { AssociateTokenOutput } from '@/plugins/token/commands/associate';
 import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
@@ -10,7 +6,6 @@ import type { TransferFungibleTokenOutput } from '@/plugins/token/commands/trans
 
 import '@/core/utils/json-serialize';
 
-import { Status } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { associateToken } from '@/plugins/token/commands/associate/handler';
 import { createToken } from '@/plugins/token/commands/create-ft/handler';
@@ -30,7 +25,7 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
 
-describe('ADR-003 Compliance - Token Plugin', () => {
+describe('Handler Output Validation - Token Plugin', () => {
   beforeEach(() => {
     MockedHelper.mockClear();
     MockedHelper.mockImplementation(() => ({
@@ -49,8 +44,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
   });
 
   describe('createTokenHandler', () => {
-    test('returns CommandExecutionResult on success', async () => {
-      // Arrange
+    test('returns CommandResult on success', async () => {
       const mockSignResult = makeTransactionResult({
         tokenId: '0.0.12345',
         transactionId: '0.0.123@1700000000.123456789',
@@ -65,7 +59,10 @@ describe('ADR-003 Compliance - Token Plugin', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
-          getPublicKey: jest.fn().mockReturnValue('test-public-key'),
+          get: jest.fn().mockReturnValue({
+            keyRefId: 'test-key-ref-id',
+            publicKey: 'test-public-key',
+          }),
         },
         alias: {
           register: jest.fn(),
@@ -80,7 +77,6 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         supplyType: SupplyType.INFINITE,
       };
 
-      // Act
       const result = await createToken({
         api,
         logger: makeLogger(),
@@ -89,14 +85,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      // Assert
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-
-      const output = JSON.parse(
-        result.outputJson!,
-      ) as CreateFungibleTokenOutput;
+      const output = result.result as CreateFungibleTokenOutput;
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TTK');
@@ -105,8 +94,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
   });
 
   describe('transferTokenHandler', () => {
-    test('returns CommandExecutionResult on success', async () => {
-      // Arrange
+    test('returns CommandResult on success', async () => {
       const mockSignResult = makeTransactionResult({
         transactionId: '0.0.123@1700000000.123456789',
         success: true,
@@ -142,7 +130,10 @@ describe('ADR-003 Compliance - Token Plugin', () => {
             }),
         },
         kms: {
-          getPublicKey: jest.fn().mockReturnValue('mock-public-key'),
+          get: jest.fn().mockReturnValue({
+            keyRefId: 'mock-key-ref-id',
+            publicKey: 'mock-public-key',
+          }),
         },
       });
 
@@ -152,7 +143,6 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         amount: '100t',
       };
 
-      // Act
       const result = await transferToken({
         api,
         logger: makeLogger(),
@@ -161,23 +151,15 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      // Assert
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-
-      const output = JSON.parse(
-        result.outputJson!,
-      ) as TransferFungibleTokenOutput;
+      const output = result.result as TransferFungibleTokenOutput;
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.transactionId).toBe('0.0.123@1700000000.123456789');
-      expect(output.amount).toBe('100');
+      expect(output.amount).toBe(100n);
     });
   });
 
   describe('associateTokenHandler', () => {
-    test('returns CommandExecutionResult on success', async () => {
-      // Arrange
+    test('returns CommandResult on success', async () => {
       const mockSignResult = makeTransactionResult({
         transactionId: '0.0.123@1700000000.123456789',
         success: true,
@@ -189,6 +171,9 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         },
         signing: {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        },
+        mirror: {
+          getAccountTokenBalances: jest.fn().mockResolvedValue({ tokens: [] }),
         },
         alias: {
           resolve: jest.fn().mockReturnValue({
@@ -203,7 +188,6 @@ describe('ADR-003 Compliance - Token Plugin', () => {
           '0.0.111:4444444444444444444444444444444444444444444444444444444444444444',
       };
 
-      // Act
       const result = await associateToken({
         api,
         logger: makeLogger(),
@@ -212,12 +196,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      // Assert
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-
-      const output = JSON.parse(result.outputJson!) as AssociateTokenOutput;
+      const output = result.result as AssociateTokenOutput;
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.associated).toBe(true);
       expect(output.transactionId).toBe('0.0.123@1700000000.123456789');
@@ -225,13 +204,11 @@ describe('ADR-003 Compliance - Token Plugin', () => {
   });
 
   describe('listTokensHandler', () => {
-    test('returns CommandExecutionResult with empty list', async () => {
-      // Arrange
+    test('returns CommandResult with empty list', async () => {
       const { api } = makeApiMocks();
 
       const args = {};
 
-      // Act
       const result = await listTokens({
         api,
         logger: makeLogger(),
@@ -240,19 +217,13 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      // Assert
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-
-      const output = JSON.parse(result.outputJson!) as ListTokensOutput;
+      const output = result.result as ListTokensOutput;
       expect(output.tokens).toEqual([]);
       expect(output.totalCount).toBe(0);
       expect(output.stats).toBeDefined();
     });
 
-    test('returns CommandExecutionResult with token list', async () => {
-      // Arrange
+    test('returns CommandResult with token list', async () => {
       MockedHelper.mockImplementation(() => ({
         listTokens: jest.fn().mockReturnValue([
           {
@@ -278,7 +249,6 @@ describe('ADR-003 Compliance - Token Plugin', () => {
 
       const args = {};
 
-      // Act
       const result = await listTokens({
         api,
         logger: makeLogger(),
@@ -287,12 +257,7 @@ describe('ADR-003 Compliance - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      // Assert
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-
-      const output = JSON.parse(result.outputJson!) as ListTokensOutput;
+      const output = result.result as ListTokensOutput;
       expect(output.tokens).toHaveLength(1);
       expect(output.tokens[0].tokenId).toBe('0.0.12345');
       expect(output.totalCount).toBe(1);

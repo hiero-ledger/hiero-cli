@@ -4,7 +4,7 @@ import {
   AmountInputSchema,
   EntityReferenceSchema,
   KeyManagerTypeSchema,
-  KeyOrAccountAliasSchema,
+  PrivateKeySchema,
 } from '@/core/schemas';
 
 /**
@@ -16,8 +16,8 @@ export const MintFtInputSchema = z.object({
   amount: AmountInputSchema.describe(
     'Amount to mint (display units or base units with "t" suffix)',
   ),
-  supplyKey: KeyOrAccountAliasSchema.describe(
-    'Supply key as account name or {accountId}:{private_key} format',
+  supplyKey: PrivateKeySchema.describe(
+    'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias.',
   ),
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type (defaults to config setting)',

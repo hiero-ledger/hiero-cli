@@ -1,13 +1,10 @@
-/**
- * NFT Token Create From File Handler Unit Tests
- * Tests the NFT token creation from file functionality of the token plugin
- */
 import '@/core/utils/json-serialize';
 
 import * as fs from 'fs/promises';
 import * as path from 'path';
 
-import { HederaTokenType, Status } from '@/core/shared/constants';
+import { FileError, StateError } from '@/core/errors';
+import { HederaTokenType } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   createNftFromFile,
@@ -72,10 +69,6 @@ describe('createNftFromFileHandler', () => {
         findByPublicKey: jest.fn().mockImplementation((key) => {
           if (key === 'admin-key') return 'admin-key-ref-id';
           return undefined;
-        }),
-        getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-          if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-          return 'mock-public-key';
         }),
       },
     });
@@ -152,12 +145,22 @@ describe('createNftFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -173,12 +176,7 @@ describe('createNftFromFileHandler', () => {
 
       const result = await createNftFromFile(args);
 
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
+      const output = result.result as CreateNftFromFileOutput;
       expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
       expect(output.name).toBe(validNftTokenFile.name);
       expect(output.symbol).toBe(validNftTokenFile.symbol);
@@ -226,11 +224,7 @@ describe('createNftFromFileHandler', () => {
 
       const result = await createNftFromFile(args);
 
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
+      const output = result.result as CreateNftFromFileOutput;
       expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
       expect(output.name).toBe(validNftTokenFile.name);
       expect(output.symbol).toBe(validNftTokenFile.symbol);
@@ -260,11 +254,7 @@ describe('createNftFromFileHandler', () => {
 
       const result = await createNftFromFile(args);
 
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
+      const output = result.result as CreateNftFromFileOutput;
       expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
       expect(output.name).toBe(validNftTokenFile.name);
       expect(output.symbol).toBe(validNftTokenFile.symbol);
@@ -317,12 +307,22 @@ describe('createNftFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -338,12 +338,7 @@ describe('createNftFromFileHandler', () => {
 
       const result = await createNftFromFile(args);
 
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
+      const output = result.result as CreateNftFromFileOutput;
       expect(output.name).toBe(validNftTokenFile.name);
       expect(output.symbol).toBe(validNftTokenFile.symbol);
       expect(output.treasuryId).toBe(mockAccountIds.treasury);
@@ -400,12 +395,22 @@ describe('createNftFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -421,12 +426,7 @@ describe('createNftFromFileHandler', () => {
 
       const result = await createNftFromFile(args);
 
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
+      const output = result.result as CreateNftFromFileOutput;
       expect(output.name).toBe(infiniteSupplyNftFile.name);
       expect(output.symbol).toBe(infiniteSupplyNftFile.symbol);
       expect(output.treasuryId).toBe(mockAccountIds.treasury);
@@ -500,12 +500,22 @@ describe('createNftFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -521,12 +531,7 @@ describe('createNftFromFileHandler', () => {
 
       const result = await createNftFromFile(args);
 
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
+      const output = result.result as CreateNftFromFileOutput;
       expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
       expect(output.associations).toBeDefined();
       expect(output.associations.length).toBeGreaterThan(0);
@@ -553,14 +558,7 @@ describe('createNftFromFileHandler', () => {
         args: { file: 'nonexistent' },
       });
 
-      const result = await createNftFromFile(args);
-
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain(
-        'Failed to create NFT token from file',
-      );
-      expect(result.outputJson).toBeUndefined();
+      await expect(createNftFromFile(args)).rejects.toThrow(FileError);
     });
 
     test('should handle file read error', async () => {
@@ -578,14 +576,7 @@ describe('createNftFromFileHandler', () => {
         },
       });
 
-      const result = await createNftFromFile(args);
-
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain(
-        'Failed to create NFT token from file',
-      );
-      expect(result.outputJson).toBeUndefined();
+      await expect(createNftFromFile(args)).rejects.toThrow(FileError);
     });
 
     test('should handle invalid JSON', async () => {
@@ -603,14 +594,7 @@ describe('createNftFromFileHandler', () => {
         },
       });
 
-      const result = await createNftFromFile(args);
-
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain(
-        'Failed to create NFT token from file',
-      );
-      expect(result.outputJson).toBeUndefined();
+      await expect(createNftFromFile(args)).rejects.toThrow(FileError);
     });
   });
 
@@ -632,14 +616,9 @@ describe('createNftFromFileHandler', () => {
         },
       });
 
-      const result = await createNftFromFile(args);
-
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain(
-        'Invalid NFT token definition file',
+      await expect(createNftFromFile(args)).rejects.toThrow(
+        'Private key with account ID must be a valid account ID and private key pair in {account-id:private-key} format, key reference or alias name',
       );
-      expect(result.outputJson).toBeUndefined();
     });
 
     test('should handle missing supplyKey (required for NFT)', async () => {
@@ -659,14 +638,9 @@ describe('createNftFromFileHandler', () => {
         },
       });
 
-      const result = await createNftFromFile(args);
-
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain(
+      await expect(createNftFromFile(args)).rejects.toThrow(
         'Invalid NFT token definition file',
       );
-      expect(result.outputJson).toBeUndefined();
     });
 
     test('should handle invalid treasury format', async () => {
@@ -686,14 +660,9 @@ describe('createNftFromFileHandler', () => {
         },
       });
 
-      const result = await createNftFromFile(args);
-
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain(
-        'Invalid NFT token definition file',
+      await expect(createNftFromFile(args)).rejects.toThrow(
+        'Private key with account ID must be a valid account ID and private key pair in {account-id:private-key} format, key reference or alias name',
       );
-      expect(result.outputJson).toBeUndefined();
     });
 
     test('should handle invalid supply type', async () => {
@@ -713,14 +682,9 @@ describe('createNftFromFileHandler', () => {
         },
       });
 
-      const result = await createNftFromFile(args);
-
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain(
+      await expect(createNftFromFile(args)).rejects.toThrow(
         'Invalid NFT token definition file',
       );
-      expect(result.outputJson).toBeUndefined();
     });
 
     test('should handle finite supply without maxSupply', async () => {
@@ -740,14 +704,9 @@ describe('createNftFromFileHandler', () => {
         },
       });
 
-      const result = await createNftFromFile(args);
-
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain(
+      await expect(createNftFromFile(args)).rejects.toThrow(
         'Invalid NFT token definition file',
       );
-      expect(result.outputJson).toBeUndefined();
     });
 
     test('should handle infinite supply with maxSupply', async () => {
@@ -767,14 +726,9 @@ describe('createNftFromFileHandler', () => {
         },
       });
 
-      const result = await createNftFromFile(args);
-
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain(
+      await expect(createNftFromFile(args)).rejects.toThrow(
         'Invalid NFT token definition file',
       );
-      expect(result.outputJson).toBeUndefined();
     });
   });
 
@@ -826,12 +780,22 @@ describe('createNftFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -845,14 +809,7 @@ describe('createNftFromFileHandler', () => {
         },
       });
 
-      const result = await createNftFromFile(args);
-
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain(
-        'Failed to create NFT token from file',
-      );
-      expect(result.outputJson).toBeUndefined();
+      await expect(createNftFromFile(args)).rejects.toThrow(StateError);
     });
 
     test('should handle association failure gracefully', async () => {
@@ -907,12 +864,22 @@ describe('createNftFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -928,17 +895,12 @@ describe('createNftFromFileHandler', () => {
 
       const result = await createNftFromFile(args);
 
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
+      const output = result.result as CreateNftFromFileOutput;
       expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
       expect(output.name).toBe(validNftTokenFile.name);
 
       expect(logger.warn).toHaveBeenCalledWith(
-        expect.stringContaining('⚠️  Failed to associate account 0.0.789012:'),
+        expect.stringContaining('⚠️  Failed to associate account 0.0.789012'),
       );
     });
   });
@@ -991,12 +953,22 @@ describe('createNftFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -1012,12 +984,7 @@ describe('createNftFromFileHandler', () => {
 
       const result = await createNftFromFile(args);
 
-      expect(result).toBeDefined();
-      expect(result.status).toBe(Status.Success);
-      expect(result.outputJson).toBeDefined();
-      expect(result.errorMessage).toBeUndefined();
-
-      const output: CreateNftFromFileOutput = JSON.parse(result.outputJson!);
+      const output = result.result as CreateNftFromFileOutput;
       expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
       expect(output.name).toBe(validNftTokenFile.name);
 

@@ -5,7 +5,7 @@
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
-import { toErrorMessage } from '@/core/utils/errors';
+import { NotFoundError } from '@/core/errors';
 
 import { TOKEN_NAMESPACE } from './manifest';
 import { type TokenData } from './schema';
@@ -32,7 +32,7 @@ export class ZustandTokenStateHelper {
       this.logger.debug(`[TOKEN STATE] Successfully saved token ${key}`);
     } catch (error) {
       this.logger.error(
-        `[TOKEN STATE] Failed to save token ${key}: ${toErrorMessage(error)}`,
+        `[TOKEN STATE] Failed to save token ${key}: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }
@@ -56,7 +56,7 @@ export class ZustandTokenStateHelper {
       }
     } catch (error) {
       this.logger.error(
-        `[TOKEN STATE] Failed to get token ${key}: ${toErrorMessage(error)}`,
+        `[TOKEN STATE] Failed to get token ${key}: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }
@@ -85,7 +85,7 @@ export class ZustandTokenStateHelper {
       return tokensMap;
     } catch (error) {
       this.logger.error(
-        `[TOKEN STATE] Failed to get all tokens: ${toErrorMessage(error)}`,
+        `[TOKEN STATE] Failed to get all tokens: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }
@@ -103,7 +103,7 @@ export class ZustandTokenStateHelper {
       this.logger.debug(`[TOKEN STATE] Successfully removed token ${key}`);
     } catch (error) {
       this.logger.error(
-        `[TOKEN STATE] Failed to remove token ${key}: ${toErrorMessage(error)}`,
+        `[TOKEN STATE] Failed to remove token ${key}: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }
@@ -120,7 +120,9 @@ export class ZustandTokenStateHelper {
     try {
       const tokenData = this.getToken(key);
       if (!tokenData) {
-        throw new Error(`Token ${key} not found`);
+        throw new NotFoundError(`Token ${key} not found`, {
+          context: { key },
+        });
       }
 
       // Check if association already exists
@@ -175,7 +177,7 @@ export class ZustandTokenStateHelper {
       }
     } catch (error) {
       this.logger.error(
-        `[TOKEN STATE] Failed to add association to token ${key}: ${toErrorMessage(error)}`,
+        `[TOKEN STATE] Failed to add association to token ${key}: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }
@@ -223,7 +225,7 @@ export class ZustandTokenStateHelper {
       return validTokens;
     } catch (error) {
       this.logger.error(
-        `[TOKEN STATE] Failed to list tokens: ${toErrorMessage(error)}`,
+        `[TOKEN STATE] Failed to list tokens: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }
@@ -282,7 +284,7 @@ export class ZustandTokenStateHelper {
       return stats;
     } catch (error) {
       this.logger.error(
-        `[TOKEN STATE] Failed to generate token stats: ${toErrorMessage(error)}`,
+        `[TOKEN STATE] Failed to generate token stats: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }

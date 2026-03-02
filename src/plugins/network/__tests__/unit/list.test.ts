@@ -1,10 +1,11 @@
+import type { ListNetworksOutput } from '@/plugins/network/commands/list/output';
+
 import {
   makeArgs,
   makeLogger,
   makeNetworkMock,
   setupExitSpy,
 } from '@/__tests__/mocks/mocks';
-import { Status } from '@/core/shared/constants';
 import { listHandler } from '@/plugins/network/commands/list';
 import {
   checkMirrorNodeHealth,
@@ -42,8 +43,9 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    const output = result.result as ListNetworksOutput;
+    expect(output.networks).toBeDefined();
+    expect(output.activeNetwork).toBe('testnet');
   });
 
   test('shows health checks for active network', async () => {
@@ -59,8 +61,7 @@ describe('network plugin - list command', () => {
     }));
     const args = makeArgs({ network: networkService }, logger, {});
 
-    const result = await listHandler(args);
-    expect(result.status).toBe(Status.Success);
+    await listHandler(args);
 
     expect(mockedCheckMirrorNodeHealth).toHaveBeenCalledWith(
       'https://testnet.mirrornode.hedera.com/api/v1',
@@ -75,14 +76,13 @@ describe('network plugin - list command', () => {
     const networkService = makeNetworkMock('testnet');
     const args = makeArgs({ network: networkService }, logger, {});
 
-    const result = await listHandler(args);
-    expect(result.status).toBe(Status.Success);
+    await listHandler(args);
 
     expect(mockedCheckMirrorNodeHealth).toHaveBeenCalledTimes(1);
     expect(mockedCheckRpcHealth).toHaveBeenCalledTimes(1);
   });
 
-  test('outputs JSON format when --json flag is set', async () => {
+  test('returns output with networks for all available networks', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('mainnet');
     networkService.getAvailableNetworks = jest
@@ -106,11 +106,12 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
+    const output = result.result as ListNetworksOutput;
+    expect(output.networks).toHaveLength(4);
+    expect(output.activeNetwork).toBe('mainnet');
   });
 
-  test('handles errors gracefully', async () => {
+  test('throws when network service fails', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     networkService.getAvailableNetworks = jest.fn().mockImplementation(() => {
@@ -118,10 +119,7 @@ describe('network plugin - list command', () => {
     });
     const args = makeArgs({ network: networkService }, logger, {});
 
-    const result = await listHandler(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toContain('Failed to list networks');
+    await expect(listHandler(args)).rejects.toThrow('Network service error');
   });
 
   test('shows health check failures', async () => {
@@ -142,7 +140,9 @@ describe('network plugin - list command', () => {
     const args = makeArgs({ network: networkService }, logger, {});
 
     const result = await listHandler(args);
-    expect(result.status).toBe(Status.Success);
+
+    const output = result.result as ListNetworksOutput;
+    expect(output.networks).toBeDefined();
   });
 
   test('returns success on happy path', async () => {
@@ -152,7 +152,8 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    expect(result.status).toBe(Status.Success);
+    const output = result.result as ListNetworksOutput;
+    expect(output.activeNetwork).toBe('testnet');
   });
 
   test('includes operator information in output', async () => {
@@ -170,28 +171,20 @@ describe('network plugin - list command', () => {
     const args = makeArgs({ network: networkService }, logger, {});
 
     const result = await listHandler(args);
-    expect(result.status).toBe(Status.Success);
 
-    const parsed = JSON.parse(result.outputJson as string);
-    expect(
-      parsed.networks.some(
-        (n: Record<string, unknown>) => n.operatorId === '0.0.1001',
-      ),
-    ).toBe(true);
+    const output = result.result as ListNetworksOutput;
+    expect(output.networks.some((n) => n.operatorId === '0.0.1001')).toBe(true);
   });
 
-  test('shows "Not configured" when no operator is set', async () => {
+  test('shows empty operatorId when no operator is set', async () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     networkService.getOperator = jest.fn().mockReturnValue(null);
     const args = makeArgs({ network: networkService }, logger, {});
 
     const result = await listHandler(args);
-    expect(result.status).toBe(Status.Success);
 
-    const parsed = JSON.parse(result.outputJson as string);
-    expect(
-      parsed.networks.some((n: Record<string, unknown>) => !n.operatorId),
-    ).toBe(true);
+    const output = result.result as ListNetworksOutput;
+    expect(output.networks.some((n) => !n.operatorId)).toBe(true);
   });
 });

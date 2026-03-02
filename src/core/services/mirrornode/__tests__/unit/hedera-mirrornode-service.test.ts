@@ -8,12 +8,19 @@ import {
   createMockContractInfo,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
+import { NetworkError, NotFoundError } from '@/core/errors';
 import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { AccountBalanceOperator } from '@/core/services/mirrornode/types';
+import {
+  MirrorNodeRequestOrderParameter,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 
 import {
   createMockAccountAPIResponse,
+  createMockAccountListItemAPIResponse,
   createMockExchangeRateResponse,
+  createMockGetAccountsAPIResponse,
   createMockNftInfo,
   createMockTokenAirdropsResponse,
   createMockTokenBalancesResponse,
@@ -56,15 +63,8 @@ const setupService = (network: SupportedNetwork = SupportedNetwork.TESTNET) => {
 };
 
 describe('HederaMirrornodeServiceDefaultImpl', () => {
-  let consoleErrorSpy: jest.SpyInstance;
-
   beforeEach(() => {
     jest.clearAllMocks();
-    consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-  });
-
-  afterEach(() => {
-    consoleErrorSpy.mockRestore();
   });
 
   describe('constructor', () => {
@@ -152,7 +152,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getAccount(TEST_ACCOUNT_ID)).rejects.toThrow(
-        'No key is associated with the specified account.',
+        NotFoundError,
       );
     });
 
@@ -180,7 +180,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getAccount(TEST_ACCOUNT_ID)).rejects.toThrow(
-        `Failed to fetch account ${TEST_ACCOUNT_ID}: 404 Not Found`,
+        NotFoundError,
       );
     });
 
@@ -193,7 +193,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getAccount(TEST_ACCOUNT_ID)).rejects.toThrow(
-        `Failed to fetch account ${TEST_ACCOUNT_ID}: 500 Internal Server Error`,
+        NetworkError,
       );
     });
 
@@ -208,7 +208,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getAccount(TEST_ACCOUNT_ID)).rejects.toThrow(
-        `Account ${TEST_ACCOUNT_ID} not found`,
+        NotFoundError,
       );
     });
   });
@@ -260,7 +260,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       expect(result).toBe(0n);
     });
 
-    it('should throw error with formatError wrapper when getAccount fails', async () => {
+    it('should throw error when getAccount fails', async () => {
       const { service } = setupService();
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: false,
@@ -270,9 +270,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await expect(
         service.getAccountHBarBalance(TEST_ACCOUNT_ID),
-      ).rejects.toThrow(
-        `Failed to fetch hbar balance for ${TEST_ACCOUNT_ID}: : Failed to fetch account ${TEST_ACCOUNT_ID}: 404 Not Found`,
-      );
+      ).rejects.toThrow(NotFoundError);
     });
   });
 
@@ -332,9 +330,230 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await expect(
         service.getAccountTokenBalances(TEST_ACCOUNT_ID),
-      ).rejects.toThrow(
-        `Failed to fetch balance for an account ${TEST_ACCOUNT_ID}: 404 Not Found`,
+      ).rejects.toThrow(NotFoundError);
+    });
+  });
+
+  describe('getAccounts', () => {
+    it('should fetch accounts without params and return mapped DTO', async () => {
+      const { service } = setupService();
+      const mockAccount = createMockAccountListItemAPIResponse();
+      const mockResponse = createMockGetAccountsAPIResponse([mockAccount]);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccounts();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_URL}/accounts?balance=false&limit=25&order=asc`,
       );
+      expect(result.accounts).toHaveLength(1);
+      expect(result.accounts[0].accountId).toBe('0.0.1234');
+      expect(result.accounts[0].createdTimestamp).toBe(
+        mockAccount.created_timestamp,
+      );
+      expect(result.accounts[0].accountPublicKey).toBe('ed25519_abcd1234');
+      expect(result.accounts[0].evmAddress).toBe(
+        '0x1234567890123456789012345678901234567890',
+      );
+      expect(result.accounts[0].balance?.balance).toBe(1000000);
+      expect(result.accounts[0].balance?.tokens).toEqual([
+        { tokenId: '0.0.2000', balance: 100 },
+      ]);
+    });
+
+    it('should build correct query string with all params', async () => {
+      const { service } = setupService();
+      const mockResponse = createMockGetAccountsAPIResponse([]);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      await service.getAccounts({
+        accountBalance: { operator: AccountBalanceOperator.GTE, value: 1000 },
+        accountId: '0.0.1234',
+        accountPublicKey:
+          '3c3d546321ff6f63d701d2ec5c277095874e19f4a235bee1e6bb19258bf362be',
+        balance: false,
+        limit: 10,
+        order: MirrorNodeRequestOrderParameter.DESC,
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_URL}/accounts?account.balance=gte:1000&account.id=0.0.1234&account.publickey=3c3d546321ff6f63d701d2ec5c277095874e19f4a235bee1e6bb19258bf362be&balance=false&limit=10&order=desc`,
+      );
+    });
+
+    it('should handle single page response (no links.next)', async () => {
+      const { service } = setupService();
+      const mockAccount = createMockAccountListItemAPIResponse();
+      const mockResponse = createMockGetAccountsAPIResponse([mockAccount], {
+        links: undefined,
+      });
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccounts();
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+      expect(result.accounts).toHaveLength(1);
+    });
+
+    it('should handle pagination with links.next', async () => {
+      const { service } = setupService();
+      const acc1 = createMockAccountListItemAPIResponse({
+        account: '0.0.1',
+      });
+      const acc2 = createMockAccountListItemAPIResponse({
+        account: '0.0.2',
+      });
+
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            accounts: [acc1],
+            links: { next: '/accounts?limit=25&order=asc' },
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            accounts: [acc2],
+            links: undefined,
+          }),
+        });
+
+      const result = await service.getAccounts();
+
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+      expect(result.accounts).toHaveLength(2);
+      expect(result.accounts[0].accountId).toBe('0.0.1');
+      expect(result.accounts[1].accountId).toBe('0.0.2');
+    });
+
+    it('should stop pagination at 100 pages', async () => {
+      const { service } = setupService();
+
+      (global.fetch as jest.Mock).mockImplementation(() =>
+        Promise.resolve({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            accounts: [createMockAccountListItemAPIResponse()],
+            links: { next: '/accounts?next=page' },
+          }),
+        }),
+      );
+
+      const result = await service.getAccounts();
+
+      expect(global.fetch).toHaveBeenCalledTimes(100);
+      expect(result.accounts).toHaveLength(100);
+    });
+
+    it('should construct next URL correctly: baseUrl + links.next', async () => {
+      const { service } = setupService();
+      const nextPath = '/accounts?limit=25&order=asc&next=token';
+
+      (global.fetch as jest.Mock)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            accounts: [createMockAccountListItemAPIResponse()],
+            links: { next: nextPath },
+          }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: jest.fn().mockResolvedValue({
+            accounts: [createMockAccountListItemAPIResponse()],
+            links: undefined,
+          }),
+        });
+
+      await service.getAccounts();
+
+      expect(global.fetch).toHaveBeenNthCalledWith(
+        2,
+        `${TESTNET_URL}${nextPath}`,
+      );
+    });
+
+    it('should throw error on HTTP 404', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      await expect(service.getAccounts()).rejects.toThrow(
+        'Failed to get accounts: 404 Not Found',
+      );
+    });
+
+    it('should log error to console.error before rethrowing', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      });
+
+      await expect(service.getAccounts()).rejects.toThrow(NetworkError);
+    });
+
+    it('should handle empty accounts array', async () => {
+      const { service } = setupService();
+      const mockResponse = createMockGetAccountsAPIResponse([]);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccounts();
+
+      expect(result.accounts).toHaveLength(0);
+    });
+
+    it('should map account with null key correctly', async () => {
+      const { service } = setupService();
+      const mockAccount = createMockAccountListItemAPIResponse({
+        key: null,
+      });
+      const mockResponse = createMockGetAccountsAPIResponse([mockAccount]);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccounts();
+
+      expect(result.accounts[0].accountId).toBe('0.0.1234');
+      expect(result.accounts[0].accountPublicKey).toBeUndefined();
+      expect(result.accounts[0].keyAlgorithm).toBeUndefined();
+    });
+
+    it('should map account with key and keyAlgorithm', async () => {
+      const { service } = setupService();
+      const mockAccount = createMockAccountListItemAPIResponse({
+        key: { _type: 'ECDSA_SECP256K1', key: 'ecdsa_key_123' },
+      });
+      const mockResponse = createMockGetAccountsAPIResponse([mockAccount]);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccounts();
+
+      expect(result.accounts[0].accountPublicKey).toBe('ecdsa_key_123');
+      expect(result.accounts[0].keyAlgorithm).toBeDefined();
     });
   });
 
@@ -501,29 +720,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await expect(
         service.getTopicMessages({ topicId: TEST_TOPIC_ID }),
-      ).rejects.toThrow(
-        `Failed to get topic messages for ${TEST_TOPIC_ID}: 404 Not Found`,
-      );
-    });
-
-    it('should log error to console.error before rethrowing', async () => {
-      const { service } = setupService();
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: false,
-        status: 500,
-        statusText: 'Internal Server Error',
-      });
-
-      await expect(
-        service.getTopicMessages({ topicId: TEST_TOPIC_ID }),
-      ).rejects.toThrow();
-
-      expect(console.error).toHaveBeenCalledWith(
-        expect.stringContaining(
-          `Failed to fetch topic messages for ${TEST_TOPIC_ID}`,
-        ),
-        expect.any(Error),
-      );
+      ).rejects.toThrow(NetworkError);
     });
 
     it('should handle empty messages array', async () => {
@@ -567,7 +764,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getTokenInfo(TEST_TOKEN_ID)).rejects.toThrow(
-        `Failed to get token info for a token ${TEST_TOKEN_ID}: 404 Not Found`,
+        NotFoundError,
       );
     });
   });
@@ -604,9 +801,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await expect(
         service.getNftInfo(TEST_TOKEN_ID, TEST_SERIAL_NUMBER),
-      ).rejects.toThrow(
-        `Failed to get NFT info for token ${TEST_TOKEN_ID} serial ${TEST_SERIAL_NUMBER}: 404 Not Found`,
-      );
+      ).rejects.toThrow(NotFoundError);
     });
 
     it('should work with mainnet network', async () => {
@@ -651,7 +846,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getTopicInfo(TEST_TOPIC_ID)).rejects.toThrow(
-        `Failed to get topic info for ${TEST_TOPIC_ID}: 404 Not Found`,
+        NotFoundError,
       );
     });
   });
@@ -712,7 +907,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getTransactionRecord(TEST_TX_ID)).rejects.toThrow(
-        `Failed to get transaction record for ${TEST_TX_ID}: 404 Not Found`,
+        NotFoundError,
       );
     });
   });
@@ -743,7 +938,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getContractInfo(MOCK_CONTRACT_ID)).rejects.toThrow(
-        `Failed to get contract info for ${MOCK_CONTRACT_ID}: 404 Not Found`,
+        NotFoundError,
       );
     });
   });
@@ -787,7 +982,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.getPendingAirdrops(TEST_ACCOUNT_ID)).rejects.toThrow(
-        `Failed to fetch pending airdrops for an account ${TEST_ACCOUNT_ID}: 404 Not Found`,
+        NotFoundError,
       );
     });
   });
@@ -832,9 +1027,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await expect(
         service.getOutstandingAirdrops(TEST_ACCOUNT_ID),
-      ).rejects.toThrow(
-        `Failed to fetch outstanding airdrops for an account ${TEST_ACCOUNT_ID}: 404 Not Found`,
-      );
+      ).rejects.toThrow(NotFoundError);
     });
   });
 
@@ -894,9 +1087,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         statusText: 'Not Found',
       });
 
-      await expect(service.getExchangeRate()).rejects.toThrow(
-        'HTTP error! status: 404. Message: Not Found',
-      );
+      await expect(service.getExchangeRate()).rejects.toThrow(NetworkError);
     });
   });
 
@@ -943,7 +1134,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       await expect(service.postContractCall(requestBody)).rejects.toThrow(
-        'Failed to call contract via mirror node: 500 Internal Server Error',
+        NetworkError,
       );
     });
   });

@@ -2,7 +2,7 @@
  * Interface for network management operations
  * All network services must implement this interface
  */
-import type { ResolvedKey } from '@/core/services/key-resolver/key-resolver-service.interface';
+import type { ResolvedKey } from '@/core/services/key-resolver/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface NetworkService {

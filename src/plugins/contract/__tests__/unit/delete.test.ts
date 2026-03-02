@@ -10,7 +10,6 @@ import {
   MOCK_TX_ID,
 } from '@/__tests__/mocks/fixtures';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
-import { Status } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   makeAliasServiceMock,
@@ -91,10 +90,7 @@ describe('contract plugin - delete command', () => {
     const result = await deleteContract(args);
 
     expect(deleteContractMock).toHaveBeenCalledWith(MOCK_CONTRACT_ID);
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: DeleteContractOutput = JSON.parse(result.outputJson!);
+    const output = result.result as DeleteContractOutput;
     expect(output.deletedContract.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.deletedContract.contractName).toBe('MyContract');
   });
@@ -144,15 +140,12 @@ describe('contract plugin - delete command', () => {
       'my-contract',
       SupportedNetwork.TESTNET,
     );
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: DeleteContractOutput = JSON.parse(result.outputJson!);
+    const output = result.result as DeleteContractOutput;
     expect(output.deletedContract.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.deletedContract.contractName).toBe('ImportedContract');
   });
 
-  test('returns failure when contract param is missing', async () => {
+  test('throws when contract param is missing', async () => {
     MockedHelper.mockImplementation(() => ({
       getContract: jest.fn(),
       deleteContract: jest.fn(),
@@ -160,29 +153,22 @@ describe('contract plugin - delete command', () => {
 
     const args = makeArgs(api, logger, {});
 
-    const result = await deleteContract(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
+    await expect(deleteContract(args)).rejects.toThrow();
   });
 
-  test('returns failure when contract with given ID not found', async () => {
+  test('throws when contract with given ID not found', async () => {
     MockedHelper.mockImplementation(() => ({
       getContract: jest.fn().mockReturnValue(undefined),
       deleteContract: jest.fn(),
     }));
     const args = makeArgs(api, logger, { contract: '0.0.9999' });
 
-    const result = await deleteContract(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain(
-      "Failed to delete contract: Contract '0.0.9999' not found",
+    await expect(deleteContract(args)).rejects.toThrow(
+      "Contract with identifier '0.0.9999' not found",
     );
   });
 
-  test('returns failure when contract with given alias not found', async () => {
+  test('throws when contract with given alias not found', async () => {
     const alias = makeAliasServiceMock();
     alias.resolve.mockReturnValue(null);
 
@@ -195,16 +181,12 @@ describe('contract plugin - delete command', () => {
       contract: 'missing-alias',
     });
 
-    const result = await deleteContract(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain(
+    await expect(deleteContract(args)).rejects.toThrow(
       "Contract with alias 'missing-alias' not found",
     );
   });
 
-  test('returns failure when alias resolves but contract not in state', async () => {
+  test('throws when alias resolves but contract not in state', async () => {
     const alias = makeAliasServiceMock();
     alias.resolve.mockReturnValue({
       alias: 'my-contract',
@@ -223,16 +205,12 @@ describe('contract plugin - delete command', () => {
       contract: 'my-contract',
     });
 
-    const result = await deleteContract(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain(
-      "Failed to delete contract: Contract 'my-contract' not found",
+    await expect(deleteContract(args)).rejects.toThrow(
+      "Contract with identifier 'my-contract' not found",
     );
   });
 
-  test('returns failure when deleteContract throws', async () => {
+  test('throws when deleteContract throws', async () => {
     const contract = makeContractData({ contractId: MOCK_CONTRACT_ID });
     const alias = makeAliasServiceMock();
     MockedHelper.mockImplementation(() => ({
@@ -245,11 +223,6 @@ describe('contract plugin - delete command', () => {
       contract: MOCK_CONTRACT_ID,
     });
 
-    const result = await deleteContract(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Failed to delete contract');
-    expect(result.errorMessage).toContain('db error');
+    await expect(deleteContract(args)).rejects.toThrow('db error');
   });
 });

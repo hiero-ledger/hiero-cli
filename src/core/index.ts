@@ -7,6 +7,11 @@
  */
 
 // ============================================================================
+// Errors
+// ============================================================================
+export * from './errors';
+
+// ============================================================================
 // Core API
 // ============================================================================
 export * from './core-api';
@@ -64,6 +69,7 @@ export {
   HederaTokenType,
   KeyAlgorithm,
   MirrorTokenTypeToHederaTokenType,
+  PLUGIN_INITIALIZED_DEFAULTS_KEY,
   PLUGIN_MANAGEMENT_NAMESPACE,
   Status,
   TOKEN_BALANCE_LIMIT,
@@ -78,17 +84,16 @@ export * from './schemas';
 // ============================================================================
 // Utilities
 // ============================================================================
-export { formatError, toErrorMessage } from './utils/errors';
 export { zodToJsonSchema } from './utils/zod-to-json-schema';
 
 // ============================================================================
 // Plugin Types
 // ============================================================================
 export type {
-  CommandExecutionResult,
   CommandHandler,
   CommandOption,
   CommandOutputSpec,
+  CommandResult,
   CommandSpec,
   PluginContext,
   PluginManifest,

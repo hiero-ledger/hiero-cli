@@ -22,6 +22,7 @@ import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-
 import type { ContractInfo } from '@/core/services/mirrornode/types';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
+import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type {
@@ -30,6 +31,7 @@ import type {
 } from '@/core/services/tx-execution/tx-execution-service.interface';
 
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -122,13 +124,17 @@ export const makeKmsMock = (): jest.Mocked<KmsService> => ({
     keyRefId: 'kr_test123',
     publicKey: 'pub-key-test',
   }),
+  importPublicKey: jest.fn().mockReturnValue({
+    keyRefId: 'kr_test123',
+    publicKey: 'pub-key-test',
+  }),
   importAndValidatePrivateKey: jest.fn().mockReturnValue({
     keyRefId: 'kr_test123',
     publicKey: 'pub-key-test',
   }),
-  getPublicKey: jest.fn(),
   getSignerHandle: jest.fn(),
   findByPublicKey: jest.fn(),
+  get: jest.fn(),
   list: jest.fn(),
   remove: jest.fn(),
   createClient: jest.fn(),
@@ -295,6 +301,7 @@ export const createMirrorNodeMock =
     getAccount: jest.fn(),
     getAccountHBarBalance: jest.fn(),
     getAccountTokenBalances: jest.fn(),
+    getAccounts: jest.fn(),
     getTopicMessage: jest.fn(),
     getTopicMessages: jest.fn(),
     getTokenInfo: jest.fn(),
@@ -407,7 +414,7 @@ const makeHbarMock = (): jest.Mocked<HbarService> => ({
  * Create a mocked OutputService
  */
 const makeOutputMock = (): jest.Mocked<OutputService> => ({
-  handleCommandOutput: jest.fn(),
+  handleOutput: jest.fn<never, [OutputHandlerOptions]>(),
   setFormat: jest.fn(),
   getFormat: jest.fn().mockReturnValue('human'),
   emptyLine: jest.fn(),
@@ -422,6 +429,9 @@ const makePluginManagementServiceMock = (): PluginManagementService =>
     enablePlugin: jest.fn(),
     disablePlugin: jest.fn(),
     savePluginState: jest.fn(),
+    getInitializedDefaults: jest.fn().mockReturnValue([]),
+    setInitializedDefaults: jest.fn(),
+    addToInitializedDefaults: jest.fn(),
   }) as unknown as PluginManagementService;
 
 const makeContractTransactionServiceMock = (): ContractTransactionService =>
@@ -498,6 +508,7 @@ export const makeArgs = (
       getAccount: jest.fn(),
       getAccountHBarBalance: jest.fn(),
       getAccountTokenBalances: jest.fn(),
+      getAccounts: jest.fn(),
       getTopicMessage: jest.fn(),
       getTopicMessages: jest.fn(),
       getTokenInfo: jest.fn(),
@@ -575,7 +586,7 @@ export const makeKeyResolverMock = (
     // eslint-disable-next-line @typescript-eslint/require-await
     .mockImplementation(async (keyOrAlias, keyManager, labels) => {
       // accountId:privateKey format
-      if (keyOrAlias?.type === 'keypair') {
+      if (keyOrAlias?.type === CredentialType.ACCOUNT_KEY_PAIR) {
         // Call kms.importPrivateKey if available
         if (options.kms?.importPrivateKey) {
           const importResult = options.kms.importPrivateKey(
@@ -598,7 +609,7 @@ export const makeKeyResolverMock = (
       }
 
       // alias format
-      if (keyOrAlias?.type === 'alias' && options.alias) {
+      if (keyOrAlias?.type === CredentialType.ALIAS && options.alias) {
         const network =
           options.network?.getCurrentNetwork() || SupportedNetwork.TESTNET;
         const resolved = options.alias.resolve(

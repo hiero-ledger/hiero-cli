@@ -53,9 +53,17 @@ export const contractPluginManifest: PluginManifest = {
           name: 'file',
           short: 'f',
           type: OptionType.STRING,
-          required: true,
+          required: false,
           description:
             'Smart contract definition file path (absolute or relative) to a Solidity file',
+        },
+        {
+          name: 'default',
+          short: 'd',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Use built-in contract template: erc20 or erc721 (mutually exclusive with --file)',
         },
         {
           name: 'base-path',
@@ -70,15 +78,16 @@ export const contractPluginManifest: PluginManifest = {
           short: 'g',
           type: OptionType.NUMBER,
           required: false,
-          default: 1000000,
-          description: 'Gas for smart contract creation. Default: 1000000',
+          default: 2000000,
+          description: 'Gas for smart contract creation. Default: 2000000',
         },
         {
           name: 'admin-key',
           short: 'a',
           type: OptionType.STRING,
           required: false,
-          description: 'Smart contract admin key.',
+          description:
+            'Smart contract admin key as account ID with private key in {accountId}:{private_key} format, account public key in {ed25519|ecdsa}:{public-key} format, account private key in {ed25519|ecdsa}:{private-key} format, account ID, account name/alias or account key reference.',
         },
         {
           name: 'memo',

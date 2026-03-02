@@ -10,7 +10,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { createAccount, viewAccount } from '@/plugins/account';
 import { createNft } from '@/plugins/token/commands/create-nft';
@@ -39,10 +39,8 @@ describe('Create NFT Integration Tests', () => {
       config: coreApi.config,
     });
 
-    expect(createAccountResult.status).toBe(Status.Success);
-    const createAccountOutput: CreateAccountOutput = JSON.parse(
-      createAccountResult.outputJson!,
-    );
+    const createAccountOutput =
+      createAccountResult.result as CreateAccountOutput;
     expect(createAccountOutput.name).toBe('account-create-nft');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -59,12 +57,9 @@ describe('Create NFT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(viewAccountResult.status).toBe(Status.Success);
-    const viewAccountOutput: ViewAccountOutput = JSON.parse(
-      viewAccountResult.outputJson!,
-    );
+    const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
-    expect(viewAccountOutput.balance).toBe('100000000'); // result in tinybars
+    expect(viewAccountOutput.balance).toBe(100000000n); // result in tinybars
     expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
     expect(viewAccountOutput.publicKey).toBe(createAccountOutput.publicKey);
 
@@ -85,10 +80,7 @@ describe('Create NFT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    expect(createNftResult.status).toBe(Status.Success);
-    const createNftOutput: CreateNftOutput = JSON.parse(
-      createNftResult.outputJson!,
-    );
+    const createNftOutput = createNftResult.result as CreateNftOutput;
     expect(createNftOutput.network).toBe(network);
     expect(createNftOutput.name).toBe('Test NFT');
     expect(createNftOutput.alias).toBe('test-nft');

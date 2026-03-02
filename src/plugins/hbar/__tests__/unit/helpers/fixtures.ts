@@ -79,12 +79,14 @@ export const mockDefaultCredentials = {
   testnet: {
     accountId: mockAccountIds.default,
     privateKey: 'default-key',
+    keyRefId: 'kr_default_testnet',
     network: 'testnet' as const,
     isDefault: true,
   },
   mainnet: {
     accountId: mockAccountIds.default,
     privateKey: 'default-key',
+    keyRefId: 'kr_default_mainnet',
     network: 'mainnet' as const,
     isDefault: true,
   },

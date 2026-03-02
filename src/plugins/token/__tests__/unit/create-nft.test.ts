@@ -1,11 +1,6 @@
-/**
- * Token Create Handler Unit Tests
- * Tests the token creation functionality of the token plugin
- * Updated for ADR-003 compliance
- */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
-import { HederaTokenType, Status } from '@/core/shared/constants';
+import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { createNft } from '@/plugins/token/commands/create-nft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -58,7 +53,10 @@ describe('createNftHandler', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
-          getPublicKey: jest.fn().mockReturnValue('operator-public-key'),
+          get: jest.fn().mockReturnValue({
+            keyRefId: 'operator-key-ref-id',
+            publicKey: 'operator-public-key',
+          }),
           importPrivateKey: jest.fn().mockReturnValue({
             keyRefId: 'treasury-key-ref-id',
             publicKey: 'treasury-public-key',
@@ -66,7 +64,6 @@ describe('createNftHandler', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            // Mock account alias resolution
             if (type === 'account' && alias === 'treasury-account') {
               return {
                 entityId: '0.0.123456',
@@ -74,7 +71,6 @@ describe('createNftHandler', () => {
                 keyRefId: 'treasury-key-ref-id',
               };
             }
-            // Mock account alias resolution for admin-key
             if (type === 'account' && alias === 'test-admin-key') {
               return {
                 entityId: '0.0.100000',
@@ -82,7 +78,6 @@ describe('createNftHandler', () => {
                 keyRefId: 'admin-key-ref-id',
               };
             }
-            // Mock account alias resolution for supply-key
             if (type === 'account' && alias === 'test-supply-key') {
               return {
                 entityId: '0.0.200000',
@@ -102,7 +97,6 @@ describe('createNftHandler', () => {
       const result = await createNft(args);
 
       // Assert
-      // Note: importPrivateKey is NOT called because treasury is resolved from alias
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
         expectedNftTransactionParams,
       );
@@ -111,7 +105,7 @@ describe('createNftHandler', () => {
         expect.arrayContaining(['admin-key-ref-id', 'treasury-key-ref-id']),
       );
       expect(mockSaveToken).toHaveBeenCalled();
-      expect(result.status).toBe(Status.Success);
+      expect(result.result).toBeDefined();
     });
 
     test('should use default credentials when treasury not provided', async () => {
@@ -152,7 +146,6 @@ describe('createNftHandler', () => {
       const result = await createNft(args);
 
       // Assert
-      // keyResolver.resolveKeyOrAliasWithFallback is called which internally uses getOperator
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith({
         name: 'TestToken',
         symbol: 'TEST',
@@ -166,14 +159,12 @@ describe('createNftHandler', () => {
         supplyPublicKey: expect.any(Object),
         memo: undefined,
       });
-      // When adminKey is not provided, only treasury signs (which is the operator)
       expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
         mockTransactions.token,
         ['operator-key-ref-id'],
       );
       expect(mockSaveToken).toHaveBeenCalled();
-      expect(result.status).toBe(Status.Success);
-      // This test is now ADR-003 compliant
+      expect(result.result).toBeDefined();
     });
   });
 
@@ -182,7 +173,6 @@ describe('createNftHandler', () => {
       // Arrange
       const { api, keyResolver } = makeApiMocks();
 
-      // Mock keyResolver to throw error when no operator is available
       keyResolver.getOrInitKeyWithFallback.mockImplementation(() =>
         Promise.reject(new Error('No operator set')),
       );
@@ -199,7 +189,6 @@ describe('createNftHandler', () => {
         logger,
       };
 
-      // Act & Assert - Error is thrown before try-catch block in handler
       await expect(createNft(args)).rejects.toThrow('No operator set');
     });
   });
@@ -225,11 +214,13 @@ describe('createNftHandler', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
-          getPublicKey: jest.fn().mockReturnValue('operator-public-key'),
+          get: jest.fn().mockReturnValue({
+            keyRefId: 'operator-key-ref-id',
+            publicKey: 'operator-public-key',
+          }),
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            // Mock account alias resolution
             if (type === 'account' && alias === 'treasury-account') {
               return {
                 entityId: '0.0.123456',
@@ -237,7 +228,6 @@ describe('createNftHandler', () => {
                 keyRefId: 'treasury-key-ref-id',
               };
             }
-            // Mock account alias resolution for admin-key
             if (type === 'account' && alias === 'test-admin-key') {
               return {
                 entityId: '0.0.100000',
@@ -245,7 +235,6 @@ describe('createNftHandler', () => {
                 keyRefId: 'admin-key-ref-id',
               };
             }
-            // Mock account alias resolution for supply-key
             if (type === 'account' && alias === 'test-supply-key') {
               return {
                 entityId: '0.0.100000',
@@ -273,13 +262,11 @@ describe('createNftHandler', () => {
       };
 
       // Act
-      const result = await createNft(args);
+      await createNft(args);
 
       // Assert
       expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);
       expect(mockSaveToken).toHaveBeenCalled();
-      expect(result.status).toBe(Status.Success);
-      // This test is now ADR-003 compliant
     });
   });
 });

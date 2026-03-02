@@ -2,8 +2,8 @@ import { z } from 'zod';
 
 import {
   KeyManagerTypeSchema,
-  KeyOrAccountAliasSchema,
   NetworkSchema,
+  PrivateKeyWithAccountIdSchema,
 } from '@/core/schemas';
 
 /**
@@ -11,8 +11,8 @@ import {
  * Validates arguments for setting operator credentials
  */
 export const SetOperatorInputSchema = z.object({
-  operator: KeyOrAccountAliasSchema.describe(
-    'Operator credentials: account name or AccountID:privateKey pair',
+  operator: PrivateKeyWithAccountIdSchema.describe(
+    'Operator credentials. Can be accountId:privateKey pair, key reference or account alias.',
   ),
   network: NetworkSchema.optional().describe(
     'Target network (defaults to current network)',

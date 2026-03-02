@@ -1,6 +1,6 @@
 {
   "name": "@hiero-ledger/hiero-cli",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "CLI tool to manage and setup developer environments for Hiero-Ledger.",
   "main": "hiero-cli.js",
   "target": "esnext",
@@ -27,7 +27,8 @@
     "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "npm run format && rimraf --glob 'dist/' && tsc && tsc-alias && chmod +x dist/hiero-cli.js",
+    "build": "npm run format && rimraf --glob 'dist/' && tsc && tsc-alias && npm run copy-contracts && chmod +x dist/hiero-cli.js",
+    "copy-contracts": "copyfiles -u 1 \"examples/contracts/**/*.sol\" dist",
     "build-test": "tsc && tsc -p tsconfig.test.json && npm run test ",
     "clean": "rm -rf dist/ && rm -rf coverage/ && rm -rf junit.xml && rm -rf junit-integration.xml",
     "dev-build": "rm -rf dist/ && tsc && chmod +x dist/hiero-cli.js && npm run watch",
@@ -65,14 +66,15 @@
   "dependencies": {
     "@clack/prompts": "0.11.0",
     "@hashgraph/sdk": "2.80.0",
+    "@openzeppelin/contracts": "5.4.0",
     "ansi-escapes": "4.3.2",
     "bignumber.js": "9.3.1",
     "commander": "14.0.3",
     "ethers": "6.16.0",
     "handlebars": "4.7.8",
     "jiti": "2.4.2",
-    "supports-hyperlinks": "3.0.0",
     "solc": "0.8.33",
+    "supports-hyperlinks": "3.0.0",
     "zod": "4.3.6",
     "zustand": "5.0.11"
   },

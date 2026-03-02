@@ -107,7 +107,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Supply key as account name or {accountId}:{private_key} format',
+            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias.',
         },
         {
           name: 'key-manager',
@@ -149,7 +149,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Supply key as account name or {accountId}:{private_key} format',
+            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias.',
         },
         {
           name: 'key-manager',
@@ -183,7 +183,15 @@ export const tokenPluginManifest: PluginManifest = {
           short: 't',
           type: OptionType.STRING,
           required: true,
-          description: 'Destination account: either an alias or account-id',
+          description: 'Destination to transfer to. Can be accountID or alias',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account to transfer from. Can be {accountId}:{privateKey pair}, key reference or account alias. Defaults to operator.',
         },
         {
           name: 'amount',
@@ -192,14 +200,6 @@ export const tokenPluginManifest: PluginManifest = {
           required: true,
           description:
             'Amount to transfer. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "100t")',
-        },
-        {
-          name: 'from',
-          short: 'f',
-          type: OptionType.STRING,
-          required: false,
-          description:
-            'Source account: either a stored alias or account-id:private-key or account-id:key-type:private-key pair',
         },
         {
           name: 'key-manager',
@@ -233,7 +233,15 @@ export const tokenPluginManifest: PluginManifest = {
           short: 't',
           type: OptionType.STRING,
           required: true,
-          description: 'Destination account: either an alias or account-id',
+          description: 'Destination account. Can be accountID or alias',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account to transfer from. Can be {accountId}:{privateKey pair}, key reference or account alias. Defaults to operator.',
         },
         {
           name: 'serials',
@@ -242,14 +250,6 @@ export const tokenPluginManifest: PluginManifest = {
           required: true,
           description:
             'NFT serial numbers to transfer (comma-separated list, e.g., "1,2,3")',
-        },
-        {
-          name: 'from',
-          short: 'f',
-          type: OptionType.STRING,
-          required: false,
-          description:
-            'Source account: either a stored alias or account-id:private-key pair',
         },
         {
           name: 'key-manager',
@@ -291,7 +291,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Treasury account: either an alias or treasury-id:treasury-key pair',
+            'Treasury account of token. Can be {accountId}:{privateKey} pair, key reference or account alias. Defaults to operator.',
         },
         {
           name: 'decimals',
@@ -332,7 +332,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Admin key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
+            'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias. Defaults to operator key.',
         },
         {
           name: 'supply-key',
@@ -340,7 +340,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Optional supply key as account name or {accountId}:{private_key} format.',
+            'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:{public-key} format, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias.',
         },
         {
           name: 'name',
@@ -398,7 +398,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Treasury account: either an alias or treasury-id:treasury-key pair',
+            'Treasury account of token. Can be {accountId}:{privateKey} pair, key reference or account alias. Defaults to operator.',
         },
         {
           name: 'supply-type',
@@ -422,7 +422,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Admin key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
+            'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias. Defaults to operator key.',
         },
         {
           name: 'supply-key',
@@ -430,7 +430,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Supply key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
+            'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:{public-key} format, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias.',
         },
         {
           name: 'name',
@@ -479,7 +479,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Account: either an alias or account-id:account-key pair',
+            'Account to associate. Can be {accountId}:{privateKey pair}, key reference or account alias.',
         },
         {
           name: 'key-manager',

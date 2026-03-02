@@ -1,12 +1,8 @@
-/**
- * Token Create Handler Unit Tests
- * Tests the token creation functionality of the token plugin
- * Updated for ADR-003 compliance
- */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
-import { HederaTokenType, Status } from '@/core/shared/constants';
+import { StateError } from '@/core/errors';
+import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { createToken } from '@/plugins/token/commands/create-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -59,7 +55,10 @@ describe('createTokenHandler', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
-          getPublicKey: jest.fn().mockReturnValue('operator-public-key'),
+          get: jest.fn().mockReturnValue({
+            keyRefId: 'mock-key-ref-id',
+            publicKey: 'operator-public-key',
+          }),
           importPrivateKey: jest.fn().mockReturnValue({
             keyRefId: 'treasury-key-ref-id',
             publicKey: 'treasury-public-key',
@@ -104,8 +103,7 @@ describe('createTokenHandler', () => {
         expect.arrayContaining(['admin-key-ref-id', 'treasury-key-ref-id']),
       );
       expect(mockSaveToken).toHaveBeenCalled();
-      expect(result.status).toBe(Status.Success);
-      // This test is now ADR-003 compliant
+      expect(result.result).toBeDefined();
     });
 
     test('should use default credentials when treasury not provided', async () => {
@@ -165,8 +163,7 @@ describe('createTokenHandler', () => {
         ['operator-key-ref-id'],
       );
       expect(mockSaveToken).toHaveBeenCalled();
-      expect(result.status).toBe(Status.Success);
-      // This test is now ADR-003 compliant
+      expect(result.result).toBeDefined();
     });
   });
 
@@ -230,7 +227,10 @@ describe('createTokenHandler', () => {
             .mockResolvedValue(mockSignResult as TransactionResult),
         },
         kms: {
-          getPublicKey: jest.fn().mockReturnValue('operator-public-key'),
+          get: jest.fn().mockReturnValue({
+            keyRefId: 'operator-key-ref-id',
+            publicKey: 'operator-public-key',
+          }),
         },
       });
 
@@ -247,15 +247,9 @@ describe('createTokenHandler', () => {
         logger,
       };
 
-      // Act
-      const result = await createToken(args);
-
-      // Assert
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create fungible token');
-      expect(result.errorMessage).toContain('no token ID returned');
+      // Act & Assert
+      await expect(createToken(args)).rejects.toThrow(StateError);
       expect(mockSaveToken).not.toHaveBeenCalled();
-      // This test is now ADR-003 compliant
     });
 
     test('should handle token transaction service error', async () => {
@@ -267,7 +261,10 @@ describe('createTokenHandler', () => {
           }),
         },
         kms: {
-          getPublicKey: jest.fn().mockReturnValue('operator-public-key'),
+          get: jest.fn().mockReturnValue({
+            keyRefId: 'operator-key-ref-id',
+            publicKey: 'operator-public-key',
+          }),
         },
       });
 
@@ -284,14 +281,8 @@ describe('createTokenHandler', () => {
         logger,
       };
 
-      // Act
-      const result = await createToken(args);
-
-      // Assert
-      expect(result.status).toBe(Status.Failure);
-      expect(result.errorMessage).toContain('Failed to create fungible token');
-      expect(result.errorMessage).toContain('Service error');
-      // This test is now ADR-003 compliant
+      // Act & Assert
+      await expect(createToken(args)).rejects.toThrow('Service error');
     });
     test('should handle initial supply limit exceeded', async () => {
       const { api } = makeApiMocks({});
@@ -335,7 +326,10 @@ describe('createTokenHandler', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
-          getPublicKey: jest.fn().mockReturnValue('operator-public-key'),
+          get: jest.fn().mockReturnValue({
+            keyRefId: 'operator-key-ref-id',
+            publicKey: 'operator-public-key',
+          }),
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
@@ -374,13 +368,11 @@ describe('createTokenHandler', () => {
       };
 
       // Act
-      const result = await createToken(args);
+      await createToken(args);
 
       // Assert
       expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);
       expect(mockSaveToken).toHaveBeenCalled();
-      expect(result.status).toBe(Status.Success);
-      // This test is now ADR-003 compliant
     });
   });
 });

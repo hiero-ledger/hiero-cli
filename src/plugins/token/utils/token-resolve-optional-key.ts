@@ -1,25 +1,23 @@
+import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
+import type { ResolvedKey } from '@/core/services/key-resolver/types';
 import type {
-  KeyResolverService,
-  ResolvedKey,
-} from '@/core/services/key-resolver/key-resolver-service.interface';
-import type {
+  Credential,
   KeyManagerName,
-  KeyOrAccountAlias,
 } from '@/core/services/kms/kms-types.interface';
 
 import { PublicKey } from '@hashgraph/sdk';
 
 export async function resolveOptionalKey(
-  keyOrAlias: KeyOrAccountAlias | undefined,
+  credential: Credential | undefined,
   keyManager: KeyManagerName,
   keyResolver: KeyResolverService,
   tag: string,
 ): Promise<ResolvedKey | undefined> {
-  if (!keyOrAlias) {
+  if (!credential) {
     return undefined;
   }
 
-  return keyResolver.getOrInitKey(keyOrAlias, keyManager, [tag]);
+  return keyResolver.getOrInitKey(credential, keyManager, [tag]);
 }
 
 export function toPublicKey(

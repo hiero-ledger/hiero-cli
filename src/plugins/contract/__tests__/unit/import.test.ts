@@ -17,7 +17,6 @@ import {
   makeLogger,
 } from '@/__tests__/mocks/mocks';
 import { SupportedNetwork } from '@/core';
-import { Status } from '@/core/shared/constants';
 import { importContract } from '@/plugins/contract/commands/import/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
@@ -111,10 +110,7 @@ describe('contract plugin - import command', () => {
       }),
     );
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ImportContractOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ImportContractOutput;
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.contractName).toBe('ImportedContract');
     expect(output.contractEvmAddress).toBe(MOCK_EVM_ADDRESS);
@@ -158,13 +154,12 @@ describe('contract plugin - import command', () => {
       }),
     );
 
-    expect(result.status).toBe(Status.Success);
-    const output: ImportContractOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ImportContractOutput;
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.verified).toBe(false);
   });
 
-  test('returns failure if contract already exists', async () => {
+  test('throws if contract already exists', async () => {
     MockedHelper.mockImplementation(() => ({
       hasContract: jest.fn().mockReturnValue(true),
       saveContract: jest.fn(),
@@ -187,16 +182,12 @@ describe('contract plugin - import command', () => {
       },
     );
 
-    const result = await importContract(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain(
+    await expect(importContract(args)).rejects.toThrow(
       `Contract with ID '${MOCK_CONTRACT_ID}' already exists in state`,
     );
   });
 
-  test('returns failure when mirror.getContractInfo throws', async () => {
+  test('throws when mirror.getContractInfo throws', async () => {
     MockedHelper.mockImplementation(() => ({
       hasContract: jest.fn().mockReturnValue(false),
       saveContract: jest.fn(),
@@ -216,10 +207,6 @@ describe('contract plugin - import command', () => {
       },
     );
 
-    const result = await importContract(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('mirror down');
+    await expect(importContract(args)).rejects.toThrow('mirror down');
   });
 });

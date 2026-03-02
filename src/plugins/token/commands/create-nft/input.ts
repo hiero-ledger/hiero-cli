@@ -3,8 +3,10 @@ import { z } from 'zod';
 import {
   AmountInputSchema,
   KeyManagerTypeSchema,
-  KeyOrAccountAliasSchema,
+  KeySchema,
   MemoSchema,
+  PrivateKeySchema,
+  PrivateKeyWithAccountIdSchema,
   SupplyTypeSchema,
   TokenAliasNameSchema,
   TokenNameSchema,
@@ -21,8 +23,8 @@ export const CreateNftInputSchema = z
   .object({
     tokenName: TokenNameSchema.describe('Token name'),
     symbol: TokenSymbolSchema.describe('Token symbol/ticker'),
-    treasury: KeyOrAccountAliasSchema.optional().describe(
-      'Treasury account. Can be alias or TreasuryID:treasuryKey pair. Defaults to operator.',
+    treasury: PrivateKeyWithAccountIdSchema.optional().describe(
+      'Treasury account of token. Can be {accountId}:{privateKey} pair, key reference or account alias. Defaults to operator key.',
     ),
     supplyType: SupplyTypeSchema.default(SupplyType.INFINITE).describe(
       'Supply type: INFINITE (default) or FINITE',
@@ -30,11 +32,11 @@ export const CreateNftInputSchema = z
     maxSupply: AmountInputSchema.optional().describe(
       'Maximum supply (required for FINITE supply type)',
     ),
-    adminKey: KeyOrAccountAliasSchema.optional().describe(
-      'Admin key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
+    adminKey: PrivateKeySchema.optional().describe(
+      'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias. Defaults to operator key.',
     ),
-    supplyKey: KeyOrAccountAliasSchema.optional().describe(
-      'Supply key as account name or {accountId}:{private_key} format. If not set, operator key is used.',
+    supplyKey: KeySchema.optional().describe(
+      'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:{public-key} format, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias. Defaults to operator key.',
     ),
     name: TokenAliasNameSchema.optional().describe(
       'Optional alias to register for the token',

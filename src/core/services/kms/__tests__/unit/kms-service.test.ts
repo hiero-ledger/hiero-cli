@@ -15,6 +15,7 @@ import type { StateService } from '@/core/services/state/state-service.interface
 import { AccountId, Client, PrivateKey, PublicKey } from '@hashgraph/sdk';
 
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import { ConfigurationError, NotFoundError } from '@/core/errors';
 import { KmsServiceImpl } from '@/core/services/kms/kms-service';
 import { KEY_MANAGERS } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
@@ -152,7 +153,7 @@ describe('KmsServiceImpl', () => {
     const { service } = setupService({ ed25519Enabled: false });
 
     expect(() => service.createLocalPrivateKey(KeyAlgorithm.ED25519)).toThrow(
-      'ED25519 key type is not enabled. Please enable it by setting the config option ed25519_support_enabled to true.',
+      ConfigurationError,
     );
   });
 
@@ -206,15 +207,12 @@ describe('KmsServiceImpl', () => {
     );
 
     expect(logger.debug).toHaveBeenCalledWith(
-      '[CRED] Passed key already exists, keyRefId: kr_existing',
+      '[CRED] Passed key already exists, updating it with new private key, keyRefId: kr_existing',
     );
     expect(result).toEqual({
       keyRefId: 'kr_existing',
       publicKey: 'existing-public',
     });
-    expect(
-      getLocalKeyManager(KEY_MANAGERS.local).writeSecret,
-    ).not.toHaveBeenCalled();
   });
 
   it('imports new private key and stores secret and metadata', () => {
@@ -257,9 +255,7 @@ describe('KmsServiceImpl', () => {
     const { service } = setupService();
     credentialStorageMockInstance.get.mockReturnValue(undefined);
 
-    expect(() => service.getSignerHandle('kr_missing')).toThrow(
-      'Credential not found: kr_missing',
-    );
+    expect(() => service.getSignerHandle('kr_missing')).toThrow(NotFoundError);
   });
 
   it('getSignerHandle creates signer using correct manager', () => {

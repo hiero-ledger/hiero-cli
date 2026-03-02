@@ -3,7 +3,7 @@
   "symbol": "TAL",
   "decimals": 10,
   "supplyType": "infinite",
-  "initialSupply": 1000,
+  "initialSupply": "1000",
   "treasuryKey": "treasuryAccount",
   "adminKey": "<adminAccount>"
 }

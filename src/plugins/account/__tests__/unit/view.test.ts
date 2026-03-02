@@ -11,7 +11,8 @@ import {
   makeMirrorMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { NotFoundError } from '@/core/errors';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { viewAccount } from '@/plugins/account/commands/view/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -59,12 +60,9 @@ describe('account plugin - view command (ADR-003)', () => {
     expect(logger.info).toHaveBeenCalledWith('Viewing account details: acc1');
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.1111');
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ViewAccountOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ViewAccountOutput;
     expect(output.accountId).toBe('0.0.1111');
-    expect(output.balance).toBe('1000');
+    expect(output.balance).toBe(1000n);
   });
 
   test('returns account details when resolved via alias (not in state)', async () => {
@@ -104,14 +102,11 @@ describe('account plugin - view command (ADR-003)', () => {
     expect(logger.info).toHaveBeenCalledWith('Viewing account details: acc2');
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.2222');
 
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: ViewAccountOutput = JSON.parse(result.outputJson!);
+    const output = result.result as ViewAccountOutput;
     expect(output.accountId).toBe('0.0.2222');
   });
 
-  test('returns failure when mirror.getAccount throws', async () => {
+  test('throws error when mirror.getAccount throws', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -128,15 +123,10 @@ describe('account plugin - view command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: '0.0.3333' });
 
-    const result = await viewAccount(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Failed to view account');
-    expect(result.errorMessage).toContain('mirror down');
+    await expect(viewAccount(args)).rejects.toThrow();
   });
 
-  test('returns failure when loadAccount throws', async () => {
+  test('throws NotFoundError when account not found', async () => {
     const logger = makeLogger();
 
     const mirrorMock = makeMirrorMock();
@@ -148,11 +138,6 @@ describe('account plugin - view command (ADR-003)', () => {
     const account = 'broken';
     const args = makeArgs(api, logger, { account });
 
-    const result = await viewAccount(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Account not found with ID or alias');
-    expect(result.errorMessage).toContain(account);
+    await expect(viewAccount(args)).rejects.toThrow(NotFoundError);
   });
 });

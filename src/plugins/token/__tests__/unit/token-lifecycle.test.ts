@@ -1,7 +1,3 @@
-/**
- * Token Lifecycle Integration Tests
- * Tests the complete token lifecycle: create → associate → transfer
- */
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
@@ -9,7 +5,7 @@ import type { StateService } from '@/core/services/state/state-service.interface
 import '@/core/utils/json-serialize';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
-import { HederaTokenType, Status } from '@/core/shared/constants';
+import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createToken } from '@/plugins/token/commands/create-ft';
@@ -39,8 +35,7 @@ describe('Token Lifecycle Integration', () => {
   });
 
   describe('complete token lifecycle', () => {
-    test('should handle create → associate → transfer flow', async () => {
-      // Arrange
+    test('should handle create -> associate -> transfer flow', async () => {
       const mockAddToken = jest.fn();
       const mockAddAssociation = jest.fn();
       const token = '0.0.123456';
@@ -72,7 +67,6 @@ describe('Token Lifecycle Integration', () => {
         },
         signing: {
           signAndExecuteWith: jest.fn().mockImplementation((transaction) => {
-            // Mock different responses based on transaction type
             if (transaction === mockTokenTransaction) {
               return Promise.resolve({
                 ...mockTransactionResults.success,
@@ -101,10 +95,10 @@ describe('Token Lifecycle Integration', () => {
         },
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({ decimals: 2 }),
+          getAccountTokenBalances: jest.fn().mockResolvedValue({ tokens: [] }),
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            // Mock account alias resolution for test keys
             if (type === 'account' && alias === 'admin-key') {
               return {
                 entityId: '0.0.100000',
@@ -119,7 +113,7 @@ describe('Token Lifecycle Integration', () => {
 
       const logger = makeLogger();
 
-      // Act - Step 1: Create Token
+      // Step 1: Create Token
       const createArgs: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
@@ -138,14 +132,9 @@ describe('Token Lifecycle Integration', () => {
       };
 
       const createResult = await createToken(createArgs);
+      expect(createResult.result).toBeDefined();
 
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(createResult).toBeDefined();
-      expect(createResult.status).toBe(Status.Success);
-      expect(createResult.outputJson).toBeDefined();
-      expect(createResult.errorMessage).toBeUndefined();
-
-      // Act - Step 2: Associate Token
+      // Step 2: Associate Token
       const associateArgs: CommandHandlerArgs = {
         args: {
           token,
@@ -158,14 +147,9 @@ describe('Token Lifecycle Integration', () => {
       };
 
       const associateResult = await associateToken(associateArgs);
+      expect(associateResult.result).toBeDefined();
 
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(associateResult).toBeDefined();
-      expect(associateResult.status).toBe(Status.Success);
-      expect(associateResult.outputJson).toBeDefined();
-      expect(associateResult.errorMessage).toBeUndefined();
-
-      // Act - Step 3: Transfer Token
+      // Step 3: Transfer Token
       const transferArgs: CommandHandlerArgs = {
         args: {
           token,
@@ -180,14 +164,9 @@ describe('Token Lifecycle Integration', () => {
       };
 
       const transferResult = await transferToken(transferArgs);
+      expect(transferResult.result).toBeDefined();
 
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(transferResult).toBeDefined();
-      expect(transferResult.status).toBe(Status.Success);
-      expect(transferResult.outputJson).toBeDefined();
-      expect(transferResult.errorMessage).toBeUndefined();
-
-      // Assert - Verify all operations were called correctly
+      // Verify all operations were called correctly
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith({
         name: 'TestToken',
         symbol: 'TEST',
@@ -215,8 +194,6 @@ describe('Token Lifecycle Integration', () => {
         amount: 10000n,
       });
 
-      // These operations will not succeed due to process.exit(1), so we can't verify the success calls
-      // The important thing is that the transactions were created and attempted
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalled();
       expect(
         tokenTransactions.createTokenAssociationTransaction,
@@ -225,7 +202,6 @@ describe('Token Lifecycle Integration', () => {
     });
 
     test('should handle partial failure in lifecycle', async () => {
-      // Arrange
       const mockAddToken = jest.fn();
       const token = '0.0.123456';
       const userAccountId = mockAccountIds.association;
@@ -271,9 +247,11 @@ describe('Token Lifecycle Integration', () => {
             });
           }),
         },
+        mirror: {
+          getAccountTokenBalances: jest.fn().mockResolvedValue({ tokens: [] }),
+        },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            // Mock account alias resolution for test keys
             if (type === 'account' && alias === 'admin-key') {
               return {
                 entityId: '0.0.100000',
@@ -288,7 +266,7 @@ describe('Token Lifecycle Integration', () => {
 
       const logger = makeLogger();
 
-      // Act - Step 1: Create Token (success)
+      // Step 1: Create Token (success)
       const createArgs: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
@@ -303,14 +281,9 @@ describe('Token Lifecycle Integration', () => {
       };
 
       const createResult = await createToken(createArgs);
+      expect(createResult.result).toBeDefined();
 
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(createResult).toBeDefined();
-      expect(createResult.status).toBe(Status.Success);
-      expect(createResult.outputJson).toBeDefined();
-      expect(createResult.errorMessage).toBeUndefined();
-
-      // Act - Step 2: Associate Token (success)
+      // Step 2: Associate Token (success)
       const associateArgs: CommandHandlerArgs = {
         args: {
           token,
@@ -323,14 +296,8 @@ describe('Token Lifecycle Integration', () => {
       };
 
       const associateResult = await associateToken(associateArgs);
+      expect(associateResult.result).toBeDefined();
 
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(associateResult).toBeDefined();
-      expect(associateResult.status).toBe(Status.Success);
-      expect(associateResult.outputJson).toBeDefined();
-      expect(associateResult.errorMessage).toBeUndefined();
-
-      // Assert - Operations were attempted but failed due to process.exit(1)
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalled();
       expect(
         tokenTransactions.createTokenAssociationTransaction,
@@ -338,7 +305,6 @@ describe('Token Lifecycle Integration', () => {
     });
 
     test('should handle multiple associations for same token', async () => {
-      // Arrange
       const mockAddToken = jest.fn();
       const mockAddAssociation = jest.fn();
       const token = '0.0.123456';
@@ -396,9 +362,11 @@ describe('Token Lifecycle Integration', () => {
             });
           }),
         },
+        mirror: {
+          getAccountTokenBalances: jest.fn().mockResolvedValue({ tokens: [] }),
+        },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            // Mock account alias resolution for test keys
             if (type === 'account' && alias === 'admin-key') {
               return {
                 entityId: '0.0.100000',
@@ -413,7 +381,7 @@ describe('Token Lifecycle Integration', () => {
 
       const logger = makeLogger();
 
-      // Act - Step 1: Create Token
+      // Step 1: Create Token
       const createArgs: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
@@ -428,14 +396,9 @@ describe('Token Lifecycle Integration', () => {
       };
 
       const createResult = await createToken(createArgs);
+      expect(createResult.result).toBeDefined();
 
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(createResult).toBeDefined();
-      expect(createResult.status).toBe(Status.Success);
-      expect(createResult.outputJson).toBeDefined();
-      expect(createResult.errorMessage).toBeUndefined();
-
-      // Act - Step 2: Associate with first user
+      // Step 2: Associate with first user
       const associateArgs1: CommandHandlerArgs = {
         args: {
           token,
@@ -448,14 +411,9 @@ describe('Token Lifecycle Integration', () => {
       };
 
       const associateResult1 = await associateToken(associateArgs1);
+      expect(associateResult1.result).toBeDefined();
 
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(associateResult1).toBeDefined();
-      expect(associateResult1.status).toBe('success');
-      expect(associateResult1.outputJson).toBeDefined();
-      expect(associateResult1.errorMessage).toBeUndefined();
-
-      // Act - Step 3: Associate with second user
+      // Step 3: Associate with second user
       const associateArgs2: CommandHandlerArgs = {
         args: {
           token,
@@ -468,14 +426,8 @@ describe('Token Lifecycle Integration', () => {
       };
 
       const associateResult2 = await associateToken(associateArgs2);
+      expect(associateResult2.result).toBeDefined();
 
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(associateResult2).toBeDefined();
-      expect(associateResult2.status).toBe('success');
-      expect(associateResult2.outputJson).toBeDefined();
-      expect(associateResult2.errorMessage).toBeUndefined();
-
-      // Assert - Operations were attempted
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalled();
       expect(
         tokenTransactions.createTokenAssociationTransaction,
@@ -485,7 +437,6 @@ describe('Token Lifecycle Integration', () => {
 
   describe('state consistency', () => {
     test('should maintain consistent state across operations', async () => {
-      // Arrange
       const mockAddToken = jest.fn();
       const mockAddAssociation = jest.fn();
       const token = '0.0.123456';
@@ -510,11 +461,14 @@ describe('Token Lifecycle Integration', () => {
             transactionId: '0.0.123@1234567890.123456789',
           }),
         },
+        mirror: {
+          getAccountTokenBalances: jest.fn().mockResolvedValue({ tokens: [] }),
+        },
       });
 
       const logger = makeLogger();
 
-      // Act - Execute operations
+      // Create token - this will throw because signAndExecuteWith returns no tokenId
       const createArgs: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
@@ -528,13 +482,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      const createResult = await createToken(createArgs);
-
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(createResult).toBeDefined();
-      expect(createResult.status).toBe(Status.Failure);
-      expect(createResult.errorMessage).toBeDefined();
-      expect(createResult.outputJson).toBeUndefined();
+      await expect(createToken(createArgs)).rejects.toThrow();
 
       const associateArgs: CommandHandlerArgs = {
         args: {
@@ -548,20 +496,11 @@ describe('Token Lifecycle Integration', () => {
       };
 
       const associateResult = await associateToken(associateArgs);
+      expect(associateResult.result).toBeDefined();
 
-      // ADR-003 compliance: check CommandExecutionResult
-      expect(associateResult).toBeDefined();
-      expect(associateResult.status).toBe(Status.Success);
-      expect(associateResult.outputJson).toBeDefined();
-      expect(associateResult.errorMessage).toBeUndefined();
-
-      // Assert - Verify state helper was initialized consistently
       expect(MockedHelper).toHaveBeenCalledTimes(2);
       expect(MockedHelper).toHaveBeenNthCalledWith(1, api.state, logger);
       expect(MockedHelper).toHaveBeenNthCalledWith(2, api.state, logger);
-
-      // State helper was initialized for both operations
-      expect(MockedHelper).toHaveBeenCalledTimes(2);
     });
   });
 });

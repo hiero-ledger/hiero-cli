@@ -12,7 +12,7 @@ import {
 } from '@/__tests__/mocks/fixtures';
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { SupportedNetwork } from '@/core';
-import { KeyAlgorithm, Status } from '@/core/shared/constants';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { createAccount } from '@/plugins/account/commands/create/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -36,7 +36,7 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const { account, signing, networkMock, kms, alias, mirror } =
       makeApiMocksForAccountCreate({
-        createAccountImpl: jest.fn().mockResolvedValue({
+        createAccountImpl: jest.fn().mockReturnValue({
           transaction: {},
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
@@ -101,10 +101,7 @@ describe('account plugin - create command (ADR-003)', () => {
     );
 
     // Verify ADR-003 result
-    expect(result.status).toBe(Status.Success);
-    expect(result.outputJson).toBeDefined();
-
-    const output: CreateAccountOutput = JSON.parse(result.outputJson!);
+    const output = result.result as CreateAccountOutput;
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('myAccount');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
@@ -120,9 +117,8 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const { account, signing, networkMock, kms, mirror, alias } =
       makeApiMocksForAccountCreate({
-        createAccountImpl: jest.fn().mockResolvedValue({
+        createAccountImpl: jest.fn().mockReturnValue({
           transaction: {},
-          privateKey: 'priv',
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
         signAndExecuteImpl: jest.fn().mockResolvedValue({
@@ -144,21 +140,18 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const args = makeArgs(api, logger, { name: 'failAccount', balance: '100' });
 
-    const result = await createAccount(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBe('Failed to create account');
+    await expect(createAccount(args)).rejects.toThrow();
   });
 
-  test('returns failure when createAccount throws', async () => {
+  test('throws error when createAccount fails', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({ saveAccount: jest.fn() }));
 
     const { account, signing, networkMock, kms, mirror, alias } =
       makeApiMocksForAccountCreate({
-        createAccountImpl: jest
-          .fn()
-          .mockRejectedValue(new Error('network error')),
+        createAccountImpl: jest.fn().mockImplementation(() => {
+          throw new Error('network error');
+        }),
       });
 
     const api: Partial<CoreApi> = {
@@ -176,11 +169,7 @@ describe('account plugin - create command (ADR-003)', () => {
       balance: '100',
     });
 
-    const result = await createAccount(args);
-
-    expect(result.status).toBe(Status.Failure);
-    expect(result.errorMessage).toBeDefined();
-    expect(result.errorMessage).toContain('Failed to create account');
+    await expect(createAccount(args)).rejects.toThrow();
   });
 
   test('creates account with ECDSA key type', async () => {
@@ -190,7 +179,7 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const { account, signing, networkMock, kms, alias, mirror } =
       makeApiMocksForAccountCreate({
-        createAccountImpl: jest.fn().mockResolvedValue({
+        createAccountImpl: jest.fn().mockReturnValue({
           transaction: {},
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
@@ -231,8 +220,7 @@ describe('account plugin - create command (ADR-003)', () => {
       }),
     );
 
-    expect(result.status).toBe(Status.Success);
-    const output: CreateAccountOutput = JSON.parse(result.outputJson!);
+    const output = result.result as CreateAccountOutput;
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.evmAddress).toBe(ECDSA_EVM_ADDRESS);
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
@@ -245,7 +233,7 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const { account, signing, networkMock, kms, alias, mirror } =
       makeApiMocksForAccountCreate({
-        createAccountImpl: jest.fn().mockResolvedValue({
+        createAccountImpl: jest.fn().mockReturnValue({
           transaction: {},
           publicKey: ED25519_HEX_PUBLIC_KEY,
         }),
@@ -286,8 +274,7 @@ describe('account plugin - create command (ADR-003)', () => {
       }),
     );
 
-    expect(result.status).toBe(Status.Success);
-    const output: CreateAccountOutput = JSON.parse(result.outputJson!);
+    const output = result.result as CreateAccountOutput;
     expect(output.type).toBe(KeyAlgorithm.ED25519);
     expect(output.evmAddress).toBe(
       '0x0000000000000000000000000000000000001e61',

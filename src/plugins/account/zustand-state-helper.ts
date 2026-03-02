@@ -4,6 +4,8 @@
  */
 import type { Logger, StateService } from '@/core';
 
+import { ValidationError } from '@/core/errors';
+
 import { ACCOUNT_NAMESPACE } from './manifest';
 import { type AccountData, safeParseAccountData } from './schema';
 
@@ -29,7 +31,7 @@ export class ZustandAccountStateHelper {
       const errors = validation.error.issues
         .map((e) => `${e.path.join('.')}: ${e.message}`)
         .join(', ');
-      throw new Error(`Invalid account data: ${errors}`);
+      throw new ValidationError(`Invalid account data: ${errors}`);
     }
 
     this.state.set(this.namespace, key, accountData);
