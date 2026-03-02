@@ -546,7 +546,7 @@ export const KeySchema = z
       };
     }
 
-    const publicKey = PublicKeyDefintionWithTypeSchema.safeParse(val);
+    const publicKey = PublicKeyDefinitionWithTypeSchema.safeParse(val);
     if (publicKey.success) {
       return {
         type: CredentialType.PUBLIC_KEY,
@@ -811,7 +811,7 @@ export const PublicKeyDefinitionSchema = z.union([
   Ed25519PublicKeySchema,
 ]);
 
-export const PublicKeyDefintionWithTypeSchema = z.union([
+export const PublicKeyDefinitionWithTypeSchema = z.union([
   EcdsaPublicKeySchema.transform((key) => ({
     keyType: KeyAlgorithm.ECDSA,
     publicKey: key,
