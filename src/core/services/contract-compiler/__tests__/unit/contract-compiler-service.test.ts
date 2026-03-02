@@ -7,7 +7,7 @@ import type { CompilationParams } from '@/core/services/contract-compiler/types'
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { InternalError } from '@/core';
+import { InternalError } from '@/core/errors';
 import { ContractCompilerServiceImpl } from '@/core/services/contract-compiler/contract-compiler-service';
 
 // Use a global object to store the mock compile function
