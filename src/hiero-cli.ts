@@ -51,7 +51,9 @@ async function initializeCLI() {
 
     coreApi.output.setFormat(format);
 
-    if (format !== 'json') {
+    if (format === 'json') {
+      program.showHelpAfterError(false);
+    } else {
       program.showHelpAfterError('use --help for available options');
     }
 
