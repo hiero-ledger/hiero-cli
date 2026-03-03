@@ -3,7 +3,7 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { TransferOutput } from './output';
 
 import { TransactionError, ValidationError } from '@/core/errors';
-import { EntityIdSchema } from '@/core/schemas';
+import { EntityIdSchema, EvmAddressSchema } from '@/core/schemas';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 
@@ -44,6 +44,8 @@ export async function transferHandler(
   if (toAlias && toAlias.entityId) {
     toAccountId = toAlias.entityId;
   } else if (EntityIdSchema.safeParse(to).success) {
+    toAccountId = to;
+  } else if (EvmAddressSchema.safeParse(to).success) {
     toAccountId = to;
   } else {
     throw new ValidationError(
