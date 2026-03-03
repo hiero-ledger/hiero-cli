@@ -5,6 +5,7 @@ import type {
   AccountIdCredential,
   AliasCredential,
   Credential,
+  EvmAddressCredential,
   KeyManagerName,
   KeypairCredential,
   KeyReferenceCredential,
@@ -55,6 +56,8 @@ export class KeyResolverServiceImpl implements KeyResolverService {
         return this.resolveKeyReference(credential);
       case CredentialType.ALIAS:
         return this.resolveAlias(credential);
+      case CredentialType.EVM_ADDRESS:
+        return this.resolveEvmAddress(credential, keyManager, labels);
     }
   }
 
@@ -228,6 +231,39 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       publicKey: keyReference.publicKey,
       keyRefId: keyReference.keyRefId,
     };
+  }
+
+  private async resolveEvmAddress(
+    credential: EvmAddressCredential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<ResolvedKey> {
+    const { evmAddress } = credential;
+
+    let accountData;
+    try {
+      accountData = await this.mirror.getAccount(evmAddress);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return { evmAddress };
+      }
+      throw error;
+    }
+
+    const { keyAlgorithm, accountPublicKey, accountId } = accountData;
+
+    if (!keyAlgorithm || !accountPublicKey) {
+      return { accountId, evmAddress };
+    }
+
+    const { keyRefId, publicKey } = this.kms.importPublicKey(
+      keyAlgorithm,
+      accountPublicKey,
+      keyManager,
+      labels,
+    );
+
+    return { accountId, evmAddress, publicKey, keyRefId };
   }
 
   private resolveAlias(aliasCredential: AliasCredential): ResolvedKey {

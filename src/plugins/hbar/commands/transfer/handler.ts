@@ -3,7 +3,6 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { TransferOutput } from './output';
 
 import { TransactionError, ValidationError } from '@/core/errors';
-import { EntityIdSchema, EvmAddressSchema } from '@/core/schemas';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 
@@ -19,7 +18,7 @@ export async function transferHandler(
   const validArgs = TransferInputSchema.parse(args.args);
 
   const to = validArgs.to;
-  const fromArg = validArgs.from;
+  const from = validArgs.from;
   const memo = validArgs.memo;
 
   const providedKeyManager = validArgs.keyManager;
@@ -27,50 +26,29 @@ export async function transferHandler(
     providedKeyManager ||
     api.config.getOption<KeyManagerName>('default_key_manager');
 
-  const from = await api.keyResolver.getOrInitKeyWithFallback(
-    fromArg,
-    keyManager,
-    ['hbar:transfer'],
-  );
-
-  if (!from.accountId) {
-    throw new ValidationError(
-      `Could not resolve account ID for passed "from" argument ${validArgs.from?.type} from value ${validArgs.from?.rawValue}`,
-    );
-  }
-
   const amount = processBalanceInput(validArgs.amount, HBAR_DECIMALS);
 
   const currentNetwork = api.network.getCurrentNetwork();
 
-  let toAccountId = to;
+  // Resolve accounts
+  const fromAccount = await api.keyResolver.getOrInitKeyWithFallback(
+    from,
+    keyManager,
+  );
+  const toAccount = await api.keyResolver.getOrInitKey(to, keyManager);
 
-  const toAlias = api.alias.resolve(to, 'account', currentNetwork);
-
-  if (toAlias && toAlias.entityId) {
-    toAccountId = toAlias.entityId;
-  } else if (EntityIdSchema.safeParse(to).success) {
-    toAccountId = to;
-  } else if (EvmAddressSchema.safeParse(to).success) {
-    toAccountId = to;
-  } else {
-    throw new ValidationError(
-      `Invalid to account: ${to} is neither a valid account ID nor a known alias`,
-    );
-  }
-
-  if (from.accountId === toAccountId) {
+  if (fromAccount.accountId === toAccount.accountId) {
     throw new ValidationError('Cannot transfer to the same account');
   }
 
   logger.info(
-    `[HBAR] Transferring ${amount.toString()} tinybars from ${from.accountId} to ${toAccountId}`,
+    `[HBAR] Transferring ${amount.toString()} tinybars from ${fromAccount.accountId} to ${toAccount.accountId}`,
   );
 
   const transferResult = await api.hbar.transferTinybar({
     amount: amount,
-    from: from.accountId,
-    to: toAccountId,
+    from: fromAccount.accountId,
+    to: toAccount.accountId,
     memo,
   });
 

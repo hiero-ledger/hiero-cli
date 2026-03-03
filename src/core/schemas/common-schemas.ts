@@ -574,6 +574,15 @@ export const KeySchema = z
       };
     }
 
+    const evmAddress = EvmAddressSchema.safeParse(val);
+    if (evmAddress.success) {
+      return {
+        type: CredentialType.EVM_ADDRESS,
+        evmAddress: evmAddress.data,
+        rawValue: val,
+      };
+    }
+
     const alias = AliasNameSchema.safeParse(val);
     if (alias.success) {
       return {
@@ -584,7 +593,7 @@ export const KeySchema = z
     }
 
     throw new ValidationError(
-      'Key must be a valid account ID and private key pair in format {account-id:private-key}, account ID, private key in format {ed25519|ecdsa}:{private-key}, public key in format {ed25519|ecdsa}:{public-key}, key reference or alias name',
+      'Key must be a valid account ID and private key pair in format {account-id:private-key}, account ID, private key in format {ed25519|ecdsa}:{private-key}, public key in format {ed25519|ecdsa}:{public-key}, key reference, EVM address (0x...) or alias name',
     );
   })
   .describe(

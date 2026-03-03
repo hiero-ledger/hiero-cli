@@ -1,5 +1,6 @@
 export type ResolvedKey = {
-  publicKey: string;
+  publicKey?: string;
   accountId?: string;
-  keyRefId: string;
+  evmAddress?: string;
+  keyRefId?: string;
 };
