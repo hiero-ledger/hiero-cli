@@ -15,7 +15,7 @@ import {
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { SupportedNetwork } from '@/core';
-import { ValidationError } from '@/core/errors';
+import { StateError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { importAccount } from '@/plugins/account/commands/import/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -36,6 +36,7 @@ describe('account plugin - import command (ADR-003)', () => {
     const saveAccountMock = jest.fn().mockReturnValue(undefined);
 
     MockedHelper.mockImplementation(() => ({
+      hasAccountById: jest.fn().mockReturnValue(false),
       hasAccount: jest.fn().mockReturnValue(false),
       saveAccount: saveAccountMock,
     }));
@@ -96,10 +97,11 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(output.evmAddress).toBe('0xabc');
   });
 
-  test('returns failure if account already exists', async () => {
+  test('returns failure if account with same name already exists', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
+      hasAccountById: jest.fn().mockReturnValue(false),
       hasAccount: jest.fn().mockReturnValue(true),
       saveAccount: jest.fn(),
     }));
@@ -120,16 +122,16 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const args = makeArgs(api, logger, {
       key: '0.0.1111:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-      alias: 'test',
     });
 
-    await expect(importAccount(args)).rejects.toThrow(ValidationError);
+    await expect(importAccount(args)).rejects.toThrow(StateError);
   });
 
   test('throws error when mirror.getAccount fails', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
+      hasAccountById: jest.fn().mockReturnValue(false),
       hasAccount: jest.fn().mockReturnValue(false),
       saveAccount: jest.fn(),
     }));

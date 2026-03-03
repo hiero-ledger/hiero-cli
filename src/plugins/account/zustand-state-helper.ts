@@ -84,7 +84,7 @@ export class ZustandAccountStateHelper {
   }
 
   /**
-   * Check if account exists
+   * Check if account exists by name
    */
   hasAccount(key: string): boolean {
     this.logger.debug(

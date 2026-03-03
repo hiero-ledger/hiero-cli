@@ -7,6 +7,7 @@ import {
   makeNetworkMock,
   setupExitSpy,
 } from '@/__tests__/mocks/mocks';
+import { NetworkError } from '@/core';
 import { useHandler } from '@/plugins/network/commands/use';
 
 let exitSpy: jest.SpyInstance;
@@ -50,7 +51,7 @@ describe('network plugin - use command', () => {
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     networkService.switchNetwork = jest.fn().mockImplementation(() => {
-      throw new Error('Network not available: testnet');
+      throw new NetworkError('Network not available: testnet');
     });
 
     const args = makeArgs({ network: networkService }, logger, {

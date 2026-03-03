@@ -165,7 +165,7 @@ describe('HbarServiceImpl', () => {
       expect.assertions(2);
 
       (AccountId.fromString as jest.Mock).mockImplementationOnce(() => {
-        throw new Error('Invalid account ID format');
+        throw new ValidationError('Invalid account ID format');
       });
 
       const params = {
@@ -190,7 +190,7 @@ describe('HbarServiceImpl', () => {
       (AccountId.fromString as jest.Mock)
         .mockReturnValueOnce({})
         .mockImplementationOnce(() => {
-          throw new Error('Invalid account ID format');
+          throw new ValidationError('Invalid account ID format');
         });
 
       const params = {
@@ -210,7 +210,7 @@ describe('HbarServiceImpl', () => {
       expect.assertions(2);
 
       (AccountId.fromString as jest.Mock).mockImplementationOnce(() => {
-        throw new Error('Invalid format');
+        throw new ValidationError('Invalid format');
       });
 
       const params = {

@@ -115,8 +115,7 @@ export const accountPluginManifest: PluginManifest = {
           short: 'a',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Account ID, alias or name of the account present in state',
+          description: 'Account ID or alias of the account present in state',
         },
         {
           name: 'hbar-only',
@@ -229,7 +228,7 @@ export const accountPluginManifest: PluginManifest = {
           short: 'a',
           type: OptionType.STRING,
           required: true,
-          description: 'Account name or account ID to delete from state',
+          description: 'Account ID or alias of the account present in state',
         },
       ],
       handler: deleteAccount,
@@ -250,8 +249,7 @@ export const accountPluginManifest: PluginManifest = {
           short: 'a',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Account ID, alias or name of the account present in state',
+          description: 'Account ID or alias of the account present in state',
         },
       ],
       handler: viewAccount,

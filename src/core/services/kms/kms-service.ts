@@ -134,7 +134,7 @@ export class KmsServiceImpl implements KmsService {
         'ed25519_support_enabled',
       );
       if (!ed25519SupportEnabled) {
-        throw new Error(
+        throw new ConfigurationError(
           'ED25519 key type is not enabled. Please enable it by setting the config option ed25519_support_enabled to true.',
         );
       }

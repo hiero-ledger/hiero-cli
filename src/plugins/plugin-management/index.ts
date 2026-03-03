@@ -8,6 +8,7 @@ import { enablePlugin } from './commands/enable/handler';
 import { getPluginInfo } from './commands/info/handler';
 import { getPluginList } from './commands/list/handler';
 import { removePlugin } from './commands/remove/handler';
+import { resetPlugins } from './commands/reset/handler';
 
 export { pluginManagementManifest } from './manifest';
 
@@ -18,4 +19,5 @@ export {
   getPluginInfo,
   getPluginList,
   removePlugin,
+  resetPlugins,
 };

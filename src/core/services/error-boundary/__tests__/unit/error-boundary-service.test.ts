@@ -113,7 +113,7 @@ describe('ErrorBoundaryServiceImpl', () => {
         .mockImplementation(() => {});
 
       outputMock.handleOutput.mockImplementation(() => {
-        throw new Error('formatter failed');
+        throw new InternalError('formatter failed');
       });
 
       expect(() => service.handle(new Error('runtime failure'))).not.toThrow();

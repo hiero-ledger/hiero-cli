@@ -36,26 +36,40 @@ import {
   removePlugin,
   RemovePluginOutputSchema,
 } from './commands/remove';
+import {
+  RESET_PLUGINS_TEMPLATE,
+  resetPlugins,
+  ResetPluginsOutputSchema,
+} from './commands/reset';
 
 export const pluginManagementManifest: PluginManifest = {
   name: 'plugin-management',
   version: '1.0.0',
   displayName: 'Plugin Management',
   description: 'Plugin for managing other CLI plugins',
+  skipWizardInitialization: true,
   commands: [
     {
       name: 'add',
-      summary: 'Add a plugin from path',
+      summary: 'Add a plugin from path or by name',
       description:
-        'Add a new plugin to the plugin-management state and enable it',
+        'Add a new plugin to the plugin-management state and enable it. Use --path for custom plugins, --name for default plugins.',
       options: [
         {
           name: 'path',
           short: 'p',
           type: OptionType.STRING,
-          required: true,
+          required: false,
           description:
             'Filesystem path to the plugin directory containing manifest.js',
+        },
+        {
+          name: 'name',
+          short: 'n',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Name of a default plugin to add (e.g. account, token). Use --path for custom plugins.',
         },
       ],
       handler: addPlugin,
@@ -131,6 +145,20 @@ export const pluginManagementManifest: PluginManifest = {
         schema: ListPluginsOutputSchema,
         humanTemplate: LIST_PLUGINS_TEMPLATE,
       },
+    },
+    {
+      name: 'reset',
+      summary: 'Reset plugin state to defaults',
+      description:
+        'Clear plugin-management state. Custom plugins will be removed.',
+      options: [],
+      handler: resetPlugins,
+      output: {
+        schema: ResetPluginsOutputSchema,
+        humanTemplate: RESET_PLUGINS_TEMPLATE,
+      },
+      requireConfirmation:
+        'Are you sure you want to reset plugin state? Custom plugins will be removed.',
     },
     {
       name: 'info',

@@ -1,3 +1,4 @@
+import { InternalError } from '@/core';
 import { DEFAULT_PLUGIN_STATE } from '@/core/shared/config/cli-options';
 import { filterReservedOptions } from '@/core/utils/filter-reserved-options';
 
@@ -28,7 +29,7 @@ describe('Global Manifest Validation', () => {
     }
 
     if (violations.length > 0) {
-      throw new Error(
+      throw new InternalError(
         `Manifest Validation Failed!\n\n${violations.join('\n')}\n\n` +
           'Please change these option names/short-flags as they are reserved for global CLI use.',
       );

@@ -2,6 +2,7 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { ListCredentialsOutput } from '@/plugins/credentials/commands/list/output';
 
 import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
+import { InternalError } from '@/core';
 import { listCredentials } from '@/plugins/credentials/commands/list/handler';
 
 describe('credentials plugin - list command', () => {
@@ -68,7 +69,7 @@ describe('credentials plugin - list command', () => {
     const logger = makeLogger();
     const kmsService = makeKmsMock();
     kmsService.list.mockImplementation(() => {
-      throw new Error('KMS service error');
+      throw new InternalError('KMS service error');
     });
 
     const args = makeArgs({ kms: kmsService }, logger, {});

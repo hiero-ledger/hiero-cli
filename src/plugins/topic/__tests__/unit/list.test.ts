@@ -3,6 +3,7 @@ import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
 import type { TopicData } from '@/plugins/topic/schema';
 
 import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import { InternalError } from '@/core';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { listTopics } from '@/plugins/topic/commands/list/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -225,7 +226,7 @@ describe('topic plugin - list command', () => {
 
     MockedHelper.mockImplementation(() => ({
       listTopics: jest.fn().mockImplementation(() => {
-        throw new Error('db error');
+        throw new InternalError('db error');
       }),
     }));
 

@@ -10,16 +10,23 @@ This plugin provides functionality to add, remove, list, and get information abo
 
 ### `add`
 
-Add a new plugin to the system from a plugin directory path.
+Add a new plugin to the system. Use `--path` for custom plugins or `--name` for default plugins.
 
 **Options:**
 
-- `--path, -p` (required): Filesystem path to the plugin directory containing `manifest.js`
+- `--path, -p` (optional): Filesystem path to the plugin directory containing `manifest.js`
+- `--name, -n` (optional): Name of a default plugin to add (e.g. account, token). Use `--path` for custom plugins.
 
-**Example:**
+Exactly one of `--path` or `--name` must be provided.
+
+**Examples:**
 
 ```bash
+# Add a custom plugin from path
 hcli plugin-management add --path ./dist/plugins/my-plugin
+
+# Add a default plugin by name
+hcli plugin-management add --name account
 ```
 
 ### `remove`
@@ -33,7 +40,7 @@ Remove a plugin from the system.
 **Example:**
 
 ```bash
-hedera plugin-management remove --name my-plugin
+hcli plugin-management remove --name my-plugin
 ```
 
 ### `list`
@@ -43,7 +50,7 @@ List all available plugins in the system.
 **Example:**
 
 ```bash
-hedera plugin-management list
+hcli plugin-management list
 ```
 
 ### `info`
@@ -57,7 +64,7 @@ Get detailed information about a specific plugin.
 **Example:**
 
 ```bash
-hedera plugin-management info --name account
+hcli plugin-management info --name account
 ```
 
 ### `enable`
@@ -71,7 +78,7 @@ Enable a plugin that exists in the plugin-management state.
 **Example:**
 
 ```bash
-hedera plugin-management enable --name account
+hcli plugin-management enable --name account
 ```
 
 ### `disable`
@@ -88,6 +95,20 @@ Disable a plugin that exists in the plugin-management state.
 hcli plugin-management disable --name account
 ```
 
+### `reset`
+
+Clear plugin-management state. Custom plugins will be removed. This is a destructive operation and requires confirmation.
+
+**Options:**
+
+- None
+
+**Example:**
+
+```bash
+hcli plugin-management reset
+```
+
 ## Plugin Management State
 
 The plugin-management state is stored in `~/.hiero-cli/state/plugin-management-storage.json`. It contains:
@@ -96,7 +117,7 @@ The plugin-management state is stored in `~/.hiero-cli/state/plugin-management-s
 
 - `name`, `enabled`, `description`, and optionally `path` for custom plugins
 
-**`initialized-defaults`** – metadata key listing default plugin names that have been initialized at least once. Used to:
+**`initialized-defaults`** – metadata key (always first in the file) listing default plugin names that have been initialized at least once. Used to:
 
 - Add new default plugins when they appear in `DEFAULT_PLUGIN_STATE` (e.g. after a CLI update)
 - Avoid re-adding default plugins that the user explicitly removed
@@ -137,10 +158,16 @@ The `result` field contains a structured object conforming to the Zod schema def
 src/plugins/plugin-management/
 ├── commands/
 │   ├── add/
-│   │   ├── handler.ts      # Command handler
-│   │   ├── output.ts       # Output schema and template
-│   │   └── index.ts        # Export
+│   │   ├── input.ts
+│   │   ├── handler.ts
+│   │   ├── output.ts
+│   │   └── index.ts
 │   ├── remove/
+│   │   ├── input.ts
+│   │   ├── handler.ts
+│   │   ├── output.ts
+│   │   └── index.ts
+│   ├── reset/
 │   │   ├── handler.ts
 │   │   ├── output.ts
 │   │   └── index.ts
@@ -148,7 +175,18 @@ src/plugins/plugin-management/
 │   │   ├── handler.ts
 │   │   ├── output.ts
 │   │   └── index.ts
+│   ├── enable/
+│   │   ├── input.ts
+│   │   ├── handler.ts
+│   │   ├── output.ts
+│   │   └── index.ts
+│   ├── disable/
+│   │   ├── input.ts
+│   │   ├── handler.ts
+│   │   ├── output.ts
+│   │   └── index.ts
 │   └── info/
+│       ├── input.ts
 │       ├── handler.ts
 │       ├── output.ts
 │       └── index.ts

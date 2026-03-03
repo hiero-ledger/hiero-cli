@@ -8,7 +8,7 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { AccountData } from '@/plugins/account/schema';
 import type { ImportAccountOutput } from './output';
 
-import { ValidationError } from '@/core/errors';
+import { StateError, ValidationError } from '@/core/errors';
 import { composeKey } from '@/core/utils/key-composer';
 import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -30,9 +30,12 @@ export async function importAccount(
   const alias = validArgs.name;
   const keyManagerArg = validArgs.keyManager;
   const accountId = key.accountId;
-
-  // Check if name already exists on the current network
   const network = api.network.getCurrentNetwork();
+  const accountKey = composeKey(network, accountId);
+
+  if (accountState.hasAccount(accountKey)) {
+    throw new StateError('Account with this ID is already saved in state');
+  }
 
   // Get keyManager from args or fallback to config
   const keyManager =
@@ -52,8 +55,6 @@ export async function importAccount(
     keyManager,
   );
 
-  // Generate a unique name for the account
-  const accountKey = composeKey(network, accountId);
   logger.info(`Importing account: ${accountKey} (${accountId})`);
 
   // Check if account name already exists

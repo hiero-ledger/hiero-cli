@@ -7,6 +7,7 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
+import { InternalError } from '@/core';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { listContracts } from '@/plugins/contract/commands/list/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
@@ -113,7 +114,7 @@ describe('contract plugin - list command', () => {
 
     MockedHelper.mockImplementation(() => ({
       listContracts: jest.fn().mockImplementation(() => {
-        throw new Error('database error');
+        throw new InternalError('database error');
       }),
     }));
 

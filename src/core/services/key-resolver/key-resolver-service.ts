@@ -171,7 +171,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
   ): Promise<ResolvedKey> {
     const keyReference = this.kms.get(keyReferenceCredential.keyReference);
     if (!keyReference) {
-      throw new Error(
+      throw new NotFoundError(
         `Key reference with id ${keyReferenceCredential.keyReference} not found in state`,
       );
     }
@@ -187,13 +187,13 @@ export class KeyResolverServiceImpl implements KeyResolverService {
   }
 
   private async resolvePrivateKey(
-    publicKeyCredential: PrivateKeyCredential,
+    privateKeyCredential: PrivateKeyCredential,
     keyManager: KeyManagerName,
     labels?: string[],
   ): Promise<ResolvedKey> {
     const keyReference = this.kms.importPrivateKey(
-      publicKeyCredential.keyType,
-      publicKeyCredential.privateKey,
+      privateKeyCredential.keyType,
+      privateKeyCredential.privateKey,
       keyManager,
       labels,
     );

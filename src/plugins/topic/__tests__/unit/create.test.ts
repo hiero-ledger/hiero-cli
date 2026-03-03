@@ -10,7 +10,7 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
-import { SupportedNetwork } from '@/core';
+import { NetworkError, SupportedNetwork } from '@/core';
 import { TransactionError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { createTopic } from '@/plugins/topic/commands/create/handler';
@@ -300,7 +300,7 @@ describe('topic plugin - create command', () => {
     const { topicTransactions, signing, networkMock, kms, alias } =
       makeApiMocks({
         createTopicImpl: jest.fn().mockImplementation(() => {
-          throw new Error('network error');
+          throw new NetworkError('network error');
         }),
       });
 

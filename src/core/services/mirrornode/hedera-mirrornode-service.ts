@@ -172,7 +172,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         url = data.links?.next ? this.getBaseUrl() + data.links.next : null;
       } catch (error) {
         if (error instanceof NetworkError) throw error;
-        throw new NetworkError(`Failed to fetch topic accounts`, {
+        throw new NetworkError(`Failed to fetch accounts`, {
           cause: error,
           recoverable: true,
         });

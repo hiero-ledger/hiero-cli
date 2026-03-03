@@ -107,7 +107,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias.',
+            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
           name: 'key-manager',
@@ -149,7 +149,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: true,
           description:
-            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias.',
+            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
           name: 'key-manager',
@@ -332,7 +332,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias. Defaults to operator key.',
+            'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Defaults to operator key.',
         },
         {
           name: 'supply-key',
@@ -340,7 +340,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:{public-key} format, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias.',
+            'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
           name: 'name',
@@ -422,7 +422,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias. Defaults to operator key.',
+            'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Defaults to operator key.',
         },
         {
           name: 'supply-key',
@@ -430,7 +430,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:{public-key} format, account private key in {ed25519|ecdsa}:{private-key} format, key reference or account alias.',
+            'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
           name: 'name',

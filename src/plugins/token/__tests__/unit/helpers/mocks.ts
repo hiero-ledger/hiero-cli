@@ -30,7 +30,7 @@ import {
   makeIdentityResolutionServiceMock as makeGlobalIdentityResolutionServiceMock,
   makeKeyResolverMock as makeGlobalKeyResolverMock,
 } from '@/__tests__/mocks/mocks';
-import { KeyAlgorithm } from '@/core';
+import { InternalError, KeyAlgorithm } from '@/core';
 
 import { mockTransactionResults } from './fixtures';
 
@@ -401,6 +401,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       removePlugin: jest.fn(),
       enablePlugin: jest.fn(),
       disablePlugin: jest.fn(),
+      resetPlugins: jest.fn(),
       savePluginState: jest.fn(),
       getInitializedDefaults: jest.fn().mockReturnValue([]),
       setInitializedDefaults: jest.fn(),
@@ -498,7 +499,7 @@ export const mockProcessExitThrows = () => {
 
   const setupExit = () => {
     exitSpy = jest.spyOn(process, 'exit').mockImplementation((code) => {
-      throw new Error(`Process.exit(${code})`);
+      throw new InternalError(`Process.exit(${code})`);
     });
   };
 

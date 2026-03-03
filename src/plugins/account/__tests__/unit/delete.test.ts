@@ -3,7 +3,7 @@ import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { DeleteAccountOutput } from '@/plugins/account/commands/delete';
 
 import { makeAliasMock, makeStateMock } from '@/__tests__/mocks/mocks';
-import { NotFoundError } from '@/core/errors';
+import { InternalError, NotFoundError } from '@/core/errors';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { deleteAccount } from '@/plugins/account/commands/delete/handler';
@@ -181,7 +181,7 @@ describe('account plugin - delete command (ADR-003)', () => {
       getAccount: jest.fn().mockReturnValue(account),
       listAccounts: jest.fn(),
       deleteAccount: jest.fn().mockImplementation(() => {
-        throw new Error('db error');
+        throw new InternalError('db error');
       }),
     }));
 

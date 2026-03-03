@@ -13,6 +13,7 @@ import {
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
 import {
+  NetworkError,
   NotFoundError,
   TransactionError,
   ValidationError,
@@ -304,7 +305,7 @@ describe('topic plugin - message-submit command', () => {
 
     const { topicTransactions, signing, networkMock, alias } = makeApiMocks({
       submitMessageImpl: jest.fn().mockImplementation(() => {
-        throw new Error('network error');
+        throw new NetworkError('network error');
       }),
     });
 

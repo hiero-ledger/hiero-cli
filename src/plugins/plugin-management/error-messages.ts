@@ -14,4 +14,6 @@ export const ERROR_MESSAGES = {
     `Plugin ${name} is protected and cannot be disabled`,
   pluginProtectedCannotRemove: (name: string) =>
     `Plugin ${name} is a core plugin and cannot be removed from state via CLI`,
+  pluginNotDefault: (name: string) =>
+    `Plugin ${name} is not a default plugin. Use --path for custom plugins.`,
 } as const;

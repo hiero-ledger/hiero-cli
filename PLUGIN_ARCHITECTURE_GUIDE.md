@@ -97,6 +97,10 @@ export const myPluginManifest: PluginManifest = {
 };
 ```
 
+#### Optional manifest fields
+
+- **`skipWizardInitialization`** (boolean): When `true`, the CLI skips the setup wizard (`ensureCliInitialized`) before running this plugin's commands. Use this for plugins that must run before the CLI is fully set up (e.g. `network`, `config`, `plugin-management`), since they are used to configure the network, options, or manage plugins before the user has completed the initial setup.
+
 Each entry in `commands` **must** provide an `output` block that references a Zod schema and (optionally) a template for human-readable output. The CLI relies on this metadata to validate `outputJson` and render results in line with [ADR-003](../docs/adr/ADR-003-command-handler-result-contract.md).
 
 Human-readable output templates use [Handlebars](https://handlebarsjs.com/) syntax for variable interpolation, conditionals, and iteration. Handlebars allows you to create flexible, readable output formats using expressions like `{{variable}}` for interpolation, `{{#if condition}}...{{/if}}` for conditionals, and `{{#each items}}...{{/each}}` for loops.
@@ -516,7 +520,7 @@ Handlers receive `api` (CoreApi) with all Hedera services. Use `api.account`, `a
 
 ### 3. External Plugin Support
 
-Plugins can be distributed as separate npm packages. Use `hcli plugin add <path-or-url>` to load them. See [Plugin Distribution](#-plugin-distribution) for package structure and [Contributing Guide](../CONTRIBUTING.md) for development workflow.
+Plugins can be distributed as separate npm packages. Use `hcli plugin-management add --path <path>` for custom plugins or `hcli plugin-management add --name <name>` for default plugins (e.g. account, token). See [Plugin Distribution](#-plugin-distribution) for package structure and [Contributing Guide](../CONTRIBUTING.md) for development workflow.
 
 ## 📚 Best Practices
 

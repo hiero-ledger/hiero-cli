@@ -2,7 +2,7 @@ import type { KmsCredentialRecord } from '@/core/services/kms/kms-types.interfac
 import type { RemoveCredentialsOutput } from '@/plugins/credentials/commands/remove/output';
 
 import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
-import { NotFoundError } from '@/core/errors';
+import { InternalError, NotFoundError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { removeCredentials } from '@/plugins/credentials/commands/remove/handler';
 
@@ -69,7 +69,7 @@ describe('credentials plugin - remove command', () => {
     const kmsService = makeKmsMock();
     kmsService.get.mockReturnValue(mockCredentials);
     kmsService.remove.mockImplementation(() => {
-      throw new Error('KMS service error');
+      throw new InternalError('KMS service error');
     });
 
     const args = makeArgs({ kms: kmsService }, logger, { id: 'kr_test123' });

@@ -6,7 +6,7 @@ import {
   TransactionId,
 } from '@hashgraph/sdk';
 
-import { TransactionError } from '@/core/errors';
+import { InternalError, TransactionError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
   associateToken,
@@ -393,7 +393,7 @@ describe('associateTokenHandler', () => {
           createTokenAssociationTransaction: jest
             .fn()
             .mockImplementation(() => {
-              throw new Error('Service unavailable');
+              throw new InternalError('Service unavailable');
             }),
         },
         kms: {
