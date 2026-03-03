@@ -4,6 +4,7 @@
  * Follows ADR-003 contract: returns CommandResult
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { AccountData } from '@/plugins/account/schema';
 import type { DeleteAccountOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
@@ -22,26 +23,47 @@ export async function deleteAccount(
 
   const validArgs = DeleteAccountInputSchema.parse(args.args);
   const accountRef = validArgs.account;
-  const isEntityId = EntityIdSchema.safeParse(accountRef).success;
-  let accountToDelete;
+  const currentNetwork = api.network.getCurrentNetwork();
+  const accounts = accountState.listAccounts();
+  let accountToDelete: AccountData | undefined;
 
-  if (isEntityId) {
-    const accounts = accountState.listAccounts();
+  const entityIdResult = EntityIdSchema.safeParse(accountRef);
+  if (entityIdResult.success) {
     accountToDelete = accounts.find((acc) => acc.accountId === accountRef);
     if (!accountToDelete) {
       throw new NotFoundError(`Account with ID '${accountRef}' not found`);
     }
   } else {
-    accountToDelete = accountState.loadAccount(accountRef);
+    const aliasRecord = api.alias.resolve(
+      accountRef,
+      ALIAS_TYPE.Account,
+      currentNetwork,
+    );
+    if (aliasRecord?.entityId) {
+      accountToDelete = accounts.find(
+        (acc) => acc.accountId === aliasRecord.entityId,
+      );
+      if (accountToDelete) {
+        logger.info(
+          `Found account via alias: ${aliasRecord.alias} -> ${accountToDelete.accountId}`,
+        );
+      }
+    }
     if (!accountToDelete) {
-      throw new NotFoundError(`Account with name '${accountRef}' not found`);
+      accountToDelete = accountState.loadAccount(accountRef) ?? undefined;
+    }
+    if (!accountToDelete) {
+      throw new NotFoundError(
+        `Account not found with ID or alias: ${accountRef}`,
+      );
     }
   }
 
-  const currentNetwork = api.network.getCurrentNetwork();
+  const account = accountToDelete;
+
   const aliasesForAccount = api.alias
     .list({ network: currentNetwork, type: ALIAS_TYPE.Account })
-    .filter((rec) => rec.entityId === accountToDelete.accountId);
+    .filter((rec) => rec.entityId === account.accountId);
 
   const removedAliases: string[] = [];
   for (const rec of aliasesForAccount) {
@@ -50,25 +72,24 @@ export async function deleteAccount(
     logger.info(`🧹 Removed alias '${rec.alias}' on ${currentNetwork}`);
   }
 
-  accountState.deleteAccount(accountToDelete.name);
+  accountState.deleteAccount(account.name);
 
   const accountsWithSameKeyRef = accountState
     .listAccounts()
-    .filter((acc) => acc.keyRefId === accountToDelete.keyRefId);
+    .filter((acc) => acc.keyRefId === account.keyRefId);
   const isOtherAccountUseSameKey = accountsWithSameKeyRef.length > 1;
 
   const operator = api.network.getCurrentOperatorOrThrow();
-  const isOperatorHaveSameKeyRef =
-    operator.keyRefId === accountToDelete.keyRefId;
+  const isOperatorHaveSameKeyRef = operator.keyRefId === account.keyRefId;
 
   if (!isOtherAccountUseSameKey && !isOperatorHaveSameKeyRef) {
-    api.kms.remove(accountToDelete.keyRefId);
+    api.kms.remove(account.keyRefId);
   }
 
   const outputData: DeleteAccountOutput = {
     deletedAccount: {
-      name: accountToDelete.name,
-      accountId: accountToDelete.accountId,
+      name: account.name,
+      accountId: account.accountId,
     },
     removedAliases,
     network: currentNetwork,
