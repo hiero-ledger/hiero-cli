@@ -1,4 +1,8 @@
-import type { ResolvedKey } from '@/core/services/key-resolver/types';
+import type {
+  Destination,
+  ResolvedKey,
+  SigningKey,
+} from '@/core/services/key-resolver/types';
 import type {
   Credential,
   KeyManagerName,
@@ -16,4 +20,16 @@ export interface KeyResolverService {
     keyManager: KeyManagerName,
     labels?: string[],
   ): Promise<ResolvedKey>;
+
+  resolveSigningKey(
+    credential: Credential | undefined,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<SigningKey>;
+
+  resolveDestination(
+    credential: Credential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<Destination>;
 }

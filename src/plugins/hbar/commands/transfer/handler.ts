@@ -31,11 +31,11 @@ export async function transferHandler(
   const currentNetwork = api.network.getCurrentNetwork();
 
   // Resolve accounts
-  const fromAccount = await api.keyResolver.getOrInitKeyWithFallback(
-    from,
-    keyManager,
-  );
-  const toAccount = await api.keyResolver.getOrInitKey(to, keyManager);
+  const fromAccount = await api.keyResolver.resolveSigningKey(from, keyManager);
+  const toAccount = await api.keyResolver.resolveDestination(to, keyManager);
+
+  // In resolved destination at least one field is present
+  const destination = toAccount.evmAddress || <string>toAccount.accountId;
 
   if (fromAccount.accountId === toAccount.accountId) {
     throw new ValidationError('Cannot transfer to the same account');
@@ -48,18 +48,18 @@ export async function transferHandler(
   const transferResult = await api.hbar.transferTinybar({
     amount: amount,
     from: fromAccount.accountId,
-    to: toAccount.accountId,
+    to: destination,
     memo,
   });
 
   const result = await api.txExecution.signAndExecuteWith(
     transferResult.transaction,
-    [from.keyRefId],
+    [fromAccount.keyRefId],
   );
 
   if (!result.success) {
     throw new TransactionError(
-      `Transfer failed from ${from.accountId} to ${toAccountId} (txId: ${result.transactionId}, status: ${result.receipt?.status?.status ?? 'UNKNOWN'})`,
+      `Transfer failed from ${fromAccount.accountId} to ${destination} (txId: ${result.transactionId}, status: ${result.receipt?.status?.status ?? 'UNKNOWN'})`,
       false,
     );
   }
@@ -70,8 +70,8 @@ export async function transferHandler(
 
   const outputData: TransferOutput = {
     transactionId: result.transactionId || '',
-    fromAccountId: from.accountId,
-    toAccountId,
+    fromAccountId: fromAccount.accountId,
+    toAccountId: destination,
     amountTinybar: amount,
     network: currentNetwork,
     ...(memo && { memo }),

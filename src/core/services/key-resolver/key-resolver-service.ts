@@ -1,5 +1,9 @@
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
-import type { ResolvedKey } from '@/core/services/key-resolver/types';
+import type {
+  Destination,
+  ResolvedKey,
+  SigningKey,
+} from '@/core/services/key-resolver/types';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type {
   AccountIdCredential,
@@ -91,6 +95,54 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     }
 
     return this.getOrInitKey(credential, keyManager, labels);
+  }
+
+  public async resolveSigningKey(
+    credential: Credential | undefined,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<SigningKey> {
+    const resolved = await this.getOrInitKeyWithFallback(
+      credential,
+      keyManager,
+      labels,
+    );
+    const { keyRefId, accountId, publicKey } = resolved;
+
+    if (!keyRefId || !accountId || !publicKey) {
+      throw new StateError(
+        'Credential cannot be used for signing: missing accountId, publicKey or keyRefId',
+        {
+          context: {
+            hasKeyRefId: !!keyRefId,
+            hasAccountId: !!accountId,
+            hasPublicKey: !!publicKey,
+          },
+        },
+      );
+    }
+
+    return { keyRefId, accountId, publicKey };
+  }
+
+  public async resolveDestination(
+    credential: Credential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<Destination> {
+    const resolved = await this.getOrInitKey(credential, keyManager, labels);
+    const { accountId, evmAddress } = resolved;
+
+    if (!accountId && !evmAddress) {
+      throw new StateError(
+        'Credential cannot be used as destination: missing accountId and evmAddress',
+        {
+          context: { rawValue: credential.rawValue },
+        },
+      );
+    }
+
+    return { accountId, evmAddress } as Destination;
   }
 
   private async resolveAccountId(

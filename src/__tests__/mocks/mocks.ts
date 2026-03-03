@@ -16,6 +16,7 @@ import type { ContractVerifierService } from '@/core/services/contract-verifier/
 import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
+import type { Destination } from '@/core/services/key-resolver/types';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
@@ -30,7 +31,7 @@ import type {
   TxExecutionService,
 } from '@/core/services/tx-execution/tx-execution-service.interface';
 
-import { ValidationError } from '@/core';
+import { StateError, ValidationError } from '@/core';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
@@ -655,6 +656,52 @@ export const makeKeyResolverMock = (
       // delegate
       const resolver = makeKeyResolverMock(options);
       return resolver.getOrInitKey(keyOrAlias, keyManager, labels || []);
+    }),
+
+  resolveSigningKey: jest
+    .fn()
+    .mockImplementation(async (credential, keyManager, labels) => {
+      if (!credential && options.network) {
+        const operator = options.network.getCurrentOperatorOrThrow();
+        return {
+          accountId: operator.accountId,
+          publicKey: '302a300506032b6570032100' + '0'.repeat(64),
+          keyRefId: operator.keyRefId,
+        };
+      }
+      const resolver = makeKeyResolverMock(options);
+      const resolved = await resolver.getOrInitKey(
+        credential,
+        keyManager,
+        labels || [],
+      );
+      if (!resolved.keyRefId || !resolved.accountId || !resolved.publicKey) {
+        throw new StateError(
+          'Mock: resolved key missing required signing fields',
+        );
+      }
+      return {
+        keyRefId: resolved.keyRefId,
+        accountId: resolved.accountId,
+        publicKey: resolved.publicKey,
+      };
+    }),
+
+  resolveDestination: jest
+    .fn()
+    .mockImplementation(async (credential, keyManager, labels) => {
+      const resolver = makeKeyResolverMock(options);
+      const resolved = await resolver.getOrInitKey(
+        credential,
+        keyManager,
+        labels || [],
+      );
+      if (!resolved.accountId && !resolved.evmAddress) {
+        throw new StateError(
+          'Mock: resolved key missing accountId and evmAddress',
+        );
+      }
+      return resolved as Destination;
     }),
 });
 
