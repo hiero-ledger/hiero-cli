@@ -59,7 +59,10 @@ describe('Handler Output Validation - Token Plugin', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
-          getPublicKey: jest.fn().mockReturnValue('test-public-key'),
+          get: jest.fn().mockReturnValue({
+            keyRefId: 'test-key-ref-id',
+            publicKey: 'test-public-key',
+          }),
         },
         alias: {
           register: jest.fn(),
@@ -127,7 +130,10 @@ describe('Handler Output Validation - Token Plugin', () => {
             }),
         },
         kms: {
-          getPublicKey: jest.fn().mockReturnValue('mock-public-key'),
+          get: jest.fn().mockReturnValue({
+            keyRefId: 'mock-key-ref-id',
+            publicKey: 'mock-public-key',
+          }),
         },
       });
 

@@ -3,11 +3,7 @@ import type { GetOperatorOutput } from '@/plugins/network/commands/get-operator'
 
 import { z } from 'zod';
 
-import {
-  EcdsaPrivateKeySchema,
-  Ed25519PrivateKeySchema,
-  EntityIdSchema,
-} from '@/core/schemas/common-schemas';
+import { EntityIdSchema } from '@/core/schemas/common-schemas';
 import { getOperatorHandler } from '@/plugins/network/commands/get-operator';
 import { setOperatorHandler } from '@/plugins/network/commands/set-operator';
 import { useHandler } from '@/plugins/network/commands/use';
@@ -19,21 +15,7 @@ const envSchema = z.object({
     .trim()
     .pipe(EntityIdSchema)
     .describe('Hedera entity ID in format 0.0.{number}'),
-  OPERATOR_KEY: z
-    .string()
-    .min(1, 'OPERATOR_KEY is required')
-    .trim()
-    .refine(
-      (value) => {
-        const ed25519Result = Ed25519PrivateKeySchema.safeParse(value);
-        const ecdsaResult = EcdsaPrivateKeySchema.safeParse(value);
-        return ed25519Result.success || ecdsaResult.success;
-      },
-      {
-        message:
-          'OPERATOR_KEY must be a valid ED25519 or ECDSA key in hex (with optional 0x prefix)',
-      },
-    ),
+  OPERATOR_KEY: z.string().min(1, 'OPERATOR_KEY is required').trim(),
   NETWORK: z.enum(['testnet', 'localnet'], {
     error: () => ({
       message: 'Network must be testnet or localnet',

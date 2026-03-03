@@ -5,7 +5,10 @@ import type {
 } from '@hashgraph/sdk';
 import type { KeyAlgorithm } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { KeyManagerName } from './kms-types.interface';
+import type {
+  KeyManagerName,
+  KmsCredentialRecord,
+} from './kms-types.interface';
 import type { Signer } from './signers/signer.interface';
 
 export interface KmsService {
@@ -24,6 +27,12 @@ export interface KmsService {
     keyRefId: string;
     publicKey: string;
   };
+  importPublicKey(
+    keyType: KeyAlgorithm,
+    publicKeyRaw: string,
+    keyManager?: KeyManagerName,
+    labels?: string[],
+  ): { keyRefId: string; publicKey: string };
 
   /**
    * Imports an existing private key using specified KeyManager.
@@ -60,11 +69,6 @@ export interface KmsService {
   ): { keyRefId: string; publicKey: string };
 
   /**
-   * Gets public key for a keyRefId.
-   */
-  getPublicKey(keyRefId: string): string | null;
-
-  /**
    * Gets a signer handle for signing transactions.
    */
   getSignerHandle(keyRefId: string): Signer;
@@ -72,7 +76,12 @@ export interface KmsService {
   /**
    * Finds keyRefId by public key.
    */
-  findByPublicKey(publicKey: string): string | null;
+  findByPublicKey(publicKey: string): KmsCredentialRecord | undefined;
+
+  /**
+   * Finds keyRefId by public key.
+   */
+  get(keyRefId: string): KmsCredentialRecord | undefined;
 
   /**
    * Lists all credential records.

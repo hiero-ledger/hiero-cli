@@ -11,7 +11,7 @@ import {
   makeLogger,
   makeMirrorMock,
 } from '@/__tests__/mocks/mocks';
-import { NotFoundError } from '@/core/errors';
+import { InternalError, NotFoundError, StateError } from '@/core/errors';
 import { getAccountBalance } from '@/plugins/account/commands/balance/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -305,7 +305,7 @@ describe('account plugin - balance command (ADR-003)', () => {
 
     MockedHelper.mockImplementation(() => ({
       loadAccount: jest.fn().mockImplementation(() => {
-        throw new Error('state failure');
+        throw new StateError('state failure');
       }),
     }));
 
@@ -328,7 +328,7 @@ describe('account plugin - balance command (ADR-003)', () => {
 
     const mirrorMock = makeMirrorMock({ hbarBalance: 100n });
     mirrorMock.getAccountHBarBalance = jest.fn().mockImplementation(() => {
-      throw new Error('Mirror service error');
+      throw new InternalError('Mirror service error');
     });
 
     const api: Partial<CoreApi> = {

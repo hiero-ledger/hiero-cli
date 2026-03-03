@@ -164,14 +164,14 @@ describe('hbar plugin - transfer command (unit)', () => {
   });
 
   test('returns failure when from is just account ID without private key', () => {
-    // SIMPLE validation → test schema directly
+    // SIMPLE validation → test schema directly (PrivateKeyWithAccountIdSchema throws Error in transform)
     expect(() => {
       TransferInputSchema.parse({
         amount: mockAmounts.small,
         from: mockAccountIds.sender, // Just account ID, no private key
         to: mockAccountIds.receiver,
       });
-    }).toThrow(ZodError);
+    }).toThrow(ValidationError);
   });
 
   test('uses default credentials as from when not provided', async () => {

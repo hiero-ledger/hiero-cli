@@ -5,7 +5,7 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import * as clack from '@clack/prompts';
 
 import { ConfigurationError } from '@/core/errors';
-import { EntityIdSchema, PrivateKeySchema } from '@/core/schemas';
+import { EntityIdSchema, PrivateKeyDefinitionSchema } from '@/core/schemas';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 const NETWORK_DISPLAY_OPTIONS = [
@@ -81,7 +81,7 @@ async function promptForAccountCredentials(): Promise<{
 
   let privateKey = await clack.text({
     message: 'Enter your Private Key:',
-    validate: clackZodValidation(PrivateKeySchema),
+    validate: clackZodValidation(PrivateKeyDefinitionSchema),
   });
   privateKey = ensureNotCanceled(privateKey);
 

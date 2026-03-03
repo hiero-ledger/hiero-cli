@@ -30,7 +30,9 @@ import type {
   TxExecutionService,
 } from '@/core/services/tx-execution/tx-execution-service.interface';
 
+import { ValidationError } from '@/core';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -123,13 +125,17 @@ export const makeKmsMock = (): jest.Mocked<KmsService> => ({
     keyRefId: 'kr_test123',
     publicKey: 'pub-key-test',
   }),
+  importPublicKey: jest.fn().mockReturnValue({
+    keyRefId: 'kr_test123',
+    publicKey: 'pub-key-test',
+  }),
   importAndValidatePrivateKey: jest.fn().mockReturnValue({
     keyRefId: 'kr_test123',
     publicKey: 'pub-key-test',
   }),
-  getPublicKey: jest.fn(),
   getSignerHandle: jest.fn(),
   findByPublicKey: jest.fn(),
+  get: jest.fn(),
   list: jest.fn(),
   remove: jest.fn(),
   createClient: jest.fn(),
@@ -296,6 +302,7 @@ export const createMirrorNodeMock =
     getAccount: jest.fn(),
     getAccountHBarBalance: jest.fn(),
     getAccountTokenBalances: jest.fn(),
+    getAccounts: jest.fn(),
     getTopicMessage: jest.fn(),
     getTopicMessages: jest.fn(),
     getTokenInfo: jest.fn(),
@@ -503,6 +510,7 @@ export const makeArgs = (
       getAccount: jest.fn(),
       getAccountHBarBalance: jest.fn(),
       getAccountTokenBalances: jest.fn(),
+      getAccounts: jest.fn(),
       getTopicMessage: jest.fn(),
       getTopicMessages: jest.fn(),
       getTokenInfo: jest.fn(),
@@ -580,7 +588,7 @@ export const makeKeyResolverMock = (
     // eslint-disable-next-line @typescript-eslint/require-await
     .mockImplementation(async (keyOrAlias, keyManager, labels) => {
       // accountId:privateKey format
-      if (keyOrAlias?.type === 'keypair') {
+      if (keyOrAlias?.type === CredentialType.ACCOUNT_KEY_PAIR) {
         // Call kms.importPrivateKey if available
         if (options.kms?.importPrivateKey) {
           const importResult = options.kms.importPrivateKey(
@@ -603,7 +611,7 @@ export const makeKeyResolverMock = (
       }
 
       // alias format
-      if (keyOrAlias?.type === 'alias' && options.alias) {
+      if (keyOrAlias?.type === CredentialType.ALIAS && options.alias) {
         const network =
           options.network?.getCurrentNetwork() || SupportedNetwork.TESTNET;
         const resolved = options.alias.resolve(
@@ -612,9 +620,11 @@ export const makeKeyResolverMock = (
           network,
         );
         if (!resolved)
-          throw new Error('No account is associated with the name provided.');
+          throw new ValidationError(
+            'No account is associated with the name provided.',
+          );
         if (!resolved.publicKey || !resolved.keyRefId || !resolved.entityId) {
-          throw new Error(
+          throw new ValidationError(
             'The account associated with the alias does not have an associated private/public key or accountId',
           );
         }
@@ -625,7 +635,7 @@ export const makeKeyResolverMock = (
         };
       }
 
-      throw new Error('Invalid keyOrAlias');
+      throw new ValidationError('Invalid keyOrAlias');
     }),
 
   getOrInitKeyWithFallback: jest

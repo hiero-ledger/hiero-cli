@@ -15,7 +15,7 @@ export async function removeCredentials(
 
   logger.info(`🗑️  Removing credentials for id: ${id}`);
 
-  const publicKey = api.kms.getPublicKey(id);
+  const publicKey = api.kms.get(id)?.publicKey;
   if (!publicKey) {
     throw new NotFoundError(
       `Credential with key reference ID '${id}' does not exist`,

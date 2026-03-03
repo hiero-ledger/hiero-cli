@@ -2,6 +2,7 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { TransferNftOutput } from './output';
 
+import { StateError } from '@/core';
 import {
   NotFoundError,
   TransactionError,
@@ -58,6 +59,11 @@ export async function transferNft(
   );
 
   const fromAccountId = resolvedFromAccount.accountId;
+  if (!fromAccountId) {
+    throw new StateError(
+      `Could not resolve account ID for passed "from" argument ${validArgs.from?.type} from value ${validArgs.from?.rawValue}`,
+    );
+  }
   const signerKeyRefId = resolvedFromAccount.keyRefId;
 
   logger.info(`🔑 Using from account: ${fromAccountId}`);

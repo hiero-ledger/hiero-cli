@@ -1,3 +1,4 @@
+import type { KmsCredentialRecord } from '@/core/services/kms/kms-types.interface';
 import type { GetOperatorOutput } from '@/plugins/network/commands/get-operator/output';
 
 import {
@@ -7,7 +8,8 @@ import {
   makeNetworkMock,
   setupExitSpy,
 } from '@/__tests__/mocks/mocks';
-import { ValidationError } from '@/core/errors';
+import { InternalError, ValidationError } from '@/core/errors';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { getOperatorHandler } from '@/plugins/network/commands/get-operator';
 
 let exitSpy: jest.SpyInstance;
@@ -26,6 +28,14 @@ describe('network plugin - get-operator command', () => {
   });
 
   test('gets operator for current network when no network specified', async () => {
+    const mockCredentials: KmsCredentialRecord = {
+      keyRefId: 'kr_test123',
+      publicKey: 'pub-key-test',
+      keyAlgorithm: KeyAlgorithm.ECDSA,
+      keyManager: 'local',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -34,7 +44,7 @@ describe('network plugin - get-operator command', () => {
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
     });
-    kmsService.getPublicKey.mockReturnValue('pub-key-test');
+    kmsService.get.mockReturnValue(mockCredentials);
 
     const args = makeArgs(
       { network: networkService, kms: kmsService },
@@ -52,10 +62,18 @@ describe('network plugin - get-operator command', () => {
       publicKey: 'pub-key-test',
     });
     expect(networkService.getOperator).toHaveBeenCalledWith('testnet');
-    expect(kmsService.getPublicKey).toHaveBeenCalledWith('kr_test123');
+    expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
   });
 
   test('gets operator for specified network', async () => {
+    const mockCredentials: KmsCredentialRecord = {
+      keyRefId: 'kr_mainnet',
+      publicKey: 'pub-key-mainnet',
+      keyAlgorithm: KeyAlgorithm.ECDSA,
+      keyManager: 'local',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -64,7 +82,7 @@ describe('network plugin - get-operator command', () => {
       accountId: '0.0.789012',
       keyRefId: 'kr_mainnet',
     });
-    kmsService.getPublicKey.mockReturnValue('pub-key-mainnet');
+    kmsService.get.mockReturnValue(mockCredentials);
 
     const args = makeArgs(
       { network: networkService, kms: kmsService },
@@ -82,7 +100,7 @@ describe('network plugin - get-operator command', () => {
       publicKey: 'pub-key-mainnet',
     });
     expect(networkService.getOperator).toHaveBeenCalledWith('mainnet');
-    expect(kmsService.getPublicKey).toHaveBeenCalledWith('kr_mainnet');
+    expect(kmsService.get).toHaveBeenCalledWith('kr_mainnet');
   });
 
   test('returns output without operator when no operator configured', async () => {
@@ -104,7 +122,7 @@ describe('network plugin - get-operator command', () => {
     expect(output.network).toBe('testnet');
     expect(output.operator).toBeUndefined();
     expect(networkService.getOperator).toHaveBeenCalledWith('testnet');
-    expect(kmsService.getPublicKey).not.toHaveBeenCalled();
+    expect(kmsService.get).not.toHaveBeenCalled();
   });
 
   test('handles missing public key gracefully', async () => {
@@ -116,7 +134,7 @@ describe('network plugin - get-operator command', () => {
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
     });
-    kmsService.getPublicKey.mockReturnValue(null);
+    kmsService.get.mockReturnValue(undefined);
 
     const args = makeArgs(
       { network: networkService, kms: kmsService },
@@ -134,7 +152,7 @@ describe('network plugin - get-operator command', () => {
       publicKey: undefined,
     });
     expect(networkService.getOperator).toHaveBeenCalledWith('testnet');
-    expect(kmsService.getPublicKey).toHaveBeenCalledWith('kr_test123');
+    expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
   });
 
   test('throws ValidationError when network is not available', async () => {
@@ -165,7 +183,7 @@ describe('network plugin - get-operator command', () => {
     const kmsService = makeKmsMock();
 
     networkService.getOperator.mockImplementation(() => {
-      throw new Error('Network service error');
+      throw new InternalError('Network service error');
     });
 
     const args = makeArgs(
@@ -188,8 +206,8 @@ describe('network plugin - get-operator command', () => {
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
     });
-    kmsService.getPublicKey.mockImplementation(() => {
-      throw new Error('KMS service error');
+    kmsService.get.mockImplementation(() => {
+      throw new InternalError('KMS service error');
     });
 
     const args = makeArgs(
@@ -202,6 +220,15 @@ describe('network plugin - get-operator command', () => {
   });
 
   test('validates network before getting operator', async () => {
+    const mockCredentials: KmsCredentialRecord = {
+      keyRefId: 'kr_testnet',
+      publicKey: 'pub-key-test',
+      keyAlgorithm: KeyAlgorithm.ECDSA,
+      keyManager: 'local',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -211,7 +238,7 @@ describe('network plugin - get-operator command', () => {
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
     });
-    kmsService.getPublicKey.mockReturnValue('pub-key-test');
+    kmsService.get.mockReturnValue(mockCredentials);
 
     const args = makeArgs(
       { network: networkService, kms: kmsService },
@@ -230,6 +257,15 @@ describe('network plugin - get-operator command', () => {
   });
 
   test('displays all operator information when found', async () => {
+    const mockCredentials: KmsCredentialRecord = {
+      keyRefId: 'kr_special',
+      publicKey: 'pub-key-special',
+      keyAlgorithm: KeyAlgorithm.ECDSA,
+      keyManager: 'local',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+
     const logger = makeLogger();
     const networkService = makeNetworkMock('testnet');
     const kmsService = makeKmsMock();
@@ -238,7 +274,7 @@ describe('network plugin - get-operator command', () => {
       accountId: '0.0.999999',
       keyRefId: 'kr_special',
     });
-    kmsService.getPublicKey.mockReturnValue('pub-key-special');
+    kmsService.get.mockReturnValue(mockCredentials);
 
     const args = makeArgs(
       { network: networkService, kms: kmsService },

@@ -68,12 +68,22 @@ describe('createTokenFromFileHandler', () => {
           publicKey: 'treasury-key',
         }),
         findByPublicKey: jest.fn().mockImplementation((key) => {
-          if (key === 'admin-key') return 'admin-key-ref-id';
-          return undefined;
+          if (key === 'admin-key') {
+            return {
+              keyRefId: 'admin-key-ref-id',
+              publicKey: 'admin-key',
+            };
+          }
+          return null;
         }),
-        getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-          if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-          return 'mock-public-key';
+        get: jest.fn().mockImplementation((key) => {
+          if (key === 'mock-key-ref-id') {
+            return {
+              keyRefId: 'mock-key-ref-id',
+              publicKey: 'admin-key',
+            };
+          }
+          return null;
         }),
       },
     });
@@ -144,12 +154,22 @@ describe('createTokenFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -305,12 +325,22 @@ describe('createTokenFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -405,12 +435,22 @@ describe('createTokenFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -556,7 +596,7 @@ describe('createTokenFromFileHandler', () => {
 
       // Act & Assert
       await expect(createTokenFromFile(args)).rejects.toThrow(
-        'Invalid token definition file',
+        'Private key with account ID must be a valid account ID and private key pair in {account-id:private-key} format, key reference or alias name',
       );
     });
 
@@ -654,12 +694,22 @@ describe('createTokenFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -701,7 +751,7 @@ describe('createTokenFromFileHandler', () => {
           createTokenAssociationTransaction: jest
             .fn()
             .mockImplementation(() => {
-              throw new Error('Association failed');
+              throw new StateError('Association failed');
             }),
         },
         signing: {
@@ -726,12 +776,22 @@ describe('createTokenFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });
@@ -803,12 +863,22 @@ describe('createTokenFromFileHandler', () => {
               };
             }),
           findByPublicKey: jest.fn().mockImplementation((key) => {
-            if (key === 'admin-key') return 'admin-key-ref-id';
-            return undefined;
+            if (key === 'admin-key') {
+              return {
+                keyRefId: 'admin-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
-          getPublicKey: jest.fn().mockImplementation((keyRefId) => {
-            if (keyRefId === 'admin-key-ref-id') return 'admin-public-key';
-            return 'mock-public-key';
+          get: jest.fn().mockImplementation((key) => {
+            if (key === 'mock-key-ref-id') {
+              return {
+                keyRefId: 'mock-key-ref-id',
+                publicKey: 'admin-key',
+              };
+            }
+            return null;
           }),
         },
       });

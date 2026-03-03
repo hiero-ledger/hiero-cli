@@ -10,6 +10,7 @@ import {
   makeStateMock,
   mockTopicAliasRecord,
 } from '@/__tests__/mocks/mocks';
+import { InternalError } from '@/core';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { deleteTopic } from '@/plugins/topic/commands/delete/handler';
@@ -185,7 +186,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
       listTopics: jest.fn().mockReturnValue([topic]),
       findTopicByTopicId: jest.fn(),
       deleteTopic: jest.fn().mockImplementation(() => {
-        throw new Error('db error');
+        throw new InternalError('db error');
       }),
     }));
 

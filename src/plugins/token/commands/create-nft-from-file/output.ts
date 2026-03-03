@@ -3,6 +3,7 @@ import { z } from 'zod';
 import {
   EntityIdSchema,
   NetworkSchema,
+  PublicKeyDefinitionSchema,
   SupplyTypeSchema,
   TransactionIdSchema,
 } from '@/core/schemas/common-schemas';
@@ -19,8 +20,10 @@ export const CreateNftFromFileOutputSchema = z.object({
   name: z.string().describe('NFT token name'),
   symbol: z.string().describe('NFT token symbol'),
   treasuryId: EntityIdSchema,
-  adminAccountId: EntityIdSchema,
-  supplyAccountId: EntityIdSchema,
+  adminAccountId: EntityIdSchema.optional().describe('Admin account ID'),
+  adminPublicKey: PublicKeyDefinitionSchema.describe('Admin public key'),
+  supplyAccountId: EntityIdSchema.optional().describe('Supply account ID'),
+  supplyPublicKey: PublicKeyDefinitionSchema.describe('Supply public key'),
   supplyType: SupplyTypeSchema,
   transactionId: TransactionIdSchema,
   alias: z.string().describe('NFT token alias').optional(),
@@ -39,8 +42,14 @@ export const CREATE_NFT_FROM_FILE_TEMPLATE = `
 
    Name: {{name}} ({{symbol}})
    Treasury: {{hashscanLink treasuryId "account" network}}
-   Admin: {{hashscanLink adminAccountId "account" network}}
-   Supply: {{hashscanLink supplyAccountId "account" network}}
+{{#if adminAccountId}}
+   Admin account: {{hashscanLink adminAccountId "account" network}}
+{{/if}}
+   Admin public key: {{adminPublicKey}}
+{{#if supplyAccountId}}
+   Supply account: {{hashscanLink supplyAccountId "account" network}}
+{{/if}}
+   Supply public key: {{supplyPublicKey}}
    Supply Type: {{supplyType}}
 {{#if alias}}
    Alias: {{alias}}

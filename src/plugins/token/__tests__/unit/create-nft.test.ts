@@ -53,7 +53,10 @@ describe('createNftHandler', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
-          getPublicKey: jest.fn().mockReturnValue('operator-public-key'),
+          get: jest.fn().mockReturnValue({
+            keyRefId: 'operator-key-ref-id',
+            publicKey: 'operator-public-key',
+          }),
           importPrivateKey: jest.fn().mockReturnValue({
             keyRefId: 'treasury-key-ref-id',
             publicKey: 'treasury-public-key',
@@ -211,7 +214,10 @@ describe('createNftHandler', () => {
           signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
-          getPublicKey: jest.fn().mockReturnValue('operator-public-key'),
+          get: jest.fn().mockReturnValue({
+            keyRefId: 'operator-key-ref-id',
+            publicKey: 'operator-public-key',
+          }),
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {

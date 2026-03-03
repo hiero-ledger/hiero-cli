@@ -3,6 +3,7 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { ClearAccountsOutput } from '@/plugins/account/commands/clear';
 
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import { InternalError } from '@/core';
 import { clearAccounts } from '@/plugins/account/commands/clear/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -63,7 +64,7 @@ describe('account plugin - clear command (ADR-003)', () => {
     MockedHelper.mockImplementation(() => ({
       listAccounts: jest.fn().mockReturnValue([{ name: 'a' }]),
       clearAccounts: jest.fn().mockImplementation(() => {
-        throw new Error('db error');
+        throw new InternalError('db error');
       }),
     }));
 

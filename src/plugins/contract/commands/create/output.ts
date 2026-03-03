@@ -7,7 +7,7 @@ import {
   EntityIdSchema,
   EvmAddressSchema,
   NetworkSchema,
-  PublicKeySchema,
+  PublicKeyDefinitionSchema,
   TransactionIdSchema,
 } from '@/core/schemas';
 
@@ -18,7 +18,7 @@ export const ContractCreateOutputSchema = z.object({
   alias: AliasNameSchema.optional(),
   network: NetworkSchema,
   transactionId: TransactionIdSchema,
-  adminPublicKey: PublicKeySchema.optional(),
+  adminPublicKey: PublicKeyDefinitionSchema.optional(),
   verified: ContractVerifiedSchema,
 });
 

@@ -6,6 +6,7 @@ import { z } from 'zod';
 import {
   EntityIdSchema,
   NetworkSchema,
+  PublicKeyDefinitionSchema,
   SupplyTypeSchema,
   TokenNameSchema,
   TokenSymbolSchema,
@@ -26,8 +27,10 @@ export const CreateNftOutputSchema = z.object({
   transactionId: TransactionIdSchema.describe(
     'Hedera token create transaction ID',
   ),
-  adminAccountId: EntityIdSchema.describe('Admin account ID'),
-  supplyAccountId: EntityIdSchema.describe('Supply account ID'),
+  adminAccountId: EntityIdSchema.optional().describe('Admin account ID'),
+  adminPublicKey: PublicKeyDefinitionSchema.describe('Admin public key'),
+  supplyAccountId: EntityIdSchema.optional().describe('Supply account ID'),
+  supplyPublicKey: PublicKeyDefinitionSchema.describe('Supply public key'),
   alias: z.string().describe('Token alias').optional(),
   network: NetworkSchema.describe('Network on which token exists'),
 });
@@ -42,8 +45,14 @@ export const CREATE_NFT_TEMPLATE = `
    Name: {{name}} ({{symbol}})
    Treasury: {{hashscanLink treasuryId "account" network}}
    Supply Type: {{supplyType}}
+{{#if adminAccountId}}
    Admin account: {{hashscanLink adminAccountId "account" network}}
+{{/if}}
+   Admin public key: {{adminPublicKey}}
+{{#if supplyAccountId}}
    Supply account: {{hashscanLink supplyAccountId "account" network}}
+{{/if}}
+   Supply public key: {{supplyPublicKey}}
 {{#if alias}}
    Alias: {{alias}}
 {{/if}}

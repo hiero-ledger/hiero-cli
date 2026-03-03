@@ -1,5 +1,6 @@
 import type { GetConfigOutput } from '@/plugins/config/commands/get/output';
 
+import { ConfigurationError } from '@/core';
 import { getConfigOption } from '@/plugins/config/commands/get/handler';
 
 import { enumOption } from './helpers/fixtures';
@@ -32,7 +33,7 @@ describe('config plugin - get', () => {
   test('throws when getOption fails', async () => {
     const configSvc = makeConfigServiceMock({
       getOption: jest.fn().mockImplementation(() => {
-        throw new Error('Option not found');
+        throw new ConfigurationError('Option not found');
       }),
       listOptions: jest.fn().mockReturnValue([]),
     });

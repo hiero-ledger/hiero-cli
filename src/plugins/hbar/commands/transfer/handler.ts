@@ -33,6 +33,12 @@ export async function transferHandler(
     ['hbar:transfer'],
   );
 
+  if (!from.accountId) {
+    throw new ValidationError(
+      `Could not resolve account ID for passed "from" argument ${validArgs.from?.type} from value ${validArgs.from?.rawValue}`,
+    );
+  }
+
   const amount = processBalanceInput(validArgs.amount, HBAR_DECIMALS);
 
   const currentNetwork = api.network.getCurrentNetwork();

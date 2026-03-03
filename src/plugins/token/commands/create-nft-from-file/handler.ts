@@ -5,7 +5,7 @@ import type { CreateNftFromFileOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
 
-import { StateError } from '@/core/errors';
+import { NotFoundError, StateError } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
 import { buildNftTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
@@ -46,6 +46,11 @@ export async function createNftFromFile(
     keyManager,
     ['token:treasury'],
   );
+  if (!treasury.accountId) {
+    throw new NotFoundError(
+      `Could not resolve account ID for passed "treasury" field`,
+    );
+  }
 
   const adminKey = await api.keyResolver.getOrInitKey(
     tokenDefinition.adminKey,
@@ -177,7 +182,9 @@ export async function createNftFromFile(
     symbol: tokenDefinition.symbol,
     treasuryId: treasury.accountId,
     adminAccountId: adminKey.accountId,
+    adminPublicKey: adminKey.publicKey,
     supplyAccountId: supplyKey.accountId,
+    supplyPublicKey: supplyKey.publicKey,
     supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
     transactionId: result.transactionId,
     network,

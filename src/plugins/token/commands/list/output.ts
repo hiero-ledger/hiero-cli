@@ -6,7 +6,7 @@ import { z } from 'zod';
 import {
   EntityIdSchema,
   NetworkSchema,
-  PublicKeySchema,
+  PublicKeyDefinitionSchema,
   SupplyTypeSchema,
 } from '@/core/schemas/common-schemas';
 import { HederaTokenType } from '@/core/shared/constants';
@@ -16,14 +16,14 @@ import { HederaTokenType } from '@/core/shared/constants';
  */
 const TokenKeysSchema = z
   .object({
-    adminKey: PublicKeySchema.nullable(),
-    supplyKey: PublicKeySchema.nullable(),
-    wipeKey: PublicKeySchema.nullable(),
-    kycKey: PublicKeySchema.nullable(),
-    freezeKey: PublicKeySchema.nullable(),
-    pauseKey: PublicKeySchema.nullable(),
-    feeScheduleKey: PublicKeySchema.nullable(),
-    treasuryKey: PublicKeySchema.nullable(),
+    adminKey: PublicKeyDefinitionSchema.nullable(),
+    supplyKey: PublicKeyDefinitionSchema.nullable(),
+    wipeKey: PublicKeyDefinitionSchema.nullable(),
+    kycKey: PublicKeyDefinitionSchema.nullable(),
+    freezeKey: PublicKeyDefinitionSchema.nullable(),
+    pauseKey: PublicKeyDefinitionSchema.nullable(),
+    feeScheduleKey: PublicKeyDefinitionSchema.nullable(),
+    treasuryKey: PublicKeyDefinitionSchema.nullable(),
   })
   .describe('Token management keys');
 

@@ -6,7 +6,7 @@ import {
   TransactionId,
 } from '@hashgraph/sdk';
 
-import { TransactionError } from '@/core/errors';
+import { InternalError, TransactionError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
   associateToken,
@@ -178,9 +178,6 @@ describe('associateTokenHandler', () => {
             publicKey: '302a300506032b6570032100' + '0'.repeat(64),
             keyRefId: 'alias-key-ref-id',
           }),
-        },
-        kms: {
-          getPublicKey: jest.fn().mockReturnValue('alias-public-key'),
         },
         mirror: {
           getAccountTokenBalances: jest.fn().mockResolvedValue({
@@ -396,7 +393,7 @@ describe('associateTokenHandler', () => {
           createTokenAssociationTransaction: jest
             .fn()
             .mockImplementation(() => {
-              throw new Error('Service unavailable');
+              throw new InternalError('Service unavailable');
             }),
         },
         kms: {
@@ -577,9 +574,6 @@ describe('associateTokenHandler', () => {
             publicKey: '302a300506032b6570032100' + '0'.repeat(64),
             keyRefId: 'alias-key-ref-id',
           }),
-        },
-        kms: {
-          getPublicKey: jest.fn().mockReturnValue('alias-public-key'),
         },
         mirror: {
           getAccountTokenBalances: jest.fn().mockResolvedValue({

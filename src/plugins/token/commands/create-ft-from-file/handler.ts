@@ -6,7 +6,7 @@ import type { CreateFungibleTokenFromFileOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
 
-import { StateError } from '@/core/errors';
+import { NotFoundError, StateError } from '@/core/errors';
 import { CustomFeeType } from '@/core/types/token.types';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
 import { buildTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
@@ -47,6 +47,11 @@ export async function createTokenFromFile(
     keyManager,
     ['token:treasury'],
   );
+  if (!treasury.accountId) {
+    throw new NotFoundError(
+      `Could not resolve account ID for passed "treasury" field`,
+    );
+  }
 
   const adminKey = await api.keyResolver.getOrInitKey(
     tokenDefinition.adminKey,

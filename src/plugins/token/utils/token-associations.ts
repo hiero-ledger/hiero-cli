@@ -4,10 +4,12 @@
  */
 import type { CoreApi, Logger } from '@/core';
 import type {
+  Credential,
   KeyManagerName,
-  KeyOrAccountAlias,
 } from '@/core/services/kms/kms-types.interface';
 import type { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
+import { StateError } from '@/core';
 
 export function saveAssociationToState(
   tokenState: ZustandTokenStateHelper,
@@ -24,7 +26,7 @@ export function saveAssociationToState(
 
 export async function processTokenAssociations(
   tokenId: string,
-  associations: KeyOrAccountAlias[],
+  associations: Credential[],
   api: CoreApi,
   logger: Logger,
   keyManager: KeyManagerName,
@@ -43,6 +45,11 @@ export async function processTokenAssociations(
         keyManager,
         ['token:associate'],
       );
+      if (!account.accountId) {
+        throw new StateError(
+          `Could not resolve account ID for passed "association" field for type ${association?.type} from value ${association?.rawValue}`,
+        );
+      }
 
       const associateTransaction = api.token.createTokenAssociationTransaction({
         tokenId,
@@ -64,13 +71,7 @@ export async function processTokenAssociations(
         logger.warn(`   ⚠️  Failed to associate account ${account.accountId}`);
       }
     } catch {
-      const associationIdentifier =
-        association.type === 'keypair'
-          ? association.accountId
-          : association.alias;
-      logger.warn(
-        `   ⚠️  Failed to associate account ${associationIdentifier}`,
-      );
+      logger.warn(`   ⚠️  Failed to associate account ${association.rawValue}`);
     }
   }
 

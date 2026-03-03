@@ -3,7 +3,7 @@
  */
 import { z } from 'zod';
 
-import { PublicKeySchema } from '@/core/schemas';
+import { PublicKeyDefinitionSchema } from '@/core/schemas';
 import { keyManagerNameSchema } from '@/core/services/kms/kms-types.interface';
 
 /**
@@ -12,7 +12,7 @@ import { keyManagerNameSchema } from '@/core/services/kms/kms-types.interface';
 const CredentialEntrySchema = z.object({
   keyRefId: z.string().describe('Key reference ID'),
   keyManager: keyManagerNameSchema,
-  publicKey: PublicKeySchema,
+  publicKey: PublicKeyDefinitionSchema,
   labels: z.array(z.string()).describe('Associated labels').optional(),
 });
 

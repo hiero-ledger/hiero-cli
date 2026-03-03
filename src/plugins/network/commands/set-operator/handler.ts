@@ -38,6 +38,11 @@ export async function setOperatorHandler(
     'network:operator',
     `network:${targetNetwork}`,
   ]);
+  if (!operator.accountId) {
+    throw new ValidationError(
+      `Could not resolve account ID for passed "operator" argument ${validArgs.operator?.type} from value ${validArgs.operator?.rawValue}`,
+    );
+  }
 
   const existingOperator = api.network.getOperator(targetNetwork);
   if (existingOperator) {

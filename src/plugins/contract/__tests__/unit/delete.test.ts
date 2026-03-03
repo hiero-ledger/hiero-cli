@@ -9,6 +9,7 @@ import {
   MOCK_EVM_ADDRESS,
   MOCK_TX_ID,
 } from '@/__tests__/mocks/fixtures';
+import { InternalError } from '@/core';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
@@ -216,7 +217,7 @@ describe('contract plugin - delete command', () => {
     MockedHelper.mockImplementation(() => ({
       getContract: jest.fn().mockReturnValue(contract),
       deleteContract: jest.fn().mockImplementation(() => {
-        throw new Error('db error');
+        throw new InternalError('db error');
       }),
     }));
     const args = makeArgs({ ...api, alias }, logger, {
