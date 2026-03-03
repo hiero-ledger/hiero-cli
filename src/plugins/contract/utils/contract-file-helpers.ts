@@ -19,6 +19,8 @@ export const DEFAULT_CONSTRUCTOR_PARAMS: Record<
 
 import { FileError } from '@/core/errors';
 
+export const CONTRACT_NAME_REGEX = /\bcontract\s+(\w+)/;
+
 export function resolveContractFilePath(filename: string): string {
   const hasPathSeparator = filename.includes('/') || filename.includes('\\');
 
@@ -43,7 +45,7 @@ export function readContractNameFromFileContent(
   contractBasename: string,
   contractFileContent: string,
 ): string {
-  const match = contractFileContent.match(/\bcontract\s+(\w+)/);
+  const match = contractFileContent.match(CONTRACT_NAME_REGEX);
   if (!match) {
     throw new FileError(
       `Could not resolve contract name from file: ${contractBasename}`,
