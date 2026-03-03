@@ -144,6 +144,7 @@ hiero-cli.config.*.local.json
 
 #AI agents
 .claude
+.cursor
 CLAUDE.md
 
 pnpm-lock.yaml
