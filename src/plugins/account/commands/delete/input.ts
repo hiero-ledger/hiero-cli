@@ -4,7 +4,7 @@ import { AccountReferenceSchema } from '@/core/schemas';
 
 export const DeleteAccountInputSchema = z.object({
   account: AccountReferenceSchema.describe(
-    'Account ID, alias or name of the account present in state',
+    'Account ID or alias of the account present in state',
   ),
 });
 
