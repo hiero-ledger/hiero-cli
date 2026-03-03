@@ -47,6 +47,7 @@ export const pluginManagementManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Plugin Management',
   description: 'Plugin for managing other CLI plugins',
+  skipWizardInitialization: true,
   commands: [
     {
       name: 'add',
