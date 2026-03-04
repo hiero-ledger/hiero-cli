@@ -40,4 +40,22 @@ describe('CLI from different working directories', () => {
     expect(result).toContain('list');
     expect(result).not.toContain('Error');
   });
+
+  it('should return JSON error when required option is missing with --format json', () => {
+    let stderr = '';
+    try {
+      execSync(`node ${CLI_PATH} --format json topic submit-message`, {
+        cwd: path.resolve(__dirname, '../../../..'),
+        encoding: 'utf-8',
+        stdio: 'pipe',
+      });
+    } catch (e: unknown) {
+      const err = e as { stderr: string };
+      stderr = err.stderr;
+    }
+
+    const parsed = JSON.parse(stderr) as { status: string; code: string };
+    expect(parsed.status).toBe('failure');
+    expect(parsed.code).toBe('VALIDATION_ERROR');
+  });
 });
