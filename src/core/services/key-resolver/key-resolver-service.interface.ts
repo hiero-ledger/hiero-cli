@@ -1,6 +1,6 @@
 import type {
   Destination,
-  ResolvedKey,
+  ResolvedPublicKey,
   SigningKey,
 } from '@/core/services/key-resolver/types';
 import type {
@@ -9,19 +9,13 @@ import type {
 } from '@/core/services/kms/kms-types.interface';
 
 export interface KeyResolverService {
-  getOrInitKey(
+  resolveSigningKey(
     credential: Credential,
     keyManager: KeyManagerName,
     labels?: string[],
-  ): Promise<ResolvedKey>;
+  ): Promise<SigningKey>;
 
-  getOrInitKeyWithFallback(
-    credential: Credential | undefined,
-    keyManager: KeyManagerName,
-    labels?: string[],
-  ): Promise<ResolvedKey>;
-
-  resolveSigningKey(
+  resolveSigningKeyWithFallback(
     credential: Credential | undefined,
     keyManager: KeyManagerName,
     labels?: string[],
@@ -32,4 +26,10 @@ export interface KeyResolverService {
     keyManager: KeyManagerName,
     labels?: string[],
   ): Promise<Destination>;
+
+  getPublicKey(
+    credential: Credential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<ResolvedPublicKey>;
 }

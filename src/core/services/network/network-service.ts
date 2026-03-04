@@ -2,7 +2,7 @@
  * Network Service Implementation
  * Manages network configuration using StateService with namespace
  */
-import type { ResolvedKey } from '@/core/services/key-resolver/types';
+import type { SigningKey } from '@/core/services/key-resolver/types';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type {
@@ -32,7 +32,7 @@ export class NetworkServiceImpl implements NetworkService {
   private readonly state: StateService;
   private readonly logger: Logger;
   private network: SupportedNetwork;
-  private payer: ResolvedKey | null = null;
+  private payer: SigningKey | null = null;
 
   constructor(state: StateService, logger: Logger) {
     this.state = state;
@@ -147,14 +147,14 @@ export class NetworkServiceImpl implements NetworkService {
     return operator;
   }
 
-  setPayer(payer: ResolvedKey | null): void {
+  setPayer(payer: SigningKey | null): void {
     if (payer) {
       this.logger.debug(`[NETWORK] Setting payer: ${payer.accountId}`);
     }
     this.payer = payer;
   }
 
-  getPayer(): ResolvedKey | null {
+  getPayer(): SigningKey | null {
     return this.payer;
   }
 

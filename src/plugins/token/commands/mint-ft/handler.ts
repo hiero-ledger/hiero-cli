@@ -60,7 +60,7 @@ export async function mintFt(args: CommandHandlerArgs): Promise<CommandResult> {
     });
   }
 
-  const supplyKeyResolved = await api.keyResolver.getOrInitKey(
+  const supplyKeyResolved = await api.keyResolver.resolveSigningKey(
     validArgs.supplyKey,
     keyManager,
     ['token:supply'],

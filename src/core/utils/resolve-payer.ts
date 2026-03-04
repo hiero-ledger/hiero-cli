@@ -18,7 +18,7 @@ export async function resolvePayer(
   const keyManager =
     coreApi.config.getOption<KeyManagerName>('default_key_manager') || 'local';
   const parsedPayer = PrivateKeySchema.parse(payerString);
-  const resolvedPayer = await coreApi.keyResolver.getOrInitKey(
+  const resolvedPayer = await coreApi.keyResolver.resolveSigningKey(
     parsedPayer,
     keyManager,
     ['payer:override'],

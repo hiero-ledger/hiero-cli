@@ -33,7 +33,11 @@ import type {
 
 import { StateError, ValidationError } from '@/core';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
-import { CredentialType } from '@/core/services/kms/kms-types.interface';
+import {
+  type Credential,
+  CredentialType,
+  type KeyManagerName,
+} from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -139,6 +143,7 @@ export const makeKmsMock = (): jest.Mocked<KmsService> => ({
   get: jest.fn(),
   list: jest.fn(),
   remove: jest.fn(),
+  hasPrivateKey: jest.fn().mockReturnValue(true),
   createClient: jest.fn(),
   signTransaction: jest.fn(),
   signContractCreateFlow: jest.fn(),
@@ -583,127 +588,141 @@ export const makeKeyResolverMock = (
     kms?: KmsService;
     mirror?: HederaMirrornodeService;
   } = {},
-): jest.Mocked<KeyResolverService> => ({
-  getOrInitKey: jest
-    .fn()
-    // eslint-disable-next-line @typescript-eslint/require-await
-    .mockImplementation(async (keyOrAlias, keyManager, labels) => {
-      // accountId:privateKey format
-      if (keyOrAlias?.type === CredentialType.ACCOUNT_KEY_PAIR) {
-        // Call kms.importPrivateKey if available
-        if (options.kms?.importPrivateKey) {
-          const importResult = options.kms.importPrivateKey(
+): jest.Mocked<KeyResolverService> => {
+  const resolveCore = (
+    credential: Credential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ) => {
+    if (credential?.type === CredentialType.ACCOUNT_KEY_PAIR) {
+      const importResult = options.kms?.importPrivateKey
+        ? options.kms.importPrivateKey(
             KeyAlgorithm.ECDSA,
-            keyOrAlias.privateKey,
+            credential.privateKey,
             keyManager,
             labels || [],
-          );
-          return {
-            accountId: keyOrAlias.accountId,
-            publicKey: MOCK_PUBLIC_KEY,
-            keyRefId: importResult.keyRefId,
-          };
-        }
-        return {
-          accountId: keyOrAlias.accountId,
-          publicKey: MOCK_PUBLIC_KEY,
-          keyRefId: 'imported-key-ref-id',
-        };
-      }
+          )
+        : { keyRefId: 'imported-key-ref-id', publicKey: MOCK_PUBLIC_KEY };
+      return {
+        accountId: credential.accountId,
+        publicKey: MOCK_PUBLIC_KEY,
+        keyRefId: importResult.keyRefId,
+      };
+    }
 
-      // alias format
-      if (keyOrAlias?.type === CredentialType.ALIAS && options.alias) {
-        const network =
-          options.network?.getCurrentNetwork() || SupportedNetwork.TESTNET;
-        const resolved = options.alias.resolve(
-          keyOrAlias.alias,
-          'account',
-          network,
-        );
-        if (!resolved)
-          throw new ValidationError(
-            'No account is associated with the name provided.',
-          );
-        if (!resolved.publicKey || !resolved.keyRefId || !resolved.entityId) {
-          throw new ValidationError(
-            'The account associated with the alias does not have an associated private/public key or accountId',
-          );
-        }
-        return {
-          accountId: resolved.entityId,
-          publicKey: resolved.publicKey,
-          keyRefId: resolved.keyRefId,
-        };
-      }
+    if (credential?.type === CredentialType.EVM_ADDRESS) {
+      return { evmAddress: credential.evmAddress };
+    }
 
-      throw new ValidationError('Invalid keyOrAlias');
-    }),
+    if (credential?.type === CredentialType.ACCOUNT_ID) {
+      return { accountId: credential.accountId };
+    }
 
-  getOrInitKeyWithFallback: jest
-    .fn()
-    .mockImplementation(async (keyOrAlias, keyManager, labels) => {
-      if (!keyOrAlias && options.network) {
-        const operator = options.network.getCurrentOperatorOrThrow();
-        // Always use default valid public key for mocking
-        const publicKey = '302a300506032b6570032100' + '0'.repeat(64);
-        return {
-          accountId: operator.accountId,
-          publicKey,
-          keyRefId: operator.keyRefId,
-        };
-      }
-
-      // delegate
-      const resolver = makeKeyResolverMock(options);
-      return resolver.getOrInitKey(keyOrAlias, keyManager, labels || []);
-    }),
-
-  resolveSigningKey: jest
-    .fn()
-    .mockImplementation(async (credential, keyManager, labels) => {
-      if (!credential && options.network) {
-        const operator = options.network.getCurrentOperatorOrThrow();
-        return {
-          accountId: operator.accountId,
-          publicKey: '302a300506032b6570032100' + '0'.repeat(64),
-          keyRefId: operator.keyRefId,
-        };
-      }
-      const resolver = makeKeyResolverMock(options);
-      const resolved = await resolver.getOrInitKey(
-        credential,
-        keyManager,
-        labels || [],
+    if (credential?.type === CredentialType.ALIAS && options.alias) {
+      const network =
+        options.network?.getCurrentNetwork() || SupportedNetwork.TESTNET;
+      const resolved = options.alias.resolve(
+        credential.alias,
+        'account',
+        network,
       );
-      if (!resolved.keyRefId || !resolved.accountId || !resolved.publicKey) {
-        throw new StateError(
-          'Mock: resolved key missing required signing fields',
+      if (!resolved)
+        throw new ValidationError(
+          'No account is associated with the name provided.',
+        );
+      if (!resolved.publicKey || !resolved.keyRefId || !resolved.entityId) {
+        throw new ValidationError(
+          'The account associated with the alias does not have an associated private/public key or accountId',
         );
       }
       return {
-        keyRefId: resolved.keyRefId,
-        accountId: resolved.accountId,
+        accountId: resolved.entityId,
         publicKey: resolved.publicKey,
+        keyRefId: resolved.keyRefId,
       };
-    }),
+    }
 
-  resolveDestination: jest
-    .fn()
-    .mockImplementation(async (credential, keyManager, labels) => {
-      const resolver = makeKeyResolverMock(options);
-      const resolved = await resolver.getOrInitKey(
-        credential,
-        keyManager,
-        labels || [],
-      );
-      if (!resolved.accountId && !resolved.evmAddress) {
-        throw new StateError(
-          'Mock: resolved key missing accountId and evmAddress',
-        );
-      }
-      return resolved as Destination;
-    }),
-});
+    throw new ValidationError('Invalid keyOrAlias');
+  };
+
+  const operatorFallback = () => {
+    const operator = options.network!.getCurrentOperatorOrThrow();
+    return {
+      accountId: operator.accountId,
+      publicKey: '302a300506032b6570032100' + '0'.repeat(64),
+      keyRefId: operator.keyRefId,
+    };
+  };
+
+  return {
+    resolveSigningKey: jest
+      .fn()
+      .mockImplementation((credential, keyManager, labels) => {
+        const resolved = resolveCore(credential, keyManager, labels || []);
+        if (!resolved.keyRefId || !resolved.accountId || !resolved.publicKey) {
+          throw new StateError(
+            'Mock: resolved key missing required signing fields',
+          );
+        }
+        if (options.kms && !options.kms.hasPrivateKey(resolved.keyRefId)) {
+          throw new StateError('Mock: no private key available');
+        }
+        return Promise.resolve({
+          keyRefId: resolved.keyRefId,
+          accountId: resolved.accountId,
+          publicKey: resolved.publicKey,
+        });
+      }),
+
+    resolveSigningKeyWithFallback: jest
+      .fn()
+      .mockImplementation((credential, keyManager, labels) => {
+        if (!credential && options.network)
+          return Promise.resolve(operatorFallback());
+        const resolved = resolveCore(credential, keyManager, labels || []);
+        if (!resolved.keyRefId || !resolved.accountId || !resolved.publicKey) {
+          throw new StateError(
+            'Mock: resolved key missing required signing fields',
+          );
+        }
+        if (options.kms && !options.kms.hasPrivateKey(resolved.keyRefId)) {
+          throw new StateError('Mock: no private key available');
+        }
+        return Promise.resolve({
+          keyRefId: resolved.keyRefId,
+          accountId: resolved.accountId,
+          publicKey: resolved.publicKey,
+        });
+      }),
+
+    getPublicKey: jest
+      .fn()
+      .mockImplementation((credential, keyManager, labels) => {
+        const resolved = resolveCore(credential, keyManager, labels || []);
+        if (!resolved.keyRefId || !resolved.publicKey) {
+          throw new StateError(
+            'Mock: resolved key missing keyRefId or publicKey',
+          );
+        }
+        return Promise.resolve({
+          keyRefId: resolved.keyRefId,
+          publicKey: resolved.publicKey,
+        });
+      }),
+
+    resolveDestination: jest
+      .fn()
+      .mockImplementation((credential, keyManager, labels) => {
+        const resolved = resolveCore(credential, keyManager, labels || []);
+        if (!resolved.accountId && !resolved.evmAddress) {
+          throw new StateError(
+            'Mock: resolved key missing accountId and evmAddress',
+          );
+        }
+        return Promise.resolve(resolved as Destination);
+      }),
+  };
+};
 
 export const createMockContractInfo = (
   overrides: Partial<ContractInfo> = {},

@@ -148,16 +148,14 @@ describe('topic plugin - message-submit command', () => {
     MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
 
     const keyResolverMock = {
-      getOrInitKey: jest.fn().mockResolvedValue({
+      resolveSigningKey: jest.fn().mockResolvedValue({
         publicKey: '02abc123',
         accountId: '0.0.999',
         keyRefId: submitKeyRefId,
       }),
-      getOrInitKeyWithFallback: jest.fn().mockResolvedValue({
-        publicKey: '02abc123',
-        accountId: '0.0.999',
-        keyRefId: submitKeyRefId,
-      }),
+      resolveSigningKeyWithFallback: jest.fn(),
+      resolveDestination: jest.fn(),
+      getPublicKey: jest.fn(),
     };
 
     const { topicTransactions, signing, networkMock, alias } = makeApiMocks({
@@ -231,12 +229,14 @@ describe('topic plugin - message-submit command', () => {
     MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
 
     const keyResolverMock = {
-      getOrInitKey: jest.fn().mockResolvedValue({
+      resolveSigningKey: jest.fn().mockResolvedValue({
         publicKey: '02abc123',
         accountId: '0.0.999',
         keyRefId: 'kr_wrong_submit',
       }),
-      getOrInitKeyWithFallback: jest.fn(),
+      resolveSigningKeyWithFallback: jest.fn(),
+      resolveDestination: jest.fn(),
+      getPublicKey: jest.fn(),
     };
 
     const { topicTransactions, signing, networkMock, alias } = makeApiMocks({});

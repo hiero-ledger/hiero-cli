@@ -53,7 +53,7 @@ export async function submitMessage(
   let signerKeyRefId: string | undefined;
 
   if (signerArg) {
-    const resolvedSigner = await api.keyResolver.getOrInitKey(
+    const resolvedSigner = await api.keyResolver.resolveSigningKey(
       signerArg,
       keyManager,
       ['topic:signer'],

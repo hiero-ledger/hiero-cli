@@ -5,6 +5,11 @@ export type ResolvedKey = {
   keyRefId?: string;
 };
 
+export type ResolvedPublicKey = {
+  keyRefId: string;
+  publicKey: string;
+};
+
 export type SigningKey = {
   keyRefId: string;
   accountId: string;
