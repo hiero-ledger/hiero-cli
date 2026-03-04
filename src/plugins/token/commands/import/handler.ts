@@ -28,7 +28,6 @@ export async function importToken(
   if (alias) {
     api.alias.availableOrThrow(alias, network);
   }
-
   if (tokenState.getToken(key)) {
     throw new ValidationError(
       `Token with ID '${tokenId}' already exists in state`,

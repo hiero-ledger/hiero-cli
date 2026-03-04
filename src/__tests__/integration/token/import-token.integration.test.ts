@@ -11,10 +11,17 @@ import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { SupplyType } from '@/core/types/shared.types';
-import { createToken, importToken, listTokens } from '@/plugins/token';
+import {
+  createToken,
+  deleteToken,
+  importToken,
+  listTokens,
+} from '@/plugins/token';
 import { TOKEN_NAMESPACE } from '@/plugins/token/manifest';
 
 describe('Import Token Integration Tests', () => {
+  const TOKEN_NAME = 'TokenImport';
+
   let coreApi: CoreApi;
   let network: SupportedNetwork;
   let tokenId: string;
@@ -25,7 +32,7 @@ describe('Import Token Integration Tests', () => {
     network = coreApi.network.getCurrentNetwork();
 
     const createTokenArgs: Record<string, unknown> = {
-      tokenName: `Token Import ${Date.now()}`,
+      tokenName: TOKEN_NAME,
       symbol: 'TIMP',
       initialSupply: '10',
       supplyType: SupplyType.INFINITE,
@@ -42,10 +49,25 @@ describe('Import Token Integration Tests', () => {
     const createTokenOutput =
       createTokenResult.result as CreateFungibleTokenOutput;
     tokenId = createTokenOutput.tokenId;
-
-    coreApi.state.delete(TOKEN_NAMESPACE, tokenId);
+    coreApi.state.delete(
+      TOKEN_NAMESPACE,
+      `${coreApi.network.getCurrentNetwork()}:${tokenId}`,
+    );
 
     await delay(5000);
+  });
+
+  afterEach(async () => {
+    const deleteTokenArgs: Record<string, unknown> = {
+      token: tokenId,
+    };
+    await deleteToken({
+      args: deleteTokenArgs,
+      api: coreApi,
+      state: coreApi.state,
+      logger: coreApi.logger,
+      config: coreApi.config,
+    });
   });
 
   it('should import a token by ID and verify with list', async () => {
@@ -62,7 +84,7 @@ describe('Import Token Integration Tests', () => {
 
     const importTokenOutput = importTokenResult.result as ImportTokenOutput;
     expect(importTokenOutput.tokenId).toBe(tokenId);
-    expect(importTokenOutput.name).toContain('Token Import');
+    expect(importTokenOutput.name).toBe(TOKEN_NAME);
     expect(importTokenOutput.network).toBe(network);
     expect(importTokenOutput.alias).toBeUndefined();
 
@@ -82,8 +104,6 @@ describe('Import Token Integration Tests', () => {
   });
 
   it('should import a token with alias and verify with list', async () => {
-    coreApi.state.delete(TOKEN_NAMESPACE, tokenId);
-
     const alias = `imported-token-${Date.now()}`;
     const importTokenArgs: Record<string, unknown> = {
       token: tokenId,
@@ -99,7 +119,7 @@ describe('Import Token Integration Tests', () => {
 
     const importTokenOutput = importTokenResult.result as ImportTokenOutput;
     expect(importTokenOutput.tokenId).toBe(tokenId);
-    expect(importTokenOutput.name).toBe(alias);
+    expect(importTokenOutput.name).toBe(TOKEN_NAME);
     expect(importTokenOutput.alias).toBe(alias);
     expect(importTokenOutput.network).toBe(network);
 
@@ -114,6 +134,6 @@ describe('Import Token Integration Tests', () => {
     const listTokenOutput = listTokenResult.result as ListTokensOutput;
     const token = listTokenOutput.tokens.find((t) => t.tokenId === tokenId);
     expect(token).not.toBeNull();
-    expect(token?.name).toBe(alias);
+    expect(token?.name).toBe(TOKEN_NAME);
   });
 });

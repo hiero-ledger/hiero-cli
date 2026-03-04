@@ -55,7 +55,7 @@ export async function deleteTopic(
     logger.info(`🧹 Removed alias '${rec.alias}' on ${network}`);
   }
 
-  topicState.deleteTopic(topicToDelete.topicId);
+  topicState.deleteTopic(key);
 
   const result: DeleteTopicOutput = {
     deletedTopic: {

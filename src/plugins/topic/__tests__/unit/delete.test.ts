@@ -36,7 +36,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     jest.clearAllMocks();
   });
 
-  test('deletes topic successfully by name', async () => {
+  test('deletes topic successfully by alias', async () => {
     const logger = makeLogger();
     const topic = makeTopicData({ name: 'topic1', topicId: '0.0.1111' });
 
@@ -48,7 +48,12 @@ describe('topic plugin - delete command (ADR-007)', () => {
     }));
 
     const alias = makeAliasMock();
-    alias.list = jest.fn().mockReturnValue([]);
+    const aliasMock = {
+      alias: 'topic1',
+      entityId: '0.0.1111',
+    };
+    alias.resolveOrThrow = jest.fn().mockReturnValue(aliasMock);
+    alias.list = jest.fn().mockReturnValue([aliasMock]);
     const network = makeNetworkMock(SupportedNetwork.TESTNET);
 
     const api: Partial<CoreApi> = {
@@ -61,7 +66,9 @@ describe('topic plugin - delete command (ADR-007)', () => {
 
     const result = await deleteTopic(args);
 
-    expect(deleteTopicMock).toHaveBeenCalledWith('0.0.1111');
+    expect(deleteTopicMock).toHaveBeenCalledWith(
+      `${SupportedNetwork.TESTNET}:0.0.1111`,
+    );
     const output = result.result as DeleteTopicOutput;
     expect(output.deletedTopic.name).toBe('topic1');
     expect(output.deletedTopic.topicId).toBe('0.0.1111');
@@ -92,7 +99,9 @@ describe('topic plugin - delete command (ADR-007)', () => {
 
     const result = await deleteTopic(args);
 
-    expect(deleteTopicMock).toHaveBeenCalledWith('0.0.2222');
+    expect(deleteTopicMock).toHaveBeenCalledWith(
+      `${SupportedNetwork.TESTNET}:0.0.2222`,
+    );
     const output = result.result as DeleteTopicOutput;
     expect(output.deletedTopic.name).toBe('topic2');
     expect(output.deletedTopic.topicId).toBe('0.0.2222');
