@@ -75,7 +75,7 @@ export async function mintFt(args: CommandHandlerArgs): Promise<CommandResult> {
     });
   }
 
-  logger.info(`Using supply key: ${supplyKeyResolved.accountId}`);
+  logger.info(`Using supply key: ${supplyKeyResolved.keyRefId}`);
 
   const rawUnits = isRawUnits(userAmountInput);
   const tokenDecimals = rawUnits ? 0 : parseInt(tokenInfo.decimals);

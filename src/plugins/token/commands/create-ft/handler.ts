@@ -49,13 +49,13 @@ export async function createToken(
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(alias, network);
 
-  const treasury = await api.keyResolver.resolveSigningKeyWithFallback(
+  const treasury = await api.keyResolver.resolveAccountCredentialsWithFallback(
     validArgs.treasury,
     keyManager,
     ['token:treasury'],
   );
 
-  const admin = await api.keyResolver.resolveSigningKeyWithFallback(
+  const admin = await api.keyResolver.resolveAccountCredentialsWithFallback(
     validArgs.adminKey,
     keyManager,
     ['token:admin'],

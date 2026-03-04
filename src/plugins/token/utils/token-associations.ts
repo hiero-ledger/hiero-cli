@@ -38,7 +38,7 @@ export async function processTokenAssociations(
 
   for (const association of associations) {
     try {
-      const account = await api.keyResolver.resolveSigningKey(
+      const account = await api.keyResolver.resolveAccountCredentials(
         association,
         keyManager,
         ['token:associate'],

@@ -655,7 +655,7 @@ export const makeKeyResolverMock = (
   };
 
   return {
-    resolveSigningKey: jest
+    resolveAccountCredentials: jest
       .fn()
       .mockImplementation((credential, keyManager, labels) => {
         const resolved = resolveCore(credential, keyManager, labels || []);
@@ -674,7 +674,7 @@ export const makeKeyResolverMock = (
         });
       }),
 
-    resolveSigningKeyWithFallback: jest
+    resolveAccountCredentialsWithFallback: jest
       .fn()
       .mockImplementation((credential, keyManager, labels) => {
         if (!credential && options.network)
@@ -720,6 +720,24 @@ export const makeKeyResolverMock = (
           );
         }
         return Promise.resolve(resolved as Destination);
+      }),
+
+    resolveSigningKey: jest
+      .fn()
+      .mockImplementation((credential, keyManager, labels) => {
+        const resolved = resolveCore(credential, keyManager, labels || []);
+        if (!resolved.keyRefId || !resolved.publicKey) {
+          throw new StateError(
+            'Mock: resolved key missing keyRefId or publicKey',
+          );
+        }
+        if (options.kms && !options.kms.hasPrivateKey(resolved.keyRefId)) {
+          throw new StateError('Mock: no private key available');
+        }
+        return Promise.resolve({
+          keyRefId: resolved.keyRefId,
+          publicKey: resolved.publicKey,
+        });
       }),
   };
 };

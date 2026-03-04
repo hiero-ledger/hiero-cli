@@ -52,9 +52,11 @@ export async function transferNft(
   }
 
   const resolvedFromAccount =
-    await api.keyResolver.resolveSigningKeyWithFallback(from, keyManager, [
-      'token:account',
-    ]);
+    await api.keyResolver.resolveAccountCredentialsWithFallback(
+      from,
+      keyManager,
+      ['token:account'],
+    );
 
   const { accountId: fromAccountId, keyRefId: signerKeyRefId } =
     resolvedFromAccount;

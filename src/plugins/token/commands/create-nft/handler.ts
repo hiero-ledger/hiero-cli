@@ -46,19 +46,19 @@ export async function createNft(
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(alias, network);
 
-  const treasury = await api.keyResolver.resolveSigningKeyWithFallback(
+  const treasury = await api.keyResolver.resolveAccountCredentialsWithFallback(
     validArgs.treasury,
     keyManager,
     ['token:treasury'],
   );
 
-  const admin = await api.keyResolver.resolveSigningKeyWithFallback(
+  const admin = await api.keyResolver.resolveAccountCredentialsWithFallback(
     validArgs.adminKey,
     keyManager,
     ['token:admin'],
   );
 
-  const supply = await api.keyResolver.resolveSigningKeyWithFallback(
+  const supply = await api.keyResolver.resolveAccountCredentialsWithFallback(
     validArgs.supplyKey,
     keyManager,
     ['token:supply'],

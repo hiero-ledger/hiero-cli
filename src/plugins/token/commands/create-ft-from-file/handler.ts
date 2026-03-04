@@ -42,7 +42,7 @@ export async function createTokenFromFile(
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(tokenDefinition.name, network);
 
-  const treasury = await api.keyResolver.resolveSigningKey(
+  const treasury = await api.keyResolver.resolveAccountCredentials(
     tokenDefinition.treasuryKey,
     keyManager,
     ['token:treasury'],

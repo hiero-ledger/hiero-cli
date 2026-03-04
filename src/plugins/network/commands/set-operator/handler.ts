@@ -34,7 +34,7 @@ export async function setOperatorHandler(
     );
   }
 
-  const operator = await api.keyResolver.resolveSigningKey(
+  const operator = await api.keyResolver.resolveAccountCredentials(
     operatorArg,
     keyManager,
     ['network:operator', `network:${targetNetwork}`],

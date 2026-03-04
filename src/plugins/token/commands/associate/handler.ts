@@ -52,7 +52,7 @@ export async function associateToken(
 
   const tokenId = resolvedToken.tokenId;
 
-  const account = await api.keyResolver.resolveSigningKey(
+  const account = await api.keyResolver.resolveAccountCredentials(
     accountReference,
     keyManager,
     ['token:associate'],

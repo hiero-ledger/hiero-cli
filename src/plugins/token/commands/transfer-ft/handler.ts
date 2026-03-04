@@ -60,9 +60,11 @@ export async function transferToken(
   const rawAmount = processBalanceInput(userAmountInput, tokenDecimals);
 
   const resolvedFromAccount =
-    await api.keyResolver.resolveSigningKeyWithFallback(from, keyManager, [
-      'token:account',
-    ]);
+    await api.keyResolver.resolveAccountCredentialsWithFallback(
+      from,
+      keyManager,
+      ['token:account'],
+    );
 
   const { accountId: fromAccountId, keyRefId: signerKeyRefId } =
     resolvedFromAccount;

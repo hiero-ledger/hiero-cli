@@ -85,7 +85,7 @@ export async function mintNft(
     });
   }
 
-  logger.info(`Using supply key: ${supplyKeyResolved.accountId}`);
+  logger.info(`Using supply key: ${supplyKeyResolved.keyRefId}`);
 
   const maxSupply = BigInt(tokenInfo.max_supply || '0');
   const totalSupply = BigInt(tokenInfo.total_supply || '0');

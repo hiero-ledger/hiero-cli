@@ -31,10 +31,11 @@ export async function transferHandler(
   const currentNetwork = api.network.getCurrentNetwork();
 
   // Resolve accounts
-  const fromAccount = await api.keyResolver.resolveSigningKeyWithFallback(
-    from,
-    keyManager,
-  );
+  const fromAccount =
+    await api.keyResolver.resolveAccountCredentialsWithFallback(
+      from,
+      keyManager,
+    );
   const toAccount = await api.keyResolver.resolveDestination(to, keyManager);
 
   // In resolved destination at least one field is present

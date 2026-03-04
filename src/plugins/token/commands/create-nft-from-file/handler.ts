@@ -41,7 +41,7 @@ export async function createNftFromFile(
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(tokenDefinition.name, network);
 
-  const treasury = await api.keyResolver.resolveSigningKey(
+  const treasury = await api.keyResolver.resolveAccountCredentials(
     tokenDefinition.treasuryKey,
     keyManager,
     ['token:treasury'],
@@ -176,9 +176,7 @@ export async function createNftFromFile(
     name: tokenDefinition.name,
     symbol: tokenDefinition.symbol,
     treasuryId: treasury.accountId,
-    adminAccountId: adminKey.accountId,
     adminPublicKey: adminKey.publicKey,
-    supplyAccountId: supplyKey.accountId,
     supplyPublicKey: supplyKey.publicKey,
     supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
     transactionId: result.transactionId,

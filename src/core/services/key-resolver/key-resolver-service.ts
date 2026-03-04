@@ -43,7 +43,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     this.kms = kmsService;
   }
 
-  public async resolveSigningKey(
+  public async resolveAccountCredentials(
     credential: Credential,
     keyManager: KeyManagerName,
     labels?: string[],
@@ -56,7 +56,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     return this.assertSigningKey(resolved, credential.rawValue);
   }
 
-  public async resolveSigningKeyWithFallback(
+  public async resolveAccountCredentialsWithFallback(
     credential: Credential | undefined,
     keyManager: KeyManagerName,
     labels?: string[],
@@ -65,7 +65,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       const resolved = this.resolveOperator();
       return this.assertSigningKey(resolved);
     }
-    return this.resolveSigningKey(credential, keyManager, labels);
+    return this.resolveAccountCredentials(credential, keyManager, labels);
   }
 
   public async getPublicKey(
@@ -86,6 +86,37 @@ export class KeyResolverServiceImpl implements KeyResolverService {
         {
           context: { hasKeyRefId: !!keyRefId, hasPublicKey: !!publicKey },
         },
+      );
+    }
+
+    return { keyRefId, publicKey };
+  }
+
+  public async resolveSigningKey(
+    credential: Credential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<ResolvedPublicKey> {
+    const resolved = await this.resolveCredential(
+      credential,
+      keyManager,
+      labels,
+    );
+    const { keyRefId, publicKey } = resolved;
+
+    if (!keyRefId || !publicKey) {
+      throw new StateError(
+        'Credential cannot be used for signing: missing publicKey or keyRefId',
+        {
+          context: { hasKeyRefId: !!keyRefId, hasPublicKey: !!publicKey },
+        },
+      );
+    }
+
+    if (!this.kms.hasPrivateKey(keyRefId)) {
+      throw new StateError(
+        'Credential cannot be used for signing: no private key available',
+        { context: { keyRefId, rawValue: credential.rawValue } },
       );
     }
 
