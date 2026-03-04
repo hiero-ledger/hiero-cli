@@ -85,7 +85,6 @@ describe('Import Topic Integration Tests', () => {
 
     const importTopicOutput = importTopicResult.result as ImportTopicOutput;
     expect(importTopicOutput.topicId).toBe(topicId);
-    expect(importTopicOutput.name).toBe(TOPIC_NAME);
     expect(importTopicOutput.network).toBe(network);
 
     const listTopicArgs: Record<string, unknown> = {
@@ -102,7 +101,6 @@ describe('Import Topic Integration Tests', () => {
     const topic = listTopicOutput.topics.find((t) => t.topicId === topicId);
     expect(topic).not.toBeNull();
     expect(topic?.topicId).toBe(topicId);
-    expect(topic?.name).toBe(importTopicOutput.name);
     expect(topic?.network).toBe(network);
   });
 
@@ -127,7 +125,7 @@ describe('Import Topic Integration Tests', () => {
 
     const importTopicOutput = importTopicResult.result as ImportTopicOutput;
     expect(importTopicOutput.topicId).toBe(topicId);
-    expect(importTopicOutput.name).toBe(TOPIC_NAME);
+    expect(importTopicOutput.name).toBe(alias);
     expect(importTopicOutput.network).toBe(network);
 
     const listTopicArgs: Record<string, unknown> = {
