@@ -1,9 +1,9 @@
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type {
   Destination,
+  ResolvedAccountCredential,
   ResolvedKey,
   ResolvedPublicKey,
-  SigningKey,
 } from '@/core/services/key-resolver/types';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type {
@@ -47,7 +47,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     credential: Credential,
     keyManager: KeyManagerName,
     labels?: string[],
-  ): Promise<SigningKey> {
+  ): Promise<ResolvedAccountCredential> {
     const resolved = await this.resolveCredential(
       credential,
       keyManager,
@@ -60,7 +60,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     credential: Credential | undefined,
     keyManager: KeyManagerName,
     labels?: string[],
-  ): Promise<SigningKey> {
+  ): Promise<ResolvedAccountCredential> {
     if (!credential) {
       const resolved = this.resolveOperator();
       return this.assertSigningKey(resolved);
@@ -190,7 +190,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
   private assertSigningKey(
     resolved: ResolvedKey,
     rawValue?: string,
-  ): SigningKey {
+  ): ResolvedAccountCredential {
     const { keyRefId, accountId, publicKey } = resolved;
 
     if (!keyRefId || !accountId || !publicKey) {

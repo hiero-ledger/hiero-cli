@@ -1,7 +1,7 @@
 import type {
   Destination,
+  ResolvedAccountCredential,
   ResolvedPublicKey,
-  SigningKey,
 } from '@/core/services/key-resolver/types';
 import type {
   Credential,
@@ -14,14 +14,14 @@ export interface KeyResolverService {
     credential: Credential,
     keyManager: KeyManagerName,
     labels?: string[],
-  ): Promise<SigningKey>;
+  ): Promise<ResolvedAccountCredential>;
 
   // Same as resolveAccountCredentials but falls back to operator when credential is undefined.
   resolveAccountCredentialsWithFallback(
     credential: Credential | undefined,
     keyManager: KeyManagerName,
     labels?: string[],
-  ): Promise<SigningKey>;
+  ): Promise<ResolvedAccountCredential>;
 
   // Receiver side: requires at least accountId or evmAddress, no private key needed.
   resolveDestination(

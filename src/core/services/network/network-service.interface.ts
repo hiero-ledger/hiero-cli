@@ -2,7 +2,7 @@
  * Interface for network management operations
  * All network services must implement this interface
  */
-import type { SigningKey } from '@/core/services/key-resolver/types';
+import type { ResolvedAccountCredential } from '@/core/services/key-resolver/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface NetworkService {
@@ -63,12 +63,12 @@ export interface NetworkService {
    * Set payer (session-scoped, in-memory only)
    * Used to override the default operator as payer for all transactions
    */
-  setPayer(payer: SigningKey | null): void;
+  setPayer(payer: ResolvedAccountCredential | null): void;
 
   /**
    * Get payer
    */
-  getPayer(): SigningKey | null;
+  getPayer(): ResolvedAccountCredential | null;
 
   /**
    * Check if any network has an operator configured

@@ -10,7 +10,7 @@ export type ResolvedPublicKey = {
   publicKey: string;
 };
 
-export type SigningKey = {
+export type ResolvedAccountCredential = {
   keyRefId: string;
   accountId: string;
   publicKey: string;
