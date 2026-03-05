@@ -178,6 +178,7 @@ export const makeKmsMock = (
   createClient: jest.fn(),
   signTransaction: jest.fn(),
   signContractCreateFlow: jest.fn(),
+  hasPrivateKey: jest.fn().mockReturnValue(true),
   ...overrides,
 });
 
@@ -734,7 +735,7 @@ export const makeMintFtSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.getOrInitKey = jest.fn().mockResolvedValue({
+  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
     accountId: '0.0.200000',
     publicKey: defaultSupplyKeyPublicKey,
     keyRefId: 'supply-key-ref-id',
@@ -804,7 +805,7 @@ export const makeMintNftSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.getOrInitKey = jest.fn().mockResolvedValue({
+  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
     accountId: '0.0.200000',
     publicKey: defaultSupplyKeyPublicKey,
     keyRefId: 'supply-key-ref-id',

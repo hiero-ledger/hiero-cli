@@ -1,5 +1,21 @@
 export type ResolvedKey = {
-  publicKey: string;
+  publicKey?: string;
   accountId?: string;
-  keyRefId: string;
+  evmAddress?: string;
+  keyRefId?: string;
 };
+
+export type ResolvedPublicKey = {
+  keyRefId: string;
+  publicKey: string;
+};
+
+export type ResolvedAccountCredential = {
+  keyRefId: string;
+  accountId: string;
+  publicKey: string;
+};
+
+export type Destination =
+  | { accountId: string; evmAddress?: string }
+  | { accountId?: string; evmAddress: string };

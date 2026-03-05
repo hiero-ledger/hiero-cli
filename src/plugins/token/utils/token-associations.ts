@@ -9,7 +9,6 @@ import type {
 } from '@/core/services/kms/kms-types.interface';
 import type { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { StateError } from '@/core';
 import { composeKey } from '@/core/utils/key-composer';
 
 export function saveAssociationToState(
@@ -43,16 +42,11 @@ export async function processTokenAssociations(
 
   for (const association of associations) {
     try {
-      const account = await api.keyResolver.getOrInitKey(
+      const account = await api.keyResolver.resolveAccountCredentials(
         association,
         keyManager,
         ['token:associate'],
       );
-      if (!account.accountId) {
-        throw new StateError(
-          `Could not resolve account ID for passed "association" field for type ${association?.type} from value ${association?.rawValue}`,
-        );
-      }
 
       const associateTransaction = api.token.createTokenAssociationTransaction({
         tokenId,

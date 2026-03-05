@@ -420,7 +420,9 @@ export class PluginManager {
             commandSpec.summary ||
             `Execute ${commandName}`,
         ),
-      );
+      )
+      .exitOverride()
+      .configureOutput({ outputError: () => {} });
     if (commandSpec.excessArguments) {
       command = command.allowUnknownOption(true).allowExcessArguments(true);
     }

@@ -1,11 +1,10 @@
 import { z } from 'zod';
 
 import {
-  AccountReferenceSchema,
   AmountInputSchema,
   KeyManagerTypeSchema,
+  KeySchema,
   MemoSchema,
-  PrivateKeyWithAccountIdSchema,
 } from '@/core/schemas';
 
 /**
@@ -22,11 +21,9 @@ export const TransferInputSchema = z.object({
       message: 'Transfer amount must be greater than zero',
     },
   ).describe('Amount to transfer. Format: "100" (HBAR) or "100t" (tinybars)'),
-  to: AccountReferenceSchema.describe(
-    'Account ID, EVM address, or name to transfer to',
-  ),
-  from: PrivateKeyWithAccountIdSchema.optional().describe(
-    'Account to transfer from. Can be accountId:privateKey pair, key reference or account alias. Defaults to operator.',
+  to: KeySchema.describe('Account ID, EVM address, or alias to transfer to'),
+  from: KeySchema.optional().describe(
+    'Account to transfer from with private key. Can be accountId:privateKey pair or key reference. Defaults to operator.',
   ),
   memo: MemoSchema.describe('Optional memo for the transfer'),
   keyManager: KeyManagerTypeSchema.optional().describe(

@@ -50,18 +50,13 @@ export async function createToken(
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(alias, network);
 
-  const treasury = await api.keyResolver.getOrInitKeyWithFallback(
+  const treasury = await api.keyResolver.resolveAccountCredentialsWithFallback(
     validArgs.treasury,
     keyManager,
     ['token:treasury'],
   );
-  if (!treasury.accountId) {
-    throw new StateError(
-      `Could not resolve account ID for passed "treasury" argument for type ${validArgs.treasury?.type} from value ${validArgs.treasury?.rawValue}`,
-    );
-  }
 
-  const admin = await api.keyResolver.getOrInitKeyWithFallback(
+  const admin = await api.keyResolver.resolveAccountCredentialsWithFallback(
     validArgs.adminKey,
     keyManager,
     ['token:admin'],

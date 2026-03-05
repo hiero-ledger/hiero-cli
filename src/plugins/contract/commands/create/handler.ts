@@ -59,11 +59,9 @@ export async function createContract(
     api.config.getOption<KeyManagerName>('default_key_manager');
 
   const admin = validArgs.adminKey
-    ? await api.keyResolver.getOrInitKeyWithFallback(
-        validArgs.adminKey,
-        keyManager,
-        ['contract:admin'],
-      )
+    ? await api.keyResolver.resolveSigningKey(validArgs.adminKey, keyManager, [
+        'contract:admin',
+      ])
     : undefined;
 
   if (!admin) {
