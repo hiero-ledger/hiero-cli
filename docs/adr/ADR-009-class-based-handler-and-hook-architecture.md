@@ -25,6 +25,150 @@ Introduce two complementary mechanisms:
 
 `BaseCommand<TNormalisedParams, TCoreActionResult>` (defined in `src/core/commands/command.ts`) implements the `Command` interface and provides a template-method `execute` orchestrator. Subclasses implement three abstract methods:
 
+#### Full Implementation
+
+```ts
+// src/core/commands/command.ts
+import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { Command } from '@/core/commands/command.interface';
+import type { AbstractHook } from '@/core/hooks/abstract-hook';
+import type {
+  PostCoreActionParams,
+  PostOutputPreparationParams,
+  PostParamsPreparationAndNormalizationParams,
+  PreCoreActionParams,
+  PreOutputPreparationParams,
+} from '@/core/hooks/types';
+import type { Context } from '@/core/shared/context/context';
+
+export abstract class BaseCommand<
+  TNormalisedParams = unknown,
+  TCoreActionResult = unknown,
+> implements Command {
+  async execute(args: CommandHandlerArgs, context: Context) {
+    this.preParamsNormalizationHook(args, context);
+    const normalisedParams = await this.normalizeParams(args, context);
+    this.postParamsNormalizationHook(args, context, { normalisedParams });
+    this.preCoreActionHook(args, context, { normalisedParams });
+
+    let coreActionResult;
+    if (context.coreActionEnabled) {
+      coreActionResult = await this.coreAction(args, context, normalisedParams);
+    }
+
+    this.postCoreActionHook(args, context, {
+      normalisedParams,
+      coreActionResult,
+    });
+    this.preOutputPreparationHook(args, context, {
+      normalisedParams,
+      coreActionResult,
+    });
+
+    const result = await this.outputPreparation(
+      args,
+      context,
+      normalisedParams,
+      coreActionResult,
+    );
+
+    this.postOutputPreparationHook(args, context, {
+      normalisedParams,
+      coreActionResult,
+      outputResult: result,
+    });
+    return result;
+  }
+
+  async preParamsNormalizationHook(
+    args: CommandHandlerArgs,
+    context: Context,
+  ): Promise<void> {
+    await this.executeHooks(context, async (h) =>
+      h.preParamsPreparationAndNormalizationHook(args, context),
+    );
+  }
+
+  async postParamsNormalizationHook(
+    args: CommandHandlerArgs,
+    context: Context,
+    params: PostParamsPreparationAndNormalizationParams<TNormalisedParams>,
+  ): Promise<void> {
+    await this.executeHooks(context, async (h) =>
+      h.postParamsPreparationAndNormalizationHook(args, context, params),
+    );
+  }
+
+  async preCoreActionHook(
+    args: CommandHandlerArgs,
+    context: Context,
+    params: PreCoreActionParams<TNormalisedParams>,
+  ): Promise<void> {
+    await this.executeHooks(context, async (h) =>
+      h.preCoreActionHook(args, context, params),
+    );
+  }
+
+  async postCoreActionHook(
+    args: CommandHandlerArgs,
+    context: Context,
+    params: PostCoreActionParams<TNormalisedParams, TCoreActionResult>,
+  ): Promise<void> {
+    await this.executeHooks(context, async (h) =>
+      h.postCoreActionHook(args, context, params),
+    );
+  }
+
+  async preOutputPreparationHook(
+    args: CommandHandlerArgs,
+    context: Context,
+    params: PreOutputPreparationParams<TNormalisedParams, TCoreActionResult>,
+  ): Promise<void> {
+    await this.executeHooks(context, async (h) =>
+      h.preOutputPreparationHook(args, context, params),
+    );
+  }
+
+  async postOutputPreparationHook(
+    args: CommandHandlerArgs,
+    context: Context,
+    params: PostOutputPreparationParams<TNormalisedParams, TCoreActionResult>,
+  ): Promise<void> {
+    await this.executeHooks(context, async (h) =>
+      h.postOutputPreparationHook(args, context, params),
+    );
+  }
+
+  protected async executeHooks(
+    context: Context,
+    hookExecutor: (hook: AbstractHook) => Promise<void>,
+  ): Promise<void> {
+    if (!context.hooks) return;
+    for (const hook of context.hooks) {
+      await hookExecutor(hook);
+    }
+  }
+
+  abstract normalizeParams(
+    args: CommandHandlerArgs,
+    context: Context,
+  ): Promise<TNormalisedParams>;
+
+  abstract coreAction(
+    args: CommandHandlerArgs,
+    context: Context,
+    normalisedParams: TNormalisedParams,
+  ): Promise<TCoreActionResult>;
+
+  abstract outputPreparation(
+    args: CommandHandlerArgs,
+    context: Context,
+    normalisedParams: TNormalisedParams,
+    coreActionResult?: TCoreActionResult,
+  ): Promise<CommandResult>;
+}
+```
+
 | Method                                                                  | Responsibility                                                                                                                   |
 | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `normalizeParams(args, context)`                                        | Validate and transform raw CLI arguments into a strongly-typed params object (`TNormalisedParams`). Typically uses a Zod schema. |
@@ -92,7 +236,90 @@ export class FooTestCommand extends BaseCommand<FooNormalizedParams, void> {
 
 ### Part 2: Hook System
 
-`AbstractHook` (defined in `src/core/hooks/abstract-hook.ts`) provides six no-op lifecycle methods -- one **pre** and one **post** hook for each of the three command phases:
+`AbstractHook` (defined in `src/core/hooks/abstract-hook.ts`) provides six no-op lifecycle methods -- one **pre** and one **post** hook for each of the three command phases.
+
+#### Full Implementation
+
+```ts
+// src/core/hooks/abstract-hook.ts
+import type { CommandHandlerArgs } from '@/core';
+import type {
+  PostCoreActionParams,
+  PostOutputPreparationParams,
+  PostParamsPreparationAndNormalizationParams,
+  PreCoreActionParams,
+  PreOutputPreparationParams,
+} from '@/core/hooks/types';
+import type { Context } from '@/core/shared/context/context';
+
+export abstract class AbstractHook {
+  public preParamsPreparationAndNormalizationHook(
+    _args: CommandHandlerArgs,
+    _context: Context,
+  ): Promise<void> {
+    void _args;
+    void _context;
+    return Promise.resolve();
+  }
+
+  public postParamsPreparationAndNormalizationHook(
+    _args: CommandHandlerArgs,
+    _context: Context,
+    _params: PostParamsPreparationAndNormalizationParams,
+  ): Promise<void> {
+    void _args;
+    void _context;
+    void _params;
+    return Promise.resolve();
+  }
+
+  public preCoreActionHook(
+    _args: CommandHandlerArgs,
+    _context: Context,
+    _params: PreCoreActionParams,
+  ): Promise<void> {
+    void _args;
+    void _context;
+    void _params;
+    return Promise.resolve();
+  }
+
+  public postCoreActionHook(
+    _args: CommandHandlerArgs,
+    _context: Context,
+    _params: PostCoreActionParams,
+  ): Promise<void> {
+    void _args;
+    void _context;
+    void _params;
+    return Promise.resolve();
+  }
+
+  public preOutputPreparationHook(
+    _args: CommandHandlerArgs,
+    _context: Context,
+    _params: PreOutputPreparationParams,
+  ): Promise<void> {
+    void _args;
+    void _context;
+    void _params;
+    return Promise.resolve();
+  }
+
+  public postOutputPreparationHook(
+    _args: CommandHandlerArgs,
+    _context: Context,
+    _params: PostOutputPreparationParams,
+  ): Promise<void> {
+    void _args;
+    void _context;
+    void _params;
+    return Promise.resolve();
+  }
+}
+```
+
+#### Hook Lifecycle Methods
 
 | Hook                                        | Fires                      | Receives                                                                  |
 | ------------------------------------------- | -------------------------- | ------------------------------------------------------------------------- |
