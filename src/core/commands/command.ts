@@ -4,44 +4,33 @@ import type { AbstractHook } from '@/core/hooks/abstract-hook';
 import type {
   PostCoreActionParams,
   PostOutputPreparationParams,
-  PostParamsPreparationAndNormalizationParams,
   PreCoreActionParams,
-  PreOutputPreparationParams,
 } from '@/core/hooks/types';
-import type { Context } from '@/core/shared/context/context';
 
 export abstract class BaseCommand<
   TNormalisedParams = unknown,
   TCoreActionResult = unknown,
 > implements Command {
-  async execute(args: CommandHandlerArgs, context: Context) {
-    this.preParamsNormalizationHook(args, context);
-    const normalisedParams = await this.normalizeParams(args, context);
-    this.postParamsNormalizationHook(args, context, {
-      normalisedParams,
-    });
-    this.preCoreActionHook(args, context, {
+  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+    await this.preParamsNormalizationHook(args);
+    const normalisedParams = await this.normalizeParams(args);
+    await this.preCoreActionHook(args, {
       normalisedParams,
     });
     let coreActionResult;
-    if (context.coreActionEnabled) {
-      coreActionResult = await this.coreAction(args, context, normalisedParams);
-    }
-    this.postCoreActionHook(args, context, {
-      normalisedParams,
-      coreActionResult,
-    });
-    this.preOutputPreparationHook(args, context, {
+    // if (context.coreActionEnabled) {
+    coreActionResult = await this.coreAction(args, normalisedParams);
+    // }
+    await this.postCoreActionHook(args, {
       normalisedParams,
       coreActionResult,
     });
     const result = await this.outputPreparation(
       args,
-      context,
       normalisedParams,
       coreActionResult,
     );
-    this.postOutputPreparationHook(args, context, {
+    this.postOutputPreparationHook(args, {
       normalisedParams,
       coreActionResult,
       outputResult: result,
@@ -50,96 +39,71 @@ export abstract class BaseCommand<
   }
 
   // Hooks
-  async preParamsNormalizationHook(
-    args: CommandHandlerArgs,
-    context: Context,
-  ): Promise<void> {
-    await this.executeHooks(context, async (h) =>
-      h.preParamsPreparationAndNormalizationHook(args, context),
-    );
-  }
-
-  async postParamsNormalizationHook(
-    args: CommandHandlerArgs,
-    context: Context,
-    params: PostParamsPreparationAndNormalizationParams<TNormalisedParams>,
-  ): Promise<void> {
-    await this.executeHooks(context, async (h) =>
-      h.postParamsPreparationAndNormalizationHook(args, context, params),
+  async preParamsNormalizationHook(args: CommandHandlerArgs): Promise<void> {
+    await this.executeHooks(
+      async (h) => h.preParamsPreparationAndNormalizationHook(args),
+      args.hooks,
     );
   }
 
   async preCoreActionHook(
     args: CommandHandlerArgs,
-    context: Context,
     params: PreCoreActionParams<TNormalisedParams>,
   ): Promise<void> {
-    await this.executeHooks(context, async (h) =>
-      h.preCoreActionHook(args, context, params),
+    await this.executeHooks(
+      async (h) => h.preCoreActionHook(args, params),
+      args.hooks,
     );
   }
 
   async postCoreActionHook(
     args: CommandHandlerArgs,
-    context: Context,
     params: PostCoreActionParams<TNormalisedParams, TCoreActionResult>,
   ): Promise<void> {
-    await this.executeHooks(context, async (h) =>
-      h.postCoreActionHook(args, context, params),
-    );
-  }
-
-  async preOutputPreparationHook(
-    args: CommandHandlerArgs,
-    context: Context,
-    params: PreOutputPreparationParams<TNormalisedParams, TCoreActionResult>,
-  ): Promise<void> {
-    await this.executeHooks(context, async (h) =>
-      h.preOutputPreparationHook(args, context, params),
+    await this.executeHooks(
+      async (h) => h.postCoreActionHook(args, params),
+      args.hooks,
     );
   }
 
   async postOutputPreparationHook(
     args: CommandHandlerArgs,
-    context: Context,
     params: PostOutputPreparationParams<TNormalisedParams, TCoreActionResult>,
   ): Promise<void> {
-    await this.executeHooks(context, async (h) =>
-      h.postOutputPreparationHook(args, context, params),
+    await this.executeHooks(
+      async (h) => h.postOutputPreparationHook(args, params),
+      args.hooks,
     );
   }
 
   /**
    * Generic hook execution method that executes hooks on all registered hooks.
    * Hook-agnostic: just awaits the hook executor without caring about the result.
-   * @param context - The execution context.
    * @param hookExecutor - The hook function to execute on each hook.
+   * @param hooks - abstract hooks list registered.
    */
   protected async executeHooks(
-    context: Context,
     hookExecutor: (hook: AbstractHook) => Promise<void>,
+    hooks?: AbstractHook[],
   ): Promise<void> {
-    if (!context.hooks) {
+    if (!hooks) {
       return;
     }
 
-    for (const hook of context.hooks) {
+    for (const hook of hooks) {
       await hookExecutor(hook);
     }
   }
 
   abstract normalizeParams(
     args: CommandHandlerArgs,
-    context: Context,
   ): Promise<TNormalisedParams>;
   abstract coreAction(
     args: CommandHandlerArgs,
-    context: Context,
     normalisedParams: TNormalisedParams,
   ): Promise<TCoreActionResult>;
   abstract outputPreparation(
     args: CommandHandlerArgs,
-    context: Context,
     normalisedParams: TNormalisedParams,
     coreActionResult?: TCoreActionResult,
   ): Promise<CommandResult>;

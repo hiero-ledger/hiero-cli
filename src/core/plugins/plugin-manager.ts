@@ -403,17 +403,14 @@ export class PluginManager {
       state: this.coreApi.state,
       config: this.coreApi.config,
       logger: this.logger,
+      hooks: this.filterHooksForCommand(_plugin, commandSpec),
     };
 
     await this.handleConfirmation(commandSpec, handlerArgs, skipConfirmation);
 
     let result;
     if (commandSpec.command) {
-      result = await commandSpec.command.execute(handlerArgs, {
-        coreActionEnabled: true,
-        outputPreparationEnabled: true,
-        hooks: this.filterHooksForCommand(_plugin, commandSpec),
-      });
+      result = await commandSpec.command.execute(handlerArgs);
     } else {
       result = await commandSpec.handler(handlerArgs);
     }

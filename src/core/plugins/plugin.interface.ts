@@ -1,4 +1,6 @@
 // Import plugin types
+import type { AbstractHook } from '@/core/hooks/abstract-hook';
+
 export type * from './plugin.types';
 
 export interface CommandHandlerArgs {
@@ -7,6 +9,7 @@ export interface CommandHandlerArgs {
   state: StateManager; // namespaced access provided by Core
   config: ConfigView;
   logger: Logger;
+  hooks?: AbstractHook[];
 }
 
 // Import types from other interfaces
