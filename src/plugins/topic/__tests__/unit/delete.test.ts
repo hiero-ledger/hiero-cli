@@ -36,19 +36,24 @@ describe('topic plugin - delete command (ADR-007)', () => {
     jest.clearAllMocks();
   });
 
-  test('deletes topic successfully by name', async () => {
+  test('deletes topic successfully by alias', async () => {
     const logger = makeLogger();
     const topic = makeTopicData({ name: 'topic1', topicId: '0.0.1111' });
 
     const deleteTopicMock = jest.fn().mockReturnValue(undefined);
     MockedHelper.mockImplementation(() => ({
       listTopics: jest.fn().mockReturnValue([topic]),
-      findTopicByTopicId: jest.fn(),
+      loadTopic: jest.fn().mockReturnValue(topic),
       deleteTopic: deleteTopicMock,
     }));
 
     const alias = makeAliasMock();
-    alias.list = jest.fn().mockReturnValue([]);
+    const aliasMock = {
+      alias: 'topic1',
+      entityId: '0.0.1111',
+    };
+    alias.resolveOrThrow = jest.fn().mockReturnValue(aliasMock);
+    alias.list = jest.fn().mockReturnValue([aliasMock]);
     const network = makeNetworkMock(SupportedNetwork.TESTNET);
 
     const api: Partial<CoreApi> = {
@@ -61,7 +66,9 @@ describe('topic plugin - delete command (ADR-007)', () => {
 
     const result = await deleteTopic(args);
 
-    expect(deleteTopicMock).toHaveBeenCalledWith('0.0.1111');
+    expect(deleteTopicMock).toHaveBeenCalledWith(
+      `${SupportedNetwork.TESTNET}:0.0.1111`,
+    );
     const output = result.result as DeleteTopicOutput;
     expect(output.deletedTopic.name).toBe('topic1');
     expect(output.deletedTopic.topicId).toBe('0.0.1111');
@@ -74,7 +81,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     const deleteTopicMock = jest.fn().mockReturnValue(undefined);
     MockedHelper.mockImplementation(() => ({
       listTopics: jest.fn(),
-      findTopicByTopicId: jest.fn().mockReturnValue(topic),
+      loadTopic: jest.fn().mockReturnValue(topic),
       deleteTopic: deleteTopicMock,
     }));
 
@@ -92,7 +99,9 @@ describe('topic plugin - delete command (ADR-007)', () => {
 
     const result = await deleteTopic(args);
 
-    expect(deleteTopicMock).toHaveBeenCalledWith('0.0.2222');
+    expect(deleteTopicMock).toHaveBeenCalledWith(
+      `${SupportedNetwork.TESTNET}:0.0.2222`,
+    );
     const output = result.result as DeleteTopicOutput;
     expect(output.deletedTopic.name).toBe('topic2');
     expect(output.deletedTopic.topicId).toBe('0.0.2222');
@@ -103,7 +112,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
 
     MockedHelper.mockImplementation(() => ({
       listTopics: jest.fn().mockReturnValue([]),
-      findTopicByTopicId: jest.fn().mockReturnValue(null),
+      loadTopic: jest.fn().mockReturnValue(null),
       deleteTopic: jest.fn(),
     }));
 
@@ -131,7 +140,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
         .mockReturnValue([
           makeTopicData({ name: 'other', topicId: '0.0.3333' }),
         ]),
-      findTopicByTopicId: jest.fn(),
+      loadTopic: jest.fn().mockReturnValue(null),
       deleteTopic: jest.fn(),
     }));
 
@@ -148,7 +157,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     const args = makeArgs(api, logger, { topic: 'missingTopic' });
 
     await expect(deleteTopic(args)).rejects.toThrow(
-      "Topic with name 'missingTopic' not found",
+      "Topic with identifier 'missingTopic' not found",
     );
   });
 
@@ -157,7 +166,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
 
     MockedHelper.mockImplementation(() => ({
       listTopics: jest.fn(),
-      findTopicByTopicId: jest.fn().mockReturnValue(null),
+      loadTopic: jest.fn().mockReturnValue(null),
       deleteTopic: jest.fn(),
     }));
 
@@ -174,7 +183,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     const args = makeArgs(api, logger, { topic: '0.0.4444' });
 
     await expect(deleteTopic(args)).rejects.toThrow(
-      "Topic with ID '0.0.4444' not found",
+      "Topic with identifier '0.0.4444' not found",
     );
   });
 
@@ -184,7 +193,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
 
     MockedHelper.mockImplementation(() => ({
       listTopics: jest.fn().mockReturnValue([topic]),
-      findTopicByTopicId: jest.fn(),
+      loadTopic: jest.fn().mockReturnValue(topic),
       deleteTopic: jest.fn().mockImplementation(() => {
         throw new InternalError('db error');
       }),
@@ -214,7 +223,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
 
     MockedHelper.mockImplementation(() => ({
       listTopics: jest.fn().mockReturnValue([topic]),
-      findTopicByTopicId: jest.fn(),
+      loadTopic: jest.fn().mockReturnValue(topic),
       deleteTopic: jest.fn(),
     }));
 

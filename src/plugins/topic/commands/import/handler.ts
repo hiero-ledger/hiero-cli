@@ -4,8 +4,8 @@ import type { ImportTopicOutput } from './output';
 
 import { ValidationError } from '@/core/errors';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
-import { entityIdToAliasSafeFormat } from '@/core/utils/entity-id-to-alias-format';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
+import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { ImportTopicInputSchema } from './input';
@@ -30,10 +30,10 @@ export async function importTopic(
 
   const topicInfo = await api.mirror.getTopicInfo(topicId);
 
-  const name = alias || `imported-${entityIdToAliasSafeFormat(topicId)}`;
-  logger.info(`Importing topic: ${name} (${topicId})`);
+  const key = composeKey(network, topicId);
+  logger.info(`Importing topic: ${key} (${topicId})`);
 
-  if (topicState.findTopicByTopicId(topicId)) {
+  if (topicState.loadTopic(key)) {
     throw new ValidationError(
       `Topic with ID '${topicId}' already exists in state`,
     );
@@ -51,7 +51,7 @@ export async function importTopic(
 
   const createdAt = hederaTimestampToIso(topicInfo.created_timestamp);
   const topicData: TopicData = {
-    name,
+    name: alias,
     topicId,
     memo: topicInfo.memo || '(No memo)',
     adminKeyRefId: undefined,
@@ -60,7 +60,7 @@ export async function importTopic(
     createdAt,
   };
 
-  topicState.saveTopic(topicId, topicData);
+  topicState.saveTopic(key, topicData);
 
   const result: ImportTopicOutput = {
     topicId,
@@ -69,7 +69,6 @@ export async function importTopic(
     memo: topicInfo.memo || undefined,
     adminKeyPresent: Boolean(topicInfo.admin_key),
     submitKeyPresent: Boolean(topicInfo.submit_key),
-    alias,
   };
 
   return { result };

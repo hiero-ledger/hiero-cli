@@ -11,7 +11,7 @@ import {
   ED25519_HEX_PUBLIC_KEY,
 } from '@/__tests__/mocks/fixtures';
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
-import { NetworkError } from '@/core';
+import { NetworkError, SupportedNetwork } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { createAccount } from '@/plugins/account/commands/create/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -89,7 +89,7 @@ describe('account plugin - create command (ADR-003)', () => {
       }),
     );
     expect(saveAccountMock).toHaveBeenCalledWith(
-      'myAccount',
+      `${SupportedNetwork.TESTNET}:0.0.9999`,
       expect.objectContaining({
         name: 'myAccount',
         accountId: '0.0.9999',

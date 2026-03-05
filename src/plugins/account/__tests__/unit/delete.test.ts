@@ -2,7 +2,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { DeleteAccountOutput } from '@/plugins/account/commands/delete';
 
-import { makeStateMock } from '@/__tests__/mocks/mocks';
+import { makeAliasMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { InternalError, NotFoundError } from '@/core/errors';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -35,12 +35,16 @@ describe('account plugin - delete command (ADR-003)', () => {
 
     const deleteAccountMock = jest.fn().mockReturnValue(undefined);
     MockedHelper.mockImplementation(() => ({
-      loadAccount: jest.fn().mockReturnValue(account),
+      getAccount: jest.fn().mockReturnValue(account),
       listAccounts: jest.fn().mockReturnValue([]),
       deleteAccount: deleteAccountMock,
     }));
-
-    const alias = makeAliasServiceMock();
+    const alias = makeAliasMock();
+    alias.resolveOrThrow = jest.fn().mockReturnValue({
+      alias: 'acc1',
+      entityId: '0.0.1111',
+    });
+    alias.list = jest.fn().mockReturnValue([]);
     const network = makeNetworkServiceMock(SupportedNetwork.TESTNET);
     const kms = { remove: jest.fn() };
 
@@ -55,7 +59,7 @@ describe('account plugin - delete command (ADR-003)', () => {
 
     const result = await deleteAccount(args);
 
-    expect(deleteAccountMock).toHaveBeenCalledWith('acc1');
+    expect(deleteAccountMock).toHaveBeenCalledWith('testnet:0.0.1111');
     const output = result.result as DeleteAccountOutput;
     expect(output.deletedAccount.name).toBe('acc1');
     expect(output.deletedAccount.accountId).toBe('0.0.1111');
@@ -67,7 +71,7 @@ describe('account plugin - delete command (ADR-003)', () => {
 
     const deleteAccountMock = jest.fn().mockReturnValue(undefined);
     MockedHelper.mockImplementation(() => ({
-      loadAccount: jest.fn(),
+      getAccount: jest.fn().mockReturnValue(account),
       listAccounts: jest.fn().mockReturnValue([account]),
       deleteAccount: deleteAccountMock,
     }));
@@ -87,7 +91,7 @@ describe('account plugin - delete command (ADR-003)', () => {
 
     const result = await deleteAccount(args);
 
-    expect(deleteAccountMock).toHaveBeenCalledWith('acc2');
+    expect(deleteAccountMock).toHaveBeenCalledWith('testnet:0.0.2222');
     const output = result.result as DeleteAccountOutput;
     expect(output.deletedAccount.name).toBe('acc2');
     expect(output.deletedAccount.accountId).toBe('0.0.2222');
@@ -97,7 +101,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
-      loadAccount: jest.fn().mockReturnValue(null),
+      getAccount: jest.fn().mockReturnValue(null),
       listAccounts: jest.fn().mockReturnValue([]),
       deleteAccount: jest.fn(),
     }));
@@ -120,12 +124,17 @@ describe('account plugin - delete command (ADR-003)', () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
-      loadAccount: jest.fn().mockReturnValue(null),
+      getAccount: jest.fn().mockReturnValue(null),
       listAccounts: jest.fn(),
       deleteAccount: jest.fn(),
     }));
 
     const alias = makeAliasServiceMock();
+    alias.resolveOrThrow = jest.fn().mockReturnValue({
+      alias: 'acc1',
+      entityId: '0.0.1111',
+    });
+    alias.list = jest.fn().mockReturnValue([]);
     const network = makeNetworkServiceMock(SupportedNetwork.TESTNET);
 
     const api: Partial<CoreApi> = {
@@ -143,7 +152,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
-      loadAccount: jest.fn(),
+      getAccount: jest.fn().mockReturnValue(null),
       listAccounts: jest
         .fn()
         .mockReturnValue([makeAccountData({ accountId: '0.0.3333' })]),
@@ -169,7 +178,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const account = makeAccountData({ name: 'acc5', accountId: '0.0.5555' });
 
     MockedHelper.mockImplementation(() => ({
-      loadAccount: jest.fn().mockReturnValue(account),
+      getAccount: jest.fn().mockReturnValue(account),
       listAccounts: jest.fn(),
       deleteAccount: jest.fn().mockImplementation(() => {
         throw new InternalError('db error');
@@ -177,6 +186,11 @@ describe('account plugin - delete command (ADR-003)', () => {
     }));
 
     const alias = makeAliasServiceMock();
+    alias.resolveOrThrow = jest.fn().mockReturnValue({
+      alias: 'acc5',
+      entityId: '0.0.5555',
+    });
+    alias.list = jest.fn().mockReturnValue([]);
     const network = makeNetworkServiceMock(SupportedNetwork.TESTNET);
 
     const api: Partial<CoreApi> = {
@@ -199,7 +213,7 @@ describe('account plugin - delete command (ADR-003)', () => {
 
     // Mock account state helper
     MockedHelper.mockImplementation(() => ({
-      loadAccount: jest.fn().mockReturnValue(account),
+      getAccount: jest.fn().mockReturnValue(account),
       listAccounts: jest.fn().mockReturnValue([]),
       deleteAccount: jest.fn(),
     }));
@@ -207,6 +221,10 @@ describe('account plugin - delete command (ADR-003)', () => {
     // Setup alias and network mocks via dedicated helpers
     const alias = makeAliasServiceMock({
       records: mockAliasLists.multiNetworkMultiType,
+    });
+    alias.resolveOrThrow = jest.fn().mockReturnValue({
+      alias: 'acc-alias',
+      entityId: '0.0.7777',
     });
     const network = makeNetworkServiceMock(SupportedNetwork.TESTNET);
     const kms = { remove: jest.fn() };

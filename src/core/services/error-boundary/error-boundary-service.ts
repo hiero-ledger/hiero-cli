@@ -2,6 +2,7 @@ import type { ErrorBoundaryService } from '@/core/services/error-boundary/error-
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
 
+import { CommanderError } from 'commander';
 import { ZodError } from 'zod';
 
 import { CliError, InternalError, ValidationError } from '@/core/errors';
@@ -52,6 +53,10 @@ export class ErrorBoundaryServiceImpl implements ErrorBoundaryService {
 
     if (error instanceof ZodError) {
       return ValidationError.fromZod(error);
+    }
+
+    if (error instanceof CommanderError) {
+      return new ValidationError(error.message);
     }
 
     if (error instanceof Error) {

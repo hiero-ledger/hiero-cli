@@ -2,6 +2,7 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
 
+import { SupportedNetwork } from '@/core';
 import { NotFoundError } from '@/core/errors';
 import {
   deleteToken,
@@ -73,7 +74,9 @@ describe('deleteTokenHandler', () => {
       expect(output.removedAliases).toEqual(['my-token (testnet)']);
 
       expect(api.alias.remove).toHaveBeenCalledWith('my-token', 'testnet');
-      expect(mockRemoveToken).toHaveBeenCalledWith('0.0.123456');
+      expect(mockRemoveToken).toHaveBeenCalledWith(
+        `${SupportedNetwork.TESTNET}:0.0.123456`,
+      );
     });
 
     test('deletes token without removedAliases when no alias points to token', async () => {

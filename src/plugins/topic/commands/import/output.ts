@@ -10,7 +10,7 @@ import { EntityIdSchema, NetworkSchema } from '@/core/schemas/common-schemas';
  */
 export const ImportTopicOutputSchema = z.object({
   topicId: EntityIdSchema,
-  name: z.string().describe('Topic name or alias'),
+  name: z.string().describe('Topic name').optional(),
   network: NetworkSchema,
   memo: z.string().describe('Topic memo').optional(),
   adminKeyPresent: z
@@ -19,7 +19,6 @@ export const ImportTopicOutputSchema = z.object({
   submitKeyPresent: z
     .boolean()
     .describe('Whether submit key is set on the topic'),
-  alias: z.string().describe('Topic alias').optional(),
 });
 
 export type ImportTopicOutput = z.infer<typeof ImportTopicOutputSchema>;
@@ -30,13 +29,13 @@ export type ImportTopicOutput = z.infer<typeof ImportTopicOutputSchema>;
 export const IMPORT_TOPIC_TEMPLATE = `
 ✅ Topic imported successfully: {{hashscanLink topicId "topic" network}}
    Network: {{network}}
-   Name (Alias): {{name}}
+{{#if name}}
+   Name: {{name}}
+{{/if}}
 {{#if memo}}
    Memo: {{memo}}
 {{/if}}
    Admin key: {{#if adminKeyPresent}}✅ Present{{else}}❌ Not set{{/if}}
    Submit key: {{#if submitKeyPresent}}✅ Present{{else}}❌ Not set (public topic){{/if}}
-{{#if alias}}
-   Alias: {{alias}}
-{{/if}}
+
 `.trim();

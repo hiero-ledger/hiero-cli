@@ -16,6 +16,7 @@ import {
   makeArgs,
   makeLogger,
 } from '@/__tests__/mocks/mocks';
+import { SupportedNetwork } from '@/core';
 import { importContract } from '@/plugins/contract/commands/import/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
@@ -99,7 +100,7 @@ describe('contract plugin - import command', () => {
       }),
     );
     expect(saveContractMock).toHaveBeenCalledWith(
-      MOCK_CONTRACT_ID,
+      `${SupportedNetwork.TESTNET}:${MOCK_CONTRACT_ID}`,
       expect.objectContaining({
         contractId: MOCK_CONTRACT_ID,
         contractName: 'ImportedContract',
@@ -147,7 +148,7 @@ describe('contract plugin - import command', () => {
     expect(mirrorMock.getContractInfo).toHaveBeenCalledWith(MOCK_EVM_ADDRESS);
     expect(api.alias.register).not.toHaveBeenCalled();
     expect(saveContractMock).toHaveBeenCalledWith(
-      MOCK_CONTRACT_ID,
+      `${SupportedNetwork.TESTNET}:${MOCK_CONTRACT_ID}`,
       expect.objectContaining({
         verified: false,
       }),

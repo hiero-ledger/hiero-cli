@@ -8,7 +8,7 @@ import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
-import { createCoreApi } from '@/core';
+import { createCoreApi, NotFoundError } from '@/core';
 import { createTopic, deleteTopic, listTopics } from '@/plugins/topic';
 
 describe('Delete Topic Integration Tests', () => {
@@ -147,7 +147,7 @@ describe('Delete Topic Integration Tests', () => {
           logger: coreApi.logger,
           config: coreApi.config,
         }),
-      ).rejects.toThrow("Topic with name 'non-existent-topic-name' not found");
+      ).rejects.toThrow(NotFoundError);
     });
 
     it('should fail when deleting non-existent topic by topicId', async () => {
@@ -159,7 +159,7 @@ describe('Delete Topic Integration Tests', () => {
           logger: coreApi.logger,
           config: coreApi.config,
         }),
-      ).rejects.toThrow("Topic with ID '0.0.999999999' not found");
+      ).rejects.toThrow("Topic with identifier '0.0.999999999' not found");
     });
   });
 });

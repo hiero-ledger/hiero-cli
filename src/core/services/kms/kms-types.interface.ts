@@ -74,6 +74,7 @@ export enum CredentialType {
   PUBLIC_KEY = 'public_key',
   KEY_REFERENCE = 'key_reference',
   ALIAS = 'alias',
+  EVM_ADDRESS = 'evm_address',
 }
 
 /**
@@ -133,13 +134,20 @@ export type AliasCredential = {
   rawValue: string;
 };
 
+export type EvmAddressCredential = {
+  type: CredentialType.EVM_ADDRESS;
+  evmAddress: string;
+  rawValue: string;
+};
+
 export type Credential =
   | KeypairCredential
   | AccountIdCredential
   | PrivateKeyCredential
   | PublicKeyCredential
   | KeyReferenceCredential
-  | AliasCredential;
+  | AliasCredential
+  | EvmAddressCredential;
 
 /**
  * Key resolution - explicit keypair or alias reference

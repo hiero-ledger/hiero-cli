@@ -9,6 +9,7 @@ import path from 'path';
 
 import { StateError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
+import { composeKey } from '@/core/utils/key-composer';
 import { ContractCreateSchema } from '@/plugins/contract/commands/create/input';
 import {
   DEFAULT_CONSTRUCTOR_PARAMS,
@@ -58,11 +59,9 @@ export async function createContract(
     api.config.getOption<KeyManagerName>('default_key_manager');
 
   const admin = validArgs.adminKey
-    ? await api.keyResolver.getOrInitKeyWithFallback(
-        validArgs.adminKey,
-        keyManager,
-        ['contract:admin'],
-      )
+    ? await api.keyResolver.resolveSigningKey(validArgs.adminKey, keyManager, [
+        'contract:admin',
+      ])
     : undefined;
 
   if (!admin) {
@@ -140,8 +139,8 @@ export async function createContract(
     memo,
     verified: verificationResult.success,
   };
-  contractState.saveContract(contractCreateFlowResult.contractId, contractData);
-
+  const contractKey = composeKey(network, contractCreateFlowResult.contractId);
+  contractState.saveContract(contractKey, contractData);
   if (alias) {
     api.alias.register({
       alias,
@@ -154,12 +153,12 @@ export async function createContract(
 
   const output: ContractCreateOutput = {
     contractId: contractCreateFlowResult.contractId,
-    contractName: contractName,
+    contractName,
     contractEvmAddress,
     network,
     alias,
     transactionId: contractCreateFlowResult.transactionId,
-    adminPublicKey: adminPublicKey,
+    adminPublicKey,
     verified: verificationResult.success,
   };
 

@@ -73,7 +73,7 @@ describe('token plugin - import command (ADR-007)', () => {
 
     const result = await importToken(args);
 
-    expect(mirrorMock.getTokenInfo).toHaveBeenCalledWith('0.0.123456');
+    expect(mirrorMock.getTokenInfo).toHaveBeenCalledWith(`0.0.123456`);
     expect(alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
         alias: 'my-token',
@@ -83,9 +83,9 @@ describe('token plugin - import command (ADR-007)', () => {
       }),
     );
     expect(saveTokenMock).toHaveBeenCalledWith(
-      '0.0.123456',
+      `${SupportedNetwork.TESTNET}:0.0.123456`,
       expect.objectContaining({
-        name: 'my-token',
+        name: 'Test Token',
         tokenId: '0.0.123456',
         symbol: 'TEST',
         memo: 'Imported token memo',
@@ -95,7 +95,7 @@ describe('token plugin - import command (ADR-007)', () => {
 
     const output = result.result as ImportTokenOutput;
     expect(output.tokenId).toBe('0.0.123456');
-    expect(output.name).toBe('my-token');
+    expect(output.name).toBe('Test Token');
     expect(output.symbol).toBe('TEST');
     expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.memo).toBe('Imported token memo');
@@ -142,10 +142,10 @@ describe('token plugin - import command (ADR-007)', () => {
 
     const result = await importToken(args);
 
-    expect(mirrorMock.getTokenInfo).toHaveBeenCalledWith('0.0.999999');
+    expect(mirrorMock.getTokenInfo).toHaveBeenCalledWith(`0.0.999999`);
     expect(alias.register).not.toHaveBeenCalled();
     expect(saveTokenMock).toHaveBeenCalledWith(
-      '0.0.999999',
+      `${SupportedNetwork.TESTNET}:0.0.999999`,
       expect.objectContaining({
         name: 'Existing Token',
         tokenId: '0.0.999999',
@@ -200,7 +200,7 @@ describe('token plugin - import command (ADR-007)', () => {
     const output = result.result as ImportTokenOutput;
     expect(output.tokenId).toBe('0.0.555555');
     expect(saveTokenMock).toHaveBeenCalledWith(
-      '0.0.555555',
+      `${SupportedNetwork.TESTNET}:0.0.555555`,
       expect.objectContaining({
         tokenId: '0.0.555555',
         name: 'NFT Collection',

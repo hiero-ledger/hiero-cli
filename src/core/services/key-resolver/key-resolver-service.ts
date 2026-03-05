@@ -1,10 +1,16 @@
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
-import type { ResolvedKey } from '@/core/services/key-resolver/types';
+import type {
+  Destination,
+  ResolvedAccountCredential,
+  ResolvedKey,
+  ResolvedPublicKey,
+} from '@/core/services/key-resolver/types';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type {
   AccountIdCredential,
   AliasCredential,
   Credential,
+  EvmAddressCredential,
   KeyManagerName,
   KeypairCredential,
   KeyReferenceCredential,
@@ -37,7 +43,111 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     this.kms = kmsService;
   }
 
-  public async getOrInitKey(
+  public async resolveAccountCredentials(
+    credential: Credential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<ResolvedAccountCredential> {
+    const resolved = await this.resolveCredential(
+      credential,
+      keyManager,
+      labels,
+    );
+    return this.assertSigningKey(resolved, credential.rawValue);
+  }
+
+  public async resolveAccountCredentialsWithFallback(
+    credential: Credential | undefined,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<ResolvedAccountCredential> {
+    if (!credential) {
+      const resolved = this.resolveOperator();
+      return this.assertSigningKey(resolved);
+    }
+    return this.resolveAccountCredentials(credential, keyManager, labels);
+  }
+
+  public async getPublicKey(
+    credential: Credential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<ResolvedPublicKey> {
+    const resolved = await this.resolveCredential(
+      credential,
+      keyManager,
+      labels,
+    );
+    const { keyRefId, publicKey } = resolved;
+
+    if (!keyRefId || !publicKey) {
+      throw new StateError(
+        'Credential cannot be used as public key: missing publicKey or keyRefId',
+        {
+          context: { hasKeyRefId: !!keyRefId, hasPublicKey: !!publicKey },
+        },
+      );
+    }
+
+    return { keyRefId, publicKey };
+  }
+
+  public async resolveSigningKey(
+    credential: Credential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<ResolvedPublicKey> {
+    const resolved = await this.resolveCredential(
+      credential,
+      keyManager,
+      labels,
+    );
+    const { keyRefId, publicKey } = resolved;
+
+    if (!keyRefId || !publicKey) {
+      throw new StateError(
+        'Credential cannot be used for signing: missing publicKey or keyRefId',
+        {
+          context: { hasKeyRefId: !!keyRefId, hasPublicKey: !!publicKey },
+        },
+      );
+    }
+
+    if (!this.kms.hasPrivateKey(keyRefId)) {
+      throw new StateError(
+        'Credential cannot be used for signing: no private key available',
+        { context: { keyRefId, rawValue: credential.rawValue } },
+      );
+    }
+
+    return { keyRefId, publicKey };
+  }
+
+  public async resolveDestination(
+    credential: Credential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<Destination> {
+    const resolved = await this.resolveCredential(
+      credential,
+      keyManager,
+      labels,
+    );
+    const { accountId, evmAddress } = resolved;
+
+    if (!accountId && !evmAddress) {
+      throw new StateError(
+        'Credential cannot be used as destination: missing accountId and evmAddress',
+        {
+          context: { rawValue: credential.rawValue },
+        },
+      );
+    }
+
+    return { accountId, evmAddress } as Destination;
+  }
+
+  private resolveCredential(
     credential: Credential,
     keyManager: KeyManagerName,
     labels?: string[],
@@ -54,40 +164,57 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       case CredentialType.KEY_REFERENCE:
         return this.resolveKeyReference(credential);
       case CredentialType.ALIAS:
-        return this.resolveAlias(credential);
+        return Promise.resolve(this.resolveAlias(credential));
+      case CredentialType.EVM_ADDRESS:
+        return this.resolveEvmAddress(credential, keyManager, labels);
     }
   }
 
-  public async getOrInitKeyWithFallback(
-    credential: Credential | undefined,
-    keyManager: KeyManagerName,
-    labels?: string[],
-  ): Promise<ResolvedKey> {
-    if (!credential) {
-      const operator = this.network.getCurrentOperatorOrThrow();
+  private resolveOperator(): ResolvedKey {
+    const operator = this.network.getCurrentOperatorOrThrow();
+    const operatorPublicKey = this.kms.get(operator.keyRefId)?.publicKey;
 
-      const operatorPublicKey = this.kms.get(operator.keyRefId)?.publicKey;
-
-      if (!operatorPublicKey) {
-        throw new StateError(
-          'Operator exists in state but missing public key',
-          {
-            context: {
-              accountId: operator.accountId,
-              keyRefId: operator.keyRefId,
-            },
-          },
-        );
-      }
-
-      return {
-        publicKey: operatorPublicKey,
-        accountId: operator.accountId,
-        keyRefId: operator.keyRefId,
-      };
+    if (!operatorPublicKey) {
+      throw new StateError('Operator exists in state but missing public key', {
+        context: { accountId: operator.accountId, keyRefId: operator.keyRefId },
+      });
     }
 
-    return this.getOrInitKey(credential, keyManager, labels);
+    return {
+      publicKey: operatorPublicKey,
+      accountId: operator.accountId,
+      keyRefId: operator.keyRefId,
+    };
+  }
+
+  private assertSigningKey(
+    resolved: ResolvedKey,
+    rawValue?: string,
+  ): ResolvedAccountCredential {
+    const { keyRefId, accountId, publicKey } = resolved;
+
+    if (!keyRefId || !accountId || !publicKey) {
+      throw new StateError(
+        'Credential cannot be used for signing: missing accountId, publicKey or keyRefId',
+        {
+          context: {
+            hasKeyRefId: !!keyRefId,
+            hasAccountId: !!accountId,
+            hasPublicKey: !!publicKey,
+            rawValue,
+          },
+        },
+      );
+    }
+
+    if (!this.kms.hasPrivateKey(keyRefId)) {
+      throw new StateError(
+        'Credential cannot be used for signing: no private key available',
+        { context: { keyRefId, rawValue } },
+      );
+    }
+
+    return { keyRefId, accountId, publicKey };
   }
 
   private async resolveAccountId(
@@ -228,6 +355,39 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       publicKey: keyReference.publicKey,
       keyRefId: keyReference.keyRefId,
     };
+  }
+
+  private async resolveEvmAddress(
+    credential: EvmAddressCredential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<ResolvedKey> {
+    const { evmAddress } = credential;
+
+    let accountData;
+    try {
+      accountData = await this.mirror.getAccount(evmAddress);
+    } catch (error) {
+      if (error instanceof NotFoundError) {
+        return { evmAddress };
+      }
+      throw error;
+    }
+
+    const { keyAlgorithm, accountPublicKey, accountId } = accountData;
+
+    if (!keyAlgorithm || !accountPublicKey) {
+      return { accountId, evmAddress };
+    }
+
+    const { keyRefId, publicKey } = this.kms.importPublicKey(
+      keyAlgorithm,
+      accountPublicKey,
+      keyManager,
+      labels,
+    );
+
+    return { accountId, evmAddress, publicKey, keyRefId };
   }
 
   private resolveAlias(aliasCredential: AliasCredential): ResolvedKey {

@@ -70,7 +70,7 @@ export async function mintNft(
     });
   }
 
-  const supplyKeyResolved = await api.keyResolver.getOrInitKey(
+  const supplyKeyResolved = await api.keyResolver.resolveSigningKey(
     validArgs.supplyKey,
     keyManager,
     ['token:supply'],
@@ -85,7 +85,7 @@ export async function mintNft(
     });
   }
 
-  logger.info(`Using supply key: ${supplyKeyResolved.accountId}`);
+  logger.info(`Using supply key: ${supplyKeyResolved.keyRefId}`);
 
   const maxSupply = BigInt(tokenInfo.max_supply || '0');
   const totalSupply = BigInt(tokenInfo.total_supply || '0');

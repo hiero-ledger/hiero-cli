@@ -1,19 +1,46 @@
-import type { ResolvedKey } from '@/core/services/key-resolver/types';
+import type {
+  Destination,
+  ResolvedAccountCredential,
+  ResolvedPublicKey,
+} from '@/core/services/key-resolver/types';
 import type {
   Credential,
   KeyManagerName,
 } from '@/core/services/kms/kms-types.interface';
 
 export interface KeyResolverService {
-  getOrInitKey(
+  // Sender side: requires accountId + publicKey + private key in KMS.
+  resolveAccountCredentials(
     credential: Credential,
     keyManager: KeyManagerName,
     labels?: string[],
-  ): Promise<ResolvedKey>;
+  ): Promise<ResolvedAccountCredential>;
 
-  getOrInitKeyWithFallback(
+  // Same as resolveAccountCredentials but falls back to operator when credential is undefined.
+  resolveAccountCredentialsWithFallback(
     credential: Credential | undefined,
     keyManager: KeyManagerName,
     labels?: string[],
-  ): Promise<ResolvedKey>;
+  ): Promise<ResolvedAccountCredential>;
+
+  // Receiver side: requires at least accountId or evmAddress, no private key needed.
+  resolveDestination(
+    credential: Credential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<Destination>;
+
+  // Read-only key reference: requires publicKey + keyRefId, no account or private key needed.
+  getPublicKey(
+    credential: Credential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<ResolvedPublicKey>;
+
+  // Role key (adminKey, supplyKey etc.): requires private key in KMS but no account association.
+  resolveSigningKey(
+    credential: Credential,
+    keyManager: KeyManagerName,
+    labels?: string[],
+  ): Promise<ResolvedPublicKey>;
 }
