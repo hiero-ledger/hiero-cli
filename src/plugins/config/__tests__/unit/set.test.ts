@@ -1,7 +1,7 @@
 import { assertOutput } from '@/__tests__/utils/assert-output';
+import { ConfigurationError } from '@/core';
 import {
- ConfigurationError } from '@/core';
-import { setConfigOption,
+  setConfigOption,
   SetConfigOutputSchema,
 } from '@/plugins/config/commands/set';
 

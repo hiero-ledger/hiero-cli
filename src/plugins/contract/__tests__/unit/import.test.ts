@@ -16,8 +16,8 @@ import {
   makeLogger,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { ImportContractOutputSchema } from '@/plugins/contract/commands/import';
 import { SupportedNetwork } from '@/core';
+import { ImportContractOutputSchema } from '@/plugins/contract/commands/import';
 import { importContract } from '@/plugins/contract/commands/import/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';

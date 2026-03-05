@@ -2,8 +2,8 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 
 import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { ListAccountsOutputSchema } from '@/plugins/account/commands/list';
 import { InternalError } from '@/core';
+import { ListAccountsOutputSchema } from '@/plugins/account/commands/list';
 import { listAccounts } from '@/plugins/account/commands/list/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 

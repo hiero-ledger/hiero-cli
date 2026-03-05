@@ -5,8 +5,8 @@ import {
   makeNetworkMock,
   setupExitSpy,
 } from '@/__tests__/mocks/mocks';
-import { NetworkError } from '@/core';
 import { assertOutput } from '@/__tests__/utils/assert-output';
+import { NetworkError } from '@/core';
 import {
   useHandler,
   UseNetworkOutputSchema,

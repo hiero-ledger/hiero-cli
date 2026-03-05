@@ -2,8 +2,8 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 
 import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { ListCredentialsOutputSchema } from '@/plugins/credentials/commands/list';
 import { InternalError } from '@/core';
+import { ListCredentialsOutputSchema } from '@/plugins/credentials/commands/list';
 import { listCredentials } from '@/plugins/credentials/commands/list/handler';
 
 describe('credentials plugin - list command', () => {
