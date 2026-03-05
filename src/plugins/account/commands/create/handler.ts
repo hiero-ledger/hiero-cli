@@ -8,7 +8,7 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { AccountData } from '@/plugins/account/schema';
 import type { CreateAccountOutput } from './output';
 
-import { StateError, TransactionError, ValidationError } from '@/core/errors';
+import { StateError, TransactionError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HBAR_DECIMALS, KeyAlgorithm } from '@/core/shared/constants';
 import { composeKey } from '@/core/utils/key-composer';
@@ -34,18 +34,6 @@ export async function createAccount(
   const maxAutoAssociations = validArgs.autoAssociations;
   const alias = validArgs.name;
   const keyManagerArg = validArgs.keyManager;
-  const keyTypeArg = validArgs.keyType;
-
-  if (
-    keyTypeArg !== KeyAlgorithm.ECDSA &&
-    keyTypeArg !== KeyAlgorithm.ED25519
-  ) {
-    throw new ValidationError(
-      `Invalid key type: ${String(keyTypeArg)}. Must be '${KeyAlgorithm.ECDSA}' or '${KeyAlgorithm.ED25519}'.`,
-    );
-  }
-
-  const keyType = keyTypeArg;
 
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(alias, network);
@@ -66,17 +54,37 @@ export async function createAccount(
 
   logger.info(`Creating account with name: ${alias}`);
 
-  const { keyRefId, publicKey } = api.kms.createLocalPrivateKey(
-    keyType,
-    keyManager,
-    ['account:create', `account:${name}`],
-  );
+  let keyRefId: string;
+  let publicKey: string;
+  let keyType: KeyAlgorithm;
+
+  if (validArgs.key) {
+    const resolved = await api.keyResolver.getPublicKey(
+      validArgs.key,
+      keyManager,
+      ['account:create', `account:${name}`],
+    );
+    keyRefId = resolved.keyRefId;
+    publicKey = resolved.publicKey;
+    const kmsRecord = api.kms.get(keyRefId);
+    if (!kmsRecord) {
+      throw new StateError(`KMS record not found for keyRefId: ${keyRefId}`);
+    }
+    keyType = kmsRecord.keyAlgorithm;
+  } else {
+    keyType = validArgs.keyType ?? KeyAlgorithm.ECDSA;
+    const created = api.kms.createLocalPrivateKey(keyType, keyManager, [
+      'account:create',
+      `account:${name}`,
+    ]);
+    keyRefId = created.keyRefId;
+    publicKey = created.publicKey;
+  }
 
   const accountCreateResult = api.account.createAccount({
     balanceRaw: balance,
     maxAutoAssociations,
     publicKey,
-    keyType,
   });
 
   const result = await api.txExecution.signAndExecute(

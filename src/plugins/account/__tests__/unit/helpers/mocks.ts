@@ -239,6 +239,7 @@ export interface ApiMocksConfig {
   signAndExecuteImpl?: jest.Mock;
   network?: 'testnet' | 'mainnet' | 'previewnet';
   operatorBalance?: bigint;
+  keyResolverGetPublicKeyImpl?: jest.Mock;
 }
 
 /**
@@ -254,6 +255,7 @@ export const makeApiMocksForAccountCreate = ({
   signAndExecuteImpl,
   network = 'testnet',
   operatorBalance = OPERATOR_SUFFICIENT_BALANCE,
+  keyResolverGetPublicKeyImpl,
 }: ApiMocksConfig) => {
   const account: jest.Mocked<AccountService> = {
     createAccount: createAccountImpl || jest.fn(),
@@ -284,5 +286,18 @@ export const makeApiMocksForAccountCreate = ({
 
   const alias = makeGlobalAliasMock();
 
-  return { account, signing, networkMock, kms, alias, mirror };
+  const keyResolver = {
+    getPublicKey:
+      keyResolverGetPublicKeyImpl ??
+      jest.fn().mockResolvedValue({
+        keyRefId: 'kr_provided123',
+        publicKey: 'provided-pub-key',
+      }),
+    resolveAccountCredentials: jest.fn(),
+    resolveAccountCredentialsWithFallback: jest.fn(),
+    resolveDestination: jest.fn(),
+    resolveSigningKey: jest.fn(),
+  };
+
+  return { account, signing, networkMock, kms, alias, mirror, keyResolver };
 };

@@ -10,9 +10,9 @@ import { AccountId, Hbar, PublicKey } from '@hashgraph/sdk';
 
 import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { KeyAlgorithm } from '@/core';
 import { ValidationError } from '@/core/errors';
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
-import { KeyAlgorithm } from '@/core/shared/constants';
 
 import {
   createMockAccountCreateTransaction,
@@ -59,11 +59,10 @@ describe('AccountServiceImpl', () => {
   });
 
   describe('createAccount', () => {
-    it('should create account with ECDSA key type', () => {
+    it('should create account with provided public key', () => {
       const params = {
         balanceRaw: 100_000_000n,
         publicKey: ECDSA_HEX_PUBLIC_KEY,
-        keyType: KeyAlgorithm.ECDSA,
       };
 
       const result = accountService.createAccount(params);
@@ -73,10 +72,10 @@ describe('AccountServiceImpl', () => {
       expect(mockTransaction.setInitialBalance).toHaveBeenCalledWith(
         mockHbarInstance,
       );
-      expect(mockTransaction.setECDSAKeyWithAlias).toHaveBeenCalledWith(
+      expect(mockTransaction.setKeyWithoutAlias).toHaveBeenCalledWith(
         mockPublicKeyInstance,
       );
-      expect(mockTransaction.setKeyWithoutAlias).not.toHaveBeenCalled();
+      expect(mockTransaction.setECDSAKeyWithAlias).not.toHaveBeenCalled();
       expect(result.transaction).toBe(mockTransaction);
       expect(result.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
     });
@@ -98,7 +97,7 @@ describe('AccountServiceImpl', () => {
       expect(result.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
     });
 
-    it('should default to ECDSA when keyType is not specified', () => {
+    it('should always use setKeyWithoutAlias regardless of key format', () => {
       const params = {
         balanceRaw: 100_000_000n,
         publicKey: ECDSA_HEX_PUBLIC_KEY,
@@ -106,8 +105,8 @@ describe('AccountServiceImpl', () => {
 
       accountService.createAccount(params);
 
-      expect(mockTransaction.setECDSAKeyWithAlias).toHaveBeenCalled();
-      expect(mockTransaction.setKeyWithoutAlias).not.toHaveBeenCalled();
+      expect(mockTransaction.setKeyWithoutAlias).toHaveBeenCalled();
+      expect(mockTransaction.setECDSAKeyWithAlias).not.toHaveBeenCalled();
     });
 
     it('should set max auto associations when specified', () => {
