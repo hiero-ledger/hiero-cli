@@ -2,6 +2,7 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { AbstractHook } from '@/core/hooks/abstract-hook';
 import type {
+  HookResult,
   PostCoreActionParams,
   PostOutputPreparationParams,
   PreCoreActionParams,
@@ -12,35 +13,59 @@ export abstract class BaseCommand<
   TCoreActionResult = unknown,
 > implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    await this.preParamsNormalizationHook(args);
+    const preNormalizationHookResult =
+      await this.preParamsNormalizationHook(args);
+    if (preNormalizationHookResult && preNormalizationHookResult.breakFlow) {
+      return {
+        result: preNormalizationHookResult.result,
+        humanTemplate: preNormalizationHookResult.humanTemplate,
+      };
+    }
     const normalisedParams = await this.normalizeParams(args);
-    await this.preCoreActionHook(args, {
+    const preCoreHookResult = await this.preCoreActionHook(args, {
       normalisedParams,
     });
-    let coreActionResult;
-    // if (context.coreActionEnabled) {
-    coreActionResult = await this.coreAction(args, normalisedParams);
-    // }
-    await this.postCoreActionHook(args, {
+    if (preCoreHookResult && preCoreHookResult.breakFlow) {
+      return {
+        result: preCoreHookResult.result,
+        humanTemplate: preCoreHookResult.humanTemplate,
+      };
+    }
+    const coreActionResult = await this.coreAction(args, normalisedParams);
+    const postCoreHookResult = await this.postCoreActionHook(args, {
       normalisedParams,
       coreActionResult,
     });
+    if (postCoreHookResult && postCoreHookResult.breakFlow) {
+      return {
+        result: postCoreHookResult.result,
+        humanTemplate: postCoreHookResult.humanTemplate,
+      };
+    }
     const result = await this.outputPreparation(
       args,
       normalisedParams,
       coreActionResult,
     );
-    this.postOutputPreparationHook(args, {
+    const postOutputHookResult = await this.postOutputPreparationHook(args, {
       normalisedParams,
       coreActionResult,
       outputResult: result,
     });
+    if (postOutputHookResult && postOutputHookResult.breakFlow) {
+      return {
+        result: postOutputHookResult.result,
+        humanTemplate: postOutputHookResult.humanTemplate,
+      };
+    }
     return result;
   }
 
   // Hooks
-  async preParamsNormalizationHook(args: CommandHandlerArgs): Promise<void> {
-    await this.executeHooks(
+  async preParamsNormalizationHook(
+    args: CommandHandlerArgs,
+  ): Promise<HookResult | undefined> {
+    return await this.executeHooks(
       async (h) => h.preParamsPreparationAndNormalizationHook(args),
       args.hooks,
     );
@@ -49,8 +74,8 @@ export abstract class BaseCommand<
   async preCoreActionHook(
     args: CommandHandlerArgs,
     params: PreCoreActionParams<TNormalisedParams>,
-  ): Promise<void> {
-    await this.executeHooks(
+  ): Promise<HookResult | undefined> {
+    return await this.executeHooks(
       async (h) => h.preCoreActionHook(args, params),
       args.hooks,
     );
@@ -59,8 +84,8 @@ export abstract class BaseCommand<
   async postCoreActionHook(
     args: CommandHandlerArgs,
     params: PostCoreActionParams<TNormalisedParams, TCoreActionResult>,
-  ): Promise<void> {
-    await this.executeHooks(
+  ): Promise<HookResult | undefined> {
+    return await this.executeHooks(
       async (h) => h.postCoreActionHook(args, params),
       args.hooks,
     );
@@ -69,8 +94,8 @@ export abstract class BaseCommand<
   async postOutputPreparationHook(
     args: CommandHandlerArgs,
     params: PostOutputPreparationParams<TNormalisedParams, TCoreActionResult>,
-  ): Promise<void> {
-    await this.executeHooks(
+  ): Promise<HookResult | undefined> {
+    return await this.executeHooks(
       async (h) => h.postOutputPreparationHook(args, params),
       args.hooks,
     );
@@ -83,16 +108,20 @@ export abstract class BaseCommand<
    * @param hooks - abstract hooks list registered.
    */
   protected async executeHooks(
-    hookExecutor: (hook: AbstractHook) => Promise<void>,
+    hookExecutor: (hook: AbstractHook) => Promise<HookResult | undefined>,
     hooks?: AbstractHook[],
-  ): Promise<void> {
+  ): Promise<HookResult | undefined> {
     if (!hooks) {
-      return;
+      return undefined;
     }
 
     for (const hook of hooks) {
-      await hookExecutor(hook);
+      const hookResult = await hookExecutor(hook);
+      if (hookResult && hookResult.breakFlow) {
+        return hookResult;
+      }
     }
+    return undefined;
   }
 
   abstract normalizeParams(

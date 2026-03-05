@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs } from '@/core';
 import type {
+  HookResult,
   PostCoreActionParams,
   PostOutputPreparationParams,
   PreCoreActionParams,
@@ -8,35 +9,55 @@ import type {
 export abstract class AbstractHook {
   public preParamsPreparationAndNormalizationHook(
     _args: CommandHandlerArgs,
-  ): Promise<void> {
+  ): Promise<HookResult | undefined> {
     void _args;
-    return Promise.resolve();
+    return Promise.resolve({
+      breakFlow: false,
+      result: {
+        message: 'success',
+      },
+    });
   }
 
   public preCoreActionHook(
     _args: CommandHandlerArgs,
     _params: PreCoreActionParams,
-  ): Promise<void> {
+  ): Promise<HookResult | undefined> {
     void _args;
     void _params;
-    return Promise.resolve();
+    return Promise.resolve({
+      breakFlow: false,
+      result: {
+        message: 'success',
+      },
+    });
   }
 
   public postCoreActionHook(
     _args: CommandHandlerArgs,
     _params: PostCoreActionParams,
-  ): Promise<void> {
+  ): Promise<HookResult | undefined> {
     void _args;
     void _params;
-    return Promise.resolve();
+    return Promise.resolve({
+      breakFlow: false,
+      result: {
+        message: 'success',
+      },
+    });
   }
 
   public postOutputPreparationHook(
     _args: CommandHandlerArgs,
     _params: PostOutputPreparationParams,
-  ): Promise<void> {
+  ): Promise<HookResult | undefined> {
     void _args;
     void _params;
-    return Promise.resolve();
+    return Promise.resolve({
+      breakFlow: false,
+      result: {
+        message: 'success',
+      },
+    });
   }
 }

@@ -6,6 +6,7 @@
 import type { Command, OptionValues } from 'commander';
 import type {
   CommandHandlerArgs,
+  CommandResult,
   CommandSpec,
   HookSpec,
   PluginManifest,
@@ -408,7 +409,7 @@ export class PluginManager {
 
     await this.handleConfirmation(commandSpec, handlerArgs, skipConfirmation);
 
-    let result;
+    let result: CommandResult;
     if (commandSpec.command) {
       result = await commandSpec.command.execute(handlerArgs);
     } else {
@@ -417,7 +418,7 @@ export class PluginManager {
 
     this.coreApi.output.handleOutput({
       status: Status.Success,
-      template: commandSpec.output.humanTemplate,
+      template: result.humanTemplate ?? commandSpec.output.humanTemplate,
       data: result.result,
     });
   }

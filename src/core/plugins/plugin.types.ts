@@ -85,6 +85,7 @@ export interface PluginContext {
  */
 export interface CommandResult {
   result: object;
+  humanTemplate?: string;
 }
 
 /**

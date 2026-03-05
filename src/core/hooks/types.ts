@@ -20,3 +20,9 @@ export interface PostOutputPreparationParams<
   coreActionResult?: TCoreActionResult;
   outputResult: CommandResult;
 }
+
+export interface HookResult {
+  breakFlow: boolean;
+  result: object;
+  humanTemplate?: string;
+}
