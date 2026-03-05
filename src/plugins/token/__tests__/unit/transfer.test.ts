@@ -5,7 +5,7 @@ import '@/core/utils/json-serialize';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { NetworkError } from '@/core';
+import { NetworkError, SupportedNetwork } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
@@ -236,7 +236,7 @@ describe('transferTokenHandler', () => {
       expect(alias.resolve).toHaveBeenCalledWith(
         'bob',
         AliasType.Account,
-        'testnet',
+        SupportedNetwork.TESTNET,
       );
       expect(tokens.createTransferTransaction).toHaveBeenCalledWith({
         tokenId: '0.0.123456',
