@@ -17,6 +17,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupportedNetwork } from '@/core';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ImportContractOutputSchema } from '@/plugins/contract/commands/import';
 import { importContract } from '@/plugins/contract/commands/import/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
@@ -94,7 +95,7 @@ describe('contract plugin - import command', () => {
     expect(api.alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
         alias: 'imported-contract',
-        type: 'contract',
+        type: AliasType.Contract,
         network: 'testnet',
         entityId: MOCK_CONTRACT_ID,
         evmAddress: MOCK_EVM_ADDRESS,

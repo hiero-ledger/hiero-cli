@@ -3,6 +3,7 @@ import type { TransactionResult } from '@/core/services/tx-execution/tx-executio
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, StateError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
@@ -71,7 +72,7 @@ describe('createTokenHandler', () => {
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
             // Mock account alias resolution
-            if (type === 'account' && alias === 'treasury-account') {
+            if (type === AliasType.Account && alias === 'treasury-account') {
               return {
                 entityId: '0.0.123456',
                 publicKey: '302a300506032b6570032100' + '1'.repeat(64),
@@ -79,7 +80,7 @@ describe('createTokenHandler', () => {
               };
             }
             // Mock account alias resolution for admin-key
-            if (type === 'account' && alias === 'test-admin-key') {
+            if (type === AliasType.Account && alias === 'test-admin-key') {
               return {
                 entityId: '0.0.100000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),
@@ -338,7 +339,7 @@ describe('createTokenHandler', () => {
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
             // Mock account alias resolution
-            if (type === 'account' && alias === 'treasury-account') {
+            if (type === AliasType.Account && alias === 'treasury-account') {
               return {
                 entityId: '0.0.123456',
                 publicKey: '302a300506032b6570032100' + '1'.repeat(64),
@@ -346,7 +347,7 @@ describe('createTokenHandler', () => {
               };
             }
             // Mock account alias resolution for admin-key
-            if (type === 'account' && alias === 'test-admin-key') {
+            if (type === AliasType.Account && alias === 'test-admin-key') {
               return {
                 entityId: '0.0.100000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),

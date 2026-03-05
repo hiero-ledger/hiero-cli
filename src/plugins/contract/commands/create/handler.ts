@@ -8,6 +8,7 @@ import { ContractId, PublicKey } from '@hashgraph/sdk';
 import path from 'path';
 
 import { StateError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { ContractCreateSchema } from '@/plugins/contract/commands/create/input';
@@ -144,7 +145,7 @@ export async function createContract(
   if (alias) {
     api.alias.register({
       alias,
-      type: 'contract',
+      type: AliasType.Contract,
       network: network,
       entityId: contractCreateFlowResult.contractId,
       createdAt: contractCreateFlowResult.consensusTimestamp,

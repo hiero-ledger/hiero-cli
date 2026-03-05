@@ -5,7 +5,7 @@ import type {
 } from '@/core/services/identity-resolution/types';
 
 import { StateError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { IdentityResolutionServiceImpl } from '@/core/services/identity-resolution/identity-resolution-service';
 import {
   EntityReferenceType,
@@ -70,7 +70,7 @@ describe('IdentityResolutionServiceImpl', () => {
 
       expect(aliasService.resolveOrThrow).toHaveBeenCalledWith(
         'alice',
-        ALIAS_TYPE.Account,
+        AliasType.Account,
         SupportedNetwork.TESTNET,
       );
       expect(mirrorService.getAccount).toHaveBeenCalledWith('0.0.1234');
@@ -150,7 +150,7 @@ describe('IdentityResolutionServiceImpl', () => {
 
       expect(aliasService.resolveOrThrow).toHaveBeenCalledWith(
         'my-contract',
-        ALIAS_TYPE.Contract,
+        AliasType.Contract,
         SupportedNetwork.TESTNET,
       );
       expect(mirrorService.getContractInfo).toHaveBeenCalledWith('0.0.4321');
@@ -215,12 +215,12 @@ describe('IdentityResolutionServiceImpl', () => {
         entityReference: 'some-alias',
         referenceType: EntityReferenceType.ALIAS,
         network: SupportedNetwork.TESTNET,
-        aliasType: ALIAS_TYPE.Account,
+        aliasType: AliasType.Account,
       });
 
       expect(aliasService.resolveOrThrow).toHaveBeenCalledWith(
         'some-alias',
-        ALIAS_TYPE.Account,
+        AliasType.Account,
         SupportedNetwork.TESTNET,
       );
       expect(result).toEqual({ entityIdOrEvmAddress: '0.0.1357' });
@@ -236,7 +236,7 @@ describe('IdentityResolutionServiceImpl', () => {
           entityReference: 'broken-alias',
           referenceType: EntityReferenceType.ALIAS,
           network: SupportedNetwork.TESTNET,
-          aliasType: ALIAS_TYPE.Account,
+          aliasType: AliasType.Account,
         });
       }).toThrow(StateError);
     });
@@ -246,7 +246,7 @@ describe('IdentityResolutionServiceImpl', () => {
         entityReference: '0.0.2468',
         referenceType: EntityReferenceType.ENTITY_ID,
         network: SupportedNetwork.TESTNET,
-        aliasType: ALIAS_TYPE.Account,
+        aliasType: AliasType.Account,
       });
 
       expect(aliasService.resolveOrThrow).not.toHaveBeenCalled();

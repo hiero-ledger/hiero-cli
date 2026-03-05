@@ -10,7 +10,7 @@ import {
 } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   makeAliasServiceMock,
@@ -108,7 +108,7 @@ describe('contract plugin - delete command', () => {
     const alias = makeAliasServiceMock();
     alias.resolve.mockReturnValue({
       alias: 'my-contract',
-      type: ALIAS_TYPE.Contract,
+      type: AliasType.Contract,
       network: SupportedNetwork.TESTNET,
       entityId: MOCK_CONTRACT_ID,
       createdAt: '2024-01-01T00:00:00.000Z',
@@ -134,7 +134,7 @@ describe('contract plugin - delete command', () => {
 
     expect(alias.resolve).toHaveBeenCalledWith(
       'my-contract',
-      ALIAS_TYPE.Contract,
+      AliasType.Contract,
       SupportedNetwork.TESTNET,
     );
     expect(deleteContractMock).toHaveBeenCalledWith(MOCK_CONTRACT_ID);
@@ -192,7 +192,7 @@ describe('contract plugin - delete command', () => {
     const alias = makeAliasServiceMock();
     alias.resolve.mockReturnValue({
       alias: 'my-contract',
-      type: ALIAS_TYPE.Contract,
+      type: AliasType.Contract,
       network: SupportedNetwork.TESTNET,
       entityId: MOCK_CONTRACT_ID,
       createdAt: '2024-01-01T00:00:00.000Z',

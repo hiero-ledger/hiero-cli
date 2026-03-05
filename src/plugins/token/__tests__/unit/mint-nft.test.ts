@@ -6,6 +6,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
@@ -133,7 +134,7 @@ describe('mintNftHandler', () => {
         alias: {
           resolve: jest.fn().mockReturnValue({
             entityId: '0.0.123456',
-            type: 'token',
+            type: AliasType.Token,
             network: 'testnet',
             createdAt: '2024-01-01T00:00:00.000Z',
           }),
@@ -169,7 +170,7 @@ describe('mintNftHandler', () => {
       expect(output.tokenId).toBe('0.0.123456');
       expect(api.alias.resolve).toHaveBeenCalledWith(
         'my-nft-collection',
-        'token',
+        AliasType.Token,
         'testnet',
       );
     });

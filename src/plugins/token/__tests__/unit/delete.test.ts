@@ -5,6 +5,7 @@ import '@/core/utils/json-serialize';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupportedNetwork } from '@/core';
 import { NotFoundError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import {
   deleteToken,
   DeleteTokenOutputSchema,
@@ -48,7 +49,7 @@ describe('deleteTokenHandler', () => {
             {
               alias: 'my-token',
               entityId: '0.0.123456',
-              type: 'token',
+              type: AliasType.Token,
               network: 'testnet',
               createdAt: '2024-01-01T00:00:00.000Z',
             },

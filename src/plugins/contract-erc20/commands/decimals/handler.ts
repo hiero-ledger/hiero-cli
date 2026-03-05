@@ -7,7 +7,7 @@ import type { ContractErc20CallDecimalsOutput } from '@/plugins/contract-erc20/c
 import { Interface } from 'ethers';
 
 import { StateError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ContractErc20CallDecimalsInputSchema } from '@/plugins/contract-erc20/commands/decimals/input';
 import { ContractErc20CallDecimalsResultSchema } from '@/plugins/contract-erc20/commands/decimals/result';
 import { ERC20_ABI } from '@/plugins/contract-erc20/shared/erc20-abi';
@@ -28,7 +28,7 @@ export async function decimalsFunctionCall(
       entityReference: contractRef.value,
       referenceType: contractRef.type,
       network,
-      aliasType: ALIAS_TYPE.Contract,
+      aliasType: AliasType.Contract,
     }).entityIdOrEvmAddress;
 
   const result = await api.contractQuery.queryContractFunction({

@@ -12,6 +12,7 @@ import {
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, SupportedNetwork } from '@/core';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { CreateAccountOutputSchema } from '@/plugins/account/commands/create';
 import { createAccount } from '@/plugins/account/commands/create/handler';
@@ -82,7 +83,7 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
         alias: 'myAccount',
-        type: 'account',
+        type: AliasType.Account,
         network: 'testnet',
         entityId: '0.0.9999',
         publicKey: 'pub-key-test',

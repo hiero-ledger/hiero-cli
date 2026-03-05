@@ -22,7 +22,7 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import type { KeyResolverService } from './key-resolver-service.interface';
 
 import { NotFoundError, StateError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
 
 export class KeyResolverServiceImpl implements KeyResolverService {
@@ -395,7 +395,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
     const account = this.alias.resolve(
       aliasCredential.alias,
-      ALIAS_TYPE.Account,
+      AliasType.Account,
       currentNetwork,
     );
 

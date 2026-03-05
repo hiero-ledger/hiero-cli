@@ -8,6 +8,7 @@ import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import BigNumber from 'bignumber.js';
 
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { normalizeBalance } from '@/core/utils/normalize-balance';
 
 /**
@@ -52,7 +53,11 @@ export async function fetchAccountTokenBalances(
   return Promise.all(
     tokenBalances.tokens.map(async (token: TokenBalanceInfo) => {
       const balanceRaw = BigInt(token.balance.toString());
-      const alias = api.alias.resolve(token.token_id, 'token', network)?.alias;
+      const alias = api.alias.resolve(
+        token.token_id,
+        AliasType.Token,
+        network,
+      )?.alias;
 
       let name: string | undefined;
       let symbol: string | undefined;

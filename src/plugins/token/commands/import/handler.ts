@@ -3,6 +3,7 @@ import type { TokenData } from '@/plugins/token/schema';
 import type { ImportTokenOutput } from './output';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { MirrorTokenTypeToHederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
@@ -46,7 +47,7 @@ export async function importToken(
   if (alias) {
     api.alias.register({
       alias,
-      type: 'token',
+      type: AliasType.Token,
       network,
       entityId: tokenId,
       createdAt: new Date().toISOString(),

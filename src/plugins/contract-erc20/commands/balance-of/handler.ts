@@ -7,7 +7,7 @@ import type { ContractErc20CallBalanceOfOutput } from '@/plugins/contract-erc20/
 import { Interface } from 'ethers';
 
 import { NotFoundError, StateError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { EntityReferenceType } from '@/core/types/shared.types';
 import { ContractErc20CallBalanceOfInputSchema } from '@/plugins/contract-erc20/commands/balance-of/input';
 import { ContractErc20CallBalanceOfResultSchema } from '@/plugins/contract-erc20/commands/balance-of/result';
@@ -30,7 +30,7 @@ export async function balanceOfFunctionCall(
       entityReference: contractRef.value,
       referenceType: contractRef.type,
       network,
-      aliasType: ALIAS_TYPE.Contract,
+      aliasType: AliasType.Contract,
     }).entityIdOrEvmAddress;
 
   const accountEvmAddress =

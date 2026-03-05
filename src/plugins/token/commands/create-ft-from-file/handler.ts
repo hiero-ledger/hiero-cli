@@ -7,6 +7,7 @@ import type { CreateFungibleTokenFromFileOutput } from './output';
 import { PublicKey } from '@hashgraph/sdk';
 
 import { StateError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { CustomFeeType } from '@/core/types/token.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
@@ -185,7 +186,7 @@ export async function createTokenFromFile(
 
   api.alias.register({
     alias: tokenDefinition.name,
-    type: 'token',
+    type: AliasType.Token,
     network,
     entityId: result.tokenId,
     createdAt: result.consensusTimestamp,

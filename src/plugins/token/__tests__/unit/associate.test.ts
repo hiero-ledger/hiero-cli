@@ -7,7 +7,9 @@ import {
 } from '@hashgraph/sdk';
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
+import { SupportedNetwork } from '@/core';
 import { InternalError, TransactionError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
   associateToken,
@@ -207,7 +209,11 @@ describe('associateTokenHandler', () => {
       expect(output.associated).toBe(true);
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
 
-      expect(alias.resolve).toHaveBeenCalledWith('alice', 'account', 'testnet');
+      expect(alias.resolve).toHaveBeenCalledWith(
+        'alice',
+        AliasType.Account,
+        SupportedNetwork.TESTNET,
+      );
       expect(
         tokenTransactions.createTokenAssociationTransaction,
       ).toHaveBeenCalledWith({

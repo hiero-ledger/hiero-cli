@@ -9,7 +9,7 @@ import type { AccountData } from '@/plugins/account/schema';
 import type { CreateAccountOutput } from './output';
 
 import { StateError, TransactionError, ValidationError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HBAR_DECIMALS, KeyAlgorithm } from '@/core/shared/constants';
 import { composeKey } from '@/core/utils/key-composer';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
@@ -105,7 +105,7 @@ export async function createAccount(
   if (alias) {
     api.alias.register({
       alias,
-      type: ALIAS_TYPE.Account,
+      type: AliasType.Account,
       network,
       entityId: result.accountId,
       evmAddress,

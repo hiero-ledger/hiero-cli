@@ -3,6 +3,7 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import '@/core/utils/json-serialize';
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupplyType } from '@/core/types/shared.types';
 import {
   associateToken,
@@ -123,24 +124,26 @@ describe('Handler Output Validation - Token Plugin', () => {
         alias: {
           resolve: jest
             .fn()
-            .mockImplementation((alias: string, type: string) => {
-              if (
-                type === 'account' &&
-                (alias === '0.0.111' || alias === '0.0.222')
-              ) {
-                return {
-                  entityId: alias,
-                  keyRefId: `key-ref-${alias}`,
-                  alias,
-                };
-              }
-              if (type === 'token' && alias === '0.0.12345') {
-                return {
-                  entityId: alias,
-                };
-              }
-              return null;
-            }),
+            .mockImplementation(
+              (alias: string, type: AliasType | undefined) => {
+                if (
+                  type === AliasType.Account &&
+                  (alias === '0.0.111' || alias === '0.0.222')
+                ) {
+                  return {
+                    entityId: alias,
+                    keyRefId: `key-ref-${alias}`,
+                    alias,
+                  };
+                }
+                if (type === AliasType.Token && alias === '0.0.12345') {
+                  return {
+                    entityId: alias,
+                  };
+                }
+                return null;
+              },
+            ),
         },
         kms: {
           get: jest.fn().mockReturnValue({

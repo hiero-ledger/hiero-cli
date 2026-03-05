@@ -4,7 +4,7 @@ import type { ContractErc721CallNameOutput } from '@/plugins/contract-erc721/com
 import { Interface } from 'ethers';
 
 import { StateError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ContractErc721CallNameInputSchema } from '@/plugins/contract-erc721/commands/name/input';
 import { ContractErc721CallNameResultSchema } from '@/plugins/contract-erc721/commands/name/result';
 import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';
@@ -25,7 +25,7 @@ export async function nameFunctionCall(
       entityReference: contractRef.value,
       referenceType: contractRef.type,
       network,
-      aliasType: ALIAS_TYPE.Contract,
+      aliasType: AliasType.Contract,
     }).entityIdOrEvmAddress;
 
   const result = await api.contractQuery.queryContractFunction({

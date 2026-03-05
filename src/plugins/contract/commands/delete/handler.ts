@@ -3,7 +3,7 @@ import type { DeleteContractOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
@@ -30,7 +30,7 @@ export async function deleteContract(
   } else {
     const aliasRecord = api.alias.resolve(
       contractRef,
-      ALIAS_TYPE.Contract,
+      AliasType.Contract,
       currentNetwork,
     );
     if (!aliasRecord?.entityId) {

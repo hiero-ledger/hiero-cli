@@ -5,7 +5,8 @@ import '@/core/utils/json-serialize';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { NetworkError } from '@/core';
+import { NetworkError, SupportedNetwork } from '@/core';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
   TransferFungibleTokenOutputSchema,
@@ -153,7 +154,11 @@ describe('transferTokenHandler', () => {
       expect(output.amount).toBe(100000000n);
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
 
-      expect(alias.resolve).toHaveBeenCalledWith('alice', 'account', 'testnet');
+      expect(alias.resolve).toHaveBeenCalledWith(
+        'alice',
+        AliasType.Account,
+        'testnet',
+      );
       expect(tokens.createTransferTransaction).toHaveBeenCalledWith({
         tokenId: '0.0.123456',
         fromAccountId: '0.0.345678',
@@ -228,7 +233,11 @@ describe('transferTokenHandler', () => {
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.to).toBe('0.0.789012');
 
-      expect(alias.resolve).toHaveBeenCalledWith('bob', 'account', 'testnet');
+      expect(alias.resolve).toHaveBeenCalledWith(
+        'bob',
+        AliasType.Account,
+        SupportedNetwork.TESTNET,
+      );
       expect(tokens.createTransferTransaction).toHaveBeenCalledWith({
         tokenId: '0.0.123456',
         fromAccountId: '0.0.345678',

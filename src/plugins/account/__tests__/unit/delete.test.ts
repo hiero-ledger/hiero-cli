@@ -4,7 +4,7 @@ import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import { makeAliasMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { DeleteAccountOutputSchema } from '@/plugins/account/commands/delete';
 import { deleteAccount } from '@/plugins/account/commands/delete/handler';
@@ -243,7 +243,7 @@ describe('account plugin - delete command (ADR-003)', () => {
 
     expect(alias.list).toHaveBeenCalledWith({
       network: SupportedNetwork.TESTNET,
-      type: ALIAS_TYPE.Account,
+      type: AliasType.Account,
     });
 
     expect(alias.remove).toHaveBeenCalledTimes(1);

@@ -6,6 +6,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { CustomFeeType, FixedFeeUnitType } from '@/core/types/token.types';
@@ -970,7 +971,7 @@ export const mockDeleteAliasRecords = {
     {
       alias: 'my-token-alias',
       entityId: '0.0.4444',
-      type: 'token' as const,
+      type: AliasType.Token,
       network: SupportedNetwork.TESTNET,
     },
   ],
@@ -978,13 +979,13 @@ export const mockDeleteAliasRecords = {
     {
       alias: 'my-token-alias',
       entityId: '0.0.4444',
-      type: 'token' as const,
+      type: AliasType.Token,
       network: SupportedNetwork.TESTNET,
     },
     {
       alias: 'other-token-alias',
       entityId: '0.0.5555',
-      type: 'token' as const,
+      type: AliasType.Token,
       network: SupportedNetwork.TESTNET,
     },
   ],

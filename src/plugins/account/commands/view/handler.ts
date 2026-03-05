@@ -8,7 +8,7 @@ import type { ViewAccountOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 
 import { ViewAccountInputSchema } from './input';
 
@@ -31,7 +31,7 @@ export async function viewAccount(
   const network = args.api.network.getCurrentNetwork();
   const account = args.api.alias.resolve(
     accountIdOrNameOrAlias,
-    ALIAS_TYPE.Account,
+    AliasType.Account,
     network,
   );
   if (account && account.entityId) {

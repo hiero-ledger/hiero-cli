@@ -6,7 +6,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { ClearAccountsOutput } from './output';
 
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 export async function clearAccounts(
@@ -21,7 +21,7 @@ export async function clearAccounts(
   const accounts = accountState.listAccounts();
   const count = accounts.length;
 
-  api.alias.clear(ALIAS_TYPE.Account);
+  api.alias.clear(AliasType.Account);
 
   accountState.clearAccounts();
 

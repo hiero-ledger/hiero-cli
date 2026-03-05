@@ -3,7 +3,7 @@ import type { DeleteTopicOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -29,7 +29,7 @@ export async function deleteTopic(
   } else {
     const topicAlias = api.alias.resolveOrThrow(
       topicRef,
-      ALIAS_TYPE.Topic,
+      AliasType.Topic,
       network,
     );
     if (!topicAlias.entityId) {
@@ -45,7 +45,7 @@ export async function deleteTopic(
   }
 
   const aliasesForTopic = api.alias
-    .list({ network, type: ALIAS_TYPE.Topic })
+    .list({ network, type: AliasType.Topic })
     .filter((rec) => rec.entityId === topicToDelete.topicId);
 
   const removedAliases: string[] = [];

@@ -32,7 +32,7 @@ import type {
 } from '@/core/services/tx-execution/tx-execution-service.interface';
 
 import { StateError, ValidationError } from '@/core';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import {
   type Credential,
   CredentialType,
@@ -156,7 +156,7 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
   register: jest.fn(),
   resolve: jest.fn().mockImplementation((alias, type) => {
     // Domyślnie zwracaj dane dla typowych aliasów używanych w testach
-    if (type === 'account') {
+    if (type === AliasType.Account) {
       const accountAliases: Record<string, AccountAlias> = {
         'admin-key': {
           entityId: '0.0.100000',
@@ -216,7 +216,7 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
   resolveOrThrow: jest.fn().mockReturnValue({
     entityId: '0.0.1234',
     alias: 'default',
-    type: 'contract',
+    type: AliasType.Contract,
     network: 'testnet',
     createdAt: '2024-01-01T00:00:00.000Z',
   }),
@@ -230,7 +230,7 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
 
 export const mockTopicAliasRecord: AliasRecord = {
   alias: 'topic-alias-testnet',
-  type: ALIAS_TYPE.Topic,
+  type: AliasType.Topic,
   network: SupportedNetwork.TESTNET,
   entityId: MOCK_TOPIC_ID,
   createdAt: '2024-01-01T00:00:00.000Z',
@@ -624,7 +624,7 @@ export const makeKeyResolverMock = (
         options.network?.getCurrentNetwork() || SupportedNetwork.TESTNET;
       const resolved = options.alias.resolve(
         credential.alias,
-        'account',
+        AliasType.Account,
         network,
       );
       if (!resolved)

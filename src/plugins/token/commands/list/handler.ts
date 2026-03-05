@@ -1,6 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { ListTokensOutput } from './output';
 
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { ListTokenInputSchema } from './input';
@@ -30,7 +31,7 @@ export async function listTokens(
   const tokensList = tokens.map((token) => {
     const alias = api.alias.resolve(
       token.tokenId,
-      'token',
+      AliasType.Token,
       token.network,
     )?.alias;
 
