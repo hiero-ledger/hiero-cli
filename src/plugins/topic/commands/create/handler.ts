@@ -42,14 +42,14 @@ export async function createTopic(
 
   const adminKey =
     adminKeyArg &&
-    (await api.keyResolver.getOrInitKey(adminKeyArg, keyManager, [
+    (await api.keyResolver.resolveSigningKey(adminKeyArg, keyManager, [
       'topic:admin',
       `topic:${name}`,
     ]));
 
   const submitKey =
     submitKeyArg &&
-    (await api.keyResolver.getOrInitKey(submitKeyArg, keyManager, [
+    (await api.keyResolver.getPublicKey(submitKeyArg, keyManager, [
       'topic:submit',
       `topic:${name}`,
     ]));

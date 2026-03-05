@@ -142,7 +142,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      api.keyResolver.getOrInitKey = jest.fn().mockResolvedValue({
+      api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
         accountId: '0.0.200000',
         publicKey: 'supply-public-key',
         keyRefId: 'supply-key-ref-id',
@@ -387,7 +387,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      api.keyResolver.getOrInitKey = jest.fn().mockResolvedValue({
+      api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
         accountId: '0.0.200000',
         publicKey: providedSupplyKeyPublicKey,
         keyRefId: 'supply-key-ref-id',

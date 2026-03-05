@@ -1,5 +1,5 @@
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
-import type { ResolvedKey } from '@/core/services/key-resolver/types';
+import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type {
   Credential,
   KeyManagerName,
@@ -12,16 +12,16 @@ export async function resolveOptionalKey(
   keyManager: KeyManagerName,
   keyResolver: KeyResolverService,
   tag: string,
-): Promise<ResolvedKey | undefined> {
+): Promise<ResolvedPublicKey | undefined> {
   if (!credential) {
     return undefined;
   }
 
-  return keyResolver.getOrInitKey(credential, keyManager, [tag]);
+  return keyResolver.getPublicKey(credential, keyManager, [tag]);
 }
 
 export function toPublicKey(
-  key: ResolvedKey | undefined,
+  key: ResolvedPublicKey | undefined,
 ): PublicKey | undefined {
   return key ? PublicKey.fromString(key.publicKey) : undefined;
 }

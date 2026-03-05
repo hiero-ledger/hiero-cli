@@ -4,7 +4,6 @@ import type { AssociateTokenOutput } from './output';
 
 import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
 
-import { StateError } from '@/core';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { saveAssociationToState } from '@/plugins/token/utils/token-associations';
@@ -53,16 +52,11 @@ export async function associateToken(
 
   const tokenId = resolvedToken.tokenId;
 
-  const account = await api.keyResolver.getOrInitKey(
+  const account = await api.keyResolver.resolveAccountCredentials(
     accountReference,
     keyManager,
     ['token:associate'],
   );
-  if (!account.accountId) {
-    throw new StateError(
-      `Could not resolve account ID for passed "account" argument for type ${validArgs.account?.type} from value ${validArgs.account?.rawValue}`,
-    );
-  }
 
   logger.info(`🔑 Using account: ${account.accountId}`);
   logger.info(`🔑 Will sign with account key`);

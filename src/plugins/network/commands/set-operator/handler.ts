@@ -34,15 +34,11 @@ export async function setOperatorHandler(
     );
   }
 
-  const operator = await api.keyResolver.getOrInitKey(operatorArg, keyManager, [
-    'network:operator',
-    `network:${targetNetwork}`,
-  ]);
-  if (!operator.accountId) {
-    throw new ValidationError(
-      `Could not resolve account ID for passed "operator" argument ${validArgs.operator?.type} from value ${validArgs.operator?.rawValue}`,
-    );
-  }
+  const operator = await api.keyResolver.resolveAccountCredentials(
+    operatorArg,
+    keyManager,
+    ['network:operator', `network:${targetNetwork}`],
+  );
 
   const existingOperator = api.network.getOperator(targetNetwork);
   if (existingOperator) {
