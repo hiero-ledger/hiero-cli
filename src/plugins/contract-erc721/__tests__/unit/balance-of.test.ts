@@ -1,5 +1,4 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc721CallBalanceOfOutput } from '@/plugins/contract-erc721/commands/balance-of/output';
 
 import { ZodError } from 'zod';
 
@@ -10,6 +9,7 @@ import {
   MOCK_EVM_ADDRESS_RAW,
 } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
@@ -17,7 +17,10 @@ import {
   MOCK_CONTRACT_ID_ALT,
 } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { balanceOfFunctionCall } from '@/plugins/contract-erc721/commands/balance-of/handler';
+import {
+  balanceOfFunctionCall,
+  ContractErc721CallBalanceOfOutputSchema,
+} from '@/plugins/contract-erc721/commands/balance-of';
 import { ContractErc721CallBalanceOfInputSchema } from '@/plugins/contract-erc721/commands/balance-of/input';
 
 jest.mock('@hashgraph/sdk', () => ({
@@ -78,7 +81,10 @@ describe('contract-erc721 plugin - balanceOf command (unit)', () => {
     const result = await balanceOfFunctionCall(args);
 
     expect(result.result).toBeDefined();
-    const output = result.result as ContractErc721CallBalanceOfOutput;
+    const output = assertOutput(
+      result.result,
+      ContractErc721CallBalanceOfOutputSchema,
+    );
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.owner).toBe(MOCK_EVM_ADDRESS);
     expect(output.balance).toBe('5000000000000000000');
@@ -122,7 +128,10 @@ describe('contract-erc721 plugin - balanceOf command (unit)', () => {
     const result = await balanceOfFunctionCall(args);
 
     expect(result.result).toBeDefined();
-    const output = result.result as ContractErc721CallBalanceOfOutput;
+    const output = assertOutput(
+      result.result,
+      ContractErc721CallBalanceOfOutputSchema,
+    );
     expect(output.owner).toBe(MOCK_EVM_ADDRESS);
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(
       expect.objectContaining({

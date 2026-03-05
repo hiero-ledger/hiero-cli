@@ -1,14 +1,14 @@
 /**
  * Unit tests for plugin-management disable command
  */
-import type { DisablePluginOutput } from '@/plugins/plugin-management/commands/disable/output';
-
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, StateError } from '@/core/errors';
 import {
   PluginManagementDisableStatus,
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
+import { DisablePluginOutputSchema } from '@/plugins/plugin-management/commands/disable';
 import { disablePlugin } from '@/plugins/plugin-management/commands/disable/handler';
 
 describe('plugin-management disable command', () => {
@@ -30,7 +30,7 @@ describe('plugin-management disable command', () => {
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
     const result = await disablePlugin(args);
-    const output = result.result as DisablePluginOutput;
+    const output = assertOutput(result.result, DisablePluginOutputSchema);
 
     expect(output).toBeDefined();
     expect(output.name).toBe('custom-plugin');

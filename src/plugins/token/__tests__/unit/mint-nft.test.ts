@@ -1,5 +1,6 @@
 import '@/core/utils/json-serialize';
 
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
   TransactionError,
@@ -7,7 +8,10 @@ import {
 } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { mintNft, type MintNftOutput } from '@/plugins/token/commands/mint-nft';
+import {
+  mintNft,
+  MintNftOutputSchema,
+} from '@/plugins/token/commands/mint-nft';
 import { TOKEN_NAMESPACE } from '@/plugins/token/manifest';
 
 import { makeMintNftCommandArgs } from './helpers/fixtures';
@@ -39,7 +43,7 @@ describe('mintNftHandler', () => {
 
       const result = await mintNft(args);
 
-      const output = result.result as MintNftOutput;
+      const output = assertOutput(result.result, MintNftOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
       expect(output.serialNumber).toBe('1');
@@ -81,7 +85,7 @@ describe('mintNftHandler', () => {
 
       const result = await mintNft(args);
 
-      const output = result.result as MintNftOutput;
+      const output = assertOutput(result.result, MintNftOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.serialNumber).toBe('1');
 
@@ -161,7 +165,7 @@ describe('mintNftHandler', () => {
 
       const result = await mintNft(args);
 
-      const output = result.result as MintNftOutput;
+      const output = assertOutput(result.result, MintNftOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(api.alias.resolve).toHaveBeenCalledWith(
         'my-nft-collection',

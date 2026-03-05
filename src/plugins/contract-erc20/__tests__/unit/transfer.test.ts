@@ -1,12 +1,13 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc20CallTransferOutput } from '@/plugins/contract-erc20/commands/transfer';
 
 import { ZodError } from 'zod';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { makeContractErc20ExecuteCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
+import { ContractErc20CallTransferOutputSchema } from '@/plugins/contract-erc20/commands/transfer';
 import { transferFunctionCall as erc20TransferHandler } from '@/plugins/contract-erc20/commands/transfer/handler';
 import { ContractErc20CallTransferInputSchema } from '@/plugins/contract-erc20/commands/transfer/input';
 
@@ -84,7 +85,10 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
 
     expect(result.result).toBeDefined();
 
-    const parsed = result.result as ContractErc20CallTransferOutput;
+    const parsed = assertOutput(
+      result.result,
+      ContractErc20CallTransferOutputSchema,
+    );
 
     expect(parsed.contractId).toBe(CONTRACT_ID);
     expect(parsed.network).toBe('testnet');

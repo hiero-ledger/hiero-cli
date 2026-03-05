@@ -1,5 +1,4 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc721CallMintOutput } from '@/plugins/contract-erc721/commands/mint/output';
 
 import { ZodError } from 'zod';
 
@@ -11,6 +10,7 @@ import {
   MOCK_TX_ID,
 } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
@@ -19,7 +19,10 @@ import {
   MOCK_CONTRACT_ID_ALT,
 } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { mintFunctionCall } from '@/plugins/contract-erc721/commands/mint/handler';
+import {
+  ContractErc721CallMintOutputSchema,
+  mintFunctionCall,
+} from '@/plugins/contract-erc721/commands/mint';
 import { ContractErc721CallMintInputSchema } from '@/plugins/contract-erc721/commands/mint/input';
 
 const mockAddAddress = jest.fn().mockReturnThis();
@@ -90,7 +93,10 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
     const result = await mintFunctionCall(args);
 
     expect(result.result).toBeDefined();
-    const output = result.result as ContractErc721CallMintOutput;
+    const output = assertOutput(
+      result.result,
+      ContractErc721CallMintOutputSchema,
+    );
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.transactionId).toBe(MOCK_TX_ID);

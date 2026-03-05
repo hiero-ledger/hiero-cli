@@ -1,6 +1,5 @@
 import type { CoreApi, TransactionResult } from '@/core';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
-import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
 
 import { ED25519_DER_PRIVATE_KEY } from '@/__tests__/mocks/fixtures';
 import {
@@ -10,9 +9,11 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, SupportedNetwork } from '@/core';
 import { TransactionError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { CreateTopicOutputSchema } from '@/plugins/topic/commands/create';
 import { createTopic } from '@/plugins/topic/commands/create/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -95,9 +96,10 @@ describe('topic plugin - create command', () => {
           transaction: {},
         }),
         signAndExecuteImpl: jest.fn().mockResolvedValue({
-          transactionId: 'tx-123',
+          transactionId: '0.0.100000@1700000000.000000000',
           success: true,
           topicId: '0.0.9999',
+          consensusTimestamp: '2024-01-01T00:00:00.000Z',
           receipt: { status: { status: 'success' } },
         } as TransactionResult),
       });
@@ -117,11 +119,11 @@ describe('topic plugin - create command', () => {
 
     const result = await createTopic(args);
 
-    const output = result.result as CreateTopicOutput;
+    const output = assertOutput(result.result, CreateTopicOutputSchema);
     expect(output.topicId).toBe('0.0.9999');
     expect(output.memo).toBe('Test topic memo');
     expect(output.network).toBe('testnet');
-    expect(output.transactionId).toBe('tx-123');
+    expect(output.transactionId).toBe('0.0.100000@1700000000.000000000');
 
     expect(topicTransactions.createTopic).toHaveBeenCalledWith({
       memo: 'Test topic memo',
@@ -154,9 +156,10 @@ describe('topic plugin - create command', () => {
           transaction: {},
         }),
         signAndExecuteWithImpl: jest.fn().mockResolvedValue({
-          transactionId: 'tx-456',
+          transactionId: '0.0.100000@1700000000.000000001',
           success: true,
           topicId: '0.0.8888',
+          consensusTimestamp: '2024-01-01T00:00:00.000Z',
           receipt: { status: { status: 'success' } },
         } as TransactionResult),
       });
@@ -178,7 +181,7 @@ describe('topic plugin - create command', () => {
 
     const result = await createTopic(args);
 
-    const output = result.result as CreateTopicOutput;
+    const output = assertOutput(result.result, CreateTopicOutputSchema);
     expect(output.topicId).toBe('0.0.8888');
     expect(output.adminKeyPresent).toBe(true);
     expect(output.submitKeyPresent).toBe(true);
@@ -224,9 +227,10 @@ describe('topic plugin - create command', () => {
           transaction: {},
         }),
         signAndExecuteImpl: jest.fn().mockResolvedValue({
-          transactionId: 'tx-789',
+          transactionId: '0.0.100000@1700000000.000000002',
           success: true,
           topicId: '0.0.7777',
+          consensusTimestamp: '2024-01-01T00:00:00.000Z',
           receipt: { status: { status: 'success' } },
         } as TransactionResult),
       });
@@ -244,7 +248,7 @@ describe('topic plugin - create command', () => {
 
     const result = await createTopic(args);
 
-    const output = result.result as CreateTopicOutput;
+    const output = assertOutput(result.result, CreateTopicOutputSchema);
     expect(output.topicId).toBe('0.0.7777');
     expect(output.memo).toBeUndefined();
 

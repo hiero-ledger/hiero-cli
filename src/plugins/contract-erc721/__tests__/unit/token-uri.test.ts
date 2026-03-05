@@ -1,15 +1,18 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc721CallTokenUriOutput } from '@/plugins/contract-erc721/commands/token-uri/output';
 
 import { ZodError } from 'zod';
 
 import { MOCK_CONTRACT_ID } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { makeContractErc721CallCommandArgs } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { tokenUriFunctionCall } from '@/plugins/contract-erc721/commands/token-uri/handler';
+import {
+  ContractErc721CallTokenUriOutputSchema,
+  tokenUriFunctionCall,
+} from '@/plugins/contract-erc721/commands/token-uri';
 import { ContractErc721CallTokenUriInputSchema } from '@/plugins/contract-erc721/commands/token-uri/input';
 
 const mockTokenUri = 'https://example.com/metadata/1';
@@ -69,7 +72,10 @@ describe('contract-erc721 plugin - tokenURI command (unit)', () => {
     const result = await tokenUriFunctionCall(args);
 
     expect(result.result).toBeDefined();
-    const output = result.result as ContractErc721CallTokenUriOutput;
+    const output = assertOutput(
+      result.result,
+      ContractErc721CallTokenUriOutputSchema,
+    );
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.tokenId).toBe(tokenId);
     expect(output.tokenURI).toBe(mockTokenUri);

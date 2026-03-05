@@ -69,13 +69,13 @@ export const mockTokenBalances = {
  */
 export const mockTransactionResults = {
   success: {
-    transactionId: 'tx-123',
+    transactionId: '0.0.1234@1234567890.000000000',
     success: true,
     accountId: '0.0.9999',
     receipt: { status: { status: 'success' } },
   },
   failure: {
-    transactionId: 'tx-456',
+    transactionId: '0.0.1234@1234567890.000000001',
     success: false,
     receipt: { status: { status: 'failed' } },
   },

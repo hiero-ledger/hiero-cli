@@ -1,5 +1,4 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc721CallIsApprovedForAllOutput } from '@/plugins/contract-erc721/commands/is-approved-for-all/output';
 
 import { ZodError } from 'zod';
 
@@ -10,6 +9,7 @@ import {
   MOCK_EVM_ADDRESS_ALT,
 } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, StateError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
@@ -18,7 +18,10 @@ import {
   MOCK_ACCOUNT_ID_TO,
 } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { isApprovedForAllFunctionCall } from '@/plugins/contract-erc721/commands/is-approved-for-all/handler';
+import {
+  ContractErc721CallIsApprovedForAllOutputSchema,
+  isApprovedForAllFunctionCall,
+} from '@/plugins/contract-erc721/commands/is-approved-for-all';
 import { ContractErc721CallIsApprovedForAllInputSchema } from '@/plugins/contract-erc721/commands/is-approved-for-all/input';
 
 describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
@@ -62,7 +65,10 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
     const result = await isApprovedForAllFunctionCall(args);
 
     expect(result.result).toBeDefined();
-    const output = result.result as ContractErc721CallIsApprovedForAllOutput;
+    const output = assertOutput(
+      result.result,
+      ContractErc721CallIsApprovedForAllOutputSchema,
+    );
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.owner).toBe(MOCK_EVM_ADDRESS);
     expect(output.operator).toBe(MOCK_EVM_ADDRESS_ALT);

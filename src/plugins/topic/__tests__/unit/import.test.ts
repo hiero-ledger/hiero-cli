@@ -1,7 +1,6 @@
 import type { CoreApi } from '@/core';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
-import type { ImportTopicOutput } from '@/plugins/topic/commands/import';
 
 import {
   makeAliasMock,
@@ -11,8 +10,10 @@ import {
   makeNetworkMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { SupportedNetwork } from '@/core/types/shared.types';
+import { ImportTopicOutputSchema } from '@/plugins/topic/commands/import';
 import { importTopic } from '@/plugins/topic/commands/import/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -84,7 +85,7 @@ describe('topic plugin - import command (ADR-007)', () => {
       }),
     );
 
-    const output = result.result as ImportTopicOutput;
+    const output = assertOutput(result.result, ImportTopicOutputSchema);
     expect(output.topicId).toBe('0.0.123456');
     expect(output.name).toBe('my-topic');
     expect(output.network).toBe(SupportedNetwork.TESTNET);
@@ -137,7 +138,7 @@ describe('topic plugin - import command (ADR-007)', () => {
       }),
     );
 
-    const output = result.result as ImportTopicOutput;
+    const output = assertOutput(result.result, ImportTopicOutputSchema);
     expect(output.topicId).toBe('0.0.999999');
     expect(output.name).toBe(undefined);
   });

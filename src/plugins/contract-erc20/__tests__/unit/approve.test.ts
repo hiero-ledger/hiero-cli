@@ -1,12 +1,13 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc20CallApproveOutput } from '@/plugins/contract-erc20/commands/approve/output';
 
 import { ZodError } from 'zod';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { makeContractErc20ExecuteCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
+import { ContractErc20CallApproveOutputSchema } from '@/plugins/contract-erc20/commands/approve';
 import { approveFunctionCall as erc20ApproveHandler } from '@/plugins/contract-erc20/commands/approve/handler';
 import { ContractErc20CallApproveInputSchema } from '@/plugins/contract-erc20/commands/approve/input';
 
@@ -84,7 +85,10 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
 
     expect(result.result).toBeDefined();
 
-    const parsed = result.result as ContractErc20CallApproveOutput;
+    const parsed = assertOutput(
+      result.result,
+      ContractErc20CallApproveOutputSchema,
+    );
 
     expect(parsed.contractId).toBe(CONTRACT_ID);
     expect(parsed.network).toBe('testnet');

@@ -4,10 +4,11 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import '@/core/utils/json-serialize';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
-  type TransferFungibleTokenOutput,
+  TransferFungibleTokenOutputSchema,
   transferToken,
 } from '@/plugins/token/commands/transfer-ft';
 
@@ -63,7 +64,10 @@ describe('transferTokenHandler', () => {
 
       const result = await transferToken(args);
 
-      const output = result.result as TransferFungibleTokenOutput;
+      const output = assertOutput(
+        result.result,
+        TransferFungibleTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.from).toBe('0.0.345678');
       expect(output.to).toBe('0.0.789012');
@@ -139,7 +143,10 @@ describe('transferTokenHandler', () => {
 
       const result = await transferToken(args);
 
-      const output = result.result as TransferFungibleTokenOutput;
+      const output = assertOutput(
+        result.result,
+        TransferFungibleTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.from).toBe('0.0.345678');
       expect(output.to).toBe('0.0.789012');
@@ -214,7 +221,10 @@ describe('transferTokenHandler', () => {
 
       const result = await transferToken(args);
 
-      const output = result.result as TransferFungibleTokenOutput;
+      const output = assertOutput(
+        result.result,
+        TransferFungibleTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.to).toBe('0.0.789012');
 
@@ -312,7 +322,10 @@ describe('transferTokenHandler', () => {
 
       const result = await transferToken(args);
 
-      const output = result.result as TransferFungibleTokenOutput;
+      const output = assertOutput(
+        result.result,
+        TransferFungibleTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.to).toBe('0.0.789012');
     });
@@ -478,7 +491,10 @@ describe('transferTokenHandler', () => {
 
       const result = await transferToken(args);
 
-      const output = result.result as TransferFungibleTokenOutput;
+      const output = assertOutput(
+        result.result,
+        TransferFungibleTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.to).toBe('0.0.789012');
 
@@ -538,7 +554,10 @@ describe('transferTokenHandler', () => {
 
       const result = await transferToken(args);
 
-      const output = result.result as TransferFungibleTokenOutput;
+      const output = assertOutput(
+        result.result,
+        TransferFungibleTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.to).toBe('0.0.789012');
     });
@@ -589,7 +608,10 @@ describe('transferTokenHandler', () => {
 
       const result = await transferToken(args);
 
-      const output = result.result as TransferFungibleTokenOutput;
+      const output = assertOutput(
+        result.result,
+        TransferFungibleTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.to).toBe('0.0.345678');
 
@@ -621,7 +643,10 @@ describe('transferTokenHandler', () => {
 
       const result = await transferToken(args);
 
-      const output = result.result as TransferFungibleTokenOutput;
+      const output = assertOutput(
+        result.result,
+        TransferFungibleTokenOutputSchema,
+      );
       expect(output.amount).toBe(100500000n);
     });
   });

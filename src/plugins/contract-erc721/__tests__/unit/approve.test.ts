@@ -1,5 +1,4 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc721CallApproveOutput } from '@/plugins/contract-erc721/commands/approve/output';
 
 import { ZodError } from 'zod';
 
@@ -11,6 +10,7 @@ import {
   MOCK_TX_ID,
 } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
@@ -19,7 +19,10 @@ import {
   MOCK_CONTRACT_ID_ALT,
 } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-import { approveFunctionCall } from '@/plugins/contract-erc721/commands/approve/handler';
+import {
+  approveFunctionCall,
+  ContractErc721CallApproveOutputSchema,
+} from '@/plugins/contract-erc721/commands/approve';
 import { ContractErc721CallApproveInputSchema } from '@/plugins/contract-erc721/commands/approve/input';
 
 const mockAddAddress = jest.fn().mockReturnThis();
@@ -90,7 +93,10 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
     const result = await approveFunctionCall(args);
 
     expect(result.result).toBeDefined();
-    const output = result.result as ContractErc721CallApproveOutput;
+    const output = assertOutput(
+      result.result,
+      ContractErc721CallApproveOutputSchema,
+    );
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.transactionId).toBe(MOCK_TX_ID);

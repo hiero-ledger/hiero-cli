@@ -1,12 +1,14 @@
-import type { TransferOutput } from '@/plugins/hbar/commands/transfer/output';
-
 import '@/core/utils/json-serialize';
 
 import { ZodError } from 'zod';
 
 import { makeArgs } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError, ValidationError } from '@/core/errors';
-import { transferHandler } from '@/plugins/hbar/commands/transfer';
+import {
+  transferHandler,
+  TransferOutputSchema,
+} from '@/plugins/hbar/commands/transfer';
 import { TransferInputSchema } from '@/plugins/hbar/commands/transfer/input';
 
 import {
@@ -43,7 +45,7 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const result = await transferHandler(args);
-    const output = result.result as TransferOutput;
+    const output = assertOutput(result.result, TransferOutputSchema);
 
     expect(output.transactionId).toBe(
       mockTransactionResults.success.transactionId,
@@ -114,7 +116,7 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const result = await transferHandler(args);
-    const output = result.result as TransferOutput;
+    const output = assertOutput(result.result, TransferOutputSchema);
 
     expect(output).toBeDefined();
     expect(logger.info).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
@@ -193,7 +195,7 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const result = await transferHandler(args);
-    const output = result.result as TransferOutput;
+    const output = assertOutput(result.result, TransferOutputSchema);
 
     expect(output).toBeDefined();
 

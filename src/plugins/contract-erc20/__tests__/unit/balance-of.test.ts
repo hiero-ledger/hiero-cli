@@ -1,12 +1,13 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc20CallBalanceOfOutput } from '@/plugins/contract-erc20/commands/balance-of/output';
 
 import { ZodError } from 'zod';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
+import { ContractErc20CallBalanceOfOutputSchema } from '@/plugins/contract-erc20/commands/balance-of';
 import { balanceOfFunctionCall as erc20BalanceOfHandler } from '@/plugins/contract-erc20/commands/balance-of/handler';
 import { ContractErc20CallBalanceOfInputSchema } from '@/plugins/contract-erc20/commands/balance-of/input';
 
@@ -72,7 +73,10 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
 
     expect(result.result).toBeDefined();
 
-    const parsed = result.result as ContractErc20CallBalanceOfOutput;
+    const parsed = assertOutput(
+      result.result,
+      ContractErc20CallBalanceOfOutputSchema,
+    );
 
     expect(parsed.contractId).toBe('0.0.1234');
     expect(parsed.account).toBe(accountAddress);
@@ -119,7 +123,10 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
 
     expect(result.result).toBeDefined();
 
-    const parsed = result.result as ContractErc20CallBalanceOfOutput;
+    const parsed = assertOutput(
+      result.result,
+      ContractErc20CallBalanceOfOutputSchema,
+    );
 
     expect(parsed.account).toBe(`0x${mockSolidityAddress}`);
     expect(args.api.contractQuery.queryContractFunction).toHaveBeenCalledWith(

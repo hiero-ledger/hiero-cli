@@ -1,16 +1,17 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc20CallDecimalsOutput } from '@/plugins/contract-erc20/commands/decimals/output';
 
 import '@/core/utils/json-serialize';
 
 import { ZodError } from 'zod';
 
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import {
   makeApiMocks,
   makeLogger,
 } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
+import { ContractErc20CallDecimalsOutputSchema } from '@/plugins/contract-erc20/commands/decimals';
 import { decimalsFunctionCall as erc20DecimalsHandler } from '@/plugins/contract-erc20/commands/decimals/handler';
 import { ContractErc20CallDecimalsInputSchema } from '@/plugins/contract-erc20/commands/decimals/input';
 
@@ -43,7 +44,10 @@ describe('contract-erc20 plugin - decimals command (unit)', () => {
 
     expect(result.result).toBeDefined();
 
-    const parsed = result.result as ContractErc20CallDecimalsOutput;
+    const parsed = assertOutput(
+      result.result,
+      ContractErc20CallDecimalsOutputSchema,
+    );
 
     expect(parsed.contractId).toBe('0.0.1234');
     expect(parsed.decimals).toBe(18);

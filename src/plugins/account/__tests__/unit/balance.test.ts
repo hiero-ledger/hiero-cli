@@ -1,7 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { AccountBalanceOutput } from '@/plugins/account/commands/balance';
 
 import '@/core/utils/json-serialize';
 
@@ -11,7 +10,9 @@ import {
   makeLogger,
   makeMirrorMock,
 } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError, StateError } from '@/core/errors';
+import { AccountBalanceOutputSchema } from '@/plugins/account/commands/balance';
 import { getAccountBalance } from '@/plugins/account/commands/balance/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -52,7 +53,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     });
 
     const result = await getAccountBalance(args);
-    const output = result.result as AccountBalanceOutput;
+    const output = assertOutput(result.result, AccountBalanceOutputSchema);
 
     expect(mirrorMock.getAccountHBarBalance).not.toHaveBeenCalled();
     expect(mirrorMock.getAccountTokenBalances).toHaveBeenCalledWith(
@@ -113,7 +114,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       '0.0.1234',
       '0.0.7777',
     );
-    const output = result.result as AccountBalanceOutput;
+    const output = assertOutput(result.result, AccountBalanceOutputSchema);
     expect(output.accountId).toBe('0.0.1234');
     expect(output.hbarBalance).toBeUndefined();
     expect(output.tokenOnly).toBe(true);
@@ -152,7 +153,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     const result = await getAccountBalance(args);
 
     expect(mirrorMock.getAccountHBarBalance).toHaveBeenCalledWith('0.0.1001');
-    const output = result.result as AccountBalanceOutput;
+    const output = assertOutput(result.result, AccountBalanceOutputSchema);
     expect(output.accountId).toBe('0.0.1001');
     expect(output.hbarBalance).toBe(123456n);
     expect(output.hbarBalanceDisplay).toBeDefined();
@@ -192,7 +193,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       '0.0.2002',
       undefined,
     );
-    const output = result.result as AccountBalanceOutput;
+    const output = assertOutput(result.result, AccountBalanceOutputSchema);
     expect(output.accountId).toBe('0.0.2002');
     expect(output.hbarBalance).toBe(5000n);
     expect(output.hbarBalanceDisplay).toBeDefined();
@@ -240,7 +241,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     const result = await getAccountBalance(args);
 
     expect(mirrorMock.getAccountHBarBalance).toHaveBeenCalledWith('0.0.7777');
-    const output = result.result as AccountBalanceOutput;
+    const output = assertOutput(result.result, AccountBalanceOutputSchema);
     expect(output.accountId).toBe('0.0.7777');
     expect(output.hbarBalance).toBe(999n);
     expect(output.hbarBalanceDisplay).toBeDefined();
@@ -268,7 +269,7 @@ describe('account plugin - balance command (ADR-003)', () => {
 
     const result = await getAccountBalance(args);
 
-    const output = result.result as AccountBalanceOutput;
+    const output = assertOutput(result.result, AccountBalanceOutputSchema);
     expect(output.accountId).toBe('0.0.5005');
     expect(output.hbarBalance).toBe(42n);
     expect(output.hbarBalanceDisplay).toBeDefined();
@@ -384,7 +385,7 @@ describe('account plugin - balance command (ADR-003)', () => {
 
     const result = await getAccountBalance(args);
 
-    const output = result.result as AccountBalanceOutput;
+    const output = assertOutput(result.result, AccountBalanceOutputSchema);
     expect(output.accountId).toBe('0.0.2002');
     expect(output.hbarBalance).toBe(100000000n);
     expect(output.hbarBalanceDisplay).toBe('1');
@@ -433,7 +434,7 @@ describe('account plugin - balance command (ADR-003)', () => {
 
     const result = await getAccountBalance(args);
 
-    const output = result.result as AccountBalanceOutput;
+    const output = assertOutput(result.result, AccountBalanceOutputSchema);
     expect(output.accountId).toBe('0.0.2002');
     expect(output.hbarBalance).toBe(100000000n);
     expect(output.hbarBalanceDisplay).toBeUndefined();

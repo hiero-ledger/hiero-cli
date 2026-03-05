@@ -627,6 +627,7 @@ export const setupZustandHelperMock = (
     getTokensWithStats: jest.fn().mockReturnValue(
       config.stats || {
         total: 0,
+        withKeys: 0,
         byNetwork: {},
         bySupplyType: {},
         withAssociations: 0,

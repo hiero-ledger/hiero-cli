@@ -2,7 +2,11 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
 
-import { viewToken, type ViewTokenOutput } from '@/plugins/token/commands/view';
+import { assertOutput } from '@/__tests__/utils/assert-output';
+import {
+  viewToken,
+  ViewTokenOutputSchema,
+} from '@/plugins/token/commands/view';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -62,7 +66,7 @@ describe('viewTokenHandler', () => {
 
       const result = await viewToken(args);
 
-      const output = result.result as ViewTokenOutput;
+      const output = assertOutput(result.result, ViewTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -110,7 +114,7 @@ describe('viewTokenHandler', () => {
 
       const result = await viewToken(args);
 
-      const output = result.result as ViewTokenOutput;
+      const output = assertOutput(result.result, ViewTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');

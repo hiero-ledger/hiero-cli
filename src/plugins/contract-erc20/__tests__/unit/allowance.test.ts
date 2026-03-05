@@ -1,12 +1,13 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc20CallAllowanceOutput } from '@/plugins/contract-erc20/commands/allowance/output';
 
 import { ZodError } from 'zod';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
+import { ContractErc20CallAllowanceOutputSchema } from '@/plugins/contract-erc20/commands/allowance';
 import { allowanceFunctionCall as erc20AllowanceHandler } from '@/plugins/contract-erc20/commands/allowance/handler';
 import { ContractErc20CallAllowanceInputSchema } from '@/plugins/contract-erc20/commands/allowance/input';
 
@@ -59,7 +60,10 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
 
     expect(result.result).toBeDefined();
 
-    const parsed = result.result as ContractErc20CallAllowanceOutput;
+    const parsed = assertOutput(
+      result.result,
+      ContractErc20CallAllowanceOutputSchema,
+    );
 
     expect(parsed.contractId).toBe(CONTRACT_ID);
     expect(parsed.owner).toBe(OWNER_EVM);
@@ -104,7 +108,10 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
 
     expect(result.result).toBeDefined();
 
-    const parsed = result.result as ContractErc20CallAllowanceOutput;
+    const parsed = assertOutput(
+      result.result,
+      ContractErc20CallAllowanceOutputSchema,
+    );
 
     expect(parsed.owner).toBe(OWNER_EVM);
     expect(parsed.spender).toBe(SPENDER_EVM);

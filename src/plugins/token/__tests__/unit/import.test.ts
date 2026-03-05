@@ -1,7 +1,6 @@
 import type { CoreApi } from '@/core';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
-import type { ImportTokenOutput } from '@/plugins/token/commands/import';
 
 import {
   makeAliasMock,
@@ -11,8 +10,10 @@ import {
   makeNetworkMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { createMockTokenInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { SupportedNetwork } from '@/core/types/shared.types';
+import { ImportTokenOutputSchema } from '@/plugins/token/commands/import';
 import { importToken } from '@/plugins/token/commands/import/handler';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -93,7 +94,7 @@ describe('token plugin - import command (ADR-007)', () => {
       }),
     );
 
-    const output = result.result as ImportTokenOutput;
+    const output = assertOutput(result.result, ImportTokenOutputSchema);
     expect(output.tokenId).toBe('0.0.123456');
     expect(output.name).toBe('Test Token');
     expect(output.symbol).toBe('TEST');
@@ -153,7 +154,7 @@ describe('token plugin - import command (ADR-007)', () => {
       }),
     );
 
-    const output = result.result as ImportTokenOutput;
+    const output = assertOutput(result.result, ImportTokenOutputSchema);
     expect(output.tokenId).toBe('0.0.999999');
     expect(output.name).toBe('Existing Token');
     expect(output.alias).toBeUndefined();
@@ -197,7 +198,7 @@ describe('token plugin - import command (ADR-007)', () => {
 
     const result = await importToken(args);
 
-    const output = result.result as ImportTokenOutput;
+    const output = assertOutput(result.result, ImportTokenOutputSchema);
     expect(output.tokenId).toBe('0.0.555555');
     expect(saveTokenMock).toHaveBeenCalledWith(
       `${SupportedNetwork.TESTNET}:0.0.555555`,

@@ -2,10 +2,11 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
 
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupplyType } from '@/core/types/shared.types';
 import {
   listTokens,
-  type ListTokensOutput,
+  ListTokensOutputSchema,
 } from '@/plugins/token/commands/list';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -41,7 +42,7 @@ describe('listTokensHandler', () => {
 
       const result = await listTokens(args);
 
-      const output = result.result as ListTokensOutput;
+      const output = assertOutput(result.result, ListTokensOutputSchema);
       expect(output.tokens).toEqual([]);
       expect(output.totalCount).toBe(0);
       expect(output.stats).toBeDefined();
@@ -56,12 +57,16 @@ describe('listTokensHandler', () => {
             symbol: 'TTK',
             decimals: 2,
             supplyType: SupplyType.INFINITE,
+            tokenType: 'FungibleCommon',
+            maxSupply: 0,
+            associationCount: 0,
             treasuryId: '0.0.111',
             network: 'testnet',
           },
         ]),
         getTokensWithStats: jest.fn().mockReturnValue({
           total: 1,
+          withKeys: 0,
           byNetwork: { testnet: 1 },
           bySupplyType: { [SupplyType.INFINITE]: 1 },
           withAssociations: 0,
@@ -82,7 +87,7 @@ describe('listTokensHandler', () => {
 
       const result = await listTokens(args);
 
-      const output = result.result as ListTokensOutput;
+      const output = assertOutput(result.result, ListTokensOutputSchema);
       expect(output.tokens).toHaveLength(1);
       expect(output.tokens[0].tokenId).toBe('0.0.12345');
       expect(output.totalCount).toBe(1);
@@ -97,12 +102,16 @@ describe('listTokensHandler', () => {
             symbol: 'MNT',
             decimals: 8,
             supplyType: SupplyType.FINITE,
+            tokenType: 'FungibleCommon',
+            maxSupply: 0,
+            associationCount: 0,
             treasuryId: '0.0.222',
             network: 'mainnet',
           },
         ]),
         getTokensWithStats: jest.fn().mockReturnValue({
           total: 1,
+          withKeys: 0,
           byNetwork: { mainnet: 1 },
           bySupplyType: { [SupplyType.FINITE]: 1 },
           withAssociations: 0,
@@ -123,7 +132,7 @@ describe('listTokensHandler', () => {
 
       const result = await listTokens(args);
 
-      const output = result.result as ListTokensOutput;
+      const output = assertOutput(result.result, ListTokensOutputSchema);
       expect(output.tokens).toHaveLength(1);
       expect(output.tokens[0].tokenId).toBe('0.0.99999');
       expect(output.tokens[0].network).toBe('mainnet');

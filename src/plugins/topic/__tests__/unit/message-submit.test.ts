@@ -2,7 +2,6 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
-import type { SubmitMessageOutput } from '@/plugins/topic/commands/submit-message/output';
 import type { TopicData } from '@/plugins/topic/schema';
 
 import {
@@ -12,6 +11,7 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NetworkError,
   NotFoundError,
@@ -19,6 +19,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
+import { SubmitMessageOutputSchema } from '@/plugins/topic/commands/submit-message';
 import { submitMessage } from '@/plugins/topic/commands/submit-message/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -100,7 +101,7 @@ describe('topic plugin - message-submit command', () => {
         transaction: {},
       }),
       signAndExecuteImpl: jest.fn().mockResolvedValue({
-        transactionId: 'tx-123',
+        transactionId: '0.0.1234@1234567890.000000000',
         success: true,
         topicSequenceNumber: 5,
         receipt: { status: { status: 'success' } },
@@ -123,11 +124,11 @@ describe('topic plugin - message-submit command', () => {
 
     const result = await submitMessage(args);
 
-    const output = result.result as SubmitMessageOutput;
+    const output = assertOutput(result.result, SubmitMessageOutputSchema);
     expect(output.topicId).toBe('0.0.1234');
     expect(output.message).toBe('Hello, World!');
     expect(output.sequenceNumber).toBe(5);
-    expect(output.transactionId).toBe('tx-123');
+    expect(output.transactionId).toBe('0.0.1234@1234567890.000000000');
 
     expect(loadTopicMock).toHaveBeenCalledWith(
       `${SupportedNetwork.TESTNET}:0.0.1234`,
@@ -166,7 +167,7 @@ describe('topic plugin - message-submit command', () => {
         transaction: {},
       }),
       signAndExecuteWithImpl: jest.fn().mockResolvedValue({
-        transactionId: 'tx-456',
+        transactionId: '0.0.5678@1234567890.000000000',
         success: true,
         topicSequenceNumber: 10,
         receipt: { status: { status: 'success' } },
@@ -191,7 +192,7 @@ describe('topic plugin - message-submit command', () => {
 
     const result = await submitMessage(args);
 
-    const output = result.result as SubmitMessageOutput;
+    const output = assertOutput(result.result, SubmitMessageOutputSchema);
     expect(output.sequenceNumber).toBe(10);
 
     expect(signing.signAndExecuteWith).toHaveBeenCalledWith({}, [
