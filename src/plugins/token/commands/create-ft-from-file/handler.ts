@@ -8,6 +8,7 @@ import { PublicKey } from '@hashgraph/sdk';
 
 import { StateError } from '@/core/errors';
 import { CustomFeeType } from '@/core/types/token.types';
+import { composeKey } from '@/core/utils/key-composer';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
 import { buildTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
 import { readAndValidateTokenFile } from '@/plugins/token/utils/token-file-helpers';
@@ -178,7 +179,8 @@ export async function createTokenFromFile(
   );
   tokenData.associations = successfulAssociations;
 
-  tokenState.saveToken(result.tokenId, tokenData);
+  const key = composeKey(network, result.tokenId);
+  tokenState.saveToken(key, tokenData);
   logger.info(`   Token data saved to state`);
 
   api.alias.register({

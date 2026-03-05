@@ -7,6 +7,7 @@ import { PublicKey } from '@hashgraph/sdk';
 import { StateError } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
+import { composeKey } from '@/core/utils/key-composer';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { CreateNftInputSchema } from '@/plugins/token/commands/create-nft/input';
 import {
@@ -127,7 +128,8 @@ export async function createNft(
     network: api.network.getCurrentNetwork(),
   });
 
-  tokenState.saveToken(result.tokenId, tokenData);
+  const key = composeKey(network, result.tokenId);
+  tokenState.saveToken(key, tokenData);
   logger.info(`   Non-fungible token data saved to state`);
 
   if (alias) {

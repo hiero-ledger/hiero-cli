@@ -10,7 +10,7 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
-import { NetworkError } from '@/core';
+import { NetworkError, SupportedNetwork } from '@/core';
 import { TransactionError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { createTopic } from '@/plugins/topic/commands/create/handler';
@@ -130,7 +130,7 @@ describe('topic plugin - create command', () => {
     });
     expect(signing.signAndExecute).toHaveBeenCalled();
     expect(saveTopicMock).toHaveBeenCalledWith(
-      '0.0.9999',
+      `${SupportedNetwork.TESTNET}:0.0.9999`,
       expect.objectContaining({
         topicId: '0.0.9999',
         memo: 'Test topic memo',
@@ -192,17 +192,17 @@ describe('topic plugin - create command', () => {
       KeyAlgorithm.ECDSA,
       ED25519_DER_PRIVATE_KEY,
       'local',
-      ['topic:admin', expect.stringMatching(/^topic:topic-\d+$/)],
+      ['topic:admin'],
     );
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
       '302e020100300506032b6570042204202222222222222222222222222222222222222222222222222222222222222222',
       'local',
-      ['topic:submit', expect.stringMatching(/^topic:topic-\d+$/)],
+      ['topic:submit'],
     );
     expect(signing.signAndExecuteWith).toHaveBeenCalledWith({}, ['kr_admin']);
     expect(saveTopicMock).toHaveBeenCalledWith(
-      '0.0.8888',
+      `${SupportedNetwork.TESTNET}:0.0.8888`,
       expect.objectContaining({
         topicId: '0.0.8888',
         memo: 'Test topic',
@@ -254,7 +254,7 @@ describe('topic plugin - create command', () => {
       submitKey: undefined,
     });
     expect(saveTopicMock).toHaveBeenCalledWith(
-      '0.0.7777',
+      `${SupportedNetwork.TESTNET}:0.0.7777`,
       expect.objectContaining({
         topicId: '0.0.7777',
         memo: '(No memo)',

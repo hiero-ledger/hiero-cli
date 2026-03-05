@@ -129,7 +129,9 @@ describe('topic plugin - message-submit command', () => {
     expect(output.sequenceNumber).toBe(5);
     expect(output.transactionId).toBe('tx-123');
 
-    expect(loadTopicMock).toHaveBeenCalledWith('0.0.1234');
+    expect(loadTopicMock).toHaveBeenCalledWith(
+      `${SupportedNetwork.TESTNET}:0.0.1234`,
+    );
     expect(topicTransactions.submitMessage).toHaveBeenCalledWith({
       topicId: '0.0.1234',
       message: 'Hello, World!',

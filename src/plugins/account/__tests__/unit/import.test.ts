@@ -14,7 +14,8 @@ import {
   makeNetworkMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { StateError, ValidationError } from '@/core/errors';
+import { SupportedNetwork } from '@/core';
+import { StateError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { importAccount } from '@/plugins/account/commands/import/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -78,7 +79,7 @@ describe('account plugin - import command (ADR-003)', () => {
       }),
     );
     expect(saveAccountMock).toHaveBeenCalledWith(
-      'imported',
+      `${SupportedNetwork.TESTNET}:0.0.9999`,
       expect.objectContaining({
         name: 'imported',
         accountId: '0.0.9999',
@@ -92,42 +93,8 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('imported');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
-    expect(output.alias).toBe('imported');
     expect(output.network).toBe('testnet');
     expect(output.evmAddress).toBe('0xabc');
-  });
-
-  test('throws StateError if account with same ID already exists in state', async () => {
-    const logger = makeLogger();
-
-    MockedHelper.mockImplementation(() => ({
-      hasAccountById: jest.fn().mockReturnValue(true),
-      hasAccount: jest.fn().mockReturnValue(false),
-      saveAccount: jest.fn(),
-    }));
-
-    const mirrorMock = makeMirrorMock();
-    const networkMock = makeNetworkMock();
-    const kms = makeKmsMock();
-    const alias = makeAliasMock();
-
-    const api: Partial<CoreApi> = {
-      mirror: mirrorMock as HederaMirrornodeService,
-      network: networkMock as NetworkService,
-      kms,
-      alias,
-      logger,
-      state: makeStateMock(),
-    };
-
-    const args = makeArgs(api, logger, {
-      key: '0.0.1111:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-      name: 'operator2',
-    });
-
-    await expect(importAccount(args)).rejects.toThrow(
-      new StateError('Account with this ID is already saved in state'),
-    );
   });
 
   test('returns failure if account with same name already exists', async () => {
@@ -157,7 +124,7 @@ describe('account plugin - import command (ADR-003)', () => {
       key: '0.0.1111:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
     });
 
-    await expect(importAccount(args)).rejects.toThrow(ValidationError);
+    await expect(importAccount(args)).rejects.toThrow(StateError);
   });
 
   test('throws error when mirror.getAccount fails', async () => {

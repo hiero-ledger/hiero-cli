@@ -11,6 +11,7 @@ import type { CreateAccountOutput } from './output';
 import { StateError, TransactionError, ValidationError } from '@/core/errors';
 import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
 import { HBAR_DECIMALS, KeyAlgorithm } from '@/core/shared/constants';
+import { composeKey } from '@/core/utils/key-composer';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
 import { validateSufficientBalance } from '@/plugins/account/utils/account-validation';
@@ -61,7 +62,7 @@ export async function createAccount(
 
   validateSufficientBalance(operatorBalance, balance, operator.accountId);
 
-  const name = alias || `account-${Date.now()}`;
+  const name = alias;
 
   logger.info(`Creating account with name: ${alias}`);
 
@@ -123,14 +124,14 @@ export async function createAccount(
     keyRefId,
     network: api.network.getCurrentNetwork(),
   };
+  const accountKey = composeKey(network, result.accountId);
 
-  accountState.saveAccount(name, accountData);
+  accountState.saveAccount(accountKey, accountData);
 
   const outputData: CreateAccountOutput = {
     accountId: accountData.accountId,
     name: accountData.name,
     type: accountData.type,
-    alias,
     network: accountData.network,
     transactionId: result.transactionId || '',
     evmAddress,

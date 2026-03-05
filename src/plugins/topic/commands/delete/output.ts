@@ -10,7 +10,7 @@ import { EntityIdSchema, NetworkSchema } from '@/core/schemas/common-schemas';
  */
 export const DeleteTopicOutputSchema = z.object({
   deletedTopic: z.object({
-    name: z.string().describe('Topic name or alias'),
+    name: z.string().describe('Topic name or alias').optional(),
     topicId: EntityIdSchema,
   }),
   removedAliases: z.array(z.string().describe('Removed alias')).optional(),
@@ -23,7 +23,7 @@ export type DeleteTopicOutput = z.infer<typeof DeleteTopicOutputSchema>;
  * Human-readable template for delete topic output
  */
 export const DELETE_TOPIC_TEMPLATE = `
-✅ Topic deleted successfully: {{deletedTopic.name}} ({{hashscanLink deletedTopic.topicId "topic" network}})
+✅ Topic deleted successfully: {{#if deletedTopic.name}}{{deletedTopic.name}}{{/if}} ({{hashscanLink deletedTopic.topicId "topic" network}})
 {{#if removedAliases}}
 🧹 Removed {{removedAliases.length}} alias(es):
 {{#each removedAliases}}

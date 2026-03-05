@@ -10,7 +10,10 @@ import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
 // Zod schema for runtime validation
 export const TopicDataSchema = z.object({
-  name: AliasNameSchema.max(50, 'Alias must be 50 characters or less'),
+  name: AliasNameSchema.max(
+    50,
+    'Alias must be 50 characters or less',
+  ).optional(),
 
   topicId: EntityIdSchema,
 

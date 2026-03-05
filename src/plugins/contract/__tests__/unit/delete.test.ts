@@ -165,7 +165,7 @@ describe('contract plugin - delete command', () => {
     const args = makeArgs(api, logger, { contract: '0.0.9999' });
 
     await expect(deleteContract(args)).rejects.toThrow(
-      "Contract with ID '0.0.9999' not found",
+      "Contract with identifier '0.0.9999' not found",
     );
   });
 
@@ -207,7 +207,7 @@ describe('contract plugin - delete command', () => {
     });
 
     await expect(deleteContract(args)).rejects.toThrow(
-      "Contract with alias 'my-contract' not found",
+      "Contract with identifier 'my-contract' not found",
     );
   });
 

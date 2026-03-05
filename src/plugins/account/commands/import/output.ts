@@ -16,9 +16,8 @@ import {
  */
 export const ImportAccountOutputSchema = z.object({
   accountId: EntityIdSchema,
-  name: z.string().describe('Account name or alias'),
+  name: z.string().describe('Account name').optional(),
   type: KeyTypeSchema,
-  alias: z.string().describe('Account alias').optional(),
   network: NetworkSchema,
   balance: TinybarSchema,
   evmAddress: EvmAddressSchema,
@@ -31,12 +30,11 @@ export type ImportAccountOutput = z.infer<typeof ImportAccountOutputSchema>;
  */
 export const IMPORT_ACCOUNT_TEMPLATE = `
 ✅ Account imported successfully: {{hashscanLink accountId "account" network}}
+{{#if name}}
    Name: {{name}}
+{{/if}}
    Type: {{type}}
    Network: {{network}}
-{{#if alias}}
-   Alias: {{alias}}
-{{/if}}
    EVM Address: {{evmAddress}}
    Balance: {{balance}} tinybars
 `.trim();

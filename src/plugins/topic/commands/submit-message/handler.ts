@@ -11,6 +11,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { SubmitMessageInputSchema } from './input';
@@ -42,10 +43,10 @@ export async function submitMessage(
   if (topicAliasResult?.entityId) {
     topicId = topicAliasResult.entityId;
   }
-
   logger.info(`Submitting message to topic: ${topicId}`);
 
-  const topicData = topicState.loadTopic(topicId);
+  const key = composeKey(currentNetwork, topicId);
+  const topicData = topicState.loadTopic(key);
   if (!topicData) {
     throw new NotFoundError(`Topic not found with ID or alias: ${topicId}`);
   }

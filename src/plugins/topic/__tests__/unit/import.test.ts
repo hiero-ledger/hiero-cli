@@ -32,7 +32,7 @@ describe('topic plugin - import command (ADR-007)', () => {
     const saveTopicMock = jest.fn().mockReturnValue(undefined);
 
     MockedHelper.mockImplementation(() => ({
-      findTopicByTopicId: jest.fn().mockReturnValue(null),
+      loadTopic: jest.fn().mockReturnValue(null),
       saveTopic: saveTopicMock,
     }));
 
@@ -75,7 +75,7 @@ describe('topic plugin - import command (ADR-007)', () => {
       }),
     );
     expect(saveTopicMock).toHaveBeenCalledWith(
-      '0.0.123456',
+      `${SupportedNetwork.TESTNET}:0.0.123456`,
       expect.objectContaining({
         name: 'my-topic',
         topicId: '0.0.123456',
@@ -89,7 +89,6 @@ describe('topic plugin - import command (ADR-007)', () => {
     expect(output.name).toBe('my-topic');
     expect(output.network).toBe(SupportedNetwork.TESTNET);
     expect(output.memo).toBe('Imported topic memo');
-    expect(output.alias).toBe('my-topic');
   });
 
   test('imports topic successfully without name', async () => {
@@ -97,7 +96,7 @@ describe('topic plugin - import command (ADR-007)', () => {
     const saveTopicMock = jest.fn().mockReturnValue(undefined);
 
     MockedHelper.mockImplementation(() => ({
-      findTopicByTopicId: jest.fn().mockReturnValue(null),
+      loadTopic: jest.fn().mockReturnValue(null),
       saveTopic: saveTopicMock,
     }));
 
@@ -131,9 +130,8 @@ describe('topic plugin - import command (ADR-007)', () => {
     expect(mirrorMock.getTopicInfo).toHaveBeenCalledWith('0.0.999999');
     expect(alias.register).not.toHaveBeenCalled();
     expect(saveTopicMock).toHaveBeenCalledWith(
-      '0.0.999999',
+      `${SupportedNetwork.TESTNET}:0.0.999999`,
       expect.objectContaining({
-        name: 'imported-0-0-999999',
         topicId: '0.0.999999',
         network: SupportedNetwork.TESTNET,
       }),
@@ -141,15 +139,14 @@ describe('topic plugin - import command (ADR-007)', () => {
 
     const output = result.result as ImportTopicOutput;
     expect(output.topicId).toBe('0.0.999999');
-    expect(output.name).toBe('imported-0-0-999999');
-    expect(output.alias).toBeUndefined();
+    expect(output.name).toBe(undefined);
   });
 
   test('throws when topic already exists in state', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
-      findTopicByTopicId: jest.fn().mockReturnValue({
+      loadTopic: jest.fn().mockReturnValue({
         topicId: '0.0.123456',
         name: 'existing',
       }),
@@ -188,7 +185,7 @@ describe('topic plugin - import command (ADR-007)', () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
-      findTopicByTopicId: jest.fn().mockReturnValue(null),
+      loadTopic: jest.fn().mockReturnValue(null),
       saveTopic: jest.fn(),
     }));
 

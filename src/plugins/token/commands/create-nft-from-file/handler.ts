@@ -7,6 +7,7 @@ import { PublicKey } from '@hashgraph/sdk';
 
 import { StateError } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
+import { composeKey } from '@/core/utils/key-composer';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
 import { buildNftTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
 import { readAndValidateNftTokenFile } from '@/plugins/token/utils/token-file-helpers';
@@ -159,7 +160,8 @@ export async function createNftFromFile(
   );
   tokenData.associations = successfulAssociations;
 
-  tokenState.saveToken(result.tokenId, tokenData);
+  const key = composeKey(network, result.tokenId);
+  tokenState.saveToken(key, tokenData);
   logger.info(`   Token data saved to state`);
 
   api.alias.register({

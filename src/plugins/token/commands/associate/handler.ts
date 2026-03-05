@@ -75,7 +75,13 @@ export async function associateToken(
       `Token ${tokenId} is already associated with account ${account.accountId}`,
     );
 
-    saveAssociationToState(tokenState, tokenId, account.accountId, logger);
+    saveAssociationToState(
+      tokenState,
+      tokenId,
+      account.accountId,
+      network,
+      logger,
+    );
 
     const outputData: AssociateTokenOutput = {
       accountId: account.accountId,
@@ -101,7 +107,13 @@ export async function associateToken(
     ]);
   } catch (error) {
     if (isTokenAlreadyAssociatedError(error)) {
-      saveAssociationToState(tokenState, tokenId, account.accountId, logger);
+      saveAssociationToState(
+        tokenState,
+        tokenId,
+        account.accountId,
+        network,
+        logger,
+      );
       return {
         result: {
           accountId: account.accountId,
@@ -124,7 +136,13 @@ export async function associateToken(
     );
   }
 
-  saveAssociationToState(tokenState, tokenId, account.accountId, logger);
+  saveAssociationToState(
+    tokenState,
+    tokenId,
+    account.accountId,
+    network,
+    logger,
+  );
 
   const outputData: AssociateTokenOutput = {
     accountId: account.accountId,

@@ -16,7 +16,7 @@ import {
 export const ListTopicsOutputSchema = z.object({
   topics: z.array(
     z.object({
-      name: z.string().describe('Topic name or alias'),
+      name: z.string().describe('Topic name').optional(),
       topicId: EntityIdSchema,
       network: NetworkSchema,
       memo: z.string().describe('Topic memo').nullable(),

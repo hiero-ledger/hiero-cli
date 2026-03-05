@@ -16,7 +16,7 @@ import {
  */
 export const CreateTopicOutputSchema = z.object({
   topicId: EntityIdSchema,
-  name: z.string().describe('Topic name or alias'),
+  name: z.string().describe('Topic name or alias').optional(),
   network: NetworkSchema,
   memo: z.string().describe('Topic memo').optional(),
   adminKeyPresent: z.boolean().describe('Whether admin key is set'),
@@ -35,7 +35,9 @@ export type CreateTopicOutput = z.infer<typeof CreateTopicOutputSchema>;
 export const CREATE_TOPIC_TEMPLATE = `
 ✅ Topic created successfully: {{hashscanLink topicId "topic" network}}
    Network: {{network}}
-   Name (Alias): {{name}}
+{{#if name}}
+   Name: {{name}}
+{{/if}}
 {{#if memo}}
    Memo: {{memo}}
 {{/if}}
