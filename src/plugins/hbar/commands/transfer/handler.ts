@@ -3,8 +3,6 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { TransferOutput } from './output';
 
 import { TransactionError, ValidationError } from '@/core/errors';
-import { EntityIdSchema } from '@/core/schemas';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 

@@ -1,7 +1,7 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { assertOutput } from '@/__tests__/utils/assert-output';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {

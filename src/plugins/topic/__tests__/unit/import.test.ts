@@ -10,8 +10,8 @@ import {
   makeNetworkMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { assertOutput } from '@/__tests__/utils/assert-output';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { ImportTopicOutputSchema } from '@/plugins/topic/commands/import';

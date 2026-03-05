@@ -30,8 +30,8 @@ import {
   makeIdentityResolutionServiceMock as makeGlobalIdentityResolutionServiceMock,
   makeKeyResolverMock as makeGlobalKeyResolverMock,
 } from '@/__tests__/mocks/mocks';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { InternalError, KeyAlgorithm } from '@/core';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 
 import { mockTransactionResults } from './fixtures';
 

@@ -33,7 +33,7 @@ export async function deleteAccount(
   } else {
     const alias = api.alias.resolveOrThrow(
       accountRef,
-      ALIAS_TYPE.Account,
+      AliasType.Account,
       network,
     );
     if (!alias.entityId) {

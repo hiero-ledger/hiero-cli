@@ -395,7 +395,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
     const account = this.alias.resolve(
       aliasCredential.alias,
-      ALIAS_TYPE.Account,
+      AliasType.Account,
       currentNetwork,
     );
 

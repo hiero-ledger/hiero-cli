@@ -29,7 +29,7 @@ export async function deleteTopic(
   } else {
     const topicAlias = api.alias.resolveOrThrow(
       topicRef,
-      ALIAS_TYPE.Topic,
+      AliasType.Topic,
       network,
     );
     if (!topicAlias.entityId) {
