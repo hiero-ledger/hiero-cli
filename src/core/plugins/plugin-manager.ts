@@ -7,10 +7,12 @@ import type { Command, OptionValues } from 'commander';
 import type {
   CommandHandlerArgs,
   CommandSpec,
+  HookSpec,
   PluginManifest,
   PluginStateEntry,
 } from '@/core';
 import type { CoreApi } from '@/core/core-api';
+import type { AbstractHook } from '@/core/hooks/abstract-hook';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 
@@ -39,6 +41,7 @@ export class PluginManager {
   private defaultPlugins: string[] = [];
   private logger: Logger;
   private pluginManagement: PluginManagementService;
+  private hooks: HookSpec[] = [];
 
   constructor(coreApi: CoreApi) {
     this.coreApi = coreApi;
@@ -147,6 +150,9 @@ export class PluginManager {
    * Register all plugin commands with Commander.js
    */
   registerCommands(program: Command): void {
+    this.hooks = Array.from(this.loadedPlugins.values()).flatMap(
+      (plugin) => plugin.manifest.hooks ?? [],
+    );
     for (const plugin of this.loadedPlugins.values()) {
       this.registerPluginCommands(program, plugin);
     }
@@ -401,7 +407,16 @@ export class PluginManager {
 
     await this.handleConfirmation(commandSpec, handlerArgs, skipConfirmation);
 
-    const result = await commandSpec.handler(handlerArgs);
+    let result;
+    if (commandSpec.command) {
+      result = await commandSpec.command.execute(handlerArgs, {
+        coreActionEnabled: true,
+        outputPreparationEnabled: true,
+        hooks: this.filterHooksForCommand(_plugin, commandSpec),
+      });
+    } else {
+      result = await commandSpec.handler(handlerArgs);
+    }
 
     this.coreApi.output.handleOutput({
       status: Status.Success,
@@ -427,5 +442,15 @@ export class PluginManager {
       command = command.allowUnknownOption(true).allowExcessArguments(true);
     }
     return command;
+  }
+
+  private filterHooksForCommand(
+    plugin: LoadedPlugin,
+    commandSpec: CommandSpec,
+  ): AbstractHook[] {
+    const commandKey = `${plugin.manifest.name}_${commandSpec.name}`;
+    return this.hooks
+      .filter((spec) => spec.relevantCommands.includes(commandKey))
+      .map((spec) => spec.hook);
   }
 }

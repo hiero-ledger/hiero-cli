@@ -3,7 +3,9 @@
  * Types specific to the plugin architecture
  */
 import type { z } from 'zod';
+import type { Command } from '@/core/commands/command.interface';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { AbstractHook } from '@/core/hooks/abstract-hook';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
@@ -19,7 +21,14 @@ export interface PluginManifest {
   displayName: string;
   description: string;
   commands: CommandSpec[];
+  hooks?: HookSpec[];
   skipWizardInitialization?: boolean;
+}
+
+export interface HookSpec {
+  name: string;
+  relevantCommands: string[];
+  hook: AbstractHook;
 }
 
 /**
@@ -41,6 +50,7 @@ export interface CommandSpec {
   summary: string;
   description: string;
   options?: CommandOption[];
+  command?: Command;
   handler: CommandHandler;
   output: CommandOutputSpec;
   excessArguments?: boolean;

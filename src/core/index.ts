@@ -95,6 +95,7 @@ export type {
   CommandOutputSpec,
   CommandResult,
   CommandSpec,
+  HookSpec,
   PluginContext,
   PluginManifest,
   PluginStateSchema,
