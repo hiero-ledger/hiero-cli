@@ -5,8 +5,13 @@ import type { FooTestOutput } from './output';
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { FooTestInputSchema } from '@/plugins/test/commands/foo/input';
 
+interface FooBuildAndSignResult {
+  message: string;
+}
+
 export class FooTestCommand extends BaseTransactionCommand<
   FooNormalizedParams,
+  FooBuildAndSignResult,
   void
 > {
   async normalizeParams(
@@ -18,18 +23,28 @@ export class FooTestCommand extends BaseTransactionCommand<
     };
   }
 
-  async coreAction(
+  async buildAndSign(
     args: CommandHandlerArgs,
     normalisedParams: FooNormalizedParams,
+  ): Promise<FooBuildAndSignResult> {
+    void args;
+    return { message: normalisedParams.message };
+  }
+
+  async executeTransaction(
+    args: CommandHandlerArgs,
+    _normalisedParams: FooNormalizedParams,
+    buildAndSignResult: FooBuildAndSignResult,
   ): Promise<void> {
     const { logger } = args;
-    logger.info(normalisedParams.message);
+    logger.info(buildAndSignResult.message);
   }
 
   async outputPreparation(
     args: CommandHandlerArgs,
     normalisedParams: FooNormalizedParams,
   ): Promise<CommandResult> {
+    void args;
     const output: FooTestOutput = {
       bar: normalisedParams.message,
     };

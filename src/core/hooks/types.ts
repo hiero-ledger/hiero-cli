@@ -1,14 +1,24 @@
 import type { CommandResult } from '@/core';
 
-export interface PreCoreActionParams<TNormalisedParams = unknown> {
+export interface PreBuildAndSignParams<TNormalisedParams = unknown> {
   normalisedParams: TNormalisedParams;
 }
 
-export interface PostCoreActionParams<
+export interface PreExecuteTransactionParams<
   TNormalisedParams = unknown,
+  TBuildAndSignResult = unknown,
+> {
+  normalisedParams: TNormalisedParams;
+  buildAndSignResult?: TBuildAndSignResult;
+}
+
+export interface PostExecuteTransactionParams<
+  TNormalisedParams = unknown,
+  TBuildAndSignResult = unknown,
   TCoreActionResult = unknown,
 > {
   normalisedParams: TNormalisedParams;
+  buildAndSignResult?: TBuildAndSignResult;
   coreActionResult?: TCoreActionResult;
 }
 
