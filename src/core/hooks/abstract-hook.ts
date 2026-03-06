@@ -9,7 +9,7 @@ import type {
 export abstract class AbstractHook {
   public preParamsPreparationAndNormalizationHook(
     _args: CommandHandlerArgs,
-  ): Promise<HookResult | undefined> {
+  ): Promise<HookResult> {
     void _args;
     return Promise.resolve({
       breakFlow: false,
@@ -22,7 +22,7 @@ export abstract class AbstractHook {
   public preCoreActionHook(
     _args: CommandHandlerArgs,
     _params: PreCoreActionParams,
-  ): Promise<HookResult | undefined> {
+  ): Promise<HookResult> {
     void _args;
     void _params;
     return Promise.resolve({
@@ -36,7 +36,7 @@ export abstract class AbstractHook {
   public postCoreActionHook(
     _args: CommandHandlerArgs,
     _params: PostCoreActionParams,
-  ): Promise<HookResult | undefined> {
+  ): Promise<HookResult> {
     void _args;
     void _params;
     return Promise.resolve({
@@ -50,7 +50,7 @@ export abstract class AbstractHook {
   public postOutputPreparationHook(
     _args: CommandHandlerArgs,
     _params: PostOutputPreparationParams,
-  ): Promise<HookResult | undefined> {
+  ): Promise<HookResult> {
     void _args;
     void _params;
     return Promise.resolve({

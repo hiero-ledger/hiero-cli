@@ -2,10 +2,13 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { FooNormalizedParams } from '@/plugins/test/commands/foo/types';
 import type { FooTestOutput } from './output';
 
-import { BaseCommand } from '@/core/commands/command';
+import { BaseTransactionCommand } from '@/core/commands/command';
 import { FooTestInputSchema } from '@/plugins/test/commands/foo/input';
 
-export class FooTestCommand extends BaseCommand<FooNormalizedParams, void> {
+export class FooTestCommand extends BaseTransactionCommand<
+  FooNormalizedParams,
+  void
+> {
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<FooNormalizedParams> {
