@@ -230,7 +230,7 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
   });
 
-  test('creates account with provided private key (--key ecdsa:xxx)', async () => {
+  test('creates account with provided private key (--key ecdsa:private:xxx)', async () => {
     const logger = makeLogger();
     const saveAccountMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));

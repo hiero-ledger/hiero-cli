@@ -35,7 +35,7 @@ export const CreateAccountInputSchema = z
       'Cryptographic key type for the account',
     ),
     key: KeySchema.optional().describe(
-      'Existing key for the account. Formats: ecdsa:{privateKey}, ed25519:{privateKey}, ecdsa:{publicKey}, ed25519:{publicKey}, kr_{ref}, {accountId}:{privateKey}, alias name',
+      'Existing key for the account. Formats: ecdsa|ed25519:private|public:{key}, kr_{ref}, {accountId}:{privateKey}, alias name',
     ),
   })
   .superRefine((data, ctx) => {
