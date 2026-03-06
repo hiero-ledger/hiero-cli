@@ -9,7 +9,8 @@ import type { AccountData } from '@/plugins/account/schema';
 import type { ImportAccountOutput } from './output';
 
 import { StateError, ValidationError } from '@/core/errors';
-import { entityIdToAliasSafeFormat } from '@/core/utils/entity-id-to-alias-format';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { composeKey } from '@/core/utils/key-composer';
 import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -30,12 +31,12 @@ export async function importAccount(
   const alias = validArgs.name;
   const keyManagerArg = validArgs.keyManager;
   const accountId = key.accountId;
+  const network = api.network.getCurrentNetwork();
+  const accountKey = composeKey(network, accountId);
 
-  if (accountState.hasAccountById(accountId)) {
+  if (accountState.hasAccount(accountKey)) {
     throw new StateError('Account with this ID is already saved in state');
   }
-
-  const network = api.network.getCurrentNetwork();
 
   // Get keyManager from args or fallback to config
   const keyManager =
@@ -55,13 +56,13 @@ export async function importAccount(
     keyManager,
   );
 
-  // Generate a unique name for the account
-  const name = alias || `imported-${entityIdToAliasSafeFormat(accountId)}`;
-  logger.info(`Importing account: ${name} (${accountId})`);
+  logger.info(`Importing account: ${accountKey} (${accountId})`);
 
   // Check if account name already exists
-  if (accountState.hasAccount(name)) {
-    throw new ValidationError(`Account with name '${name}' already exists`);
+  if (accountState.hasAccount(accountKey)) {
+    throw new ValidationError(
+      `Account with identifier '${accountKey}' already exists`,
+    );
   }
 
   const evmAddress = buildAccountEvmAddress({
@@ -74,7 +75,7 @@ export async function importAccount(
   if (alias) {
     api.alias.register({
       alias,
-      type: 'account',
+      type: AliasType.Account,
       network: api.network.getCurrentNetwork(),
       entityId: accountId,
       evmAddress,
@@ -86,7 +87,7 @@ export async function importAccount(
 
   // Create account object (no private key in plugin state)
   const account: AccountData = {
-    name,
+    name: alias,
     accountId,
     type: accountInfo.keyAlgorithm,
     publicKey: publicKey,
@@ -96,14 +97,13 @@ export async function importAccount(
   };
 
   // Store account in state using the helper
-  accountState.saveAccount(name, account);
+  accountState.saveAccount(accountKey, account);
 
   // Prepare output data
   const outputData: ImportAccountOutput = {
     accountId,
-    name: account.name,
+    name: alias,
     type: account.type,
-    ...(alias && { alias }),
     network: account.network,
     balance: BigInt(accountInfo.balance.balance.toString()),
     evmAddress,

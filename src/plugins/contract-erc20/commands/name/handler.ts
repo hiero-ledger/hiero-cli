@@ -7,7 +7,7 @@ import type { ContractErc20CallNameOutput } from '@/plugins/contract-erc20/comma
 import { Interface } from 'ethers';
 
 import { StateError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ContractErc20CallNameInputSchema } from '@/plugins/contract-erc20/commands/name/input';
 import { ContractErc20CallNameResultSchema } from '@/plugins/contract-erc20/commands/name/result';
 import { ERC20_ABI } from '@/plugins/contract-erc20/shared/erc20-abi';
@@ -28,7 +28,7 @@ export async function nameFunctionCall(
       entityReference: contractRef.value,
       referenceType: contractRef.type,
       network,
-      aliasType: ALIAS_TYPE.Contract,
+      aliasType: AliasType.Contract,
     }).entityIdOrEvmAddress;
 
   const result = await api.contractQuery.queryContractFunction({

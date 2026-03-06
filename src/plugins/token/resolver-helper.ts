@@ -3,6 +3,7 @@ import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import { NotFoundError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 
 export interface ResolvedDestinationAccount {
   accountId: string;
@@ -22,7 +23,7 @@ export function resolveDestinationAccountParameter(
     return { accountId: account };
   }
 
-  const aliasRecord = api.alias.resolve(account, 'account', network);
+  const aliasRecord = api.alias.resolve(account, AliasType.Account, network);
   if (!aliasRecord) {
     throw new NotFoundError(`Account "${account}" not found on ${network}`, {
       context: { account, network },
@@ -56,7 +57,11 @@ export function resolveTokenParameter(
     return { tokenId: tokenIdOrName };
   }
 
-  const aliasRecord = api.alias.resolve(tokenIdOrName, 'token', network);
+  const aliasRecord = api.alias.resolve(
+    tokenIdOrName,
+    AliasType.Token,
+    network,
+  );
   if (!aliasRecord) {
     throw new NotFoundError(
       `Token "${tokenIdOrName}" not found on ${network}`,

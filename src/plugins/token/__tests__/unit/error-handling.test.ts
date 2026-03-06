@@ -8,6 +8,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createToken } from '@/plugins/token/commands/create-ft';
 import { createTokenFromFile } from '@/plugins/token/commands/create-ft-from-file';
@@ -33,25 +34,27 @@ interface AliasData {
 }
 
 const makeTestAliasService = () => ({
-  resolve: jest.fn().mockImplementation((alias: string, type: string) => {
-    // Mock account alias resolution for test keys
-    if (type === 'account') {
-      const accountAliases: Record<string, AliasData> = {
-        'admin-key': {
-          entityId: '0.0.100000',
-          publicKey: '302a300506032b6570032100' + '0'.repeat(64),
-          keyRefId: 'admin-key-ref-id',
-        },
-        'treasury-account': {
-          entityId: '0.0.123456',
-          publicKey: '302a300506032b6570032100' + '1'.repeat(64),
-          keyRefId: 'treasury-key-ref-id',
-        },
-      };
-      return accountAliases[alias] || null;
-    }
-    return null;
-  }),
+  resolve: jest
+    .fn()
+    .mockImplementation((alias: string, type: AliasType | undefined) => {
+      // Mock account alias resolution for test keys
+      if (type === AliasType.Account) {
+        const accountAliases: Record<string, AliasData> = {
+          'admin-key': {
+            entityId: '0.0.100000',
+            publicKey: '302a300506032b6570032100' + '0'.repeat(64),
+            keyRefId: 'admin-key-ref-id',
+          },
+          'treasury-account': {
+            entityId: '0.0.123456',
+            publicKey: '302a300506032b6570032100' + '1'.repeat(64),
+            keyRefId: 'treasury-key-ref-id',
+          },
+        };
+        return accountAliases[alias] || null;
+      }
+      return null;
+    }),
   register: jest.fn(),
   list: jest.fn().mockReturnValue([]),
   remove: jest.fn(),

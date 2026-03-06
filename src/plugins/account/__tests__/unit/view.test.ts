@@ -1,6 +1,5 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { ViewAccountOutput } from '@/plugins/account/commands/view';
 
 import '@/core/utils/json-serialize';
 
@@ -11,8 +10,11 @@ import {
   makeMirrorMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { ViewAccountOutputSchema } from '@/plugins/account/commands/view';
 import { viewAccount } from '@/plugins/account/commands/view/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -33,9 +35,10 @@ describe('account plugin - view command (ADR-003)', () => {
     const mirrorMock = makeMirrorMock({
       accountInfo: {
         accountId: '0.0.1111',
-        balance: { balance: 1000, timestamp: '1234567890' },
-        evmAddress: '0xabc',
-        accountPublicKey: 'pubKey',
+        balance: { balance: 1000, timestamp: '1234567890.000000000' },
+        evmAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        accountPublicKey:
+          '0230a1f42abc4794541e4a4389ec7e822666b8a7693c4cc3dedd2746b32f9c015b',
         keyAlgorithm: KeyAlgorithm.ECDSA,
       },
     });
@@ -47,7 +50,7 @@ describe('account plugin - view command (ADR-003)', () => {
         ...makeAliasMock(),
         resolve: jest.fn().mockReturnValue({
           alias: 'acc1',
-          type: 'account',
+          type: AliasType.Account,
           network: 'testnet',
           entityId: '0.0.1111',
         }),
@@ -60,7 +63,7 @@ describe('account plugin - view command (ADR-003)', () => {
     expect(logger.info).toHaveBeenCalledWith('Viewing account details: acc1');
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.1111');
 
-    const output = result.result as ViewAccountOutput;
+    const output = assertOutput(result.result, ViewAccountOutputSchema);
     expect(output.accountId).toBe('0.0.1111');
     expect(output.balance).toBe(1000n);
   });
@@ -75,16 +78,17 @@ describe('account plugin - view command (ADR-003)', () => {
     const mirrorMock = makeMirrorMock({
       accountInfo: {
         accountId: '0.0.2222',
-        balance: { balance: 2000, timestamp: '1234567890' },
-        evmAddress: '0xdef',
-        accountPublicKey: 'pubKey2',
+        balance: { balance: 2000, timestamp: '1234567890.000000000' },
+        evmAddress: '0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+        accountPublicKey:
+          '0230a1f42abc4794541e4a4389ec7e822666b8a7693c4cc3dedd2746b32f9c015b',
         keyAlgorithm: KeyAlgorithm.ECDSA,
       },
     });
     const alias = makeAliasMock();
     (alias.resolve as jest.Mock).mockReturnValue({
       alias: 'acc2',
-      type: 'account',
+      type: AliasType.Account,
       network: 'testnet',
       entityId: '0.0.2222',
       createdAt: new Date().toISOString(),
@@ -102,7 +106,7 @@ describe('account plugin - view command (ADR-003)', () => {
     expect(logger.info).toHaveBeenCalledWith('Viewing account details: acc2');
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.2222');
 
-    const output = result.result as ViewAccountOutput;
+    const output = assertOutput(result.result, ViewAccountOutputSchema);
     expect(output.accountId).toBe('0.0.2222');
   });
 

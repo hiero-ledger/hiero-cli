@@ -1,14 +1,14 @@
 /**
  * Unit tests for plugin-management remove command
  */
-import type { RemovePluginOutput } from '@/plugins/plugin-management/commands/remove/output';
-
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, StateError } from '@/core/errors';
 import {
   PluginManagementRemoveStatus,
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
+import { RemovePluginOutputSchema } from '@/plugins/plugin-management/commands/remove';
 import { removePlugin } from '@/plugins/plugin-management/commands/remove/handler';
 
 describe('plugin-management remove command', () => {
@@ -29,7 +29,7 @@ describe('plugin-management remove command', () => {
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
     const result = await removePlugin(args);
-    const output = result.result as RemovePluginOutput;
+    const output = assertOutput(result.result, RemovePluginOutputSchema);
 
     expect(output).toBeDefined();
     expect(output.name).toBe('custom-plugin');

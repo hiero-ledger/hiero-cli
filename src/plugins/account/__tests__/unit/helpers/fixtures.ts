@@ -5,7 +5,7 @@
 import type { AliasRecord } from '@/core/services/alias/alias-service.interface';
 import type { AccountData } from '@/plugins/account/schema';
 
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -69,13 +69,13 @@ export const mockTokenBalances = {
  */
 export const mockTransactionResults = {
   success: {
-    transactionId: 'tx-123',
+    transactionId: '0.0.1234@1234567890.000000000',
     success: true,
     accountId: '0.0.9999',
     receipt: { status: { status: 'success' } },
   },
   failure: {
-    transactionId: 'tx-456',
+    transactionId: '0.0.1234@1234567890.000000001',
     success: false,
     receipt: { status: { status: 'failed' } },
   },
@@ -128,28 +128,28 @@ export const mockAccountLists = {
 export const mockAliasRecords = {
   accountTestnet: {
     alias: 'acc-alias-testnet',
-    type: ALIAS_TYPE.Account,
+    type: AliasType.Account,
     network: SupportedNetwork.TESTNET,
     entityId: '0.0.7777',
     createdAt: '2024-01-01T00:00:00.000Z',
   } satisfies AliasRecord,
   accountMainnet: {
     alias: 'acc-alias-mainnet',
-    type: ALIAS_TYPE.Account,
+    type: AliasType.Account,
     network: SupportedNetwork.MAINNET,
     entityId: '0.0.7777',
     createdAt: '2024-01-01T00:00:00.000Z',
   } satisfies AliasRecord,
   tokenTestnet: {
     alias: 'token-alias-testnet',
-    type: ALIAS_TYPE.Token,
+    type: AliasType.Token,
     network: SupportedNetwork.TESTNET,
     entityId: '0.0.7777',
     createdAt: '2024-01-01T00:00:00.000Z',
   } satisfies AliasRecord,
   otherAccountTestnet: {
     alias: 'other-acc-testnet',
-    type: ALIAS_TYPE.Account,
+    type: AliasType.Account,
     network: SupportedNetwork.TESTNET,
     entityId: '0.0.8888',
     createdAt: '2024-01-01T00:00:00.000Z',

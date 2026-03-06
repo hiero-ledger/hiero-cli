@@ -1,5 +1,4 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { ContractListOutput } from '@/plugins/contract/commands/list/output';
 
 import {
   makeAliasMock,
@@ -7,8 +6,10 @@ import {
   makeLogger,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
 import { SupportedNetwork } from '@/core/types/shared.types';
+import { ContractListOutputSchema } from '@/plugins/contract/commands/list';
 import { listContracts } from '@/plugins/contract/commands/list/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
@@ -45,7 +46,7 @@ describe('contract plugin - list command', () => {
 
     const result = await listContracts(args);
 
-    const output = result.result as ContractListOutput;
+    const output = assertOutput(result.result, ContractListOutputSchema);
     expect(output.contracts).toHaveLength(0);
     expect(output.totalCount).toBe(0);
   });
@@ -85,7 +86,7 @@ describe('contract plugin - list command', () => {
     const result = await listContracts(args);
 
     expect(MockedHelper).toHaveBeenCalledTimes(1);
-    const output = result.result as ContractListOutput;
+    const output = assertOutput(result.result, ContractListOutputSchema);
 
     expect(output.contracts).toHaveLength(2);
     expect(output.totalCount).toBe(2);

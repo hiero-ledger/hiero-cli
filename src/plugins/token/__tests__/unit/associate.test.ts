@@ -6,11 +6,14 @@ import {
   TransactionId,
 } from '@hashgraph/sdk';
 
+import { assertOutput } from '@/__tests__/utils/assert-output';
+import { SupportedNetwork } from '@/core';
 import { InternalError, TransactionError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
   associateToken,
-  type AssociateTokenOutput,
+  AssociateTokenOutputSchema,
 } from '@/plugins/token/commands/associate';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -76,7 +79,7 @@ describe('associateTokenHandler', () => {
 
       const result = await associateToken(args);
 
-      const output = result.result as AssociateTokenOutput;
+      const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe(tokenId);
       expect(output.accountId).toBe(accountId);
       expect(output.associated).toBe(true);
@@ -130,7 +133,7 @@ describe('associateTokenHandler', () => {
 
       const result = await associateToken(args);
 
-      const output = result.result as AssociateTokenOutput;
+      const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -200,13 +203,17 @@ describe('associateTokenHandler', () => {
 
       const result = await associateToken(args);
 
-      const output = result.result as AssociateTokenOutput;
+      const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
 
-      expect(alias.resolve).toHaveBeenCalledWith('alice', 'account', 'testnet');
+      expect(alias.resolve).toHaveBeenCalledWith(
+        'alice',
+        AliasType.Account,
+        SupportedNetwork.TESTNET,
+      );
       expect(
         tokenTransactions.createTokenAssociationTransaction,
       ).toHaveBeenCalledWith({
@@ -265,7 +272,7 @@ describe('associateTokenHandler', () => {
 
       const result = await associateToken(args);
 
-      const output = result.result as AssociateTokenOutput;
+      const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -323,7 +330,7 @@ describe('associateTokenHandler', () => {
 
       const result = await associateToken(args);
 
-      const output = result.result as AssociateTokenOutput;
+      const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -520,7 +527,7 @@ describe('associateTokenHandler', () => {
 
       const result = await associateToken(args);
 
-      const output = result.result as AssociateTokenOutput;
+      const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -596,7 +603,7 @@ describe('associateTokenHandler', () => {
 
       const result = await associateToken(args);
 
-      const output = result.result as AssociateTokenOutput;
+      const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);

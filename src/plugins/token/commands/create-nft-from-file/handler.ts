@@ -5,8 +5,10 @@ import type { CreateNftFromFileOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
 
-import { NotFoundError, StateError } from '@/core/errors';
+import { StateError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
+import { composeKey } from '@/core/utils/key-composer';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
 import { buildNftTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
 import { readAndValidateNftTokenFile } from '@/plugins/token/utils/token-file-helpers';
@@ -41,25 +43,20 @@ export async function createNftFromFile(
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(tokenDefinition.name, network);
 
-  const treasury = await api.keyResolver.getOrInitKey(
+  const treasury = await api.keyResolver.resolveAccountCredentials(
     tokenDefinition.treasuryKey,
     keyManager,
     ['token:treasury'],
   );
-  if (!treasury.accountId) {
-    throw new NotFoundError(
-      `Could not resolve account ID for passed "treasury" field`,
-    );
-  }
 
-  const adminKey = await api.keyResolver.getOrInitKey(
+  const adminKey = await api.keyResolver.resolveSigningKey(
     tokenDefinition.adminKey,
     keyManager,
     ['token:admin', `token:${tokenDefinition.name}`],
   );
   logger.info(`🔑 Resolved admin key for signing`);
 
-  const supplyKey = await api.keyResolver.getOrInitKey(
+  const supplyKey = await api.keyResolver.resolveSigningKey(
     tokenDefinition.supplyKey,
     keyManager,
     ['token:supply'],
@@ -164,12 +161,13 @@ export async function createNftFromFile(
   );
   tokenData.associations = successfulAssociations;
 
-  tokenState.saveToken(result.tokenId, tokenData);
+  const key = composeKey(network, result.tokenId);
+  tokenState.saveToken(key, tokenData);
   logger.info(`   Token data saved to state`);
 
   api.alias.register({
     alias: tokenDefinition.name,
-    type: 'token',
+    type: AliasType.Token,
     network,
     entityId: result.tokenId,
     createdAt: result.consensusTimestamp,
@@ -181,9 +179,7 @@ export async function createNftFromFile(
     name: tokenDefinition.name,
     symbol: tokenDefinition.symbol,
     treasuryId: treasury.accountId,
-    adminAccountId: adminKey.accountId,
     adminPublicKey: adminKey.publicKey,
-    supplyAccountId: supplyKey.accountId,
     supplyPublicKey: supplyKey.publicKey,
     supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
     transactionId: result.transactionId,

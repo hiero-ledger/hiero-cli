@@ -9,7 +9,7 @@ import type { StateService } from '@/core/services/state/state-service.interface
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { AliasServiceImpl } from '@/core/services/alias/alias-service';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 describe('AliasServiceImpl', () => {
@@ -21,7 +21,7 @@ describe('AliasServiceImpl', () => {
     overrides: Partial<AliasRecord> = {},
   ): AliasRecord => ({
     alias: 'test-alias',
-    type: ALIAS_TYPE.Account,
+    type: AliasType.Account,
     network: SupportedNetwork.TESTNET,
     entityId: '0.0.1234',
     createdAt: '2024-01-01T00:00:00.000Z',
@@ -51,7 +51,7 @@ describe('AliasServiceImpl', () => {
         'testnet:test-alias',
         expect.objectContaining({
           alias: 'test-alias',
-          type: ALIAS_TYPE.Account,
+          type: AliasType.Account,
           network: SupportedNetwork.TESTNET,
           entityId: '0.0.1234',
         }),
@@ -90,7 +90,7 @@ describe('AliasServiceImpl', () => {
 
       const tokenRecord = createAliasRecord({
         alias: 'my-token',
-        type: ALIAS_TYPE.Token,
+        type: AliasType.Token,
         entityId: '0.0.5555',
       });
       aliasService.register(tokenRecord);
@@ -132,12 +132,12 @@ describe('AliasServiceImpl', () => {
     });
 
     it('should return null when type expectation does not match', () => {
-      const record = createAliasRecord({ type: ALIAS_TYPE.Account });
+      const record = createAliasRecord({ type: AliasType.Account });
       stateMock.get.mockReturnValue(record);
 
       const result = aliasService.resolve(
         'test-alias',
-        ALIAS_TYPE.Token,
+        AliasType.Token,
         SupportedNetwork.TESTNET,
       );
 
@@ -145,12 +145,12 @@ describe('AliasServiceImpl', () => {
     });
 
     it('should return record when type expectation matches', () => {
-      const record = createAliasRecord({ type: ALIAS_TYPE.Token });
+      const record = createAliasRecord({ type: AliasType.Token });
       stateMock.get.mockReturnValue(record);
 
       const result = aliasService.resolve(
         'test-alias',
-        ALIAS_TYPE.Token,
+        AliasType.Token,
         SupportedNetwork.TESTNET,
       );
 
@@ -158,7 +158,7 @@ describe('AliasServiceImpl', () => {
     });
 
     it('should resolve with undefined expectation (any type)', () => {
-      const record = createAliasRecord({ type: ALIAS_TYPE.Topic });
+      const record = createAliasRecord({ type: AliasType.Topic });
       stateMock.get.mockReturnValue(record);
 
       const result = aliasService.resolve(
@@ -175,14 +175,14 @@ describe('AliasServiceImpl', () => {
     it('should return record when alias exists and type matches', () => {
       const record = createAliasRecord({
         alias: 'my-contract',
-        type: ALIAS_TYPE.Contract,
+        type: AliasType.Contract,
         entityId: '0.0.5678',
       });
       stateMock.get.mockReturnValue(record);
 
       const result = aliasService.resolveOrThrow(
         'my-contract',
-        ALIAS_TYPE.Contract,
+        AliasType.Contract,
         SupportedNetwork.TESTNET,
       );
 
@@ -200,7 +200,7 @@ describe('AliasServiceImpl', () => {
       expect(() =>
         aliasService.resolveOrThrow(
           'non-existent',
-          ALIAS_TYPE.Contract,
+          AliasType.Contract,
           SupportedNetwork.TESTNET,
         ),
       ).toThrow(NotFoundError);
@@ -213,14 +213,14 @@ describe('AliasServiceImpl', () => {
     it('should throw when alias exists but type does not match', () => {
       const record = createAliasRecord({
         alias: 'test-alias',
-        type: ALIAS_TYPE.Account,
+        type: AliasType.Account,
       });
       stateMock.get.mockReturnValue(record);
 
       expect(() =>
         aliasService.resolveOrThrow(
           'test-alias',
-          ALIAS_TYPE.Contract,
+          AliasType.Contract,
           SupportedNetwork.TESTNET,
         ),
       ).toThrow(NotFoundError);
@@ -230,13 +230,13 @@ describe('AliasServiceImpl', () => {
       const record = createAliasRecord({
         alias: 'main-alias',
         network: SupportedNetwork.MAINNET,
-        type: ALIAS_TYPE.Token,
+        type: AliasType.Token,
       });
       stateMock.get.mockReturnValue(record);
 
       const result = aliasService.resolveOrThrow(
         'main-alias',
-        ALIAS_TYPE.Token,
+        AliasType.Token,
         SupportedNetwork.MAINNET,
       );
 
@@ -250,19 +250,19 @@ describe('AliasServiceImpl', () => {
     it('should return record for account type', () => {
       const record = createAliasRecord({
         alias: 'treasury',
-        type: ALIAS_TYPE.Account,
+        type: AliasType.Account,
         entityId: '0.0.100',
       });
       stateMock.get.mockReturnValue(record);
 
       const result = aliasService.resolveOrThrow(
         'treasury',
-        ALIAS_TYPE.Account,
+        AliasType.Account,
         SupportedNetwork.TESTNET,
       );
 
       expect(result).toEqual(record);
-      expect(result.type).toBe(ALIAS_TYPE.Account);
+      expect(result.type).toBe(AliasType.Account);
     });
   });
 
@@ -270,7 +270,7 @@ describe('AliasServiceImpl', () => {
     it('should return all aliases when no filter provided', () => {
       const records = [
         createAliasRecord({ alias: 'alias1' }),
-        createAliasRecord({ alias: 'alias2', type: ALIAS_TYPE.Token }),
+        createAliasRecord({ alias: 'alias2', type: AliasType.Token }),
       ];
       stateMock.list.mockReturnValue(records);
 
@@ -301,15 +301,15 @@ describe('AliasServiceImpl', () => {
 
     it('should filter by type', () => {
       const records = [
-        createAliasRecord({ alias: 'alias1', type: ALIAS_TYPE.Account }),
-        createAliasRecord({ alias: 'alias2', type: ALIAS_TYPE.Token }),
+        createAliasRecord({ alias: 'alias1', type: AliasType.Account }),
+        createAliasRecord({ alias: 'alias2', type: AliasType.Token }),
       ];
       stateMock.list.mockReturnValue(records);
 
-      const result = aliasService.list({ type: ALIAS_TYPE.Token });
+      const result = aliasService.list({ type: AliasType.Token });
 
       expect(result).toHaveLength(1);
-      expect(result[0].type).toBe(ALIAS_TYPE.Token);
+      expect(result[0].type).toBe(AliasType.Token);
     });
 
     it('should filter by both network and type', () => {
@@ -317,24 +317,24 @@ describe('AliasServiceImpl', () => {
         createAliasRecord({
           alias: 'a1',
           network: SupportedNetwork.TESTNET,
-          type: ALIAS_TYPE.Account,
+          type: AliasType.Account,
         }),
         createAliasRecord({
           alias: 'a2',
           network: SupportedNetwork.TESTNET,
-          type: ALIAS_TYPE.Token,
+          type: AliasType.Token,
         }),
         createAliasRecord({
           alias: 'a3',
           network: SupportedNetwork.MAINNET,
-          type: ALIAS_TYPE.Token,
+          type: AliasType.Token,
         }),
       ];
       stateMock.list.mockReturnValue(records);
 
       const result = aliasService.list({
         network: SupportedNetwork.TESTNET,
-        type: ALIAS_TYPE.Token,
+        type: AliasType.Token,
       });
 
       expect(result).toHaveLength(1);
@@ -453,22 +453,22 @@ describe('AliasServiceImpl', () => {
         createAliasRecord({
           alias: 'a1',
           network: SupportedNetwork.TESTNET,
-          type: ALIAS_TYPE.Account,
+          type: AliasType.Account,
         }),
         createAliasRecord({
           alias: 'a2',
           network: SupportedNetwork.TESTNET,
-          type: ALIAS_TYPE.Token,
+          type: AliasType.Token,
         }),
         createAliasRecord({
           alias: 'a3',
           network: SupportedNetwork.MAINNET,
-          type: ALIAS_TYPE.Account,
+          type: AliasType.Account,
         }),
       ];
       stateMock.list.mockReturnValue(records);
 
-      aliasService.clear(ALIAS_TYPE.Account);
+      aliasService.clear(AliasType.Account);
 
       expect(stateMock.list).toHaveBeenCalledWith('aliases');
       expect(stateMock.delete).toHaveBeenCalledTimes(2);

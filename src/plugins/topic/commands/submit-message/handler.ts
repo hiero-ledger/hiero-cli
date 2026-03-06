@@ -11,6 +11,8 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { SubmitMessageInputSchema } from './input';
@@ -36,16 +38,16 @@ export async function submitMessage(
   let topicId = topicIdOrAlias;
   const topicAliasResult = api.alias.resolve(
     topicIdOrAlias,
-    'topic',
+    AliasType.Topic,
     currentNetwork,
   );
   if (topicAliasResult?.entityId) {
     topicId = topicAliasResult.entityId;
   }
-
   logger.info(`Submitting message to topic: ${topicId}`);
 
-  const topicData = topicState.loadTopic(topicId);
+  const key = composeKey(currentNetwork, topicId);
+  const topicData = topicState.loadTopic(key);
   if (!topicData) {
     throw new NotFoundError(`Topic not found with ID or alias: ${topicId}`);
   }
@@ -53,7 +55,7 @@ export async function submitMessage(
   let signerKeyRefId: string | undefined;
 
   if (signerArg) {
-    const resolvedSigner = await api.keyResolver.getOrInitKey(
+    const resolvedSigner = await api.keyResolver.resolveSigningKey(
       signerArg,
       keyManager,
       ['topic:signer'],

@@ -9,7 +9,8 @@ import type { CreateTopicOutput } from './output';
 import { PublicKey } from '@hashgraph/sdk';
 
 import { TransactionError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { CreateTopicInputSchema } from './input';
@@ -34,7 +35,6 @@ export async function createTopic(
   const keyManager =
     keyManagerArg ||
     api.config.getOption<KeyManagerName>('default_key_manager');
-  const name = alias || `topic-${Date.now()}`;
 
   if (memo) {
     logger.info(`Creating topic with memo: ${memo}`);
@@ -42,16 +42,14 @@ export async function createTopic(
 
   const adminKey =
     adminKeyArg &&
-    (await api.keyResolver.getOrInitKey(adminKeyArg, keyManager, [
+    (await api.keyResolver.resolveSigningKey(adminKeyArg, keyManager, [
       'topic:admin',
-      `topic:${name}`,
     ]));
 
   const submitKey =
     submitKeyArg &&
-    (await api.keyResolver.getOrInitKey(submitKeyArg, keyManager, [
+    (await api.keyResolver.getPublicKey(submitKeyArg, keyManager, [
       'topic:submit',
-      `topic:${name}`,
     ]));
 
   const topicCreateResult = api.topic.createTopic({
@@ -72,8 +70,7 @@ export async function createTopic(
       topicCreateResult.transaction,
     );
   }
-
-  if (!result.success) {
+  if (!result.success || !result.topicId) {
     throw new TransactionError(
       `Failed to create topic (txId: ${result.transactionId})`,
       false,
@@ -81,7 +78,7 @@ export async function createTopic(
   }
 
   const topicData = {
-    name,
+    name: alias,
     topicId: result.topicId || '(unknown)',
     memo: memo || '(No memo)',
     adminKeyRefId: adminKey?.keyRefId,
@@ -93,14 +90,16 @@ export async function createTopic(
   if (alias) {
     api.alias.register({
       alias,
-      type: ALIAS_TYPE.Topic,
+      type: AliasType.Topic,
       network: api.network.getCurrentNetwork(),
       entityId: result.topicId,
       createdAt: result.consensusTimestamp,
     });
   }
 
-  topicState.saveTopic(String(result.topicId), topicData);
+  const key = composeKey(network, result.topicId);
+  // Step 7: Save topic to state
+  topicState.saveTopic(key, topicData);
 
   const outputData: CreateTopicOutput = {
     topicId: topicData.topicId,

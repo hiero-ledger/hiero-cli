@@ -4,7 +4,7 @@ import type { ContractErc721CallOwnerOfOutput } from '@/plugins/contract-erc721/
 import { Interface } from 'ethers';
 
 import { StateError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ContractErc721CallOwnerOfInputSchema } from '@/plugins/contract-erc721/commands/owner-of/input';
 import { ContractErc721CallOwnerOfResultSchema } from '@/plugins/contract-erc721/commands/owner-of/result';
 import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';
@@ -26,7 +26,7 @@ export async function ownerOfFunctionCall(
       entityReference: contractRef.value,
       referenceType: contractRef.type,
       network,
-      aliasType: ALIAS_TYPE.Contract,
+      aliasType: AliasType.Contract,
     }).entityIdOrEvmAddress;
 
   const result = await api.contractQuery.queryContractFunction({

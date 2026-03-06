@@ -7,6 +7,7 @@ import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import { NotFoundError, StateError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 
 /**
  * Resolve topic ID from alias or validate topic ID
@@ -29,7 +30,7 @@ export function resolveTopicId(
 
   const topicAliasResult = aliasService.resolve(
     topicIdOrAlias,
-    'topic',
+    AliasType.Topic,
     currentNetwork,
   );
 

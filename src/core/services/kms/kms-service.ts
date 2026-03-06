@@ -312,6 +312,10 @@ export class KmsServiceImpl implements KmsService {
     return this.credentialStorage.get(keyRefId);
   }
 
+  hasPrivateKey(keyRefId: string): boolean {
+    return this.getPrivateKeyString(keyRefId) !== null;
+  }
+
   // Removed registerProvider - no longer needed
 
   createClient(network: SupportedNetwork): Client {

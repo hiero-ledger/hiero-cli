@@ -1,6 +1,5 @@
 import type { Logger } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { ImportContractOutput } from '@/plugins/contract/commands/import';
 
 import '@/core/utils/json-serialize';
 
@@ -16,6 +15,10 @@ import {
   makeArgs,
   makeLogger,
 } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
+import { SupportedNetwork } from '@/core';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ImportContractOutputSchema } from '@/plugins/contract/commands/import';
 import { importContract } from '@/plugins/contract/commands/import/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
@@ -92,14 +95,14 @@ describe('contract plugin - import command', () => {
     expect(api.alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
         alias: 'imported-contract',
-        type: 'contract',
+        type: AliasType.Contract,
         network: 'testnet',
         entityId: MOCK_CONTRACT_ID,
         evmAddress: MOCK_EVM_ADDRESS,
       }),
     );
     expect(saveContractMock).toHaveBeenCalledWith(
-      MOCK_CONTRACT_ID,
+      `${SupportedNetwork.TESTNET}:${MOCK_CONTRACT_ID}`,
       expect.objectContaining({
         contractId: MOCK_CONTRACT_ID,
         contractName: 'ImportedContract',
@@ -109,7 +112,7 @@ describe('contract plugin - import command', () => {
       }),
     );
 
-    const output = result.result as ImportContractOutput;
+    const output = assertOutput(result.result, ImportContractOutputSchema);
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.contractName).toBe('ImportedContract');
     expect(output.contractEvmAddress).toBe(MOCK_EVM_ADDRESS);
@@ -147,13 +150,13 @@ describe('contract plugin - import command', () => {
     expect(mirrorMock.getContractInfo).toHaveBeenCalledWith(MOCK_EVM_ADDRESS);
     expect(api.alias.register).not.toHaveBeenCalled();
     expect(saveContractMock).toHaveBeenCalledWith(
-      MOCK_CONTRACT_ID,
+      `${SupportedNetwork.TESTNET}:${MOCK_CONTRACT_ID}`,
       expect.objectContaining({
         verified: false,
       }),
     );
 
-    const output = result.result as ImportContractOutput;
+    const output = assertOutput(result.result, ImportContractOutputSchema);
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.verified).toBe(false);
   });

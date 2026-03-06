@@ -13,7 +13,3 @@ export const createMockAccountCreateTransaction = () => ({
 export const createMockAccountInfoQuery = () => ({
   setAccountId: jest.fn().mockReturnThis(),
 });
-
-export const createMockAccountBalanceQuery = () => ({
-  setAccountId: jest.fn().mockReturnThis(),
-});

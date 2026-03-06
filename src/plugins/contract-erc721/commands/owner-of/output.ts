@@ -1,14 +1,17 @@
 import { z } from 'zod';
 
-import { EntityIdSchema, EvmAddressSchema } from '@/core/schemas';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import {
+  EntityIdSchema,
+  EvmAddressSchema,
+  NetworkSchema,
+} from '@/core/schemas';
 
 export const ContractErc721CallOwnerOfOutputSchema = z.object({
   contractId: EntityIdSchema,
   owner: EvmAddressSchema,
   ownerAlias: z.string().optional(),
   ownerEntityId: EntityIdSchema.optional(),
-  network: SupportedNetwork,
+  network: NetworkSchema,
 });
 
 export type ContractErc721CallOwnerOfOutput = z.infer<

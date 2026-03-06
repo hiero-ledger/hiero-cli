@@ -5,6 +5,7 @@ import type { StateService } from '@/core/services/state/state-service.interface
 import '@/core/utils/json-serialize';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { associateToken } from '@/plugins/token/commands/associate';
@@ -99,7 +100,7 @@ describe('Token Lifecycle Integration', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            if (type === 'account' && alias === 'admin-key') {
+            if (type === AliasType.Account && alias === 'admin-key') {
               return {
                 entityId: '0.0.100000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),
@@ -252,7 +253,7 @@ describe('Token Lifecycle Integration', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            if (type === 'account' && alias === 'admin-key') {
+            if (type === AliasType.Account && alias === 'admin-key') {
               return {
                 entityId: '0.0.100000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),
@@ -367,7 +368,7 @@ describe('Token Lifecycle Integration', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            if (type === 'account' && alias === 'admin-key') {
+            if (type === AliasType.Account && alias === 'admin-key') {
               return {
                 entityId: '0.0.100000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),

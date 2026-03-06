@@ -4,11 +4,12 @@
 import type * as path from 'path';
 import type { PluginStateEntry } from '@/core/plugins/plugin.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
-import type { PluginInfoOutput } from '@/plugins/plugin-management/commands/info/output';
 
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
+import { PluginInfoOutputSchema } from '@/plugins/plugin-management/commands/info';
 import { getPluginInfo } from '@/plugins/plugin-management/commands/info/handler';
 
 jest.mock('@/core/utils/load-plugin-manifest', () => ({
@@ -54,7 +55,7 @@ describe('plugin-management info command', () => {
     const args = makeArgs(api, logger, { name: 'topic' });
 
     const result = await getPluginInfo(args);
-    const output = result.result as PluginInfoOutput;
+    const output = assertOutput(result.result, PluginInfoOutputSchema);
 
     expect(output).toBeDefined();
     expect(output.found).toBe(true);
@@ -86,7 +87,7 @@ describe('plugin-management info command', () => {
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
     const result = await getPluginInfo(args);
-    const output = result.result as PluginInfoOutput;
+    const output = assertOutput(result.result, PluginInfoOutputSchema);
 
     expect(output).toBeDefined();
     expect(output.found).toBe(true);

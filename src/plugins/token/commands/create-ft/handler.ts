@@ -5,8 +5,10 @@ import type { CreateFungibleTokenOutput } from './output';
 import { PublicKey } from '@hashgraph/sdk';
 
 import { StateError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
+import { composeKey } from '@/core/utils/key-composer';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import {
   buildTokenData,
@@ -49,18 +51,13 @@ export async function createToken(
   const network = api.network.getCurrentNetwork();
   api.alias.availableOrThrow(alias, network);
 
-  const treasury = await api.keyResolver.getOrInitKeyWithFallback(
+  const treasury = await api.keyResolver.resolveAccountCredentialsWithFallback(
     validArgs.treasury,
     keyManager,
     ['token:treasury'],
   );
-  if (!treasury.accountId) {
-    throw new StateError(
-      `Could not resolve account ID for passed "treasury" argument for type ${validArgs.treasury?.type} from value ${validArgs.treasury?.rawValue}`,
-    );
-  }
 
-  const admin = await api.keyResolver.getOrInitKeyWithFallback(
+  const admin = await api.keyResolver.resolveAccountCredentialsWithFallback(
     validArgs.adminKey,
     keyManager,
     ['token:admin'],
@@ -139,13 +136,14 @@ export async function createToken(
     network: api.network.getCurrentNetwork(),
   });
 
-  tokenState.saveToken(result.tokenId, tokenData);
+  const key = composeKey(network, result.tokenId);
+  tokenState.saveToken(key, tokenData);
   logger.info(`   Token data saved to state`);
 
   if (alias) {
     api.alias.register({
       alias,
-      type: 'token',
+      type: AliasType.Token,
       network: api.network.getCurrentNetwork(),
       entityId: result.tokenId,
       createdAt: result.consensusTimestamp,

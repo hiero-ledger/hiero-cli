@@ -1,10 +1,15 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, StateError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { createToken } from '@/plugins/token/commands/create-ft';
+import {
+  CreateFungibleTokenOutputSchema,
+  createToken,
+} from '@/plugins/token/commands/create-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -67,7 +72,7 @@ describe('createTokenHandler', () => {
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
             // Mock account alias resolution
-            if (type === 'account' && alias === 'treasury-account') {
+            if (type === AliasType.Account && alias === 'treasury-account') {
               return {
                 entityId: '0.0.123456',
                 publicKey: '302a300506032b6570032100' + '1'.repeat(64),
@@ -75,7 +80,7 @@ describe('createTokenHandler', () => {
               };
             }
             // Mock account alias resolution for admin-key
-            if (type === 'account' && alias === 'test-admin-key') {
+            if (type === AliasType.Account && alias === 'test-admin-key') {
               return {
                 entityId: '0.0.100000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),
@@ -103,7 +108,7 @@ describe('createTokenHandler', () => {
         expect.arrayContaining(['admin-key-ref-id', 'treasury-key-ref-id']),
       );
       expect(mockSaveToken).toHaveBeenCalled();
-      expect(result.result).toBeDefined();
+      assertOutput(result.result, CreateFungibleTokenOutputSchema);
     });
 
     test('should use default credentials when treasury not provided', async () => {
@@ -163,7 +168,7 @@ describe('createTokenHandler', () => {
         ['operator-key-ref-id'],
       );
       expect(mockSaveToken).toHaveBeenCalled();
-      expect(result.result).toBeDefined();
+      assertOutput(result.result, CreateFungibleTokenOutputSchema);
     });
   });
 
@@ -173,7 +178,7 @@ describe('createTokenHandler', () => {
       const { api, keyResolver } = makeApiMocks();
 
       // Mock keyResolver to throw error when no operator is available
-      keyResolver.getOrInitKeyWithFallback.mockImplementation(() =>
+      keyResolver.resolveAccountCredentialsWithFallback.mockImplementation(() =>
         Promise.reject(new Error('No operator set')),
       );
 
@@ -334,7 +339,7 @@ describe('createTokenHandler', () => {
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
             // Mock account alias resolution
-            if (type === 'account' && alias === 'treasury-account') {
+            if (type === AliasType.Account && alias === 'treasury-account') {
               return {
                 entityId: '0.0.123456',
                 publicKey: '302a300506032b6570032100' + '1'.repeat(64),
@@ -342,7 +347,7 @@ describe('createTokenHandler', () => {
               };
             }
             // Mock account alias resolution for admin-key
-            if (type === 'account' && alias === 'test-admin-key') {
+            if (type === AliasType.Account && alias === 'test-admin-key') {
               return {
                 entityId: '0.0.100000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),

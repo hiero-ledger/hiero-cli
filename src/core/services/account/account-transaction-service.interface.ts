@@ -14,11 +14,6 @@ export interface AccountService {
    * Get account information (creates a transaction to query account info)
    */
   getAccountInfo(accountId: string): AccountInfoQuery;
-
-  /**
-   * Get account balance (creates a transaction to query balance)
-   */
-  getAccountBalance(accountId: string, tokenId?: string): AccountBalanceQuery;
 }
 
 export interface AccountCreateResult {
@@ -36,7 +31,6 @@ export interface CreateAccountParams {
 
 // Import Hedera SDK types
 import type {
-  AccountBalanceQuery,
   AccountCreateTransaction,
   AccountInfoQuery,
 } from '@hashgraph/sdk';

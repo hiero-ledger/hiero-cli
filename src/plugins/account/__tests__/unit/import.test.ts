@@ -1,7 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
-import type { ImportAccountOutput } from '@/plugins/account/commands/import';
 
 import '@/core/utils/json-serialize';
 
@@ -14,8 +13,12 @@ import {
   makeNetworkMock,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { StateError, ValidationError } from '@/core/errors';
+import { assertOutput } from '@/__tests__/utils/assert-output';
+import { SupportedNetwork } from '@/core';
+import { StateError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { ImportAccountOutputSchema } from '@/plugins/account/commands/import';
 import { importAccount } from '@/plugins/account/commands/import/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -63,14 +66,14 @@ describe('account plugin - import command (ADR-003)', () => {
     expect(kms.importAndValidatePrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
       'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
-      'pubKey',
+      '0230a1f42abc4794541e4a4389ec7e822666b8a7693c4cc3dedd2746b32f9c015b',
       'local',
     );
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.9999');
     expect(alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
         alias: 'imported',
-        type: 'account',
+        type: AliasType.Account,
         network: 'testnet',
         entityId: '0.0.9999',
         publicKey: 'pub-key-test',
@@ -78,55 +81,23 @@ describe('account plugin - import command (ADR-003)', () => {
       }),
     );
     expect(saveAccountMock).toHaveBeenCalledWith(
-      'imported',
+      `${SupportedNetwork.TESTNET}:0.0.9999`,
       expect.objectContaining({
         name: 'imported',
         accountId: '0.0.9999',
         network: 'testnet',
         keyRefId: 'kr_test123',
-        evmAddress: '0xabc',
+        evmAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
       }),
     );
 
-    const output = result.result as ImportAccountOutput;
+    const output = assertOutput(result.result, ImportAccountOutputSchema);
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('imported');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
-    expect(output.alias).toBe('imported');
     expect(output.network).toBe('testnet');
-    expect(output.evmAddress).toBe('0xabc');
-  });
-
-  test('throws StateError if account with same ID already exists in state', async () => {
-    const logger = makeLogger();
-
-    MockedHelper.mockImplementation(() => ({
-      hasAccountById: jest.fn().mockReturnValue(true),
-      hasAccount: jest.fn().mockReturnValue(false),
-      saveAccount: jest.fn(),
-    }));
-
-    const mirrorMock = makeMirrorMock();
-    const networkMock = makeNetworkMock();
-    const kms = makeKmsMock();
-    const alias = makeAliasMock();
-
-    const api: Partial<CoreApi> = {
-      mirror: mirrorMock as HederaMirrornodeService,
-      network: networkMock as NetworkService,
-      kms,
-      alias,
-      logger,
-      state: makeStateMock(),
-    };
-
-    const args = makeArgs(api, logger, {
-      key: '0.0.1111:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
-      name: 'operator2',
-    });
-
-    await expect(importAccount(args)).rejects.toThrow(
-      new StateError('Account with this ID is already saved in state'),
+    expect(output.evmAddress).toBe(
+      '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
     );
   });
 
@@ -157,7 +128,7 @@ describe('account plugin - import command (ADR-003)', () => {
       key: '0.0.1111:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
     });
 
-    await expect(importAccount(args)).rejects.toThrow(ValidationError);
+    await expect(importAccount(args)).rejects.toThrow(StateError);
   });
 
   test('throws error when mirror.getAccount fails', async () => {

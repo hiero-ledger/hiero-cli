@@ -8,6 +8,7 @@ import type {
 } from './alias-service.interface';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
+import { composeKey } from '@/core/utils/key-composer';
 
 const NAMESPACE = 'aliases';
 
@@ -27,7 +28,7 @@ export class AliasServiceImpl implements AliasService {
         { context: { alias: record.alias, network: record.network } },
       );
     }
-    const key = this.composeKey(record.network, record.alias);
+    const key = composeKey(record.network, record.alias);
     this.state.set<AliasRecord>(NAMESPACE, key, record);
     this.logger.debug(
       `[ALIAS] Registered ${record.alias} (${record.type}) on ${record.network}`,
@@ -39,7 +40,7 @@ export class AliasServiceImpl implements AliasService {
     expectation: AliasType | undefined,
     network: SupportedNetwork,
   ): AliasRecord | null {
-    const key = this.composeKey(network, ref);
+    const key = composeKey(network, ref);
     const rec = this.state.get<AliasRecord>(NAMESPACE, key);
     if (!rec) return null;
     if (expectation && rec.type !== expectation) return null;
@@ -92,7 +93,7 @@ export class AliasServiceImpl implements AliasService {
   }
 
   remove(alias: string, network: SupportedNetwork): void {
-    const key = this.composeKey(network, alias);
+    const key = composeKey(network, alias);
     this.state.delete(NAMESPACE, key);
     this.logger.debug(`[ALIAS] Removed ${alias} on ${network}`);
   }
@@ -105,14 +106,14 @@ export class AliasServiceImpl implements AliasService {
         return r.type === type;
       })
       .forEach((r) => {
-        this.state.delete(NAMESPACE, this.composeKey(r.network, r.alias));
+        this.state.delete(NAMESPACE, composeKey(r.network, r.alias));
         this.logger.debug(`[ALIAS] Removed ${r.alias} on ${r.network}`);
       });
     this.logger.debug(`[ALIAS] Cleared aliases for type ${type}`);
   }
 
   exists(alias: string, network: SupportedNetwork): boolean {
-    const key = this.composeKey(network, alias);
+    const key = composeKey(network, alias);
     return this.state.has(NAMESPACE, key);
   }
 
@@ -126,9 +127,5 @@ export class AliasServiceImpl implements AliasService {
         { context: { alias, network } },
       );
     }
-  }
-
-  private composeKey(network: SupportedNetwork, alias: string): string {
-    return `${network}:${alias}`;
   }
 }

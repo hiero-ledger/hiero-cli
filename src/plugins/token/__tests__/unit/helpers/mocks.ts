@@ -31,6 +31,7 @@ import {
   makeKeyResolverMock as makeGlobalKeyResolverMock,
 } from '@/__tests__/mocks/mocks';
 import { InternalError, KeyAlgorithm } from '@/core';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 
 import { mockTransactionResults } from './fixtures';
 
@@ -178,6 +179,7 @@ export const makeKmsMock = (
   createClient: jest.fn(),
   signTransaction: jest.fn(),
   signContractCreateFlow: jest.fn(),
+  hasPrivateKey: jest.fn().mockReturnValue(true),
   ...overrides,
 });
 
@@ -198,7 +200,7 @@ export const makeAliasServiceMock = (
 ): jest.Mocked<AliasService> => ({
   register: jest.fn(),
   resolve: jest.fn().mockImplementation((alias, type) => {
-    if (type === 'account') {
+    if (type === AliasType.Account) {
       const accountAliases: Record<string, AliasAccountData> = {
         'admin-key': {
           entityId: '0.0.100000',
@@ -248,7 +250,7 @@ export const makeAliasServiceMock = (
       };
       return accountAliases[alias] || null;
     }
-    if (type === 'token') {
+    if (type === AliasType.Token) {
       const tokenAliases: Record<string, { entityId: string }> = {
         'my-token': { entityId: '0.0.12345' },
         'my-nft-collection': { entityId: '0.0.54321' },
@@ -626,6 +628,7 @@ export const setupZustandHelperMock = (
     getTokensWithStats: jest.fn().mockReturnValue(
       config.stats || {
         total: 0,
+        withKeys: 0,
         byNetwork: {},
         bySupplyType: {},
         withAssociations: 0,
@@ -734,7 +737,7 @@ export const makeMintFtSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.getOrInitKey = jest.fn().mockResolvedValue({
+  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
     accountId: '0.0.200000',
     publicKey: defaultSupplyKeyPublicKey,
     keyRefId: 'supply-key-ref-id',
@@ -804,7 +807,7 @@ export const makeMintNftSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.getOrInitKey = jest.fn().mockResolvedValue({
+  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
     accountId: '0.0.200000',
     publicKey: defaultSupplyKeyPublicKey,
     keyRefId: 'supply-key-ref-id',

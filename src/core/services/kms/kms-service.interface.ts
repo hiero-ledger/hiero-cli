@@ -98,6 +98,8 @@ export interface KmsService {
    */
   remove(keyRefId: string): void;
 
+  hasPrivateKey(keyRefId: string): boolean;
+
   /**
    * Creates a Hedera client with operator credentials.
    * @param network - Network to connect to

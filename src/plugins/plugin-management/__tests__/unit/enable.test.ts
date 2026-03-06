@@ -1,14 +1,14 @@
 /**
  * Unit tests for plugin-management enable command
  */
-import type { EnablePluginOutput } from '@/plugins/plugin-management/commands/enable/output';
-
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, StateError } from '@/core/errors';
 import {
   PluginManagementEnableStatus,
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
+import { EnablePluginOutputSchema } from '@/plugins/plugin-management/commands/enable';
 import { enablePlugin } from '@/plugins/plugin-management/commands/enable/handler';
 
 describe('plugin-management enable command', () => {
@@ -29,7 +29,7 @@ describe('plugin-management enable command', () => {
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
     const result = await enablePlugin(args);
-    const output = result.result as EnablePluginOutput;
+    const output = assertOutput(result.result, EnablePluginOutputSchema);
 
     expect(output).toBeDefined();
     expect(output.name).toBe('custom-plugin');

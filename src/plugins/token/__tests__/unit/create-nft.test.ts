@@ -1,8 +1,13 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
+import { assertOutput } from '@/__tests__/utils/assert-output';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { createNft } from '@/plugins/token/commands/create-nft';
+import {
+  createNft,
+  CreateNftOutputSchema,
+} from '@/plugins/token/commands/create-nft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -64,21 +69,21 @@ describe('createNftHandler', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            if (type === 'account' && alias === 'treasury-account') {
+            if (type === AliasType.Account && alias === 'treasury-account') {
               return {
                 entityId: '0.0.123456',
                 publicKey: '302a300506032b6570032100' + '1'.repeat(64),
                 keyRefId: 'treasury-key-ref-id',
               };
             }
-            if (type === 'account' && alias === 'test-admin-key') {
+            if (type === AliasType.Account && alias === 'test-admin-key') {
               return {
                 entityId: '0.0.100000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),
                 keyRefId: 'admin-key-ref-id',
               };
             }
-            if (type === 'account' && alias === 'test-supply-key') {
+            if (type === AliasType.Account && alias === 'test-supply-key') {
               return {
                 entityId: '0.0.200000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),
@@ -105,7 +110,7 @@ describe('createNftHandler', () => {
         expect.arrayContaining(['admin-key-ref-id', 'treasury-key-ref-id']),
       );
       expect(mockSaveToken).toHaveBeenCalled();
-      expect(result.result).toBeDefined();
+      assertOutput(result.result, CreateNftOutputSchema);
     });
 
     test('should use default credentials when treasury not provided', async () => {
@@ -164,7 +169,7 @@ describe('createNftHandler', () => {
         ['operator-key-ref-id'],
       );
       expect(mockSaveToken).toHaveBeenCalled();
-      expect(result.result).toBeDefined();
+      assertOutput(result.result, CreateNftOutputSchema);
     });
   });
 
@@ -173,7 +178,7 @@ describe('createNftHandler', () => {
       // Arrange
       const { api, keyResolver } = makeApiMocks();
 
-      keyResolver.getOrInitKeyWithFallback.mockImplementation(() =>
+      keyResolver.resolveAccountCredentialsWithFallback.mockImplementation(() =>
         Promise.reject(new Error('No operator set')),
       );
 
@@ -221,21 +226,21 @@ describe('createNftHandler', () => {
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias, type) => {
-            if (type === 'account' && alias === 'treasury-account') {
+            if (type === AliasType.Account && alias === 'treasury-account') {
               return {
                 entityId: '0.0.123456',
                 publicKey: '302a300506032b6570032100' + '1'.repeat(64),
                 keyRefId: 'treasury-key-ref-id',
               };
             }
-            if (type === 'account' && alias === 'test-admin-key') {
+            if (type === AliasType.Account && alias === 'test-admin-key') {
               return {
                 entityId: '0.0.100000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),
                 keyRefId: 'admin-key-ref-id',
               };
             }
-            if (type === 'account' && alias === 'test-supply-key') {
+            if (type === AliasType.Account && alias === 'test-supply-key') {
               return {
                 entityId: '0.0.100000',
                 publicKey: '302a300506032b6570032100' + '0'.repeat(64),

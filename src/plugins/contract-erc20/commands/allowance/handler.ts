@@ -7,7 +7,7 @@ import type { ContractErc20CallAllowanceOutput } from '@/plugins/contract-erc20/
 import { Interface } from 'ethers';
 
 import { NotFoundError, StateError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { EntityReferenceType } from '@/core/types/shared.types';
 import { ContractErc20CallAllowanceInputSchema } from '@/plugins/contract-erc20/commands/allowance/input';
 import { ContractErc20CallAllowanceResultSchema } from '@/plugins/contract-erc20/commands/allowance/result';
@@ -31,7 +31,7 @@ export async function allowanceFunctionCall(
       entityReference: contractRef.value,
       referenceType: contractRef.type,
       network,
-      aliasType: ALIAS_TYPE.Contract,
+      aliasType: AliasType.Contract,
     }).entityIdOrEvmAddress;
 
   const ownerEvmAddress =

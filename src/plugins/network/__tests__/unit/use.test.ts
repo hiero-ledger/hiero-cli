@@ -1,5 +1,3 @@
-import type { UseNetworkOutput } from '@/plugins/network/commands/use/output';
-
 import {
   createMirrorNodeMock,
   makeArgs,
@@ -7,8 +5,12 @@ import {
   makeNetworkMock,
   setupExitSpy,
 } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
-import { useHandler } from '@/plugins/network/commands/use';
+import {
+  useHandler,
+  UseNetworkOutputSchema,
+} from '@/plugins/network/commands/use';
 
 let exitSpy: jest.SpyInstance;
 
@@ -43,7 +45,7 @@ describe('network plugin - use command', () => {
     const result = await useHandler(args);
 
     expect(networkService.switchNetwork).toHaveBeenCalledWith('mainnet');
-    const output = result.result as UseNetworkOutput;
+    const output = assertOutput(result.result, UseNetworkOutputSchema);
     expect(output.activeNetwork).toBe('mainnet');
   });
 
@@ -81,7 +83,7 @@ describe('network plugin - use command', () => {
     const result = await useHandler(args);
 
     expect(networkService.switchNetwork).toHaveBeenCalledWith('previewnet');
-    const output = result.result as UseNetworkOutput;
+    const output = assertOutput(result.result, UseNetworkOutputSchema);
     expect(output.activeNetwork).toBe('previewnet');
   });
 
@@ -121,7 +123,9 @@ describe('network plugin - use command', () => {
     );
 
     const res1 = await useHandler(argsToMainnet);
-    expect((res1.result as UseNetworkOutput).activeNetwork).toBe('mainnet');
+    expect(
+      assertOutput(res1.result, UseNetworkOutputSchema).activeNetwork,
+    ).toBe('mainnet');
     expect(networkService.switchNetwork).toHaveBeenCalledWith('mainnet');
 
     jest.clearAllMocks();
@@ -135,7 +139,9 @@ describe('network plugin - use command', () => {
     );
 
     const res2 = await useHandler(argsToPreviewnet);
-    expect((res2.result as UseNetworkOutput).activeNetwork).toBe('previewnet');
+    expect(
+      assertOutput(res2.result, UseNetworkOutputSchema).activeNetwork,
+    ).toBe('previewnet');
     expect(networkService.switchNetwork).toHaveBeenCalledWith('previewnet');
   });
 });

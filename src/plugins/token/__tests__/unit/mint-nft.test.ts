@@ -1,13 +1,18 @@
 import '@/core/utils/json-serialize';
 
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { mintNft, type MintNftOutput } from '@/plugins/token/commands/mint-nft';
+import {
+  mintNft,
+  MintNftOutputSchema,
+} from '@/plugins/token/commands/mint-nft';
 import { TOKEN_NAMESPACE } from '@/plugins/token/manifest';
 
 import { makeMintNftCommandArgs } from './helpers/fixtures';
@@ -39,7 +44,7 @@ describe('mintNftHandler', () => {
 
       const result = await mintNft(args);
 
-      const output = result.result as MintNftOutput;
+      const output = assertOutput(result.result, MintNftOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
       expect(output.serialNumber).toBe('1');
@@ -81,7 +86,7 @@ describe('mintNftHandler', () => {
 
       const result = await mintNft(args);
 
-      const output = result.result as MintNftOutput;
+      const output = assertOutput(result.result, MintNftOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.serialNumber).toBe('1');
 
@@ -129,7 +134,7 @@ describe('mintNftHandler', () => {
         alias: {
           resolve: jest.fn().mockReturnValue({
             entityId: '0.0.123456',
-            type: 'token',
+            type: AliasType.Token,
             network: 'testnet',
             createdAt: '2024-01-01T00:00:00.000Z',
           }),
@@ -142,7 +147,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      api.keyResolver.getOrInitKey = jest.fn().mockResolvedValue({
+      api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
         accountId: '0.0.200000',
         publicKey: 'supply-public-key',
         keyRefId: 'supply-key-ref-id',
@@ -161,11 +166,11 @@ describe('mintNftHandler', () => {
 
       const result = await mintNft(args);
 
-      const output = result.result as MintNftOutput;
+      const output = assertOutput(result.result, MintNftOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(api.alias.resolve).toHaveBeenCalledWith(
         'my-nft-collection',
-        'token',
+        AliasType.Token,
         'testnet',
       );
     });
@@ -387,7 +392,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      api.keyResolver.getOrInitKey = jest.fn().mockResolvedValue({
+      api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
         accountId: '0.0.200000',
         publicKey: providedSupplyKeyPublicKey,
         keyRefId: 'supply-key-ref-id',

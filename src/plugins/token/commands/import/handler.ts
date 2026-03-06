@@ -3,9 +3,10 @@ import type { TokenData } from '@/plugins/token/schema';
 import type { ImportTokenOutput } from './output';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { MirrorTokenTypeToHederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { entityIdToAliasSafeFormat } from '@/core/utils/entity-id-to-alias-format';
+import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { ImportTokenInputSchema } from './input';
@@ -24,11 +25,11 @@ export async function importToken(
 
   const network = api.network.getCurrentNetwork();
 
+  const key = composeKey(network, tokenId);
   if (alias) {
     api.alias.availableOrThrow(alias, network);
   }
-
-  if (tokenState.getToken(tokenId)) {
+  if (tokenState.getToken(key)) {
     throw new ValidationError(
       `Token with ID '${tokenId}' already exists in state`,
     );
@@ -43,14 +44,10 @@ export async function importToken(
     );
   }
 
-  const name =
-    alias || tokenInfo.name || `imported-${entityIdToAliasSafeFormat(tokenId)}`;
-  logger.info(`Importing token: ${name} (${tokenId})`);
-
   if (alias) {
     api.alias.register({
       alias,
-      type: 'token',
+      type: AliasType.Token,
       network,
       entityId: tokenId,
       createdAt: new Date().toISOString(),
@@ -62,7 +59,7 @@ export async function importToken(
 
   const tokenData: TokenData = {
     tokenId,
-    name,
+    name: tokenInfo.name,
     symbol: tokenInfo.symbol,
     treasuryId: tokenInfo.treasury,
     adminPublicKey: tokenInfo.admin_key?.key,
@@ -83,7 +80,7 @@ export async function importToken(
     memo: tokenInfo.memo || undefined,
   };
 
-  tokenState.saveToken(tokenId, tokenData);
+  tokenState.saveToken(key, tokenData);
 
   const result: ImportTokenOutput = {
     tokenId,

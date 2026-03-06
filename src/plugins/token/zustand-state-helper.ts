@@ -22,17 +22,17 @@ export class ZustandTokenStateHelper {
   /**
    * Save a token to the state
    */
-  saveToken(tokenId: string, tokenData: TokenData): void {
+  saveToken(key: string, tokenData: TokenData): void {
     try {
-      this.logger.debug(`[TOKEN STATE] Saving token ${tokenId} to state`);
+      this.logger.debug(`[TOKEN STATE] Saving token ${key} to state`);
 
       // Use the state service to save data in the token namespace
-      this.state.set(TOKEN_NAMESPACE, tokenId, tokenData);
+      this.state.set(TOKEN_NAMESPACE, key, tokenData);
 
-      this.logger.debug(`[TOKEN STATE] Successfully saved token ${tokenId}`);
+      this.logger.debug(`[TOKEN STATE] Successfully saved token ${key}`);
     } catch (error) {
       this.logger.error(
-        `[TOKEN STATE] Failed to save token ${tokenId}: ${error instanceof Error ? error.message : String(error)}`,
+        `[TOKEN STATE] Failed to save token ${key}: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }
@@ -41,22 +41,22 @@ export class ZustandTokenStateHelper {
   /**
    * Get a token from the state
    */
-  getToken(tokenId: string): TokenData | null {
+  getToken(key: string): TokenData | null {
     try {
-      this.logger.debug(`[TOKEN STATE] Getting token ${tokenId} from state`);
+      this.logger.debug(`[TOKEN STATE] Getting token ${key} from state`);
 
-      const tokenData = this.state.get<TokenData>(TOKEN_NAMESPACE, tokenId);
+      const tokenData = this.state.get<TokenData>(TOKEN_NAMESPACE, key);
 
       if (tokenData) {
-        this.logger.debug(`[TOKEN STATE] Found token ${tokenId} in state`);
+        this.logger.debug(`[TOKEN STATE] Found token ${key} in state`);
         return tokenData;
       } else {
-        this.logger.debug(`[TOKEN STATE] Token ${tokenId} not found in state`);
+        this.logger.debug(`[TOKEN STATE] Token ${key} not found in state`);
         return null;
       }
     } catch (error) {
       this.logger.error(
-        `[TOKEN STATE] Failed to get token ${tokenId}: ${error instanceof Error ? error.message : String(error)}`,
+        `[TOKEN STATE] Failed to get token ${key}: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }
@@ -94,16 +94,16 @@ export class ZustandTokenStateHelper {
   /**
    * Remove a token from the state
    */
-  removeToken(tokenId: string): void {
+  removeToken(key: string): void {
     try {
-      this.logger.debug(`[TOKEN STATE] Removing token ${tokenId} from state`);
+      this.logger.debug(`[TOKEN STATE] Removing token ${key} from state`);
 
-      this.state.delete(TOKEN_NAMESPACE, tokenId);
+      this.state.delete(TOKEN_NAMESPACE, key);
 
-      this.logger.debug(`[TOKEN STATE] Successfully removed token ${tokenId}`);
+      this.logger.debug(`[TOKEN STATE] Successfully removed token ${key}`);
     } catch (error) {
       this.logger.error(
-        `[TOKEN STATE] Failed to remove token ${tokenId}: ${error instanceof Error ? error.message : String(error)}`,
+        `[TOKEN STATE] Failed to remove token ${key}: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }
@@ -113,15 +113,15 @@ export class ZustandTokenStateHelper {
    * Add an association to a token
    */
   addTokenAssociation(
-    tokenId: string,
+    key: string,
     accountId: string,
     accountName: string,
   ): void {
     try {
-      const tokenData = this.getToken(tokenId);
+      const tokenData = this.getToken(key);
       if (!tokenData) {
-        throw new NotFoundError(`Token ${tokenId} not found`, {
-          context: { tokenId },
+        throw new NotFoundError(`Token ${key} not found`, {
+          context: { key },
         });
       }
 
@@ -166,18 +166,18 @@ export class ZustandTokenStateHelper {
           supplyPublicKey: tokenData.supplyPublicKey,
         };
 
-        this.saveToken(tokenId, updatedTokenData);
+        this.saveToken(key, updatedTokenData);
         this.logger.debug(
-          `[TOKEN STATE] Added association ${accountId} to token ${tokenId}`,
+          `[TOKEN STATE] Added association ${accountId} to token ${key}`,
         );
       } else {
         this.logger.debug(
-          `[TOKEN STATE] Association ${accountId} already exists for token ${tokenId}`,
+          `[TOKEN STATE] Association ${accountId} already exists for token ${key}`,
         );
       }
     } catch (error) {
       this.logger.error(
-        `[TOKEN STATE] Failed to add association to token ${tokenId}: ${error instanceof Error ? error.message : String(error)}`,
+        `[TOKEN STATE] Failed to add association to token ${key}: ${error instanceof Error ? error.message : String(error)}`,
       );
       throw error;
     }

@@ -16,7 +16,7 @@ import {
 export const ListTopicsOutputSchema = z.object({
   topics: z.array(
     z.object({
-      name: z.string().describe('Topic name or alias'),
+      name: z.string().describe('Topic name').optional(),
       topicId: EntityIdSchema,
       network: NetworkSchema,
       memo: z.string().describe('Topic memo').nullable(),
@@ -32,7 +32,7 @@ export const ListTopicsOutputSchema = z.object({
     withSubmitKey: z.number().describe('Count of topics with submit key'),
     withMemo: z.number().describe('Count of topics with memo'),
     byNetwork: z
-      .record(z.number(), z.number())
+      .record(z.string(), z.number())
       .describe('Count of topics by network'),
   }),
 });

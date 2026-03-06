@@ -2,10 +2,13 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
 
+import { assertOutput } from '@/__tests__/utils/assert-output';
+import { SupportedNetwork } from '@/core';
 import { NotFoundError } from '@/core/errors';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import {
   deleteToken,
-  type DeleteTokenOutput,
+  DeleteTokenOutputSchema,
 } from '@/plugins/token/commands/delete';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -46,7 +49,7 @@ describe('deleteTokenHandler', () => {
             {
               alias: 'my-token',
               entityId: '0.0.123456',
-              type: 'token',
+              type: AliasType.Token,
               network: 'testnet',
               createdAt: '2024-01-01T00:00:00.000Z',
             },
@@ -66,14 +69,16 @@ describe('deleteTokenHandler', () => {
 
       const result = await deleteToken(args);
 
-      const output = result.result as DeleteTokenOutput;
+      const output = assertOutput(result.result, DeleteTokenOutputSchema);
       expect(output.deletedToken.tokenId).toBe('0.0.123456');
       expect(output.deletedToken.name).toBe('TestToken');
       expect(output.network).toBe('testnet');
       expect(output.removedAliases).toEqual(['my-token (testnet)']);
 
       expect(api.alias.remove).toHaveBeenCalledWith('my-token', 'testnet');
-      expect(mockRemoveToken).toHaveBeenCalledWith('0.0.123456');
+      expect(mockRemoveToken).toHaveBeenCalledWith(
+        `${SupportedNetwork.TESTNET}:0.0.123456`,
+      );
     });
 
     test('deletes token without removedAliases when no alias points to token', async () => {
@@ -102,7 +107,7 @@ describe('deleteTokenHandler', () => {
 
       const result = await deleteToken(args);
 
-      const output = result.result as DeleteTokenOutput;
+      const output = assertOutput(result.result, DeleteTokenOutputSchema);
       expect(output.deletedToken.tokenId).toBe('0.0.123456');
       expect(output.deletedToken.name).toBe('TestToken');
       expect(output.removedAliases).toBeUndefined();

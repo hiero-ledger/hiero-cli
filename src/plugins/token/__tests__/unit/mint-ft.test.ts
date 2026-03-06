@@ -1,5 +1,6 @@
 import '@/core/utils/json-serialize';
 
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
   TransactionError,
@@ -7,7 +8,7 @@ import {
 } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { mintFt, type MintFtOutput } from '@/plugins/token/commands/mint-ft';
+import { mintFt, MintFtOutputSchema } from '@/plugins/token/commands/mint-ft';
 import { TOKEN_NAMESPACE } from '@/plugins/token/manifest';
 
 import { makeMintFtCommandArgs } from './helpers/fixtures';
@@ -39,7 +40,7 @@ describe('mintFtHandler', () => {
 
       const result = await mintFt(args);
 
-      const output = result.result as MintFtOutput;
+      const output = assertOutput(result.result, MintFtOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
 
@@ -69,7 +70,7 @@ describe('mintFtHandler', () => {
 
       const result = await mintFt(args);
 
-      const output = result.result as MintFtOutput;
+      const output = assertOutput(result.result, MintFtOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.amount).toBe(5000n);
 
@@ -104,7 +105,7 @@ describe('mintFtHandler', () => {
 
       const result = await mintFt(args);
 
-      const output = result.result as MintFtOutput;
+      const output = assertOutput(result.result, MintFtOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.amount).toBe(10000n);
 

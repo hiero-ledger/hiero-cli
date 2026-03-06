@@ -3,7 +3,8 @@ import type { DeleteContractOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { composeKey } from '@/core/utils/key-composer';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
 import { DeleteContractInputSchema } from './input';
@@ -22,25 +23,26 @@ export async function deleteContract(
   const isEntityId = EntityIdSchema.safeParse(contractRef).success;
   const currentNetwork = api.network.getCurrentNetwork();
   let contractToDelete;
+  let contractKey;
 
   if (isEntityId) {
-    contractToDelete = contractState.getContract(contractRef);
-    if (!contractToDelete) {
-      throw new NotFoundError(`Contract with ID '${contractRef}' not found`);
-    }
+    contractKey = composeKey(currentNetwork, contractRef);
   } else {
     const aliasRecord = api.alias.resolve(
       contractRef,
-      ALIAS_TYPE.Contract,
+      AliasType.Contract,
       currentNetwork,
     );
     if (!aliasRecord?.entityId) {
       throw new NotFoundError(`Contract with alias '${contractRef}' not found`);
     }
-    contractToDelete = contractState.getContract(aliasRecord.entityId);
-    if (!contractToDelete) {
-      throw new NotFoundError(`Contract with alias '${contractRef}' not found`);
-    }
+    contractKey = composeKey(currentNetwork, aliasRecord.entityId);
+  }
+  contractToDelete = contractState.getContract(contractKey);
+  if (!contractToDelete) {
+    throw new NotFoundError(
+      `Contract with identifier '${contractRef}' not found`,
+    );
   }
 
   if (contractToDelete.alias) {

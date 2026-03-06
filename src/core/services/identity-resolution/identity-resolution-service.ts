@@ -10,7 +10,7 @@ import type {
 } from '@/core/services/identity-resolution/types';
 
 import { StateError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { EntityReferenceType } from '@/core/types/shared.types';
 
 export class IdentityResolutionServiceImpl implements IdentityResolutionService {
@@ -33,7 +33,7 @@ export class IdentityResolutionServiceImpl implements IdentityResolutionService 
         entityReference: params.accountReference,
         referenceType: params.type,
         network: params.network,
-        aliasType: ALIAS_TYPE.Account,
+        aliasType: AliasType.Account,
       });
     const accountInfo = await this.mirrorService.getAccount(
       accountReferenceResolutionResult.entityIdOrEvmAddress,
@@ -53,7 +53,7 @@ export class IdentityResolutionServiceImpl implements IdentityResolutionService 
         entityReference: params.contractReference,
         referenceType: params.type,
         network: params.network,
-        aliasType: ALIAS_TYPE.Contract,
+        aliasType: AliasType.Contract,
       });
     const contractInfo = await this.mirrorService.getContractInfo(
       contractReferenceResolutionResult.entityIdOrEvmAddress,

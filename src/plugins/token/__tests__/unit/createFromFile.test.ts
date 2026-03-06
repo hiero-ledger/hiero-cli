@@ -6,11 +6,12 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { FileError, StateError } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  type CreateFungibleTokenFromFileOutput,
+  CreateFungibleTokenFromFileOutputSchema,
   createTokenFromFile,
 } from '@/plugins/token/commands/create-ft-from-file';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -187,7 +188,10 @@ describe('createTokenFromFileHandler', () => {
 
       // Act
       const result = await createTokenFromFile(args);
-      const output = result.result as CreateFungibleTokenFromFileOutput;
+      const output = assertOutput(
+        result.result,
+        CreateFungibleTokenFromFileOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -238,7 +242,10 @@ describe('createTokenFromFileHandler', () => {
 
       const result = await createTokenFromFile(args);
 
-      const output = result.result as CreateFungibleTokenFromFileOutput;
+      const output = assertOutput(
+        result.result,
+        CreateFungibleTokenFromFileOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -272,7 +279,10 @@ describe('createTokenFromFileHandler', () => {
 
       const result = await createTokenFromFile(args);
 
-      const output = result.result as CreateFungibleTokenFromFileOutput;
+      const output = assertOutput(
+        result.result,
+        CreateFungibleTokenFromFileOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -358,7 +368,10 @@ describe('createTokenFromFileHandler', () => {
 
       // Act
       const result = await createTokenFromFile(args);
-      const output = result.result as CreateFungibleTokenFromFileOutput;
+      const output = assertOutput(
+        result.result,
+        CreateFungibleTokenFromFileOutputSchema,
+      );
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
       expect(output.treasuryId).toBe('0.0.123456');
@@ -468,7 +481,10 @@ describe('createTokenFromFileHandler', () => {
 
       // Act
       const result = await createTokenFromFile(args);
-      const output = result.result as CreateFungibleTokenFromFileOutput;
+      const output = assertOutput(
+        result.result,
+        CreateFungibleTokenFromFileOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.associations).toBeDefined();
       expect(output.associations.length).toBeGreaterThan(0);
@@ -809,7 +825,10 @@ describe('createTokenFromFileHandler', () => {
 
       // Act
       const result = await createTokenFromFile(args);
-      const output = result.result as CreateFungibleTokenFromFileOutput;
+      const output = assertOutput(
+        result.result,
+        CreateFungibleTokenFromFileOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
 
@@ -896,7 +915,10 @@ describe('createTokenFromFileHandler', () => {
 
       // Act
       const result = await createTokenFromFile(args);
-      const output = result.result as CreateFungibleTokenFromFileOutput;
+      const output = assertOutput(
+        result.result,
+        CreateFungibleTokenFromFileOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
 

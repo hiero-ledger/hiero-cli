@@ -1,12 +1,13 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc20CallSymbolOutput } from '@/plugins/contract-erc20/commands/symbol/output';
 
 import { ZodError } from 'zod';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
+import { ContractErc20CallSymbolOutputSchema } from '@/plugins/contract-erc20/commands/symbol';
 import { symbolFunctionCall as erc20SymbolHandler } from '@/plugins/contract-erc20/commands/symbol/handler';
 import { ContractErc20CallSymbolInputSchema } from '@/plugins/contract-erc20/commands/symbol/input';
 
@@ -46,7 +47,10 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
 
     expect(result.result).toBeDefined();
 
-    const parsed = result.result as ContractErc20CallSymbolOutput;
+    const parsed = assertOutput(
+      result.result,
+      ContractErc20CallSymbolOutputSchema,
+    );
 
     expect(parsed.contractId).toBe('0.0.1234');
     expect(parsed.contractSymbol).toBe('HBAR');

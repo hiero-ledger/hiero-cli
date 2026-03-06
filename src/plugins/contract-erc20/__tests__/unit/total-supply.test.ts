@@ -1,12 +1,13 @@
 import type { CoreApi, Logger } from '@/core';
-import type { ContractErc20CallTotalSupplyOutput } from '@/plugins/contract-erc20/commands/total-supply/output';
 
 import { ZodError } from 'zod';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
+import { ContractErc20CallTotalSupplyOutputSchema } from '@/plugins/contract-erc20/commands/total-supply';
 import { totalSupplyFunctionCall as erc20TotalSupplyHandler } from '@/plugins/contract-erc20/commands/total-supply/handler';
 import { ContractErc20CallTotalSupplyInputSchema } from '@/plugins/contract-erc20/commands/total-supply/input';
 
@@ -46,7 +47,10 @@ describe('contract-erc20 plugin - totalSupply command (unit)', () => {
 
     expect(result.result).toBeDefined();
 
-    const parsed = result.result as ContractErc20CallTotalSupplyOutput;
+    const parsed = assertOutput(
+      result.result,
+      ContractErc20CallTotalSupplyOutputSchema,
+    );
 
     expect(parsed.contractId).toBe('0.0.1234');
     expect(parsed.totalSupply).toBe('1000000000000000000');

@@ -1,8 +1,9 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { ListAccountsOutput } from '@/plugins/account/commands/list';
 
 import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
+import { ListAccountsOutputSchema } from '@/plugins/account/commands/list';
 import { listAccounts } from '@/plugins/account/commands/list/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -31,7 +32,7 @@ describe('account plugin - list command (ADR-003)', () => {
 
     const result = await listAccounts(args);
 
-    const output = result.result as ListAccountsOutput;
+    const output = assertOutput(result.result, ListAccountsOutputSchema);
     expect(output.totalCount).toBe(0);
     expect(output.accounts).toEqual([]);
   });
@@ -52,7 +53,7 @@ describe('account plugin - list command (ADR-003)', () => {
 
     const result = await listAccounts(args);
 
-    const output = result.result as ListAccountsOutput;
+    const output = assertOutput(result.result, ListAccountsOutputSchema);
     expect(output.totalCount).toBe(2);
     expect(output.accounts).toHaveLength(2);
     expect(output.accounts[0].name).toBe('acc1');
@@ -76,7 +77,7 @@ describe('account plugin - list command (ADR-003)', () => {
 
     const result = await listAccounts(args);
 
-    const output = result.result as ListAccountsOutput;
+    const output = assertOutput(result.result, ListAccountsOutputSchema);
     expect(output.totalCount).toBe(1);
     expect(output.accounts).toHaveLength(1);
     expect(output.accounts[0].name).toBe('acc3');

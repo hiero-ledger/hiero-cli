@@ -1,16 +1,26 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { AssociateTokenOutput } from '@/plugins/token/commands/associate';
-import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
-import type { ListTokensOutput } from '@/plugins/token/commands/list';
-import type { TransferFungibleTokenOutput } from '@/plugins/token/commands/transfer-ft';
 
 import '@/core/utils/json-serialize';
 
+import { assertOutput } from '@/__tests__/utils/assert-output';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupplyType } from '@/core/types/shared.types';
-import { associateToken } from '@/plugins/token/commands/associate/handler';
-import { createToken } from '@/plugins/token/commands/create-ft/handler';
-import { listTokens } from '@/plugins/token/commands/list/handler';
-import { transferToken } from '@/plugins/token/commands/transfer-ft/handler';
+import {
+  associateToken,
+  AssociateTokenOutputSchema,
+} from '@/plugins/token/commands/associate';
+import {
+  CreateFungibleTokenOutputSchema,
+  createToken,
+} from '@/plugins/token/commands/create-ft';
+import {
+  listTokens,
+  ListTokensOutputSchema,
+} from '@/plugins/token/commands/list';
+import {
+  TransferFungibleTokenOutputSchema,
+  transferToken,
+} from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -35,6 +45,7 @@ describe('Handler Output Validation - Token Plugin', () => {
       listTokens: jest.fn().mockReturnValue([]),
       getTokensWithStats: jest.fn().mockReturnValue({
         total: 0,
+        withKeys: 0,
         byNetwork: {},
         bySupplyType: {},
         withAssociations: 0,
@@ -85,7 +96,10 @@ describe('Handler Output Validation - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      const output = result.result as CreateFungibleTokenOutput;
+      const output = assertOutput(
+        result.result,
+        CreateFungibleTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TTK');
@@ -110,24 +124,26 @@ describe('Handler Output Validation - Token Plugin', () => {
         alias: {
           resolve: jest
             .fn()
-            .mockImplementation((alias: string, type: string) => {
-              if (
-                type === 'account' &&
-                (alias === '0.0.111' || alias === '0.0.222')
-              ) {
-                return {
-                  entityId: alias,
-                  keyRefId: `key-ref-${alias}`,
-                  alias,
-                };
-              }
-              if (type === 'token' && alias === '0.0.12345') {
-                return {
-                  entityId: alias,
-                };
-              }
-              return null;
-            }),
+            .mockImplementation(
+              (alias: string, type: AliasType | undefined) => {
+                if (
+                  type === AliasType.Account &&
+                  (alias === '0.0.111' || alias === '0.0.222')
+                ) {
+                  return {
+                    entityId: alias,
+                    keyRefId: `key-ref-${alias}`,
+                    alias,
+                  };
+                }
+                if (type === AliasType.Token && alias === '0.0.12345') {
+                  return {
+                    entityId: alias,
+                  };
+                }
+                return null;
+              },
+            ),
         },
         kms: {
           get: jest.fn().mockReturnValue({
@@ -151,7 +167,10 @@ describe('Handler Output Validation - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      const output = result.result as TransferFungibleTokenOutput;
+      const output = assertOutput(
+        result.result,
+        TransferFungibleTokenOutputSchema,
+      );
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.transactionId).toBe('0.0.123@1700000000.123456789');
       expect(output.amount).toBe(100n);
@@ -196,7 +215,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      const output = result.result as AssociateTokenOutput;
+      const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.associated).toBe(true);
       expect(output.transactionId).toBe('0.0.123@1700000000.123456789');
@@ -217,7 +236,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      const output = result.result as ListTokensOutput;
+      const output = assertOutput(result.result, ListTokensOutputSchema);
       expect(output.tokens).toEqual([]);
       expect(output.totalCount).toBe(0);
       expect(output.stats).toBeDefined();
@@ -232,12 +251,16 @@ describe('Handler Output Validation - Token Plugin', () => {
             symbol: 'TTK',
             decimals: 2,
             supplyType: SupplyType.INFINITE,
+            tokenType: 'FungibleCommon',
+            maxSupply: 0,
+            associationCount: 0,
             treasuryId: '0.0.111',
             network: 'testnet',
           },
         ]),
         getTokensWithStats: jest.fn().mockReturnValue({
           total: 1,
+          withKeys: 0,
           byNetwork: { testnet: 1 },
           bySupplyType: { [SupplyType.INFINITE]: 1 },
           withAssociations: 0,
@@ -257,7 +280,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      const output = result.result as ListTokensOutput;
+      const output = assertOutput(result.result, ListTokensOutputSchema);
       expect(output.tokens).toHaveLength(1);
       expect(output.tokens[0].tokenId).toBe('0.0.12345');
       expect(output.totalCount).toBe(1);

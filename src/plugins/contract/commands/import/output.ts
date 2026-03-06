@@ -20,7 +20,7 @@ export const ImportContractOutputSchema = z.object({
   alias: AliasNameSchema.optional(),
   network: NetworkSchema,
   memo: z.string().optional(),
-  verified: z.boolean,
+  verified: z.boolean(),
 });
 
 export type ImportContractOutput = z.infer<typeof ImportContractOutputSchema>;

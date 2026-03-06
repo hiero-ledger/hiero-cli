@@ -3,7 +3,8 @@ import type { ContractData } from '@/plugins/contract/schema';
 import type { ImportContractOutput } from './output';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
-import { ALIAS_TYPE } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { composeKey } from '@/core/utils/key-composer';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
 import { ImportContractInputSchema } from './input';
@@ -50,7 +51,7 @@ export async function importContract(
   if (alias) {
     api.alias.register({
       alias,
-      type: ALIAS_TYPE.Contract,
+      type: AliasType.Contract,
       network,
       entityId: contractId,
       evmAddress: contractEvmAddress,
@@ -67,8 +68,9 @@ export async function importContract(
     memo: contractInfo.memo || undefined,
     verified: false,
   };
+  const contractKey = composeKey(network, contractId);
 
-  contractState.saveContract(contractId, contractData);
+  contractState.saveContract(contractKey, contractData);
 
   const result: ImportContractOutput = {
     contractId,
