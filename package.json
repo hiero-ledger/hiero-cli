@@ -64,7 +64,7 @@
     "url": "https://github.com/hiero-ledger/hiero-cli.git"
   },
   "dependencies": {
-    "@clack/prompts": "0.11.0",
+    "@clack/prompts": "1.1.0",
     "@hashgraph/sdk": "2.80.0",
     "@openzeppelin/contracts": "5.4.0",
     "ansi-escapes": "4.3.2",
