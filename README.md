@@ -307,6 +307,20 @@ The Hiero CLI is built on a plugin architecture. The following default plugins a
 
 Each plugin has its own README with detailed documentation about available commands, usage examples, and architecture details. Click on the plugin name above to learn more.
 
+## Community Plugins
+
+Community plugins can be found in their respective owners repositories. Make sure to **clone a plugin repository** and **add the plugin** using the [`hcli plugin-management add` command](src/plugins/plugin-management/README.md). You can clone the repository anywhere on your local machine and add it to the CLI if you use the globally installed Hiero CLI version.
+
+**Note:** Community plugins are not officially supported by the Hiero team. Use them at your own risk.
+
+### List of Community Plugins
+
+None at the moment. Want to contribute a plugin?
+
+### Template for Creating Your Own Plugin
+
+A template for creating your own plugin and documenting it can be found in the [`src/plugins/test` plugin](src/plugins/test) directory.
+
 # Configuration & State Storage
 
 The CLI externalizes both its immutable base configuration and mutable runtime state. No editable JSON lives in `src/state/` anymore.
