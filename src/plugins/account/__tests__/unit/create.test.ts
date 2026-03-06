@@ -6,7 +6,8 @@ import type { TransactionResult } from '@/core/services/tx-execution/tx-executio
 import '@/core/utils/json-serialize';
 
 import {
-  ECDSA_EVM_ADDRESS,
+  ACCOUNT_ID_EVM_ADDRESS_8888,
+  ACCOUNT_ID_EVM_ADDRESS_9999,
   ECDSA_HEX_PRIVATE_KEY,
   ECDSA_HEX_PUBLIC_KEY,
   ED25519_HEX_PUBLIC_KEY,
@@ -99,7 +100,7 @@ describe('account plugin - create command (ADR-003)', () => {
         type: KeyAlgorithm.ECDSA,
         network: 'testnet',
         keyRefId: 'kr_test123',
-        evmAddress: ECDSA_EVM_ADDRESS,
+        evmAddress: ACCOUNT_ID_EVM_ADDRESS_9999,
       }),
     );
 
@@ -110,7 +111,7 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.network).toBe('testnet');
     expect(output.transactionId).toBe('0.0.1234@1234567890.000000000');
-    expect(output.evmAddress).toBe(ECDSA_EVM_ADDRESS);
+    expect(output.evmAddress).toBe(ACCOUNT_ID_EVM_ADDRESS_9999);
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
   });
 
@@ -225,7 +226,7 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const output = assertOutput(result.result, CreateAccountOutputSchema);
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
-    expect(output.evmAddress).toBe(ECDSA_EVM_ADDRESS);
+    expect(output.evmAddress).toBe(ACCOUNT_ID_EVM_ADDRESS_8888);
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
   });
 

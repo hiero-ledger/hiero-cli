@@ -13,7 +13,7 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HBAR_DECIMALS, KeyAlgorithm } from '@/core/shared/constants';
 import { composeKey } from '@/core/utils/key-composer';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
-import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
+import { buildEvmAddressFromAccountId } from '@/plugins/account/utils/account-address';
 import { validateSufficientBalance } from '@/plugins/account/utils/account-validation';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -104,11 +104,7 @@ export async function createAccount(
     );
   }
 
-  const evmAddress = buildAccountEvmAddress({
-    accountId: result.accountId,
-    publicKey: accountCreateResult.publicKey,
-    keyType,
-  });
+  const evmAddress = buildEvmAddressFromAccountId(result.accountId);
 
   if (alias) {
     api.alias.register({
