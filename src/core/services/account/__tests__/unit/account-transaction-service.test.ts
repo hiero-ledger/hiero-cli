@@ -15,14 +15,12 @@ import { AccountServiceImpl } from '@/core/services/account/account-transaction-
 import { KeyAlgorithm } from '@/core/shared/constants';
 
 import {
-  createMockAccountBalanceQuery,
   createMockAccountCreateTransaction,
   createMockAccountInfoQuery,
 } from './mocks';
 
 const mockTransaction = createMockAccountCreateTransaction();
 const mockInfoQuery = createMockAccountInfoQuery();
-const mockBalanceQuery = createMockAccountBalanceQuery();
 
 const mockPublicKeyInstance = {
   toString: jest.fn().mockReturnValue('mock-pk'),
@@ -35,7 +33,6 @@ const mockHbarInstance = { toString: jest.fn().mockReturnValue('100 ℏ') };
 jest.mock('@hashgraph/sdk', () => ({
   AccountCreateTransaction: jest.fn(() => mockTransaction),
   AccountInfoQuery: jest.fn(() => mockInfoQuery),
-  AccountBalanceQuery: jest.fn(() => mockBalanceQuery),
   AccountId: {
     fromString: jest.fn(() => mockAccountIdInstance),
   },
@@ -265,92 +262,6 @@ describe('AccountServiceImpl', () => {
           message: 'Invalid account ID format',
         }),
       );
-
-      AccountIdMock.fromString.mockReturnValue(mockAccountIdInstance);
-    });
-  });
-
-  describe('getAccountBalance', () => {
-    it('should create account balance query with correct account ID', () => {
-      const accountId = '0.0.1234';
-
-      const result = accountService.getAccountBalance(accountId);
-
-      expect(AccountId.fromString).toHaveBeenCalledWith(accountId);
-      expect(mockBalanceQuery.setAccountId).toHaveBeenCalledWith(
-        mockAccountIdInstance,
-      );
-      expect(result).toBe(mockBalanceQuery);
-    });
-
-    it('should log debug messages when getting account balance', () => {
-      const accountId = '0.0.9999';
-
-      accountService.getAccountBalance(accountId);
-
-      expect(logger.debug).toHaveBeenCalledWith(
-        '[ACCOUNT TX] Getting account balance for: 0.0.9999',
-      );
-      expect(logger.debug).toHaveBeenCalledWith(
-        '[ACCOUNT TX] Created account balance query for: 0.0.9999',
-      );
-    });
-
-    it('should log token ID note when token ID is provided', () => {
-      const accountId = '0.0.1234';
-      const tokenId = '0.0.5555';
-
-      accountService.getAccountBalance(accountId, tokenId);
-
-      expect(logger.debug).toHaveBeenCalledWith(
-        '[ACCOUNT TX] Getting account balance for: 0.0.1234, token: 0.0.5555',
-      );
-      expect(logger.debug).toHaveBeenCalledWith(
-        '[ACCOUNT TX] Note: Token ID 0.0.5555 specified but AccountBalanceQuery returns all token balances',
-      );
-    });
-
-    it('should not log token note when token ID is not provided', () => {
-      const accountId = '0.0.1234';
-
-      accountService.getAccountBalance(accountId);
-
-      expect(logger.debug).not.toHaveBeenCalledWith(
-        expect.stringContaining('Token ID'),
-      );
-    });
-
-    it('should throw ValidationError when AccountId.fromString fails', () => {
-      const { AccountId: AccountIdMock } = jest.requireMock('@hashgraph/sdk');
-      const sdkError = new Error('Invalid account ID format');
-      AccountIdMock.fromString.mockImplementation(() => {
-        throw sdkError;
-      });
-
-      expect(() =>
-        accountService.getAccountBalance('invalid-account-id'),
-      ).toThrow(
-        expect.objectContaining({
-          message: 'Invalid account ID format',
-        }),
-      );
-
-      AccountIdMock.fromString.mockReturnValue(mockAccountIdInstance);
-    });
-
-    it('should throw ValidationError with token context when provided', () => {
-      const { AccountId: AccountIdMock } = jest.requireMock('@hashgraph/sdk');
-      const sdkError = new Error('Invalid account ID format');
-      AccountIdMock.fromString.mockImplementation(() => {
-        throw sdkError;
-      });
-
-      const accountId = 'invalid-account-id';
-      const tokenId = '0.0.5555';
-
-      expect(() =>
-        accountService.getAccountBalance(accountId, tokenId),
-      ).toThrow(ValidationError);
 
       AccountIdMock.fromString.mockReturnValue(mockAccountIdInstance);
     });
