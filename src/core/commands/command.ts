@@ -160,7 +160,8 @@ export abstract class BaseTransactionCommand<
   ): Promise<CommandResult> {
     return Promise.resolve({
       result: hookResult.result,
-      humanTemplate: hookResult.humanTemplate,
+      overrideSchema: hookResult.schema,
+      overrideHumanTemplate: hookResult.humanTemplate,
     });
   }
 

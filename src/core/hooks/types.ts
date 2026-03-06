@@ -1,3 +1,4 @@
+import type { z } from 'zod';
 import type { CommandResult } from '@/core';
 
 export interface PreBuildAndSignParams<TNormalisedParams = unknown> {
@@ -34,5 +35,6 @@ export interface PostOutputPreparationParams<
 export interface HookResult {
   breakFlow: boolean;
   result: object;
+  schema?: z.ZodTypeAny;
   humanTemplate?: string;
 }

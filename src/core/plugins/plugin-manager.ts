@@ -415,11 +415,13 @@ export class PluginManager {
     } else {
       result = await commandSpec.handler(handlerArgs);
     }
-    commandSpec.output.schema.parse(result.result);
+    const outputSchema = result.overrideSchema ?? commandSpec.output.schema;
+    outputSchema.parse(result.result);
 
     this.coreApi.output.handleOutput({
       status: Status.Success,
-      template: result.humanTemplate ?? commandSpec.output.humanTemplate,
+      template:
+        result.overrideHumanTemplate ?? commandSpec.output.humanTemplate,
       data: result.result,
     });
   }
