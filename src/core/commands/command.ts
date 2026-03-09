@@ -83,6 +83,8 @@ export abstract class BaseTransactionCommand<
     );
     const postOutputHookResult = await this.postOutputPreparationHook(args, {
       normalisedParams,
+      buildTransactionResult,
+      signTransactionResult,
       executeTransactionResult,
       outputResult: result,
     });
@@ -158,6 +160,8 @@ export abstract class BaseTransactionCommand<
     args: CommandHandlerArgs,
     params: PostOutputPreparationParams<
       TNormalisedParams,
+      TBuildTransactionResult,
+      TSignTransactionResult,
       TExecuteTransactionResult
     >,
   ): Promise<HookResult> {
