@@ -16,6 +16,7 @@ import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, SupportedNetwork } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { CreateAccountOutputSchema } from '@/plugins/account/commands/create';
 import { createAccount } from '@/plugins/account/commands/create/handler';
@@ -257,7 +258,7 @@ describe('account plugin - create command (ADR-003)', () => {
       keyRefId: 'kr_provided123',
       publicKey: ECDSA_HEX_PUBLIC_KEY,
       keyAlgorithm: KeyAlgorithm.ECDSA,
-      keyManager: 'local',
+      keyManager: KeyManager.local,
       labels: [],
       createdAt: '',
       updatedAt: '',
@@ -322,7 +323,7 @@ describe('account plugin - create command (ADR-003)', () => {
       keyRefId: 'kr_test123',
       publicKey: ECDSA_HEX_PUBLIC_KEY,
       keyAlgorithm: KeyAlgorithm.ECDSA,
-      keyManager: 'local',
+      keyManager: KeyManager.local,
       labels: [],
       createdAt: '',
       updatedAt: '',

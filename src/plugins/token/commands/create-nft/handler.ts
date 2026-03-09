@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { CreateNftOutput } from '@/plugins/token/commands/create-nft/output';
 
 import { PublicKey } from '@hashgraph/sdk';
@@ -39,7 +39,7 @@ export async function createNft(
 
   const keyManager =
     providedKeyManager ??
-    api.config.getOption<KeyManagerName>('default_key_manager');
+    api.config.getOption<KeyManager>('default_key_manager');
 
   const maxSupply = providedMaxSupply
     ? processTokenBalanceInput(providedMaxSupply, decimals)

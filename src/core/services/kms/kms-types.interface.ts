@@ -2,37 +2,14 @@ import type { KeyAlgorithm } from '@/core/shared/constants';
 
 import { z } from 'zod';
 
-// KEY MANAGERS - SINGLE SOURCE OF TRUTH
+export enum KeyManager {
+  local = 'local',
+  local_encrypted = 'local_encrypted',
+}
 
-/**
- * All available key managers.
- * Add new managers here and they'll be automatically available everywhere.
- * This is the SINGLE SOURCE OF TRUTH for key manager names across the entire project.
- */
-export const KEY_MANAGER_VALUES = ['local', 'local_encrypted'] as const;
-
-/**
- * Zod schema for runtime validation
- */
 export const keyManagerNameSchema = z
-  .enum(KEY_MANAGER_VALUES)
+  .enum(KeyManager)
   .describe('Key manager type (local or localEncrypted)');
-
-/**
- * TypeScript type for compile-time checking
- */
-export type KeyManagerName = (typeof KEY_MANAGER_VALUES)[number];
-
-/**
- * Helper constants for convenience (auto-generated, type-safe)
- */
-export const KEY_MANAGERS = KEY_MANAGER_VALUES.reduce(
-  (acc, name) => {
-    acc[name] = name;
-    return acc;
-  },
-  {} as Record<KeyManagerName, KeyManagerName>,
-);
 
 // CREDENTIAL RECORD (Metadata)
 
@@ -42,7 +19,7 @@ export const KEY_MANAGERS = KEY_MANAGER_VALUES.reduce(
  */
 export interface KmsCredentialRecord {
   keyRefId: string;
-  keyManager: KeyManagerName; // Which KeyManager owns this key
+  keyManager: KeyManager;
   publicKey: string;
   labels?: string[];
   keyAlgorithm: KeyAlgorithm;

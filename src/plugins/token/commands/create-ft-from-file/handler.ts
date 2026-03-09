@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/shared.types';
 import type { CustomFee } from '@/core/types/token.types';
 import type { CreateFungibleTokenFromFileOutput } from './output';
@@ -35,7 +35,7 @@ export async function createTokenFromFile(
 
   const keyManager =
     providedKeyManager ??
-    api.config.getOption<KeyManagerName>('default_key_manager');
+    api.config.getOption<KeyManager>('default_key_manager');
 
   logger.info(`Creating fungible token from file: ${filename}`);
 

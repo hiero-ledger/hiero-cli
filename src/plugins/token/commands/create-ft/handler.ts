@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { CreateFungibleTokenOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
@@ -41,7 +41,7 @@ export async function createToken(
 
   const keyManager =
     providedKeyManager ??
-    api.config.getOption<KeyManagerName>('default_key_manager');
+    api.config.getOption<KeyManager>('default_key_manager');
 
   const initialSupply = processTokenBalanceInput(rawInitialSupply, decimals);
   const maxSupply = providedMaxSupply

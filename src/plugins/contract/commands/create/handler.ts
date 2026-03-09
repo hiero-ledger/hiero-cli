@@ -1,7 +1,7 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { CommandResult } from '@/core/plugins/plugin.types';
 import type { ContractVerificationResult } from '@/core/services/contract-verifier/types';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { ContractCreateOutput } from '@/plugins/contract/commands/create/output';
 
 import { ContractId, PublicKey } from '@hashgraph/sdk';
@@ -56,8 +56,7 @@ export async function createContract(
   api.alias.availableOrThrow(alias, network);
 
   const keyManager =
-    keyManagerArg ||
-    api.config.getOption<KeyManagerName>('default_key_manager');
+    keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
   const admin = validArgs.adminKey
     ? await api.keyResolver.resolveSigningKey(validArgs.adminKey, keyManager, [

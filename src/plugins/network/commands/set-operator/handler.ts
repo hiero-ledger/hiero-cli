@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs } from '@/core';
 import type { CommandResult } from '@/core/plugins/plugin.types';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { SetOperatorOutput } from './output';
 
@@ -21,8 +21,7 @@ export async function setOperatorHandler(
   const keyManagerArg = validArgs.keyManager;
 
   const keyManager =
-    keyManagerArg ||
-    api.config.getOption<KeyManagerName>('default_key_manager');
+    keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
   const targetNetwork =
     (networkArg as SupportedNetwork) || api.network.getCurrentNetwork();

@@ -3,7 +3,7 @@ import type {
   CommandResult,
   TransactionResult,
 } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { CreateTopicOutput } from './output';
 
 import { PublicKey } from '@hashgraph/sdk';
@@ -33,8 +33,7 @@ export async function createTopic(
   api.alias.availableOrThrow(alias, network);
 
   const keyManager =
-    keyManagerArg ||
-    api.config.getOption<KeyManagerName>('default_key_manager');
+    keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
   if (memo) {
     logger.info(`Creating topic with memo: ${memo}`);

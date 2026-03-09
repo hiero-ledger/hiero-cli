@@ -9,6 +9,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, ValidationError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
   getOperatorHandler,
@@ -35,7 +36,7 @@ describe('network plugin - get-operator command', () => {
       keyRefId: 'kr_test123',
       publicKey: 'pub-key-test',
       keyAlgorithm: KeyAlgorithm.ECDSA,
-      keyManager: 'local',
+      keyManager: KeyManager.local,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -73,7 +74,7 @@ describe('network plugin - get-operator command', () => {
       keyRefId: 'kr_mainnet',
       publicKey: 'pub-key-mainnet',
       keyAlgorithm: KeyAlgorithm.ECDSA,
-      keyManager: 'local',
+      keyManager: KeyManager.local,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -227,7 +228,7 @@ describe('network plugin - get-operator command', () => {
       keyRefId: 'kr_testnet',
       publicKey: 'pub-key-test',
       keyAlgorithm: KeyAlgorithm.ECDSA,
-      keyManager: 'local',
+      keyManager: KeyManager.local,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -264,7 +265,7 @@ describe('network plugin - get-operator command', () => {
       keyRefId: 'kr_special',
       publicKey: 'pub-key-special',
       keyAlgorithm: KeyAlgorithm.ECDSA,
-      keyManager: 'local',
+      keyManager: KeyManager.local,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };

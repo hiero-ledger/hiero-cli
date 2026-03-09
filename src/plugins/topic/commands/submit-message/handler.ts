@@ -3,7 +3,7 @@ import type {
   CommandResult,
   TransactionResult,
 } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SubmitMessageOutput } from './output';
 
 import {
@@ -32,8 +32,7 @@ export async function submitMessage(
 
   const currentNetwork = api.network.getCurrentNetwork();
   const keyManager =
-    keyManagerArg ||
-    api.config.getOption<KeyManagerName>('default_key_manager');
+    keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
   let topicId = topicIdOrAlias;
   const topicAliasResult = api.alias.resolve(

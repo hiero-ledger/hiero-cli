@@ -32,6 +32,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { InternalError, KeyAlgorithm } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 import { mockTransactionResults } from './fixtures';
 
@@ -110,7 +111,7 @@ export const makeKmsMock = (
     if (publicKey === 'operator-public-key') {
       return {
         keyRefId: 'operator-key-ref-id',
-        keyManager: 'local',
+        keyManager: KeyManager.local,
         publicKey: ED25519_HEX_PUBLIC_KEY,
         labels: ['operator:public-key'],
         keyAlgorithm: KeyAlgorithm.ED25519,
@@ -121,7 +122,7 @@ export const makeKmsMock = (
     if (publicKey === 'admin-key') {
       return {
         keyRefId: 'admin-key-ref-id',
-        keyManager: 'local',
+        keyManager: KeyManager.local,
         publicKey: ED25519_HEX_PUBLIC_KEY,
         labels: ['account:create'],
         keyAlgorithm: KeyAlgorithm.ED25519,
@@ -132,7 +133,7 @@ export const makeKmsMock = (
     if (publicKey === 'test-admin-key') {
       return {
         keyRefId: 'admin-key-ref-id',
-        keyManager: 'local',
+        keyManager: KeyManager.local,
         publicKey: ED25519_HEX_PUBLIC_KEY,
         labels: ['account:update'],
         keyAlgorithm: KeyAlgorithm.ED25519,
@@ -143,7 +144,7 @@ export const makeKmsMock = (
     if (publicKey === 'test-public-key') {
       return {
         keyRefId: 'test-key-ref-id',
-        keyManager: 'local',
+        keyManager: KeyManager.local,
         publicKey: ED25519_HEX_PUBLIC_KEY,
         labels: ['token:test'],
         keyAlgorithm: KeyAlgorithm.ED25519,
@@ -154,7 +155,7 @@ export const makeKmsMock = (
     if (publicKey === 'treasury-public-key') {
       return {
         keyRefId: 'treasury-key-ref-id',
-        keyManager: 'local',
+        keyManager: KeyManager.local,
         publicKey: ED25519_HEX_PUBLIC_KEY,
         labels: ['token:treasury'],
         keyAlgorithm: KeyAlgorithm.ED25519,
@@ -166,7 +167,7 @@ export const makeKmsMock = (
   }),
   get: jest.fn().mockReturnValue({
     keyRefId: 'treasury-key-ref-id',
-    keyManager: 'local',
+    keyManager: KeyManager.local,
     publicKey: ED25519_HEX_PUBLIC_KEY,
     labels: ['token:treasury'],
     keyAlgorithm: KeyAlgorithm.ED25519,

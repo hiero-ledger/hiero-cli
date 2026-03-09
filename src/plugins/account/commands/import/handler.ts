@@ -4,7 +4,7 @@
  * Follows ADR-003 contract: returns CommandExecutionResult
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { AccountData } from '@/plugins/account/schema';
 import type { ImportAccountOutput } from './output';
 
@@ -40,8 +40,7 @@ export async function importAccount(
 
   // Get keyManager from args or fallback to config
   const keyManager =
-    keyManagerArg ||
-    api.config.getOption<KeyManagerName>('default_key_manager');
+    keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
   // Check if account name already exists
   api.alias.availableOrThrow(alias, network);

@@ -6,6 +6,7 @@ import type { RemoveCredentialsOutput } from '@/plugins/credentials/commands/rem
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { listCredentials, removeCredentials } from '@/plugins/credentials';
 
@@ -20,7 +21,7 @@ describe('Credentials Integration Tests', () => {
   it('should remove credential and then verify it with list', async () => {
     const record: KmsCredentialRecord = {
       keyRefId: 'test-key',
-      keyManager: 'local',
+      keyManager: KeyManager.local,
       publicKey: 'public-key-test',
       labels: ['label1', 'label2'],
       keyAlgorithm: KeyAlgorithm.ECDSA,
