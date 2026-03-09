@@ -1,34 +1,46 @@
 import type { z } from 'zod';
 import type { CommandResult } from '@/core';
 
-export interface PreBuildAndSignParams<TNormalisedParams = unknown> {
+export interface PreBuildTransactionParams<TNormalisedParams = unknown> {
   normalisedParams: TNormalisedParams;
+}
+
+export interface PreSignTransactionParams<
+  TNormalisedParams = unknown,
+  TBuildTransactionResult = unknown,
+> {
+  normalisedParams: TNormalisedParams;
+  buildTransactionResult: TBuildTransactionResult;
 }
 
 export interface PreExecuteTransactionParams<
   TNormalisedParams = unknown,
-  TBuildAndSignResult = unknown,
+  TBuildTransactionResult = unknown,
+  TSignTransactionResult = unknown,
 > {
   normalisedParams: TNormalisedParams;
-  buildAndSignResult?: TBuildAndSignResult;
+  buildTransactionResult: TBuildTransactionResult;
+  signTransactionResult: TSignTransactionResult;
 }
 
 export interface PostExecuteTransactionParams<
   TNormalisedParams = unknown,
-  TBuildAndSignResult = unknown,
-  TCoreActionResult = unknown,
+  TBuildTransactionResult = unknown,
+  TSignTransactionResult = unknown,
+  TExecuteTransactionResult = unknown,
 > {
   normalisedParams: TNormalisedParams;
-  buildAndSignResult?: TBuildAndSignResult;
-  coreActionResult?: TCoreActionResult;
+  buildTransactionResult: TBuildTransactionResult;
+  signTransactionResult: TSignTransactionResult;
+  executeTransactionResult: TExecuteTransactionResult;
 }
 
 export interface PostOutputPreparationParams<
   TNormalisedParams = unknown,
-  TCoreActionResult = unknown,
+  TExecuteTransactionResult = unknown,
 > {
   normalisedParams: TNormalisedParams;
-  coreActionResult?: TCoreActionResult;
+  executeTransactionResult: TExecuteTransactionResult;
   outputResult: CommandResult;
 }
 

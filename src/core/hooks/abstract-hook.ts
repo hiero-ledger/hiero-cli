@@ -3,8 +3,9 @@ import type {
   HookResult,
   PostExecuteTransactionParams,
   PostOutputPreparationParams,
-  PreBuildAndSignParams,
+  PreBuildTransactionParams,
   PreExecuteTransactionParams,
+  PreSignTransactionParams,
 } from '@/core/hooks/types';
 
 export abstract class AbstractHook {
@@ -20,9 +21,23 @@ export abstract class AbstractHook {
     });
   }
 
-  public preBuildAndSignHook(
+  public preBuildTransactionHook(
     _args: CommandHandlerArgs,
-    _params: PreBuildAndSignParams,
+    _params: PreBuildTransactionParams,
+  ): Promise<HookResult> {
+    void _args;
+    void _params;
+    return Promise.resolve({
+      breakFlow: false,
+      result: {
+        message: 'success',
+      },
+    });
+  }
+
+  public preSignTransactionHook(
+    _args: CommandHandlerArgs,
+    _params: PreSignTransactionParams,
   ): Promise<HookResult> {
     void _args;
     void _params;
