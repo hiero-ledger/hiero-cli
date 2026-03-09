@@ -26,14 +26,14 @@ describe('transferTokenHandler', () => {
         consensusTimestamp: '1234567890.123456789',
       };
 
-      const { api, tokens, signing, kms } = makeApiMocks({
+      const { api, tokens, txExecute, kms } = makeApiMocks({
         tokens: {
           createTransferTransaction: jest
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
         },
         alias: {
           resolve: jest.fn().mockReturnValue(null),
@@ -81,9 +81,8 @@ describe('transferTokenHandler', () => {
         toAccountId: '0.0.789012',
         amount: 100000000n,
       });
-      expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
-        mockTransferTransaction,
-        ['imported-key-ref-id'],
+      expect(txExecute.executeBytes).toHaveBeenCalledWith(
+        expect.any(Uint8Array),
       );
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
@@ -101,14 +100,14 @@ describe('transferTokenHandler', () => {
         consensusTimestamp: '1234567890.123456789',
       };
 
-      const { api, tokens, signing, alias } = makeApiMocks({
+      const { api, tokens, txExecute, alias } = makeApiMocks({
         tokens: {
           createTransferTransaction: jest
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
         },
         alias: {
           resolve: jest.fn().mockReturnValue({
@@ -165,9 +164,8 @@ describe('transferTokenHandler', () => {
         toAccountId: '0.0.789012',
         amount: 100000000n,
       });
-      expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
-        mockTransferTransaction,
-        ['alias-key-ref-id'],
+      expect(txExecute.executeBytes).toHaveBeenCalledWith(
+        expect.any(Uint8Array),
       );
     });
 
@@ -185,8 +183,8 @@ describe('transferTokenHandler', () => {
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
         },
         alias: {
           resolve: jest.fn().mockImplementation((alias) => {
@@ -288,8 +286,8 @@ describe('transferTokenHandler', () => {
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest.fn().mockReturnValue({
@@ -354,8 +352,8 @@ describe('transferTokenHandler', () => {
             .fn()
             .mockResolvedValue(mockTransferTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest.fn().mockReturnValue({
@@ -423,10 +421,8 @@ describe('transferTokenHandler', () => {
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest
-            .fn()
-            .mockRejectedValue(new Error('Invalid key')),
+        txExecute: {
+          executeBytes: jest.fn().mockRejectedValue(new Error('Invalid key')),
         },
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({ decimals: 6 }),
@@ -470,8 +466,8 @@ describe('transferTokenHandler', () => {
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
         },
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({ decimals: 6 }),
@@ -536,8 +532,8 @@ describe('transferTokenHandler', () => {
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({ decimals: 6 }),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest.fn().mockReturnValue({
@@ -587,8 +583,8 @@ describe('transferTokenHandler', () => {
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
         },
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({ decimals: 6 }),

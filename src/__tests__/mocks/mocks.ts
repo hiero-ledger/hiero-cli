@@ -26,10 +26,9 @@ import type { OutputService } from '@/core/services/output/output-service.interf
 import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
-import type {
-  TransactionResult,
-  TxExecutionService,
-} from '@/core/services/tx-execution/tx-execution-service.interface';
+import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
+import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
+import type { TransactionResult } from '@/core/types/shared.types';
 
 import { StateError, ValidationError } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
@@ -254,30 +253,23 @@ export const makeIdentityResolutionServiceMock =
     resolveReferenceToEntityOrEvmAddress: jest.fn(),
   });
 
-/**
- * Create a mocked TxExecutionService
- */
-export const makeSigningMock = (
-  options: {
-    signAndExecuteImpl?: jest.Mock;
-  } = {},
-): jest.Mocked<TxExecutionService> => ({
-  signAndExecute:
-    options.signAndExecuteImpl ||
+export const makeTxSignMock = (): jest.Mocked<TxSignService> => ({
+  sign: jest.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
+  signContractCreateFlow: jest.fn().mockImplementation((flow) => flow),
+});
+
+export const makeTxExecuteMock = (
+  options: { executeImpl?: jest.Mock } = {},
+): jest.Mocked<TxExecuteService> => ({
+  executeBytes:
+    options.executeImpl ||
     jest.fn().mockResolvedValue({
       success: true,
       transactionId: 'mock-tx-id',
       receipt: { status: { status: 'success' } },
     }),
-  signAndExecuteWith:
-    options.signAndExecuteImpl ||
-    jest.fn().mockResolvedValue({
-      success: true,
-      transactionId: 'mock-tx-id',
-      receipt: { status: { status: 'success' } },
-    }),
-  signAndExecuteContractCreateFlowWith:
-    options.signAndExecuteImpl ||
+  executeContractCreateFlow:
+    options.executeImpl ||
     jest.fn().mockResolvedValue({
       success: true,
       transactionId: 'mock-tx-id',
@@ -492,7 +484,8 @@ export const makeArgs = (
   const apiObject = {
     account: {} as unknown,
     token: {} as unknown,
-    txExecution: makeSigningMock(),
+    txSign: makeTxSignMock(),
+    txExecute: makeTxExecuteMock(),
     topic: {
       createTopic: jest.fn(),
       submitMessage: jest.fn(),

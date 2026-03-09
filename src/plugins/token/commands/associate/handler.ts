@@ -102,9 +102,10 @@ export async function associateToken(
   let result;
   try {
     logger.debug(`Using key ${account.keyRefId} for signing transaction`);
-    result = await api.txExecution.signAndExecuteWith(associateTransaction, [
+    const bytes = await api.txSign.sign(associateTransaction, [
       account.keyRefId,
     ]);
+    result = await api.txExecute.executeBytes(bytes);
   } catch (error) {
     if (isTokenAlreadyAssociatedError(error)) {
       saveAssociationToState(

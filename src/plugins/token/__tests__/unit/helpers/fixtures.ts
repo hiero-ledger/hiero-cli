@@ -4,7 +4,7 @@
  */
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
-import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
+import type { TransactionResult } from '@/core/types/shared.types';
 
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';

@@ -21,7 +21,8 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
-import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
+import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
+import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 
 export interface CoreApi {
   /**
@@ -40,9 +41,14 @@ export interface CoreApi {
   topic: TopicService;
 
   /**
+   * Transaction signing service
+   */
+  txSign: TxSignService;
+
+  /**
    * Transaction execution service
    */
-  txExecution: TxExecutionService;
+  txExecute: TxExecuteService;
 
   /**
    * State management with namespaced access

@@ -53,10 +53,10 @@ export async function processTokenAssociations(
         accountId: account.accountId,
       });
 
-      const associateResult = await api.txExecution.signAndExecuteWith(
-        associateTransaction,
-        [account.keyRefId],
-      );
+      const txBytes = await api.txSign.sign(associateTransaction, [
+        account.keyRefId,
+      ]);
+      const associateResult = await api.txExecute.executeBytes(txBytes);
 
       if (associateResult.success) {
         logger.info(`   ✅ Associated account ${account.accountId} with token`);

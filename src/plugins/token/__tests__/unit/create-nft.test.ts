@@ -48,14 +48,14 @@ describe('createNftHandler', () => {
         saveToken: mockSaveToken,
       }));
 
-      const { api, tokenTransactions, signing } = makeApiMocks({
+      const { api, tokenTransactions, txExecute } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
             .mockReturnValue(mockTransactions.token),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           get: jest.fn().mockReturnValue({
@@ -105,9 +105,8 @@ describe('createNftHandler', () => {
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
         expectedNftTransactionParams,
       );
-      expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
-        mockTransactions.token,
-        expect.arrayContaining(['admin-key-ref-id', 'treasury-key-ref-id']),
+      expect(txExecute.executeBytes).toHaveBeenCalledWith(
+        expect.any(Uint8Array),
       );
       expect(mockSaveToken).toHaveBeenCalled();
       assertOutput(result.result, CreateNftOutputSchema);
@@ -124,14 +123,14 @@ describe('createNftHandler', () => {
         saveToken: mockSaveToken,
       }));
 
-      const { api, tokenTransactions, signing } = makeApiMocks({
+      const { api, tokenTransactions, txExecute } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
             .mockReturnValue(mockTransactions.token),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
         },
       });
 
@@ -164,9 +163,8 @@ describe('createNftHandler', () => {
         supplyPublicKey: expect.any(Object),
         memo: undefined,
       });
-      expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
-        mockTransactions.token,
-        ['operator-key-ref-id'],
+      expect(txExecute.executeBytes).toHaveBeenCalledWith(
+        expect.any(Uint8Array),
       );
       expect(mockSaveToken).toHaveBeenCalled();
       assertOutput(result.result, CreateNftOutputSchema);
@@ -215,8 +213,8 @@ describe('createNftHandler', () => {
             .fn()
             .mockReturnValue(mockTokenTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           get: jest.fn().mockReturnValue({

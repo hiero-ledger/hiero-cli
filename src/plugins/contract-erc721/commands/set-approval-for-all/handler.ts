@@ -60,9 +60,8 @@ export async function setApprovalForAllFunctionCall(
     functionName: ERC_721_FUNCTION_NAME,
     functionParameters,
   });
-  const result = await api.txExecution.signAndExecute(
-    contractCallTransaction.transaction,
-  );
+  const bytes = await api.txSign.sign(contractCallTransaction.transaction, []);
+  const result = await api.txExecute.executeBytes(bytes);
 
   if (!result.success) {
     throw new TransactionError(

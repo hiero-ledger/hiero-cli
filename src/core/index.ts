@@ -38,7 +38,8 @@ export type * from './services/plugin-management/plugin-management-service.inter
 export type * from './services/state/state-service.interface';
 export type * from './services/token/token-service.interface';
 export type * from './services/topic/topic-transaction-service.interface';
-export type * from './services/tx-execution/tx-execution-service.interface';
+export type * from './services/tx-execute/tx-execute-service.interface';
+export type * from './services/tx-sign/tx-sign-service.interface';
 
 // ============================================================================
 // Shared Types
@@ -49,6 +50,9 @@ export type {
   Script,
   Token,
   Topic,
+  TransactionReceipt,
+  TransactionResult,
+  TransactionStatus,
 } from './types/shared.types';
 export type { SolcCompiler } from './types/shared.types';
 export {

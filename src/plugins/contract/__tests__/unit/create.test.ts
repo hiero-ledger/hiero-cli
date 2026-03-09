@@ -302,7 +302,7 @@ describe('contract plugin - create command', () => {
     test('throws when contractCreateFlowResult has no contractId', async () => {
       api = makeContractCreateApiMocks().api;
       (
-        api.txExecution.signAndExecuteContractCreateFlowWith as jest.Mock
+        api.txExecute.executeContractCreateFlow as jest.Mock
       ).mockResolvedValueOnce({
         success: true,
         transactionId: MOCK_TX_ID,

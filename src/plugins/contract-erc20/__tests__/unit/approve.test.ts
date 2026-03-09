@@ -60,8 +60,8 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
           transaction: {},
         }),
       },
-      txExecution: {
-        signAndExecute: jest.fn().mockResolvedValue({
+      txExecute: {
+        executeBytes: jest.fn().mockResolvedValue({
           success: true,
           transactionId: TX_ID,
         }),
@@ -113,7 +113,9 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
         functionName: 'approve',
       }),
     );
-    expect(args.api.txExecution.signAndExecute).toHaveBeenCalledWith({});
+    expect(args.api.txExecute.executeBytes).toHaveBeenCalledWith(
+      expect.any(Uint8Array),
+    );
   });
 
   test('uses entity ID when contract is entity ID (not alias)', async () => {
@@ -165,7 +167,7 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
     expect(mockAddAddress).toHaveBeenCalledWith(evmSpender);
   });
 
-  test('throws TransactionError when signAndExecute returns success false', async () => {
+  test('throws TransactionError when executeBytes returns success false', async () => {
     const args = makeContractErc20ExecuteCommandArgs({
       api,
       logger,
@@ -176,7 +178,7 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
         value: 100,
       },
     });
-    (args.api.txExecution.signAndExecute as jest.Mock).mockResolvedValue({
+    (args.api.txExecute.executeBytes as jest.Mock).mockResolvedValue({
       success: false,
       receipt: { status: { status: 'FAILURE' } },
     });
@@ -185,7 +187,7 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
     await expect(erc20ApproveHandler(args)).rejects.toThrow('FAILURE');
   });
 
-  test('throws when signAndExecute throws', async () => {
+  test('throws when executeBytes throws', async () => {
     const args = makeContractErc20ExecuteCommandArgs({
       api,
       logger,
@@ -196,7 +198,7 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
         value: 100,
       },
     });
-    (args.api.txExecution.signAndExecute as jest.Mock).mockRejectedValue(
+    (args.api.txExecute.executeBytes as jest.Mock).mockRejectedValue(
       new Error('network error'),
     );
 

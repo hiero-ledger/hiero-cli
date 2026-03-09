@@ -54,8 +54,8 @@ describe('contract plugin - import command', () => {
           transaction: {},
         }),
       },
-      txExecution: {
-        signAndExecute: jest.fn().mockResolvedValue({
+      txExecute: {
+        executeBytes: jest.fn().mockResolvedValue({
           success: true,
           transactionId: MOCK_TX_ID,
         }),

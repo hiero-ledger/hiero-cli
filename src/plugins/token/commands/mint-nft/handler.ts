@@ -110,9 +110,10 @@ export async function mintNft(
   logger.debug(
     `Using key ${supplyKeyResolved.keyRefId} for signing transaction`,
   );
-  const result = await api.txExecution.signAndExecuteWith(mintTransaction, [
+  const bytes = await api.txSign.sign(mintTransaction, [
     supplyKeyResolved.keyRefId,
   ]);
+  const result = await api.txExecute.executeBytes(bytes);
 
   if (!result.success) {
     throw new TransactionError(

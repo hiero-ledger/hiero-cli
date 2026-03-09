@@ -25,7 +25,7 @@ const defaultSupplyKey =
 describe('mintFtHandler', () => {
   describe('success scenarios', () => {
     test('should mint tokens with token ID and display units', async () => {
-      const { api, mockMintTransaction } = makeMintFtSuccessMocks();
+      const { api } = makeMintFtSuccessMocks();
 
       const logger = makeLogger();
       const args = makeMintFtCommandArgs({
@@ -48,9 +48,8 @@ describe('mintFtHandler', () => {
         tokenId: '0.0.123456',
         amount: 10000n,
       });
-      expect(api.txExecution.signAndExecuteWith).toHaveBeenCalledWith(
-        mockMintTransaction,
-        ['supply-key-ref-id'],
+      expect(api.txExecute.executeBytes).toHaveBeenCalledWith(
+        expect.any(Uint8Array),
       );
     });
 

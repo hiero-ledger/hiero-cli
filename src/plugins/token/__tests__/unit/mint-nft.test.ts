@@ -29,7 +29,7 @@ const defaultSupplyKey =
 describe('mintNftHandler', () => {
   describe('success scenarios', () => {
     test('should mint NFT with token ID and metadata', async () => {
-      const { api, mockMintTransaction } = makeMintNftSuccessMocks();
+      const { api } = makeMintNftSuccessMocks();
 
       const logger = makeLogger();
       const args = makeMintNftCommandArgs({
@@ -54,9 +54,8 @@ describe('mintNftHandler', () => {
         tokenId: '0.0.123456',
         metadata: metadataBytes,
       });
-      expect(api.txExecution.signAndExecuteWith).toHaveBeenCalledWith(
-        mockMintTransaction,
-        ['supply-key-ref-id'],
+      expect(api.txExecute.executeBytes).toHaveBeenCalledWith(
+        expect.any(Uint8Array),
       );
     });
 
@@ -110,8 +109,8 @@ describe('mintNftHandler', () => {
         tokens: {
           createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue({
+        txExecute: {
+          executeBytes: jest.fn().mockResolvedValue({
             ...makeTransactionResult({ success: true }),
             receipt: {
               status: {

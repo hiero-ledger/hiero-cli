@@ -144,10 +144,8 @@ export async function createTokenFromFile(
   logger.info(
     `🔑 Signing transaction with admin key and treasury key (${signingKeys.length} keys)`,
   );
-  const result = await api.txExecution.signAndExecuteWith(
-    tokenCreateTransaction,
-    signingKeys,
-  );
+  const bytes = await api.txSign.sign(tokenCreateTransaction, signingKeys);
+  const result = await api.txExecute.executeBytes(bytes);
 
   if (!result.success || !result.tokenId) {
     throw new StateError('Token creation completed but no token ID returned', {

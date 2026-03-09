@@ -66,33 +66,22 @@ describe('Token Lifecycle Integration', () => {
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockImplementation((transaction) => {
-            if (transaction === mockTokenTransaction) {
-              return Promise.resolve({
-                ...mockTransactionResults.success,
-                transactionId: `${token}@1234567890.123456789`,
-                tokenId: token,
-              });
-            }
-            if (transaction === mockAssociationTransaction) {
-              return Promise.resolve({
-                ...mockTransactionResults.successWithAssociation,
-                transactionId: '0.0.123@1234567890.123456790',
-              });
-            }
-            if (transaction === mockTransferTransaction) {
-              return Promise.resolve({
-                ...mockTransactionResults.success,
-                transactionId: '0.0.123@1234567890.123456791',
-              });
-            }
-            return Promise.resolve({
-              success: false,
-              transactionId: '',
-              receipt: { status: { status: 'failed', transactionId: '' } },
-            });
-          }),
+        txExecute: {
+          executeBytes: jest
+            .fn()
+            .mockResolvedValueOnce({
+              ...mockTransactionResults.success,
+              transactionId: `${token}@1234567890.123456789`,
+              tokenId: token,
+            })
+            .mockResolvedValueOnce({
+              ...mockTransactionResults.successWithAssociation,
+              transactionId: '0.0.123@1234567890.123456790',
+            })
+            .mockResolvedValueOnce({
+              ...mockTransactionResults.success,
+              transactionId: '0.0.123@1234567890.123456791',
+            }),
         },
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({ decimals: 2 }),
@@ -226,27 +215,18 @@ describe('Token Lifecycle Integration', () => {
             .fn()
             .mockReturnValue(mockAssociationTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockImplementation((transaction) => {
-            if (transaction === mockTokenTransaction) {
-              return Promise.resolve({
-                ...mockTransactionResults.success,
-                transactionId: `${token}@1234567890.123456789`,
-                tokenId: token,
-              });
-            }
-            if (transaction === mockAssociationTransaction) {
-              return Promise.resolve({
-                ...mockTransactionResults.successWithAssociation,
-                transactionId: '0.0.123@1234567890.123456790',
-              });
-            }
-            return Promise.resolve({
-              success: false,
-              transactionId: '',
-              receipt: { status: { status: 'failed', transactionId: '' } },
-            });
-          }),
+        txExecute: {
+          executeBytes: jest
+            .fn()
+            .mockResolvedValueOnce({
+              ...mockTransactionResults.success,
+              transactionId: `${token}@1234567890.123456789`,
+              tokenId: token,
+            })
+            .mockResolvedValueOnce({
+              ...mockTransactionResults.successWithAssociation,
+              transactionId: '0.0.123@1234567890.123456790',
+            }),
         },
         mirror: {
           getAccountTokenBalances: jest.fn().mockResolvedValue({ tokens: [] }),
@@ -338,30 +318,20 @@ describe('Token Lifecycle Integration', () => {
               return mockAssociationTransaction2;
             }),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockImplementation((transaction) => {
-            if (
-              transaction === mockTokenTransaction ||
-              transaction === mockAssociationTransaction1 ||
-              transaction === mockAssociationTransaction2
-            ) {
-              return Promise.resolve({
-                ...mockTransactionResults.success,
-                transactionId: '0.0.123@1234567890.123456789',
-                tokenId:
-                  transaction === mockTokenTransaction
-                    ? '0.0.123456'
-                    : undefined,
-                consensusTimestamp: '2024-01-01T00:00:00.000Z',
-              });
-            }
-            return Promise.resolve({
-              success: false,
-              error: 'Unknown transaction',
-              transactionId: '',
-              receipt: null,
-            });
-          }),
+        txExecute: {
+          executeBytes: jest
+            .fn()
+            .mockResolvedValueOnce({
+              ...mockTransactionResults.success,
+              transactionId: '0.0.123@1234567890.123456789',
+              tokenId: '0.0.123456',
+              consensusTimestamp: '2024-01-01T00:00:00.000Z',
+            })
+            .mockResolvedValue({
+              ...mockTransactionResults.success,
+              transactionId: '0.0.123@1234567890.123456789',
+              consensusTimestamp: '2024-01-01T00:00:00.000Z',
+            }),
         },
         mirror: {
           getAccountTokenBalances: jest.fn().mockResolvedValue({ tokens: [] }),
@@ -456,8 +426,8 @@ describe('Token Lifecycle Integration', () => {
           createTokenTransaction: jest.fn().mockReturnValue({}),
           createTokenAssociationTransaction: jest.fn().mockReturnValue({}),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockReturnValue({
+        txExecute: {
+          executeBytes: jest.fn().mockReturnValue({
             ...mockTransactionResults.success,
             transactionId: '0.0.123@1234567890.123456789',
           }),
@@ -469,7 +439,7 @@ describe('Token Lifecycle Integration', () => {
 
       const logger = makeLogger();
 
-      // Create token - this will throw because signAndExecuteWith returns no tokenId
+      // Create token - this will throw because executeBytes returns no tokenId
       const createArgs: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',

@@ -69,8 +69,8 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
           transaction: {},
         }),
       },
-      txExecution: {
-        signAndExecute: jest.fn().mockResolvedValue({
+      txExecute: {
+        executeBytes: jest.fn().mockResolvedValue({
           success: true,
           transactionId: MOCK_TX_ID,
         }),
@@ -120,7 +120,9 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
         functionName: 'approve',
       }),
     );
-    expect(args.api.txExecution.signAndExecute).toHaveBeenCalledWith({});
+    expect(args.api.txExecute.executeBytes).toHaveBeenCalledWith(
+      expect.any(Uint8Array),
+    );
   });
 
   test('uses entity ID when contract is entity ID (not alias)', async () => {
@@ -171,7 +173,7 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
     expect(mockAddUint256).toHaveBeenCalledWith(100);
   });
 
-  test('throws TransactionError when signAndExecute returns success false', async () => {
+  test('throws TransactionError when executeBytes returns success false', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -182,7 +184,7 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
         tokenId: 1,
       },
     });
-    (args.api.txExecution.signAndExecute as jest.Mock).mockResolvedValue({
+    (args.api.txExecute.executeBytes as jest.Mock).mockResolvedValue({
       success: false,
       receipt: { status: { status: 'FAILURE' } },
     });
@@ -193,7 +195,7 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
     );
   });
 
-  test('propagates error when signAndExecute throws', async () => {
+  test('propagates error when executeBytes throws', async () => {
     const args = makeContractErc721ExecuteCommandArgs({
       api,
       logger,
@@ -204,7 +206,7 @@ describe('contract-erc721 plugin - approve command (unit)', () => {
         tokenId: 1,
       },
     });
-    (args.api.txExecution.signAndExecute as jest.Mock).mockRejectedValue(
+    (args.api.txExecute.executeBytes as jest.Mock).mockRejectedValue(
       new Error('network error'),
     );
 
