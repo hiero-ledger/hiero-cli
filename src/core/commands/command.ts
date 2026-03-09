@@ -12,7 +12,7 @@ import type {
 export abstract class BaseTransactionCommand<
   TNormalisedParams = unknown,
   TBuildAndSignResult = unknown,
-  TCoreActionResult = unknown,
+  TTransactionExecutionResult = unknown,
 > implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const preNormalizationHookResult =
@@ -103,7 +103,7 @@ export abstract class BaseTransactionCommand<
     params: PostExecuteTransactionParams<
       TNormalisedParams,
       TBuildAndSignResult,
-      TCoreActionResult
+      TTransactionExecutionResult
     >,
   ): Promise<HookResult> {
     return await this.executeHooks(
@@ -114,7 +114,10 @@ export abstract class BaseTransactionCommand<
 
   async postOutputPreparationHook(
     args: CommandHandlerArgs,
-    params: PostOutputPreparationParams<TNormalisedParams, TCoreActionResult>,
+    params: PostOutputPreparationParams<
+      TNormalisedParams,
+      TTransactionExecutionResult
+    >,
   ): Promise<HookResult> {
     return await this.executeHooks(
       async (h) => h.postOutputPreparationHook(args, params),
@@ -178,11 +181,11 @@ export abstract class BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: TNormalisedParams,
     buildAndSignResult: TBuildAndSignResult,
-  ): Promise<TCoreActionResult>;
+  ): Promise<TTransactionExecutionResult>;
 
   abstract outputPreparation(
     args: CommandHandlerArgs,
     normalisedParams: TNormalisedParams,
-    coreActionResult?: TCoreActionResult,
+    transactionExecutionResult?: TTransactionExecutionResult,
   ): Promise<CommandResult>;
 }

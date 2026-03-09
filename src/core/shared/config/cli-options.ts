@@ -1,6 +1,7 @@
 import type { PluginManifest } from '@/core/plugins/plugin.types';
 
 import accountPluginManifest from '@/plugins/account/manifest';
+import batchPluginManifest from '@/plugins/batch/manifest';
 import configPluginManifest from '@/plugins/config/manifest';
 import contractPluginManifest from '@/plugins/contract/manifest';
 import contractErc20PluginManifest from '@/plugins/contract-erc20/manifest';
@@ -38,6 +39,7 @@ export const RESERVED_SHORT_OPTIONS = new Set<string>([
 
 export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
   accountPluginManifest,
+  batchPluginManifest,
   tokenPluginManifest,
   networkPluginManifest,
   pluginManagementManifest,

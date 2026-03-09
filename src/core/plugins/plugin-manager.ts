@@ -412,8 +412,10 @@ export class PluginManager {
     let result: CommandResult;
     if (commandSpec.command) {
       result = await commandSpec.command.execute(handlerArgs);
-    } else {
+    } else if (commandSpec.handler) {
       result = await commandSpec.handler(handlerArgs);
+    } else {
+      throw new InternalError('Command handler not found');
     }
     const outputSchema = result.overrideSchema ?? commandSpec.output.schema;
     outputSchema.parse(result.result);
