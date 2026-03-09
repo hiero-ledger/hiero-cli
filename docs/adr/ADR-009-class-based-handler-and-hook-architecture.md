@@ -57,7 +57,7 @@ export class SimpleStatusCommand implements Command {
 
 ### Part 2: BaseTransactionCommand
 
-`BaseTransactionCommand<TNormalisedParams, TBuildAndSignResult, TCoreActionResult>` (defined in `src/core/commands/command.ts`) implements the `Command` interface and provides a template-method `execute` orchestrator. Subclasses implement four abstract methods:
+`BaseTransactionCommand<TNormalisedParams, TBuildTransactionResult, TSignTransactionResult, TExecuteTransactionResult>` (defined in `src/core/commands/command.ts`) implements the `Command` interface and provides a template-method `execute` orchestrator. Subclasses implement four abstract methods:
 
 #### Full Implementation
 
@@ -346,18 +346,11 @@ This makes adoption incremental -- existing handler functions continue to work u
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import { BaseTransactionCommand } from '@/core/commands/command';
 
-interface FooNormalizedParams {
-  message: string;
-}
-
-interface FooBuildAndSignResult {
-  message: string;
-}
-
 export class FooTestCommand extends BaseTransactionCommand<
   FooNormalizedParams,
-  FooBuildAndSignResult,
-  void
+  FooBuildTransactionResult,
+  FooSignTransactionResult,
+  FooExecuteTransactionResult
 > {
   async normalizeParams(
     args: CommandHandlerArgs,
@@ -543,35 +536,61 @@ Concrete hooks extend `AbstractHook` and override only the methods they need.
 
 ```ts
 // src/core/hooks/types.ts
-export interface PreBuildAndSignParams<TNormalisedParams = unknown> {
+import type { z } from 'zod';
+import type { CommandResult } from '@/core';
+
+export interface PreBuildTransactionParams<TNormalisedParams = unknown> {
   normalisedParams: TNormalisedParams;
+}
+
+export interface PreSignTransactionParams<
+  TNormalisedParams = unknown,
+  TBuildTransactionResult = unknown,
+> {
+  normalisedParams: TNormalisedParams;
+  buildTransactionResult: TBuildTransactionResult;
 }
 
 export interface PreExecuteTransactionParams<
   TNormalisedParams = unknown,
-  TBuildAndSignResult = unknown,
+  TBuildTransactionResult = unknown,
+  TSignTransactionResult = unknown,
 > {
   normalisedParams: TNormalisedParams;
-  buildAndSignResult?: TBuildAndSignResult;
+  buildTransactionResult: TBuildTransactionResult;
+  signTransactionResult: TSignTransactionResult;
 }
 
 export interface PostExecuteTransactionParams<
   TNormalisedParams = unknown,
-  TBuildAndSignResult = unknown,
-  TCoreActionResult = unknown,
+  TBuildTransactionResult = unknown,
+  TSignTransactionResult = unknown,
+  TExecuteTransactionResult = unknown,
 > {
   normalisedParams: TNormalisedParams;
-  buildAndSignResult?: TBuildAndSignResult;
-  coreActionResult?: TCoreActionResult;
+  buildTransactionResult: TBuildTransactionResult;
+  signTransactionResult: TSignTransactionResult;
+  executeTransactionResult: TExecuteTransactionResult;
 }
 
 export interface PostOutputPreparationParams<
   TNormalisedParams = unknown,
-  TCoreActionResult = unknown,
+  TBuildTransactionResult = unknown,
+  TSignTransactionResult = unknown,
+  TExecuteTransactionResult = unknown,
 > {
   normalisedParams: TNormalisedParams;
-  coreActionResult?: TCoreActionResult;
+  buildTransactionResult: TBuildTransactionResult;
+  signTransactionResult: TSignTransactionResult;
+  executeTransactionResult: TExecuteTransactionResult;
   outputResult: CommandResult;
+}
+
+export interface HookResult {
+  breakFlow: boolean;
+  result: object;
+  schema?: z.ZodTypeAny;
+  humanTemplate?: string;
 }
 ```
 
@@ -675,9 +694,9 @@ export class TransactionInspectionHook extends AbstractHook {
     params: PreExecuteTransactionParams,
   ): Promise<HookResult> {
     const { logger } = args;
-    const { buildAndSignResult } = params;
+    const { signTransactionResult } = params;
 
-    logger.info(`Signed transaction: ${JSON.stringify(buildAndSignResult)}`);
+    logger.info(`Signed transaction: ${JSON.stringify(signTransactionResult)}`);
 
     return Promise.resolve({
       breakFlow: false,
@@ -737,34 +756,43 @@ sequenceDiagram
     BC->>Sub: normalizeParams(args)
     Sub-->>BC: normalisedParams
 
-    BC->>H: preBuildAndSignHook(args, normalisedParams)
+    BC->>H: preBuildTransactionHook(args, normalisedParams)
     H-->>BC: HookResult
     alt breakFlow = true
         BC-->>PM: HookResult as CommandResult
     end
 
-    BC->>Sub: buildAndSign(args, normalisedParams)
-    Sub-->>BC: buildAndSignResult
+    BC->>Sub: buildTransaction(args, normalisedParams)
+    Sub-->>BC: buildTransactionResult
 
-    BC->>H: preExecuteTransactionHook(args, normalisedParams, buildAndSignResult)
+    BC->>H: preSignTransactionHook(args, normalisedParams, buildTransactionResult)
     H-->>BC: HookResult
     alt breakFlow = true
         BC-->>PM: HookResult as CommandResult
     end
 
-    BC->>Sub: executeTransaction(args, normalisedParams, buildAndSignResult)
-    Sub-->>BC: coreActionResult
+    BC->>Sub: signTransaction(args, normalisedParams, buildTransactionResult)
+    Sub-->>BC: signTransactionResult
 
-    BC->>H: postExecuteTransactionHook(args, normalisedParams, buildAndSignResult, coreActionResult)
+    BC->>H: preExecuteTransactionHook(args, normalisedParams, buildTransactionResult, signTransactionResult)
     H-->>BC: HookResult
     alt breakFlow = true
         BC-->>PM: HookResult as CommandResult
     end
 
-    BC->>Sub: outputPreparation(args, normalisedParams, coreActionResult)
+    BC->>Sub: executeTransaction(args, normalisedParams, buildTransactionResult, signTransactionResult)
+    Sub-->>BC: executeTransactionResult
+
+    BC->>H: postExecuteTransactionHook(args, normalisedParams, buildTransactionResult, signTransactionResult, executeTransactionResult)
+    H-->>BC: HookResult
+    alt breakFlow = true
+        BC-->>PM: HookResult as CommandResult
+    end
+
+    BC->>Sub: outputPreparation(args, normalisedParams, buildTransactionResult, signTransactionResult, executeTransactionResult)
     Sub-->>BC: CommandResult
 
-    BC->>H: postOutputPreparationHook(args, normalisedParams, coreActionResult, outputResult)
+    BC->>H: postOutputPreparationHook(args, normalisedParams, executeTransactionResult, outputResult)
     H-->>BC: HookResult
     alt breakFlow = true
         BC-->>PM: HookResult as CommandResult

@@ -37,9 +37,13 @@ export interface PostExecuteTransactionParams<
 
 export interface PostOutputPreparationParams<
   TNormalisedParams = unknown,
+  TBuildTransactionResult = unknown,
+  TSignTransactionResult = unknown,
   TExecuteTransactionResult = unknown,
 > {
   normalisedParams: TNormalisedParams;
+  buildTransactionResult: TBuildTransactionResult;
+  signTransactionResult: TSignTransactionResult;
   executeTransactionResult: TExecuteTransactionResult;
   outputResult: CommandResult;
 }
