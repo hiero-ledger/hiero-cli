@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { TransferOutput } from './output';
 import type {
   TransferBuildTransactionResult,
@@ -40,7 +40,7 @@ export class TransferCommand extends BaseTransactionCommand<
     const providedKeyManager = validArgs.keyManager;
     const keyManager =
       providedKeyManager ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      api.config.getOption<KeyManager>('default_key_manager');
 
     const amount = processBalanceInput(validArgs.amount, HBAR_DECIMALS);
     const currentNetwork = api.network.getCurrentNetwork();

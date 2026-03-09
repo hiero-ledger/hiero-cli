@@ -4,7 +4,7 @@
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { ContractVerificationResult } from '@/core/services/contract-verifier/types';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { ContractCreateOutput } from './output';
 import type {
   ContractCreateBuildTransactionResult,
@@ -71,9 +71,8 @@ export class CreateContractCommand extends BaseTransactionCommand<
 
     api.alias.availableOrThrow(alias, network);
 
-    const keyManager =
-      keyManagerArg ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+  const keyManager =
+    keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
     const admin = validArgs.adminKey
       ? await api.keyResolver.resolveSigningKey(

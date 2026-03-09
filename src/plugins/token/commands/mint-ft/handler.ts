@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type {
   MintFtBuildTransactionResult,
   MintFtExecuteTransactionResult,
@@ -41,9 +41,8 @@ export class MintFtCommand extends BaseTransactionCommand<
     const userAmountInput = validArgs.amount;
     const keyManagerArg = validArgs.keyManager;
 
-    const keyManager =
-      keyManagerArg ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+  const keyManager =
+    keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
     const network = api.network.getCurrentNetwork();
 

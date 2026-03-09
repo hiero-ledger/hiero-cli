@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { MintNftOutput } from './output';
 import type {
   MintNftBuildTransactionResult,
@@ -36,7 +36,7 @@ export class MintNftCommand extends BaseTransactionCommand<
     const validArgs = MintNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      api.config.getOption<KeyManager>('default_key_manager');
     const network = api.network.getCurrentNetwork();
     const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
 

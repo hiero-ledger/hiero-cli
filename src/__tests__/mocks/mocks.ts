@@ -18,6 +18,10 @@ import type { IdentityResolutionService } from '@/core/services/identity-resolut
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { Destination } from '@/core/services/key-resolver/types';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
+import type {
+  Credential,
+  KeyManager,
+} from '@/core/services/kms/kms-types.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { ContractInfo } from '@/core/services/mirrornode/types';
@@ -33,11 +37,7 @@ import type { TransactionResult } from '@/core/types/shared.types';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import { StateError, ValidationError } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
-import {
-  type Credential,
-  CredentialType,
-  type KeyManagerName,
-} from '@/core/services/kms/kms-types.interface';
+import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -586,7 +586,7 @@ export const makeKeyResolverMock = (
 ): jest.Mocked<KeyResolverService> => {
   const resolveCore = (
     credential: Credential,
-    keyManager: KeyManagerName,
+    keyManager: KeyManager,
     labels?: string[],
   ) => {
     if (credential?.type === CredentialType.ACCOUNT_KEY_PAIR) {

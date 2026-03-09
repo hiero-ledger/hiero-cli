@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SubmitMessageOutput } from './output';
 import type {
   SubmitMessageBuildTransactionResult,
@@ -40,7 +40,7 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
     const currentNetwork = api.network.getCurrentNetwork();
     const keyManager =
       keyManagerArg ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      api.config.getOption<KeyManager>('default_key_manager');
 
     let topicId = topicIdOrAlias;
     const topicAliasResult = api.alias.resolve(

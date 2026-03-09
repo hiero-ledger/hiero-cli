@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { TransferNftOutput } from './output';
 import type {
   TransferNftBuildTransactionResult,
@@ -34,7 +34,7 @@ export class TransferNftCommand extends BaseTransactionCommand<
     const validArgs = TransferNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      api.config.getOption<KeyManager>('default_key_manager');
     const network = api.network.getCurrentNetwork();
     const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
 

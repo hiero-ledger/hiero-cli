@@ -1,7 +1,7 @@
 import type { CommandHandlerArgs } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { CommandResult } from '@/core/plugins/plugin.types';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { SetOperatorOutput } from './output';
 import type {
@@ -21,8 +21,7 @@ const normalizeParams = (
   const validArgs = SetOperatorInputSchema.parse(args.args);
 
   const keyManager =
-    validArgs.keyManager ||
-    api.config.getOption<KeyManagerName>('default_key_manager');
+    validArgs.keyManager || api.config.getOption<KeyManager>('default_key_manager');
 
   const targetNetwork =
     (validArgs.network as SupportedNetwork) || api.network.getCurrentNetwork();
