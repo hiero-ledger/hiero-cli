@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { AccountData } from '@/plugins/account/schema';
 import type { AccountCreateOutput } from './output';
 import type {
@@ -49,9 +49,8 @@ export class AccountCreateCommand extends BaseTransactionCommand<
 
     api.alias.availableOrThrow(alias, network);
 
-    const keyManager =
-      keyManagerArg ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+  const keyManager =
+    keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
     const operator = api.network.getCurrentOperatorOrThrow();
     const operatorBalance = await api.mirror.getAccountHBarBalance(
