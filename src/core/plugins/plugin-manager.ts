@@ -8,6 +8,7 @@ import type {
   CommandHandlerArgs,
   CommandResult,
   CommandSpec,
+  HookOption,
   HookSpec,
   PluginManifest,
   PluginStateEntry,
@@ -16,6 +17,7 @@ import type { CoreApi } from '@/core/core-api';
 import type { AbstractHook } from '@/core/hooks/abstract-hook';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { FilteredOptionsResult } from '@/core/utils/filter-reserved-options';
 
 import * as Handlebars from 'handlebars';
 import * as path from 'path';
@@ -154,6 +156,7 @@ export class PluginManager {
     this.hooks = Array.from(this.loadedPlugins.values()).flatMap(
       (plugin) => plugin.manifest.hooks ?? [],
     );
+    this.validateUniqueHookNames();
     for (const plugin of this.loadedPlugins.values()) {
       this.registerPluginCommands(program, plugin);
     }
@@ -186,6 +189,22 @@ export class PluginManager {
       path: plugin.path,
       status: plugin.status,
     }));
+  }
+
+  private validateUniqueHookNames(): void {
+    const keyCounts = new Map<string, number>();
+    for (const name of this.hooks.map((spec) => spec.name)) {
+      keyCounts.set(name, (keyCounts.get(name) ?? 0) + 1);
+    }
+    const duplicateHooks = Array.from(keyCounts.entries())
+      .filter(([, count]) => count > 1)
+      .map(([key]) => key);
+
+    if (duplicateHooks.length > 0) {
+      throw new ConfigurationError('Duplicate hook names found', {
+        context: { duplicateHooks },
+      });
+    }
   }
 
   /**
@@ -244,86 +263,19 @@ export class PluginManager {
     commandSpec: CommandSpec,
     skipConfirmation: boolean,
   ): void {
-    const commandName = String(commandSpec.name);
     const command = this.buildCommand(pluginCommand, commandSpec);
+    const registeredHooks = this.filterHooksForCommand(commandSpec);
+    const hookOptions: HookOption[] = registeredHooks.flatMap(
+      (spec) => spec.options ?? [],
+    );
     // Add options
     if (commandSpec.options) {
-      const { allowed, filteredLong, filteredShort } = filterReservedOptions(
+      const filteredOptions = filterReservedOptions(
         commandSpec.options,
+        hookOptions,
       );
 
-      if (filteredLong.length > 0 || filteredShort.length > 0) {
-        const longDesc = filteredLong.map((n) => `--${n}`).join(', ');
-        const shortDesc = filteredShort.map((s) => `-${s}`).join(', ');
-        const combined = [longDesc, shortDesc].filter(Boolean).join(', ');
-
-        throw new ConfigurationError(
-          `Plugin ${plugin.manifest.name} command ${commandName} uses reserved option(s): ${combined}. These are reserved by the core CLI.`,
-        );
-      }
-
-      for (const option of allowed) {
-        const optionName = String(option.name);
-        const short = option.short ? `-${String(option.short)}` : '';
-        const long = `--${optionName}`;
-        const combined = short ? `${short}, ${long}` : long;
-        const flags = `${combined} <value>`;
-        const baseDescription = option.description || `Set ${optionName}`;
-        const description = option.required
-          ? `${baseDescription} (required)`
-          : baseDescription;
-
-        const addOption = <T>(
-          parser?: (value: string, previous: T) => T,
-          useValueFlag = true,
-        ) => {
-          const optionFlags = useValueFlag ? flags : combined;
-          if (option.required) {
-            // Commander treats the third argument as an optional parser/transform function
-            if (parser) {
-              command.requiredOption(optionFlags, description, parser);
-            } else {
-              command.requiredOption(optionFlags, description);
-            }
-          } else {
-            if (parser) {
-              command.option(optionFlags, description, parser);
-            } else {
-              command.option(optionFlags, description);
-            }
-          }
-        };
-
-        switch (option.type) {
-          case OptionType.BOOLEAN:
-            // boolean flags don't take a value placeholder or parser
-            addOption<boolean | undefined>(undefined, false);
-            break;
-          case OptionType.NUMBER:
-            addOption<number>((value) => parseFloat(value));
-            break;
-          case OptionType.ARRAY: {
-            const parseArray = (value: string) => String(value).split(',');
-            addOption<string[]>(parseArray);
-            break;
-          }
-          case OptionType.REPEATABLE: {
-            const parseRepeatable = (
-              value: string,
-              previous: string[] | undefined,
-            ) => {
-              const arr = previous ?? [];
-              arr.push(value);
-              return arr;
-            };
-            addOption<string[]>(parseRepeatable);
-            break;
-          }
-          default:
-            // default to a simple string option (no parser)
-            addOption<string | undefined>();
-        }
-      }
+      this.registerOptions(command, plugin, commandSpec, filteredOptions);
     }
 
     // Set up action handler
@@ -333,6 +285,7 @@ export class PluginManager {
         commandSpec,
         args,
         skipConfirmation,
+        registeredHooks.map((spec) => spec.hook),
       );
     });
   }
@@ -386,6 +339,7 @@ export class PluginManager {
     commandSpec: CommandSpec,
     args: unknown[],
     skipConfirmation: boolean,
+    registeredHooks: AbstractHook[],
   ): Promise<void> {
     const command = args[args.length - 1] as Command;
     const options = command.opts();
@@ -404,7 +358,7 @@ export class PluginManager {
       state: this.coreApi.state,
       config: this.coreApi.config,
       logger: this.logger,
-      hooks: this.filterHooksForCommand(_plugin, commandSpec),
+      hooks: registeredHooks,
     };
 
     await this.handleConfirmation(commandSpec, handlerArgs, skipConfirmation);
@@ -447,13 +401,90 @@ export class PluginManager {
     return command;
   }
 
-  private filterHooksForCommand(
+  private registerOptions(
+    command: Command,
     plugin: LoadedPlugin,
     commandSpec: CommandSpec,
-  ): AbstractHook[] {
-    const commandKey = `${plugin.manifest.name}_${commandSpec.name}`;
-    return this.hooks
-      .filter((spec) => spec.relevantCommands.includes(commandKey))
-      .map((spec) => spec.hook);
+    filteredOptions: FilteredOptionsResult,
+  ) {
+    const { allowed, filteredLong, filteredShort } = filteredOptions;
+
+    if (filteredLong.length > 0 || filteredShort.length > 0) {
+      const longDesc = filteredLong.map((n) => `--${n}`).join(', ');
+      const shortDesc = filteredShort.map((s) => `-${s}`).join(', ');
+      const combined = [longDesc, shortDesc].filter(Boolean).join(', ');
+
+      throw new ConfigurationError(
+        `Plugin ${plugin.manifest.name} command ${commandSpec.name} uses reserved option(s): ${combined}. These are reserved by the core CLI.`,
+      );
+    }
+
+    for (const option of allowed) {
+      const optionName = String(option.name);
+      const short = option.short ? `-${String(option.short)}` : '';
+      const long = `--${optionName}`;
+      const combined = short ? `${short}, ${long}` : long;
+      const flags = `${combined} <value>`;
+      const baseDescription = option.description || `Set ${optionName}`;
+      const description = option.required
+        ? `${baseDescription} (required)`
+        : baseDescription;
+
+      const addOption = <T>(
+        parser?: (value: string, previous: T) => T,
+        useValueFlag = true,
+      ) => {
+        const optionFlags = useValueFlag ? flags : combined;
+        if (option.required) {
+          // Commander treats the third argument as an optional parser/transform function
+          if (parser) {
+            command.requiredOption(optionFlags, description, parser);
+          } else {
+            command.requiredOption(optionFlags, description);
+          }
+        } else {
+          if (parser) {
+            command.option(optionFlags, description, parser);
+          } else {
+            command.option(optionFlags, description);
+          }
+        }
+      };
+
+      switch (option.type) {
+        case OptionType.BOOLEAN:
+          // boolean flags don't take a value placeholder or parser
+          addOption<boolean | undefined>(undefined, false);
+          break;
+        case OptionType.NUMBER:
+          addOption<number>((value) => parseFloat(value));
+          break;
+        case OptionType.ARRAY: {
+          const parseArray = (value: string) => String(value).split(',');
+          addOption<string[]>(parseArray);
+          break;
+        }
+        case OptionType.REPEATABLE: {
+          const parseRepeatable = (
+            value: string,
+            previous: string[] | undefined,
+          ) => {
+            const arr = previous ?? [];
+            arr.push(value);
+            return arr;
+          };
+          addOption<string[]>(parseRepeatable);
+          break;
+        }
+        default:
+          // default to a simple string option (no parser)
+          addOption<string | undefined>();
+      }
+    }
+  }
+
+  private filterHooksForCommand(commandSpec: CommandSpec): HookSpec[] {
+    const registeredHooks: string[] = commandSpec.registeredHooks ?? [];
+    return this.hooks.filter((spec) => registeredHooks.includes(spec.name));
   }
 }
