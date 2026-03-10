@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   EntityReferenceSchema,
   KeyManagerTypeSchema,
-  PrivateKeyWithAccountIdSchema,
+  KeySchema,
 } from '@/core/schemas';
 
 /**
@@ -12,7 +12,7 @@ import {
  */
 export const AssociateTokenInputSchema = z.object({
   token: EntityReferenceSchema.describe('Token identifier (ID or name)'),
-  account: PrivateKeyWithAccountIdSchema.describe(
+  account: KeySchema.describe(
     'Account to associate. Can be {accountId}:{privateKey pair}, key reference or account alias.',
   ),
   keyManager: KeyManagerTypeSchema.optional().describe(

@@ -85,8 +85,6 @@ describe('Create NFT Integration Tests', () => {
     expect(createNftOutput.name).toBe('Test NFT');
     expect(createNftOutput.alias).toBe('test-nft');
     expect(createNftOutput.treasuryId).toBe(viewAccountOutput.accountId);
-    expect(createNftOutput.adminAccountId).toBe(viewAccountOutput.accountId);
-    expect(createNftOutput.supplyAccountId).toBe(viewAccountOutput.accountId);
     expect(createNftOutput.symbol).toBe('NFT');
     expect(createNftOutput.supplyType).toBe(SupplyType.FINITE);
   });

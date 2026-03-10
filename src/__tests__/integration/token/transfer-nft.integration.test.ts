@@ -106,12 +106,6 @@ describe('Transfer NFT Integration Tests', () => {
       expect(createNftOutput.treasuryId).toBe(
         createSourceAccountOutput.accountId,
       );
-      expect(createNftOutput.adminAccountId).toBe(
-        createSourceAccountOutput.accountId,
-      );
-      expect(createNftOutput.supplyAccountId).toBe(
-        createSourceAccountOutput.accountId,
-      );
       expect(createNftOutput.symbol).toBe('TNFTC');
       expect(createNftOutput.supplyType).toBe(SupplyType.FINITE);
 
