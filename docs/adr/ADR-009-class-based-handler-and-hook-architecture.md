@@ -2,7 +2,7 @@
 
 - Status: Proposed
 - Date: 2026-03-05
-- Related: `src/core/commands/command.ts`, `src/core/hooks/abstract-hook.ts`, `src/core/plugins/plugin-manager.ts`, `docs/adr/ADR-001-plugin-architecture.md`, `docs/adr/ADR-003-command-handler-result-contract.md`
+- Related: `src/core/commands/command.ts`, `src/core/hooks/abstract-hook.ts`, `src/core/plugins/plugin-manager.ts`, `src/core/plugins/plugin.types.ts`, `src/core/utils/filter-reserved-options.ts`, `docs/adr/ADR-001-plugin-architecture.md`, `docs/adr/ADR-003-command-handler-result-contract.md`
 
 ## Context
 
@@ -57,7 +57,7 @@ export class SimpleStatusCommand implements Command {
 
 ### Part 2: BaseTransactionCommand
 
-`BaseTransactionCommand<TNormalisedParams, TBuildAndSignResult, TCoreActionResult>` (defined in `src/core/commands/command.ts`) implements the `Command` interface and provides a template-method `execute` orchestrator. Subclasses implement four abstract methods:
+`BaseTransactionCommand<TNormalisedParams, TBuildTransactionResult, TSignTransactionResult, TExecuteTransactionResult>` (defined in `src/core/commands/command.ts`) implements the `Command` interface and provides a template-method `execute` orchestrator. Subclasses implement four abstract methods:
 
 #### Full Implementation
 
@@ -68,16 +68,18 @@ import type { Command } from '@/core/commands/command.interface';
 import type { AbstractHook } from '@/core/hooks/abstract-hook';
 import type {
   HookResult,
-  PostExecuteTransactionParams,
+  PreOutputPreparationParams,
   PostOutputPreparationParams,
-  PreBuildAndSignParams,
+  PreBuildTransactionParams,
   PreExecuteTransactionParams,
+  PreSignTransactionParams,
 } from '@/core/hooks/types';
 
 export abstract class BaseTransactionCommand<
   TNormalisedParams = unknown,
-  TBuildAndSignResult = unknown,
-  TCoreActionResult = unknown,
+  TBuildTransactionResult = unknown,
+  TSignTransactionResult = unknown,
+  TExecuteTransactionResult = unknown,
 > implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const preNormalizationHookResult =
@@ -87,45 +89,68 @@ export abstract class BaseTransactionCommand<
     }
     const normalisedParams = await this.normalizeParams(args);
 
-    const preBuildAndSignHookResult = await this.preBuildAndSignHook(args, {
-      normalisedParams,
-    });
-    if (preBuildAndSignHookResult.breakFlow) {
-      return this.processHookResult(preBuildAndSignHookResult);
+    const preBuildTransactionHookResult = await this.preBuildTransactionHook(
+      args,
+      { normalisedParams },
+    );
+    if (preBuildTransactionHookResult.breakFlow) {
+      return this.processHookResult(preBuildTransactionHookResult);
     }
-    const buildAndSignResult = await this.buildAndSign(args, normalisedParams);
+    const buildTransactionResult = await this.buildTransaction(
+      args,
+      normalisedParams,
+    );
+
+    const preSignTransactionHookResult = await this.preSignTransactionHook(
+      args,
+      { normalisedParams, buildTransactionResult },
+    );
+    if (preSignTransactionHookResult.breakFlow) {
+      return this.processHookResult(preSignTransactionHookResult);
+    }
+    const signTransactionResult = await this.signTransaction(
+      args,
+      normalisedParams,
+      buildTransactionResult,
+    );
 
     const preExecuteTransactionHookResult =
       await this.preExecuteTransactionHook(args, {
         normalisedParams,
-        buildAndSignResult,
+        buildTransactionResult,
+        signTransactionResult,
       });
     if (preExecuteTransactionHookResult.breakFlow) {
       return this.processHookResult(preExecuteTransactionHookResult);
     }
-    const coreActionResult = await this.executeTransaction(
+    const executeTransactionResult = await this.executeTransaction(
       args,
       normalisedParams,
-      buildAndSignResult,
+      buildTransactionResult,
+      signTransactionResult,
     );
-    const postExecuteTransactionHookResult =
-      await this.postExecuteTransactionHook(args, {
+    const preOutputPreparationHookResult = await this.preOutputPreparationHook(
+      args,
+      {
         normalisedParams,
-        buildAndSignResult,
-        coreActionResult,
-      });
-    if (postExecuteTransactionHookResult.breakFlow) {
-      return this.processHookResult(postExecuteTransactionHookResult);
+        buildTransactionResult,
+        signTransactionResult,
+        executeTransactionResult,
+      },
+    );
+    if (preOutputPreparationHookResult.breakFlow) {
+      return this.processHookResult(preOutputPreparationHookResult);
     }
-
     const result = await this.outputPreparation(
       args,
       normalisedParams,
-      coreActionResult,
+      buildTransactionResult,
+      signTransactionResult,
+      executeTransactionResult,
     );
     const postOutputHookResult = await this.postOutputPreparationHook(args, {
       normalisedParams,
-      coreActionResult,
+      executeTransactionResult,
       outputResult: result,
     });
     if (postOutputHookResult.breakFlow) {
@@ -134,6 +159,7 @@ export abstract class BaseTransactionCommand<
     return result;
   }
 
+  // Hooks
   async preParamsNormalizationHook(
     args: CommandHandlerArgs,
   ): Promise<HookResult> {
@@ -143,19 +169,36 @@ export abstract class BaseTransactionCommand<
     );
   }
 
-  async preBuildAndSignHook(
+  async preBuildTransactionHook(
     args: CommandHandlerArgs,
-    params: PreBuildAndSignParams<TNormalisedParams>,
+    params: PreBuildTransactionParams<TNormalisedParams>,
   ): Promise<HookResult> {
     return await this.executeHooks(
-      async (h) => h.preBuildAndSignHook(args, params),
+      async (h) => h.preBuildTransactionHook(args, params),
+      args.hooks,
+    );
+  }
+
+  async preSignTransactionHook(
+    args: CommandHandlerArgs,
+    params: PreSignTransactionParams<
+      TNormalisedParams,
+      TBuildTransactionResult
+    >,
+  ): Promise<HookResult> {
+    return await this.executeHooks(
+      async (h) => h.preSignTransactionHook(args, params),
       args.hooks,
     );
   }
 
   async preExecuteTransactionHook(
     args: CommandHandlerArgs,
-    params: PreExecuteTransactionParams<TNormalisedParams, TBuildAndSignResult>,
+    params: PreExecuteTransactionParams<
+      TNormalisedParams,
+      TBuildTransactionResult,
+      TSignTransactionResult
+    >,
   ): Promise<HookResult> {
     return await this.executeHooks(
       async (h) => h.preExecuteTransactionHook(args, params),
@@ -163,23 +206,27 @@ export abstract class BaseTransactionCommand<
     );
   }
 
-  async postExecuteTransactionHook(
+  async preOutputPreparationHook(
     args: CommandHandlerArgs,
-    params: PostExecuteTransactionParams<
+    params: PreOutputPreparationParams<
       TNormalisedParams,
-      TBuildAndSignResult,
-      TCoreActionResult
+      TBuildTransactionResult,
+      TSignTransactionResult,
+      TExecuteTransactionResult
     >,
   ): Promise<HookResult> {
     return await this.executeHooks(
-      async (h) => h.postExecuteTransactionHook(args, params),
+      async (h) => h.preOutputPreparationHook(args, params),
       args.hooks,
     );
   }
 
   async postOutputPreparationHook(
     args: CommandHandlerArgs,
-    params: PostOutputPreparationParams<TNormalisedParams, TCoreActionResult>,
+    params: PostOutputPreparationParams<
+      TNormalisedParams,
+      TExecuteTransactionResult
+    >,
   ): Promise<HookResult> {
     return await this.executeHooks(
       async (h) => h.postOutputPreparationHook(args, params),
@@ -187,20 +234,37 @@ export abstract class BaseTransactionCommand<
     );
   }
 
+  /**
+   * Generic hook execution method that executes hooks on all registered hooks.
+   * Hook-agnostic: just awaits the hook executor without caring about the result.
+   * @param hookExecutor - The hook function to execute on each hook.
+   * @param hooks - abstract hooks list registered.
+   */
   protected async executeHooks(
     hookExecutor: (hook: AbstractHook) => Promise<HookResult>,
     hooks?: AbstractHook[],
   ): Promise<HookResult> {
     if (!hooks) {
-      return { breakFlow: false, result: { message: 'no hooks available' } };
+      return {
+        breakFlow: false,
+        result: {
+          message: 'no hooks available',
+        },
+      };
     }
+
     for (const hook of hooks) {
       const hookResult = await hookExecutor(hook);
       if (hookResult.breakFlow) {
         return hookResult;
       }
     }
-    return { breakFlow: false, result: { message: 'success' } };
+    return {
+      breakFlow: false,
+      result: {
+        message: 'success',
+      },
+    };
   }
 
   protected async processHookResult(
@@ -208,7 +272,8 @@ export abstract class BaseTransactionCommand<
   ): Promise<CommandResult> {
     return Promise.resolve({
       result: hookResult.result,
-      humanTemplate: hookResult.humanTemplate,
+      overrideSchema: hookResult.schema,
+      overrideHumanTemplate: hookResult.humanTemplate,
     });
   }
 
@@ -216,33 +281,43 @@ export abstract class BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<TNormalisedParams>;
 
-  abstract buildAndSign(
+  abstract buildTransaction(
     args: CommandHandlerArgs,
     normalisedParams: TNormalisedParams,
-  ): Promise<TBuildAndSignResult>;
+  ): Promise<TBuildTransactionResult>;
+
+  abstract signTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: TNormalisedParams,
+    buildTransactionResult: TBuildTransactionResult,
+  ): Promise<TSignTransactionResult>;
 
   abstract executeTransaction(
     args: CommandHandlerArgs,
     normalisedParams: TNormalisedParams,
-    buildAndSignResult: TBuildAndSignResult,
-  ): Promise<TCoreActionResult>;
+    buildTransactionResult: TBuildTransactionResult,
+    signTransactionResult: TSignTransactionResult,
+  ): Promise<TExecuteTransactionResult>;
 
   abstract outputPreparation(
     args: CommandHandlerArgs,
     normalisedParams: TNormalisedParams,
-    coreActionResult?: TCoreActionResult,
+    buildTransactionResult: TBuildTransactionResult,
+    signTransactionResult: TSignTransactionResult,
+    coreActionResult: TExecuteTransactionResult,
   ): Promise<CommandResult>;
 }
 ```
 
-| Method                                                           | Responsibility                                                                                                                   |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `normalizeParams(args)`                                          | Validate and transform raw CLI arguments into a strongly-typed params object (`TNormalisedParams`). Typically uses a Zod schema. |
-| `buildAndSign(args, normalisedParams)`                           | Build and sign a transaction from the normalized params. Returns `TBuildAndSignResult` (e.g. a signed transaction bytes object). |
-| `executeTransaction(args, normalisedParams, buildAndSignResult)` | Submit the signed transaction to the network. Returns `TCoreActionResult` (e.g. a transaction receipt).                          |
-| `outputPreparation(args, normalisedParams, coreActionResult?)`   | Map the domain result into a `CommandResult` for the CLI output pipeline.                                                        |
+| Method                                                                                                                | Responsibility                                                                                                                     |
+| --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `normalizeParams(args)`                                                                                               | Validate and transform raw CLI arguments into a strongly-typed params object (`TNormalisedParams`). Typically uses a Zod schema.   |
+| `buildTransaction(args, normalisedParams)`                                                                            | Build a transaction from the normalized params. Returns `TBuildTransactionResult` (e.g. a build transaction object).               |
+| `signTransaction(args, normalisedParams, buildTranasctionResult)`                                                     | Sign a transaction from the builded transaction object. Returns `TSignTransactionResult` (e.g. a signed transaction bytes object). |
+| `executeTransaction(args, normalisedParams, buildTranasctionResult, signTransactionResult)`                           | Submit the signed transaction to the network. Returns `TExecuteTransactionResult` (e.g. a transaction receipt).                    |
+| `outputPreparation(args, normalisedParams, buildTranasctionResult, signTransactionResult, executeTransactionResult?)` | Map the domain result into a `CommandResult` for the CLI output pipeline.                                                          |
 
-The previous single `coreAction` method has been split into `buildAndSign` and `executeTransaction` to provide a clear separation between transaction construction/signing and network submission. This enables hooks to inspect or modify the signed transaction before it is submitted, and to react to the submission result before output is prepared.
+Transaction operations are splitted into three separate methods `buildTransaction`, `signTransaction` and `executeTransaction`. This enables hooks to inspect or modify the signed transaction before it is submitted, and to react to the submission result before output is prepared.
 
 Each hook point checks the returned `HookResult` -- if `breakFlow` is `true`, execution stops immediately and the hook's result is returned as the command output via `processHookResult`.
 
@@ -261,8 +336,9 @@ This makes adoption incremental -- existing handler functions continue to work u
   name: 'foo',
   summary: 'Run foo',
   description: 'Execute the foo command',
-  command: new FooTestCommand(),   // <-- BaseTransactionCommand instance
-  handler: fooTestOptions,         // <-- legacy fallback
+  registeredHooks: ['inspection-hook'],  // <-- opt-in to hooks by name
+  command: new FooTestCommand(),          // <-- BaseTransactionCommand instance
+  handler: fooTestOptions,               // <-- legacy fallback
   output: { schema: FooTestOutputSchema, humanTemplate: FOO_TEMPLATE },
 }
 ```
@@ -273,18 +349,11 @@ This makes adoption incremental -- existing handler functions continue to work u
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import { BaseTransactionCommand } from '@/core/commands/command';
 
-interface FooNormalizedParams {
-  message: string;
-}
-
-interface FooBuildAndSignResult {
-  message: string;
-}
-
 export class FooTestCommand extends BaseTransactionCommand<
   FooNormalizedParams,
-  FooBuildAndSignResult,
-  void
+  FooBuildTransactionResult,
+  FooSignTransactionResult,
+  FooExecuteTransactionResult
 > {
   async normalizeParams(
     args: CommandHandlerArgs,
@@ -293,24 +362,57 @@ export class FooTestCommand extends BaseTransactionCommand<
     return { message: validArgs.message };
   }
 
-  async buildAndSign(
+  async buildTransaction(
     args: CommandHandlerArgs,
     normalisedParams: FooNormalizedParams,
-  ): Promise<FooBuildAndSignResult> {
-    return { message: normalisedParams.message };
+  ): Promise<FooBuildTransactionResult> {
+    const { api } = args;
+    const transaction = api.account.create({
+      key: normalisedParams.key,
+    });
+    return {
+      transaction,
+    };
+  }
+
+  async signTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: FooNormalizedParams,
+    buildTransactionResult: FooBuildTransactionResult,
+  ): Promise<FooSignedTransactionResult> {
+    void normalisedParams;
+    const { api } = args;
+    const signedTx = api.signer.sign({
+      transaction: buildTransactionResult.transaction,
+    });
+    return {
+      signedTx,
+    };
   }
 
   async executeTransaction(
     args: CommandHandlerArgs,
-    _normalisedParams: FooNormalizedParams,
-    buildAndSignResult: FooBuildAndSignResult,
-  ): Promise<void> {
-    args.logger.info(buildAndSignResult.message);
+    normalisedParams: FooNormalizedParams,
+    buildTransactionResult: FooBuildTransactionResult,
+    signedTransactionResult: FooSignedTransactionResult,
+  ): Promise<FooTransactionExecuteResult> {
+    void normalisedParams;
+    void buildTransactionResult;
+    const { api } = args;
+    const transactionResult = api.txExecution.execute({
+      transaction: signedTransactionResult.transaction,
+    });
+    return {
+      transactionResult,
+    };
   }
 
   async outputPreparation(
     args: CommandHandlerArgs,
     normalisedParams: FooNormalizedParams,
+    buildTransactionResult: FooBuildTransactionResult,
+    signedTransactionResult: FooSignedTransactionResult,
+    executeTransactionResult: FooTransactionExecuteResult,
   ): Promise<CommandResult> {
     return { result: { bar: normalisedParams.message } };
   }
@@ -328,10 +430,11 @@ export class FooTestCommand extends BaseTransactionCommand<
 import type { CommandHandlerArgs } from '@/core';
 import type {
   HookResult,
-  PostExecuteTransactionParams,
+  PreOutputPreparationParams,
   PostOutputPreparationParams,
-  PreBuildAndSignParams,
+  PreBuildTransactionParams,
   PreExecuteTransactionParams,
+  PreSignTransactionParams,
 } from '@/core/hooks/types';
 
 export abstract class AbstractHook {
@@ -341,19 +444,37 @@ export abstract class AbstractHook {
     void _args;
     return Promise.resolve({
       breakFlow: false,
-      result: { message: 'success' },
+      result: {
+        message: 'success',
+      },
     });
   }
 
-  public preBuildAndSignHook(
+  public preBuildTransactionHook(
     _args: CommandHandlerArgs,
-    _params: PreBuildAndSignParams,
+    _params: PreBuildTransactionParams,
   ): Promise<HookResult> {
     void _args;
     void _params;
     return Promise.resolve({
       breakFlow: false,
-      result: { message: 'success' },
+      result: {
+        message: 'success',
+      },
+    });
+  }
+
+  public preSignTransactionHook(
+    _args: CommandHandlerArgs,
+    _params: PreSignTransactionParams,
+  ): Promise<HookResult> {
+    void _args;
+    void _params;
+    return Promise.resolve({
+      breakFlow: false,
+      result: {
+        message: 'success',
+      },
     });
   }
 
@@ -365,19 +486,23 @@ export abstract class AbstractHook {
     void _params;
     return Promise.resolve({
       breakFlow: false,
-      result: { message: 'success' },
+      result: {
+        message: 'success',
+      },
     });
   }
 
-  public postExecuteTransactionHook(
+  public preOutputPreparationHook(
     _args: CommandHandlerArgs,
-    _params: PostExecuteTransactionParams,
+    _params: PreOutputPreparationParams,
   ): Promise<HookResult> {
     void _args;
     void _params;
     return Promise.resolve({
       breakFlow: false,
-      result: { message: 'success' },
+      result: {
+        message: 'success',
+      },
     });
   }
 
@@ -389,7 +514,9 @@ export abstract class AbstractHook {
     void _params;
     return Promise.resolve({
       breakFlow: false,
-      result: { message: 'success' },
+      result: {
+        message: 'success',
+      },
     });
   }
 }
@@ -397,13 +524,14 @@ export abstract class AbstractHook {
 
 #### Hook Lifecycle Methods
 
-| Hook                                       | Fires                       | Receives                                                             |
-| ------------------------------------------ | --------------------------- | -------------------------------------------------------------------- |
-| `preParamsPreparationAndNormalizationHook` | Before `normalizeParams`    | `args`                                                               |
-| `preBuildAndSignHook`                      | Before `buildAndSign`       | `args`, `{ normalisedParams }`                                       |
-| `preExecuteTransactionHook`                | Before `executeTransaction` | `args`, `{ normalisedParams, buildAndSignResult }`                   |
-| `postExecuteTransactionHook`               | After `executeTransaction`  | `args`, `{ normalisedParams, buildAndSignResult, coreActionResult }` |
-| `postOutputPreparationHook`                | After `outputPreparation`   | `args`, `{ normalisedParams, coreActionResult, outputResult }`       |
+| Hook                                       | Fires                       | Receives                                                                                                              |
+| ------------------------------------------ | --------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `preParamsPreparationAndNormalizationHook` | Before `normalizeParams`    | `args`                                                                                                                |
+| `preBuildTransactionHook`                  | Before `buildTransaction`   | `args`, `{ normalisedParams }`                                                                                        |
+| `preSignTransactoinHook`                   | Before `signTransaction`    | `args`, `{ normalisedParams, buildTransactionResult }`                                                                |
+| `preExecuteTransactionHook`                | Before `executeTransaction` | `args`, `{ normalisedParams, buildTransactionResult, signTransactionResult }`                                         |
+| `preOutputPreparationHook`                 | After `executeTransaction`  | `args`, `{ normalisedParams, buildTransactionResult, signTransactionResult, executeTransactionResult }`               |
+| `postOutputPreparationHook`                | After `outputPreparation`   | `args`, `{ normalisedParams, buildTransactionResult, signTransactionResult, executeTransactionResult, outputResult }` |
 
 Concrete hooks extend `AbstractHook` and override only the methods they need.
 
@@ -411,35 +539,61 @@ Concrete hooks extend `AbstractHook` and override only the methods they need.
 
 ```ts
 // src/core/hooks/types.ts
-export interface PreBuildAndSignParams<TNormalisedParams = unknown> {
+import type { z } from 'zod';
+import type { CommandResult } from '@/core';
+
+export interface PreBuildTransactionParams<TNormalisedParams = unknown> {
   normalisedParams: TNormalisedParams;
+}
+
+export interface PreSignTransactionParams<
+  TNormalisedParams = unknown,
+  TBuildTransactionResult = unknown,
+> {
+  normalisedParams: TNormalisedParams;
+  buildTransactionResult: TBuildTransactionResult;
 }
 
 export interface PreExecuteTransactionParams<
   TNormalisedParams = unknown,
-  TBuildAndSignResult = unknown,
+  TBuildTransactionResult = unknown,
+  TSignTransactionResult = unknown,
 > {
   normalisedParams: TNormalisedParams;
-  buildAndSignResult?: TBuildAndSignResult;
+  buildTransactionResult: TBuildTransactionResult;
+  signTransactionResult: TSignTransactionResult;
 }
 
-export interface PostExecuteTransactionParams<
+export interface PreOutputPreparationParams<
   TNormalisedParams = unknown,
-  TBuildAndSignResult = unknown,
-  TCoreActionResult = unknown,
+  TBuildTransactionResult = unknown,
+  TSignTransactionResult = unknown,
+  TExecuteTransactionResult = unknown,
 > {
   normalisedParams: TNormalisedParams;
-  buildAndSignResult?: TBuildAndSignResult;
-  coreActionResult?: TCoreActionResult;
+  buildTransactionResult: TBuildTransactionResult;
+  signTransactionResult: TSignTransactionResult;
+  executeTransactionResult: TExecuteTransactionResult;
 }
 
 export interface PostOutputPreparationParams<
   TNormalisedParams = unknown,
-  TCoreActionResult = unknown,
+  TBuildTransactionResult = unknown,
+  TSignTransactionResult = unknown,
+  TExecuteTransactionResult = unknown,
 > {
   normalisedParams: TNormalisedParams;
-  coreActionResult?: TCoreActionResult;
+  buildTransactionResult: TBuildTransactionResult;
+  signTransactionResult: TSignTransactionResult;
+  executeTransactionResult: TExecuteTransactionResult;
   outputResult: CommandResult;
+}
+
+export interface HookResult {
+  breakFlow: boolean;
+  result: object;
+  schema?: z.ZodTypeAny;
+  humanTemplate?: string;
 }
 ```
 
@@ -476,17 +630,101 @@ When `PluginManager` renders output, it prefers `result.humanTemplate` (if set b
 
 #### Hook Registration
 
-Hooks are registered via `HookSpec` in a plugin's manifest:
+Hooks are defined via `HookSpec` in a plugin's manifest. Each hook has a unique `name`, the `AbstractHook` instance, and optional `HookOption[]` that allow the hook to inject additional CLI options into commands that use it:
 
 ```ts
 export interface HookSpec {
   name: string;
-  relevantCommands: string[]; // e.g. ["topic_submit-message", "contract_deploy"]
   hook: AbstractHook;
+  options?: HookOption[];
+}
+
+export interface HookOption {
+  name: string;
+  type: OptionType;
+  description?: string;
+  short: string;
 }
 ```
 
-The `relevantCommands` array uses the format `${pluginName}_${commandName}` to target specific commands. A hook registered in plugin A can target commands in plugin B -- this is the core cross-plugin extensibility mechanism.
+Hook names must be globally unique across all loaded plugins. During `PluginManager.registerCommands`, all hooks are collected and validated:
+
+```ts
+this.hooks = Array.from(this.loadedPlugins.values()).flatMap(
+  (plugin) => plugin.manifest.hooks ?? [],
+);
+this.validateUniqueHookNames();
+```
+
+#### Connecting Hooks to Commands
+
+Instead of hooks declaring which commands they target (via a `relevantCommands` field), **commands declare which hooks they want** via the optional `registeredHooks` field on `CommandSpec`:
+
+```ts
+export interface CommandSpec {
+  name: string;
+  // ...
+  registeredHooks?: string[]; // e.g. ["inspection-hook", "add-inner-transaction"]
+}
+```
+
+The `registeredHooks` array contains hook names (matching `HookSpec.name`). This inverts the registration direction -- the command opts in to the hooks it needs, rather than hooks declaring which commands they target.
+
+Example: a command in the test plugin registering the `inspection-hook` defined in the topic plugin:
+
+```ts
+// src/plugins/test/manifest.ts
+{
+  name: 'foo',
+  summary: 'Foo Test',
+  description: 'Execute the foo command',
+  options: [
+    { name: 'message', short: 'm', type: OptionType.STRING, required: true, description: 'Message' },
+  ],
+  registeredHooks: ['inspection-hook'],
+  command: new FooTestCommand(),
+  handler: fooTestOptions,
+  output: { schema: FooTestOutputSchema, humanTemplate: FOO_TEMPLATE },
+}
+```
+
+#### Hook Option Injection
+
+When a hook defines `options` in its `HookSpec`, those options are automatically merged into every command that references the hook via `registeredHooks`. This allows hooks to inject additional CLI flags without modifying the command's own option list.
+
+During command registration, `PluginManager` resolves the hook options and combines them with the command's own options. Hook options are always registered as non-required (`required: false`). The combined list is filtered against reserved option names to prevent collisions:
+
+```ts
+const registeredHooks = this.filterHooksForCommand(commandSpec);
+const hookOptions: HookOption[] = registeredHooks.flatMap(
+  (spec) => spec.options ?? [],
+);
+const filteredOptions = filterReservedOptions(commandSpec.options, hookOptions);
+```
+
+The `filterReservedOptions` function merges both lists and checks against `RESERVED_LONG_OPTIONS` and `RESERVED_SHORT_OPTIONS` (plus any hook option names/shorts) to prevent conflicts.
+
+Example: a hook in the topic plugin that injects a `--define` option:
+
+```ts
+// src/plugins/topic/manifest.ts
+hooks: [
+  {
+    name: 'inspection-hook',
+    hook: new TransactionInspectionHook(),
+    options: [
+      {
+        name: 'define',
+        type: OptionType.STRING,
+        description: 'Def',
+        short: 'd',
+      },
+    ],
+  },
+],
+```
+
+Any command that includes `'inspection-hook'` in its `registeredHooks` will automatically gain the `--define` / `-d` option.
 
 #### Hook Delivery
 
@@ -503,25 +741,13 @@ export interface CommandHandlerArgs {
 }
 ```
 
-During `PluginManager.registerCommands`, all `HookSpec` entries from every loaded plugin are collected into a single list:
+When a command is executed, `filterHooksForCommand` selects the hooks by name and injects them into `handlerArgs.hooks`:
 
 ```ts
-this.hooks = Array.from(this.loadedPlugins.values()).flatMap(
-  (plugin) => plugin.manifest.hooks ?? [],
-);
-```
-
-When a command is executed, `filterHooksForCommand` selects the relevant hooks and injects them into `handlerArgs.hooks`:
-
-```ts
-private filterHooksForCommand(
-  plugin: LoadedPlugin,
-  commandSpec: CommandSpec,
-): AbstractHook[] {
-  const commandKey = `${plugin.manifest.name}_${commandSpec.name}`;
+private filterHooksForCommand(commandSpec: CommandSpec): HookSpec[] {
+  const registeredHooks: string[] = commandSpec.registeredHooks ?? [];
   return this.hooks
-    .filter((spec) => spec.relevantCommands.includes(commandKey))
-    .map((spec) => spec.hook);
+    .filter((spec) => registeredHooks.includes(spec.name));
 }
 ```
 
@@ -543,9 +769,9 @@ export class TransactionInspectionHook extends AbstractHook {
     params: PreExecuteTransactionParams,
   ): Promise<HookResult> {
     const { logger } = args;
-    const { buildAndSignResult } = params;
+    const { signTransactionResult } = params;
 
-    logger.info(`Signed transaction: ${JSON.stringify(buildAndSignResult)}`);
+    logger.info(`Signed transaction: ${JSON.stringify(signTransactionResult)}`);
 
     return Promise.resolve({
       breakFlow: false,
@@ -561,9 +787,9 @@ A hook that halts execution if the user lacks permission:
 
 ```ts
 export class AuthorizationHook extends AbstractHook {
-  override preBuildAndSignHook(
+  override preBuildTransactionHook(
     args: CommandHandlerArgs,
-    params: PreBuildAndSignParams,
+    params: PreBuildTransactionParams,
   ): Promise<HookResult> {
     const isAuthorized = checkPermissions(args);
 
@@ -583,7 +809,7 @@ export class AuthorizationHook extends AbstractHook {
 }
 ```
 
-When `breakFlow: true` is returned, `BaseTransactionCommand.execute` immediately returns the hook's result as the command output, skipping `buildAndSign`, `executeTransaction`, `outputPreparation`, and all subsequent hooks.
+When `breakFlow: true` is returned, `BaseTransactionCommand.execute` immediately returns the hook's result as the command output, skipping `buildTransaction`, `signTransaction`, `executeTransaction`, `outputPreparation`, and all subsequent hooks.
 
 ## Execution Flow
 
@@ -605,34 +831,43 @@ sequenceDiagram
     BC->>Sub: normalizeParams(args)
     Sub-->>BC: normalisedParams
 
-    BC->>H: preBuildAndSignHook(args, normalisedParams)
+    BC->>H: preBuildTransactionHook(args, normalisedParams)
     H-->>BC: HookResult
     alt breakFlow = true
         BC-->>PM: HookResult as CommandResult
     end
 
-    BC->>Sub: buildAndSign(args, normalisedParams)
-    Sub-->>BC: buildAndSignResult
+    BC->>Sub: buildTransaction(args, normalisedParams)
+    Sub-->>BC: buildTransactionResult
 
-    BC->>H: preExecuteTransactionHook(args, normalisedParams, buildAndSignResult)
+    BC->>H: preSignTransactionHook(args, normalisedParams, buildTransactionResult)
     H-->>BC: HookResult
     alt breakFlow = true
         BC-->>PM: HookResult as CommandResult
     end
 
-    BC->>Sub: executeTransaction(args, normalisedParams, buildAndSignResult)
-    Sub-->>BC: coreActionResult
+    BC->>Sub: signTransaction(args, normalisedParams, buildTransactionResult)
+    Sub-->>BC: signTransactionResult
 
-    BC->>H: postExecuteTransactionHook(args, normalisedParams, buildAndSignResult, coreActionResult)
+    BC->>H: preExecuteTransactionHook(args, normalisedParams, buildTransactionResult, signTransactionResult)
     H-->>BC: HookResult
     alt breakFlow = true
         BC-->>PM: HookResult as CommandResult
     end
 
-    BC->>Sub: outputPreparation(args, normalisedParams, coreActionResult)
+    BC->>Sub: executeTransaction(args, normalisedParams, buildTransactionResult, signTransactionResult)
+    Sub-->>BC: executeTransactionResult
+
+    BC->>H: preOutputPreparationHook(args, normalisedParams, buildTransactionResult, signTransactionResult, executeTransactionResult)
+    H-->>BC: HookResult
+    alt breakFlow = true
+        BC-->>PM: HookResult as CommandResult
+    end
+
+    BC->>Sub: outputPreparation(args, normalisedParams, buildTransactionResult, signTransactionResult, executeTransactionResult)
     Sub-->>BC: CommandResult
 
-    BC->>H: postOutputPreparationHook(args, normalisedParams, coreActionResult, outputResult)
+    BC->>H: postOutputPreparationHook(args, normalisedParams, executeTransactionResult, outputResult)
     H-->>BC: HookResult
     alt breakFlow = true
         BC-->>PM: HookResult as CommandResult
@@ -645,9 +880,11 @@ sequenceDiagram
 
 ### Pros
 
-- **Cross-plugin extensibility.** Hooks registered in one plugin can intercept commands in a completely different plugin. This enables cross-cutting concerns (auditing, authorization, telemetry) without modifying the target command.
-- **Separation of concerns.** Validation (`normalizeParams`), transaction construction (`buildAndSign`), network submission (`executeTransaction`), and output formatting (`outputPreparation`) are isolated in dedicated methods, making each easier to understand and maintain.
-- **Transaction interception.** The split between `buildAndSign` and `executeTransaction` allows hooks to inspect, log, or reject a signed transaction before it reaches the network. This is valuable for audit trails, dry-run modes, and multi-signature workflows.
+- **Cross-plugin extensibility.** Hooks defined in one plugin can be registered by commands in a completely different plugin via `registeredHooks`. This enables cross-cutting concerns (auditing, authorization, telemetry) without modifying the hook or target command.
+- **Command-driven hook selection.** Commands declare which hooks they want (`registeredHooks`), making the dependency explicit and discoverable at the command definition site.
+- **Hook option injection.** Hooks can declare their own CLI options (`HookOption[]`), which are automatically merged into every command that registers the hook. This eliminates the need to duplicate option definitions across commands.
+- **Separation of concerns.** Validation (`normalizeParams`), transaction construction (`buildTransaction`), signing (`signTransaction`), network submission (`executeTransaction`), and output formatting (`outputPreparation`) are isolated in dedicated methods, making each easier to understand and maintain.
+- **Transaction interception.** The split between `buildTransaction`, `signTransaction`, and `executeTransaction` allows hooks to inspect, log, or modify a transaction at each stage. This is valuable for audit trails, dry-run modes, batch transaction assembly, and multi-signature workflows.
 - **Flow control via hooks.** Any hook can halt command execution by returning `{ breakFlow: true }` with a custom result. This enables use cases like authorization gates, rate limiting, or conditional command skipping -- all without modifying the command itself.
 - **Testability.** Each phase can be unit-tested independently. Hooks can be tested in isolation by invoking them directly with mock args and params.
 - **Incremental adoption.** The `command` field on `CommandSpec` is optional. Existing plain handler functions continue to work, so migration can happen command-by-command.
@@ -655,27 +892,32 @@ sequenceDiagram
 
 ### Cons
 
-- **Additional boilerplate.** A `BaseTransactionCommand` subclass requires implementing four methods, three type parameters, and separate files for normalized params and output types -- noticeably more code than a plain handler function for simple commands.
-- **Learning curve.** Developers must understand the lifecycle phases, hook ordering, the `HookResult` contract, and how `HookSpec.relevantCommands` matching works.
+- **Additional boilerplate.** A `BaseTransactionCommand` subclass requires implementing four methods, four type parameters, and separate files for normalized params and output types -- noticeably more code than a plain handler function for simple commands.
+- **Learning curve.** Developers must understand the lifecycle phases, hook ordering, the `HookResult` contract, and how `registeredHooks` matching works.
 - **Sequential hook execution overhead.** Hooks are executed sequentially with `await`. A slow hook blocks subsequent hooks and the command phase it precedes. There is no parallel execution or timeout mechanism.
-- **Debugging complexity.** When multiple hooks from different plugins interact with the same command, tracing the execution flow and diagnosing issues requires understanding the full hook chain, which is assembled at runtime. The `breakFlow` mechanism adds another dimension -- a hook may silently prevent execution of later hooks and the command itself.
+- **Debugging complexity.** When multiple hooks from different plugins interact with the same command, tracing the execution flow and diagnosing issues requires understanding the full hook chain. The `breakFlow` mechanism adds another dimension -- a hook may silently prevent execution of later hooks and the command itself.
 - **No hook ordering guarantees.** Hook execution order depends on plugin loading order, which may vary. There is currently no priority or explicit ordering mechanism.
+- **Option name collisions.** Hook options are merged into the command's option list. If two hooks declare options with the same name or short flag, they will conflict. Reserved option filtering mitigates core collisions, but hook-to-hook collisions require manual coordination.
 
 ## Consequences
 
 - New commands should prefer `BaseTransactionCommand` over plain handler functions when they involve distinct validation, signing, execution, and output phases, or when hook extensibility is needed.
-- Plugins that need to inject cross-cutting behavior into other plugins' commands should define `HookSpec` entries in their manifest.
+- Plugins that need to inject cross-cutting behavior should define `HookSpec` entries in their manifest. Commands that want to use these hooks must list them in `registeredHooks`.
+- Hook names must be globally unique across all loaded plugins. `PluginManager` validates this during registration.
+- Hooks that declare `options` will have those options automatically added (as non-required) to every command that references the hook via `registeredHooks`.
 - Hook authors must handle errors defensively -- an unhandled exception in a hook will propagate and abort the command execution.
 - Hooks that use `breakFlow: true` should provide meaningful `result` and optionally `humanTemplate` values, as these become the command's output.
 - The `CommandResult.humanTemplate` field allows hooks to override the output template defined in the command manifest, giving hooks full control over the user-facing output when they halt execution.
-- The `buildAndSign`/`executeTransaction` split is designed for transaction-oriented commands; non-transactional commands may use trivial implementations (e.g. returning `undefined` from `buildAndSign` and performing all logic in `executeTransaction`).
+- The `buildTransaction`/`signTransaction`/`executeTransaction` split is designed for transaction-oriented commands; non-transactional commands may use trivial implementations (e.g. returning `undefined` from `buildTransaction` and performing all logic in `executeTransaction`).
 
 ## Testing Strategy
 
-- **Unit: BaseTransactionCommand subclass.** Test each abstract method independently by instantiating the subclass and calling `normalizeParams`, `buildAndSign`, `executeTransaction`, and `outputPreparation` with mock args.
+- **Unit: BaseTransactionCommand subclass.** Test each abstract method independently by instantiating the subclass and calling `normalizeParams`, `buildTransaction`, `signTransaction`, `executeTransaction`, and `outputPreparation` with mock args.
 - **Unit: Hook execution.** Verify that `executeHooks` calls each hook in order, returns `{ breakFlow: false }` when no hook breaks flow, and returns the `HookResult` immediately when a hook sets `breakFlow: true`.
 - **Unit: Flow interruption.** Verify that when a hook returns `breakFlow: true`, subsequent hooks are not called and the command phases after the hook point are skipped.
-- **Unit: Hook filtering.** Test `filterHooksForCommand` with various `relevantCommands` patterns to ensure correct matching.
+- **Unit: Hook filtering.** Test `filterHooksForCommand` with various `registeredHooks` values to ensure correct matching by hook name.
+- **Unit: Hook name uniqueness.** Verify that `validateUniqueHookNames` throws `ConfigurationError` when two plugins register hooks with the same name.
+- **Unit: Hook option injection.** Verify that hook options are merged into the command's options with `required: false`, and that reserved options are filtered out.
 - **Unit: Individual hooks.** Instantiate a concrete hook and invoke its lifecycle method with mock args/params. Assert the expected side effects and `HookResult` values.
-- **Integration: Cross-plugin hooks.** Load two plugins where one declares a hook targeting the other's command. Execute the command and verify the hook fires.
+- **Integration: Cross-plugin hooks.** Load two plugins where one declares a hook and the other's command references it via `registeredHooks`. Execute the command and verify the hook fires and its options are available.
 - **Integration: Legacy fallback.** Ensure commands without a `command` field still execute via the plain `handler` function.
