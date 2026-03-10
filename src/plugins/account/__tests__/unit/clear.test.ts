@@ -5,7 +5,7 @@ import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
 import { ClearAccountsOutputSchema } from '@/plugins/account/commands/clear';
-import { clearAccounts } from '@/plugins/account/commands/clear/handler';
+import { ClearAccountsCommand } from '@/plugins/account/commands/clear/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -44,7 +44,9 @@ describe('account plugin - clear command (ADR-003)', () => {
       args: {},
     };
 
-    const result = await clearAccounts(args as CommandHandlerArgs);
+    const result = await new ClearAccountsCommand().execute(
+      args as CommandHandlerArgs,
+    );
 
     expect(MockedHelper).toHaveBeenCalledWith(args.api!.state, logger);
     expect(listAccountsMock).toHaveBeenCalledTimes(1);
@@ -78,6 +80,8 @@ describe('account plugin - clear command (ADR-003)', () => {
       args: {},
     };
 
-    await expect(clearAccounts(args as CommandHandlerArgs)).rejects.toThrow();
+    await expect(
+      new ClearAccountsCommand().execute(args as CommandHandlerArgs),
+    ).rejects.toThrow();
   });
 });

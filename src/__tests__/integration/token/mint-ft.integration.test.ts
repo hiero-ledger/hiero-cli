@@ -15,9 +15,9 @@ import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  createAccount,
-  getAccountBalance,
-  viewAccount,
+  AccountBalanceCommand,
+  CreateAccountCommand,
+  ViewAccountCommand,
 } from '@/plugins/account';
 import { createToken, mintFt } from '@/plugins/token';
 
@@ -38,7 +38,7 @@ describe('Mint FT Integration Tests', () => {
       'key-type': 'ecdsa',
       'auto-associations': 10,
     };
-    const createAccountResult = await createAccount({
+    const createAccountResult = await new CreateAccountCommand().execute({
       args: createAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -57,7 +57,7 @@ describe('Mint FT Integration Tests', () => {
     const viewAccountArgs: Record<string, unknown> = {
       account: 'account-mint-ft',
     };
-    const viewAccountResult = await viewAccount({
+    const viewAccountResult = await new ViewAccountCommand().execute({
       args: viewAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -104,13 +104,15 @@ describe('Mint FT Integration Tests', () => {
     };
     const accountBalanceBeforeMintOutput = await waitFor(
       () =>
-        getAccountBalance({
-          args: accountBalanceBeforeMintArgs,
-          api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
-        }).then((r) => r.result as AccountBalanceOutput),
+        new AccountBalanceCommand()
+          .execute({
+            args: accountBalanceBeforeMintArgs,
+            api: coreApi,
+            state: coreApi.state,
+            logger: coreApi.logger,
+            config: coreApi.config,
+          })
+          .then((r) => r.result as AccountBalanceOutput),
       (output) => (output.tokenBalances?.length ?? 0) > 0,
     );
     expect(accountBalanceBeforeMintOutput.tokenBalances?.length).toBe(1);
@@ -148,13 +150,15 @@ describe('Mint FT Integration Tests', () => {
     };
     const accountBalanceAfterMintOutput = await waitFor(
       () =>
-        getAccountBalance({
-          args: accountBalanceAfterMintArgs,
-          api: coreApi,
-          state: coreApi.state,
-          logger: coreApi.logger,
-          config: coreApi.config,
-        }).then((r) => r.result as AccountBalanceOutput),
+        new AccountBalanceCommand()
+          .execute({
+            args: accountBalanceAfterMintArgs,
+            api: coreApi,
+            state: coreApi.state,
+            logger: coreApi.logger,
+            config: coreApi.config,
+          })
+          .then((r) => r.result as AccountBalanceOutput),
       (output) => output.tokenBalances?.at(0)?.balance === 150n,
     );
     expect(accountBalanceAfterMintOutput.tokenBalances?.length).toBe(1);

@@ -1,14 +1,15 @@
-/**
- * Account Import Command Handler
- * Handles importing existing accounts using the Core API
- * Follows ADR-003 contract: returns CommandExecutionResult
- */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { AccountData } from '@/plugins/account/schema';
 import type { ImportAccountOutput } from './output';
+import type {
+  ImportAccountBuildTransactionResult,
+  ImportAccountExecuteTransactionResult,
+  ImportAccountNormalisedParams,
+  ImportAccountSignTransactionResult,
+} from './types';
 
-import { StateError, ValidationError } from '@/core/errors';
+import { BaseTransactionCommand } from '@/core/commands/command';
+import { StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
@@ -16,98 +17,133 @@ import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helpe
 
 import { ImportAccountInputSchema } from './input';
 
-export async function importAccount(
-  args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { api, logger } = args;
+export class ImportAccountCommand extends BaseTransactionCommand<
+  ImportAccountNormalisedParams,
+  ImportAccountBuildTransactionResult,
+  ImportAccountSignTransactionResult,
+  ImportAccountExecuteTransactionResult
+> {
+  async normalizeParams(
+    args: CommandHandlerArgs,
+  ): Promise<ImportAccountNormalisedParams> {
+    const { api, logger } = args;
+    const accountState = new ZustandAccountStateHelper(api.state, logger);
 
-  // Initialize Zustand state helper
-  const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const validArgs = ImportAccountInputSchema.parse(args.args);
 
-  // Parse and validate command arguments
-  const validArgs = ImportAccountInputSchema.parse(args.args);
+    const key = validArgs.key;
+    const alias = validArgs.name;
+    const keyManagerArg = validArgs.keyManager;
+    const accountId = key.accountId;
+    const network = api.network.getCurrentNetwork();
+    const accountKey = composeKey(network, accountId);
 
-  const key = validArgs.key;
-  const alias = validArgs.name;
-  const keyManagerArg = validArgs.keyManager;
-  const accountId = key.accountId;
-  const network = api.network.getCurrentNetwork();
-  const accountKey = composeKey(network, accountId);
+    if (accountState.hasAccount(accountKey)) {
+      throw new StateError('Account with this ID is already saved in state');
+    }
 
-  if (accountState.hasAccount(accountKey)) {
-    throw new StateError('Account with this ID is already saved in state');
+    api.alias.availableOrThrow(alias, network);
+
+    const keyManager =
+      keyManagerArg ||
+      api.config.getOption<KeyManagerName>('default_key_manager');
+
+    return { key, alias, keyManager, accountId, network, accountKey };
   }
 
-  // Get keyManager from args or fallback to config
-  const keyManager =
-    keyManagerArg ||
-    api.config.getOption<KeyManagerName>('default_key_manager');
+  async buildTransaction(
+    args: CommandHandlerArgs,
+    p: ImportAccountNormalisedParams,
+  ): Promise<ImportAccountBuildTransactionResult> {
+    void args;
+    void p;
+    return {};
+  }
 
-  // Check if account name already exists
-  api.alias.availableOrThrow(alias, network);
+  async signTransaction(
+    args: CommandHandlerArgs,
+    p: ImportAccountNormalisedParams,
+    b: ImportAccountBuildTransactionResult,
+  ): Promise<ImportAccountSignTransactionResult> {
+    void args;
+    void p;
+    void b;
+    return {};
+  }
 
-  // Get account info from mirror node
-  const accountInfo = await api.mirror.getAccount(key.accountId);
+  async executeTransaction(
+    args: CommandHandlerArgs,
+    p: ImportAccountNormalisedParams,
+    b: ImportAccountBuildTransactionResult,
+    s: ImportAccountSignTransactionResult,
+  ): Promise<ImportAccountExecuteTransactionResult> {
+    void b;
+    void s;
+    const { api } = args;
 
-  const { keyRefId, publicKey } = api.kms.importAndValidatePrivateKey(
-    accountInfo.keyAlgorithm,
-    key.privateKey,
-    accountInfo.accountPublicKey,
-    keyManager,
-  );
+    const accountInfo = await api.mirror.getAccount(p.key.accountId);
 
-  logger.info(`Importing account: ${accountKey} (${accountId})`);
-
-  // Check if account name already exists
-  if (accountState.hasAccount(accountKey)) {
-    throw new ValidationError(
-      `Account with identifier '${accountKey}' already exists`,
+    const { keyRefId, publicKey } = api.kms.importAndValidatePrivateKey(
+      accountInfo.keyAlgorithm,
+      p.key.privateKey,
+      accountInfo.accountPublicKey,
+      p.keyManager,
     );
-  }
 
-  const evmAddress = buildAccountEvmAddress({
-    accountId,
-    publicKey,
-    keyType: accountInfo.keyAlgorithm,
-    existingEvmAddress: accountInfo.evmAddress,
-  });
-
-  if (alias) {
-    api.alias.register({
-      alias,
-      type: AliasType.Account,
-      network: api.network.getCurrentNetwork(),
-      entityId: accountId,
-      evmAddress,
+    const evmAddress = buildAccountEvmAddress({
+      accountId: p.accountId,
       publicKey,
-      keyRefId,
-      createdAt: new Date().toISOString(),
+      keyType: accountInfo.keyAlgorithm,
+      existingEvmAddress: accountInfo.evmAddress,
     });
+
+    return { keyRefId, publicKey, accountInfo, evmAddress };
   }
 
-  // Create account object (no private key in plugin state)
-  const account: AccountData = {
-    name: alias,
-    accountId,
-    type: accountInfo.keyAlgorithm,
-    publicKey: publicKey,
-    evmAddress,
-    keyRefId,
-    network: api.network.getCurrentNetwork(),
-  };
+  async outputPreparation(
+    args: CommandHandlerArgs,
+    p: ImportAccountNormalisedParams,
+    b: ImportAccountBuildTransactionResult,
+    s: ImportAccountSignTransactionResult,
+    e: ImportAccountExecuteTransactionResult,
+  ): Promise<CommandResult> {
+    void b;
+    void s;
+    const { api, logger } = args;
+    const accountState = new ZustandAccountStateHelper(api.state, logger);
 
-  // Store account in state using the helper
-  accountState.saveAccount(accountKey, account);
+    if (p.alias) {
+      api.alias.register({
+        alias: p.alias,
+        type: AliasType.Account,
+        network: p.network,
+        entityId: p.accountId,
+        evmAddress: e.evmAddress,
+        publicKey: e.publicKey,
+        keyRefId: e.keyRefId,
+        createdAt: new Date().toISOString(),
+      });
+    }
 
-  // Prepare output data
-  const outputData: ImportAccountOutput = {
-    accountId,
-    name: alias,
-    type: account.type,
-    network: account.network,
-    balance: BigInt(accountInfo.balance.balance.toString()),
-    evmAddress,
-  };
+    accountState.saveAccount(p.accountKey, {
+      name: p.alias,
+      accountId: p.accountId,
+      type: e.accountInfo.keyAlgorithm,
+      publicKey: e.publicKey,
+      evmAddress: e.evmAddress,
+      keyRefId: e.keyRefId,
+      network: p.network,
+    });
 
-  return { result: outputData };
+    const outputData: ImportAccountOutput = {
+      accountId: p.accountId,
+      name: p.alias,
+      type: e.accountInfo.keyAlgorithm,
+      network: p.network,
+      balance: BigInt(e.accountInfo.balance.balance.toString()),
+      evmAddress: e.evmAddress,
+    };
+
+    return { result: outputData };
+  }
 }

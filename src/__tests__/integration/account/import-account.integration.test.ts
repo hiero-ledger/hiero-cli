@@ -9,7 +9,7 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { importAccount, viewAccount } from '@/plugins/account';
+import { ImportAccountCommand, ViewAccountCommand } from '@/plugins/account';
 
 describe('Import Account Integration Tests', () => {
   let coreApi: CoreApi;
@@ -40,7 +40,7 @@ describe('Import Account Integration Tests', () => {
         name: 'account-imported',
         key: `${accountId}:${accountKey}`,
       };
-      const importAccountResult = await importAccount({
+      const importAccountResult = await new ImportAccountCommand().execute({
         args: importAccountArgs,
         api: coreApi,
         state: coreApi.state,
@@ -59,7 +59,7 @@ describe('Import Account Integration Tests', () => {
       const viewAccountArgs: Record<string, unknown> = {
         account: 'account-imported',
       };
-      const viewAccountResult = await viewAccount({
+      const viewAccountResult = await new ViewAccountCommand().execute({
         args: viewAccountArgs,
         api: coreApi,
         state: coreApi.state,

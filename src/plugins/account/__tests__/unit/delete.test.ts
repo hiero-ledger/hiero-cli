@@ -7,7 +7,7 @@ import { InternalError, NotFoundError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { DeleteAccountOutputSchema } from '@/plugins/account/commands/delete';
-import { deleteAccount } from '@/plugins/account/commands/delete/handler';
+import { DeleteAccountCommand } from '@/plugins/account/commands/delete/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { mockAliasLists, mockAliasRecords } from './helpers/fixtures';
@@ -58,7 +58,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'acc1' });
 
-    const result = await deleteAccount(args);
+    const result = await new DeleteAccountCommand().execute(args);
 
     expect(deleteAccountMock).toHaveBeenCalledWith('testnet:0.0.1111');
     const output = assertOutput(result.result, DeleteAccountOutputSchema);
@@ -90,7 +90,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: '0.0.2222' });
 
-    const result = await deleteAccount(args);
+    const result = await new DeleteAccountCommand().execute(args);
 
     expect(deleteAccountMock).toHaveBeenCalledWith('testnet:0.0.2222');
     const output = assertOutput(result.result, DeleteAccountOutputSchema);
@@ -118,7 +118,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, {});
 
-    await expect(deleteAccount(args)).rejects.toThrow();
+    await expect(new DeleteAccountCommand().execute(args)).rejects.toThrow();
   });
 
   test('throws error when account with given name not found', async () => {
@@ -146,7 +146,9 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'missingAcc' });
 
-    await expect(deleteAccount(args)).rejects.toThrow(NotFoundError);
+    await expect(new DeleteAccountCommand().execute(args)).rejects.toThrow(
+      NotFoundError,
+    );
   });
 
   test('throws error when account with given id not found', async () => {
@@ -171,7 +173,9 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: '0.0.4444' });
 
-    await expect(deleteAccount(args)).rejects.toThrow(NotFoundError);
+    await expect(new DeleteAccountCommand().execute(args)).rejects.toThrow(
+      NotFoundError,
+    );
   });
 
   test('throws error when deleteAccount fails', async () => {
@@ -202,7 +206,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'acc5' });
 
-    await expect(deleteAccount(args)).rejects.toThrow();
+    await expect(new DeleteAccountCommand().execute(args)).rejects.toThrow();
   });
 
   test('removes aliases of the account only for current network and type', async () => {
@@ -239,7 +243,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'acc-alias' });
 
-    const result = await deleteAccount(args);
+    const result = await new DeleteAccountCommand().execute(args);
 
     expect(alias.list).toHaveBeenCalledWith({
       network: SupportedNetwork.TESTNET,

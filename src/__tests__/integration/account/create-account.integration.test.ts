@@ -10,7 +10,7 @@ import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { createAccount, viewAccount } from '@/plugins/account';
+import { CreateAccountCommand, ViewAccountCommand } from '@/plugins/account';
 
 describe('Create Account Integration Tests', () => {
   let coreApi: CoreApi;
@@ -30,7 +30,7 @@ describe('Create Account Integration Tests', () => {
         'key-type': 'ecdsa',
         'auto-associations': 10,
       };
-      const createAccountResult = await createAccount({
+      const createAccountResult = await new CreateAccountCommand().execute({
         args: createAccountArgs,
         api: coreApi,
         state: coreApi.state,
@@ -49,7 +49,7 @@ describe('Create Account Integration Tests', () => {
       const viewAccountArgs: Record<string, unknown> = {
         account: 'account-test',
       };
-      const viewAccountResult = await viewAccount({
+      const viewAccountResult = await new ViewAccountCommand().execute({
         args: viewAccountArgs,
         api: coreApi,
         state: coreApi.state,

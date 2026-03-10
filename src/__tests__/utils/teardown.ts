@@ -4,7 +4,11 @@ import type { ViewAccountOutput } from '@/plugins/account/commands/view';
 
 import * as fs from 'fs';
 
-import { importAccount, listAccounts, viewAccount } from '@/plugins/account';
+import {
+  ImportAccountCommand,
+  ListAccountsCommand,
+  ViewAccountCommand,
+} from '@/plugins/account';
 import { transferHandler } from '@/plugins/hbar/commands/transfer';
 
 import { delay } from './common-utils';
@@ -17,7 +21,7 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
   coreApi: CoreApi,
 ): Promise<void> => {
   try {
-    const accountListResult = await listAccounts({
+    const accountListResult = await new ListAccountsCommand().execute({
       args: {},
       api: coreApi,
       state: coreApi.state,
@@ -32,7 +36,7 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
       key: `${process.env.OPERATOR_ID as string}:${process.env.OPERATOR_KEY as string}`,
     };
     try {
-      await importAccount({
+      await new ImportAccountCommand().execute({
         args: importAccountArgs,
         api: coreApi,
         state: coreApi.state,
@@ -45,7 +49,7 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
     await delay(5000);
     for (const account of accounts) {
       try {
-        const viewAccountResult = await viewAccount({
+        const viewAccountResult = await new ViewAccountCommand().execute({
           args: { account: account.name },
           api: coreApi,
           state: coreApi.state,

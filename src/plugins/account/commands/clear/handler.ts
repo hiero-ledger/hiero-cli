@@ -1,33 +1,88 @@
-/**
- * Account Clear Command Handler
- * Handles clearing all accounts using the Core API
- * Follows ADR-003 contract: returns CommandResult
- */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { ClearAccountsOutput } from './output';
+import type {
+  ClearAccountsBuildTransactionResult,
+  ClearAccountsExecuteTransactionResult,
+  ClearAccountsNormalisedParams,
+  ClearAccountsSignTransactionResult,
+} from './types';
 
+import { BaseTransactionCommand } from '@/core/commands/command';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
-export async function clearAccounts(
-  args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { api, logger } = args;
+export class ClearAccountsCommand extends BaseTransactionCommand<
+  ClearAccountsNormalisedParams,
+  ClearAccountsBuildTransactionResult,
+  ClearAccountsSignTransactionResult,
+  ClearAccountsExecuteTransactionResult
+> {
+  async normalizeParams(
+    args: CommandHandlerArgs,
+  ): Promise<ClearAccountsNormalisedParams> {
+    void args;
+    return {};
+  }
 
-  const accountState = new ZustandAccountStateHelper(api.state, logger);
+  async buildTransaction(
+    args: CommandHandlerArgs,
+    p: ClearAccountsNormalisedParams,
+  ): Promise<ClearAccountsBuildTransactionResult> {
+    void args;
+    void p;
+    return {};
+  }
 
-  logger.info('Clearing all accounts...');
+  async signTransaction(
+    args: CommandHandlerArgs,
+    p: ClearAccountsNormalisedParams,
+    b: ClearAccountsBuildTransactionResult,
+  ): Promise<ClearAccountsSignTransactionResult> {
+    void args;
+    void p;
+    void b;
+    return {};
+  }
 
-  const accounts = accountState.listAccounts();
-  const count = accounts.length;
+  async executeTransaction(
+    args: CommandHandlerArgs,
+    p: ClearAccountsNormalisedParams,
+    b: ClearAccountsBuildTransactionResult,
+    s: ClearAccountsSignTransactionResult,
+  ): Promise<ClearAccountsExecuteTransactionResult> {
+    void p;
+    void b;
+    void s;
+    const { api, logger } = args;
+    const accountState = new ZustandAccountStateHelper(api.state, logger);
 
-  api.alias.clear(AliasType.Account);
+    logger.info('Clearing all accounts...');
 
-  accountState.clearAccounts();
+    const accounts = accountState.listAccounts();
+    const count = accounts.length;
 
-  const outputData: ClearAccountsOutput = {
-    clearedCount: count,
-  };
+    api.alias.clear(AliasType.Account);
+    accountState.clearAccounts();
 
-  return { result: outputData };
+    return { clearedCount: count };
+  }
+
+  async outputPreparation(
+    args: CommandHandlerArgs,
+    p: ClearAccountsNormalisedParams,
+    b: ClearAccountsBuildTransactionResult,
+    s: ClearAccountsSignTransactionResult,
+    e: ClearAccountsExecuteTransactionResult,
+  ): Promise<CommandResult> {
+    void args;
+    void p;
+    void b;
+    void s;
+
+    const outputData: ClearAccountsOutput = {
+      clearedCount: e.clearedCount,
+    };
+
+    return { result: outputData };
+  }
 }

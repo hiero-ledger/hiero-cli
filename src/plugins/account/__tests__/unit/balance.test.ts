@@ -14,7 +14,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError, StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { AccountBalanceOutputSchema } from '@/plugins/account/commands/balance';
-import { getAccountBalance } from '@/plugins/account/commands/balance/handler';
+import { AccountBalanceCommand } from '@/plugins/account/commands/balance/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -53,7 +53,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       token: '0.0.7777',
     });
 
-    const result = await getAccountBalance(args);
+    const result = await new AccountBalanceCommand().execute(args);
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
 
     expect(mirrorMock.getAccountHBarBalance).not.toHaveBeenCalled();
@@ -108,7 +108,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       token: 'token-alias',
     });
 
-    const result = await getAccountBalance(args);
+    const result = await new AccountBalanceCommand().execute(args);
 
     expect(mirrorMock.getAccountHBarBalance).not.toHaveBeenCalled();
     expect(mirrorMock.getAccountTokenBalances).toHaveBeenCalledWith(
@@ -151,7 +151,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       hbarOnly: true,
     });
 
-    const result = await getAccountBalance(args);
+    const result = await new AccountBalanceCommand().execute(args);
 
     expect(mirrorMock.getAccountHBarBalance).toHaveBeenCalledWith('0.0.1001');
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
@@ -187,7 +187,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'acc2' });
 
-    const result = await getAccountBalance(args);
+    const result = await new AccountBalanceCommand().execute(args);
 
     expect(mirrorMock.getAccountHBarBalance).toHaveBeenCalledWith('0.0.2002');
     expect(mirrorMock.getAccountTokenBalances).toHaveBeenCalledWith(
@@ -239,7 +239,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'acc777' });
 
-    const result = await getAccountBalance(args);
+    const result = await new AccountBalanceCommand().execute(args);
 
     expect(mirrorMock.getAccountHBarBalance).toHaveBeenCalledWith('0.0.7777');
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
@@ -268,7 +268,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'acc3' });
 
-    const result = await getAccountBalance(args);
+    const result = await new AccountBalanceCommand().execute(args);
 
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
     expect(output.accountId).toBe('0.0.5005');
@@ -299,7 +299,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'acc4' });
 
-    await expect(getAccountBalance(args)).rejects.toThrow();
+    await expect(new AccountBalanceCommand().execute(args)).rejects.toThrow();
   });
 
   test('throws NotFoundError when account not found', async () => {
@@ -322,7 +322,9 @@ describe('account plugin - balance command (ADR-003)', () => {
     const account = 'broken';
     const args = makeArgs(api, logger, { account });
 
-    await expect(getAccountBalance(args)).rejects.toThrow(NotFoundError);
+    await expect(new AccountBalanceCommand().execute(args)).rejects.toThrow(
+      NotFoundError,
+    );
   });
 
   test('throws error when mirror service fails', async () => {
@@ -350,7 +352,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       hbarOnly: true,
     });
 
-    await expect(getAccountBalance(args)).rejects.toThrow();
+    await expect(new AccountBalanceCommand().execute(args)).rejects.toThrow();
   });
 
   test('returns display units by default', async () => {
@@ -384,7 +386,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       account: 'test-acc',
     });
 
-    const result = await getAccountBalance(args);
+    const result = await new AccountBalanceCommand().execute(args);
 
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
     expect(output.accountId).toBe('0.0.2002');
@@ -433,7 +435,7 @@ describe('account plugin - balance command (ADR-003)', () => {
       raw: true,
     });
 
-    const result = await getAccountBalance(args);
+    const result = await new AccountBalanceCommand().execute(args);
 
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
     expect(output.accountId).toBe('0.0.2002');

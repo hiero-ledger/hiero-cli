@@ -14,7 +14,7 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { createAccount, viewAccount } from '@/plugins/account';
+import { CreateAccountCommand, ViewAccountCommand } from '@/plugins/account';
 import { createNft } from '@/plugins/token/commands/create-nft';
 import { mintNft } from '@/plugins/token/commands/mint-nft';
 import { viewToken } from '@/plugins/token/commands/view';
@@ -36,7 +36,7 @@ describe('Mint NFT Integration Tests', () => {
       keyType: 'ecdsa',
       autoAssociations: 10,
     };
-    const createAccountResult = await createAccount({
+    const createAccountResult = await new CreateAccountCommand().execute({
       args: createAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -55,7 +55,7 @@ describe('Mint NFT Integration Tests', () => {
     const viewAccountArgs: Record<string, unknown> = {
       account: 'account-mint-nft',
     };
-    const viewAccountResult = await viewAccount({
+    const viewAccountResult = await new ViewAccountCommand().execute({
       args: viewAccountArgs,
       api: coreApi,
       state: coreApi.state,

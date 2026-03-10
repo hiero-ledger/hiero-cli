@@ -11,7 +11,7 @@ import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { createAccount, viewAccount } from '@/plugins/account';
+import { CreateAccountCommand, ViewAccountCommand } from '@/plugins/account';
 import { transferHandler } from '@/plugins/hbar/commands/transfer';
 
 describe('HBAR Transfer Account Integration Tests', () => {
@@ -31,7 +31,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
       'key-type': 'ecdsa',
       'auto-associations': 10,
     };
-    const createAccountResult = await createAccount({
+    const createAccountResult = await new CreateAccountCommand().execute({
       args: createAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -72,7 +72,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const viewAccountArgs: Record<string, unknown> = {
       account: 'account-transfer',
     };
-    const viewAccountResult = await viewAccount({
+    const viewAccountResult = await new ViewAccountCommand().execute({
       args: viewAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -93,7 +93,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
       'key-type': 'ecdsa',
       'auto-associations': 10,
     };
-    const accountFromResult = await createAccount({
+    const accountFromResult = await new CreateAccountCommand().execute({
       args: accountFromArgs,
       api: coreApi,
       state: coreApi.state,
@@ -112,7 +112,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
       'key-type': 'ecdsa',
       'auto-associations': 10,
     };
-    const accountToResult = await createAccount({
+    const accountToResult = await new CreateAccountCommand().execute({
       args: accountToArgs,
       api: coreApi,
       state: coreApi.state,
@@ -151,7 +151,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const viewAccountFromArgs: Record<string, unknown> = {
       account: 'account-transfer-from',
     };
-    const viewAccountFromResult = await viewAccount({
+    const viewAccountFromResult = await new ViewAccountCommand().execute({
       args: viewAccountFromArgs,
       api: coreApi,
       state: coreApi.state,
@@ -166,7 +166,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     const viewAccountToArgs: Record<string, unknown> = {
       account: 'account-transfer-to',
     };
-    const viewAccountToResult = await viewAccount({
+    const viewAccountToResult = await new ViewAccountCommand().execute({
       args: viewAccountToArgs,
       api: coreApi,
       state: coreApi.state,

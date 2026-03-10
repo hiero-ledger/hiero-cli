@@ -12,7 +12,7 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { createAccount, viewAccount } from '@/plugins/account';
+import { CreateAccountCommand, ViewAccountCommand } from '@/plugins/account';
 import { createNft } from '@/plugins/token/commands/create-nft';
 
 describe('Create NFT Integration Tests', () => {
@@ -31,7 +31,7 @@ describe('Create NFT Integration Tests', () => {
       'key-type': 'ecdsa',
       'auto-associations': 10,
     };
-    const createAccountResult = await createAccount({
+    const createAccountResult = await new CreateAccountCommand().execute({
       args: createAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -50,7 +50,7 @@ describe('Create NFT Integration Tests', () => {
     const viewAccountArgs: Record<string, unknown> = {
       account: 'account-create-nft',
     };
-    const viewAccountResult = await viewAccount({
+    const viewAccountResult = await new ViewAccountCommand().execute({
       args: viewAccountArgs,
       api: coreApi,
       state: coreApi.state,

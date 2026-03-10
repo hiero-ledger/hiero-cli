@@ -14,9 +14,9 @@ import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  createAccount,
-  getAccountBalance,
-  viewAccount,
+  AccountBalanceCommand,
+  CreateAccountCommand,
+  ViewAccountCommand,
 } from '@/plugins/account';
 import { createToken } from '@/plugins/token';
 
@@ -36,7 +36,7 @@ describe('Create Token Integration Tests', () => {
       'key-type': 'ecdsa',
       'auto-associations': 10,
     };
-    const createAccountResult = await createAccount({
+    const createAccountResult = await new CreateAccountCommand().execute({
       args: createAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -55,7 +55,7 @@ describe('Create Token Integration Tests', () => {
     const viewAccountArgs: Record<string, unknown> = {
       account: 'account-create-token',
     };
-    const viewAccountResult = await viewAccount({
+    const viewAccountResult = await new ViewAccountCommand().execute({
       args: viewAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -103,7 +103,7 @@ describe('Create Token Integration Tests', () => {
       hbarOnly: false,
       token: createTokenOutput.tokenId,
     };
-    const accountBalanceResult = await getAccountBalance({
+    const accountBalanceResult = await new AccountBalanceCommand().execute({
       args: accountBalanceArgs,
       api: coreApi,
       state: coreApi.state,

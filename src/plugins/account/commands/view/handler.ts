@@ -1,70 +1,112 @@
-/**
- * Account View Command Handler
- * Handles viewing account details using the Core API
- * Follows ADR-003 contract: returns CommandExecutionResult
- */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { ViewAccountOutput } from './output';
+import type {
+  ViewAccountBuildTransactionResult,
+  ViewAccountExecuteTransactionResult,
+  ViewAccountNormalisedParams,
+  ViewAccountSignTransactionResult,
+} from './types';
 
+import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 
 import { ViewAccountInputSchema } from './input';
 
-export async function viewAccount(
-  args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { api, logger } = args;
+export class ViewAccountCommand extends BaseTransactionCommand<
+  ViewAccountNormalisedParams,
+  ViewAccountBuildTransactionResult,
+  ViewAccountSignTransactionResult,
+  ViewAccountExecuteTransactionResult
+> {
+  async normalizeParams(
+    args: CommandHandlerArgs,
+  ): Promise<ViewAccountNormalisedParams> {
+    const { api, logger } = args;
 
-  // Parse and validate command arguments
-  const validArgs = ViewAccountInputSchema.parse(args.args);
+    const validArgs = ViewAccountInputSchema.parse(args.args);
+    const accountIdOrNameOrAlias = validArgs.account;
 
-  const accountIdOrNameOrAlias = validArgs.account;
+    logger.info(`Viewing account details: ${accountIdOrNameOrAlias}`);
 
-  logger.info(`Viewing account details: ${accountIdOrNameOrAlias}`);
+    const network = api.network.getCurrentNetwork();
+    let accountId = accountIdOrNameOrAlias;
 
-  // Resolve account identifier (could be name, account ID, or alias)
-  let accountId = accountIdOrNameOrAlias;
-
-  // First check if it's a stored account name
-  const network = args.api.network.getCurrentNetwork();
-  const account = args.api.alias.resolve(
-    accountIdOrNameOrAlias,
-    AliasType.Account,
-    network,
-  );
-  if (account && account.entityId) {
-    accountId = account.entityId;
-    logger.info(`Found account in state: ${account.alias}`);
-  } else {
-    const accountIdParseResult = EntityIdSchema.safeParse(
+    const account = api.alias.resolve(
       accountIdOrNameOrAlias,
+      AliasType.Account,
+      network,
     );
-
-    if (!accountIdParseResult.success) {
-      throw new NotFoundError(
-        `Account not found with ID or alias: ${accountIdOrNameOrAlias}`,
+    if (account && account.entityId) {
+      accountId = account.entityId;
+      logger.info(`Found account in state: ${account.alias}`);
+    } else {
+      const accountIdParseResult = EntityIdSchema.safeParse(
+        accountIdOrNameOrAlias,
       );
+      if (!accountIdParseResult.success) {
+        throw new NotFoundError(
+          `Account not found with ID or alias: ${accountIdOrNameOrAlias}`,
+        );
+      }
+      accountId = accountIdParseResult.data;
     }
 
-    accountId = accountIdParseResult.data;
+    return { accountId, network };
   }
 
-  // Get account info from mirror node
-  const accountInfo = await api.mirror.getAccount(accountId);
+  async buildTransaction(
+    args: CommandHandlerArgs,
+    p: ViewAccountNormalisedParams,
+  ): Promise<ViewAccountBuildTransactionResult> {
+    void args;
+    void p;
+    return {};
+  }
 
-  // Prepare output data
-  const outputData: ViewAccountOutput = {
-    accountId: accountInfo.accountId,
-    balance: BigInt(accountInfo.balance.balance.toString()),
-    ...(accountInfo.evmAddress && { evmAddress: accountInfo.evmAddress }),
-    ...(accountInfo.accountPublicKey && {
-      publicKey: accountInfo.accountPublicKey,
-    }),
-    balanceTimestamp: accountInfo.balance.timestamp,
-    network,
-  };
+  async signTransaction(
+    args: CommandHandlerArgs,
+    p: ViewAccountNormalisedParams,
+    b: ViewAccountBuildTransactionResult,
+  ): Promise<ViewAccountSignTransactionResult> {
+    void args;
+    void p;
+    void b;
+    return {};
+  }
 
-  return { result: outputData };
+  async executeTransaction(
+    args: CommandHandlerArgs,
+    p: ViewAccountNormalisedParams,
+    b: ViewAccountBuildTransactionResult,
+    s: ViewAccountSignTransactionResult,
+  ): Promise<ViewAccountExecuteTransactionResult> {
+    void b;
+    void s;
+    return await args.api.mirror.getAccount(p.accountId);
+  }
+
+  async outputPreparation(
+    args: CommandHandlerArgs,
+    p: ViewAccountNormalisedParams,
+    b: ViewAccountBuildTransactionResult,
+    s: ViewAccountSignTransactionResult,
+    e: ViewAccountExecuteTransactionResult,
+  ): Promise<CommandResult> {
+    void args;
+    void b;
+    void s;
+
+    const outputData: ViewAccountOutput = {
+      accountId: e.accountId,
+      balance: BigInt(e.balance.balance.toString()),
+      ...(e.evmAddress && { evmAddress: e.evmAddress }),
+      ...(e.accountPublicKey && { publicKey: e.accountPublicKey }),
+      balanceTimestamp: e.balance.timestamp,
+      network: p.network,
+    };
+
+    return { result: outputData };
+  }
 }

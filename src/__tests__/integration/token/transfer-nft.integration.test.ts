@@ -15,7 +15,7 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { createAccount } from '@/plugins/account';
+import { CreateAccountCommand } from '@/plugins/account';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createNft } from '@/plugins/token/commands/create-nft';
 import { mintNft } from '@/plugins/token/commands/mint-nft';
@@ -40,13 +40,14 @@ describe('Transfer NFT Integration Tests', () => {
         'key-type': 'ecdsa',
         'auto-associations': 10,
       };
-      const createSourceAccountResult = await createAccount({
-        args: createSourceAccountArgs,
-        api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
-      });
+      const createSourceAccountResult =
+        await new CreateAccountCommand().execute({
+          args: createSourceAccountArgs,
+          api: coreApi,
+          state: coreApi.state,
+          logger: coreApi.logger,
+          config: coreApi.config,
+        });
 
       const createSourceAccountOutput =
         createSourceAccountResult.result as CreateAccountOutput;
@@ -64,13 +65,14 @@ describe('Transfer NFT Integration Tests', () => {
         'key-type': 'ecdsa',
         'auto-associations': 10,
       };
-      const createDestinationAccountResult = await createAccount({
-        args: createDestinationAccountArgs,
-        api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
-      });
+      const createDestinationAccountResult =
+        await new CreateAccountCommand().execute({
+          args: createDestinationAccountArgs,
+          api: coreApi,
+          state: coreApi.state,
+          logger: coreApi.logger,
+          config: coreApi.config,
+        });
 
       const createDestinationAccountOutput =
         createDestinationAccountResult.result as CreateAccountOutput;
@@ -247,7 +249,7 @@ describe('Transfer NFT Integration Tests', () => {
         'key-type': 'ecdsa',
         'auto-associations': 10,
       };
-      const createAccountResult = await createAccount({
+      const createAccountResult = await new CreateAccountCommand().execute({
         args: createAccountArgs,
         api: coreApi,
         state: coreApi.state,
@@ -306,7 +308,7 @@ describe('Transfer NFT Integration Tests', () => {
         'key-type': 'ecdsa',
         'auto-associations': 10,
       };
-      await createAccount({
+      await new CreateAccountCommand().execute({
         args: createAnotherAccountArgs,
         api: coreApi,
         state: coreApi.state,
