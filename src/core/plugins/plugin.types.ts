@@ -27,7 +27,6 @@ export interface PluginManifest {
 
 export interface HookSpec {
   name: string;
-  relevantCommands: string[];
   hook: AbstractHook;
   options?: HookOption[];
 }
