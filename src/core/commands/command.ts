@@ -5,14 +5,16 @@ import type {
   HookResult,
   PostExecuteTransactionParams,
   PostOutputPreparationParams,
-  PreBuildAndSignParams,
+  PreBuildTransactionParams,
   PreExecuteTransactionParams,
+  PreSignTransactionParams,
 } from '@/core/hooks/types';
 
 export abstract class BaseTransactionCommand<
   TNormalisedParams = unknown,
-  TBuildAndSignResult = unknown,
-  TCoreActionResult = unknown,
+  TBuildTransactionResult = unknown,
+  TSignTransactionResult = unknown,
+  TExecuteTransactionResult = unknown,
 > implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const preNormalizationHookResult =
@@ -22,32 +24,52 @@ export abstract class BaseTransactionCommand<
     }
     const normalisedParams = await this.normalizeParams(args);
 
-    const preBuildAndSignHookResult = await this.preBuildAndSignHook(args, {
-      normalisedParams,
-    });
-    if (preBuildAndSignHookResult.breakFlow) {
-      return this.processHookResult(preBuildAndSignHookResult);
+    const preBuildTransactionHookResult = await this.preBuildTransactionHook(
+      args,
+      { normalisedParams },
+    );
+    if (preBuildTransactionHookResult.breakFlow) {
+      return this.processHookResult(preBuildTransactionHookResult);
     }
-    const buildAndSignResult = await this.buildAndSign(args, normalisedParams);
+    const buildTransactionResult = await this.buildTransaction(
+      args,
+      normalisedParams,
+    );
+
+    const preSignTransactionHookResult = await this.preSignTransactionHook(
+      args,
+      { normalisedParams, buildTransactionResult },
+    );
+    if (preSignTransactionHookResult.breakFlow) {
+      return this.processHookResult(preSignTransactionHookResult);
+    }
+    const signTransactionResult = await this.signTransaction(
+      args,
+      normalisedParams,
+      buildTransactionResult,
+    );
 
     const preExecuteTransactionHookResult =
       await this.preExecuteTransactionHook(args, {
         normalisedParams,
-        buildAndSignResult,
+        buildTransactionResult,
+        signTransactionResult,
       });
     if (preExecuteTransactionHookResult.breakFlow) {
       return this.processHookResult(preExecuteTransactionHookResult);
     }
-    const coreActionResult = await this.executeTransaction(
+    const executeTransactionResult = await this.executeTransaction(
       args,
       normalisedParams,
-      buildAndSignResult,
+      buildTransactionResult,
+      signTransactionResult,
     );
     const postExecuteTransactionHookResult =
       await this.postExecuteTransactionHook(args, {
         normalisedParams,
-        buildAndSignResult,
-        coreActionResult,
+        buildTransactionResult,
+        signTransactionResult,
+        executeTransactionResult,
       });
     if (postExecuteTransactionHookResult.breakFlow) {
       return this.processHookResult(postExecuteTransactionHookResult);
@@ -55,11 +77,15 @@ export abstract class BaseTransactionCommand<
     const result = await this.outputPreparation(
       args,
       normalisedParams,
-      coreActionResult,
+      buildTransactionResult,
+      signTransactionResult,
+      executeTransactionResult,
     );
     const postOutputHookResult = await this.postOutputPreparationHook(args, {
       normalisedParams,
-      coreActionResult,
+      buildTransactionResult,
+      signTransactionResult,
+      executeTransactionResult,
       outputResult: result,
     });
     if (postOutputHookResult.breakFlow) {
@@ -78,19 +104,36 @@ export abstract class BaseTransactionCommand<
     );
   }
 
-  async preBuildAndSignHook(
+  async preBuildTransactionHook(
     args: CommandHandlerArgs,
-    params: PreBuildAndSignParams<TNormalisedParams>,
+    params: PreBuildTransactionParams<TNormalisedParams>,
   ): Promise<HookResult> {
     return await this.executeHooks(
-      async (h) => h.preBuildAndSignHook(args, params),
+      async (h) => h.preBuildTransactionHook(args, params),
+      args.hooks,
+    );
+  }
+
+  async preSignTransactionHook(
+    args: CommandHandlerArgs,
+    params: PreSignTransactionParams<
+      TNormalisedParams,
+      TBuildTransactionResult
+    >,
+  ): Promise<HookResult> {
+    return await this.executeHooks(
+      async (h) => h.preSignTransactionHook(args, params),
       args.hooks,
     );
   }
 
   async preExecuteTransactionHook(
     args: CommandHandlerArgs,
-    params: PreExecuteTransactionParams<TNormalisedParams, TBuildAndSignResult>,
+    params: PreExecuteTransactionParams<
+      TNormalisedParams,
+      TBuildTransactionResult,
+      TSignTransactionResult
+    >,
   ): Promise<HookResult> {
     return await this.executeHooks(
       async (h) => h.preExecuteTransactionHook(args, params),
@@ -102,8 +145,9 @@ export abstract class BaseTransactionCommand<
     args: CommandHandlerArgs,
     params: PostExecuteTransactionParams<
       TNormalisedParams,
-      TBuildAndSignResult,
-      TCoreActionResult
+      TBuildTransactionResult,
+      TSignTransactionResult,
+      TExecuteTransactionResult
     >,
   ): Promise<HookResult> {
     return await this.executeHooks(
@@ -114,7 +158,12 @@ export abstract class BaseTransactionCommand<
 
   async postOutputPreparationHook(
     args: CommandHandlerArgs,
-    params: PostOutputPreparationParams<TNormalisedParams, TCoreActionResult>,
+    params: PostOutputPreparationParams<
+      TNormalisedParams,
+      TBuildTransactionResult,
+      TSignTransactionResult,
+      TExecuteTransactionResult
+    >,
   ): Promise<HookResult> {
     return await this.executeHooks(
       async (h) => h.postOutputPreparationHook(args, params),
@@ -169,20 +218,29 @@ export abstract class BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<TNormalisedParams>;
 
-  abstract buildAndSign(
+  abstract buildTransaction(
     args: CommandHandlerArgs,
     normalisedParams: TNormalisedParams,
-  ): Promise<TBuildAndSignResult>;
+  ): Promise<TBuildTransactionResult>;
+
+  abstract signTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: TNormalisedParams,
+    buildTransactionResult: TBuildTransactionResult,
+  ): Promise<TSignTransactionResult>;
 
   abstract executeTransaction(
     args: CommandHandlerArgs,
     normalisedParams: TNormalisedParams,
-    buildAndSignResult: TBuildAndSignResult,
-  ): Promise<TCoreActionResult>;
+    buildTransactionResult: TBuildTransactionResult,
+    signTransactionResult: TSignTransactionResult,
+  ): Promise<TExecuteTransactionResult>;
 
   abstract outputPreparation(
     args: CommandHandlerArgs,
     normalisedParams: TNormalisedParams,
-    coreActionResult?: TCoreActionResult,
+    buildTransactionResult: TBuildTransactionResult,
+    signTransactionResult: TSignTransactionResult,
+    coreActionResult: TExecuteTransactionResult,
   ): Promise<CommandResult>;
 }

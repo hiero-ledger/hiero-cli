@@ -27,8 +27,18 @@ export interface PluginManifest {
 
 export interface HookSpec {
   name: string;
-  relevantCommands: string[];
   hook: AbstractHook;
+  options?: HookOption[];
+}
+
+/**
+ * Hook option
+ */
+export interface HookOption {
+  name: string;
+  type: OptionType;
+  description?: string;
+  short: string; // optional short flag alias like 'b' for -b
 }
 
 /**
@@ -54,6 +64,7 @@ export interface CommandSpec {
   handler: CommandHandler;
   output: CommandOutputSpec;
   excessArguments?: boolean;
+  registeredHooks?: string[];
   /** Handlebars template for pre-execution confirmation (human format only). Example: 'Delete account {{name}}?' */
   requireConfirmation?: string;
 }
@@ -95,6 +106,17 @@ export interface CommandResult {
 export type CommandHandler = (
   args: CommandHandlerArgs,
 ) => Promise<CommandResult>;
+
+/**
+ * Option
+ */
+export interface Option {
+  name: string;
+  type: OptionType;
+  required: boolean;
+  description?: string;
+  short?: string;
+}
 
 /**
  * Plugin state schema

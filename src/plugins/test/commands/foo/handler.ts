@@ -1,17 +1,18 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { FooNormalizedParams } from '@/plugins/test/commands/foo/types';
+import type {
+  FooBuildTransactionResult,
+  FooNormalizedParams,
+  FooSignTransactionResult,
+} from '@/plugins/test/commands/foo/types';
 import type { FooTestOutput } from './output';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { FooTestInputSchema } from '@/plugins/test/commands/foo/input';
 
-interface FooBuildAndSignResult {
-  message: string;
-}
-
 export class FooTestCommand extends BaseTransactionCommand<
   FooNormalizedParams,
-  FooBuildAndSignResult,
+  FooBuildTransactionResult,
+  FooSignTransactionResult,
   void
 > {
   async normalizeParams(
@@ -23,28 +24,47 @@ export class FooTestCommand extends BaseTransactionCommand<
     };
   }
 
-  async buildAndSign(
+  async buildTransaction(
     args: CommandHandlerArgs,
     normalisedParams: FooNormalizedParams,
-  ): Promise<FooBuildAndSignResult> {
+  ): Promise<FooBuildTransactionResult> {
     void args;
     return { message: normalisedParams.message };
   }
 
+  async signTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: FooNormalizedParams,
+    buildTransactionResult: FooBuildTransactionResult,
+  ): Promise<FooSignTransactionResult> {
+    void args;
+    void normalisedParams;
+    return { message: buildTransactionResult.message };
+  }
+
   async executeTransaction(
     args: CommandHandlerArgs,
-    _normalisedParams: FooNormalizedParams,
-    buildAndSignResult: FooBuildAndSignResult,
+    normalisedParams: FooNormalizedParams,
+    buildTransactionResult: FooBuildTransactionResult,
+    signTransactionResult: FooSignTransactionResult,
   ): Promise<void> {
+    void normalisedParams;
+    void buildTransactionResult;
     const { logger } = args;
-    logger.info(buildAndSignResult.message);
+    logger.info(signTransactionResult.message);
   }
 
   async outputPreparation(
     args: CommandHandlerArgs,
     normalisedParams: FooNormalizedParams,
+    buildTransactionResult: FooBuildTransactionResult,
+    signTransactionResult: FooSignTransactionResult,
+    executeTransactionResult: void,
   ): Promise<CommandResult> {
     void args;
+    void buildTransactionResult;
+    void signTransactionResult;
+    void executeTransactionResult;
     const output: FooTestOutput = {
       bar: normalisedParams.message,
     };

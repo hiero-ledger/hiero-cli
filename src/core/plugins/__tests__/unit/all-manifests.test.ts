@@ -12,6 +12,7 @@ describe('Global Manifest Validation', () => {
 
         const { filteredLong, filteredShort } = filterReservedOptions(
           command.options,
+          [],
         );
 
         if (filteredLong.length > 0) {
