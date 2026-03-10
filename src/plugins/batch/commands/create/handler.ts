@@ -37,6 +37,7 @@ export class CreateBatchCommand implements Command {
     const batchData = {
       name: validArgs.name,
       keyRefId: resolved.keyRefId,
+      transactions: [],
     };
 
     batchState.saveBatch(validArgs.name, batchData);

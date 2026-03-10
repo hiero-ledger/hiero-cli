@@ -4,6 +4,7 @@
  */
 import type { AccountService } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { BatchTransactionService } from '@/core/services/batch/batch-transaction-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
@@ -116,6 +117,9 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       createMintTransaction: jest.fn(),
       createNftTransferTransaction: jest.fn(),
     } as unknown as TokenService,
+    batch: {
+      createBatchTransaction: jest.fn(),
+    } as unknown as BatchTransactionService,
     topic: {} as unknown as TopicService,
     txExecution,
     kms,
