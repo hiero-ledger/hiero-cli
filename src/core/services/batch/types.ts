@@ -7,4 +7,5 @@ export interface CreateBatchTransactionResult {
 // Parameter types for account operations
 export interface CreateBatchTransactionParams {
   transactions: Transaction[];
+  batchKey: string;
 }

@@ -5,6 +5,7 @@
 import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
+import { BatchifyHook } from '@/plugins/batch/hooks/batchify/handler';
 
 import {
   CREATE_BATCH_TEMPLATE,
@@ -25,6 +26,20 @@ export const batchPluginManifest: PluginManifest = {
   displayName: 'Batch Plugin',
   description:
     'Plugin for creating and executing batches of Hedera transactions',
+  hooks: [
+    {
+      name: 'batchify',
+      hook: new BatchifyHook(),
+      options: [
+        {
+          name: 'batch',
+          short: 'b',
+          type: OptionType.STRING,
+          description: 'Name of the batch',
+        },
+      ],
+    },
+  ],
   commands: [
     {
       name: 'create',

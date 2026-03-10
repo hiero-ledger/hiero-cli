@@ -17,6 +17,7 @@ import { Transaction } from '@hashgraph/sdk';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
+import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
@@ -37,6 +38,7 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
     const name = validArgs.name;
     const network = api.network.getCurrentNetwork();
     const key = composeKey(network, name);
+    console.log(key);
     const batchData = batchState.getBatch(key);
     if (!batchData) {
       throw new NotFoundError(`Batch not found: ${validArgs.name}`);
@@ -57,12 +59,20 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
       .sort((a, b) => a.order - b.order)
       .map((txItem) => {
         return Transaction.fromBytes(
-          //@todo ensure that transaction will be stored in hex format
           Uint8Array.from(Buffer.from(txItem.transactionBytes, 'hex')),
         );
       });
+    const batchKey = await api.keyResolver.getPublicKey(
+      {
+        type: CredentialType.KEY_REFERENCE,
+        keyReference: normalisedParams.batchData.keyRefId,
+        rawValue: normalisedParams.batchData.keyRefId,
+      },
+      'local',
+    );
     const result = api.batch.createBatchTransaction({
       transactions: innerTransactions,
+      batchKey: batchKey.publicKey,
     });
     return { transaction: result.transaction };
   }
@@ -74,6 +84,7 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
     const { api } = args;
     void normalisedParams;
     const batchKey = normalisedParams.batchData.keyRefId;
+    console.log(batchKey);
     const signedTransaction = await api.txSign.sign(
       buildTransactionResult.transaction,
       [batchKey],
