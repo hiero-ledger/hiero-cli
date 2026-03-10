@@ -23,12 +23,11 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
-
-import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 
 import { ED25519_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
+import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeIdentityResolutionServiceMock as makeGlobalIdentityResolutionServiceMock,
   makeKeyResolverMock as makeGlobalKeyResolverMock,
