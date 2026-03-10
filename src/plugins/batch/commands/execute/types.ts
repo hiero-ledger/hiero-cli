@@ -8,6 +8,10 @@ export interface BatchNormalisedParams {
   batchData: BatchData;
 }
 
-export interface BatchBuildAndSignResult {
+export interface BatchBuildTransactionResult {
+  transaction: Transaction;
+}
+
+export interface BatchSignTransactionResult {
   transaction: Transaction;
 }

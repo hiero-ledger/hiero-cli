@@ -7,8 +7,9 @@ import type {
   TransactionResult,
 } from '@/core';
 import type {
-  BatchBuildAndSignResult,
+  BatchBuildTransactionResult,
   BatchNormalisedParams,
+  BatchSignTransactionResult,
 } from '@/plugins/batch/commands/execute/types';
 import type { ExecuteBatchOutput } from './output';
 
@@ -23,7 +24,8 @@ import { ExecuteBatchInputSchema } from './input';
 
 export class ExecuteBatchCommand extends BaseTransactionCommand<
   BatchNormalisedParams,
-  BatchBuildAndSignResult,
+  BatchBuildTransactionResult,
+  BatchSignTransactionResult,
   TransactionResult
 > {
   async normalizeParams(
@@ -45,10 +47,10 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
       batchData,
     };
   }
-  async buildAndSign(
+  async buildTransaction(
     args: CommandHandlerArgs,
     normalisedParams: BatchNormalisedParams,
-  ): Promise<BatchBuildAndSignResult> {
+  ): Promise<BatchBuildTransactionResult> {
     void normalisedParams;
     const { api } = args;
     const innerTransactions = [...normalisedParams.batchData.transactions]
@@ -64,15 +66,29 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
     });
     return { transaction: result.transaction };
   }
+  async signTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: BatchNormalisedParams,
+    buildTransactionResult: BatchBuildTransactionResult,
+  ): Promise<BatchSignTransactionResult> {
+    void args;
+    void normalisedParams;
+    //@TODO add proper signing after txExecution split changes into two separate methods
+    return {
+      transaction: buildTransactionResult.transaction,
+    };
+  }
   async executeTransaction(
     args: CommandHandlerArgs,
     normalisedParams: BatchNormalisedParams,
-    buildAndSignResult: BatchBuildAndSignResult,
+    buildTransactionResult: BatchBuildTransactionResult,
+    signTransactionResult: BatchSignTransactionResult,
   ): Promise<TransactionResult> {
+    void buildTransactionResult;
     const { api } = args;
     const batchKey = normalisedParams.batchData.keyRefId;
     const result = await api.txExecution.signAndExecuteWith(
-      buildAndSignResult.transaction,
+      signTransactionResult.transaction,
       [batchKey],
     );
     if (!result.success) {
@@ -86,13 +102,17 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
   async outputPreparation(
     args: CommandHandlerArgs,
     normalisedParams: BatchNormalisedParams,
-    transactionExecutionResult: TransactionResult | undefined,
+    buildTransactionResult: BatchBuildTransactionResult,
+    signTransactionResult: BatchSignTransactionResult,
+    executeTransactionResult: TransactionResult,
   ): Promise<CommandResult> {
     void args;
+    void buildTransactionResult;
+    void signTransactionResult;
     const outputData: ExecuteBatchOutput = {
       batchName: normalisedParams.name,
-      transactionId: transactionExecutionResult?.transactionId || '',
-      success: transactionExecutionResult?.success || false,
+      transactionId: executeTransactionResult?.transactionId || '',
+      success: executeTransactionResult?.success || false,
       network: normalisedParams.network,
     };
 
