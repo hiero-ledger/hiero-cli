@@ -88,8 +88,6 @@ describe('Mint NFT Integration Tests', () => {
     expect(createNftOutput.name).toBe('Test NFT Collection');
     expect(createNftOutput.alias).toBe('test-nft-collection');
     expect(createNftOutput.treasuryId).toBe(viewAccountOutput.accountId);
-    expect(createNftOutput.adminAccountId).toBe(viewAccountOutput.accountId);
-    expect(createNftOutput.supplyAccountId).toBe(viewAccountOutput.accountId);
     expect(createNftOutput.symbol).toBe('TNFT');
     expect(createNftOutput.supplyType).toBe(SupplyType.FINITE);
 

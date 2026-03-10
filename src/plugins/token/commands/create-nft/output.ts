@@ -28,7 +28,8 @@ export const TokenCreateNftOutputSchema = z.object({
     'Hedera token create transaction ID',
   ),
   adminAccountId: EntityIdSchema.optional().describe('Admin account ID'),
-  adminPublicKey: PublicKeyDefinitionSchema.describe('Admin public key'),
+  adminPublicKey:
+    PublicKeyDefinitionSchema.optional().describe('Admin public key'),
   supplyAccountId: EntityIdSchema.optional().describe('Supply account ID'),
   supplyPublicKey: PublicKeyDefinitionSchema.describe('Supply public key'),
   alias: z.string().describe('Token alias').optional(),

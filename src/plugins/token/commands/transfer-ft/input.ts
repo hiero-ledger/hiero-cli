@@ -5,7 +5,7 @@ import {
   AmountInputSchema,
   EntityReferenceSchema,
   KeyManagerTypeSchema,
-  PrivateKeyWithAccountIdSchema,
+  KeySchema,
 } from '@/core/schemas';
 
 /**
@@ -17,7 +17,7 @@ export const TokenTransferFtInputSchema = z.object({
   to: AccountReferenceSchema.describe(
     'Destination account (ID, EVM address, or name)',
   ),
-  from: PrivateKeyWithAccountIdSchema.optional().describe(
+  from: KeySchema.optional().describe(
     'Account to transfer from. Can be {accountId}:{privateKey pair}, key reference or account alias. Defaults to operator.',
   ),
   amount: AmountInputSchema.describe(

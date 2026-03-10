@@ -6,8 +6,6 @@ import {
   KeyManagerTypeSchema,
   KeySchema,
   MemoSchema,
-  PrivateKeySchema,
-  PrivateKeyWithAccountIdSchema,
   SupplyTypeSchema,
   TokenAliasNameSchema,
   TokenNameSchema,
@@ -24,7 +22,7 @@ export const TokenCreateFtInputSchema = z
   .object({
     tokenName: TokenNameSchema.describe('Token name'),
     symbol: TokenSymbolSchema.describe('Token symbol/ticker'),
-    treasury: PrivateKeyWithAccountIdSchema.optional().describe(
+    treasury: KeySchema.optional().describe(
       'Treasury account of token. Can be {accountId}:{privateKey} pair, key reference or account alias. Defaults to operator.',
     ),
     decimals: HtsDecimalsSchema.default(0).describe(
@@ -42,7 +40,7 @@ export const TokenCreateFtInputSchema = z
     maxSupply: AmountInputSchema.optional().describe(
       'Maximum supply (required for FINITE supply type)',
     ),
-    adminKey: PrivateKeySchema.optional().describe(
+    adminKey: KeySchema.optional().describe(
       'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Defaults to operator key.',
     ),
     supplyKey: KeySchema.optional().describe(
