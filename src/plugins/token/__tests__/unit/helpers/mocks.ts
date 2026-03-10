@@ -24,9 +24,11 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
-import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
+import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
+import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 
 import { ED25519_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
+import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeIdentityResolutionServiceMock as makeGlobalIdentityResolutionServiceMock,
   makeKeyResolverMock as makeGlobalKeyResolverMock,
@@ -66,17 +68,19 @@ export const makeTokenServiceMock = (
  */
 export const makeTokenTransactionServiceMock = makeTokenServiceMock;
 
-/**
- * Create a mocked TxExecutionService
- */
-export const makeTxExecutionServiceMock = (
-  overrides?: Partial<jest.Mocked<TxExecutionService>>,
-): jest.Mocked<TxExecutionService> => ({
-  signAndExecute: jest.fn().mockResolvedValue(mockTransactionResults.success),
-  signAndExecuteWith: jest
-    .fn()
-    .mockResolvedValue(mockTransactionResults.success),
-  signAndExecuteContractCreateFlowWith: jest
+export const makeTxSignServiceMock = (
+  overrides?: Partial<jest.Mocked<TxSignService>>,
+): jest.Mocked<TxSignService> => ({
+  sign: jest.fn().mockResolvedValue(createMockTransaction()),
+  signContractCreateFlow: jest.fn().mockImplementation((flow) => flow),
+  ...overrides,
+});
+
+export const makeTxExecuteServiceMock = (
+  overrides?: Partial<jest.Mocked<TxExecuteService>>,
+): jest.Mocked<TxExecuteService> => ({
+  execute: jest.fn().mockResolvedValue(mockTransactionResults.success),
+  executeContractCreateFlow: jest
     .fn()
     .mockResolvedValue(mockTransactionResults.success),
   ...overrides,
@@ -309,15 +313,15 @@ export const makeAccountTransactionServiceMock =
  */
 interface ApiMocksConfig {
   tokens?: Partial<jest.Mocked<TokenService>>;
-  tokenTransactions?: Partial<jest.Mocked<TokenService>>; // Deprecated, use 'tokens'
-  signing?: Partial<jest.Mocked<TxExecutionService>>;
+  tokenTransactions?: Partial<jest.Mocked<TokenService>>;
+  txSign?: Partial<jest.Mocked<TxSignService>>;
+  txExecute?: Partial<jest.Mocked<TxExecuteService>>;
   kms?: Partial<jest.Mocked<KmsService>>;
   alias?: Partial<jest.Mocked<AliasService>>;
   state?: Partial<jest.Mocked<StateService>>;
   mirror?: Record<string, jest.Mock>;
   network?: string;
   createTransferImpl?: jest.Mock;
-  signAndExecuteImpl?: jest.Mock;
   keyResolver?: Partial<jest.Mocked<KeyResolverService>>;
   contract?: Partial<jest.Mocked<ContractTransactionService>>;
   contractCompiler?: Partial<jest.Mocked<ContractCompilerService>>;
@@ -330,11 +334,11 @@ interface ApiMocksConfig {
  * Create a complete mocked CoreApi with configurable services
  */
 export const makeApiMocks = (config?: ApiMocksConfig) => {
-  // Support both 'tokens' and 'tokenTransactions' for backward compatibility
   const tokens = makeTokenServiceMock(
     config?.tokens || config?.tokenTransactions,
   );
-  const signing = makeTxExecutionServiceMock(config?.signing);
+  const txSign = makeTxSignServiceMock(config?.txSign);
+  const txExecute = makeTxExecuteServiceMock(config?.txExecute);
   const kms = makeKmsMock(config?.kms);
   const alias = makeAliasServiceMock(config?.alias);
   const state = makeStateServiceMock(config?.state);
@@ -360,12 +364,12 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
   const api: jest.Mocked<CoreApi> = {
     account,
     token: tokens,
-    // Topic service not mocked for token tests - not needed
     topic: {} as unknown as TopicService,
+    txSign,
+    txExecute,
     batch: {
       createBatchTransaction: jest.fn(),
     } as unknown as BatchTransactionService,
-    txExecution: signing,
     kms,
     alias,
     state,
@@ -435,14 +439,15 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
   return {
     api,
     tokens,
-    tokenTransactions: tokens, // Deprecated alias for backward compatibility
-    signing,
+    tokenTransactions: tokens,
+    txSign,
+    txExecute,
     kms,
     alias,
     state,
     account,
     keyResolver,
-    createTransferImpl: config?.createTransferImpl, // Legacy support
+    createTransferImpl: config?.createTransferImpl,
   };
 };
 
@@ -713,8 +718,8 @@ export const makeMintFtSuccessMocks = (overrides?: {
     tokens: {
       createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
     },
-    signing: {
-      signAndExecuteWith: jest
+    txExecute: {
+      execute: jest
         .fn()
         .mockResolvedValue(
           overrides?.signResult || makeTransactionResult({ success: true }),
@@ -753,9 +758,6 @@ export const makeMintFtSuccessMocks = (overrides?: {
   };
 };
 
-/**
- * Create mocks for successful NFT mint scenarios
- */
 export const makeMintNftSuccessMocks = (overrides?: {
   tokenInfo?: {
     decimals?: string;
@@ -786,8 +788,8 @@ export const makeMintNftSuccessMocks = (overrides?: {
     tokens: {
       createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
     },
-    signing: {
-      signAndExecuteWith: jest.fn().mockResolvedValue(signResult),
+    txExecute: {
+      execute: jest.fn().mockResolvedValue(signResult),
     },
     mirror: {
       getTokenInfo: jest.fn().mockResolvedValue({

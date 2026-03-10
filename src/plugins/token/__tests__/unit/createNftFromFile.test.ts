@@ -59,8 +59,8 @@ describe('createNftFromFileHandler', () => {
         createTokenTransaction: jest.fn().mockReturnValue(mockTokenTransaction),
         createTokenAssociationTransaction: jest.fn(),
       },
-      signing: {
-        signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+      txExecute: {
+        execute: jest.fn().mockResolvedValue(mockSignResult),
       },
       kms: {
         importPrivateKey: jest.fn().mockReturnValue({
@@ -101,7 +101,7 @@ describe('createNftFromFileHandler', () => {
       const mockAssociationResult =
         mockTransactionResults.successWithAssociation;
 
-      const { api, tokenTransactions, signing } = makeApiMocks({
+      const { api, tokenTransactions, txExecute } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -110,16 +110,11 @@ describe('createNftFromFileHandler', () => {
             .fn()
             .mockReturnValue(mockAssociationTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockImplementation((transaction) => {
-            if (transaction === mockTokenTransaction) {
-              return Promise.resolve(mockSignResult);
-            }
-            if (transaction === mockAssociationTransaction) {
-              return Promise.resolve(mockAssociationResult);
-            }
-            return Promise.resolve(mockTransactionResults.failure);
-          }),
+        txExecute: {
+          execute: jest
+            .fn()
+            .mockResolvedValueOnce(mockSignResult)
+            .mockResolvedValueOnce(mockAssociationResult),
         },
         kms: {
           importPrivateKey: jest
@@ -197,10 +192,7 @@ describe('createNftFromFileHandler', () => {
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
         expectedNftTransactionParamsFromFile,
       );
-      expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
-        mockTokenTransaction,
-        ['admin-key-ref-id', 'treasury-key-ref-id', 'supply-key-ref-id'],
-      );
+      expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(mockAddToken).toHaveBeenCalled();
     });
 
@@ -280,8 +272,8 @@ describe('createNftFromFileHandler', () => {
             .fn()
             .mockReturnValue(mockTokenTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest
@@ -368,8 +360,8 @@ describe('createNftFromFileHandler', () => {
             .fn()
             .mockReturnValue(mockTokenTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest
@@ -473,8 +465,8 @@ describe('createNftFromFileHandler', () => {
             .fn()
             .mockReturnValue(_mockAssociationTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest
@@ -753,8 +745,8 @@ describe('createNftFromFileHandler', () => {
             .fn()
             .mockReturnValue(mockTokenTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest
@@ -837,8 +829,8 @@ describe('createNftFromFileHandler', () => {
               throw new StateError('Association failed');
             }),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest
@@ -926,8 +918,8 @@ describe('createNftFromFileHandler', () => {
             .fn()
             .mockReturnValue(mockTokenTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest

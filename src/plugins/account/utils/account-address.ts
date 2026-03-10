@@ -17,6 +17,16 @@ const ensureHexAddressPrefix = (address: string): string => {
   return address.startsWith('0x') ? address : `0x${address}`;
 };
 
+export function buildEvmAddressFromAccountId(accountId: string): string {
+  if (!accountId) {
+    throw new ValidationError(
+      'accountId is required to derive account addresses',
+    );
+  }
+  const solidityAddress = AccountId.fromString(accountId).toSolidityAddress();
+  return `0x${solidityAddress}`;
+}
+
 export function buildAccountEvmAddress({
   accountId,
   publicKey,

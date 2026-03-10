@@ -71,11 +71,15 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
     normalisedParams: BatchNormalisedParams,
     buildTransactionResult: BatchBuildTransactionResult,
   ): Promise<BatchSignTransactionResult> {
-    void args;
+    const { api } = args;
     void normalisedParams;
-    //@TODO add proper signing after txExecution split changes into two separate methods
+    const batchKey = normalisedParams.batchData.keyRefId;
+    const signedTransaction = await api.txSign.sign(
+      buildTransactionResult.transaction,
+      [batchKey],
+    );
     return {
-      transaction: buildTransactionResult.transaction,
+      transaction: signedTransaction,
     };
   }
   async executeTransaction(
@@ -84,12 +88,11 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
     buildTransactionResult: BatchBuildTransactionResult,
     signTransactionResult: BatchSignTransactionResult,
   ): Promise<TransactionResult> {
+    void normalisedParams;
     void buildTransactionResult;
     const { api } = args;
-    const batchKey = normalisedParams.batchData.keyRefId;
-    const result = await api.txExecution.signAndExecuteWith(
+    const result = await api.txExecute.execute(
       signTransactionResult.transaction,
-      [batchKey],
     );
     if (!result.success) {
       throw new TransactionError(

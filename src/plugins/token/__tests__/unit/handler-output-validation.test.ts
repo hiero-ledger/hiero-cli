@@ -66,8 +66,8 @@ describe('Handler Output Validation - Token Plugin', () => {
         tokenTransactions: {
           createTokenTransaction: jest.fn().mockReturnValue({}),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           get: jest.fn().mockReturnValue({
@@ -118,8 +118,8 @@ describe('Handler Output Validation - Token Plugin', () => {
         tokenTransactions: {
           createTransferTransaction: jest.fn().mockReturnValue({}),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         alias: {
           resolve: jest
@@ -188,8 +188,8 @@ describe('Handler Output Validation - Token Plugin', () => {
         tokenTransactions: {
           createTokenAssociationTransaction: jest.fn().mockReturnValue({}),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         mirror: {
           getAccountTokenBalances: jest.fn().mockResolvedValue({ tokens: [] }),

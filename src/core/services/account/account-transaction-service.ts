@@ -18,7 +18,6 @@ import {
 } from '@hashgraph/sdk';
 
 import { ValidationError } from '@/core/errors';
-import { KeyAlgorithm } from '@/core/shared/constants';
 
 export class AccountServiceImpl implements AccountService {
   private logger: Logger;
@@ -42,12 +41,7 @@ export class AccountServiceImpl implements AccountService {
         balance || 0,
       );
 
-      const keyType = params.keyType || KeyAlgorithm.ECDSA;
-      if (keyType === KeyAlgorithm.ECDSA) {
-        transaction.setECDSAKeyWithAlias(publicKey);
-      } else {
-        transaction.setKeyWithoutAlias(publicKey);
-      }
+      transaction.setKeyWithoutAlias(publicKey);
 
       if (params.maxAutoAssociations && params.maxAutoAssociations > 0) {
         transaction.setMaxAutomaticTokenAssociations(

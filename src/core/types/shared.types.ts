@@ -137,3 +137,30 @@ export enum MirrorNodeRequestOrderParameter {
   ASC = 'asc',
   DESC = 'desc',
 }
+
+export interface TransactionStatus {
+  status: 'pending' | 'success' | 'failed';
+  transactionId: string;
+  error?: string;
+}
+
+export interface TransactionReceipt {
+  status: TransactionStatus;
+  accountId?: string;
+  tokenId?: string;
+  topicId?: string;
+  topicSequenceNumber?: number;
+  serials?: string[];
+}
+
+export interface TransactionResult {
+  transactionId: string;
+  success: boolean;
+  receipt: TransactionReceipt;
+  accountId?: string;
+  tokenId?: string;
+  topicId?: string;
+  contractId?: string;
+  topicSequenceNumber?: number;
+  consensusTimestamp: string;
+}

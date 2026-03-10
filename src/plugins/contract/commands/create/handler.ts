@@ -97,11 +97,12 @@ export async function createContract(
     adminKey: adminPublicKey ? PublicKey.fromString(adminPublicKey) : undefined,
     memo: memo,
   });
+  const signedFlow = api.txSign.signContractCreateFlow(
+    contractCreateFlowTx.transaction,
+    txSigners,
+  );
   const contractCreateFlowResult =
-    await api.txExecution.signAndExecuteContractCreateFlowWith(
-      contractCreateFlowTx.transaction,
-      txSigners,
-    );
+    await api.txExecute.executeContractCreateFlow(signedFlow);
 
   if (!contractCreateFlowResult.contractId) {
     throw new StateError('Transaction completed but no contractId returned', {

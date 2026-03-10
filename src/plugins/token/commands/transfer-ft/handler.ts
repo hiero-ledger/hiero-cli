@@ -98,9 +98,10 @@ export async function transferToken(
   });
 
   logger.debug(`Using key ${signerKeyRefId} for signing transaction`);
-  const result = await api.txExecution.signAndExecuteWith(transferTransaction, [
+  const transaction = await api.txSign.sign(transferTransaction, [
     signerKeyRefId,
   ]);
+  const result = await api.txExecute.execute(transaction);
 
   if (!result.success) {
     throw new TransactionError(

@@ -20,7 +20,8 @@ import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
-import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
+import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
+import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 
 import { MOCK_CONTRACT_ID } from '@/__tests__/mocks/fixtures';
 import {
@@ -32,8 +33,9 @@ import {
   makeKeyResolverMock,
   makeKmsMock,
   makeNetworkMock,
-  makeSigningMock,
   makeStateMock,
+  makeTxExecuteMock,
+  makeTxSignMock,
 } from '@/__tests__/mocks/mocks';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -55,7 +57,8 @@ export interface ApiMocksConfig {
   identityResolution?: Partial<jest.Mocked<IdentityResolutionService>>;
   contractQuery?: Partial<jest.Mocked<ContractQueryService>>;
   contract?: Partial<jest.Mocked<ContractTransactionService>>;
-  txExecution?: Partial<jest.Mocked<TxExecutionService>>;
+  txSign?: Partial<jest.Mocked<TxSignService>>;
+  txExecute?: Partial<jest.Mocked<TxExecuteService>>;
   network?: SupportedNetwork;
   alias?: Partial<jest.Mocked<AliasService>>;
 }
@@ -105,10 +108,11 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     ...config?.contract,
   } as ContractTransactionService;
 
-  const txExecution = {
-    ...makeSigningMock(),
-    ...config?.txExecution,
-  } as TxExecutionService;
+  const txSign = { ...makeTxSignMock(), ...config?.txSign } as TxSignService;
+  const txExecute = {
+    ...makeTxExecuteMock(),
+    ...config?.txExecute,
+  } as TxExecuteService;
 
   const api: jest.Mocked<CoreApi> = {
     account: {
@@ -127,7 +131,8 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       createBatchTransaction: jest.fn(),
     } as unknown as BatchTransactionService,
     topic: {} as unknown as TopicService,
-    txExecution,
+    txSign,
+    txExecute,
     kms,
     alias,
     state: makeStateMock(),

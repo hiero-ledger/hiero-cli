@@ -4,7 +4,6 @@
  */
 import type { PluginManifest } from '@/core';
 
-import { KeyAlgorithm } from '@/core/shared/constants';
 import { OptionType } from '@/core/types/shared.types';
 
 import {
@@ -94,9 +93,16 @@ export const accountPluginManifest: PluginManifest = {
           short: 't',
           type: OptionType.STRING,
           required: false,
-          default: KeyAlgorithm.ECDSA,
           description:
-            'Key type for the account. Options: ecdsa, ed25519. Default: ecdsa',
+            'Key type for the account. Options: ecdsa, ed25519. Default: ecdsa. Mutually exclusive with --key.',
+        },
+        {
+          name: 'key',
+          short: 'K',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Existing key for the new account (ecdsa/ed25519 private or public key, key reference kr_xxx, or alias name). Mutually exclusive with --key-type.',
         },
       ],
       handler: createAccount,

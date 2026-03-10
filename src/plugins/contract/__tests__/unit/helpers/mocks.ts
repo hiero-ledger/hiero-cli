@@ -37,8 +37,11 @@ export function setupContractFileMocks(): void {
 
 export function makeContractCreateApiMocks(): { api: jest.Mocked<CoreApi> } {
   const { api } = makeApiMocks({
-    txExecution: {
-      signAndExecuteContractCreateFlowWith: jest
+    txSign: {
+      signContractCreateFlow: jest.fn().mockImplementation((flow) => flow),
+    },
+    txExecute: {
+      executeContractCreateFlow: jest
         .fn()
         .mockResolvedValue(MOCK_CONTRACT_CREATE_FLOW_RESULT),
     },
