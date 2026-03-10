@@ -58,18 +58,11 @@ export async function createTopic(
     submitKey: submitKey && PublicKey.fromString(submitKey.publicKey),
   });
 
-  let result: TransactionResult;
-
-  if (adminKey) {
-    result = await api.txExecution.signAndExecuteWith(
-      topicCreateResult.transaction,
-      [adminKey.keyRefId],
-    );
-  } else {
-    result = await api.txExecution.signAndExecute(
-      topicCreateResult.transaction,
-    );
-  }
+  const transaction = await api.txSign.sign(
+    topicCreateResult.transaction,
+    adminKey ? [adminKey.keyRefId] : [],
+  );
+  const result: TransactionResult = await api.txExecute.execute(transaction);
   if (!result.success || !result.topicId) {
     throw new TransactionError(
       `Failed to create topic (txId: ${result.transactionId})`,

@@ -12,8 +12,9 @@ import {
   makeKmsMock,
   makeLogger,
   makeNetworkMock,
-  makeSigningMock,
   makeStateMock,
+  makeTxExecuteMock,
+  makeTxSignMock,
 } from '@/__tests__/mocks/mocks';
 
 import { mockTransferTransactionResults } from './fixtures';
@@ -30,18 +31,12 @@ export const makeHbarServiceMock = (
   ...overrides,
 });
 
-/**
- * Configuration options for makeApiMocks
- */
 interface ApiMocksConfig {
   transferImpl?: jest.Mock;
   signAndExecuteImpl?: jest.Mock;
   network?: 'testnet' | 'mainnet' | 'previewnet';
 }
 
-/**
- * Create a complete set of API mocks for transfer tests
- */
 export const makeApiMocks = (config?: ApiMocksConfig) => {
   const hbar: jest.Mocked<HbarService> = {
     transferTinybar:
@@ -49,14 +44,15 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       jest.fn().mockResolvedValue(mockTransferTransactionResults.empty),
   };
 
-  const signing = makeSigningMock({
-    signAndExecuteImpl: config?.signAndExecuteImpl,
+  const txSign = makeTxSignMock();
+  const txExecute = makeTxExecuteMock({
+    executeImpl: config?.signAndExecuteImpl,
   });
   const networkMock = makeNetworkMock(config?.network || 'testnet');
   const kms = makeKmsMock();
   const alias = makeAliasMock();
 
-  return { hbar, signing, networkMock, kms, alias };
+  return { hbar, txSign, txExecute, networkMock, kms, alias };
 };
 
 /**
@@ -79,7 +75,7 @@ interface SetupTransferTestOptions {
  */
 export const setupTransferTest = (options: SetupTransferTestOptions = {}) => {
   const logger = makeLogger();
-  const { hbar, signing, networkMock, kms, alias } = makeApiMocks({
+  const { hbar, txSign, txExecute, networkMock, kms, alias } = makeApiMocks({
     transferImpl: options.transferImpl,
     signAndExecuteImpl: options.signAndExecuteImpl,
   });
@@ -88,7 +84,8 @@ export const setupTransferTest = (options: SetupTransferTestOptions = {}) => {
 
   const api: Partial<CoreApi> = {
     hbar,
-    txExecution: signing,
+    txSign,
+    txExecute,
     network: networkMock,
     kms,
     alias,
@@ -107,5 +104,5 @@ export const setupTransferTest = (options: SetupTransferTestOptions = {}) => {
     );
   }
 
-  return { api, logger, hbar, signing, kms, alias, stateMock };
+  return { api, logger, hbar, txSign, txExecute, kms, alias, stateMock };
 };

@@ -112,10 +112,8 @@ export async function createToken(
     txSigners.push(admin.keyRefId);
   }
 
-  const result = await api.txExecution.signAndExecuteWith(
-    tokenCreateTransaction,
-    txSigners,
-  );
+  const transaction = await api.txSign.sign(tokenCreateTransaction, txSigners);
+  const result = await api.txExecute.execute(transaction);
 
   if (!result.success || !result.tokenId) {
     throw new StateError('Token creation completed but no token ID returned', {

@@ -10,17 +10,20 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
-import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
+import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
+import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 import type { AccountData } from '@/plugins/account/schema';
 
+import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeAliasMock as makeGlobalAliasMock,
   makeConfigMock,
   makeKmsMock as makeGlobalKmsMock,
   makeMirrorMock as makeGlobalMirrorMock,
   makeNetworkMock as makeGlobalNetworkMock,
-  makeSigningMock as makeGlobalSigningMock,
   makeStateMock,
+  makeTxExecuteMock,
+  makeTxSignMock,
 } from '@/__tests__/mocks/mocks';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -86,17 +89,19 @@ export const makeAccountTransactionServiceMock = (
   ...overrides,
 });
 
-/**
- * Creates mock TxExecutionService
- */
-export const makeTxExecutionServiceMock = (
-  overrides?: Partial<jest.Mocked<TxExecutionService>>,
-): jest.Mocked<TxExecutionService> => ({
-  signAndExecute: jest.fn().mockResolvedValue(mockTransactionResults.success),
-  signAndExecuteWith: jest
-    .fn()
-    .mockResolvedValue(mockTransactionResults.success),
-  signAndExecuteContractCreateFlowWith: jest
+export const makeTxSignServiceMock = (
+  overrides?: Partial<jest.Mocked<TxSignService>>,
+): jest.Mocked<TxSignService> => ({
+  sign: jest.fn().mockResolvedValue(createMockTransaction()),
+  signContractCreateFlow: jest.fn().mockImplementation((flow) => flow),
+  ...overrides,
+});
+
+export const makeTxExecuteServiceMock = (
+  overrides?: Partial<jest.Mocked<TxExecuteService>>,
+): jest.Mocked<TxExecuteService> => ({
+  execute: jest.fn().mockResolvedValue(mockTransactionResults.success),
+  executeContractCreateFlow: jest
     .fn()
     .mockResolvedValue(mockTransactionResults.success),
   ...overrides,
@@ -236,7 +241,7 @@ export const makeArgs = (
  */
 export interface ApiMocksConfig {
   createAccountImpl?: jest.Mock;
-  signAndExecuteImpl?: jest.Mock;
+  executeImpl?: jest.Mock;
   network?: 'testnet' | 'mainnet' | 'previewnet';
   operatorBalance?: bigint;
   keyResolverGetPublicKeyImpl?: jest.Mock;
@@ -252,7 +257,7 @@ export interface ApiMocksConfig {
  */
 export const makeApiMocksForAccountCreate = ({
   createAccountImpl,
-  signAndExecuteImpl,
+  executeImpl,
   network = 'testnet',
   operatorBalance = OPERATOR_SUFFICIENT_BALANCE,
   keyResolverGetPublicKeyImpl,
@@ -262,7 +267,8 @@ export const makeApiMocksForAccountCreate = ({
     getAccountInfo: jest.fn(),
   };
 
-  const signing = makeGlobalSigningMock({ signAndExecuteImpl });
+  const txSign = makeTxSignMock();
+  const txExecute = makeTxExecuteMock({ executeImpl: executeImpl });
   const networkMock = makeGlobalNetworkMock(network);
 
   // Configure network mock to return a valid operator for balance checks
@@ -299,5 +305,14 @@ export const makeApiMocksForAccountCreate = ({
     resolveSigningKey: jest.fn(),
   };
 
-  return { account, signing, networkMock, kms, alias, mirror, keyResolver };
+  return {
+    account,
+    txSign,
+    txExecute,
+    networkMock,
+    kms,
+    alias,
+    mirror,
+    keyResolver,
+  };
 };

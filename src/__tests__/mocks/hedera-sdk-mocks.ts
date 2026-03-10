@@ -1,14 +1,10 @@
-/**
- * Hedera SDK Mocks for TX Execution Service Tests
- * Factory functions that create fresh mock instances for each test
- */
-
 import { Transaction } from '@hashgraph/sdk';
 
 export const createMockTransaction = (overrides = {}) => {
   const mock = {
     isFrozen: jest.fn().mockReturnValue(false),
     freezeWith: jest.fn().mockReturnThis(),
+    setTransactionId: jest.fn().mockReturnThis(),
     signWith: jest.fn().mockResolvedValue(undefined),
     execute: jest.fn(),
     transactionId: {
@@ -16,7 +12,9 @@ export const createMockTransaction = (overrides = {}) => {
     },
     ...overrides,
   };
-  Object.setPrototypeOf(mock, Transaction.prototype);
+  if (typeof Transaction !== 'undefined' && Transaction?.prototype) {
+    Object.setPrototypeOf(mock, Transaction.prototype);
+  }
   return mock;
 };
 

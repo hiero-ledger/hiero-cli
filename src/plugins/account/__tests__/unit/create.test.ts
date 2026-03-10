@@ -1,7 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
+import type { TransactionResult } from '@/core/types/shared.types';
 
 import '@/core/utils/json-serialize';
 
@@ -39,13 +39,13 @@ describe('account plugin - create command (ADR-003)', () => {
     const saveAccountMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
 
-    const { account, signing, networkMock, kms, alias, mirror } =
+    const { account, txSign, txExecute, networkMock, kms, alias, mirror } =
       makeApiMocksForAccountCreate({
         createAccountImpl: jest.fn().mockReturnValue({
           transaction: {},
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
-        signAndExecuteImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: '0.0.1234@1234567890.000000000',
           success: true,
           accountId: '0.0.9999',
@@ -55,7 +55,8 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const api: Partial<CoreApi> = {
       account,
-      txExecution: signing,
+      txSign,
+      txExecute,
       network: networkMock,
       kms,
       alias,
@@ -81,7 +82,7 @@ describe('account plugin - create command (ADR-003)', () => {
       maxAutoAssociations: 3,
       publicKey: 'pub-key-test',
     });
-    expect(signing.signAndExecute).toHaveBeenCalled();
+    expect(txExecute.execute).toHaveBeenCalled();
     expect(alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
         alias: 'myAccount',
@@ -115,17 +116,17 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
   });
 
-  test('returns failure when signAndExecute returns failure', async () => {
+  test('returns failure when execute returns failure', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({ saveAccount: jest.fn() }));
 
-    const { account, signing, networkMock, kms, mirror, alias } =
+    const { account, txSign, txExecute, networkMock, kms, mirror, alias } =
       makeApiMocksForAccountCreate({
         createAccountImpl: jest.fn().mockReturnValue({
           transaction: {},
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
-        signAndExecuteImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: '0.0.1234@1234567890.000000000',
           success: false,
           receipt: { status: { status: 'failed' } },
@@ -134,7 +135,8 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const api: Partial<CoreApi> = {
       account,
-      txExecution: signing,
+      txSign,
+      txExecute,
       network: networkMock,
       kms,
       mirror: mirror as HederaMirrornodeService,
@@ -151,7 +153,7 @@ describe('account plugin - create command (ADR-003)', () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({ saveAccount: jest.fn() }));
 
-    const { account, signing, networkMock, kms, mirror, alias } =
+    const { account, txSign, txExecute, networkMock, kms, mirror, alias } =
       makeApiMocksForAccountCreate({
         createAccountImpl: jest.fn().mockImplementation(() => {
           throw new NetworkError('network error');
@@ -160,7 +162,8 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const api: Partial<CoreApi> = {
       account,
-      txExecution: signing,
+      txSign,
+      txExecute,
       network: networkMock,
       kms,
       mirror: mirror as HederaMirrornodeService,
@@ -181,13 +184,13 @@ describe('account plugin - create command (ADR-003)', () => {
     const saveAccountMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
 
-    const { account, signing, networkMock, kms, alias, mirror } =
+    const { account, txSign, txExecute, networkMock, kms, alias, mirror } =
       makeApiMocksForAccountCreate({
         createAccountImpl: jest.fn().mockReturnValue({
           transaction: {},
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
-        signAndExecuteImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: '0.0.1234@1234567890.000000002',
           success: true,
           accountId: '0.0.8888',
@@ -197,7 +200,8 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const api: Partial<CoreApi> = {
       account,
-      txExecution: signing,
+      txSign,
+      txExecute,
       network: networkMock,
       kms,
       alias,
@@ -235,23 +239,31 @@ describe('account plugin - create command (ADR-003)', () => {
     const saveAccountMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
 
-    const { account, signing, networkMock, kms, alias, mirror, keyResolver } =
-      makeApiMocksForAccountCreate({
-        createAccountImpl: jest.fn().mockReturnValue({
-          transaction: {},
-          publicKey: ECDSA_HEX_PUBLIC_KEY,
-        }),
-        signAndExecuteImpl: jest.fn().mockResolvedValue({
-          transactionId: '0.0.1234@1234567890.000000004',
-          success: true,
-          accountId: '0.0.6666',
-          receipt: { status: { status: 'success' } },
-        }),
-        keyResolverGetPublicKeyImpl: jest.fn().mockResolvedValue({
-          keyRefId: 'kr_provided123',
-          publicKey: ECDSA_HEX_PUBLIC_KEY,
-        }),
-      });
+    const {
+      account,
+      txSign,
+      txExecute,
+      networkMock,
+      kms,
+      alias,
+      mirror,
+      keyResolver,
+    } = makeApiMocksForAccountCreate({
+      createAccountImpl: jest.fn().mockReturnValue({
+        transaction: {},
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
+      }),
+      executeImpl: jest.fn().mockResolvedValue({
+        transactionId: '0.0.1234@1234567890.000000004',
+        success: true,
+        accountId: '0.0.6666',
+        receipt: { status: { status: 'success' } },
+      }),
+      keyResolverGetPublicKeyImpl: jest.fn().mockResolvedValue({
+        keyRefId: 'kr_provided123',
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
+      }),
+    });
 
     kms.get = jest.fn().mockReturnValue({
       keyRefId: 'kr_provided123',
@@ -265,7 +277,8 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const api: Partial<CoreApi> = {
       account,
-      txExecution: signing,
+      txSign,
+      txExecute,
       network: networkMock,
       kms,
       alias,
@@ -300,23 +313,31 @@ describe('account plugin - create command (ADR-003)', () => {
     const saveAccountMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
 
-    const { account, signing, networkMock, kms, alias, mirror, keyResolver } =
-      makeApiMocksForAccountCreate({
-        createAccountImpl: jest.fn().mockReturnValue({
-          transaction: {},
-          publicKey: ECDSA_HEX_PUBLIC_KEY,
-        }),
-        signAndExecuteImpl: jest.fn().mockResolvedValue({
-          transactionId: '0.0.1234@1234567890.000000005',
-          success: true,
-          accountId: '0.0.5555',
-          receipt: { status: { status: 'success' } },
-        }),
-        keyResolverGetPublicKeyImpl: jest.fn().mockResolvedValue({
-          keyRefId: 'kr_test123',
-          publicKey: ECDSA_HEX_PUBLIC_KEY,
-        }),
-      });
+    const {
+      account,
+      txSign,
+      txExecute,
+      networkMock,
+      kms,
+      alias,
+      mirror,
+      keyResolver,
+    } = makeApiMocksForAccountCreate({
+      createAccountImpl: jest.fn().mockReturnValue({
+        transaction: {},
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
+      }),
+      executeImpl: jest.fn().mockResolvedValue({
+        transactionId: '0.0.1234@1234567890.000000005',
+        success: true,
+        accountId: '0.0.5555',
+        receipt: { status: { status: 'success' } },
+      }),
+      keyResolverGetPublicKeyImpl: jest.fn().mockResolvedValue({
+        keyRefId: 'kr_test123',
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
+      }),
+    });
 
     kms.get = jest.fn().mockReturnValue({
       keyRefId: 'kr_test123',
@@ -330,7 +351,8 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const api: Partial<CoreApi> = {
       account,
-      txExecution: signing,
+      txSign,
+      txExecute,
       network: networkMock,
       kms,
       alias,
@@ -362,12 +384,21 @@ describe('account plugin - create command (ADR-003)', () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({ saveAccount: jest.fn() }));
 
-    const { account, signing, networkMock, kms, alias, mirror, keyResolver } =
-      makeApiMocksForAccountCreate({});
+    const {
+      account,
+      txSign,
+      txExecute,
+      networkMock,
+      kms,
+      alias,
+      mirror,
+      keyResolver,
+    } = makeApiMocksForAccountCreate({});
 
     const api: Partial<CoreApi> = {
       account,
-      txExecution: signing,
+      txSign,
+      txExecute,
       network: networkMock,
       kms,
       alias,
@@ -390,13 +421,13 @@ describe('account plugin - create command (ADR-003)', () => {
     const saveAccountMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
 
-    const { account, signing, networkMock, kms, alias, mirror } =
+    const { account, txSign, txExecute, networkMock, kms, alias, mirror } =
       makeApiMocksForAccountCreate({
         createAccountImpl: jest.fn().mockReturnValue({
           transaction: {},
           publicKey: ED25519_HEX_PUBLIC_KEY,
         }),
-        signAndExecuteImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: '0.0.1234@1234567890.000000003',
           success: true,
           accountId: '0.0.7777',
@@ -406,7 +437,8 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const api: Partial<CoreApi> = {
       account,
-      txExecution: signing,
+      txSign,
+      txExecute,
       network: networkMock,
       kms,
       alias,

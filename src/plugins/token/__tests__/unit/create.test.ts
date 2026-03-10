@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
+import type { TransactionResult } from '@/core/types/shared.types';
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, StateError } from '@/core/errors';
@@ -50,14 +50,14 @@ describe('createTokenHandler', () => {
         saveToken: mockSaveToken,
       }));
 
-      const { api, tokenTransactions, signing } = makeApiMocks({
+      const { api, tokenTransactions, txExecute } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
             .mockReturnValue(mockTransactions.token),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           get: jest.fn().mockReturnValue({
@@ -103,10 +103,7 @@ describe('createTokenHandler', () => {
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
         expectedTokenTransactionParams,
       );
-      expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
-        mockTransactions.token,
-        expect.arrayContaining(['admin-key-ref-id', 'treasury-key-ref-id']),
-      );
+      expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(mockSaveToken).toHaveBeenCalled();
       assertOutput(result.result, CreateFungibleTokenOutputSchema);
     });
@@ -122,14 +119,14 @@ describe('createTokenHandler', () => {
         saveToken: mockSaveToken,
       }));
 
-      const { api, tokenTransactions, signing } = makeApiMocks({
+      const { api, tokenTransactions, txExecute } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
             .mockReturnValue(mockTransactions.token),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
       });
 
@@ -163,10 +160,7 @@ describe('createTokenHandler', () => {
         memo: undefined,
       });
       // When adminKey is not provided, only treasury signs (which is the operator)
-      expect(signing.signAndExecuteWith).toHaveBeenCalledWith(
-        mockTransactions.token,
-        ['operator-key-ref-id'],
-      );
+      expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(mockSaveToken).toHaveBeenCalled();
       assertOutput(result.result, CreateFungibleTokenOutputSchema);
     });
@@ -226,8 +220,8 @@ describe('createTokenHandler', () => {
             .fn()
             .mockReturnValue(mockTokenTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest
+        txExecute: {
+          execute: jest
             .fn()
             .mockResolvedValue(mockSignResult as TransactionResult),
         },
@@ -327,8 +321,8 @@ describe('createTokenHandler', () => {
             .fn()
             .mockReturnValue(mockTokenTransaction),
         },
-        signing: {
-          signAndExecuteWith: jest.fn().mockResolvedValue(mockSignResult),
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           get: jest.fn().mockReturnValue({

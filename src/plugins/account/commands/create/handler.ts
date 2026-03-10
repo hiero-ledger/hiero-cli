@@ -87,9 +87,11 @@ export async function createAccount(
     publicKey,
   });
 
-  const result = await api.txExecution.signAndExecute(
+  const transaction = await api.txSign.sign(
     accountCreateResult.transaction,
+    [],
   );
+  const result = await api.txExecute.execute(transaction);
 
   if (!result.success) {
     throw new TransactionError(

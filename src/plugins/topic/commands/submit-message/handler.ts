@@ -80,11 +80,11 @@ export async function submitMessage(
 
   const messageSubmitTx = api.topic.submitMessage({ topicId, message });
 
-  const txResult: TransactionResult = signerKeyRefId
-    ? await api.txExecution.signAndExecuteWith(messageSubmitTx.transaction, [
-        signerKeyRefId,
-      ])
-    : await api.txExecution.signAndExecute(messageSubmitTx.transaction);
+  const transaction = await api.txSign.sign(
+    messageSubmitTx.transaction,
+    signerKeyRefId ? [signerKeyRefId] : [],
+  );
+  const txResult: TransactionResult = await api.txExecute.execute(transaction);
 
   if (!txResult.success) {
     throw new TransactionError(

@@ -125,10 +125,11 @@ export async function createNftFromFile(
   logger.info(
     `🔑 Signing transaction with admin, treasury and supply keys (${signingKeys.length} keys)`,
   );
-  const result = await api.txExecution.signAndExecuteWith(
+  const transaction = await api.txSign.sign(
     tokenCreateTransaction,
     signingKeys,
   );
+  const result = await api.txExecute.execute(transaction);
 
   if (!result.success || !result.tokenId) {
     throw new StateError('NFT creation completed but no token ID returned', {

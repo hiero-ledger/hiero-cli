@@ -18,7 +18,8 @@ export type { KmsService } from '../services/kms/kms-service.interface';
 export type { Logger } from '../services/logger/logger-service.interface';
 export type { NetworkService } from '../services/network/network-service.interface';
 export type { StateService as GenericStateService } from '../services/state/state-service.interface';
-export type { TxExecutionService } from '../services/tx-execution/tx-execution-service.interface';
+export type { TxExecuteService } from '../services/tx-execute/tx-execute-service.interface';
+export type { TxSignService } from '../services/tx-sign/tx-sign-service.interface';
 
 // Plugin interfaces (ADR-001 compliant)
 export type { CommandHandlerArgs } from '../plugins/plugin.interface';

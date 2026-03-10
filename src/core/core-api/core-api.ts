@@ -25,7 +25,8 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
-import type { TxExecutionService } from '@/core/services/tx-execution/tx-execution-service.interface';
+import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
+import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
 import { AliasServiceImpl } from '@/core/services/alias/alias-service';
@@ -46,12 +47,14 @@ import { PluginManagementServiceImpl } from '@/core/services/plugin-management/p
 import { ZustandGenericStateServiceImpl } from '@/core/services/state/state-service';
 import { TokenServiceImpl } from '@/core/services/token/token-service';
 import { TopicServiceImpl } from '@/core/services/topic/topic-transaction-service';
-import { TxExecutionServiceImpl } from '@/core/services/tx-execution/tx-execution-service';
+import { TxExecuteServiceImpl } from '@/core/services/tx-execute/tx-execute-service';
+import { TxSignServiceImpl } from '@/core/services/tx-sign/tx-sign-service';
 
 export class CoreApiImplementation implements CoreApi {
   public account: AccountService;
   public token: TokenService;
-  public txExecution: TxExecutionService;
+  public txSign: TxSignService;
+  public txExecute: TxExecuteService;
   public topic: TopicService;
   public state: StateService;
   public mirror: HederaMirrornodeService;
@@ -93,7 +96,8 @@ export class CoreApiImplementation implements CoreApi {
       this.network,
       this.config,
     );
-    this.txExecution = new TxExecutionServiceImpl(
+    this.txSign = new TxSignServiceImpl(this.logger, this.kms, this.network);
+    this.txExecute = new TxExecuteServiceImpl(
       this.logger,
       this.kms,
       this.network,

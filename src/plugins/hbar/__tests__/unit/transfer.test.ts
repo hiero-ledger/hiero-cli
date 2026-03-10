@@ -28,7 +28,7 @@ describe('hbar plugin - transfer command (unit)', () => {
   });
 
   test('transfers HBAR successfully when all params provided', async () => {
-    const { api, logger, hbar, signing } = setupTransferTest({
+    const { api, logger, hbar, txExecute } = setupTransferTest({
       transferImpl: jest
         .fn()
         .mockResolvedValue(mockTransferTransactionResults.empty),
@@ -58,7 +58,7 @@ describe('hbar plugin - transfer command (unit)', () => {
       to: mockAccountIds.receiver,
       memo: 'test-transfer',
     });
-    expect(signing.signAndExecute).toHaveBeenCalled();
+    expect(txExecute.execute).toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
     expect(logger.info).toHaveBeenCalledWith(
       `[HBAR] Transfer submitted successfully, txId=${mockTransactionResults.success.transactionId}`,
