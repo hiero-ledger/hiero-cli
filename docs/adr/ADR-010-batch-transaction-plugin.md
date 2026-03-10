@@ -369,7 +369,7 @@ export class BatchifyTransactionHook extends AbstractHook {
 hooks: [
   {
     name: 'token-batch-state',
-    hook: new TokenStateHook(),
+    hook: new TokenBatchStateHook(),
   },
 ],
 ```

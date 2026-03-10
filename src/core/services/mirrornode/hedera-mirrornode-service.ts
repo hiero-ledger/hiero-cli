@@ -358,7 +358,6 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
 
   async getTopicInfo(topicId: string): Promise<TopicInfo> {
     const url = `${this.getBaseUrl()}/topics/${topicId}`;
-    console.log(url);
     try {
       const response = await fetch(url);
 
