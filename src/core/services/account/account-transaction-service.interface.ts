@@ -1,5 +1,3 @@
-import type { KeyAlgorithm } from '@/core/shared/constants';
-
 /**
  * Interface for Account-related operations
  * All account services must implement this interface
@@ -26,7 +24,6 @@ export interface CreateAccountParams {
   balanceRaw: bigint;
   maxAutoAssociations?: number;
   publicKey: string;
-  keyType?: KeyAlgorithm;
 }
 
 // Import Hedera SDK types

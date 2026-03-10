@@ -12,7 +12,6 @@ import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { ValidationError } from '@/core/errors';
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
-import { KeyAlgorithm } from '@/core/shared/constants';
 
 import {
   createMockAccountCreateTransaction,
@@ -59,11 +58,10 @@ describe('AccountServiceImpl', () => {
   });
 
   describe('createAccount', () => {
-    it('should create account with ECDSA key type', () => {
+    it('should create account with provided public key', () => {
       const params = {
         balanceRaw: 100_000_000n,
         publicKey: ECDSA_HEX_PUBLIC_KEY,
-        keyType: KeyAlgorithm.ECDSA,
       };
 
       const result = accountService.createAccount(params);
@@ -73,41 +71,11 @@ describe('AccountServiceImpl', () => {
       expect(mockTransaction.setInitialBalance).toHaveBeenCalledWith(
         mockHbarInstance,
       );
-      expect(mockTransaction.setECDSAKeyWithAlias).toHaveBeenCalledWith(
-        mockPublicKeyInstance,
-      );
-      expect(mockTransaction.setKeyWithoutAlias).not.toHaveBeenCalled();
-      expect(result.transaction).toBe(mockTransaction);
-      expect(result.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
-    });
-
-    it('should create account with ED25519 key type', () => {
-      const params = {
-        balanceRaw: 50_000_000n,
-        publicKey: ECDSA_HEX_PUBLIC_KEY,
-        keyType: KeyAlgorithm.ED25519,
-      };
-
-      const result = accountService.createAccount(params);
-
       expect(mockTransaction.setKeyWithoutAlias).toHaveBeenCalledWith(
         mockPublicKeyInstance,
       );
-      expect(mockTransaction.setECDSAKeyWithAlias).not.toHaveBeenCalled();
       expect(result.transaction).toBe(mockTransaction);
       expect(result.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
-    });
-
-    it('should default to ECDSA when keyType is not specified', () => {
-      const params = {
-        balanceRaw: 100_000_000n,
-        publicKey: ECDSA_HEX_PUBLIC_KEY,
-      };
-
-      accountService.createAccount(params);
-
-      expect(mockTransaction.setECDSAKeyWithAlias).toHaveBeenCalled();
-      expect(mockTransaction.setKeyWithoutAlias).not.toHaveBeenCalled();
     });
 
     it('should set max auto associations when specified', () => {

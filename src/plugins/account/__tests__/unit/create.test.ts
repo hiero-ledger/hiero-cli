@@ -1,11 +1,14 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 
 import '@/core/utils/json-serialize';
 
 import {
-  ECDSA_EVM_ADDRESS,
+  ACCOUNT_ID_EVM_ADDRESS_8888,
+  ACCOUNT_ID_EVM_ADDRESS_9999,
+  ECDSA_HEX_PRIVATE_KEY,
   ECDSA_HEX_PUBLIC_KEY,
   ED25519_HEX_PUBLIC_KEY,
 } from '@/__tests__/mocks/fixtures';
@@ -77,7 +80,6 @@ describe('account plugin - create command (ADR-003)', () => {
       balanceRaw: 500000000000n,
       maxAutoAssociations: 3,
       publicKey: 'pub-key-test',
-      keyType: KeyAlgorithm.ECDSA,
     });
     expect(signing.signAndExecute).toHaveBeenCalled();
     expect(alias.register).toHaveBeenCalledWith(
@@ -98,7 +100,7 @@ describe('account plugin - create command (ADR-003)', () => {
         type: KeyAlgorithm.ECDSA,
         network: 'testnet',
         keyRefId: 'kr_test123',
-        evmAddress: ECDSA_EVM_ADDRESS,
+        evmAddress: ACCOUNT_ID_EVM_ADDRESS_9999,
       }),
     );
 
@@ -109,7 +111,7 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.network).toBe('testnet');
     expect(output.transactionId).toBe('0.0.1234@1234567890.000000000');
-    expect(output.evmAddress).toBe(ECDSA_EVM_ADDRESS);
+    expect(output.evmAddress).toBe(ACCOUNT_ID_EVM_ADDRESS_9999);
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
   });
 
@@ -218,14 +220,169 @@ describe('account plugin - create command (ADR-003)', () => {
     );
     expect(account.createAccount).toHaveBeenCalledWith(
       expect.objectContaining({
-        keyType: KeyAlgorithm.ECDSA,
+        publicKey: 'pub-key-test',
       }),
     );
 
     const output = assertOutput(result.result, CreateAccountOutputSchema);
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
-    expect(output.evmAddress).toBe(ECDSA_EVM_ADDRESS);
+    expect(output.evmAddress).toBe(ACCOUNT_ID_EVM_ADDRESS_8888);
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
+  });
+
+  test('creates account with provided private key (--key ecdsa:private:xxx)', async () => {
+    const logger = makeLogger();
+    const saveAccountMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
+
+    const { account, signing, networkMock, kms, alias, mirror, keyResolver } =
+      makeApiMocksForAccountCreate({
+        createAccountImpl: jest.fn().mockReturnValue({
+          transaction: {},
+          publicKey: ECDSA_HEX_PUBLIC_KEY,
+        }),
+        signAndExecuteImpl: jest.fn().mockResolvedValue({
+          transactionId: '0.0.1234@1234567890.000000004',
+          success: true,
+          accountId: '0.0.6666',
+          receipt: { status: { status: 'success' } },
+        }),
+        keyResolverGetPublicKeyImpl: jest.fn().mockResolvedValue({
+          keyRefId: 'kr_provided123',
+          publicKey: ECDSA_HEX_PUBLIC_KEY,
+        }),
+      });
+
+    kms.get = jest.fn().mockReturnValue({
+      keyRefId: 'kr_provided123',
+      publicKey: ECDSA_HEX_PUBLIC_KEY,
+      keyAlgorithm: KeyAlgorithm.ECDSA,
+      keyManager: 'local',
+      labels: [],
+      createdAt: '',
+      updatedAt: '',
+    });
+
+    const api: Partial<CoreApi> = {
+      account,
+      txExecution: signing,
+      network: networkMock,
+      kms,
+      alias,
+      mirror: mirror as HederaMirrornodeService,
+      keyResolver: keyResolver as KeyResolverService,
+      logger,
+    };
+
+    const args = makeArgs(api, logger, {
+      balance: '1000',
+      key: `ecdsa:private:${ECDSA_HEX_PRIVATE_KEY}`,
+    });
+
+    const result = await createAccount(args);
+
+    expect(kms.createLocalPrivateKey).not.toHaveBeenCalled();
+    expect(keyResolver.getPublicKey).toHaveBeenCalled();
+    expect(account.createAccount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
+      }),
+    );
+
+    const output = assertOutput(result.result, CreateAccountOutputSchema);
+    expect(output.accountId).toBe('0.0.6666');
+    expect(output.type).toBe(KeyAlgorithm.ECDSA);
+    expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
+  });
+
+  test('creates account with key reference (--key kr_xxx)', async () => {
+    const logger = makeLogger();
+    const saveAccountMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
+
+    const { account, signing, networkMock, kms, alias, mirror, keyResolver } =
+      makeApiMocksForAccountCreate({
+        createAccountImpl: jest.fn().mockReturnValue({
+          transaction: {},
+          publicKey: ECDSA_HEX_PUBLIC_KEY,
+        }),
+        signAndExecuteImpl: jest.fn().mockResolvedValue({
+          transactionId: '0.0.1234@1234567890.000000005',
+          success: true,
+          accountId: '0.0.5555',
+          receipt: { status: { status: 'success' } },
+        }),
+        keyResolverGetPublicKeyImpl: jest.fn().mockResolvedValue({
+          keyRefId: 'kr_test123',
+          publicKey: ECDSA_HEX_PUBLIC_KEY,
+        }),
+      });
+
+    kms.get = jest.fn().mockReturnValue({
+      keyRefId: 'kr_test123',
+      publicKey: ECDSA_HEX_PUBLIC_KEY,
+      keyAlgorithm: KeyAlgorithm.ECDSA,
+      keyManager: 'local',
+      labels: [],
+      createdAt: '',
+      updatedAt: '',
+    });
+
+    const api: Partial<CoreApi> = {
+      account,
+      txExecution: signing,
+      network: networkMock,
+      kms,
+      alias,
+      mirror: mirror as HederaMirrornodeService,
+      keyResolver: keyResolver as KeyResolverService,
+      logger,
+    };
+
+    const args = makeArgs(api, logger, {
+      balance: '1000',
+      key: 'kr_test123',
+    });
+
+    const result = await createAccount(args);
+
+    expect(kms.createLocalPrivateKey).not.toHaveBeenCalled();
+    expect(keyResolver.getPublicKey).toHaveBeenCalled();
+    expect(account.createAccount).toHaveBeenCalledWith(
+      expect.objectContaining({
+        publicKey: ECDSA_HEX_PUBLIC_KEY,
+      }),
+    );
+
+    const output = assertOutput(result.result, CreateAccountOutputSchema);
+    expect(output.accountId).toBe('0.0.5555');
+  });
+
+  test('throws ValidationError when both --key and --key-type are provided', async () => {
+    const logger = makeLogger();
+    MockedHelper.mockImplementation(() => ({ saveAccount: jest.fn() }));
+
+    const { account, signing, networkMock, kms, alias, mirror, keyResolver } =
+      makeApiMocksForAccountCreate({});
+
+    const api: Partial<CoreApi> = {
+      account,
+      txExecution: signing,
+      network: networkMock,
+      kms,
+      alias,
+      mirror: mirror as HederaMirrornodeService,
+      keyResolver: keyResolver as KeyResolverService,
+      logger,
+    };
+
+    const args = makeArgs(api, logger, {
+      balance: '1000',
+      key: `ecdsa:private:${ECDSA_HEX_PRIVATE_KEY}`,
+      keyType: KeyAlgorithm.ECDSA,
+    });
+
+    await expect(createAccount(args)).rejects.toThrow();
   });
 
   test('creates account with ED25519 key type', async () => {
@@ -272,7 +429,7 @@ describe('account plugin - create command (ADR-003)', () => {
     );
     expect(account.createAccount).toHaveBeenCalledWith(
       expect.objectContaining({
-        keyType: KeyAlgorithm.ED25519,
+        publicKey: 'pub-key-test',
       }),
     );
 
