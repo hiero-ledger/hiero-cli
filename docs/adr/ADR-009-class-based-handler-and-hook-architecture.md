@@ -68,7 +68,7 @@ import type { Command } from '@/core/commands/command.interface';
 import type { AbstractHook } from '@/core/hooks/abstract-hook';
 import type {
   HookResult,
-  PostExecuteTransactionParams,
+  PreOutputPreparationParams,
   PostOutputPreparationParams,
   PreBuildTransactionParams,
   PreExecuteTransactionParams,
@@ -129,15 +129,17 @@ export abstract class BaseTransactionCommand<
       buildTransactionResult,
       signTransactionResult,
     );
-    const postExecuteTransactionHookResult =
-      await this.postExecuteTransactionHook(args, {
+    const preOutputPreparationHookResult = await this.preOutputPreparationHook(
+      args,
+      {
         normalisedParams,
         buildTransactionResult,
         signTransactionResult,
         executeTransactionResult,
-      });
-    if (postExecuteTransactionHookResult.breakFlow) {
-      return this.processHookResult(postExecuteTransactionHookResult);
+      },
+    );
+    if (preOutputPreparationHookResult.breakFlow) {
+      return this.processHookResult(preOutputPreparationHookResult);
     }
     const result = await this.outputPreparation(
       args,
@@ -204,9 +206,9 @@ export abstract class BaseTransactionCommand<
     );
   }
 
-  async postExecuteTransactionHook(
+  async preOutputPreparationHook(
     args: CommandHandlerArgs,
-    params: PostExecuteTransactionParams<
+    params: PreOutputPreparationParams<
       TNormalisedParams,
       TBuildTransactionResult,
       TSignTransactionResult,
@@ -214,7 +216,7 @@ export abstract class BaseTransactionCommand<
     >,
   ): Promise<HookResult> {
     return await this.executeHooks(
-      async (h) => h.postExecuteTransactionHook(args, params),
+      async (h) => h.preOutputPreparationHook(args, params),
       args.hooks,
     );
   }
@@ -428,7 +430,7 @@ export class FooTestCommand extends BaseTransactionCommand<
 import type { CommandHandlerArgs } from '@/core';
 import type {
   HookResult,
-  PostExecuteTransactionParams,
+  PreOutputPreparationParams,
   PostOutputPreparationParams,
   PreBuildTransactionParams,
   PreExecuteTransactionParams,
@@ -490,9 +492,9 @@ export abstract class AbstractHook {
     });
   }
 
-  public postExecuteTransactionHook(
+  public preOutputPreparationHook(
     _args: CommandHandlerArgs,
-    _params: PostExecuteTransactionParams,
+    _params: PreOutputPreparationParams,
   ): Promise<HookResult> {
     void _args;
     void _params;
@@ -528,7 +530,7 @@ export abstract class AbstractHook {
 | `preBuildTransactionHook`                  | Before `buildTransaction`   | `args`, `{ normalisedParams }`                                                                                        |
 | `preSignTransactoinHook`                   | Before `signTransaction`    | `args`, `{ normalisedParams, buildTransactionResult }`                                                                |
 | `preExecuteTransactionHook`                | Before `executeTransaction` | `args`, `{ normalisedParams, buildTransactionResult, signTransactionResult }`                                         |
-| `postExecuteTransactionHook`               | After `executeTransaction`  | `args`, `{ normalisedParams, buildTransactionResult, signTransactionResult, executeTransactionResult }`               |
+| `preOutputPreparationHook`                 | After `executeTransaction`  | `args`, `{ normalisedParams, buildTransactionResult, signTransactionResult, executeTransactionResult }`               |
 | `postOutputPreparationHook`                | After `outputPreparation`   | `args`, `{ normalisedParams, buildTransactionResult, signTransactionResult, executeTransactionResult, outputResult }` |
 
 Concrete hooks extend `AbstractHook` and override only the methods they need.
@@ -562,7 +564,7 @@ export interface PreExecuteTransactionParams<
   signTransactionResult: TSignTransactionResult;
 }
 
-export interface PostExecuteTransactionParams<
+export interface PreOutputPreparationParams<
   TNormalisedParams = unknown,
   TBuildTransactionResult = unknown,
   TSignTransactionResult = unknown,
@@ -856,7 +858,7 @@ sequenceDiagram
     BC->>Sub: executeTransaction(args, normalisedParams, buildTransactionResult, signTransactionResult)
     Sub-->>BC: executeTransactionResult
 
-    BC->>H: postExecuteTransactionHook(args, normalisedParams, buildTransactionResult, signTransactionResult, executeTransactionResult)
+    BC->>H: preOutputPreparationHook(args, normalisedParams, buildTransactionResult, signTransactionResult, executeTransactionResult)
     H-->>BC: HookResult
     alt breakFlow = true
         BC-->>PM: HookResult as CommandResult

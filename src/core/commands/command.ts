@@ -3,10 +3,10 @@ import type { Command } from '@/core/commands/command.interface';
 import type { AbstractHook } from '@/core/hooks/abstract-hook';
 import type {
   HookResult,
-  PostExecuteTransactionParams,
   PostOutputPreparationParams,
   PreBuildTransactionParams,
   PreExecuteTransactionParams,
+  PreOutputPreparationParams,
   PreSignTransactionParams,
 } from '@/core/hooks/types';
 
@@ -143,7 +143,7 @@ export abstract class BaseTransactionCommand<
 
   async postExecuteTransactionHook(
     args: CommandHandlerArgs,
-    params: PostExecuteTransactionParams<
+    params: PreOutputPreparationParams<
       TNormalisedParams,
       TBuildTransactionResult,
       TSignTransactionResult,
@@ -151,7 +151,7 @@ export abstract class BaseTransactionCommand<
     >,
   ): Promise<HookResult> {
     return await this.executeHooks(
-      async (h) => h.postExecuteTransactionHook(args, params),
+      async (h) => h.preOutputPreparationHook(args, params),
       args.hooks,
     );
   }

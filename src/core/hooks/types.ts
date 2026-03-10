@@ -23,7 +23,7 @@ export interface PreExecuteTransactionParams<
   signTransactionResult: TSignTransactionResult;
 }
 
-export interface PostExecuteTransactionParams<
+export interface PreOutputPreparationParams<
   TNormalisedParams = unknown,
   TBuildTransactionResult = unknown,
   TSignTransactionResult = unknown,

@@ -1,10 +1,10 @@
 import type { CommandHandlerArgs } from '@/core';
 import type {
   HookResult,
-  PostExecuteTransactionParams,
   PostOutputPreparationParams,
   PreBuildTransactionParams,
   PreExecuteTransactionParams,
+  PreOutputPreparationParams,
   PreSignTransactionParams,
 } from '@/core/hooks/types';
 
@@ -63,9 +63,9 @@ export abstract class AbstractHook {
     });
   }
 
-  public postExecuteTransactionHook(
+  public preOutputPreparationHook(
     _args: CommandHandlerArgs,
-    _params: PostExecuteTransactionParams,
+    _params: PreOutputPreparationParams,
   ): Promise<HookResult> {
     void _args;
     void _params;
