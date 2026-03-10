@@ -2,7 +2,7 @@
 
 - Status: Proposed
 - Date: 2026-03-05
-- Related: `src/core/commands/command.ts`, `src/core/hooks/abstract-hook.ts`, `src/core/plugins/plugin-manager.ts`, `docs/adr/ADR-001-plugin-architecture.md`, `docs/adr/ADR-003-command-handler-result-contract.md`
+- Related: `src/core/commands/command.ts`, `src/core/hooks/abstract-hook.ts`, `src/core/plugins/plugin-manager.ts`, `src/core/plugins/plugin.types.ts`, `src/core/utils/filter-reserved-options.ts`, `docs/adr/ADR-001-plugin-architecture.md`, `docs/adr/ADR-003-command-handler-result-contract.md`
 
 ## Context
 
@@ -334,8 +334,9 @@ This makes adoption incremental -- existing handler functions continue to work u
   name: 'foo',
   summary: 'Run foo',
   description: 'Execute the foo command',
-  command: new FooTestCommand(),   // <-- BaseTransactionCommand instance
-  handler: fooTestOptions,         // <-- legacy fallback
+  registeredHooks: ['inspection-hook'],  // <-- opt-in to hooks by name
+  command: new FooTestCommand(),          // <-- BaseTransactionCommand instance
+  handler: fooTestOptions,               // <-- legacy fallback
   output: { schema: FooTestOutputSchema, humanTemplate: FOO_TEMPLATE },
 }
 ```
@@ -627,17 +628,101 @@ When `PluginManager` renders output, it prefers `result.humanTemplate` (if set b
 
 #### Hook Registration
 
-Hooks are registered via `HookSpec` in a plugin's manifest:
+Hooks are defined via `HookSpec` in a plugin's manifest. Each hook has a unique `name`, the `AbstractHook` instance, and optional `HookOption[]` that allow the hook to inject additional CLI options into commands that use it:
 
 ```ts
 export interface HookSpec {
   name: string;
-  relevantCommands: string[]; // e.g. ["topic_submit-message", "contract_deploy"]
   hook: AbstractHook;
+  options?: HookOption[];
+}
+
+export interface HookOption {
+  name: string;
+  type: OptionType;
+  description?: string;
+  short: string;
 }
 ```
 
-The `relevantCommands` array uses the format `${pluginName}_${commandName}` to target specific commands. A hook registered in plugin A can target commands in plugin B -- this is the core cross-plugin extensibility mechanism.
+Hook names must be globally unique across all loaded plugins. During `PluginManager.registerCommands`, all hooks are collected and validated:
+
+```ts
+this.hooks = Array.from(this.loadedPlugins.values()).flatMap(
+  (plugin) => plugin.manifest.hooks ?? [],
+);
+this.validateUniqueHookNames();
+```
+
+#### Connecting Hooks to Commands
+
+Instead of hooks declaring which commands they target (via a `relevantCommands` field), **commands declare which hooks they want** via the optional `registeredHooks` field on `CommandSpec`:
+
+```ts
+export interface CommandSpec {
+  name: string;
+  // ...
+  registeredHooks?: string[]; // e.g. ["inspection-hook", "add-inner-transaction"]
+}
+```
+
+The `registeredHooks` array contains hook names (matching `HookSpec.name`). This inverts the registration direction -- the command opts in to the hooks it needs, rather than hooks declaring which commands they target.
+
+Example: a command in the test plugin registering the `inspection-hook` defined in the topic plugin:
+
+```ts
+// src/plugins/test/manifest.ts
+{
+  name: 'foo',
+  summary: 'Foo Test',
+  description: 'Execute the foo command',
+  options: [
+    { name: 'message', short: 'm', type: OptionType.STRING, required: true, description: 'Message' },
+  ],
+  registeredHooks: ['inspection-hook'],
+  command: new FooTestCommand(),
+  handler: fooTestOptions,
+  output: { schema: FooTestOutputSchema, humanTemplate: FOO_TEMPLATE },
+}
+```
+
+#### Hook Option Injection
+
+When a hook defines `options` in its `HookSpec`, those options are automatically merged into every command that references the hook via `registeredHooks`. This allows hooks to inject additional CLI flags without modifying the command's own option list.
+
+During command registration, `PluginManager` resolves the hook options and combines them with the command's own options. Hook options are always registered as non-required (`required: false`). The combined list is filtered against reserved option names to prevent collisions:
+
+```ts
+const registeredHooks = this.filterHooksForCommand(commandSpec);
+const hookOptions: HookOption[] = registeredHooks.flatMap(
+  (spec) => spec.options ?? [],
+);
+const filteredOptions = filterReservedOptions(commandSpec.options, hookOptions);
+```
+
+The `filterReservedOptions` function merges both lists and checks against `RESERVED_LONG_OPTIONS` and `RESERVED_SHORT_OPTIONS` (plus any hook option names/shorts) to prevent conflicts.
+
+Example: a hook in the topic plugin that injects a `--define` option:
+
+```ts
+// src/plugins/topic/manifest.ts
+hooks: [
+  {
+    name: 'inspection-hook',
+    hook: new TransactionInspectionHook(),
+    options: [
+      {
+        name: 'define',
+        type: OptionType.STRING,
+        description: 'Def',
+        short: 'd',
+      },
+    ],
+  },
+],
+```
+
+Any command that includes `'inspection-hook'` in its `registeredHooks` will automatically gain the `--define` / `-d` option.
 
 #### Hook Delivery
 
@@ -654,25 +739,13 @@ export interface CommandHandlerArgs {
 }
 ```
 
-During `PluginManager.registerCommands`, all `HookSpec` entries from every loaded plugin are collected into a single list:
+When a command is executed, `filterHooksForCommand` selects the hooks by name and injects them into `handlerArgs.hooks`:
 
 ```ts
-this.hooks = Array.from(this.loadedPlugins.values()).flatMap(
-  (plugin) => plugin.manifest.hooks ?? [],
-);
-```
-
-When a command is executed, `filterHooksForCommand` selects the relevant hooks and injects them into `handlerArgs.hooks`:
-
-```ts
-private filterHooksForCommand(
-  plugin: LoadedPlugin,
-  commandSpec: CommandSpec,
-): AbstractHook[] {
-  const commandKey = `${plugin.manifest.name}_${commandSpec.name}`;
+private filterHooksForCommand(commandSpec: CommandSpec): HookSpec[] {
+  const registeredHooks: string[] = commandSpec.registeredHooks ?? [];
   return this.hooks
-    .filter((spec) => spec.relevantCommands.includes(commandKey))
-    .map((spec) => spec.hook);
+    .filter((spec) => registeredHooks.includes(spec.name));
 }
 ```
 
@@ -712,9 +785,9 @@ A hook that halts execution if the user lacks permission:
 
 ```ts
 export class AuthorizationHook extends AbstractHook {
-  override preBuildAndSignHook(
+  override preBuildTransactionHook(
     args: CommandHandlerArgs,
-    params: PreBuildAndSignParams,
+    params: PreBuildTransactionParams,
   ): Promise<HookResult> {
     const isAuthorized = checkPermissions(args);
 
@@ -734,7 +807,7 @@ export class AuthorizationHook extends AbstractHook {
 }
 ```
 
-When `breakFlow: true` is returned, `BaseTransactionCommand.execute` immediately returns the hook's result as the command output, skipping `buildAndSign`, `executeTransaction`, `outputPreparation`, and all subsequent hooks.
+When `breakFlow: true` is returned, `BaseTransactionCommand.execute` immediately returns the hook's result as the command output, skipping `buildTransaction`, `signTransaction`, `executeTransaction`, `outputPreparation`, and all subsequent hooks.
 
 ## Execution Flow
 
@@ -805,9 +878,11 @@ sequenceDiagram
 
 ### Pros
 
-- **Cross-plugin extensibility.** Hooks registered in one plugin can intercept commands in a completely different plugin. This enables cross-cutting concerns (auditing, authorization, telemetry) without modifying the target command.
-- **Separation of concerns.** Validation (`normalizeParams`), transaction construction (`buildAndSign`), network submission (`executeTransaction`), and output formatting (`outputPreparation`) are isolated in dedicated methods, making each easier to understand and maintain.
-- **Transaction interception.** The split between `buildAndSign` and `executeTransaction` allows hooks to inspect, log, or reject a signed transaction before it reaches the network. This is valuable for audit trails, dry-run modes, and multi-signature workflows.
+- **Cross-plugin extensibility.** Hooks defined in one plugin can be registered by commands in a completely different plugin via `registeredHooks`. This enables cross-cutting concerns (auditing, authorization, telemetry) without modifying the hook or target command.
+- **Command-driven hook selection.** Commands declare which hooks they want (`registeredHooks`), making the dependency explicit and discoverable at the command definition site.
+- **Hook option injection.** Hooks can declare their own CLI options (`HookOption[]`), which are automatically merged into every command that registers the hook. This eliminates the need to duplicate option definitions across commands.
+- **Separation of concerns.** Validation (`normalizeParams`), transaction construction (`buildTransaction`), signing (`signTransaction`), network submission (`executeTransaction`), and output formatting (`outputPreparation`) are isolated in dedicated methods, making each easier to understand and maintain.
+- **Transaction interception.** The split between `buildTransaction`, `signTransaction`, and `executeTransaction` allows hooks to inspect, log, or modify a transaction at each stage. This is valuable for audit trails, dry-run modes, batch transaction assembly, and multi-signature workflows.
 - **Flow control via hooks.** Any hook can halt command execution by returning `{ breakFlow: true }` with a custom result. This enables use cases like authorization gates, rate limiting, or conditional command skipping -- all without modifying the command itself.
 - **Testability.** Each phase can be unit-tested independently. Hooks can be tested in isolation by invoking them directly with mock args and params.
 - **Incremental adoption.** The `command` field on `CommandSpec` is optional. Existing plain handler functions continue to work, so migration can happen command-by-command.
@@ -815,27 +890,32 @@ sequenceDiagram
 
 ### Cons
 
-- **Additional boilerplate.** A `BaseTransactionCommand` subclass requires implementing four methods, three type parameters, and separate files for normalized params and output types -- noticeably more code than a plain handler function for simple commands.
-- **Learning curve.** Developers must understand the lifecycle phases, hook ordering, the `HookResult` contract, and how `HookSpec.relevantCommands` matching works.
+- **Additional boilerplate.** A `BaseTransactionCommand` subclass requires implementing four methods, four type parameters, and separate files for normalized params and output types -- noticeably more code than a plain handler function for simple commands.
+- **Learning curve.** Developers must understand the lifecycle phases, hook ordering, the `HookResult` contract, and how `registeredHooks` matching works.
 - **Sequential hook execution overhead.** Hooks are executed sequentially with `await`. A slow hook blocks subsequent hooks and the command phase it precedes. There is no parallel execution or timeout mechanism.
-- **Debugging complexity.** When multiple hooks from different plugins interact with the same command, tracing the execution flow and diagnosing issues requires understanding the full hook chain, which is assembled at runtime. The `breakFlow` mechanism adds another dimension -- a hook may silently prevent execution of later hooks and the command itself.
+- **Debugging complexity.** When multiple hooks from different plugins interact with the same command, tracing the execution flow and diagnosing issues requires understanding the full hook chain. The `breakFlow` mechanism adds another dimension -- a hook may silently prevent execution of later hooks and the command itself.
 - **No hook ordering guarantees.** Hook execution order depends on plugin loading order, which may vary. There is currently no priority or explicit ordering mechanism.
+- **Option name collisions.** Hook options are merged into the command's option list. If two hooks declare options with the same name or short flag, they will conflict. Reserved option filtering mitigates core collisions, but hook-to-hook collisions require manual coordination.
 
 ## Consequences
 
 - New commands should prefer `BaseTransactionCommand` over plain handler functions when they involve distinct validation, signing, execution, and output phases, or when hook extensibility is needed.
-- Plugins that need to inject cross-cutting behavior into other plugins' commands should define `HookSpec` entries in their manifest.
+- Plugins that need to inject cross-cutting behavior should define `HookSpec` entries in their manifest. Commands that want to use these hooks must list them in `registeredHooks`.
+- Hook names must be globally unique across all loaded plugins. `PluginManager` validates this during registration.
+- Hooks that declare `options` will have those options automatically added (as non-required) to every command that references the hook via `registeredHooks`.
 - Hook authors must handle errors defensively -- an unhandled exception in a hook will propagate and abort the command execution.
 - Hooks that use `breakFlow: true` should provide meaningful `result` and optionally `humanTemplate` values, as these become the command's output.
 - The `CommandResult.humanTemplate` field allows hooks to override the output template defined in the command manifest, giving hooks full control over the user-facing output when they halt execution.
-- The `buildAndSign`/`executeTransaction` split is designed for transaction-oriented commands; non-transactional commands may use trivial implementations (e.g. returning `undefined` from `buildAndSign` and performing all logic in `executeTransaction`).
+- The `buildTransaction`/`signTransaction`/`executeTransaction` split is designed for transaction-oriented commands; non-transactional commands may use trivial implementations (e.g. returning `undefined` from `buildTransaction` and performing all logic in `executeTransaction`).
 
 ## Testing Strategy
 
-- **Unit: BaseTransactionCommand subclass.** Test each abstract method independently by instantiating the subclass and calling `normalizeParams`, `buildAndSign`, `executeTransaction`, and `outputPreparation` with mock args.
+- **Unit: BaseTransactionCommand subclass.** Test each abstract method independently by instantiating the subclass and calling `normalizeParams`, `buildTransaction`, `signTransaction`, `executeTransaction`, and `outputPreparation` with mock args.
 - **Unit: Hook execution.** Verify that `executeHooks` calls each hook in order, returns `{ breakFlow: false }` when no hook breaks flow, and returns the `HookResult` immediately when a hook sets `breakFlow: true`.
 - **Unit: Flow interruption.** Verify that when a hook returns `breakFlow: true`, subsequent hooks are not called and the command phases after the hook point are skipped.
-- **Unit: Hook filtering.** Test `filterHooksForCommand` with various `relevantCommands` patterns to ensure correct matching.
+- **Unit: Hook filtering.** Test `filterHooksForCommand` with various `registeredHooks` values to ensure correct matching by hook name.
+- **Unit: Hook name uniqueness.** Verify that `validateUniqueHookNames` throws `ConfigurationError` when two plugins register hooks with the same name.
+- **Unit: Hook option injection.** Verify that hook options are merged into the command's options with `required: false`, and that reserved options are filtered out.
 - **Unit: Individual hooks.** Instantiate a concrete hook and invoke its lifecycle method with mock args/params. Assert the expected side effects and `HookResult` values.
-- **Integration: Cross-plugin hooks.** Load two plugins where one declares a hook targeting the other's command. Execute the command and verify the hook fires.
+- **Integration: Cross-plugin hooks.** Load two plugins where one declares a hook and the other's command references it via `registeredHooks`. Execute the command and verify the hook fires and its options are available.
 - **Integration: Legacy fallback.** Ensure commands without a `command` field still execute via the plain `handler` function.
