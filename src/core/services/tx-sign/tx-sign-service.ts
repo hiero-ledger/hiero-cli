@@ -25,7 +25,7 @@ export class TxSignServiceImpl implements TxSignService {
   async sign(
     transaction: HederaTransaction,
     keyRefIds: string[],
-  ): Promise<Uint8Array> {
+  ): Promise<HederaTransaction> {
     this.logger.debug(`[TX-SIGN] Signing with ${keyRefIds.length} key(s)`);
 
     const network = this.networkService.getCurrentNetwork();
@@ -67,7 +67,7 @@ export class TxSignServiceImpl implements TxSignService {
       await this.kms.signTransaction(transaction, payer.keyRefId);
     }
 
-    return transaction.toBytes();
+    return transaction;
   }
 
   signContractCreateFlow(

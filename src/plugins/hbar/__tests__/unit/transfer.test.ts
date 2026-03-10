@@ -58,7 +58,7 @@ describe('hbar plugin - transfer command (unit)', () => {
       to: mockAccountIds.receiver,
       memo: 'test-transfer',
     });
-    expect(txExecute.executeBytes).toHaveBeenCalled();
+    expect(txExecute.execute).toHaveBeenCalled();
     expect(logger.info).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
     expect(logger.info).toHaveBeenCalledWith(
       `[HBAR] Transfer submitted successfully, txId=${mockTransactionResults.success.transactionId}`,

@@ -23,6 +23,8 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
+
+import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 
@@ -69,7 +71,7 @@ export const makeTokenTransactionServiceMock = makeTokenServiceMock;
 export const makeTxSignServiceMock = (
   overrides?: Partial<jest.Mocked<TxSignService>>,
 ): jest.Mocked<TxSignService> => ({
-  sign: jest.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
+  sign: jest.fn().mockResolvedValue(createMockTransaction()),
   signContractCreateFlow: jest.fn().mockImplementation((flow) => flow),
   ...overrides,
 });
@@ -77,7 +79,7 @@ export const makeTxSignServiceMock = (
 export const makeTxExecuteServiceMock = (
   overrides?: Partial<jest.Mocked<TxExecuteService>>,
 ): jest.Mocked<TxExecuteService> => ({
-  executeBytes: jest.fn().mockResolvedValue(mockTransactionResults.success),
+  execute: jest.fn().mockResolvedValue(mockTransactionResults.success),
   executeContractCreateFlow: jest
     .fn()
     .mockResolvedValue(mockTransactionResults.success),
@@ -714,7 +716,7 @@ export const makeMintFtSuccessMocks = (overrides?: {
       createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
     },
     txExecute: {
-      executeBytes: jest
+      execute: jest
         .fn()
         .mockResolvedValue(
           overrides?.signResult || makeTransactionResult({ success: true }),
@@ -784,7 +786,7 @@ export const makeMintNftSuccessMocks = (overrides?: {
       createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
     },
     txExecute: {
-      executeBytes: jest.fn().mockResolvedValue(signResult),
+      execute: jest.fn().mockResolvedValue(signResult),
     },
     mirror: {
       getTokenInfo: jest.fn().mockResolvedValue({

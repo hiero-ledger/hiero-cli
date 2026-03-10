@@ -2,6 +2,7 @@ import type { CoreApi, TransactionResult } from '@/core';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 
 import { ED25519_DER_PRIVATE_KEY } from '@/__tests__/mocks/fixtures';
+import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeAliasMock,
   makeArgs,
@@ -25,11 +26,11 @@ const MockedHelper = ZustandTopicStateHelper as jest.Mock;
 
 const makeApiMocks = ({
   createTopicImpl,
-  executeBytesImpl,
+  executeImpl,
   network = 'testnet',
 }: {
   createTopicImpl?: jest.Mock;
-  executeBytesImpl?: jest.Mock;
+  executeImpl?: jest.Mock;
   network?: 'testnet' | 'mainnet' | 'previewnet';
 }) => {
   const topicTransactions = {
@@ -38,12 +39,12 @@ const makeApiMocks = ({
   };
 
   const txSign = {
-    sign: jest.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
+    sign: jest.fn().mockResolvedValue(createMockTransaction()),
     signContractCreateFlow: jest.fn().mockImplementation((flow) => flow),
   };
 
   const txExecute = {
-    executeBytes: executeBytesImpl || jest.fn(),
+    execute: executeImpl || jest.fn(),
     executeContractCreateFlow: jest.fn(),
   };
 
@@ -90,7 +91,7 @@ describe('topic plugin - create command', () => {
         createTopicImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
-        executeBytesImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: '0.0.100000@1700000000.000000000',
           success: true,
           topicId: '0.0.9999',
@@ -126,7 +127,7 @@ describe('topic plugin - create command', () => {
       adminKey: undefined,
       submitKey: undefined,
     });
-    expect(txExecute.executeBytes).toHaveBeenCalled();
+    expect(txExecute.execute).toHaveBeenCalled();
     expect(saveTopicMock).toHaveBeenCalledWith(
       `${SupportedNetwork.TESTNET}:0.0.9999`,
       expect.objectContaining({
@@ -151,7 +152,7 @@ describe('topic plugin - create command', () => {
         createTopicImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
-        executeBytesImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: '0.0.100000@1700000000.000000001',
           success: true,
           topicId: '0.0.8888',
@@ -200,7 +201,7 @@ describe('topic plugin - create command', () => {
       'local',
       ['topic:submit'],
     );
-    expect(txExecute.executeBytes).toHaveBeenCalledWith(expect.any(Uint8Array));
+    expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
     expect(saveTopicMock).toHaveBeenCalledWith(
       `${SupportedNetwork.TESTNET}:0.0.8888`,
       expect.objectContaining({
@@ -223,7 +224,7 @@ describe('topic plugin - create command', () => {
         createTopicImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
-        executeBytesImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: '0.0.100000@1700000000.000000002',
           success: true,
           topicId: '0.0.7777',
@@ -265,7 +266,7 @@ describe('topic plugin - create command', () => {
     );
   });
 
-  test('throws TransactionError when executeBytes returns failure', async () => {
+  test('throws TransactionError when execute returns failure', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({ saveTopic: jest.fn() }));
 
@@ -274,7 +275,7 @@ describe('topic plugin - create command', () => {
         createTopicImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
-        executeBytesImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: 'tx-123',
           success: false,
           receipt: { status: { status: 'success' } },

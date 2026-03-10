@@ -105,8 +105,10 @@ export async function transferNft(
   });
 
   logger.debug(`Using key ${signerKeyRefId} for signing transaction`);
-  const bytes = await api.txSign.sign(transferTransaction, [signerKeyRefId]);
-  const result = await api.txExecute.executeBytes(bytes);
+  const transaction = await api.txSign.sign(transferTransaction, [
+    signerKeyRefId,
+  ]);
+  const result = await api.txExecute.execute(transaction);
 
   if (!result.success) {
     throw new TransactionError(

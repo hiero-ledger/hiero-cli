@@ -56,10 +56,10 @@ export async function transferHandler(
     memo,
   });
 
-  const bytes = await api.txSign.sign(transferResult.transaction, [
+  const transaction = await api.txSign.sign(transferResult.transaction, [
     fromAccount.keyRefId,
   ]);
-  const result = await api.txExecute.executeBytes(bytes);
+  const result = await api.txExecute.execute(transaction);
 
   if (!result.success) {
     throw new TransactionError(

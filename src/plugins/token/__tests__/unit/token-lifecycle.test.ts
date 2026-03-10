@@ -67,7 +67,7 @@ describe('Token Lifecycle Integration', () => {
             .mockReturnValue(mockTransferTransaction),
         },
         txExecute: {
-          executeBytes: jest
+          execute: jest
             .fn()
             .mockResolvedValueOnce({
               ...mockTransactionResults.success,
@@ -216,7 +216,7 @@ describe('Token Lifecycle Integration', () => {
             .mockReturnValue(mockAssociationTransaction),
         },
         txExecute: {
-          executeBytes: jest
+          execute: jest
             .fn()
             .mockResolvedValueOnce({
               ...mockTransactionResults.success,
@@ -319,7 +319,7 @@ describe('Token Lifecycle Integration', () => {
             }),
         },
         txExecute: {
-          executeBytes: jest
+          execute: jest
             .fn()
             .mockResolvedValueOnce({
               ...mockTransactionResults.success,
@@ -427,7 +427,7 @@ describe('Token Lifecycle Integration', () => {
           createTokenAssociationTransaction: jest.fn().mockReturnValue({}),
         },
         txExecute: {
-          executeBytes: jest.fn().mockReturnValue({
+          execute: jest.fn().mockReturnValue({
             ...mockTransactionResults.success,
             transactionId: '0.0.123@1234567890.123456789',
           }),
@@ -439,7 +439,7 @@ describe('Token Lifecycle Integration', () => {
 
       const logger = makeLogger();
 
-      // Create token - this will throw because executeBytes returns no tokenId
+      // Create token - this will throw because execute returns no tokenId
       const createArgs: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',

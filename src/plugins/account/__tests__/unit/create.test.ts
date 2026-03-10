@@ -45,7 +45,7 @@ describe('account plugin - create command (ADR-003)', () => {
           transaction: {},
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
-        executeBytesImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: '0.0.1234@1234567890.000000000',
           success: true,
           accountId: '0.0.9999',
@@ -82,7 +82,7 @@ describe('account plugin - create command (ADR-003)', () => {
       maxAutoAssociations: 3,
       publicKey: 'pub-key-test',
     });
-    expect(txExecute.executeBytes).toHaveBeenCalled();
+    expect(txExecute.execute).toHaveBeenCalled();
     expect(alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
         alias: 'myAccount',
@@ -116,7 +116,7 @@ describe('account plugin - create command (ADR-003)', () => {
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
   });
 
-  test('returns failure when executeBytes returns failure', async () => {
+  test('returns failure when execute returns failure', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({ saveAccount: jest.fn() }));
 
@@ -126,7 +126,7 @@ describe('account plugin - create command (ADR-003)', () => {
           transaction: {},
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
-        executeBytesImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: '0.0.1234@1234567890.000000000',
           success: false,
           receipt: { status: { status: 'failed' } },
@@ -190,7 +190,7 @@ describe('account plugin - create command (ADR-003)', () => {
           transaction: {},
           publicKey: ECDSA_HEX_PUBLIC_KEY,
         }),
-        executeBytesImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: '0.0.1234@1234567890.000000002',
           success: true,
           accountId: '0.0.8888',
@@ -253,7 +253,7 @@ describe('account plugin - create command (ADR-003)', () => {
         transaction: {},
         publicKey: ECDSA_HEX_PUBLIC_KEY,
       }),
-      executeBytesImpl: jest.fn().mockResolvedValue({
+      executeImpl: jest.fn().mockResolvedValue({
         transactionId: '0.0.1234@1234567890.000000004',
         success: true,
         accountId: '0.0.6666',
@@ -327,7 +327,7 @@ describe('account plugin - create command (ADR-003)', () => {
         transaction: {},
         publicKey: ECDSA_HEX_PUBLIC_KEY,
       }),
-      executeBytesImpl: jest.fn().mockResolvedValue({
+      executeImpl: jest.fn().mockResolvedValue({
         transactionId: '0.0.1234@1234567890.000000005',
         success: true,
         accountId: '0.0.5555',
@@ -427,7 +427,7 @@ describe('account plugin - create command (ADR-003)', () => {
           transaction: {},
           publicKey: ED25519_HEX_PUBLIC_KEY,
         }),
-        executeBytesImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: '0.0.1234@1234567890.000000003',
           success: true,
           accountId: '0.0.7777',

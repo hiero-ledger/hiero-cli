@@ -48,9 +48,7 @@ describe('mintFtHandler', () => {
         tokenId: '0.0.123456',
         amount: 10000n,
       });
-      expect(api.txExecute.executeBytes).toHaveBeenCalledWith(
-        expect.any(Uint8Array),
-      );
+      expect(api.txExecute.execute).toHaveBeenCalledWith(expect.anything());
     });
 
     test('should mint tokens with base units (t suffix)', async () => {

@@ -57,7 +57,7 @@ describe('createTokenHandler', () => {
             .mockReturnValue(mockTransactions.token),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           get: jest.fn().mockReturnValue({
@@ -103,9 +103,7 @@ describe('createTokenHandler', () => {
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
         expectedTokenTransactionParams,
       );
-      expect(txExecute.executeBytes).toHaveBeenCalledWith(
-        expect.any(Uint8Array),
-      );
+      expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(mockSaveToken).toHaveBeenCalled();
       assertOutput(result.result, CreateFungibleTokenOutputSchema);
     });
@@ -128,7 +126,7 @@ describe('createTokenHandler', () => {
             .mockReturnValue(mockTransactions.token),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
       });
 
@@ -162,9 +160,7 @@ describe('createTokenHandler', () => {
         memo: undefined,
       });
       // When adminKey is not provided, only treasury signs (which is the operator)
-      expect(txExecute.executeBytes).toHaveBeenCalledWith(
-        expect.any(Uint8Array),
-      );
+      expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(mockSaveToken).toHaveBeenCalled();
       assertOutput(result.result, CreateFungibleTokenOutputSchema);
     });
@@ -225,7 +221,7 @@ describe('createTokenHandler', () => {
             .mockReturnValue(mockTokenTransaction),
         },
         txExecute: {
-          executeBytes: jest
+          execute: jest
             .fn()
             .mockResolvedValue(mockSignResult as TransactionResult),
         },
@@ -326,7 +322,7 @@ describe('createTokenHandler', () => {
             .mockReturnValue(mockTokenTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           get: jest.fn().mockReturnValue({

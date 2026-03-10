@@ -219,7 +219,7 @@ describe('Token Plugin Error Handling', () => {
             .mockResolvedValue(mockTokenTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue({
+          execute: jest.fn().mockResolvedValue({
             success: false,
             transactionId: '',
             receipt: {
@@ -268,7 +268,7 @@ describe('Token Plugin Error Handling', () => {
             .mockResolvedValue(mockAssociationTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(_mockSignResult),
+          execute: jest.fn().mockResolvedValue(_mockSignResult),
         },
         mirror: {
           getAccountTokenBalances: jest.fn().mockResolvedValue({ tokens: [] }),
@@ -320,7 +320,7 @@ describe('Token Plugin Error Handling', () => {
           getTokenInfo: jest.fn().mockResolvedValue({ decimals: 6 }),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(_mockSignResult),
+          execute: jest.fn().mockResolvedValue(_mockSignResult),
         },
       });
 
@@ -391,7 +391,7 @@ describe('Token Plugin Error Handling', () => {
             .mockResolvedValue(mockAssociationTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(_mockSignResult),
+          execute: jest.fn().mockResolvedValue(_mockSignResult),
         },
         mirror: {
           getAccountTokenBalances: jest.fn().mockResolvedValue({ tokens: [] }),
@@ -426,7 +426,7 @@ describe('Token Plugin Error Handling', () => {
             .mockResolvedValue(mockTokenTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue({
+          execute: jest.fn().mockResolvedValue({
             success: false,
             transactionId: '',
             receipt: { status: { status: 'failed', transactionId: '' } },
@@ -529,7 +529,7 @@ describe('Token Plugin Error Handling', () => {
             .mockResolvedValue(mockTokenTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue({
+          execute: jest.fn().mockResolvedValue({
             success: true,
             transactionId: '0.0.123@1234567890.123456789',
             tokenId: '0.0.123456',
@@ -613,7 +613,7 @@ describe('Token Plugin Error Handling', () => {
           getTokenInfo: jest.fn().mockResolvedValue({ decimals: 6 }),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(_mockSignResult),
+          execute: jest.fn().mockResolvedValue(_mockSignResult),
         },
       });
 
@@ -659,7 +659,7 @@ describe('Token Plugin Error Handling', () => {
             .mockResolvedValue(mockTokenTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(_mockSignResult),
+          execute: jest.fn().mockResolvedValue(_mockSignResult),
         },
         alias: makeTestAliasService(),
       });
@@ -731,7 +731,7 @@ describe('Token Plugin Error Handling', () => {
             .mockResolvedValue(mockAssociationTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockFailureResult),
+          execute: jest.fn().mockResolvedValue(mockFailureResult),
         },
         mirror: {
           getAccountTokenBalances: jest.fn().mockResolvedValue({ tokens: [] }),

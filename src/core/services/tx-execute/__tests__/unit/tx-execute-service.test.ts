@@ -26,9 +26,6 @@ jest.mock('@hashgraph/sdk', () => {
     Status: {
       Success: MockStatusSuccess,
     },
-    Transaction: {
-      fromBytes: jest.fn(),
-    },
   };
 });
 
@@ -63,8 +60,8 @@ describe('TxExecuteServiceImpl', () => {
     jest.clearAllMocks();
   });
 
-  describe('executeBytes', () => {
-    it('should deserialize bytes, execute and return TransactionResult (happy path)', async () => {
+  describe('execute', () => {
+    it('should execute transaction and return TransactionResult (happy path)', async () => {
       const { service, kms, mockClient } = setupService();
       const mockTx = makeMockTx();
       const mockResponse = createMockTransactionResponse();
@@ -73,17 +70,12 @@ describe('TxExecuteServiceImpl', () => {
       });
       const mockRecord = createMockTransactionRecord();
 
-      const { Transaction } = jest.requireMock('@hashgraph/sdk');
-      Transaction.fromBytes.mockReturnValue(mockTx);
       mockTx.execute.mockResolvedValue(mockResponse);
       mockResponse.getReceipt.mockResolvedValue(mockReceipt);
       mockResponse.getRecord.mockResolvedValue(mockRecord);
 
-      const result = await service.executeBytes(new Uint8Array([1, 2, 3]));
+      const result = await service.execute(mockTx as never);
 
-      expect(Transaction.fromBytes).toHaveBeenCalledWith(
-        new Uint8Array([1, 2, 3]),
-      );
       expect(kms.createClient).toHaveBeenCalledWith(NETWORK);
       expect(mockTx.execute).toHaveBeenCalledWith(mockClient);
       expect(result.transactionId).toBe(MOCK_TX_ID);
@@ -102,13 +94,11 @@ describe('TxExecuteServiceImpl', () => {
       });
       const mockRecord = createMockTransactionRecord();
 
-      const { Transaction } = jest.requireMock('@hashgraph/sdk');
-      Transaction.fromBytes.mockReturnValue(mockTx);
       mockTx.execute.mockResolvedValue(mockResponse);
       mockResponse.getReceipt.mockResolvedValue(mockReceipt);
       mockResponse.getRecord.mockResolvedValue(mockRecord);
 
-      const result = await service.executeBytes(new Uint8Array([1, 2, 3]));
+      const result = await service.execute(mockTx as never);
 
       expect(result.accountId).toBe(MOCK_ACCOUNT_ID);
     });
@@ -123,13 +113,11 @@ describe('TxExecuteServiceImpl', () => {
       });
       const mockRecord = createMockTransactionRecord();
 
-      const { Transaction } = jest.requireMock('@hashgraph/sdk');
-      Transaction.fromBytes.mockReturnValue(mockTx);
       mockTx.execute.mockResolvedValue(mockResponse);
       mockResponse.getReceipt.mockResolvedValue(mockReceipt);
       mockResponse.getRecord.mockResolvedValue(mockRecord);
 
-      const result = await service.executeBytes(new Uint8Array([1, 2, 3]));
+      const result = await service.execute(mockTx as never);
 
       expect(result.tokenId).toBe(MOCK_TOKEN_ID);
     });
@@ -145,13 +133,11 @@ describe('TxExecuteServiceImpl', () => {
       });
       const mockRecord = createMockTransactionRecord();
 
-      const { Transaction } = jest.requireMock('@hashgraph/sdk');
-      Transaction.fromBytes.mockReturnValue(mockTx);
       mockTx.execute.mockResolvedValue(mockResponse);
       mockResponse.getReceipt.mockResolvedValue(mockReceipt);
       mockResponse.getRecord.mockResolvedValue(mockRecord);
 
-      const result = await service.executeBytes(new Uint8Array([1, 2, 3]));
+      const result = await service.execute(mockTx as never);
 
       expect(result.topicId).toBe(MOCK_TOPIC_ID);
       expect(result.topicSequenceNumber).toBe(MOCK_TOPIC_SEQ);
@@ -168,13 +154,11 @@ describe('TxExecuteServiceImpl', () => {
       });
       const mockRecord = createMockTransactionRecord();
 
-      const { Transaction } = jest.requireMock('@hashgraph/sdk');
-      Transaction.fromBytes.mockReturnValue(mockTx);
       mockTx.execute.mockResolvedValue(mockResponse);
       mockResponse.getReceipt.mockResolvedValue(mockReceipt);
       mockResponse.getRecord.mockResolvedValue(mockRecord);
 
-      const result = await service.executeBytes(new Uint8Array([1, 2, 3]));
+      const result = await service.execute(mockTx as never);
 
       expect(result.contractId).toBe('0.0.9999');
       expect(result.receipt.serials).toEqual(['1', '2']);
@@ -189,13 +173,11 @@ describe('TxExecuteServiceImpl', () => {
       });
       const mockRecord = createMockTransactionRecord();
 
-      const { Transaction } = jest.requireMock('@hashgraph/sdk');
-      Transaction.fromBytes.mockReturnValue(mockTx);
       mockTx.execute.mockResolvedValue(mockResponse);
       mockResponse.getReceipt.mockResolvedValue(mockReceipt);
       mockResponse.getRecord.mockResolvedValue(mockRecord);
 
-      const result = await service.executeBytes(new Uint8Array([1, 2, 3]));
+      const result = await service.execute(mockTx as never);
 
       expect(result.success).toBe(false);
       expect(result.receipt.status.status).toBe('failed');
@@ -205,13 +187,11 @@ describe('TxExecuteServiceImpl', () => {
       const { service } = setupService();
       const mockTx = makeMockTx();
 
-      const { Transaction } = jest.requireMock('@hashgraph/sdk');
-      Transaction.fromBytes.mockReturnValue(mockTx);
       mockTx.execute.mockRejectedValue(new Error('Network error'));
 
-      await expect(
-        service.executeBytes(new Uint8Array([1, 2, 3])),
-      ).rejects.toThrow(TransactionError);
+      await expect(service.execute(mockTx as never)).rejects.toThrow(
+        TransactionError,
+      );
     });
 
     it('should throw TransactionError when getReceipt fails', async () => {
@@ -219,27 +199,21 @@ describe('TxExecuteServiceImpl', () => {
       const mockTx = makeMockTx();
       const mockResponse = createMockTransactionResponse();
 
-      const { Transaction } = jest.requireMock('@hashgraph/sdk');
-      Transaction.fromBytes.mockReturnValue(mockTx);
       mockTx.execute.mockResolvedValue(mockResponse);
       mockResponse.getReceipt.mockRejectedValue(new Error('Receipt error'));
 
-      await expect(
-        service.executeBytes(new Uint8Array([1, 2, 3])),
-      ).rejects.toThrow(TransactionError);
+      await expect(service.execute(mockTx as never)).rejects.toThrow(
+        TransactionError,
+      );
     });
 
     it('should close client in finally block', async () => {
       const { service, mockClient } = setupService();
       const mockTx = makeMockTx();
 
-      const { Transaction } = jest.requireMock('@hashgraph/sdk');
-      Transaction.fromBytes.mockReturnValue(mockTx);
       mockTx.execute.mockRejectedValue(new Error('fail'));
 
-      await expect(
-        service.executeBytes(new Uint8Array([1, 2, 3])),
-      ).rejects.toThrow();
+      await expect(service.execute(mockTx as never)).rejects.toThrow();
       expect(mockClient.close).toHaveBeenCalled();
     });
   });

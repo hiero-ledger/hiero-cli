@@ -30,6 +30,7 @@ import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-ser
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 import type { TransactionResult } from '@/core/types/shared.types';
 
+import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import { StateError, ValidationError } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import {
@@ -254,14 +255,14 @@ export const makeIdentityResolutionServiceMock =
   });
 
 export const makeTxSignMock = (): jest.Mocked<TxSignService> => ({
-  sign: jest.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
+  sign: jest.fn().mockResolvedValue(createMockTransaction()),
   signContractCreateFlow: jest.fn().mockImplementation((flow) => flow),
 });
 
 export const makeTxExecuteMock = (
   options: { executeImpl?: jest.Mock } = {},
 ): jest.Mocked<TxExecuteService> => ({
-  executeBytes:
+  execute:
     options.executeImpl ||
     jest.fn().mockResolvedValue({
       success: true,

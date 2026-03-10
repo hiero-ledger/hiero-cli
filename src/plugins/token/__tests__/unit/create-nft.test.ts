@@ -55,7 +55,7 @@ describe('createNftHandler', () => {
             .mockReturnValue(mockTransactions.token),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           get: jest.fn().mockReturnValue({
@@ -105,9 +105,7 @@ describe('createNftHandler', () => {
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
         expectedNftTransactionParams,
       );
-      expect(txExecute.executeBytes).toHaveBeenCalledWith(
-        expect.any(Uint8Array),
-      );
+      expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(mockSaveToken).toHaveBeenCalled();
       assertOutput(result.result, CreateNftOutputSchema);
     });
@@ -130,7 +128,7 @@ describe('createNftHandler', () => {
             .mockReturnValue(mockTransactions.token),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
       });
 
@@ -163,9 +161,7 @@ describe('createNftHandler', () => {
         supplyPublicKey: expect.any(Object),
         memo: undefined,
       });
-      expect(txExecute.executeBytes).toHaveBeenCalledWith(
-        expect.any(Uint8Array),
-      );
+      expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(mockSaveToken).toHaveBeenCalled();
       assertOutput(result.result, CreateNftOutputSchema);
     });
@@ -214,7 +210,7 @@ describe('createNftHandler', () => {
             .mockReturnValue(mockTokenTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           get: jest.fn().mockReturnValue({

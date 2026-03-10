@@ -61,7 +61,7 @@ describe('createTokenFromFileHandler', () => {
         createTokenAssociationTransaction: jest.fn(),
       },
       txExecute: {
-        executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+        execute: jest.fn().mockResolvedValue(mockSignResult),
       },
       kms: {
         importPrivateKey: jest.fn().mockReturnValue({
@@ -126,7 +126,7 @@ describe('createTokenFromFileHandler', () => {
             .mockReturnValue(mockAssociationTransaction),
         },
         txExecute: {
-          executeBytes: jest
+          execute: jest
             .fn()
             .mockResolvedValueOnce(mockSignResult)
             .mockResolvedValueOnce(mockAssociationResult),
@@ -205,9 +205,7 @@ describe('createTokenFromFileHandler', () => {
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
         expectedTokenTransactionParamsFromFile,
       );
-      expect(txExecute.executeBytes).toHaveBeenCalledWith(
-        expect.any(Uint8Array),
-      );
+      expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(mockAddToken).toHaveBeenCalled();
     });
 
@@ -308,7 +306,7 @@ describe('createTokenFromFileHandler', () => {
             .mockReturnValue(mockTokenTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest
@@ -421,7 +419,7 @@ describe('createTokenFromFileHandler', () => {
             .mockReturnValue(_mockAssociationTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest
@@ -683,7 +681,7 @@ describe('createTokenFromFileHandler', () => {
             .mockReturnValue(mockTokenTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest
@@ -765,7 +763,7 @@ describe('createTokenFromFileHandler', () => {
             }),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest
@@ -855,7 +853,7 @@ describe('createTokenFromFileHandler', () => {
             .mockReturnValue(mockTokenTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest

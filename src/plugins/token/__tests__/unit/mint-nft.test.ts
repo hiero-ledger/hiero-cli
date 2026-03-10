@@ -54,9 +54,7 @@ describe('mintNftHandler', () => {
         tokenId: '0.0.123456',
         metadata: metadataBytes,
       });
-      expect(api.txExecute.executeBytes).toHaveBeenCalledWith(
-        expect.any(Uint8Array),
-      );
+      expect(api.txExecute.execute).toHaveBeenCalledWith(expect.anything());
     });
 
     test('should mint NFT for FINITE supply token below max supply', async () => {
@@ -110,7 +108,7 @@ describe('mintNftHandler', () => {
           createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue({
+          execute: jest.fn().mockResolvedValue({
             ...makeTransactionResult({ success: true }),
             receipt: {
               status: {

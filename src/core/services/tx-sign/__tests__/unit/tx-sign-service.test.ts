@@ -50,7 +50,7 @@ describe('TxSignServiceImpl', () => {
   });
 
   describe('sign', () => {
-    it('should freeze transaction and return bytes', async () => {
+    it('should freeze transaction and return signed transaction', async () => {
       const { service, mockClient } = setupService();
       const mockTx = createMockTransaction();
 
@@ -60,8 +60,7 @@ describe('TxSignServiceImpl', () => {
       );
 
       expect(mockTx.freezeWith).toHaveBeenCalledWith(mockClient);
-      expect(mockTx.toBytes).toHaveBeenCalled();
-      expect(result).toBeInstanceOf(Uint8Array);
+      expect(result).toBe(mockTx);
     });
 
     it('should not freeze when already frozen', async () => {

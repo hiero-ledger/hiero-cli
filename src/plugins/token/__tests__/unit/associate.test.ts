@@ -103,7 +103,7 @@ describe('associateTokenHandler', () => {
             .mockReturnValue(mockAssociationTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest.fn().mockReturnValue({
@@ -145,9 +145,7 @@ describe('associateTokenHandler', () => {
         tokenId: '0.0.123456',
         accountId: '0.0.789012',
       });
-      expect(txExecute.executeBytes).toHaveBeenCalledWith(
-        expect.any(Uint8Array),
-      );
+      expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
         '3333333333333333333333333333333333333333333333333333333333333333',
@@ -172,7 +170,7 @@ describe('associateTokenHandler', () => {
             .mockReturnValue(mockAssociationTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         alias: {
           resolve: jest.fn().mockReturnValue({
@@ -219,9 +217,7 @@ describe('associateTokenHandler', () => {
         tokenId: '0.0.123456',
         accountId: '0.0.789012',
       });
-      expect(txExecute.executeBytes).toHaveBeenCalledWith(
-        expect.any(Uint8Array),
-      );
+      expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
     });
 
     test('should update token state with association', async () => {
@@ -240,7 +236,7 @@ describe('associateTokenHandler', () => {
             .mockReturnValue(mockAssociationTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest.fn().mockReturnValue({
@@ -298,7 +294,7 @@ describe('associateTokenHandler', () => {
             .mockReturnValue(mockAssociationTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockRejectedValue(wrappedError),
+          execute: jest.fn().mockRejectedValue(wrappedError),
         },
         kms: {
           importPrivateKey: jest.fn().mockReturnValue({
@@ -334,9 +330,7 @@ describe('associateTokenHandler', () => {
       expect(output.associated).toBe(true);
       expect(output.alreadyAssociated).toBe(true);
       expect(output.transactionId).toBeUndefined();
-      expect(api.txExecute.executeBytes).toHaveBeenCalledWith(
-        expect.any(Uint8Array),
-      );
+      expect(api.txExecute.execute).toHaveBeenCalledWith(expect.anything());
     });
   });
 
@@ -360,7 +354,7 @@ describe('associateTokenHandler', () => {
             .mockReturnValue(mockAssociationTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest.fn().mockReturnValue({
@@ -439,9 +433,7 @@ describe('associateTokenHandler', () => {
             .mockReturnValue(mockAssociationTransaction),
         },
         txExecute: {
-          executeBytes: jest
-            .fn()
-            .mockRejectedValue(new Error('Signing failed')),
+          execute: jest.fn().mockRejectedValue(new Error('Signing failed')),
         },
         kms: {
           importPrivateKey: jest.fn().mockReturnValue({
@@ -494,7 +486,7 @@ describe('associateTokenHandler', () => {
             .mockReturnValue(mockAssociationTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         kms: {
           importPrivateKey: jest.fn().mockReturnValue({
@@ -538,9 +530,7 @@ describe('associateTokenHandler', () => {
         tokenId: '0.0.123456',
         accountId: '0.0.789012',
       });
-      expect(txExecute.executeBytes).toHaveBeenCalledWith(
-        expect.any(Uint8Array),
-      );
+      expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
         '3333333333333333333333333333333333333333333333333333333333333333',
@@ -569,7 +559,7 @@ describe('associateTokenHandler', () => {
             .mockReturnValue(mockAssociationTransaction),
         },
         txExecute: {
-          executeBytes: jest.fn().mockResolvedValue(mockSignResult),
+          execute: jest.fn().mockResolvedValue(mockSignResult),
         },
         alias: {
           resolve: jest.fn().mockReturnValue({
@@ -613,9 +603,7 @@ describe('associateTokenHandler', () => {
         tokenId: '0.0.123456',
         accountId: '0.0.789012',
       });
-      expect(txExecute.executeBytes).toHaveBeenCalledWith(
-        expect.any(Uint8Array),
-      );
+      expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
     });
   });
 });

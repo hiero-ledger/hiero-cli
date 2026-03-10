@@ -7,13 +7,14 @@ export const createMockTransaction = (overrides = {}) => {
     setTransactionId: jest.fn().mockReturnThis(),
     signWith: jest.fn().mockResolvedValue(undefined),
     execute: jest.fn(),
-    toBytes: jest.fn().mockReturnValue(new Uint8Array([1, 2, 3])),
     transactionId: {
       toString: jest.fn().mockReturnValue('0.0.1234@1234567890.000'),
     },
     ...overrides,
   };
-  Object.setPrototypeOf(mock, Transaction.prototype);
+  if (typeof Transaction !== 'undefined' && Transaction?.prototype) {
+    Object.setPrototypeOf(mock, Transaction.prototype);
+  }
   return mock;
 };
 

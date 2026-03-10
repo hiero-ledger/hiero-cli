@@ -14,6 +14,7 @@ import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-ser
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 import type { AccountData } from '@/plugins/account/schema';
 
+import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeAliasMock as makeGlobalAliasMock,
   makeConfigMock,
@@ -91,7 +92,7 @@ export const makeAccountTransactionServiceMock = (
 export const makeTxSignServiceMock = (
   overrides?: Partial<jest.Mocked<TxSignService>>,
 ): jest.Mocked<TxSignService> => ({
-  sign: jest.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
+  sign: jest.fn().mockResolvedValue(createMockTransaction()),
   signContractCreateFlow: jest.fn().mockImplementation((flow) => flow),
   ...overrides,
 });
@@ -99,7 +100,7 @@ export const makeTxSignServiceMock = (
 export const makeTxExecuteServiceMock = (
   overrides?: Partial<jest.Mocked<TxExecuteService>>,
 ): jest.Mocked<TxExecuteService> => ({
-  executeBytes: jest.fn().mockResolvedValue(mockTransactionResults.success),
+  execute: jest.fn().mockResolvedValue(mockTransactionResults.success),
   executeContractCreateFlow: jest
     .fn()
     .mockResolvedValue(mockTransactionResults.success),
@@ -240,7 +241,7 @@ export const makeArgs = (
  */
 export interface ApiMocksConfig {
   createAccountImpl?: jest.Mock;
-  executeBytesImpl?: jest.Mock;
+  executeImpl?: jest.Mock;
   network?: 'testnet' | 'mainnet' | 'previewnet';
   operatorBalance?: bigint;
   keyResolverGetPublicKeyImpl?: jest.Mock;
@@ -256,7 +257,7 @@ export interface ApiMocksConfig {
  */
 export const makeApiMocksForAccountCreate = ({
   createAccountImpl,
-  executeBytesImpl,
+  executeImpl,
   network = 'testnet',
   operatorBalance = OPERATOR_SUFFICIENT_BALANCE,
   keyResolverGetPublicKeyImpl,
@@ -267,7 +268,7 @@ export const makeApiMocksForAccountCreate = ({
   };
 
   const txSign = makeTxSignMock();
-  const txExecute = makeTxExecuteMock({ executeImpl: executeBytesImpl });
+  const txExecute = makeTxExecuteMock({ executeImpl: executeImpl });
   const networkMock = makeGlobalNetworkMock(network);
 
   // Configure network mock to return a valid operator for balance checks

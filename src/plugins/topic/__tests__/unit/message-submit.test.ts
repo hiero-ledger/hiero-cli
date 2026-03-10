@@ -4,6 +4,7 @@ import type { KeyResolverService } from '@/core/services/key-resolver/key-resolv
 import type { TransactionResult } from '@/core/types/shared.types';
 import type { TopicData } from '@/plugins/topic/schema';
 
+import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeAliasMock,
   makeArgs,
@@ -40,12 +41,12 @@ const makeTopicData = (overrides: Partial<TopicData> = {}): TopicData => ({
 
 const makeApiMocks = ({
   submitMessageImpl,
-  executeBytesImpl,
+  executeImpl,
   executeContractCreateFlowImpl,
   network = 'testnet',
 }: {
   submitMessageImpl?: jest.Mock;
-  executeBytesImpl?: jest.Mock;
+  executeImpl?: jest.Mock;
   executeContractCreateFlowImpl?: jest.Mock;
   network?: 'testnet' | 'mainnet' | 'previewnet';
 }) => {
@@ -55,12 +56,12 @@ const makeApiMocks = ({
   };
 
   const txSign = {
-    sign: jest.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
+    sign: jest.fn().mockResolvedValue(createMockTransaction()),
     signContractCreateFlow: jest.fn().mockImplementation((flow) => flow),
   };
 
   const txExecute = {
-    executeBytes: executeBytesImpl || jest.fn(),
+    execute: executeImpl || jest.fn(),
     executeContractCreateFlow: executeContractCreateFlowImpl || jest.fn(),
   };
 
@@ -89,7 +90,7 @@ describe('topic plugin - message-submit command', () => {
         submitMessageImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
-        executeBytesImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: '0.0.1234@1234567890.000000000',
           success: true,
           topicSequenceNumber: 5,
@@ -157,7 +158,7 @@ describe('topic plugin - message-submit command', () => {
         submitMessageImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
-        executeBytesImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: '0.0.5678@1234567890.000000000',
           success: true,
           topicSequenceNumber: 10,
@@ -187,7 +188,7 @@ describe('topic plugin - message-submit command', () => {
     const output = assertOutput(result.result, SubmitMessageOutputSchema);
     expect(output.sequenceNumber).toBe(10);
 
-    expect(txExecute.executeBytes).toHaveBeenCalledWith(expect.any(Uint8Array));
+    expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
   });
 
   test('throws NotFoundError when topic not found', async () => {
@@ -259,7 +260,7 @@ describe('topic plugin - message-submit command', () => {
     await expect(submitMessage(args)).rejects.toThrow(ValidationError);
   });
 
-  test('throws TransactionError when executeBytes returns failure', async () => {
+  test('throws TransactionError when execute returns failure', async () => {
     const logger = makeLogger();
     const topicData = makeTopicData({
       topicId: '0.0.1234',
@@ -272,7 +273,7 @@ describe('topic plugin - message-submit command', () => {
         submitMessageImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
-        executeBytesImpl: jest.fn().mockResolvedValue({
+        executeImpl: jest.fn().mockResolvedValue({
           transactionId: 'tx-123',
           success: false,
           receipt: { status: { status: 'success' } },

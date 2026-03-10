@@ -1,6 +1,7 @@
 import type {
   Client,
   ContractCreateFlow,
+  Transaction as HederaTransaction,
   TransactionReceipt,
   TransactionResponse,
 } from '@hashgraph/sdk';
@@ -10,7 +11,7 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import type { TransactionResult } from '@/core/types/shared.types';
 import type { TxExecuteService } from './tx-execute-service.interface';
 
-import { Status, Transaction } from '@hashgraph/sdk';
+import { Status } from '@hashgraph/sdk';
 
 import { TransactionError } from '@/core/errors';
 
@@ -30,17 +31,16 @@ export class TxExecuteServiceImpl implements TxExecuteService {
     return this.kms.createClient(network);
   }
 
-  async executeBytes(bytes: Uint8Array): Promise<TransactionResult> {
-    this.logger.debug('[TX-EXECUTE] Executing transaction from bytes');
-    const tx = Transaction.fromBytes(bytes);
+  async execute(transaction: HederaTransaction): Promise<TransactionResult> {
+    this.logger.debug('[TX-EXECUTE] Executing transaction');
     const client = this.getClient();
 
     try {
-      const response: TransactionResponse = await tx.execute(client);
+      const response: TransactionResponse = await transaction.execute(client);
       return await this.processTransactionResponse(response, client);
     } catch (error) {
       throw new TransactionError(
-        `Transaction execution failed (txId: ${tx.transactionId?.toString() ?? 'unknown'})`,
+        `Transaction execution failed (txId: ${transaction.transactionId?.toString() ?? 'unknown'})`,
         false,
         { cause: error },
       );

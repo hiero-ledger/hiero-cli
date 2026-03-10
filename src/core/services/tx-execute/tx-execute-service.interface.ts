@@ -1,8 +1,11 @@
-import type { ContractCreateFlow } from '@hashgraph/sdk';
+import type {
+  ContractCreateFlow,
+  Transaction as HederaTransaction,
+} from '@hashgraph/sdk';
 import type { TransactionResult } from '@/core/types/shared.types';
 
 export interface TxExecuteService {
-  executeBytes(bytes: Uint8Array): Promise<TransactionResult>;
+  execute(transaction: HederaTransaction): Promise<TransactionResult>;
   executeContractCreateFlow(
     transaction: ContractCreateFlow,
   ): Promise<TransactionResult>;

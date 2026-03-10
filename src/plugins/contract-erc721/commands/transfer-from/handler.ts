@@ -79,8 +79,11 @@ export async function transferFromFunctionCall(
     functionName: ERC_721_FUNCTION_NAME,
     functionParameters,
   });
-  const bytes = await api.txSign.sign(contractCallTransaction.transaction, []);
-  const result = await api.txExecute.executeBytes(bytes);
+  const transaction = await api.txSign.sign(
+    contractCallTransaction.transaction,
+    [],
+  );
+  const result = await api.txExecute.execute(transaction);
 
   if (!result.success) {
     throw new TransactionError(

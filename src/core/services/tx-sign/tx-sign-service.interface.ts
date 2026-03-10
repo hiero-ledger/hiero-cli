@@ -7,7 +7,7 @@ export interface TxSignService {
   sign(
     transaction: HederaTransaction,
     keyRefIds: string[],
-  ): Promise<Uint8Array>;
+  ): Promise<HederaTransaction>;
   signContractCreateFlow(
     transaction: ContractCreateFlow,
     keyRefIds: string[],

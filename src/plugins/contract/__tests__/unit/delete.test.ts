@@ -64,7 +64,7 @@ describe('contract plugin - delete command', () => {
         }),
       },
       txExecute: {
-        executeBytes: jest.fn().mockResolvedValue({
+        execute: jest.fn().mockResolvedValue({
           success: true,
           transactionId: MOCK_TX_ID,
         }),

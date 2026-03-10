@@ -105,8 +105,8 @@ export async function createNft(
     txSigners.push(admin.keyRefId);
   }
 
-  const bytes = await api.txSign.sign(tokenCreateTransaction, txSigners);
-  const result = await api.txExecute.executeBytes(bytes);
+  const transaction = await api.txSign.sign(tokenCreateTransaction, txSigners);
+  const result = await api.txExecute.execute(transaction);
 
   if (!result.success || !result.tokenId) {
     throw new StateError('NFT creation completed but no token ID returned', {
