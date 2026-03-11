@@ -1,9 +1,5 @@
-/**
- * Account View Command Handler
- * Handles viewing account details using the Core API
- * Follows ADR-003 contract: returns CommandExecutionResult
- */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { Command } from '@/core/commands/command.interface';
 import type { ViewAccountOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
@@ -12,59 +8,46 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 
 import { ViewAccountInputSchema } from './input';
 
-export async function viewAccount(
-  args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { api, logger } = args;
+export class ViewAccountCommand implements Command {
+  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+    const { api, logger } = args;
 
-  // Parse and validate command arguments
-  const validArgs = ViewAccountInputSchema.parse(args.args);
+    const validArgs = ViewAccountInputSchema.parse(args.args);
 
-  const accountIdOrNameOrAlias = validArgs.account;
+    const accountIdOrNameOrAlias = validArgs.account;
 
-  logger.info(`Viewing account details: ${accountIdOrNameOrAlias}`);
+    logger.info(`Viewing account details: ${accountIdOrNameOrAlias}`);
 
-  // Resolve account identifier (could be name, account ID, or alias)
-  let accountId = accountIdOrNameOrAlias;
+    let accountId = accountIdOrNameOrAlias;
 
-  // First check if it's a stored account name
-  const network = args.api.network.getCurrentNetwork();
-  const account = args.api.alias.resolve(
-    accountIdOrNameOrAlias,
-    AliasType.Account,
-    network,
-  );
-  if (account && account.entityId) {
-    accountId = account.entityId;
-    logger.info(`Found account in state: ${account.alias}`);
-  } else {
-    const accountIdParseResult = EntityIdSchema.safeParse(
-      accountIdOrNameOrAlias,
-    );
+    const network = api.network.getCurrentNetwork();
+    const account = api.alias.resolve(accountIdOrNameOrAlias, AliasType.Account, network);
+    if (account && account.entityId) {
+      accountId = account.entityId;
+      logger.info(`Found account in state: ${account.alias}`);
+    } else {
+      const accountIdParseResult = EntityIdSchema.safeParse(accountIdOrNameOrAlias);
 
-    if (!accountIdParseResult.success) {
-      throw new NotFoundError(
-        `Account not found with ID or alias: ${accountIdOrNameOrAlias}`,
-      );
+      if (!accountIdParseResult.success) {
+        throw new NotFoundError(
+          `Account not found with ID or alias: ${accountIdOrNameOrAlias}`,
+        );
+      }
+
+      accountId = accountIdParseResult.data;
     }
 
-    accountId = accountIdParseResult.data;
+    const accountInfo = await api.mirror.getAccount(accountId);
+
+    const outputData: ViewAccountOutput = {
+      accountId: accountInfo.accountId,
+      balance: BigInt(accountInfo.balance.balance.toString()),
+      ...(accountInfo.evmAddress && { evmAddress: accountInfo.evmAddress }),
+      ...(accountInfo.accountPublicKey && { publicKey: accountInfo.accountPublicKey }),
+      balanceTimestamp: accountInfo.balance.timestamp,
+      network,
+    };
+
+    return { result: outputData };
   }
-
-  // Get account info from mirror node
-  const accountInfo = await api.mirror.getAccount(accountId);
-
-  // Prepare output data
-  const outputData: ViewAccountOutput = {
-    accountId: accountInfo.accountId,
-    balance: BigInt(accountInfo.balance.balance.toString()),
-    ...(accountInfo.evmAddress && { evmAddress: accountInfo.evmAddress }),
-    ...(accountInfo.accountPublicKey && {
-      publicKey: accountInfo.accountPublicKey,
-    }),
-    balanceTimestamp: accountInfo.balance.timestamp,
-    network,
-  };
-
-  return { result: outputData };
 }

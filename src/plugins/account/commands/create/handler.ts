@@ -1,13 +1,15 @@
-/**
- * Account Create Command Handler
- * Handles account creation using the Core API
- * Follows ADR-003 contract: returns CommandExecutionResult
- */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { AccountData } from '@/plugins/account/schema';
 import type { CreateAccountOutput } from './output';
+import type {
+  CreateBuildTransactionResult,
+  CreateExecuteTransactionResult,
+  CreateNormalisedParams,
+  CreateSignTransactionResult,
+} from './types';
 
+import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError, TransactionError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HBAR_DECIMALS, KeyAlgorithm } from '@/core/shared/constants';
@@ -19,130 +21,157 @@ import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helpe
 
 import { CreateAccountInputSchema } from './input';
 
-export async function createAccount(
-  args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { api, logger } = args;
+export class CreateAccountCommand extends BaseTransactionCommand<
+  CreateNormalisedParams,
+  CreateBuildTransactionResult,
+  CreateSignTransactionResult,
+  CreateExecuteTransactionResult
+> {
+  async normalizeParams(args: CommandHandlerArgs): Promise<CreateNormalisedParams> {
+    const { api, logger } = args;
 
-  const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const validArgs = CreateAccountInputSchema.parse(args.args);
 
-  const validArgs = CreateAccountInputSchema.parse(args.args);
+    const balance = processBalanceInput(validArgs.balance, HBAR_DECIMALS);
+    const maxAutoAssociations = validArgs.autoAssociations;
+    const alias = validArgs.name;
+    const name = alias;
+    const keyManagerArg = validArgs.keyManager;
+    const network = api.network.getCurrentNetwork();
 
-  const rawBalance = validArgs.balance;
-  const balance = processBalanceInput(rawBalance, HBAR_DECIMALS);
+    api.alias.availableOrThrow(alias, network);
 
-  const maxAutoAssociations = validArgs.autoAssociations;
-  const alias = validArgs.name;
-  const keyManagerArg = validArgs.keyManager;
+    const keyManager =
+      keyManagerArg || api.config.getOption<KeyManagerName>('default_key_manager');
 
-  const network = api.network.getCurrentNetwork();
-  api.alias.availableOrThrow(alias, network);
+    const operator = api.network.getCurrentOperatorOrThrow();
+    const operatorBalance = await api.mirror.getAccountHBarBalance(operator.accountId);
+    validateSufficientBalance(operatorBalance, balance, operator.accountId);
 
-  const keyManager =
-    keyManagerArg ||
-    api.config.getOption<KeyManagerName>('default_key_manager');
+    logger.info(`Creating account with name: ${alias}`);
 
-  const operator = api.network.getCurrentOperatorOrThrow();
+    let keyRefId: string;
+    let publicKey: string;
+    let keyType: KeyAlgorithm;
 
-  const operatorBalance = await api.mirror.getAccountHBarBalance(
-    operator.accountId,
-  );
-
-  validateSufficientBalance(operatorBalance, balance, operator.accountId);
-
-  const name = alias;
-
-  logger.info(`Creating account with name: ${alias}`);
-
-  let keyRefId: string;
-  let publicKey: string;
-  let keyType: KeyAlgorithm;
-
-  if (validArgs.key) {
-    const resolved = await api.keyResolver.getPublicKey(
-      validArgs.key,
-      keyManager,
-      ['account:create', `account:${name}`],
-    );
-    keyRefId = resolved.keyRefId;
-    publicKey = resolved.publicKey;
-    const kmsRecord = api.kms.get(keyRefId);
-    if (!kmsRecord) {
-      throw new StateError(`KMS record not found for keyRefId: ${keyRefId}`);
+    if (validArgs.key) {
+      const resolved = await api.keyResolver.getPublicKey(
+        validArgs.key,
+        keyManager,
+        ['account:create', `account:${name}`],
+      );
+      keyRefId = resolved.keyRefId;
+      publicKey = resolved.publicKey;
+      const kmsRecord = api.kms.get(keyRefId);
+      if (!kmsRecord) {
+        throw new StateError(`KMS record not found for keyRefId: ${keyRefId}`);
+      }
+      keyType = kmsRecord.keyAlgorithm;
+    } else {
+      keyType = validArgs.keyType ?? KeyAlgorithm.ECDSA;
+      const created = api.kms.createLocalPrivateKey(keyType, keyManager, [
+        'account:create',
+        `account:${name}`,
+      ]);
+      keyRefId = created.keyRefId;
+      publicKey = created.publicKey;
     }
-    keyType = kmsRecord.keyAlgorithm;
-  } else {
-    keyType = validArgs.keyType ?? KeyAlgorithm.ECDSA;
-    const created = api.kms.createLocalPrivateKey(keyType, keyManager, [
-      'account:create',
-      `account:${name}`,
-    ]);
-    keyRefId = created.keyRefId;
-    publicKey = created.publicKey;
+
+    return { balance, maxAutoAssociations, alias, name, publicKey, keyRefId, keyType, network };
   }
 
-  const accountCreateResult = api.account.createAccount({
-    balanceRaw: balance,
-    maxAutoAssociations,
-    publicKey,
-  });
-
-  const transaction = await api.txSign.sign(
-    accountCreateResult.transaction,
-    [],
-  );
-  const result = await api.txExecute.execute(transaction);
-
-  if (!result.success) {
-    throw new TransactionError(
-      `Failed to create account (txId: ${result.transactionId})`,
-      false,
-    );
-  }
-
-  if (!result.accountId) {
-    throw new StateError(
-      'Transaction completed but did not return an account ID, unable to derive addresses',
-    );
-  }
-
-  const evmAddress = buildEvmAddressFromAccountId(result.accountId);
-
-  if (alias) {
-    api.alias.register({
-      alias,
-      type: AliasType.Account,
-      network,
-      entityId: result.accountId,
-      evmAddress,
-      publicKey,
-      keyRefId,
-      createdAt: result.consensusTimestamp,
+  async buildTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: CreateNormalisedParams,
+  ): Promise<CreateBuildTransactionResult> {
+    const { api } = args;
+    return api.account.createAccount({
+      balanceRaw: normalisedParams.balance,
+      maxAutoAssociations: normalisedParams.maxAutoAssociations,
+      publicKey: normalisedParams.publicKey,
     });
   }
 
-  const accountData: AccountData = {
-    name,
-    accountId: result.accountId,
-    type: keyType,
-    publicKey: accountCreateResult.publicKey,
-    evmAddress,
-    keyRefId,
-    network: api.network.getCurrentNetwork(),
-  };
-  const accountKey = composeKey(network, result.accountId);
+  async signTransaction(
+    args: CommandHandlerArgs,
+    _normalisedParams: CreateNormalisedParams,
+    buildTransactionResult: CreateBuildTransactionResult,
+  ): Promise<CreateSignTransactionResult> {
+    const { api } = args;
+    const signedTransaction = await api.txSign.sign(buildTransactionResult.transaction, []);
+    return { signedTransaction };
+  }
 
-  accountState.saveAccount(accountKey, accountData);
+  async executeTransaction(
+    args: CommandHandlerArgs,
+    _normalisedParams: CreateNormalisedParams,
+    _buildTransactionResult: CreateBuildTransactionResult,
+    signTransactionResult: CreateSignTransactionResult,
+  ): Promise<CreateExecuteTransactionResult> {
+    const { api } = args;
+    return api.txExecute.execute(signTransactionResult.signedTransaction);
+  }
 
-  const outputData: CreateAccountOutput = {
-    accountId: accountData.accountId,
-    name: accountData.name,
-    type: accountData.type,
-    network: accountData.network,
-    transactionId: result.transactionId || '',
-    evmAddress,
-    publicKey: accountData.publicKey,
-  };
+  async outputPreparation(
+    args: CommandHandlerArgs,
+    normalisedParams: CreateNormalisedParams,
+    buildTransactionResult: CreateBuildTransactionResult,
+    _signTransactionResult: CreateSignTransactionResult,
+    executeTransactionResult: CreateExecuteTransactionResult,
+  ): Promise<CommandResult> {
+    const { api, logger } = args;
 
-  return { result: outputData };
+    if (!executeTransactionResult.success) {
+      throw new TransactionError(
+        `Failed to create account (txId: ${executeTransactionResult.transactionId})`,
+        false,
+      );
+    }
+
+    if (!executeTransactionResult.accountId) {
+      throw new StateError(
+        'Transaction completed but did not return an account ID, unable to derive addresses',
+      );
+    }
+
+    const evmAddress = buildEvmAddressFromAccountId(executeTransactionResult.accountId);
+
+    if (normalisedParams.alias) {
+      api.alias.register({
+        alias: normalisedParams.alias,
+        type: AliasType.Account,
+        network: normalisedParams.network,
+        entityId: executeTransactionResult.accountId,
+        evmAddress,
+        publicKey: normalisedParams.publicKey,
+        keyRefId: normalisedParams.keyRefId,
+        createdAt: executeTransactionResult.consensusTimestamp,
+      });
+    }
+
+    const accountData: AccountData = {
+      name: normalisedParams.name,
+      accountId: executeTransactionResult.accountId,
+      type: normalisedParams.keyType,
+      publicKey: buildTransactionResult.publicKey,
+      evmAddress,
+      keyRefId: normalisedParams.keyRefId,
+      network: normalisedParams.network,
+    };
+    const accountKey = composeKey(normalisedParams.network, executeTransactionResult.accountId);
+    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    accountState.saveAccount(accountKey, accountData);
+
+    const outputData: CreateAccountOutput = {
+      accountId: accountData.accountId,
+      name: accountData.name,
+      type: accountData.type,
+      network: accountData.network,
+      transactionId: executeTransactionResult.transactionId || '',
+      evmAddress,
+      publicKey: accountData.publicKey,
+    };
+
+    return { result: outputData };
+  }
 }

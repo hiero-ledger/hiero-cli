@@ -59,7 +59,8 @@ export interface CommandSpec {
   summary: string;
   description: string;
   options?: CommandOption[];
-  handler: CommandHandler;
+  command?: Command;
+  handler?: CommandHandler;
   output: CommandOutputSpec;
   excessArguments?: boolean;
   registeredHooks?: string[];
