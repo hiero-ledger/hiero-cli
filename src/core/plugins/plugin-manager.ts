@@ -362,7 +362,16 @@ export class PluginManager {
 
     await this.handleConfirmation(commandSpec, handlerArgs, skipConfirmation);
 
-    const result = await commandSpec.handler(handlerArgs);
+    let result: CommandResult;
+    if (commandSpec.command) {
+      result = await commandSpec.command.execute(handlerArgs);
+    } else if (commandSpec.handler) {
+      result = await commandSpec.handler(handlerArgs);
+    } else {
+      throw new InternalError(
+        `Command '${commandSpec.name}' is missing both command and handler`,
+      );
+    }
     const outputSchema = result.overrideSchema ?? commandSpec.output.schema;
     outputSchema.parse(result.result);
 

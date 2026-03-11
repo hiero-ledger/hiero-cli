@@ -21,7 +21,7 @@ import {
 } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { SubmitMessageOutputSchema } from '@/plugins/topic/commands/submit-message';
-import { submitMessage } from '@/plugins/topic/commands/submit-message/handler';
+import { SubmitMessageCommand } from '@/plugins/topic/commands/submit-message/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -113,7 +113,7 @@ describe('topic plugin - message-submit command', () => {
       message: 'Hello, World!',
     });
 
-    const result = await submitMessage(args);
+    const result = await new SubmitMessageCommand().execute(args);
 
     const output = assertOutput(result.result, SubmitMessageOutputSchema);
     expect(output.topicId).toBe('0.0.1234');
@@ -183,7 +183,7 @@ describe('topic plugin - message-submit command', () => {
       signer: 'my-account-alias',
     });
 
-    const result = await submitMessage(args);
+    const result = await new SubmitMessageCommand().execute(args);
 
     const output = assertOutput(result.result, SubmitMessageOutputSchema);
     expect(output.sequenceNumber).toBe(10);
@@ -213,7 +213,9 @@ describe('topic plugin - message-submit command', () => {
       message: 'Test message',
     });
 
-    await expect(submitMessage(args)).rejects.toThrow(NotFoundError);
+    await expect(new SubmitMessageCommand().execute(args)).rejects.toThrow(
+      NotFoundError,
+    );
   });
 
   test('throws ValidationError when signer is not authorized', async () => {
@@ -257,7 +259,9 @@ describe('topic plugin - message-submit command', () => {
       signer: 'wrong-signer',
     });
 
-    await expect(submitMessage(args)).rejects.toThrow(ValidationError);
+    await expect(new SubmitMessageCommand().execute(args)).rejects.toThrow(
+      ValidationError,
+    );
   });
 
   test('throws TransactionError when execute returns failure', async () => {
@@ -294,7 +298,9 @@ describe('topic plugin - message-submit command', () => {
       message: 'Failed message',
     });
 
-    await expect(submitMessage(args)).rejects.toThrow(TransactionError);
+    await expect(new SubmitMessageCommand().execute(args)).rejects.toThrow(
+      TransactionError,
+    );
   });
 
   test('throws when submitMessage throws', async () => {
@@ -326,6 +332,8 @@ describe('topic plugin - message-submit command', () => {
       message: 'Error message',
     });
 
-    await expect(submitMessage(args)).rejects.toThrow('network error');
+    await expect(new SubmitMessageCommand().execute(args)).rejects.toThrow(
+      'network error',
+    );
   });
 });

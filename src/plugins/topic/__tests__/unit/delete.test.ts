@@ -14,7 +14,7 @@ import { InternalError } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { DeleteTopicOutputSchema } from '@/plugins/topic/commands/delete';
-import { deleteTopic } from '@/plugins/topic/commands/delete/handler';
+import { DeleteTopicCommand } from '@/plugins/topic/commands/delete/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -65,7 +65,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     };
     const args = makeArgs(api, logger, { topic: 'topic1' });
 
-    const result = await deleteTopic(args);
+    const result = await new DeleteTopicCommand().execute(args);
 
     expect(deleteTopicMock).toHaveBeenCalledWith(
       `${SupportedNetwork.TESTNET}:0.0.1111`,
@@ -98,7 +98,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     };
     const args = makeArgs(api, logger, { topic: '0.0.2222' });
 
-    const result = await deleteTopic(args);
+    const result = await new DeleteTopicCommand().execute(args);
 
     expect(deleteTopicMock).toHaveBeenCalledWith(
       `${SupportedNetwork.TESTNET}:0.0.2222`,
@@ -129,7 +129,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     };
     const args = makeArgs(api, logger, {});
 
-    await expect(deleteTopic(args)).rejects.toThrow();
+    await expect(new DeleteTopicCommand().execute(args)).rejects.toThrow();
   });
 
   test('throws when topic with given name not found', async () => {
@@ -157,7 +157,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     };
     const args = makeArgs(api, logger, { topic: 'missingTopic' });
 
-    await expect(deleteTopic(args)).rejects.toThrow(
+    await expect(new DeleteTopicCommand().execute(args)).rejects.toThrow(
       "Topic with identifier 'missingTopic' not found",
     );
   });
@@ -183,7 +183,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     };
     const args = makeArgs(api, logger, { topic: '0.0.4444' });
 
-    await expect(deleteTopic(args)).rejects.toThrow(
+    await expect(new DeleteTopicCommand().execute(args)).rejects.toThrow(
       "Topic with identifier '0.0.4444' not found",
     );
   });
@@ -212,7 +212,9 @@ describe('topic plugin - delete command (ADR-007)', () => {
     };
     const args = makeArgs(api, logger, { topic: 'topic5' });
 
-    await expect(deleteTopic(args)).rejects.toThrow('db error');
+    await expect(new DeleteTopicCommand().execute(args)).rejects.toThrow(
+      'db error',
+    );
   });
 
   test('removes aliases of the topic for current network and type', async () => {
@@ -241,7 +243,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     };
     const args = makeArgs(api, logger, { topic: 'topic-alias' });
 
-    const result = await deleteTopic(args);
+    const result = await new DeleteTopicCommand().execute(args);
 
     expect(alias.list).toHaveBeenCalledWith({
       network: SupportedNetwork.TESTNET,

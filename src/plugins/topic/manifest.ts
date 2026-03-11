@@ -8,32 +8,32 @@ import { OptionType } from '@/core/types/shared.types';
 // Import output specifications from each command
 import {
   CREATE_TOPIC_TEMPLATE,
-  createTopic,
+  CreateTopicCommand,
   CreateTopicOutputSchema,
 } from './commands/create';
 import {
   DELETE_TOPIC_TEMPLATE,
-  deleteTopic,
+  DeleteTopicCommand,
   DeleteTopicOutputSchema,
 } from './commands/delete';
 import {
   FIND_MESSAGES_TEMPLATE,
-  findMessage,
+  FindMessageCommand,
   FindMessagesOutputSchema,
 } from './commands/find-message';
 import {
   IMPORT_TOPIC_TEMPLATE,
-  importTopic,
+  ImportTopicCommand,
   ImportTopicOutputSchema,
 } from './commands/import';
 import {
   LIST_TOPICS_TEMPLATE,
-  listTopics,
+  ListTopicsCommand,
   ListTopicsOutputSchema,
 } from './commands/list';
 import {
   SUBMIT_MESSAGE_TEMPLATE,
-  submitMessage,
+  SubmitMessageCommand,
   SubmitMessageOutputSchema,
 } from './commands/submit-message';
 
@@ -92,7 +92,7 @@ export const topicPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: createTopic,
+      command: new CreateTopicCommand(),
       output: {
         schema: CreateTopicOutputSchema,
         humanTemplate: CREATE_TOPIC_TEMPLATE,
@@ -119,7 +119,7 @@ export const topicPluginManifest: PluginManifest = {
           description: 'Name/alias for the topic',
         },
       ],
-      handler: importTopic,
+      command: new ImportTopicCommand(),
       output: {
         schema: ImportTopicOutputSchema,
         humanTemplate: IMPORT_TOPIC_TEMPLATE,
@@ -130,7 +130,7 @@ export const topicPluginManifest: PluginManifest = {
       summary: 'List all topics',
       description: 'List all topics stored in the state',
       options: [],
-      handler: listTopics,
+      command: new ListTopicsCommand(),
       output: {
         schema: ListTopicsOutputSchema,
         humanTemplate: LIST_TOPICS_TEMPLATE,
@@ -172,7 +172,7 @@ export const topicPluginManifest: PluginManifest = {
           short: 'k',
         },
       ],
-      handler: submitMessage,
+      command: new SubmitMessageCommand(),
       output: {
         schema: SubmitMessageOutputSchema,
         humanTemplate: SUBMIT_MESSAGE_TEMPLATE,
@@ -192,7 +192,7 @@ export const topicPluginManifest: PluginManifest = {
           description: 'Topic name or topic ID to delete from state',
         },
       ],
-      handler: deleteTopic,
+      command: new DeleteTopicCommand(),
       output: {
         schema: DeleteTopicOutputSchema,
         humanTemplate: DELETE_TOPIC_TEMPLATE,
@@ -248,7 +248,7 @@ export const topicPluginManifest: PluginManifest = {
           description: 'Filter by sequence number equal to',
         },
       ],
-      handler: findMessage,
+      command: new FindMessageCommand(),
       output: {
         schema: FindMessagesOutputSchema,
         humanTemplate: FIND_MESSAGES_TEMPLATE,
