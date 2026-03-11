@@ -15,6 +15,9 @@ import { processBalanceInput } from '@/core/utils/process-balance-input';
 
 import { TransferInputSchema } from './input';
 
+export const transferHbar = (args: CommandHandlerArgs) =>
+  new TransferCommand().execute(args);
+
 export class TransferCommand extends BaseTransactionCommand<
   TransferNormalisedParams,
   TransferBuildTransactionResult,

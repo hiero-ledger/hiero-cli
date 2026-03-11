@@ -3,12 +3,12 @@
  * Types specific to the plugin architecture
  */
 import type { z } from 'zod';
+import type { Command } from '@/core/commands/command.interface';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AbstractHook } from '@/core/hooks/abstract-hook';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
-import type { Command } from '@/core/commands/command.interface';
 import type { OptionType } from '@/core/types/shared.types';
 import type { CommandHandlerArgs } from './plugin.interface';
 
@@ -61,7 +61,7 @@ export interface CommandSpec {
   description: string;
   options?: CommandOption[];
   command?: Command;
-  handler?: CommandHandler;
+  handler: CommandHandler;
   output: CommandOutputSpec;
   excessArguments?: boolean;
   registeredHooks?: string[];

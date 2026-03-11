@@ -4,7 +4,7 @@ import { OptionType } from '@/core/types/shared.types';
 
 import {
   TRANSFER_TEMPLATE,
-  TransferCommand,
+  transferHbar,
   TransferOutputSchema,
 } from './commands/transfer';
 
@@ -58,7 +58,7 @@ export const hbarPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      command: new TransferCommand(),
+      handler: transferHbar,
       output: {
         schema: TransferOutputSchema,
         humanTemplate: TRANSFER_TEMPLATE,
