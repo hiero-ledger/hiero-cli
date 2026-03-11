@@ -3,7 +3,6 @@
  * Types specific to the plugin architecture
  */
 import type { z } from 'zod';
-import type { Command as PluginCommand } from '@/core/commands/command.interface';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AbstractHook } from '@/core/hooks/abstract-hook';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
@@ -60,8 +59,7 @@ export interface CommandSpec {
   summary: string;
   description: string;
   options?: CommandOption[];
-  command?: PluginCommand;
-  handler?: CommandHandler;
+  handler: CommandHandler;
   output: CommandOutputSpec;
   excessArguments?: boolean;
   registeredHooks?: string[];

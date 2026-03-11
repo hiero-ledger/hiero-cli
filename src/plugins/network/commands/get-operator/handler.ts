@@ -60,3 +60,7 @@ export class GetOperatorCommand implements Command {
     return { result: output };
   }
 }
+
+export const getOperator = async (
+  args: CommandHandlerArgs,
+): Promise<CommandResult> => new GetOperatorCommand().execute(args);

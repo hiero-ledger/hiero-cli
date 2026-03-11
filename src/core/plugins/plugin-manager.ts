@@ -6,7 +6,6 @@
 import type { Command, OptionValues } from 'commander';
 import type {
   CommandHandlerArgs,
-  CommandResult,
   CommandSpec,
   HookOption,
   HookSpec,
@@ -362,17 +361,7 @@ export class PluginManager {
     };
 
     await this.handleConfirmation(commandSpec, handlerArgs, skipConfirmation);
-
-    let result: CommandResult;
-    if (commandSpec.command) {
-      result = await commandSpec.command.execute(handlerArgs);
-    } else if (commandSpec.handler) {
-      result = await commandSpec.handler(handlerArgs);
-    } else {
-      throw new ConfigurationError(
-        `Command ${commandSpec.name} must define either command or handler.`,
-      );
-    }
+    const result = await commandSpec.handler(handlerArgs);
     const outputSchema = result.overrideSchema ?? commandSpec.output.schema;
     outputSchema.parse(result.result);
 

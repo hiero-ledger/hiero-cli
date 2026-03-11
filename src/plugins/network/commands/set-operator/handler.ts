@@ -82,3 +82,7 @@ export class SetOperatorCommand implements Command {
     return { result: output };
   }
 }
+
+export const setOperator = async (
+  args: CommandHandlerArgs,
+): Promise<CommandResult> => new SetOperatorCommand().execute(args);
