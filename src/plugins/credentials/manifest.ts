@@ -1,7 +1,6 @@
 /**
  * Credentials Management Plugin Manifest
  * A plugin for managing operator credentials
- * Updated for ADR-003 compliance
  */
 import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
