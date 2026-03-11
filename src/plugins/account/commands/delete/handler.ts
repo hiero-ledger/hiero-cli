@@ -25,7 +25,11 @@ export class DeleteAccountCommand implements Command {
     if (isEntityId) {
       key = composeKey(network, accountRef);
     } else {
-      const alias = api.alias.resolveOrThrow(accountRef, AliasType.Account, network);
+      const alias = api.alias.resolveOrThrow(
+        accountRef,
+        AliasType.Account,
+        network,
+      );
       if (!alias.entityId) {
         throw new NotFoundError(
           `Alias for account ${accountRef} is missing account ID in its record`,
@@ -58,7 +62,8 @@ export class DeleteAccountCommand implements Command {
     const isOtherAccountUseSameKey = accountsWithSameKeyRef.length > 1;
 
     const operator = api.network.getCurrentOperatorOrThrow();
-    const isOperatorHaveSameKeyRef = operator.keyRefId === accountToDelete.keyRefId;
+    const isOperatorHaveSameKeyRef =
+      operator.keyRefId === accountToDelete.keyRefId;
 
     if (!isOtherAccountUseSameKey && !isOperatorHaveSameKeyRef) {
       api.kms.remove(accountToDelete.keyRefId);

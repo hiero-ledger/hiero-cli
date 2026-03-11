@@ -21,12 +21,18 @@ export class ViewAccountCommand implements Command {
     let accountId = accountIdOrNameOrAlias;
 
     const network = api.network.getCurrentNetwork();
-    const account = api.alias.resolve(accountIdOrNameOrAlias, AliasType.Account, network);
+    const account = api.alias.resolve(
+      accountIdOrNameOrAlias,
+      AliasType.Account,
+      network,
+    );
     if (account && account.entityId) {
       accountId = account.entityId;
       logger.info(`Found account in state: ${account.alias}`);
     } else {
-      const accountIdParseResult = EntityIdSchema.safeParse(accountIdOrNameOrAlias);
+      const accountIdParseResult = EntityIdSchema.safeParse(
+        accountIdOrNameOrAlias,
+      );
 
       if (!accountIdParseResult.success) {
         throw new NotFoundError(
@@ -43,7 +49,9 @@ export class ViewAccountCommand implements Command {
       accountId: accountInfo.accountId,
       balance: BigInt(accountInfo.balance.balance.toString()),
       ...(accountInfo.evmAddress && { evmAddress: accountInfo.evmAddress }),
-      ...(accountInfo.accountPublicKey && { publicKey: accountInfo.accountPublicKey }),
+      ...(accountInfo.accountPublicKey && {
+        publicKey: accountInfo.accountPublicKey,
+      }),
       balanceTimestamp: accountInfo.balance.timestamp,
       network,
     };

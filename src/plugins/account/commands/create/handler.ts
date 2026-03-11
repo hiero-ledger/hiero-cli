@@ -27,7 +27,9 @@ export class CreateAccountCommand extends BaseTransactionCommand<
   CreateSignTransactionResult,
   CreateExecuteTransactionResult
 > {
-  async normalizeParams(args: CommandHandlerArgs): Promise<CreateNormalisedParams> {
+  async normalizeParams(
+    args: CommandHandlerArgs,
+  ): Promise<CreateNormalisedParams> {
     const { api, logger } = args;
 
     const validArgs = CreateAccountInputSchema.parse(args.args);
@@ -42,10 +44,13 @@ export class CreateAccountCommand extends BaseTransactionCommand<
     api.alias.availableOrThrow(alias, network);
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManagerName>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManagerName>('default_key_manager');
 
     const operator = api.network.getCurrentOperatorOrThrow();
-    const operatorBalance = await api.mirror.getAccountHBarBalance(operator.accountId);
+    const operatorBalance = await api.mirror.getAccountHBarBalance(
+      operator.accountId,
+    );
     validateSufficientBalance(operatorBalance, balance, operator.accountId);
 
     logger.info(`Creating account with name: ${alias}`);
@@ -77,7 +82,16 @@ export class CreateAccountCommand extends BaseTransactionCommand<
       publicKey = created.publicKey;
     }
 
-    return { balance, maxAutoAssociations, alias, name, publicKey, keyRefId, keyType, network };
+    return {
+      balance,
+      maxAutoAssociations,
+      alias,
+      name,
+      publicKey,
+      keyRefId,
+      keyType,
+      network,
+    };
   }
 
   async buildTransaction(
@@ -98,7 +112,10 @@ export class CreateAccountCommand extends BaseTransactionCommand<
     buildTransactionResult: CreateBuildTransactionResult,
   ): Promise<CreateSignTransactionResult> {
     const { api } = args;
-    const signedTransaction = await api.txSign.sign(buildTransactionResult.transaction, []);
+    const signedTransaction = await api.txSign.sign(
+      buildTransactionResult.transaction,
+      [],
+    );
     return { signedTransaction };
   }
 
@@ -134,7 +151,9 @@ export class CreateAccountCommand extends BaseTransactionCommand<
       );
     }
 
-    const evmAddress = buildEvmAddressFromAccountId(executeTransactionResult.accountId);
+    const evmAddress = buildEvmAddressFromAccountId(
+      executeTransactionResult.accountId,
+    );
 
     if (normalisedParams.alias) {
       api.alias.register({
@@ -158,7 +177,10 @@ export class CreateAccountCommand extends BaseTransactionCommand<
       keyRefId: normalisedParams.keyRefId,
       network: normalisedParams.network,
     };
-    const accountKey = composeKey(normalisedParams.network, executeTransactionResult.accountId);
+    const accountKey = composeKey(
+      normalisedParams.network,
+      executeTransactionResult.accountId,
+    );
     const accountState = new ZustandAccountStateHelper(api.state, logger);
     accountState.saveAccount(accountKey, accountData);
 

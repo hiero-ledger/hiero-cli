@@ -32,7 +32,8 @@ export class ImportAccountCommand implements Command {
     }
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManagerName>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManagerName>('default_key_manager');
 
     api.alias.availableOrThrow(alias, network);
 

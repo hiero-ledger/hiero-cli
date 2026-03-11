@@ -128,7 +128,9 @@ describe('account plugin - import command (ADR-003)', () => {
       key: '0.0.1111:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
     });
 
-    await expect(new ImportAccountCommand().execute(args)).rejects.toThrow(StateError);
+    await expect(new ImportAccountCommand().execute(args)).rejects.toThrow(
+      StateError,
+    );
   });
 
   test('throws error when mirror.getAccount fails', async () => {

@@ -142,6 +142,8 @@ describe('account plugin - view command (ADR-003)', () => {
     const account = 'broken';
     const args = makeArgs(api, logger, { account });
 
-    await expect(new ViewAccountCommand().execute(args)).rejects.toThrow(NotFoundError);
+    await expect(new ViewAccountCommand().execute(args)).rejects.toThrow(
+      NotFoundError,
+    );
   });
 });

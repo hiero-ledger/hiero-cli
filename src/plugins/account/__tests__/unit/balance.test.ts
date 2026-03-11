@@ -322,7 +322,9 @@ describe('account plugin - balance command (ADR-003)', () => {
     const account = 'broken';
     const args = makeArgs(api, logger, { account });
 
-    await expect(new AccountBalanceCommand().execute(args)).rejects.toThrow(NotFoundError);
+    await expect(new AccountBalanceCommand().execute(args)).rejects.toThrow(
+      NotFoundError,
+    );
   });
 
   test('throws error when mirror service fails', async () => {

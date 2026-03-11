@@ -1,5 +1,8 @@
-import type { CommandHandlerArgs, CommandResult } from '@/core/plugins/plugin.interface';
 import type { Command } from '@/core/commands/command.interface';
+import type {
+  CommandHandlerArgs,
+  CommandResult,
+} from '@/core/plugins/plugin.interface';
 import type { ListAccountsOutput } from './output';
 
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';

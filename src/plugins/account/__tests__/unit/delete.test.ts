@@ -146,7 +146,9 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'missingAcc' });
 
-    await expect(new DeleteAccountCommand().execute(args)).rejects.toThrow(NotFoundError);
+    await expect(new DeleteAccountCommand().execute(args)).rejects.toThrow(
+      NotFoundError,
+    );
   });
 
   test('throws error when account with given id not found', async () => {
@@ -171,7 +173,9 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: '0.0.4444' });
 
-    await expect(new DeleteAccountCommand().execute(args)).rejects.toThrow(NotFoundError);
+    await expect(new DeleteAccountCommand().execute(args)).rejects.toThrow(
+      NotFoundError,
+    );
   });
 
   test('throws error when deleteAccount fails', async () => {

@@ -30,12 +30,18 @@ export class AccountBalanceCommand implements Command {
     const network = api.network.getCurrentNetwork();
     let accountId = accountIdOrNameOrAlias;
 
-    const account = api.alias.resolve(accountIdOrNameOrAlias, AliasType.Account, network);
+    const account = api.alias.resolve(
+      accountIdOrNameOrAlias,
+      AliasType.Account,
+      network,
+    );
     if (account && account.entityId) {
       accountId = account.entityId;
       logger.info(`Found account in state: ${account.alias} -> ${accountId}`);
     } else {
-      const accountIdParseResult = EntityIdSchema.safeParse(accountIdOrNameOrAlias);
+      const accountIdParseResult = EntityIdSchema.safeParse(
+        accountIdOrNameOrAlias,
+      );
 
       if (!accountIdParseResult.success) {
         throw new NotFoundError(
@@ -60,7 +66,10 @@ export class AccountBalanceCommand implements Command {
 
       if (!raw) {
         const hbarBalanceBigNumber = new BigNumber(hbarBalanceRaw);
-        outputData.hbarBalanceDisplay = normalizeBalance(hbarBalanceBigNumber, HBAR_DECIMALS);
+        outputData.hbarBalanceDisplay = normalizeBalance(
+          hbarBalanceBigNumber,
+          HBAR_DECIMALS,
+        );
       }
     }
 
@@ -68,9 +77,15 @@ export class AccountBalanceCommand implements Command {
       let tokenId: string | undefined;
       if (token) {
         if (token.type === TokenEntityType.Alias) {
-          const resolved = api.alias.resolve(token.value, AliasType.Token, network);
+          const resolved = api.alias.resolve(
+            token.value,
+            AliasType.Token,
+            network,
+          );
           if (!resolved || !resolved.entityId) {
-            throw new NotFoundError(`Token not found with ID or alias: ${token.value}`);
+            throw new NotFoundError(
+              `Token not found with ID or alias: ${token.value}`,
+            );
           }
           tokenId = resolved.entityId;
         } else {
