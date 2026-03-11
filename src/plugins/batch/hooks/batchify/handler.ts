@@ -52,6 +52,11 @@ export class BatchifyHook extends AbstractHook {
     if (!batch) {
       throw new NotFoundError(`Batch not found for name ${batchName}`);
     }
+    if (batch.executed) {
+      throw new ValidationError(
+        `Batch "${batch.name}" has been already executed `,
+      );
+    }
     const batchKey = api.kms.get(batch.keyRefId);
     if (!batchKey) {
       throw new NotFoundError(
@@ -113,7 +118,7 @@ export class BatchifyHook extends AbstractHook {
     );
     const highestOrder =
       batch.transactions.length === 0
-        ? -1
+        ? 0
         : Math.max(...batch.transactions.map((tx) => tx.order));
     const nextOrder = highestOrder + 1;
 

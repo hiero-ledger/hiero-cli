@@ -74,4 +74,12 @@ export class ZustandBatchStateHelper {
     this.logger.debug(`[ZUSTAND BATCH STATE] Checking if batch exists: ${key}`);
     return this.state.has(this.namespace, key);
   }
+
+  /**
+   * Delete a batch by key
+   */
+  deleteBatch(key: string): void {
+    this.logger.debug(`[ZUSTAND BATCH STATE] Deleting batch: ${key}`);
+    this.state.delete(this.namespace, key);
+  }
 }

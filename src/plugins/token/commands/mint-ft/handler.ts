@@ -143,7 +143,6 @@ export class MintFtCommand extends BaseTransactionCommand<
     buildTransactionResult: MintFtBuildTransactionResult,
   ): Promise<MintFtSignTransactionResult> {
     const { api, logger } = args;
-    console.log(buildTransactionResult.transaction.batchKey);
     const supplyKeyRefId = normalisedParams.supplyKeyResolved.keyRefId;
     logger.debug(`Using key ${supplyKeyRefId} for signing transaction`);
     const transaction = await api.txSign.sign(
@@ -158,12 +157,10 @@ export class MintFtCommand extends BaseTransactionCommand<
   async executeTransaction(
     args: CommandHandlerArgs,
     normalisedParams: MintFtNormalizedParams,
-    buildTransactionResult: MintFtBuildTransactionResult,
+    _buildTransactionResult: MintFtBuildTransactionResult,
     signTransactionResult: MintFtSignTransactionResult,
   ): Promise<MintFtExecuteTransactionResult> {
     const { api } = args;
-    void normalisedParams;
-    void buildTransactionResult;
     const signedTransaction = signTransactionResult.transaction;
     const result = await api.txExecute.execute(signedTransaction);
 
@@ -179,15 +176,12 @@ export class MintFtCommand extends BaseTransactionCommand<
   }
 
   async outputPreparation(
-    args: CommandHandlerArgs,
+    _args: CommandHandlerArgs,
     normalisedParams: MintFtNormalizedParams,
-    buildTransactionResult: MintFtBuildTransactionResult,
-    signTransactionResult: MintFtSignTransactionResult,
+    _buildTransactionResult: MintFtBuildTransactionResult,
+    _signTransactionResult: MintFtSignTransactionResult,
     executeTransactionResult: MintFtExecuteTransactionResult,
   ): Promise<CommandResult> {
-    void args;
-    void buildTransactionResult;
-    void signTransactionResult;
     const outputData: MintFtOutput = {
       transactionId: executeTransactionResult.transactionResult.transactionId,
       tokenId: normalisedParams.tokenId,

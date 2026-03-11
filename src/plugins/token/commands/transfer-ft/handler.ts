@@ -150,12 +150,10 @@ export class TransferFtCommand extends BaseTransactionCommand<
   async executeTransaction(
     args: CommandHandlerArgs,
     normalisedParams: TransferFtNormalizedParams,
-    buildTransactionResult: TransferFtBuildTransactionResult,
+    _buildTransactionResult: TransferFtBuildTransactionResult,
     signTransactionResult: TransferFtSignTransactionResult,
   ): Promise<TransferFtExecuteTransactionResult> {
     const { api } = args;
-    void normalisedParams;
-    void buildTransactionResult;
     const signedTransaction = signTransactionResult.transaction;
     const result = await api.txExecute.execute(signedTransaction);
 
@@ -172,15 +170,12 @@ export class TransferFtCommand extends BaseTransactionCommand<
   }
 
   async outputPreparation(
-    args: CommandHandlerArgs,
+    _args: CommandHandlerArgs,
     normalisedParams: TransferFtNormalizedParams,
-    buildTransactionResult: TransferFtBuildTransactionResult,
-    signTransactionResult: TransferFtSignTransactionResult,
+    _buildTransactionResult: TransferFtBuildTransactionResult,
+    _signTransactionResult: TransferFtSignTransactionResult,
     executeTransactionResult: TransferFtExecuteTransactionResult,
   ): Promise<CommandResult> {
-    void args;
-    void buildTransactionResult;
-    void signTransactionResult;
     const outputData: TransferFungibleTokenOutput = {
       transactionId: executeTransactionResult.transactionResult.transactionId,
       tokenId: normalisedParams.tokenId,

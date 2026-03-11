@@ -17,7 +17,7 @@ import {
   importToken,
   listTokens,
 } from '@/plugins/token';
-import { TOKEN_NAMESPACE } from '@/plugins/token/manifest';
+import { TOKEN_NAMESPACE } from '@/plugins/token/constants';
 
 describe('Import Token Integration Tests', () => {
   const TOKEN_NAME = 'TokenImport';

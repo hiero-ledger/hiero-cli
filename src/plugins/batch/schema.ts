@@ -20,6 +20,8 @@ export const BatchTransactionItemSchema = z.object({
 export const BatchDataSchema = z.object({
   name: AliasNameSchema,
   keyRefId: z.string().min(1, 'Key reference ID is required'),
+  executed: z.boolean().default(false).describe('Batch executed'),
+  success: z.boolean().default(false).describe('Batch execution success'),
   transactions: z
     .array(BatchTransactionItemSchema)
     .default([])

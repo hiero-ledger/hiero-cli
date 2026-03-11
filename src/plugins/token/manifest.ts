@@ -73,8 +73,6 @@ import {
   ViewTokenOutputSchema,
 } from './commands/view';
 
-export const TOKEN_NAMESPACE = 'token-tokens';
-
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
   version: '1.0.0',

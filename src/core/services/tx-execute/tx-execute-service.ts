@@ -39,7 +39,6 @@ export class TxExecuteServiceImpl implements TxExecuteService {
       const response: TransactionResponse = await transaction.execute(client);
       return await this.processTransactionResponse(response, client);
     } catch (error) {
-      console.log(error);
       throw new TransactionError(
         `Transaction execution failed (txId: ${transaction.transactionId?.toString() ?? 'unknown'})`,
         false,

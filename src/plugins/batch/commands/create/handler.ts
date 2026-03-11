@@ -40,6 +40,8 @@ export class CreateBatchCommand implements Command {
     const batchData = {
       name,
       keyRefId: resolved.keyRefId,
+      executed: false,
+      success: false,
       transactions: [],
     };
 

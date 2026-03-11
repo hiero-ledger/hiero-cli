@@ -5,6 +5,11 @@
 import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
+import {
+  LIST_BATCHES_TEMPLATE,
+  ListBatchCommand,
+  ListBatchesOutputSchema,
+} from '@/plugins/batch/commands/list';
 import { BatchifyHook } from '@/plugins/batch/hooks/batchify/handler';
 
 import {
@@ -12,6 +17,11 @@ import {
   CreateBatchCommand,
   CreateBatchOutputSchema,
 } from './commands/create';
+import {
+  DELETE_BATCH_TEMPLATE,
+  DeleteBatchCommand,
+  DeleteBatchOutputSchema,
+} from './commands/delete';
 import {
   EXECUTE_BATCH_TEMPLATE,
   ExecuteBatchCommand,
@@ -95,6 +105,45 @@ export const batchPluginManifest: PluginManifest = {
       output: {
         schema: ExecuteBatchOutputSchema,
         humanTemplate: EXECUTE_BATCH_TEMPLATE,
+      },
+    },
+    {
+      name: 'list',
+      summary: 'List batches',
+      description: 'List all available batches',
+      options: [],
+      command: new ListBatchCommand(),
+      output: {
+        schema: ListBatchesOutputSchema,
+        humanTemplate: LIST_BATCHES_TEMPLATE,
+      },
+    },
+    {
+      name: 'delete',
+      summary: 'Delete a batch or a transaction',
+      description:
+        'Delete a whole batch by name, or remove a single transaction by name and order',
+      options: [
+        {
+          name: 'name',
+          short: 'n',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Name of the batch',
+        },
+        {
+          name: 'order',
+          short: 'o',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'Order of transaction to remove. If omitted, deletes the entire batch',
+        },
+      ],
+      command: new DeleteBatchCommand(),
+      output: {
+        schema: DeleteBatchOutputSchema,
+        humanTemplate: DELETE_BATCH_TEMPLATE,
       },
     },
   ],
