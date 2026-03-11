@@ -1,20 +1,20 @@
 import type { CommandHandlerArgs } from '@/core';
+import type { Command } from '@/core/commands/command.interface';
 import type { CommandResult } from '@/core/plugins/plugin.types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { GetOperatorOutput } from './output';
+import type { GetOperatorNormalisedParams } from './types';
 
 import { ValidationError } from '@/core/errors';
 import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 
 import { GetOperatorInputSchema } from './input';
 
-export async function getOperatorHandler(
+const normalizeParams = (
   args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { logger, api } = args;
-
+): GetOperatorNormalisedParams => {
+  const { api } = args;
   const validArgs = GetOperatorInputSchema.parse(args.args);
-
   const networkArg = validArgs.network;
 
   if (networkArg && !api.network.isNetworkAvailable(networkArg)) {
@@ -24,30 +24,39 @@ export async function getOperatorHandler(
     );
   }
 
-  const targetNetwork =
-    (networkArg as SupportedNetwork) || api.network.getCurrentNetwork();
+  return {
+    targetNetwork:
+      (networkArg as SupportedNetwork) || api.network.getCurrentNetwork(),
+  };
+};
 
-  logger.info(`Getting operator for network: ${targetNetwork}`);
+export class GetOperatorCommand implements Command {
+  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+    const { logger, api } = args;
+    const normalisedParams = normalizeParams(args);
 
-  const operator = api.network.getOperator(targetNetwork);
+    logger.info(
+      `Getting operator for network: ${normalisedParams.targetNetwork}`,
+    );
 
-  let publicKey: string | undefined;
-  if (operator) {
-    publicKey = api.kms.get(operator.keyRefId)?.publicKey;
+    const operator = api.network.getOperator(normalisedParams.targetNetwork);
+    const publicKey = operator
+      ? api.kms.get(operator.keyRefId)?.publicKey
+      : undefined;
+
+    const output: GetOperatorOutput = operator
+      ? {
+          network: normalisedParams.targetNetwork,
+          operator: {
+            accountId: operator.accountId,
+            keyRefId: operator.keyRefId,
+            publicKey,
+          },
+        }
+      : {
+          network: normalisedParams.targetNetwork,
+        };
+
+    return { result: output };
   }
-
-  const output: GetOperatorOutput = operator
-    ? {
-        network: targetNetwork,
-        operator: {
-          accountId: operator.accountId,
-          keyRefId: operator.keyRefId,
-          publicKey,
-        },
-      }
-    : {
-        network: targetNetwork,
-      };
-
-  return { result: output };
 }

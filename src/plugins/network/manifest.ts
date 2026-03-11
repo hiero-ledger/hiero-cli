@@ -8,22 +8,22 @@ import { OptionType } from '@/core/types/shared.types';
 
 import {
   GET_OPERATOR_TEMPLATE,
-  getOperatorHandler,
+  GetOperatorCommand,
   GetOperatorOutputSchema,
 } from './commands/get-operator';
 import {
   LIST_NETWORKS_TEMPLATE,
-  listHandler,
+  ListNetworksCommand,
   ListNetworksOutputSchema,
 } from './commands/list';
 import {
   SET_OPERATOR_TEMPLATE,
-  setOperatorHandler,
+  SetOperatorCommand,
   SetOperatorOutputSchema,
 } from './commands/set-operator';
 import {
   USE_NETWORK_TEMPLATE,
-  useHandler,
+  UseNetworkCommand,
   UseNetworkOutputSchema,
 } from './commands/use';
 
@@ -40,7 +40,7 @@ export const networkPluginManifest: PluginManifest = {
       description:
         'List all available networks with their configuration and health status',
       options: [],
-      handler: listHandler,
+      command: new ListNetworksCommand(),
       output: {
         schema: ListNetworksOutputSchema,
         humanTemplate: LIST_NETWORKS_TEMPLATE,
@@ -59,7 +59,7 @@ export const networkPluginManifest: PluginManifest = {
           description: 'Network name (testnet, mainnet, previewnet, localnet)',
         },
       ],
-      handler: useHandler,
+      command: new UseNetworkCommand(),
       output: {
         schema: UseNetworkOutputSchema,
         humanTemplate: USE_NETWORK_TEMPLATE,
@@ -70,7 +70,7 @@ export const networkPluginManifest: PluginManifest = {
       summary: 'Get operator for a network',
       description: 'Get operator credentials for a specific network',
       options: [],
-      handler: getOperatorHandler,
+      command: new GetOperatorCommand(),
       output: {
         schema: GetOperatorOutputSchema,
         humanTemplate: GET_OPERATOR_TEMPLATE,
@@ -99,7 +99,7 @@ export const networkPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: setOperatorHandler,
+      command: new SetOperatorCommand(),
       output: {
         schema: SetOperatorOutputSchema,
         humanTemplate: SET_OPERATOR_TEMPLATE,
