@@ -1,6 +1,7 @@
 import type { AccountCreateTransaction } from '@hashgraph/sdk';
 import type { TransactionResult } from '@/core/services/tx-execution/tx-execution-service.interface';
 import type { KeyAlgorithm } from '@/core/shared/constants';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface CreateAccountNormalisedParams {
   balance: bigint;
@@ -9,7 +10,7 @@ export interface CreateAccountNormalisedParams {
   keyRefId: string;
   publicKey: string;
   keyType: KeyAlgorithm;
-  network: string;
+  network: SupportedNetwork;
 }
 
 export interface CreateAccountBuildTransactionResult {

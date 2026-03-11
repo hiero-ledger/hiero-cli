@@ -1,3 +1,4 @@
+import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TokenBalanceWithMetadata } from '@/plugins/account/utils/balance-helpers';
 
 export interface AccountBalanceNormalisedParams {
@@ -5,7 +6,7 @@ export interface AccountBalanceNormalisedParams {
   hbarOnly: boolean;
   tokenOnly: boolean;
   raw: boolean;
-  network: string;
+  network: SupportedNetwork;
   tokenId: string | undefined;
 }
 

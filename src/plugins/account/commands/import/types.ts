@@ -1,12 +1,13 @@
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { KeyAlgorithm } from '@/core/shared/constants';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface ImportAccountNormalisedParams {
   key: { accountId: string; privateKey: string };
   alias: string | undefined;
   keyManager: KeyManagerName;
   accountId: string;
-  network: string;
+  network: SupportedNetwork;
   accountKey: string;
 }
 
@@ -18,7 +19,7 @@ export interface ImportAccountExecuteTransactionResult {
   publicKey: string;
   accountInfo: {
     keyAlgorithm: KeyAlgorithm;
-    evmAddress: string | undefined;
+    evmAddress?: string;
     balance: { balance: number };
   };
   evmAddress: string;

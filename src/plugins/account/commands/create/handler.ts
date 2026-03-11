@@ -162,7 +162,7 @@ export class CreateAccountCommand extends BaseTransactionCommand<
         network: p.network,
         entityId: e.accountId!,
         evmAddress,
-        publicKey: b.publicKey,
+        publicKey: p.publicKey,
         keyRefId: p.keyRefId,
         createdAt: e.consensusTimestamp,
       });

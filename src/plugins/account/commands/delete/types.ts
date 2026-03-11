@@ -1,9 +1,10 @@
+import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountData } from '@/plugins/account/schema';
 
 export interface DeleteAccountNormalisedParams {
   accountRef: string;
   key: string;
-  network: string;
+  network: SupportedNetwork;
   accountToDelete: AccountData;
 }
 
