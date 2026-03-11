@@ -27,3 +27,6 @@ export class ClearAccountsCommand implements Command {
     return { result: outputData };
   }
 }
+
+export const clearAccounts = (args: CommandHandlerArgs) =>
+  new ClearAccountsCommand().execute(args);

@@ -98,3 +98,6 @@ export class ImportAccountCommand implements Command {
     return { result: outputData };
   }
 }
+
+export const importAccount = (args: CommandHandlerArgs) =>
+  new ImportAccountCommand().execute(args);

@@ -81,3 +81,6 @@ export class DeleteAccountCommand implements Command {
     return { result: outputData };
   }
 }
+
+export const deleteAccount = (args: CommandHandlerArgs) =>
+  new DeleteAccountCommand().execute(args);

@@ -197,3 +197,6 @@ export class CreateAccountCommand extends BaseTransactionCommand<
     return { result: outputData };
   }
 }
+
+export const createAccount = (args: CommandHandlerArgs) =>
+  new CreateAccountCommand().execute(args);

@@ -38,3 +38,6 @@ export class ListAccountsCommand implements Command {
     return { result: outputData };
   }
 }
+
+export const listAccounts = (args: CommandHandlerArgs) =>
+  new ListAccountsCommand().execute(args);
