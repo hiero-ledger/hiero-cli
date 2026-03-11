@@ -12,7 +12,7 @@ import {
   makeLogger,
 } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallDecimalsOutputSchema } from '@/plugins/contract-erc20/commands/decimals';
-import { decimalsFunctionCall as erc20DecimalsHandler } from '@/plugins/contract-erc20/commands/decimals/handler';
+import { ContractErc20DecimalsCommand } from '@/plugins/contract-erc20/commands/decimals/handler';
 import { ContractErc20CallDecimalsInputSchema } from '@/plugins/contract-erc20/commands/decimals/input';
 
 jest.mock('@hashgraph/sdk', () => ({
@@ -40,7 +40,7 @@ describe('contract-erc20 plugin - decimals command (unit)', () => {
   test('calls ERC-20 decimals successfully and returns expected output', async () => {
     const args = makeContractErc20CallCommandArgs({ api, logger });
 
-    const result = await erc20DecimalsHandler(args);
+    const result = await new ContractErc20DecimalsCommand().execute(args);
 
     expect(result.result).toBeDefined();
 
@@ -78,7 +78,9 @@ describe('contract-erc20 plugin - decimals command (unit)', () => {
       queryResult: [],
     });
 
-    await expect(erc20DecimalsHandler(args)).rejects.toThrow(StateError);
+    await expect(
+      new ContractErc20DecimalsCommand().execute(args),
+    ).rejects.toThrow(StateError);
   });
 
   test('throws when queryContractFunction throws', async () => {
@@ -87,9 +89,9 @@ describe('contract-erc20 plugin - decimals command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    await expect(erc20DecimalsHandler(args)).rejects.toThrow(
-      'contract query error',
-    );
+    await expect(
+      new ContractErc20DecimalsCommand().execute(args),
+    ).rejects.toThrow('contract query error');
   });
 
   test('schema validation fails when contract is missing', () => {

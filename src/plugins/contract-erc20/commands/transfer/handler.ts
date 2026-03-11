@@ -3,9 +3,16 @@
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { ContractErc20CallTransferOutput } from './output';
+import type {
+  ContractErc20TransferBuildTransactionResult,
+  ContractErc20TransferExecuteTransactionResult,
+  ContractErc20TransferNormalizedParams,
+  ContractErc20TransferSignTransactionResult,
+} from './types';
 
 import { ContractFunctionParameters } from '@hashgraph/sdk';
 
+import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { EntityReferenceType } from '@/core/types/shared.types';
 
@@ -13,71 +20,133 @@ import { ContractErc20CallTransferInputSchema } from './input';
 
 const ERC_20_FUNCTION_NAME = 'transfer';
 
-export async function transferFunctionCall(
-  args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { api } = args;
+export class ContractErc20TransferCommand extends BaseTransactionCommand<
+  ContractErc20TransferNormalizedParams,
+  ContractErc20TransferBuildTransactionResult,
+  ContractErc20TransferSignTransactionResult,
+  ContractErc20TransferExecuteTransactionResult
+> {
+  async normalizeParams(
+    args: CommandHandlerArgs,
+  ): Promise<ContractErc20TransferNormalizedParams> {
+    const { api } = args;
 
-  const validArgs = ContractErc20CallTransferInputSchema.parse(args.args);
-  const contractRef = validArgs.contract;
-  const gas = validArgs.gas;
-  const accountToRef = validArgs.to;
-  const value = validArgs.value;
-  const network = api.network.getCurrentNetwork();
-  const contractInfo = await api.identityResolution.resolveContract({
-    contractReference: contractRef.value,
-    type: contractRef.type,
-    network,
-  });
+    const validArgs = ContractErc20CallTransferInputSchema.parse(args.args);
+    const network = api.network.getCurrentNetwork();
+    const contractInfo = await api.identityResolution.resolveContract({
+      contractReference: validArgs.contract.value,
+      type: validArgs.contract.type,
+      network,
+    });
 
-  const accountToEvmAddress =
-    accountToRef.type === EntityReferenceType.EVM_ADDRESS
-      ? accountToRef.value
-      : (
-          await api.identityResolution.resolveAccount({
-            accountReference: accountToRef.value,
-            type: accountToRef.type,
-            network,
-          })
-        ).evmAddress;
+    const accountToEvmAddress =
+      validArgs.to.type === EntityReferenceType.EVM_ADDRESS
+        ? validArgs.to.value
+        : (
+            await api.identityResolution.resolveAccount({
+              accountReference: validArgs.to.value,
+              type: validArgs.to.type,
+              network,
+            })
+          ).evmAddress;
 
-  if (!accountToEvmAddress) {
-    throw new NotFoundError(
-      `Couldn't resolve EVM address for an account ${accountToRef.value}`,
-      { context: { accountToRef: accountToRef.value } },
-    );
+    if (!accountToEvmAddress) {
+      throw new NotFoundError(
+        `Couldn't resolve EVM address for an account ${validArgs.to.value}`,
+        { context: { accountToRef: validArgs.to.value } },
+      );
+    }
+
+    return {
+      contractId: contractInfo.contractId,
+      gas: validArgs.gas,
+      accountToEvmAddress,
+      value: validArgs.value,
+      network,
+    };
   }
 
-  const functionParameters: ContractFunctionParameters =
-    new ContractFunctionParameters()
-      .addAddress(accountToEvmAddress)
-      .addUint256(value);
+  async buildTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: ContractErc20TransferNormalizedParams,
+  ): Promise<ContractErc20TransferBuildTransactionResult> {
+    const { api } = args;
 
-  const contractCallTransaction = api.contract.contractExecuteTransaction({
-    contractId: contractInfo.contractId,
-    gas,
-    functionName: ERC_20_FUNCTION_NAME,
-    functionParameters,
-  });
-  const transaction = await api.txSign.sign(
-    contractCallTransaction.transaction,
-    [],
-  );
-  const result = await api.txExecute.execute(transaction);
+    const functionParameters: ContractFunctionParameters =
+      new ContractFunctionParameters()
+        .addAddress(normalisedParams.accountToEvmAddress)
+        .addUint256(normalisedParams.value);
 
-  if (!result.success) {
-    throw new TransactionError(
-      `Failed to call ${ERC_20_FUNCTION_NAME} on contract ${contractInfo.contractId} (txId: ${result.transactionId}, status: ${result.receipt?.status?.status ?? 'UNKNOWN'})`,
-      false,
-      { context: { status: result.receipt?.status?.status } },
-    );
+    const contractCallTransaction = api.contract.contractExecuteTransaction({
+      contractId: normalisedParams.contractId,
+      gas: normalisedParams.gas,
+      functionName: ERC_20_FUNCTION_NAME,
+      functionParameters,
+    });
+
+    return {
+      transaction: contractCallTransaction.transaction,
+    };
   }
 
-  const outputData: ContractErc20CallTransferOutput = {
-    contractId: contractInfo.contractId,
-    network,
-    transactionId: result.transactionId,
-  };
+  async signTransaction(
+    args: CommandHandlerArgs,
+    _normalisedParams: ContractErc20TransferNormalizedParams,
+    buildTransactionResult: ContractErc20TransferBuildTransactionResult,
+  ): Promise<ContractErc20TransferSignTransactionResult> {
+    const { api } = args;
 
-  return { result: outputData };
+    const transaction = await api.txSign.sign(
+      buildTransactionResult.transaction,
+      [],
+    );
+
+    return {
+      transaction,
+    };
+  }
+
+  async executeTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: ContractErc20TransferNormalizedParams,
+    _buildTransactionResult: ContractErc20TransferBuildTransactionResult,
+    signTransactionResult: ContractErc20TransferSignTransactionResult,
+  ): Promise<ContractErc20TransferExecuteTransactionResult> {
+    const { api } = args;
+
+    const result = await api.txExecute.execute(
+      signTransactionResult.transaction,
+    );
+
+    if (!result.success) {
+      throw new TransactionError(
+        `Failed to call ${ERC_20_FUNCTION_NAME} on contract ${normalisedParams.contractId} (txId: ${result.transactionId}, status: ${result.receipt?.status?.status ?? 'UNKNOWN'})`,
+        false,
+        { context: { status: result.receipt?.status?.status } },
+      );
+    }
+
+    return {
+      transactionResult: result,
+    };
+  }
+
+  async outputPreparation(
+    _args: CommandHandlerArgs,
+    normalisedParams: ContractErc20TransferNormalizedParams,
+    _buildTransactionResult: ContractErc20TransferBuildTransactionResult,
+    _signTransactionResult: ContractErc20TransferSignTransactionResult,
+    executeTransactionResult: ContractErc20TransferExecuteTransactionResult,
+  ): Promise<CommandResult> {
+    const outputData: ContractErc20CallTransferOutput = {
+      contractId: normalisedParams.contractId,
+      network: normalisedParams.network,
+      transactionId: executeTransactionResult.transactionResult.transactionId,
+    };
+
+    return { result: outputData };
+  }
 }
+
+export const transfer = (args: CommandHandlerArgs) =>
+  new ContractErc20TransferCommand().execute(args);

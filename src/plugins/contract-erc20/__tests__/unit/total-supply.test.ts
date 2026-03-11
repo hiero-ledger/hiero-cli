@@ -8,7 +8,7 @@ import { StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallTotalSupplyOutputSchema } from '@/plugins/contract-erc20/commands/total-supply';
-import { totalSupplyFunctionCall as erc20TotalSupplyHandler } from '@/plugins/contract-erc20/commands/total-supply/handler';
+import { ContractErc20TotalSupplyCommand } from '@/plugins/contract-erc20/commands/total-supply/handler';
 import { ContractErc20CallTotalSupplyInputSchema } from '@/plugins/contract-erc20/commands/total-supply/input';
 
 jest.mock('@hashgraph/sdk', () => ({
@@ -43,7 +43,7 @@ describe('contract-erc20 plugin - totalSupply command (unit)', () => {
   test('calls ERC-20 totalSupply successfully and returns expected output', async () => {
     const args = makeContractErc20CallCommandArgs({ api, logger });
 
-    const result = await erc20TotalSupplyHandler(args);
+    const result = await new ContractErc20TotalSupplyCommand().execute(args);
 
     expect(result.result).toBeDefined();
 
@@ -81,7 +81,9 @@ describe('contract-erc20 plugin - totalSupply command (unit)', () => {
       queryResult: [],
     });
 
-    await expect(erc20TotalSupplyHandler(args)).rejects.toThrow(StateError);
+    await expect(
+      new ContractErc20TotalSupplyCommand().execute(args),
+    ).rejects.toThrow(StateError);
   });
 
   test('throws when queryContractFunction throws', async () => {
@@ -90,9 +92,9 @@ describe('contract-erc20 plugin - totalSupply command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    await expect(erc20TotalSupplyHandler(args)).rejects.toThrow(
-      'contract query error',
-    );
+    await expect(
+      new ContractErc20TotalSupplyCommand().execute(args),
+    ).rejects.toThrow('contract query error');
   });
 
   test('schema validation fails when contract is missing', () => {
