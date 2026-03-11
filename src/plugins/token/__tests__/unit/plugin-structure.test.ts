@@ -6,7 +6,7 @@ import {
   associateToken,
   createToken,
   createTokenFromFile,
-  TransferFtCommand,
+  transferFt,
 } from '@/plugins/token/index';
 import { tokenPluginManifest } from '@/plugins/token/manifest';
 
@@ -28,14 +28,14 @@ describe('Token Plugin Structure', () => {
   });
 
   test('command handlers should be exported', () => {
-    expect(TransferFtCommand).toBeDefined();
+    expect(transferFt).toBeDefined();
     expect(createToken).toBeDefined();
     expect(associateToken).toBeDefined();
     expect(createTokenFromFile).toBeDefined();
   });
 
   test('command handlers should be functions', () => {
-    expect(typeof TransferFtCommand).toBe('function');
+    expect(typeof transferFt).toBe('function');
     expect(typeof createToken).toBe('function');
     expect(typeof associateToken).toBe('function');
     expect(typeof createTokenFromFile).toBe('function');
