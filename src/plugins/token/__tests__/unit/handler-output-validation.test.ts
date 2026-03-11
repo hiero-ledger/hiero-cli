@@ -18,8 +18,8 @@ import {
   ListTokensOutputSchema,
 } from '@/plugins/token/commands/list';
 import {
+  transferFt,
   TransferFungibleTokenOutputSchema,
-  transferToken,
 } from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -159,7 +159,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         amount: '100t',
       };
 
-      const result = await transferToken({
+      const result = await transferFt({
         api,
         logger: makeLogger(),
         state: api.state,

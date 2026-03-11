@@ -9,10 +9,10 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { transferFt } from '@/plugins/token';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createToken } from '@/plugins/token/commands/create-ft';
 import { createTokenFromFile } from '@/plugins/token/commands/create-ft-from-file';
-import { transferToken } from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -162,7 +162,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(transferToken(args)).rejects.toThrow('Network unreachable');
+      await expect(transferFt(args)).rejects.toThrow('Network unreachable');
     });
   });
 
@@ -339,7 +339,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(transferToken(args)).rejects.toThrow();
+      await expect(transferFt(args)).rejects.toThrow();
     });
 
     test('should handle token not found', async () => {
@@ -632,7 +632,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(transferToken(args)).rejects.toThrow();
+      await expect(transferFt(args)).rejects.toThrow();
     });
   });
 

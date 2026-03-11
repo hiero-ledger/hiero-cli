@@ -13,7 +13,7 @@ import {
   mintNft,
   MintNftOutputSchema,
 } from '@/plugins/token/commands/mint-nft';
-import { TOKEN_NAMESPACE } from '@/plugins/token/manifest';
+import { TOKEN_NAMESPACE } from '@/plugins/token/constants';
 
 import { makeMintNftCommandArgs } from './helpers/fixtures';
 import {

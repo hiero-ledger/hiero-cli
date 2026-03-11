@@ -7,7 +7,7 @@ import type { StateService } from '@/core/services/state/state-service.interface
 
 import { NotFoundError } from '@/core/errors';
 
-import { TOKEN_NAMESPACE } from './manifest';
+import { TOKEN_NAMESPACE } from './constants';
 import { type TokenData } from './schema';
 
 export class ZustandTokenStateHelper {

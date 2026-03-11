@@ -5,6 +5,7 @@
 import type { CoreApi } from '@/core';
 import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { BatchTransactionService } from '@/core/services/batch/batch-transaction-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
@@ -30,6 +31,7 @@ import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.inte
 
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
 import { AliasServiceImpl } from '@/core/services/alias/alias-service';
+import { BatchTransactionServiceImpl } from '@/core/services/batch/batch-transaction-service';
 import { ConfigServiceImpl } from '@/core/services/config/config-service';
 import { ContractCompilerServiceImpl } from '@/core/services/contract-compiler/contract-compiler-service';
 import { ContractQueryServiceImpl } from '@/core/services/contract-query/contract-query-service';
@@ -72,6 +74,7 @@ export class CoreApiImplementation implements CoreApi {
   public contractVerifier: ContractVerifierService;
   public contractQuery: ContractQueryService;
   public identityResolution: IdentityResolutionService;
+  public batch: BatchTransactionService;
 
   constructor(storageDir?: string) {
     this.logger = new LoggerService();
@@ -128,6 +131,7 @@ export class CoreApiImplementation implements CoreApi {
       this.alias,
       this.mirror,
     );
+    this.batch = new BatchTransactionServiceImpl(this.logger);
   }
 }
 
