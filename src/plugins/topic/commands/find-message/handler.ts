@@ -46,3 +46,7 @@ export class FindMessageCommand implements Command {
     return { result: outputData };
   }
 }
+
+const findMessageCommand = new FindMessageCommand();
+
+export const findMessage = findMessageCommand.execute.bind(findMessageCommand);

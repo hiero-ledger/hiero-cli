@@ -166,3 +166,8 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
     return { result: outputData };
   }
 }
+
+const submitMessageCommand = new SubmitMessageCommand();
+
+export const submitMessage =
+  submitMessageCommand.execute.bind(submitMessageCommand);

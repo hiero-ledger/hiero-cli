@@ -180,3 +180,7 @@ export class CreateTopicCommand extends BaseTransactionCommand<
     return { result: outputData };
   }
 }
+
+const createTopicCommand = new CreateTopicCommand();
+
+export const createTopic = createTopicCommand.execute.bind(createTopicCommand);

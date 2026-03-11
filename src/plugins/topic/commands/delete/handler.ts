@@ -81,3 +81,7 @@ export class DeleteTopicCommand implements Command {
     return { result };
   }
 }
+
+const deleteTopicCommand = new DeleteTopicCommand();
+
+export const deleteTopic = deleteTopicCommand.execute.bind(deleteTopicCommand);

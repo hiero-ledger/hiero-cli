@@ -79,3 +79,7 @@ export class ImportTopicCommand implements Command {
     return { result };
   }
 }
+
+const importTopicCommand = new ImportTopicCommand();
+
+export const importTopic = importTopicCommand.execute.bind(importTopicCommand);

@@ -61,3 +61,7 @@ export class ListTopicsCommand implements Command {
     return { result: outputData };
   }
 }
+
+const listTopicsCommand = new ListTopicsCommand();
+
+export const listTopics = listTopicsCommand.execute.bind(listTopicsCommand);
