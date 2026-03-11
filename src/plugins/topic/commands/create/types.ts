@@ -1,5 +1,4 @@
 import type { Transaction as HederaTransaction } from '@hashgraph/sdk';
-
 import type { TransactionResult } from '@/core';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
@@ -22,4 +21,4 @@ export interface CreateTopicSignTransactionResult {
   transaction: HederaTransaction;
 }
 
-export interface CreateTopicExecuteTransactionResult extends TransactionResult {}
+export type CreateTopicExecuteTransactionResult = TransactionResult;

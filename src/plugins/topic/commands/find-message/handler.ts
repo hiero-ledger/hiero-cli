@@ -1,8 +1,8 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { Command } from '@/core/commands/command.interface';
 import type { FindMessagesOutput } from './output';
 import type { FindMessageNormalisedParams } from './types';
 
-import type { Command } from '@/core/commands/command.interface';
 import { fetchFilteredMessages } from '@/plugins/topic/utils/message-helpers';
 import { buildApiFilters } from '@/plugins/topic/utils/messageFilters';
 import { resolveTopicId } from '@/plugins/topic/utils/topicResolver';

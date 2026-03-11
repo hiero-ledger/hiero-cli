@@ -1,9 +1,9 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { Command } from '@/core/commands/command.interface';
 import type { TopicData } from '@/plugins/topic/schema';
 import type { ImportTopicOutput } from './output';
 import type { ImportTopicNormalisedParams } from './types';
 
-import type { Command } from '@/core/commands/command.interface';
 import { ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';

@@ -1,8 +1,8 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { Command } from '@/core/commands/command.interface';
 import type { ListTopicsOutput } from './output';
 import type { ListTopicsNormalisedParams } from './types';
 
-import type { Command } from '@/core/commands/command.interface';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { ListTopicsInputSchema } from './input';

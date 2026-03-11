@@ -1,8 +1,8 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { Command } from '@/core/commands/command.interface';
 import type { DeleteTopicOutput } from './output';
 import type { DeleteTopicNormalisedParams } from './types';
 
-import type { Command } from '@/core/commands/command.interface';
 import { NotFoundError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
