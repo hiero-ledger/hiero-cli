@@ -49,7 +49,7 @@ import {
 } from './commands/list';
 import {
   MINT_FT_TEMPLATE,
-  MintFtCommand,
+  mintFt,
   MintFtOutputSchema,
 } from './commands/mint-ft';
 import {
@@ -59,7 +59,7 @@ import {
 } from './commands/mint-nft';
 import {
   TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
-  TransferFtCommand,
+  transferFt,
   TransferFungibleTokenOutputSchema,
 } from './commands/transfer-ft';
 import {
@@ -117,7 +117,7 @@ export const tokenPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      command: new MintFtCommand(),
+      handler: mintFt,
       output: {
         schema: MintFtOutputSchema,
         humanTemplate: MINT_FT_TEMPLATE,
@@ -210,7 +210,7 @@ export const tokenPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      command: new TransferFtCommand(),
+      handler: transferFt,
       output: {
         schema: TransferFungibleTokenOutputSchema,
         humanTemplate: TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,

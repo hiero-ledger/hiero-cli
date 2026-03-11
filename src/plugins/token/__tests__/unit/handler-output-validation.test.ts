@@ -18,7 +18,7 @@ import {
   ListTokensOutputSchema,
 } from '@/plugins/token/commands/list';
 import {
-  TransferFtCommand,
+  transferFt,
   TransferFungibleTokenOutputSchema,
 } from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -34,7 +34,6 @@ jest.mock('../../zustand-state-helper', () => ({
 }));
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
-const transferFtCommand = new TransferFtCommand();
 
 describe('Handler Output Validation - Token Plugin', () => {
   beforeEach(() => {
@@ -160,7 +159,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         amount: '100t',
       };
 
-      const result = await transferFtCommand.execute({
+      const result = await transferFt({
         api,
         logger: makeLogger(),
         state: api.state,

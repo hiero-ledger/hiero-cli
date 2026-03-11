@@ -187,3 +187,9 @@ export class TransferFtCommand extends BaseTransactionCommand<
     return { result: outputData };
   }
 }
+
+export async function transferFt(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new TransferFtCommand().execute(args);
+}

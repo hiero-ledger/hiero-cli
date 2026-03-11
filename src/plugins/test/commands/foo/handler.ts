@@ -88,3 +88,9 @@ export async function fooTestOptions(
 
   return { result: output };
 }
+
+export async function fooTest(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new FooTestCommand().execute(args);
+}

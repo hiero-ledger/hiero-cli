@@ -10,10 +10,8 @@ import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createToken } from '@/plugins/token/commands/create-ft';
-import { TransferFtCommand } from '@/plugins/token/commands/transfer-ft';
+import { transferFt } from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
-
-const transferFtCommand = new TransferFtCommand();
 
 import {
   mockAccountIds,
@@ -155,7 +153,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      const transferResult = await transferFtCommand.execute(transferArgs);
+      const transferResult = await transferFt(transferArgs);
       expect(transferResult.result).toBeDefined();
 
       // Verify all operations were called correctly

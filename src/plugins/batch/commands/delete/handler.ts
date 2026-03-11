@@ -64,3 +64,9 @@ export class DeleteBatchCommand implements Command {
     return { result: outputData };
   }
 }
+
+export async function deleteBatch(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new DeleteBatchCommand().execute(args);
+}

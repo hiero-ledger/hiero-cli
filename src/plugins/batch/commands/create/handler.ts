@@ -55,3 +55,9 @@ export class CreateBatchCommand implements Command {
     return { result: outputData };
   }
 }
+
+export async function createBatch(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new CreateBatchCommand().execute(args);
+}

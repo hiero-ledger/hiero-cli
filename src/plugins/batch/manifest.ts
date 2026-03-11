@@ -7,24 +7,24 @@ import type { PluginManifest } from '@/core';
 import { OptionType } from '@/core/types/shared.types';
 import {
   LIST_BATCHES_TEMPLATE,
-  ListBatchCommand,
+  listBatch,
   ListBatchesOutputSchema,
 } from '@/plugins/batch/commands/list';
 import { BatchifyHook } from '@/plugins/batch/hooks/batchify/handler';
 
 import {
   CREATE_BATCH_TEMPLATE,
-  CreateBatchCommand,
+  createBatch,
   CreateBatchOutputSchema,
 } from './commands/create';
 import {
   DELETE_BATCH_TEMPLATE,
-  DeleteBatchCommand,
+  deleteBatch,
   DeleteBatchOutputSchema,
 } from './commands/delete';
 import {
   EXECUTE_BATCH_TEMPLATE,
-  ExecuteBatchCommand,
+  executeBatch,
   ExecuteBatchOutputSchema,
 } from './commands/execute';
 
@@ -81,7 +81,7 @@ export const batchPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      command: new CreateBatchCommand(),
+      handler: createBatch,
       output: {
         schema: CreateBatchOutputSchema,
         humanTemplate: CREATE_BATCH_TEMPLATE,
@@ -101,7 +101,7 @@ export const batchPluginManifest: PluginManifest = {
           description: 'Name of the batch to execute',
         },
       ],
-      command: new ExecuteBatchCommand(),
+      handler: executeBatch,
       output: {
         schema: ExecuteBatchOutputSchema,
         humanTemplate: EXECUTE_BATCH_TEMPLATE,
@@ -112,7 +112,7 @@ export const batchPluginManifest: PluginManifest = {
       summary: 'List batches',
       description: 'List all available batches',
       options: [],
-      command: new ListBatchCommand(),
+      handler: listBatch,
       output: {
         schema: ListBatchesOutputSchema,
         humanTemplate: LIST_BATCHES_TEMPLATE,
@@ -140,7 +140,7 @@ export const batchPluginManifest: PluginManifest = {
             'Order of transaction to remove. If omitted, deletes the entire batch',
         },
       ],
-      command: new DeleteBatchCommand(),
+      handler: deleteBatch,
       output: {
         schema: DeleteBatchOutputSchema,
         humanTemplate: DELETE_BATCH_TEMPLATE,

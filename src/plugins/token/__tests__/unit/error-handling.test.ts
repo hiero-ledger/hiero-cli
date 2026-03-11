@@ -9,7 +9,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { TransferFtCommand } from '@/plugins/token';
+import { transferFt } from '@/plugins/token';
 import { associateToken } from '@/plugins/token/commands/associate';
 import { createToken } from '@/plugins/token/commands/create-ft';
 import { createTokenFromFile } from '@/plugins/token/commands/create-ft-from-file';
@@ -26,7 +26,6 @@ jest.mock('../../zustand-state-helper', () => ({
 }));
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
-const transferFtCommand = new TransferFtCommand();
 
 interface AliasData {
   entityId: string;
@@ -163,9 +162,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(transferFtCommand.execute(args)).rejects.toThrow(
-        'Network unreachable',
-      );
+      await expect(transferFt(args)).rejects.toThrow('Network unreachable');
     });
   });
 
@@ -342,7 +339,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(transferFtCommand.execute(args)).rejects.toThrow();
+      await expect(transferFt(args)).rejects.toThrow();
     });
 
     test('should handle token not found', async () => {
@@ -635,7 +632,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(transferFtCommand.execute(args)).rejects.toThrow();
+      await expect(transferFt(args)).rejects.toThrow();
     });
   });
 

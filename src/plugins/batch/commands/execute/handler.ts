@@ -140,3 +140,9 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
     return { result: outputData };
   }
 }
+
+export async function executeBatch(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ExecuteBatchCommand().execute(args);
+}

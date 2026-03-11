@@ -37,3 +37,9 @@ export class ListBatchCommand implements Command {
     return { result: outputData };
   }
 }
+
+export async function listBatch(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ListBatchCommand().execute(args);
+}

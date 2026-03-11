@@ -191,3 +191,7 @@ export class MintFtCommand extends BaseTransactionCommand<
     return { result: outputData };
   }
 }
+
+export async function mintFt(args: CommandHandlerArgs): Promise<CommandResult> {
+  return new MintFtCommand().execute(args);
+}
