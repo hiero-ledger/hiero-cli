@@ -12,7 +12,7 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { createAccount, viewAccount } from '@/plugins/account';
-import { transferHandler } from '@/plugins/hbar/commands/transfer';
+import { TransferCommand } from '@/plugins/hbar/commands/transfer';
 
 describe('HBAR Transfer Account Integration Tests', () => {
   let coreApi: CoreApi;
@@ -52,7 +52,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
       to: 'account-transfer',
       memo: 'Memo test',
     };
-    const transferHbarResult = await transferHandler({
+    const transferHbarResult = await new TransferCommand().execute({
       args: transferAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -132,7 +132,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
       from: 'account-transfer-from',
       to: 'account-transfer-to',
     };
-    const transferHbarResult = await transferHandler({
+    const transferHbarResult = await new TransferCommand().execute({
       args: transferAccountArgs,
       api: coreApi,
       state: coreApi.state,
