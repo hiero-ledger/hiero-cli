@@ -366,8 +366,12 @@ export class PluginManager {
     let result: CommandResult;
     if (commandSpec.command) {
       result = await commandSpec.command.execute(handlerArgs);
-    } else {
+    } else if (commandSpec.handler) {
       result = await commandSpec.handler(handlerArgs);
+    } else {
+      throw new InternalError(
+        `Command "${commandSpec.name}" has no command or handler defined`,
+      );
     }
     const outputSchema = result.overrideSchema ?? commandSpec.output.schema;
     outputSchema.parse(result.result);

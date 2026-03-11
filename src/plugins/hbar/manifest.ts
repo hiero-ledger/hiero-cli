@@ -1,14 +1,10 @@
-/**
- * HBAR Plugin Manifest
- * Defines the hbar plugin and its commands
- */
 import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
 import { OptionType } from '@/core/types/shared.types';
 
 import {
   TRANSFER_TEMPLATE,
-  transferHandler,
+  TransferCommand,
   TransferOutputSchema,
 } from './commands/transfer';
 
@@ -62,7 +58,7 @@ export const hbarPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: transferHandler,
+      command: new TransferCommand(),
       output: {
         schema: TransferOutputSchema,
         humanTemplate: TRANSFER_TEMPLATE,

@@ -1,88 +1,148 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { TransferOutput } from './output';
+import type {
+  TransferBuildTransactionResult,
+  TransferExecuteTransactionResult,
+  TransferNormalisedParams,
+  TransferSignTransactionResult,
+} from './types';
 
+import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError, ValidationError } from '@/core/errors';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 
 import { TransferInputSchema } from './input';
 
-export async function transferHandler(
-  args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { api, logger } = args;
+export class TransferCommand extends BaseTransactionCommand<
+  TransferNormalisedParams,
+  TransferBuildTransactionResult,
+  TransferSignTransactionResult,
+  TransferExecuteTransactionResult
+> {
+  async normalizeParams(
+    args: CommandHandlerArgs,
+  ): Promise<TransferNormalisedParams> {
+    const { api, logger } = args;
 
-  logger.info('[HBAR] Transfer command invoked');
+    logger.info('[HBAR] Transfer command invoked');
 
-  const validArgs = TransferInputSchema.parse(args.args);
+    const validArgs = TransferInputSchema.parse(args.args);
 
-  const to = validArgs.to;
-  const from = validArgs.from;
-  const memo = validArgs.memo;
+    const to = validArgs.to;
+    const from = validArgs.from;
+    const memo = validArgs.memo;
 
-  const providedKeyManager = validArgs.keyManager;
-  const keyManager =
-    providedKeyManager ||
-    api.config.getOption<KeyManagerName>('default_key_manager');
+    const providedKeyManager = validArgs.keyManager;
+    const keyManager =
+      providedKeyManager ||
+      api.config.getOption<KeyManagerName>('default_key_manager');
 
-  const amount = processBalanceInput(validArgs.amount, HBAR_DECIMALS);
+    const amount = processBalanceInput(validArgs.amount, HBAR_DECIMALS);
+    const currentNetwork = api.network.getCurrentNetwork();
 
-  const currentNetwork = api.network.getCurrentNetwork();
+    const fromAccount =
+      await api.keyResolver.resolveAccountCredentialsWithFallback(
+        from,
+        keyManager,
+      );
+    const toAccount = await api.keyResolver.resolveDestination(to, keyManager);
 
-  // Resolve accounts
-  const fromAccount =
-    await api.keyResolver.resolveAccountCredentialsWithFallback(
-      from,
+    // In resolved destination at least one field is present
+    const destination = toAccount.evmAddress || <string>toAccount.accountId;
+
+    if (fromAccount.accountId === toAccount.accountId) {
+      throw new ValidationError('Cannot transfer to the same account');
+    }
+
+    return {
+      amount,
+      memo,
       keyManager,
-    );
-  const toAccount = await api.keyResolver.resolveDestination(to, keyManager);
-
-  // In resolved destination at least one field is present
-  const destination = toAccount.evmAddress || <string>toAccount.accountId;
-
-  if (fromAccount.accountId === toAccount.accountId) {
-    throw new ValidationError('Cannot transfer to the same account');
+      fromAccount,
+      destination,
+      currentNetwork,
+    };
   }
 
-  logger.info(
-    `[HBAR] Transferring ${amount.toString()} tinybars from ${fromAccount.accountId} to ${toAccount.accountId}`,
-  );
+  async buildTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: TransferNormalisedParams,
+  ): Promise<TransferBuildTransactionResult> {
+    const { api, logger } = args;
 
-  const transferResult = await api.hbar.transferTinybar({
-    amount: amount,
-    from: fromAccount.accountId,
-    to: destination,
-    memo,
-  });
-
-  const transaction = await api.txSign.sign(transferResult.transaction, [
-    fromAccount.keyRefId,
-  ]);
-  const result = await api.txExecute.execute(transaction);
-
-  if (!result.success) {
-    throw new TransactionError(
-      `Transfer failed from ${fromAccount.accountId} to ${destination} (txId: ${result.transactionId}, status: ${result.receipt?.status?.status ?? 'UNKNOWN'})`,
-      false,
+    logger.info(
+      `[HBAR] Transferring ${normalisedParams.amount.toString()} tinybars from ${normalisedParams.fromAccount.accountId} to ${normalisedParams.destination}`,
     );
+
+    const transferResult = await api.hbar.transferTinybar({
+      amount: normalisedParams.amount,
+      from: normalisedParams.fromAccount.accountId,
+      to: normalisedParams.destination,
+      memo: normalisedParams.memo,
+    });
+
+    return { transaction: transferResult.transaction };
   }
 
-  logger.info(
-    `[HBAR] Transfer submitted successfully, txId=${result.transactionId}`,
-  );
+  async signTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: TransferNormalisedParams,
+    buildTransactionResult: TransferBuildTransactionResult,
+  ): Promise<TransferSignTransactionResult> {
+    const signedTransaction = await args.api.txSign.sign(
+      buildTransactionResult.transaction,
+      [normalisedParams.fromAccount.keyRefId],
+    );
+    return { signedTransaction };
+  }
 
-  const outputData: TransferOutput = {
-    transactionId: result.transactionId || '',
-    fromAccountId: fromAccount.accountId,
-    toAccountId: destination,
-    amountTinybar: amount,
-    network: currentNetwork,
-    ...(memo && { memo }),
-    ...(result.receipt?.status && {
-      status: result.receipt.status.status,
-    }),
-  };
+  async executeTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: TransferNormalisedParams,
+    _buildTransactionResult: TransferBuildTransactionResult,
+    signTransactionResult: TransferSignTransactionResult,
+  ): Promise<TransferExecuteTransactionResult> {
+    const result = await args.api.txExecute.execute(
+      signTransactionResult.signedTransaction,
+    );
 
-  return { result: outputData };
+    if (!result.success) {
+      throw new TransactionError(
+        `Transfer failed from ${normalisedParams.fromAccount.accountId} to ${normalisedParams.destination} (txId: ${result.transactionId}, status: ${result.receipt?.status?.status ?? 'UNKNOWN'})`,
+        false,
+      );
+    }
+
+    return result;
+  }
+
+  async outputPreparation(
+    args: CommandHandlerArgs,
+    normalisedParams: TransferNormalisedParams,
+    _buildTransactionResult: TransferBuildTransactionResult,
+    _signTransactionResult: TransferSignTransactionResult,
+    executeTransactionResult: TransferExecuteTransactionResult,
+  ): Promise<CommandResult> {
+    const { logger } = args;
+
+    logger.info(
+      `[HBAR] Transfer submitted successfully, txId=${executeTransactionResult.transactionId}`,
+    );
+
+    const outputData: TransferOutput = {
+      transactionId: executeTransactionResult.transactionId || '',
+      fromAccountId: normalisedParams.fromAccount.accountId,
+      toAccountId: normalisedParams.destination,
+      amountTinybar: normalisedParams.amount,
+      network: normalisedParams.currentNetwork,
+      ...(normalisedParams.memo && { memo: normalisedParams.memo }),
+      ...(executeTransactionResult.receipt?.status && {
+        status: executeTransactionResult.receipt.status.status,
+      }),
+    };
+
+    return { result: outputData };
+  }
 }
