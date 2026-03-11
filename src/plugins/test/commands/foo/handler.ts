@@ -77,3 +77,9 @@ export async function fooTestOptions(
 ): Promise<CommandResult> {
   return new FooTestCommand().execute(args);
 }
+
+export async function fooTest(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new FooTestCommand().execute(args);
+}

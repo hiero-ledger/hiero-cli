@@ -5,6 +5,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { BatchTransactionService } from '@/core/services/batch/batch-transaction-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
@@ -366,6 +367,9 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     topic: {} as unknown as TopicService,
     txSign,
     txExecute,
+    batch: {
+      createBatchTransaction: jest.fn(),
+    } as unknown as BatchTransactionService,
     kms,
     alias,
     state,

@@ -59,8 +59,8 @@ import {
 } from './commands/mint-nft';
 import {
   TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
+  transferFt,
   TransferFungibleTokenOutputSchema,
-  transferToken,
 } from './commands/transfer-ft';
 import {
   TRANSFER_NFT_TEMPLATE,
@@ -73,8 +73,6 @@ import {
   ViewTokenOutputSchema,
 } from './commands/view';
 
-export const TOKEN_NAMESPACE = 'token-tokens';
-
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
   version: '1.0.0',
@@ -85,6 +83,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'mint-ft',
       summary: 'Mint fungible tokens',
       description: 'Mint additional fungible tokens to increase supply.',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'token',
@@ -170,6 +169,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'transfer-ft',
       summary: 'Transfer a fungible token',
       description: 'Transfer a fungible token from one account to another',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'token',
@@ -210,7 +210,7 @@ export const tokenPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: transferToken,
+      handler: transferFt,
       output: {
         schema: TransferFungibleTokenOutputSchema,
         humanTemplate: TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,

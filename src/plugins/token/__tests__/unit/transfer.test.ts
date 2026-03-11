@@ -9,8 +9,8 @@ import { NetworkError, SupportedNetwork } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
+  transferFt,
   TransferFungibleTokenOutputSchema,
-  transferToken,
 } from '@/plugins/token/commands/transfer-ft';
 
 import { mockTransactionResults } from './helpers/fixtures';
@@ -63,7 +63,7 @@ describe('transferTokenHandler', () => {
         logger,
       };
 
-      const result = await transferToken(args);
+      const result = await transferFt(args);
 
       const output = assertOutput(
         result.result,
@@ -139,7 +139,7 @@ describe('transferTokenHandler', () => {
         logger,
       };
 
-      const result = await transferToken(args);
+      const result = await transferFt(args);
 
       const output = assertOutput(
         result.result,
@@ -218,7 +218,7 @@ describe('transferTokenHandler', () => {
         logger,
       };
 
-      const result = await transferToken(args);
+      const result = await transferFt(args);
 
       const output = assertOutput(
         result.result,
@@ -261,7 +261,7 @@ describe('transferTokenHandler', () => {
         logger,
       };
 
-      const result = await transferToken(args);
+      const result = await transferFt(args);
 
       expect(result.result).toBeDefined();
     });
@@ -323,7 +323,7 @@ describe('transferTokenHandler', () => {
         logger,
       };
 
-      const result = await transferToken(args);
+      const result = await transferFt(args);
 
       const output = assertOutput(
         result.result,
@@ -373,7 +373,7 @@ describe('transferTokenHandler', () => {
         logger,
       };
 
-      await expect(transferToken(args)).rejects.toThrow();
+      await expect(transferFt(args)).rejects.toThrow();
     });
 
     test('should handle token transaction service error', async () => {
@@ -405,7 +405,7 @@ describe('transferTokenHandler', () => {
         logger,
       };
 
-      await expect(transferToken(args)).rejects.toThrow('Network error');
+      await expect(transferFt(args)).rejects.toThrow('Network error');
     });
 
     test('should handle signing service error', async () => {
@@ -445,7 +445,7 @@ describe('transferTokenHandler', () => {
         logger,
       };
 
-      await expect(transferToken(args)).rejects.toThrow('Invalid key');
+      await expect(transferFt(args)).rejects.toThrow('Invalid key');
     });
 
     test('should handle large amount transfers', async () => {
@@ -490,7 +490,7 @@ describe('transferTokenHandler', () => {
         logger,
       };
 
-      const result = await transferToken(args);
+      const result = await transferFt(args);
 
       const output = assertOutput(
         result.result,
@@ -553,7 +553,7 @@ describe('transferTokenHandler', () => {
         logger,
       };
 
-      const result = await transferToken(args);
+      const result = await transferFt(args);
 
       const output = assertOutput(
         result.result,
@@ -607,7 +607,7 @@ describe('transferTokenHandler', () => {
         logger,
       };
 
-      const result = await transferToken(args);
+      const result = await transferFt(args);
 
       const output = assertOutput(
         result.result,
@@ -642,7 +642,7 @@ describe('transferTokenHandler', () => {
         logger,
       };
 
-      const result = await transferToken(args);
+      const result = await transferFt(args);
 
       const output = assertOutput(
         result.result,

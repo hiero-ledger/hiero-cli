@@ -9,7 +9,7 @@ import {
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { mintFt, MintFtOutputSchema } from '@/plugins/token/commands/mint-ft';
-import { TOKEN_NAMESPACE } from '@/plugins/token/manifest';
+import { TOKEN_NAMESPACE } from '@/plugins/token/constants';
 
 import { makeMintFtCommandArgs } from './helpers/fixtures';
 import {

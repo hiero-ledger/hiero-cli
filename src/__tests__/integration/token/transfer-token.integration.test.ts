@@ -20,7 +20,7 @@ import {
   getAccountBalance,
   viewAccount,
 } from '@/plugins/account';
-import { associateToken, createToken, transferToken } from '@/plugins/token';
+import { associateToken, createToken, transferFt } from '@/plugins/token';
 
 describe('Transfer Token Integration Tests', () => {
   let coreApi: CoreApi;
@@ -123,7 +123,7 @@ describe('Transfer Token Integration Tests', () => {
       to: 'account-transfer-token',
       amount: '5',
     };
-    const transferTokenResult = await transferToken({
+    const transferTokenResult = await transferFt({
       args: transferTokenArgs,
       api: coreApi,
       state: coreApi.state,
