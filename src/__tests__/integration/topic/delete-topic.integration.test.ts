@@ -9,7 +9,15 @@ import '@/core/utils/json-serialize';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi, NotFoundError } from '@/core';
-import { createTopic, deleteTopic, listTopics } from '@/plugins/topic';
+import {
+  CreateTopicCommand,
+  DeleteTopicCommand,
+  ListTopicsCommand,
+} from '@/plugins/topic';
+
+const createTopicCommand = new CreateTopicCommand();
+const deleteTopicCommand = new DeleteTopicCommand();
+const listTopicsCommand = new ListTopicsCommand();
 
 describe('Delete Topic Integration Tests', () => {
   let coreApi: CoreApi;
@@ -26,7 +34,7 @@ describe('Delete Topic Integration Tests', () => {
       const createTopicArgs: Record<string, unknown> = {
         name: 'topic-to-be-deleted',
       };
-      const createTopicResult = await createTopic({
+      const createTopicResult = await createTopicCommand.execute({
         args: createTopicArgs,
         api: coreApi,
         state: coreApi.state,
@@ -41,7 +49,7 @@ describe('Delete Topic Integration Tests', () => {
       const listTopicArgs: Record<string, unknown> = {
         network: network,
       };
-      const listTopicResult = await listTopics({
+      const listTopicResult = await listTopicsCommand.execute({
         args: listTopicArgs,
         api: coreApi,
         state: coreApi.state,
@@ -58,7 +66,7 @@ describe('Delete Topic Integration Tests', () => {
       const deleteTopicArgs: Record<string, unknown> = {
         topic: 'topic-to-be-deleted',
       };
-      const deleteTopicResult = await deleteTopic({
+      const deleteTopicResult = await deleteTopicCommand.execute({
         args: deleteTopicArgs,
         api: coreApi,
         state: coreApi.state,
@@ -72,7 +80,7 @@ describe('Delete Topic Integration Tests', () => {
       );
       expect(deleteTopicOutput.network).toBe(network);
 
-      const listAfterDeleteResult = await listTopics({
+      const listAfterDeleteResult = await listTopicsCommand.execute({
         args: listTopicArgs,
         api: coreApi,
         state: coreApi.state,
@@ -91,7 +99,7 @@ describe('Delete Topic Integration Tests', () => {
       const createTopicArgs: Record<string, unknown> = {
         name: 'topic-to-delete-by-id',
       };
-      const createTopicResult = await createTopic({
+      const createTopicResult = await createTopicCommand.execute({
         args: createTopicArgs,
         api: coreApi,
         state: coreApi.state,
@@ -105,7 +113,7 @@ describe('Delete Topic Integration Tests', () => {
       const deleteTopicArgs: Record<string, unknown> = {
         topic: createTopicOutput.topicId,
       };
-      const deleteTopicResult = await deleteTopic({
+      const deleteTopicResult = await deleteTopicCommand.execute({
         args: deleteTopicArgs,
         api: coreApi,
         state: coreApi.state,
@@ -121,7 +129,7 @@ describe('Delete Topic Integration Tests', () => {
       const listTopicArgs: Record<string, unknown> = {
         network: network,
       };
-      const listAfterDeleteResult = await listTopics({
+      const listAfterDeleteResult = await listTopicsCommand.execute({
         args: listTopicArgs,
         api: coreApi,
         state: coreApi.state,
@@ -140,7 +148,7 @@ describe('Delete Topic Integration Tests', () => {
   describe('Invalid Delete Topic Scenarios', () => {
     it('should fail when deleting non-existent topic by name', async () => {
       await expect(
-        deleteTopic({
+        deleteTopicCommand.execute({
           args: { topic: 'non-existent-topic-name' },
           api: coreApi,
           state: coreApi.state,
@@ -152,7 +160,7 @@ describe('Delete Topic Integration Tests', () => {
 
     it('should fail when deleting non-existent topic by topicId', async () => {
       await expect(
-        deleteTopic({
+        deleteTopicCommand.execute({
           args: { topic: '0.0.999999999' },
           api: coreApi,
           state: coreApi.state,
