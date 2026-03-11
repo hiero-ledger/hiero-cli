@@ -21,8 +21,8 @@ export type DeleteBatchOutput = z.infer<typeof DeleteBatchOutputSchema>;
  * Human-readable template for delete batch output
  */
 export const DELETE_BATCH_TEMPLATE = `
-{{#if (order)}}
-✅ Transaction at order {{order}} removed from batch '{{name}}'
+{{#if order}}
+✅ Transaction with order {{order}} removed from batch '{{name}}'
 {{else}}
 ✅ Batch '{{name}}' deleted successfully
 {{/if}}
