@@ -6,6 +6,7 @@
 import type { Command, OptionValues } from 'commander';
 import type {
   CommandHandlerArgs,
+  CommandResult,
   CommandSpec,
   HookOption,
   HookSpec,
