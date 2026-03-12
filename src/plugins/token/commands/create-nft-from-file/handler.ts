@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/shared.types';
 import type { CreateNftFromFileOutput } from './output';
 import type {
@@ -41,7 +41,7 @@ export class CreateNftFromFileCommand extends BaseTransactionCommand<
     const validArgs = CreateNftFromFileInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      api.config.getOption<KeyManager>('default_key_manager');
 
     logger.info(`Creating NFT token from file: ${validArgs.file}`);
 

@@ -1,8 +1,7 @@
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-
 import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { ListCredentialsOutputSchema } from '@/plugins/credentials/commands/list';
 import { listCredentials } from '@/plugins/credentials/commands/list/handler';
 
@@ -32,14 +31,14 @@ describe('credentials plugin - list command', () => {
     const mockCredentials = [
       {
         keyRefId: 'kr_test123',
-        keyManager: 'local' as KeyManagerName,
+        keyManager: KeyManager.local,
         publicKey:
           '02aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         labels: ['test', 'dev'],
       },
       {
         keyRefId: 'kr_test456',
-        keyManager: 'local_encrypted' as KeyManagerName,
+        keyManager: KeyManager.local_encrypted,
         publicKey:
           '02bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
       },

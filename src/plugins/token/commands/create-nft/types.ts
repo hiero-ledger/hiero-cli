@@ -1,7 +1,7 @@
 import type { Transaction } from '@hashgraph/sdk';
 import type { TransactionResult } from '@/core';
 import type { ResolvedAccountCredential } from '@/core/services/key-resolver/types';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 
@@ -15,7 +15,7 @@ export interface CreateNftNormalizedParams {
   alias?: string;
   memo?: string;
   network: SupportedNetwork;
-  keyManager: KeyManagerName;
+  keyManager: KeyManager;
   treasury: ResolvedAccountCredential;
   admin: ResolvedAccountCredential;
   supply: ResolvedAccountCredential;

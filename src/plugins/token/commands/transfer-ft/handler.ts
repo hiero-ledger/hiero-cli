@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { TransferFungibleTokenOutput } from './output';
 import type {
   TransferFtBuildTransactionResult,
@@ -41,8 +41,7 @@ export class TransferFtCommand extends BaseTransactionCommand<
     const keyManagerArg = validArgs.keyManager;
 
     const keyManager =
-      keyManagerArg ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
     const network = api.network.getCurrentNetwork();
 

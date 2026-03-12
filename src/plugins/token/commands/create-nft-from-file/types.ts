@@ -4,13 +4,13 @@ import type {
   ResolvedAccountCredential,
   ResolvedPublicKey,
 } from '@/core/services/key-resolver/types';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { NonFungibleTokenFileDefinition } from '@/plugins/token/schema';
 
 export interface CreateNftFromFileNormalizedParams {
   filename: string;
-  keyManager: KeyManagerName;
+  keyManager: KeyManager;
   tokenDefinition: NonFungibleTokenFileDefinition;
   network: SupportedNetwork;
   treasury: ResolvedAccountCredential;
