@@ -180,5 +180,8 @@ export class TransferNftCommand extends BaseTransactionCommand<
   }
 }
 
-export const transferNft = (args: CommandHandlerArgs) =>
-  new TransferNftCommand().execute(args);
+export async function transferNft(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new TransferNftCommand().execute(args);
+}

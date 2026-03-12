@@ -6,49 +6,49 @@ import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
 import {
-  allowance,
   CONTRACT_ERC20_CALL_ALLOWANCE_CREATE_TEMPLATE,
+  contractErc20Allowance,
   ContractErc20CallAllowanceOutputSchema,
 } from '@/plugins/contract-erc20/commands/allowance';
 import {
-  approve,
   CONTRACT_ERC20_CALL_APPROVE_TEMPLATE,
+  contractErc20Approve,
   ContractErc20CallApproveOutputSchema,
 } from '@/plugins/contract-erc20/commands/approve';
 import {
-  balanceOf,
   CONTRACT_ERC20_CALL_BALANCE_OF_CREATE_TEMPLATE,
+  contractErc20BalanceOf,
   ContractErc20CallBalanceOfOutputSchema,
 } from '@/plugins/contract-erc20/commands/balance-of';
 import {
   CONTRACT_ERC20_CALL_DECIMALS_TEMPLATE,
   ContractErc20CallDecimalsOutputSchema,
-  decimals,
+  contractErc20Decimals,
 } from '@/plugins/contract-erc20/commands/decimals';
 import {
   CONTRACT_ERC20_CALL_NAME_CREATE_TEMPLATE,
   ContractErc20CallNameOutputSchema,
-  name,
+  contractErc20Name,
 } from '@/plugins/contract-erc20/commands/name';
 import {
   CONTRACT_ERC20_CALL_SYMBOL_CREATE_TEMPLATE,
   ContractErc20CallSymbolOutputSchema,
-  symbol,
+  contractErc20Symbol,
 } from '@/plugins/contract-erc20/commands/symbol';
 import {
   CONTRACT_ERC20_CALL_TOTAL_SUPPLY_CREATE_TEMPLATE,
   ContractErc20CallTotalSupplyOutputSchema,
-  totalSupply,
+  contractErc20TotalSupply,
 } from '@/plugins/contract-erc20/commands/total-supply';
 import {
   CONTRACT_ERC20_CALL_TRANSFER_TEMPLATE,
   ContractErc20CallTransferOutputSchema,
-  transfer,
+  contractErc20Transfer,
 } from '@/plugins/contract-erc20/commands/transfer';
 import {
   CONTRACT_ERC20_CALL_TRANSFER_FROM_TEMPLATE,
   ContractErc20CallTransferFromOutputSchema,
-  transferFrom,
+  contractErc20TransferFrom,
 } from '@/plugins/contract-erc20/commands/transfer-from';
 
 export const contractErc20PluginManifest: PluginManifest = {
@@ -70,7 +70,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           description: 'Smart contract ID represented by alias or contract ID',
         },
       ],
-      handler: name,
+      handler: contractErc20Name,
       output: {
         schema: ContractErc20CallNameOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_NAME_CREATE_TEMPLATE,
@@ -89,7 +89,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           description: 'Smart contract ID represented by alias or contract ID',
         },
       ],
-      handler: symbol,
+      handler: contractErc20Symbol,
       output: {
         schema: ContractErc20CallSymbolOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_SYMBOL_CREATE_TEMPLATE,
@@ -108,7 +108,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           description: 'Smart contract ID represented by alias or contract ID',
         },
       ],
-      handler: decimals,
+      handler: contractErc20Decimals,
       output: {
         schema: ContractErc20CallDecimalsOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_DECIMALS_TEMPLATE,
@@ -143,7 +143,7 @@ export const contractErc20PluginManifest: PluginManifest = {
             'Spender account represented by alias, account ID or EVM address',
         },
       ],
-      handler: allowance,
+      handler: contractErc20Allowance,
       output: {
         schema: ContractErc20CallAllowanceOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_ALLOWANCE_CREATE_TEMPLATE,
@@ -170,7 +170,7 @@ export const contractErc20PluginManifest: PluginManifest = {
             'Account represented by alias, account ID, or EVM address',
         },
       ],
-      handler: balanceOf,
+      handler: contractErc20BalanceOf,
       output: {
         schema: ContractErc20CallBalanceOfOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_BALANCE_OF_CREATE_TEMPLATE,
@@ -214,7 +214,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           description: 'Gas for function call. Default: 100000',
         },
       ],
-      handler: transfer,
+      handler: contractErc20Transfer,
       output: {
         schema: ContractErc20CallTransferOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_TRANSFER_TEMPLATE,
@@ -266,7 +266,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           description: 'Gas for function call. Default: 100000',
         },
       ],
-      handler: transferFrom,
+      handler: contractErc20TransferFrom,
       output: {
         schema: ContractErc20CallTransferFromOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_TRANSFER_FROM_TEMPLATE,
@@ -310,7 +310,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           description: 'Gas for function call. Default: 100000',
         },
       ],
-      handler: approve,
+      handler: contractErc20Approve,
       output: {
         schema: ContractErc20CallApproveOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_APPROVE_TEMPLATE,
@@ -329,7 +329,7 @@ export const contractErc20PluginManifest: PluginManifest = {
           description: 'Smart contract ID represented by alias or contract ID',
         },
       ],
-      handler: totalSupply,
+      handler: contractErc20TotalSupply,
       output: {
         schema: ContractErc20CallTotalSupplyOutputSchema,
         humanTemplate: CONTRACT_ERC20_CALL_TOTAL_SUPPLY_CREATE_TEMPLATE,

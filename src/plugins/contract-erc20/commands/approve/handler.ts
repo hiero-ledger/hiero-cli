@@ -155,5 +155,8 @@ export class ContractErc20ApproveCommand extends BaseTransactionCommand<
   }
 }
 
-export const approve = (args: CommandHandlerArgs) =>
-  new ContractErc20ApproveCommand().execute(args);
+export async function contractErc20Approve(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ContractErc20ApproveCommand().execute(args);
+}

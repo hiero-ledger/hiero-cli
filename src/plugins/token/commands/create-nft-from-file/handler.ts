@@ -268,5 +268,8 @@ export class CreateNftFromFileCommand extends BaseTransactionCommand<
   }
 }
 
-export const createNftFromFile = (args: CommandHandlerArgs) =>
-  new CreateNftFromFileCommand().execute(args);
+export async function createNftFromFile(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new CreateNftFromFileCommand().execute(args);
+}

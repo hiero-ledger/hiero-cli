@@ -199,7 +199,8 @@ export class AssociateTokenCommand extends BaseTransactionCommand<
   }
 }
 
-export const associate = (args: CommandHandlerArgs) =>
-  new AssociateTokenCommand().execute(args);
-
-export const associateToken = associate;
+export async function associateToken(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new AssociateTokenCommand().execute(args);
+}

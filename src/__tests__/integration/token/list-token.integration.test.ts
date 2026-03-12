@@ -9,7 +9,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { SupplyType } from '@/core/types/shared.types';
-import { createToken, listTokens } from '@/plugins/token';
+import { createFt, listTokens } from '@/plugins/token';
 
 describe('List Token Integration Tests', () => {
   let coreApi: CoreApi;
@@ -28,7 +28,7 @@ describe('List Token Integration Tests', () => {
       supplyType: SupplyType.INFINITE,
       name: 'test-token-list',
     };
-    const createTokenResult = await createToken({
+    const createTokenResult = await createFt({
       args: createTokenArgs,
       api: coreApi,
       state: coreApi.state,

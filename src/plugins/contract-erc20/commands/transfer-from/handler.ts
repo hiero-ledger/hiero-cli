@@ -176,5 +176,8 @@ export class ContractErc20TransferFromCommand extends BaseTransactionCommand<
   }
 }
 
-export const transferFrom = (args: CommandHandlerArgs) =>
-  new ContractErc20TransferFromCommand().execute(args);
+export async function contractErc20TransferFrom(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ContractErc20TransferFromCommand().execute(args);
+}

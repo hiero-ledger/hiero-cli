@@ -62,6 +62,8 @@ export class ListTopicsCommand implements Command {
   }
 }
 
-const listTopicsCommand = new ListTopicsCommand();
-
-export const listTopics = listTopicsCommand.execute.bind(listTopicsCommand);
+export async function listTopics(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ListTopicsCommand().execute(args);
+}

@@ -47,6 +47,8 @@ export class FindMessageCommand implements Command {
   }
 }
 
-const findMessageCommand = new FindMessageCommand();
-
-export const findMessage = findMessageCommand.execute.bind(findMessageCommand);
+export async function findMessage(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new FindMessageCommand().execute(args);
+}

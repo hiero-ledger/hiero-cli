@@ -4,7 +4,7 @@
  */
 import {
   associateToken,
-  createToken,
+  createFt,
   createTokenFromFile,
   transferFt,
 } from '@/plugins/token/index';
@@ -29,14 +29,14 @@ describe('Token Plugin Structure', () => {
 
   test('command handlers should be exported', () => {
     expect(transferFt).toBeDefined();
-    expect(createToken).toBeDefined();
+    expect(createFt).toBeDefined();
     expect(associateToken).toBeDefined();
     expect(createTokenFromFile).toBeDefined();
   });
 
   test('command handlers should be functions', () => {
     expect(typeof transferFt).toBe('function');
-    expect(typeof createToken).toBe('function');
+    expect(typeof createFt).toBe('function');
     expect(typeof associateToken).toBe('function');
     expect(typeof createTokenFromFile).toBe('function');
   });

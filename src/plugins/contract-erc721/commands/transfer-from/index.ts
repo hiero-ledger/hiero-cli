@@ -4,8 +4,8 @@
  */
 export {
   CONTRACT_ERC721_TRANSFER_FROM_COMMAND_NAME,
-  TransferFromCommand,
-  transferFromFunctionCall,
+  ContractErc721TransferFromCommand,
+  contractErc721TransferFromFunctionCall,
 } from './handler';
 export type { ContractErc721CallTransferFromOutput } from './output';
 export {

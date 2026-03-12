@@ -3,7 +3,6 @@
  * For use by tests and external consumers
  */
 export {
-  associate,
   associateToken,
   AssociateTokenCommand,
   TOKEN_ASSOCIATE_COMMAND_NAME,

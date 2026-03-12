@@ -204,5 +204,8 @@ export class CreateAccountCommand extends BaseTransactionCommand<
   }
 }
 
-export const createAccount = (args: CommandHandlerArgs) =>
-  new CreateAccountCommand().execute(args);
+export async function createAccount(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new CreateAccountCommand().execute(args);
+}

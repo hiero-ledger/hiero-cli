@@ -4,8 +4,8 @@
  */
 export {
   CONTRACT_ERC20_TRANSFER_COMMAND_NAME,
+  contractErc20Transfer,
   ContractErc20TransferCommand,
-  transfer,
 } from './handler';
 export type { ContractErc20CallTransferOutput } from './output';
 export {

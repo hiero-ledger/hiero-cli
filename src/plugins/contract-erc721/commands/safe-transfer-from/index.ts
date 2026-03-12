@@ -4,8 +4,8 @@
  */
 export {
   CONTRACT_ERC721_SAFE_TRANSFER_FROM_COMMAND_NAME,
-  SafeTransferFromCommand,
-  safeTransferFromFunctionCall,
+  ContractErc721SafeTransferFromCommand,
+  contractErc721SafeTransferFromFunctionCall,
 } from './handler';
 export type { ContractErc721CallSafeTransferFromOutput } from './output';
 export {

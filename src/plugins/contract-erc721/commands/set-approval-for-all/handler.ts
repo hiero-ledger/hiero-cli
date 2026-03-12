@@ -20,7 +20,7 @@ const ERC_721_FUNCTION_NAME = 'setApprovalForAll';
 export const CONTRACT_ERC721_SET_APPROVAL_FOR_ALL_COMMAND_NAME =
   'contract-erc721_set-approval-for-all';
 
-export class SetApprovalForAllCommand extends BaseTransactionCommand<
+export class ContractErc721SetApprovalForAllCommand extends BaseTransactionCommand<
   SetApprovalForAllNormalisedParams,
   SetApprovalForAllBuildTransactionResult,
   SetApprovalForAllSignTransactionResult,
@@ -159,8 +159,8 @@ export class SetApprovalForAllCommand extends BaseTransactionCommand<
   }
 }
 
-export async function setApprovalForAllFunctionCall(
+export async function contractErc721SetApprovalForAllFunctionCall(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new SetApprovalForAllCommand().execute(args);
+  return new ContractErc721SetApprovalForAllCommand().execute(args);
 }

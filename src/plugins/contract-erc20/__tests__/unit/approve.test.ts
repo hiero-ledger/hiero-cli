@@ -8,7 +8,7 @@ import { NotFoundError, TransactionError } from '@/core/errors';
 import { makeContractErc20ExecuteCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallApproveOutputSchema } from '@/plugins/contract-erc20/commands/approve';
-import { approve as erc20ApproveHandler } from '@/plugins/contract-erc20/commands/approve/handler';
+import { contractErc20Approve as erc20ApproveHandler } from '@/plugins/contract-erc20/commands/approve/handler';
 import { ContractErc20CallApproveInputSchema } from '@/plugins/contract-erc20/commands/approve/input';
 
 const mockAddAddress = jest.fn().mockReturnThis();

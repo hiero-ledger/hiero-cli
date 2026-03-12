@@ -2,7 +2,7 @@
  * Contract ERC20 Name Command Exports
  * For use by tests and external consumers
  */
-export { ContractErc20NameCommand, name } from './handler';
+export { contractErc20Name, ContractErc20NameCommand } from './handler';
 export type { ContractErc20CallNameOutput } from './output';
 export {
   CONTRACT_ERC20_CALL_NAME_CREATE_TEMPLATE,

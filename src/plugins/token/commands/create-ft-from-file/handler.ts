@@ -290,7 +290,8 @@ export class CreateFtFromFileCommand extends BaseTransactionCommand<
   }
 }
 
-export const createFtFromFile = (args: CommandHandlerArgs) =>
-  new CreateFtFromFileCommand().execute(args);
-
-export const createTokenFromFile = createFtFromFile;
+export async function createTokenFromFile(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new CreateFtFromFileCommand().execute(args);
+}

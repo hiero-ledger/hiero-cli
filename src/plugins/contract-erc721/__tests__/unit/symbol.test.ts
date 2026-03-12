@@ -11,7 +11,7 @@ import { makeContractErc721CallCommandArgs } from '@/plugins/contract-erc721/__t
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 import {
   ContractErc721CallSymbolOutputSchema,
-  symbolFunctionCall,
+  contractErc721SymbolFunctionCall,
 } from '@/plugins/contract-erc721/commands/symbol';
 import { ContractErc721CallSymbolInputSchema } from '@/plugins/contract-erc721/commands/symbol/input';
 
@@ -67,7 +67,7 @@ describe('contract-erc721 plugin - symbol command (unit)', () => {
       },
     });
 
-    const result = await symbolFunctionCall(args);
+    const result = await contractErc721SymbolFunctionCall(args);
 
     expect(result.result).toBeDefined();
     const output = assertOutput(
@@ -104,7 +104,7 @@ describe('contract-erc721 plugin - symbol command (unit)', () => {
       },
     });
 
-    const result = await symbolFunctionCall(args);
+    const result = await contractErc721SymbolFunctionCall(args);
 
     expect(result.result).toBeDefined();
     expect(
@@ -139,8 +139,10 @@ describe('contract-erc721 plugin - symbol command (unit)', () => {
       queryResult: [],
     });
 
-    await expect(symbolFunctionCall(args)).rejects.toThrow(StateError);
-    await expect(symbolFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721SymbolFunctionCall(args)).rejects.toThrow(
+      StateError,
+    );
+    await expect(contractErc721SymbolFunctionCall(args)).rejects.toThrow(
       `There was a problem with decoding contract ${MOCK_CONTRACT_ID} "symbol" function result`,
     );
   });
@@ -157,7 +159,7 @@ describe('contract-erc721 plugin - symbol command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    await expect(symbolFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721SymbolFunctionCall(args)).rejects.toThrow(
       'contract query error',
     );
   });

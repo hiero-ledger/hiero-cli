@@ -25,7 +25,7 @@ import {
 } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 import {
   ContractErc721CallTransferFromOutputSchema,
-  transferFromFunctionCall,
+  contractErc721TransferFromFunctionCall,
 } from '@/plugins/contract-erc721/commands/transfer-from';
 import { ContractErc721CallTransferFromInputSchema } from '@/plugins/contract-erc721/commands/transfer-from/input';
 
@@ -95,7 +95,7 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       },
     });
 
-    const result = await transferFromFunctionCall(args);
+    const result = await contractErc721TransferFromFunctionCall(args);
 
     expect(result.result).toBeDefined();
     const output = assertOutput(
@@ -147,7 +147,7 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       },
     });
 
-    const result = await transferFromFunctionCall(args);
+    const result = await contractErc721TransferFromFunctionCall(args);
 
     expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
@@ -181,7 +181,7 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       },
     });
 
-    const result = await transferFromFunctionCall(args);
+    const result = await contractErc721TransferFromFunctionCall(args);
 
     expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveAccount).not.toHaveBeenCalledWith(
@@ -204,7 +204,7 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       },
     });
 
-    const result = await transferFromFunctionCall(args);
+    const result = await contractErc721TransferFromFunctionCall(args);
 
     expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveAccount).not.toHaveBeenCalledWith(
@@ -230,10 +230,10 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       receipt: { status: { status: 'FAILURE' } },
     });
 
-    await expect(transferFromFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721TransferFromFunctionCall(args)).rejects.toThrow(
       TransactionError,
     );
-    await expect(transferFromFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721TransferFromFunctionCall(args)).rejects.toThrow(
       'Failed to call transferFrom on contract 0.0.1234 (txId: undefined, status: FAILURE)',
     );
   });
@@ -254,7 +254,7 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       new Error('network error'),
     );
 
-    await expect(transferFromFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721TransferFromFunctionCall(args)).rejects.toThrow(
       'network error',
     );
   });
@@ -280,7 +280,9 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
       ),
     );
 
-    await expect(transferFromFunctionCall(args)).rejects.toThrow('not found');
+    await expect(contractErc721TransferFromFunctionCall(args)).rejects.toThrow(
+      'not found',
+    );
   });
 
   test('throws NotFoundError when resolveAccount for from has no evmAddress', async () => {
@@ -308,7 +310,7 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
         evmAddress: MOCK_EVM_ADDRESS,
       });
 
-    const promise = transferFromFunctionCall(args);
+    const promise = contractErc721TransferFromFunctionCall(args);
     await expect(promise).rejects.toThrow(NotFoundError);
     await expect(promise).rejects.toThrow(
       "Couldn't resolve EVM address for an account",
@@ -341,7 +343,7 @@ describe('contract-erc721 plugin - transferFrom command (unit)', () => {
         evmAddress: undefined,
       });
 
-    const promise = transferFromFunctionCall(args);
+    const promise = contractErc721TransferFromFunctionCall(args);
     await expect(promise).rejects.toThrow(NotFoundError);
     await expect(promise).rejects.toThrow(
       "Couldn't resolve EVM address for an account",

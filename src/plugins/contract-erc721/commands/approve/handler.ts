@@ -19,7 +19,7 @@ const ERC_721_FUNCTION_NAME = 'approve';
 
 export const CONTRACT_ERC721_APPROVE_COMMAND_NAME = 'contract-erc721_approve';
 
-export class ApproveCommand extends BaseTransactionCommand<
+export class ContractErc721ApproveCommand extends BaseTransactionCommand<
   ApproveNormalisedParams,
   ApproveBuildTransactionResult,
   ApproveSignTransactionResult,
@@ -156,8 +156,8 @@ export class ApproveCommand extends BaseTransactionCommand<
   }
 }
 
-export async function approveFunctionCall(
+export async function contractErc721ApproveFunctionCall(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ApproveCommand().execute(args);
+  return new ContractErc721ApproveCommand().execute(args);
 }

@@ -20,7 +20,7 @@ const ERC_721_FUNCTION_NAME = 'transferFrom';
 export const CONTRACT_ERC721_TRANSFER_FROM_COMMAND_NAME =
   'contract-erc721_transfer-from';
 
-export class TransferFromCommand extends BaseTransactionCommand<
+export class ContractErc721TransferFromCommand extends BaseTransactionCommand<
   TransferFromNormalisedParams,
   TransferFromBuildTransactionResult,
   TransferFromSignTransactionResult,
@@ -181,8 +181,8 @@ export class TransferFromCommand extends BaseTransactionCommand<
   }
 }
 
-export async function transferFromFunctionCall(
+export async function contractErc721TransferFromFunctionCall(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TransferFromCommand().execute(args);
+  return new ContractErc721TransferFromCommand().execute(args);
 }

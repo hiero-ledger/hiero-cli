@@ -2,7 +2,10 @@
  * Contract symbol Command Exports
  * For use by tests and external consumers
  */
-export { SymbolCommand, symbolFunctionCall } from './handler';
+export {
+  ContractErc721SymbolCommand,
+  contractErc721SymbolFunctionCall,
+} from './handler';
 export type { ContractErc721CallSymbolOutput } from './output';
 export {
   CONTRACT_ERC721_CALL_SYMBOL_TEMPLATE,

@@ -11,7 +11,7 @@ import {
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { transferFt } from '@/plugins/token';
 import { associateToken } from '@/plugins/token/commands/associate';
-import { createToken } from '@/plugins/token/commands/create-ft';
+import { createFt } from '@/plugins/token/commands/create-ft';
 import { createTokenFromFile } from '@/plugins/token/commands/create-ft-from-file';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -93,7 +93,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createToken(args)).rejects.toThrow('Network timeout');
+      await expect(createFt(args)).rejects.toThrow('Network timeout');
     });
 
     test('should handle network connectivity issues during association', async () => {
@@ -203,7 +203,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert - Error is thrown before try-catch block in handler
-      await expect(createToken(args)).rejects.toThrow(
+      await expect(createFt(args)).rejects.toThrow(
         'Invalid private key format',
       );
     });
@@ -248,7 +248,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createToken(args)).rejects.toThrow();
+      await expect(createFt(args)).rejects.toThrow();
     });
 
     test('should handle insufficient permissions', async () => {
@@ -449,7 +449,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createToken(args)).rejects.toThrow();
+      await expect(createFt(args)).rejects.toThrow();
     });
   });
 
@@ -560,7 +560,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createToken(args)).rejects.toThrow();
+      await expect(createFt(args)).rejects.toThrow();
     });
   });
 
@@ -590,7 +590,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createToken(args)).rejects.toThrow();
+      await expect(createFt(args)).rejects.toThrow();
     });
 
     test('should handle service throttling', async () => {
@@ -680,7 +680,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createToken(args)).rejects.toThrow(StateError);
+      await expect(createFt(args)).rejects.toThrow(StateError);
     });
 
     test('should handle unexpected API responses', async () => {
@@ -708,7 +708,7 @@ describe('Token Plugin Error Handling', () => {
         logger,
       };
 
-      const result = await createToken(args);
+      const result = await createFt(args);
       expect(result.result).toBeDefined();
     });
   });

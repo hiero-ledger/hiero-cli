@@ -173,7 +173,8 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
   }
 }
 
-const submitMessageCommand = new SubmitMessageCommand();
-
-export const submitMessage =
-  submitMessageCommand.execute.bind(submitMessageCommand);
+export async function submitMessage(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new SubmitMessageCommand().execute(args);
+}

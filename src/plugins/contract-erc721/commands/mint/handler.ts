@@ -19,7 +19,7 @@ const ERC_721_FUNCTION_NAME = 'mint';
 
 export const CONTRACT_ERC721_MINT_COMMAND_NAME = 'contract-erc721_mint';
 
-export class MintCommand extends BaseTransactionCommand<
+export class ContractErc721MintCommand extends BaseTransactionCommand<
   MintNormalisedParams,
   MintBuildTransactionResult,
   MintSignTransactionResult,
@@ -156,8 +156,8 @@ export class MintCommand extends BaseTransactionCommand<
   }
 }
 
-export async function mintFunctionCall(
+export async function contractErc721MintFunctionCall(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new MintCommand().execute(args);
+  return new ContractErc721MintCommand().execute(args);
 }

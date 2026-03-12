@@ -123,5 +123,8 @@ export class ContractErc20AllowanceCommand implements Command {
   }
 }
 
-export const allowance = (args: CommandHandlerArgs) =>
-  new ContractErc20AllowanceCommand().execute(args);
+export async function contractErc20Allowance(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ContractErc20AllowanceCommand().execute(args);
+}

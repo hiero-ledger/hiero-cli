@@ -20,7 +20,7 @@ const ERC_721_FUNCTION_NAME = 'safeTransferFrom';
 export const CONTRACT_ERC721_SAFE_TRANSFER_FROM_COMMAND_NAME =
   'contract-erc721_safe-transfer-from';
 
-export class SafeTransferFromCommand extends BaseTransactionCommand<
+export class ContractErc721SafeTransferFromCommand extends BaseTransactionCommand<
   SafeTransferFromNormalisedParams,
   SafeTransferFromBuildTransactionResult,
   SafeTransferFromSignTransactionResult,
@@ -189,8 +189,8 @@ export class SafeTransferFromCommand extends BaseTransactionCommand<
   }
 }
 
-export async function safeTransferFromFunctionCall(
+export async function contractErc721SafeTransferFromFunctionCall(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new SafeTransferFromCommand().execute(args);
+  return new ContractErc721SafeTransferFromCommand().execute(args);
 }

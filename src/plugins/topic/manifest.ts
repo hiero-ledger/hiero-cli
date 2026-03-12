@@ -51,6 +51,7 @@ export const topicPluginManifest: PluginManifest = {
       summary: 'Create a new Hedera topic',
       description:
         'Create a new Hedera Consensus Service topic with optional memo and keys',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'memo',
@@ -140,6 +141,7 @@ export const topicPluginManifest: PluginManifest = {
       name: 'submit-message',
       summary: 'Submit a message to a topic',
       description: 'Submit a message to a Hedera Consensus Service topic',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'topic',
