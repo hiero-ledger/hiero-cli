@@ -1,6 +1,6 @@
 /**
- * Test Plugin Manifest
- * Provides commands to list, get and set configuration options
+ * Contract Plugin Manifest
+ * Provides commands for smart contract management (create, list, import, delete)
  */
 import type { PluginManifest } from '@/core';
 
