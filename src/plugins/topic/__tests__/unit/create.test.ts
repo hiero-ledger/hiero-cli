@@ -15,7 +15,7 @@ import { NetworkError, SupportedNetwork } from '@/core';
 import { TransactionError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { CreateTopicOutputSchema } from '@/plugins/topic/commands/create';
-import { CreateTopicCommand } from '@/plugins/topic/commands/create/handler';
+import { createTopic } from '@/plugins/topic/commands/create/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -114,7 +114,7 @@ describe('topic plugin - create command', () => {
       memo: 'Test topic memo',
     });
 
-    const result = await new CreateTopicCommand().execute(args);
+    const result = await createTopic(args);
 
     const output = assertOutput(result.result, CreateTopicOutputSchema);
     expect(output.topicId).toBe('0.0.9999');
@@ -177,7 +177,7 @@ describe('topic plugin - create command', () => {
       submitKey,
     });
 
-    const result = await new CreateTopicCommand().execute(args);
+    const result = await createTopic(args);
 
     const output = assertOutput(result.result, CreateTopicOutputSchema);
     expect(output.topicId).toBe('0.0.8888');
@@ -245,7 +245,7 @@ describe('topic plugin - create command', () => {
 
     const args = makeArgs(api, logger, {});
 
-    const result = await new CreateTopicCommand().execute(args);
+    const result = await createTopic(args);
 
     const output = assertOutput(result.result, CreateTopicOutputSchema);
     expect(output.topicId).toBe('0.0.7777');
@@ -294,9 +294,7 @@ describe('topic plugin - create command', () => {
 
     const args = makeArgs(api, logger, { memo: 'Failed topic' });
 
-    await expect(new CreateTopicCommand().execute(args)).rejects.toThrow(
-      TransactionError,
-    );
+    await expect(createTopic(args)).rejects.toThrow(TransactionError);
   });
 
   test('throws when createTopic throws', async () => {
@@ -322,8 +320,6 @@ describe('topic plugin - create command', () => {
 
     const args = makeArgs(api, logger, { memo: 'Error topic' });
 
-    await expect(new CreateTopicCommand().execute(args)).rejects.toThrow(
-      'network error',
-    );
+    await expect(createTopic(args)).rejects.toThrow('network error');
   });
 });

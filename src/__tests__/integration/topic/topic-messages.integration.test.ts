@@ -12,16 +12,11 @@ import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import {
-  CreateTopicCommand,
-  FindMessageCommand,
-  ListTopicsCommand,
-  SubmitMessageCommand,
+  createTopic,
+  findMessage,
+  listTopics,
+  submitMessage,
 } from '@/plugins/topic';
-
-const createTopicCommand = new CreateTopicCommand();
-const findMessageCommand = new FindMessageCommand();
-const listTopicsCommand = new ListTopicsCommand();
-const submitMessageCommand = new SubmitMessageCommand();
 
 describe('Topic Messages Integration Tests', () => {
   let coreApi: CoreApi;
@@ -36,7 +31,7 @@ describe('Topic Messages Integration Tests', () => {
     const createTopicArgs: Record<string, unknown> = {
       name: 'test-topic-submit',
     };
-    const createTopicResult = await createTopicCommand.execute({
+    const createTopicResult = await createTopic({
       args: createTopicArgs,
       api: coreApi,
       state: coreApi.state,
@@ -53,7 +48,7 @@ describe('Topic Messages Integration Tests', () => {
     const listTopicArgs: Record<string, unknown> = {
       network: network,
     };
-    const listTopicResult = await listTopicsCommand.execute({
+    const listTopicResult = await listTopics({
       args: listTopicArgs,
       api: coreApi,
       state: coreApi.state,
@@ -77,7 +72,7 @@ describe('Topic Messages Integration Tests', () => {
         topic: createTopicOutput.topicId,
         message: `Test message ${i + 1}`,
       };
-      const submitMessageResult = await submitMessageCommand.execute({
+      const submitMessageResult = await submitMessage({
         args: topicMessageSubmitArgs,
         api: coreApi,
         state: coreApi.state,
@@ -96,7 +91,7 @@ describe('Topic Messages Integration Tests', () => {
       topic: createTopicOutput.topicId,
       sequenceEq: 3,
     };
-    const findMessageEqResult = await findMessageCommand.execute({
+    const findMessageEqResult = await findMessage({
       args: findMessageEqArgs,
       api: coreApi,
       state: coreApi.state,
@@ -112,7 +107,7 @@ describe('Topic Messages Integration Tests', () => {
       topic: createTopicOutput.topicId,
       sequenceGt: 7,
     };
-    const findMessageGtResult = await findMessageCommand.execute({
+    const findMessageGtResult = await findMessage({
       args: findMessageGtArgs,
       api: coreApi,
       state: coreApi.state,
@@ -128,7 +123,7 @@ describe('Topic Messages Integration Tests', () => {
       topic: createTopicOutput.topicId,
       sequenceGte: 7,
     };
-    const findMessageGteResult = await findMessageCommand.execute({
+    const findMessageGteResult = await findMessage({
       args: findMessageGteArgs,
       api: coreApi,
       state: coreApi.state,
@@ -144,7 +139,7 @@ describe('Topic Messages Integration Tests', () => {
       topic: createTopicOutput.topicId,
       sequenceLt: 4,
     };
-    const findMessageLtResult = await findMessageCommand.execute({
+    const findMessageLtResult = await findMessage({
       args: findMessageLtArgs,
       api: coreApi,
       state: coreApi.state,
@@ -160,7 +155,7 @@ describe('Topic Messages Integration Tests', () => {
       topic: createTopicOutput.topicId,
       sequenceLte: 4,
     };
-    const findMessageLteResult = await findMessageCommand.execute({
+    const findMessageLteResult = await findMessage({
       args: findMessageLteArgs,
       api: coreApi,
       state: coreApi.state,

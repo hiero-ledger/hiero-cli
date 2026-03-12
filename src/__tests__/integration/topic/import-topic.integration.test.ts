@@ -11,17 +11,12 @@ import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import {
-  CreateTopicCommand,
-  DeleteTopicCommand,
-  ImportTopicCommand,
-  ListTopicsCommand,
+  createTopic,
+  deleteTopic,
+  importTopic,
+  listTopics,
 } from '@/plugins/topic';
 import { TOPIC_NAMESPACE } from '@/plugins/topic/manifest';
-
-const createTopicCommand = new CreateTopicCommand();
-const deleteTopicCommand = new DeleteTopicCommand();
-const importTopicCommand = new ImportTopicCommand();
-const listTopicsCommand = new ListTopicsCommand();
 
 describe('Import Topic Integration Tests', () => {
   const TOPIC_NAME = 'TopicImport';
@@ -38,7 +33,7 @@ describe('Import Topic Integration Tests', () => {
     const createTopicArgs: Record<string, unknown> = {
       name: TOPIC_NAME,
     };
-    const createTopicResult = await createTopicCommand.execute({
+    const createTopicResult = await createTopic({
       args: createTopicArgs,
       api: coreApi,
       state: coreApi.state,
@@ -52,7 +47,7 @@ describe('Import Topic Integration Tests', () => {
     const deleteTopicArgs: Record<string, unknown> = {
       topic: topicId,
     };
-    await deleteTopicCommand.execute({
+    await deleteTopic({
       args: deleteTopicArgs,
       api: coreApi,
       state: coreApi.state,
@@ -67,7 +62,7 @@ describe('Import Topic Integration Tests', () => {
     const deleteTopicArgs: Record<string, unknown> = {
       topic: topicId,
     };
-    await deleteTopicCommand.execute({
+    await deleteTopic({
       args: deleteTopicArgs,
       api: coreApi,
       state: coreApi.state,
@@ -80,7 +75,7 @@ describe('Import Topic Integration Tests', () => {
     const importTopicArgs: Record<string, unknown> = {
       topic: topicId,
     };
-    const importTopicResult = await importTopicCommand.execute({
+    const importTopicResult = await importTopic({
       args: importTopicArgs,
       api: coreApi,
       state: coreApi.state,
@@ -95,7 +90,7 @@ describe('Import Topic Integration Tests', () => {
     const listTopicArgs: Record<string, unknown> = {
       network,
     };
-    const listTopicResult = await listTopicsCommand.execute({
+    const listTopicResult = await listTopics({
       args: listTopicArgs,
       api: coreApi,
       state: coreApi.state,
@@ -120,7 +115,7 @@ describe('Import Topic Integration Tests', () => {
       topic: topicId,
       name: alias,
     };
-    const importTopicResult = await importTopicCommand.execute({
+    const importTopicResult = await importTopic({
       args: importTopicArgs,
       api: coreApi,
       state: coreApi.state,
@@ -136,7 +131,7 @@ describe('Import Topic Integration Tests', () => {
     const listTopicArgs: Record<string, unknown> = {
       network,
     };
-    const listTopicResult = await listTopicsCommand.execute({
+    const listTopicResult = await listTopics({
       args: listTopicArgs,
       api: coreApi,
       state: coreApi.state,
