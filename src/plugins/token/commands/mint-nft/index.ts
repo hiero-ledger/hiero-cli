@@ -1,4 +1,4 @@
-export { mintNft } from './handler';
+export { mintNft, MintNftCommand } from './handler';
 export { type MintNftInput, MintNftInputSchema } from './input';
 export {
   MINT_NFT_TEMPLATE,

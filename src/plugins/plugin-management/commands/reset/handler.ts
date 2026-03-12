@@ -4,21 +4,28 @@
  * Custom plugins will be removed.
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { Command } from '@/core/commands/command.interface';
 import type { ResetPluginsOutput } from './output';
+
+export class ResetPluginsCommand implements Command {
+  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+    const { api, logger } = args;
+
+    logger.info('🔄 Resetting plugin state...');
+
+    api.pluginManagement.resetPlugins();
+
+    const outputData: ResetPluginsOutput = {
+      reset: true,
+      message: 'Plugin state has been reset successfully.',
+    };
+
+    return { result: outputData };
+  }
+}
 
 export async function resetPlugins(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  const { api, logger } = args;
-
-  logger.info('🔄 Resetting plugin state...');
-
-  api.pluginManagement.resetPlugins();
-
-  const outputData: ResetPluginsOutput = {
-    reset: true,
-    message: 'Plugin state has been reset successfully.',
-  };
-
-  return { result: outputData };
+  return new ResetPluginsCommand().execute(args);
 }

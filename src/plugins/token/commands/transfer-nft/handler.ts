@@ -1,7 +1,14 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { TransferNftOutput } from './output';
+import type {
+  TransferNftBuildTransactionResult,
+  TransferNftExecuteTransactionResult,
+  TransferNftNormalizedParams,
+  TransferNftSignTransactionResult,
+} from './types';
 
+import { BaseTransactionCommand } from '@/core/commands/command';
 import {
   NotFoundError,
   TransactionError,
@@ -14,117 +21,158 @@ import {
 
 import { TransferNftInputSchema } from './input';
 
-export async function transferNft(
-  args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { api, logger } = args;
+export class TransferNftCommand extends BaseTransactionCommand<
+  TransferNftNormalizedParams,
+  TransferNftBuildTransactionResult,
+  TransferNftSignTransactionResult,
+  TransferNftExecuteTransactionResult
+> {
+  async normalizeParams(
+    args: CommandHandlerArgs,
+  ): Promise<TransferNftNormalizedParams> {
+    const { api, logger } = args;
+    const validArgs = TransferNftInputSchema.parse(args.args);
+    const keyManager =
+      validArgs.keyManager ||
+      api.config.getOption<KeyManagerName>('default_key_manager');
+    const network = api.network.getCurrentNetwork();
+    const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
 
-  const validArgs = TransferNftInputSchema.parse(args.args);
-
-  const tokenIdOrAlias = validArgs.token;
-  const from = validArgs.from;
-  const to = validArgs.to;
-  const serials = validArgs.serials;
-  const keyManagerArg = validArgs.keyManager;
-
-  const keyManager =
-    keyManagerArg ||
-    api.config.getOption<KeyManagerName>('default_key_manager');
-
-  const network = api.network.getCurrentNetwork();
-
-  const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
-
-  if (!resolvedToken) {
-    throw new NotFoundError(`Token not found: ${tokenIdOrAlias}`, {
-      context: { tokenIdOrAlias },
-    });
-  }
-
-  const tokenId = resolvedToken.tokenId;
-
-  const tokenInfo = await api.mirror.getTokenInfo(tokenId);
-
-  if (tokenInfo.type !== 'NON_FUNGIBLE_UNIQUE') {
-    throw new ValidationError('Token is not an NFT', {
-      context: { tokenId, type: tokenInfo.type },
-    });
-  }
-
-  const resolvedFromAccount =
-    await api.keyResolver.resolveAccountCredentialsWithFallback(
-      from,
-      keyManager,
-      ['token:account'],
-    );
-
-  const { accountId: fromAccountId, keyRefId: signerKeyRefId } =
-    resolvedFromAccount;
-
-  logger.info(`🔑 Using from account: ${fromAccountId}`);
-  logger.info(`🔑 Will sign with from account key`);
-
-  for (const serial of serials) {
-    const nftInfo = await api.mirror.getNftInfo(tokenId, serial);
-
-    if (nftInfo.account_id !== fromAccountId) {
-      throw new ValidationError('NFT not owned by sender', {
-        context: {
-          tokenId,
-          serial,
-          owner: nftInfo.account_id,
-          expected: fromAccountId,
-        },
+    if (!resolvedToken) {
+      throw new NotFoundError(`Token not found: ${validArgs.token}`, {
+        context: { tokenIdOrAlias: validArgs.token },
       });
     }
-  }
 
-  const resolvedToAccount = resolveDestinationAccountParameter(
-    to,
-    api,
-    network,
-  );
+    const tokenId = resolvedToken.tokenId;
+    const tokenInfo = await api.mirror.getTokenInfo(tokenId);
+    if (tokenInfo.type !== 'NON_FUNGIBLE_UNIQUE') {
+      throw new ValidationError('Token is not an NFT', {
+        context: { tokenId, type: tokenInfo.type },
+      });
+    }
 
-  if (!resolvedToAccount) {
-    throw new NotFoundError(`Destination account not found: ${to}`, {
-      context: { to },
-    });
-  }
+    const resolvedFromAccount =
+      await api.keyResolver.resolveAccountCredentialsWithFallback(
+        validArgs.from,
+        keyManager,
+        ['token:account'],
+      );
+    const fromAccountId = resolvedFromAccount.accountId;
+    const signerKeyRefId = resolvedFromAccount.keyRefId;
 
-  const toAccountId = resolvedToAccount.accountId;
+    logger.info(`🔑 Using from account: ${fromAccountId}`);
+    logger.info('🔑 Will sign with from account key');
 
-  logger.info(
-    `Transferring ${serials.length} NFT(s) of ${tokenId} from ${fromAccountId} to ${toAccountId}`,
-  );
+    for (const serial of validArgs.serials) {
+      const nftInfo = await api.mirror.getNftInfo(tokenId, serial);
+      if (nftInfo.account_id !== fromAccountId) {
+        throw new ValidationError('NFT not owned by sender', {
+          context: {
+            tokenId,
+            serial,
+            owner: nftInfo.account_id,
+            expected: fromAccountId,
+          },
+        });
+      }
+    }
 
-  const transferTransaction = api.token.createNftTransferTransaction({
-    tokenId,
-    fromAccountId,
-    toAccountId,
-    serialNumbers: serials,
-  });
-
-  logger.debug(`Using key ${signerKeyRefId} for signing transaction`);
-  const transaction = await api.txSign.sign(transferTransaction, [
-    signerKeyRefId,
-  ]);
-  const result = await api.txExecute.execute(transaction);
-
-  if (!result.success) {
-    throw new TransactionError(
-      `NFT transfer failed (tokenId: ${tokenId}, from: ${fromAccountId}, to: ${toAccountId}, txId: ${result.transactionId})`,
-      false,
+    const resolvedToAccount = resolveDestinationAccountParameter(
+      validArgs.to,
+      api,
+      network,
     );
+    if (!resolvedToAccount) {
+      throw new NotFoundError(
+        `Destination account not found: ${validArgs.to}`,
+        {
+          context: { to: validArgs.to },
+        },
+      );
+    }
+
+    logger.info(
+      `Transferring ${validArgs.serials.length} NFT(s) of ${tokenId} from ${fromAccountId} to ${resolvedToAccount.accountId}`,
+    );
+
+    return {
+      network,
+      tokenId,
+      fromAccountId,
+      toAccountId: resolvedToAccount.accountId,
+      serials: validArgs.serials,
+      signerKeyRefId,
+    };
   }
 
-  const outputData: TransferNftOutput = {
-    transactionId: result.transactionId,
-    tokenId,
-    from: fromAccountId,
-    to: toAccountId,
-    serials,
-    network,
-  };
+  async buildTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: TransferNftNormalizedParams,
+  ): Promise<TransferNftBuildTransactionResult> {
+    const { api } = args;
+    const transaction = api.token.createNftTransferTransaction({
+      tokenId: normalisedParams.tokenId,
+      fromAccountId: normalisedParams.fromAccountId,
+      toAccountId: normalisedParams.toAccountId,
+      serialNumbers: normalisedParams.serials,
+    });
+    return { transaction };
+  }
 
-  return { result: outputData };
+  async signTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: TransferNftNormalizedParams,
+    buildTransactionResult: TransferNftBuildTransactionResult,
+  ): Promise<TransferNftSignTransactionResult> {
+    const { api, logger } = args;
+    logger.debug(
+      `Using key ${normalisedParams.signerKeyRefId} for signing transaction`,
+    );
+    const transaction = await api.txSign.sign(
+      buildTransactionResult.transaction,
+      [normalisedParams.signerKeyRefId],
+    );
+    return { transaction };
+  }
+
+  async executeTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: TransferNftNormalizedParams,
+    _buildTransactionResult: TransferNftBuildTransactionResult,
+    signTransactionResult: TransferNftSignTransactionResult,
+  ): Promise<TransferNftExecuteTransactionResult> {
+    const { api } = args;
+    const transactionResult = await api.txExecute.execute(
+      signTransactionResult.transaction,
+    );
+    if (!transactionResult.success) {
+      throw new TransactionError(
+        `NFT transfer failed (tokenId: ${normalisedParams.tokenId}, from: ${normalisedParams.fromAccountId}, to: ${normalisedParams.toAccountId}, txId: ${transactionResult.transactionId})`,
+        false,
+      );
+    }
+    return { transactionResult };
+  }
+
+  async outputPreparation(
+    _args: CommandHandlerArgs,
+    normalisedParams: TransferNftNormalizedParams,
+    _buildTransactionResult: TransferNftBuildTransactionResult,
+    _signTransactionResult: TransferNftSignTransactionResult,
+    executeTransactionResult: TransferNftExecuteTransactionResult,
+  ): Promise<CommandResult> {
+    const outputData: TransferNftOutput = {
+      transactionId: executeTransactionResult.transactionResult.transactionId,
+      tokenId: normalisedParams.tokenId,
+      from: normalisedParams.fromAccountId,
+      to: normalisedParams.toAccountId,
+      serials: normalisedParams.serials,
+      network: normalisedParams.network,
+    };
+    return { result: outputData };
+  }
 }
+
+export const transferNft = (args: CommandHandlerArgs) =>
+  new TransferNftCommand().execute(args);

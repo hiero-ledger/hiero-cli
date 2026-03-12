@@ -8,7 +8,7 @@ import { NotFoundError, StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallAllowanceOutputSchema } from '@/plugins/contract-erc20/commands/allowance';
-import { allowanceFunctionCall as erc20AllowanceHandler } from '@/plugins/contract-erc20/commands/allowance/handler';
+import { allowance as erc20AllowanceHandler } from '@/plugins/contract-erc20/commands/allowance/handler';
 import { ContractErc20CallAllowanceInputSchema } from '@/plugins/contract-erc20/commands/allowance/input';
 
 const CONTRACT_ID = '0.0.1234';

@@ -361,7 +361,6 @@ export class PluginManager {
     };
 
     await this.handleConfirmation(commandSpec, handlerArgs, skipConfirmation);
-
     const result = await commandSpec.handler(handlerArgs);
     const outputSchema = result.overrideSchema ?? commandSpec.output.schema;
     outputSchema.parse(result.result);

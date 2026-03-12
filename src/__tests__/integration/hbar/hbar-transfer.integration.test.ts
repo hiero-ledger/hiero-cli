@@ -12,7 +12,7 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { createAccount, viewAccount } from '@/plugins/account';
-import { transferHandler } from '@/plugins/hbar/commands/transfer';
+import { transferHbar as transferHandler } from '@/plugins/hbar/commands/transfer';
 
 describe('HBAR Transfer Account Integration Tests', () => {
   let coreApi: CoreApi;

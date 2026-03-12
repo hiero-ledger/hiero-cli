@@ -1,24 +1,11 @@
-/**
- * Account Plugin Index
- * Exports the account plugin manifest and command handlers
- */
-import { getAccountBalance } from './commands/balance/handler';
-import { clearAccounts } from './commands/clear/handler';
-import { createAccount } from './commands/create/handler';
-import { deleteAccount } from './commands/delete/handler';
-import { importAccount } from './commands/import/handler';
-import { listAccounts } from './commands/list/handler';
-import { viewAccount } from './commands/view/handler';
-
-export { accountPluginManifest } from './manifest';
-
-// Export command handlers
 export {
-  clearAccounts,
-  createAccount,
-  deleteAccount,
+  AccountBalanceCommand,
   getAccountBalance,
-  importAccount,
-  listAccounts,
-  viewAccount,
-};
+} from './commands/balance/handler';
+export { clearAccounts, ClearAccountsCommand } from './commands/clear/handler';
+export { createAccount, CreateAccountCommand } from './commands/create/handler';
+export { deleteAccount, DeleteAccountCommand } from './commands/delete/handler';
+export { importAccount, ImportAccountCommand } from './commands/import/handler';
+export { listAccounts, ListAccountsCommand } from './commands/list/handler';
+export { viewAccount, ViewAccountCommand } from './commands/view/handler';
+export { accountPluginManifest } from './manifest';

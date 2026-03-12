@@ -13,19 +13,19 @@ import {
 } from '@/plugins/token/commands/create-nft';
 
 import {
+  associate,
   ASSOCIATE_TOKEN_TEMPLATE,
-  associateToken,
   AssociateTokenOutputSchema,
 } from './commands/associate';
 import {
   CREATE_FUNGIBLE_TOKEN_TEMPLATE,
+  createFt,
   CreateFungibleTokenOutputSchema,
-  createToken,
 } from './commands/create-ft';
 import {
   CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE,
+  createFtFromFile,
   CreateFungibleTokenFromFileOutputSchema,
-  createTokenFromFile,
 } from './commands/create-ft-from-file';
 import {
   CREATE_NFT_FROM_FILE_TEMPLATE,
@@ -34,17 +34,17 @@ import {
 } from './commands/create-nft-from-file';
 import {
   DELETE_TOKEN_TEMPLATE,
-  deleteToken,
+  deleteTokenFlow,
   DeleteTokenOutputSchema,
 } from './commands/delete';
 import {
   IMPORT_TOKEN_TEMPLATE,
-  importToken,
+  importTokenFlow,
   ImportTokenOutputSchema,
 } from './commands/import';
 import {
   LIST_TOKENS_TEMPLATE,
-  listTokens,
+  listTokensFlow,
   ListTokensOutputSchema,
 } from './commands/list';
 import {
@@ -69,7 +69,7 @@ import {
 } from './commands/transfer-nft';
 import {
   VIEW_TOKEN_TEMPLATE,
-  viewToken,
+  viewTokenFlow,
   ViewTokenOutputSchema,
 } from './commands/view';
 
@@ -366,7 +366,7 @@ export const tokenPluginManifest: PluginManifest = {
             'Optional memo for the fungible token (max 100 characters)',
         },
       ],
-      handler: createToken,
+      handler: createFt,
       output: {
         schema: CreateFungibleTokenOutputSchema,
         humanTemplate: CREATE_FUNGIBLE_TOKEN_TEMPLATE,
@@ -490,7 +490,7 @@ export const tokenPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: associateToken,
+      handler: associate,
       output: {
         schema: AssociateTokenOutputSchema,
         humanTemplate: ASSOCIATE_TOKEN_TEMPLATE,
@@ -519,7 +519,7 @@ export const tokenPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: createTokenFromFile,
+      handler: createFtFromFile,
       output: {
         schema: CreateFungibleTokenFromFileOutputSchema,
         humanTemplate: CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE,
@@ -569,7 +569,7 @@ export const tokenPluginManifest: PluginManifest = {
           description: 'Show token key information (admin, supply, wipe, etc.)',
         },
       ],
-      handler: listTokens,
+      handler: listTokensFlow,
       output: {
         schema: ListTokensOutputSchema,
         humanTemplate: LIST_TOKENS_TEMPLATE,
@@ -596,7 +596,7 @@ export const tokenPluginManifest: PluginManifest = {
           description: 'Serial number of a specific NFT instance',
         },
       ],
-      handler: viewToken,
+      handler: viewTokenFlow,
       output: {
         schema: ViewTokenOutputSchema,
         humanTemplate: VIEW_TOKEN_TEMPLATE,
@@ -616,7 +616,7 @@ export const tokenPluginManifest: PluginManifest = {
           description: 'Token identifier: either a token alias or token-id',
         },
       ],
-      handler: deleteToken,
+      handler: deleteTokenFlow,
       output: {
         schema: DeleteTokenOutputSchema,
         humanTemplate: DELETE_TOKEN_TEMPLATE,
@@ -643,7 +643,7 @@ export const tokenPluginManifest: PluginManifest = {
           description: 'Name/alias for the token',
         },
       ],
-      handler: importToken,
+      handler: importTokenFlow,
       output: {
         schema: ImportTokenOutputSchema,
         humanTemplate: IMPORT_TOKEN_TEMPLATE,

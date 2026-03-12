@@ -3,9 +3,17 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/shared.types';
 import type { CustomFee } from '@/core/types/token.types';
 import type { CreateFungibleTokenFromFileOutput } from './output';
+import type {
+  CreateFtFromFileAssociationOutput,
+  CreateFtFromFileBuildTransactionResult,
+  CreateFtFromFileExecuteTransactionResult,
+  CreateFtFromFileNormalizedParams,
+  CreateFtFromFileSignTransactionResult,
+} from './types';
 
 import { PublicKey } from '@hashgraph/sdk';
 
+import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { CustomFeeType } from '@/core/types/token.types';
@@ -21,110 +29,127 @@ import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { CreateFungibleTokenFromFileInputSchema } from './input';
 
-export async function createTokenFromFile(
-  args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { api, logger } = args;
+export class CreateFtFromFileCommand extends BaseTransactionCommand<
+  CreateFtFromFileNormalizedParams,
+  CreateFtFromFileBuildTransactionResult,
+  CreateFtFromFileSignTransactionResult,
+  CreateFtFromFileExecuteTransactionResult
+> {
+  async normalizeParams(
+    args: CommandHandlerArgs,
+  ): Promise<CreateFtFromFileNormalizedParams> {
+    const { api, logger } = args;
+    const validArgs = CreateFungibleTokenFromFileInputSchema.parse(args.args);
+    const keyManager =
+      validArgs.keyManager ??
+      api.config.getOption<KeyManagerName>('default_key_manager');
 
-  const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    logger.info(`Creating fungible token from file: ${validArgs.file}`);
 
-  const validArgs = CreateFungibleTokenFromFileInputSchema.parse(args.args);
+    const tokenDefinition = await readAndValidateTokenFile(
+      validArgs.file,
+      logger,
+    );
+    const network = api.network.getCurrentNetwork();
+    api.alias.availableOrThrow(tokenDefinition.name, network);
 
-  const filename = validArgs.file;
-  const providedKeyManager = validArgs.keyManager;
+    const treasury = await api.keyResolver.resolveAccountCredentials(
+      tokenDefinition.treasuryKey,
+      keyManager,
+      ['token:treasury'],
+    );
+    const adminKey = await api.keyResolver.resolveSigningKey(
+      tokenDefinition.adminKey,
+      keyManager,
+      ['token:admin', `token:${tokenDefinition.name}`],
+    );
+    logger.info('🔑 Resolved admin key for signing');
 
-  const keyManager =
-    providedKeyManager ??
-    api.config.getOption<KeyManagerName>('default_key_manager');
+    const supplyKey = await resolveOptionalKey(
+      tokenDefinition.supplyKey,
+      keyManager,
+      api.keyResolver,
+      'token:supply',
+    );
+    const wipeKey = await resolveOptionalKey(
+      tokenDefinition.wipeKey,
+      keyManager,
+      api.keyResolver,
+      'token:wipe',
+    );
+    const kycKey = await resolveOptionalKey(
+      tokenDefinition.kycKey,
+      keyManager,
+      api.keyResolver,
+      'token:kyc',
+    );
+    const freezeKey = await resolveOptionalKey(
+      tokenDefinition.freezeKey,
+      keyManager,
+      api.keyResolver,
+      'token:freeze',
+    );
+    const pauseKey = await resolveOptionalKey(
+      tokenDefinition.pauseKey,
+      keyManager,
+      api.keyResolver,
+      'token:pause',
+    );
+    const feeScheduleKey = await resolveOptionalKey(
+      tokenDefinition.feeScheduleKey,
+      keyManager,
+      api.keyResolver,
+      'token:feeSchedule',
+    );
 
-  logger.info(`Creating fungible token from file: ${filename}`);
+    return {
+      filename: validArgs.file,
+      keyManager,
+      tokenDefinition,
+      network,
+      treasury,
+      adminKey,
+      supplyKey,
+      wipeKey,
+      kycKey,
+      freezeKey,
+      pauseKey,
+      feeScheduleKey,
+    };
+  }
 
-  const tokenDefinition = await readAndValidateTokenFile(filename, logger);
-
-  const network = api.network.getCurrentNetwork();
-  api.alias.availableOrThrow(tokenDefinition.name, network);
-
-  const treasury = await api.keyResolver.resolveAccountCredentials(
-    tokenDefinition.treasuryKey,
-    keyManager,
-    ['token:treasury'],
-  );
-
-  const adminKey = await api.keyResolver.resolveSigningKey(
-    tokenDefinition.adminKey,
-    keyManager,
-    ['token:admin', `token:${tokenDefinition.name}`],
-  );
-  logger.info(`🔑 Resolved admin key for signing`);
-
-  const supplyKey = await resolveOptionalKey(
-    tokenDefinition.supplyKey,
-    keyManager,
-    api.keyResolver,
-    'token:supply',
-  );
-
-  const wipeKey = await resolveOptionalKey(
-    tokenDefinition.wipeKey,
-    keyManager,
-    api.keyResolver,
-    'token:wipe',
-  );
-
-  const kycKey = await resolveOptionalKey(
-    tokenDefinition.kycKey,
-    keyManager,
-    api.keyResolver,
-    'token:kyc',
-  );
-
-  const freezeKey = await resolveOptionalKey(
-    tokenDefinition.freezeKey,
-    keyManager,
-    api.keyResolver,
-    'token:freeze',
-  );
-
-  const pauseKey = await resolveOptionalKey(
-    tokenDefinition.pauseKey,
-    keyManager,
-    api.keyResolver,
-    'token:pause',
-  );
-
-  const feeScheduleKey = await resolveOptionalKey(
-    tokenDefinition.feeScheduleKey,
-    keyManager,
-    api.keyResolver,
-    'token:feeSchedule',
-  );
-
-  const tokenCreateTransaction = api.token.createTokenTransaction({
-    name: tokenDefinition.name,
-    symbol: tokenDefinition.symbol,
-    treasuryId: treasury.accountId,
-    decimals: tokenDefinition.decimals,
-    initialSupplyRaw: tokenDefinition.initialSupply,
-    tokenType: tokenDefinition.tokenType,
-    supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
-    maxSupplyRaw: tokenDefinition.maxSupply,
-    adminPublicKey: PublicKey.fromString(adminKey.publicKey),
-    supplyPublicKey: toPublicKey(supplyKey),
-    wipePublicKey: toPublicKey(wipeKey),
-    kycPublicKey: toPublicKey(kycKey),
-    freezePublicKey: toPublicKey(freezeKey),
-    pausePublicKey: toPublicKey(pauseKey),
-    feeSchedulePublicKey: toPublicKey(feeScheduleKey),
-    customFees: tokenDefinition.customFees.map((fee): CustomFee => {
-      if (fee.type === CustomFeeType.FIXED) {
-        return {
-          type: CustomFeeType.FIXED,
-          amount: fee.amount,
-          unitType: fee.unitType,
-          collectorId: fee.collectorId,
-          exempt: fee.exempt,
-        };
-      } else {
+  async buildTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: CreateFtFromFileNormalizedParams,
+  ): Promise<CreateFtFromFileBuildTransactionResult> {
+    const { api } = args;
+    const { tokenDefinition } = normalisedParams;
+    const transaction = api.token.createTokenTransaction({
+      name: tokenDefinition.name,
+      symbol: tokenDefinition.symbol,
+      treasuryId: normalisedParams.treasury.accountId,
+      decimals: tokenDefinition.decimals,
+      initialSupplyRaw: tokenDefinition.initialSupply,
+      tokenType: tokenDefinition.tokenType,
+      supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
+      maxSupplyRaw: tokenDefinition.maxSupply,
+      adminPublicKey: PublicKey.fromString(normalisedParams.adminKey.publicKey),
+      supplyPublicKey: toPublicKey(normalisedParams.supplyKey),
+      wipePublicKey: toPublicKey(normalisedParams.wipeKey),
+      kycPublicKey: toPublicKey(normalisedParams.kycKey),
+      freezePublicKey: toPublicKey(normalisedParams.freezeKey),
+      pausePublicKey: toPublicKey(normalisedParams.pauseKey),
+      feeSchedulePublicKey: toPublicKey(normalisedParams.feeScheduleKey),
+      customFees: tokenDefinition.customFees.map((fee): CustomFee => {
+        if (fee.type === CustomFeeType.FIXED) {
+          return {
+            type: CustomFeeType.FIXED,
+            amount: fee.amount,
+            unitType: fee.unitType,
+            collectorId: fee.collectorId,
+            exempt: fee.exempt,
+          };
+        }
         return {
           type: CustomFeeType.FRACTIONAL,
           numerator: fee.numerator,
@@ -135,82 +160,130 @@ export async function createTokenFromFile(
           collectorId: fee.collectorId,
           exempt: fee.exempt,
         };
-      }
-    }),
-    memo: tokenDefinition.memo,
-  });
-
-  const signingKeys = [adminKey.keyRefId, treasury.keyRefId];
-  logger.info(
-    `🔑 Signing transaction with admin key and treasury key (${signingKeys.length} keys)`,
-  );
-  const transaction = await api.txSign.sign(
-    tokenCreateTransaction,
-    signingKeys,
-  );
-  const result = await api.txExecute.execute(transaction);
-
-  if (!result.success || !result.tokenId) {
-    throw new StateError('Token creation completed but no token ID returned', {
-      context: { transactionId: result.transactionId },
+      }),
+      memo: tokenDefinition.memo,
     });
+    return { transaction };
   }
 
-  const tokenData = buildTokenDataFromFile(
-    result,
-    tokenDefinition,
-    treasury.accountId,
-    adminKey.publicKey,
-    network,
-    {
-      supplyPublicKey: supplyKey?.publicKey,
-      wipePublicKey: wipeKey?.publicKey,
-      kycPublicKey: kycKey?.publicKey,
-      freezePublicKey: freezeKey?.publicKey,
-      pausePublicKey: pauseKey?.publicKey,
-      feeSchedulePublicKey: feeScheduleKey?.publicKey,
-    },
-  );
+  async signTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: CreateFtFromFileNormalizedParams,
+    buildTransactionResult: CreateFtFromFileBuildTransactionResult,
+  ): Promise<CreateFtFromFileSignTransactionResult> {
+    const { api, logger } = args;
+    const signingKeys = [
+      normalisedParams.adminKey.keyRefId,
+      normalisedParams.treasury.keyRefId,
+    ];
+    logger.info(
+      `🔑 Signing transaction with admin key and treasury key (${signingKeys.length} keys)`,
+    );
+    const transaction = await api.txSign.sign(
+      buildTransactionResult.transaction,
+      signingKeys,
+    );
+    return { transaction };
+  }
 
-  const successfulAssociations = await processTokenAssociations(
-    result.tokenId,
-    tokenDefinition.associations,
-    api,
-    logger,
-    keyManager,
-  );
-  tokenData.associations = successfulAssociations;
+  async executeTransaction(
+    args: CommandHandlerArgs,
+    _normalisedParams: CreateFtFromFileNormalizedParams,
+    _buildTransactionResult: CreateFtFromFileBuildTransactionResult,
+    signTransactionResult: CreateFtFromFileSignTransactionResult,
+  ): Promise<CreateFtFromFileExecuteTransactionResult> {
+    const { api } = args;
+    const transactionResult = await api.txExecute.execute(
+      signTransactionResult.transaction,
+    );
 
-  const key = composeKey(network, result.tokenId);
-  tokenState.saveToken(key, tokenData);
-  logger.info(`   Token data saved to state`);
+    if (!transactionResult.success || !transactionResult.tokenId) {
+      throw new StateError(
+        'Token creation completed but no token ID returned',
+        {
+          context: { transactionId: transactionResult.transactionId },
+        },
+      );
+    }
 
-  api.alias.register({
-    alias: tokenDefinition.name,
-    type: AliasType.Token,
-    network,
-    entityId: result.tokenId,
-    createdAt: result.consensusTimestamp,
-  });
-  logger.info(`   Name registered: ${tokenDefinition.name}`);
+    return { transactionResult };
+  }
 
-  const outputData: CreateFungibleTokenFromFileOutput = {
-    tokenId: result.tokenId,
-    name: tokenDefinition.name,
-    symbol: tokenDefinition.symbol,
-    treasuryId: treasury.accountId,
-    decimals: tokenDefinition.decimals,
-    initialSupply: tokenDefinition.initialSupply.toString(),
-    supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
-    transactionId: result.transactionId,
-    network,
-    associations: successfulAssociations.map((assoc) => ({
-      accountId: assoc.accountId,
-      name: assoc.name,
-      success: true,
+  async outputPreparation(
+    args: CommandHandlerArgs,
+    normalisedParams: CreateFtFromFileNormalizedParams,
+    _buildTransactionResult: CreateFtFromFileBuildTransactionResult,
+    _signTransactionResult: CreateFtFromFileSignTransactionResult,
+    executeTransactionResult: CreateFtFromFileExecuteTransactionResult,
+  ): Promise<CommandResult> {
+    const { api, logger } = args;
+    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const result = executeTransactionResult.transactionResult;
+    const tokenData = buildTokenDataFromFile(
+      result,
+      normalisedParams.tokenDefinition,
+      normalisedParams.treasury.accountId,
+      normalisedParams.adminKey.publicKey,
+      normalisedParams.network,
+      {
+        supplyPublicKey: normalisedParams.supplyKey?.publicKey,
+        wipePublicKey: normalisedParams.wipeKey?.publicKey,
+        kycPublicKey: normalisedParams.kycKey?.publicKey,
+        freezePublicKey: normalisedParams.freezeKey?.publicKey,
+        pausePublicKey: normalisedParams.pauseKey?.publicKey,
+        feeSchedulePublicKey: normalisedParams.feeScheduleKey?.publicKey,
+      },
+    );
+
+    const successfulAssociations = await processTokenAssociations(
+      result.tokenId!,
+      normalisedParams.tokenDefinition.associations,
+      api,
+      logger,
+      normalisedParams.keyManager,
+    );
+    tokenData.associations = successfulAssociations;
+
+    const key = composeKey(normalisedParams.network, result.tokenId!);
+    tokenState.saveToken(key, tokenData);
+    logger.info('   Token data saved to state');
+
+    api.alias.register({
+      alias: normalisedParams.tokenDefinition.name,
+      type: AliasType.Token,
+      network: normalisedParams.network,
+      entityId: result.tokenId!,
+      createdAt: result.consensusTimestamp,
+    });
+    logger.info(`   Name registered: ${normalisedParams.tokenDefinition.name}`);
+
+    const associations: CreateFtFromFileAssociationOutput[] =
+      successfulAssociations.map((assoc) => ({
+        accountId: assoc.accountId,
+        name: assoc.name,
+        success: true,
+        transactionId: result.transactionId,
+      }));
+
+    const outputData: CreateFungibleTokenFromFileOutput = {
+      tokenId: result.tokenId!,
+      name: normalisedParams.tokenDefinition.name,
+      symbol: normalisedParams.tokenDefinition.symbol,
+      treasuryId: normalisedParams.treasury.accountId,
+      decimals: normalisedParams.tokenDefinition.decimals,
+      initialSupply: normalisedParams.tokenDefinition.initialSupply.toString(),
+      supplyType:
+        normalisedParams.tokenDefinition.supplyType.toUpperCase() as SupplyType,
       transactionId: result.transactionId,
-    })),
-  };
+      network: normalisedParams.network,
+      associations,
+    };
 
-  return { result: outputData };
+    return { result: outputData };
+  }
 }
+
+export const createFtFromFile = (args: CommandHandlerArgs) =>
+  new CreateFtFromFileCommand().execute(args);
+
+export const createTokenFromFile = createFtFromFile;

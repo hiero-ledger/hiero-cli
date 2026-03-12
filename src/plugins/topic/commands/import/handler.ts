@@ -1,6 +1,8 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { Command } from '@/core/commands/command.interface';
 import type { TopicData } from '@/plugins/topic/schema';
 import type { ImportTopicOutput } from './output';
+import type { ImportTopicNormalisedParams } from './types';
 
 import { ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
@@ -10,66 +12,74 @@ import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { ImportTopicInputSchema } from './input';
 
-export async function importTopic(
-  args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { api, logger } = args;
+export class ImportTopicCommand implements Command {
+  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+    const { api, logger } = args;
 
-  const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const topicState = new ZustandTopicStateHelper(api.state, logger);
+    const validArgs = ImportTopicInputSchema.parse(args.args);
+    const network = api.network.getCurrentNetwork();
 
-  const validArgs = ImportTopicInputSchema.parse(args.args);
-
-  const topicId = validArgs.topic;
-  const alias = validArgs.name;
-
-  const network = api.network.getCurrentNetwork();
-
-  if (alias) {
-    api.alias.availableOrThrow(alias, network);
-  }
-
-  const topicInfo = await api.mirror.getTopicInfo(topicId);
-
-  const key = composeKey(network, topicId);
-  logger.info(`Importing topic: ${key} (${topicId})`);
-
-  if (topicState.loadTopic(key)) {
-    throw new ValidationError(
-      `Topic with ID '${topicId}' already exists in state`,
-    );
-  }
-
-  if (alias) {
-    api.alias.register({
-      alias,
-      type: AliasType.Topic,
+    const normalisedParams: ImportTopicNormalisedParams = {
+      topicId: validArgs.topic,
+      alias: validArgs.name,
       network,
-      entityId: topicId,
-      createdAt: new Date().toISOString(),
-    });
+    };
+
+    if (normalisedParams.alias) {
+      api.alias.availableOrThrow(
+        normalisedParams.alias,
+        normalisedParams.network,
+      );
+    }
+
+    const topicInfo = await api.mirror.getTopicInfo(normalisedParams.topicId);
+    const key = composeKey(normalisedParams.network, normalisedParams.topicId);
+
+    logger.info(`Importing topic: ${key} (${normalisedParams.topicId})`);
+
+    if (topicState.loadTopic(key)) {
+      throw new ValidationError(
+        `Topic with ID '${normalisedParams.topicId}' already exists in state`,
+      );
+    }
+
+    if (normalisedParams.alias) {
+      api.alias.register({
+        alias: normalisedParams.alias,
+        type: AliasType.Topic,
+        network: normalisedParams.network,
+        entityId: normalisedParams.topicId,
+        createdAt: new Date().toISOString(),
+      });
+    }
+
+    const createdAt = hederaTimestampToIso(topicInfo.created_timestamp);
+    const topicData: TopicData = {
+      name: normalisedParams.alias,
+      topicId: normalisedParams.topicId,
+      memo: topicInfo.memo || '(No memo)',
+      adminKeyRefId: undefined,
+      submitKeyRefId: undefined,
+      network: normalisedParams.network,
+      createdAt,
+    };
+
+    topicState.saveTopic(key, topicData);
+
+    const result: ImportTopicOutput = {
+      topicId: normalisedParams.topicId,
+      name: topicData.name,
+      network: normalisedParams.network,
+      memo: topicInfo.memo || undefined,
+      adminKeyPresent: Boolean(topicInfo.admin_key),
+      submitKeyPresent: Boolean(topicInfo.submit_key),
+    };
+
+    return { result };
   }
-
-  const createdAt = hederaTimestampToIso(topicInfo.created_timestamp);
-  const topicData: TopicData = {
-    name: alias,
-    topicId,
-    memo: topicInfo.memo || '(No memo)',
-    adminKeyRefId: undefined,
-    submitKeyRefId: undefined,
-    network,
-    createdAt,
-  };
-
-  topicState.saveTopic(key, topicData);
-
-  const result: ImportTopicOutput = {
-    topicId,
-    name: topicData.name,
-    network,
-    memo: topicInfo.memo || undefined,
-    adminKeyPresent: Boolean(topicInfo.admin_key),
-    submitKeyPresent: Boolean(topicInfo.submit_key),
-  };
-
-  return { result };
 }
+
+const importTopicCommand = new ImportTopicCommand();
+
+export const importTopic = importTopicCommand.execute.bind(importTopicCommand);

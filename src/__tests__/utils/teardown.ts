@@ -5,7 +5,7 @@ import type { ViewAccountOutput } from '@/plugins/account/commands/view';
 import * as fs from 'fs';
 
 import { importAccount, listAccounts, viewAccount } from '@/plugins/account';
-import { transferHandler } from '@/plugins/hbar/commands/transfer';
+import { transferHbar } from '@/plugins/hbar/commands/transfer';
 
 import { delay } from './common-utils';
 
@@ -58,7 +58,7 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
           to: 'main-account',
           from: account.name,
         };
-        await transferHandler({
+        await transferHbar({
           args,
           api: coreApi,
           state: coreApi.state,

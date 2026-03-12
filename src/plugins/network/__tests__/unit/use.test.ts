@@ -8,7 +8,7 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
 import {
-  useHandler,
+  useNetwork as useHandler,
   UseNetworkOutputSchema,
 } from '@/plugins/network/commands/use';
 

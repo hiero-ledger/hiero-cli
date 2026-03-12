@@ -2,9 +2,17 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/shared.types';
 import type { CreateNftFromFileOutput } from './output';
+import type {
+  CreateNftFromFileAssociationOutput,
+  CreateNftFromFileBuildTransactionResult,
+  CreateNftFromFileExecuteTransactionResult,
+  CreateNftFromFileNormalizedParams,
+  CreateNftFromFileSignTransactionResult,
+} from './types';
 
 import { PublicKey } from '@hashgraph/sdk';
 
+import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
@@ -20,178 +28,238 @@ import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { CreateNftFromFileInputSchema } from './input';
 
-export async function createNftFromFile(
-  args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { api, logger } = args;
+export class CreateNftFromFileCommand extends BaseTransactionCommand<
+  CreateNftFromFileNormalizedParams,
+  CreateNftFromFileBuildTransactionResult,
+  CreateNftFromFileSignTransactionResult,
+  CreateNftFromFileExecuteTransactionResult
+> {
+  async normalizeParams(
+    args: CommandHandlerArgs,
+  ): Promise<CreateNftFromFileNormalizedParams> {
+    const { api, logger } = args;
+    const validArgs = CreateNftFromFileInputSchema.parse(args.args);
+    const keyManager =
+      validArgs.keyManager ??
+      api.config.getOption<KeyManagerName>('default_key_manager');
 
-  const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    logger.info(`Creating NFT token from file: ${validArgs.file}`);
 
-  const validArgs = CreateNftFromFileInputSchema.parse(args.args);
+    const tokenDefinition = await readAndValidateNftTokenFile(
+      validArgs.file,
+      logger,
+    );
+    const network = api.network.getCurrentNetwork();
+    api.alias.availableOrThrow(tokenDefinition.name, network);
 
-  const filename = validArgs.file;
-  const providedKeyManager = validArgs.keyManager;
+    const treasury = await api.keyResolver.resolveAccountCredentials(
+      tokenDefinition.treasuryKey,
+      keyManager,
+      ['token:treasury'],
+    );
+    const adminKey = await api.keyResolver.resolveSigningKey(
+      tokenDefinition.adminKey,
+      keyManager,
+      ['token:admin', `token:${tokenDefinition.name}`],
+    );
+    logger.info('🔑 Resolved admin key for signing');
+    const supplyKey = await api.keyResolver.resolveSigningKey(
+      tokenDefinition.supplyKey,
+      keyManager,
+      ['token:supply'],
+    );
+    logger.info('🔑 Resolved supply key for signing');
 
-  const keyManager =
-    providedKeyManager ??
-    api.config.getOption<KeyManagerName>('default_key_manager');
+    const wipeKey = await resolveOptionalKey(
+      tokenDefinition.wipeKey,
+      keyManager,
+      api.keyResolver,
+      'token:wipe',
+    );
+    const kycKey = await resolveOptionalKey(
+      tokenDefinition.kycKey,
+      keyManager,
+      api.keyResolver,
+      'token:kyc',
+    );
+    const freezeKey = await resolveOptionalKey(
+      tokenDefinition.freezeKey,
+      keyManager,
+      api.keyResolver,
+      'token:freeze',
+    );
+    const pauseKey = await resolveOptionalKey(
+      tokenDefinition.pauseKey,
+      keyManager,
+      api.keyResolver,
+      'token:pause',
+    );
+    const feeScheduleKey = await resolveOptionalKey(
+      tokenDefinition.feeScheduleKey,
+      keyManager,
+      api.keyResolver,
+      'token:feeSchedule',
+    );
 
-  logger.info(`Creating NFT token from file: ${filename}`);
-
-  const tokenDefinition = await readAndValidateNftTokenFile(filename, logger);
-
-  const network = api.network.getCurrentNetwork();
-  api.alias.availableOrThrow(tokenDefinition.name, network);
-
-  const treasury = await api.keyResolver.resolveAccountCredentials(
-    tokenDefinition.treasuryKey,
-    keyManager,
-    ['token:treasury'],
-  );
-
-  const adminKey = await api.keyResolver.resolveSigningKey(
-    tokenDefinition.adminKey,
-    keyManager,
-    ['token:admin', `token:${tokenDefinition.name}`],
-  );
-  logger.info(`🔑 Resolved admin key for signing`);
-
-  const supplyKey = await api.keyResolver.resolveSigningKey(
-    tokenDefinition.supplyKey,
-    keyManager,
-    ['token:supply'],
-  );
-  logger.info(`🔑 Resolved supply key for signing`);
-
-  const wipeKey = await resolveOptionalKey(
-    tokenDefinition.wipeKey,
-    keyManager,
-    api.keyResolver,
-    'token:wipe',
-  );
-
-  const kycKey = await resolveOptionalKey(
-    tokenDefinition.kycKey,
-    keyManager,
-    api.keyResolver,
-    'token:kyc',
-  );
-
-  const freezeKey = await resolveOptionalKey(
-    tokenDefinition.freezeKey,
-    keyManager,
-    api.keyResolver,
-    'token:freeze',
-  );
-
-  const pauseKey = await resolveOptionalKey(
-    tokenDefinition.pauseKey,
-    keyManager,
-    api.keyResolver,
-    'token:pause',
-  );
-
-  const feeScheduleKey = await resolveOptionalKey(
-    tokenDefinition.feeScheduleKey,
-    keyManager,
-    api.keyResolver,
-    'token:feeSchedule',
-  );
-
-  const tokenCreateTransaction = api.token.createTokenTransaction({
-    name: tokenDefinition.name,
-    symbol: tokenDefinition.symbol,
-    treasuryId: treasury.accountId,
-    decimals: 0,
-    initialSupplyRaw: 0n,
-    tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
-    supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
-    maxSupplyRaw: tokenDefinition.maxSupply ?? 0n,
-    adminPublicKey: PublicKey.fromString(adminKey.publicKey),
-    supplyPublicKey: PublicKey.fromString(supplyKey.publicKey),
-    wipePublicKey: toPublicKey(wipeKey),
-    kycPublicKey: toPublicKey(kycKey),
-    freezePublicKey: toPublicKey(freezeKey),
-    pausePublicKey: toPublicKey(pauseKey),
-    feeSchedulePublicKey: toPublicKey(feeScheduleKey),
-    memo: tokenDefinition.memo,
-  });
-
-  const signingKeys = [
-    adminKey.keyRefId,
-    treasury.keyRefId,
-    supplyKey.keyRefId,
-  ];
-  logger.info(
-    `🔑 Signing transaction with admin, treasury and supply keys (${signingKeys.length} keys)`,
-  );
-  const transaction = await api.txSign.sign(
-    tokenCreateTransaction,
-    signingKeys,
-  );
-  const result = await api.txExecute.execute(transaction);
-
-  if (!result.success || !result.tokenId) {
-    throw new StateError('NFT creation completed but no token ID returned', {
-      context: { transactionId: result.transactionId },
-    });
+    return {
+      filename: validArgs.file,
+      keyManager,
+      tokenDefinition,
+      network,
+      treasury,
+      adminKey,
+      supplyKey,
+      wipeKey,
+      kycKey,
+      freezeKey,
+      pauseKey,
+      feeScheduleKey,
+    };
   }
 
-  const tokenData = buildNftTokenDataFromFile(
-    result,
-    tokenDefinition,
-    treasury.accountId,
-    adminKey.publicKey,
-    supplyKey.publicKey,
-    network,
-    {
-      wipePublicKey: wipeKey?.publicKey,
-      kycPublicKey: kycKey?.publicKey,
-      freezePublicKey: freezeKey?.publicKey,
-      pausePublicKey: pauseKey?.publicKey,
-      feeSchedulePublicKey: feeScheduleKey?.publicKey,
-    },
-  );
+  async buildTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: CreateNftFromFileNormalizedParams,
+  ): Promise<CreateNftFromFileBuildTransactionResult> {
+    const { api } = args;
+    const { tokenDefinition } = normalisedParams;
+    const transaction = api.token.createTokenTransaction({
+      name: tokenDefinition.name,
+      symbol: tokenDefinition.symbol,
+      treasuryId: normalisedParams.treasury.accountId,
+      decimals: 0,
+      initialSupplyRaw: 0n,
+      tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
+      supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
+      maxSupplyRaw: tokenDefinition.maxSupply ?? 0n,
+      adminPublicKey: PublicKey.fromString(normalisedParams.adminKey.publicKey),
+      supplyPublicKey: PublicKey.fromString(
+        normalisedParams.supplyKey.publicKey,
+      ),
+      wipePublicKey: toPublicKey(normalisedParams.wipeKey),
+      kycPublicKey: toPublicKey(normalisedParams.kycKey),
+      freezePublicKey: toPublicKey(normalisedParams.freezeKey),
+      pausePublicKey: toPublicKey(normalisedParams.pauseKey),
+      feeSchedulePublicKey: toPublicKey(normalisedParams.feeScheduleKey),
+      memo: tokenDefinition.memo,
+    });
+    return { transaction };
+  }
 
-  const successfulAssociations = await processTokenAssociations(
-    result.tokenId,
-    tokenDefinition.associations,
-    api,
-    logger,
-    keyManager,
-  );
-  tokenData.associations = successfulAssociations;
+  async signTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: CreateNftFromFileNormalizedParams,
+    buildTransactionResult: CreateNftFromFileBuildTransactionResult,
+  ): Promise<CreateNftFromFileSignTransactionResult> {
+    const { api, logger } = args;
+    const signingKeys = [
+      normalisedParams.adminKey.keyRefId,
+      normalisedParams.treasury.keyRefId,
+      normalisedParams.supplyKey.keyRefId,
+    ];
+    logger.info(
+      `🔑 Signing transaction with admin, treasury and supply keys (${signingKeys.length} keys)`,
+    );
+    const transaction = await api.txSign.sign(
+      buildTransactionResult.transaction,
+      signingKeys,
+    );
+    return { transaction };
+  }
 
-  const key = composeKey(network, result.tokenId);
-  tokenState.saveToken(key, tokenData);
-  logger.info(`   Token data saved to state`);
+  async executeTransaction(
+    args: CommandHandlerArgs,
+    _normalisedParams: CreateNftFromFileNormalizedParams,
+    _buildTransactionResult: CreateNftFromFileBuildTransactionResult,
+    signTransactionResult: CreateNftFromFileSignTransactionResult,
+  ): Promise<CreateNftFromFileExecuteTransactionResult> {
+    const { api } = args;
+    const transactionResult = await api.txExecute.execute(
+      signTransactionResult.transaction,
+    );
 
-  api.alias.register({
-    alias: tokenDefinition.name,
-    type: AliasType.Token,
-    network,
-    entityId: result.tokenId,
-    createdAt: result.consensusTimestamp,
-  });
-  logger.info(`   Name registered: ${tokenDefinition.name}`);
+    if (!transactionResult.success || !transactionResult.tokenId) {
+      throw new StateError('NFT creation completed but no token ID returned', {
+        context: { transactionId: transactionResult.transactionId },
+      });
+    }
 
-  const outputData: CreateNftFromFileOutput = {
-    tokenId: result.tokenId,
-    name: tokenDefinition.name,
-    symbol: tokenDefinition.symbol,
-    treasuryId: treasury.accountId,
-    adminPublicKey: adminKey.publicKey,
-    supplyPublicKey: supplyKey.publicKey,
-    supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
-    transactionId: result.transactionId,
-    network,
-    associations: successfulAssociations.map((assoc) => ({
-      accountId: assoc.accountId,
-      name: assoc.name,
-      success: true,
+    return { transactionResult };
+  }
+
+  async outputPreparation(
+    args: CommandHandlerArgs,
+    normalisedParams: CreateNftFromFileNormalizedParams,
+    _buildTransactionResult: CreateNftFromFileBuildTransactionResult,
+    _signTransactionResult: CreateNftFromFileSignTransactionResult,
+    executeTransactionResult: CreateNftFromFileExecuteTransactionResult,
+  ): Promise<CommandResult> {
+    const { api, logger } = args;
+    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    const result = executeTransactionResult.transactionResult;
+    const tokenData = buildNftTokenDataFromFile(
+      result,
+      normalisedParams.tokenDefinition,
+      normalisedParams.treasury.accountId,
+      normalisedParams.adminKey.publicKey,
+      normalisedParams.supplyKey.publicKey,
+      normalisedParams.network,
+      {
+        wipePublicKey: normalisedParams.wipeKey?.publicKey,
+        kycPublicKey: normalisedParams.kycKey?.publicKey,
+        freezePublicKey: normalisedParams.freezeKey?.publicKey,
+        pausePublicKey: normalisedParams.pauseKey?.publicKey,
+        feeSchedulePublicKey: normalisedParams.feeScheduleKey?.publicKey,
+      },
+    );
+
+    const successfulAssociations = await processTokenAssociations(
+      result.tokenId!,
+      normalisedParams.tokenDefinition.associations,
+      api,
+      logger,
+      normalisedParams.keyManager,
+    );
+    tokenData.associations = successfulAssociations;
+
+    const key = composeKey(normalisedParams.network, result.tokenId!);
+    tokenState.saveToken(key, tokenData);
+    logger.info('   Token data saved to state');
+
+    api.alias.register({
+      alias: normalisedParams.tokenDefinition.name,
+      type: AliasType.Token,
+      network: normalisedParams.network,
+      entityId: result.tokenId!,
+      createdAt: result.consensusTimestamp,
+    });
+    logger.info(`   Name registered: ${normalisedParams.tokenDefinition.name}`);
+
+    const associations: CreateNftFromFileAssociationOutput[] =
+      successfulAssociations.map((assoc) => ({
+        accountId: assoc.accountId,
+        name: assoc.name,
+        success: true,
+        transactionId: result.transactionId,
+      }));
+
+    const outputData: CreateNftFromFileOutput = {
+      tokenId: result.tokenId!,
+      name: normalisedParams.tokenDefinition.name,
+      symbol: normalisedParams.tokenDefinition.symbol,
+      treasuryId: normalisedParams.treasury.accountId,
+      adminPublicKey: normalisedParams.adminKey.publicKey,
+      supplyPublicKey: normalisedParams.supplyKey.publicKey,
+      supplyType:
+        normalisedParams.tokenDefinition.supplyType.toUpperCase() as SupplyType,
       transactionId: result.transactionId,
-    })),
-  };
+      network: normalisedParams.network,
+      associations,
+    };
 
-  return { result: outputData };
+    return { result: outputData };
+  }
 }
+
+export const createNftFromFile = (args: CommandHandlerArgs) =>
+  new CreateNftFromFileCommand().execute(args);

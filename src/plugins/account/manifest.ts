@@ -1,7 +1,3 @@
-/**
- * Account Plugin Manifest
- * Defines the account plugin according to ADR-001
- */
 import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';

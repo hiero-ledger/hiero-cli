@@ -8,7 +8,7 @@ import { NotFoundError, TransactionError } from '@/core/errors';
 import { makeContractErc20ExecuteCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallTransferOutputSchema } from '@/plugins/contract-erc20/commands/transfer';
-import { transferFunctionCall as erc20TransferHandler } from '@/plugins/contract-erc20/commands/transfer/handler';
+import { transfer as erc20TransferHandler } from '@/plugins/contract-erc20/commands/transfer/handler';
 import { ContractErc20CallTransferInputSchema } from '@/plugins/contract-erc20/commands/transfer/input';
 
 const mockAddAddress = jest.fn().mockReturnThis();
