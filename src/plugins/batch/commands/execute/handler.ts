@@ -20,7 +20,9 @@ import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
 import { ExecuteBatchInputSchema } from './input';
 
-export class ExecuteBatchCommand extends BaseTransactionCommand<
+export const BATCH_EXECUTE_COMMAND_NAME = 'batch_execute';
+
+export class BatchExecuteCommand extends BaseTransactionCommand<
   BatchNormalisedParams,
   BatchBuildTransactionResult,
   BatchSignTransactionResult,
@@ -151,8 +153,8 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
   }
 }
 
-export async function executeBatch(
+export async function batchExecute(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ExecuteBatchCommand().execute(args);
+  return new BatchExecuteCommand(BATCH_EXECUTE_COMMAND_NAME).execute(args);
 }

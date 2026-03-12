@@ -22,7 +22,9 @@ import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { MintFtInputSchema } from './input';
 
-export class MintFtCommand extends BaseTransactionCommand<
+export const TOKEN_MINT_FT_COMMAND_NAME = 'token_mint-ft';
+
+export class TokenMintFtCommand extends BaseTransactionCommand<
   MintFtNormalizedParams,
   MintFtBuildTransactionResult,
   MintFtSignTransactionResult,
@@ -193,5 +195,5 @@ export class MintFtCommand extends BaseTransactionCommand<
 }
 
 export async function mintFt(args: CommandHandlerArgs): Promise<CommandResult> {
-  return new MintFtCommand().execute(args);
+  return new TokenMintFtCommand(TOKEN_MINT_FT_COMMAND_NAME).execute(args);
 }

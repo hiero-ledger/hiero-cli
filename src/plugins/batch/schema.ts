@@ -8,11 +8,18 @@ import { AliasNameSchema } from '@/core/schemas/common-schemas';
 
 /** Schema for a single batch list item */
 export const BatchTransactionItemSchema = z.object({
-  transactionBytes: z.string().min(1, 'Transaction raw bytes'),
+  transactionBytes: z.string().min(1).describe('Transaction raw bytes'),
   order: z
     .number()
     .int()
     .describe('Order of inner transaction in batch transaction'),
+  command: z.string().min(1).describe('Name of the command entry point'),
+  normalizedParams: z
+    .record(z.string(), z.unknown())
+    .default({})
+    .describe(
+      'Normalized params from the command that produced this transaction',
+    ),
 });
 
 // Zod schema for runtime validation

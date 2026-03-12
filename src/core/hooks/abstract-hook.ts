@@ -11,8 +11,8 @@ import type {
 export abstract class AbstractHook {
   public preParamsPreparationAndNormalizationHook(
     _args: CommandHandlerArgs,
+    _commandName: string,
   ): Promise<HookResult> {
-    void _args;
     return Promise.resolve({
       breakFlow: false,
       result: {
@@ -24,9 +24,8 @@ export abstract class AbstractHook {
   public preBuildTransactionHook(
     _args: CommandHandlerArgs,
     _params: PreBuildTransactionParams,
+    _commandName: string,
   ): Promise<HookResult> {
-    void _args;
-    void _params;
     return Promise.resolve({
       breakFlow: false,
       result: {
@@ -38,9 +37,8 @@ export abstract class AbstractHook {
   public preSignTransactionHook(
     _args: CommandHandlerArgs,
     _params: PreSignTransactionParams,
+    _commandName: string,
   ): Promise<HookResult> {
-    void _args;
-    void _params;
     return Promise.resolve({
       breakFlow: false,
       result: {
@@ -52,9 +50,8 @@ export abstract class AbstractHook {
   public preExecuteTransactionHook(
     _args: CommandHandlerArgs,
     _params: PreExecuteTransactionParams,
+    _commandName: string,
   ): Promise<HookResult> {
-    void _args;
-    void _params;
     return Promise.resolve({
       breakFlow: false,
       result: {
@@ -66,9 +63,8 @@ export abstract class AbstractHook {
   public preOutputPreparationHook(
     _args: CommandHandlerArgs,
     _params: PreOutputPreparationParams,
+    _commandName: string,
   ): Promise<HookResult> {
-    void _args;
-    void _params;
     return Promise.resolve({
       breakFlow: false,
       result: {
@@ -80,9 +76,8 @@ export abstract class AbstractHook {
   public postOutputPreparationHook(
     _args: CommandHandlerArgs,
     _params: PostOutputPreparationParams,
+    _commandName: string,
   ): Promise<HookResult> {
-    void _args;
-    void _params;
     return Promise.resolve({
       breakFlow: false,
       result: {
