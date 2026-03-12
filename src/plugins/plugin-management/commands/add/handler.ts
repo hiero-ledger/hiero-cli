@@ -13,6 +13,7 @@ import type {
   CommandResult,
   PluginStateEntry,
 } from '@/core';
+import type { Command } from '@/core/commands/command.interface';
 import type { AddPluginOutput } from './output';
 
 import { StateError } from '@/core/errors';
@@ -24,48 +25,54 @@ import { resolveDefaultPluginPath } from '@/plugins/plugin-management/utils/reso
 
 import { AddPluginInputSchema } from './input';
 
+export class AddPluginCommand implements Command {
+  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+    const { api, logger } = args;
+
+    const validArgs = AddPluginInputSchema.parse(args.args);
+
+    let pluginPath: string;
+    if (validArgs.name) {
+      pluginPath = resolveDefaultPluginPath(validArgs.name);
+      logger.info(`➕ Adding default plugin: ${validArgs.name}...`);
+    } else {
+      pluginPath = validArgs.path!;
+      logger.info('➕ Adding plugin from path...');
+    }
+
+    const { resolvedPath, manifestPath } = await validatePluginPath(pluginPath);
+
+    logger.info(`🔍 Loading plugin manifest from: ${manifestPath}`);
+
+    const manifest = await loadPluginManifest(manifestPath);
+    const pluginName = manifest.name;
+
+    const newEntry: PluginStateEntry = {
+      name: pluginName,
+      path: resolvedPath,
+      enabled: true,
+    };
+    const result = api.pluginManagement.addPlugin(newEntry);
+
+    if (result.status === PluginManagementCreateStatus.Duplicate) {
+      throw new StateError(ERROR_MESSAGES.pluginAlreadyExists(pluginName), {
+        context: { pluginName, path: resolvedPath },
+      });
+    }
+
+    const outputData: AddPluginOutput = {
+      name: pluginName,
+      path: resolvedPath,
+      added: true,
+      message: `Plugin '${pluginName}' added and enabled successfully`,
+    };
+
+    return { result: outputData };
+  }
+}
+
 export async function addPlugin(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  const { api, logger } = args;
-
-  const validArgs = AddPluginInputSchema.parse(args.args);
-
-  let pluginPath: string;
-  if (validArgs.name) {
-    pluginPath = resolveDefaultPluginPath(validArgs.name);
-    logger.info(`➕ Adding default plugin: ${validArgs.name}...`);
-  } else {
-    pluginPath = validArgs.path!;
-    logger.info('➕ Adding plugin from path...');
-  }
-
-  const { resolvedPath, manifestPath } = await validatePluginPath(pluginPath);
-
-  logger.info(`🔍 Loading plugin manifest from: ${manifestPath}`);
-
-  const manifest = await loadPluginManifest(manifestPath);
-  const pluginName = manifest.name;
-
-  const newEntry: PluginStateEntry = {
-    name: pluginName,
-    path: resolvedPath,
-    enabled: true,
-  };
-  const result = api.pluginManagement.addPlugin(newEntry);
-
-  if (result.status === PluginManagementCreateStatus.Duplicate) {
-    throw new StateError(ERROR_MESSAGES.pluginAlreadyExists(pluginName), {
-      context: { pluginName, path: resolvedPath },
-    });
-  }
-
-  const outputData: AddPluginOutput = {
-    name: pluginName,
-    path: resolvedPath,
-    added: true,
-    message: `Plugin '${pluginName}' added and enabled successfully`,
-  };
-
-  return { result: outputData };
+  return new AddPluginCommand().execute(args);
 }
