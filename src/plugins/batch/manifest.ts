@@ -43,7 +43,7 @@ export const batchPluginManifest: PluginManifest = {
       options: [
         {
           name: 'batch',
-          short: 'b',
+          short: 'B',
           type: OptionType.STRING,
           description: 'Name of the batch',
         },

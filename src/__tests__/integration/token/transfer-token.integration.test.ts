@@ -20,7 +20,7 @@ import {
   getAccountBalance,
   viewAccount,
 } from '@/plugins/account';
-import { associateToken, createToken, transferFt } from '@/plugins/token';
+import { associateToken, createFt, transferFt } from '@/plugins/token';
 
 describe('Transfer Token Integration Tests', () => {
   let coreApi: CoreApi;
@@ -77,7 +77,7 @@ describe('Transfer Token Integration Tests', () => {
       supplyType: SupplyType.INFINITE,
       name: 'test-token-transfer',
     };
-    const createTokenResult = await createToken({
+    const createTokenResult = await createFt({
       args: createTokenArgs,
       api: coreApi,
       state: coreApi.state,
