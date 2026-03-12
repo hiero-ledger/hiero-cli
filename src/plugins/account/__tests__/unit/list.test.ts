@@ -4,7 +4,7 @@ import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
 import { ListAccountsOutputSchema } from '@/plugins/account/commands/list';
-import { ListAccountsCommand } from '@/plugins/account/commands/list/handler';
+import { listAccounts } from '@/plugins/account/commands/list/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { makeAccountData } from './helpers/mocks';
@@ -30,7 +30,7 @@ describe('account plugin - list command (ADR-003)', () => {
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
-    const result = await new ListAccountsCommand().execute(args);
+    const result = await listAccounts(args);
 
     const output = assertOutput(result.result, ListAccountsOutputSchema);
     expect(output.totalCount).toBe(0);
@@ -51,7 +51,7 @@ describe('account plugin - list command (ADR-003)', () => {
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
-    const result = await new ListAccountsCommand().execute(args);
+    const result = await listAccounts(args);
 
     const output = assertOutput(result.result, ListAccountsOutputSchema);
     expect(output.totalCount).toBe(2);
@@ -75,7 +75,7 @@ describe('account plugin - list command (ADR-003)', () => {
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, { private: true });
 
-    const result = await new ListAccountsCommand().execute(args);
+    const result = await listAccounts(args);
 
     const output = assertOutput(result.result, ListAccountsOutputSchema);
     expect(output.totalCount).toBe(1);
@@ -98,6 +98,6 @@ describe('account plugin - list command (ADR-003)', () => {
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
-    await expect(new ListAccountsCommand().execute(args)).rejects.toThrow();
+    await expect(listAccounts(args)).rejects.toThrow();
   });
 });

@@ -15,7 +15,7 @@ import { NotFoundError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { ViewAccountOutputSchema } from '@/plugins/account/commands/view';
-import { ViewAccountCommand } from '@/plugins/account/commands/view/handler';
+import { viewAccount } from '@/plugins/account/commands/view/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -58,7 +58,7 @@ describe('account plugin - view command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'acc1' });
 
-    const result = await new ViewAccountCommand().execute(args);
+    const result = await viewAccount(args);
 
     expect(logger.info).toHaveBeenCalledWith('Viewing account details: acc1');
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.1111');
@@ -101,7 +101,7 @@ describe('account plugin - view command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'acc2' });
 
-    const result = await new ViewAccountCommand().execute(args);
+    const result = await viewAccount(args);
 
     expect(logger.info).toHaveBeenCalledWith('Viewing account details: acc2');
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.2222');
@@ -127,7 +127,7 @@ describe('account plugin - view command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: '0.0.3333' });
 
-    await expect(new ViewAccountCommand().execute(args)).rejects.toThrow();
+    await expect(viewAccount(args)).rejects.toThrow();
   });
 
   test('throws NotFoundError when account not found', async () => {
@@ -142,8 +142,6 @@ describe('account plugin - view command (ADR-003)', () => {
     const account = 'broken';
     const args = makeArgs(api, logger, { account });
 
-    await expect(new ViewAccountCommand().execute(args)).rejects.toThrow(
-      NotFoundError,
-    );
+    await expect(viewAccount(args)).rejects.toThrow(NotFoundError);
   });
 });
