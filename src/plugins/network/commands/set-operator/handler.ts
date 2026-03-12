@@ -1,67 +1,88 @@
 import type { CommandHandlerArgs } from '@/core';
+import type { Command } from '@/core/commands/command.interface';
 import type { CommandResult } from '@/core/plugins/plugin.types';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { SetOperatorOutput } from './output';
+import type {
+  SetOperatorExecuteContext,
+  SetOperatorNormalisedParams,
+} from './types';
 
 import { ValidationError } from '@/core/errors';
 import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 
 import { SetOperatorInputSchema } from './input';
 
-export async function setOperatorHandler(
+const normalizeParams = (
   args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { logger, api } = args;
-
+): SetOperatorNormalisedParams => {
+  const { api } = args;
   const validArgs = SetOperatorInputSchema.parse(args.args);
 
-  const operatorArg = validArgs.operator;
-  const networkArg = validArgs.network;
-  const keyManagerArg = validArgs.keyManager;
-
   const keyManager =
-    keyManagerArg ||
+    validArgs.keyManager ||
     api.config.getOption<KeyManagerName>('default_key_manager');
 
   const targetNetwork =
-    (networkArg as SupportedNetwork) || api.network.getCurrentNetwork();
+    (validArgs.network as SupportedNetwork) || api.network.getCurrentNetwork();
 
-  if (networkArg && !api.network.isNetworkAvailable(networkArg)) {
+  if (validArgs.network && !api.network.isNetworkAvailable(validArgs.network)) {
     const available = api.network.getAvailableNetworks().join(', ');
     throw new ValidationError(
-      ERROR_MESSAGES.networkNotAvailable(networkArg, available),
+      ERROR_MESSAGES.networkNotAvailable(validArgs.network, available),
     );
   }
 
-  const operator = await api.keyResolver.resolveAccountCredentials(
-    operatorArg,
+  return {
     keyManager,
-    ['network:operator', `network:${targetNetwork}`],
-  );
-
-  const existingOperator = api.network.getOperator(targetNetwork);
-  if (existingOperator) {
-    logger.info(
-      `Overwriting existing operator for ${targetNetwork}: ${existingOperator.accountId} -> ${operator.accountId}`,
-    );
-  } else {
-    logger.info(`Setting new operator for network ${targetNetwork}`);
-  }
-
-  api.network.setOperator(targetNetwork, {
-    accountId: operator.accountId,
-    keyRefId: operator.keyRefId,
-  });
-
-  const output: SetOperatorOutput = {
-    network: targetNetwork,
-    operator: {
-      accountId: operator.accountId,
-      keyRefId: operator.keyRefId,
-      publicKey: operator.publicKey,
-    },
+    operatorArg: validArgs.operator,
+    targetNetwork,
   };
+};
 
-  return { result: output };
+export class SetOperatorCommand implements Command {
+  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+    const { logger, api } = args;
+    const normalisedParams = normalizeParams(args);
+    const operator = await api.keyResolver.resolveAccountCredentials(
+      normalisedParams.operatorArg,
+      normalisedParams.keyManager,
+      ['network:operator', `network:${normalisedParams.targetNetwork}`],
+    );
+    const executeContext: SetOperatorExecuteContext = {
+      existingOperator: api.network.getOperator(normalisedParams.targetNetwork),
+      operator,
+    };
+
+    if (executeContext.existingOperator) {
+      logger.info(
+        `Overwriting existing operator for ${normalisedParams.targetNetwork}: ${executeContext.existingOperator.accountId} -> ${executeContext.operator.accountId}`,
+      );
+    } else {
+      logger.info(
+        `Setting new operator for network ${normalisedParams.targetNetwork}`,
+      );
+    }
+
+    api.network.setOperator(normalisedParams.targetNetwork, {
+      accountId: executeContext.operator.accountId,
+      keyRefId: executeContext.operator.keyRefId,
+    });
+
+    const output: SetOperatorOutput = {
+      network: normalisedParams.targetNetwork,
+      operator: {
+        accountId: executeContext.operator.accountId,
+        keyRefId: executeContext.operator.keyRefId,
+        publicKey: executeContext.operator.publicKey,
+      },
+    };
+
+    return { result: output };
+  }
 }
+
+export const setOperator = async (
+  args: CommandHandlerArgs,
+): Promise<CommandResult> => new SetOperatorCommand().execute(args);

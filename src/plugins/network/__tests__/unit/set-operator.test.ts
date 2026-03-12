@@ -16,7 +16,7 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
-  setOperatorHandler,
+  setOperator as setOperatorHandler,
   SetOperatorOutputSchema,
 } from '@/plugins/network/commands/set-operator';
 

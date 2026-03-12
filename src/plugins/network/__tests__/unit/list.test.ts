@@ -7,7 +7,7 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
 import {
-  listHandler,
+  listNetworks as listHandler,
   ListNetworksOutputSchema,
 } from '@/plugins/network/commands/list';
 import {

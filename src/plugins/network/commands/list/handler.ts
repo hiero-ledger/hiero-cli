@@ -1,51 +1,63 @@
-import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { CommandResult } from '@/core/plugins/plugin.types';
-import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { Command } from '@/core/commands/command.interface';
 import type { ListNetworksOutput } from './output';
+import type {
+  ListNetworksExecuteResult,
+  ListNetworksNormalisedParams,
+} from './types';
 
 import {
   checkMirrorNodeHealth,
   checkRpcHealth,
 } from '@/plugins/network/utils/networkHealth';
 
-export async function listHandler(
+const normalizeParams = (
   args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { api } = args;
+): ListNetworksNormalisedParams => ({
+  currentNetwork: args.api.network.getCurrentNetwork(),
+  networkNames:
+    args.api.network.getAvailableNetworks() as ListNetworksNormalisedParams['networkNames'],
+});
 
-  const networkNames = api.network.getAvailableNetworks();
-  const currentNetwork = api.network.getCurrentNetwork();
+export class ListNetworksCommand implements Command {
+  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+    const { api } = args;
+    const normalisedParams = normalizeParams(args);
 
-  const networks = await Promise.all(
-    networkNames.map(async (name) => {
-      const networkName = name as SupportedNetwork;
-      const config = api.network.getNetworkConfig(networkName);
-      const operator = api.network.getOperator(networkName);
+    const networks: ListNetworksExecuteResult = await Promise.all(
+      normalisedParams.networkNames.map(async (networkName) => {
+        const config = api.network.getNetworkConfig(networkName);
+        const operator = api.network.getOperator(networkName);
 
-      let mirrorNodeHealth;
-      let rpcHealth;
+        let mirrorNodeHealth;
+        let rpcHealth;
 
-      if (networkName === currentNetwork) {
-        mirrorNodeHealth = await checkMirrorNodeHealth(config.mirrorNodeUrl);
-        rpcHealth = await checkRpcHealth(config.rpcUrl);
-      }
+        if (networkName === normalisedParams.currentNetwork) {
+          mirrorNodeHealth = await checkMirrorNodeHealth(config.mirrorNodeUrl);
+          rpcHealth = await checkRpcHealth(config.rpcUrl);
+        }
 
-      return {
-        name: networkName,
-        isActive: networkName === currentNetwork,
-        mirrorNodeUrl: config.mirrorNodeUrl,
-        rpcUrl: config.rpcUrl,
-        operatorId: operator?.accountId || '',
-        mirrorNodeHealth,
-        rpcHealth,
-      };
-    }),
-  );
+        return {
+          name: networkName,
+          isActive: networkName === normalisedParams.currentNetwork,
+          mirrorNodeUrl: config.mirrorNodeUrl,
+          rpcUrl: config.rpcUrl,
+          operatorId: operator?.accountId || '',
+          mirrorNodeHealth,
+          rpcHealth,
+        };
+      }),
+    );
 
-  const output: ListNetworksOutput = {
-    networks,
-    activeNetwork: currentNetwork,
-  };
+    const output: ListNetworksOutput = {
+      networks,
+      activeNetwork: normalisedParams.currentNetwork,
+    };
 
-  return { result: output };
+    return { result: output };
+  }
 }
+
+export const listNetworks = async (
+  args: CommandHandlerArgs,
+): Promise<CommandResult> => new ListNetworksCommand().execute(args);

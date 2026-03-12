@@ -11,7 +11,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, ValidationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
-  getOperatorHandler,
+  getOperator as getOperatorHandler,
   GetOperatorOutputSchema,
 } from '@/plugins/network/commands/get-operator';
 
