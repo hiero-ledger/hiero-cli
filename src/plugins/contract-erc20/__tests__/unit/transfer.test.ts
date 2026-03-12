@@ -8,7 +8,7 @@ import { NotFoundError, TransactionError } from '@/core/errors';
 import { makeContractErc20ExecuteCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallTransferOutputSchema } from '@/plugins/contract-erc20/commands/transfer';
-import { ContractErc20TransferCommand } from '@/plugins/contract-erc20/commands/transfer/handler';
+import { transfer as erc20TransferHandler } from '@/plugins/contract-erc20/commands/transfer/handler';
 import { ContractErc20CallTransferInputSchema } from '@/plugins/contract-erc20/commands/transfer/input';
 
 const mockAddAddress = jest.fn().mockReturnThis();
@@ -81,7 +81,7 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
       },
     });
 
-    const result = await new ContractErc20TransferCommand().execute(args);
+    const result = await erc20TransferHandler(args);
 
     expect(result.result).toBeDefined();
 
@@ -128,7 +128,7 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
       },
     });
 
-    const result = await new ContractErc20TransferCommand().execute(args);
+    const result = await erc20TransferHandler(args);
 
     expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
@@ -156,7 +156,7 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
       },
     });
 
-    const result = await new ContractErc20TransferCommand().execute(args);
+    const result = await erc20TransferHandler(args);
 
     expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveAccount).not.toHaveBeenCalled();
@@ -179,12 +179,8 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
       receipt: { status: { status: 'FAILURE' } },
     });
 
-    await expect(
-      new ContractErc20TransferCommand().execute(args),
-    ).rejects.toThrow(TransactionError);
-    await expect(
-      new ContractErc20TransferCommand().execute(args),
-    ).rejects.toThrow('FAILURE');
+    await expect(erc20TransferHandler(args)).rejects.toThrow(TransactionError);
+    await expect(erc20TransferHandler(args)).rejects.toThrow('FAILURE');
   });
 
   test('throws when execute throws', async () => {
@@ -202,9 +198,7 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
       new Error('network error'),
     );
 
-    await expect(
-      new ContractErc20TransferCommand().execute(args),
-    ).rejects.toThrow('network error');
+    await expect(erc20TransferHandler(args)).rejects.toThrow('network error');
   });
 
   test('throws when alias not found for contract', async () => {
@@ -227,9 +221,7 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
       ),
     );
 
-    await expect(
-      new ContractErc20TransferCommand().execute(args),
-    ).rejects.toThrow(
+    await expect(erc20TransferHandler(args)).rejects.toThrow(
       'Alias "missing-contract" for contract on network "testnet" not found',
     );
   });
@@ -254,12 +246,10 @@ describe('contract-erc20 plugin - transfer command (unit)', () => {
       },
     );
 
-    await expect(
-      new ContractErc20TransferCommand().execute(args),
-    ).rejects.toThrow(NotFoundError);
-    await expect(
-      new ContractErc20TransferCommand().execute(args),
-    ).rejects.toThrow("Couldn't resolve EVM address for an account");
+    await expect(erc20TransferHandler(args)).rejects.toThrow(NotFoundError);
+    await expect(erc20TransferHandler(args)).rejects.toThrow(
+      "Couldn't resolve EVM address for an account",
+    );
   });
 
   test('schema validation fails when contract is missing', () => {

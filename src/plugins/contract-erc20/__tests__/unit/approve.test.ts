@@ -8,7 +8,7 @@ import { NotFoundError, TransactionError } from '@/core/errors';
 import { makeContractErc20ExecuteCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallApproveOutputSchema } from '@/plugins/contract-erc20/commands/approve';
-import { ContractErc20ApproveCommand } from '@/plugins/contract-erc20/commands/approve/handler';
+import { approve as erc20ApproveHandler } from '@/plugins/contract-erc20/commands/approve/handler';
 import { ContractErc20CallApproveInputSchema } from '@/plugins/contract-erc20/commands/approve/input';
 
 const mockAddAddress = jest.fn().mockReturnThis();
@@ -81,7 +81,7 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
       },
     });
 
-    const result = await new ContractErc20ApproveCommand().execute(args);
+    const result = await erc20ApproveHandler(args);
 
     expect(result.result).toBeDefined();
 
@@ -128,7 +128,7 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
       },
     });
 
-    const result = await new ContractErc20ApproveCommand().execute(args);
+    const result = await erc20ApproveHandler(args);
 
     expect(result.result).toBeDefined();
 
@@ -157,7 +157,7 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
       },
     });
 
-    const result = await new ContractErc20ApproveCommand().execute(args);
+    const result = await erc20ApproveHandler(args);
 
     expect(result.result).toBeDefined();
 
@@ -181,12 +181,8 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
       receipt: { status: { status: 'FAILURE' } },
     });
 
-    await expect(
-      new ContractErc20ApproveCommand().execute(args),
-    ).rejects.toThrow(TransactionError);
-    await expect(
-      new ContractErc20ApproveCommand().execute(args),
-    ).rejects.toThrow('FAILURE');
+    await expect(erc20ApproveHandler(args)).rejects.toThrow(TransactionError);
+    await expect(erc20ApproveHandler(args)).rejects.toThrow('FAILURE');
   });
 
   test('throws when execute throws', async () => {
@@ -204,9 +200,7 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
       new Error('network error'),
     );
 
-    await expect(
-      new ContractErc20ApproveCommand().execute(args),
-    ).rejects.toThrow('network error');
+    await expect(erc20ApproveHandler(args)).rejects.toThrow('network error');
   });
 
   test('throws when alias not found for contract', async () => {
@@ -229,9 +223,7 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
       ),
     );
 
-    await expect(
-      new ContractErc20ApproveCommand().execute(args),
-    ).rejects.toThrow(
+    await expect(erc20ApproveHandler(args)).rejects.toThrow(
       'Alias "missing-contract" for contract on network "testnet" not found',
     );
   });
@@ -256,12 +248,10 @@ describe('contract-erc20 plugin - approve command (unit)', () => {
       },
     );
 
-    await expect(
-      new ContractErc20ApproveCommand().execute(args),
-    ).rejects.toThrow(NotFoundError);
-    await expect(
-      new ContractErc20ApproveCommand().execute(args),
-    ).rejects.toThrow("Couldn't resolve EVM address for an account");
+    await expect(erc20ApproveHandler(args)).rejects.toThrow(NotFoundError);
+    await expect(erc20ApproveHandler(args)).rejects.toThrow(
+      "Couldn't resolve EVM address for an account",
+    );
   });
 
   test('schema validation fails when contract is missing', () => {

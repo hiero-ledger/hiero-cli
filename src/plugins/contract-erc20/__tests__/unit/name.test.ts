@@ -8,7 +8,7 @@ import { StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallNameOutputSchema } from '@/plugins/contract-erc20/commands/name';
-import { ContractErc20NameCommand } from '@/plugins/contract-erc20/commands/name/handler';
+import { name as erc20NameHandler } from '@/plugins/contract-erc20/commands/name/handler';
 import { ContractErc20CallNameInputSchema } from '@/plugins/contract-erc20/commands/name/input';
 
 jest.mock('@hashgraph/sdk', () => ({
@@ -43,7 +43,7 @@ describe('contract-erc20 plugin - name command (unit)', () => {
   test('calls ERC-20 name successfully and returns expected output', async () => {
     const args = makeContractErc20CallCommandArgs({ api, logger });
 
-    const result = await new ContractErc20NameCommand().execute(args);
+    const result = await erc20NameHandler(args);
 
     expect(result.result).toBeDefined();
 
@@ -81,9 +81,7 @@ describe('contract-erc20 plugin - name command (unit)', () => {
       queryResult: [],
     });
 
-    await expect(new ContractErc20NameCommand().execute(args)).rejects.toThrow(
-      StateError,
-    );
+    await expect(erc20NameHandler(args)).rejects.toThrow(StateError);
   });
 
   test('throws when queryContractFunction throws', async () => {
@@ -92,7 +90,7 @@ describe('contract-erc20 plugin - name command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    await expect(new ContractErc20NameCommand().execute(args)).rejects.toThrow(
+    await expect(erc20NameHandler(args)).rejects.toThrow(
       'contract query error',
     );
   });

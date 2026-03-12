@@ -8,7 +8,7 @@ import { NotFoundError, StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallBalanceOfOutputSchema } from '@/plugins/contract-erc20/commands/balance-of';
-import { ContractErc20BalanceOfCommand } from '@/plugins/contract-erc20/commands/balance-of/handler';
+import { balanceOf as erc20BalanceOfHandler } from '@/plugins/contract-erc20/commands/balance-of/handler';
 import { ContractErc20CallBalanceOfInputSchema } from '@/plugins/contract-erc20/commands/balance-of/input';
 
 const mockSolidityAddress = '1234567890123456789012345678901234567890';
@@ -69,7 +69,7 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
       },
     });
 
-    const result = await new ContractErc20BalanceOfCommand().execute(args);
+    const result = await erc20BalanceOfHandler(args);
 
     expect(result.result).toBeDefined();
 
@@ -119,7 +119,7 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
       },
     );
 
-    const result = await new ContractErc20BalanceOfCommand().execute(args);
+    const result = await erc20BalanceOfHandler(args);
 
     expect(result.result).toBeDefined();
 
@@ -154,7 +154,7 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
       },
     );
 
-    const result = await new ContractErc20BalanceOfCommand().execute(args);
+    const result = await erc20BalanceOfHandler(args);
 
     expect(result.result).toBeDefined();
 
@@ -186,9 +186,7 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
       queryResult: [],
     });
 
-    await expect(
-      new ContractErc20BalanceOfCommand().execute(args),
-    ).rejects.toThrow(StateError);
+    await expect(erc20BalanceOfHandler(args)).rejects.toThrow(StateError);
   });
 
   test('throws when queryContractFunction throws', async () => {
@@ -204,9 +202,9 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    await expect(
-      new ContractErc20BalanceOfCommand().execute(args),
-    ).rejects.toThrow('contract query error');
+    await expect(erc20BalanceOfHandler(args)).rejects.toThrow(
+      'contract query error',
+    );
   });
 
   test('throws NotFoundError when accountEvmAddress is not found', async () => {
@@ -227,9 +225,7 @@ describe('contract-erc20 plugin - balanceOf command (unit)', () => {
       },
     );
 
-    await expect(
-      new ContractErc20BalanceOfCommand().execute(args),
-    ).rejects.toThrow(NotFoundError);
+    await expect(erc20BalanceOfHandler(args)).rejects.toThrow(NotFoundError);
   });
 
   test('schema validation fails when contract is missing', () => {
