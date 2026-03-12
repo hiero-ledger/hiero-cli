@@ -1,33 +1,32 @@
-/**
- * Account Clear Command Handler
- * Handles clearing all accounts using the Core API
- * Follows ADR-003 contract: returns CommandResult
- */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { Command } from '@/core/commands/command.interface';
 import type { ClearAccountsOutput } from './output';
 
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
-export async function clearAccounts(
-  args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  const { api, logger } = args;
+export class ClearAccountsCommand implements Command {
+  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+    const { api, logger } = args;
 
-  const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const accountState = new ZustandAccountStateHelper(api.state, logger);
 
-  logger.info('Clearing all accounts...');
+    logger.info('Clearing all accounts...');
 
-  const accounts = accountState.listAccounts();
-  const count = accounts.length;
+    const accounts = accountState.listAccounts();
+    const count = accounts.length;
 
-  api.alias.clear(AliasType.Account);
+    api.alias.clear(AliasType.Account);
 
-  accountState.clearAccounts();
+    accountState.clearAccounts();
 
-  const outputData: ClearAccountsOutput = {
-    clearedCount: count,
-  };
+    const outputData: ClearAccountsOutput = {
+      clearedCount: count,
+    };
 
-  return { result: outputData };
+    return { result: outputData };
+  }
 }
+
+export const clearAccounts = (args: CommandHandlerArgs) =>
+  new ClearAccountsCommand().execute(args);
