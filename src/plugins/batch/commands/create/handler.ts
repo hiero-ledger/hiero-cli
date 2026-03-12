@@ -31,11 +31,12 @@ export class CreateBatchCommand implements Command {
       validArgs.keyManager ||
       api.config.getOption<KeyManagerName>('default_key_manager');
 
-    const resolved = await api.keyResolver.resolveSigningKey(
-      batchKey,
-      keyManager,
-      ['batch:signer'],
-    );
+    const resolved =
+      await api.keyResolver.resolveAccountCredentialsWithFallback(
+        batchKey,
+        keyManager,
+        ['batch:signer'],
+      );
 
     const batchData = {
       name,

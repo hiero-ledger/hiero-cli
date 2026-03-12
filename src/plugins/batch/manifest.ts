@@ -68,9 +68,9 @@ export const batchPluginManifest: PluginManifest = {
           name: 'key',
           short: 'k',
           type: OptionType.STRING,
-          required: true,
+          required: false,
           description:
-            'Key to sign transactions. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias',
+            'Key to sign transactions. Defaults to operator when omitted. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias',
         },
         {
           name: 'key-manager',
