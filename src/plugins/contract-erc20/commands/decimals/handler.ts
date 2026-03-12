@@ -78,5 +78,8 @@ export class ContractErc20DecimalsCommand implements Command {
   }
 }
 
-export const decimals = (args: CommandHandlerArgs) =>
-  new ContractErc20DecimalsCommand().execute(args);
+export async function contractErc20Decimals(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ContractErc20DecimalsCommand().execute(args);
+}

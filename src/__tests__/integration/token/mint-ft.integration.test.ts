@@ -19,7 +19,7 @@ import {
   getAccountBalance,
   viewAccount,
 } from '@/plugins/account';
-import { createToken, mintFt } from '@/plugins/token';
+import { createFt, mintFt } from '@/plugins/token';
 
 describe('Mint FT Integration Tests', () => {
   let coreApi: CoreApi;
@@ -79,7 +79,7 @@ describe('Mint FT Integration Tests', () => {
       supplyKey: `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
       name: 'test-token-mint',
     };
-    const createTokenResult = await createToken({
+    const createTokenResult = await createFt({
       args: createTokenArgs,
       api: coreApi,
       state: coreApi.state,

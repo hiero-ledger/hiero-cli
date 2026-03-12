@@ -79,7 +79,8 @@ export class ListTokensCommand implements Command {
   }
 }
 
-export const listTokensFlow = (args: CommandHandlerArgs) =>
-  new ListTokensCommand().execute(args);
-
-export const listTokens = listTokensFlow;
+export async function listTokens(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ListTokensCommand().execute(args);
+}

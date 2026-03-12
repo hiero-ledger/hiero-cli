@@ -13,7 +13,7 @@ import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';
 
 const ERC_721_FUNCTION_NAME = 'isApprovedForAll';
 
-export class IsApprovedForAllCommand implements Command {
+export class ContractErc721IsApprovedForAllCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
@@ -106,5 +106,5 @@ export class IsApprovedForAllCommand implements Command {
 export async function isApprovedForAllFunctionCall(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new IsApprovedForAllCommand().execute(args);
+  return new ContractErc721IsApprovedForAllCommand().execute(args);
 }

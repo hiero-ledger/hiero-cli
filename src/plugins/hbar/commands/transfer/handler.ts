@@ -15,8 +15,13 @@ import { processBalanceInput } from '@/core/utils/process-balance-input';
 
 import { TransferInputSchema } from './input';
 
-export const transferHbar = (args: CommandHandlerArgs) =>
-  new TransferCommand().execute(args);
+export const HBAR_TRANSFER_COMMAND_NAME = 'hbar_transfer';
+
+export async function transferHbar(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new TransferCommand().execute(args);
+}
 
 export class TransferCommand extends BaseTransactionCommand<
   TransferNormalisedParams,
@@ -24,6 +29,10 @@ export class TransferCommand extends BaseTransactionCommand<
   TransferSignTransactionResult,
   TransferExecuteTransactionResult
 > {
+  constructor() {
+    super(HBAR_TRANSFER_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TransferNormalisedParams> {

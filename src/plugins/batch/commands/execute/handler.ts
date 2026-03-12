@@ -15,18 +15,23 @@ import { Transaction } from '@hashgraph/sdk';
 import { ValidationError } from '@/core';
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError } from '@/core/errors';
-import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
 import { ExecuteBatchInputSchema } from './input';
 
-export class ExecuteBatchCommand extends BaseTransactionCommand<
+export const BATCH_EXECUTE_COMMAND_NAME = 'batch_execute';
+
+export class BatchExecuteCommand extends BaseTransactionCommand<
   BatchNormalisedParams,
   BatchBuildTransactionResult,
   BatchSignTransactionResult,
   BatchExecuteTransactionResult
 > {
+  constructor() {
+    super(BATCH_EXECUTE_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<BatchNormalisedParams> {
@@ -43,11 +48,21 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
     if (batchData.executed) {
       throw new ValidationError(`Batch "${name}" has been already executed `);
     }
+    const operator = api.network.getOperator(network);
+    if (!operator) {
+      throw new NotFoundError(`Operator not found current network ${network}`);
+    }
+    const batchKey = api.kms.get(batchData.keyRefId);
+    if (!batchKey) {
+      throw new NotFoundError(`Batch key not found ${batchData.keyRefId}`);
+    }
     return {
       name,
       network,
       batchId: key,
       batchData,
+      batchKey,
+      operatorKeyRefId: operator.keyRefId,
     };
   }
   async buildTransaction(
@@ -55,20 +70,21 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
     normalisedParams: BatchNormalisedParams,
   ): Promise<BatchBuildTransactionResult> {
     const { api } = args;
-    const innerTransactions = [...normalisedParams.batchData.transactions]
-      .sort((a, b) => a.order - b.order)
-      .map((txItem) => {
-        return Transaction.fromBytes(
-          Uint8Array.from(Buffer.from(txItem.transactionBytes, 'hex')),
-        );
-      });
-    const batchKey = await api.keyResolver.getPublicKey(
-      {
-        type: CredentialType.KEY_REFERENCE,
-        keyReference: normalisedParams.batchData.keyRefId,
-        rawValue: normalisedParams.batchData.keyRefId,
-      },
-      'local',
+    const batchKey = normalisedParams.batchKey;
+    const operatorKeyRefId = normalisedParams.operatorKeyRefId;
+    const signingKeys = [batchKey.keyRefId];
+    if (operatorKeyRefId != batchKey.keyRefId) {
+      signingKeys.push(operatorKeyRefId);
+    }
+    const innerTransactions = await Promise.all(
+      [...normalisedParams.batchData.transactions]
+        .sort((a, b) => a.order - b.order)
+        .map(async (txItem) => {
+          const transaction = Transaction.fromBytes(
+            Uint8Array.from(Buffer.from(txItem.transactionBytes, 'hex')),
+          );
+          return api.txSign.sign(transaction, signingKeys);
+        }),
     );
     const result = api.batch.createBatchTransaction({
       transactions: innerTransactions,
@@ -141,8 +157,8 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
   }
 }
 
-export async function executeBatch(
+export async function batchExecute(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ExecuteBatchCommand().execute(args);
+  return new BatchExecuteCommand().execute(args);
 }

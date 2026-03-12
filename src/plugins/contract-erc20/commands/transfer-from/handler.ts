@@ -20,12 +20,19 @@ import { ContractErc20CallTransferFromInputSchema } from './input';
 
 const ERC_20_FUNCTION_NAME = 'transferFrom';
 
+export const CONTRACT_ERC20_TRANSFER_FROM_COMMAND_NAME =
+  'contract-erc20_transfer-from';
+
 export class ContractErc20TransferFromCommand extends BaseTransactionCommand<
   ContractErc20TransferFromNormalizedParams,
   ContractErc20TransferFromBuildTransactionResult,
   ContractErc20TransferFromSignTransactionResult,
   ContractErc20TransferFromExecuteTransactionResult
 > {
+  constructor() {
+    super(CONTRACT_ERC20_TRANSFER_FROM_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<ContractErc20TransferFromNormalizedParams> {
@@ -169,5 +176,8 @@ export class ContractErc20TransferFromCommand extends BaseTransactionCommand<
   }
 }
 
-export const transferFrom = (args: CommandHandlerArgs) =>
-  new ContractErc20TransferFromCommand().execute(args);
+export async function contractErc20TransferFrom(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ContractErc20TransferFromCommand().execute(args);
+}

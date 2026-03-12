@@ -12,7 +12,7 @@ import type { ListBatchesOutput } from './output';
 
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
-export class ListBatchCommand implements Command {
+export class BatchListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
@@ -38,8 +38,8 @@ export class ListBatchCommand implements Command {
   }
 }
 
-export async function listBatch(
+export async function batchList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ListBatchCommand().execute(args);
+  return new BatchListCommand().execute(args);
 }

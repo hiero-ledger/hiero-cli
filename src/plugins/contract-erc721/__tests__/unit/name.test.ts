@@ -11,7 +11,7 @@ import { makeContractErc721CallCommandArgs } from '@/plugins/contract-erc721/__t
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 import {
   ContractErc721CallNameOutputSchema,
-  nameFunctionCall,
+  contractErc721NameFunctionCall,
 } from '@/plugins/contract-erc721/commands/name';
 import { ContractErc721CallNameInputSchema } from '@/plugins/contract-erc721/commands/name/input';
 
@@ -67,7 +67,7 @@ describe('contract-erc721 plugin - name command (unit)', () => {
       },
     });
 
-    const result = await nameFunctionCall(args);
+    const result = await contractErc721NameFunctionCall(args);
 
     expect(result.result).toBeDefined();
     const output = assertOutput(
@@ -104,7 +104,7 @@ describe('contract-erc721 plugin - name command (unit)', () => {
       },
     });
 
-    const result = await nameFunctionCall(args);
+    const result = await contractErc721NameFunctionCall(args);
 
     expect(result.result).toBeDefined();
     expect(
@@ -139,8 +139,10 @@ describe('contract-erc721 plugin - name command (unit)', () => {
       queryResult: [],
     });
 
-    await expect(nameFunctionCall(args)).rejects.toThrow(StateError);
-    await expect(nameFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721NameFunctionCall(args)).rejects.toThrow(
+      StateError,
+    );
+    await expect(contractErc721NameFunctionCall(args)).rejects.toThrow(
       `There was a problem with decoding contract ${MOCK_CONTRACT_ID} "name" function result`,
     );
   });
@@ -157,7 +159,7 @@ describe('contract-erc721 plugin - name command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    await expect(nameFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721NameFunctionCall(args)).rejects.toThrow(
       'contract query error',
     );
   });

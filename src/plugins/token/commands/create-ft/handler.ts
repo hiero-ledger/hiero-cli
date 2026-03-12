@@ -26,12 +26,18 @@ import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { CreateFungibleTokenInputSchema } from './input';
 
+export const TOKEN_CREATE_FT_COMMAND_NAME = 'token_create-ft';
+
 export class CreateFtCommand extends BaseTransactionCommand<
   CreateFtNormalizedParams,
   CreateFtBuildTransactionResult,
   CreateFtSignTransactionResult,
   CreateFtExecuteTransactionResult
 > {
+  constructor() {
+    super(TOKEN_CREATE_FT_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<CreateFtNormalizedParams> {
@@ -232,7 +238,8 @@ export class CreateFtCommand extends BaseTransactionCommand<
   }
 }
 
-export const createFt = (args: CommandHandlerArgs) =>
-  new CreateFtCommand().execute(args);
-
-export const createToken = createFt;
+export async function createFt(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new CreateFtCommand().execute(args);
+}

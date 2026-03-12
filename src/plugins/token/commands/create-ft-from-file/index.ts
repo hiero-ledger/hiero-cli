@@ -3,9 +3,9 @@
  * For use by tests and external consumers
  */
 export {
-  createFtFromFile,
   CreateFtFromFileCommand,
   createTokenFromFile,
+  TOKEN_CREATE_FT_FROM_FILE_COMMAND_NAME,
 } from './handler';
 export type { CreateFungibleTokenFromFileOutput } from './output';
 export {

@@ -12,7 +12,7 @@ import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';
 
 const ERC_721_FUNCTION_NAME = 'name';
 
-export class NameCommand implements Command {
+export class ContractErc721NameCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
@@ -58,8 +58,8 @@ export class NameCommand implements Command {
   }
 }
 
-export async function nameFunctionCall(
+export async function contractErc721NameFunctionCall(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new NameCommand().execute(args);
+  return new ContractErc721NameCommand().execute(args);
 }

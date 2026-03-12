@@ -20,12 +20,18 @@ import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TransferFungibleTokenInputSchema } from './input';
 
+export const TOKEN_TRANSFER_FT_COMMAND_NAME = 'token_transfer-ft';
+
 export class TransferFtCommand extends BaseTransactionCommand<
   TransferFtNormalizedParams,
   TransferFtBuildTransactionResult,
   TransferFtSignTransactionResult,
   TransferFtExecuteTransactionResult
 > {
+  constructor() {
+    super(TOKEN_TRANSFER_FT_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TransferFtNormalizedParams> {

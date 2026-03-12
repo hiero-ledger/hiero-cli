@@ -82,6 +82,8 @@ export class DeleteTopicCommand implements Command {
   }
 }
 
-const deleteTopicCommand = new DeleteTopicCommand();
-
-export const deleteTopic = deleteTopicCommand.execute.bind(deleteTopicCommand);
+export async function deleteTopic(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new DeleteTopicCommand().execute(args);
+}

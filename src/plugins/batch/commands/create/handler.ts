@@ -12,7 +12,7 @@ import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
 import { CreateBatchInputSchema } from './input';
 
-export class CreateBatchCommand implements Command {
+export class BatchCreateCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
@@ -56,8 +56,8 @@ export class CreateBatchCommand implements Command {
   }
 }
 
-export async function createBatch(
+export async function batchCreate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new CreateBatchCommand().execute(args);
+  return new BatchCreateCommand().execute(args);
 }

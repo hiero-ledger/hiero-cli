@@ -28,12 +28,19 @@ import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { CreateNftFromFileInputSchema } from './input';
 
+export const TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME =
+  'token_create-nft-from-file';
+
 export class CreateNftFromFileCommand extends BaseTransactionCommand<
   CreateNftFromFileNormalizedParams,
   CreateNftFromFileBuildTransactionResult,
   CreateNftFromFileSignTransactionResult,
   CreateNftFromFileExecuteTransactionResult
 > {
+  constructor() {
+    super(TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<CreateNftFromFileNormalizedParams> {
@@ -261,5 +268,8 @@ export class CreateNftFromFileCommand extends BaseTransactionCommand<
   }
 }
 
-export const createNftFromFile = (args: CommandHandlerArgs) =>
-  new CreateNftFromFileCommand().execute(args);
+export async function createNftFromFile(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new CreateNftFromFileCommand().execute(args);
+}

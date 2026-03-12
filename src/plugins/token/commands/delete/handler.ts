@@ -67,7 +67,8 @@ export class DeleteTokenCommand implements Command {
   }
 }
 
-export const deleteTokenFlow = (args: CommandHandlerArgs) =>
-  new DeleteTokenCommand().execute(args);
-
-export const deleteToken = deleteTokenFlow;
+export async function deleteToken(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new DeleteTokenCommand().execute(args);
+}

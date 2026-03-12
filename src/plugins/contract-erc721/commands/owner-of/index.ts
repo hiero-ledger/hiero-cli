@@ -2,7 +2,10 @@
  * Contract ownerOf Command Exports
  * For use by tests and external consumers
  */
-export { OwnerOfCommand, ownerOfFunctionCall } from './handler';
+export {
+  ContractErc721OwnerOfCommand,
+  contractErc721OwnerOfFunctionCall,
+} from './handler';
 export type { ContractErc721CallOwnerOfOutput } from './output';
 export {
   CONTRACT_ERC721_CALL_OWNER_OF_TEMPLATE,

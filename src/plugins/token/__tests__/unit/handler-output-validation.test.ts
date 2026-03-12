@@ -10,8 +10,8 @@ import {
   AssociateTokenOutputSchema,
 } from '@/plugins/token/commands/associate';
 import {
+  createFt,
   CreateFungibleTokenOutputSchema,
-  createToken,
 } from '@/plugins/token/commands/create-ft';
 import {
   listTokens,
@@ -88,7 +88,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         supplyType: SupplyType.INFINITE,
       };
 
-      const result = await createToken({
+      const result = await createFt({
         api,
         logger: makeLogger(),
         state: api.state,

@@ -2,7 +2,7 @@
  * Contract function decimals Command Exports
  * For use by tests and external consumers
  */
-export { ContractErc20DecimalsCommand, decimals } from './handler';
+export { contractErc20Decimals, ContractErc20DecimalsCommand } from './handler';
 export type { ContractErc20CallDecimalsOutput } from './output';
 export {
   CONTRACT_ERC20_CALL_DECIMALS_TEMPLATE,

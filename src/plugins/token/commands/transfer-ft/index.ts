@@ -2,7 +2,11 @@
  * Transfer Token Command Exports
  * For use by tests and external consumers
  */
-export { transferFt, TransferFtCommand } from './handler';
+export {
+  TOKEN_TRANSFER_FT_COMMAND_NAME,
+  transferFt,
+  TransferFtCommand,
+} from './handler';
 export type { TransferFungibleTokenOutput } from './output';
 export {
   TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,

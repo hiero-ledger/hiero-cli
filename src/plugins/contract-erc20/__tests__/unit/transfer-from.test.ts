@@ -10,7 +10,7 @@ import {
   makeLogger,
 } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallTransferFromOutputSchema } from '@/plugins/contract-erc20/commands/transfer-from';
-import { transferFrom as erc20TransferFromHandler } from '@/plugins/contract-erc20/commands/transfer-from/handler';
+import { contractErc20TransferFrom as erc20TransferFromHandler } from '@/plugins/contract-erc20/commands/transfer-from/handler';
 import { ContractErc20CallTransferFromInputSchema } from '@/plugins/contract-erc20/commands/transfer-from/input';
 
 const mockAddAddress = jest.fn().mockReturnThis();

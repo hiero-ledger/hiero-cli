@@ -12,7 +12,7 @@ import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
 import { DeleteBatchInputSchema } from './input';
 
-export class DeleteBatchCommand implements Command {
+export class BatchDeleteCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
@@ -65,8 +65,8 @@ export class DeleteBatchCommand implements Command {
   }
 }
 
-export async function deleteBatch(
+export async function batchDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new DeleteBatchCommand().execute(args);
+  return new BatchDeleteCommand().execute(args);
 }

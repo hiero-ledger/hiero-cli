@@ -13,7 +13,7 @@ import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';
 
 const ERC_721_FUNCTION_NAME = 'balanceOf';
 
-export class BalanceOfCommand implements Command {
+export class ContractErc721BalanceOfCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
@@ -79,8 +79,8 @@ export class BalanceOfCommand implements Command {
   }
 }
 
-export async function balanceOfFunctionCall(
+export async function contractErc721BalanceOfFunctionCall(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new BalanceOfCommand().execute(args);
+  return new ContractErc721BalanceOfCommand().execute(args);
 }

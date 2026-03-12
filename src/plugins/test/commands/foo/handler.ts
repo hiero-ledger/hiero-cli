@@ -9,12 +9,18 @@ import type { FooTestOutput } from './output';
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { FooTestInputSchema } from '@/plugins/test/commands/foo/input';
 
-export class FooTestCommand extends BaseTransactionCommand<
+export const TEST_FOO_COMMAND_NAME = 'test_foo';
+
+export class TestFooCommand extends BaseTransactionCommand<
   FooNormalizedParams,
   FooBuildTransactionResult,
   FooSignTransactionResult,
   void
 > {
+  constructor() {
+    super(TEST_FOO_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<FooNormalizedParams> {
@@ -75,11 +81,11 @@ export class FooTestCommand extends BaseTransactionCommand<
 export async function fooTestOptions(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new FooTestCommand().execute(args);
+  return new TestFooCommand().execute(args);
 }
 
-export async function fooTest(
+export async function testFoo(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new FooTestCommand().execute(args);
+  return new TestFooCommand().execute(args);
 }

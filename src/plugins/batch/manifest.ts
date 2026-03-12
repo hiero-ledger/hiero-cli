@@ -6,25 +6,25 @@ import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
 import {
+  batchList,
   LIST_BATCHES_TEMPLATE,
-  listBatch,
   ListBatchesOutputSchema,
 } from '@/plugins/batch/commands/list';
-import { BatchifyHook } from '@/plugins/batch/hooks/batchify/handler';
+import { BatchBatchifyHook } from '@/plugins/batch/hooks/batchify/handler';
 
 import {
+  batchCreate,
   CREATE_BATCH_TEMPLATE,
-  createBatch,
   CreateBatchOutputSchema,
 } from './commands/create';
 import {
+  batchDelete,
   DELETE_BATCH_TEMPLATE,
-  deleteBatch,
   DeleteBatchOutputSchema,
 } from './commands/delete';
 import {
+  batchExecute,
   EXECUTE_BATCH_TEMPLATE,
-  executeBatch,
   ExecuteBatchOutputSchema,
 } from './commands/execute';
 
@@ -39,11 +39,11 @@ export const batchPluginManifest: PluginManifest = {
   hooks: [
     {
       name: 'batchify',
-      hook: new BatchifyHook(),
+      hook: new BatchBatchifyHook(),
       options: [
         {
           name: 'batch',
-          short: 'b',
+          short: 'B',
           type: OptionType.STRING,
           description: 'Name of the batch',
         },
@@ -81,7 +81,7 @@ export const batchPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: createBatch,
+      handler: batchCreate,
       output: {
         schema: CreateBatchOutputSchema,
         humanTemplate: CREATE_BATCH_TEMPLATE,
@@ -101,7 +101,7 @@ export const batchPluginManifest: PluginManifest = {
           description: 'Name of the batch to execute',
         },
       ],
-      handler: executeBatch,
+      handler: batchExecute,
       output: {
         schema: ExecuteBatchOutputSchema,
         humanTemplate: EXECUTE_BATCH_TEMPLATE,
@@ -112,7 +112,7 @@ export const batchPluginManifest: PluginManifest = {
       summary: 'List batches',
       description: 'List all available batches',
       options: [],
-      handler: listBatch,
+      handler: batchList,
       output: {
         schema: ListBatchesOutputSchema,
         humanTemplate: LIST_BATCHES_TEMPLATE,
@@ -140,7 +140,7 @@ export const batchPluginManifest: PluginManifest = {
             'Order of transaction to remove. If omitted, deletes the entire batch',
         },
       ],
-      handler: deleteBatch,
+      handler: batchDelete,
       output: {
         schema: DeleteBatchOutputSchema,
         humanTemplate: DELETE_BATCH_TEMPLATE,

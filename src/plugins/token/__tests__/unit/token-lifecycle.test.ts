@@ -9,7 +9,7 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { associateToken } from '@/plugins/token/commands/associate';
-import { createToken } from '@/plugins/token/commands/create-ft';
+import { createFt } from '@/plugins/token/commands/create-ft';
 import { transferFt } from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -121,7 +121,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      const createResult = await createToken(createArgs);
+      const createResult = await createFt(createArgs);
       expect(createResult.result).toBeDefined();
 
       // Step 2: Associate Token
@@ -261,7 +261,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      const createResult = await createToken(createArgs);
+      const createResult = await createFt(createArgs);
       expect(createResult.result).toBeDefined();
 
       // Step 2: Associate Token (success)
@@ -366,7 +366,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      const createResult = await createToken(createArgs);
+      const createResult = await createFt(createArgs);
       expect(createResult.result).toBeDefined();
 
       // Step 2: Associate with first user
@@ -453,7 +453,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      await expect(createToken(createArgs)).rejects.toThrow();
+      await expect(createFt(createArgs)).rejects.toThrow();
 
       const associateArgs: CommandHandlerArgs = {
         args: {

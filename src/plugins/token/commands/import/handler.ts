@@ -96,7 +96,8 @@ export class ImportTokenCommand implements Command {
   }
 }
 
-export const importTokenFlow = (args: CommandHandlerArgs) =>
-  new ImportTokenCommand().execute(args);
-
-export const importToken = importTokenFlow;
+export async function importToken(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ImportTokenCommand().execute(args);
+}

@@ -80,6 +80,8 @@ export class ImportTopicCommand implements Command {
   }
 }
 
-const importTopicCommand = new ImportTopicCommand();
-
-export const importTopic = importTopicCommand.execute.bind(importTopicCommand);
+export async function importTopic(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ImportTopicCommand().execute(args);
+}

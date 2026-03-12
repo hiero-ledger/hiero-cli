@@ -1,3 +1,7 @@
-export { TransferCommand, transferHbar } from './handler';
+export {
+  HBAR_TRANSFER_COMMAND_NAME,
+  TransferCommand,
+  transferHbar,
+} from './handler';
 export type { TransferOutput } from './output';
 export { TRANSFER_TEMPLATE, TransferOutputSchema } from './output';

@@ -22,12 +22,18 @@ import { MintNftInputSchema } from './input';
 
 const MAX_METADATA_BYTES = 100;
 
+export const TOKEN_MINT_NFT_COMMAND_NAME = 'token_mint-nft';
+
 export class MintNftCommand extends BaseTransactionCommand<
   MintNftNormalizedParams,
   MintNftBuildTransactionResult,
   MintNftSignTransactionResult,
   MintNftExecuteTransactionResult
 > {
+  constructor() {
+    super(TOKEN_MINT_NFT_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<MintNftNormalizedParams> {
@@ -174,5 +180,8 @@ export class MintNftCommand extends BaseTransactionCommand<
   }
 }
 
-export const mintNft = (args: CommandHandlerArgs) =>
-  new MintNftCommand().execute(args);
+export async function mintNft(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new MintNftCommand().execute(args);
+}

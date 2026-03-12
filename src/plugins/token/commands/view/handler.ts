@@ -53,7 +53,8 @@ export class ViewTokenCommand implements Command {
   }
 }
 
-export const viewTokenFlow = (args: CommandHandlerArgs) =>
-  new ViewTokenCommand().execute(args);
-
-export const viewToken = viewTokenFlow;
+export async function viewToken(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ViewTokenCommand().execute(args);
+}

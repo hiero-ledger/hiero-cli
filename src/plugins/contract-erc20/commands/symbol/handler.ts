@@ -78,5 +78,8 @@ export class ContractErc20SymbolCommand implements Command {
   }
 }
 
-export const symbol = (args: CommandHandlerArgs) =>
-  new ContractErc20SymbolCommand().execute(args);
+export async function contractErc20Symbol(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ContractErc20SymbolCommand().execute(args);
+}

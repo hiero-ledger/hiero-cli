@@ -12,7 +12,7 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  createToken,
+  createFt,
   deleteToken,
   importToken,
   listTokens,
@@ -38,7 +38,7 @@ describe('Import Token Integration Tests', () => {
       supplyType: SupplyType.INFINITE,
       name: `token-import-${Date.now()}`,
     };
-    const createTokenResult = await createToken({
+    const createTokenResult = await createFt({
       args: createTokenArgs,
       api: coreApi,
       state: coreApi.state,

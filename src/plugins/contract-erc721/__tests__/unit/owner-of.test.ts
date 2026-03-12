@@ -17,7 +17,7 @@ import { makeContractErc721CallCommandArgs } from '@/plugins/contract-erc721/__t
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 import {
   ContractErc721CallOwnerOfOutputSchema,
-  ownerOfFunctionCall,
+  contractErc721OwnerOfFunctionCall,
 } from '@/plugins/contract-erc721/commands/owner-of';
 import { ContractErc721CallOwnerOfInputSchema } from '@/plugins/contract-erc721/commands/owner-of/input';
 
@@ -81,7 +81,7 @@ describe('contract-erc721 plugin - ownerOf command (unit)', () => {
       },
     });
 
-    const result = await ownerOfFunctionCall(args);
+    const result = await contractErc721OwnerOfFunctionCall(args);
 
     expect(result.result).toBeDefined();
     const output = assertOutput(
@@ -122,7 +122,7 @@ describe('contract-erc721 plugin - ownerOf command (unit)', () => {
       },
     });
 
-    const result = await ownerOfFunctionCall(args);
+    const result = await contractErc721OwnerOfFunctionCall(args);
 
     expect(result.result).toBeDefined();
     expect(
@@ -158,8 +158,10 @@ describe('contract-erc721 plugin - ownerOf command (unit)', () => {
       queryResult: [],
     });
 
-    await expect(ownerOfFunctionCall(args)).rejects.toThrow(StateError);
-    await expect(ownerOfFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721OwnerOfFunctionCall(args)).rejects.toThrow(
+      StateError,
+    );
+    await expect(contractErc721OwnerOfFunctionCall(args)).rejects.toThrow(
       `There was a problem with decoding contract ${MOCK_CONTRACT_ID} "ownerOf" function result`,
     );
   });
@@ -177,7 +179,7 @@ describe('contract-erc721 plugin - ownerOf command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    await expect(ownerOfFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721OwnerOfFunctionCall(args)).rejects.toThrow(
       'contract query error',
     );
   });

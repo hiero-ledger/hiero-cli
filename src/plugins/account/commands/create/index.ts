@@ -2,6 +2,10 @@
  * Create Command Exports
  * For use by tests and external consumers
  */
-export { createAccount, CreateAccountCommand } from './handler';
+export {
+  ACCOUNT_CREATE_COMMAND_NAME,
+  createAccount,
+  CreateAccountCommand,
+} from './handler';
 export type { CreateAccountOutput } from './output';
 export { CREATE_ACCOUNT_TEMPLATE, CreateAccountOutputSchema } from './output';

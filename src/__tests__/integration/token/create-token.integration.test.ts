@@ -18,7 +18,7 @@ import {
   getAccountBalance,
   viewAccount,
 } from '@/plugins/account';
-import { createToken } from '@/plugins/token';
+import { createFt } from '@/plugins/token';
 
 describe('Create Token Integration Tests', () => {
   let coreApi: CoreApi;
@@ -78,7 +78,7 @@ describe('Create Token Integration Tests', () => {
       adminKey: 'account-create-token',
       name: 'test-token',
     };
-    const createTokenResult = await createToken({
+    const createTokenResult = await createFt({
       args: createTokenArgs,
       api: coreApi,
       state: coreApi.state,
