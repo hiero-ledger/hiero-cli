@@ -8,7 +8,7 @@ import { StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallSymbolOutputSchema } from '@/plugins/contract-erc20/commands/symbol';
-import { symbolFunctionCall as erc20SymbolHandler } from '@/plugins/contract-erc20/commands/symbol/handler';
+import { symbol as erc20SymbolHandler } from '@/plugins/contract-erc20/commands/symbol/handler';
 import { ContractErc20CallSymbolInputSchema } from '@/plugins/contract-erc20/commands/symbol/input';
 
 jest.mock('@hashgraph/sdk', () => ({

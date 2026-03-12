@@ -8,7 +8,7 @@ import { StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallTotalSupplyOutputSchema } from '@/plugins/contract-erc20/commands/total-supply';
-import { totalSupplyFunctionCall as erc20TotalSupplyHandler } from '@/plugins/contract-erc20/commands/total-supply/handler';
+import { totalSupply as erc20TotalSupplyHandler } from '@/plugins/contract-erc20/commands/total-supply/handler';
 import { ContractErc20CallTotalSupplyInputSchema } from '@/plugins/contract-erc20/commands/total-supply/input';
 
 jest.mock('@hashgraph/sdk', () => ({

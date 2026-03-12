@@ -8,7 +8,7 @@ import { NotFoundError, StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallBalanceOfOutputSchema } from '@/plugins/contract-erc20/commands/balance-of';
-import { balanceOfFunctionCall as erc20BalanceOfHandler } from '@/plugins/contract-erc20/commands/balance-of/handler';
+import { balanceOf as erc20BalanceOfHandler } from '@/plugins/contract-erc20/commands/balance-of/handler';
 import { ContractErc20CallBalanceOfInputSchema } from '@/plugins/contract-erc20/commands/balance-of/input';
 
 const mockSolidityAddress = '1234567890123456789012345678901234567890';

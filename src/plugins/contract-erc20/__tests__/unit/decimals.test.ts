@@ -12,7 +12,7 @@ import {
   makeLogger,
 } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallDecimalsOutputSchema } from '@/plugins/contract-erc20/commands/decimals';
-import { decimalsFunctionCall as erc20DecimalsHandler } from '@/plugins/contract-erc20/commands/decimals/handler';
+import { decimals as erc20DecimalsHandler } from '@/plugins/contract-erc20/commands/decimals/handler';
 import { ContractErc20CallDecimalsInputSchema } from '@/plugins/contract-erc20/commands/decimals/input';
 
 jest.mock('@hashgraph/sdk', () => ({
