@@ -6,7 +6,7 @@ import { makeArgs } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError, ValidationError } from '@/core/errors';
 import {
-  TransferCommand,
+  transferHbar as transferHandler,
   TransferOutputSchema,
 } from '@/plugins/hbar/commands/transfer';
 import { TransferInputSchema } from '@/plugins/hbar/commands/transfer/input';
@@ -44,7 +44,7 @@ describe('hbar plugin - transfer command (unit)', () => {
       memo: 'test-transfer',
     });
 
-    const result = await new TransferCommand().execute(args);
+    const result = await transferHandler(args);
     const output = assertOutput(result.result, TransferOutputSchema);
 
     expect(output.transactionId).toBe(
@@ -96,7 +96,7 @@ describe('hbar plugin - transfer command (unit)', () => {
       to: mockAccountIds.receiver,
     });
 
-    await expect(new TransferCommand().execute(args)).rejects.toThrow(ZodError);
+    await expect(transferHandler(args)).rejects.toThrow(ZodError);
   });
 
   test('succeeds when valid params provided (no default accounts check)', async () => {
@@ -115,7 +115,7 @@ describe('hbar plugin - transfer command (unit)', () => {
       to: mockAccountIds.receiver,
     });
 
-    const result = await new TransferCommand().execute(args);
+    const result = await transferHandler(args);
     const output = assertOutput(result.result, TransferOutputSchema);
 
     expect(output).toBeDefined();
@@ -143,9 +143,7 @@ describe('hbar plugin - transfer command (unit)', () => {
       to: 'same-account',
     });
 
-    await expect(new TransferCommand().execute(args)).rejects.toThrow(
-      ValidationError,
-    );
+    await expect(transferHandler(args)).rejects.toThrow(ValidationError);
   });
 
   test('returns failure when transferTinybar fails', async () => {
@@ -162,7 +160,7 @@ describe('hbar plugin - transfer command (unit)', () => {
       memo: 'test-transfer',
     });
 
-    await expect(new TransferCommand().execute(args)).rejects.toThrow(
+    await expect(transferHandler(args)).rejects.toThrow(
       'Network connection failed',
     );
   });
@@ -176,9 +174,7 @@ describe('hbar plugin - transfer command (unit)', () => {
       to: mockAccountIds.receiver,
     });
 
-    await expect(new TransferCommand().execute(args)).rejects.toThrow(
-      StateError,
-    );
+    await expect(transferHandler(args)).rejects.toThrow(StateError);
   });
 
   test('uses default credentials as from when not provided', async () => {
@@ -198,7 +194,7 @@ describe('hbar plugin - transfer command (unit)', () => {
       to: mockAccountIds.receiver,
     });
 
-    const result = await new TransferCommand().execute(args);
+    const result = await transferHandler(args);
     const output = assertOutput(result.result, TransferOutputSchema);
 
     expect(output).toBeDefined();
