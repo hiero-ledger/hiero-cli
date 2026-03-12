@@ -74,7 +74,7 @@ export class BatchifyHook extends AbstractHook {
     });
   }
 
-  override async preExecuteTransactionHook(
+  override preExecuteTransactionHook(
     args: CommandHandlerArgs,
     params: PreExecuteTransactionParams<
       Record<string, unknown>,
@@ -91,12 +91,12 @@ export class BatchifyHook extends AbstractHook {
       logger.debug(
         'No parameter "batch" found. Transaction will not be added to batch.',
       );
-      return {
+      return Promise.resolve({
         breakFlow: false,
         result: {
           message: 'No "batch" parameter found',
         },
-      };
+      });
     }
     const key = composeKey(network, batchName);
     const batch = batchState.getBatch(key);
@@ -109,13 +109,8 @@ export class BatchifyHook extends AbstractHook {
       );
     }
     const transaction = params.signTransactionResult.transaction;
-    const signedTransaction = await api.txSign.sign(transaction, [
-      batch.keyRefId,
-    ]);
 
-    const transactionBytes = Buffer.from(signedTransaction.toBytes()).toString(
-      'hex',
-    );
+    const transactionBytes = Buffer.from(transaction.toBytes()).toString('hex');
     const highestOrder =
       batch.transactions.length === 0
         ? 0
@@ -132,7 +127,7 @@ export class BatchifyHook extends AbstractHook {
       `Transaction added to batch '${batchName}' at position ${nextOrder}`,
     );
 
-    return {
+    return Promise.resolve({
       breakFlow: true,
       result: {
         batchName,
@@ -140,6 +135,6 @@ export class BatchifyHook extends AbstractHook {
       },
       schema: BatchifyOutputSchema,
       humanTemplate: BATCHIFY_TEMPLATE,
-    };
+    });
   }
 }
