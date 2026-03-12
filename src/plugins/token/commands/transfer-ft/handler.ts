@@ -28,6 +28,10 @@ export class TransferFtCommand extends BaseTransactionCommand<
   TransferFtSignTransactionResult,
   TransferFtExecuteTransactionResult
 > {
+  constructor() {
+    super(TOKEN_TRANSFER_FT_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TransferFtNormalizedParams> {
@@ -193,5 +197,5 @@ export class TransferFtCommand extends BaseTransactionCommand<
 export async function transferFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TransferFtCommand(TOKEN_TRANSFER_FT_COMMAND_NAME).execute(args);
+  return new TransferFtCommand().execute(args);
 }

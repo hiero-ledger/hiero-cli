@@ -20,12 +20,18 @@ import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { SubmitMessageInputSchema } from './input';
 
+export const TOPIC_SUBMIT_MESSAGE_COMMAND_NAME = 'topic_submit-message';
+
 export class SubmitMessageCommand extends BaseTransactionCommand<
   SubmitMessageNormalisedParams,
   SubmitMessageBuildTransactionResult,
   SubmitMessageSignTransactionResult,
   SubmitMessageExecuteTransactionResult
 > {
+  constructor() {
+    super(TOPIC_SUBMIT_MESSAGE_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<SubmitMessageNormalisedParams> {

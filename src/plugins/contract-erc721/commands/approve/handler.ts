@@ -17,12 +17,18 @@ import { ContractErc721CallApproveInputSchema } from './input';
 
 const ERC_721_FUNCTION_NAME = 'approve';
 
+export const CONTRACT_ERC721_APPROVE_COMMAND_NAME = 'contract-erc721_approve';
+
 export class ApproveCommand extends BaseTransactionCommand<
   ApproveNormalisedParams,
   ApproveBuildTransactionResult,
   ApproveSignTransactionResult,
   ApproveExecuteTransactionResult
 > {
+  constructor() {
+    super(CONTRACT_ERC721_APPROVE_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<ApproveNormalisedParams> {

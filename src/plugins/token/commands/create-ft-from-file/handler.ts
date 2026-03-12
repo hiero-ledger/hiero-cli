@@ -29,12 +29,19 @@ import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { CreateFungibleTokenFromFileInputSchema } from './input';
 
+export const TOKEN_CREATE_FT_FROM_FILE_COMMAND_NAME =
+  'token_create-ft-from-file';
+
 export class CreateFtFromFileCommand extends BaseTransactionCommand<
   CreateFtFromFileNormalizedParams,
   CreateFtFromFileBuildTransactionResult,
   CreateFtFromFileSignTransactionResult,
   CreateFtFromFileExecuteTransactionResult
 > {
+  constructor() {
+    super(TOKEN_CREATE_FT_FROM_FILE_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<CreateFtFromFileNormalizedParams> {

@@ -17,12 +17,18 @@ import { ContractErc721CallMintInputSchema } from './input';
 
 const ERC_721_FUNCTION_NAME = 'mint';
 
+export const CONTRACT_ERC721_MINT_COMMAND_NAME = 'contract-erc721_mint';
+
 export class MintCommand extends BaseTransactionCommand<
   MintNormalisedParams,
   MintBuildTransactionResult,
   MintSignTransactionResult,
   MintExecuteTransactionResult
 > {
+  constructor() {
+    super(CONTRACT_ERC721_MINT_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<MintNormalisedParams> {

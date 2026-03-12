@@ -3,6 +3,7 @@
  * For use by tests and external consumers
  */
 export {
+  CONTRACT_ERC721_SAFE_TRANSFER_FROM_COMMAND_NAME,
   SafeTransferFromCommand,
   safeTransferFromFunctionCall,
 } from './handler';

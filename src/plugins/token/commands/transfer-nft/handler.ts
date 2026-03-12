@@ -21,12 +21,18 @@ import {
 
 import { TransferNftInputSchema } from './input';
 
+export const TOKEN_TRANSFER_NFT_COMMAND_NAME = 'token_transfer-nft';
+
 export class TransferNftCommand extends BaseTransactionCommand<
   TransferNftNormalizedParams,
   TransferNftBuildTransactionResult,
   TransferNftSignTransactionResult,
   TransferNftExecuteTransactionResult
 > {
+  constructor() {
+    super(TOKEN_TRANSFER_NFT_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TransferNftNormalizedParams> {

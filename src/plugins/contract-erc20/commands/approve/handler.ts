@@ -20,12 +20,18 @@ import { ContractErc20CallApproveInputSchema } from './input';
 
 const ERC_20_FUNCTION_NAME = 'approve';
 
+export const CONTRACT_ERC20_APPROVE_COMMAND_NAME = 'contract-erc20_approve';
+
 export class ContractErc20ApproveCommand extends BaseTransactionCommand<
   ContractErc20ApproveNormalizedParams,
   ContractErc20ApproveBuildTransactionResult,
   ContractErc20ApproveSignTransactionResult,
   ContractErc20ApproveExecuteTransactionResult
 > {
+  constructor() {
+    super(CONTRACT_ERC20_APPROVE_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<ContractErc20ApproveNormalizedParams> {

@@ -18,12 +18,18 @@ import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { CreateTopicInputSchema } from './input';
 
+export const TOPIC_CREATE_COMMAND_NAME = 'topic_create';
+
 export class CreateTopicCommand extends BaseTransactionCommand<
   CreateTopicNormalisedParams,
   CreateTopicBuildTransactionResult,
   CreateTopicSignTransactionResult,
   CreateTopicExecuteTransactionResult
 > {
+  constructor() {
+    super(TOPIC_CREATE_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<CreateTopicNormalisedParams> {

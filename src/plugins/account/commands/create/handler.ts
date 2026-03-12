@@ -21,12 +21,18 @@ import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helpe
 
 import { CreateAccountInputSchema } from './input';
 
+export const ACCOUNT_CREATE_COMMAND_NAME = 'account_create';
+
 export class CreateAccountCommand extends BaseTransactionCommand<
   CreateNormalisedParams,
   CreateBuildTransactionResult,
   CreateSignTransactionResult,
   CreateExecuteTransactionResult
 > {
+  constructor() {
+    super(ACCOUNT_CREATE_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<CreateNormalisedParams> {

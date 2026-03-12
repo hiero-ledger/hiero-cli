@@ -24,12 +24,18 @@ import {
 } from '@/plugins/token/utils/token-data-builders';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
+export const TOKEN_CREATE_NFT_COMMAND_NAME = 'token_create-nft';
+
 export class CreateNftCommand extends BaseTransactionCommand<
   CreateNftNormalizedParams,
   CreateNftBuildTransactionResult,
   CreateNftSignTransactionResult,
   CreateNftExecuteTransactionResult
 > {
+  constructor() {
+    super(TOKEN_CREATE_NFT_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<CreateNftNormalizedParams> {

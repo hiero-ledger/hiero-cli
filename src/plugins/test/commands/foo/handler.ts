@@ -17,6 +17,10 @@ export class TestFooCommand extends BaseTransactionCommand<
   FooSignTransactionResult,
   void
 > {
+  constructor() {
+    super(TEST_FOO_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<FooNormalizedParams> {
@@ -77,11 +81,11 @@ export class TestFooCommand extends BaseTransactionCommand<
 export async function fooTestOptions(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new FooTestCommand().execute(args);
+  return new TestFooCommand().execute(args);
 }
 
 export async function testFoo(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TestFooCommand(TEST_FOO_COMMAND_NAME).execute(args);
+  return new TestFooCommand().execute(args);
 }

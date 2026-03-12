@@ -32,12 +32,18 @@ import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-hel
 
 import { ContractCreateSchema } from './input';
 
+export const CONTRACT_CREATE_COMMAND_NAME = 'contract_create';
+
 export class CreateContractCommand extends BaseTransactionCommand<
   ContractCreateNormalisedParams,
   ContractCreateBuildTransactionResult,
   ContractCreateSignTransactionResult,
   ContractCreateExecuteTransactionResult
 > {
+  constructor() {
+    super(CONTRACT_CREATE_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<ContractCreateNormalisedParams> {

@@ -17,12 +17,19 @@ import { ContractErc721CallSetApprovalForAllInputSchema } from './input';
 
 const ERC_721_FUNCTION_NAME = 'setApprovalForAll';
 
+export const CONTRACT_ERC721_SET_APPROVAL_FOR_ALL_COMMAND_NAME =
+  'contract-erc721_set-approval-for-all';
+
 export class SetApprovalForAllCommand extends BaseTransactionCommand<
   SetApprovalForAllNormalisedParams,
   SetApprovalForAllBuildTransactionResult,
   SetApprovalForAllSignTransactionResult,
   SetApprovalForAllExecuteTransactionResult
 > {
+  constructor() {
+    super(CONTRACT_ERC721_SET_APPROVAL_FOR_ALL_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<SetApprovalForAllNormalisedParams> {

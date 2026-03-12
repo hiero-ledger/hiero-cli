@@ -18,6 +18,8 @@ import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { AssociateTokenInputSchema } from './input';
 
+export const TOKEN_ASSOCIATE_COMMAND_NAME = 'token_associate';
+
 function isTokenAlreadyAssociatedError(error: unknown): boolean {
   if (!(error instanceof TransactionError)) {
     return false;
@@ -36,6 +38,10 @@ export class AssociateTokenCommand extends BaseTransactionCommand<
   AssociateSignTransactionResult,
   AssociateExecuteTransactionResult
 > {
+  constructor() {
+    super(TOKEN_ASSOCIATE_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<AssociateNormalizedParams> {

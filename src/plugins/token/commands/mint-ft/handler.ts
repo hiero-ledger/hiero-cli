@@ -30,6 +30,10 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
   MintFtSignTransactionResult,
   MintFtExecuteTransactionResult
 > {
+  constructor() {
+    super(TOKEN_MINT_FT_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<MintFtNormalizedParams> {
@@ -195,5 +199,5 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
 }
 
 export async function mintFt(args: CommandHandlerArgs): Promise<CommandResult> {
-  return new TokenMintFtCommand(TOKEN_MINT_FT_COMMAND_NAME).execute(args);
+  return new TokenMintFtCommand().execute(args);
 }

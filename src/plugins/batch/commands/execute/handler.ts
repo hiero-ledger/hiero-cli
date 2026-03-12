@@ -28,6 +28,10 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
   BatchSignTransactionResult,
   BatchExecuteTransactionResult
 > {
+  constructor() {
+    super(BATCH_EXECUTE_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<BatchNormalisedParams> {
@@ -156,5 +160,5 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
 export async function batchExecute(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new BatchExecuteCommand(BATCH_EXECUTE_COMMAND_NAME).execute(args);
+  return new BatchExecuteCommand().execute(args);
 }
