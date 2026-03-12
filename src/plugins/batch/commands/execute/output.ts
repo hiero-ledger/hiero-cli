@@ -26,6 +26,6 @@ export type ExecuteBatchOutput = z.infer<typeof ExecuteBatchOutputSchema>;
 export const EXECUTE_BATCH_TEMPLATE = `
 ✅ Batch executed successfully
    Batch: {{batchName}}
-   Transaction ID: {{hashscanLink transactionId "transaction" network}}
+   Transaction ID: {{hashscanLink transactionId "transactionsById" network}}
    Success: {{success}}
 `.trim();
