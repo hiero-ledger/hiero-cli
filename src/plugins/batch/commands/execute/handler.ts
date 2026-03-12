@@ -15,7 +15,10 @@ import { Transaction } from '@hashgraph/sdk';
 import { ValidationError } from '@/core';
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError } from '@/core/errors';
-import { CredentialType } from '@/core/services/kms/kms-types.interface';
+import {
+  CredentialType,
+  KeyManager,
+} from '@/core/services/kms/kms-types.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
@@ -68,7 +71,7 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
         keyReference: normalisedParams.batchData.keyRefId,
         rawValue: normalisedParams.batchData.keyRefId,
       },
-      'local',
+      KeyManager.local,
     );
     const result = api.batch.createBatchTransaction({
       transactions: innerTransactions,

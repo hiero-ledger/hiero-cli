@@ -39,8 +39,7 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
     const keyManagerArg = validArgs.keyManager;
     const currentNetwork = api.network.getCurrentNetwork();
     const keyManager =
-      keyManagerArg ||
-      api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
     let topicId = topicIdOrAlias;
     const topicAliasResult = api.alias.resolve(

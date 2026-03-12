@@ -40,8 +40,8 @@ export class TransferFtCommand extends BaseTransactionCommand<
     const to = validArgs.to;
     const keyManagerArg = validArgs.keyManager;
 
-  const keyManager =
-    keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+    const keyManager =
+      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
     const network = api.network.getCurrentNetwork();
 

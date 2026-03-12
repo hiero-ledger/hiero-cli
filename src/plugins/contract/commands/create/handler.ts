@@ -71,8 +71,8 @@ export class CreateContractCommand extends BaseTransactionCommand<
 
     api.alias.availableOrThrow(alias, network);
 
-  const keyManager =
-    keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+    const keyManager =
+      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
     const admin = validArgs.adminKey
       ? await api.keyResolver.resolveSigningKey(
