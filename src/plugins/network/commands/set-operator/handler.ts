@@ -21,7 +21,8 @@ const normalizeParams = (
   const validArgs = NetworkSetOperatorInputSchema.parse(args.args);
 
   const keyManager =
-    validArgs.keyManager || api.config.getOption<KeyManager>('default_key_manager');
+    validArgs.keyManager ||
+    api.config.getOption<KeyManager>('default_key_manager');
 
   const targetNetwork =
     (validArgs.network as SupportedNetwork) || api.network.getCurrentNetwork();
