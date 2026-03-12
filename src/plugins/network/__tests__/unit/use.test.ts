@@ -8,12 +8,11 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
 import {
-  UseNetworkCommand,
+  useNetwork as useHandler,
   UseNetworkOutputSchema,
 } from '@/plugins/network/commands/use';
 
 let exitSpy: jest.SpyInstance;
-const command = new UseNetworkCommand();
 
 beforeAll(() => {
   exitSpy = setupExitSpy();
@@ -43,7 +42,7 @@ describe('network plugin - use command', () => {
       },
     );
 
-    const result = await command.execute(args);
+    const result = await useHandler(args);
 
     expect(networkService.switchNetwork).toHaveBeenCalledWith('mainnet');
     const output = assertOutput(result.result, UseNetworkOutputSchema);
@@ -61,7 +60,7 @@ describe('network plugin - use command', () => {
       global: 'testnet',
     });
 
-    await expect(command.execute(args)).rejects.toThrow(
+    await expect(useHandler(args)).rejects.toThrow(
       'Network not available: testnet',
     );
   });
@@ -81,7 +80,7 @@ describe('network plugin - use command', () => {
       },
     );
 
-    const result = await command.execute(args);
+    const result = await useHandler(args);
 
     expect(networkService.switchNetwork).toHaveBeenCalledWith('previewnet');
     const output = assertOutput(result.result, UseNetworkOutputSchema);
@@ -103,7 +102,7 @@ describe('network plugin - use command', () => {
       },
     );
 
-    await command.execute(args);
+    await useHandler(args);
 
     expect(logger.info).toHaveBeenCalledWith('Switching to network: mainnet');
   });
@@ -123,7 +122,7 @@ describe('network plugin - use command', () => {
       },
     );
 
-    const res1 = await command.execute(argsToMainnet);
+    const res1 = await useHandler(argsToMainnet);
     expect(
       assertOutput(res1.result, UseNetworkOutputSchema).activeNetwork,
     ).toBe('mainnet');
@@ -139,7 +138,7 @@ describe('network plugin - use command', () => {
       },
     );
 
-    const res2 = await command.execute(argsToPreviewnet);
+    const res2 = await useHandler(argsToPreviewnet);
     expect(
       assertOutput(res2.result, UseNetworkOutputSchema).activeNetwork,
     ).toBe('previewnet');

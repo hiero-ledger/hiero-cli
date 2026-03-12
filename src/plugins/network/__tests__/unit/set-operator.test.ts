@@ -16,12 +16,11 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
-  SetOperatorCommand,
+  setOperator as setOperatorHandler,
   SetOperatorOutputSchema,
 } from '@/plugins/network/commands/set-operator';
 
 let exitSpy: jest.SpyInstance;
-const command = new SetOperatorCommand();
 
 beforeAll(() => {
   exitSpy = setupExitSpy();
@@ -48,7 +47,7 @@ describe('network plugin - set-operator command', () => {
       { operator: `0.0.123456:${ECDSA_DER_PRIVATE_KEY}` },
     );
 
-    const result = await command.execute(args);
+    const result = await setOperatorHandler(args);
 
     const output = assertOutput(result.result, SetOperatorOutputSchema);
     expect(output.network).toBe('testnet');
@@ -92,7 +91,7 @@ describe('network plugin - set-operator command', () => {
       { operator: 'testnet1' },
     );
 
-    const result = await command.execute(args);
+    const result = await setOperatorHandler(args);
 
     expect(aliasService.resolve).toHaveBeenCalledWith(
       'testnet1',
@@ -129,7 +128,7 @@ describe('network plugin - set-operator command', () => {
       },
     );
 
-    const result = await command.execute(args);
+    const result = await setOperatorHandler(args);
 
     expect(networkService.setOperator).toHaveBeenCalledWith('mainnet', {
       accountId: '0.0.123456',
@@ -159,7 +158,7 @@ describe('network plugin - set-operator command', () => {
       },
     );
 
-    const result = await command.execute(args);
+    const result = await setOperatorHandler(args);
 
     const output = assertOutput(result.result, SetOperatorOutputSchema);
     expect(output.network).toBe('testnet');
@@ -186,7 +185,7 @@ describe('network plugin - set-operator command', () => {
       },
     );
 
-    const result = await command.execute(args);
+    const result = await setOperatorHandler(args);
 
     const output = assertOutput(result.result, SetOperatorOutputSchema);
     expect(output.network).toBe('testnet');
@@ -214,7 +213,7 @@ describe('network plugin - set-operator command', () => {
       { operator: 'nonexistent' },
     );
 
-    await expect(command.execute(args)).rejects.toThrow(
+    await expect(setOperatorHandler(args)).rejects.toThrow(
       'No account is associated with the name provided.',
     );
   });
@@ -245,7 +244,7 @@ describe('network plugin - set-operator command', () => {
       { operator: 'testnet1' },
     );
 
-    await expect(command.execute(args)).rejects.toThrow(
+    await expect(setOperatorHandler(args)).rejects.toThrow(
       'The account associated with the alias does not have an associated private/public key or accountId',
     );
   });
@@ -273,7 +272,7 @@ describe('network plugin - set-operator command', () => {
       },
     );
 
-    await expect(command.execute(args)).rejects.toThrow(
+    await expect(setOperatorHandler(args)).rejects.toThrow(
       'Invalid private key format',
     );
   });
@@ -297,7 +296,7 @@ describe('network plugin - set-operator command', () => {
       },
     );
 
-    await expect(command.execute(args)).rejects.toThrow(
+    await expect(setOperatorHandler(args)).rejects.toThrow(
       'Network service error',
     );
   });
@@ -325,7 +324,7 @@ describe('network plugin - set-operator command', () => {
       },
     );
 
-    await expect(command.execute(args)).rejects.toThrow(ValidationError);
+    await expect(setOperatorHandler(args)).rejects.toThrow(ValidationError);
   });
 
   test('displays all operator information after successful set', async () => {
@@ -343,7 +342,7 @@ describe('network plugin - set-operator command', () => {
       },
     );
 
-    const result = await command.execute(args);
+    const result = await setOperatorHandler(args);
 
     const output = assertOutput(result.result, SetOperatorOutputSchema);
     expect(output.network).toBe('testnet');

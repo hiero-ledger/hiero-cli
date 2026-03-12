@@ -11,12 +11,11 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, ValidationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
-  GetOperatorCommand,
+  getOperator as getOperatorHandler,
   GetOperatorOutputSchema,
 } from '@/plugins/network/commands/get-operator';
 
 let exitSpy: jest.SpyInstance;
-const command = new GetOperatorCommand();
 
 beforeAll(() => {
   exitSpy = setupExitSpy();
@@ -56,7 +55,7 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    const result = await command.execute(args);
+    const result = await getOperatorHandler(args);
 
     const output = assertOutput(result.result, GetOperatorOutputSchema);
     expect(output.network).toBe('testnet');
@@ -94,7 +93,7 @@ describe('network plugin - get-operator command', () => {
       { network: 'mainnet' },
     );
 
-    const result = await command.execute(args);
+    const result = await getOperatorHandler(args);
 
     const output = assertOutput(result.result, GetOperatorOutputSchema);
     expect(output.network).toBe('mainnet');
@@ -120,7 +119,7 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    const result = await command.execute(args);
+    const result = await getOperatorHandler(args);
 
     const output = assertOutput(result.result, GetOperatorOutputSchema);
     expect(output.network).toBe('testnet');
@@ -146,7 +145,7 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    const result = await command.execute(args);
+    const result = await getOperatorHandler(args);
 
     const output = assertOutput(result.result, GetOperatorOutputSchema);
     expect(output.network).toBe('testnet');
@@ -177,7 +176,7 @@ describe('network plugin - get-operator command', () => {
       { network: 'mainnet' },
     );
 
-    await expect(command.execute(args)).rejects.toThrow(ValidationError);
+    await expect(getOperatorHandler(args)).rejects.toThrow(ValidationError);
     expect(networkService.isNetworkAvailable).toHaveBeenCalledWith('mainnet');
   });
 
@@ -196,7 +195,7 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    await expect(command.execute(args)).rejects.toThrow(
+    await expect(getOperatorHandler(args)).rejects.toThrow(
       'Network service error',
     );
   });
@@ -220,7 +219,7 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    await expect(command.execute(args)).rejects.toThrow('KMS service error');
+    await expect(getOperatorHandler(args)).rejects.toThrow('KMS service error');
   });
 
   test('validates network before getting operator', async () => {
@@ -250,7 +249,7 @@ describe('network plugin - get-operator command', () => {
       { network: 'previewnet' },
     );
 
-    const result = await command.execute(args);
+    const result = await getOperatorHandler(args);
 
     const output = assertOutput(result.result, GetOperatorOutputSchema);
     expect(networkService.isNetworkAvailable).toHaveBeenCalledWith(
@@ -286,7 +285,7 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    const result = await command.execute(args);
+    const result = await getOperatorHandler(args);
 
     const output = assertOutput(result.result, GetOperatorOutputSchema);
     expect(output.network).toBe('testnet');
