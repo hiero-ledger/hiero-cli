@@ -106,5 +106,5 @@ export class AccountBalanceCommand implements Command {
   }
 }
 
-export const getAccountBalance = (args: CommandHandlerArgs) =>
+export const accountBalance = (args: CommandHandlerArgs) =>
   new AccountBalanceCommand().execute(args);

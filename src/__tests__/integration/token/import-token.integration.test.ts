@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
+import type { TokenCreateFtOutput } from '@/plugins/token/commands/create-ft';
 import type { ImportTokenOutput } from '@/plugins/token/commands/import';
 import type { ListTokensOutput } from '@/plugins/token/commands/list';
 
@@ -12,10 +12,10 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  createFt,
-  deleteToken,
-  importToken,
-  listTokens,
+  tokenCreateFt,
+  tokenDelete,
+  tokenImport,
+  tokenList,
 } from '@/plugins/token';
 import { TOKEN_NAMESPACE } from '@/plugins/token/constants';
 
@@ -38,7 +38,7 @@ describe('Import Token Integration Tests', () => {
       supplyType: SupplyType.INFINITE,
       name: `token-import-${Date.now()}`,
     };
-    const createTokenResult = await createFt({
+    const createTokenResult = await tokenCreateFt({
       args: createTokenArgs,
       api: coreApi,
       state: coreApi.state,
@@ -46,8 +46,7 @@ describe('Import Token Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const createTokenOutput =
-      createTokenResult.result as CreateFungibleTokenOutput;
+    const createTokenOutput = createTokenResult.result as TokenCreateFtOutput;
     tokenId = createTokenOutput.tokenId;
     coreApi.state.delete(
       TOKEN_NAMESPACE,
@@ -61,7 +60,7 @@ describe('Import Token Integration Tests', () => {
     const deleteTokenArgs: Record<string, unknown> = {
       token: tokenId,
     };
-    await deleteToken({
+    await tokenDelete({
       args: deleteTokenArgs,
       api: coreApi,
       state: coreApi.state,
@@ -74,7 +73,7 @@ describe('Import Token Integration Tests', () => {
     const importTokenArgs: Record<string, unknown> = {
       token: tokenId,
     };
-    const importTokenResult = await importToken({
+    const importTokenResult = await tokenImport({
       args: importTokenArgs,
       api: coreApi,
       state: coreApi.state,
@@ -89,7 +88,7 @@ describe('Import Token Integration Tests', () => {
     expect(importTokenOutput.alias).toBeUndefined();
 
     const listTokenArgs: Record<string, unknown> = {};
-    const listTokenResult = await listTokens({
+    const listTokenResult = await tokenList({
       args: listTokenArgs,
       api: coreApi,
       state: coreApi.state,
@@ -109,7 +108,7 @@ describe('Import Token Integration Tests', () => {
       token: tokenId,
       name: alias,
     };
-    const importTokenResult = await importToken({
+    const importTokenResult = await tokenImport({
       args: importTokenArgs,
       api: coreApi,
       state: coreApi.state,
@@ -124,7 +123,7 @@ describe('Import Token Integration Tests', () => {
     expect(importTokenOutput.network).toBe(network);
 
     const listTokenArgs: Record<string, unknown> = {};
-    const listTokenResult = await listTokens({
+    const listTokenResult = await tokenList({
       args: listTokenArgs,
       api: coreApi,
       state: coreApi.state,

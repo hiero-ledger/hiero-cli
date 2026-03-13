@@ -7,8 +7,8 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
 import {
-  listNetworks as listHandler,
-  ListNetworksOutputSchema,
+  networkList as listHandler,
+  NetworkListOutputSchema,
 } from '@/plugins/network/commands/list';
 import {
   checkMirrorNodeHealth,
@@ -46,7 +46,7 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    const output = assertOutput(result.result, ListNetworksOutputSchema);
+    const output = assertOutput(result.result, NetworkListOutputSchema);
     expect(output.networks).toBeDefined();
     expect(output.activeNetwork).toBe('testnet');
   });
@@ -109,7 +109,7 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    const output = assertOutput(result.result, ListNetworksOutputSchema);
+    const output = assertOutput(result.result, NetworkListOutputSchema);
     expect(output.networks).toHaveLength(4);
     expect(output.activeNetwork).toBe('mainnet');
   });
@@ -144,7 +144,7 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    const output = assertOutput(result.result, ListNetworksOutputSchema);
+    const output = assertOutput(result.result, NetworkListOutputSchema);
     expect(output.networks).toBeDefined();
   });
 
@@ -155,7 +155,7 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    const output = assertOutput(result.result, ListNetworksOutputSchema);
+    const output = assertOutput(result.result, NetworkListOutputSchema);
     expect(output.activeNetwork).toBe('testnet');
   });
 
@@ -175,7 +175,7 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    const output = assertOutput(result.result, ListNetworksOutputSchema);
+    const output = assertOutput(result.result, NetworkListOutputSchema);
     expect(output.networks.some((n) => n.operatorId === '0.0.1001')).toBe(true);
   });
 
@@ -187,7 +187,7 @@ describe('network plugin - list command', () => {
 
     const result = await listHandler(args);
 
-    const output = assertOutput(result.result, ListNetworksOutputSchema);
+    const output = assertOutput(result.result, NetworkListOutputSchema);
     expect(output.networks.some((n) => !n.operatorId)).toBe(true);
   });
 });

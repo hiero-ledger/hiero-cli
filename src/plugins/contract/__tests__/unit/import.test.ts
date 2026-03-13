@@ -19,7 +19,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupportedNetwork } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ImportContractOutputSchema } from '@/plugins/contract/commands/import';
-import { importContract } from '@/plugins/contract/commands/import/handler';
+import { contractImport } from '@/plugins/contract/commands/import/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 
@@ -89,7 +89,7 @@ describe('contract plugin - import command', () => {
       },
     );
 
-    const result = await importContract(args);
+    const result = await contractImport(args);
 
     expect(mirrorMock.getContractInfo).toHaveBeenCalledWith(MOCK_CONTRACT_ID);
     expect(api.alias.register).toHaveBeenCalledWith(
@@ -145,7 +145,7 @@ describe('contract plugin - import command', () => {
       },
     );
 
-    const result = await importContract(args);
+    const result = await contractImport(args);
 
     expect(mirrorMock.getContractInfo).toHaveBeenCalledWith(MOCK_EVM_ADDRESS);
     expect(api.alias.register).not.toHaveBeenCalled();
@@ -184,7 +184,7 @@ describe('contract plugin - import command', () => {
       },
     );
 
-    await expect(importContract(args)).rejects.toThrow(
+    await expect(contractImport(args)).rejects.toThrow(
       `Contract with ID '${MOCK_CONTRACT_ID}' already exists in state`,
     );
   });
@@ -209,6 +209,6 @@ describe('contract plugin - import command', () => {
       },
     );
 
-    await expect(importContract(args)).rejects.toThrow('mirror down');
+    await expect(contractImport(args)).rejects.toThrow('mirror down');
   });
 });

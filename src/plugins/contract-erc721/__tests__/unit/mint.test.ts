@@ -21,7 +21,7 @@ import {
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 import {
   ContractErc721CallMintOutputSchema,
-  contractErc721MintFunctionCall,
+  contractErc721Mint,
 } from '@/plugins/contract-erc721/commands/mint';
 import { ContractErc721CallMintInputSchema } from '@/plugins/contract-erc721/commands/mint/input';
 
@@ -90,7 +90,7 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       },
     });
 
-    const result = await contractErc721MintFunctionCall(args);
+    const result = await contractErc721Mint(args);
 
     expect(result.result).toBeDefined();
     const output = assertOutput(
@@ -135,7 +135,7 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       },
     });
 
-    const result = await contractErc721MintFunctionCall(args);
+    const result = await contractErc721Mint(args);
 
     expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveContract).toHaveBeenCalledWith({
@@ -163,7 +163,7 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       },
     });
 
-    const result = await contractErc721MintFunctionCall(args);
+    const result = await contractErc721Mint(args);
 
     expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveAccount).not.toHaveBeenCalled();
@@ -187,10 +187,8 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       receipt: { status: { status: 'FAILURE' } },
     });
 
-    await expect(contractErc721MintFunctionCall(args)).rejects.toThrow(
-      TransactionError,
-    );
-    await expect(contractErc721MintFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721Mint(args)).rejects.toThrow(TransactionError);
+    await expect(contractErc721Mint(args)).rejects.toThrow(
       'Failed to call mint on contract 0.0.1234 (txId: undefined, status: FAILURE)',
     );
   });
@@ -210,9 +208,7 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       new Error('network error'),
     );
 
-    await expect(contractErc721MintFunctionCall(args)).rejects.toThrow(
-      'network error',
-    );
+    await expect(contractErc721Mint(args)).rejects.toThrow('network error');
   });
 
   test('propagates error when contract not found', async () => {
@@ -235,9 +231,7 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       ),
     );
 
-    await expect(contractErc721MintFunctionCall(args)).rejects.toThrow(
-      'not found',
-    );
+    await expect(contractErc721Mint(args)).rejects.toThrow('not found');
   });
 
   test('throws NotFoundError when to has no evmAddress', async () => {
@@ -260,10 +254,8 @@ describe('contract-erc721 plugin - mint command (unit)', () => {
       },
     );
 
-    await expect(contractErc721MintFunctionCall(args)).rejects.toThrow(
-      NotFoundError,
-    );
-    await expect(contractErc721MintFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721Mint(args)).rejects.toThrow(NotFoundError);
+    await expect(contractErc721Mint(args)).rejects.toThrow(
       "Couldn't resolve EVM address for an account",
     );
   });

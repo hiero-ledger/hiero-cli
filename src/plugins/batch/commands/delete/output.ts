@@ -6,7 +6,7 @@ import { z } from 'zod';
 /**
  * Delete Batch Command Output Schema
  */
-export const DeleteBatchOutputSchema = z.object({
+export const BatchDeleteOutputSchema = z.object({
   name: z.string().describe('Batch name'),
   order: z
     .number()
@@ -15,12 +15,12 @@ export const DeleteBatchOutputSchema = z.object({
     .describe('Transaction order (when deleting a single transaction)'),
 });
 
-export type DeleteBatchOutput = z.infer<typeof DeleteBatchOutputSchema>;
+export type DeleteBatchOutput = z.infer<typeof BatchDeleteOutputSchema>;
 
 /**
  * Human-readable template for delete batch output
  */
-export const DELETE_BATCH_TEMPLATE = `
+export const BATCH_DELETE_TEMPLATE = `
 {{#if order}}
 ✅ Transaction with order {{order}} removed from batch '{{name}}'
 {{else}}

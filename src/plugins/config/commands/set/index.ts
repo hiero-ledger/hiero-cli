@@ -1,6 +1,6 @@
 /**
  * Set Command Exports
  */
-export { SetConfigCommand, setConfigOption } from './handler';
+export { configSet, ConfigSetCommand } from './handler';
 export type { SetConfigOutput } from './output';
-export { SET_CONFIG_TEMPLATE, SetConfigOutputSchema } from './output';
+export { CONFIG_SET_TEMPLATE, ConfigSetOutputSchema } from './output';

@@ -3,9 +3,9 @@ import type { PluginManifest } from '@/core/plugins/plugin.interface';
 import { OptionType } from '@/core/types/shared.types';
 
 import {
-  TRANSFER_TEMPLATE,
-  transferHbar,
-  TransferOutputSchema,
+  HBAR_HBAR_TRANSFER_TEMPLATE,
+  HbarHbarHbarHbarTransferOutputSchema,
+  hbarTransfer,
 } from './commands/transfer';
 
 export const hbarPluginManifest: PluginManifest = {
@@ -59,10 +59,10 @@ export const hbarPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: transferHbar,
+      handler: hbarTransfer,
       output: {
-        schema: TransferOutputSchema,
-        humanTemplate: TRANSFER_TEMPLATE,
+        schema: HbarHbarHbarHbarTransferOutputSchema,
+        humanTemplate: HBAR_HBAR_TRANSFER_TEMPLATE,
       },
     },
   ],

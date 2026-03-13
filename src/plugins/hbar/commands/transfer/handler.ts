@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { TransferOutput } from './output';
+import type { HbarHbarTransferOutput } from './output';
 import type {
   TransferBuildTransactionResult,
   TransferExecuteTransactionResult,
@@ -13,17 +13,17 @@ import { TransactionError, ValidationError } from '@/core/errors';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 
-import { TransferInputSchema } from './input';
+import { HbarHbarHbarHbarTransferInputSchema } from './input';
 
 export const HBAR_TRANSFER_COMMAND_NAME = 'hbar_transfer';
 
-export async function transferHbar(
+export async function hbarTransfer(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TransferCommand().execute(args);
+  return new HbarHbarTransferCommand().execute(args);
 }
 
-export class TransferCommand extends BaseTransactionCommand<
+export class HbarHbarTransferCommand extends BaseTransactionCommand<
   TransferNormalisedParams,
   TransferBuildTransactionResult,
   TransferSignTransactionResult,
@@ -40,7 +40,7 @@ export class TransferCommand extends BaseTransactionCommand<
 
     logger.info('[HBAR] Transfer command invoked');
 
-    const validArgs = TransferInputSchema.parse(args.args);
+    const validArgs = HbarHbarHbarHbarTransferInputSchema.parse(args.args);
 
     const to = validArgs.to;
     const from = validArgs.from;
@@ -143,7 +143,7 @@ export class TransferCommand extends BaseTransactionCommand<
       `[HBAR] Transfer submitted successfully, txId=${executeTransactionResult.transactionId}`,
     );
 
-    const outputData: TransferOutput = {
+    const outputData: HbarHbarTransferOutput = {
       transactionId: executeTransactionResult.transactionId || '',
       fromAccountId: normalisedParams.fromAccount.accountId,
       toAccountId: normalisedParams.destination,

@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { FilePathSchema, KeyManagerTypeSchema } from '@/core/schemas';
 
-export const CreateNftFromFileInputSchema = z.object({
+export const TokenCreateNftFromFileInputSchema = z.object({
   file: FilePathSchema.describe(
     'Filesystem path to JSON file containing NFT token definition',
   ),
@@ -11,6 +11,6 @@ export const CreateNftFromFileInputSchema = z.object({
   ),
 });
 
-export type CreateNftFromFileInput = z.infer<
-  typeof CreateNftFromFileInputSchema
+export type TokenCreateNftFromFileInput = z.infer<
+  typeof TokenCreateNftFromFileInputSchema
 >;

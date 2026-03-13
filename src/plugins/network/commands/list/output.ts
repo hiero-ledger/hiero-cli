@@ -7,7 +7,7 @@ export const NetworkHealthStatusSchema = z.object({
   code: z.number().optional(),
 });
 
-export const ListNetworksOutputSchema = z.object({
+export const NetworkListOutputSchema = z.object({
   networks: z.array(
     z.object({
       name: NetworkSchema,
@@ -22,9 +22,9 @@ export const ListNetworksOutputSchema = z.object({
   activeNetwork: NetworkSchema,
 });
 
-export type ListNetworksOutput = z.infer<typeof ListNetworksOutputSchema>;
+export type ListNetworksOutput = z.infer<typeof NetworkListOutputSchema>;
 
-export const LIST_NETWORKS_TEMPLATE = `
+export const NETWORK_LIST_TEMPLATE = `
 Available networks:
 
 {{#each networks}}

@@ -1,11 +1,11 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { CreateFungibleTokenOutput } from './output';
+import type { TokenCreateFtOutput } from './output';
 import type {
-  CreateFtBuildTransactionResult,
-  CreateFtExecuteTransactionResult,
-  CreateFtNormalizedParams,
-  CreateFtSignTransactionResult,
+  TokenCreateFtBuildTransactionResult,
+  TokenCreateFtExecuteTransactionResult,
+  TokenCreateFtNormalizedParams,
+  TokenCreateFtSignTransactionResult,
 } from './types';
 
 import { PublicKey } from '@hashgraph/sdk';
@@ -24,15 +24,15 @@ import {
 import { resolveOptionalKey } from '@/plugins/token/utils/token-resolve-optional-key';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { CreateFungibleTokenInputSchema } from './input';
+import { TokenCreateFtInputSchema } from './input';
 
 export const TOKEN_CREATE_FT_COMMAND_NAME = 'token_create-ft';
 
-export class CreateFtCommand extends BaseTransactionCommand<
-  CreateFtNormalizedParams,
-  CreateFtBuildTransactionResult,
-  CreateFtSignTransactionResult,
-  CreateFtExecuteTransactionResult
+export class TokenCreateFtCommand extends BaseTransactionCommand<
+  TokenCreateFtNormalizedParams,
+  TokenCreateFtBuildTransactionResult,
+  TokenCreateFtSignTransactionResult,
+  TokenCreateFtExecuteTransactionResult
 > {
   constructor() {
     super(TOKEN_CREATE_FT_COMMAND_NAME);
@@ -40,9 +40,9 @@ export class CreateFtCommand extends BaseTransactionCommand<
 
   async normalizeParams(
     args: CommandHandlerArgs,
-  ): Promise<CreateFtNormalizedParams> {
+  ): Promise<TokenCreateFtNormalizedParams> {
     const { api, logger } = args;
-    const validArgs = CreateFungibleTokenInputSchema.parse(args.args);
+    const validArgs = TokenCreateFtInputSchema.parse(args.args);
 
     const keyManager =
       validArgs.keyManager ??
@@ -119,8 +119,8 @@ export class CreateFtCommand extends BaseTransactionCommand<
 
   async buildTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: CreateFtNormalizedParams,
-  ): Promise<CreateFtBuildTransactionResult> {
+    normalisedParams: TokenCreateFtNormalizedParams,
+  ): Promise<TokenCreateFtBuildTransactionResult> {
     const { api } = args;
     const transaction = api.token.createTokenTransaction({
       name: normalisedParams.name,
@@ -142,9 +142,9 @@ export class CreateFtCommand extends BaseTransactionCommand<
 
   async signTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: CreateFtNormalizedParams,
-    buildTransactionResult: CreateFtBuildTransactionResult,
-  ): Promise<CreateFtSignTransactionResult> {
+    normalisedParams: TokenCreateFtNormalizedParams,
+    buildTransactionResult: TokenCreateFtBuildTransactionResult,
+  ): Promise<TokenCreateFtSignTransactionResult> {
     const { api } = args;
     const txSigners = [normalisedParams.treasury.keyRefId];
 
@@ -161,10 +161,10 @@ export class CreateFtCommand extends BaseTransactionCommand<
 
   async executeTransaction(
     args: CommandHandlerArgs,
-    _normalisedParams: CreateFtNormalizedParams,
-    _buildTransactionResult: CreateFtBuildTransactionResult,
-    signTransactionResult: CreateFtSignTransactionResult,
-  ): Promise<CreateFtExecuteTransactionResult> {
+    _normalisedParams: TokenCreateFtNormalizedParams,
+    _buildTransactionResult: TokenCreateFtBuildTransactionResult,
+    signTransactionResult: TokenCreateFtSignTransactionResult,
+  ): Promise<TokenCreateFtExecuteTransactionResult> {
     const { api } = args;
     const transactionResult = await api.txExecute.execute(
       signTransactionResult.transaction,
@@ -184,10 +184,10 @@ export class CreateFtCommand extends BaseTransactionCommand<
 
   async outputPreparation(
     args: CommandHandlerArgs,
-    normalisedParams: CreateFtNormalizedParams,
-    _buildTransactionResult: CreateFtBuildTransactionResult,
-    _signTransactionResult: CreateFtSignTransactionResult,
-    executeTransactionResult: CreateFtExecuteTransactionResult,
+    normalisedParams: TokenCreateFtNormalizedParams,
+    _buildTransactionResult: TokenCreateFtBuildTransactionResult,
+    _signTransactionResult: TokenCreateFtSignTransactionResult,
+    executeTransactionResult: TokenCreateFtExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { api, logger } = args;
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
@@ -221,7 +221,7 @@ export class CreateFtCommand extends BaseTransactionCommand<
       logger.info(`   Name registered: ${normalisedParams.alias}`);
     }
 
-    const outputData: CreateFungibleTokenOutput = {
+    const outputData: TokenCreateFtOutput = {
       tokenId: result.tokenId!,
       name: normalisedParams.name,
       symbol: normalisedParams.symbol,
@@ -238,8 +238,8 @@ export class CreateFtCommand extends BaseTransactionCommand<
   }
 }
 
-export async function createFt(
+export async function tokenCreateFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new CreateFtCommand().execute(args);
+  return new TokenCreateFtCommand().execute(args);
 }

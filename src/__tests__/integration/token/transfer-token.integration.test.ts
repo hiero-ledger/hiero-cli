@@ -1,11 +1,11 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountBalanceOutput } from '@/plugins/account/commands/balance';
-import type { CreateAccountOutput } from '@/plugins/account/commands/create';
-import type { ViewAccountOutput } from '@/plugins/account/commands/view';
+import type { AccountCreateOutput } from '@/plugins/account/commands/create';
+import type { AccountViewOutput } from '@/plugins/account/commands/view';
 import type { AssociateTokenOutput } from '@/plugins/token/commands/associate';
-import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
-import type { TransferFungibleTokenOutput } from '@/plugins/token/commands/transfer-ft';
+import type { TokenCreateFtOutput } from '@/plugins/token/commands/create-ft';
+import type { TokenTransferFtOutput } from '@/plugins/token/commands/transfer-ft';
 
 import '@/core/utils/json-serialize';
 
@@ -15,12 +15,12 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
+import { accountBalance, accountCreate, accountView } from '@/plugins/account';
 import {
-  createAccount,
-  getAccountBalance,
-  viewAccount,
-} from '@/plugins/account';
-import { associateToken, createFt, transferFt } from '@/plugins/token';
+  tokenAssociate,
+  tokenCreateFt,
+  tokenTransferFt,
+} from '@/plugins/token';
 
 describe('Transfer Token Integration Tests', () => {
   let coreApi: CoreApi;
@@ -38,7 +38,7 @@ describe('Transfer Token Integration Tests', () => {
       'key-type': 'ecdsa',
       'auto-associations': 10,
     };
-    const createAccountResult = await createAccount({
+    const createAccountResult = await accountCreate({
       args: createAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -47,7 +47,7 @@ describe('Transfer Token Integration Tests', () => {
     });
 
     const createAccountOutput =
-      createAccountResult.result as CreateAccountOutput;
+      createAccountResult.result as AccountCreateOutput;
     expect(createAccountOutput.name).toBe('account-transfer-token');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -57,14 +57,14 @@ describe('Transfer Token Integration Tests', () => {
     const viewAccountArgs: Record<string, unknown> = {
       account: 'account-transfer-token',
     };
-    const viewAccountResult = await viewAccount({
+    const viewAccountResult = await accountView({
       args: viewAccountArgs,
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
+    const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
     expect(viewAccountOutput.balance).toBe(100000000n); // result in tinybars
     expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
@@ -77,15 +77,14 @@ describe('Transfer Token Integration Tests', () => {
       supplyType: SupplyType.INFINITE,
       name: 'test-token-transfer',
     };
-    const createTokenResult = await createFt({
+    const createTokenResult = await tokenCreateFt({
       args: createTokenArgs,
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const createTokenOutput =
-      createTokenResult.result as CreateFungibleTokenOutput;
+    const createTokenOutput = createTokenResult.result as TokenCreateFtOutput;
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('10');
@@ -101,7 +100,7 @@ describe('Transfer Token Integration Tests', () => {
       token: createTokenOutput.tokenId,
       account: 'account-transfer-token',
     };
-    const associateTokenResult = await associateToken({
+    const associateTokenResult = await tokenAssociate({
       args: associateTokenArgs,
       api: coreApi,
       state: coreApi.state,
@@ -123,7 +122,7 @@ describe('Transfer Token Integration Tests', () => {
       to: 'account-transfer-token',
       amount: '5',
     };
-    const transferTokenResult = await transferFt({
+    const transferTokenResult = await tokenTransferFt({
       args: transferTokenArgs,
       api: coreApi,
       state: coreApi.state,
@@ -131,7 +130,7 @@ describe('Transfer Token Integration Tests', () => {
       config: coreApi.config,
     });
     const transferTokenOutput =
-      transferTokenResult.result as TransferFungibleTokenOutput;
+      transferTokenResult.result as TokenTransferFtOutput;
     expect(transferTokenOutput.tokenId).toBe(createTokenOutput.tokenId);
     expect(transferTokenOutput.from).toBe(process.env.OPERATOR_ID);
     expect(transferTokenOutput.to).toBe(createAccountOutput.accountId);
@@ -144,7 +143,7 @@ describe('Transfer Token Integration Tests', () => {
       hbarOnly: false,
       token: createTokenOutput.tokenId,
     };
-    const accountBalanceResult = await getAccountBalance({
+    const accountBalanceResult = await accountBalance({
       args: accountBalanceArgs,
       api: coreApi,
       state: coreApi.state,

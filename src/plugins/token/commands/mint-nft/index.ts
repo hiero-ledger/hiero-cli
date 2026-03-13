@@ -1,11 +1,11 @@
 export {
-  mintNft,
-  MintNftCommand,
   TOKEN_MINT_NFT_COMMAND_NAME,
+  tokenMintNft,
+  TokenMintNftCommand,
 } from './handler';
-export { type MintNftInput, MintNftInputSchema } from './input';
+export { type MintNftInput, TokenMintNftInputSchema } from './input';
 export {
-  MINT_NFT_TEMPLATE,
-  type MintNftOutput,
-  MintNftOutputSchema,
+  TOKEN_MINT_NFT_TEMPLATE,
+  type TokenMintNftOutput,
+  TokenMintNftOutputSchema,
 } from './output';

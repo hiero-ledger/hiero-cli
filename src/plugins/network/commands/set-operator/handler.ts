@@ -12,13 +12,13 @@ import type {
 import { ValidationError } from '@/core/errors';
 import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 
-import { SetOperatorInputSchema } from './input';
+import { NetworkNetworkSetOperatorInputSchema } from './input';
 
 const normalizeParams = (
   args: CommandHandlerArgs,
 ): SetOperatorNormalisedParams => {
   const { api } = args;
-  const validArgs = SetOperatorInputSchema.parse(args.args);
+  const validArgs = NetworkNetworkSetOperatorInputSchema.parse(args.args);
 
   const keyManager =
     validArgs.keyManager ||
@@ -41,7 +41,7 @@ const normalizeParams = (
   };
 };
 
-export class SetOperatorCommand implements Command {
+export class NetworkNetworkSetOperatorCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { logger, api } = args;
     const normalisedParams = normalizeParams(args);
@@ -83,6 +83,7 @@ export class SetOperatorCommand implements Command {
   }
 }
 
-export const setOperator = async (
+export const networkSetOperator = async (
   args: CommandHandlerArgs,
-): Promise<CommandResult> => new SetOperatorCommand().execute(args);
+): Promise<CommandResult> =>
+  new NetworkNetworkSetOperatorCommand().execute(args);

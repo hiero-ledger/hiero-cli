@@ -8,7 +8,7 @@ import { EntityIdSchema, NetworkSchema } from '@/core/schemas/common-schemas';
 /**
  * Delete Account Command Output Schema
  */
-export const DeleteAccountOutputSchema = z.object({
+export const AccountDeleteOutputSchema = z.object({
   deletedAccount: z.object({
     name: z.string().describe('Account name or alias').optional(),
     accountId: EntityIdSchema,
@@ -17,12 +17,12 @@ export const DeleteAccountOutputSchema = z.object({
   network: NetworkSchema,
 });
 
-export type DeleteAccountOutput = z.infer<typeof DeleteAccountOutputSchema>;
+export type AccountDeleteOutput = z.infer<typeof AccountDeleteOutputSchema>;
 
 /**
  * Human-readable template for delete account output
  */
-export const DELETE_ACCOUNT_TEMPLATE = `
+export const ACCOUNT_DELETE_TEMPLATE = `
 {{#if removedAliases}}
 ✅ Account deleted successfully: {{deletedAccount.name}} ({{hashscanLink deletedAccount.accountId "account" network}})
 {{else}}

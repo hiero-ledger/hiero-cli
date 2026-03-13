@@ -14,7 +14,7 @@ import {
  * Create Topic Command Output Schema
  * Defines the structure of successful topic creation output
  */
-export const CreateTopicOutputSchema = z.object({
+export const TopicCreateOutputSchema = z.object({
   topicId: EntityIdSchema,
   name: z.string().describe('Topic name or alias').optional(),
   network: NetworkSchema,
@@ -26,13 +26,13 @@ export const CreateTopicOutputSchema = z.object({
 });
 
 // Infer TypeScript type from schema for type safety
-export type CreateTopicOutput = z.infer<typeof CreateTopicOutputSchema>;
+export type TopicCreateOutput = z.infer<typeof TopicCreateOutputSchema>;
 
 /**
  * Human-readable Handlebars template for create topic output
  * Matches the current CLI output format for consistency
  */
-export const CREATE_TOPIC_TEMPLATE = `
+export const TOPIC_CREATE_TEMPLATE = `
 ✅ Topic created successfully: {{hashscanLink topicId "topic" network}}
    Network: {{network}}
 {{#if name}}

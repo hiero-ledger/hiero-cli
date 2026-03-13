@@ -64,10 +64,10 @@ export const testPluginManifest: PluginManifest = {
           description: 'Message to print. Max size should be 100 characters', // description, when printing with help it is displayed. Mandatory field
         },
       ],
-      handler: fooTestOptions, // Handler implementation that we want to use when executing command. Needs to be set up
+      handler: testFoo, // Handler implementation that we want to use when executing command. Needs to be set up
       output: {
-        schema: FooTestOutputSchema, // zod schema to be parsed at the output
-        humanTemplate: FOO_TEST_TEMPLATE, // human readable template to be printed at the output
+        schema: TestFooOutputSchema, // zod schema to be parsed at the output
+        humanTemplate: TEST_FOO_TEMPLATE, // human readable template to be printed at the output
       },
     },
     {
@@ -91,10 +91,10 @@ export const testPluginManifest: PluginManifest = {
           description: 'Memo for an account. Max size should be 100 characters',
         },
       ],
-      handler: createMemo,
+      handler: testMemo,
       output: {
-        schema: MemoTestOutputSchema,
-        humanTemplate: MEMO_TEST_TEMPLATE,
+        schema: TestMemoOutputSchema,
+        humanTemplate: TEST_MEMO_TEMPLATE,
       },
     },
   ],

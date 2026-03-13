@@ -4,7 +4,7 @@ import { z } from 'zod';
  * Input schema for token list command
  * Validates arguments for listing tokens
  */
-export const ListTokenInputSchema = z.object({
+export const TokenListInputSchema = z.object({
   keys: z
     .boolean()
     .default(false)
@@ -13,4 +13,4 @@ export const ListTokenInputSchema = z.object({
     ),
 });
 
-export type ListTokenInput = z.infer<typeof ListTokenInputSchema>;
+export type ListTokenInput = z.infer<typeof TokenListInputSchema>;

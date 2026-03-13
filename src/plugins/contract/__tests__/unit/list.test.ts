@@ -10,7 +10,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { ContractListOutputSchema } from '@/plugins/contract/commands/list';
-import { listContracts } from '@/plugins/contract/commands/list/handler';
+import { contractList } from '@/plugins/contract/commands/list/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
 jest.mock('@/plugins/contract/zustand-state-helper', () => ({
@@ -44,7 +44,7 @@ describe('contract plugin - list command', () => {
 
     const args = makeArgs(api, logger, {});
 
-    const result = await listContracts(args);
+    const result = await contractList(args);
 
     const output = assertOutput(result.result, ContractListOutputSchema);
     expect(output.contracts).toHaveLength(0);
@@ -83,7 +83,7 @@ describe('contract plugin - list command', () => {
     };
     const args = makeArgs(api, logger, {});
 
-    const result = await listContracts(args);
+    const result = await contractList(args);
 
     expect(MockedHelper).toHaveBeenCalledTimes(1);
     const output = assertOutput(result.result, ContractListOutputSchema);
@@ -127,6 +127,6 @@ describe('contract plugin - list command', () => {
     };
     const args = makeArgs(api, logger, {});
 
-    await expect(listContracts(args)).rejects.toThrow('database error');
+    await expect(contractList(args)).rejects.toThrow('database error');
   });
 });

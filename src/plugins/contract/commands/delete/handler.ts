@@ -72,7 +72,7 @@ export class DeleteContractCommand implements Command {
   }
 }
 
-export async function deleteContract(
+export async function contractDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new DeleteContractCommand().execute(args);

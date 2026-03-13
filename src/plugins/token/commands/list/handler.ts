@@ -6,13 +6,13 @@ import type { ListTokensNormalizedParams } from './types';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { ListTokenInputSchema } from './input';
+import { TokenListInputSchema } from './input';
 
-export class ListTokensCommand implements Command {
+export class TokenListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
-    const validArgs: ListTokensNormalizedParams = ListTokenInputSchema.parse(
+    const validArgs: ListTokensNormalizedParams = TokenListInputSchema.parse(
       args.args,
     );
 
@@ -79,8 +79,8 @@ export class ListTokensCommand implements Command {
   }
 }
 
-export async function listTokens(
+export async function tokenList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ListTokensCommand().execute(args);
+  return new TokenListCommand().execute(args);
 }

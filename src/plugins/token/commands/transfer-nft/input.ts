@@ -8,7 +8,7 @@ import {
   PrivateKeyWithAccountIdSchema,
 } from '@/core/schemas';
 
-export const TransferNftInputSchema = z.object({
+export const TokenTransferNftInputSchema = z.object({
   token: EntityReferenceSchema.describe('Token identifier (ID or name)'),
   to: AccountReferenceSchema.describe(
     'Destination account (ID, EVM address, or name)',
@@ -22,4 +22,4 @@ export const TransferNftInputSchema = z.object({
   ),
 });
 
-export type TransferNftInput = z.infer<typeof TransferNftInputSchema>;
+export type TransferNftInput = z.infer<typeof TokenTransferNftInputSchema>;

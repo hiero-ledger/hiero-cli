@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { EntityIdSchema, NetworkSchema } from '@/core/schemas/common-schemas';
 
-export const ImportTokenOutputSchema = z.object({
+export const TokenImportOutputSchema = z.object({
   tokenId: EntityIdSchema,
   name: z.string().describe('Token name or alias'),
   symbol: z.string().describe('Token symbol'),
@@ -20,9 +20,9 @@ export const ImportTokenOutputSchema = z.object({
   alias: z.string().describe('Token alias').optional(),
 });
 
-export type ImportTokenOutput = z.infer<typeof ImportTokenOutputSchema>;
+export type ImportTokenOutput = z.infer<typeof TokenImportOutputSchema>;
 
-export const IMPORT_TOKEN_TEMPLATE = `
+export const TOKEN_IMPORT_TEMPLATE = `
 ✅ Token imported successfully: {{hashscanLink tokenId "token" network}}
    Network: {{network}}
    Name (Alias): {{name}}

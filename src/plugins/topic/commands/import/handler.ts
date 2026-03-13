@@ -10,14 +10,14 @@ import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
-import { ImportTopicInputSchema } from './input';
+import { TopicImportInputSchema } from './input';
 
-export class ImportTopicCommand implements Command {
+export class TopicImportCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
     const topicState = new ZustandTopicStateHelper(api.state, logger);
-    const validArgs = ImportTopicInputSchema.parse(args.args);
+    const validArgs = TopicImportInputSchema.parse(args.args);
     const network = api.network.getCurrentNetwork();
 
     const normalisedParams: ImportTopicNormalisedParams = {
@@ -80,8 +80,8 @@ export class ImportTopicCommand implements Command {
   }
 }
 
-export async function importTopic(
+export async function topicImport(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ImportTopicCommand().execute(args);
+  return new TopicImportCommand().execute(args);
 }

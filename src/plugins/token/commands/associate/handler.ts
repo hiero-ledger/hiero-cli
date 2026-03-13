@@ -16,7 +16,7 @@ import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { saveAssociationToState } from '@/plugins/token/utils/token-associations';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { AssociateTokenInputSchema } from './input';
+import { TokenAssociateInputSchema } from './input';
 
 export const TOKEN_ASSOCIATE_COMMAND_NAME = 'token_associate';
 
@@ -32,7 +32,7 @@ function isTokenAlreadyAssociatedError(error: unknown): boolean {
   );
 }
 
-export class AssociateTokenCommand extends BaseTransactionCommand<
+export class TokenAssociateCommand extends BaseTransactionCommand<
   AssociateNormalizedParams,
   AssociateBuildTransactionResult,
   AssociateSignTransactionResult,
@@ -46,7 +46,7 @@ export class AssociateTokenCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<AssociateNormalizedParams> {
     const { api, logger } = args;
-    const validArgs = AssociateTokenInputSchema.parse(args.args);
+    const validArgs = TokenAssociateInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
       api.config.getOption<KeyManagerName>('default_key_manager');
@@ -199,8 +199,8 @@ export class AssociateTokenCommand extends BaseTransactionCommand<
   }
 }
 
-export async function associateToken(
+export async function tokenAssociate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new AssociateTokenCommand().execute(args);
+  return new TokenAssociateCommand().execute(args);
 }

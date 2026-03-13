@@ -5,14 +5,14 @@ import type { ListTopicsNormalisedParams } from './types';
 
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
-import { ListTopicsInputSchema } from './input';
+import { TopicListInputSchema } from './input';
 
-export class ListTopicsCommand implements Command {
+export class TopicListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
     const topicState = new ZustandTopicStateHelper(api.state, logger);
-    const validArgs = ListTopicsInputSchema.parse(args.args);
+    const validArgs = TopicListInputSchema.parse(args.args);
     const normalisedParams: ListTopicsNormalisedParams = {
       networkFilter: validArgs.network,
     };
@@ -62,8 +62,8 @@ export class ListTopicsCommand implements Command {
   }
 }
 
-export async function listTopics(
+export async function topicList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ListTopicsCommand().execute(args);
+  return new TopicListCommand().execute(args);
 }

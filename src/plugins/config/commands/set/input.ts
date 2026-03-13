@@ -9,7 +9,7 @@ import {
  * Input schema for config set command
  * Validates arguments for setting a configuration option value
  */
-export const SetConfigInputSchema = z.object({
+export const ConfigSetInputSchema = z.object({
   option: ConfigOptionNameSchema.describe(
     'Configuration option name to set. Use `list` command to check available options.',
   ),
@@ -18,4 +18,4 @@ export const SetConfigInputSchema = z.object({
   ),
 });
 
-export type SetConfigInput = z.infer<typeof SetConfigInputSchema>;
+export type SetConfigInput = z.infer<typeof ConfigSetInputSchema>;

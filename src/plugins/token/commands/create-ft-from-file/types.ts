@@ -8,7 +8,7 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { FungibleTokenFileDefinition } from '@/plugins/token/schema';
 
-export interface CreateFtFromFileNormalizedParams {
+export interface TokenCreateFtFromFileNormalizedParams {
   filename: string;
   keyManager: KeyManagerName;
   tokenDefinition: FungibleTokenFileDefinition;
@@ -23,19 +23,19 @@ export interface CreateFtFromFileNormalizedParams {
   feeScheduleKey?: ResolvedPublicKey;
 }
 
-export interface CreateFtFromFileBuildTransactionResult {
+export interface TokenCreateFtFromFileBuildTransactionResult {
   transaction: Transaction;
 }
 
-export interface CreateFtFromFileSignTransactionResult {
+export interface TokenCreateFtFromFileSignTransactionResult {
   transaction: Transaction;
 }
 
-export interface CreateFtFromFileExecuteTransactionResult {
+export interface TokenCreateFtFromFileExecuteTransactionResult {
   transactionResult: TransactionResult;
 }
 
-export interface CreateFtFromFileAssociationOutput {
+export interface TokenCreateFtFromFileAssociationOutput {
   accountId: string;
   name: string;
   success: boolean;

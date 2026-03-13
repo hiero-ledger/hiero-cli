@@ -8,7 +8,7 @@ import { EntityIdSchema, NetworkSchema } from '@/core/schemas/common-schemas';
 /**
  * Import Topic Command Output Schema
  */
-export const ImportTopicOutputSchema = z.object({
+export const TopicImportOutputSchema = z.object({
   topicId: EntityIdSchema,
   name: z.string().describe('Topic name').optional(),
   network: NetworkSchema,
@@ -21,12 +21,12 @@ export const ImportTopicOutputSchema = z.object({
     .describe('Whether submit key is set on the topic'),
 });
 
-export type ImportTopicOutput = z.infer<typeof ImportTopicOutputSchema>;
+export type ImportTopicOutput = z.infer<typeof TopicImportOutputSchema>;
 
 /**
  * Human-readable template for import topic output
  */
-export const IMPORT_TOPIC_TEMPLATE = `
+export const TOPIC_IMPORT_TEMPLATE = `
 ✅ Topic imported successfully: {{hashscanLink topicId "topic" network}}
    Network: {{network}}
 {{#if name}}

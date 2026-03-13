@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
+import type { TopicCreateOutput } from '@/plugins/topic/commands/create';
 import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
 
 import '@/core/utils/json-serialize';
@@ -8,7 +8,7 @@ import '@/core/utils/json-serialize';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { createTopic, listTopics } from '@/plugins/topic';
+import { topicCreate, topicList } from '@/plugins/topic';
 
 describe('Create Topic Integration Tests', () => {
   let coreApi: CoreApi;
@@ -26,7 +26,7 @@ describe('Create Topic Integration Tests', () => {
       submitKey: `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
       name: 'test-topic',
     };
-    const createTopicResult = await createTopic({
+    const createTopicResult = await topicCreate({
       args: createTopicArgs,
       api: coreApi,
       state: coreApi.state,
@@ -34,7 +34,7 @@ describe('Create Topic Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const createTopicOutput = createTopicResult.result as CreateTopicOutput;
+    const createTopicOutput = createTopicResult.result as TopicCreateOutput;
     expect(createTopicOutput.name).toBe('test-topic');
     expect(createTopicOutput.network).toBe(network);
     expect(createTopicOutput.memo).toBe('Test topic');
@@ -44,7 +44,7 @@ describe('Create Topic Integration Tests', () => {
     const listTopicArgs: Record<string, unknown> = {
       network: network,
     };
-    const listTopicResult = await listTopics({
+    const listTopicResult = await topicList({
       args: listTopicArgs,
       api: coreApi,
       state: coreApi.state,

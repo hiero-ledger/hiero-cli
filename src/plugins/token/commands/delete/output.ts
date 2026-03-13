@@ -8,7 +8,7 @@ import { EntityIdSchema, NetworkSchema } from '@/core/schemas/common-schemas';
 /**
  * Delete Token Command Output Schema
  */
-export const DeleteTokenOutputSchema = z.object({
+export const TokenDeleteOutputSchema = z.object({
   deletedToken: z.object({
     name: z.string().describe('Token name'),
     tokenId: EntityIdSchema,
@@ -17,12 +17,12 @@ export const DeleteTokenOutputSchema = z.object({
   network: NetworkSchema,
 });
 
-export type DeleteTokenOutput = z.infer<typeof DeleteTokenOutputSchema>;
+export type TokenDeleteOutput = z.infer<typeof TokenDeleteOutputSchema>;
 
 /**
  * Human-readable template for delete token output
  */
-export const DELETE_TOKEN_TEMPLATE = `
+export const TOKEN_DELETE_TEMPLATE = `
 ✅ Token deleted successfully: {{deletedToken.name}} ({{hashscanLink deletedToken.tokenId "token" network}})
 {{#if removedAliases}}
 🧹 Removed {{removedAliases.length}} alias(es):

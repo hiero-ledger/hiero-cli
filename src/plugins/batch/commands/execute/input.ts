@@ -5,8 +5,8 @@ import { AliasNameSchema } from '@/core/schemas';
 /**
  * Input schema for batch execute command
  */
-export const ExecuteBatchInputSchema = z.object({
+export const BatchExecuteInputSchema = z.object({
   name: AliasNameSchema.describe('Batch name'),
 });
 
-export type ExecuteBatchInput = z.infer<typeof ExecuteBatchInputSchema>;
+export type ExecuteBatchInput = z.infer<typeof BatchExecuteInputSchema>;

@@ -4,4 +4,4 @@
  */
 export { batchList, BatchListCommand } from './handler';
 export type { ListBatchesOutput } from './output';
-export { LIST_BATCHES_TEMPLATE, ListBatchesOutputSchema } from './output';
+export { BATCH_LIST_TEMPLATE, BatchListOutputSchema } from './output';

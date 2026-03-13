@@ -6,7 +6,7 @@ import type {
   MintFtNormalizedParams,
   MintFtSignTransactionResult,
 } from '@/plugins/token/commands/mint-ft/types';
-import type { MintFtOutput } from './output';
+import type { TokenMintFtOutput } from './output';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import {
@@ -20,7 +20,7 @@ import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { isRawUnits } from '@/plugins/token/utils/token-amount-helpers';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { MintFtInputSchema } from './input';
+import { TokenMintFtInputSchema } from './input';
 
 export const TOKEN_MINT_FT_COMMAND_NAME = 'token_mint-ft';
 
@@ -41,7 +41,7 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
 
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
-    const validArgs = MintFtInputSchema.parse(args.args);
+    const validArgs = TokenMintFtInputSchema.parse(args.args);
 
     const tokenIdOrAlias = validArgs.token;
     const userAmountInput = validArgs.amount;
@@ -188,7 +188,7 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
     _signTransactionResult: MintFtSignTransactionResult,
     executeTransactionResult: MintFtExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const outputData: MintFtOutput = {
+    const outputData: TokenMintFtOutput = {
       transactionId: executeTransactionResult.transactionResult.transactionId,
       tokenId: normalisedParams.tokenId,
       amount: normalisedParams.rawAmount,
@@ -198,6 +198,8 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
   }
 }
 
-export async function mintFt(args: CommandHandlerArgs): Promise<CommandResult> {
+export async function tokenMintFt(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
   return new TokenMintFtCommand().execute(args);
 }

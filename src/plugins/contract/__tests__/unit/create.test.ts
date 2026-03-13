@@ -8,7 +8,7 @@ import {
   makeArgs,
   makeLogger,
 } from '@/plugins/account/__tests__/unit/helpers/mocks';
-import { createContract } from '@/plugins/contract/commands/create/handler';
+import { contractCreate } from '@/plugins/contract/commands/create/handler';
 import {
   DEFAULT_CONSTRUCTOR_PARAMS,
   DefaultContractTemplate,
@@ -68,7 +68,7 @@ describe('contract plugin - create command', () => {
         default: 'erc20',
       });
 
-      const result = await createContract(args);
+      const result = await contractCreate(args);
 
       expect(mockGetDefaultContractFilePath).toHaveBeenCalledWith(
         DefaultContractTemplate.Erc20,
@@ -110,7 +110,7 @@ describe('contract plugin - create command', () => {
         default: 'erc721',
       });
 
-      const result = await createContract(args);
+      const result = await contractCreate(args);
 
       expect(mockGetDefaultContractFilePath).toHaveBeenCalledWith(
         DefaultContractTemplate.Erc721,
@@ -149,7 +149,7 @@ describe('contract plugin - create command', () => {
         default: 'erc20',
       });
 
-      await createContract(args);
+      await contractCreate(args);
 
       expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -169,7 +169,7 @@ describe('contract plugin - create command', () => {
         default: 'erc721',
       });
 
-      await createContract(args);
+      await contractCreate(args);
 
       expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -191,7 +191,7 @@ describe('contract plugin - create command', () => {
         constructorParameter: customParams,
       });
 
-      await createContract(args);
+      await contractCreate(args);
 
       expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -214,7 +214,7 @@ describe('contract plugin - create command', () => {
         default: 'erc20',
       });
 
-      await createContract(args);
+      await contractCreate(args);
 
       expect(mockGetDefaultContractFilePath).toHaveBeenCalledTimes(1);
       expect(mockGetDefaultContractFilePath).toHaveBeenCalledWith(
@@ -235,7 +235,7 @@ describe('contract plugin - create command', () => {
         default: 'erc721',
       });
 
-      await createContract(args);
+      await contractCreate(args);
 
       expect(mockGetDefaultContractFilePath).toHaveBeenCalledTimes(1);
       expect(mockGetDefaultContractFilePath).toHaveBeenCalledWith(
@@ -254,7 +254,7 @@ describe('contract plugin - create command', () => {
         default: 'erc20',
       });
 
-      await createContract(args);
+      await contractCreate(args);
 
       expect(mockGetRepositoryBasePath).toHaveBeenCalled();
       expect(api.contractCompiler.compileContract).toHaveBeenCalledWith(
@@ -281,7 +281,7 @@ describe('contract plugin - create command', () => {
         file: customPath,
       });
 
-      const result = await createContract(args);
+      const result = await contractCreate(args);
 
       expect(mockGetDefaultContractFilePath).not.toHaveBeenCalled();
       expect(mockGetRepositoryBasePath).not.toHaveBeenCalled();
@@ -319,7 +319,7 @@ describe('contract plugin - create command', () => {
         default: 'erc20',
       });
 
-      await expect(createContract(args)).rejects.toThrow(
+      await expect(contractCreate(args)).rejects.toThrow(
         'Transaction completed but no contractId returned',
       );
     });

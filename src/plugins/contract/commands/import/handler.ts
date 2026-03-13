@@ -90,7 +90,7 @@ export class ImportContractCommand implements Command {
   }
 }
 
-export async function importContract(
+export async function contractImport(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ImportContractCommand().execute(args);

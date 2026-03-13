@@ -10,14 +10,14 @@ import { NotFoundError } from '@/core/errors';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
-import { DeleteBatchInputSchema } from './input';
+import { BatchDeleteInputSchema } from './input';
 
 export class BatchDeleteCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
     const batchState = new ZustandBatchStateHelper(api.state, logger);
-    const validArgs = DeleteBatchInputSchema.parse(args.args);
+    const validArgs = BatchDeleteInputSchema.parse(args.args);
     const name = validArgs.name;
     const order = validArgs.order;
     const network = api.network.getCurrentNetwork();

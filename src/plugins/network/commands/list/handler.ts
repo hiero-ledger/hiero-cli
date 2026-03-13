@@ -19,7 +19,7 @@ const normalizeParams = (
     args.api.network.getAvailableNetworks() as ListNetworksNormalisedParams['networkNames'],
 });
 
-export class ListNetworksCommand implements Command {
+export class NetworkListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
     const normalisedParams = normalizeParams(args);
@@ -58,6 +58,6 @@ export class ListNetworksCommand implements Command {
   }
 }
 
-export const listNetworks = async (
+export const networkList = async (
   args: CommandHandlerArgs,
-): Promise<CommandResult> => new ListNetworksCommand().execute(args);
+): Promise<CommandResult> => new NetworkListCommand().execute(args);

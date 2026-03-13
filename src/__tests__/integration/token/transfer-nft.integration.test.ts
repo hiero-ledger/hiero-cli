@@ -1,9 +1,9 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateAccountOutput } from '@/plugins/account/commands/create';
+import type { AccountCreateOutput } from '@/plugins/account/commands/create';
 import type { AssociateTokenOutput } from '@/plugins/token/commands/associate';
-import type { CreateNftOutput } from '@/plugins/token/commands/create-nft';
-import type { MintNftOutput } from '@/plugins/token/commands/mint-nft';
+import type { TokenCreateNftOutput } from '@/plugins/token/commands/create-nft';
+import type { TokenMintNftOutput } from '@/plugins/token/commands/mint-nft';
 import type { TransferNftOutput } from '@/plugins/token/commands/transfer-nft';
 import type { ViewTokenOutput } from '@/plugins/token/commands/view';
 
@@ -15,12 +15,14 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { createAccount } from '@/plugins/account';
-import { associateToken } from '@/plugins/token/commands/associate';
-import { createNft } from '@/plugins/token/commands/create-nft';
-import { mintNft } from '@/plugins/token/commands/mint-nft';
-import { transferNft } from '@/plugins/token/commands/transfer-nft';
-import { viewToken } from '@/plugins/token/commands/view';
+import { accountCreate } from '@/plugins/account';
+import {
+  tokenAssociate,
+  tokenCreateNft,
+  tokenMintNft,
+  tokenTransferNft,
+  tokenView,
+} from '@/plugins/token';
 
 describe('Transfer NFT Integration Tests', () => {
   let coreApi: CoreApi;
@@ -40,7 +42,7 @@ describe('Transfer NFT Integration Tests', () => {
         'key-type': 'ecdsa',
         'auto-associations': 10,
       };
-      const createSourceAccountResult = await createAccount({
+      const createSourceAccountResult = await accountCreate({
         args: createSourceAccountArgs,
         api: coreApi,
         state: coreApi.state,
@@ -49,7 +51,7 @@ describe('Transfer NFT Integration Tests', () => {
       });
 
       const createSourceAccountOutput =
-        createSourceAccountResult.result as CreateAccountOutput;
+        createSourceAccountResult.result as AccountCreateOutput;
       expect(createSourceAccountOutput.name).toBe(
         'account-nft-transfer-source',
       );
@@ -64,7 +66,7 @@ describe('Transfer NFT Integration Tests', () => {
         'key-type': 'ecdsa',
         'auto-associations': 10,
       };
-      const createDestinationAccountResult = await createAccount({
+      const createDestinationAccountResult = await accountCreate({
         args: createDestinationAccountArgs,
         api: coreApi,
         state: coreApi.state,
@@ -73,7 +75,7 @@ describe('Transfer NFT Integration Tests', () => {
       });
 
       const createDestinationAccountOutput =
-        createDestinationAccountResult.result as CreateAccountOutput;
+        createDestinationAccountResult.result as AccountCreateOutput;
       expect(createDestinationAccountOutput.name).toBe(
         'account-nft-transfer-destination',
       );
@@ -92,14 +94,14 @@ describe('Transfer NFT Integration Tests', () => {
         supplyKey: 'account-nft-transfer-source',
         name: 'test-nft-transfer-collection',
       };
-      const createNftResult = await createNft({
+      const createNftResult = await tokenCreateNft({
         args: createNftArgs,
         api: coreApi,
         state: coreApi.state,
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const createNftOutput = createNftResult.result as CreateNftOutput;
+      const createNftOutput = createNftResult.result as TokenCreateNftOutput;
       expect(createNftOutput.network).toBe(network);
       expect(createNftOutput.name).toBe('Test NFT Transfer Collection');
       expect(createNftOutput.alias).toBe('test-nft-transfer-collection');
@@ -122,14 +124,14 @@ describe('Transfer NFT Integration Tests', () => {
         metadata: 'Test NFT Transfer Metadata',
         supplyKey: 'account-nft-transfer-source',
       };
-      const mintNftResult = await mintNft({
+      const mintNftResult = await tokenMintNft({
         args: mintNftArgs,
         api: coreApi,
         state: coreApi.state,
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const mintNftOutput = mintNftResult.result as MintNftOutput;
+      const mintNftOutput = mintNftResult.result as TokenMintNftOutput;
       expect(mintNftOutput.tokenId).toBe(createNftOutput.tokenId);
       expect(mintNftOutput.serialNumber).toBeDefined();
       expect(mintNftOutput.network).toBe(network);
@@ -141,7 +143,7 @@ describe('Transfer NFT Integration Tests', () => {
         token: createNftOutput.tokenId,
         account: 'account-nft-transfer-destination',
       };
-      const associateTokenResult = await associateToken({
+      const associateTokenResult = await tokenAssociate({
         args: associateTokenArgs,
         api: coreApi,
         state: coreApi.state,
@@ -162,25 +164,25 @@ describe('Transfer NFT Integration Tests', () => {
         token: createNftOutput.tokenId,
         serial: mintNftOutput.serialNumber,
       };
-      const viewTokenBeforeTransferResult = await viewToken({
+      const viewTokenBeforeTransferResult = await tokenView({
         args: viewTokenBeforeTransferArgs,
         api: coreApi,
         state: coreApi.state,
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const viewTokenBeforeTransferOutput =
+      const viewTokenBeforeHbarHbarTransferOutput =
         viewTokenBeforeTransferResult.result as ViewTokenOutput;
-      expect(viewTokenBeforeTransferOutput.tokenId).toBe(
+      expect(viewTokenBeforeHbarHbarTransferOutput.tokenId).toBe(
         createNftOutput.tokenId,
       );
-      expect(viewTokenBeforeTransferOutput.nftSerial?.serialNumber).toBe(
-        parseInt(mintNftOutput.serialNumber, 10),
-      );
-      expect(viewTokenBeforeTransferOutput.nftSerial?.owner).toBe(
+      expect(
+        viewTokenBeforeHbarHbarTransferOutput.nftSerial?.serialNumber,
+      ).toBe(parseInt(mintNftOutput.serialNumber, 10));
+      expect(viewTokenBeforeHbarHbarTransferOutput.nftSerial?.owner).toBe(
         createSourceAccountOutput.accountId,
       );
-      expect(viewTokenBeforeTransferOutput.nftSerial?.metadata).toBe(
+      expect(viewTokenBeforeHbarHbarTransferOutput.nftSerial?.metadata).toBe(
         'Test NFT Transfer Metadata',
       );
 
@@ -190,7 +192,7 @@ describe('Transfer NFT Integration Tests', () => {
         to: 'account-nft-transfer-destination',
         serials: mintNftOutput.serialNumber,
       };
-      const transferNftResult = await transferNft({
+      const transferNftResult = await tokenTransferNft({
         args: transferNftArgs,
         api: coreApi,
         state: coreApi.state,
@@ -215,25 +217,25 @@ describe('Transfer NFT Integration Tests', () => {
         token: createNftOutput.tokenId,
         serial: mintNftOutput.serialNumber,
       };
-      const viewTokenAfterTransferResult = await viewToken({
+      const viewTokenAfterTransferResult = await tokenView({
         args: viewTokenAfterTransferArgs,
         api: coreApi,
         state: coreApi.state,
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const viewTokenAfterTransferOutput =
+      const viewTokenAfterHbarHbarTransferOutput =
         viewTokenAfterTransferResult.result as ViewTokenOutput;
-      expect(viewTokenAfterTransferOutput.tokenId).toBe(
+      expect(viewTokenAfterHbarHbarTransferOutput.tokenId).toBe(
         createNftOutput.tokenId,
       );
-      expect(viewTokenAfterTransferOutput.nftSerial?.serialNumber).toBe(
+      expect(viewTokenAfterHbarHbarTransferOutput.nftSerial?.serialNumber).toBe(
         parseInt(mintNftOutput.serialNumber, 10),
       );
-      expect(viewTokenAfterTransferOutput.nftSerial?.owner).toBe(
+      expect(viewTokenAfterHbarHbarTransferOutput.nftSerial?.owner).toBe(
         createDestinationAccountOutput.accountId,
       );
-      expect(viewTokenAfterTransferOutput.nftSerial?.metadata).toBe(
+      expect(viewTokenAfterHbarHbarTransferOutput.nftSerial?.metadata).toBe(
         'Test NFT Transfer Metadata',
       );
     }, 120000);
@@ -247,7 +249,7 @@ describe('Transfer NFT Integration Tests', () => {
         'key-type': 'ecdsa',
         'auto-associations': 10,
       };
-      const createAccountResult = await createAccount({
+      const createAccountResult = await accountCreate({
         args: createAccountArgs,
         api: coreApi,
         state: coreApi.state,
@@ -256,7 +258,7 @@ describe('Transfer NFT Integration Tests', () => {
       });
 
       const createAccountOutput =
-        createAccountResult.result as CreateAccountOutput;
+        createAccountResult.result as AccountCreateOutput;
       expect(createAccountOutput.name).toBe('account-nft-not-owned-test');
       expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
       expect(createAccountOutput.network).toBe(network);
@@ -273,14 +275,14 @@ describe('Transfer NFT Integration Tests', () => {
         supplyKey: 'account-nft-not-owned-test',
         name: 'test-nft-not-owned',
       };
-      const createNftResult = await createNft({
+      const createNftResult = await tokenCreateNft({
         args: createNftArgs,
         api: coreApi,
         state: coreApi.state,
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const createNftOutput = createNftResult.result as CreateNftOutput;
+      const createNftOutput = createNftResult.result as TokenCreateNftOutput;
 
       await delay(5000);
 
@@ -289,14 +291,14 @@ describe('Transfer NFT Integration Tests', () => {
         metadata: 'Test NFT Not Owned Metadata',
         supplyKey: 'account-nft-not-owned-test',
       };
-      const mintNftResult = await mintNft({
+      const mintNftResult = await tokenMintNft({
         args: mintNftArgs,
         api: coreApi,
         state: coreApi.state,
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const mintNftOutput = mintNftResult.result as MintNftOutput;
+      const mintNftOutput = mintNftResult.result as TokenMintNftOutput;
 
       await delay(5000);
 
@@ -306,7 +308,7 @@ describe('Transfer NFT Integration Tests', () => {
         'key-type': 'ecdsa',
         'auto-associations': 10,
       };
-      await createAccount({
+      await accountCreate({
         args: createAnotherAccountArgs,
         api: coreApi,
         state: coreApi.state,
@@ -323,7 +325,7 @@ describe('Transfer NFT Integration Tests', () => {
         serials: mintNftOutput.serialNumber,
       };
       await expect(
-        transferNft({
+        tokenTransferNft({
           args: transferNftArgs,
           api: coreApi,
           state: coreApi.state,
@@ -342,7 +344,7 @@ describe('Transfer NFT Integration Tests', () => {
       };
 
       await expect(
-        transferNft({
+        tokenTransferNft({
           args: transferNftArgs,
           api: coreApi,
           state: coreApi.state,
