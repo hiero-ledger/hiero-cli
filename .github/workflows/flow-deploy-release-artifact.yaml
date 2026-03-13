@@ -196,7 +196,7 @@ jobs:
           version: 1.7
 
       - name: Setup JFrog CLI
-        uses: jfrog/setup-jfrog-cli@c32bf10843e4071112c4ea3abf622d3b27cd8c17 # v4.7.0
+        uses: jfrog/setup-jfrog-cli@279b1f629f43dd5bc658d8361ac4802a7ef8d2d5 # v4.9.1
         env:
           JF_URL: ${{ vars.JF_URL }}
         with:
