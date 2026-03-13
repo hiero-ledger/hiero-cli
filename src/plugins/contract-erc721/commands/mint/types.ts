@@ -1,7 +1,4 @@
-import type {
-  ContractExecuteTransaction,
-  Transaction as HederaTransaction,
-} from '@hashgraph/sdk';
+import type { ContractExecuteTransaction, Transaction } from '@hashgraph/sdk';
 import type {
   SupportedNetwork,
   TransactionResult,
@@ -20,7 +17,7 @@ export interface MintBuildTransactionResult {
 }
 
 export interface MintSignTransactionResult {
-  signedTransaction: HederaTransaction;
+  signedTransaction: Transaction;
 }
 
 export interface MintExecuteTransactionResult {

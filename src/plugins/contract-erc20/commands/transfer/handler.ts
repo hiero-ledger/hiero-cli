@@ -108,7 +108,7 @@ export class ContractErc20TransferCommand extends BaseTransactionCommand<
     );
 
     return {
-      transaction,
+      signedTransaction: transaction,
     };
   }
 
@@ -121,7 +121,7 @@ export class ContractErc20TransferCommand extends BaseTransactionCommand<
     const { api } = args;
 
     const result = await api.txExecute.execute(
-      signTransactionResult.transaction,
+      signTransactionResult.signedTransaction,
     );
 
     if (!result.success) {

@@ -1,0 +1,113 @@
+import type { CommandHandlerArgs } from '@/core';
+import type {
+  HookResult,
+  PreOutputPreparationParams,
+} from '@/core/hooks/types';
+import type { TransactionResult } from '@/core/types/shared.types';
+import type { BatchDataItem, BatchExecuteTransactionResult } from './types';
+
+import { StateError } from '@/core';
+import { AbstractHook } from '@/core/hooks/abstract-hook';
+import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { composeKey } from '@/core/utils/key-composer';
+import { TOKEN_CREATE_FT_COMMAND_NAME } from '@/plugins/token/commands/create-ft';
+import { buildTokenData } from '@/plugins/token/utils/token-data-builders';
+import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+
+import { CreateFtNormalizedParamsSchema } from './types';
+
+export class TokenCreateFtBatchStateHook extends AbstractHook {
+  override async preOutputPreparationHook(
+    args: CommandHandlerArgs,
+    params: PreOutputPreparationParams<
+      unknown,
+      unknown,
+      unknown,
+      BatchExecuteTransactionResult
+    >,
+  ): Promise<HookResult> {
+    const batchData = params.executeTransactionResult.updatedBatchData;
+    const sortedTransactions = [...batchData.transactions].sort(
+      (a, b) => a.order - b.order,
+    );
+    await Promise.all(
+      sortedTransactions
+        .filter((item) => item.command === TOKEN_CREATE_FT_COMMAND_NAME)
+        .map((batchDataItem) => this.saveCreateFt(args, batchDataItem)),
+    );
+    return Promise.resolve({
+      breakFlow: false,
+      result: {
+        message: 'success',
+      },
+    });
+  }
+
+  private async saveCreateFt(
+    args: CommandHandlerArgs,
+    batchDataItem: BatchDataItem,
+  ): Promise<void> {
+    const { api, logger } = args;
+    const parseResult = CreateFtNormalizedParamsSchema.safeParse(
+      batchDataItem.normalizedParams,
+    );
+    if (!parseResult.success) {
+      logger.warn(
+        `There was a problem with parsing data schema. The saving will not be done`,
+      );
+      return;
+    }
+    const normalisedParams = parseResult.data;
+    const innerTransactionId = batchDataItem.transactionId;
+    if (!innerTransactionId) {
+      logger.warn(
+        `No transaction ID found for batch transaction ${batchDataItem.order}`,
+      );
+      return;
+    }
+
+    const innerTransactionResult: TransactionResult =
+      await api.receipt.getReceipt({
+        transactionId: innerTransactionId,
+      });
+
+    if (!innerTransactionResult.tokenId) {
+      throw new StateError(
+        'Transaction completed but did not return a token ID',
+        { context: { transactionId: innerTransactionResult.transactionId } },
+      );
+    }
+
+    const tokenData = buildTokenData(innerTransactionResult, {
+      name: normalisedParams.name,
+      symbol: normalisedParams.symbol,
+      treasuryId: normalisedParams.treasury.accountId,
+      decimals: normalisedParams.decimals,
+      initialSupply: normalisedParams.initialSupply,
+      tokenType: normalisedParams.tokenType,
+      supplyType: normalisedParams.supplyType,
+      adminPublicKey: normalisedParams.admin.publicKey,
+      supplyPublicKey: normalisedParams.supply?.publicKey,
+      network: normalisedParams.network,
+    });
+
+    const key = composeKey(
+      normalisedParams.network,
+      innerTransactionResult.tokenId,
+    );
+    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    tokenState.saveToken(key, tokenData);
+    logger.info('   Token data saved to state');
+
+    if (normalisedParams.alias) {
+      api.alias.register({
+        alias: normalisedParams.alias,
+        type: AliasType.Token,
+        network: normalisedParams.network,
+        entityId: innerTransactionResult.tokenId,
+        createdAt: innerTransactionResult.consensusTimestamp,
+      });
+      logger.info(`   Name registered: ${normalisedParams.alias}`);
+    }
+  }
+}

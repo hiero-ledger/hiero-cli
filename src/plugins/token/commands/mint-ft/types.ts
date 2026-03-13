@@ -14,7 +14,7 @@ export interface MintFtBuildTransactionResult {
 }
 
 export interface MintFtSignTransactionResult {
-  transaction: Transaction;
+  signedTransaction: Transaction;
 }
 
 export interface MintFtExecuteTransactionResult {

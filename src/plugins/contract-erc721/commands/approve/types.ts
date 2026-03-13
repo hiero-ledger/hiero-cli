@@ -1,7 +1,4 @@
-import type {
-  ContractExecuteTransaction,
-  Transaction as HederaTransaction,
-} from '@hashgraph/sdk';
+import type { ContractExecuteTransaction, Transaction } from '@hashgraph/sdk';
 import type {
   SupportedNetwork,
   TransactionResult,
@@ -20,7 +17,7 @@ export interface ApproveBuildTransactionResult {
 }
 
 export interface ApproveSignTransactionResult {
-  signedTransaction: HederaTransaction;
+  signedTransaction: Transaction;
 }
 
 export interface ApproveExecuteTransactionResult {

@@ -20,6 +20,7 @@ The Hiero CLI is built on a plugin-based architecture designed to be extensible,
 │  ├── Token Service                                          │
 │  ├── Topic Service                                          │
 │  ├── TxExecutionService                                     │
+│  ├── Receipt Service                                        │
 │  ├── State Service (Zustand)                                │
 │  ├── Mirror Node Service                                    │
 │  ├── Network Service                                        │
@@ -265,7 +266,25 @@ Configuration options include:
 - Structured output
 - Plugin-specific logging
 
-### 9. KMS Service (Key Management Service)
+### 9. Receipt Service
+
+**Purpose**: Fetches transaction receipts by transaction ID using Hedera's `TransactionGetReceiptQuery`.
+
+**Key Features**:
+
+- Retrieve receipt data for any submitted transaction
+- Returns `TransactionResult` with status, entity IDs (account, token, topic, contract), and serials
+- Used by batch workflows to obtain entity IDs for inner transactions after batch execution
+
+**Interface**:
+
+```typescript
+interface ReceiptService {
+  getReceipt(params: TransactionReceiptParams): Promise<TransactionResult>;
+}
+```
+
+### 10. KMS Service (Key Management Service)
 
 **Purpose**: Manages operator credentials and cryptographic keys securely.
 
@@ -332,6 +351,8 @@ Core API
 │   └── Config Service
 ├── TxExecutionService
 │   ├── KMS Service
+│   └── Network Service
+├── Receipt Service
 │   └── Network Service
 ├── Account Transaction Service
 ├── Token Service

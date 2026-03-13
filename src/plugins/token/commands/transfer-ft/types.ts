@@ -15,7 +15,7 @@ export interface TransferFtBuildTransactionResult {
 }
 
 export interface TransferFtSignTransactionResult {
-  transaction: Transaction;
+  signedTransaction: Transaction;
 }
 
 export interface TransferFtExecuteTransactionResult {

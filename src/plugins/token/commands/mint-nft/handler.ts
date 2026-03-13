@@ -139,7 +139,7 @@ export class MintNftCommand extends BaseTransactionCommand<
       buildTransactionResult.transaction,
       [normalisedParams.supplyKeyResolved.keyRefId],
     );
-    return { transaction };
+    return { signedTransaction: transaction };
   }
 
   async executeTransaction(
@@ -150,7 +150,7 @@ export class MintNftCommand extends BaseTransactionCommand<
   ): Promise<MintNftExecuteTransactionResult> {
     const { api } = args;
     const transactionResult = await api.txExecute.execute(
-      signTransactionResult.transaction,
+      signTransactionResult.signedTransaction,
     );
     if (!transactionResult.success) {
       throw new TransactionError(

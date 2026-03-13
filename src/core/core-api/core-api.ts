@@ -23,6 +23,7 @@ import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { ReceiptService } from '@/core/services/receipt/receipt-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
@@ -46,6 +47,7 @@ import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/h
 import { NetworkServiceImpl } from '@/core/services/network/network-service';
 import { OutputServiceImpl } from '@/core/services/output/output-service';
 import { PluginManagementServiceImpl } from '@/core/services/plugin-management/plugin-management-service';
+import { ReceiptServiceImpl } from '@/core/services/receipt/receipt-service';
 import { ZustandGenericStateServiceImpl } from '@/core/services/state/state-service';
 import { TokenServiceImpl } from '@/core/services/token/token-service';
 import { TopicServiceImpl } from '@/core/services/topic/topic-transaction-service';
@@ -75,6 +77,7 @@ export class CoreApiImplementation implements CoreApi {
   public contractQuery: ContractQueryService;
   public identityResolution: IdentityResolutionService;
   public batch: BatchTransactionService;
+  public receipt: ReceiptService;
 
   constructor(storageDir?: string) {
     this.logger = new LoggerService();
@@ -132,6 +135,7 @@ export class CoreApiImplementation implements CoreApi {
       this.mirror,
     );
     this.batch = new BatchTransactionServiceImpl(this.logger);
+    this.receipt = new ReceiptServiceImpl(this.logger, this.network);
   }
 }
 

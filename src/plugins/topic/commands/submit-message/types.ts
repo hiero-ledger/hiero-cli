@@ -1,4 +1,4 @@
-import type { Transaction as HederaTransaction } from '@hashgraph/sdk';
+import type { Transaction as Transaction } from '@hashgraph/sdk';
 import type { TransactionResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
@@ -14,11 +14,11 @@ export interface SubmitMessageNormalisedParams {
 }
 
 export interface SubmitMessageBuildTransactionResult {
-  transaction: HederaTransaction;
+  transaction: Transaction;
 }
 
 export interface SubmitMessageSignTransactionResult {
-  transaction: HederaTransaction;
+  signedTransaction: Transaction;
 }
 
 export type SubmitMessageExecuteTransactionResult = TransactionResult;
