@@ -1,5 +1,5 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { ImportAccountOutput } from '@/plugins/account/commands/import';
+import type { AccountImportOutput } from '@/plugins/account/commands/import';
 import type { AccountViewOutput } from '@/plugins/account/commands/view';
 
 import '@/core/utils/json-serialize';
@@ -49,7 +49,7 @@ describe('Import Account Integration Tests', () => {
       });
 
       const importAccountOutput =
-        importAccountResult.result as ImportAccountOutput;
+        importAccountResult.result as AccountImportOutput;
       expect(importAccountOutput.accountId).toBe(accountId);
       expect(importAccountOutput.name).toBe('account-imported');
       expect(importAccountOutput.type).toBe(KeyAlgorithm.ECDSA);

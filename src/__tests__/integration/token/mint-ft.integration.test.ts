@@ -4,7 +4,7 @@ import type { AccountBalanceOutput } from '@/plugins/account/commands/balance';
 import type { AccountCreateOutput } from '@/plugins/account/commands/create';
 import type { AccountViewOutput } from '@/plugins/account/commands/view';
 import type { TokenCreateFtOutput } from '@/plugins/token/commands/create-ft';
-import type { MintFtOutput } from '@/plugins/token/commands/mint-ft';
+import type { TokenMintFtOutput } from '@/plugins/token/commands/mint-ft';
 
 import '@/core/utils/json-serialize';
 
@@ -130,7 +130,7 @@ describe('Mint FT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const mintFtOutput = mintFtResult.result as MintFtOutput;
+    const mintFtOutput = mintFtResult.result as TokenMintFtOutput;
     expect(mintFtOutput.tokenId).toBe(createTokenOutput.tokenId);
     expect(mintFtOutput.amount).toBe(50n);
     expect(mintFtOutput.network).toBe(network);

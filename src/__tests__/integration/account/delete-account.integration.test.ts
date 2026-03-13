@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AccountDeleteOutput } from '@/plugins/account/commands/delete';
-import type { ImportAccountOutput } from '@/plugins/account/commands/import';
+import type { AccountImportOutput } from '@/plugins/account/commands/import';
 import type { AccountViewOutput } from '@/plugins/account/commands/view';
 
 import '@/core/utils/json-serialize';
@@ -50,7 +50,7 @@ describe('Delete Account Integration Tests', () => {
       });
 
       const importAccountOutput =
-        importAccountResult.result as ImportAccountOutput;
+        importAccountResult.result as AccountImportOutput;
       expect(importAccountOutput.accountId).toBe(accountId);
       expect(importAccountOutput.name).toBe('account-to-be-deleted');
       expect(importAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
