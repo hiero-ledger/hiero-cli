@@ -8,7 +8,7 @@ import { PublicKeyDefinitionSchema } from '@/core/schemas/common-schemas';
 /**
  * List Batches Command Output Schema
  */
-export const ListBatchesOutputSchema = z.object({
+export const BatchListOutputSchema = z.object({
   batches: z.array(
     z.object({
       name: z.string().describe('Batch name'),
@@ -21,12 +21,12 @@ export const ListBatchesOutputSchema = z.object({
   totalCount: z.number().describe('Total number of batches'),
 });
 
-export type ListBatchesOutput = z.infer<typeof ListBatchesOutputSchema>;
+export type ListBatchesOutput = z.infer<typeof BatchListOutputSchema>;
 
 /**
  * Human-readable template for list batches output
  */
-export const LIST_BATCHES_TEMPLATE = `
+export const BATCH_LIST_TEMPLATE = `
 {{#if (eq totalCount 0)}}
 📝 No batches found
 {{else}}

@@ -17,7 +17,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, SupportedNetwork } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { CreateAccountOutputSchema } from '@/plugins/account/commands/create';
+import { AccountCreateOutputSchema } from '@/plugins/account/commands/create';
 import { accountCreate } from '@/plugins/account/commands/create/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -106,7 +106,7 @@ describe('account plugin - create command (ADR-003)', () => {
     );
 
     // Verify ADR-003 result
-    const output = assertOutput(result.result, CreateAccountOutputSchema);
+    const output = assertOutput(result.result, AccountCreateOutputSchema);
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('myAccount');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
@@ -228,7 +228,7 @@ describe('account plugin - create command (ADR-003)', () => {
       }),
     );
 
-    const output = assertOutput(result.result, CreateAccountOutputSchema);
+    const output = assertOutput(result.result, AccountCreateOutputSchema);
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.evmAddress).toBe(ACCOUNT_ID_EVM_ADDRESS_8888);
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
@@ -302,7 +302,7 @@ describe('account plugin - create command (ADR-003)', () => {
       }),
     );
 
-    const output = assertOutput(result.result, CreateAccountOutputSchema);
+    const output = assertOutput(result.result, AccountCreateOutputSchema);
     expect(output.accountId).toBe('0.0.6666');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
@@ -376,7 +376,7 @@ describe('account plugin - create command (ADR-003)', () => {
       }),
     );
 
-    const output = assertOutput(result.result, CreateAccountOutputSchema);
+    const output = assertOutput(result.result, AccountCreateOutputSchema);
     expect(output.accountId).toBe('0.0.5555');
   });
 
@@ -465,7 +465,7 @@ describe('account plugin - create command (ADR-003)', () => {
       }),
     );
 
-    const output = assertOutput(result.result, CreateAccountOutputSchema);
+    const output = assertOutput(result.result, AccountCreateOutputSchema);
     expect(output.type).toBe(KeyAlgorithm.ED25519);
     expect(output.evmAddress).toBe(
       '0x0000000000000000000000000000000000001e61',

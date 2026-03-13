@@ -1,9 +1,9 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountBalanceOutput } from '@/plugins/account/commands/balance';
-import type { CreateAccountOutput } from '@/plugins/account/commands/create';
+import type { AccountCreateOutput } from '@/plugins/account/commands/create';
 import type { ViewAccountOutput } from '@/plugins/account/commands/view';
-import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
+import type { TokenCreateFtOutput } from '@/plugins/token/commands/create-ft';
 import type { MintFtOutput } from '@/plugins/token/commands/mint-ft';
 
 import '@/core/utils/json-serialize';
@@ -43,7 +43,7 @@ describe('Mint FT Integration Tests', () => {
     });
 
     const createAccountOutput =
-      createAccountResult.result as CreateAccountOutput;
+      createAccountResult.result as AccountCreateOutput;
     expect(createAccountOutput.name).toBe('account-mint-ft');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -82,8 +82,7 @@ describe('Mint FT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const createTokenOutput =
-      createTokenResult.result as CreateFungibleTokenOutput;
+    const createTokenOutput = createTokenResult.result as TokenCreateFtOutput;
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('100');

@@ -1,4 +1,4 @@
-export { DeleteTopicCommand, topicDelete } from './handler';
-export { DeleteTopicInputSchema } from './input';
+export { topicDelete, TopicDeleteCommand } from './handler';
+export { TopicDeleteInputSchema } from './input';
 export type { DeleteTopicOutput } from './output';
-export { DELETE_TOPIC_TEMPLATE, DeleteTopicOutputSchema } from './output';
+export { TOPIC_DELETE_TEMPLATE, TopicDeleteOutputSchema } from './output';

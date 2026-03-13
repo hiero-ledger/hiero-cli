@@ -18,11 +18,11 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
-import { SubmitMessageInputSchema } from './input';
+import { TopicTopicSubmitMessageInputSchema } from './input';
 
 export const TOPIC_SUBMIT_MESSAGE_COMMAND_NAME = 'topic_submit-message';
 
-export class SubmitMessageCommand extends BaseTransactionCommand<
+export class TopicTopicSubmitMessageCommand extends BaseTransactionCommand<
   SubmitMessageNormalisedParams,
   SubmitMessageBuildTransactionResult,
   SubmitMessageSignTransactionResult,
@@ -37,7 +37,7 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
   ): Promise<SubmitMessageNormalisedParams> {
     const { api, logger } = args;
     const topicState = new ZustandTopicStateHelper(api.state, logger);
-    const validArgs = SubmitMessageInputSchema.parse(args.args);
+    const validArgs = TopicTopicSubmitMessageInputSchema.parse(args.args);
 
     const topicIdOrAlias = validArgs.topic;
     const message = validArgs.message;
@@ -176,5 +176,5 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
 export async function topicSubmitMessage(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new SubmitMessageCommand().execute(args);
+  return new TopicTopicSubmitMessageCommand().execute(args);
 }

@@ -1,11 +1,11 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { CreateNftOutput } from '@/plugins/token/commands/create-nft/output';
+import type { TokenCreateNftOutput } from '@/plugins/token/commands/create-nft/output';
 import type {
-  CreateNftBuildTransactionResult,
-  CreateNftExecuteTransactionResult,
-  CreateNftNormalizedParams,
-  CreateNftSignTransactionResult,
+  TokenCreateNftBuildTransactionResult,
+  TokenCreateNftExecuteTransactionResult,
+  TokenCreateNftNormalizedParams,
+  TokenCreateNftSignTransactionResult,
 } from '@/plugins/token/commands/create-nft/types';
 
 import { PublicKey } from '@hashgraph/sdk';
@@ -17,7 +17,7 @@ import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
-import { CreateNftInputSchema } from '@/plugins/token/commands/create-nft/input';
+import { TokenCreateNftInputSchema } from '@/plugins/token/commands/create-nft/input';
 import {
   buildTokenData,
   determineFiniteMaxSupply,
@@ -26,11 +26,11 @@ import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 export const TOKEN_CREATE_NFT_COMMAND_NAME = 'token_create-nft';
 
-export class CreateNftCommand extends BaseTransactionCommand<
-  CreateNftNormalizedParams,
-  CreateNftBuildTransactionResult,
-  CreateNftSignTransactionResult,
-  CreateNftExecuteTransactionResult
+export class TokenCreateNftCommand extends BaseTransactionCommand<
+  TokenCreateNftNormalizedParams,
+  TokenCreateNftBuildTransactionResult,
+  TokenCreateNftSignTransactionResult,
+  TokenCreateNftExecuteTransactionResult
 > {
   constructor() {
     super(TOKEN_CREATE_NFT_COMMAND_NAME);
@@ -38,9 +38,9 @@ export class CreateNftCommand extends BaseTransactionCommand<
 
   async normalizeParams(
     args: CommandHandlerArgs,
-  ): Promise<CreateNftNormalizedParams> {
+  ): Promise<TokenCreateNftNormalizedParams> {
     const { api, logger } = args;
-    const validArgs = CreateNftInputSchema.parse(args.args);
+    const validArgs = TokenCreateNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
       api.config.getOption<KeyManagerName>('default_key_manager');
@@ -107,8 +107,8 @@ export class CreateNftCommand extends BaseTransactionCommand<
 
   async buildTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: CreateNftNormalizedParams,
-  ): Promise<CreateNftBuildTransactionResult> {
+    normalisedParams: TokenCreateNftNormalizedParams,
+  ): Promise<TokenCreateNftBuildTransactionResult> {
     const { api } = args;
     const transaction = api.token.createTokenTransaction({
       name: normalisedParams.name,
@@ -128,9 +128,9 @@ export class CreateNftCommand extends BaseTransactionCommand<
 
   async signTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: CreateNftNormalizedParams,
-    buildTransactionResult: CreateNftBuildTransactionResult,
-  ): Promise<CreateNftSignTransactionResult> {
+    normalisedParams: TokenCreateNftNormalizedParams,
+    buildTransactionResult: TokenCreateNftBuildTransactionResult,
+  ): Promise<TokenCreateNftSignTransactionResult> {
     const { api } = args;
     const txSigners = [normalisedParams.treasury.keyRefId];
 
@@ -147,10 +147,10 @@ export class CreateNftCommand extends BaseTransactionCommand<
 
   async executeTransaction(
     args: CommandHandlerArgs,
-    _normalisedParams: CreateNftNormalizedParams,
-    _buildTransactionResult: CreateNftBuildTransactionResult,
-    signTransactionResult: CreateNftSignTransactionResult,
-  ): Promise<CreateNftExecuteTransactionResult> {
+    _normalisedParams: TokenCreateNftNormalizedParams,
+    _buildTransactionResult: TokenCreateNftBuildTransactionResult,
+    signTransactionResult: TokenCreateNftSignTransactionResult,
+  ): Promise<TokenCreateNftExecuteTransactionResult> {
     const { api } = args;
     const transactionResult = await api.txExecute.execute(
       signTransactionResult.transaction,
@@ -167,10 +167,10 @@ export class CreateNftCommand extends BaseTransactionCommand<
 
   async outputPreparation(
     args: CommandHandlerArgs,
-    normalisedParams: CreateNftNormalizedParams,
-    _buildTransactionResult: CreateNftBuildTransactionResult,
-    _signTransactionResult: CreateNftSignTransactionResult,
-    executeTransactionResult: CreateNftExecuteTransactionResult,
+    normalisedParams: TokenCreateNftNormalizedParams,
+    _buildTransactionResult: TokenCreateNftBuildTransactionResult,
+    _signTransactionResult: TokenCreateNftSignTransactionResult,
+    executeTransactionResult: TokenCreateNftExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { api, logger } = args;
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
@@ -203,7 +203,7 @@ export class CreateNftCommand extends BaseTransactionCommand<
       logger.info(`   Name registered: ${normalisedParams.alias}`);
     }
 
-    const outputData: CreateNftOutput = {
+    const outputData: TokenCreateNftOutput = {
       tokenId: result.tokenId!,
       name: normalisedParams.name,
       symbol: normalisedParams.symbol,
@@ -225,5 +225,5 @@ export class CreateNftCommand extends BaseTransactionCommand<
 export async function tokenCreateNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new CreateNftCommand().execute(args);
+  return new TokenCreateNftCommand().execute(args);
 }

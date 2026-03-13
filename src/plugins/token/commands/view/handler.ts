@@ -8,12 +8,12 @@ import { NotFoundError, ValidationError } from '@/core/errors';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { buildOutput } from '@/plugins/token/utils/nft-build-output';
 
-import { ViewTokenInputSchema } from './input';
+import { TokenViewInputSchema } from './input';
 
-export class ViewTokenCommand implements Command {
+export class TokenViewCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
-    const validArgs: ViewTokenNormalizedParams = ViewTokenInputSchema.parse(
+    const validArgs: ViewTokenNormalizedParams = TokenViewInputSchema.parse(
       args.args,
     );
     const network = api.network.getCurrentNetwork();
@@ -56,5 +56,5 @@ export class ViewTokenCommand implements Command {
 export async function tokenView(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ViewTokenCommand().execute(args);
+  return new TokenViewCommand().execute(args);
 }

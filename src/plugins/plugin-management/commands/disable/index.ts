@@ -1,3 +1,9 @@
-export { DisablePluginCommand, pluginManagementDisable } from './handler';
-export type { DisablePluginOutput } from './output';
-export { DISABLE_PLUGIN_TEMPLATE, DisablePluginOutputSchema } from './output';
+export {
+  pluginManagementDisable,
+  PluginManagementDisableCommand,
+} from './handler';
+export type { PluginManagementDisableOutput } from './output';
+export {
+  PLUGIN_MANAGEMENT_DISABLE_TEMPLATE,
+  PluginManagementDisableOutputSchema,
+} from './output';

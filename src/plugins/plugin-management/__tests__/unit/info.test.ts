@@ -9,7 +9,7 @@ import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
-import { PluginInfoOutputSchema } from '@/plugins/plugin-management/commands/info';
+import { PluginManagementInfoOutputSchema } from '@/plugins/plugin-management/commands/info';
 import { pluginManagementInfo } from '@/plugins/plugin-management/commands/info/handler';
 
 jest.mock('@/core/utils/load-plugin-manifest', () => ({
@@ -55,7 +55,10 @@ describe('plugin-management info command', () => {
     const args = makeArgs(api, logger, { name: 'topic' });
 
     const result = await pluginManagementInfo(args);
-    const output = assertOutput(result.result, PluginInfoOutputSchema);
+    const output = assertOutput(
+      result.result,
+      PluginManagementInfoOutputSchema,
+    );
 
     expect(output).toBeDefined();
     expect(output.found).toBe(true);
@@ -87,7 +90,10 @@ describe('plugin-management info command', () => {
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
     const result = await pluginManagementInfo(args);
-    const output = assertOutput(result.result, PluginInfoOutputSchema);
+    const output = assertOutput(
+      result.result,
+      PluginManagementInfoOutputSchema,
+    );
 
     expect(output).toBeDefined();
     expect(output.found).toBe(true);

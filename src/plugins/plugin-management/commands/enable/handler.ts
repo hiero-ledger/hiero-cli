@@ -4,19 +4,19 @@
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { EnablePluginOutput } from './output';
+import type { PluginManagementEnableOutput } from './output';
 
 import { NotFoundError, StateError } from '@/core/errors';
 import { PluginManagementEnableStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
-import { EnablePluginInputSchema } from './input';
+import { PluginManagementEnableInputSchema } from './input';
 
-export class EnablePluginCommand implements Command {
+export class PluginManagementEnableCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
-    const validArgs = EnablePluginInputSchema.parse(args.args);
+    const validArgs = PluginManagementEnableInputSchema.parse(args.args);
     const name = validArgs.name;
 
     logger.info('✅ Enabling plugin...');
@@ -35,7 +35,7 @@ export class EnablePluginCommand implements Command {
       });
     }
 
-    const outputData: EnablePluginOutput = {
+    const outputData: PluginManagementEnableOutput = {
       name,
       path: result.entry?.path ?? 'unknown',
       enabled: true,
@@ -49,5 +49,5 @@ export class EnablePluginCommand implements Command {
 export async function pluginManagementEnable(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new EnablePluginCommand().execute(args);
+  return new PluginManagementEnableCommand().execute(args);
 }

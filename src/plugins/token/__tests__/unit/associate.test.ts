@@ -12,8 +12,8 @@ import { InternalError, TransactionError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
-  AssociateTokenOutputSchema,
   tokenAssociate,
+  TokenAssociateOutputSchema,
 } from '@/plugins/token/commands/associate';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -79,7 +79,7 @@ describe('tokenAssociateHandler', () => {
 
       const result = await tokenAssociate(args);
 
-      const output = assertOutput(result.result, AssociateTokenOutputSchema);
+      const output = assertOutput(result.result, TokenAssociateOutputSchema);
       expect(output.tokenId).toBe(tokenId);
       expect(output.accountId).toBe(accountId);
       expect(output.associated).toBe(true);
@@ -133,7 +133,7 @@ describe('tokenAssociateHandler', () => {
 
       const result = await tokenAssociate(args);
 
-      const output = assertOutput(result.result, AssociateTokenOutputSchema);
+      const output = assertOutput(result.result, TokenAssociateOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -200,7 +200,7 @@ describe('tokenAssociateHandler', () => {
 
       const result = await tokenAssociate(args);
 
-      const output = assertOutput(result.result, AssociateTokenOutputSchema);
+      const output = assertOutput(result.result, TokenAssociateOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -266,7 +266,7 @@ describe('tokenAssociateHandler', () => {
 
       const result = await tokenAssociate(args);
 
-      const output = assertOutput(result.result, AssociateTokenOutputSchema);
+      const output = assertOutput(result.result, TokenAssociateOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -324,7 +324,7 @@ describe('tokenAssociateHandler', () => {
 
       const result = await tokenAssociate(args);
 
-      const output = assertOutput(result.result, AssociateTokenOutputSchema);
+      const output = assertOutput(result.result, TokenAssociateOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -516,7 +516,7 @@ describe('tokenAssociateHandler', () => {
 
       const result = await tokenAssociate(args);
 
-      const output = assertOutput(result.result, AssociateTokenOutputSchema);
+      const output = assertOutput(result.result, TokenAssociateOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);
@@ -589,7 +589,7 @@ describe('tokenAssociateHandler', () => {
 
       const result = await tokenAssociate(args);
 
-      const output = assertOutput(result.result, AssociateTokenOutputSchema);
+      const output = assertOutput(result.result, TokenAssociateOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.accountId).toBe('0.0.789012');
       expect(output.associated).toBe(true);

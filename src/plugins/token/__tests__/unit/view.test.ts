@@ -6,7 +6,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import {
   tokenView,
-  ViewTokenOutputSchema,
+  TokenViewOutputSchema,
 } from '@/plugins/token/commands/view';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -67,7 +67,7 @@ describe('tokenViewHandler', () => {
 
       const result = await tokenView(args);
 
-      const output = assertOutput(result.result, ViewTokenOutputSchema);
+      const output = assertOutput(result.result, TokenViewOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -115,7 +115,7 @@ describe('tokenViewHandler', () => {
 
       const result = await tokenView(args);
 
-      const output = assertOutput(result.result, ViewTokenOutputSchema);
+      const output = assertOutput(result.result, TokenViewOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');

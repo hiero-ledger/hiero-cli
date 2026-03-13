@@ -4,13 +4,13 @@
  */
 import type { z } from 'zod';
 
-import { AddPluginOutputSchema } from '@/plugins/plugin-management/schema';
+import { PluginManagementAddOutputSchema } from '@/plugins/plugin-management/schema';
 
 // Export the schema
-export { AddPluginOutputSchema };
+export { PluginManagementAddOutputSchema };
 
 // Human-readable template
-export const ADD_PLUGIN_TEMPLATE = `{{#if added}}
+export const PLUGIN_MANAGEMENT_ADD_TEMPLATE = `{{#if added}}
 ✅ Plugin added successfully
    Name: {{name}}
    Path: {{path}}
@@ -22,4 +22,6 @@ export const ADD_PLUGIN_TEMPLATE = `{{#if added}}
 {{/if}}`;
 
 // Type export
-export type AddPluginOutput = z.infer<typeof AddPluginOutputSchema>;
+export type PluginManagementAddOutput = z.infer<
+  typeof PluginManagementAddOutputSchema
+>;

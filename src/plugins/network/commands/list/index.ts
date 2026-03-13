@@ -1,6 +1,6 @@
-export { ListNetworksCommand, networkList } from './handler';
+export { networkList, NetworkListCommand } from './handler';
 export type { ListNetworksOutput } from './output';
-export { LIST_NETWORKS_TEMPLATE, ListNetworksOutputSchema } from './output';
+export { NETWORK_LIST_TEMPLATE, NetworkListOutputSchema } from './output';
 export type {
   ListNetworksExecuteResult,
   ListNetworksNormalisedParams,

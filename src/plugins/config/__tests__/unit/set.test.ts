@@ -2,7 +2,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ConfigurationError } from '@/core';
 import {
   configSet,
-  SetConfigOutputSchema,
+  ConfigSetOutputSchema,
 } from '@/plugins/config/commands/set';
 
 import { enumOption } from './helpers/fixtures';
@@ -34,7 +34,7 @@ describe('config plugin - set', () => {
       'ed25519_support_enabled',
       true,
     );
-    const output = assertOutput(result.result, SetConfigOutputSchema);
+    const output = assertOutput(result.result, ConfigSetOutputSchema);
     expect(output.name).toBe('ed25519_support_enabled');
     expect(output.previousValue).toBe(false);
     expect(output.newValue).toBe(true);
@@ -56,7 +56,7 @@ describe('config plugin - set', () => {
 
     const result = await configSet(args);
     expect(configSvc.setOption).toHaveBeenCalledWith('some_number', 42);
-    const output = assertOutput(result.result, SetConfigOutputSchema);
+    const output = assertOutput(result.result, ConfigSetOutputSchema);
     expect(output.newValue).toBe(42);
   });
 

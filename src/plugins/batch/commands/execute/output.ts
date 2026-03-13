@@ -11,19 +11,19 @@ import {
 /**
  * Execute Batch Command Output Schema
  */
-export const ExecuteBatchOutputSchema = z.object({
+export const BatchExecuteOutputSchema = z.object({
   batchName: z.string().describe('Batch name'),
   transactionId: TransactionIdSchema.describe('Transaction ID'),
   success: z.boolean().describe('Whether the transaction succeeded'),
   network: NetworkSchema.describe('Network'),
 });
 
-export type ExecuteBatchOutput = z.infer<typeof ExecuteBatchOutputSchema>;
+export type ExecuteBatchOutput = z.infer<typeof BatchExecuteOutputSchema>;
 
 /**
  * Human-readable template for execute batch output
  */
-export const EXECUTE_BATCH_TEMPLATE = `
+export const BATCH_EXECUTE_TEMPLATE = `
 ✅ Batch executed successfully
    Batch: {{batchName}}
    Transaction ID: {{hashscanLink transactionId "transaction" network}}

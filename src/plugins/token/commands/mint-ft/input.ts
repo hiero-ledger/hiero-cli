@@ -11,7 +11,7 @@ import {
  * Input schema for token mint-ft command
  * Validates arguments for minting fungible tokens
  */
-export const MintFtInputSchema = z.object({
+export const TokenMintFtInputSchema = z.object({
   token: EntityReferenceSchema.describe('Token identifier (ID or name)'),
   amount: AmountInputSchema.describe(
     'Amount to mint (display units or base units with "t" suffix)',
@@ -24,4 +24,4 @@ export const MintFtInputSchema = z.object({
   ),
 });
 
-export type MintFtInput = z.infer<typeof MintFtInputSchema>;
+export type MintFtInput = z.infer<typeof TokenMintFtInputSchema>;

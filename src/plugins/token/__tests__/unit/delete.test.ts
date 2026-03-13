@@ -7,8 +7,8 @@ import { SupportedNetwork } from '@/core';
 import { NotFoundError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import {
-  DeleteTokenOutputSchema,
   tokenDelete,
+  TokenDeleteOutputSchema,
 } from '@/plugins/token/commands/delete';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -69,7 +69,7 @@ describe('tokenDeleteHandler', () => {
 
       const result = await tokenDelete(args);
 
-      const output = assertOutput(result.result, DeleteTokenOutputSchema);
+      const output = assertOutput(result.result, TokenDeleteOutputSchema);
       expect(output.deletedToken.tokenId).toBe('0.0.123456');
       expect(output.deletedToken.name).toBe('TestToken');
       expect(output.network).toBe('testnet');
@@ -107,7 +107,7 @@ describe('tokenDeleteHandler', () => {
 
       const result = await tokenDelete(args);
 
-      const output = assertOutput(result.result, DeleteTokenOutputSchema);
+      const output = assertOutput(result.result, TokenDeleteOutputSchema);
       expect(output.deletedToken.tokenId).toBe('0.0.123456');
       expect(output.deletedToken.name).toBe('TestToken');
       expect(output.removedAliases).toBeUndefined();

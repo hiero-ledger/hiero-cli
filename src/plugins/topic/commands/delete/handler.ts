@@ -9,9 +9,9 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
-import { DeleteTopicInputSchema } from './input';
+import { TopicDeleteInputSchema } from './input';
 
-export class DeleteTopicCommand implements Command {
+export class TopicDeleteCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
@@ -19,7 +19,7 @@ export class DeleteTopicCommand implements Command {
 
     logger.info(`Deleting topic...`);
 
-    const validArgs = DeleteTopicInputSchema.parse(args.args);
+    const validArgs = TopicDeleteInputSchema.parse(args.args);
     const topicRef = validArgs.topic;
     const isEntityId = EntityIdSchema.safeParse(topicRef).success;
     const network = api.network.getCurrentNetwork();
@@ -85,5 +85,5 @@ export class DeleteTopicCommand implements Command {
 export async function topicDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new DeleteTopicCommand().execute(args);
+  return new TopicDeleteCommand().execute(args);
 }

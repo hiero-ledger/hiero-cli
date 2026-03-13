@@ -3,19 +3,19 @@ import type {
   CommandHandlerArgs,
   CommandResult,
 } from '@/core/plugins/plugin.interface';
-import type { ListAccountsOutput } from './output';
+import type { AccountListOutput } from './output';
 
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
-import { ListAccountsInputSchema } from './input';
+import { AccountListInputSchema } from './input';
 
-export class ListAccountsCommand implements Command {
+export class AccountListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
     const accountState = new ZustandAccountStateHelper(api.state, logger);
 
-    const validArgs = ListAccountsInputSchema.parse(args.args);
+    const validArgs = AccountListInputSchema.parse(args.args);
 
     const showPrivateKeys = validArgs.private;
 
@@ -23,7 +23,7 @@ export class ListAccountsCommand implements Command {
 
     const accounts = accountState.listAccounts();
 
-    const outputData: ListAccountsOutput = {
+    const outputData: AccountListOutput = {
       accounts: accounts.map((account) => ({
         name: account.name,
         accountId: account.accountId,
@@ -40,4 +40,4 @@ export class ListAccountsCommand implements Command {
 }
 
 export const accountList = (args: CommandHandlerArgs) =>
-  new ListAccountsCommand().execute(args);
+  new AccountListCommand().execute(args);

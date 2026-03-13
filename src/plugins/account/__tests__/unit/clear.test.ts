@@ -4,7 +4,7 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
-import { ClearAccountsOutputSchema } from '@/plugins/account/commands/clear';
+import { AccountClearOutputSchema } from '@/plugins/account/commands/clear';
 import { accountClear } from '@/plugins/account/commands/clear/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -52,7 +52,7 @@ describe('account plugin - clear command (ADR-003)', () => {
     expect(logger.info).toHaveBeenCalledWith('Clearing all accounts...');
     expect(alias.clear).toHaveBeenCalledTimes(1);
 
-    const output = assertOutput(result.result, ClearAccountsOutputSchema);
+    const output = assertOutput(result.result, AccountClearOutputSchema);
     expect(output.clearedCount).toBe(2);
   });
 

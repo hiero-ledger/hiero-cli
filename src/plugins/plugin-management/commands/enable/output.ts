@@ -4,13 +4,13 @@
  */
 import type { z } from 'zod';
 
-import { EnablePluginOutputSchema } from '@/plugins/plugin-management/schema';
+import { PluginManagementEnableOutputSchema } from '@/plugins/plugin-management/schema';
 
 // Export the schema
-export { EnablePluginOutputSchema };
+export { PluginManagementEnableOutputSchema };
 
 // Human-readable template for enable
-export const ENABLE_PLUGIN_TEMPLATE = `{{#if enabled}}
+export const PLUGIN_MANAGEMENT_ENABLE_TEMPLATE = `{{#if enabled}}
 ✅ Plugin enabled successfully
    Name: {{name}}
 {{else}}
@@ -20,4 +20,6 @@ export const ENABLE_PLUGIN_TEMPLATE = `{{#if enabled}}
 {{/if}}`;
 
 // Type export
-export type EnablePluginOutput = z.infer<typeof EnablePluginOutputSchema>;
+export type PluginManagementEnableOutput = z.infer<
+  typeof PluginManagementEnableOutputSchema
+>;

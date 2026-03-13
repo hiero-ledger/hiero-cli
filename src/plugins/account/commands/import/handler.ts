@@ -2,7 +2,7 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { AccountData } from '@/plugins/account/schema';
-import type { ImportAccountOutput } from './output';
+import type { AccountImportOutput } from './output';
 
 import { StateError, ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
@@ -10,15 +10,15 @@ import { composeKey } from '@/core/utils/key-composer';
 import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
-import { ImportAccountInputSchema } from './input';
+import { AccountImportInputSchema } from './input';
 
-export class ImportAccountCommand implements Command {
+export class AccountImportCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
     const accountState = new ZustandAccountStateHelper(api.state, logger);
 
-    const validArgs = ImportAccountInputSchema.parse(args.args);
+    const validArgs = AccountImportInputSchema.parse(args.args);
 
     const key = validArgs.key;
     const alias = validArgs.name;
@@ -86,7 +86,7 @@ export class ImportAccountCommand implements Command {
 
     accountState.saveAccount(accountKey, account);
 
-    const outputData: ImportAccountOutput = {
+    const outputData: AccountImportOutput = {
       accountId,
       name: alias,
       type: account.type,
@@ -100,4 +100,4 @@ export class ImportAccountCommand implements Command {
 }
 
 export const accountImport = (args: CommandHandlerArgs) =>
-  new ImportAccountCommand().execute(args);
+  new AccountImportCommand().execute(args);

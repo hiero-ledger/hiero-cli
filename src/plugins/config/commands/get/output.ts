@@ -8,16 +8,16 @@ import {
   ConfigValueSchema,
 } from '@/plugins/config/schema';
 
-export const GetConfigOutputSchema = z.object({
+export const ConfigGetOutputSchema = z.object({
   name: z.string(),
   type: ConfigOptionTypeSchema,
   value: ConfigValueSchema,
   allowedValues: z.array(z.string()).optional(),
 });
 
-export type GetConfigOutput = z.infer<typeof GetConfigOutputSchema>;
+export type GetConfigOutput = z.infer<typeof ConfigGetOutputSchema>;
 
-export const GET_CONFIG_TEMPLATE = `
+export const CONFIG_GET_TEMPLATE = `
 🔧 {{name}}
    Type: {{type}}
    Value: {{value}}{{#if allowedValues}} [{{#each allowedValues}}{{this}}{{#unless @last}}, {{/unless}}{{/each}}]{{/if}}

@@ -9,8 +9,8 @@ import {
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  MintFtOutputSchema,
   tokenMintFt,
+  TokenMintFtOutputSchema,
 } from '@/plugins/token/commands/mint-ft';
 import { TOKEN_NAMESPACE } from '@/plugins/token/constants';
 
@@ -43,7 +43,7 @@ describe('tokenMintFtHandler', () => {
 
       const result = await tokenMintFt(args);
 
-      const output = assertOutput(result.result, MintFtOutputSchema);
+      const output = assertOutput(result.result, TokenMintFtOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
 
@@ -70,7 +70,7 @@ describe('tokenMintFtHandler', () => {
 
       const result = await tokenMintFt(args);
 
-      const output = assertOutput(result.result, MintFtOutputSchema);
+      const output = assertOutput(result.result, TokenMintFtOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.amount).toBe(5000n);
 
@@ -105,7 +105,7 @@ describe('tokenMintFtHandler', () => {
 
       const result = await tokenMintFt(args);
 
-      const output = assertOutput(result.result, MintFtOutputSchema);
+      const output = assertOutput(result.result, TokenMintFtOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.amount).toBe(10000n);
 

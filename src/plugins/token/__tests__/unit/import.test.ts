@@ -14,7 +14,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { createMockTokenInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { ImportTokenOutputSchema } from '@/plugins/token/commands/import';
+import { TokenImportOutputSchema } from '@/plugins/token/commands/import';
 import { tokenImport } from '@/plugins/token/commands/import/handler';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -95,7 +95,7 @@ describe('token plugin - import command (ADR-007)', () => {
       }),
     );
 
-    const output = assertOutput(result.result, ImportTokenOutputSchema);
+    const output = assertOutput(result.result, TokenImportOutputSchema);
     expect(output.tokenId).toBe('0.0.123456');
     expect(output.name).toBe('Test Token');
     expect(output.symbol).toBe('TEST');
@@ -155,7 +155,7 @@ describe('token plugin - import command (ADR-007)', () => {
       }),
     );
 
-    const output = assertOutput(result.result, ImportTokenOutputSchema);
+    const output = assertOutput(result.result, TokenImportOutputSchema);
     expect(output.tokenId).toBe('0.0.999999');
     expect(output.name).toBe('Existing Token');
     expect(output.alias).toBeUndefined();
@@ -199,7 +199,7 @@ describe('token plugin - import command (ADR-007)', () => {
 
     const result = await tokenImport(args);
 
-    const output = assertOutput(result.result, ImportTokenOutputSchema);
+    const output = assertOutput(result.result, TokenImportOutputSchema);
     expect(output.tokenId).toBe('0.0.555555');
     expect(saveTokenMock).toHaveBeenCalledWith(
       `${SupportedNetwork.TESTNET}:0.0.555555`,

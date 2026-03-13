@@ -2,21 +2,21 @@ import type { Transaction } from '@hashgraph/sdk';
 import type { SupportedNetwork, TransactionResult } from '@/core';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 
-export interface MintNftNormalizedParams {
+export interface TokenMintNftNormalizedParams {
   network: SupportedNetwork;
   tokenId: string;
   metadataBytes: Uint8Array;
   supplyKeyResolved: ResolvedPublicKey;
 }
 
-export interface MintNftBuildTransactionResult {
+export interface TokenMintNftBuildTransactionResult {
   transaction: Transaction;
 }
 
-export interface MintNftSignTransactionResult {
+export interface TokenMintNftSignTransactionResult {
   transaction: Transaction;
 }
 
-export interface MintNftExecuteTransactionResult {
+export interface TokenMintNftExecuteTransactionResult {
   transactionResult: TransactionResult;
 }

@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
+import type { TokenCreateFtOutput } from '@/plugins/token/commands/create-ft';
 import type { ImportTokenOutput } from '@/plugins/token/commands/import';
 import type { ListTokensOutput } from '@/plugins/token/commands/list';
 
@@ -46,8 +46,7 @@ describe('Import Token Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const createTokenOutput =
-      createTokenResult.result as CreateFungibleTokenOutput;
+    const createTokenOutput = createTokenResult.result as TokenCreateFtOutput;
     tokenId = createTokenOutput.tokenId;
     coreApi.state.delete(
       TOKEN_NAMESPACE,

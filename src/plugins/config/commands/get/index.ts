@@ -1,6 +1,6 @@
 /**
  * Get Command Exports
  */
-export { configGet, GetConfigCommand } from './handler';
+export { configGet, ConfigGetCommand } from './handler';
 export type { GetConfigOutput } from './output';
-export { GET_CONFIG_TEMPLATE, GetConfigOutputSchema } from './output';
+export { CONFIG_GET_TEMPLATE, ConfigGetOutputSchema } from './output';

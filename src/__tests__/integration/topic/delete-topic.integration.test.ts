@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
+import type { TopicCreateOutput } from '@/plugins/topic/commands/create';
 import type { DeleteTopicOutput } from '@/plugins/topic/commands/delete';
 import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
 
@@ -34,7 +34,7 @@ describe('Delete Topic Integration Tests', () => {
         config: coreApi.config,
       });
 
-      const createTopicOutput = createTopicResult.result as CreateTopicOutput;
+      const createTopicOutput = createTopicResult.result as TopicCreateOutput;
       expect(createTopicOutput.name).toBe('topic-to-be-deleted');
       expect(createTopicOutput.network).toBe(network);
 
@@ -99,7 +99,7 @@ describe('Delete Topic Integration Tests', () => {
         config: coreApi.config,
       });
 
-      const createTopicOutput = createTopicResult.result as CreateTopicOutput;
+      const createTopicOutput = createTopicResult.result as TopicCreateOutput;
       expect(createTopicOutput.name).toBe('topic-to-delete-by-id');
 
       const deleteTopicArgs: Record<string, unknown> = {

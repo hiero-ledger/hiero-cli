@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateAccountOutput } from '@/plugins/account/commands/create';
+import type { AccountCreateOutput } from '@/plugins/account/commands/create';
 import type { ViewAccountOutput } from '@/plugins/account/commands/view';
 
 import '@/core/utils/json-serialize';
@@ -39,7 +39,7 @@ describe('Create Account Integration Tests', () => {
       });
 
       const createAccountOutput =
-        createAccountResult.result as CreateAccountOutput;
+        createAccountResult.result as AccountCreateOutput;
       expect(createAccountOutput.name).toBe('account-test');
       expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
       expect(createAccountOutput.network).toBe(network);

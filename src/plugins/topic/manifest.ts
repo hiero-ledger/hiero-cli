@@ -7,34 +7,34 @@ import { OptionType } from '@/core/types/shared.types';
 
 // Import output specifications from each command
 import {
-  CREATE_TOPIC_TEMPLATE,
-  CreateTopicOutputSchema,
+  TOPIC_CREATE_TEMPLATE,
   topicCreate,
+  TopicCreateOutputSchema,
 } from './commands/create';
 import {
-  DELETE_TOPIC_TEMPLATE,
-  DeleteTopicOutputSchema,
+  TOPIC_DELETE_TEMPLATE,
   topicDelete,
+  TopicDeleteOutputSchema,
 } from './commands/delete';
 import {
-  FIND_MESSAGES_TEMPLATE,
-  FindMessagesOutputSchema,
+  TOPIC_FIND_MESSAGE_TEMPLATE,
   topicFindMessage,
+  TopicFindMessageOutputSchema,
 } from './commands/find-message';
 import {
-  IMPORT_TOPIC_TEMPLATE,
-  ImportTopicOutputSchema,
+  TOPIC_IMPORT_TEMPLATE,
   topicImport,
+  TopicImportOutputSchema,
 } from './commands/import';
 import {
-  LIST_TOPICS_TEMPLATE,
-  ListTopicsOutputSchema,
+  TOPIC_LIST_TEMPLATE,
   topicList,
+  TopicListOutputSchema,
 } from './commands/list';
 import {
-  SUBMIT_MESSAGE_TEMPLATE,
-  SubmitMessageOutputSchema,
+  TOPIC_TOPIC_SUBMIT_MESSAGE_TEMPLATE,
   topicSubmitMessage,
+  TopicTopicSubmitMessageOutputSchema,
 } from './commands/submit-message';
 
 export const TOPIC_NAMESPACE = 'topic-topics';
@@ -95,8 +95,8 @@ export const topicPluginManifest: PluginManifest = {
       ],
       handler: topicCreate,
       output: {
-        schema: CreateTopicOutputSchema,
-        humanTemplate: CREATE_TOPIC_TEMPLATE,
+        schema: TopicCreateOutputSchema,
+        humanTemplate: TOPIC_CREATE_TEMPLATE,
       },
     },
     {
@@ -122,8 +122,8 @@ export const topicPluginManifest: PluginManifest = {
       ],
       handler: topicImport,
       output: {
-        schema: ImportTopicOutputSchema,
-        humanTemplate: IMPORT_TOPIC_TEMPLATE,
+        schema: TopicImportOutputSchema,
+        humanTemplate: TOPIC_IMPORT_TEMPLATE,
       },
     },
     {
@@ -133,8 +133,8 @@ export const topicPluginManifest: PluginManifest = {
       options: [],
       handler: topicList,
       output: {
-        schema: ListTopicsOutputSchema,
-        humanTemplate: LIST_TOPICS_TEMPLATE,
+        schema: TopicListOutputSchema,
+        humanTemplate: TOPIC_LIST_TEMPLATE,
       },
     },
     {
@@ -176,8 +176,8 @@ export const topicPluginManifest: PluginManifest = {
       ],
       handler: topicSubmitMessage,
       output: {
-        schema: SubmitMessageOutputSchema,
-        humanTemplate: SUBMIT_MESSAGE_TEMPLATE,
+        schema: TopicTopicSubmitMessageOutputSchema,
+        humanTemplate: TOPIC_TOPIC_SUBMIT_MESSAGE_TEMPLATE,
       },
     },
     {
@@ -196,8 +196,8 @@ export const topicPluginManifest: PluginManifest = {
       ],
       handler: topicDelete,
       output: {
-        schema: DeleteTopicOutputSchema,
-        humanTemplate: DELETE_TOPIC_TEMPLATE,
+        schema: TopicDeleteOutputSchema,
+        humanTemplate: TOPIC_DELETE_TEMPLATE,
       },
       requireConfirmation:
         'Are you sure you want to delete topic {{topic}}? This action cannot be undone.',
@@ -252,8 +252,8 @@ export const topicPluginManifest: PluginManifest = {
       ],
       handler: topicFindMessage,
       output: {
-        schema: FindMessagesOutputSchema,
-        humanTemplate: FIND_MESSAGES_TEMPLATE,
+        schema: TopicFindMessageOutputSchema,
+        humanTemplate: TOPIC_FIND_MESSAGE_TEMPLATE,
       },
     },
   ],

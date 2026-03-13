@@ -18,7 +18,7 @@ import { NotFoundError } from '@/core/errors';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
-import { ExecuteBatchInputSchema } from './input';
+import { BatchExecuteInputSchema } from './input';
 
 export const BATCH_EXECUTE_COMMAND_NAME = 'batch_execute';
 
@@ -37,7 +37,7 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
   ): Promise<BatchNormalisedParams> {
     const { api, logger } = args;
     const batchState = new ZustandBatchStateHelper(api.state, logger);
-    const validArgs = ExecuteBatchInputSchema.parse(args.args);
+    const validArgs = BatchExecuteInputSchema.parse(args.args);
     const name = validArgs.name;
     const network = api.network.getCurrentNetwork();
     const key = composeKey(network, name);

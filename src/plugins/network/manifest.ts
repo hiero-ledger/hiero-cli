@@ -7,24 +7,24 @@ import type { PluginManifest } from '@/core/plugins/plugin.interface';
 import { OptionType } from '@/core/types/shared.types';
 
 import {
-  GET_OPERATOR_TEMPLATE,
-  GetOperatorOutputSchema,
+  NETWORK_NETWORK_GET_OPERATOR_TEMPLATE,
   networkGetOperator,
+  NetworkNetworkGetOperatorOutputSchema,
 } from './commands/get-operator';
 import {
-  LIST_NETWORKS_TEMPLATE,
-  ListNetworksOutputSchema,
+  NETWORK_LIST_TEMPLATE,
   networkList,
+  NetworkListOutputSchema,
 } from './commands/list';
 import {
+  NETWORK_NETWORK_SET_OPERATOR_TEMPLATE,
+  NetworkNetworkSetOperatorOutputSchema,
   networkSetOperator,
-  SET_OPERATOR_TEMPLATE,
-  SetOperatorOutputSchema,
 } from './commands/set-operator';
 import {
+  NETWORK_USE_TEMPLATE,
   networkUse,
-  USE_NETWORK_TEMPLATE,
-  UseNetworkOutputSchema,
+  NetworkUseOutputSchema,
 } from './commands/use';
 
 export const networkPluginManifest: PluginManifest = {
@@ -42,8 +42,8 @@ export const networkPluginManifest: PluginManifest = {
       options: [],
       handler: networkList,
       output: {
-        schema: ListNetworksOutputSchema,
-        humanTemplate: LIST_NETWORKS_TEMPLATE,
+        schema: NetworkListOutputSchema,
+        humanTemplate: NETWORK_LIST_TEMPLATE,
       },
     },
     {
@@ -61,8 +61,8 @@ export const networkPluginManifest: PluginManifest = {
       ],
       handler: networkUse,
       output: {
-        schema: UseNetworkOutputSchema,
-        humanTemplate: USE_NETWORK_TEMPLATE,
+        schema: NetworkUseOutputSchema,
+        humanTemplate: NETWORK_USE_TEMPLATE,
       },
     },
     {
@@ -72,8 +72,8 @@ export const networkPluginManifest: PluginManifest = {
       options: [],
       handler: networkGetOperator,
       output: {
-        schema: GetOperatorOutputSchema,
-        humanTemplate: GET_OPERATOR_TEMPLATE,
+        schema: NetworkNetworkGetOperatorOutputSchema,
+        humanTemplate: NETWORK_NETWORK_GET_OPERATOR_TEMPLATE,
       },
     },
     {
@@ -101,8 +101,8 @@ export const networkPluginManifest: PluginManifest = {
       ],
       handler: networkSetOperator,
       output: {
-        schema: SetOperatorOutputSchema,
-        humanTemplate: SET_OPERATOR_TEMPLATE,
+        schema: NetworkNetworkSetOperatorOutputSchema,
+        humanTemplate: NETWORK_NETWORK_SET_OPERATOR_TEMPLATE,
       },
     },
   ],

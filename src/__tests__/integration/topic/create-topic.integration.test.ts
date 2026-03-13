@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
+import type { TopicCreateOutput } from '@/plugins/topic/commands/create';
 import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
 
 import '@/core/utils/json-serialize';
@@ -34,7 +34,7 @@ describe('Create Topic Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const createTopicOutput = createTopicResult.result as CreateTopicOutput;
+    const createTopicOutput = createTopicResult.result as TopicCreateOutput;
     expect(createTopicOutput.name).toBe('test-topic');
     expect(createTopicOutput.network).toBe(network);
     expect(createTopicOutput.memo).toBe('Test topic');

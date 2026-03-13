@@ -8,34 +8,34 @@ import {
   AccountBalanceOutputSchema,
 } from './commands/balance';
 import {
+  ACCOUNT_CLEAR_TEMPLATE,
   accountClear,
-  CLEAR_ACCOUNTS_TEMPLATE,
-  ClearAccountsOutputSchema,
+  AccountClearOutputSchema,
 } from './commands/clear';
 import {
+  ACCOUNT_CREATE_TEMPLATE,
   accountCreate,
-  CREATE_ACCOUNT_TEMPLATE,
-  CreateAccountOutputSchema,
+  AccountCreateOutputSchema,
 } from './commands/create';
 import {
+  ACCOUNT_DELETE_TEMPLATE,
   accountDelete,
-  DELETE_ACCOUNT_TEMPLATE,
-  DeleteAccountOutputSchema,
+  AccountDeleteOutputSchema,
 } from './commands/delete';
 import {
+  ACCOUNT_IMPORT_TEMPLATE,
   accountImport,
-  IMPORT_ACCOUNT_TEMPLATE,
-  ImportAccountOutputSchema,
+  AccountImportOutputSchema,
 } from './commands/import';
 import {
+  ACCOUNT_LIST_TEMPLATE,
   accountList,
-  LIST_ACCOUNTS_TEMPLATE,
-  ListAccountsOutputSchema,
+  AccountListOutputSchema,
 } from './commands/list';
 import {
+  ACCOUNT_VIEW_TEMPLATE,
   accountView,
-  VIEW_ACCOUNT_TEMPLATE,
-  ViewAccountOutputSchema,
+  AccountViewOutputSchema,
 } from './commands/view';
 
 export const ACCOUNT_NAMESPACE = 'account-accounts';
@@ -104,8 +104,8 @@ export const accountPluginManifest: PluginManifest = {
       ],
       handler: accountCreate,
       output: {
-        schema: CreateAccountOutputSchema,
-        humanTemplate: CREATE_ACCOUNT_TEMPLATE,
+        schema: AccountCreateOutputSchema,
+        humanTemplate: ACCOUNT_CREATE_TEMPLATE,
       },
     },
     {
@@ -167,8 +167,8 @@ export const accountPluginManifest: PluginManifest = {
       ],
       handler: accountList,
       output: {
-        schema: ListAccountsOutputSchema,
-        humanTemplate: LIST_ACCOUNTS_TEMPLATE,
+        schema: AccountListOutputSchema,
+        humanTemplate: ACCOUNT_LIST_TEMPLATE,
       },
     },
     {
@@ -203,8 +203,8 @@ export const accountPluginManifest: PluginManifest = {
       ],
       handler: accountImport,
       output: {
-        schema: ImportAccountOutputSchema,
-        humanTemplate: IMPORT_ACCOUNT_TEMPLATE,
+        schema: AccountImportOutputSchema,
+        humanTemplate: ACCOUNT_IMPORT_TEMPLATE,
       },
     },
     {
@@ -214,8 +214,8 @@ export const accountPluginManifest: PluginManifest = {
       options: [],
       handler: accountClear,
       output: {
-        schema: ClearAccountsOutputSchema,
-        humanTemplate: CLEAR_ACCOUNTS_TEMPLATE,
+        schema: AccountClearOutputSchema,
+        humanTemplate: ACCOUNT_CLEAR_TEMPLATE,
       },
       requireConfirmation:
         'Are you sure you want to remove ALL accounts from the address book? This action cannot be undone.',
@@ -236,8 +236,8 @@ export const accountPluginManifest: PluginManifest = {
       ],
       handler: accountDelete,
       output: {
-        schema: DeleteAccountOutputSchema,
-        humanTemplate: DELETE_ACCOUNT_TEMPLATE,
+        schema: AccountDeleteOutputSchema,
+        humanTemplate: ACCOUNT_DELETE_TEMPLATE,
       },
       requireConfirmation:
         'Are you sure you want to delete account {{account}}? This action cannot be undone.',
@@ -257,8 +257,8 @@ export const accountPluginManifest: PluginManifest = {
       ],
       handler: accountView,
       output: {
-        schema: ViewAccountOutputSchema,
-        humanTemplate: VIEW_ACCOUNT_TEMPLATE,
+        schema: AccountViewOutputSchema,
+        humanTemplate: ACCOUNT_VIEW_TEMPLATE,
       },
     },
   ],

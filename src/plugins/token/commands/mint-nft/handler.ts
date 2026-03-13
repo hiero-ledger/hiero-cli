@@ -1,11 +1,11 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { MintNftOutput } from './output';
+import type { TokenMintNftOutput } from './output';
 import type {
-  MintNftBuildTransactionResult,
-  MintNftExecuteTransactionResult,
-  MintNftNormalizedParams,
-  MintNftSignTransactionResult,
+  TokenMintNftBuildTransactionResult,
+  TokenMintNftExecuteTransactionResult,
+  TokenMintNftNormalizedParams,
+  TokenMintNftSignTransactionResult,
 } from './types';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
@@ -18,17 +18,17 @@ import { HederaTokenType } from '@/core/shared/constants';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { MintNftInputSchema } from './input';
+import { TokenMintNftInputSchema } from './input';
 
 const MAX_METADATA_BYTES = 100;
 
 export const TOKEN_MINT_NFT_COMMAND_NAME = 'token_mint-nft';
 
-export class MintNftCommand extends BaseTransactionCommand<
-  MintNftNormalizedParams,
-  MintNftBuildTransactionResult,
-  MintNftSignTransactionResult,
-  MintNftExecuteTransactionResult
+export class TokenMintNftCommand extends BaseTransactionCommand<
+  TokenMintNftNormalizedParams,
+  TokenMintNftBuildTransactionResult,
+  TokenMintNftSignTransactionResult,
+  TokenMintNftExecuteTransactionResult
 > {
   constructor() {
     super(TOKEN_MINT_NFT_COMMAND_NAME);
@@ -36,10 +36,10 @@ export class MintNftCommand extends BaseTransactionCommand<
 
   async normalizeParams(
     args: CommandHandlerArgs,
-  ): Promise<MintNftNormalizedParams> {
+  ): Promise<TokenMintNftNormalizedParams> {
     const { api, logger } = args;
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
-    const validArgs = MintNftInputSchema.parse(args.args);
+    const validArgs = TokenMintNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ||
       api.config.getOption<KeyManagerName>('default_key_manager');
@@ -116,8 +116,8 @@ export class MintNftCommand extends BaseTransactionCommand<
 
   async buildTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: MintNftNormalizedParams,
-  ): Promise<MintNftBuildTransactionResult> {
+    normalisedParams: TokenMintNftNormalizedParams,
+  ): Promise<TokenMintNftBuildTransactionResult> {
     const { api } = args;
     const transaction = api.token.createMintTransaction({
       tokenId: normalisedParams.tokenId,
@@ -128,9 +128,9 @@ export class MintNftCommand extends BaseTransactionCommand<
 
   async signTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: MintNftNormalizedParams,
-    buildTransactionResult: MintNftBuildTransactionResult,
-  ): Promise<MintNftSignTransactionResult> {
+    normalisedParams: TokenMintNftNormalizedParams,
+    buildTransactionResult: TokenMintNftBuildTransactionResult,
+  ): Promise<TokenMintNftSignTransactionResult> {
     const { api, logger } = args;
     logger.debug(
       `Using key ${normalisedParams.supplyKeyResolved.keyRefId} for signing transaction`,
@@ -144,10 +144,10 @@ export class MintNftCommand extends BaseTransactionCommand<
 
   async executeTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: MintNftNormalizedParams,
-    _buildTransactionResult: MintNftBuildTransactionResult,
-    signTransactionResult: MintNftSignTransactionResult,
-  ): Promise<MintNftExecuteTransactionResult> {
+    normalisedParams: TokenMintNftNormalizedParams,
+    _buildTransactionResult: TokenMintNftBuildTransactionResult,
+    signTransactionResult: TokenMintNftSignTransactionResult,
+  ): Promise<TokenMintNftExecuteTransactionResult> {
     const { api } = args;
     const transactionResult = await api.txExecute.execute(
       signTransactionResult.transaction,
@@ -163,14 +163,14 @@ export class MintNftCommand extends BaseTransactionCommand<
 
   async outputPreparation(
     _args: CommandHandlerArgs,
-    normalisedParams: MintNftNormalizedParams,
-    _buildTransactionResult: MintNftBuildTransactionResult,
-    _signTransactionResult: MintNftSignTransactionResult,
-    executeTransactionResult: MintNftExecuteTransactionResult,
+    normalisedParams: TokenMintNftNormalizedParams,
+    _buildTransactionResult: TokenMintNftBuildTransactionResult,
+    _signTransactionResult: TokenMintNftSignTransactionResult,
+    executeTransactionResult: TokenMintNftExecuteTransactionResult,
   ): Promise<CommandResult> {
     const serialNumber =
       executeTransactionResult.transactionResult.receipt.serials![0];
-    const outputData: MintNftOutput = {
+    const outputData: TokenMintNftOutput = {
       transactionId: executeTransactionResult.transactionResult.transactionId,
       tokenId: normalisedParams.tokenId,
       serialNumber,
@@ -183,5 +183,5 @@ export class MintNftCommand extends BaseTransactionCommand<
 export async function tokenMintNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new MintNftCommand().execute(args);
+  return new TokenMintNftCommand().execute(args);
 }

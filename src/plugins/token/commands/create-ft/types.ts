@@ -8,7 +8,7 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 
-export interface CreateFtNormalizedParams {
+export interface TokenCreateFtNormalizedParams {
   name: string;
   symbol: string;
   decimals: number;
@@ -26,14 +26,14 @@ export interface CreateFtNormalizedParams {
   adminKeyProvided: boolean;
 }
 
-export interface CreateFtBuildTransactionResult {
+export interface TokenCreateFtBuildTransactionResult {
   transaction: Transaction;
 }
 
-export interface CreateFtSignTransactionResult {
+export interface TokenCreateFtSignTransactionResult {
   transaction: Transaction;
 }
 
-export interface CreateFtExecuteTransactionResult {
+export interface TokenCreateFtExecuteTransactionResult {
   transactionResult: TransactionResult;
 }

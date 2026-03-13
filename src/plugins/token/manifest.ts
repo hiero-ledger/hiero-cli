@@ -7,70 +7,70 @@ import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
 import { OptionType, SupplyType } from '@/core/types/shared.types';
 import {
-  CREATE_NFT_TEMPLATE,
-  CreateNftOutputSchema,
+  TOKEN_CREATE_NFT_TEMPLATE,
   tokenCreateNft,
+  TokenCreateNftOutputSchema,
 } from '@/plugins/token/commands/create-nft';
 
 import {
-  ASSOCIATE_TOKEN_TEMPLATE,
-  AssociateTokenOutputSchema,
+  TOKEN_ASSOCIATE_TEMPLATE,
   tokenAssociate,
+  TokenAssociateOutputSchema,
 } from './commands/associate';
 import {
-  CREATE_FUNGIBLE_TOKEN_TEMPLATE,
-  CreateFungibleTokenOutputSchema,
+  TOKEN_CREATE_FT_TEMPLATE,
   tokenCreateFt,
+  TokenCreateFtOutputSchema,
 } from './commands/create-ft';
 import {
-  CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE,
-  CreateFungibleTokenFromFileOutputSchema,
+  TOKEN_CREATE_FT_FROM_FILE_TEMPLATE,
   tokenCreateFtFromFile,
+  TokenCreateFtFromFileOutputSchema,
 } from './commands/create-ft-from-file';
 import {
-  CREATE_NFT_FROM_FILE_TEMPLATE,
-  CreateNftFromFileOutputSchema,
+  TOKEN_CREATE_NFT_FROM_FILE_TEMPLATE,
   tokenCreateNftFromFile,
+  TokenCreateNftFromFileOutputSchema,
 } from './commands/create-nft-from-file';
 import {
-  DELETE_TOKEN_TEMPLATE,
-  DeleteTokenOutputSchema,
+  TOKEN_DELETE_TEMPLATE,
   tokenDelete,
+  TokenDeleteOutputSchema,
 } from './commands/delete';
 import {
-  IMPORT_TOKEN_TEMPLATE,
-  ImportTokenOutputSchema,
+  TOKEN_IMPORT_TEMPLATE,
   tokenImport,
+  TokenImportOutputSchema,
 } from './commands/import';
 import {
-  LIST_TOKENS_TEMPLATE,
-  ListTokensOutputSchema,
+  TOKEN_LIST_TEMPLATE,
   tokenList,
+  TokenListOutputSchema,
 } from './commands/list';
 import {
-  MINT_FT_TEMPLATE,
-  MintFtOutputSchema,
+  TOKEN_MINT_FT_TEMPLATE,
   tokenMintFt,
+  TokenMintFtOutputSchema,
 } from './commands/mint-ft';
 import {
-  MINT_NFT_TEMPLATE,
-  MintNftOutputSchema,
+  TOKEN_MINT_NFT_TEMPLATE,
   tokenMintNft,
+  TokenMintNftOutputSchema,
 } from './commands/mint-nft';
 import {
+  TOKEN_TRANSFER_FT_TEMPLATE,
   tokenTransferFt,
-  TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
-  TransferFungibleTokenOutputSchema,
+  TokenTransferFtOutputSchema,
 } from './commands/transfer-ft';
 import {
+  TOKEN_TRANSFER_NFT_TEMPLATE,
   tokenTransferNft,
-  TRANSFER_NFT_TEMPLATE,
-  TransferNftOutputSchema,
+  TokenTransferNftOutputSchema,
 } from './commands/transfer-nft';
 import {
+  TOKEN_VIEW_TEMPLATE,
   tokenView,
-  VIEW_TOKEN_TEMPLATE,
-  ViewTokenOutputSchema,
+  TokenViewOutputSchema,
 } from './commands/view';
 
 export const tokenPluginManifest: PluginManifest = {
@@ -119,8 +119,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: tokenMintFt,
       output: {
-        schema: MintFtOutputSchema,
-        humanTemplate: MINT_FT_TEMPLATE,
+        schema: TokenMintFtOutputSchema,
+        humanTemplate: TOKEN_MINT_FT_TEMPLATE,
       },
     },
     {
@@ -162,8 +162,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: tokenMintNft,
       output: {
-        schema: MintNftOutputSchema,
-        humanTemplate: MINT_NFT_TEMPLATE,
+        schema: TokenMintNftOutputSchema,
+        humanTemplate: TOKEN_MINT_NFT_TEMPLATE,
       },
     },
     {
@@ -213,8 +213,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: tokenTransferFt,
       output: {
-        schema: TransferFungibleTokenOutputSchema,
-        humanTemplate: TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
+        schema: TokenTransferFtOutputSchema,
+        humanTemplate: TOKEN_TRANSFER_FT_TEMPLATE,
       },
     },
     {
@@ -264,8 +264,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: tokenTransferNft,
       output: {
-        schema: TransferNftOutputSchema,
-        humanTemplate: TRANSFER_NFT_TEMPLATE,
+        schema: TokenTransferNftOutputSchema,
+        humanTemplate: TOKEN_TRANSFER_NFT_TEMPLATE,
       },
     },
     {
@@ -371,8 +371,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: tokenCreateFt,
       output: {
-        schema: CreateFungibleTokenOutputSchema,
-        humanTemplate: CREATE_FUNGIBLE_TOKEN_TEMPLATE,
+        schema: TokenCreateFtOutputSchema,
+        humanTemplate: TOKEN_CREATE_FT_TEMPLATE,
       },
     },
 
@@ -461,8 +461,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: tokenCreateNft,
       output: {
-        schema: CreateNftOutputSchema,
-        humanTemplate: CREATE_NFT_TEMPLATE,
+        schema: TokenCreateNftOutputSchema,
+        humanTemplate: TOKEN_CREATE_NFT_TEMPLATE,
       },
     },
     {
@@ -497,8 +497,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: tokenAssociate,
       output: {
-        schema: AssociateTokenOutputSchema,
-        humanTemplate: ASSOCIATE_TOKEN_TEMPLATE,
+        schema: TokenAssociateOutputSchema,
+        humanTemplate: TOKEN_ASSOCIATE_TEMPLATE,
       },
     },
     {
@@ -527,8 +527,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: tokenCreateFtFromFile,
       output: {
-        schema: CreateFungibleTokenFromFileOutputSchema,
-        humanTemplate: CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE,
+        schema: TokenCreateFtFromFileOutputSchema,
+        humanTemplate: TOKEN_CREATE_FT_FROM_FILE_TEMPLATE,
       },
     },
     {
@@ -557,8 +557,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: tokenCreateNftFromFile,
       output: {
-        schema: CreateNftFromFileOutputSchema,
-        humanTemplate: CREATE_NFT_FROM_FILE_TEMPLATE,
+        schema: TokenCreateNftFromFileOutputSchema,
+        humanTemplate: TOKEN_CREATE_NFT_FROM_FILE_TEMPLATE,
       },
     },
     {
@@ -578,8 +578,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: tokenList,
       output: {
-        schema: ListTokensOutputSchema,
-        humanTemplate: LIST_TOKENS_TEMPLATE,
+        schema: TokenListOutputSchema,
+        humanTemplate: TOKEN_LIST_TEMPLATE,
       },
     },
     {
@@ -605,8 +605,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: tokenView,
       output: {
-        schema: ViewTokenOutputSchema,
-        humanTemplate: VIEW_TOKEN_TEMPLATE,
+        schema: TokenViewOutputSchema,
+        humanTemplate: TOKEN_VIEW_TEMPLATE,
       },
     },
     {
@@ -625,8 +625,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: tokenDelete,
       output: {
-        schema: DeleteTokenOutputSchema,
-        humanTemplate: DELETE_TOKEN_TEMPLATE,
+        schema: TokenDeleteOutputSchema,
+        humanTemplate: TOKEN_DELETE_TEMPLATE,
       },
     },
     {
@@ -652,8 +652,8 @@ export const tokenPluginManifest: PluginManifest = {
       ],
       handler: tokenImport,
       output: {
-        schema: ImportTokenOutputSchema,
-        humanTemplate: IMPORT_TOKEN_TEMPLATE,
+        schema: TokenImportOutputSchema,
+        humanTemplate: TOKEN_IMPORT_TEMPLATE,
       },
     },
   ],

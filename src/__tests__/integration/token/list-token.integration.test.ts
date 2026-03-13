@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
+import type { TokenCreateFtOutput } from '@/plugins/token/commands/create-ft';
 import type { ListTokensOutput } from '@/plugins/token/commands/list';
 
 import '@/core/utils/json-serialize';
@@ -35,8 +35,7 @@ describe('List Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const createTokenOutput =
-      createTokenResult.result as CreateFungibleTokenOutput;
+    const createTokenOutput = createTokenResult.result as TokenCreateFtOutput;
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('10');

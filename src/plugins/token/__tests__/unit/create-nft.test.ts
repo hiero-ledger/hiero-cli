@@ -5,8 +5,8 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  CreateNftOutputSchema,
   tokenCreateNft,
+  TokenCreateNftOutputSchema,
 } from '@/plugins/token/commands/create-nft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -107,7 +107,7 @@ describe('tokenCreateNftHandler', () => {
       );
       expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(mockSaveToken).toHaveBeenCalled();
-      assertOutput(result.result, CreateNftOutputSchema);
+      assertOutput(result.result, TokenCreateNftOutputSchema);
     });
 
     test('should use default credentials when treasury not provided', async () => {
@@ -163,7 +163,7 @@ describe('tokenCreateNftHandler', () => {
       });
       expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(mockSaveToken).toHaveBeenCalled();
-      assertOutput(result.result, CreateNftOutputSchema);
+      assertOutput(result.result, TokenCreateNftOutputSchema);
     });
   });
 

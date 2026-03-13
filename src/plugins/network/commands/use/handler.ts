@@ -5,19 +5,19 @@ import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { UseNetworkOutput } from './output';
 import type { UseNetworkNormalisedParams } from './types';
 
-import { UseNetworkInputSchema } from './input';
+import { NetworkUseInputSchema } from './input';
 
 const normalizeParams = (
   args: CommandHandlerArgs,
 ): UseNetworkNormalisedParams => {
-  const validArgs = UseNetworkInputSchema.parse(args.args);
+  const validArgs = NetworkUseInputSchema.parse(args.args);
 
   return {
     network: (validArgs.global || validArgs.g) as SupportedNetwork,
   };
 };
 
-export class UseNetworkCommand implements Command {
+export class NetworkUseCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { logger, api } = args;
     const normalisedParams = normalizeParams(args);
@@ -35,4 +35,4 @@ export class UseNetworkCommand implements Command {
 
 export const networkUse = async (
   args: CommandHandlerArgs,
-): Promise<CommandResult> => new UseNetworkCommand().execute(args);
+): Promise<CommandResult> => new NetworkUseCommand().execute(args);

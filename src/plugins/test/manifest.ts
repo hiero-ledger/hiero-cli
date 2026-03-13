@@ -5,13 +5,13 @@
 import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
-import { MEMO_TEST_TEMPLATE, testMemo } from '@/plugins/test/commands/memo';
-import { MemoTestOutputSchema } from '@/plugins/test/commands/memo/output';
+import { TEST_MEMO_TEMPLATE, testMemo } from '@/plugins/test/commands/memo';
+import { TestMemoOutputSchema } from '@/plugins/test/commands/memo/output';
 
 import {
-  FOO_TEST_TEMPLATE,
-  FooTestOutputSchema,
+  TEST_FOO_TEMPLATE,
   testFoo,
+  TestFooOutputSchema,
 } from './commands/foo';
 
 export const MEMO_NAMESPACE = 'memo-memos';
@@ -38,8 +38,8 @@ export const testPluginManifest: PluginManifest = {
       ],
       handler: testFoo,
       output: {
-        schema: FooTestOutputSchema,
-        humanTemplate: FOO_TEST_TEMPLATE,
+        schema: TestFooOutputSchema,
+        humanTemplate: TEST_FOO_TEMPLATE,
       },
     },
     {
@@ -65,8 +65,8 @@ export const testPluginManifest: PluginManifest = {
       ],
       handler: testMemo,
       output: {
-        schema: MemoTestOutputSchema,
-        humanTemplate: MEMO_TEST_TEMPLATE,
+        schema: TestMemoOutputSchema,
+        humanTemplate: TEST_MEMO_TEMPLATE,
       },
     },
   ],

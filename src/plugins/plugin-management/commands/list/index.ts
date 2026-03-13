@@ -1,3 +1,6 @@
-export { ListPluginsCommand, pluginManagementList } from './handler';
-export type { ListPluginsOutput } from './output';
-export { LIST_PLUGINS_TEMPLATE, ListPluginsOutputSchema } from './output';
+export { pluginManagementList, PluginManagementListCommand } from './handler';
+export type { PluginManagementListOutput } from './output';
+export {
+  PLUGIN_MANAGEMENT_LIST_TEMPLATE,
+  PluginManagementListOutputSchema,
+} from './output';

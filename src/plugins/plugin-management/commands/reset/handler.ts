@@ -5,9 +5,9 @@
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { ResetPluginsOutput } from './output';
+import type { PluginManagementResetOutput } from './output';
 
-export class ResetPluginsCommand implements Command {
+export class PluginManagementResetCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
@@ -15,7 +15,7 @@ export class ResetPluginsCommand implements Command {
 
     api.pluginManagement.resetPlugins();
 
-    const outputData: ResetPluginsOutput = {
+    const outputData: PluginManagementResetOutput = {
       reset: true,
       message: 'Plugin state has been reset successfully.',
     };
@@ -27,5 +27,5 @@ export class ResetPluginsCommand implements Command {
 export async function pluginManagementReset(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ResetPluginsCommand().execute(args);
+  return new PluginManagementResetCommand().execute(args);
 }

@@ -1,11 +1,11 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { AddPluginOutput } from '@/plugins/plugin-management/commands/add/output';
-import type { DisablePluginOutput } from '@/plugins/plugin-management/commands/disable/output';
-import type { EnablePluginOutput } from '@/plugins/plugin-management/commands/enable/output';
-import type { PluginInfoOutput } from '@/plugins/plugin-management/commands/info/output';
-import type { ListPluginsOutput } from '@/plugins/plugin-management/commands/list/output';
-import type { RemovePluginOutput } from '@/plugins/plugin-management/commands/remove/output';
-import type { ResetPluginsOutput } from '@/plugins/plugin-management/commands/reset/output';
+import type { PluginManagementAddOutput } from '@/plugins/plugin-management/commands/add/output';
+import type { PluginManagementDisableOutput } from '@/plugins/plugin-management/commands/disable/output';
+import type { PluginManagementEnableOutput } from '@/plugins/plugin-management/commands/enable/output';
+import type { PluginManagementInfoOutput } from '@/plugins/plugin-management/commands/info/output';
+import type { PluginManagementListOutput } from '@/plugins/plugin-management/commands/list/output';
+import type { PluginManagementRemoveOutput } from '@/plugins/plugin-management/commands/remove/output';
+import type { PluginManagementResetOutput } from '@/plugins/plugin-management/commands/reset/output';
 
 import '@/core/utils/json-serialize';
 
@@ -42,7 +42,7 @@ describe('Plugin Management Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const addPluginOutput = addPluginResult.result as AddPluginOutput;
+    const addPluginOutput = addPluginResult.result as PluginManagementAddOutput;
     expect(addPluginOutput.path).toContain('dist/plugins/test');
     expect(addPluginOutput.name).toBe('test');
     expect(addPluginOutput.added).toBe(true);
@@ -60,7 +60,8 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const viewPluginOutput = viewPluginResult.result as PluginInfoOutput;
+    const viewPluginOutput =
+      viewPluginResult.result as PluginManagementInfoOutput;
     expect(viewPluginOutput.found).toBe(true);
     expect(viewPluginOutput.message).toBe(
       'Plugin test information retrieved successfully',
@@ -83,7 +84,7 @@ describe('Plugin Management Integration Tests', () => {
       config: coreApi.config,
     });
     const disablePluginOutput =
-      disablePluginResult.result as DisablePluginOutput;
+      disablePluginResult.result as PluginManagementDisableOutput;
     expect(disablePluginOutput.name).toBe('test');
     expect(disablePluginOutput.message).toBe(
       'Plugin test disabled successfully',
@@ -97,7 +98,8 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const listPluginOutput = listPluginResult.result as ListPluginsOutput;
+    const listPluginOutput =
+      listPluginResult.result as PluginManagementListOutput;
     const testPlugin = listPluginOutput.plugins.find(
       (plugin) => plugin.name == 'test',
     );
@@ -114,7 +116,8 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const enablePluginOutput = enablePluginResult.result as EnablePluginOutput;
+    const enablePluginOutput =
+      enablePluginResult.result as PluginManagementEnableOutput;
     expect(enablePluginOutput.name).toBe('test');
     expect(enablePluginOutput.message).toBe('Plugin test enabled successfully');
     expect(enablePluginOutput.enabled).toBe(true);
@@ -130,7 +133,7 @@ describe('Plugin Management Integration Tests', () => {
       config: coreApi.config,
     });
     const viewPluginEnabledOutput =
-      viewPluginEnabledResult.result as PluginInfoOutput;
+      viewPluginEnabledResult.result as PluginManagementInfoOutput;
     expect(viewPluginEnabledOutput.found).toBe(true);
     expect(viewPluginEnabledOutput.message).toBe(
       'Plugin test information retrieved successfully',
@@ -154,7 +157,8 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const removePluginOutput = removePluginResult.result as RemovePluginOutput;
+    const removePluginOutput =
+      removePluginResult.result as PluginManagementRemoveOutput;
     expect(removePluginOutput.name).toBe('test');
     expect(removePluginOutput.removed).toBe(true);
     expect(removePluginOutput.message).toBe(
@@ -173,7 +177,7 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const addOutput = addPluginResult.result as AddPluginOutput;
+    const addOutput = addPluginResult.result as PluginManagementAddOutput;
     expect(addOutput.added).toBe(true);
 
     const listBeforeReset = await pluginManagementList({
@@ -183,7 +187,8 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const listBeforeOutput = listBeforeReset.result as ListPluginsOutput;
+    const listBeforeOutput =
+      listBeforeReset.result as PluginManagementListOutput;
     expect(listBeforeOutput.plugins.some((p) => p.name === 'test')).toBe(true);
 
     const resetResult = await pluginManagementReset({
@@ -193,7 +198,7 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const resetOutput = resetResult.result as ResetPluginsOutput;
+    const resetOutput = resetResult.result as PluginManagementResetOutput;
     expect(resetOutput.reset).toBe(true);
     expect(resetOutput.message).toBe(
       'Plugin state has been reset successfully.',
@@ -206,7 +211,7 @@ describe('Plugin Management Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const listAfterOutput = listAfterReset.result as ListPluginsOutput;
+    const listAfterOutput = listAfterReset.result as PluginManagementListOutput;
     expect(listAfterOutput.plugins.some((p) => p.name === 'test')).toBe(false);
     expect(listAfterOutput.count).toBe(0);
   });

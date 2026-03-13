@@ -7,14 +7,14 @@ import type { PluginManifest } from '@/core/plugins/plugin.interface';
 import { OptionType } from '@/core/types/shared.types';
 
 import {
+  CREDENTIALS_LIST_TEMPLATE,
   credentialsList,
-  LIST_CREDENTIALS_TEMPLATE,
-  ListCredentialsOutputSchema,
+  CredentialsListOutputSchema,
 } from './commands/list';
 import {
+  CREDENTIALS_REMOVE_TEMPLATE,
   credentialsRemove,
-  REMOVE_CREDENTIALS_TEMPLATE,
-  RemoveCredentialsOutputSchema,
+  CredentialsRemoveOutputSchema,
 } from './commands/remove';
 
 export const CREDENTIALS_NAMESPACE = 'credentials';
@@ -32,8 +32,8 @@ export const credentialsManifest: PluginManifest = {
       options: [],
       handler: credentialsList,
       output: {
-        schema: ListCredentialsOutputSchema,
-        humanTemplate: LIST_CREDENTIALS_TEMPLATE,
+        schema: CredentialsListOutputSchema,
+        humanTemplate: CREDENTIALS_LIST_TEMPLATE,
       },
     },
     {
@@ -51,8 +51,8 @@ export const credentialsManifest: PluginManifest = {
       ],
       handler: credentialsRemove,
       output: {
-        schema: RemoveCredentialsOutputSchema,
-        humanTemplate: REMOVE_CREDENTIALS_TEMPLATE,
+        schema: CredentialsRemoveOutputSchema,
+        humanTemplate: CREDENTIALS_REMOVE_TEMPLATE,
       },
       requireConfirmation:
         "Are you sure you want to remove credentials with ID '{{id}}'? This action cannot be undone.",

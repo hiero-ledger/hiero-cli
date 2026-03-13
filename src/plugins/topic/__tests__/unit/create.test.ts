@@ -14,7 +14,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, SupportedNetwork } from '@/core';
 import { TransactionError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { CreateTopicOutputSchema } from '@/plugins/topic/commands/create';
+import { TopicCreateOutputSchema } from '@/plugins/topic/commands/create';
 import { topicCreate } from '@/plugins/topic/commands/create/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -116,7 +116,7 @@ describe('topic plugin - create command', () => {
 
     const result = await topicCreate(args);
 
-    const output = assertOutput(result.result, CreateTopicOutputSchema);
+    const output = assertOutput(result.result, TopicCreateOutputSchema);
     expect(output.topicId).toBe('0.0.9999');
     expect(output.memo).toBe('Test topic memo');
     expect(output.network).toBe('testnet');
@@ -179,7 +179,7 @@ describe('topic plugin - create command', () => {
 
     const result = await topicCreate(args);
 
-    const output = assertOutput(result.result, CreateTopicOutputSchema);
+    const output = assertOutput(result.result, TopicCreateOutputSchema);
     expect(output.topicId).toBe('0.0.8888');
     expect(output.adminKeyPresent).toBe(true);
     expect(output.submitKeyPresent).toBe(true);
@@ -247,7 +247,7 @@ describe('topic plugin - create command', () => {
 
     const result = await topicCreate(args);
 
-    const output = assertOutput(result.result, CreateTopicOutputSchema);
+    const output = assertOutput(result.result, TopicCreateOutputSchema);
     expect(output.topicId).toBe('0.0.7777');
     expect(output.memo).toBeUndefined();
 

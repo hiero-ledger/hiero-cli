@@ -5,7 +5,7 @@ import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 
-export interface CreateNftNormalizedParams {
+export interface TokenCreateNftNormalizedParams {
   name: string;
   symbol: string;
   decimals: number;
@@ -23,14 +23,14 @@ export interface CreateNftNormalizedParams {
   adminKeyProvided: boolean;
 }
 
-export interface CreateNftBuildTransactionResult {
+export interface TokenCreateNftBuildTransactionResult {
   transaction: Transaction;
 }
 
-export interface CreateNftSignTransactionResult {
+export interface TokenCreateNftSignTransactionResult {
   transaction: Transaction;
 }
 
-export interface CreateNftExecuteTransactionResult {
+export interface TokenCreateNftExecuteTransactionResult {
   transactionResult: TransactionResult;
 }

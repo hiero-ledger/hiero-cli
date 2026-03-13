@@ -7,19 +7,19 @@ import type { PluginManifest } from '@/core';
 import { OptionType } from '@/core/types/shared.types';
 
 import {
+  CONFIG_GET_TEMPLATE,
   configGet,
-  GET_CONFIG_TEMPLATE,
-  GetConfigOutputSchema,
+  ConfigGetOutputSchema,
 } from './commands/get';
 import {
+  CONFIG_LIST_TEMPLATE,
   configList,
-  LIST_CONFIG_TEMPLATE,
-  ListConfigOutputSchema,
+  ConfigListOutputSchema,
 } from './commands/list';
 import {
+  CONFIG_SET_TEMPLATE,
   configSet,
-  SET_CONFIG_TEMPLATE,
-  SetConfigOutputSchema,
+  ConfigSetOutputSchema,
 } from './commands/set';
 
 export const configPluginManifest: PluginManifest = {
@@ -36,8 +36,8 @@ export const configPluginManifest: PluginManifest = {
       options: [],
       handler: configList,
       output: {
-        schema: ListConfigOutputSchema,
-        humanTemplate: LIST_CONFIG_TEMPLATE,
+        schema: ConfigListOutputSchema,
+        humanTemplate: CONFIG_LIST_TEMPLATE,
       },
     },
     {
@@ -55,8 +55,8 @@ export const configPluginManifest: PluginManifest = {
       ],
       handler: configGet,
       output: {
-        schema: GetConfigOutputSchema,
-        humanTemplate: GET_CONFIG_TEMPLATE,
+        schema: ConfigGetOutputSchema,
+        humanTemplate: CONFIG_GET_TEMPLATE,
       },
     },
     {
@@ -83,8 +83,8 @@ export const configPluginManifest: PluginManifest = {
       ],
       handler: configSet,
       output: {
-        schema: SetConfigOutputSchema,
-        humanTemplate: SET_CONFIG_TEMPLATE,
+        schema: ConfigSetOutputSchema,
+        humanTemplate: CONFIG_SET_TEMPLATE,
       },
     },
   ],

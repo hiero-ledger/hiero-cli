@@ -6,10 +6,10 @@ import { makeArgs } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError, ValidationError } from '@/core/errors';
 import {
+  HbarHbarHbarHbarTransferOutputSchema,
   hbarTransfer as transferHandler,
-  TransferOutputSchema,
 } from '@/plugins/hbar/commands/transfer';
-import { TransferInputSchema } from '@/plugins/hbar/commands/transfer/input';
+import { HbarHbarHbarHbarTransferInputSchema } from '@/plugins/hbar/commands/transfer/input';
 
 import {
   mockAccountIdKeyPairs,
@@ -45,7 +45,10 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const result = await transferHandler(args);
-    const output = assertOutput(result.result, TransferOutputSchema);
+    const output = assertOutput(
+      result.result,
+      HbarHbarHbarHbarTransferOutputSchema,
+    );
 
     expect(output.transactionId).toBe(
       mockTransactionResults.success.transactionId,
@@ -68,7 +71,7 @@ describe('hbar plugin - transfer command (unit)', () => {
   test('returns failure when balance is invalid', () => {
     // SIMPLE validation → test schema directly
     expect(() => {
-      TransferInputSchema.parse({
+      HbarHbarHbarHbarTransferInputSchema.parse({
         amount: mockAmounts.invalid,
         from: mockAccountIdKeyPairs.sender,
         to: mockAccountIds.receiver,
@@ -79,7 +82,7 @@ describe('hbar plugin - transfer command (unit)', () => {
   test('returns failure when balance is negative', () => {
     // SIMPLE validation → test schema directly
     expect(() => {
-      TransferInputSchema.parse({
+      HbarHbarHbarHbarTransferInputSchema.parse({
         amount: mockAmounts.negative,
         from: mockAccountIdKeyPairs.sender,
         to: mockAccountIds.receiver,
@@ -116,7 +119,10 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const result = await transferHandler(args);
-    const output = assertOutput(result.result, TransferOutputSchema);
+    const output = assertOutput(
+      result.result,
+      HbarHbarHbarHbarTransferOutputSchema,
+    );
 
     expect(output).toBeDefined();
     expect(logger.info).toHaveBeenCalledWith('[HBAR] Transfer command invoked');
@@ -195,7 +201,10 @@ describe('hbar plugin - transfer command (unit)', () => {
     });
 
     const result = await transferHandler(args);
-    const output = assertOutput(result.result, TransferOutputSchema);
+    const output = assertOutput(
+      result.result,
+      HbarHbarHbarHbarTransferOutputSchema,
+    );
 
     expect(output).toBeDefined();
 

@@ -6,8 +6,8 @@ import { ConfigOptionNameSchema } from '@/core/schemas';
  * Input schema for config get command
  * Validates arguments for retrieving a configuration option value
  */
-export const GetConfigInputSchema = z.object({
+export const ConfigGetInputSchema = z.object({
   option: ConfigOptionNameSchema.describe('Configuration option name to read'),
 });
 
-export type GetConfigInput = z.infer<typeof GetConfigInputSchema>;
+export type GetConfigInput = z.infer<typeof ConfigGetInputSchema>;

@@ -1,3 +1,6 @@
-export { PluginInfoCommand, pluginManagementInfo } from './handler';
-export type { PluginInfoOutput } from './output';
-export { PLUGIN_INFO_TEMPLATE, PluginInfoOutputSchema } from './output';
+export { pluginManagementInfo, PluginManagementInfoCommand } from './handler';
+export type { PluginManagementInfoOutput } from './output';
+export {
+  PLUGIN_MANAGEMENT_INFO_TEMPLATE,
+  PluginManagementInfoOutputSchema,
+} from './output';

@@ -12,7 +12,7 @@ import {
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { FindMessagesOutputSchema } from '@/plugins/topic/commands/find-message';
+import { TopicFindMessageOutputSchema } from '@/plugins/topic/commands/find-message';
 import { topicFindMessage } from '@/plugins/topic/commands/find-message/handler';
 
 const makeTopicMessage = (sequenceNumber: number, message: string) => ({
@@ -76,7 +76,7 @@ describe('topic plugin - message-find command', () => {
 
     const result = await topicFindMessage(args);
 
-    const output = assertOutput(result.result, FindMessagesOutputSchema);
+    const output = assertOutput(result.result, TopicFindMessageOutputSchema);
     expect(output.totalCount).toBe(3);
     expect(output.messages).toHaveLength(3);
 
@@ -125,7 +125,7 @@ describe('topic plugin - message-find command', () => {
 
     const result = await topicFindMessage(args);
 
-    const output = assertOutput(result.result, FindMessagesOutputSchema);
+    const output = assertOutput(result.result, TopicFindMessageOutputSchema);
     expect(output.totalCount).toBe(2);
     expect(output.messages).toHaveLength(2);
 
@@ -173,7 +173,7 @@ describe('topic plugin - message-find command', () => {
 
     const result = await topicFindMessage(args);
 
-    const output = assertOutput(result.result, FindMessagesOutputSchema);
+    const output = assertOutput(result.result, TopicFindMessageOutputSchema);
     expect(output.totalCount).toBe(2);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
@@ -213,7 +213,7 @@ describe('topic plugin - message-find command', () => {
 
     const result = await topicFindMessage(args);
 
-    const output = assertOutput(result.result, FindMessagesOutputSchema);
+    const output = assertOutput(result.result, TopicFindMessageOutputSchema);
     expect(output.totalCount).toBe(1);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
@@ -253,7 +253,7 @@ describe('topic plugin - message-find command', () => {
 
     const result = await topicFindMessage(args);
 
-    const output = assertOutput(result.result, FindMessagesOutputSchema);
+    const output = assertOutput(result.result, TopicFindMessageOutputSchema);
     expect(output.totalCount).toBe(1);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
@@ -296,7 +296,7 @@ describe('topic plugin - message-find command', () => {
 
     const result = await topicFindMessage(args);
 
-    const output = assertOutput(result.result, FindMessagesOutputSchema);
+    const output = assertOutput(result.result, TopicFindMessageOutputSchema);
     expect(output.totalCount).toBe(3);
 
     expect(mirror.getTopicMessages).toHaveBeenCalledWith({
@@ -353,7 +353,7 @@ describe('topic plugin - message-find command', () => {
 
     const result = await topicFindMessage(args);
 
-    const output = assertOutput(result.result, FindMessagesOutputSchema);
+    const output = assertOutput(result.result, TopicFindMessageOutputSchema);
     expect(output.totalCount).toBe(0);
     expect(output.messages).toEqual([]);
   });
@@ -430,7 +430,7 @@ describe('topic plugin - message-find command', () => {
 
     const result = await topicFindMessage(args);
 
-    const output = assertOutput(result.result, FindMessagesOutputSchema);
+    const output = assertOutput(result.result, TopicFindMessageOutputSchema);
     expect(output.totalCount).toBe(3);
     expect(output.messages).toHaveLength(3);
 
@@ -486,7 +486,7 @@ describe('topic plugin - message-find command', () => {
 
     const result = await topicFindMessage(args);
 
-    const output = assertOutput(result.result, FindMessagesOutputSchema);
+    const output = assertOutput(result.result, TopicFindMessageOutputSchema);
     expect(output.totalCount).toBe(3);
 
     const sequenceNumbers = output.messages.map((m) => m.sequenceNumber);

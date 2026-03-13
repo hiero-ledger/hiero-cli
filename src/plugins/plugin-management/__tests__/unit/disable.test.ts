@@ -8,7 +8,7 @@ import {
   PluginManagementDisableStatus,
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
-import { DisablePluginOutputSchema } from '@/plugins/plugin-management/commands/disable';
+import { PluginManagementDisableOutputSchema } from '@/plugins/plugin-management/commands/disable';
 import { pluginManagementDisable } from '@/plugins/plugin-management/commands/disable/handler';
 
 describe('plugin-management disable command', () => {
@@ -30,7 +30,10 @@ describe('plugin-management disable command', () => {
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
     const result = await pluginManagementDisable(args);
-    const output = assertOutput(result.result, DisablePluginOutputSchema);
+    const output = assertOutput(
+      result.result,
+      PluginManagementDisableOutputSchema,
+    );
 
     expect(output).toBeDefined();
     expect(output.name).toBe('custom-plugin');

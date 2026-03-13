@@ -1,7 +1,7 @@
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   configList,
-  ListConfigOutputSchema,
+  ConfigListOutputSchema,
 } from '@/plugins/config/commands/list';
 
 import { booleanOption, enumOption } from './helpers/fixtures';
@@ -20,7 +20,7 @@ describe('config plugin - list', () => {
     const args = makeCommandArgs({ api });
 
     const result = await configList(args);
-    const output = assertOutput(result.result, ListConfigOutputSchema);
+    const output = assertOutput(result.result, ConfigListOutputSchema);
 
     expect(output.totalCount).toBe(2);
     expect(output.options).toEqual(

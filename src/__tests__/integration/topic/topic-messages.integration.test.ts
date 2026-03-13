@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
+import type { TopicCreateOutput } from '@/plugins/topic/commands/create';
 import type { FindMessagesOutput } from '@/plugins/topic/commands/find-message';
 import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
 import type { SubmitMessageOutput } from '@/plugins/topic/commands/submit-message';
@@ -39,7 +39,7 @@ describe('Topic Messages Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const createTopicOutput = createTopicResult.result as CreateTopicOutput;
+    const createTopicOutput = createTopicResult.result as TopicCreateOutput;
     expect(createTopicOutput.name).toBe('test-topic-submit');
     expect(createTopicOutput.network).toBe(network);
     expect(createTopicOutput.adminKeyPresent).toBe(false);

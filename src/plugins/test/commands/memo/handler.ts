@@ -1,9 +1,9 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { MemoTestOutput } from './output';
+import type { TestMemoOutput } from './output';
 
 import { NotFoundError, StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { MemoTestInputSchema } from '@/plugins/test/commands/memo/input';
+import { TestMemoInputSchema } from '@/plugins/test/commands/memo/input';
 import { ZustandMemoStateHelper } from '@/plugins/test/zustand-state-helper';
 
 export async function testMemo(
@@ -13,7 +13,7 @@ export async function testMemo(
 
   const memoState = new ZustandMemoStateHelper(api.state, logger);
 
-  const validArgs = MemoTestInputSchema.parse(args.args);
+  const validArgs = TestMemoInputSchema.parse(args.args);
   const memo = validArgs.memo;
   const accountAlias = validArgs.account;
 
@@ -47,7 +47,7 @@ export async function testMemo(
   };
   memoState.saveMemo(account.alias, memoData);
 
-  const output: MemoTestOutput = {
+  const output: TestMemoOutput = {
     memo,
     account: account.alias,
   };

@@ -13,7 +13,7 @@ import {
  * List Topics Command Output Schema
  * Contains array of topics and calculated statistics
  */
-export const ListTopicsOutputSchema = z.object({
+export const TopicListOutputSchema = z.object({
   topics: z.array(
     z.object({
       name: z.string().describe('Topic name').optional(),
@@ -38,13 +38,13 @@ export const ListTopicsOutputSchema = z.object({
 });
 
 // Infer TypeScript type from schema for type safety
-export type ListTopicsOutput = z.infer<typeof ListTopicsOutputSchema>;
+export type ListTopicsOutput = z.infer<typeof TopicListOutputSchema>;
 
 /**
  * Human-readable Handlebars template for list topics output
  * Includes statistics calculated by handler and passed in output data
  */
-export const LIST_TOPICS_TEMPLATE = `
+export const TOPIC_LIST_TEMPLATE = `
 {{#if (eq totalCount 0)}}
 📝 No topics found
 {{else}}

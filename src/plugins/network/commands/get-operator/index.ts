@@ -1,4 +1,10 @@
-export { GetOperatorCommand, networkGetOperator } from './handler';
+export {
+  networkGetOperator,
+  NetworkNetworkGetOperatorCommand,
+} from './handler';
 export type { GetOperatorOutput } from './output';
-export { GET_OPERATOR_TEMPLATE, GetOperatorOutputSchema } from './output';
+export {
+  NETWORK_NETWORK_GET_OPERATOR_TEMPLATE,
+  NetworkNetworkGetOperatorOutputSchema,
+} from './output';
 export type { GetOperatorNormalisedParams } from './types';

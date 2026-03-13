@@ -1,6 +1,6 @@
 /**
  * List Command Exports
  */
-export { configList, ListConfigCommand } from './handler';
+export { configList, ConfigListCommand } from './handler';
 export type { ListConfigOutput } from './output';
-export { LIST_CONFIG_TEMPLATE, ListConfigOutputSchema } from './output';
+export { CONFIG_LIST_TEMPLATE, ConfigListOutputSchema } from './output';

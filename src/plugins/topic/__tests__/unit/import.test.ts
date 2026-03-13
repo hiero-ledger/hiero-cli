@@ -14,7 +14,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { ImportTopicOutputSchema } from '@/plugins/topic/commands/import';
+import { TopicImportOutputSchema } from '@/plugins/topic/commands/import';
 import { topicImport } from '@/plugins/topic/commands/import/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -86,7 +86,7 @@ describe('topic plugin - import command (ADR-007)', () => {
       }),
     );
 
-    const output = assertOutput(result.result, ImportTopicOutputSchema);
+    const output = assertOutput(result.result, TopicImportOutputSchema);
     expect(output.topicId).toBe('0.0.123456');
     expect(output.name).toBe('my-topic');
     expect(output.network).toBe(SupportedNetwork.TESTNET);
@@ -139,7 +139,7 @@ describe('topic plugin - import command (ADR-007)', () => {
       }),
     );
 
-    const output = assertOutput(result.result, ImportTopicOutputSchema);
+    const output = assertOutput(result.result, TopicImportOutputSchema);
     expect(output.topicId).toBe('0.0.999999');
     expect(output.name).toBe(undefined);
   });

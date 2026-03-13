@@ -1,5 +1,5 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { DeleteAccountOutput } from '@/plugins/account/commands/delete';
+import type { AccountDeleteOutput } from '@/plugins/account/commands/delete';
 import type { ImportAccountOutput } from '@/plugins/account/commands/import';
 import type { ViewAccountOutput } from '@/plugins/account/commands/view';
 
@@ -82,7 +82,7 @@ describe('Delete Account Integration Tests', () => {
         config: coreApi.config,
       });
       const deleteAccountOutput =
-        deleteAccountResult.result as DeleteAccountOutput;
+        deleteAccountResult.result as AccountDeleteOutput;
       expect(deleteAccountOutput.deletedAccount.accountId).toBe(accountId);
       expect(deleteAccountOutput.deletedAccount.name).toBe(
         'account-to-be-deleted',

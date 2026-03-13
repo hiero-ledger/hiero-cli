@@ -2,6 +2,9 @@
  * Find Messages Command Exports
  * For use by manifest, tests, and external consumers
  */
-export { FindMessageCommand, topicFindMessage } from './handler';
+export { topicFindMessage, TopicTopicFindMessageCommand } from './handler';
 export type { FindMessagesOutput } from './output';
-export { FIND_MESSAGES_TEMPLATE, FindMessagesOutputSchema } from './output';
+export {
+  TOPIC_FIND_MESSAGE_TEMPLATE,
+  TopicFindMessageOutputSchema,
+} from './output';

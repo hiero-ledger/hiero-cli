@@ -13,7 +13,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { DeleteTopicOutputSchema } from '@/plugins/topic/commands/delete';
+import { TopicDeleteOutputSchema } from '@/plugins/topic/commands/delete';
 import { topicDelete } from '@/plugins/topic/commands/delete/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -70,7 +70,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     expect(topicDeleteMock).toHaveBeenCalledWith(
       `${SupportedNetwork.TESTNET}:0.0.1111`,
     );
-    const output = assertOutput(result.result, DeleteTopicOutputSchema);
+    const output = assertOutput(result.result, TopicDeleteOutputSchema);
     expect(output.deletedTopic.name).toBe('topic1');
     expect(output.deletedTopic.topicId).toBe('0.0.1111');
   });
@@ -103,7 +103,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     expect(topicDeleteMock).toHaveBeenCalledWith(
       `${SupportedNetwork.TESTNET}:0.0.2222`,
     );
-    const output = assertOutput(result.result, DeleteTopicOutputSchema);
+    const output = assertOutput(result.result, TopicDeleteOutputSchema);
     expect(output.deletedTopic.name).toBe('topic2');
     expect(output.deletedTopic.topicId).toBe('0.0.2222');
   });
@@ -254,7 +254,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
       SupportedNetwork.TESTNET,
     );
 
-    const output = assertOutput(result.result, DeleteTopicOutputSchema);
+    const output = assertOutput(result.result, TopicDeleteOutputSchema);
     expect(output.deletedTopic.name).toBe('topic-alias');
     expect(output.deletedTopic.topicId).toBe('0.0.7777');
     expect(output.removedAliases).toBeDefined();

@@ -8,14 +8,16 @@ export const OperatorInfoSchema = z.object({
   publicKey: z.string().optional(),
 });
 
-export const SetOperatorOutputSchema = z.object({
+export const NetworkNetworkSetOperatorOutputSchema = z.object({
   network: NetworkSchema,
   operator: OperatorInfoSchema,
 });
 
-export type SetOperatorOutput = z.infer<typeof SetOperatorOutputSchema>;
+export type SetOperatorOutput = z.infer<
+  typeof NetworkNetworkSetOperatorOutputSchema
+>;
 
-export const SET_OPERATOR_TEMPLATE = `
+export const NETWORK_NETWORK_SET_OPERATOR_TEMPLATE = `
 ✅ Operator configured for network: {{network}}
    Account ID: {{hashscanLink operator.accountId "account" network}}
    Key Reference ID: {{operator.keyRefId}}

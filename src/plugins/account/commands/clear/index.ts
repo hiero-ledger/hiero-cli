@@ -2,6 +2,6 @@
  * Clear Command Exports
  * For use by tests and external consumers
  */
-export { accountClear, ClearAccountsCommand } from './handler';
-export type { ClearAccountsOutput } from './output';
-export { CLEAR_ACCOUNTS_TEMPLATE, ClearAccountsOutputSchema } from './output';
+export { accountClear, AccountClearCommand } from './handler';
+export type { AccountClearOutput } from './output';
+export { ACCOUNT_CLEAR_TEMPLATE, AccountClearOutputSchema } from './output';

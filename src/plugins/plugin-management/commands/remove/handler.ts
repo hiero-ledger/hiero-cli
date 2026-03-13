@@ -4,19 +4,19 @@
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { RemovePluginOutput } from './output';
+import type { PluginManagementRemoveOutput } from './output';
 
 import { NotFoundError, StateError } from '@/core/errors';
 import { PluginManagementRemoveStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
-import { RemovePluginInputSchema } from './input';
+import { PluginManagementRemoveInputSchema } from './input';
 
-export class RemovePluginCommand implements Command {
+export class PluginManagementRemoveCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
-    const validArgs = RemovePluginInputSchema.parse(args.args);
+    const validArgs = PluginManagementRemoveInputSchema.parse(args.args);
     const name = validArgs.name;
 
     logger.info('🗑️ Removing plugin from state...');
@@ -35,7 +35,7 @@ export class RemovePluginCommand implements Command {
       });
     }
 
-    const outputData: RemovePluginOutput = {
+    const outputData: PluginManagementRemoveOutput = {
       name,
       removed: true,
       message: `Plugin ${name} removed from plugin-management state`,
@@ -48,5 +48,5 @@ export class RemovePluginCommand implements Command {
 export async function pluginManagementRemove(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new RemovePluginCommand().execute(args);
+  return new PluginManagementRemoveCommand().execute(args);
 }

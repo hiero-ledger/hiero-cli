@@ -2,16 +2,16 @@
  * Topic Plugin Index
  * Exports the topic plugin manifest and command handlers
  */
-export { CreateTopicCommand, topicCreate } from './commands/create/handler';
-export { DeleteTopicCommand, topicDelete } from './commands/delete/handler';
+export { topicCreate, TopicCreateCommand } from './commands/create/handler';
+export { topicDelete, TopicDeleteCommand } from './commands/delete/handler';
 export {
-  FindMessageCommand,
   topicFindMessage,
+  TopicTopicFindMessageCommand,
 } from './commands/find-message/handler';
-export { ImportTopicCommand, topicImport } from './commands/import/handler';
-export { ListTopicsCommand, topicList } from './commands/list/handler';
+export { topicImport, TopicImportCommand } from './commands/import/handler';
+export { topicList, TopicListCommand } from './commands/list/handler';
 export {
-  SubmitMessageCommand,
   topicSubmitMessage,
+  TopicTopicSubmitMessageCommand,
 } from './commands/submit-message/handler';
 export { topicPluginManifest } from './manifest';

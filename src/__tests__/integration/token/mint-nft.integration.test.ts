@@ -1,9 +1,9 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateAccountOutput } from '@/plugins/account/commands/create';
+import type { AccountCreateOutput } from '@/plugins/account/commands/create';
 import type { ViewAccountOutput } from '@/plugins/account/commands/view';
-import type { CreateNftOutput } from '@/plugins/token/commands/create-nft';
-import type { MintNftOutput } from '@/plugins/token/commands/mint-nft';
+import type { TokenCreateNftOutput } from '@/plugins/token/commands/create-nft';
+import type { TokenMintNftOutput } from '@/plugins/token/commands/mint-nft';
 import type { ViewTokenOutput } from '@/plugins/token/commands/view';
 
 import '@/core/utils/json-serialize';
@@ -43,7 +43,7 @@ describe('Mint NFT Integration Tests', () => {
     });
 
     const createAccountOutput =
-      createAccountResult.result as CreateAccountOutput;
+      createAccountResult.result as AccountCreateOutput;
     expect(createAccountOutput.name).toBe('account-mint-nft');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -83,7 +83,7 @@ describe('Mint NFT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const createNftOutput = createNftResult.result as CreateNftOutput;
+    const createNftOutput = createNftResult.result as TokenCreateNftOutput;
     expect(createNftOutput.network).toBe(network);
     expect(createNftOutput.name).toBe('Test NFT Collection');
     expect(createNftOutput.alias).toBe('test-nft-collection');
@@ -107,7 +107,7 @@ describe('Mint NFT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const mintNftOutput = mintNftResult.result as MintNftOutput;
+    const mintNftOutput = mintNftResult.result as TokenMintNftOutput;
     expect(mintNftOutput.tokenId).toBe(createNftOutput.tokenId);
     expect(mintNftOutput.serialNumber).toBeDefined();
     expect(mintNftOutput.network).toBe(network);

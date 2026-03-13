@@ -2,13 +2,13 @@ import { z } from 'zod';
 
 import { AliasNameSchema } from '@/core/schemas';
 
-export const MemoTestOutputSchema = z.object({
+export const TestMemoOutputSchema = z.object({
   memo: z.string().describe('Memo for an account'),
   account: AliasNameSchema.describe('Account alias'),
 });
 
-export type MemoTestOutput = z.infer<typeof MemoTestOutputSchema>;
+export type TestMemoOutput = z.infer<typeof TestMemoOutputSchema>;
 
-export const MEMO_TEST_TEMPLATE = `
+export const TEST_MEMO_TEMPLATE = `
 📝 Memo {{memo}} saved for an account {{account}}
 `.trim();

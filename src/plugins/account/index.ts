@@ -2,10 +2,10 @@ export {
   accountBalance,
   AccountBalanceCommand,
 } from './commands/balance/handler';
-export { accountClear, ClearAccountsCommand } from './commands/clear/handler';
-export { accountCreate, CreateAccountCommand } from './commands/create/handler';
-export { accountDelete, DeleteAccountCommand } from './commands/delete/handler';
-export { accountImport, ImportAccountCommand } from './commands/import/handler';
-export { accountList, ListAccountsCommand } from './commands/list/handler';
-export { accountView, ViewAccountCommand } from './commands/view/handler';
+export { accountClear, AccountClearCommand } from './commands/clear/handler';
+export { accountCreate, AccountCreateCommand } from './commands/create/handler';
+export { accountDelete, AccountDeleteCommand } from './commands/delete/handler';
+export { accountImport, AccountImportCommand } from './commands/import/handler';
+export { accountList, AccountListCommand } from './commands/list/handler';
+export { accountView, AccountViewCommand } from './commands/view/handler';
 export { accountPluginManifest } from './manifest';

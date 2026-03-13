@@ -1,9 +1,9 @@
 /**
  * Remove Command Exports
  */
-export { credentialsRemove, RemoveCredentialsCommand } from './handler';
-export type { RemoveCredentialsOutput } from './output';
+export { credentialsRemove, CredentialsRemoveCommand } from './handler';
+export type { CredentialsRemoveOutput } from './output';
 export {
-  REMOVE_CREDENTIALS_TEMPLATE,
-  RemoveCredentialsOutputSchema,
+  CREDENTIALS_REMOVE_TEMPLATE,
+  CredentialsRemoveOutputSchema,
 } from './output';

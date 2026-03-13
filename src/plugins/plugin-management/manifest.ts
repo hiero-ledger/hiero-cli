@@ -7,39 +7,39 @@ import type { PluginManifest } from '@/core/plugins/plugin.interface';
 import { OptionType } from '@/core/types/shared.types';
 
 import {
-  ADD_PLUGIN_TEMPLATE,
-  AddPluginOutputSchema,
+  PLUGIN_MANAGEMENT_ADD_TEMPLATE,
   pluginManagementAdd,
+  PluginManagementAddOutputSchema,
 } from './commands/add';
 import {
-  DISABLE_PLUGIN_TEMPLATE,
-  DisablePluginOutputSchema,
+  PLUGIN_MANAGEMENT_DISABLE_TEMPLATE,
   pluginManagementDisable,
+  PluginManagementDisableOutputSchema,
 } from './commands/disable';
 import {
-  ENABLE_PLUGIN_TEMPLATE,
-  EnablePluginOutputSchema,
+  PLUGIN_MANAGEMENT_ENABLE_TEMPLATE,
   pluginManagementEnable,
+  PluginManagementEnableOutputSchema,
 } from './commands/enable';
 import {
-  PLUGIN_INFO_TEMPLATE,
-  PluginInfoOutputSchema,
+  PLUGIN_MANAGEMENT_INFO_TEMPLATE,
   pluginManagementInfo,
+  PluginManagementInfoOutputSchema,
 } from './commands/info';
 import {
-  LIST_PLUGINS_TEMPLATE,
-  ListPluginsOutputSchema,
+  PLUGIN_MANAGEMENT_LIST_TEMPLATE,
   pluginManagementList,
+  PluginManagementListOutputSchema,
 } from './commands/list';
 import {
+  PLUGIN_MANAGEMENT_REMOVE_TEMPLATE,
   pluginManagementRemove,
-  REMOVE_PLUGIN_TEMPLATE,
-  RemovePluginOutputSchema,
+  PluginManagementRemoveOutputSchema,
 } from './commands/remove';
 import {
+  PLUGIN_MANAGEMENT_RESET_TEMPLATE,
   pluginManagementReset,
-  RESET_PLUGINS_TEMPLATE,
-  ResetPluginsOutputSchema,
+  PluginManagementResetOutputSchema,
 } from './commands/reset';
 
 export const pluginManagementManifest: PluginManifest = {
@@ -74,8 +74,8 @@ export const pluginManagementManifest: PluginManifest = {
       ],
       handler: pluginManagementAdd,
       output: {
-        schema: AddPluginOutputSchema,
-        humanTemplate: ADD_PLUGIN_TEMPLATE,
+        schema: PluginManagementAddOutputSchema,
+        humanTemplate: PLUGIN_MANAGEMENT_ADD_TEMPLATE,
       },
     },
     {
@@ -93,8 +93,8 @@ export const pluginManagementManifest: PluginManifest = {
       ],
       handler: pluginManagementRemove,
       output: {
-        schema: RemovePluginOutputSchema,
-        humanTemplate: REMOVE_PLUGIN_TEMPLATE,
+        schema: PluginManagementRemoveOutputSchema,
+        humanTemplate: PLUGIN_MANAGEMENT_REMOVE_TEMPLATE,
       },
     },
     {
@@ -112,8 +112,8 @@ export const pluginManagementManifest: PluginManifest = {
       ],
       handler: pluginManagementEnable,
       output: {
-        schema: EnablePluginOutputSchema,
-        humanTemplate: ENABLE_PLUGIN_TEMPLATE,
+        schema: PluginManagementEnableOutputSchema,
+        humanTemplate: PLUGIN_MANAGEMENT_ENABLE_TEMPLATE,
       },
     },
     {
@@ -131,8 +131,8 @@ export const pluginManagementManifest: PluginManifest = {
       ],
       handler: pluginManagementDisable,
       output: {
-        schema: DisablePluginOutputSchema,
-        humanTemplate: DISABLE_PLUGIN_TEMPLATE,
+        schema: PluginManagementDisableOutputSchema,
+        humanTemplate: PLUGIN_MANAGEMENT_DISABLE_TEMPLATE,
       },
     },
     {
@@ -142,8 +142,8 @@ export const pluginManagementManifest: PluginManifest = {
       options: [],
       handler: pluginManagementList,
       output: {
-        schema: ListPluginsOutputSchema,
-        humanTemplate: LIST_PLUGINS_TEMPLATE,
+        schema: PluginManagementListOutputSchema,
+        humanTemplate: PLUGIN_MANAGEMENT_LIST_TEMPLATE,
       },
     },
     {
@@ -154,8 +154,8 @@ export const pluginManagementManifest: PluginManifest = {
       options: [],
       handler: pluginManagementReset,
       output: {
-        schema: ResetPluginsOutputSchema,
-        humanTemplate: RESET_PLUGINS_TEMPLATE,
+        schema: PluginManagementResetOutputSchema,
+        humanTemplate: PLUGIN_MANAGEMENT_RESET_TEMPLATE,
       },
       requireConfirmation:
         'Are you sure you want to reset plugin state? Custom plugins will be removed.',
@@ -175,8 +175,8 @@ export const pluginManagementManifest: PluginManifest = {
       ],
       handler: pluginManagementInfo,
       output: {
-        schema: PluginInfoOutputSchema,
-        humanTemplate: PLUGIN_INFO_TEMPLATE,
+        schema: PluginManagementInfoOutputSchema,
+        humanTemplate: PLUGIN_MANAGEMENT_INFO_TEMPLATE,
       },
     },
   ],

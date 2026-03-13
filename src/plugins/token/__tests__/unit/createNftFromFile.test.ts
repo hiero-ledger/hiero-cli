@@ -8,8 +8,8 @@ import { FileError, StateError } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
-  CreateNftFromFileOutputSchema,
   tokenCreateNftFromFile,
+  TokenCreateNftFromFileOutputSchema,
 } from '@/plugins/token/commands/create-nft-from-file';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -172,7 +172,10 @@ describe('tokenCreateNftFromFileHandler', () => {
 
       const result = await tokenCreateNftFromFile(args);
 
-      const output = assertOutput(result.result, CreateNftFromFileOutputSchema);
+      const output = assertOutput(
+        result.result,
+        TokenCreateNftFromFileOutputSchema,
+      );
       expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
       expect(output.name).toBe(validNftTokenFile.name);
       expect(output.symbol).toBe(validNftTokenFile.symbol);
@@ -217,7 +220,10 @@ describe('tokenCreateNftFromFileHandler', () => {
 
       const result = await tokenCreateNftFromFile(args);
 
-      const output = assertOutput(result.result, CreateNftFromFileOutputSchema);
+      const output = assertOutput(
+        result.result,
+        TokenCreateNftFromFileOutputSchema,
+      );
       expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
       expect(output.name).toBe(validNftTokenFile.name);
       expect(output.symbol).toBe(validNftTokenFile.symbol);
@@ -247,7 +253,10 @@ describe('tokenCreateNftFromFileHandler', () => {
 
       const result = await tokenCreateNftFromFile(args);
 
-      const output = assertOutput(result.result, CreateNftFromFileOutputSchema);
+      const output = assertOutput(
+        result.result,
+        TokenCreateNftFromFileOutputSchema,
+      );
       expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
       expect(output.name).toBe(validNftTokenFile.name);
       expect(output.symbol).toBe(validNftTokenFile.symbol);
@@ -331,7 +340,10 @@ describe('tokenCreateNftFromFileHandler', () => {
 
       const result = await tokenCreateNftFromFile(args);
 
-      const output = assertOutput(result.result, CreateNftFromFileOutputSchema);
+      const output = assertOutput(
+        result.result,
+        TokenCreateNftFromFileOutputSchema,
+      );
       expect(output.name).toBe(validNftTokenFile.name);
       expect(output.symbol).toBe(validNftTokenFile.symbol);
       expect(output.treasuryId).toBe(mockAccountIds.treasury);
@@ -419,7 +431,10 @@ describe('tokenCreateNftFromFileHandler', () => {
 
       const result = await tokenCreateNftFromFile(args);
 
-      const output = assertOutput(result.result, CreateNftFromFileOutputSchema);
+      const output = assertOutput(
+        result.result,
+        TokenCreateNftFromFileOutputSchema,
+      );
       expect(output.name).toBe(infiniteSupplyNftFile.name);
       expect(output.symbol).toBe(infiniteSupplyNftFile.symbol);
       expect(output.treasuryId).toBe(mockAccountIds.treasury);
@@ -524,7 +539,10 @@ describe('tokenCreateNftFromFileHandler', () => {
 
       const result = await tokenCreateNftFromFile(args);
 
-      const output = assertOutput(result.result, CreateNftFromFileOutputSchema);
+      const output = assertOutput(
+        result.result,
+        TokenCreateNftFromFileOutputSchema,
+      );
       expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
       expect(output.associations).toBeDefined();
       expect(output.associations.length).toBeGreaterThan(0);
@@ -888,7 +906,10 @@ describe('tokenCreateNftFromFileHandler', () => {
 
       const result = await tokenCreateNftFromFile(args);
 
-      const output = assertOutput(result.result, CreateNftFromFileOutputSchema);
+      const output = assertOutput(
+        result.result,
+        TokenCreateNftFromFileOutputSchema,
+      );
       expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
       expect(output.name).toBe(validNftTokenFile.name);
 
@@ -977,7 +998,10 @@ describe('tokenCreateNftFromFileHandler', () => {
 
       const result = await tokenCreateNftFromFile(args);
 
-      const output = assertOutput(result.result, CreateNftFromFileOutputSchema);
+      const output = assertOutput(
+        result.result,
+        TokenCreateNftFromFileOutputSchema,
+      );
       expect(output.tokenId).toBe(mockTransactionResults.success.tokenId);
       expect(output.name).toBe(validNftTokenFile.name);
 

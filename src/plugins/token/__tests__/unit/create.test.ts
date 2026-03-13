@@ -7,8 +7,8 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  CreateFungibleTokenOutputSchema,
   tokenCreateFt,
+  TokenCreateFtOutputSchema,
 } from '@/plugins/token/commands/create-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -105,7 +105,7 @@ describe('createTokenHandler', () => {
       );
       expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(mockSaveToken).toHaveBeenCalled();
-      assertOutput(result.result, CreateFungibleTokenOutputSchema);
+      assertOutput(result.result, TokenCreateFtOutputSchema);
     });
 
     test('should use default credentials when treasury not provided', async () => {
@@ -162,7 +162,7 @@ describe('createTokenHandler', () => {
       // When adminKey is not provided, only treasury signs (which is the operator)
       expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(mockSaveToken).toHaveBeenCalled();
-      assertOutput(result.result, CreateFungibleTokenOutputSchema);
+      assertOutput(result.result, TokenCreateFtOutputSchema);
     });
   });
 

@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateFungibleTokenFromFileOutput } from '@/plugins/token/commands/create-ft-from-file';
+import type { TokenCreateFtFromFileOutput } from '@/plugins/token/commands/create-ft-from-file';
 
 import '@/core/utils/json-serialize';
 
@@ -68,7 +68,7 @@ describe('Token Custom Fees Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const output = result.result as CreateFungibleTokenFromFileOutput;
+    const output = result.result as TokenCreateFtFromFileOutput;
     expect(output.tokenId).toBeDefined();
     expect(output.name).toBe(tokenFile.name);
     expect(output.network).toBe(network);
@@ -116,7 +116,7 @@ describe('Token Custom Fees Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const output = result.result as CreateFungibleTokenFromFileOutput;
+    const output = result.result as TokenCreateFtFromFileOutput;
     expect(output.tokenId).toBeDefined();
     expect(output.name).toBe(tokenFile.name);
     expect(output.network).toBe(network);
@@ -161,7 +161,7 @@ describe('Token Custom Fees Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const output = result.result as CreateFungibleTokenFromFileOutput;
+    const output = result.result as TokenCreateFtFromFileOutput;
     expect(output.tokenId).toBeDefined();
     expect(output.name).toBe(tokenFile.name);
     expect(output.network).toBe(network);

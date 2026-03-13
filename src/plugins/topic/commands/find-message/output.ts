@@ -21,7 +21,7 @@ export type FindMessageOutput = z.infer<typeof FindMessageOutputSchema>;
  * Find Messages Command Output Schema
  * Defines the structure of message query results with unified array format
  */
-export const FindMessagesOutputSchema = z.object({
+export const TopicFindMessageOutputSchema = z.object({
   topicId: EntityIdSchema,
   messages: z.array(FindMessageOutputSchema).describe('Messages found'),
   totalCount: z.number().describe('Total number of messages found'),
@@ -29,13 +29,13 @@ export const FindMessagesOutputSchema = z.object({
 });
 
 // Infer TypeScript type from schema for type safety
-export type FindMessagesOutput = z.infer<typeof FindMessagesOutputSchema>;
+export type FindMessagesOutput = z.infer<typeof TopicFindMessageOutputSchema>;
 
 /**
  * Human-readable Handlebars template for find messages output
  * Handles both single and multiple message results uniformly
  */
-export const FIND_MESSAGES_TEMPLATE = `
+export const TOPIC_FIND_MESSAGE_TEMPLATE = `
 {{#if (eq totalCount 0)}}
 No messages found in topic {{hashscanLink topicId "topic" network}}
 {{else}}

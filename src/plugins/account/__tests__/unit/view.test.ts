@@ -14,7 +14,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { ViewAccountOutputSchema } from '@/plugins/account/commands/view';
+import { AccountViewOutputSchema } from '@/plugins/account/commands/view';
 import { accountView } from '@/plugins/account/commands/view/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -63,7 +63,7 @@ describe('account plugin - view command (ADR-003)', () => {
     expect(logger.info).toHaveBeenCalledWith('Viewing account details: acc1');
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.1111');
 
-    const output = assertOutput(result.result, ViewAccountOutputSchema);
+    const output = assertOutput(result.result, AccountViewOutputSchema);
     expect(output.accountId).toBe('0.0.1111');
     expect(output.balance).toBe(1000n);
   });
@@ -106,7 +106,7 @@ describe('account plugin - view command (ADR-003)', () => {
     expect(logger.info).toHaveBeenCalledWith('Viewing account details: acc2');
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.2222');
 
-    const output = assertOutput(result.result, ViewAccountOutputSchema);
+    const output = assertOutput(result.result, AccountViewOutputSchema);
     expect(output.accountId).toBe('0.0.2222');
   });
 

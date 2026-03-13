@@ -8,7 +8,7 @@ import {
   PluginManagementEnableStatus,
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
-import { EnablePluginOutputSchema } from '@/plugins/plugin-management/commands/enable';
+import { PluginManagementEnableOutputSchema } from '@/plugins/plugin-management/commands/enable';
 import { pluginManagementEnable } from '@/plugins/plugin-management/commands/enable/handler';
 
 describe('plugin-management enable command', () => {
@@ -29,7 +29,10 @@ describe('plugin-management enable command', () => {
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
     const result = await pluginManagementEnable(args);
-    const output = assertOutput(result.result, EnablePluginOutputSchema);
+    const output = assertOutput(
+      result.result,
+      PluginManagementEnableOutputSchema,
+    );
 
     expect(output).toBeDefined();
     expect(output.name).toBe('custom-plugin');

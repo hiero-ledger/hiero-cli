@@ -1,8 +1,8 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateAccountOutput } from '@/plugins/account/commands/create';
+import type { AccountCreateOutput } from '@/plugins/account/commands/create';
 import type { ViewAccountOutput } from '@/plugins/account/commands/view';
-import type { CreateNftOutput } from '@/plugins/token/commands/create-nft';
+import type { TokenCreateNftOutput } from '@/plugins/token/commands/create-nft';
 
 import '@/core/utils/json-serialize';
 
@@ -40,7 +40,7 @@ describe('Create NFT Integration Tests', () => {
     });
 
     const createAccountOutput =
-      createAccountResult.result as CreateAccountOutput;
+      createAccountResult.result as AccountCreateOutput;
     expect(createAccountOutput.name).toBe('account-create-nft');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -80,7 +80,7 @@ describe('Create NFT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const createNftOutput = createNftResult.result as CreateNftOutput;
+    const createNftOutput = createNftResult.result as TokenCreateNftOutput;
     expect(createNftOutput.network).toBe(network);
     expect(createNftOutput.name).toBe('Test NFT');
     expect(createNftOutput.alias).toBe('test-nft');

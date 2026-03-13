@@ -5,7 +5,7 @@
 export {
   ACCOUNT_CREATE_COMMAND_NAME,
   accountCreate,
-  CreateAccountCommand,
+  AccountCreateCommand,
 } from './handler';
-export type { CreateAccountOutput } from './output';
-export { CREATE_ACCOUNT_TEMPLATE, CreateAccountOutputSchema } from './output';
+export type { AccountCreateOutput } from './output';
+export { ACCOUNT_CREATE_TEMPLATE, AccountCreateOutputSchema } from './output';

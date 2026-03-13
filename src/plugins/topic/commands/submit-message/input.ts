@@ -10,7 +10,7 @@ import {
  * Input schema for topic submit-message command
  * Validates arguments for submitting a message to a topic
  */
-export const SubmitMessageInputSchema = z.object({
+export const TopicTopicSubmitMessageInputSchema = z.object({
   topic: EntityReferenceSchema.describe('Topic ID or topic name/alias'),
   message: z
     .string()
@@ -25,4 +25,6 @@ export const SubmitMessageInputSchema = z.object({
   ),
 });
 
-export type SubmitMessageInput = z.infer<typeof SubmitMessageInputSchema>;
+export type SubmitMessageInput = z.infer<
+  typeof TopicTopicSubmitMessageInputSchema
+>;

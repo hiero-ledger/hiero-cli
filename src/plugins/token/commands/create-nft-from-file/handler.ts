@@ -1,13 +1,13 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/shared.types';
-import type { CreateNftFromFileOutput } from './output';
+import type { TokenCreateNftFromFileOutput } from './output';
 import type {
-  CreateNftFromFileAssociationOutput,
-  CreateNftFromFileBuildTransactionResult,
-  CreateNftFromFileExecuteTransactionResult,
-  CreateNftFromFileNormalizedParams,
-  CreateNftFromFileSignTransactionResult,
+  TokenCreateNftFromFileAssociationOutput,
+  TokenCreateNftFromFileBuildTransactionResult,
+  TokenCreateNftFromFileExecuteTransactionResult,
+  TokenCreateNftFromFileNormalizedParams,
+  TokenCreateNftFromFileSignTransactionResult,
 } from './types';
 
 import { PublicKey } from '@hashgraph/sdk';
@@ -26,16 +26,16 @@ import {
 } from '@/plugins/token/utils/token-resolve-optional-key';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { CreateNftFromFileInputSchema } from './input';
+import { TokenCreateNftFromFileInputSchema } from './input';
 
 export const TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME =
   'token_create-nft-from-file';
 
-export class CreateNftFromFileCommand extends BaseTransactionCommand<
-  CreateNftFromFileNormalizedParams,
-  CreateNftFromFileBuildTransactionResult,
-  CreateNftFromFileSignTransactionResult,
-  CreateNftFromFileExecuteTransactionResult
+export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
+  TokenCreateNftFromFileNormalizedParams,
+  TokenCreateNftFromFileBuildTransactionResult,
+  TokenCreateNftFromFileSignTransactionResult,
+  TokenCreateNftFromFileExecuteTransactionResult
 > {
   constructor() {
     super(TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME);
@@ -43,9 +43,9 @@ export class CreateNftFromFileCommand extends BaseTransactionCommand<
 
   async normalizeParams(
     args: CommandHandlerArgs,
-  ): Promise<CreateNftFromFileNormalizedParams> {
+  ): Promise<TokenCreateNftFromFileNormalizedParams> {
     const { api, logger } = args;
-    const validArgs = CreateNftFromFileInputSchema.parse(args.args);
+    const validArgs = TokenCreateNftFromFileInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
       api.config.getOption<KeyManagerName>('default_key_manager');
@@ -126,8 +126,8 @@ export class CreateNftFromFileCommand extends BaseTransactionCommand<
 
   async buildTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: CreateNftFromFileNormalizedParams,
-  ): Promise<CreateNftFromFileBuildTransactionResult> {
+    normalisedParams: TokenCreateNftFromFileNormalizedParams,
+  ): Promise<TokenCreateNftFromFileBuildTransactionResult> {
     const { api } = args;
     const { tokenDefinition } = normalisedParams;
     const transaction = api.token.createTokenTransaction({
@@ -155,9 +155,9 @@ export class CreateNftFromFileCommand extends BaseTransactionCommand<
 
   async signTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: CreateNftFromFileNormalizedParams,
-    buildTransactionResult: CreateNftFromFileBuildTransactionResult,
-  ): Promise<CreateNftFromFileSignTransactionResult> {
+    normalisedParams: TokenCreateNftFromFileNormalizedParams,
+    buildTransactionResult: TokenCreateNftFromFileBuildTransactionResult,
+  ): Promise<TokenCreateNftFromFileSignTransactionResult> {
     const { api, logger } = args;
     const signingKeys = [
       normalisedParams.adminKey.keyRefId,
@@ -176,10 +176,10 @@ export class CreateNftFromFileCommand extends BaseTransactionCommand<
 
   async executeTransaction(
     args: CommandHandlerArgs,
-    _normalisedParams: CreateNftFromFileNormalizedParams,
-    _buildTransactionResult: CreateNftFromFileBuildTransactionResult,
-    signTransactionResult: CreateNftFromFileSignTransactionResult,
-  ): Promise<CreateNftFromFileExecuteTransactionResult> {
+    _normalisedParams: TokenCreateNftFromFileNormalizedParams,
+    _buildTransactionResult: TokenCreateNftFromFileBuildTransactionResult,
+    signTransactionResult: TokenCreateNftFromFileSignTransactionResult,
+  ): Promise<TokenCreateNftFromFileExecuteTransactionResult> {
     const { api } = args;
     const transactionResult = await api.txExecute.execute(
       signTransactionResult.transaction,
@@ -196,10 +196,10 @@ export class CreateNftFromFileCommand extends BaseTransactionCommand<
 
   async outputPreparation(
     args: CommandHandlerArgs,
-    normalisedParams: CreateNftFromFileNormalizedParams,
-    _buildTransactionResult: CreateNftFromFileBuildTransactionResult,
-    _signTransactionResult: CreateNftFromFileSignTransactionResult,
-    executeTransactionResult: CreateNftFromFileExecuteTransactionResult,
+    normalisedParams: TokenCreateNftFromFileNormalizedParams,
+    _buildTransactionResult: TokenCreateNftFromFileBuildTransactionResult,
+    _signTransactionResult: TokenCreateNftFromFileSignTransactionResult,
+    executeTransactionResult: TokenCreateNftFromFileExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { api, logger } = args;
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
@@ -242,7 +242,7 @@ export class CreateNftFromFileCommand extends BaseTransactionCommand<
     });
     logger.info(`   Name registered: ${normalisedParams.tokenDefinition.name}`);
 
-    const associations: CreateNftFromFileAssociationOutput[] =
+    const associations: TokenCreateNftFromFileAssociationOutput[] =
       successfulAssociations.map((assoc) => ({
         accountId: assoc.accountId,
         name: assoc.name,
@@ -250,7 +250,7 @@ export class CreateNftFromFileCommand extends BaseTransactionCommand<
         transactionId: result.transactionId,
       }));
 
-    const outputData: CreateNftFromFileOutput = {
+    const outputData: TokenCreateNftFromFileOutput = {
       tokenId: result.tokenId!,
       name: normalisedParams.tokenDefinition.name,
       symbol: normalisedParams.tokenDefinition.symbol,
@@ -271,5 +271,5 @@ export class CreateNftFromFileCommand extends BaseTransactionCommand<
 export async function tokenCreateNftFromFile(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new CreateNftFromFileCommand().execute(args);
+  return new TokenCreateNftFromFileCommand().execute(args);
 }

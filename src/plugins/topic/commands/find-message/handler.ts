@@ -7,13 +7,13 @@ import { fetchFilteredMessages } from '@/plugins/topic/utils/message-helpers';
 import { buildApiFilters } from '@/plugins/topic/utils/messageFilters';
 import { resolveTopicId } from '@/plugins/topic/utils/topicResolver';
 
-import { FindMessageInputSchema } from './input';
+import { TopicTopicFindMessageInputSchema } from './input';
 
-export class FindMessageCommand implements Command {
+export class TopicTopicFindMessageCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
-    const validParams = FindMessageInputSchema.parse(args.args);
+    const validParams = TopicTopicFindMessageInputSchema.parse(args.args);
     const currentNetwork = api.network.getCurrentNetwork();
     const topicId = resolveTopicId(
       validParams.topic,
@@ -50,5 +50,5 @@ export class FindMessageCommand implements Command {
 export async function topicFindMessage(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new FindMessageCommand().execute(args);
+  return new TopicTopicFindMessageCommand().execute(args);
 }

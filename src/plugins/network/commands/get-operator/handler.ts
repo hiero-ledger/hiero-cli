@@ -8,13 +8,13 @@ import type { GetOperatorNormalisedParams } from './types';
 import { ValidationError } from '@/core/errors';
 import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 
-import { GetOperatorInputSchema } from './input';
+import { NetworkNetworkGetOperatorInputSchema } from './input';
 
 const normalizeParams = (
   args: CommandHandlerArgs,
 ): GetOperatorNormalisedParams => {
   const { api } = args;
-  const validArgs = GetOperatorInputSchema.parse(args.args);
+  const validArgs = NetworkNetworkGetOperatorInputSchema.parse(args.args);
   const networkArg = validArgs.network;
 
   if (networkArg && !api.network.isNetworkAvailable(networkArg)) {
@@ -30,7 +30,7 @@ const normalizeParams = (
   };
 };
 
-export class GetOperatorCommand implements Command {
+export class NetworkNetworkGetOperatorCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { logger, api } = args;
     const normalisedParams = normalizeParams(args);
@@ -63,4 +63,5 @@ export class GetOperatorCommand implements Command {
 
 export const networkGetOperator = async (
   args: CommandHandlerArgs,
-): Promise<CommandResult> => new GetOperatorCommand().execute(args);
+): Promise<CommandResult> =>
+  new NetworkNetworkGetOperatorCommand().execute(args);

@@ -6,7 +6,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { DeleteAccountOutputSchema } from '@/plugins/account/commands/delete';
+import { AccountDeleteOutputSchema } from '@/plugins/account/commands/delete';
 import { accountDelete } from '@/plugins/account/commands/delete/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -61,7 +61,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const result = await accountDelete(args);
 
     expect(accountDeleteMock).toHaveBeenCalledWith('testnet:0.0.1111');
-    const output = assertOutput(result.result, DeleteAccountOutputSchema);
+    const output = assertOutput(result.result, AccountDeleteOutputSchema);
     expect(output.deletedAccount.name).toBe('acc1');
     expect(output.deletedAccount.accountId).toBe('0.0.1111');
   });
@@ -93,7 +93,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     const result = await accountDelete(args);
 
     expect(accountDeleteMock).toHaveBeenCalledWith('testnet:0.0.2222');
-    const output = assertOutput(result.result, DeleteAccountOutputSchema);
+    const output = assertOutput(result.result, AccountDeleteOutputSchema);
     expect(output.deletedAccount.name).toBe('acc2');
     expect(output.deletedAccount.accountId).toBe('0.0.2222');
   });
@@ -266,7 +266,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     );
 
     // Verify ADR-003 result
-    const output = assertOutput(result.result, DeleteAccountOutputSchema);
+    const output = assertOutput(result.result, AccountDeleteOutputSchema);
     expect(output.deletedAccount.name).toBe('acc-alias');
     expect(output.deletedAccount.accountId).toBe('0.0.7777');
     expect(output.removedAliases).toBeDefined();

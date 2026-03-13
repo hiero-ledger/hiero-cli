@@ -8,7 +8,7 @@ import {
   PluginManagementRemoveStatus,
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
-import { RemovePluginOutputSchema } from '@/plugins/plugin-management/commands/remove';
+import { PluginManagementRemoveOutputSchema } from '@/plugins/plugin-management/commands/remove';
 import { pluginManagementRemove } from '@/plugins/plugin-management/commands/remove/handler';
 
 describe('plugin-management remove command', () => {
@@ -29,7 +29,10 @@ describe('plugin-management remove command', () => {
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
     const result = await pluginManagementRemove(args);
-    const output = assertOutput(result.result, RemovePluginOutputSchema);
+    const output = assertOutput(
+      result.result,
+      PluginManagementRemoveOutputSchema,
+    );
 
     expect(output).toBeDefined();
     expect(output.name).toBe('custom-plugin');

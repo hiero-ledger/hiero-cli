@@ -4,13 +4,13 @@ import type { SetConfigOutput } from './output';
 
 import { inferConfigOptionType } from '@/plugins/config/schema';
 
-import { SetConfigInputSchema } from './input';
+import { ConfigSetInputSchema } from './input';
 
-export class SetConfigCommand implements Command {
+export class ConfigSetCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
-    const validArgs = SetConfigInputSchema.parse(args.args);
+    const validArgs = ConfigSetInputSchema.parse(args.args);
 
     const name = validArgs.option;
     const value = validArgs.value;
@@ -34,5 +34,5 @@ export class SetConfigCommand implements Command {
 export async function configSet(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new SetConfigCommand().execute(args);
+  return new ConfigSetCommand().execute(args);
 }

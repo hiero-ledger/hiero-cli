@@ -14,7 +14,7 @@ import {
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
-import { AddPluginOutputSchema } from '@/plugins/plugin-management/commands/add';
+import { PluginManagementAddOutputSchema } from '@/plugins/plugin-management/commands/add';
 import { pluginManagementAdd } from '@/plugins/plugin-management/commands/add/handler';
 
 import { CUSTOM_PLUGIN_ENTRY } from './helpers/fixtures';
@@ -66,7 +66,7 @@ describe('plugin-management add command', () => {
     });
 
     const result = await pluginManagementAdd(args);
-    const output = assertOutput(result.result, AddPluginOutputSchema);
+    const output = assertOutput(result.result, PluginManagementAddOutputSchema);
 
     expect(output).toBeDefined();
     expect(output.added).toBe(true);

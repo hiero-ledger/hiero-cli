@@ -11,8 +11,8 @@ import { FileError, StateError } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  CreateFungibleTokenFromFileOutputSchema,
   tokenCreateFtFromFile,
+  TokenCreateFtFromFileOutputSchema,
 } from '@/plugins/token/commands/create-ft-from-file';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -185,7 +185,7 @@ describe('tokenCreateFtFromFileHandler', () => {
       const result = await tokenCreateFtFromFile(args);
       const output = assertOutput(
         result.result,
-        CreateFungibleTokenFromFileOutputSchema,
+        TokenCreateFtFromFileOutputSchema,
       );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
@@ -236,7 +236,7 @@ describe('tokenCreateFtFromFileHandler', () => {
 
       const output = assertOutput(
         result.result,
-        CreateFungibleTokenFromFileOutputSchema,
+        TokenCreateFtFromFileOutputSchema,
       );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
@@ -273,7 +273,7 @@ describe('tokenCreateFtFromFileHandler', () => {
 
       const output = assertOutput(
         result.result,
-        CreateFungibleTokenFromFileOutputSchema,
+        TokenCreateFtFromFileOutputSchema,
       );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
@@ -362,7 +362,7 @@ describe('tokenCreateFtFromFileHandler', () => {
       const result = await tokenCreateFtFromFile(args);
       const output = assertOutput(
         result.result,
-        CreateFungibleTokenFromFileOutputSchema,
+        TokenCreateFtFromFileOutputSchema,
       );
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -475,7 +475,7 @@ describe('tokenCreateFtFromFileHandler', () => {
       const result = await tokenCreateFtFromFile(args);
       const output = assertOutput(
         result.result,
-        CreateFungibleTokenFromFileOutputSchema,
+        TokenCreateFtFromFileOutputSchema,
       );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.associations).toBeDefined();
@@ -819,7 +819,7 @@ describe('tokenCreateFtFromFileHandler', () => {
       const result = await tokenCreateFtFromFile(args);
       const output = assertOutput(
         result.result,
-        CreateFungibleTokenFromFileOutputSchema,
+        TokenCreateFtFromFileOutputSchema,
       );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
@@ -909,7 +909,7 @@ describe('tokenCreateFtFromFileHandler', () => {
       const result = await tokenCreateFtFromFile(args);
       const output = assertOutput(
         result.result,
-        CreateFungibleTokenFromFileOutputSchema,
+        TokenCreateFtFromFileOutputSchema,
       );
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');

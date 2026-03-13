@@ -1,11 +1,11 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountBalanceOutput } from '@/plugins/account/commands/balance';
-import type { CreateAccountOutput } from '@/plugins/account/commands/create';
+import type { AccountCreateOutput } from '@/plugins/account/commands/create';
 import type { ViewAccountOutput } from '@/plugins/account/commands/view';
 import type { AssociateTokenOutput } from '@/plugins/token/commands/associate';
-import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
-import type { TransferFungibleTokenOutput } from '@/plugins/token/commands/transfer-ft';
+import type { TokenCreateFtOutput } from '@/plugins/token/commands/create-ft';
+import type { TokenTransferFtOutput } from '@/plugins/token/commands/transfer-ft';
 
 import '@/core/utils/json-serialize';
 
@@ -47,7 +47,7 @@ describe('Transfer Token Integration Tests', () => {
     });
 
     const createAccountOutput =
-      createAccountResult.result as CreateAccountOutput;
+      createAccountResult.result as AccountCreateOutput;
     expect(createAccountOutput.name).toBe('account-transfer-token');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -84,8 +84,7 @@ describe('Transfer Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const createTokenOutput =
-      createTokenResult.result as CreateFungibleTokenOutput;
+    const createTokenOutput = createTokenResult.result as TokenCreateFtOutput;
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('10');
@@ -131,7 +130,7 @@ describe('Transfer Token Integration Tests', () => {
       config: coreApi.config,
     });
     const transferTokenOutput =
-      transferTokenResult.result as TransferFungibleTokenOutput;
+      transferTokenResult.result as TokenTransferFtOutput;
     expect(transferTokenOutput.tokenId).toBe(createTokenOutput.tokenId);
     expect(transferTokenOutput.from).toBe(process.env.OPERATOR_ID);
     expect(transferTokenOutput.to).toBe(createAccountOutput.accountId);

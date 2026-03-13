@@ -1,18 +1,18 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { ViewAccountOutput } from './output';
+import type { AccountViewOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 
-import { ViewAccountInputSchema } from './input';
+import { AccountViewInputSchema } from './input';
 
-export class ViewAccountCommand implements Command {
+export class AccountViewCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
-    const validArgs = ViewAccountInputSchema.parse(args.args);
+    const validArgs = AccountViewInputSchema.parse(args.args);
 
     const accountIdOrNameOrAlias = validArgs.account;
 
@@ -45,7 +45,7 @@ export class ViewAccountCommand implements Command {
 
     const accountInfo = await api.mirror.getAccount(accountId);
 
-    const outputData: ViewAccountOutput = {
+    const outputData: AccountViewOutput = {
       accountId: accountInfo.accountId,
       balance: BigInt(accountInfo.balance.balance.toString()),
       ...(accountInfo.evmAddress && { evmAddress: accountInfo.evmAddress }),
@@ -61,4 +61,4 @@ export class ViewAccountCommand implements Command {
 }
 
 export const accountView = (args: CommandHandlerArgs) =>
-  new ViewAccountCommand().execute(args);
+  new AccountViewCommand().execute(args);

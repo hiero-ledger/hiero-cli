@@ -4,7 +4,7 @@
  */
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { CreateFungibleTokenInputSchema } from '@/plugins/token/commands/create-ft/input';
+import { TokenCreateFtInputSchema } from '@/plugins/token/commands/create-ft/input';
 import {
   FungibleTokenFileSchema,
   TokenAssociationSchema,
@@ -362,11 +362,9 @@ describe('Token Schema Validation', () => {
     });
   });
 
-  describe('CreateFungibleTokenInputSchema', () => {
+  describe('TokenCreateFtInputSchema', () => {
     test('should validate valid create parameters', () => {
-      const result = CreateFungibleTokenInputSchema.safeParse(
-        validTokenCreateParams,
-      );
+      const result = TokenCreateFtInputSchema.safeParse(validTokenCreateParams);
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.tokenName).toBe(validTokenCreateParams.tokenName);
@@ -375,7 +373,7 @@ describe('Token Schema Validation', () => {
     });
 
     test('should handle missing optional parameters with defaults', () => {
-      const result = CreateFungibleTokenInputSchema.safeParse(
+      const result = TokenCreateFtInputSchema.safeParse(
         minimalTokenCreateParams,
       );
       expect(result.success).toBe(true);
@@ -392,7 +390,7 @@ describe('Token Schema Validation', () => {
         symbol: 'TEST',
       };
 
-      const result = CreateFungibleTokenInputSchema.safeParse(invalidParams);
+      const result = TokenCreateFtInputSchema.safeParse(invalidParams);
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues.length).toBeGreaterThan(0);

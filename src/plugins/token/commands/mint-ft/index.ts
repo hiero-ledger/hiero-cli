@@ -7,5 +7,5 @@ export {
   tokenMintFt,
   TokenMintFtCommand,
 } from './handler';
-export type { MintFtOutput } from './output';
-export { MINT_FT_TEMPLATE, MintFtOutputSchema } from './output';
+export type { TokenMintFtOutput } from './output';
+export { TOKEN_MINT_FT_TEMPLATE, TokenMintFtOutputSchema } from './output';

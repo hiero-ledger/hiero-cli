@@ -1,3 +1,9 @@
-export { EnablePluginCommand, pluginManagementEnable } from './handler';
-export type { EnablePluginOutput } from './output';
-export { ENABLE_PLUGIN_TEMPLATE, EnablePluginOutputSchema } from './output';
+export {
+  pluginManagementEnable,
+  PluginManagementEnableCommand,
+} from './handler';
+export type { PluginManagementEnableOutput } from './output';
+export {
+  PLUGIN_MANAGEMENT_ENABLE_TEMPLATE,
+  PluginManagementEnableOutputSchema,
+} from './output';

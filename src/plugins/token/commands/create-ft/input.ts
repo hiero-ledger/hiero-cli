@@ -20,7 +20,7 @@ import { SupplyType } from '@/core/types/shared.types';
  * Input schema for token create command
  * Validates arguments for creating a new fungible token
  */
-export const CreateFungibleTokenInputSchema = z
+export const TokenCreateFtInputSchema = z
   .object({
     tokenName: TokenNameSchema.describe('Token name'),
     symbol: TokenSymbolSchema.describe('Token symbol/ticker'),
@@ -60,6 +60,4 @@ export const CreateFungibleTokenInputSchema = z
   })
   .superRefine(validateSupplyTypeAndMaxSupply);
 
-export type CreateFungibleTokenInput = z.infer<
-  typeof CreateFungibleTokenInputSchema
->;
+export type TokenCreateFtInput = z.infer<typeof TokenCreateFtInputSchema>;

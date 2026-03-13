@@ -1,6 +1,6 @@
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ConfigurationError } from '@/core';
-import { GetConfigOutputSchema } from '@/plugins/config/commands/get';
+import { ConfigGetOutputSchema } from '@/plugins/config/commands/get';
 import { configGet } from '@/plugins/config/commands/get/handler';
 
 import { enumOption } from './helpers/fixtures';
@@ -23,7 +23,7 @@ describe('config plugin - get', () => {
     });
 
     const result = await configGet(args);
-    const output = assertOutput(result.result, GetConfigOutputSchema);
+    const output = assertOutput(result.result, ConfigGetOutputSchema);
     expect(output.name).toBe('default_key_manager');
     expect(output.type).toBe('enum');
     expect(output.value).toBe('local');

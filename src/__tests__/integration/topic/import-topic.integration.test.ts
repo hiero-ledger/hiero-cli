@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
+import type { TopicCreateOutput } from '@/plugins/topic/commands/create';
 import type { ImportTopicOutput } from '@/plugins/topic/commands/import';
 import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
 
@@ -41,7 +41,7 @@ describe('Import Topic Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const createTopicOutput = createTopicResult.result as CreateTopicOutput;
+    const createTopicOutput = createTopicResult.result as TopicCreateOutput;
     topicId = createTopicOutput.topicId;
 
     const deleteTopicArgs: Record<string, unknown> = {

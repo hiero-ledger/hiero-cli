@@ -10,12 +10,12 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  MintNftOutputSchema,
   tokenMintNft,
+  TokenMintNftOutputSchema,
 } from '@/plugins/token/commands/mint-nft';
 import { TOKEN_NAMESPACE } from '@/plugins/token/constants';
 
-import { makeMintNftCommandArgs } from './helpers/fixtures';
+import { makeTokenMintNftCommandArgs } from './helpers/fixtures';
 import {
   makeApiMocks,
   makeLogger,
@@ -32,7 +32,7 @@ describe('tokenMintNftHandler', () => {
       const { api } = makeMintNftSuccessMocks();
 
       const logger = makeLogger();
-      const args = makeMintNftCommandArgs({
+      const args = makeTokenMintNftCommandArgs({
         api,
         logger,
         args: {
@@ -44,7 +44,7 @@ describe('tokenMintNftHandler', () => {
 
       const result = await tokenMintNft(args);
 
-      const output = assertOutput(result.result, MintNftOutputSchema);
+      const output = assertOutput(result.result, TokenMintNftOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
       expect(output.serialNumber).toBe('1');
@@ -71,7 +71,7 @@ describe('tokenMintNftHandler', () => {
       });
 
       const logger = makeLogger();
-      const args = makeMintNftCommandArgs({
+      const args = makeTokenMintNftCommandArgs({
         api,
         logger,
         args: {
@@ -83,7 +83,7 @@ describe('tokenMintNftHandler', () => {
 
       const result = await tokenMintNft(args);
 
-      const output = assertOutput(result.result, MintNftOutputSchema);
+      const output = assertOutput(result.result, TokenMintNftOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.serialNumber).toBe('1');
 
@@ -151,7 +151,7 @@ describe('tokenMintNftHandler', () => {
       });
 
       const logger = makeLogger();
-      const args = makeMintNftCommandArgs({
+      const args = makeTokenMintNftCommandArgs({
         api,
         logger,
         args: {
@@ -163,7 +163,7 @@ describe('tokenMintNftHandler', () => {
 
       const result = await tokenMintNft(args);
 
-      const output = assertOutput(result.result, MintNftOutputSchema);
+      const output = assertOutput(result.result, TokenMintNftOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(api.alias.resolve).toHaveBeenCalledWith(
         'my-nft-collection',
@@ -182,7 +182,7 @@ describe('tokenMintNftHandler', () => {
       });
 
       const logger = makeLogger();
-      const args = makeMintNftCommandArgs({
+      const args = makeTokenMintNftCommandArgs({
         api,
         logger,
         args: {
@@ -222,7 +222,7 @@ describe('tokenMintNftHandler', () => {
       });
 
       const logger = makeLogger();
-      const args = makeMintNftCommandArgs({
+      const args = makeTokenMintNftCommandArgs({
         api,
         logger,
         args: {
@@ -283,7 +283,7 @@ describe('tokenMintNftHandler', () => {
       });
 
       const logger = makeLogger();
-      const args = makeMintNftCommandArgs({
+      const args = makeTokenMintNftCommandArgs({
         api,
         logger,
         args: {
@@ -310,7 +310,7 @@ describe('tokenMintNftHandler', () => {
       });
 
       const logger = makeLogger();
-      const args = makeMintNftCommandArgs({
+      const args = makeTokenMintNftCommandArgs({
         api,
         logger,
         args: {
@@ -328,7 +328,7 @@ describe('tokenMintNftHandler', () => {
 
       const logger = makeLogger();
       const longMetadata = 'a'.repeat(101);
-      const args = makeMintNftCommandArgs({
+      const args = makeTokenMintNftCommandArgs({
         api,
         logger,
         args: {
@@ -347,7 +347,7 @@ describe('tokenMintNftHandler', () => {
       });
 
       const logger = makeLogger();
-      const args = makeMintNftCommandArgs({
+      const args = makeTokenMintNftCommandArgs({
         api,
         logger,
         args: {
@@ -396,7 +396,7 @@ describe('tokenMintNftHandler', () => {
       });
 
       const logger = makeLogger();
-      const args = makeMintNftCommandArgs({
+      const args = makeTokenMintNftCommandArgs({
         api,
         logger,
         args: {

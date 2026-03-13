@@ -3,9 +3,9 @@ import type { PluginManifest } from '@/core/plugins/plugin.interface';
 import { OptionType } from '@/core/types/shared.types';
 
 import {
+  HBAR_HBAR_TRANSFER_TEMPLATE,
+  HbarHbarHbarHbarTransferOutputSchema,
   hbarTransfer,
-  TRANSFER_TEMPLATE,
-  TransferOutputSchema,
 } from './commands/transfer';
 
 export const hbarPluginManifest: PluginManifest = {
@@ -61,8 +61,8 @@ export const hbarPluginManifest: PluginManifest = {
       ],
       handler: hbarTransfer,
       output: {
-        schema: TransferOutputSchema,
-        humanTemplate: TRANSFER_TEMPLATE,
+        schema: HbarHbarHbarHbarTransferOutputSchema,
+        humanTemplate: HBAR_HBAR_TRANSFER_TEMPLATE,
       },
     },
   ],

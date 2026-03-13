@@ -16,8 +16,8 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import {
+  NetworkNetworkSetOperatorOutputSchema,
   networkSetOperator as setOperatorHandler,
-  SetOperatorOutputSchema,
 } from '@/plugins/network/commands/set-operator';
 
 let exitSpy: jest.SpyInstance;
@@ -49,7 +49,10 @@ describe('network plugin - set-operator command', () => {
 
     const result = await setOperatorHandler(args);
 
-    const output = assertOutput(result.result, SetOperatorOutputSchema);
+    const output = assertOutput(
+      result.result,
+      NetworkNetworkSetOperatorOutputSchema,
+    );
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
@@ -102,7 +105,10 @@ describe('network plugin - set-operator command', () => {
       accountId: '0.0.789012',
       keyRefId: 'kr_alias123',
     });
-    const output = assertOutput(result.result, SetOperatorOutputSchema);
+    const output = assertOutput(
+      result.result,
+      NetworkNetworkSetOperatorOutputSchema,
+    );
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.789012',
@@ -134,7 +140,10 @@ describe('network plugin - set-operator command', () => {
       accountId: '0.0.123456',
       keyRefId: 'kr_test123',
     });
-    const output = assertOutput(result.result, SetOperatorOutputSchema);
+    const output = assertOutput(
+      result.result,
+      NetworkNetworkSetOperatorOutputSchema,
+    );
     expect(output.network).toBe('mainnet');
   });
 
@@ -160,7 +169,10 @@ describe('network plugin - set-operator command', () => {
 
     const result = await setOperatorHandler(args);
 
-    const output = assertOutput(result.result, SetOperatorOutputSchema);
+    const output = assertOutput(
+      result.result,
+      NetworkNetworkSetOperatorOutputSchema,
+    );
     expect(output.network).toBe('testnet');
     expect(networkService.setOperator).toHaveBeenCalledWith('testnet', {
       accountId: '0.0.123456',
@@ -187,7 +199,10 @@ describe('network plugin - set-operator command', () => {
 
     const result = await setOperatorHandler(args);
 
-    const output = assertOutput(result.result, SetOperatorOutputSchema);
+    const output = assertOutput(
+      result.result,
+      NetworkNetworkSetOperatorOutputSchema,
+    );
     expect(output.network).toBe('testnet');
     expect(networkService.setOperator).toHaveBeenCalledWith('testnet', {
       accountId: '0.0.123456',
@@ -344,7 +359,10 @@ describe('network plugin - set-operator command', () => {
 
     const result = await setOperatorHandler(args);
 
-    const output = assertOutput(result.result, SetOperatorOutputSchema);
+    const output = assertOutput(
+      result.result,
+      NetworkNetworkSetOperatorOutputSchema,
+    );
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
