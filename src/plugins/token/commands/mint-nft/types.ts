@@ -14,7 +14,7 @@ export interface MintNftBuildTransactionResult {
 }
 
 export interface MintNftSignTransactionResult {
-  transaction: Transaction;
+  signedTransaction: Transaction;
 }
 
 export interface MintNftExecuteTransactionResult {

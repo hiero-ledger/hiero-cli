@@ -142,7 +142,7 @@ export class CreateNftCommand extends BaseTransactionCommand<
       buildTransactionResult.transaction,
       txSigners,
     );
-    return { transaction };
+    return { signedTransaction: transaction };
   }
 
   async executeTransaction(
@@ -153,7 +153,7 @@ export class CreateNftCommand extends BaseTransactionCommand<
   ): Promise<CreateNftExecuteTransactionResult> {
     const { api } = args;
     const transactionResult = await api.txExecute.execute(
-      signTransactionResult.transaction,
+      signTransactionResult.signedTransaction,
     );
 
     if (!transactionResult.success || !transactionResult.tokenId) {

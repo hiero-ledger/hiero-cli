@@ -149,7 +149,7 @@ export class TransferFtCommand extends BaseTransactionCommand<
       [signerKeyRefId],
     );
     return {
-      transaction,
+      signedTransaction: transaction,
     };
   }
 
@@ -160,7 +160,7 @@ export class TransferFtCommand extends BaseTransactionCommand<
     signTransactionResult: TransferFtSignTransactionResult,
   ): Promise<TransferFtExecuteTransactionResult> {
     const { api } = args;
-    const signedTransaction = signTransactionResult.transaction;
+    const signedTransaction = signTransactionResult.signedTransaction;
     const result = await api.txExecute.execute(signedTransaction);
 
     if (!result.success) {

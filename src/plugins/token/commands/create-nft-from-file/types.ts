@@ -28,7 +28,7 @@ export interface CreateNftFromFileBuildTransactionResult {
 }
 
 export interface CreateNftFromFileSignTransactionResult {
-  transaction: Transaction;
+  signedTransaction: Transaction;
 }
 
 export interface CreateNftFromFileExecuteTransactionResult {
