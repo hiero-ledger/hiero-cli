@@ -33,11 +33,11 @@ export class AccountCreateBatchStateHook extends AbstractHook {
     const sortedTransactions = [...batchData.transactions].sort(
       (a, b) => a.order - b.order,
     );
-    await Promise.all(
-      sortedTransactions
-        .filter((item) => item.command === ACCOUNT_CREATE_COMMAND_NAME)
-        .map((batchDataItem) => this.saveAccount(args, batchDataItem)),
-    );
+    for (const batchDataItem of sortedTransactions.filter(
+      (item) => item.command === ACCOUNT_CREATE_COMMAND_NAME,
+    )) {
+      await this.saveAccount(args, batchDataItem);
+    }
     return Promise.resolve({
       breakFlow: false,
       result: {
