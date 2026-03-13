@@ -30,6 +30,14 @@ export class AccountCreateBatchStateHook extends AbstractHook {
     >,
   ): Promise<HookResult> {
     const batchData = params.executeTransactionResult.updatedBatchData;
+    if (!batchData.success) {
+      return Promise.resolve({
+        breakFlow: false,
+        result: {
+          message: 'Batch transaction status failure',
+        },
+      });
+    }
     const sortedTransactions = [...batchData.transactions].sort(
       (a, b) => a.order - b.order,
     );
