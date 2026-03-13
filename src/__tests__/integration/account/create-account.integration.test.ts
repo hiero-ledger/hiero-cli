@@ -1,7 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountCreateOutput } from '@/plugins/account/commands/create';
-import type { ViewAccountOutput } from '@/plugins/account/commands/view';
+import type { AccountViewOutput } from '@/plugins/account/commands/view';
 
 import '@/core/utils/json-serialize';
 
@@ -56,7 +56,7 @@ describe('Create Account Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
+      const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
       expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
       expect(viewAccountOutput.balance).toBe(100000000n); // result in tinybars
       expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);

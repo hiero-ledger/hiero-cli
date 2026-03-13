@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { ListAccountsOutput } from '@/plugins/account/commands/list';
-import type { ViewAccountOutput } from '@/plugins/account/commands/view';
+import type { AccountListOutput } from '@/plugins/account/commands/list';
+import type { AccountViewOutput } from '@/plugins/account/commands/view';
 
 import * as fs from 'fs';
 
@@ -24,7 +24,7 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const accountOutput = accountListResult.result as ListAccountsOutput;
+    const accountOutput = accountListResult.result as AccountListOutput;
     const accounts = accountOutput.accounts;
 
     const importAccountArgs: Record<string, unknown> = {
@@ -52,7 +52,7 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
           logger: coreApi.logger,
           config: coreApi.config,
         });
-        const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
+        const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
         const args: Record<string, unknown> = {
           amount: String(Number(viewAccountOutput.balance) / 100000000),
           to: 'main-account',

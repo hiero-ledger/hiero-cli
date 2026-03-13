@@ -1,7 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AccountDeleteOutput } from '@/plugins/account/commands/delete';
 import type { ImportAccountOutput } from '@/plugins/account/commands/import';
-import type { ViewAccountOutput } from '@/plugins/account/commands/view';
+import type { AccountViewOutput } from '@/plugins/account/commands/view';
 
 import '@/core/utils/json-serialize';
 
@@ -67,7 +67,7 @@ describe('Delete Account Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
+      const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
       expect(viewAccountOutput.accountId).toBe(importAccountOutput.accountId);
       expect(viewAccountOutput.evmAddress).toBe(importAccountOutput.evmAddress);
 

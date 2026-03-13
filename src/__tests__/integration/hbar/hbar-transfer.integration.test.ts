@@ -1,7 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountCreateOutput } from '@/plugins/account/commands/create';
-import type { ViewAccountOutput } from '@/plugins/account/commands/view';
+import type { AccountViewOutput } from '@/plugins/account/commands/view';
 import type { HbarHbarTransferOutput } from '@/plugins/hbar/commands/transfer';
 
 import '@/core/utils/json-serialize';
@@ -80,7 +80,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
+    const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
     expect(viewAccountOutput.balance).toBe(200000000n); // result in tinybars
     expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
@@ -161,7 +161,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
       config: coreApi.config,
     });
     const viewAccountFromOutput =
-      viewAccountFromResult.result as ViewAccountOutput;
+      viewAccountFromResult.result as AccountViewOutput;
     expect(viewAccountFromOutput.accountId).toBe(accountFromOutput.accountId);
     expect(viewAccountFromOutput.publicKey).toBe(accountFromOutput.publicKey);
 
@@ -175,7 +175,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const viewAccountToOutput = viewAccountToResult.result as ViewAccountOutput;
+    const viewAccountToOutput = viewAccountToResult.result as AccountViewOutput;
     expect(viewAccountToOutput.accountId).toBe(accountToOutput.accountId);
     expect(viewAccountToOutput.balance).toBe(200000000n); // result in tinybars
     expect(viewAccountToOutput.publicKey).toBe(accountToOutput.publicKey);
