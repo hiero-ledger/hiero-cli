@@ -36,6 +36,7 @@ import {
   submitMessage,
   SubmitMessageOutputSchema,
 } from './commands/submit-message';
+import { TopicCreateBatchStateHook } from './hooks/batch-create';
 
 export const TOPIC_NAMESPACE = 'topic-topics';
 
@@ -45,6 +46,13 @@ export const topicPluginManifest: PluginManifest = {
   displayName: 'Topic Plugin',
   description:
     'Plugin for managing Hedera Consensus Service topics and messages',
+  hooks: [
+    {
+      name: 'topic-create-batch-state',
+      hook: new TopicCreateBatchStateHook(),
+      options: [],
+    },
+  ],
   commands: [
     {
       name: 'create',
