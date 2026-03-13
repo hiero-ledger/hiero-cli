@@ -4,8 +4,8 @@ import type { ViewAccountOutput } from '@/plugins/account/commands/view';
 
 import * as fs from 'fs';
 
-import { importAccount, listAccounts, viewAccount } from '@/plugins/account';
-import { transferHbar } from '@/plugins/hbar/commands/transfer';
+import { accountImport, accountList, accountView } from '@/plugins/account';
+import { hbarTransfer } from '@/plugins/hbar/commands/transfer';
 
 import { delay } from './common-utils';
 
@@ -17,7 +17,7 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
   coreApi: CoreApi,
 ): Promise<void> => {
   try {
-    const accountListResult = await listAccounts({
+    const accountListResult = await accountList({
       args: {},
       api: coreApi,
       state: coreApi.state,
@@ -32,7 +32,7 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
       key: `${process.env.OPERATOR_ID as string}:${process.env.OPERATOR_KEY as string}`,
     };
     try {
-      await importAccount({
+      await accountImport({
         args: importAccountArgs,
         api: coreApi,
         state: coreApi.state,
@@ -45,7 +45,7 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
     await delay(5000);
     for (const account of accounts) {
       try {
-        const viewAccountResult = await viewAccount({
+        const viewAccountResult = await accountView({
           args: { account: account.name },
           api: coreApi,
           state: coreApi.state,
@@ -58,7 +58,7 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
           to: 'main-account',
           from: account.name,
         };
-        await transferHbar({
+        await hbarTransfer({
           args,
           api: coreApi,
           state: coreApi.state,

@@ -19,3 +19,4 @@ export {
   tokenTransferFt,
 } from './commands/transfer-ft';
 export { tokenTransferNft } from './commands/transfer-nft';
+export { tokenView } from './commands/view';

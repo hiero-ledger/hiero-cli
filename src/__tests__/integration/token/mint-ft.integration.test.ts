@@ -14,12 +14,8 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import {
-  createAccount,
-  getAccountBalance,
-  viewAccount,
-} from '@/plugins/account';
-import { createFt, mintFt } from '@/plugins/token';
+import { accountBalance, accountCreate, accountView } from '@/plugins/account';
+import { tokenCreateFt, tokenMintFt } from '@/plugins/token';
 
 describe('Mint FT Integration Tests', () => {
   let coreApi: CoreApi;
@@ -38,7 +34,7 @@ describe('Mint FT Integration Tests', () => {
       'key-type': 'ecdsa',
       'auto-associations': 10,
     };
-    const createAccountResult = await createAccount({
+    const createAccountResult = await accountCreate({
       args: createAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -57,7 +53,7 @@ describe('Mint FT Integration Tests', () => {
     const viewAccountArgs: Record<string, unknown> = {
       account: 'account-mint-ft',
     };
-    const viewAccountResult = await viewAccount({
+    const viewAccountResult = await accountView({
       args: viewAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -79,7 +75,7 @@ describe('Mint FT Integration Tests', () => {
       supplyKey: `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
       name: 'test-token-mint',
     };
-    const createTokenResult = await createFt({
+    const createTokenResult = await tokenCreateFt({
       args: createTokenArgs,
       api: coreApi,
       state: coreApi.state,
@@ -104,7 +100,7 @@ describe('Mint FT Integration Tests', () => {
     };
     const accountBalanceBeforeMintOutput = await waitFor(
       () =>
-        getAccountBalance({
+        accountBalance({
           args: accountBalanceBeforeMintArgs,
           api: coreApi,
           state: coreApi.state,
@@ -128,7 +124,7 @@ describe('Mint FT Integration Tests', () => {
       amount: '50',
       supplyKey: `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
     };
-    const mintFtResult = await mintFt({
+    const mintFtResult = await tokenMintFt({
       args: mintFtArgs,
       api: coreApi,
       state: coreApi.state,
@@ -148,7 +144,7 @@ describe('Mint FT Integration Tests', () => {
     };
     const accountBalanceAfterMintOutput = await waitFor(
       () =>
-        getAccountBalance({
+        accountBalance({
           args: accountBalanceAfterMintArgs,
           api: coreApi,
           state: coreApi.state,

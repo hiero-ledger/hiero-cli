@@ -11,7 +11,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { createTokenFromFile } from '@/plugins/token';
+import { tokenCreateFtFromFile } from '@/plugins/token';
 
 const TEMP_DIR = path.join(__dirname, 'temp-token-files');
 
@@ -60,7 +60,7 @@ describe('Token Custom Fees Integration Tests', () => {
     const filePath = path.join(TEMP_DIR, 'fixed-hbar-fee.json');
     await fs.writeFile(filePath, JSON.stringify(tokenFile, null, 2));
 
-    const result = await createTokenFromFile({
+    const result = await tokenCreateFtFromFile({
       args: { file: filePath },
       api: coreApi,
       state: coreApi.state,
@@ -108,7 +108,7 @@ describe('Token Custom Fees Integration Tests', () => {
     const filePath = path.join(TEMP_DIR, 'fractional-fee.json');
     await fs.writeFile(filePath, JSON.stringify(tokenFile, null, 2));
 
-    const result = await createTokenFromFile({
+    const result = await tokenCreateFtFromFile({
       args: { file: filePath },
       api: coreApi,
       state: coreApi.state,
@@ -153,7 +153,7 @@ describe('Token Custom Fees Integration Tests', () => {
     const filePath = path.join(TEMP_DIR, 'fixed-token-fee.json');
     await fs.writeFile(filePath, JSON.stringify(tokenFile, null, 2));
 
-    const result = await createTokenFromFile({
+    const result = await tokenCreateFtFromFile({
       args: { file: filePath },
       api: coreApi,
       state: coreApi.state,

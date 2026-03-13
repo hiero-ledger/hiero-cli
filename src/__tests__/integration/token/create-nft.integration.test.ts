@@ -12,8 +12,8 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { createAccount, viewAccount } from '@/plugins/account';
-import { createNft } from '@/plugins/token/commands/create-nft';
+import { accountCreate, accountView } from '@/plugins/account';
+import { tokenCreateNft } from '@/plugins/token';
 
 describe('Create NFT Integration Tests', () => {
   let coreApi: CoreApi;
@@ -31,7 +31,7 @@ describe('Create NFT Integration Tests', () => {
       'key-type': 'ecdsa',
       'auto-associations': 10,
     };
-    const createAccountResult = await createAccount({
+    const createAccountResult = await accountCreate({
       args: createAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -50,7 +50,7 @@ describe('Create NFT Integration Tests', () => {
     const viewAccountArgs: Record<string, unknown> = {
       account: 'account-create-nft',
     };
-    const viewAccountResult = await viewAccount({
+    const viewAccountResult = await accountView({
       args: viewAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -73,7 +73,7 @@ describe('Create NFT Integration Tests', () => {
       supplyKey: 'account-create-nft',
       name: 'test-nft',
     };
-    const createNftResult = await createNft({
+    const createNftResult = await tokenCreateNft({
       args: createNftArgs,
       api: coreApi,
       state: coreApi.state,

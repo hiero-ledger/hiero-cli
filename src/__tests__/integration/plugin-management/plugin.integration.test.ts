@@ -13,13 +13,13 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import {
-  addPlugin,
-  disablePlugin,
-  enablePlugin,
-  getPluginInfo,
-  getPluginList,
-  removePlugin,
-  resetPlugins,
+  pluginManagementAdd,
+  pluginManagementDisable,
+  pluginManagementEnable,
+  pluginManagementInfo,
+  pluginManagementList,
+  pluginManagementRemove,
+  pluginManagementReset,
 } from '@/plugins/plugin-management';
 
 describe('Plugin Management Integration Tests', () => {
@@ -34,7 +34,7 @@ describe('Plugin Management Integration Tests', () => {
     const addPluginArgs: Record<string, unknown> = {
       path: 'dist/plugins/test',
     };
-    const addPluginResult = await addPlugin({
+    const addPluginResult = await pluginManagementAdd({
       args: addPluginArgs,
       api: coreApi,
       state: coreApi.state,
@@ -53,7 +53,7 @@ describe('Plugin Management Integration Tests', () => {
     const viewPluginArgs: Record<string, unknown> = {
       name: 'test',
     };
-    const viewPluginResult = await getPluginInfo({
+    const viewPluginResult = await pluginManagementInfo({
       args: viewPluginArgs,
       api: coreApi,
       state: coreApi.state,
@@ -75,7 +75,7 @@ describe('Plugin Management Integration Tests', () => {
     const disablePluginArgs: Record<string, unknown> = {
       name: 'test',
     };
-    const disablePluginResult = await disablePlugin({
+    const disablePluginResult = await pluginManagementDisable({
       args: disablePluginArgs,
       api: coreApi,
       state: coreApi.state,
@@ -90,7 +90,7 @@ describe('Plugin Management Integration Tests', () => {
     );
     expect(disablePluginOutput.removed).toBe(true);
 
-    const listPluginResult = await getPluginList({
+    const listPluginResult = await pluginManagementList({
       args: {},
       api: coreApi,
       state: coreApi.state,
@@ -107,7 +107,7 @@ describe('Plugin Management Integration Tests', () => {
     const enablePluginArgs: Record<string, unknown> = {
       name: 'test',
     };
-    const enablePluginResult = await enablePlugin({
+    const enablePluginResult = await pluginManagementEnable({
       args: enablePluginArgs,
       api: coreApi,
       state: coreApi.state,
@@ -122,7 +122,7 @@ describe('Plugin Management Integration Tests', () => {
     const viewPluginEnabledArgs: Record<string, unknown> = {
       name: 'test',
     };
-    const viewPluginEnabledResult = await getPluginInfo({
+    const viewPluginEnabledResult = await pluginManagementInfo({
       args: viewPluginEnabledArgs,
       api: coreApi,
       state: coreApi.state,
@@ -147,7 +147,7 @@ describe('Plugin Management Integration Tests', () => {
     const removePluginArgs: Record<string, unknown> = {
       name: 'test',
     };
-    const removePluginResult = await removePlugin({
+    const removePluginResult = await pluginManagementRemove({
       args: removePluginArgs,
       api: coreApi,
       state: coreApi.state,
@@ -166,7 +166,7 @@ describe('Plugin Management Integration Tests', () => {
     const addPluginArgs: Record<string, unknown> = {
       path: 'dist/plugins/test',
     };
-    const addPluginResult = await addPlugin({
+    const addPluginResult = await pluginManagementAdd({
       args: addPluginArgs,
       api: coreApi,
       state: coreApi.state,
@@ -176,7 +176,7 @@ describe('Plugin Management Integration Tests', () => {
     const addOutput = addPluginResult.result as AddPluginOutput;
     expect(addOutput.added).toBe(true);
 
-    const listBeforeReset = await getPluginList({
+    const listBeforeReset = await pluginManagementList({
       args: {},
       api: coreApi,
       state: coreApi.state,
@@ -186,7 +186,7 @@ describe('Plugin Management Integration Tests', () => {
     const listBeforeOutput = listBeforeReset.result as ListPluginsOutput;
     expect(listBeforeOutput.plugins.some((p) => p.name === 'test')).toBe(true);
 
-    const resetResult = await resetPlugins({
+    const resetResult = await pluginManagementReset({
       args: {},
       api: coreApi,
       state: coreApi.state,
@@ -199,7 +199,7 @@ describe('Plugin Management Integration Tests', () => {
       'Plugin state has been reset successfully.',
     );
 
-    const listAfterReset = await getPluginList({
+    const listAfterReset = await pluginManagementList({
       args: {},
       api: coreApi,
       state: coreApi.state,

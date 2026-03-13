@@ -14,10 +14,8 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { createAccount, viewAccount } from '@/plugins/account';
-import { createNft } from '@/plugins/token/commands/create-nft';
-import { mintNft } from '@/plugins/token/commands/mint-nft';
-import { viewToken } from '@/plugins/token/commands/view';
+import { accountCreate, accountView } from '@/plugins/account';
+import { tokenCreateNft, tokenMintNft, tokenView } from '@/plugins/token';
 
 describe('Mint NFT Integration Tests', () => {
   let coreApi: CoreApi;
@@ -36,7 +34,7 @@ describe('Mint NFT Integration Tests', () => {
       keyType: 'ecdsa',
       autoAssociations: 10,
     };
-    const createAccountResult = await createAccount({
+    const createAccountResult = await accountCreate({
       args: createAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -55,7 +53,7 @@ describe('Mint NFT Integration Tests', () => {
     const viewAccountArgs: Record<string, unknown> = {
       account: 'account-mint-nft',
     };
-    const viewAccountResult = await viewAccount({
+    const viewAccountResult = await accountView({
       args: viewAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -78,7 +76,7 @@ describe('Mint NFT Integration Tests', () => {
       supplyKey: 'account-mint-nft',
       name: 'test-nft-collection',
     };
-    const createNftResult = await createNft({
+    const createNftResult = await tokenCreateNft({
       args: createNftArgs,
       api: coreApi,
       state: coreApi.state,
@@ -102,7 +100,7 @@ describe('Mint NFT Integration Tests', () => {
       metadata: 'Test NFT Metadata',
       supplyKey: 'account-mint-nft',
     };
-    const mintNftResult = await mintNft({
+    const mintNftResult = await tokenMintNft({
       args: mintNftArgs,
       api: coreApi,
       state: coreApi.state,
@@ -121,7 +119,7 @@ describe('Mint NFT Integration Tests', () => {
       token: createNftOutput.tokenId,
       serial: mintNftOutput.serialNumber,
     };
-    const viewTokenResult = await viewToken({
+    const viewTokenResult = await tokenView({
       args: viewTokenArgs,
       api: coreApi,
       state: coreApi.state,

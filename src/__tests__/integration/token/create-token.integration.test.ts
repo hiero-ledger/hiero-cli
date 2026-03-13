@@ -13,12 +13,8 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import {
-  createAccount,
-  getAccountBalance,
-  viewAccount,
-} from '@/plugins/account';
-import { createFt } from '@/plugins/token';
+import { accountBalance, accountCreate, accountView } from '@/plugins/account';
+import { tokenCreateFt } from '@/plugins/token';
 
 describe('Create Token Integration Tests', () => {
   let coreApi: CoreApi;
@@ -36,7 +32,7 @@ describe('Create Token Integration Tests', () => {
       'key-type': 'ecdsa',
       'auto-associations': 10,
     };
-    const createAccountResult = await createAccount({
+    const createAccountResult = await accountCreate({
       args: createAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -55,7 +51,7 @@ describe('Create Token Integration Tests', () => {
     const viewAccountArgs: Record<string, unknown> = {
       account: 'account-create-token',
     };
-    const viewAccountResult = await viewAccount({
+    const viewAccountResult = await accountView({
       args: viewAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -78,7 +74,7 @@ describe('Create Token Integration Tests', () => {
       adminKey: 'account-create-token',
       name: 'test-token',
     };
-    const createTokenResult = await createFt({
+    const createTokenResult = await tokenCreateFt({
       args: createTokenArgs,
       api: coreApi,
       state: coreApi.state,
@@ -103,7 +99,7 @@ describe('Create Token Integration Tests', () => {
       hbarOnly: false,
       token: createTokenOutput.tokenId,
     };
-    const accountBalanceResult = await getAccountBalance({
+    const accountBalanceResult = await accountBalance({
       args: accountBalanceArgs,
       api: coreApi,
       state: coreApi.state,

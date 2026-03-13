@@ -7,7 +7,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { listCredentials, removeCredentials } from '@/plugins/credentials';
+import { credentialsList, credentialsRemove } from '@/plugins/credentials';
 
 describe('Credentials Integration Tests', () => {
   let coreApi: CoreApi;
@@ -29,7 +29,7 @@ describe('Credentials Integration Tests', () => {
     };
     coreApi.state.set('kms-credentials', record.keyRefId, record);
 
-    const listResult = await listCredentials({
+    const listResult = await credentialsList({
       args: {},
       api: coreApi,
       state: coreApi.state,
@@ -40,7 +40,7 @@ describe('Credentials Integration Tests', () => {
     const credentialNames = listOutput.credentials.map((c) => c.keyRefId);
     expect(credentialNames).toContain('test-key');
 
-    const removeResult = await removeCredentials({
+    const removeResult = await credentialsRemove({
       args: { id: 'test-key' },
       api: coreApi,
       state: coreApi.state,
@@ -51,7 +51,7 @@ describe('Credentials Integration Tests', () => {
     expect(removeOutput.keyRefId).toBe('test-key');
     expect(removeOutput.removed).toBe(true);
 
-    const listAfterResult = await listCredentials({
+    const listAfterResult = await credentialsList({
       args: {},
       api: coreApi,
       state: coreApi.state,
