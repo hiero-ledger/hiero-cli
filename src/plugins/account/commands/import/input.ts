@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 import {
-  AccountIdWithPrivateKeySchema,
   AccountNameSchema,
   KeyManagerTypeSchema,
+  KeySchema,
 } from '@/core/schemas';
 
 /**
@@ -11,8 +11,8 @@ import {
  * Validates arguments for importing an existing account
  */
 export const ImportAccountInputSchema = z.object({
-  key: AccountIdWithPrivateKeySchema.describe(
-    'Account ID with private key in format accountId:privateKey',
+  key: KeySchema.describe(
+    'Account credentials. Can be accountId:privateKey pair, key reference or account alias.',
   ),
   name: AccountNameSchema.optional().describe('Optional account name/alias'),
   keyManager: KeyManagerTypeSchema.optional().describe(

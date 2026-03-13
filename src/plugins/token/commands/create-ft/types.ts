@@ -20,10 +20,9 @@ export interface CreateFtNormalizedParams {
   network: SupportedNetwork;
   keyManager: KeyManagerName;
   treasury: ResolvedAccountCredential;
-  admin: ResolvedAccountCredential;
+  admin?: ResolvedPublicKey;
   supply?: ResolvedPublicKey;
   finalMaxSupply?: bigint;
-  adminKeyProvided: boolean;
 }
 
 export interface CreateFtBuildTransactionResult {

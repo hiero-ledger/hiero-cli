@@ -155,7 +155,7 @@ describe('createTokenHandler', () => {
         supplyType: SupplyType.INFINITE,
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
-        adminPublicKey: expect.any(Object),
+        adminPublicKey: undefined,
         tokenType: HederaTokenType.FUNGIBLE_COMMON,
         memo: undefined,
       });

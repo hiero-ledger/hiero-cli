@@ -121,7 +121,7 @@ describe('createNftHandler', () => {
         saveToken: mockSaveToken,
       }));
 
-      const { api, tokenTransactions, txExecute } = makeApiMocks({
+      const { api, tokenTransactions, keyResolver, txExecute } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -132,11 +132,17 @@ describe('createNftHandler', () => {
         },
       });
 
+      keyResolver.resolveSigningKey.mockResolvedValue({
+        keyRefId: 'supply-key-ref-id',
+        publicKey: '302a300506032b6570032100' + '0'.repeat(64),
+      });
+
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
+          supplyKey: 'test-supply-key',
         },
         api,
         state: api.state,
@@ -157,7 +163,7 @@ describe('createNftHandler', () => {
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
         tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
-        adminPublicKey: expect.any(Object),
+        adminPublicKey: undefined,
         supplyPublicKey: expect.any(Object),
         memo: undefined,
       });
@@ -175,12 +181,16 @@ describe('createNftHandler', () => {
       keyResolver.resolveAccountCredentialsWithFallback.mockImplementation(() =>
         Promise.reject(new Error('No operator set')),
       );
+      keyResolver.resolveSigningKey.mockImplementation(() =>
+        Promise.reject(new Error('No operator set')),
+      );
 
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
+          supplyKey: 'test-supply-key',
         },
         api,
         state: api.state,

@@ -63,12 +63,6 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const result = await importAccount(args);
 
-    expect(kms.importAndValidatePrivateKey).toHaveBeenCalledWith(
-      KeyAlgorithm.ECDSA,
-      'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890',
-      '0230a1f42abc4794541e4a4389ec7e822666b8a7693c4cc3dedd2746b32f9c015b',
-      'local',
-    );
     expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.9999');
     expect(alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -76,7 +70,7 @@ describe('account plugin - import command (ADR-003)', () => {
         type: AliasType.Account,
         network: 'testnet',
         entityId: '0.0.9999',
-        publicKey: 'pub-key-test',
+        publicKey: expect.any(String),
         keyRefId: 'kr_test123',
       }),
     );

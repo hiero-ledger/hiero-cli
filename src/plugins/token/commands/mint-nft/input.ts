@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   EntityReferenceSchema,
   KeyManagerTypeSchema,
-  PrivateKeySchema,
+  KeySchema,
 } from '@/core/schemas';
 
 /**
@@ -16,7 +16,7 @@ export const MintNftInputSchema = z.object({
     .string()
     .min(1, 'Metadata cannot be empty')
     .describe('NFT metadata (string, max 100 bytes)'),
-  supplyKey: PrivateKeySchema.describe(
+  supplyKey: KeySchema.describe(
     'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
   ),
   keyManager: KeyManagerTypeSchema.optional().describe(

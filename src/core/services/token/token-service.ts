@@ -112,8 +112,11 @@ export class TokenServiceImpl implements TokenService {
       .setTokenType(TokenTypeMap[tokenType])
       .setInitialSupply(initialSupplyRaw)
       .setSupplyType(tokenSupplyType)
-      .setTreasuryAccountId(AccountId.fromString(treasuryId))
-      .setAdminKey(adminPublicKey);
+      .setTreasuryAccountId(AccountId.fromString(treasuryId));
+
+    if (adminPublicKey) {
+      tokenCreateTx.setAdminKey(adminPublicKey);
+    }
 
     // Set max supply for finite supply tokens
     if (supplyType === SupplyType.FINITE && maxSupplyRaw !== undefined) {
