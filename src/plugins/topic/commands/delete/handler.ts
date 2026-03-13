@@ -82,7 +82,7 @@ export class DeleteTopicCommand implements Command {
   }
 }
 
-export async function deleteTopic(
+export async function topicDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new DeleteTopicCommand().execute(args);

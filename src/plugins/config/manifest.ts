@@ -7,18 +7,18 @@ import type { PluginManifest } from '@/core';
 import { OptionType } from '@/core/types/shared.types';
 
 import {
+  configGet,
   GET_CONFIG_TEMPLATE,
-  getConfigOption,
   GetConfigOutputSchema,
 } from './commands/get';
 import {
+  configList,
   LIST_CONFIG_TEMPLATE,
-  listConfigOptions,
   ListConfigOutputSchema,
 } from './commands/list';
 import {
+  configSet,
   SET_CONFIG_TEMPLATE,
-  setConfigOption,
   SetConfigOutputSchema,
 } from './commands/set';
 
@@ -34,7 +34,7 @@ export const configPluginManifest: PluginManifest = {
       summary: 'List configuration options',
       description: 'List all configuration options with current values',
       options: [],
-      handler: listConfigOptions,
+      handler: configList,
       output: {
         schema: ListConfigOutputSchema,
         humanTemplate: LIST_CONFIG_TEMPLATE,
@@ -53,7 +53,7 @@ export const configPluginManifest: PluginManifest = {
           description: 'Option name to read',
         },
       ],
-      handler: getConfigOption,
+      handler: configGet,
       output: {
         schema: GetConfigOutputSchema,
         humanTemplate: GET_CONFIG_TEMPLATE,
@@ -81,7 +81,7 @@ export const configPluginManifest: PluginManifest = {
             'Value to set (boolean|number|string). Booleans: true/false.',
         },
       ],
-      handler: setConfigOption,
+      handler: configSet,
       output: {
         schema: SetConfigOutputSchema,
         humanTemplate: SET_CONFIG_TEMPLATE,

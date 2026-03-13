@@ -290,7 +290,7 @@ export class CreateFtFromFileCommand extends BaseTransactionCommand<
   }
 }
 
-export async function createTokenFromFile(
+export async function tokenCreateFtFromFile(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new CreateFtFromFileCommand().execute(args);

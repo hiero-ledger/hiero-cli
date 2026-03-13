@@ -31,7 +31,7 @@ export class SetConfigCommand implements Command {
   }
 }
 
-export async function setConfigOption(
+export async function configSet(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new SetConfigCommand().execute(args);

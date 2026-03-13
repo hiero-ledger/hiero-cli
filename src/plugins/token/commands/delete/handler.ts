@@ -67,7 +67,7 @@ export class DeleteTokenCommand implements Command {
   }
 }
 
-export async function deleteToken(
+export async function tokenDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new DeleteTokenCommand().execute(args);

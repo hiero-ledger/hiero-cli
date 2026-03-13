@@ -12,7 +12,7 @@ import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
   CreateFungibleTokenFromFileOutputSchema,
-  createTokenFromFile,
+  tokenCreateFtFromFile,
 } from '@/plugins/token/commands/create-ft-from-file';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -50,7 +50,7 @@ const MockedHelper = ZustandTokenStateHelper as jest.Mock;
 const mockFs = fs as jest.Mocked<typeof fs>;
 const mockPath = path as jest.Mocked<typeof path>;
 
-describe('createTokenFromFileHandler', () => {
+describe('tokenCreateFtFromFileHandler', () => {
   const mockTokenTransaction = mockTransactions.token;
   const mockSignResult = mockTransactionResults.success;
 
@@ -182,7 +182,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act
-      const result = await createTokenFromFile(args);
+      const result = await tokenCreateFtFromFile(args);
       const output = assertOutput(
         result.result,
         CreateFungibleTokenFromFileOutputSchema,
@@ -232,7 +232,7 @@ describe('createTokenFromFileHandler', () => {
         logger,
       };
 
-      const result = await createTokenFromFile(args);
+      const result = await tokenCreateFtFromFile(args);
 
       const output = assertOutput(
         result.result,
@@ -269,7 +269,7 @@ describe('createTokenFromFileHandler', () => {
         logger,
       };
 
-      const result = await createTokenFromFile(args);
+      const result = await tokenCreateFtFromFile(args);
 
       const output = assertOutput(
         result.result,
@@ -359,7 +359,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act
-      const result = await createTokenFromFile(args);
+      const result = await tokenCreateFtFromFile(args);
       const output = assertOutput(
         result.result,
         CreateFungibleTokenFromFileOutputSchema,
@@ -472,7 +472,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act
-      const result = await createTokenFromFile(args);
+      const result = await tokenCreateFtFromFile(args);
       const output = assertOutput(
         result.result,
         CreateFungibleTokenFromFileOutputSchema,
@@ -509,7 +509,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      await expect(createTokenFromFile(args)).rejects.toThrow(FileError);
+      await expect(tokenCreateFtFromFile(args)).rejects.toThrow(FileError);
     });
 
     test('should handle file read error', async () => {
@@ -531,7 +531,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      await expect(createTokenFromFile(args)).rejects.toThrow(FileError);
+      await expect(tokenCreateFtFromFile(args)).rejects.toThrow(FileError);
     });
 
     test('should handle invalid JSON', async () => {
@@ -553,7 +553,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      await expect(createTokenFromFile(args)).rejects.toThrow(FileError);
+      await expect(tokenCreateFtFromFile(args)).rejects.toThrow(FileError);
     });
   });
 
@@ -578,7 +578,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      await expect(createTokenFromFile(args)).rejects.toThrow(
+      await expect(tokenCreateFtFromFile(args)).rejects.toThrow(
         'Invalid token definition file',
       );
     });
@@ -603,7 +603,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      await expect(createTokenFromFile(args)).rejects.toThrow(
+      await expect(tokenCreateFtFromFile(args)).rejects.toThrow(
         'Private key with account ID must be a valid account ID and private key pair in {account-id:private-key} format, key reference or alias name',
       );
     });
@@ -628,7 +628,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      await expect(createTokenFromFile(args)).rejects.toThrow(
+      await expect(tokenCreateFtFromFile(args)).rejects.toThrow(
         'Invalid token definition file',
       );
     });
@@ -653,7 +653,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      await expect(createTokenFromFile(args)).rejects.toThrow(
+      await expect(tokenCreateFtFromFile(args)).rejects.toThrow(
         'Invalid token definition file',
       );
     });
@@ -734,7 +734,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act & Assert
-      await expect(createTokenFromFile(args)).rejects.toThrow(StateError);
+      await expect(tokenCreateFtFromFile(args)).rejects.toThrow(StateError);
     });
 
     test('should handle association failure gracefully', async () => {
@@ -816,7 +816,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act
-      const result = await createTokenFromFile(args);
+      const result = await tokenCreateFtFromFile(args);
       const output = assertOutput(
         result.result,
         CreateFungibleTokenFromFileOutputSchema,
@@ -906,7 +906,7 @@ describe('createTokenFromFileHandler', () => {
       };
 
       // Act
-      const result = await createTokenFromFile(args);
+      const result = await tokenCreateFtFromFile(args);
       const output = assertOutput(
         result.result,
         CreateFungibleTokenFromFileOutputSchema,

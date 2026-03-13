@@ -15,7 +15,7 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { ImportTopicOutputSchema } from '@/plugins/topic/commands/import';
-import { importTopic } from '@/plugins/topic/commands/import/handler';
+import { topicImport } from '@/plugins/topic/commands/import/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -65,7 +65,7 @@ describe('topic plugin - import command (ADR-007)', () => {
       name: 'my-topic',
     });
 
-    const result = await importTopic(args);
+    const result = await topicImport(args);
 
     expect(mirrorMock.getTopicInfo).toHaveBeenCalledWith('0.0.123456');
     expect(alias.register).toHaveBeenCalledWith(
@@ -127,7 +127,7 @@ describe('topic plugin - import command (ADR-007)', () => {
       topic: '0.0.999999',
     });
 
-    const result = await importTopic(args);
+    const result = await topicImport(args);
 
     expect(mirrorMock.getTopicInfo).toHaveBeenCalledWith('0.0.999999');
     expect(alias.register).not.toHaveBeenCalled();
@@ -178,7 +178,7 @@ describe('topic plugin - import command (ADR-007)', () => {
       name: 'new-topic',
     });
 
-    await expect(importTopic(args)).rejects.toThrow(
+    await expect(topicImport(args)).rejects.toThrow(
       "Topic with ID '0.0.123456' already exists in state",
     );
   });
@@ -210,6 +210,6 @@ describe('topic plugin - import command (ADR-007)', () => {
       topic: '0.0.123456',
     });
 
-    await expect(importTopic(args)).rejects.toThrow('Topic not found');
+    await expect(topicImport(args)).rejects.toThrow('Topic not found');
   });
 });

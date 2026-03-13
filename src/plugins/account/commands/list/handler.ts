@@ -39,5 +39,5 @@ export class ListAccountsCommand implements Command {
   }
 }
 
-export const listAccounts = (args: CommandHandlerArgs) =>
+export const accountList = (args: CommandHandlerArgs) =>
   new ListAccountsCommand().execute(args);

@@ -7,8 +7,8 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
 import {
-  listNetworks as listHandler,
   ListNetworksOutputSchema,
+  networkList as listHandler,
 } from '@/plugins/network/commands/list';
 import {
   checkMirrorNodeHealth,

@@ -4,37 +4,37 @@ import { OptionType } from '@/core/types/shared.types';
 
 import {
   ACCOUNT_BALANCE_TEMPLATE,
+  accountBalance,
   AccountBalanceOutputSchema,
-  getAccountBalance,
 } from './commands/balance';
 import {
+  accountClear,
   CLEAR_ACCOUNTS_TEMPLATE,
-  clearAccounts,
   ClearAccountsOutputSchema,
 } from './commands/clear';
 import {
+  accountCreate,
   CREATE_ACCOUNT_TEMPLATE,
-  createAccount,
   CreateAccountOutputSchema,
 } from './commands/create';
 import {
+  accountDelete,
   DELETE_ACCOUNT_TEMPLATE,
-  deleteAccount,
   DeleteAccountOutputSchema,
 } from './commands/delete';
 import {
+  accountImport,
   IMPORT_ACCOUNT_TEMPLATE,
-  importAccount,
   ImportAccountOutputSchema,
 } from './commands/import';
 import {
+  accountList,
   LIST_ACCOUNTS_TEMPLATE,
-  listAccounts,
   ListAccountsOutputSchema,
 } from './commands/list';
 import {
+  accountView,
   VIEW_ACCOUNT_TEMPLATE,
-  viewAccount,
   ViewAccountOutputSchema,
 } from './commands/view';
 
@@ -102,7 +102,7 @@ export const accountPluginManifest: PluginManifest = {
             'Existing key for the new account (ecdsa/ed25519 private or public key, key reference kr_xxx, or alias name). Mutually exclusive with --key-type.',
         },
       ],
-      handler: createAccount,
+      handler: accountCreate,
       output: {
         schema: CreateAccountOutputSchema,
         humanTemplate: CREATE_ACCOUNT_TEMPLATE,
@@ -145,7 +145,7 @@ export const accountPluginManifest: PluginManifest = {
             'Display balances in raw units (tinybars for HBAR, base units for tokens)',
         },
       ],
-      handler: getAccountBalance,
+      handler: accountBalance,
       output: {
         schema: AccountBalanceOutputSchema,
         humanTemplate: ACCOUNT_BALANCE_TEMPLATE,
@@ -165,7 +165,7 @@ export const accountPluginManifest: PluginManifest = {
           description: 'Include private keys reference ID in listing',
         },
       ],
-      handler: listAccounts,
+      handler: accountList,
       output: {
         schema: ListAccountsOutputSchema,
         humanTemplate: LIST_ACCOUNTS_TEMPLATE,
@@ -201,7 +201,7 @@ export const accountPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: importAccount,
+      handler: accountImport,
       output: {
         schema: ImportAccountOutputSchema,
         humanTemplate: IMPORT_ACCOUNT_TEMPLATE,
@@ -212,7 +212,7 @@ export const accountPluginManifest: PluginManifest = {
       summary: 'Clear all accounts',
       description: 'Remove all account information from the address book',
       options: [],
-      handler: clearAccounts,
+      handler: accountClear,
       output: {
         schema: ClearAccountsOutputSchema,
         humanTemplate: CLEAR_ACCOUNTS_TEMPLATE,
@@ -234,7 +234,7 @@ export const accountPluginManifest: PluginManifest = {
           description: 'Account ID or alias of the account present in state',
         },
       ],
-      handler: deleteAccount,
+      handler: accountDelete,
       output: {
         schema: DeleteAccountOutputSchema,
         humanTemplate: DELETE_ACCOUNT_TEMPLATE,
@@ -255,7 +255,7 @@ export const accountPluginManifest: PluginManifest = {
           description: 'Account ID or alias of the account present in state',
         },
       ],
-      handler: viewAccount,
+      handler: accountView,
       output: {
         schema: ViewAccountOutputSchema,
         humanTemplate: VIEW_ACCOUNT_TEMPLATE,

@@ -82,5 +82,5 @@ export class DeleteAccountCommand implements Command {
   }
 }
 
-export const deleteAccount = (args: CommandHandlerArgs) =>
+export const accountDelete = (args: CommandHandlerArgs) =>
   new DeleteAccountCommand().execute(args);

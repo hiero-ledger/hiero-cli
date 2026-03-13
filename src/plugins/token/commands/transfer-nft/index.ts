@@ -1,6 +1,6 @@
 export {
   TOKEN_TRANSFER_NFT_COMMAND_NAME,
-  transferNft,
+  tokenTransferNft,
   TransferNftCommand,
 } from './handler';
 export type { TransferNftOutput } from './output';

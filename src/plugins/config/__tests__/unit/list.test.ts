@@ -1,6 +1,6 @@
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
-  listConfigOptions,
+  configList,
   ListConfigOutputSchema,
 } from '@/plugins/config/commands/list';
 
@@ -19,7 +19,7 @@ describe('config plugin - list', () => {
     const api = makeApiMock(configSvc);
     const args = makeCommandArgs({ api });
 
-    const result = await listConfigOptions(args);
+    const result = await configList(args);
     const output = assertOutput(result.result, ListConfigOutputSchema);
 
     expect(output.totalCount).toBe(2);

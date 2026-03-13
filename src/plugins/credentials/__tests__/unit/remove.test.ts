@@ -5,7 +5,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { RemoveCredentialsOutputSchema } from '@/plugins/credentials/commands/remove';
-import { removeCredentials } from '@/plugins/credentials/commands/remove/handler';
+import { credentialsRemove } from '@/plugins/credentials/commands/remove/handler';
 
 describe('credentials plugin - remove command', () => {
   beforeEach(() => {
@@ -28,7 +28,7 @@ describe('credentials plugin - remove command', () => {
 
     const args = makeArgs({ kms: kmsService }, logger, { id: 'kr_test123' });
 
-    const result = await removeCredentials(args);
+    const result = await credentialsRemove(args);
     const output = assertOutput(result.result, RemoveCredentialsOutputSchema);
 
     expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
@@ -45,7 +45,7 @@ describe('credentials plugin - remove command', () => {
       id: 'kr_nonexistent',
     });
 
-    await expect(removeCredentials(args)).rejects.toThrow(NotFoundError);
+    await expect(credentialsRemove(args)).rejects.toThrow(NotFoundError);
     expect(kmsService.get).toHaveBeenCalledWith('kr_nonexistent');
     expect(kmsService.remove).not.toHaveBeenCalled();
   });
@@ -57,7 +57,7 @@ describe('credentials plugin - remove command', () => {
 
     const args = makeArgs({ kms: kmsService }, logger, { id: 'kr_test123' });
 
-    const result = await removeCredentials(args);
+    const result = await credentialsRemove(args);
     const output = assertOutput(result.result, RemoveCredentialsOutputSchema);
 
     expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
@@ -75,7 +75,7 @@ describe('credentials plugin - remove command', () => {
 
     const args = makeArgs({ kms: kmsService }, logger, { id: 'kr_test123' });
 
-    await expect(removeCredentials(args)).rejects.toThrow('KMS service error');
+    await expect(credentialsRemove(args)).rejects.toThrow('KMS service error');
     expect(kmsService.get).toHaveBeenCalledWith('kr_test123');
     expect(kmsService.remove).toHaveBeenCalledWith('kr_test123');
   });

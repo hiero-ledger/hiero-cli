@@ -6,19 +6,19 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  associateToken,
   AssociateTokenOutputSchema,
+  tokenAssociate,
 } from '@/plugins/token/commands/associate';
 import {
-  createFt,
   CreateFungibleTokenOutputSchema,
+  tokenCreateFt,
 } from '@/plugins/token/commands/create-ft';
 import {
-  listTokens,
   ListTokensOutputSchema,
+  tokenList,
 } from '@/plugins/token/commands/list';
 import {
-  transferFt,
+  tokenTransferFt,
   TransferFungibleTokenOutputSchema,
 } from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -88,7 +88,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         supplyType: SupplyType.INFINITE,
       };
 
-      const result = await createFt({
+      const result = await tokenCreateFt({
         api,
         logger: makeLogger(),
         state: api.state,
@@ -159,7 +159,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         amount: '100t',
       };
 
-      const result = await transferFt({
+      const result = await tokenTransferFt({
         api,
         logger: makeLogger(),
         state: api.state,
@@ -207,7 +207,7 @@ describe('Handler Output Validation - Token Plugin', () => {
           '0.0.111:4444444444444444444444444444444444444444444444444444444444444444',
       };
 
-      const result = await associateToken({
+      const result = await tokenAssociate({
         api,
         logger: makeLogger(),
         state: api.state,
@@ -228,7 +228,7 @@ describe('Handler Output Validation - Token Plugin', () => {
 
       const args = {};
 
-      const result = await listTokens({
+      const result = await tokenList({
         api,
         logger: makeLogger(),
         state: api.state,
@@ -272,7 +272,7 @@ describe('Handler Output Validation - Token Plugin', () => {
 
       const args = {};
 
-      const result = await listTokens({
+      const result = await tokenList({
         api,
         logger: makeLogger(),
         state: api.state,

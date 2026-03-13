@@ -180,7 +180,7 @@ export class MintNftCommand extends BaseTransactionCommand<
   }
 }
 
-export async function mintNft(
+export async function tokenMintNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new MintNftCommand().execute(args);

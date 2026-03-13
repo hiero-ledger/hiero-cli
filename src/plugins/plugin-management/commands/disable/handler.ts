@@ -51,7 +51,7 @@ export class DisablePluginCommand implements Command {
   }
 }
 
-export async function disablePlugin(
+export async function pluginManagementDisable(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new DisablePluginCommand().execute(args);

@@ -6,7 +6,7 @@ import { makeArgs } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { StateError, ValidationError } from '@/core/errors';
 import {
-  transferHbar as transferHandler,
+  hbarTransfer as transferHandler,
   TransferOutputSchema,
 } from '@/plugins/hbar/commands/transfer';
 import { TransferInputSchema } from '@/plugins/hbar/commands/transfer/input';

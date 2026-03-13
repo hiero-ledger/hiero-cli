@@ -35,7 +35,7 @@ export class RemoveCredentialsCommand implements Command {
   }
 }
 
-export async function removeCredentials(
+export async function credentialsRemove(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new RemoveCredentialsCommand().execute(args);

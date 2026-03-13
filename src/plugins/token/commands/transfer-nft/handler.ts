@@ -180,7 +180,7 @@ export class TransferNftCommand extends BaseTransactionCommand<
   }
 }
 
-export async function transferNft(
+export async function tokenTransferNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new TransferNftCommand().execute(args);

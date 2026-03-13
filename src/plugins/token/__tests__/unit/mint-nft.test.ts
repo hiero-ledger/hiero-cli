@@ -10,8 +10,8 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  mintNft,
   MintNftOutputSchema,
+  tokenMintNft,
 } from '@/plugins/token/commands/mint-nft';
 import { TOKEN_NAMESPACE } from '@/plugins/token/constants';
 
@@ -26,7 +26,7 @@ import {
 const defaultSupplyKey =
   '0.0.200000:3333333333333333333333333333333333333333333333333333333333333333';
 
-describe('mintNftHandler', () => {
+describe('tokenMintNftHandler', () => {
   describe('success scenarios', () => {
     test('should mint NFT with token ID and metadata', async () => {
       const { api } = makeMintNftSuccessMocks();
@@ -42,7 +42,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      const result = await mintNft(args);
+      const result = await tokenMintNft(args);
 
       const output = assertOutput(result.result, MintNftOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
@@ -81,7 +81,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      const result = await mintNft(args);
+      const result = await tokenMintNft(args);
 
       const output = assertOutput(result.result, MintNftOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
@@ -161,7 +161,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      const result = await mintNft(args);
+      const result = await tokenMintNft(args);
 
       const output = assertOutput(result.result, MintNftOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
@@ -192,7 +192,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      await expect(mintNft(args)).rejects.toThrow(NotFoundError);
+      await expect(tokenMintNft(args)).rejects.toThrow(NotFoundError);
     });
 
     test('should handle token without supply key', async () => {
@@ -232,7 +232,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      await expect(mintNft(args)).rejects.toThrow(ValidationError);
+      await expect(tokenMintNft(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle fungible token (not NFT)', async () => {
@@ -293,7 +293,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      await expect(mintNft(args)).rejects.toThrow(ValidationError);
+      await expect(tokenMintNft(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle exceeding max supply for FINITE token', async () => {
@@ -320,7 +320,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      await expect(mintNft(args)).rejects.toThrow(ValidationError);
+      await expect(tokenMintNft(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle metadata exceeding 100 bytes', async () => {
@@ -338,7 +338,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      await expect(mintNft(args)).rejects.toThrow(ValidationError);
+      await expect(tokenMintNft(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle transaction failure', async () => {
@@ -357,7 +357,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      await expect(mintNft(args)).rejects.toThrow(TransactionError);
+      await expect(tokenMintNft(args)).rejects.toThrow(TransactionError);
     });
 
     test('should handle mismatched supply key', async () => {
@@ -406,7 +406,7 @@ describe('mintNftHandler', () => {
         },
       });
 
-      await expect(mintNft(args)).rejects.toThrow(ValidationError);
+      await expect(tokenMintNft(args)).rejects.toThrow(ValidationError);
     });
   });
 });

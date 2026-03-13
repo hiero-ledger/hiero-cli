@@ -24,7 +24,7 @@ export class ResetPluginsCommand implements Command {
   }
 }
 
-export async function resetPlugins(
+export async function pluginManagementReset(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ResetPluginsCommand().execute(args);

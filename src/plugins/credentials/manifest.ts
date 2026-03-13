@@ -7,13 +7,13 @@ import type { PluginManifest } from '@/core/plugins/plugin.interface';
 import { OptionType } from '@/core/types/shared.types';
 
 import {
+  credentialsList,
   LIST_CREDENTIALS_TEMPLATE,
-  listCredentials,
   ListCredentialsOutputSchema,
 } from './commands/list';
 import {
+  credentialsRemove,
   REMOVE_CREDENTIALS_TEMPLATE,
-  removeCredentials,
   RemoveCredentialsOutputSchema,
 } from './commands/remove';
 
@@ -30,7 +30,7 @@ export const credentialsManifest: PluginManifest = {
       summary: 'List all credentials',
       description: 'Show all stored credentials',
       options: [],
-      handler: listCredentials,
+      handler: credentialsList,
       output: {
         schema: ListCredentialsOutputSchema,
         humanTemplate: LIST_CREDENTIALS_TEMPLATE,
@@ -49,7 +49,7 @@ export const credentialsManifest: PluginManifest = {
           description: 'Key reference ID to remove from KMS',
         },
       ],
-      handler: removeCredentials,
+      handler: credentialsRemove,
       output: {
         schema: RemoveCredentialsOutputSchema,
         humanTemplate: REMOVE_CREDENTIALS_TEMPLATE,

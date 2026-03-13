@@ -12,8 +12,8 @@ import { InternalError, TransactionError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
-  associateToken,
   AssociateTokenOutputSchema,
+  tokenAssociate,
 } from '@/plugins/token/commands/associate';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -34,7 +34,7 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
 
-describe('associateTokenHandler', () => {
+describe('tokenAssociateHandler', () => {
   beforeEach(() => {
     mockZustandTokenStateHelper(MockedHelper);
   });
@@ -77,7 +77,7 @@ describe('associateTokenHandler', () => {
         logger,
       };
 
-      const result = await associateToken(args);
+      const result = await tokenAssociate(args);
 
       const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe(tokenId);
@@ -131,7 +131,7 @@ describe('associateTokenHandler', () => {
         logger,
       };
 
-      const result = await associateToken(args);
+      const result = await tokenAssociate(args);
 
       const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
@@ -198,7 +198,7 @@ describe('associateTokenHandler', () => {
         logger,
       };
 
-      const result = await associateToken(args);
+      const result = await tokenAssociate(args);
 
       const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
@@ -264,7 +264,7 @@ describe('associateTokenHandler', () => {
         logger,
       };
 
-      const result = await associateToken(args);
+      const result = await tokenAssociate(args);
 
       const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
@@ -322,7 +322,7 @@ describe('associateTokenHandler', () => {
         logger,
       };
 
-      const result = await associateToken(args);
+      const result = await tokenAssociate(args);
 
       const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
@@ -382,7 +382,7 @@ describe('associateTokenHandler', () => {
         logger,
       };
 
-      await expect(associateToken(args)).rejects.toThrow(TransactionError);
+      await expect(tokenAssociate(args)).rejects.toThrow(TransactionError);
     });
 
     test('should handle token transaction service error', async () => {
@@ -420,7 +420,7 @@ describe('associateTokenHandler', () => {
         logger,
       };
 
-      await expect(associateToken(args)).rejects.toThrow('Service unavailable');
+      await expect(tokenAssociate(args)).rejects.toThrow('Service unavailable');
     });
 
     test('should handle signing service error', async () => {
@@ -461,7 +461,7 @@ describe('associateTokenHandler', () => {
         logger,
       };
 
-      await expect(associateToken(args)).rejects.toThrow('Signing failed');
+      await expect(tokenAssociate(args)).rejects.toThrow('Signing failed');
     });
   });
 
@@ -514,7 +514,7 @@ describe('associateTokenHandler', () => {
         logger,
       };
 
-      const result = await associateToken(args);
+      const result = await tokenAssociate(args);
 
       const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
@@ -587,7 +587,7 @@ describe('associateTokenHandler', () => {
         logger,
       };
 
-      const result = await associateToken(args);
+      const result = await tokenAssociate(args);
 
       const output = assertOutput(result.result, AssociateTokenOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');

@@ -46,7 +46,7 @@ export class EnablePluginCommand implements Command {
   }
 }
 
-export async function enablePlugin(
+export async function pluginManagementEnable(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new EnablePluginCommand().execute(args);

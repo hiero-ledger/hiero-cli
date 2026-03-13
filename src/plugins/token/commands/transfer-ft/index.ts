@@ -4,7 +4,7 @@
  */
 export {
   TOKEN_TRANSFER_FT_COMMAND_NAME,
-  transferFt,
+  tokenTransferFt,
   TransferFtCommand,
 } from './handler';
 export type { TransferFungibleTokenOutput } from './output';

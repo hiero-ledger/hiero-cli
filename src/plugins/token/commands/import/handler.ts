@@ -96,7 +96,7 @@ export class ImportTokenCommand implements Command {
   }
 }
 
-export async function importToken(
+export async function tokenImport(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ImportTokenCommand().execute(args);

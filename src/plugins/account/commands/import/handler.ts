@@ -99,5 +99,5 @@ export class ImportAccountCommand implements Command {
   }
 }
 
-export const importAccount = (args: CommandHandlerArgs) =>
+export const accountImport = (args: CommandHandlerArgs) =>
   new ImportAccountCommand().execute(args);

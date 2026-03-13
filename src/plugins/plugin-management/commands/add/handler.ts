@@ -71,7 +71,7 @@ export class AddPluginCommand implements Command {
   }
 }
 
-export async function addPlugin(
+export async function pluginManagementAdd(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new AddPluginCommand().execute(args);

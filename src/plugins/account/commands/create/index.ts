@@ -4,7 +4,7 @@
  */
 export {
   ACCOUNT_CREATE_COMMAND_NAME,
-  createAccount,
+  accountCreate,
   CreateAccountCommand,
 } from './handler';
 export type { CreateAccountOutput } from './output';

@@ -62,7 +62,7 @@ export class ListTopicsCommand implements Command {
   }
 }
 
-export async function listTopics(
+export async function topicList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ListTopicsCommand().execute(args);

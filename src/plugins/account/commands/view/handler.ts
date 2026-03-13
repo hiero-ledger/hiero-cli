@@ -60,5 +60,5 @@ export class ViewAccountCommand implements Command {
   }
 }
 
-export const viewAccount = (args: CommandHandlerArgs) =>
+export const accountView = (args: CommandHandlerArgs) =>
   new ViewAccountCommand().execute(args);

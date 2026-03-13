@@ -28,7 +28,7 @@ export class GetConfigCommand implements Command {
   }
 }
 
-export async function getConfigOption(
+export async function configGet(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new GetConfigCommand().execute(args);

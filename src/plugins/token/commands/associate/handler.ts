@@ -199,7 +199,7 @@ export class AssociateTokenCommand extends BaseTransactionCommand<
   }
 }
 
-export async function associateToken(
+export async function tokenAssociate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new AssociateTokenCommand().execute(args);

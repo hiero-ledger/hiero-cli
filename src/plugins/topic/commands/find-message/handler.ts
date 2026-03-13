@@ -47,7 +47,7 @@ export class FindMessageCommand implements Command {
   }
 }
 
-export async function findMessage(
+export async function topicFindMessage(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new FindMessageCommand().execute(args);

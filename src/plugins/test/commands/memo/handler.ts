@@ -6,7 +6,7 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { MemoTestInputSchema } from '@/plugins/test/commands/memo/input';
 import { ZustandMemoStateHelper } from '@/plugins/test/zustand-state-helper';
 
-export async function createMemo(
+export async function testMemo(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   const { api, logger } = args;

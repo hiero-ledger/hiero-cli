@@ -80,7 +80,7 @@ export class ImportTopicCommand implements Command {
   }
 }
 
-export async function importTopic(
+export async function topicImport(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ImportTopicCommand().execute(args);

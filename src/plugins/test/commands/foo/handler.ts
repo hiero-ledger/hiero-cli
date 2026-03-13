@@ -78,12 +78,6 @@ export class TestFooCommand extends BaseTransactionCommand<
   }
 }
 
-export async function fooTestOptions(
-  args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  return new TestFooCommand().execute(args);
-}
-
 export async function testFoo(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {

@@ -61,6 +61,6 @@ export class GetOperatorCommand implements Command {
   }
 }
 
-export const getOperator = async (
+export const networkGetOperator = async (
   args: CommandHandlerArgs,
 ): Promise<CommandResult> => new GetOperatorCommand().execute(args);

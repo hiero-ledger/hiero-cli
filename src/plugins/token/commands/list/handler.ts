@@ -79,7 +79,7 @@ export class ListTokensCommand implements Command {
   }
 }
 
-export async function listTokens(
+export async function tokenList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ListTokensCommand().execute(args);

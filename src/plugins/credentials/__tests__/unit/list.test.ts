@@ -4,7 +4,7 @@ import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
 import { ListCredentialsOutputSchema } from '@/plugins/credentials/commands/list';
-import { listCredentials } from '@/plugins/credentials/commands/list/handler';
+import { credentialsList } from '@/plugins/credentials/commands/list/handler';
 
 describe('credentials plugin - list command', () => {
   beforeEach(() => {
@@ -18,7 +18,7 @@ describe('credentials plugin - list command', () => {
 
     const args = makeArgs({ kms: kmsService }, logger, {});
 
-    const result = await listCredentials(args);
+    const result = await credentialsList(args);
     const output = assertOutput(result.result, ListCredentialsOutputSchema);
 
     expect(output.credentials).toHaveLength(0);
@@ -49,7 +49,7 @@ describe('credentials plugin - list command', () => {
 
     const args = makeArgs({ kms: kmsService }, logger, {});
 
-    const result = await listCredentials(args);
+    const result = await credentialsList(args);
     const output = assertOutput(result.result, ListCredentialsOutputSchema);
 
     expect(output.totalCount).toBe(2);
@@ -79,6 +79,6 @@ describe('credentials plugin - list command', () => {
 
     const args = makeArgs({ kms: kmsService }, logger, {});
 
-    await expect(listCredentials(args)).rejects.toThrow('KMS service error');
+    await expect(credentialsList(args)).rejects.toThrow('KMS service error');
   });
 });

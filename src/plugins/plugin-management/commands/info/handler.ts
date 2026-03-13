@@ -65,7 +65,7 @@ export class PluginInfoCommand implements Command {
   }
 }
 
-export async function getPluginInfo(
+export async function pluginManagementInfo(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new PluginInfoCommand().execute(args);

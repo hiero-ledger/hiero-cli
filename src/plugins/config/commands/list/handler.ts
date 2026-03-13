@@ -16,7 +16,7 @@ export class ListConfigCommand implements Command {
   }
 }
 
-export async function listConfigOptions(
+export async function configList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ListConfigCommand().execute(args);

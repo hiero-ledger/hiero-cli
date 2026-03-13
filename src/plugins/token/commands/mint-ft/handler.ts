@@ -198,6 +198,8 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
   }
 }
 
-export async function mintFt(args: CommandHandlerArgs): Promise<CommandResult> {
+export async function tokenMintFt(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
   return new TokenMintFtCommand().execute(args);
 }

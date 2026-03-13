@@ -108,7 +108,7 @@ Contract plugin will consist of two commands:
               'Key manager to use: local or local_encrypted (defaults to config setting)',
     },
   ],
-          handler: createContract,
+          handler: contractCreate,
           output: {
     schema: ContractCreateOutputSchema,
             humanTemplate: CONTRACT_CREATE_TEMPLATE,
@@ -152,7 +152,7 @@ hcli contract create --name my-token --default erc20 -c "CustomToken" -c "CTK" -
         summary: 'List all contracts',
         description: 'List all smart contracts stored in the state',
         options: [],
-        handler: listContracts,
+        handler: contractList,
         output: {
           schema: ContractListOutputSchema,
           humanTemplate: CONTRACT_LIST_TEMPLATE,

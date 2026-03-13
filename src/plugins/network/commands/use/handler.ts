@@ -33,6 +33,6 @@ export class UseNetworkCommand implements Command {
   }
 }
 
-export const useNetwork = async (
+export const networkUse = async (
   args: CommandHandlerArgs,
 ): Promise<CommandResult> => new UseNetworkCommand().execute(args);

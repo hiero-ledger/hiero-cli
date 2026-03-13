@@ -17,7 +17,7 @@ import { TransferInputSchema } from './input';
 
 export const HBAR_TRANSFER_COMMAND_NAME = 'hbar_transfer';
 
-export async function transferHbar(
+export async function hbarTransfer(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new TransferCommand().execute(args);

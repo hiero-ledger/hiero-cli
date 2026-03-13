@@ -83,6 +83,6 @@ export class SetOperatorCommand implements Command {
   }
 }
 
-export const setOperator = async (
+export const networkSetOperator = async (
   args: CommandHandlerArgs,
 ): Promise<CommandResult> => new SetOperatorCommand().execute(args);

@@ -5,8 +5,8 @@ import '@/core/utils/json-serialize';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  listTokens,
   ListTokensOutputSchema,
+  tokenList,
 } from '@/plugins/token/commands/list';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -22,7 +22,7 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
 
-describe('listTokensHandler', () => {
+describe('tokenListHandler', () => {
   beforeEach(() => {
     setupZustandHelperMock(MockedHelper, { tokens: [] });
   });
@@ -40,7 +40,7 @@ describe('listTokensHandler', () => {
         logger,
       };
 
-      const result = await listTokens(args);
+      const result = await tokenList(args);
 
       const output = assertOutput(result.result, ListTokensOutputSchema);
       expect(output.tokens).toEqual([]);
@@ -85,7 +85,7 @@ describe('listTokensHandler', () => {
         logger,
       };
 
-      const result = await listTokens(args);
+      const result = await tokenList(args);
 
       const output = assertOutput(result.result, ListTokensOutputSchema);
       expect(output.tokens).toHaveLength(1);
@@ -130,7 +130,7 @@ describe('listTokensHandler', () => {
         logger,
       };
 
-      const result = await listTokens(args);
+      const result = await tokenList(args);
 
       const output = assertOutput(result.result, ListTokensOutputSchema);
       expect(output.tokens).toHaveLength(1);
@@ -152,7 +152,7 @@ describe('listTokensHandler', () => {
         logger,
       };
 
-      await listTokens(args);
+      await tokenList(args);
 
       expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);
     });

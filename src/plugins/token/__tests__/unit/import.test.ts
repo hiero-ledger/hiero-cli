@@ -15,7 +15,7 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { createMockTokenInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { ImportTokenOutputSchema } from '@/plugins/token/commands/import';
-import { importToken } from '@/plugins/token/commands/import/handler';
+import { tokenImport } from '@/plugins/token/commands/import/handler';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -73,7 +73,7 @@ describe('token plugin - import command (ADR-007)', () => {
       name: 'my-token',
     });
 
-    const result = await importToken(args);
+    const result = await tokenImport(args);
 
     expect(mirrorMock.getTokenInfo).toHaveBeenCalledWith(`0.0.123456`);
     expect(alias.register).toHaveBeenCalledWith(
@@ -142,7 +142,7 @@ describe('token plugin - import command (ADR-007)', () => {
       token: '0.0.999999',
     });
 
-    const result = await importToken(args);
+    const result = await tokenImport(args);
 
     expect(mirrorMock.getTokenInfo).toHaveBeenCalledWith(`0.0.999999`);
     expect(alias.register).not.toHaveBeenCalled();
@@ -197,7 +197,7 @@ describe('token plugin - import command (ADR-007)', () => {
       token: '0.0.555555',
     });
 
-    const result = await importToken(args);
+    const result = await tokenImport(args);
 
     const output = assertOutput(result.result, ImportTokenOutputSchema);
     expect(output.tokenId).toBe('0.0.555555');
@@ -235,7 +235,7 @@ describe('token plugin - import command (ADR-007)', () => {
       name: 'new-token',
     });
 
-    await expect(importToken(args)).rejects.toThrow(
+    await expect(tokenImport(args)).rejects.toThrow(
       "Token with ID '0.0.123456' already exists in state",
     );
   });
@@ -267,6 +267,6 @@ describe('token plugin - import command (ADR-007)', () => {
       token: '0.0.123456',
     });
 
-    await expect(importToken(args)).rejects.toThrow('Token not found');
+    await expect(tokenImport(args)).rejects.toThrow('Token not found');
   });
 });

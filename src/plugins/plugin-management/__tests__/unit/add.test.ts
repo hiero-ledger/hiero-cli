@@ -15,7 +15,7 @@ import {
 } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
 import { AddPluginOutputSchema } from '@/plugins/plugin-management/commands/add';
-import { addPlugin } from '@/plugins/plugin-management/commands/add/handler';
+import { pluginManagementAdd } from '@/plugins/plugin-management/commands/add/handler';
 
 import { CUSTOM_PLUGIN_ENTRY } from './helpers/fixtures';
 
@@ -65,7 +65,7 @@ describe('plugin-management add command', () => {
       path: 'dist/plugins/custom-plugin',
     });
 
-    const result = await addPlugin(args);
+    const result = await pluginManagementAdd(args);
     const output = assertOutput(result.result, AddPluginOutputSchema);
 
     expect(output).toBeDefined();
@@ -96,8 +96,8 @@ describe('plugin-management add command', () => {
       path: 'dist/plugins/custom-plugin',
     });
 
-    await expect(addPlugin(args)).rejects.toThrow(StateError);
-    await expect(addPlugin(args)).rejects.toThrow(/already exists/);
+    await expect(pluginManagementAdd(args)).rejects.toThrow(StateError);
+    await expect(pluginManagementAdd(args)).rejects.toThrow(/already exists/);
 
     expect(pluginManagement.addPlugin).toHaveBeenCalledWith(
       expect.objectContaining({ name: 'custom-plugin' }),
@@ -119,12 +119,12 @@ describe('plugin-management add command', () => {
     (error as NodeJS.ErrnoException).code = 'ENOENT';
     mockFs.access.mockRejectedValue(error);
 
-    await expect(addPlugin(args)).rejects.toThrow(FileError);
-    await expect(addPlugin(args)).rejects.toThrow(
+    await expect(pluginManagementAdd(args)).rejects.toThrow(FileError);
+    await expect(pluginManagementAdd(args)).rejects.toThrow(
       /Plugin manifest not found at/,
     );
-    await expect(addPlugin(args)).rejects.toThrow(/manifest.js/);
-    await expect(addPlugin(args)).rejects.toThrow(
+    await expect(pluginManagementAdd(args)).rejects.toThrow(/manifest.js/);
+    await expect(pluginManagementAdd(args)).rejects.toThrow(
       /Make sure the plugin directory contains a manifest.js file/,
     );
     expect(pluginManagement.addPlugin).not.toHaveBeenCalled();

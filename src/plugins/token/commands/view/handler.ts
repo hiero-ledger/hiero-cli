@@ -53,7 +53,7 @@ export class ViewTokenCommand implements Command {
   }
 }
 
-export async function viewToken(
+export async function tokenView(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ViewTokenCommand().execute(args);

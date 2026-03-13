@@ -222,7 +222,7 @@ export class CreateNftCommand extends BaseTransactionCommand<
   }
 }
 
-export async function createNft(
+export async function tokenCreateNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new CreateNftCommand().execute(args);

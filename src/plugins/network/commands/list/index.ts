@@ -1,4 +1,4 @@
-export { listNetworks, ListNetworksCommand } from './handler';
+export { ListNetworksCommand, networkList } from './handler';
 export type { ListNetworksOutput } from './output';
 export { LIST_NETWORKS_TEMPLATE, ListNetworksOutputSchema } from './output';
 export type {

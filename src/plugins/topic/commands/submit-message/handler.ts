@@ -173,7 +173,7 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
   }
 }
 
-export async function submitMessage(
+export async function topicSubmitMessage(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new SubmitMessageCommand().execute(args);

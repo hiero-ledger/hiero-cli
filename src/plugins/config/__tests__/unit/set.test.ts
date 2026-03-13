@@ -1,7 +1,7 @@
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ConfigurationError } from '@/core';
 import {
-  setConfigOption,
+  configSet,
   SetConfigOutputSchema,
 } from '@/plugins/config/commands/set';
 
@@ -29,7 +29,7 @@ describe('config plugin - set', () => {
       args: { option: 'ed25519_support_enabled', value: 'true' },
     });
 
-    const result = await setConfigOption(args);
+    const result = await configSet(args);
     expect(configSvc.setOption).toHaveBeenCalledWith(
       'ed25519_support_enabled',
       true,
@@ -54,7 +54,7 @@ describe('config plugin - set', () => {
       args: { option: 'some_number', value: '42' },
     });
 
-    const result = await setConfigOption(args);
+    const result = await configSet(args);
     expect(configSvc.setOption).toHaveBeenCalledWith('some_number', 42);
     const output = assertOutput(result.result, SetConfigOutputSchema);
     expect(output.newValue).toBe(42);
@@ -76,7 +76,7 @@ describe('config plugin - set', () => {
       api,
       args: { option: 'default_key_manager', value: 'invalid' },
     });
-    await expect(setConfigOption(argsBad)).rejects.toThrow(
+    await expect(configSet(argsBad)).rejects.toThrow(
       'Invalid value for default_key_manager',
     );
 
@@ -84,7 +84,7 @@ describe('config plugin - set', () => {
       api,
       args: { option: 'default_key_manager', value: 'local_encrypted' },
     });
-    await setConfigOption(argsGood);
+    await configSet(argsGood);
     expect(configSvc.setOption).toHaveBeenCalledWith(
       'default_key_manager',
       'local_encrypted',

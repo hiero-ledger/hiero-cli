@@ -187,7 +187,7 @@ export class CreateTopicCommand extends BaseTransactionCommand<
   }
 }
 
-export async function createTopic(
+export async function topicCreate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new CreateTopicCommand().execute(args);

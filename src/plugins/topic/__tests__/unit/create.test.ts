@@ -15,7 +15,7 @@ import { NetworkError, SupportedNetwork } from '@/core';
 import { TransactionError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { CreateTopicOutputSchema } from '@/plugins/topic/commands/create';
-import { createTopic } from '@/plugins/topic/commands/create/handler';
+import { topicCreate } from '@/plugins/topic/commands/create/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -25,16 +25,16 @@ jest.mock('../../zustand-state-helper', () => ({
 const MockedHelper = ZustandTopicStateHelper as jest.Mock;
 
 const makeApiMocks = ({
-  createTopicImpl,
+  topicCreateImpl,
   executeImpl,
   network = 'testnet',
 }: {
-  createTopicImpl?: jest.Mock;
+  topicCreateImpl?: jest.Mock;
   executeImpl?: jest.Mock;
   network?: 'testnet' | 'mainnet' | 'previewnet';
 }) => {
   const topicTransactions = {
-    createTopic: createTopicImpl || jest.fn(),
+    createTopic: topicCreateImpl || jest.fn(),
     submitMessage: jest.fn(),
   };
 
@@ -88,7 +88,7 @@ describe('topic plugin - create command', () => {
 
     const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
       makeApiMocks({
-        createTopicImpl: jest.fn().mockReturnValue({
+        topicCreateImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
@@ -114,7 +114,7 @@ describe('topic plugin - create command', () => {
       memo: 'Test topic memo',
     });
 
-    const result = await createTopic(args);
+    const result = await topicCreate(args);
 
     const output = assertOutput(result.result, CreateTopicOutputSchema);
     expect(output.topicId).toBe('0.0.9999');
@@ -149,7 +149,7 @@ describe('topic plugin - create command', () => {
 
     const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
       makeApiMocks({
-        createTopicImpl: jest.fn().mockReturnValue({
+        topicCreateImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
@@ -177,7 +177,7 @@ describe('topic plugin - create command', () => {
       submitKey,
     });
 
-    const result = await createTopic(args);
+    const result = await topicCreate(args);
 
     const output = assertOutput(result.result, CreateTopicOutputSchema);
     expect(output.topicId).toBe('0.0.8888');
@@ -221,7 +221,7 @@ describe('topic plugin - create command', () => {
 
     const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
       makeApiMocks({
-        createTopicImpl: jest.fn().mockReturnValue({
+        topicCreateImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
@@ -245,7 +245,7 @@ describe('topic plugin - create command', () => {
 
     const args = makeArgs(api, logger, {});
 
-    const result = await createTopic(args);
+    const result = await topicCreate(args);
 
     const output = assertOutput(result.result, CreateTopicOutputSchema);
     expect(output.topicId).toBe('0.0.7777');
@@ -272,7 +272,7 @@ describe('topic plugin - create command', () => {
 
     const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
       makeApiMocks({
-        createTopicImpl: jest.fn().mockReturnValue({
+        topicCreateImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
@@ -294,16 +294,16 @@ describe('topic plugin - create command', () => {
 
     const args = makeArgs(api, logger, { memo: 'Failed topic' });
 
-    await expect(createTopic(args)).rejects.toThrow(TransactionError);
+    await expect(topicCreate(args)).rejects.toThrow(TransactionError);
   });
 
-  test('throws when createTopic throws', async () => {
+  test('throws when topicCreate throws', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({ saveTopic: jest.fn() }));
 
     const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
       makeApiMocks({
-        createTopicImpl: jest.fn().mockImplementation(() => {
+        topicCreateImpl: jest.fn().mockImplementation(() => {
           throw new NetworkError('network error');
         }),
       });
@@ -320,6 +320,6 @@ describe('topic plugin - create command', () => {
 
     const args = makeArgs(api, logger, { memo: 'Error topic' });
 
-    await expect(createTopic(args)).rejects.toThrow('network error');
+    await expect(topicCreate(args)).rejects.toThrow('network error');
   });
 });

@@ -8,9 +8,9 @@ import '@/core/utils/json-serialize';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { getConfigOption } from '@/plugins/config/commands/get/handler';
-import { listConfigOptions } from '@/plugins/config/commands/list/handler';
-import { setConfigOption } from '@/plugins/config/commands/set/handler';
+import { configGet } from '@/plugins/config/commands/get/handler';
+import { configList } from '@/plugins/config/commands/list/handler';
+import { configSet } from '@/plugins/config/commands/set/handler';
 
 describe('Config Integration Tests', () => {
   let coreApi: CoreApi;
@@ -21,7 +21,7 @@ describe('Config Integration Tests', () => {
   });
 
   it('should list config options', async () => {
-    const listConfigResult = await listConfigOptions({
+    const listConfigResult = await configList({
       args: {},
       api: coreApi,
       state: coreApi.state,
@@ -46,7 +46,7 @@ describe('Config Integration Tests', () => {
       option: 'ed25519_support_enabled',
       value: 'true',
     };
-    const setConfigResult = await setConfigOption({
+    const setConfigResult = await configSet({
       args: setConfigArgs,
       api: coreApi,
       state: coreApi.state,
@@ -60,7 +60,7 @@ describe('Config Integration Tests', () => {
     const getConfigArgs: Record<string, unknown> = {
       option: 'ed25519_support_enabled',
     };
-    const getConfigResult = await getConfigOption({
+    const getConfigResult = await configGet({
       args: getConfigArgs,
       api: coreApi,
       state: coreApi.state,

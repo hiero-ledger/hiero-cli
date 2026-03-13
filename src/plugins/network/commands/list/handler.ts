@@ -58,6 +58,6 @@ export class ListNetworksCommand implements Command {
   }
 }
 
-export const listNetworks = async (
+export const networkList = async (
   args: CommandHandlerArgs,
 ): Promise<CommandResult> => new ListNetworksCommand().execute(args);

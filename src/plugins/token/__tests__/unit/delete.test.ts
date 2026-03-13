@@ -7,8 +7,8 @@ import { SupportedNetwork } from '@/core';
 import { NotFoundError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import {
-  deleteToken,
   DeleteTokenOutputSchema,
+  tokenDelete,
 } from '@/plugins/token/commands/delete';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -24,7 +24,7 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
 
-describe('deleteTokenHandler', () => {
+describe('tokenDeleteHandler', () => {
   beforeEach(() => {
     mockZustandTokenStateHelper(MockedHelper);
   });
@@ -67,7 +67,7 @@ describe('deleteTokenHandler', () => {
         logger,
       };
 
-      const result = await deleteToken(args);
+      const result = await tokenDelete(args);
 
       const output = assertOutput(result.result, DeleteTokenOutputSchema);
       expect(output.deletedToken.tokenId).toBe('0.0.123456');
@@ -105,7 +105,7 @@ describe('deleteTokenHandler', () => {
         logger,
       };
 
-      const result = await deleteToken(args);
+      const result = await tokenDelete(args);
 
       const output = assertOutput(result.result, DeleteTokenOutputSchema);
       expect(output.deletedToken.tokenId).toBe('0.0.123456');
@@ -133,7 +133,7 @@ describe('deleteTokenHandler', () => {
         logger,
       };
 
-      await expect(deleteToken(args)).rejects.toThrow(NotFoundError);
+      await expect(tokenDelete(args)).rejects.toThrow(NotFoundError);
     });
 
     test('bubbles identity resolution errors', async () => {
@@ -152,7 +152,7 @@ describe('deleteTokenHandler', () => {
         logger,
       };
 
-      await expect(deleteToken(args)).rejects.toThrow(
+      await expect(tokenDelete(args)).rejects.toThrow(
         'identity resolution failed',
       );
     });

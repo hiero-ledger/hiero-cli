@@ -238,7 +238,7 @@ export class CreateFtCommand extends BaseTransactionCommand<
   }
 }
 
-export async function createFt(
+export async function tokenCreateFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new CreateFtCommand().execute(args);

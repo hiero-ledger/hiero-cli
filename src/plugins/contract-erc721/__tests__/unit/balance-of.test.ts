@@ -18,7 +18,7 @@ import {
 } from '@/plugins/contract-erc721/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 import {
-  contractErc721BalanceOfFunctionCall,
+  contractErc721BalanceOf,
   ContractErc721CallBalanceOfOutputSchema,
 } from '@/plugins/contract-erc721/commands/balance-of';
 import { ContractErc721CallBalanceOfInputSchema } from '@/plugins/contract-erc721/commands/balance-of/input';
@@ -78,7 +78,7 @@ describe('contract-erc721 plugin - balanceOf command (unit)', () => {
       },
     });
 
-    const result = await contractErc721BalanceOfFunctionCall(args);
+    const result = await contractErc721BalanceOf(args);
 
     expect(result.result).toBeDefined();
     const output = assertOutput(
@@ -125,7 +125,7 @@ describe('contract-erc721 plugin - balanceOf command (unit)', () => {
       },
     );
 
-    const result = await contractErc721BalanceOfFunctionCall(args);
+    const result = await contractErc721BalanceOf(args);
 
     expect(result.result).toBeDefined();
     const output = assertOutput(
@@ -158,7 +158,7 @@ describe('contract-erc721 plugin - balanceOf command (unit)', () => {
       },
     );
 
-    const result = await contractErc721BalanceOfFunctionCall(args);
+    const result = await contractErc721BalanceOf(args);
 
     expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledWith({
@@ -189,10 +189,8 @@ describe('contract-erc721 plugin - balanceOf command (unit)', () => {
       queryResult: [],
     });
 
-    await expect(contractErc721BalanceOfFunctionCall(args)).rejects.toThrow(
-      StateError,
-    );
-    await expect(contractErc721BalanceOfFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721BalanceOf(args)).rejects.toThrow(StateError);
+    await expect(contractErc721BalanceOf(args)).rejects.toThrow(
       `There was a problem with decoding contract ${MOCK_CONTRACT_ID} "balanceOf" function result`,
     );
   });
@@ -210,7 +208,7 @@ describe('contract-erc721 plugin - balanceOf command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    await expect(contractErc721BalanceOfFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721BalanceOf(args)).rejects.toThrow(
       'contract query error',
     );
   });

@@ -194,7 +194,7 @@ export class TransferFtCommand extends BaseTransactionCommand<
   }
 }
 
-export async function transferFt(
+export async function tokenTransferFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new TransferFtCommand().execute(args);

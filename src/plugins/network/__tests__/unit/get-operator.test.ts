@@ -11,8 +11,8 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, ValidationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
-  getOperator as getOperatorHandler,
   GetOperatorOutputSchema,
+  networkGetOperator as getOperatorHandler,
 } from '@/plugins/network/commands/get-operator';
 
 let exitSpy: jest.SpyInstance;

@@ -260,7 +260,7 @@ hooks: [
   options: [ /* ... token-specific options ... */ ],
   registeredHooks: ['batchify'],
   command: new MintNftCommand(),
-  handler: mintNft,
+  handler: tokenMintNft,
   output: { schema: MintNftOutputSchema, humanTemplate: MINT_NFT_TEMPLATE },
 }
 
@@ -385,7 +385,7 @@ hooks: [
   options: [ /* ... */ ],
   registeredHooks: ['token-batch-state', 'topic-batch-state', 'account-batch-state'],
   command: new ExecuteBatchCommand(),
-  handler: executeBatch,
+  handler: batchExecute,
   output: { schema: ExecuteBatchOutputSchema, humanTemplate: EXECUTE_BATCH_TEMPLATE },
 }
 ```

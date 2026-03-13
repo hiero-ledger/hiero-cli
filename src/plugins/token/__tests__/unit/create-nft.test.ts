@@ -5,8 +5,8 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  createNft,
   CreateNftOutputSchema,
+  tokenCreateNft,
 } from '@/plugins/token/commands/create-nft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -28,7 +28,7 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
 
-describe('createNftHandler', () => {
+describe('tokenCreateNftHandler', () => {
   beforeEach(() => {
     MockedHelper.mockClear();
     MockedHelper.mockImplementation(() => ({
@@ -99,7 +99,7 @@ describe('createNftHandler', () => {
       const args = makeNftCreateCommandArgs({ api, logger });
 
       // Act
-      const result = await createNft(args);
+      const result = await tokenCreateNft(args);
 
       // Assert
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
@@ -145,7 +145,7 @@ describe('createNftHandler', () => {
       };
 
       // Act
-      const result = await createNft(args);
+      const result = await tokenCreateNft(args);
 
       // Assert
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith({
@@ -188,7 +188,7 @@ describe('createNftHandler', () => {
         logger,
       };
 
-      await expect(createNft(args)).rejects.toThrow('No operator set');
+      await expect(tokenCreateNft(args)).rejects.toThrow('No operator set');
     });
   });
 
@@ -261,7 +261,7 @@ describe('createNftHandler', () => {
       };
 
       // Act
-      await createNft(args);
+      await tokenCreateNft(args);
 
       // Assert
       expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);

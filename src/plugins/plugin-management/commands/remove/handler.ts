@@ -45,7 +45,7 @@ export class RemovePluginCommand implements Command {
   }
 }
 
-export async function removePlugin(
+export async function pluginManagementRemove(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new RemovePluginCommand().execute(args);

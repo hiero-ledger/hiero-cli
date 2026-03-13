@@ -7,23 +7,23 @@ import type { PluginManifest } from '@/core';
 import { OptionType } from '@/core/types/shared.types';
 import {
   CONTRACT_LIST_TEMPLATE,
+  contractList,
   ContractListOutputSchema,
-  listContracts,
 } from '@/plugins/contract/commands/list';
 
 import {
   CONTRACT_CREATE_TEMPLATE,
+  contractCreate,
   ContractCreateOutputSchema,
-  createContract,
 } from './commands/create';
 import {
+  contractDelete,
   DELETE_CONTRACT_TEMPLATE,
-  deleteContract,
   DeleteContractOutputSchema,
 } from './commands/delete';
 import {
+  contractImport,
   IMPORT_CONTRACT_TEMPLATE,
-  importContract,
   ImportContractOutputSchema,
 } from './commands/import';
 
@@ -120,7 +120,7 @@ export const contractPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: createContract,
+      handler: contractCreate,
       output: {
         schema: ContractCreateOutputSchema,
         humanTemplate: CONTRACT_CREATE_TEMPLATE,
@@ -131,7 +131,7 @@ export const contractPluginManifest: PluginManifest = {
       summary: 'List all contracts',
       description: 'List all smart contracts stored in the state',
       options: [],
-      handler: listContracts,
+      handler: contractList,
       output: {
         schema: ContractListOutputSchema,
         humanTemplate: CONTRACT_LIST_TEMPLATE,
@@ -174,7 +174,7 @@ export const contractPluginManifest: PluginManifest = {
           description: 'Whether the contract is verified on Hashscan',
         },
       ],
-      handler: importContract,
+      handler: contractImport,
       output: {
         schema: ImportContractOutputSchema,
         humanTemplate: IMPORT_CONTRACT_TEMPLATE,
@@ -194,7 +194,7 @@ export const contractPluginManifest: PluginManifest = {
           description: 'Contract ID (0.0.xxx) or alias to delete from state',
         },
       ],
-      handler: deleteContract,
+      handler: contractDelete,
       output: {
         schema: DeleteContractOutputSchema,
         humanTemplate: DELETE_CONTRACT_TEMPLATE,

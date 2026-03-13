@@ -3,8 +3,8 @@
  * For use by tests and external consumers
  */
 export {
-  mintFt,
   TOKEN_MINT_FT_COMMAND_NAME,
+  tokenMintFt,
   TokenMintFtCommand,
 } from './handler';
 export type { MintFtOutput } from './output';

@@ -9,7 +9,7 @@ import {
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { RemovePluginOutputSchema } from '@/plugins/plugin-management/commands/remove';
-import { removePlugin } from '@/plugins/plugin-management/commands/remove/handler';
+import { pluginManagementRemove } from '@/plugins/plugin-management/commands/remove/handler';
 
 describe('plugin-management remove command', () => {
   it('should remove an existing plugin from state', async () => {
@@ -28,7 +28,7 @@ describe('plugin-management remove command', () => {
 
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
-    const result = await removePlugin(args);
+    const result = await pluginManagementRemove(args);
     const output = assertOutput(result.result, RemovePluginOutputSchema);
 
     expect(output).toBeDefined();
@@ -50,8 +50,8 @@ describe('plugin-management remove command', () => {
 
     const args = makeArgs(api, logger, { name: 'unknown-plugin' });
 
-    await expect(removePlugin(args)).rejects.toThrow(NotFoundError);
-    await expect(removePlugin(args)).rejects.toThrow(
+    await expect(pluginManagementRemove(args)).rejects.toThrow(NotFoundError);
+    await expect(pluginManagementRemove(args)).rejects.toThrow(
       /Plugin unknown-plugin not found in plugin-management state/,
     );
   });
@@ -67,8 +67,8 @@ describe('plugin-management remove command', () => {
 
     const args = makeArgs(api, logger, { name: 'plugin-management' });
 
-    await expect(removePlugin(args)).rejects.toThrow(StateError);
-    await expect(removePlugin(args)).rejects.toThrow(
+    await expect(pluginManagementRemove(args)).rejects.toThrow(StateError);
+    await expect(pluginManagementRemove(args)).rejects.toThrow(
       /plugin-management is a core plugin and cannot be removed from state via CLI/,
     );
 

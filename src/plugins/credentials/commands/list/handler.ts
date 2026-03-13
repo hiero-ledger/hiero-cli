@@ -24,7 +24,7 @@ export class ListCredentialsCommand implements Command {
   }
 }
 
-export async function listCredentials(
+export async function credentialsList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ListCredentialsCommand().execute(args);

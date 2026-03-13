@@ -18,7 +18,7 @@ import { NetworkError, SupportedNetwork } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { CreateAccountOutputSchema } from '@/plugins/account/commands/create';
-import { createAccount } from '@/plugins/account/commands/create/handler';
+import { accountCreate } from '@/plugins/account/commands/create/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { makeApiMocksForAccountCreate } from './helpers/mocks';
@@ -70,7 +70,7 @@ describe('account plugin - create command (ADR-003)', () => {
       name: 'myAccount',
     });
 
-    const result = await createAccount(args);
+    const result = await accountCreate(args);
 
     expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
@@ -146,10 +146,10 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const args = makeArgs(api, logger, { name: 'failAccount', balance: '100' });
 
-    await expect(createAccount(args)).rejects.toThrow();
+    await expect(accountCreate(args)).rejects.toThrow();
   });
 
-  test('throws error when createAccount fails', async () => {
+  test('throws error when accountCreate fails', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({ saveAccount: jest.fn() }));
 
@@ -176,7 +176,7 @@ describe('account plugin - create command (ADR-003)', () => {
       balance: '100',
     });
 
-    await expect(createAccount(args)).rejects.toThrow();
+    await expect(accountCreate(args)).rejects.toThrow();
   });
 
   test('creates account with ECDSA key type', async () => {
@@ -215,7 +215,7 @@ describe('account plugin - create command (ADR-003)', () => {
       name: 'ecdsaAccount',
     });
 
-    const result = await createAccount(args);
+    const result = await accountCreate(args);
 
     expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
@@ -292,7 +292,7 @@ describe('account plugin - create command (ADR-003)', () => {
       key: `ecdsa:private:${ECDSA_HEX_PRIVATE_KEY}`,
     });
 
-    const result = await createAccount(args);
+    const result = await accountCreate(args);
 
     expect(kms.createLocalPrivateKey).not.toHaveBeenCalled();
     expect(keyResolver.getPublicKey).toHaveBeenCalled();
@@ -366,7 +366,7 @@ describe('account plugin - create command (ADR-003)', () => {
       key: 'kr_test123',
     });
 
-    const result = await createAccount(args);
+    const result = await accountCreate(args);
 
     expect(kms.createLocalPrivateKey).not.toHaveBeenCalled();
     expect(keyResolver.getPublicKey).toHaveBeenCalled();
@@ -413,7 +413,7 @@ describe('account plugin - create command (ADR-003)', () => {
       keyType: KeyAlgorithm.ECDSA,
     });
 
-    await expect(createAccount(args)).rejects.toThrow();
+    await expect(accountCreate(args)).rejects.toThrow();
   });
 
   test('creates account with ED25519 key type', async () => {
@@ -452,7 +452,7 @@ describe('account plugin - create command (ADR-003)', () => {
       name: 'ed25519Account',
     });
 
-    const result = await createAccount(args);
+    const result = await accountCreate(args);
 
     expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ED25519,

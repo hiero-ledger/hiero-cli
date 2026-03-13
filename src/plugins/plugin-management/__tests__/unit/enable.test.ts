@@ -9,7 +9,7 @@ import {
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { EnablePluginOutputSchema } from '@/plugins/plugin-management/commands/enable';
-import { enablePlugin } from '@/plugins/plugin-management/commands/enable/handler';
+import { pluginManagementEnable } from '@/plugins/plugin-management/commands/enable/handler';
 
 describe('plugin-management enable command', () => {
   it('should enable a disabled plugin', async () => {
@@ -28,7 +28,7 @@ describe('plugin-management enable command', () => {
 
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
-    const result = await enablePlugin(args);
+    const result = await pluginManagementEnable(args);
     const output = assertOutput(result.result, EnablePluginOutputSchema);
 
     expect(output).toBeDefined();
@@ -55,8 +55,8 @@ describe('plugin-management enable command', () => {
 
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
-    await expect(enablePlugin(args)).rejects.toThrow(StateError);
-    await expect(enablePlugin(args)).rejects.toThrow(
+    await expect(pluginManagementEnable(args)).rejects.toThrow(StateError);
+    await expect(pluginManagementEnable(args)).rejects.toThrow(
       /Plugin custom-plugin is already enabled/,
     );
     expect(pluginManagement.enablePlugin).toHaveBeenCalledWith('custom-plugin');
@@ -73,8 +73,8 @@ describe('plugin-management enable command', () => {
 
     const args = makeArgs(api, logger, { name: 'unknown-plugin' });
 
-    await expect(enablePlugin(args)).rejects.toThrow(NotFoundError);
-    await expect(enablePlugin(args)).rejects.toThrow(
+    await expect(pluginManagementEnable(args)).rejects.toThrow(NotFoundError);
+    await expect(pluginManagementEnable(args)).rejects.toThrow(
       /Plugin unknown-plugin not found in plugin-management state/,
     );
     expect(pluginManagement.enablePlugin).toHaveBeenCalledWith(

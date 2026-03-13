@@ -3,8 +3,8 @@
  * For use by tests and external consumers
  */
 export {
+  contractErc721GetApproved,
   ContractErc721GetApprovedCommand,
-  contractErc721GetApprovedFunctionCall,
 } from './handler';
 export type { ContractErc721CallGetApprovedOutput } from './output';
 export {

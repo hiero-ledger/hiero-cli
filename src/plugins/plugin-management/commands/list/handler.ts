@@ -28,7 +28,7 @@ export class ListPluginsCommand implements Command {
   }
 }
 
-export async function getPluginList(
+export async function pluginManagementList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ListPluginsCommand().execute(args);
