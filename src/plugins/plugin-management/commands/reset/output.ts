@@ -4,15 +4,17 @@
  */
 import type { z } from 'zod';
 
-import { ResetPluginsOutputSchema } from '@/plugins/plugin-management/schema';
+import { PluginManagementResetOutputSchema } from '@/plugins/plugin-management/schema';
 
-export { ResetPluginsOutputSchema };
+export { PluginManagementResetOutputSchema };
 
-export const RESET_PLUGINS_TEMPLATE = `{{#if reset}}
+export const PLUGIN_MANAGEMENT_RESET_TEMPLATE = `{{#if reset}}
 ✅ Plugin state reset successfully
 {{else}}
 ❌ Failed to reset plugin state
    Error: {{message}}
 {{/if}}`;
 
-export type ResetPluginsOutput = z.infer<typeof ResetPluginsOutputSchema>;
+export type PluginManagementResetOutput = z.infer<
+  typeof PluginManagementResetOutputSchema
+>;

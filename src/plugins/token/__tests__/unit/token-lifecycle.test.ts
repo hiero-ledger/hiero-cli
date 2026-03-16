@@ -8,9 +8,9 @@ import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { associateToken } from '@/plugins/token/commands/associate';
-import { createFt } from '@/plugins/token/commands/create-ft';
-import { transferFt } from '@/plugins/token/commands/transfer-ft';
+import { tokenAssociate } from '@/plugins/token/commands/associate';
+import { tokenCreateFt } from '@/plugins/token/commands/create-ft';
+import { tokenTransferFt } from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -121,7 +121,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      const createResult = await createFt(createArgs);
+      const createResult = await tokenCreateFt(createArgs);
       expect(createResult.result).toBeDefined();
 
       // Step 2: Associate Token
@@ -136,7 +136,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      const associateResult = await associateToken(associateArgs);
+      const associateResult = await tokenAssociate(associateArgs);
       expect(associateResult.result).toBeDefined();
 
       // Step 3: Transfer Token
@@ -153,7 +153,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      const transferResult = await transferFt(transferArgs);
+      const transferResult = await tokenTransferFt(transferArgs);
       expect(transferResult.result).toBeDefined();
 
       // Verify all operations were called correctly
@@ -261,7 +261,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      const createResult = await createFt(createArgs);
+      const createResult = await tokenCreateFt(createArgs);
       expect(createResult.result).toBeDefined();
 
       // Step 2: Associate Token (success)
@@ -276,7 +276,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      const associateResult = await associateToken(associateArgs);
+      const associateResult = await tokenAssociate(associateArgs);
       expect(associateResult.result).toBeDefined();
 
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalled();
@@ -366,7 +366,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      const createResult = await createFt(createArgs);
+      const createResult = await tokenCreateFt(createArgs);
       expect(createResult.result).toBeDefined();
 
       // Step 2: Associate with first user
@@ -381,7 +381,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      const associateResult1 = await associateToken(associateArgs1);
+      const associateResult1 = await tokenAssociate(associateArgs1);
       expect(associateResult1.result).toBeDefined();
 
       // Step 3: Associate with second user
@@ -396,7 +396,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      const associateResult2 = await associateToken(associateArgs2);
+      const associateResult2 = await tokenAssociate(associateArgs2);
       expect(associateResult2.result).toBeDefined();
 
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalled();
@@ -453,7 +453,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      await expect(createFt(createArgs)).rejects.toThrow();
+      await expect(tokenCreateFt(createArgs)).rejects.toThrow();
 
       const associateArgs: CommandHandlerArgs = {
         args: {
@@ -466,7 +466,7 @@ describe('Token Lifecycle Integration', () => {
         config: makeConfigMock() as ConfigService,
       };
 
-      const associateResult = await associateToken(associateArgs);
+      const associateResult = await tokenAssociate(associateArgs);
       expect(associateResult.result).toBeDefined();
 
       expect(MockedHelper).toHaveBeenCalledTimes(2);

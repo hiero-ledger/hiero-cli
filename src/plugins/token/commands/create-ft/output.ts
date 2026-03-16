@@ -13,7 +13,7 @@ import {
 /**
  * Create Fungible Token Command Output Schema
  */
-export const CreateFungibleTokenOutputSchema = z.object({
+export const TokenCreateFtOutputSchema = z.object({
   tokenId: EntityIdSchema,
   name: z.string().describe('Fungible token name'),
   symbol: z.string().describe('Fungible token symbol'),
@@ -26,14 +26,12 @@ export const CreateFungibleTokenOutputSchema = z.object({
   network: NetworkSchema,
 });
 
-export type CreateFungibleTokenOutput = z.infer<
-  typeof CreateFungibleTokenOutputSchema
->;
+export type TokenCreateFtOutput = z.infer<typeof TokenCreateFtOutputSchema>;
 
 /**
  * Human-readable template for create fungible token output
  */
-export const CREATE_FUNGIBLE_TOKEN_TEMPLATE = `
+export const TOKEN_CREATE_FT_TEMPLATE = `
 ✅ Fungible token created successfully: {{hashscanLink tokenId "token" network}}
    Name: {{name}} ({{symbol}})
    Treasury: {{hashscanLink treasuryId "account" network}}

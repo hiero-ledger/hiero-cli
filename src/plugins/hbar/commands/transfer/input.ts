@@ -11,7 +11,7 @@ import {
  * Input schema for hbar transfer command
  * Validates arguments for transferring HBAR between accounts
  */
-export const TransferInputSchema = z.object({
+export const HbarTransferInputSchema = z.object({
   amount: AmountInputSchema.refine(
     (val) => {
       // Check if value is "0" or "0t"
@@ -31,4 +31,4 @@ export const TransferInputSchema = z.object({
   ),
 });
 
-export type TransferInput = z.infer<typeof TransferInputSchema>;
+export type HbarTransferInput = z.infer<typeof HbarTransferInputSchema>;

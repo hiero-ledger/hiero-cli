@@ -14,7 +14,7 @@ import {
 /**
  * Import Account Command Output Schema
  */
-export const ImportAccountOutputSchema = z.object({
+export const AccountImportOutputSchema = z.object({
   accountId: EntityIdSchema,
   name: z.string().describe('Account name').optional(),
   type: KeyTypeSchema,
@@ -23,12 +23,12 @@ export const ImportAccountOutputSchema = z.object({
   evmAddress: EvmAddressSchema,
 });
 
-export type ImportAccountOutput = z.infer<typeof ImportAccountOutputSchema>;
+export type AccountImportOutput = z.infer<typeof AccountImportOutputSchema>;
 
 /**
  * Human-readable template for import account output
  */
-export const IMPORT_ACCOUNT_TEMPLATE = `
+export const ACCOUNT_IMPORT_TEMPLATE = `
 ✅ Account imported successfully: {{hashscanLink accountId "account" network}}
 {{#if name}}
    Name: {{name}}

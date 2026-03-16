@@ -58,7 +58,7 @@ export class ContractErc721NameCommand implements Command {
   }
 }
 
-export async function contractErc721NameFunctionCall(
+export async function contractErc721Name(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ContractErc721NameCommand().execute(args);

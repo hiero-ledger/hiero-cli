@@ -4,11 +4,11 @@
  */
 export {
   TOKEN_TRANSFER_FT_COMMAND_NAME,
-  transferFt,
-  TransferFtCommand,
+  tokenTransferFt,
+  TokenTransferFtCommand,
 } from './handler';
-export type { TransferFungibleTokenOutput } from './output';
+export type { TokenTransferFtOutput } from './output';
 export {
-  TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
-  TransferFungibleTokenOutputSchema,
+  TOKEN_TRANSFER_FT_TEMPLATE,
+  TokenTransferFtOutputSchema,
 } from './output';

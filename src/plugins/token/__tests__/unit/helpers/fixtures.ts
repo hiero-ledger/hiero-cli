@@ -792,7 +792,7 @@ export const expectedMintFtTransactionParams = {
 /**
  * Create command args for mint-nft tests
  */
-export const makeMintNftCommandArgs = (params: {
+export const makeTokenMintNftCommandArgs = (params: {
   api: CoreApi;
   logger: Logger;
   args?: Record<string, string | number | boolean | undefined>;

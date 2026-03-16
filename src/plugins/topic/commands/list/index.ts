@@ -2,6 +2,6 @@
  * List Topics Command Exports
  * For use by manifest, tests, and external consumers
  */
-export { listTopics, ListTopicsCommand } from './handler';
-export type { ListTopicsOutput } from './output';
-export { LIST_TOPICS_TEMPLATE, ListTopicsOutputSchema } from './output';
+export { topicList, TopicListCommand } from './handler';
+export type { TopicListOutput } from './output';
+export { TOPIC_LIST_TEMPLATE, TopicListOutputSchema } from './output';

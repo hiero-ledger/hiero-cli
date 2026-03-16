@@ -1,7 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { DeleteAccountOutput } from '@/plugins/account/commands/delete';
-import type { ImportAccountOutput } from '@/plugins/account/commands/import';
-import type { ViewAccountOutput } from '@/plugins/account/commands/view';
+import type { AccountDeleteOutput } from '@/plugins/account/commands/delete';
+import type { AccountImportOutput } from '@/plugins/account/commands/import';
+import type { AccountViewOutput } from '@/plugins/account/commands/view';
 
 import '@/core/utils/json-serialize';
 
@@ -10,7 +10,7 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { deleteAccount, importAccount, viewAccount } from '@/plugins/account';
+import { accountDelete, accountImport, accountView } from '@/plugins/account';
 
 describe('Delete Account Integration Tests', () => {
   let coreApi: CoreApi;
@@ -41,7 +41,7 @@ describe('Delete Account Integration Tests', () => {
         name: 'account-to-be-deleted',
         key: `${accountId}:${accountKey}`,
       };
-      const importAccountResult = await importAccount({
+      const importAccountResult = await accountImport({
         args: importAccountArgs,
         api: coreApi,
         state: coreApi.state,
@@ -50,7 +50,7 @@ describe('Delete Account Integration Tests', () => {
       });
 
       const importAccountOutput =
-        importAccountResult.result as ImportAccountOutput;
+        importAccountResult.result as AccountImportOutput;
       expect(importAccountOutput.accountId).toBe(accountId);
       expect(importAccountOutput.name).toBe('account-to-be-deleted');
       expect(importAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
@@ -60,21 +60,21 @@ describe('Delete Account Integration Tests', () => {
       const viewAccountArgs: Record<string, unknown> = {
         account: 'account-to-be-deleted',
       };
-      const viewAccountResult = await viewAccount({
+      const viewAccountResult = await accountView({
         args: viewAccountArgs,
         api: coreApi,
         state: coreApi.state,
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
+      const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
       expect(viewAccountOutput.accountId).toBe(importAccountOutput.accountId);
       expect(viewAccountOutput.evmAddress).toBe(importAccountOutput.evmAddress);
 
       const deleteAccountArgs: Record<string, unknown> = {
         account: 'account-to-be-deleted',
       };
-      const deleteAccountResult = await deleteAccount({
+      const deleteAccountResult = await accountDelete({
         args: deleteAccountArgs,
         api: coreApi,
         state: coreApi.state,
@@ -82,14 +82,14 @@ describe('Delete Account Integration Tests', () => {
         config: coreApi.config,
       });
       const deleteAccountOutput =
-        deleteAccountResult.result as DeleteAccountOutput;
+        deleteAccountResult.result as AccountDeleteOutput;
       expect(deleteAccountOutput.deletedAccount.accountId).toBe(accountId);
       expect(deleteAccountOutput.deletedAccount.name).toBe(
         'account-to-be-deleted',
       );
 
       await expect(
-        viewAccount({
+        accountView({
           args: viewAccountArgs,
           api: coreApi,
           state: coreApi.state,

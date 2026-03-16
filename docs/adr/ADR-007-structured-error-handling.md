@@ -326,7 +326,7 @@ class ErrorBoundaryServiceImpl {
 Before (current):
 
 ```typescript
-export async function getAccountBalance(args: CommandHandlerArgs): Promise<CommandExecutionResult> {
+export async function accountBalance(args: CommandHandlerArgs): Promise<CommandExecutionResult> {
   const validArgs = AccountBalanceInputSchema.parse(args.args);
 
   try {
@@ -352,7 +352,7 @@ After (new approach):
 
 ```typescript
 // Handler returns result data - no status boilerplate, no stringify
-export async function getAccountBalance(args: CommandHandlerArgs): Promise<CommandExecutionResult<AccountBalanceOutput>> {
+export async function accountBalance(args: CommandHandlerArgs): Promise<CommandExecutionResult<AccountBalanceOutput>> {
   const validArgs = AccountBalanceInputSchema.parse(args.args);
 
   const account = api.alias.resolve(validArgs.account, ALIAS_TYPE.Account, network);

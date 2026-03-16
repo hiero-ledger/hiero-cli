@@ -19,17 +19,17 @@ const CredentialEntrySchema = z.object({
 /**
  * List Credentials Command Output Schema
  */
-export const ListCredentialsOutputSchema = z.object({
+export const CredentialsListOutputSchema = z.object({
   credentials: z.array(CredentialEntrySchema),
   totalCount: z.number().describe('Total number of stored credentials'),
 });
 
-export type ListCredentialsOutput = z.infer<typeof ListCredentialsOutputSchema>;
+export type CredentialsListOutput = z.infer<typeof CredentialsListOutputSchema>;
 
 /**
  * Human-readable template for list credentials output
  */
-export const LIST_CREDENTIALS_TEMPLATE = `
+export const CREDENTIALS_LIST_TEMPLATE = `
 {{#if (eq totalCount 0)}}
 🔐 No credentials stored
 {{else}}

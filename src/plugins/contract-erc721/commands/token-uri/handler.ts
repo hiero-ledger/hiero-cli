@@ -60,7 +60,7 @@ export class ContractErc721TokenUriCommand implements Command {
   }
 }
 
-export async function contractErc721TokenUriFunctionCall(
+export async function contractErc721TokenUri(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ContractErc721TokenUriCommand().execute(args);

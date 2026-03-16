@@ -140,7 +140,7 @@ import { EntityIdSchema, NetworkSchema, KeyTypeSchema } from '@/core/schemas';
 import { z } from 'zod';
 
 // Define your output schema using Zod
-const CreateAccountOutputSchema = z.object({
+const AccountCreateOutputSchema = z.object({
   accountId: EntityIdSchema,
   name: z.string(),
   type: KeyTypeSchema,
@@ -154,7 +154,7 @@ const CreateAccountOutputSchema = z.object({
   // ... options ...
   handler: createHandler, // Function reference, not string
   output: {
-    schema: CreateAccountOutputSchema, // Use Zod schema directly
+    schema: AccountCreateOutputSchema, // Use Zod schema directly
     humanTemplate: '✅ Account created: {{accountId}}\n   Name: {{name}}'
   }
 }

@@ -36,7 +36,7 @@ export class ListContractsCommand implements Command {
   }
 }
 
-export async function listContracts(
+export async function contractList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ListContractsCommand().execute(args);

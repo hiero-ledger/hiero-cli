@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { TransferNftOutput } from './output';
+import type { TokenTransferNftOutput } from './output';
 import type {
   TransferNftBuildTransactionResult,
   TransferNftExecuteTransactionResult,
@@ -19,11 +19,11 @@ import {
   resolveTokenParameter,
 } from '@/plugins/token/resolver-helper';
 
-import { TransferNftInputSchema } from './input';
+import { TokenTransferNftInputSchema } from './input';
 
 export const TOKEN_TRANSFER_NFT_COMMAND_NAME = 'token_transfer-nft';
 
-export class TransferNftCommand extends BaseTransactionCommand<
+export class TokenTransferNftCommand extends BaseTransactionCommand<
   TransferNftNormalizedParams,
   TransferNftBuildTransactionResult,
   TransferNftSignTransactionResult,
@@ -37,7 +37,7 @@ export class TransferNftCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<TransferNftNormalizedParams> {
     const { api, logger } = args;
-    const validArgs = TransferNftInputSchema.parse(args.args);
+    const validArgs = TokenTransferNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ||
       api.config.getOption<KeyManagerName>('default_key_manager');
@@ -168,7 +168,7 @@ export class TransferNftCommand extends BaseTransactionCommand<
     _signTransactionResult: TransferNftSignTransactionResult,
     executeTransactionResult: TransferNftExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const outputData: TransferNftOutput = {
+    const outputData: TokenTransferNftOutput = {
       transactionId: executeTransactionResult.transactionResult.transactionId,
       tokenId: normalisedParams.tokenId,
       from: normalisedParams.fromAccountId,
@@ -180,8 +180,8 @@ export class TransferNftCommand extends BaseTransactionCommand<
   }
 }
 
-export async function transferNft(
+export async function tokenTransferNft(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TransferNftCommand().execute(args);
+  return new TokenTransferNftCommand().execute(args);
 }

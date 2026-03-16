@@ -2,6 +2,9 @@
  * Add Plugin Command Index
  * Exports the command handler
  */
-export { addPlugin, AddPluginCommand } from './handler';
-export type { AddPluginOutput } from './output';
-export { ADD_PLUGIN_TEMPLATE, AddPluginOutputSchema } from './output';
+export { pluginManagementAdd, PluginManagementAddCommand } from './handler';
+export type { PluginManagementAddOutput } from './output';
+export {
+  PLUGIN_MANAGEMENT_ADD_TEMPLATE,
+  PluginManagementAddOutputSchema,
+} from './output';

@@ -1,5 +1,5 @@
 /**
- * Create Account Command Output Schema and Template
+ * Account Create Command Output Schema and Template
  */
 import { z } from 'zod';
 
@@ -13,9 +13,9 @@ import {
 } from '@/core/schemas/common-schemas';
 
 /**
- * Create Account Command Output Schema
+ * Account Create Command Output Schema
  */
-export const CreateAccountOutputSchema = z.object({
+export const AccountCreateOutputSchema = z.object({
   accountId: EntityIdSchema,
   name: z.string().describe('Account name').optional(),
   type: KeyTypeSchema,
@@ -25,12 +25,12 @@ export const CreateAccountOutputSchema = z.object({
   publicKey: PublicKeyDefinitionSchema,
 });
 
-export type CreateAccountOutput = z.infer<typeof CreateAccountOutputSchema>;
+export type AccountCreateOutput = z.infer<typeof AccountCreateOutputSchema>;
 
 /**
- * Human-readable template for create account output
+ * Human-readable template for account create output
  */
-export const CREATE_ACCOUNT_TEMPLATE = `
+export const ACCOUNT_CREATE_TEMPLATE = `
 ✅ Account created successfully: {{hashscanLink accountId "account" network}}
 {{#if name}}
    Name: {{name}}

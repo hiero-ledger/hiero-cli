@@ -3,7 +3,7 @@ import type { Command } from '@/core/commands/command.interface';
 import type { CommandResult } from '@/core/plugins/plugin.types';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { SetOperatorOutput } from './output';
+import type { NetworkSetOperatorOutput } from './output';
 import type {
   SetOperatorExecuteContext,
   SetOperatorNormalisedParams,
@@ -12,13 +12,13 @@ import type {
 import { ValidationError } from '@/core/errors';
 import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 
-import { SetOperatorInputSchema } from './input';
+import { NetworkSetOperatorInputSchema } from './input';
 
 const normalizeParams = (
   args: CommandHandlerArgs,
 ): SetOperatorNormalisedParams => {
   const { api } = args;
-  const validArgs = SetOperatorInputSchema.parse(args.args);
+  const validArgs = NetworkSetOperatorInputSchema.parse(args.args);
 
   const keyManager =
     validArgs.keyManager ||
@@ -41,7 +41,7 @@ const normalizeParams = (
   };
 };
 
-export class SetOperatorCommand implements Command {
+export class NetworkSetOperatorCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { logger, api } = args;
     const normalisedParams = normalizeParams(args);
@@ -70,7 +70,7 @@ export class SetOperatorCommand implements Command {
       keyRefId: executeContext.operator.keyRefId,
     });
 
-    const output: SetOperatorOutput = {
+    const output: NetworkSetOperatorOutput = {
       network: normalisedParams.targetNetwork,
       operator: {
         accountId: executeContext.operator.accountId,
@@ -83,6 +83,6 @@ export class SetOperatorCommand implements Command {
   }
 }
 
-export const setOperator = async (
+export const networkSetOperator = async (
   args: CommandHandlerArgs,
-): Promise<CommandResult> => new SetOperatorCommand().execute(args);
+): Promise<CommandResult> => new NetworkSetOperatorCommand().execute(args);

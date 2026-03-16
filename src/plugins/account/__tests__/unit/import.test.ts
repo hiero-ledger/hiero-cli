@@ -18,8 +18,8 @@ import { SupportedNetwork } from '@/core';
 import { StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { ImportAccountOutputSchema } from '@/plugins/account/commands/import';
-import { importAccount } from '@/plugins/account/commands/import/handler';
+import { AccountImportOutputSchema } from '@/plugins/account/commands/import';
+import { accountImport } from '@/plugins/account/commands/import/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -61,7 +61,7 @@ describe('account plugin - import command (ADR-003)', () => {
       name: 'imported',
     });
 
-    const result = await importAccount(args);
+    const result = await accountImport(args);
 
     expect(kms.importAndValidatePrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
@@ -91,7 +91,7 @@ describe('account plugin - import command (ADR-003)', () => {
       }),
     );
 
-    const output = assertOutput(result.result, ImportAccountOutputSchema);
+    const output = assertOutput(result.result, AccountImportOutputSchema);
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('imported');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
@@ -128,7 +128,7 @@ describe('account plugin - import command (ADR-003)', () => {
       key: '0.0.1111:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff',
     });
 
-    await expect(importAccount(args)).rejects.toThrow(StateError);
+    await expect(accountImport(args)).rejects.toThrow(StateError);
   });
 
   test('throws error when mirror.getAccount fails', async () => {
@@ -160,6 +160,6 @@ describe('account plugin - import command (ADR-003)', () => {
       key: '0.0.2222:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
     });
 
-    await expect(importAccount(args)).rejects.toThrow();
+    await expect(accountImport(args)).rejects.toThrow();
   });
 });
