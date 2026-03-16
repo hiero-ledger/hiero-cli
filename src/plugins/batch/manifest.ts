@@ -99,6 +99,7 @@ export const batchPluginManifest: PluginManifest = {
         'token-create-ft-from-file-batch-state',
         'token-create-nft-batch-state',
         'token-create-nft-from-file-batch-state',
+        'token-associate-batch-state',
       ],
       options: [
         {
