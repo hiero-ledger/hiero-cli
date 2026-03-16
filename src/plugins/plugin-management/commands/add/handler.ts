@@ -14,7 +14,7 @@ import type {
   PluginStateEntry,
 } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { AddPluginOutput } from './output';
+import type { PluginManagementAddOutput } from './output';
 
 import { StateError } from '@/core/errors';
 import { PluginManagementCreateStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
@@ -23,13 +23,13 @@ import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 import { validatePluginPath } from '@/plugins/plugin-management/utils/plugin-path-validator';
 import { resolveDefaultPluginPath } from '@/plugins/plugin-management/utils/resolve-default-plugin-path';
 
-import { AddPluginInputSchema } from './input';
+import { PluginManagementAddInputSchema } from './input';
 
-export class AddPluginCommand implements Command {
+export class PluginManagementAddCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
-    const validArgs = AddPluginInputSchema.parse(args.args);
+    const validArgs = PluginManagementAddInputSchema.parse(args.args);
 
     let pluginPath: string;
     if (validArgs.name) {
@@ -60,7 +60,7 @@ export class AddPluginCommand implements Command {
       });
     }
 
-    const outputData: AddPluginOutput = {
+    const outputData: PluginManagementAddOutput = {
       name: pluginName,
       path: resolvedPath,
       added: true,
@@ -71,8 +71,8 @@ export class AddPluginCommand implements Command {
   }
 }
 
-export async function addPlugin(
+export async function pluginManagementAdd(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new AddPluginCommand().execute(args);
+  return new PluginManagementAddCommand().execute(args);
 }

@@ -10,7 +10,7 @@ import {
  * Input schema for network set-operator command
  * Validates arguments for setting operator credentials
  */
-export const SetOperatorInputSchema = z.object({
+export const NetworkSetOperatorInputSchema = z.object({
   operator: PrivateKeyWithAccountIdSchema.describe(
     'Operator credentials. Can be accountId:privateKey pair, key reference or account alias.',
   ),

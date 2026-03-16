@@ -1,6 +1,9 @@
-export { setOperator, SetOperatorCommand } from './handler';
-export type { SetOperatorOutput } from './output';
-export { SET_OPERATOR_TEMPLATE, SetOperatorOutputSchema } from './output';
+export { networkSetOperator, NetworkSetOperatorCommand } from './handler';
+export type { NetworkSetOperatorOutput } from './output';
+export {
+  NETWORK_SET_OPERATOR_TEMPLATE,
+  NetworkSetOperatorOutputSchema,
+} from './output';
 export type {
   SetOperatorExecuteContext,
   SetOperatorNormalisedParams,

@@ -3,9 +3,12 @@
  * For use by tests and external consumers
  */
 export {
-  createNft,
-  CreateNftCommand,
   TOKEN_CREATE_NFT_COMMAND_NAME,
+  tokenCreateNft,
+  TokenCreateNftCommand,
 } from './handler';
-export type { CreateNftOutput } from './output';
-export { CREATE_NFT_TEMPLATE, CreateNftOutputSchema } from './output';
+export type { TokenCreateNftOutput } from './output';
+export {
+  TOKEN_CREATE_NFT_TEMPLATE,
+  TokenCreateNftOutputSchema,
+} from './output';

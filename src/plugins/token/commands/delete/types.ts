@@ -1,6 +1,6 @@
 import type { EntityReferenceType } from '@/core/types/shared.types';
 
-export interface DeleteTokenNormalizedParams {
+export interface TokenDeleteNormalizedParams {
   type: EntityReferenceType;
   value: string;
 }

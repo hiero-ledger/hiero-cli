@@ -16,7 +16,7 @@ import {
 /**
  * Create Token Command Output Schema
  */
-export const CreateNftOutputSchema = z.object({
+export const TokenCreateNftOutputSchema = z.object({
   tokenId: EntityIdSchema.describe('Token ID'),
   name: TokenNameSchema.describe('Token name'),
   symbol: TokenSymbolSchema.describe('Token symbol'),
@@ -35,12 +35,12 @@ export const CreateNftOutputSchema = z.object({
   network: NetworkSchema.describe('Network on which token exists'),
 });
 
-export type CreateNftOutput = z.infer<typeof CreateNftOutputSchema>;
+export type TokenCreateNftOutput = z.infer<typeof TokenCreateNftOutputSchema>;
 
 /**
  * Human-readable template for create token output
  */
-export const CREATE_NFT_TEMPLATE = `
+export const TOKEN_CREATE_NFT_TEMPLATE = `
 ✅ NFT created successfully: {{hashscanLink tokenId "token" network}}
    Name: {{name}} ({{symbol}})
    Treasury: {{hashscanLink treasuryId "account" network}}

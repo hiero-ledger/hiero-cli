@@ -4,13 +4,13 @@
  */
 import type { z } from 'zod';
 
-import { PluginInfoOutputSchema } from '@/plugins/plugin-management/schema';
+import { PluginManagementInfoOutputSchema } from '@/plugins/plugin-management/schema';
 
 // Export the schema
-export { PluginInfoOutputSchema };
+export { PluginManagementInfoOutputSchema };
 
 // Human-readable template
-export const PLUGIN_INFO_TEMPLATE = `{{#if found}}
+export const PLUGIN_MANAGEMENT_INFO_TEMPLATE = `{{#if found}}
 ℹ️  Plugin Information:
    Name: {{plugin.name}}
    Version: {{plugin.version}}
@@ -23,4 +23,6 @@ export const PLUGIN_INFO_TEMPLATE = `{{#if found}}
 {{/if}}`;
 
 // Type export
-export type PluginInfoOutput = z.infer<typeof PluginInfoOutputSchema>;
+export type PluginManagementInfoOutput = z.infer<
+  typeof PluginManagementInfoOutputSchema
+>;

@@ -1,7 +1,7 @@
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { FindMessageInput } from './input';
+import type { TopicFindMessageInput } from './input';
 
-export interface FindMessageNormalisedParams extends FindMessageInput {
+export interface FindMessageNormalisedParams extends TopicFindMessageInput {
   topicId: string;
   currentNetwork: SupportedNetwork;
 }

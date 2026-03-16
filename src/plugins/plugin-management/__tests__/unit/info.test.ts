@@ -9,8 +9,8 @@ import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
-import { PluginInfoOutputSchema } from '@/plugins/plugin-management/commands/info';
-import { getPluginInfo } from '@/plugins/plugin-management/commands/info/handler';
+import { PluginManagementInfoOutputSchema } from '@/plugins/plugin-management/commands/info';
+import { pluginManagementInfo } from '@/plugins/plugin-management/commands/info/handler';
 
 jest.mock('@/core/utils/load-plugin-manifest', () => ({
   loadPluginManifest: jest.fn(),
@@ -54,8 +54,11 @@ describe('plugin-management info command', () => {
 
     const args = makeArgs(api, logger, { name: 'topic' });
 
-    const result = await getPluginInfo(args);
-    const output = assertOutput(result.result, PluginInfoOutputSchema);
+    const result = await pluginManagementInfo(args);
+    const output = assertOutput(
+      result.result,
+      PluginManagementInfoOutputSchema,
+    );
 
     expect(output).toBeDefined();
     expect(output.found).toBe(true);
@@ -86,8 +89,11 @@ describe('plugin-management info command', () => {
 
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
-    const result = await getPluginInfo(args);
-    const output = assertOutput(result.result, PluginInfoOutputSchema);
+    const result = await pluginManagementInfo(args);
+    const output = assertOutput(
+      result.result,
+      PluginManagementInfoOutputSchema,
+    );
 
     expect(output).toBeDefined();
     expect(output.found).toBe(true);
@@ -108,8 +114,8 @@ describe('plugin-management info command', () => {
 
     const args = makeArgs(api, logger, { name: 'missing-plugin' });
 
-    await expect(getPluginInfo(args)).rejects.toThrow(NotFoundError);
-    await expect(getPluginInfo(args)).rejects.toThrow(
+    await expect(pluginManagementInfo(args)).rejects.toThrow(NotFoundError);
+    await expect(pluginManagementInfo(args)).rejects.toThrow(
       /Plugin missing-plugin not found in plugin-management state/,
     );
   });

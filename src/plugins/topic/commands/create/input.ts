@@ -12,7 +12,7 @@ import {
  * Input schema for topic create command
  * Validates arguments for creating a new Hedera topic
  */
-export const CreateTopicInputSchema = z.object({
+export const TopicCreateInputSchema = z.object({
   memo: MemoSchema.describe('Optional memo for the topic'),
   adminKey: PrivateKeySchema.optional().describe(
     'Admin key of topic. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias',
@@ -28,4 +28,4 @@ export const CreateTopicInputSchema = z.object({
   ),
 });
 
-export type CreateTopicInput = z.infer<typeof CreateTopicInputSchema>;
+export type TopicCreateInput = z.infer<typeof TopicCreateInputSchema>;

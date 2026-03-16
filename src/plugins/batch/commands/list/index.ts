@@ -3,5 +3,5 @@
  * For use by tests and external consumers
  */
 export { batchList, BatchListCommand } from './handler';
-export type { ListBatchesOutput } from './output';
-export { LIST_BATCHES_TEMPLATE, ListBatchesOutputSchema } from './output';
+export type { BatchListOutput } from './output';
+export { BATCH_LIST_TEMPLATE, BatchListOutputSchema } from './output';

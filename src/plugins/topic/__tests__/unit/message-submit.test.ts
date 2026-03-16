@@ -20,8 +20,8 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { SubmitMessageOutputSchema } from '@/plugins/topic/commands/submit-message';
-import { submitMessage } from '@/plugins/topic/commands/submit-message/handler';
+import { TopicSubmitMessageOutputSchema } from '@/plugins/topic/commands/submit-message';
+import { topicSubmitMessage } from '@/plugins/topic/commands/submit-message/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -40,19 +40,19 @@ const makeTopicData = (overrides: Partial<TopicData> = {}): TopicData => ({
 });
 
 const makeApiMocks = ({
-  submitMessageImpl,
+  topicSubmitMessageImpl,
   executeImpl,
   executeContractCreateFlowImpl,
   network = 'testnet',
 }: {
-  submitMessageImpl?: jest.Mock;
+  topicSubmitMessageImpl?: jest.Mock;
   executeImpl?: jest.Mock;
   executeContractCreateFlowImpl?: jest.Mock;
   network?: 'testnet' | 'mainnet' | 'previewnet';
 }) => {
   const topicTransactions = {
     createTopic: jest.fn(),
-    submitMessage: submitMessageImpl || jest.fn(),
+    submitMessage: topicSubmitMessageImpl || jest.fn(),
   };
 
   const txSign = {
@@ -87,7 +87,7 @@ describe('topic plugin - message-submit command', () => {
 
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({
-        submitMessageImpl: jest.fn().mockReturnValue({
+        topicSubmitMessageImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
@@ -113,9 +113,9 @@ describe('topic plugin - message-submit command', () => {
       message: 'Hello, World!',
     });
 
-    const result = await submitMessage(args);
+    const result = await topicSubmitMessage(args);
 
-    const output = assertOutput(result.result, SubmitMessageOutputSchema);
+    const output = assertOutput(result.result, TopicSubmitMessageOutputSchema);
     expect(output.topicId).toBe('0.0.1234');
     expect(output.message).toBe('Hello, World!');
     expect(output.sequenceNumber).toBe(5);
@@ -155,7 +155,7 @@ describe('topic plugin - message-submit command', () => {
 
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({
-        submitMessageImpl: jest.fn().mockReturnValue({
+        topicSubmitMessageImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
@@ -183,9 +183,9 @@ describe('topic plugin - message-submit command', () => {
       signer: 'my-account-alias',
     });
 
-    const result = await submitMessage(args);
+    const result = await topicSubmitMessage(args);
 
-    const output = assertOutput(result.result, SubmitMessageOutputSchema);
+    const output = assertOutput(result.result, TopicSubmitMessageOutputSchema);
     expect(output.sequenceNumber).toBe(10);
 
     expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
@@ -213,7 +213,7 @@ describe('topic plugin - message-submit command', () => {
       message: 'Test message',
     });
 
-    await expect(submitMessage(args)).rejects.toThrow(NotFoundError);
+    await expect(topicSubmitMessage(args)).rejects.toThrow(NotFoundError);
   });
 
   test('throws ValidationError when signer is not authorized', async () => {
@@ -257,7 +257,7 @@ describe('topic plugin - message-submit command', () => {
       signer: 'wrong-signer',
     });
 
-    await expect(submitMessage(args)).rejects.toThrow(ValidationError);
+    await expect(topicSubmitMessage(args)).rejects.toThrow(ValidationError);
   });
 
   test('throws TransactionError when execute returns failure', async () => {
@@ -270,7 +270,7 @@ describe('topic plugin - message-submit command', () => {
 
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({
-        submitMessageImpl: jest.fn().mockReturnValue({
+        topicSubmitMessageImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
@@ -294,10 +294,10 @@ describe('topic plugin - message-submit command', () => {
       message: 'Failed message',
     });
 
-    await expect(submitMessage(args)).rejects.toThrow(TransactionError);
+    await expect(topicSubmitMessage(args)).rejects.toThrow(TransactionError);
   });
 
-  test('throws when submitMessage throws', async () => {
+  test('throws when topicSubmitMessage throws', async () => {
     const logger = makeLogger();
     const topicData = makeTopicData({
       topicId: '0.0.1234',
@@ -307,7 +307,7 @@ describe('topic plugin - message-submit command', () => {
 
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({
-        submitMessageImpl: jest.fn().mockImplementation(() => {
+        topicSubmitMessageImpl: jest.fn().mockImplementation(() => {
           throw new NetworkError('network error');
         }),
       });
@@ -326,6 +326,6 @@ describe('topic plugin - message-submit command', () => {
       message: 'Error message',
     });
 
-    await expect(submitMessage(args)).rejects.toThrow('network error');
+    await expect(topicSubmitMessage(args)).rejects.toThrow('network error');
   });
 });

@@ -68,7 +68,7 @@ export class ContractErc721GetApprovedCommand implements Command {
   }
 }
 
-export async function contractErc721GetApprovedFunctionCall(
+export async function contractErc721GetApproved(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ContractErc721GetApprovedCommand().execute(args);
