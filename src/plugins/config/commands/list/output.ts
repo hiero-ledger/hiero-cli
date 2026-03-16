@@ -20,7 +20,7 @@ export const ConfigListOutputSchema = z.object({
   totalCount: z.number(),
 });
 
-export type ListConfigOutput = z.infer<typeof ConfigListOutputSchema>;
+export type ConfigListOutput = z.infer<typeof ConfigListOutputSchema>;
 
 export const CONFIG_LIST_TEMPLATE = `
 {{#if (eq totalCount 0)}}

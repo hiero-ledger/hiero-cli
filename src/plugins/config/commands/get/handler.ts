@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { GetConfigOutput } from './output';
+import type { ConfigGetOutput } from './output';
 
 import { inferConfigOptionType } from '@/plugins/config/schema';
 
@@ -17,7 +17,7 @@ export class ConfigGetCommand implements Command {
     const descriptor = api.config.listOptions().find((o) => o.name === name);
     const type = inferConfigOptionType(descriptor?.type, value);
 
-    const output: GetConfigOutput = {
+    const output: ConfigGetOutput = {
       name,
       type,
       value,

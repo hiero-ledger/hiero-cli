@@ -18,4 +18,4 @@ export const ConfigSetInputSchema = z.object({
   ),
 });
 
-export type SetConfigInput = z.infer<typeof ConfigSetInputSchema>;
+export type ConfigSetInput = z.infer<typeof ConfigSetInputSchema>;

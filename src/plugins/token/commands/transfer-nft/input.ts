@@ -22,4 +22,4 @@ export const TokenTransferNftInputSchema = z.object({
   ),
 });
 
-export type TransferNftInput = z.infer<typeof TokenTransferNftInputSchema>;
+export type TokenTransferNftInput = z.infer<typeof TokenTransferNftInputSchema>;

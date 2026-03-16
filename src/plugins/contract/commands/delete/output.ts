@@ -16,7 +16,7 @@ export const DeleteContractOutputSchema = z.object({
   network: NetworkSchema,
 });
 
-export type DeleteContractOutput = z.infer<typeof DeleteContractOutputSchema>;
+export type ContractDeleteOutput = z.infer<typeof DeleteContractOutputSchema>;
 
 /**
  * Human-readable template for delete contract output

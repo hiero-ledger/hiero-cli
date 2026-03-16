@@ -8,4 +8,4 @@ export const DeleteContractInputSchema = z.object({
   ),
 });
 
-export type DeleteContractInput = z.infer<typeof DeleteContractInputSchema>;
+export type ContractDeleteInput = z.infer<typeof DeleteContractInputSchema>;

@@ -14,4 +14,4 @@ export const TopicImportInputSchema = z.object({
   ),
 });
 
-export type ImportTopicInput = z.infer<typeof TopicImportInputSchema>;
+export type TopicImportInput = z.infer<typeof TopicImportInputSchema>;

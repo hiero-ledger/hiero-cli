@@ -19,4 +19,4 @@ export const BatchCreateInputSchema = z.object({
   ),
 });
 
-export type CreateBatchInput = z.infer<typeof BatchCreateInputSchema>;
+export type BatchCreateInput = z.infer<typeof BatchCreateInputSchema>;

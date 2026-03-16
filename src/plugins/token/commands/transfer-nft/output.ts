@@ -15,7 +15,9 @@ export const TokenTransferNftOutputSchema = z.object({
   network: NetworkSchema,
 });
 
-export type TransferNftOutput = z.infer<typeof TokenTransferNftOutputSchema>;
+export type TokenTransferNftOutput = z.infer<
+  typeof TokenTransferNftOutputSchema
+>;
 
 export const TOKEN_TRANSFER_NFT_TEMPLATE = `
 ✅ NFT transfer successful!

@@ -24,4 +24,4 @@ export const TokenMintFtInputSchema = z.object({
   ),
 });
 
-export type MintFtInput = z.infer<typeof TokenMintFtInputSchema>;
+export type TokenMintFtInput = z.infer<typeof TokenMintFtInputSchema>;

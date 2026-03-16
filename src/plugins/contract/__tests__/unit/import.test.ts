@@ -18,7 +18,7 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupportedNetwork } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { ImportContractOutputSchema } from '@/plugins/contract/commands/import';
+import { ContractImportOutputSchema } from '@/plugins/contract/commands/import';
 import { contractImport } from '@/plugins/contract/commands/import/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
@@ -112,7 +112,7 @@ describe('contract plugin - import command', () => {
       }),
     );
 
-    const output = assertOutput(result.result, ImportContractOutputSchema);
+    const output = assertOutput(result.result, ContractImportOutputSchema);
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.contractName).toBe('ImportedContract');
     expect(output.contractEvmAddress).toBe(MOCK_EVM_ADDRESS);
@@ -156,7 +156,7 @@ describe('contract plugin - import command', () => {
       }),
     );
 
-    const output = assertOutput(result.result, ImportContractOutputSchema);
+    const output = assertOutput(result.result, ContractImportOutputSchema);
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
     expect(output.verified).toBe(false);
   });

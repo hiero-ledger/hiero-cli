@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 import { EntityIdSchema, NetworkSchema, TimestampSchema } from '@/core/schemas';
 
-export const FindMessageOutputSchema = z.object({
+export const TopicFindMessageItemOutputSchema = z.object({
   sequenceNumber: z
     .number()
     .int()
@@ -16,20 +16,26 @@ export const FindMessageOutputSchema = z.object({
   consensusTimestamp: TimestampSchema.describe('Hedera consensus timestamp'),
 });
 
-export type FindMessageOutput = z.infer<typeof FindMessageOutputSchema>;
+export type TopicFindMessageItemOutput = z.infer<
+  typeof TopicFindMessageItemOutputSchema
+>;
 /**
  * Find Messages Command Output Schema
  * Defines the structure of message query results with unified array format
  */
 export const TopicFindMessageOutputSchema = z.object({
   topicId: EntityIdSchema,
-  messages: z.array(FindMessageOutputSchema).describe('Messages found'),
+  messages: z
+    .array(TopicFindMessageItemOutputSchema)
+    .describe('Messages found'),
   totalCount: z.number().describe('Total number of messages found'),
   network: NetworkSchema,
 });
 
 // Infer TypeScript type from schema for type safety
-export type FindMessagesOutput = z.infer<typeof TopicFindMessageOutputSchema>;
+export type TopicFindMessageOutput = z.infer<
+  typeof TopicFindMessageOutputSchema
+>;
 
 /**
  * Human-readable Handlebars template for find messages output

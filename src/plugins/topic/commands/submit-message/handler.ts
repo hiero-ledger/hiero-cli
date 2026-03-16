@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { SubmitMessageOutput } from './output';
+import type { TopicSubmitMessageOutput } from './output';
 import type {
   SubmitMessageBuildTransactionResult,
   SubmitMessageExecuteTransactionResult,
@@ -160,7 +160,7 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     _signTransactionResult: SubmitMessageSignTransactionResult,
     executeTransactionResult: SubmitMessageExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const outputData: SubmitMessageOutput = {
+    const outputData: TopicSubmitMessageOutput = {
       topicId: normalisedParams.topicId,
       message: normalisedParams.message,
       sequenceNumber: executeTransactionResult.topicSequenceNumber ?? 0,

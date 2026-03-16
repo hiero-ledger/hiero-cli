@@ -15,7 +15,7 @@ export const BatchDeleteOutputSchema = z.object({
     .describe('Transaction order (when deleting a single transaction)'),
 });
 
-export type DeleteBatchOutput = z.infer<typeof BatchDeleteOutputSchema>;
+export type BatchDeleteOutput = z.infer<typeof BatchDeleteOutputSchema>;
 
 /**
  * Human-readable template for delete batch output

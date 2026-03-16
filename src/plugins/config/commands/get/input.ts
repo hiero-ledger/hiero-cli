@@ -10,4 +10,4 @@ export const ConfigGetInputSchema = z.object({
   option: ConfigOptionNameSchema.describe('Configuration option name to read'),
 });
 
-export type GetConfigInput = z.infer<typeof ConfigGetInputSchema>;
+export type ConfigGetInput = z.infer<typeof ConfigGetInputSchema>;

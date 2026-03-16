@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { ListTopicsOutput } from './output';
+import type { TopicListOutput } from './output';
 import type { ListTopicsNormalisedParams } from './types';
 
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -52,7 +52,7 @@ export class TopicListCommand implements Command {
       createdAt: topic.createdAt,
     }));
 
-    const outputData: ListTopicsOutput = {
+    const outputData: TopicListOutput = {
       topics: topicsOutput,
       totalCount: topics.length,
       stats,

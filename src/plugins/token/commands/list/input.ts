@@ -13,4 +13,4 @@ export const TokenListInputSchema = z.object({
     ),
 });
 
-export type ListTokenInput = z.infer<typeof TokenListInputSchema>;
+export type TokenListInput = z.infer<typeof TokenListInputSchema>;

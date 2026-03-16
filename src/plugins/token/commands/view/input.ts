@@ -11,4 +11,4 @@ export const TokenViewInputSchema = z.object({
   serial: z.string().optional().describe('NFT serial number (optional)'),
 });
 
-export type ViewTokenInput = z.infer<typeof TokenViewInputSchema>;
+export type TokenViewInput = z.infer<typeof TokenViewInputSchema>;

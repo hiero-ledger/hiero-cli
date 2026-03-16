@@ -38,7 +38,7 @@ export const TopicListOutputSchema = z.object({
 });
 
 // Infer TypeScript type from schema for type safety
-export type ListTopicsOutput = z.infer<typeof TopicListOutputSchema>;
+export type TopicListOutput = z.infer<typeof TopicListOutputSchema>;
 
 /**
  * Human-readable Handlebars template for list topics output

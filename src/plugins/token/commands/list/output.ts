@@ -88,7 +88,7 @@ export const TokenListOutputSchema = z.object({
   stats: TokenStatisticsSchema.optional(),
 });
 
-export type ListTokensOutput = z.infer<typeof TokenListOutputSchema>;
+export type TokenListOutput = z.infer<typeof TokenListOutputSchema>;
 export type TokenListItem = z.infer<typeof TokenListItemSchema>;
 
 /**

@@ -10,6 +10,6 @@ export const PluginManagementDisableInputSchema = z.object({
   name: PluginNameSchema.describe('Name of the plugin to disable'),
 });
 
-export type DisablePluginInput = z.infer<
+export type PluginManagementDisableInput = z.infer<
   typeof PluginManagementDisableInputSchema
 >;

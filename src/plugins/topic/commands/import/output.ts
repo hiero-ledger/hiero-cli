@@ -21,7 +21,7 @@ export const TopicImportOutputSchema = z.object({
     .describe('Whether submit key is set on the topic'),
 });
 
-export type ImportTopicOutput = z.infer<typeof TopicImportOutputSchema>;
+export type TopicImportOutput = z.infer<typeof TopicImportOutputSchema>;
 
 /**
  * Human-readable template for import topic output

@@ -17,4 +17,4 @@ export const BatchDeleteInputSchema = z.object({
     ),
 });
 
-export type DeleteBatchInput = z.infer<typeof BatchDeleteInputSchema>;
+export type BatchDeleteInput = z.infer<typeof BatchDeleteInputSchema>;

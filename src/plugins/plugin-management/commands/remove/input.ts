@@ -10,6 +10,6 @@ export const PluginManagementRemoveInputSchema = z.object({
   name: PluginNameSchema.describe('Name of the plugin to remove from state'),
 });
 
-export type RemovePluginInput = z.infer<
+export type PluginManagementRemoveInput = z.infer<
   typeof PluginManagementRemoveInputSchema
 >;

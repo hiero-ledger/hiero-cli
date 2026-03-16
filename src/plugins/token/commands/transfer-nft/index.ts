@@ -3,7 +3,7 @@ export {
   tokenTransferNft,
   TokenTransferNftCommand,
 } from './handler';
-export type { TransferNftOutput } from './output';
+export type { TokenTransferNftOutput } from './output';
 export {
   TOKEN_TRANSFER_NFT_TEMPLATE,
   TokenTransferNftOutputSchema,

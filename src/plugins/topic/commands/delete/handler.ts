@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { DeleteTopicOutput } from './output';
+import type { TopicDeleteOutput } from './output';
 import type { DeleteTopicNormalisedParams } from './types';
 
 import { NotFoundError } from '@/core/errors';
@@ -69,7 +69,7 @@ export class TopicDeleteCommand implements Command {
 
     topicState.deleteTopic(normalisedParams.key);
 
-    const result: DeleteTopicOutput = {
+    const result: TopicDeleteOutput = {
       deletedTopic: {
         name: topicToDelete.name,
         topicId: topicToDelete.topicId,

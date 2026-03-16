@@ -1,5 +1,5 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { GetOperatorOutput } from '@/plugins/network/commands/get-operator';
+import type { NetworkGetOperatorOutput } from '@/plugins/network/commands/get-operator';
 
 import { z } from 'zod';
 
@@ -51,7 +51,8 @@ export const setDefaultOperatorForNetwork = async (
     logger: coreApi.logger,
     config: coreApi.config,
   });
-  const getOperatorOutput = getOperatorResult.result as GetOperatorOutput;
+  const getOperatorOutput =
+    getOperatorResult.result as NetworkGetOperatorOutput;
   if (getOperatorOutput.operator?.accountId != env.OPERATOR_ID) {
     const setOperatorArgs: Record<string, unknown> = {
       operator: `${env.OPERATOR_ID}:${env.OPERATOR_KEY}`,

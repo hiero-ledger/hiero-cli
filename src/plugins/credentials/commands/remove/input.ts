@@ -10,6 +10,6 @@ export const CredentialsRemoveInputSchema = z.object({
   id: KeyRefIdSchema.describe('Key reference ID to remove from KMS'),
 });
 
-export type RemoveCredentialsInput = z.infer<
+export type CredentialsRemoveInput = z.infer<
   typeof CredentialsRemoveInputSchema
 >;

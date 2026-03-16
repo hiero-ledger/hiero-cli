@@ -25,4 +25,6 @@ export const TopicSubmitMessageInputSchema = z.object({
   ),
 });
 
-export type SubmitMessageInput = z.infer<typeof TopicSubmitMessageInputSchema>;
+export type TopicSubmitMessageInput = z.infer<
+  typeof TopicSubmitMessageInputSchema
+>;

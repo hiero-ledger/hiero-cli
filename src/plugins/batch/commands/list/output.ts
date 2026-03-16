@@ -21,7 +21,7 @@ export const BatchListOutputSchema = z.object({
   totalCount: z.number().describe('Total number of batches'),
 });
 
-export type ListBatchesOutput = z.infer<typeof BatchListOutputSchema>;
+export type BatchListOutput = z.infer<typeof BatchListOutputSchema>;
 
 /**
  * Human-readable template for list batches output

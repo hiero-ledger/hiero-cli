@@ -20,7 +20,7 @@ export const TokenImportOutputSchema = z.object({
   alias: z.string().describe('Token alias').optional(),
 });
 
-export type ImportTokenOutput = z.infer<typeof TokenImportOutputSchema>;
+export type TokenImportOutput = z.infer<typeof TokenImportOutputSchema>;
 
 export const TOKEN_IMPORT_TEMPLATE = `
 ✅ Token imported successfully: {{hashscanLink tokenId "token" network}}

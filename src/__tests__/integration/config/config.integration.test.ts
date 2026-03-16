@@ -1,7 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { GetConfigOutput } from '@/plugins/config/commands/get';
-import type { ListConfigOutput } from '@/plugins/config/commands/list';
-import type { SetConfigOutput } from '@/plugins/config/commands/set';
+import type { ConfigGetOutput } from '@/plugins/config/commands/get';
+import type { ConfigListOutput } from '@/plugins/config/commands/list';
+import type { ConfigSetOutput } from '@/plugins/config/commands/set';
 
 import '@/core/utils/json-serialize';
 
@@ -29,7 +29,7 @@ describe('Config Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const listConfigOutput = listConfigResult.result as ListConfigOutput;
+    const listConfigOutput = listConfigResult.result as ConfigListOutput;
     expect(listConfigOutput.totalCount).toBe(4);
     const optionNames = listConfigOutput.options.map((option) => option.name);
     expect(optionNames).toEqual(
@@ -53,7 +53,7 @@ describe('Config Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const setConfigOutput = setConfigResult.result as SetConfigOutput;
+    const setConfigOutput = setConfigResult.result as ConfigSetOutput;
     expect(setConfigOutput.previousValue).toBe(false);
     expect(setConfigOutput.newValue).toBe(true);
 
@@ -67,7 +67,7 @@ describe('Config Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const getConfigOutput = getConfigResult.result as GetConfigOutput;
+    const getConfigOutput = getConfigResult.result as ConfigGetOutput;
     expect(getConfigOutput.name).toBe('ed25519_support_enabled');
     expect(getConfigOutput.value).toBe(true);
     expect(getConfigOutput.type).toBe('boolean');

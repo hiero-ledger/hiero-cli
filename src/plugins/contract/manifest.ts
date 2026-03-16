@@ -23,8 +23,8 @@ import {
 } from './commands/delete';
 import {
   contractImport,
+  ContractImportOutputSchema,
   IMPORT_CONTRACT_TEMPLATE,
-  ImportContractOutputSchema,
 } from './commands/import';
 
 export const CONTRACT_NAMESPACE = 'contract-contracts';
@@ -176,7 +176,7 @@ export const contractPluginManifest: PluginManifest = {
       ],
       handler: contractImport,
       output: {
-        schema: ImportContractOutputSchema,
+        schema: ContractImportOutputSchema,
         humanTemplate: IMPORT_CONTRACT_TEMPLATE,
       },
     },

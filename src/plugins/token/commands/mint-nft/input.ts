@@ -24,4 +24,4 @@ export const TokenMintNftInputSchema = z.object({
   ),
 });
 
-export type MintNftInput = z.infer<typeof TokenMintNftInputSchema>;
+export type TokenMintNftInput = z.infer<typeof TokenMintNftInputSchema>;

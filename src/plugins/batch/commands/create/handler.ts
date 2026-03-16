@@ -4,7 +4,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { CreateBatchOutput } from './output';
+import type { BatchCreateOutput } from './output';
 
 import { ValidationError } from '@/core/errors';
 import { composeKey } from '@/core/utils/key-composer';
@@ -47,7 +47,7 @@ export class BatchCreateCommand implements Command {
 
     batchState.saveBatch(key, batchData);
 
-    const outputData: CreateBatchOutput = {
+    const outputData: BatchCreateOutput = {
       name: batchData.name,
       keyRefId: batchData.keyRefId,
     };

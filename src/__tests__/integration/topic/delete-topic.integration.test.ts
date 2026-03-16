@@ -1,8 +1,8 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TopicCreateOutput } from '@/plugins/topic/commands/create';
-import type { DeleteTopicOutput } from '@/plugins/topic/commands/delete';
-import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
+import type { TopicDeleteOutput } from '@/plugins/topic/commands/delete';
+import type { TopicListOutput } from '@/plugins/topic/commands/list';
 
 import '@/core/utils/json-serialize';
 
@@ -48,7 +48,7 @@ describe('Delete Topic Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const listTopicOutput = listTopicResult.result as ListTopicsOutput;
+      const listTopicOutput = listTopicResult.result as TopicListOutput;
       const topicBeforeDelete = listTopicOutput.topics.find(
         (t) => t.name === 'topic-to-be-deleted',
       );
@@ -65,7 +65,7 @@ describe('Delete Topic Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const deleteTopicOutput = deleteTopicResult.result as DeleteTopicOutput;
+      const deleteTopicOutput = deleteTopicResult.result as TopicDeleteOutput;
       expect(deleteTopicOutput.deletedTopic.name).toBe('topic-to-be-deleted');
       expect(deleteTopicOutput.deletedTopic.topicId).toBe(
         createTopicOutput.topicId,
@@ -80,7 +80,7 @@ describe('Delete Topic Integration Tests', () => {
         config: coreApi.config,
       });
       const listAfterDeleteOutput =
-        listAfterDeleteResult.result as ListTopicsOutput;
+        listAfterDeleteResult.result as TopicListOutput;
       const topicAfterDelete = listAfterDeleteOutput.topics.find(
         (t) => t.name === 'topic-to-be-deleted',
       );
@@ -112,7 +112,7 @@ describe('Delete Topic Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const deleteTopicOutput = deleteTopicResult.result as DeleteTopicOutput;
+      const deleteTopicOutput = deleteTopicResult.result as TopicDeleteOutput;
       expect(deleteTopicOutput.deletedTopic.topicId).toBe(
         createTopicOutput.topicId,
       );
@@ -129,7 +129,7 @@ describe('Delete Topic Integration Tests', () => {
         config: coreApi.config,
       });
       const listAfterDeleteOutput =
-        listAfterDeleteResult.result as ListTopicsOutput;
+        listAfterDeleteResult.result as TopicListOutput;
       const topicAfterDelete = listAfterDeleteOutput.topics.find(
         (t) => t.topicId === createTopicOutput.topicId,
       );

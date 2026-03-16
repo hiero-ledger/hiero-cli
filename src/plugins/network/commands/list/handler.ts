@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { ListNetworksOutput } from './output';
+import type { NetworkListOutput } from './output';
 import type {
   ListNetworksExecuteResult,
   ListNetworksNormalisedParams,
@@ -49,7 +49,7 @@ export class NetworkListCommand implements Command {
       }),
     );
 
-    const output: ListNetworksOutput = {
+    const output: NetworkListOutput = {
       networks,
       activeNetwork: normalisedParams.currentNetwork,
     };

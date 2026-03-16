@@ -1,7 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TokenCreateFtOutput } from '@/plugins/token/commands/create-ft';
-import type { ListTokensOutput } from '@/plugins/token/commands/list';
+import type { TokenListOutput } from '@/plugins/token/commands/list';
 
 import '@/core/utils/json-serialize';
 
@@ -55,7 +55,7 @@ describe('List Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const listTokenOutput = listTokenResult.result as ListTokensOutput;
+    const listTokenOutput = listTokenResult.result as TokenListOutput;
     const tokenNames = listTokenOutput.tokens.map((token) => token.tokenId);
     expect(tokenNames).toContain(createTokenOutput.tokenId);
   });

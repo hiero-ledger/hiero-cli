@@ -7,5 +7,5 @@ export {
   tokenAssociate,
   TokenAssociateCommand,
 } from './handler';
-export type { AssociateTokenOutput } from './output';
+export type { TokenAssociateOutput } from './output';
 export { TOKEN_ASSOCIATE_TEMPLATE, TokenAssociateOutputSchema } from './output';

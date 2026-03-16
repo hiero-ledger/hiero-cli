@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { ListTokensOutput } from './output';
+import type { TokenListOutput } from './output';
 import type { ListTokensNormalizedParams } from './types';
 
 import { AliasType } from '@/core/services/alias/alias-service.interface';
@@ -62,7 +62,7 @@ export class TokenListCommand implements Command {
     });
 
     const stats = tokenState.getTokensWithStats();
-    const outputData: ListTokensOutput = {
+    const outputData: TokenListOutput = {
       tokens: tokensList,
       totalCount: tokens.length,
       stats: {

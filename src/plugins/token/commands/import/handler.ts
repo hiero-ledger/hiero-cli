@@ -1,7 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { TokenData } from '@/plugins/token/schema';
-import type { ImportTokenOutput } from './output';
+import type { TokenImportOutput } from './output';
 import type { ImportTokenNormalizedParams } from './types';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
@@ -80,7 +80,7 @@ export class TokenImportCommand implements Command {
 
     tokenState.saveToken(key, tokenData);
 
-    const result: ImportTokenOutput = {
+    const result: TokenImportOutput = {
       tokenId: validArgs.tokenId,
       name: tokenData.name,
       symbol: tokenData.symbol,

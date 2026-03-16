@@ -12,4 +12,6 @@ export const NetworkGetOperatorInputSchema = z.object({
   ),
 });
 
-export type GetOperatorInput = z.infer<typeof NetworkGetOperatorInputSchema>;
+export type NetworkGetOperatorInput = z.infer<
+  typeof NetworkGetOperatorInputSchema
+>;

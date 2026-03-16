@@ -1,7 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TopicCreateOutput } from '@/plugins/topic/commands/create';
-import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
+import type { TopicListOutput } from '@/plugins/topic/commands/list';
 
 import '@/core/utils/json-serialize';
 
@@ -51,7 +51,7 @@ describe('Create Topic Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const listTopicOutput = listTopicResult.result as ListTopicsOutput;
+    const listTopicOutput = listTopicResult.result as TopicListOutput;
     const topic = listTopicOutput.topics.find(
       (topic) => topic.name == 'test-topic',
     );

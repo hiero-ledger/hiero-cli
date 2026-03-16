@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { FindMessagesOutput } from './output';
+import type { TopicFindMessageOutput } from './output';
 import type { FindMessageNormalisedParams } from './types';
 
 import { fetchFilteredMessages } from '@/plugins/topic/utils/message-helpers';
@@ -36,7 +36,7 @@ export class TopicFindMessageCommand implements Command {
       apiFilters.length > 0 ? apiFilters : undefined,
     );
 
-    const outputData: FindMessagesOutput = {
+    const outputData: TopicFindMessageOutput = {
       topicId: normalisedParams.topicId,
       messages,
       totalCount: messages.length,

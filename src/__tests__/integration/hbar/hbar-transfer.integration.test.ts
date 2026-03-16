@@ -25,8 +25,9 @@ describe('HBAR Transfer Account Integration Tests', () => {
   });
 
   it('should transfer HBAR from operator to account and then verify it with account view method', async () => {
+    const alias = `account-transfer-${Date.now()}`;
     const createAccountArgs: Record<string, unknown> = {
-      name: 'account-transfer',
+      name: alias,
       balance: 1,
       'key-type': 'ecdsa',
       'auto-associations': 10,
@@ -41,7 +42,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
 
     const createAccountOutput =
       createAccountResult.result as AccountCreateOutput;
-    expect(createAccountOutput.name).toBe('account-transfer');
+    expect(createAccountOutput.name).toBe(alias);
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
 
@@ -49,7 +50,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
 
     const transferAccountArgs: Record<string, unknown> = {
       amount: '1',
-      to: 'account-transfer',
+      to: alias,
       memo: 'Memo test',
     };
     const transferHbarResult = await hbarTransfer({
@@ -70,7 +71,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     await delay(5000);
 
     const viewAccountArgs: Record<string, unknown> = {
-      account: 'account-transfer',
+      account: alias,
     };
     const viewAccountResult = await accountView({
       args: viewAccountArgs,
@@ -87,8 +88,11 @@ describe('HBAR Transfer Account Integration Tests', () => {
   }, 60000);
 
   it('should transfer HBAR from defined account to account and then verify it with account view method', async () => {
+    const suffix = Date.now();
+    const aliasFrom = `account-transfer-from-${suffix}`;
+    const aliasTo = `account-transfer-to-${suffix}`;
     const accountFromArgs: Record<string, unknown> = {
-      name: 'account-transfer-from',
+      name: aliasFrom,
       balance: 1,
       'key-type': 'ecdsa',
       'auto-associations': 10,
@@ -102,12 +106,12 @@ describe('HBAR Transfer Account Integration Tests', () => {
     });
 
     const accountFromOutput = accountFromResult.result as AccountCreateOutput;
-    expect(accountFromOutput.name).toBe('account-transfer-from');
+    expect(accountFromOutput.name).toBe(aliasFrom);
     expect(accountFromOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(accountFromOutput.network).toBe(network);
 
     const accountToArgs: Record<string, unknown> = {
-      name: 'account-transfer-to',
+      name: aliasTo,
       balance: 1,
       'key-type': 'ecdsa',
       'auto-associations': 10,
@@ -121,7 +125,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     });
 
     const accountToOutput = accountToResult.result as AccountCreateOutput;
-    expect(accountToOutput.name).toBe('account-transfer-to');
+    expect(accountToOutput.name).toBe(aliasTo);
     expect(accountToOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(accountToOutput.network).toBe(network);
 
@@ -129,8 +133,8 @@ describe('HBAR Transfer Account Integration Tests', () => {
 
     const transferAccountArgs: Record<string, unknown> = {
       amount: '1',
-      from: 'account-transfer-from',
-      to: 'account-transfer-to',
+      from: aliasFrom,
+      to: aliasTo,
     };
     const transferHbarResult = await hbarTransfer({
       args: transferAccountArgs,
@@ -149,7 +153,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     await delay(5000);
 
     const viewAccountFromArgs: Record<string, unknown> = {
-      account: 'account-transfer-from',
+      account: aliasFrom,
     };
     const viewAccountFromResult = await accountView({
       args: viewAccountFromArgs,
@@ -164,7 +168,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
     expect(viewAccountFromOutput.publicKey).toBe(accountFromOutput.publicKey);
 
     const viewAccountToArgs: Record<string, unknown> = {
-      account: 'account-transfer-to',
+      account: aliasTo,
     };
     const viewAccountToResult = await accountView({
       args: viewAccountToArgs,

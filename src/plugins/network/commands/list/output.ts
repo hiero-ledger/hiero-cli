@@ -22,7 +22,7 @@ export const NetworkListOutputSchema = z.object({
   activeNetwork: NetworkSchema,
 });
 
-export type ListNetworksOutput = z.infer<typeof NetworkListOutputSchema>;
+export type NetworkListOutput = z.infer<typeof NetworkListOutputSchema>;
 
 export const NETWORK_LIST_TEMPLATE = `
 Available networks:

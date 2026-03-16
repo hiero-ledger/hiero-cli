@@ -15,7 +15,7 @@ export const ConfigGetOutputSchema = z.object({
   allowedValues: z.array(z.string()).optional(),
 });
 
-export type GetConfigOutput = z.infer<typeof ConfigGetOutputSchema>;
+export type ConfigGetOutput = z.infer<typeof ConfigGetOutputSchema>;
 
 export const CONFIG_GET_TEMPLATE = `
 🔧 {{name}}

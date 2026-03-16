@@ -10,4 +10,6 @@ export const PluginManagementInfoInputSchema = z.object({
   name: PluginNameSchema.describe('Name of the plugin for information display'),
 });
 
-export type PluginInfoInput = z.infer<typeof PluginManagementInfoInputSchema>;
+export type PluginManagementInfoInput = z.infer<
+  typeof PluginManagementInfoInputSchema
+>;

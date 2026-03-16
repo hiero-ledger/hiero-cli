@@ -10,4 +10,4 @@ export const TokenImportInputSchema = z.object({
   ),
 });
 
-export type ImportTokenInput = z.infer<typeof TokenImportInputSchema>;
+export type TokenImportInput = z.infer<typeof TokenImportInputSchema>;

@@ -17,7 +17,7 @@ export const TopicDeleteOutputSchema = z.object({
   network: NetworkSchema,
 });
 
-export type DeleteTopicOutput = z.infer<typeof TopicDeleteOutputSchema>;
+export type TopicDeleteOutput = z.infer<typeof TopicDeleteOutputSchema>;
 
 /**
  * Human-readable template for delete topic output

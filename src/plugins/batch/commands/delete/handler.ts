@@ -4,7 +4,7 @@
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { DeleteBatchOutput } from './output';
+import type { BatchDeleteOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
 import { composeKey } from '@/core/utils/key-composer';
@@ -47,7 +47,7 @@ export class BatchDeleteCommand implements Command {
 
       logger.info(`Removed transaction at order ${order} from batch '${name}'`);
 
-      const outputData: DeleteBatchOutput = {
+      const outputData: BatchDeleteOutput = {
         name,
         order,
       };
@@ -58,7 +58,7 @@ export class BatchDeleteCommand implements Command {
     batchState.deleteBatch(key);
     logger.info(`Deleted batch '${name}'`);
 
-    const outputData: DeleteBatchOutput = {
+    const outputData: BatchDeleteOutput = {
       name,
     };
     return { result: outputData };

@@ -3,7 +3,7 @@ import type { Command } from '@/core/commands/command.interface';
 import type { CommandResult } from '@/core/plugins/plugin.types';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { SetOperatorOutput } from './output';
+import type { NetworkSetOperatorOutput } from './output';
 import type {
   SetOperatorExecuteContext,
   SetOperatorNormalisedParams,
@@ -70,7 +70,7 @@ export class NetworkSetOperatorCommand implements Command {
       keyRefId: executeContext.operator.keyRefId,
     });
 
-    const output: SetOperatorOutput = {
+    const output: NetworkSetOperatorOutput = {
       network: normalisedParams.targetNetwork,
       operator: {
         accountId: executeContext.operator.accountId,

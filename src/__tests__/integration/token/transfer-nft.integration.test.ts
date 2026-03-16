@@ -1,11 +1,11 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountCreateOutput } from '@/plugins/account/commands/create';
-import type { AssociateTokenOutput } from '@/plugins/token/commands/associate';
+import type { TokenAssociateOutput } from '@/plugins/token/commands/associate';
 import type { TokenCreateNftOutput } from '@/plugins/token/commands/create-nft';
 import type { TokenMintNftOutput } from '@/plugins/token/commands/mint-nft';
-import type { TransferNftOutput } from '@/plugins/token/commands/transfer-nft';
-import type { ViewTokenOutput } from '@/plugins/token/commands/view';
+import type { TokenTransferNftOutput } from '@/plugins/token/commands/transfer-nft';
+import type { TokenViewOutput } from '@/plugins/token/commands/view';
 
 import '@/core/utils/json-serialize';
 
@@ -151,7 +151,7 @@ describe('Transfer NFT Integration Tests', () => {
         config: coreApi.config,
       });
       const associateTokenOutput =
-        associateTokenResult.result as AssociateTokenOutput;
+        associateTokenResult.result as TokenAssociateOutput;
       expect(associateTokenOutput.tokenId).toBe(createNftOutput.tokenId);
       expect(associateTokenOutput.accountId).toBe(
         createDestinationAccountOutput.accountId,
@@ -172,7 +172,7 @@ describe('Transfer NFT Integration Tests', () => {
         config: coreApi.config,
       });
       const viewTokenBeforeTransferOutput =
-        viewTokenBeforeTransferResult.result as ViewTokenOutput;
+        viewTokenBeforeTransferResult.result as TokenViewOutput;
       expect(viewTokenBeforeTransferOutput.tokenId).toBe(
         createNftOutput.tokenId,
       );
@@ -199,7 +199,8 @@ describe('Transfer NFT Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const transferNftOutput = transferNftResult.result as TransferNftOutput;
+      const transferNftOutput =
+        transferNftResult.result as TokenTransferNftOutput;
       expect(transferNftOutput.tokenId).toBe(createNftOutput.tokenId);
       expect(transferNftOutput.from).toBe(createSourceAccountOutput.accountId);
       expect(transferNftOutput.to).toBe(
@@ -225,7 +226,7 @@ describe('Transfer NFT Integration Tests', () => {
         config: coreApi.config,
       });
       const viewTokenAfterTransferOutput =
-        viewTokenAfterTransferResult.result as ViewTokenOutput;
+        viewTokenAfterTransferResult.result as TokenViewOutput;
       expect(viewTokenAfterTransferOutput.tokenId).toBe(
         createNftOutput.tokenId,
       );

@@ -76,4 +76,4 @@ export const TopicFindMessageInputSchema = z
     },
   );
 
-export type FindMessageInput = z.infer<typeof TopicFindMessageInputSchema>;
+export type TopicFindMessageInput = z.infer<typeof TopicFindMessageInputSchema>;

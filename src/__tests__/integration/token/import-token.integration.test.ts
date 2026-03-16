@@ -1,8 +1,8 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TokenCreateFtOutput } from '@/plugins/token/commands/create-ft';
-import type { ImportTokenOutput } from '@/plugins/token/commands/import';
-import type { ListTokensOutput } from '@/plugins/token/commands/list';
+import type { TokenImportOutput } from '@/plugins/token/commands/import';
+import type { TokenListOutput } from '@/plugins/token/commands/list';
 
 import '@/core/utils/json-serialize';
 
@@ -81,7 +81,7 @@ describe('Import Token Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const importTokenOutput = importTokenResult.result as ImportTokenOutput;
+    const importTokenOutput = importTokenResult.result as TokenImportOutput;
     expect(importTokenOutput.tokenId).toBe(tokenId);
     expect(importTokenOutput.name).toBe(TOKEN_NAME);
     expect(importTokenOutput.network).toBe(network);
@@ -95,7 +95,7 @@ describe('Import Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const listTokenOutput = listTokenResult.result as ListTokensOutput;
+    const listTokenOutput = listTokenResult.result as TokenListOutput;
     const token = listTokenOutput.tokens.find((t) => t.tokenId === tokenId);
     expect(token).not.toBeNull();
     expect(token?.tokenId).toBe(tokenId);
@@ -116,7 +116,7 @@ describe('Import Token Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const importTokenOutput = importTokenResult.result as ImportTokenOutput;
+    const importTokenOutput = importTokenResult.result as TokenImportOutput;
     expect(importTokenOutput.tokenId).toBe(tokenId);
     expect(importTokenOutput.name).toBe(TOKEN_NAME);
     expect(importTokenOutput.alias).toBe(alias);
@@ -130,7 +130,7 @@ describe('Import Token Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const listTokenOutput = listTokenResult.result as ListTokensOutput;
+    const listTokenOutput = listTokenResult.result as TokenListOutput;
     const token = listTokenOutput.tokens.find((t) => t.tokenId === tokenId);
     expect(token).not.toBeNull();
     expect(token?.name).toBe(TOKEN_NAME);

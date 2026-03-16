@@ -28,7 +28,7 @@ export const TopicSubmitMessageOutputSchema = z.object({
 });
 
 // Infer TypeScript type from schema for type safety
-export type SubmitMessageOutput = z.infer<
+export type TopicSubmitMessageOutput = z.infer<
   typeof TopicSubmitMessageOutputSchema
 >;
 

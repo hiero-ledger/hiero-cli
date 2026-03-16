@@ -9,4 +9,4 @@ export const BatchExecuteInputSchema = z.object({
   name: AliasNameSchema.describe('Batch name'),
 });
 
-export type ExecuteBatchInput = z.infer<typeof BatchExecuteInputSchema>;
+export type BatchExecuteInput = z.infer<typeof BatchExecuteInputSchema>;

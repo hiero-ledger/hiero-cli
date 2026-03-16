@@ -11,7 +11,7 @@ export const BatchCreateOutputSchema = z.object({
   keyRefId: z.string().describe('Key reference ID for signing'),
 });
 
-export type CreateBatchOutput = z.infer<typeof BatchCreateOutputSchema>;
+export type BatchCreateOutput = z.infer<typeof BatchCreateOutputSchema>;
 
 /**
  * Human-readable template for create batch output

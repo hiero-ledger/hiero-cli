@@ -20,4 +20,4 @@ export const TokenAssociateInputSchema = z.object({
   ),
 });
 
-export type AssociateTokenInput = z.infer<typeof TokenAssociateInputSchema>;
+export type TokenAssociateInput = z.infer<typeof TokenAssociateInputSchema>;

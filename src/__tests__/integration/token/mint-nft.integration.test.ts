@@ -4,7 +4,7 @@ import type { AccountCreateOutput } from '@/plugins/account/commands/create';
 import type { AccountViewOutput } from '@/plugins/account/commands/view';
 import type { TokenCreateNftOutput } from '@/plugins/token/commands/create-nft';
 import type { TokenMintNftOutput } from '@/plugins/token/commands/mint-nft';
-import type { ViewTokenOutput } from '@/plugins/token/commands/view';
+import type { TokenViewOutput } from '@/plugins/token/commands/view';
 
 import '@/core/utils/json-serialize';
 
@@ -126,7 +126,7 @@ describe('Mint NFT Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const viewTokenOutput = viewTokenResult.result as ViewTokenOutput;
+    const viewTokenOutput = viewTokenResult.result as TokenViewOutput;
     expect(viewTokenOutput.tokenId).toBe(createNftOutput.tokenId);
     expect(viewTokenOutput.name).toBe('Test NFT Collection');
     expect(viewTokenOutput.symbol).toBe('TNFT');

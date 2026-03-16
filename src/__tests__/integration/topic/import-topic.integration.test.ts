@@ -1,8 +1,8 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TopicCreateOutput } from '@/plugins/topic/commands/create';
-import type { ImportTopicOutput } from '@/plugins/topic/commands/import';
-import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
+import type { TopicImportOutput } from '@/plugins/topic/commands/import';
+import type { TopicListOutput } from '@/plugins/topic/commands/list';
 
 import '@/core/utils/json-serialize';
 
@@ -83,7 +83,7 @@ describe('Import Topic Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const importTopicOutput = importTopicResult.result as ImportTopicOutput;
+    const importTopicOutput = importTopicResult.result as TopicImportOutput;
     expect(importTopicOutput.topicId).toBe(topicId);
     expect(importTopicOutput.network).toBe(network);
 
@@ -97,7 +97,7 @@ describe('Import Topic Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const listTopicOutput = listTopicResult.result as ListTopicsOutput;
+    const listTopicOutput = listTopicResult.result as TopicListOutput;
     const topic = listTopicOutput.topics.find((t) => t.topicId === topicId);
     expect(topic).not.toBeNull();
     expect(topic?.topicId).toBe(topicId);
@@ -123,7 +123,7 @@ describe('Import Topic Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const importTopicOutput = importTopicResult.result as ImportTopicOutput;
+    const importTopicOutput = importTopicResult.result as TopicImportOutput;
     expect(importTopicOutput.topicId).toBe(topicId);
     expect(importTopicOutput.name).toBe(alias);
     expect(importTopicOutput.network).toBe(network);
@@ -138,7 +138,7 @@ describe('Import Topic Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const listTopicOutput = listTopicResult.result as ListTopicsOutput;
+    const listTopicOutput = listTopicResult.result as TopicListOutput;
     const topic = listTopicOutput.topics.find((t) => t.topicId === topicId);
     expect(topic).not.toBeNull();
     expect(topic?.name).toBe(alias);

@@ -51,7 +51,7 @@ export const TokenViewOutputSchema = z.object({
     .optional(),
 });
 
-export type ViewTokenOutput = z.infer<typeof TokenViewOutputSchema>;
+export type TokenViewOutput = z.infer<typeof TokenViewOutputSchema>;
 
 /**
  * Human-readable template for view token output

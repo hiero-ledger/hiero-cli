@@ -18,7 +18,7 @@ export const BatchExecuteOutputSchema = z.object({
   network: NetworkSchema.describe('Network'),
 });
 
-export type ExecuteBatchOutput = z.infer<typeof BatchExecuteOutputSchema>;
+export type BatchExecuteOutput = z.infer<typeof BatchExecuteOutputSchema>;
 
 /**
  * Human-readable template for execute batch output

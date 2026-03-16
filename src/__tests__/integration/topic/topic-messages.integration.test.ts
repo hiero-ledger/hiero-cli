@@ -1,9 +1,9 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TopicCreateOutput } from '@/plugins/topic/commands/create';
-import type { FindMessagesOutput } from '@/plugins/topic/commands/find-message';
-import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
-import type { SubmitMessageOutput } from '@/plugins/topic/commands/submit-message';
+import type { TopicFindMessageOutput } from '@/plugins/topic/commands/find-message';
+import type { TopicListOutput } from '@/plugins/topic/commands/list';
+import type { TopicSubmitMessageOutput } from '@/plugins/topic/commands/submit-message';
 
 import '@/core/utils/json-serialize';
 
@@ -55,7 +55,7 @@ describe('Topic Messages Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const listTopicOutput = listTopicResult.result as ListTopicsOutput;
+    const listTopicOutput = listTopicResult.result as TopicListOutput;
     const topic = listTopicOutput.topics.find(
       (topic) => topic.name == 'test-topic-submit',
     );
@@ -80,7 +80,7 @@ describe('Topic Messages Integration Tests', () => {
         config: coreApi.config,
       });
       const submitMessageOutput =
-        submitMessageResult.result as SubmitMessageOutput;
+        submitMessageResult.result as TopicSubmitMessageOutput;
       expect(submitMessageOutput.topicId).toBe(createTopicOutput.topicId);
       expect(submitMessageOutput.message).toBe(`Test message ${i + 1}`);
     }
@@ -99,7 +99,7 @@ describe('Topic Messages Integration Tests', () => {
       config: coreApi.config,
     });
     const findMessageEqOutput =
-      findMessageEqResult.result as FindMessagesOutput;
+      findMessageEqResult.result as TopicFindMessageOutput;
     expect(findMessageEqOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageEqOutput.messages?.at(0)?.message).toBe(`Test message 3`);
 
@@ -115,7 +115,7 @@ describe('Topic Messages Integration Tests', () => {
       config: coreApi.config,
     });
     const findMessageGtOutput =
-      findMessageGtResult.result as FindMessagesOutput;
+      findMessageGtResult.result as TopicFindMessageOutput;
     expect(findMessageGtOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageGtOutput.messages.length).toBe(3);
 
@@ -131,7 +131,7 @@ describe('Topic Messages Integration Tests', () => {
       config: coreApi.config,
     });
     const findMessageGteOutput =
-      findMessageGteResult.result as FindMessagesOutput;
+      findMessageGteResult.result as TopicFindMessageOutput;
     expect(findMessageGteOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageGteOutput.messages.length).toBe(4);
 
@@ -147,7 +147,7 @@ describe('Topic Messages Integration Tests', () => {
       config: coreApi.config,
     });
     const findMessageLtOutput =
-      findMessageLtResult.result as FindMessagesOutput;
+      findMessageLtResult.result as TopicFindMessageOutput;
     expect(findMessageLtOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageLtOutput.messages.length).toBe(3);
 
@@ -163,7 +163,7 @@ describe('Topic Messages Integration Tests', () => {
       config: coreApi.config,
     });
     const findMessageLteOutput =
-      findMessageLteResult.result as FindMessagesOutput;
+      findMessageLteResult.result as TopicFindMessageOutput;
     expect(findMessageLteOutput.topicId).toBe(createTopicOutput.topicId);
     expect(findMessageLteOutput.messages.length).toBe(4);
   }, 120000);

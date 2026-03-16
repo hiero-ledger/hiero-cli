@@ -15,7 +15,7 @@ export const ConfigSetOutputSchema = z.object({
   newValue: ConfigValueSchema,
 });
 
-export type SetConfigOutput = z.infer<typeof ConfigSetOutputSchema>;
+export type ConfigSetOutput = z.infer<typeof ConfigSetOutputSchema>;
 
 export const CONFIG_SET_TEMPLATE = `
 ✅ Updated configuration option

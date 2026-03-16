@@ -10,6 +10,6 @@ export const PluginManagementEnableInputSchema = z.object({
   name: PluginNameSchema.describe('Name of the plugin to enable'),
 });
 
-export type EnablePluginInput = z.infer<
+export type PluginManagementEnableInput = z.infer<
   typeof PluginManagementEnableInputSchema
 >;

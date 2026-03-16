@@ -24,7 +24,7 @@ export const TokenAssociateOutputSchema = z.object({
   network: NetworkSchema,
 });
 
-export type AssociateTokenOutput = z.infer<typeof TokenAssociateOutputSchema>;
+export type TokenAssociateOutput = z.infer<typeof TokenAssociateOutputSchema>;
 
 /**
  * Human-readable template for associate token output

@@ -8,7 +8,7 @@ import type {
   BatchNormalisedParams,
   BatchSignTransactionResult,
 } from '@/plugins/batch/commands/execute/types';
-import type { ExecuteBatchOutput } from './output';
+import type { BatchExecuteOutput } from './output';
 
 import { Transaction } from '@hashgraph/sdk';
 
@@ -145,7 +145,7 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
     _signTransactionResult: BatchSignTransactionResult,
     executeTransactionResult: BatchExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const outputData: ExecuteBatchOutput = {
+    const outputData: BatchExecuteOutput = {
       batchName: normalisedParams.name,
       transactionId:
         executeTransactionResult.transactionResult?.transactionId || '',

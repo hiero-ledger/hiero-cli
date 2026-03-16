@@ -1,7 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { NftInfo } from '@/core/services/mirrornode/types';
-import type { ViewTokenOutput } from './output';
+import type { TokenViewOutput } from './output';
 import type { ViewTokenNormalizedParams } from './types';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
@@ -48,7 +48,7 @@ export class TokenViewCommand implements Command {
       nftInfo = await api.mirror.getNftInfo(tokenId, serialNum);
     }
 
-    const output: ViewTokenOutput = buildOutput(tokenInfo, nftInfo, network);
+    const output: TokenViewOutput = buildOutput(tokenInfo, nftInfo, network);
     return { result: output };
   }
 }

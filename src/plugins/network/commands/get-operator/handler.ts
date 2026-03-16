@@ -2,7 +2,7 @@ import type { CommandHandlerArgs } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { CommandResult } from '@/core/plugins/plugin.types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { GetOperatorOutput } from './output';
+import type { NetworkGetOperatorOutput } from './output';
 import type { GetOperatorNormalisedParams } from './types';
 
 import { ValidationError } from '@/core/errors';
@@ -44,7 +44,7 @@ export class NetworkGetOperatorCommand implements Command {
       ? api.kms.get(operator.keyRefId)?.publicKey
       : undefined;
 
-    const output: GetOperatorOutput = operator
+    const output: NetworkGetOperatorOutput = operator
       ? {
           network: normalisedParams.targetNetwork,
           operator: {

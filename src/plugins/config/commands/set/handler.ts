@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { SetConfigOutput } from './output';
+import type { ConfigSetOutput } from './output';
 
 import { inferConfigOptionType } from '@/plugins/config/schema';
 
@@ -20,10 +20,10 @@ export class ConfigSetCommand implements Command {
     const type = inferConfigOptionType(descriptor?.type, value);
     api.config.setOption(name, value);
 
-    const output: SetConfigOutput = {
+    const output: ConfigSetOutput = {
       name,
       type,
-      previousValue: prev as SetConfigOutput['previousValue'],
+      previousValue: prev as ConfigSetOutput['previousValue'],
       newValue: value,
     };
 

@@ -8,4 +8,4 @@ export const TopicDeleteInputSchema = z.object({
   ),
 });
 
-export type DeleteTopicInput = z.infer<typeof TopicDeleteInputSchema>;
+export type TopicDeleteInput = z.infer<typeof TopicDeleteInputSchema>;

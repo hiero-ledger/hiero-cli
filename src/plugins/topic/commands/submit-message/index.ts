@@ -7,7 +7,7 @@ export {
   topicSubmitMessage,
   TopicSubmitMessageCommand,
 } from './handler';
-export type { SubmitMessageOutput } from './output';
+export type { TopicSubmitMessageOutput } from './output';
 export {
   TOPIC_SUBMIT_MESSAGE_TEMPLATE,
   TopicSubmitMessageOutputSchema,

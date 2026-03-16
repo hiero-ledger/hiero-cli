@@ -10,4 +10,4 @@ export const TopicListInputSchema = z.object({
   network: NetworkSchema.optional().describe('Filter topics by network name'),
 });
 
-export type ListTopicsInput = z.infer<typeof TopicListInputSchema>;
+export type TopicListInput = z.infer<typeof TopicListInputSchema>;

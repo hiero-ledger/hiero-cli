@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { AssociateTokenOutput } from './output';
+import type { TokenAssociateOutput } from './output';
 import type {
   AssociateBuildTransactionResult,
   AssociateExecuteTransactionResult,
@@ -185,7 +185,7 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
       logger,
     );
 
-    const outputData: AssociateTokenOutput = {
+    const outputData: TokenAssociateOutput = {
       accountId: normalisedParams.account.accountId,
       tokenId: normalisedParams.tokenId,
       associated: true,

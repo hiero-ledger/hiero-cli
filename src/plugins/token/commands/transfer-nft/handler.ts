@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { TransferNftOutput } from './output';
+import type { TokenTransferNftOutput } from './output';
 import type {
   TransferNftBuildTransactionResult,
   TransferNftExecuteTransactionResult,
@@ -168,7 +168,7 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
     _signTransactionResult: TransferNftSignTransactionResult,
     executeTransactionResult: TransferNftExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const outputData: TransferNftOutput = {
+    const outputData: TokenTransferNftOutput = {
       transactionId: executeTransactionResult.transactionResult.transactionId,
       tokenId: normalisedParams.tokenId,
       from: normalisedParams.fromAccountId,

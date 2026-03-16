@@ -1,7 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { TopicData } from '@/plugins/topic/schema';
-import type { ImportTopicOutput } from './output';
+import type { TopicImportOutput } from './output';
 import type { ImportTopicNormalisedParams } from './types';
 
 import { ValidationError } from '@/core/errors';
@@ -67,7 +67,7 @@ export class TopicImportCommand implements Command {
 
     topicState.saveTopic(key, topicData);
 
-    const result: ImportTopicOutput = {
+    const result: TopicImportOutput = {
       topicId: normalisedParams.topicId,
       name: topicData.name,
       network: normalisedParams.network,

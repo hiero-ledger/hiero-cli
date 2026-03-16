@@ -1,5 +1,5 @@
 export { networkSetOperator, NetworkSetOperatorCommand } from './handler';
-export type { SetOperatorOutput } from './output';
+export type { NetworkSetOperatorOutput } from './output';
 export {
   NETWORK_SET_OPERATOR_TEMPLATE,
   NetworkSetOperatorOutputSchema,

@@ -13,7 +13,9 @@ export const NetworkGetOperatorOutputSchema = z.object({
   operator: OperatorInfoSchema.optional(),
 });
 
-export type GetOperatorOutput = z.infer<typeof NetworkGetOperatorOutputSchema>;
+export type NetworkGetOperatorOutput = z.infer<
+  typeof NetworkGetOperatorOutputSchema
+>;
 
 export const NETWORK_GET_OPERATOR_TEMPLATE = `
 {{#if operator}}

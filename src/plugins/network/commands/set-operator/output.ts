@@ -13,7 +13,9 @@ export const NetworkSetOperatorOutputSchema = z.object({
   operator: OperatorInfoSchema,
 });
 
-export type SetOperatorOutput = z.infer<typeof NetworkSetOperatorOutputSchema>;
+export type NetworkSetOperatorOutput = z.infer<
+  typeof NetworkSetOperatorOutputSchema
+>;
 
 export const NETWORK_SET_OPERATOR_TEMPLATE = `
 ✅ Operator configured for network: {{network}}
