@@ -1,7 +1,4 @@
-import type {
-  Transaction as HederaTransaction,
-  TransferTransaction,
-} from '@hashgraph/sdk';
+import type { Transaction, TransferTransaction } from '@hashgraph/sdk';
 import type { ResolvedAccountCredential } from '@/core/services/key-resolver/types';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type {
@@ -23,7 +20,7 @@ export interface TransferBuildTransactionResult {
 }
 
 export interface TransferSignTransactionResult {
-  signedTransaction: HederaTransaction;
+  signedTransaction: Transaction;
 }
 
 export type TransferExecuteTransactionResult = TransactionResult;

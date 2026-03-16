@@ -31,7 +31,7 @@ export interface CreateFtBuildTransactionResult {
 }
 
 export interface CreateFtSignTransactionResult {
-  transaction: Transaction;
+  signedTransaction: Transaction;
 }
 
 export interface CreateFtExecuteTransactionResult {

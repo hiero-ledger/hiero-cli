@@ -1,4 +1,4 @@
-import type { Transaction } from '@hashgraph/sdk';
+import type { BatchTransaction, Transaction } from '@hashgraph/sdk';
 import type { SupportedNetwork, TransactionResult } from '@/core';
 import type { KmsCredentialRecord } from '@/core/services/kms/kms-types.interface';
 import type { BatchData } from '@/plugins/batch/schema';
@@ -13,11 +13,11 @@ export interface BatchNormalisedParams {
 }
 
 export interface BatchBuildTransactionResult {
-  transaction: Transaction;
+  transaction: BatchTransaction;
 }
 
 export interface BatchSignTransactionResult {
-  transaction: Transaction;
+  signedTransaction: Transaction;
 }
 
 export interface BatchExecuteTransactionResult {

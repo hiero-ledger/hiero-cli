@@ -15,7 +15,7 @@ export interface TransferNftBuildTransactionResult {
 }
 
 export interface TransferNftSignTransactionResult {
-  transaction: Transaction;
+  signedTransaction: Transaction;
 }
 
 export interface TransferNftExecuteTransactionResult {

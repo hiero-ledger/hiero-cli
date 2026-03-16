@@ -16,7 +16,7 @@ export interface AssociateBuildTransactionResult {
 }
 
 export interface AssociateSignTransactionResult {
-  transaction?: Transaction;
+  signedTransaction?: Transaction;
 }
 
 export interface AssociateExecuteTransactionResult {

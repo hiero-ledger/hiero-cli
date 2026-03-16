@@ -21,6 +21,7 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { ReceiptService } from '@/core/services/receipt/receipt-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
@@ -370,6 +371,9 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     batch: {
       createBatchTransaction: jest.fn(),
     } as unknown as BatchTransactionService,
+    receipt: {
+      getReceipt: jest.fn(),
+    } as unknown as ReceiptService,
     kms,
     alias,
     state,

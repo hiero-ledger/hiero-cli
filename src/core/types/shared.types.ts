@@ -164,3 +164,23 @@ export interface TransactionResult {
   topicSequenceNumber?: number;
   consensusTimestamp: string;
 }
+
+export interface BatchDataItem {
+  transactionBytes: string;
+  order: number;
+  command: string;
+  normalizedParams: Record<string, unknown>;
+  transactionId?: string;
+}
+
+export interface BatchData {
+  name: string;
+  keyRefId: string;
+  executed: boolean;
+  success: boolean;
+  transactions: BatchDataItem[];
+}
+
+export interface BatchExecuteTransactionResult {
+  updatedBatchData: BatchData;
+}

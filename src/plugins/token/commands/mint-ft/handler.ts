@@ -156,7 +156,7 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
       [supplyKeyRefId],
     );
     return {
-      transaction,
+      signedTransaction: transaction,
     };
   }
 
@@ -167,7 +167,7 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
     signTransactionResult: MintFtSignTransactionResult,
   ): Promise<MintFtExecuteTransactionResult> {
     const { api } = args;
-    const signedTransaction = signTransactionResult.transaction;
+    const signedTransaction = signTransactionResult.signedTransaction;
     const result = await api.txExecute.execute(signedTransaction);
 
     if (!result.success) {

@@ -28,7 +28,7 @@ export interface CreateFtFromFileBuildTransactionResult {
 }
 
 export interface CreateFtFromFileSignTransactionResult {
-  transaction: Transaction;
+  signedTransaction: Transaction;
 }
 
 export interface CreateFtFromFileExecuteTransactionResult {

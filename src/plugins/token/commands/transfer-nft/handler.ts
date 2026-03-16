@@ -139,7 +139,7 @@ export class TransferNftCommand extends BaseTransactionCommand<
       buildTransactionResult.transaction,
       [normalisedParams.signerKeyRefId],
     );
-    return { transaction };
+    return { signedTransaction: transaction };
   }
 
   async executeTransaction(
@@ -150,7 +150,7 @@ export class TransferNftCommand extends BaseTransactionCommand<
   ): Promise<TransferNftExecuteTransactionResult> {
     const { api } = args;
     const transactionResult = await api.txExecute.execute(
-      signTransactionResult.transaction,
+      signTransactionResult.signedTransaction,
     );
     if (!transactionResult.success) {
       throw new TransactionError(
