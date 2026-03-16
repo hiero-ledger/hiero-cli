@@ -10,7 +10,7 @@ import {
   batchList,
   BatchListOutputSchema,
 } from '@/plugins/batch/commands/list';
-import { BatchBatchifyHook } from '@/plugins/batch/hooks/batchify/handler';
+import { BatchifyHook } from '@/plugins/batch/hooks/batchify/handler';
 
 import {
   BATCH_CREATE_TEMPLATE,
@@ -39,7 +39,7 @@ export const batchPluginManifest: PluginManifest = {
   hooks: [
     {
       name: 'batchify',
-      hook: new BatchBatchifyHook(),
+      hook: new BatchifyHook(),
       options: [
         {
           name: 'batch',

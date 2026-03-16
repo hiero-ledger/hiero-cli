@@ -14,7 +14,7 @@ import {
  * - sequenceEq cannot be combined with other filters
  * - Lower bound filters (gt/gte) must be less than upper bound filters (lt/lte)
  */
-export const TopicTopicFindMessageInputSchema = z
+export const TopicFindMessageInputSchema = z
   .object({
     topic: EntityReferenceSchema.describe('Topic ID or topic name/alias'),
     sequenceGt: PositiveIntFilterFieldSchema.describe(
@@ -76,4 +76,4 @@ export const TopicTopicFindMessageInputSchema = z
     },
   );
 
-export type FindMessageInput = z.infer<typeof TopicTopicFindMessageInputSchema>;
+export type FindMessageInput = z.infer<typeof TopicFindMessageInputSchema>;

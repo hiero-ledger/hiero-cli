@@ -6,12 +6,10 @@ import { NetworkSchema } from '@/core/schemas';
  * Input schema for network get-operator command
  * Validates arguments for retrieving operator credentials
  */
-export const NetworkNetworkGetOperatorInputSchema = z.object({
+export const NetworkGetOperatorInputSchema = z.object({
   network: NetworkSchema.optional().describe(
     'Target network (defaults to current network)',
   ),
 });
 
-export type GetOperatorInput = z.infer<
-  typeof NetworkNetworkGetOperatorInputSchema
->;
+export type GetOperatorInput = z.infer<typeof NetworkGetOperatorInputSchema>;

@@ -11,8 +11,8 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, ValidationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
-  networkGetOperator as getOperatorHandler,
-  NetworkNetworkGetOperatorOutputSchema,
+  networkGetOperator,
+  NetworkGetOperatorOutputSchema,
 } from '@/plugins/network/commands/get-operator';
 
 let exitSpy: jest.SpyInstance;
@@ -55,12 +55,9 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    const result = await getOperatorHandler(args);
+    const result = await networkGetOperator(args);
 
-    const output = assertOutput(
-      result.result,
-      NetworkNetworkGetOperatorOutputSchema,
-    );
+    const output = assertOutput(result.result, NetworkGetOperatorOutputSchema);
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
@@ -96,12 +93,9 @@ describe('network plugin - get-operator command', () => {
       { network: 'mainnet' },
     );
 
-    const result = await getOperatorHandler(args);
+    const result = await networkGetOperator(args);
 
-    const output = assertOutput(
-      result.result,
-      NetworkNetworkGetOperatorOutputSchema,
-    );
+    const output = assertOutput(result.result, NetworkGetOperatorOutputSchema);
     expect(output.network).toBe('mainnet');
     expect(output.operator).toEqual({
       accountId: '0.0.789012',
@@ -125,12 +119,9 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    const result = await getOperatorHandler(args);
+    const result = await networkGetOperator(args);
 
-    const output = assertOutput(
-      result.result,
-      NetworkNetworkGetOperatorOutputSchema,
-    );
+    const output = assertOutput(result.result, NetworkGetOperatorOutputSchema);
     expect(output.network).toBe('testnet');
     expect(output.operator).toBeUndefined();
     expect(networkService.getOperator).toHaveBeenCalledWith('testnet');
@@ -154,12 +145,9 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    const result = await getOperatorHandler(args);
+    const result = await networkGetOperator(args);
 
-    const output = assertOutput(
-      result.result,
-      NetworkNetworkGetOperatorOutputSchema,
-    );
+    const output = assertOutput(result.result, NetworkGetOperatorOutputSchema);
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.123456',
@@ -188,7 +176,7 @@ describe('network plugin - get-operator command', () => {
       { network: 'mainnet' },
     );
 
-    await expect(getOperatorHandler(args)).rejects.toThrow(ValidationError);
+    await expect(networkGetOperator(args)).rejects.toThrow(ValidationError);
     expect(networkService.isNetworkAvailable).toHaveBeenCalledWith('mainnet');
   });
 
@@ -207,7 +195,7 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    await expect(getOperatorHandler(args)).rejects.toThrow(
+    await expect(networkGetOperator(args)).rejects.toThrow(
       'Network service error',
     );
   });
@@ -231,7 +219,7 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    await expect(getOperatorHandler(args)).rejects.toThrow('KMS service error');
+    await expect(networkGetOperator(args)).rejects.toThrow('KMS service error');
   });
 
   test('validates network before getting operator', async () => {
@@ -261,12 +249,9 @@ describe('network plugin - get-operator command', () => {
       { network: 'previewnet' },
     );
 
-    const result = await getOperatorHandler(args);
+    const result = await networkGetOperator(args);
 
-    const output = assertOutput(
-      result.result,
-      NetworkNetworkGetOperatorOutputSchema,
-    );
+    const output = assertOutput(result.result, NetworkGetOperatorOutputSchema);
     expect(networkService.isNetworkAvailable).toHaveBeenCalledWith(
       'previewnet',
     );
@@ -300,12 +285,9 @@ describe('network plugin - get-operator command', () => {
       {},
     );
 
-    const result = await getOperatorHandler(args);
+    const result = await networkGetOperator(args);
 
-    const output = assertOutput(
-      result.result,
-      NetworkNetworkGetOperatorOutputSchema,
-    );
+    const output = assertOutput(result.result, NetworkGetOperatorOutputSchema);
     expect(output.network).toBe('testnet');
     expect(output.operator).toEqual({
       accountId: '0.0.999999',

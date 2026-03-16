@@ -20,7 +20,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { TopicTopicSubmitMessageOutputSchema } from '@/plugins/topic/commands/submit-message';
+import { TopicSubmitMessageOutputSchema } from '@/plugins/topic/commands/submit-message';
 import { topicSubmitMessage } from '@/plugins/topic/commands/submit-message/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -115,10 +115,7 @@ describe('topic plugin - message-submit command', () => {
 
     const result = await topicSubmitMessage(args);
 
-    const output = assertOutput(
-      result.result,
-      TopicTopicSubmitMessageOutputSchema,
-    );
+    const output = assertOutput(result.result, TopicSubmitMessageOutputSchema);
     expect(output.topicId).toBe('0.0.1234');
     expect(output.message).toBe('Hello, World!');
     expect(output.sequenceNumber).toBe(5);
@@ -188,10 +185,7 @@ describe('topic plugin - message-submit command', () => {
 
     const result = await topicSubmitMessage(args);
 
-    const output = assertOutput(
-      result.result,
-      TopicTopicSubmitMessageOutputSchema,
-    );
+    const output = assertOutput(result.result, TopicSubmitMessageOutputSchema);
     expect(output.sequenceNumber).toBe(10);
 
     expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());

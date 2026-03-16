@@ -7,7 +7,7 @@ import {
   TransactionIdSchema,
 } from '@/core/schemas/common-schemas';
 
-export const HbarHbarHbarHbarTransferOutputSchema = z.object({
+export const HbarTransferOutputSchema = z.object({
   transactionId: TransactionIdSchema,
   fromAccountId: EntityIdSchema,
   toAccountId: EntityIdSchema,
@@ -17,11 +17,9 @@ export const HbarHbarHbarHbarTransferOutputSchema = z.object({
   status: z.string().optional().describe('Transaction status if available'),
 });
 
-export type HbarHbarTransferOutput = z.infer<
-  typeof HbarHbarHbarHbarTransferOutputSchema
->;
+export type HbarTransferOutput = z.infer<typeof HbarTransferOutputSchema>;
 
-export const HBAR_HBAR_TRANSFER_TEMPLATE = `
+export const HBAR_TRANSFER_TEMPLATE = `
 ✅ HBAR transfer submitted successfully
 
 Transaction ID: {{hashscanLink transactionId "transaction" network}}

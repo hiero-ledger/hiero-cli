@@ -7,7 +7,7 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
 import {
-  networkList as listHandler,
+  networkList,
   NetworkListOutputSchema,
 } from '@/plugins/network/commands/list';
 import {
@@ -44,7 +44,7 @@ describe('network plugin - list command', () => {
     const networkService = makeNetworkMock('testnet');
     const args = makeArgs({ network: networkService }, logger, {});
 
-    const result = await listHandler(args);
+    const result = await networkList(args);
 
     const output = assertOutput(result.result, NetworkListOutputSchema);
     expect(output.networks).toBeDefined();
@@ -64,7 +64,7 @@ describe('network plugin - list command', () => {
     }));
     const args = makeArgs({ network: networkService }, logger, {});
 
-    await listHandler(args);
+    await networkList(args);
 
     expect(mockedCheckMirrorNodeHealth).toHaveBeenCalledWith(
       'https://testnet.mirrornode.hedera.com/api/v1',
@@ -79,7 +79,7 @@ describe('network plugin - list command', () => {
     const networkService = makeNetworkMock('testnet');
     const args = makeArgs({ network: networkService }, logger, {});
 
-    await listHandler(args);
+    await networkList(args);
 
     expect(mockedCheckMirrorNodeHealth).toHaveBeenCalledTimes(1);
     expect(mockedCheckRpcHealth).toHaveBeenCalledTimes(1);
@@ -107,7 +107,7 @@ describe('network plugin - list command', () => {
     });
     const args = makeArgs({ network: networkService }, logger, { json: true });
 
-    const result = await listHandler(args);
+    const result = await networkList(args);
 
     const output = assertOutput(result.result, NetworkListOutputSchema);
     expect(output.networks).toHaveLength(4);
@@ -122,7 +122,7 @@ describe('network plugin - list command', () => {
     });
     const args = makeArgs({ network: networkService }, logger, {});
 
-    await expect(listHandler(args)).rejects.toThrow('Network service error');
+    await expect(networkList(args)).rejects.toThrow('Network service error');
   });
 
   test('shows health check failures', async () => {
@@ -142,7 +142,7 @@ describe('network plugin - list command', () => {
 
     const args = makeArgs({ network: networkService }, logger, {});
 
-    const result = await listHandler(args);
+    const result = await networkList(args);
 
     const output = assertOutput(result.result, NetworkListOutputSchema);
     expect(output.networks).toBeDefined();
@@ -153,7 +153,7 @@ describe('network plugin - list command', () => {
     const networkService = makeNetworkMock('testnet');
     const args = makeArgs({ network: networkService }, logger, {});
 
-    const result = await listHandler(args);
+    const result = await networkList(args);
 
     const output = assertOutput(result.result, NetworkListOutputSchema);
     expect(output.activeNetwork).toBe('testnet');
@@ -173,7 +173,7 @@ describe('network plugin - list command', () => {
     });
     const args = makeArgs({ network: networkService }, logger, {});
 
-    const result = await listHandler(args);
+    const result = await networkList(args);
 
     const output = assertOutput(result.result, NetworkListOutputSchema);
     expect(output.networks.some((n) => n.operatorId === '0.0.1001')).toBe(true);
@@ -185,7 +185,7 @@ describe('network plugin - list command', () => {
     networkService.getOperator = jest.fn().mockReturnValue(null);
     const args = makeArgs({ network: networkService }, logger, {});
 
-    const result = await listHandler(args);
+    const result = await networkList(args);
 
     const output = assertOutput(result.result, NetworkListOutputSchema);
     expect(output.networks.some((n) => !n.operatorId)).toBe(true);

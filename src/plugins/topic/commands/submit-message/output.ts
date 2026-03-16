@@ -14,7 +14,7 @@ import {
  * Submit Message Command Output Schema
  * Defines the structure of successful message submission output
  */
-export const TopicTopicSubmitMessageOutputSchema = z.object({
+export const TopicSubmitMessageOutputSchema = z.object({
   topicId: EntityIdSchema,
   message: z.string().describe('The submitted message content'),
   sequenceNumber: z
@@ -29,14 +29,14 @@ export const TopicTopicSubmitMessageOutputSchema = z.object({
 
 // Infer TypeScript type from schema for type safety
 export type SubmitMessageOutput = z.infer<
-  typeof TopicTopicSubmitMessageOutputSchema
+  typeof TopicSubmitMessageOutputSchema
 >;
 
 /**
  * Human-readable Handlebars template for submit message output
  * Matches the current CLI output format for consistency
  */
-export const TOPIC_TOPIC_SUBMIT_MESSAGE_TEMPLATE = `
+export const TOPIC_SUBMIT_MESSAGE_TEMPLATE = `
 ✅ Message submitted successfully
    Topic ID: {{hashscanLink topicId "topic" network}}
    Message: "{{{message}}}"

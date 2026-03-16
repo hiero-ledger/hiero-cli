@@ -171,18 +171,18 @@ describe('Transfer NFT Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const viewTokenBeforeHbarHbarTransferOutput =
+      const viewTokenBeforeTransferOutput =
         viewTokenBeforeTransferResult.result as ViewTokenOutput;
-      expect(viewTokenBeforeHbarHbarTransferOutput.tokenId).toBe(
+      expect(viewTokenBeforeTransferOutput.tokenId).toBe(
         createNftOutput.tokenId,
       );
-      expect(
-        viewTokenBeforeHbarHbarTransferOutput.nftSerial?.serialNumber,
-      ).toBe(parseInt(mintNftOutput.serialNumber, 10));
-      expect(viewTokenBeforeHbarHbarTransferOutput.nftSerial?.owner).toBe(
+      expect(viewTokenBeforeTransferOutput.nftSerial?.serialNumber).toBe(
+        parseInt(mintNftOutput.serialNumber, 10),
+      );
+      expect(viewTokenBeforeTransferOutput.nftSerial?.owner).toBe(
         createSourceAccountOutput.accountId,
       );
-      expect(viewTokenBeforeHbarHbarTransferOutput.nftSerial?.metadata).toBe(
+      expect(viewTokenBeforeTransferOutput.nftSerial?.metadata).toBe(
         'Test NFT Transfer Metadata',
       );
 
@@ -224,18 +224,18 @@ describe('Transfer NFT Integration Tests', () => {
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const viewTokenAfterHbarHbarTransferOutput =
+      const viewTokenAfterTransferOutput =
         viewTokenAfterTransferResult.result as ViewTokenOutput;
-      expect(viewTokenAfterHbarHbarTransferOutput.tokenId).toBe(
+      expect(viewTokenAfterTransferOutput.tokenId).toBe(
         createNftOutput.tokenId,
       );
-      expect(viewTokenAfterHbarHbarTransferOutput.nftSerial?.serialNumber).toBe(
+      expect(viewTokenAfterTransferOutput.nftSerial?.serialNumber).toBe(
         parseInt(mintNftOutput.serialNumber, 10),
       );
-      expect(viewTokenAfterHbarHbarTransferOutput.nftSerial?.owner).toBe(
+      expect(viewTokenAfterTransferOutput.nftSerial?.owner).toBe(
         createDestinationAccountOutput.accountId,
       );
-      expect(viewTokenAfterHbarHbarTransferOutput.nftSerial?.metadata).toBe(
+      expect(viewTokenAfterTransferOutput.nftSerial?.metadata).toBe(
         'Test NFT Transfer Metadata',
       );
     }, 120000);

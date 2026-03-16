@@ -32,9 +32,9 @@ import {
   TopicListOutputSchema,
 } from './commands/list';
 import {
-  TOPIC_TOPIC_SUBMIT_MESSAGE_TEMPLATE,
+  TOPIC_SUBMIT_MESSAGE_TEMPLATE,
   topicSubmitMessage,
-  TopicTopicSubmitMessageOutputSchema,
+  TopicSubmitMessageOutputSchema,
 } from './commands/submit-message';
 
 export const TOPIC_NAMESPACE = 'topic-topics';
@@ -176,8 +176,8 @@ export const topicPluginManifest: PluginManifest = {
       ],
       handler: topicSubmitMessage,
       output: {
-        schema: TopicTopicSubmitMessageOutputSchema,
-        humanTemplate: TOPIC_TOPIC_SUBMIT_MESSAGE_TEMPLATE,
+        schema: TopicSubmitMessageOutputSchema,
+        humanTemplate: TOPIC_SUBMIT_MESSAGE_TEMPLATE,
       },
     },
     {

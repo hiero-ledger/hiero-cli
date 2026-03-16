@@ -8,16 +8,14 @@ export const OperatorInfoSchema = z.object({
   publicKey: z.string().optional(),
 });
 
-export const NetworkNetworkGetOperatorOutputSchema = z.object({
+export const NetworkGetOperatorOutputSchema = z.object({
   network: NetworkSchema,
   operator: OperatorInfoSchema.optional(),
 });
 
-export type GetOperatorOutput = z.infer<
-  typeof NetworkNetworkGetOperatorOutputSchema
->;
+export type GetOperatorOutput = z.infer<typeof NetworkGetOperatorOutputSchema>;
 
-export const NETWORK_NETWORK_GET_OPERATOR_TEMPLATE = `
+export const NETWORK_GET_OPERATOR_TEMPLATE = `
 {{#if operator}}
 ✅ Operator for network: {{network}}
    Account ID: {{hashscanLink operator.accountId "account" network}}

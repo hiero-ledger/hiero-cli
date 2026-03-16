@@ -5,10 +5,10 @@
 export {
   TOPIC_SUBMIT_MESSAGE_COMMAND_NAME,
   topicSubmitMessage,
-  TopicTopicSubmitMessageCommand,
+  TopicSubmitMessageCommand,
 } from './handler';
 export type { SubmitMessageOutput } from './output';
 export {
-  TOPIC_TOPIC_SUBMIT_MESSAGE_TEMPLATE,
-  TopicTopicSubmitMessageOutputSchema,
+  TOPIC_SUBMIT_MESSAGE_TEMPLATE,
+  TopicSubmitMessageOutputSchema,
 } from './output';

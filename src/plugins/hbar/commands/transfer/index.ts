@@ -1,10 +1,7 @@
 export {
   HBAR_TRANSFER_COMMAND_NAME,
-  HbarHbarTransferCommand,
   hbarTransfer,
+  HbarTransferCommand,
 } from './handler';
-export type { HbarHbarTransferOutput } from './output';
-export {
-  HBAR_HBAR_TRANSFER_TEMPLATE,
-  HbarHbarHbarHbarTransferOutputSchema,
-} from './output';
+export type { HbarTransferOutput } from './output';
+export { HBAR_TRANSFER_TEMPLATE, HbarTransferOutputSchema } from './output';

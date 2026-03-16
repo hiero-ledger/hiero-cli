@@ -7,9 +7,9 @@ import type { PluginManifest } from '@/core/plugins/plugin.interface';
 import { OptionType } from '@/core/types/shared.types';
 
 import {
-  NETWORK_NETWORK_GET_OPERATOR_TEMPLATE,
+  NETWORK_GET_OPERATOR_TEMPLATE,
   networkGetOperator,
-  NetworkNetworkGetOperatorOutputSchema,
+  NetworkGetOperatorOutputSchema,
 } from './commands/get-operator';
 import {
   NETWORK_LIST_TEMPLATE,
@@ -17,9 +17,9 @@ import {
   NetworkListOutputSchema,
 } from './commands/list';
 import {
-  NETWORK_NETWORK_SET_OPERATOR_TEMPLATE,
-  NetworkNetworkSetOperatorOutputSchema,
+  NETWORK_SET_OPERATOR_TEMPLATE,
   networkSetOperator,
+  NetworkSetOperatorOutputSchema,
 } from './commands/set-operator';
 import {
   NETWORK_USE_TEMPLATE,
@@ -72,8 +72,8 @@ export const networkPluginManifest: PluginManifest = {
       options: [],
       handler: networkGetOperator,
       output: {
-        schema: NetworkNetworkGetOperatorOutputSchema,
-        humanTemplate: NETWORK_NETWORK_GET_OPERATOR_TEMPLATE,
+        schema: NetworkGetOperatorOutputSchema,
+        humanTemplate: NETWORK_GET_OPERATOR_TEMPLATE,
       },
     },
     {
@@ -101,8 +101,8 @@ export const networkPluginManifest: PluginManifest = {
       ],
       handler: networkSetOperator,
       output: {
-        schema: NetworkNetworkSetOperatorOutputSchema,
-        humanTemplate: NETWORK_NETWORK_SET_OPERATOR_TEMPLATE,
+        schema: NetworkSetOperatorOutputSchema,
+        humanTemplate: NETWORK_SET_OPERATOR_TEMPLATE,
       },
     },
   ],

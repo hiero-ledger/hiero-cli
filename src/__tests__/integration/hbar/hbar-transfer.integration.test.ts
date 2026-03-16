@@ -2,7 +2,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountCreateOutput } from '@/plugins/account/commands/create';
 import type { AccountViewOutput } from '@/plugins/account/commands/view';
-import type { HbarHbarTransferOutput } from '@/plugins/hbar/commands/transfer';
+import type { HbarTransferOutput } from '@/plugins/hbar/commands/transfer';
 
 import '@/core/utils/json-serialize';
 
@@ -59,8 +59,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const transferHbarOutput =
-      transferHbarResult.result as HbarHbarTransferOutput;
+    const transferHbarOutput = transferHbarResult.result as HbarTransferOutput;
     expect(transferHbarOutput.status).toBe('success');
     expect(transferHbarOutput.fromAccountId).toBe(process.env.OPERATOR_ID);
     expect(transferHbarOutput.toAccountId).toBe(createAccountOutput.accountId);
@@ -140,8 +139,7 @@ describe('HBAR Transfer Account Integration Tests', () => {
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const transferHbarOutput =
-      transferHbarResult.result as HbarHbarTransferOutput;
+    const transferHbarOutput = transferHbarResult.result as HbarTransferOutput;
     expect(transferHbarOutput.status).toBe('success');
     expect(transferHbarOutput.fromAccountId).toBe(accountFromOutput.accountId);
     expect(transferHbarOutput.toAccountId).toBe(accountToOutput.accountId);
