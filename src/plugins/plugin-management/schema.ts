@@ -21,7 +21,7 @@ export const PluginListItemSchema = z.object({
 });
 
 // Add plugin output schema
-export const AddPluginOutputSchema = z.object({
+export const PluginManagementAddOutputSchema = z.object({
   name: z.string().describe('Plugin name'),
   path: z.string().describe('Plugin path'),
   added: z.boolean().describe('Whether plugin was successfully added'),
@@ -29,7 +29,7 @@ export const AddPluginOutputSchema = z.object({
 });
 
 // Enable plugin output schema
-export const EnablePluginOutputSchema = z.object({
+export const PluginManagementEnableOutputSchema = z.object({
   name: z.string().describe('Plugin name'),
   path: z.string().describe('Plugin path'),
   enabled: z.boolean().describe('Whether plugin was successfully enabled'),
@@ -37,27 +37,27 @@ export const EnablePluginOutputSchema = z.object({
 });
 
 // Remove plugin output schema
-export const RemovePluginOutputSchema = z.object({
+export const PluginManagementRemoveOutputSchema = z.object({
   name: z.string().describe('Plugin name'),
   removed: z.boolean().describe('Whether plugin was successfully removed'),
   message: z.string().describe('Result message'),
 });
 
 // List plugins output schema
-export const ListPluginsOutputSchema = z.object({
+export const PluginManagementListOutputSchema = z.object({
   plugins: z.array(PluginListItemSchema).describe('List of plugins'),
   count: z.number().describe('Total number of plugins'),
 });
 
 // Plugin info output schema
-export const PluginInfoOutputSchema = z.object({
+export const PluginManagementInfoOutputSchema = z.object({
   plugin: PluginInfoSchema.optional().describe('Plugin information'),
   found: z.boolean().describe('Whether plugin was found'),
   message: z.string().describe('Result message'),
 });
 
 // Reset plugins output schema
-export const ResetPluginsOutputSchema = z.object({
+export const PluginManagementResetOutputSchema = z.object({
   reset: z.boolean().describe('Whether reset was successful'),
   message: z.string().describe('Result message'),
 });
@@ -65,9 +65,21 @@ export const ResetPluginsOutputSchema = z.object({
 // Type exports
 export type PluginInfo = z.infer<typeof PluginInfoSchema>;
 export type PluginListItem = z.infer<typeof PluginListItemSchema>;
-export type AddPluginOutput = z.infer<typeof AddPluginOutputSchema>;
-export type EnablePluginOutput = z.infer<typeof EnablePluginOutputSchema>;
-export type RemovePluginOutput = z.infer<typeof RemovePluginOutputSchema>;
-export type ListPluginsOutput = z.infer<typeof ListPluginsOutputSchema>;
-export type PluginInfoOutput = z.infer<typeof PluginInfoOutputSchema>;
-export type ResetPluginsOutput = z.infer<typeof ResetPluginsOutputSchema>;
+export type PluginManagementAddOutput = z.infer<
+  typeof PluginManagementAddOutputSchema
+>;
+export type PluginManagementEnableOutput = z.infer<
+  typeof PluginManagementEnableOutputSchema
+>;
+export type PluginManagementRemoveOutput = z.infer<
+  typeof PluginManagementRemoveOutputSchema
+>;
+export type PluginManagementListOutput = z.infer<
+  typeof PluginManagementListOutputSchema
+>;
+export type PluginManagementInfoOutput = z.infer<
+  typeof PluginManagementInfoOutputSchema
+>;
+export type PluginManagementResetOutput = z.infer<
+  typeof PluginManagementResetOutputSchema
+>;

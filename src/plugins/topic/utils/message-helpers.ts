@@ -4,7 +4,7 @@
  */
 import type { CoreApi } from '@/core';
 import type { Filter } from '@/core/services/mirrornode/types';
-import type { FindMessageOutput } from '@/plugins/topic/commands/find-message/output';
+import type { TopicFindMessageItemOutput } from '@/plugins/topic/commands/find-message/output';
 
 export function decodeMessageData(message: string, consensusTimestamp: string) {
   const decodedMessage = Buffer.from(message, 'base64').toString('ascii');
@@ -20,7 +20,7 @@ export function transformMessageToOutput(message: {
   sequence_number: number;
   message: string;
   consensus_timestamp: string;
-}): FindMessageOutput {
+}): TopicFindMessageItemOutput {
   const { decodedMessage, timestamp } = decodeMessageData(
     message.message,
     message.consensus_timestamp,
@@ -38,7 +38,7 @@ export async function fetchFilteredMessages(
   api: CoreApi,
   topicId: string,
   filters: Filter[] | undefined,
-): Promise<FindMessageOutput[]> {
+): Promise<TopicFindMessageItemOutput[]> {
   const response = await api.mirror.getTopicMessages({
     topicId,
     filters,

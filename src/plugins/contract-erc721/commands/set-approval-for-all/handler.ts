@@ -159,7 +159,7 @@ export class ContractErc721SetApprovalForAllCommand extends BaseTransactionComma
   }
 }
 
-export async function contractErc721SetApprovalForAllFunctionCall(
+export async function contractErc721SetApprovalForAll(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ContractErc721SetApprovalForAllCommand().execute(args);

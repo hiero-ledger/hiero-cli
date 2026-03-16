@@ -1,9 +1,9 @@
 /**
  * List Command Exports
  */
-export { listCredentials, ListCredentialsCommand } from './handler';
-export type { ListCredentialsOutput } from './output';
+export { credentialsList, CredentialsListCommand } from './handler';
+export type { CredentialsListOutput } from './output';
 export {
-  LIST_CREDENTIALS_TEMPLATE,
-  ListCredentialsOutputSchema,
+  CREDENTIALS_LIST_TEMPLATE,
+  CredentialsListOutputSchema,
 } from './output';

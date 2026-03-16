@@ -103,7 +103,7 @@ export class ContractErc721IsApprovedForAllCommand implements Command {
   }
 }
 
-export async function isApprovedForAllFunctionCall(
+export async function contractErc721IsApprovedForAll(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ContractErc721IsApprovedForAllCommand().execute(args);

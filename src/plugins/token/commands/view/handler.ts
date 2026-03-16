@@ -1,19 +1,19 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { NftInfo } from '@/core/services/mirrornode/types';
-import type { ViewTokenOutput } from './output';
+import type { TokenViewOutput } from './output';
 import type { ViewTokenNormalizedParams } from './types';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { buildOutput } from '@/plugins/token/utils/nft-build-output';
 
-import { ViewTokenInputSchema } from './input';
+import { TokenViewInputSchema } from './input';
 
-export class ViewTokenCommand implements Command {
+export class TokenViewCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
-    const validArgs: ViewTokenNormalizedParams = ViewTokenInputSchema.parse(
+    const validArgs: ViewTokenNormalizedParams = TokenViewInputSchema.parse(
       args.args,
     );
     const network = api.network.getCurrentNetwork();
@@ -48,13 +48,13 @@ export class ViewTokenCommand implements Command {
       nftInfo = await api.mirror.getNftInfo(tokenId, serialNum);
     }
 
-    const output: ViewTokenOutput = buildOutput(tokenInfo, nftInfo, network);
+    const output: TokenViewOutput = buildOutput(tokenInfo, nftInfo, network);
     return { result: output };
   }
 }
 
-export async function viewToken(
+export async function tokenView(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ViewTokenCommand().execute(args);
+  return new TokenViewCommand().execute(args);
 }

@@ -5,7 +5,7 @@ import { z } from 'zod';
 
 import { EntityIdSchema, NetworkSchema, TimestampSchema } from '@/core/schemas';
 
-export const FindMessageOutputSchema = z.object({
+export const TopicFindMessageItemOutputSchema = z.object({
   sequenceNumber: z
     .number()
     .int()
@@ -16,26 +16,32 @@ export const FindMessageOutputSchema = z.object({
   consensusTimestamp: TimestampSchema.describe('Hedera consensus timestamp'),
 });
 
-export type FindMessageOutput = z.infer<typeof FindMessageOutputSchema>;
+export type TopicFindMessageItemOutput = z.infer<
+  typeof TopicFindMessageItemOutputSchema
+>;
 /**
  * Find Messages Command Output Schema
  * Defines the structure of message query results with unified array format
  */
-export const FindMessagesOutputSchema = z.object({
+export const TopicFindMessageOutputSchema = z.object({
   topicId: EntityIdSchema,
-  messages: z.array(FindMessageOutputSchema).describe('Messages found'),
+  messages: z
+    .array(TopicFindMessageItemOutputSchema)
+    .describe('Messages found'),
   totalCount: z.number().describe('Total number of messages found'),
   network: NetworkSchema,
 });
 
 // Infer TypeScript type from schema for type safety
-export type FindMessagesOutput = z.infer<typeof FindMessagesOutputSchema>;
+export type TopicFindMessageOutput = z.infer<
+  typeof TopicFindMessageOutputSchema
+>;
 
 /**
  * Human-readable Handlebars template for find messages output
  * Handles both single and multiple message results uniformly
  */
-export const FIND_MESSAGES_TEMPLATE = `
+export const TOPIC_FIND_MESSAGE_TEMPLATE = `
 {{#if (eq totalCount 0)}}
 No messages found in topic {{hashscanLink topicId "topic" network}}
 {{else}}

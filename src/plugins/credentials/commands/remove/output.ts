@@ -6,21 +6,21 @@ import { z } from 'zod';
 /**
  * Remove Credentials Command Output Schema
  */
-export const RemoveCredentialsOutputSchema = z.object({
+export const CredentialsRemoveOutputSchema = z.object({
   keyRefId: z.string().describe('Key reference ID that was removed'),
   removed: z
     .boolean()
     .describe('Whether the credentials were successfully removed'),
 });
 
-export type RemoveCredentialsOutput = z.infer<
-  typeof RemoveCredentialsOutputSchema
+export type CredentialsRemoveOutput = z.infer<
+  typeof CredentialsRemoveOutputSchema
 >;
 
 /**
  * Human-readable template for remove credentials output
  */
-export const REMOVE_CREDENTIALS_TEMPLATE = `
+export const CREDENTIALS_REMOVE_TEMPLATE = `
 {{#if removed}}
 ✅ Credentials removed successfully
    Key Reference ID: {{keyRefId}}

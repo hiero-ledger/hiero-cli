@@ -1,12 +1,12 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { GetOperatorOutput } from '@/plugins/network/commands/get-operator';
+import type { NetworkGetOperatorOutput } from '@/plugins/network/commands/get-operator';
 
 import { z } from 'zod';
 
 import { EntityIdSchema } from '@/core/schemas/common-schemas';
-import { getOperator } from '@/plugins/network/commands/get-operator';
-import { setOperator } from '@/plugins/network/commands/set-operator';
-import { useNetwork } from '@/plugins/network/commands/use';
+import { networkGetOperator } from '@/plugins/network/commands/get-operator';
+import { networkSetOperator } from '@/plugins/network/commands/set-operator';
+import { networkUse } from '@/plugins/network/commands/use';
 
 const envSchema = z.object({
   OPERATOR_ID: z
@@ -36,7 +36,7 @@ export const setDefaultOperatorForNetwork = async (
   const useNetworkArgs: Record<string, unknown> = {
     global: env.NETWORK,
   };
-  await useNetwork({
+  await networkUse({
     args: useNetworkArgs,
     api: coreApi,
     state: coreApi.state,
@@ -44,19 +44,20 @@ export const setDefaultOperatorForNetwork = async (
     config: coreApi.config,
   });
 
-  const getOperatorResult = await getOperator({
+  const getOperatorResult = await networkGetOperator({
     args: {},
     api: coreApi,
     state: coreApi.state,
     logger: coreApi.logger,
     config: coreApi.config,
   });
-  const getOperatorOutput = getOperatorResult.result as GetOperatorOutput;
+  const getOperatorOutput =
+    getOperatorResult.result as NetworkGetOperatorOutput;
   if (getOperatorOutput.operator?.accountId != env.OPERATOR_ID) {
     const setOperatorArgs: Record<string, unknown> = {
       operator: `${env.OPERATOR_ID}:${env.OPERATOR_KEY}`,
     };
-    await setOperator({
+    await networkSetOperator({
       args: setOperatorArgs,
       api: coreApi,
       state: coreApi.state,

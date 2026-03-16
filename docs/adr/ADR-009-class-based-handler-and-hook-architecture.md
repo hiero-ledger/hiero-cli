@@ -339,7 +339,7 @@ This makes adoption incremental -- existing handler functions continue to work u
   registeredHooks: ['inspection-hook'],  // <-- opt-in to hooks by name
   command: new FooTestCommand(),          // <-- BaseTransactionCommand instance
   handler: fooTestOptions,               // <-- legacy fallback
-  output: { schema: FooTestOutputSchema, humanTemplate: FOO_TEMPLATE },
+  output: { schema: TestFooOutputSchema, humanTemplate: FOO_TEMPLATE },
 }
 ```
 
@@ -358,7 +358,7 @@ export class FooTestCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<FooNormalizedParams> {
-    const validArgs = FooTestInputSchema.parse(args.args);
+    const validArgs = TestFooInputSchema.parse(args.args);
     return { message: validArgs.message };
   }
 
@@ -684,7 +684,7 @@ Example: a command in the test plugin registering the `inspection-hook` defined 
   registeredHooks: ['inspection-hook'],
   command: new FooTestCommand(),
   handler: fooTestOptions,
-  output: { schema: FooTestOutputSchema, humanTemplate: FOO_TEMPLATE },
+  output: { schema: TestFooOutputSchema, humanTemplate: FOO_TEMPLATE },
 }
 ```
 

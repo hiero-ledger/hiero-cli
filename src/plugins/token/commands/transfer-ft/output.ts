@@ -13,7 +13,7 @@ import {
 /**
  * Transfer Fungible Token Command Output Schema
  */
-export const TransferFungibleTokenOutputSchema = z.object({
+export const TokenTransferFtOutputSchema = z.object({
   transactionId: TransactionIdSchema,
   tokenId: EntityIdSchema,
   from: EntityIdSchema,
@@ -22,14 +22,12 @@ export const TransferFungibleTokenOutputSchema = z.object({
   network: NetworkSchema,
 });
 
-export type TransferFungibleTokenOutput = z.infer<
-  typeof TransferFungibleTokenOutputSchema
->;
+export type TokenTransferFtOutput = z.infer<typeof TokenTransferFtOutputSchema>;
 
 /**
  * Human-readable template for transfer fungible token output
  */
-export const TRANSFER_FUNGIBLE_TOKEN_TEMPLATE = `
+export const TOKEN_TRANSFER_FT_TEMPLATE = `
 ✅ Fungible token transfer successful!
    Token ID: {{hashscanLink tokenId "token" network}}
    From: {{hashscanLink from "account" network}}

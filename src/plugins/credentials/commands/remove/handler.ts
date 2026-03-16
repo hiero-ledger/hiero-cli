@@ -1,16 +1,16 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { RemoveCredentialsOutput } from './output';
+import type { CredentialsRemoveOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
 
-import { RemoveCredentialsInputSchema } from './input';
+import { CredentialsRemoveInputSchema } from './input';
 
-export class RemoveCredentialsCommand implements Command {
+export class CredentialsRemoveCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { logger, api } = args;
 
-    const { id } = RemoveCredentialsInputSchema.parse(args.args);
+    const { id } = CredentialsRemoveInputSchema.parse(args.args);
 
     logger.info(`🗑️  Removing credentials for id: ${id}`);
 
@@ -26,7 +26,7 @@ export class RemoveCredentialsCommand implements Command {
 
     api.kms.remove(id);
 
-    const outputData: RemoveCredentialsOutput = {
+    const outputData: CredentialsRemoveOutput = {
       keyRefId: id,
       removed: true,
     };
@@ -35,8 +35,8 @@ export class RemoveCredentialsCommand implements Command {
   }
 }
 
-export async function removeCredentials(
+export async function credentialsRemove(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new RemoveCredentialsCommand().execute(args);
+  return new CredentialsRemoveCommand().execute(args);
 }

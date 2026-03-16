@@ -2,6 +2,6 @@
  * Delete Command Exports
  * For use by tests and external consumers
  */
-export { deleteAccount, DeleteAccountCommand } from './handler';
-export type { DeleteAccountOutput } from './output';
-export { DELETE_ACCOUNT_TEMPLATE, DeleteAccountOutputSchema } from './output';
+export { accountDelete, AccountDeleteCommand } from './handler';
+export type { AccountDeleteOutput } from './output';
+export { ACCOUNT_DELETE_TEMPLATE, AccountDeleteOutputSchema } from './output';

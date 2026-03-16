@@ -8,7 +8,7 @@ import { EntityIdSchema, NetworkSchema } from '@/core/schemas/common-schemas';
 /**
  * Delete Topic Command Output Schema
  */
-export const DeleteTopicOutputSchema = z.object({
+export const TopicDeleteOutputSchema = z.object({
   deletedTopic: z.object({
     name: z.string().describe('Topic name or alias').optional(),
     topicId: EntityIdSchema,
@@ -17,12 +17,12 @@ export const DeleteTopicOutputSchema = z.object({
   network: NetworkSchema,
 });
 
-export type DeleteTopicOutput = z.infer<typeof DeleteTopicOutputSchema>;
+export type TopicDeleteOutput = z.infer<typeof TopicDeleteOutputSchema>;
 
 /**
  * Human-readable template for delete topic output
  */
-export const DELETE_TOPIC_TEMPLATE = `
+export const TOPIC_DELETE_TEMPLATE = `
 ✅ Topic deleted successfully: {{#if deletedTopic.name}}{{deletedTopic.name}}{{/if}} ({{hashscanLink deletedTopic.topicId "topic" network}})
 {{#if removedAliases}}
 🧹 Removed {{removedAliases.length}} alias(es):

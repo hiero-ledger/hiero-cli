@@ -4,13 +4,13 @@
  */
 import type { z } from 'zod';
 
-import { ListPluginsOutputSchema } from '@/plugins/plugin-management/schema';
+import { PluginManagementListOutputSchema } from '@/plugins/plugin-management/schema';
 
 // Export the schema
-export { ListPluginsOutputSchema };
+export { PluginManagementListOutputSchema };
 
 // Human-readable template
-export const LIST_PLUGINS_TEMPLATE = `📋 Available Plugins ({{count}}):
+export const PLUGIN_MANAGEMENT_LIST_TEMPLATE = `📋 Available Plugins ({{count}}):
 
 {{#each plugins}}
 {{add1 @index}}.
@@ -21,4 +21,6 @@ export const LIST_PLUGINS_TEMPLATE = `📋 Available Plugins ({{count}}):
 Use "plugin-management info <name>" for detailed information`;
 
 // Type export
-export type ListPluginsOutput = z.infer<typeof ListPluginsOutputSchema>;
+export type PluginManagementListOutput = z.infer<
+  typeof PluginManagementListOutputSchema
+>;

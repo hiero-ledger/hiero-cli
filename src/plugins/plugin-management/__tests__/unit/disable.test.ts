@@ -8,8 +8,8 @@ import {
   PluginManagementDisableStatus,
   type PluginManagementService,
 } from '@/core/services/plugin-management/plugin-management-service.interface';
-import { DisablePluginOutputSchema } from '@/plugins/plugin-management/commands/disable';
-import { disablePlugin } from '@/plugins/plugin-management/commands/disable/handler';
+import { PluginManagementDisableOutputSchema } from '@/plugins/plugin-management/commands/disable';
+import { pluginManagementDisable } from '@/plugins/plugin-management/commands/disable/handler';
 
 describe('plugin-management disable command', () => {
   it('should disable an enabled plugin', async () => {
@@ -29,8 +29,11 @@ describe('plugin-management disable command', () => {
 
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
-    const result = await disablePlugin(args);
-    const output = assertOutput(result.result, DisablePluginOutputSchema);
+    const result = await pluginManagementDisable(args);
+    const output = assertOutput(
+      result.result,
+      PluginManagementDisableOutputSchema,
+    );
 
     expect(output).toBeDefined();
     expect(output.name).toBe('custom-plugin');
@@ -59,8 +62,8 @@ describe('plugin-management disable command', () => {
 
     const args = makeArgs(api, logger, { name: 'custom-plugin' });
 
-    await expect(disablePlugin(args)).rejects.toThrow(StateError);
-    await expect(disablePlugin(args)).rejects.toThrow(
+    await expect(pluginManagementDisable(args)).rejects.toThrow(StateError);
+    await expect(pluginManagementDisable(args)).rejects.toThrow(
       /Plugin custom-plugin is already disabled/,
     );
     expect(pluginManagement.disablePlugin).toHaveBeenCalledWith(
@@ -79,8 +82,8 @@ describe('plugin-management disable command', () => {
 
     const args = makeArgs(api, logger, { name: 'plugin-management' });
 
-    await expect(disablePlugin(args)).rejects.toThrow(StateError);
-    await expect(disablePlugin(args)).rejects.toThrow(
+    await expect(pluginManagementDisable(args)).rejects.toThrow(StateError);
+    await expect(pluginManagementDisable(args)).rejects.toThrow(
       /Plugin plugin-management is protected and cannot be disabled/,
     );
     expect(pluginManagement.disablePlugin).toHaveBeenCalledWith(
@@ -99,8 +102,8 @@ describe('plugin-management disable command', () => {
 
     const args = makeArgs(api, logger, { name: 'unknown-plugin' });
 
-    await expect(disablePlugin(args)).rejects.toThrow(NotFoundError);
-    await expect(disablePlugin(args)).rejects.toThrow(
+    await expect(pluginManagementDisable(args)).rejects.toThrow(NotFoundError);
+    await expect(pluginManagementDisable(args)).rejects.toThrow(
       /Plugin unknown-plugin not found in plugin-management state/,
     );
     expect(pluginManagement.disablePlugin).toHaveBeenCalledWith(

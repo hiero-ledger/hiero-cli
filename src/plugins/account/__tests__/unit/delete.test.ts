@@ -6,8 +6,8 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { DeleteAccountOutputSchema } from '@/plugins/account/commands/delete';
-import { deleteAccount } from '@/plugins/account/commands/delete/handler';
+import { AccountDeleteOutputSchema } from '@/plugins/account/commands/delete';
+import { accountDelete } from '@/plugins/account/commands/delete/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { mockAliasLists, mockAliasRecords } from './helpers/fixtures';
@@ -34,11 +34,11 @@ describe('account plugin - delete command (ADR-003)', () => {
     const logger = makeLogger();
     const account = makeAccountData({ name: 'acc1', accountId: '0.0.1111' });
 
-    const deleteAccountMock = jest.fn().mockReturnValue(undefined);
+    const accountDeleteMock = jest.fn().mockReturnValue(undefined);
     MockedHelper.mockImplementation(() => ({
       getAccount: jest.fn().mockReturnValue(account),
       listAccounts: jest.fn().mockReturnValue([]),
-      deleteAccount: deleteAccountMock,
+      deleteAccount: accountDeleteMock,
     }));
     const alias = makeAliasMock();
     alias.resolveOrThrow = jest.fn().mockReturnValue({
@@ -58,10 +58,10 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'acc1' });
 
-    const result = await deleteAccount(args);
+    const result = await accountDelete(args);
 
-    expect(deleteAccountMock).toHaveBeenCalledWith('testnet:0.0.1111');
-    const output = assertOutput(result.result, DeleteAccountOutputSchema);
+    expect(accountDeleteMock).toHaveBeenCalledWith('testnet:0.0.1111');
+    const output = assertOutput(result.result, AccountDeleteOutputSchema);
     expect(output.deletedAccount.name).toBe('acc1');
     expect(output.deletedAccount.accountId).toBe('0.0.1111');
   });
@@ -70,11 +70,11 @@ describe('account plugin - delete command (ADR-003)', () => {
     const logger = makeLogger();
     const account = makeAccountData({ name: 'acc2', accountId: '0.0.2222' });
 
-    const deleteAccountMock = jest.fn().mockReturnValue(undefined);
+    const accountDeleteMock = jest.fn().mockReturnValue(undefined);
     MockedHelper.mockImplementation(() => ({
       getAccount: jest.fn().mockReturnValue(account),
       listAccounts: jest.fn().mockReturnValue([account]),
-      deleteAccount: deleteAccountMock,
+      deleteAccount: accountDeleteMock,
     }));
 
     const alias = makeAliasServiceMock();
@@ -90,10 +90,10 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: '0.0.2222' });
 
-    const result = await deleteAccount(args);
+    const result = await accountDelete(args);
 
-    expect(deleteAccountMock).toHaveBeenCalledWith('testnet:0.0.2222');
-    const output = assertOutput(result.result, DeleteAccountOutputSchema);
+    expect(accountDeleteMock).toHaveBeenCalledWith('testnet:0.0.2222');
+    const output = assertOutput(result.result, AccountDeleteOutputSchema);
     expect(output.deletedAccount.name).toBe('acc2');
     expect(output.deletedAccount.accountId).toBe('0.0.2222');
   });
@@ -118,7 +118,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, {});
 
-    await expect(deleteAccount(args)).rejects.toThrow();
+    await expect(accountDelete(args)).rejects.toThrow();
   });
 
   test('throws error when account with given name not found', async () => {
@@ -146,7 +146,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'missingAcc' });
 
-    await expect(deleteAccount(args)).rejects.toThrow(NotFoundError);
+    await expect(accountDelete(args)).rejects.toThrow(NotFoundError);
   });
 
   test('throws error when account with given id not found', async () => {
@@ -171,10 +171,10 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: '0.0.4444' });
 
-    await expect(deleteAccount(args)).rejects.toThrow(NotFoundError);
+    await expect(accountDelete(args)).rejects.toThrow(NotFoundError);
   });
 
-  test('throws error when deleteAccount fails', async () => {
+  test('throws error when accountDelete fails', async () => {
     const logger = makeLogger();
     const account = makeAccountData({ name: 'acc5', accountId: '0.0.5555' });
 
@@ -202,7 +202,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'acc5' });
 
-    await expect(deleteAccount(args)).rejects.toThrow();
+    await expect(accountDelete(args)).rejects.toThrow();
   });
 
   test('removes aliases of the account only for current network and type', async () => {
@@ -239,7 +239,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     };
     const args = makeArgs(api, logger, { account: 'acc-alias' });
 
-    const result = await deleteAccount(args);
+    const result = await accountDelete(args);
 
     expect(alias.list).toHaveBeenCalledWith({
       network: SupportedNetwork.TESTNET,
@@ -266,7 +266,7 @@ describe('account plugin - delete command (ADR-003)', () => {
     );
 
     // Verify ADR-003 result
-    const output = assertOutput(result.result, DeleteAccountOutputSchema);
+    const output = assertOutput(result.result, AccountDeleteOutputSchema);
     expect(output.deletedAccount.name).toBe('acc-alias');
     expect(output.deletedAccount.accountId).toBe('0.0.7777');
     expect(output.removedAliases).toBeDefined();

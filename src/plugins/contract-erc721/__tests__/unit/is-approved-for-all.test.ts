@@ -20,7 +20,7 @@ import {
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 import {
   ContractErc721CallIsApprovedForAllOutputSchema,
-  isApprovedForAllFunctionCall,
+  contractErc721IsApprovedForAll,
 } from '@/plugins/contract-erc721/commands/is-approved-for-all';
 import { ContractErc721CallIsApprovedForAllInputSchema } from '@/plugins/contract-erc721/commands/is-approved-for-all/input';
 
@@ -62,7 +62,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
       },
     });
 
-    const result = await isApprovedForAllFunctionCall(args);
+    const result = await contractErc721IsApprovedForAll(args);
 
     expect(result.result).toBeDefined();
     const output = assertOutput(
@@ -118,7 +118,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
         evmAddress: resolvedOperator,
       });
 
-    const result = await isApprovedForAllFunctionCall(args);
+    const result = await contractErc721IsApprovedForAll(args);
 
     expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveAccount).toHaveBeenCalledTimes(2);
@@ -146,10 +146,10 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
       queryResult: [],
     });
 
-    await expect(isApprovedForAllFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721IsApprovedForAll(args)).rejects.toThrow(
       StateError,
     );
-    await expect(isApprovedForAllFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721IsApprovedForAll(args)).rejects.toThrow(
       `There was a problem with decoding contract ${MOCK_CONTRACT_ID} "isApprovedForAll" function result`,
     );
   });
@@ -168,7 +168,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    await expect(isApprovedForAllFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721IsApprovedForAll(args)).rejects.toThrow(
       'contract query error',
     );
   });
@@ -196,7 +196,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
         evmAddress: MOCK_EVM_ADDRESS_ALT,
       });
 
-    const promise = isApprovedForAllFunctionCall(args);
+    const promise = contractErc721IsApprovedForAll(args);
     await expect(promise).rejects.toThrow(NotFoundError);
     await expect(promise).rejects.toThrow(
       /Couldn't resolve EVM address for an account/,
@@ -226,7 +226,7 @@ describe('contract-erc721 plugin - isApprovedForAll command (unit)', () => {
         evmAddress: undefined,
       });
 
-    const promise = isApprovedForAllFunctionCall(args);
+    const promise = contractErc721IsApprovedForAll(args);
     await expect(promise).rejects.toThrow(NotFoundError);
     await expect(promise).rejects.toThrow(
       "Couldn't resolve EVM address for an account",
