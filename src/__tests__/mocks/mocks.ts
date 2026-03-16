@@ -29,6 +29,7 @@ import type { StateService } from '@/core/services/state/state-service.interface
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 import type { TransactionResult } from '@/core/types/shared.types';
+import type { TopicData } from '@/plugins/topic/schema';
 
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import { StateError, ValidationError } from '@/core';
@@ -226,6 +227,17 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
   exists: jest.fn().mockReturnValue(false),
   availableOrThrow: jest.fn(),
   clear: jest.fn(),
+});
+
+export const makeTopicData = (
+  overrides: Partial<TopicData> = {},
+): TopicData => ({
+  name: 'test-topic',
+  topicId: '0.0.1234',
+  memo: 'Test topic',
+  network: SupportedNetwork.TESTNET,
+  createdAt: new Date().toISOString(),
+  ...overrides,
 });
 
 export const mockTopicAliasRecord: AliasRecord = {

@@ -9,8 +9,8 @@ export interface CreateTopicNormalisedParams {
   alias?: string;
   keyManager: KeyManagerName;
   network: SupportedNetwork;
-  adminKey?: ResolvedPublicKey;
-  submitKey?: ResolvedPublicKey;
+  adminKeys: ResolvedPublicKey[];
+  submitKeys: ResolvedPublicKey[];
 }
 
 export interface CreateTopicBuildTransactionResult {

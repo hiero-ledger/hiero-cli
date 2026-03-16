@@ -62,19 +62,18 @@ export const topicPluginManifest: PluginManifest = {
         },
         {
           name: 'admin-key',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
-          default: false,
           description:
-            'Admin key of topic. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias',
+            'Admin key(s) of topic. Pass multiple times for multiple keys (any one can sign). Format: {accountId}:{privateKey}, private key in {ed25519|ecdsa}:private:{key} format, key reference or account alias',
           short: 'a',
         },
         {
           name: 'submit-key',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Submit key of topic. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+            'Submit key(s) of topic. Pass multiple times for multiple keys (any one can sign). Format: {accountId}:{privateKey}, public/private key in {ed25519|ecdsa}:public|private:{key} format, key reference or account alias',
           short: 's',
         },
         {
