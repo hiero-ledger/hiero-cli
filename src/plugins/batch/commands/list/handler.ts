@@ -8,7 +8,7 @@ import type {
   CommandHandlerArgs,
   CommandResult,
 } from '@/core/plugins/plugin.interface';
-import type { ListBatchesOutput } from './output';
+import type { BatchListOutput } from './output';
 
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
@@ -23,7 +23,7 @@ export class BatchListCommand implements Command {
     const batches = batchState.listBatches();
 
     // Prepare output data
-    const outputData: ListBatchesOutput = {
+    const outputData: BatchListOutput = {
       batches: batches.map((batch) => ({
         name: batch.name,
         batchKey: api.kms.get(batch.keyRefId)?.publicKey ?? undefined,

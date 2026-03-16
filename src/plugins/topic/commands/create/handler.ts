@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { CreateTopicOutput } from './output';
+import type { TopicCreateOutput } from './output';
 import type {
   CreateTopicBuildTransactionResult,
   CreateTopicExecuteTransactionResult,
@@ -16,11 +16,11 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
-import { CreateTopicInputSchema } from './input';
+import { TopicCreateInputSchema } from './input';
 
 export const TOPIC_CREATE_COMMAND_NAME = 'topic_create';
 
-export class CreateTopicCommand extends BaseTransactionCommand<
+export class TopicCreateCommand extends BaseTransactionCommand<
   CreateTopicNormalisedParams,
   CreateTopicBuildTransactionResult,
   CreateTopicSignTransactionResult,
@@ -34,7 +34,7 @@ export class CreateTopicCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<CreateTopicNormalisedParams> {
     const { api, logger } = args;
-    const validArgs = CreateTopicInputSchema.parse(args.args);
+    const validArgs = TopicCreateInputSchema.parse(args.args);
 
     const memo = validArgs.memo;
     const adminKeyArg = validArgs.adminKey;
@@ -172,7 +172,7 @@ export class CreateTopicCommand extends BaseTransactionCommand<
     const key = composeKey(normalisedParams.network, topicId);
     topicState.saveTopic(key, topicData);
 
-    const outputData: CreateTopicOutput = {
+    const outputData: TopicCreateOutput = {
       topicId: topicData.topicId,
       name: topicData.name,
       network: topicData.network,
@@ -187,8 +187,8 @@ export class CreateTopicCommand extends BaseTransactionCommand<
   }
 }
 
-export async function createTopic(
+export async function topicCreate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new CreateTopicCommand().execute(args);
+  return new TopicCreateCommand().execute(args);
 }

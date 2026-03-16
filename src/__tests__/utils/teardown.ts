@@ -1,11 +1,11 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { ListAccountsOutput } from '@/plugins/account/commands/list';
-import type { ViewAccountOutput } from '@/plugins/account/commands/view';
+import type { AccountListOutput } from '@/plugins/account/commands/list';
+import type { AccountViewOutput } from '@/plugins/account/commands/view';
 
 import * as fs from 'fs';
 
-import { importAccount, listAccounts, viewAccount } from '@/plugins/account';
-import { transferHbar } from '@/plugins/hbar/commands/transfer';
+import { accountImport, accountList, accountView } from '@/plugins/account';
+import { hbarTransfer } from '@/plugins/hbar/commands/transfer';
 
 import { delay } from './common-utils';
 
@@ -17,14 +17,14 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
   coreApi: CoreApi,
 ): Promise<void> => {
   try {
-    const accountListResult = await listAccounts({
+    const accountListResult = await accountList({
       args: {},
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const accountOutput = accountListResult.result as ListAccountsOutput;
+    const accountOutput = accountListResult.result as AccountListOutput;
     const accounts = accountOutput.accounts;
 
     const importAccountArgs: Record<string, unknown> = {
@@ -32,7 +32,7 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
       key: `${process.env.OPERATOR_ID as string}:${process.env.OPERATOR_KEY as string}`,
     };
     try {
-      await importAccount({
+      await accountImport({
         args: importAccountArgs,
         api: coreApi,
         state: coreApi.state,
@@ -45,20 +45,20 @@ export const returnFundsFromCreatedAccountsToMainAccount = async (
     await delay(5000);
     for (const account of accounts) {
       try {
-        const viewAccountResult = await viewAccount({
+        const viewAccountResult = await accountView({
           args: { account: account.name },
           api: coreApi,
           state: coreApi.state,
           logger: coreApi.logger,
           config: coreApi.config,
         });
-        const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
+        const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
         const args: Record<string, unknown> = {
           amount: String(Number(viewAccountOutput.balance) / 100000000),
           to: 'main-account',
           from: account.name,
         };
-        await transferHbar({
+        await hbarTransfer({
           args,
           api: coreApi,
           state: coreApi.state,

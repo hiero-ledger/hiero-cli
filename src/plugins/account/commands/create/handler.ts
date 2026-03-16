@@ -1,7 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { AccountData } from '@/plugins/account/schema';
-import type { CreateAccountOutput } from './output';
+import type { AccountCreateOutput } from './output';
 import type {
   CreateBuildTransactionResult,
   CreateExecuteTransactionResult,
@@ -19,11 +19,11 @@ import { buildEvmAddressFromAccountId } from '@/plugins/account/utils/account-ad
 import { validateSufficientBalance } from '@/plugins/account/utils/account-validation';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
-import { CreateAccountInputSchema } from './input';
+import { AccountCreateInputSchema } from './input';
 
 export const ACCOUNT_CREATE_COMMAND_NAME = 'account_create';
 
-export class CreateAccountCommand extends BaseTransactionCommand<
+export class AccountCreateCommand extends BaseTransactionCommand<
   CreateNormalisedParams,
   CreateBuildTransactionResult,
   CreateSignTransactionResult,
@@ -38,7 +38,7 @@ export class CreateAccountCommand extends BaseTransactionCommand<
   ): Promise<CreateNormalisedParams> {
     const { api, logger } = args;
 
-    const validArgs = CreateAccountInputSchema.parse(args.args);
+    const validArgs = AccountCreateInputSchema.parse(args.args);
 
     const balance = processBalanceInput(validArgs.balance, HBAR_DECIMALS);
     const maxAutoAssociations = validArgs.autoAssociations;
@@ -190,7 +190,7 @@ export class CreateAccountCommand extends BaseTransactionCommand<
     const accountState = new ZustandAccountStateHelper(api.state, logger);
     accountState.saveAccount(accountKey, accountData);
 
-    const outputData: CreateAccountOutput = {
+    const outputData: AccountCreateOutput = {
       accountId: accountData.accountId,
       name: accountData.name,
       type: accountData.type,
@@ -204,8 +204,8 @@ export class CreateAccountCommand extends BaseTransactionCommand<
   }
 }
 
-export async function createAccount(
+export async function accountCreate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new CreateAccountCommand().execute(args);
+  return new AccountCreateCommand().execute(args);
 }

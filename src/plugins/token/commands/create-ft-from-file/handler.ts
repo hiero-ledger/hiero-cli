@@ -2,13 +2,13 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/shared.types';
 import type { CustomFee } from '@/core/types/token.types';
-import type { CreateFungibleTokenFromFileOutput } from './output';
+import type { TokenCreateFtFromFileOutput } from './output';
 import type {
-  CreateFtFromFileAssociationOutput,
-  CreateFtFromFileBuildTransactionResult,
-  CreateFtFromFileExecuteTransactionResult,
-  CreateFtFromFileNormalizedParams,
-  CreateFtFromFileSignTransactionResult,
+  TokenCreateFtFromFileAssociationOutput,
+  TokenCreateFtFromFileBuildTransactionResult,
+  TokenCreateFtFromFileExecuteTransactionResult,
+  TokenCreateFtFromFileNormalizedParams,
+  TokenCreateFtFromFileSignTransactionResult,
 } from './types';
 
 import { PublicKey } from '@hashgraph/sdk';
@@ -27,16 +27,16 @@ import {
 } from '@/plugins/token/utils/token-resolve-optional-key';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { CreateFungibleTokenFromFileInputSchema } from './input';
+import { TokenCreateFtFromFileInputSchema } from './input';
 
 export const TOKEN_CREATE_FT_FROM_FILE_COMMAND_NAME =
   'token_create-ft-from-file';
 
-export class CreateFtFromFileCommand extends BaseTransactionCommand<
-  CreateFtFromFileNormalizedParams,
-  CreateFtFromFileBuildTransactionResult,
-  CreateFtFromFileSignTransactionResult,
-  CreateFtFromFileExecuteTransactionResult
+export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
+  TokenCreateFtFromFileNormalizedParams,
+  TokenCreateFtFromFileBuildTransactionResult,
+  TokenCreateFtFromFileSignTransactionResult,
+  TokenCreateFtFromFileExecuteTransactionResult
 > {
   constructor() {
     super(TOKEN_CREATE_FT_FROM_FILE_COMMAND_NAME);
@@ -44,9 +44,9 @@ export class CreateFtFromFileCommand extends BaseTransactionCommand<
 
   async normalizeParams(
     args: CommandHandlerArgs,
-  ): Promise<CreateFtFromFileNormalizedParams> {
+  ): Promise<TokenCreateFtFromFileNormalizedParams> {
     const { api, logger } = args;
-    const validArgs = CreateFungibleTokenFromFileInputSchema.parse(args.args);
+    const validArgs = TokenCreateFtFromFileInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
       api.config.getOption<KeyManagerName>('default_key_manager');
@@ -127,8 +127,8 @@ export class CreateFtFromFileCommand extends BaseTransactionCommand<
 
   async buildTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: CreateFtFromFileNormalizedParams,
-  ): Promise<CreateFtFromFileBuildTransactionResult> {
+    normalisedParams: TokenCreateFtFromFileNormalizedParams,
+  ): Promise<TokenCreateFtFromFileBuildTransactionResult> {
     const { api } = args;
     const { tokenDefinition } = normalisedParams;
     const transaction = api.token.createTokenTransaction({
@@ -175,9 +175,9 @@ export class CreateFtFromFileCommand extends BaseTransactionCommand<
 
   async signTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: CreateFtFromFileNormalizedParams,
-    buildTransactionResult: CreateFtFromFileBuildTransactionResult,
-  ): Promise<CreateFtFromFileSignTransactionResult> {
+    normalisedParams: TokenCreateFtFromFileNormalizedParams,
+    buildTransactionResult: TokenCreateFtFromFileBuildTransactionResult,
+  ): Promise<TokenCreateFtFromFileSignTransactionResult> {
     const { api, logger } = args;
     const signingKeys = [
       normalisedParams.adminKey.keyRefId,
@@ -195,10 +195,10 @@ export class CreateFtFromFileCommand extends BaseTransactionCommand<
 
   async executeTransaction(
     args: CommandHandlerArgs,
-    _normalisedParams: CreateFtFromFileNormalizedParams,
-    _buildTransactionResult: CreateFtFromFileBuildTransactionResult,
-    signTransactionResult: CreateFtFromFileSignTransactionResult,
-  ): Promise<CreateFtFromFileExecuteTransactionResult> {
+    _normalisedParams: TokenCreateFtFromFileNormalizedParams,
+    _buildTransactionResult: TokenCreateFtFromFileBuildTransactionResult,
+    signTransactionResult: TokenCreateFtFromFileSignTransactionResult,
+  ): Promise<TokenCreateFtFromFileExecuteTransactionResult> {
     const { api } = args;
     const transactionResult = await api.txExecute.execute(
       signTransactionResult.signedTransaction,
@@ -218,10 +218,10 @@ export class CreateFtFromFileCommand extends BaseTransactionCommand<
 
   async outputPreparation(
     args: CommandHandlerArgs,
-    normalisedParams: CreateFtFromFileNormalizedParams,
-    _buildTransactionResult: CreateFtFromFileBuildTransactionResult,
-    _signTransactionResult: CreateFtFromFileSignTransactionResult,
-    executeTransactionResult: CreateFtFromFileExecuteTransactionResult,
+    normalisedParams: TokenCreateFtFromFileNormalizedParams,
+    _buildTransactionResult: TokenCreateFtFromFileBuildTransactionResult,
+    _signTransactionResult: TokenCreateFtFromFileSignTransactionResult,
+    executeTransactionResult: TokenCreateFtFromFileExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { api, logger } = args;
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
@@ -264,7 +264,7 @@ export class CreateFtFromFileCommand extends BaseTransactionCommand<
     });
     logger.info(`   Name registered: ${normalisedParams.tokenDefinition.name}`);
 
-    const associations: CreateFtFromFileAssociationOutput[] =
+    const associations: TokenCreateFtFromFileAssociationOutput[] =
       successfulAssociations.map((assoc) => ({
         accountId: assoc.accountId,
         name: assoc.name,
@@ -272,7 +272,7 @@ export class CreateFtFromFileCommand extends BaseTransactionCommand<
         transactionId: result.transactionId,
       }));
 
-    const outputData: CreateFungibleTokenFromFileOutput = {
+    const outputData: TokenCreateFtFromFileOutput = {
       tokenId: result.tokenId!,
       name: normalisedParams.tokenDefinition.name,
       symbol: normalisedParams.tokenDefinition.symbol,
@@ -290,8 +290,8 @@ export class CreateFtFromFileCommand extends BaseTransactionCommand<
   }
 }
 
-export async function createTokenFromFile(
+export async function tokenCreateFtFromFile(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new CreateFtFromFileCommand().execute(args);
+  return new TokenCreateFtFromFileCommand().execute(args);
 }

@@ -3,9 +3,12 @@
  * For use by manifest, tests, and external consumers
  */
 export {
-  submitMessage,
-  SubmitMessageCommand,
   TOPIC_SUBMIT_MESSAGE_COMMAND_NAME,
+  topicSubmitMessage,
+  TopicSubmitMessageCommand,
 } from './handler';
-export type { SubmitMessageOutput } from './output';
-export { SUBMIT_MESSAGE_TEMPLATE, SubmitMessageOutputSchema } from './output';
+export type { TopicSubmitMessageOutput } from './output';
+export {
+  TOPIC_SUBMIT_MESSAGE_TEMPLATE,
+  TopicSubmitMessageOutputSchema,
+} from './output';

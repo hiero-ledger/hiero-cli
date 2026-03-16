@@ -156,7 +156,7 @@ export class ContractErc721MintCommand extends BaseTransactionCommand<
   }
 }
 
-export async function contractErc721MintFunctionCall(
+export async function contractErc721Mint(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ContractErc721MintCommand().execute(args);

@@ -4,9 +4,9 @@
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { ListPluginsOutput } from './output';
+import type { PluginManagementListOutput } from './output';
 
-export class ListPluginsCommand implements Command {
+export class PluginManagementListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
@@ -19,7 +19,7 @@ export class ListPluginsCommand implements Command {
       enabled: entry.enabled,
     }));
 
-    const outputData: ListPluginsOutput = {
+    const outputData: PluginManagementListOutput = {
       plugins,
       count: plugins.length,
     };
@@ -28,8 +28,8 @@ export class ListPluginsCommand implements Command {
   }
 }
 
-export async function getPluginList(
+export async function pluginManagementList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ListPluginsCommand().execute(args);
+  return new PluginManagementListCommand().execute(args);
 }

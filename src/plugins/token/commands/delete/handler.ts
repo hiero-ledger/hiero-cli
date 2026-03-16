@@ -1,24 +1,24 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { DeleteTokenOutput } from './output';
-import type { DeleteTokenNormalizedParams } from './types';
+import type { TokenDeleteOutput } from './output';
+import type { TokenDeleteNormalizedParams } from './types';
 
 import { NotFoundError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { DeleteTokenInputSchema } from './input';
+import { TokenDeleteInputSchema } from './input';
 
-export class DeleteTokenCommand implements Command {
+export class TokenDeleteCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
     logger.info('Deleting token from state...');
 
-    const validArgs: { token: DeleteTokenNormalizedParams } =
-      DeleteTokenInputSchema.parse(args.args);
+    const validArgs: { token: TokenDeleteNormalizedParams } =
+      TokenDeleteInputSchema.parse(args.args);
     const currentNetwork = api.network.getCurrentNetwork();
 
     const resolvedToken =
@@ -51,7 +51,7 @@ export class DeleteTokenCommand implements Command {
 
     tokenState.removeToken(key);
 
-    const outputData: DeleteTokenOutput = {
+    const outputData: TokenDeleteOutput = {
       deletedToken: {
         name: tokenToDelete.name,
         tokenId: tokenToDelete.tokenId,
@@ -67,8 +67,8 @@ export class DeleteTokenCommand implements Command {
   }
 }
 
-export async function deleteToken(
+export async function tokenDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new DeleteTokenCommand().execute(args);
+  return new TokenDeleteCommand().execute(args);
 }

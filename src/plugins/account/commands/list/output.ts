@@ -13,7 +13,7 @@ import {
 /**
  * List Accounts Command Output Schema
  */
-export const ListAccountsOutputSchema = z.object({
+export const AccountListOutputSchema = z.object({
   accounts: z.array(
     z.object({
       name: z.string().describe('Account name').optional(),
@@ -27,12 +27,12 @@ export const ListAccountsOutputSchema = z.object({
   totalCount: z.number().describe('Total number of accounts'),
 });
 
-export type ListAccountsOutput = z.infer<typeof ListAccountsOutputSchema>;
+export type AccountListOutput = z.infer<typeof AccountListOutputSchema>;
 
 /**
  * Human-readable template for list accounts output
  */
-export const LIST_ACCOUNTS_TEMPLATE = `
+export const ACCOUNT_LIST_TEMPLATE = `
 {{#if (eq totalCount 0)}}
 📝 No accounts found in the address book
 {{else}}

@@ -8,7 +8,7 @@ import {
   ConfigValueSchema,
 } from '@/plugins/config/schema';
 
-export const ListConfigOutputSchema = z.object({
+export const ConfigListOutputSchema = z.object({
   options: z.array(
     z.object({
       name: z.string(),
@@ -20,9 +20,9 @@ export const ListConfigOutputSchema = z.object({
   totalCount: z.number(),
 });
 
-export type ListConfigOutput = z.infer<typeof ListConfigOutputSchema>;
+export type ConfigListOutput = z.infer<typeof ConfigListOutputSchema>;
 
-export const LIST_CONFIG_TEMPLATE = `
+export const CONFIG_LIST_TEMPLATE = `
 {{#if (eq totalCount 0)}}
 📝 No configuration options available
 {{else}}

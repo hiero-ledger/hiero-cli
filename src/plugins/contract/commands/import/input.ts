@@ -11,7 +11,7 @@ import {
  * Input schema for contract import command
  * Validates arguments for importing an existing contract
  */
-export const ImportContractInputSchema = z.object({
+export const ContractImportInputSchema = z.object({
   contract: z
     .union([EntityIdSchema, EvmAddressSchema])
     .describe(
@@ -31,4 +31,4 @@ export const ImportContractInputSchema = z.object({
     ),
 });
 
-export type ImportContractInput = z.infer<typeof ImportContractInputSchema>;
+export type ContractImportInput = z.infer<typeof ContractImportInputSchema>;

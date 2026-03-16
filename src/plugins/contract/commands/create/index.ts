@@ -3,7 +3,7 @@
  */
 export {
   CONTRACT_CREATE_COMMAND_NAME,
-  createContract,
+  contractCreate,
   CreateContractCommand,
 } from './handler';
 export type { ContractCreateOutput } from './output';

@@ -10,7 +10,7 @@ import {
  * Input schema for account import command
  * Validates arguments for importing an existing account
  */
-export const ImportAccountInputSchema = z.object({
+export const AccountImportInputSchema = z.object({
   key: AccountIdWithPrivateKeySchema.describe(
     'Account ID with private key in format accountId:privateKey',
   ),
@@ -20,4 +20,4 @@ export const ImportAccountInputSchema = z.object({
   ),
 });
 
-export type ImportAccountInput = z.infer<typeof ImportAccountInputSchema>;
+export type AccountImportInput = z.infer<typeof AccountImportInputSchema>;

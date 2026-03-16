@@ -5,8 +5,8 @@ import '@/core/utils/json-serialize';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  listTokens,
-  ListTokensOutputSchema,
+  tokenList,
+  TokenListOutputSchema,
 } from '@/plugins/token/commands/list';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -22,7 +22,7 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
 
-describe('listTokensHandler', () => {
+describe('tokenListHandler', () => {
   beforeEach(() => {
     setupZustandHelperMock(MockedHelper, { tokens: [] });
   });
@@ -40,9 +40,9 @@ describe('listTokensHandler', () => {
         logger,
       };
 
-      const result = await listTokens(args);
+      const result = await tokenList(args);
 
-      const output = assertOutput(result.result, ListTokensOutputSchema);
+      const output = assertOutput(result.result, TokenListOutputSchema);
       expect(output.tokens).toEqual([]);
       expect(output.totalCount).toBe(0);
       expect(output.stats).toBeDefined();
@@ -85,9 +85,9 @@ describe('listTokensHandler', () => {
         logger,
       };
 
-      const result = await listTokens(args);
+      const result = await tokenList(args);
 
-      const output = assertOutput(result.result, ListTokensOutputSchema);
+      const output = assertOutput(result.result, TokenListOutputSchema);
       expect(output.tokens).toHaveLength(1);
       expect(output.tokens[0].tokenId).toBe('0.0.12345');
       expect(output.totalCount).toBe(1);
@@ -130,9 +130,9 @@ describe('listTokensHandler', () => {
         logger,
       };
 
-      const result = await listTokens(args);
+      const result = await tokenList(args);
 
-      const output = assertOutput(result.result, ListTokensOutputSchema);
+      const output = assertOutput(result.result, TokenListOutputSchema);
       expect(output.tokens).toHaveLength(1);
       expect(output.tokens[0].tokenId).toBe('0.0.99999');
       expect(output.tokens[0].network).toBe('mainnet');
@@ -152,7 +152,7 @@ describe('listTokensHandler', () => {
         logger,
       };
 
-      await listTokens(args);
+      await tokenList(args);
 
       expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);
     });

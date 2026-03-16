@@ -1,10 +1,10 @@
 export {
-  createNftFromFile,
-  CreateNftFromFileCommand,
   TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME,
+  tokenCreateNftFromFile,
+  TokenCreateNftFromFileCommand,
 } from './handler';
-export type { CreateNftFromFileOutput } from './output';
+export type { TokenCreateNftFromFileOutput } from './output';
 export {
-  CREATE_NFT_FROM_FILE_TEMPLATE,
-  CreateNftFromFileOutputSchema,
+  TOKEN_CREATE_NFT_FROM_FILE_TEMPLATE,
+  TokenCreateNftFromFileOutputSchema,
 } from './output';

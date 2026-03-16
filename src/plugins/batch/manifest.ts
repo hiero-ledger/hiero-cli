@@ -6,26 +6,26 @@ import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
 import {
+  BATCH_LIST_TEMPLATE,
   batchList,
-  LIST_BATCHES_TEMPLATE,
-  ListBatchesOutputSchema,
+  BatchListOutputSchema,
 } from '@/plugins/batch/commands/list';
-import { BatchBatchifyHook } from '@/plugins/batch/hooks/batchify/handler';
+import { BatchifyHook } from '@/plugins/batch/hooks/batchify/handler';
 
 import {
+  BATCH_CREATE_TEMPLATE,
   batchCreate,
-  CREATE_BATCH_TEMPLATE,
-  CreateBatchOutputSchema,
+  BatchCreateOutputSchema,
 } from './commands/create';
 import {
+  BATCH_DELETE_TEMPLATE,
   batchDelete,
-  DELETE_BATCH_TEMPLATE,
-  DeleteBatchOutputSchema,
+  BatchDeleteOutputSchema,
 } from './commands/delete';
 import {
+  BATCH_EXECUTE_TEMPLATE,
   batchExecute,
-  EXECUTE_BATCH_TEMPLATE,
-  ExecuteBatchOutputSchema,
+  BatchExecuteOutputSchema,
 } from './commands/execute';
 
 export const BATCH_NAMESPACE = 'batch-batches';
@@ -39,7 +39,7 @@ export const batchPluginManifest: PluginManifest = {
   hooks: [
     {
       name: 'batchify',
-      hook: new BatchBatchifyHook(),
+      hook: new BatchifyHook(),
       options: [
         {
           name: 'batch',
@@ -83,8 +83,8 @@ export const batchPluginManifest: PluginManifest = {
       ],
       handler: batchCreate,
       output: {
-        schema: CreateBatchOutputSchema,
-        humanTemplate: CREATE_BATCH_TEMPLATE,
+        schema: BatchCreateOutputSchema,
+        humanTemplate: BATCH_CREATE_TEMPLATE,
       },
     },
     {
@@ -104,8 +104,8 @@ export const batchPluginManifest: PluginManifest = {
       ],
       handler: batchExecute,
       output: {
-        schema: ExecuteBatchOutputSchema,
-        humanTemplate: EXECUTE_BATCH_TEMPLATE,
+        schema: BatchExecuteOutputSchema,
+        humanTemplate: BATCH_EXECUTE_TEMPLATE,
       },
     },
     {
@@ -115,8 +115,8 @@ export const batchPluginManifest: PluginManifest = {
       options: [],
       handler: batchList,
       output: {
-        schema: ListBatchesOutputSchema,
-        humanTemplate: LIST_BATCHES_TEMPLATE,
+        schema: BatchListOutputSchema,
+        humanTemplate: BATCH_LIST_TEMPLATE,
       },
     },
     {
@@ -143,8 +143,8 @@ export const batchPluginManifest: PluginManifest = {
       ],
       handler: batchDelete,
       output: {
-        schema: DeleteBatchOutputSchema,
-        humanTemplate: DELETE_BATCH_TEMPLATE,
+        schema: BatchDeleteOutputSchema,
+        humanTemplate: BATCH_DELETE_TEMPLATE,
       },
     },
   ],

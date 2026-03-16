@@ -1,7 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { TokenData } from '@/plugins/token/schema';
-import type { ImportTokenOutput } from './output';
+import type { TokenImportOutput } from './output';
 import type { ImportTokenNormalizedParams } from './types';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
@@ -11,13 +11,13 @@ import { SupplyType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { ImportTokenInputSchema } from './input';
+import { TokenImportInputSchema } from './input';
 
-export class ImportTokenCommand implements Command {
+export class TokenImportCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
-    const parsedArgs = ImportTokenInputSchema.parse(args.args);
+    const parsedArgs = TokenImportInputSchema.parse(args.args);
     const validArgs: ImportTokenNormalizedParams = {
       tokenId: parsedArgs.token,
       alias: parsedArgs.name,
@@ -80,7 +80,7 @@ export class ImportTokenCommand implements Command {
 
     tokenState.saveToken(key, tokenData);
 
-    const result: ImportTokenOutput = {
+    const result: TokenImportOutput = {
       tokenId: validArgs.tokenId,
       name: tokenData.name,
       symbol: tokenData.symbol,
@@ -96,8 +96,8 @@ export class ImportTokenCommand implements Command {
   }
 }
 
-export async function importToken(
+export async function tokenImport(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ImportTokenCommand().execute(args);
+  return new TokenImportCommand().execute(args);
 }

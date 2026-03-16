@@ -1,8 +1,8 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { CreateTopicOutput } from '@/plugins/topic/commands/create';
-import type { ImportTopicOutput } from '@/plugins/topic/commands/import';
-import type { ListTopicsOutput } from '@/plugins/topic/commands/list';
+import type { TopicCreateOutput } from '@/plugins/topic/commands/create';
+import type { TopicImportOutput } from '@/plugins/topic/commands/import';
+import type { TopicListOutput } from '@/plugins/topic/commands/list';
 
 import '@/core/utils/json-serialize';
 
@@ -11,10 +11,10 @@ import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import {
-  createTopic,
-  deleteTopic,
-  importTopic,
-  listTopics,
+  topicCreate,
+  topicDelete,
+  topicImport,
+  topicList,
 } from '@/plugins/topic';
 import { TOPIC_NAMESPACE } from '@/plugins/topic/manifest';
 
@@ -33,7 +33,7 @@ describe('Import Topic Integration Tests', () => {
     const createTopicArgs: Record<string, unknown> = {
       name: TOPIC_NAME,
     };
-    const createTopicResult = await createTopic({
+    const createTopicResult = await topicCreate({
       args: createTopicArgs,
       api: coreApi,
       state: coreApi.state,
@@ -41,13 +41,13 @@ describe('Import Topic Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const createTopicOutput = createTopicResult.result as CreateTopicOutput;
+    const createTopicOutput = createTopicResult.result as TopicCreateOutput;
     topicId = createTopicOutput.topicId;
 
     const deleteTopicArgs: Record<string, unknown> = {
       topic: topicId,
     };
-    await deleteTopic({
+    await topicDelete({
       args: deleteTopicArgs,
       api: coreApi,
       state: coreApi.state,
@@ -62,7 +62,7 @@ describe('Import Topic Integration Tests', () => {
     const deleteTopicArgs: Record<string, unknown> = {
       topic: topicId,
     };
-    await deleteTopic({
+    await topicDelete({
       args: deleteTopicArgs,
       api: coreApi,
       state: coreApi.state,
@@ -75,7 +75,7 @@ describe('Import Topic Integration Tests', () => {
     const importTopicArgs: Record<string, unknown> = {
       topic: topicId,
     };
-    const importTopicResult = await importTopic({
+    const importTopicResult = await topicImport({
       args: importTopicArgs,
       api: coreApi,
       state: coreApi.state,
@@ -83,21 +83,21 @@ describe('Import Topic Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const importTopicOutput = importTopicResult.result as ImportTopicOutput;
+    const importTopicOutput = importTopicResult.result as TopicImportOutput;
     expect(importTopicOutput.topicId).toBe(topicId);
     expect(importTopicOutput.network).toBe(network);
 
     const listTopicArgs: Record<string, unknown> = {
       network,
     };
-    const listTopicResult = await listTopics({
+    const listTopicResult = await topicList({
       args: listTopicArgs,
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const listTopicOutput = listTopicResult.result as ListTopicsOutput;
+    const listTopicOutput = listTopicResult.result as TopicListOutput;
     const topic = listTopicOutput.topics.find((t) => t.topicId === topicId);
     expect(topic).not.toBeNull();
     expect(topic?.topicId).toBe(topicId);
@@ -115,7 +115,7 @@ describe('Import Topic Integration Tests', () => {
       topic: topicId,
       name: alias,
     };
-    const importTopicResult = await importTopic({
+    const importTopicResult = await topicImport({
       args: importTopicArgs,
       api: coreApi,
       state: coreApi.state,
@@ -123,7 +123,7 @@ describe('Import Topic Integration Tests', () => {
       config: coreApi.config,
     });
 
-    const importTopicOutput = importTopicResult.result as ImportTopicOutput;
+    const importTopicOutput = importTopicResult.result as TopicImportOutput;
     expect(importTopicOutput.topicId).toBe(topicId);
     expect(importTopicOutput.name).toBe(alias);
     expect(importTopicOutput.network).toBe(network);
@@ -131,14 +131,14 @@ describe('Import Topic Integration Tests', () => {
     const listTopicArgs: Record<string, unknown> = {
       network,
     };
-    const listTopicResult = await listTopics({
+    const listTopicResult = await topicList({
       args: listTopicArgs,
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const listTopicOutput = listTopicResult.result as ListTopicsOutput;
+    const listTopicOutput = listTopicResult.result as TopicListOutput;
     const topic = listTopicOutput.topics.find((t) => t.topicId === topicId);
     expect(topic).not.toBeNull();
     expect(topic?.name).toBe(alias);

@@ -5,8 +5,8 @@ import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { ListTopicsOutputSchema } from '@/plugins/topic/commands/list';
-import { listTopics } from '@/plugins/topic/commands/list/handler';
+import { TopicListOutputSchema } from '@/plugins/topic/commands/list';
+import { topicList } from '@/plugins/topic/commands/list/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -39,9 +39,9 @@ describe('topic plugin - list command', () => {
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
-    const result = await listTopics(args);
+    const result = await topicList(args);
 
-    const output = assertOutput(result.result, ListTopicsOutputSchema);
+    const output = assertOutput(result.result, TopicListOutputSchema);
     expect(output.totalCount).toBe(0);
     expect(output.topics).toEqual([]);
   });
@@ -60,9 +60,9 @@ describe('topic plugin - list command', () => {
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
-    const result = await listTopics(args);
+    const result = await topicList(args);
 
-    const output = assertOutput(result.result, ListTopicsOutputSchema);
+    const output = assertOutput(result.result, TopicListOutputSchema);
     expect(output.totalCount).toBe(2);
     expect(output.topics).toHaveLength(2);
     expect(output.topics[0].name).toBe('Topic 1');
@@ -92,9 +92,9 @@ describe('topic plugin - list command', () => {
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, { keys: true });
 
-    const result = await listTopics(args);
+    const result = await topicList(args);
 
-    const output = assertOutput(result.result, ListTopicsOutputSchema);
+    const output = assertOutput(result.result, TopicListOutputSchema);
     expect(output.topics[0].adminKeyPresent).toBe(true);
     expect(output.topics[0].submitKeyPresent).toBe(true);
     expect(output.stats.withAdminKey).toBe(1);
@@ -125,9 +125,9 @@ describe('topic plugin - list command', () => {
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, { network: 'mainnet' });
 
-    const result = await listTopics(args);
+    const result = await topicList(args);
 
-    const output = assertOutput(result.result, ListTopicsOutputSchema);
+    const output = assertOutput(result.result, TopicListOutputSchema);
     expect(output.totalCount).toBe(1);
     expect(output.topics[0].name).toBe(MAINNET_TOPIC.name);
     expect(output.topics[0].network).toBe(MAINNET_TOPIC.network);
@@ -150,9 +150,9 @@ describe('topic plugin - list command', () => {
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, { network: 'mainnet' });
 
-    const result = await listTopics(args);
+    const result = await topicList(args);
 
-    const output = assertOutput(result.result, ListTopicsOutputSchema);
+    const output = assertOutput(result.result, TopicListOutputSchema);
     expect(output.totalCount).toBe(0);
     expect(output.topics).toEqual([]);
   });
@@ -189,9 +189,9 @@ describe('topic plugin - list command', () => {
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
-    const result = await listTopics(args);
+    const result = await topicList(args);
 
-    const output = assertOutput(result.result, ListTopicsOutputSchema);
+    const output = assertOutput(result.result, TopicListOutputSchema);
     expect(output.totalCount).toBe(3);
     expect(output.stats.withAdminKey).toBe(1);
     expect(output.stats.withSubmitKey).toBe(1);
@@ -216,13 +216,13 @@ describe('topic plugin - list command', () => {
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
-    const result = await listTopics(args);
+    const result = await topicList(args);
 
-    const output = assertOutput(result.result, ListTopicsOutputSchema);
+    const output = assertOutput(result.result, TopicListOutputSchema);
     expect(output.topics[0].memo).toBeNull();
   });
 
-  test('throws when listTopics throws', async () => {
+  test('throws when topicList throws', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
@@ -234,6 +234,6 @@ describe('topic plugin - list command', () => {
     const api: Partial<CoreApi> = { state: makeStateMock(), logger };
     const args = makeArgs(api, logger, {});
 
-    await expect(listTopics(args)).rejects.toThrow('db error');
+    await expect(topicList(args)).rejects.toThrow('db error');
   });
 });
