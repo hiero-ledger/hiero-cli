@@ -74,6 +74,7 @@ import {
 } from './commands/view';
 import { TokenCreateFtBatchStateHook } from './hooks/batch-create-ft';
 import { TokenCreateFtFromFileBatchStateHook } from './hooks/batch-create-ft-from-file';
+import { TokenCreateNftBatchStateHook } from './hooks/batch-create-nft';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
@@ -89,6 +90,11 @@ export const tokenPluginManifest: PluginManifest = {
     {
       name: 'token-create-ft-from-file-batch-state',
       hook: new TokenCreateFtFromFileBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-create-nft-batch-state',
+      hook: new TokenCreateNftBatchStateHook(),
       options: [],
     },
   ],
