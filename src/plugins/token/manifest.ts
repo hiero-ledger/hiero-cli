@@ -72,12 +72,20 @@ import {
   viewToken,
   ViewTokenOutputSchema,
 } from './commands/view';
+import { TokenCreateFtBatchStateHook } from './hooks/batch-create-ft';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
   version: '1.0.0',
   displayName: 'Token Plugin',
   description: 'Plugin for managing Hedera fungible and non-fungible tokens',
+  hooks: [
+    {
+      name: 'token-create-ft-batch-state',
+      hook: new TokenCreateFtBatchStateHook(),
+      options: [],
+    },
+  ],
   commands: [
     {
       name: 'mint-ft',
