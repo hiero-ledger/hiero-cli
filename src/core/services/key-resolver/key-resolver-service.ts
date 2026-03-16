@@ -44,37 +44,36 @@ export class KeyResolverServiceImpl implements KeyResolverService {
   }
 
   public async resolveAccountCredentials(
-    credential: Credential,
-    keyManager: KeyManager,
-    labels?: string[],
-  ): Promise<ResolvedAccountCredential> {
-    const resolved = await this.resolveCredential(
-      credential,
-      keyManager,
-      labels,
-    );
-    return this.assertSigningKey(resolved, credential.rawValue);
-  }
-
-  public async resolveAccountCredentialsWithFallback(
     credential: Credential | undefined,
     keyManager: KeyManager,
+    fallback?: boolean,
     labels?: string[],
   ): Promise<ResolvedAccountCredential> {
-    if (!credential) {
+    if (!credential && fallback) {
       const resolved = this.resolveOperator();
       return this.assertSigningKey(resolved);
     }
-    return this.resolveAccountCredentials(credential, keyManager, labels);
+    const resolved = await this.resolveCredential(
+      credential!,
+      keyManager,
+      labels,
+    );
+    return this.assertSigningKey(resolved, credential!.rawValue);
   }
 
   public async getPublicKey(
-    credential: Credential,
+    credential: Credential | undefined,
     keyManager: KeyManager,
+    fallback?: boolean,
     labels?: string[],
   ): Promise<ResolvedPublicKey> {
+    if (!credential && fallback) {
+      const resolved = this.resolveOperator();
+      const { keyRefId, publicKey } = resolved;
+      return { keyRefId: keyRefId!, publicKey: publicKey! };
+    }
     const resolved = await this.resolveCredential(
-      credential,
+      credential!,
       keyManager,
       labels,
     );
@@ -93,12 +92,26 @@ export class KeyResolverServiceImpl implements KeyResolverService {
   }
 
   public async resolveSigningKey(
-    credential: Credential,
+    credential: Credential | undefined,
     keyManager: KeyManager,
+    fallback?: boolean,
     labels?: string[],
   ): Promise<ResolvedPublicKey> {
+    if (!credential && fallback) {
+      const resolved = this.resolveOperator();
+      const { keyRefId, publicKey } = resolved;
+
+      if (!this.kms.hasPrivateKey(keyRefId!)) {
+        throw new StateError(
+          'Credential cannot be used for signing: no private key available',
+          { context: { keyRefId } },
+        );
+      }
+
+      return { keyRefId: keyRefId!, publicKey: publicKey! };
+    }
     const resolved = await this.resolveCredential(
-      credential,
+      credential!,
       keyManager,
       labels,
     );
@@ -116,7 +129,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     if (!this.kms.hasPrivateKey(keyRefId)) {
       throw new StateError(
         'Credential cannot be used for signing: no private key available',
-        { context: { keyRefId, rawValue: credential.rawValue } },
+        { context: { keyRefId, rawValue: credential!.rawValue } },
       );
     }
 

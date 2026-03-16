@@ -11,15 +11,9 @@ import type {
 export interface KeyResolverService {
   // Sender side: requires accountId + publicKey + private key in KMS.
   resolveAccountCredentials(
-    credential: Credential,
-    keyManager: KeyManager,
-    labels?: string[],
-  ): Promise<ResolvedAccountCredential>;
-
-  // Same as resolveAccountCredentials but falls back to operator when credential is undefined.
-  resolveAccountCredentialsWithFallback(
     credential: Credential | undefined,
     keyManager: KeyManager,
+    fallback?: boolean,
     labels?: string[],
   ): Promise<ResolvedAccountCredential>;
 
@@ -32,15 +26,17 @@ export interface KeyResolverService {
 
   // Read-only key reference: requires publicKey + keyRefId, no account or private key needed.
   getPublicKey(
-    credential: Credential,
+    credential: Credential | undefined,
     keyManager: KeyManager,
+    fallback?: boolean,
     labels?: string[],
   ): Promise<ResolvedPublicKey>;
 
   // Role key (adminKey, supplyKey etc.): requires private key in KMS but no account association.
   resolveSigningKey(
-    credential: Credential,
+    credential: Credential | undefined,
     keyManager: KeyManager,
+    fallback?: boolean,
     labels?: string[],
   ): Promise<ResolvedPublicKey>;
 }

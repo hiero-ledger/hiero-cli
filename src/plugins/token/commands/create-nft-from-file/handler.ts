@@ -62,17 +62,20 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     const treasury = await api.keyResolver.resolveAccountCredentials(
       tokenDefinition.treasuryKey,
       keyManager,
+      false,
       ['token:treasury'],
     );
     const adminKey = await api.keyResolver.resolveSigningKey(
       tokenDefinition.adminKey,
       keyManager,
+      false,
       ['token:admin', `token:${tokenDefinition.name}`],
     );
     logger.info('🔑 Resolved admin key for signing');
     const supplyKey = await api.keyResolver.resolveSigningKey(
       tokenDefinition.supplyKey,
       keyManager,
+      false,
       ['token:supply'],
     );
     logger.info('🔑 Resolved supply key for signing');

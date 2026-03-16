@@ -83,6 +83,7 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
     const supplyKeyResolved = await api.keyResolver.resolveSigningKey(
       validArgs.supplyKey,
       keyManager,
+      false,
       ['token:supply'],
     );
 

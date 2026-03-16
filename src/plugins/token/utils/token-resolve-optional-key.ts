@@ -17,7 +17,7 @@ export async function resolveOptionalKey(
     return undefined;
   }
 
-  return keyResolver.getPublicKey(credential, keyManager, [tag]);
+  return keyResolver.getPublicKey(credential, keyManager, false, [tag]);
 }
 
 export function toPublicKey(

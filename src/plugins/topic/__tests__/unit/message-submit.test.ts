@@ -139,7 +139,6 @@ describe('topic plugin - message-submit command', () => {
         keyRefId: MOCK_TOPIC_SUBMIT_KEY_REF_ID,
       }),
       resolveAccountCredentials: jest.fn(),
-      resolveAccountCredentialsWithFallback: jest.fn(),
       resolveDestination: jest.fn(),
       getPublicKey: jest.fn(),
     };
@@ -223,7 +222,6 @@ describe('topic plugin - message-submit command', () => {
         keyRefId: 'kr_wrong_submit',
       }),
       resolveAccountCredentials: jest.fn(),
-      resolveAccountCredentialsWithFallback: jest.fn(),
       resolveDestination: jest.fn(),
       getPublicKey: jest.fn(),
     };

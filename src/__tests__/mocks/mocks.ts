@@ -669,27 +669,8 @@ export const makeKeyResolverMock = (
   return {
     resolveAccountCredentials: jest
       .fn()
-      .mockImplementation((credential, keyManager, labels) => {
-        const resolved = resolveCore(credential, keyManager, labels || []);
-        if (!resolved.keyRefId || !resolved.accountId || !resolved.publicKey) {
-          throw new StateError(
-            'Mock: resolved key missing required signing fields',
-          );
-        }
-        if (options.kms && !options.kms.hasPrivateKey(resolved.keyRefId)) {
-          throw new StateError('Mock: no private key available');
-        }
-        return Promise.resolve({
-          keyRefId: resolved.keyRefId,
-          accountId: resolved.accountId,
-          publicKey: resolved.publicKey,
-        });
-      }),
-
-    resolveAccountCredentialsWithFallback: jest
-      .fn()
-      .mockImplementation((credential, keyManager, labels) => {
-        if (!credential && options.network)
+      .mockImplementation((credential, keyManager, fallback, labels) => {
+        if (!credential && fallback && options.network)
           return Promise.resolve(operatorFallback());
         const resolved = resolveCore(credential, keyManager, labels || []);
         if (!resolved.keyRefId || !resolved.accountId || !resolved.publicKey) {
@@ -709,7 +690,7 @@ export const makeKeyResolverMock = (
 
     getPublicKey: jest
       .fn()
-      .mockImplementation((credential, keyManager, labels) => {
+      .mockImplementation((credential, keyManager, _fallback, labels) => {
         const resolved = resolveCore(credential, keyManager, labels || []);
         if (!resolved.keyRefId || !resolved.publicKey) {
           throw new StateError(
@@ -736,7 +717,7 @@ export const makeKeyResolverMock = (
 
     resolveSigningKey: jest
       .fn()
-      .mockImplementation((credential, keyManager, labels) => {
+      .mockImplementation((credential, keyManager, _fallback, labels) => {
         const resolved = resolveCore(credential, keyManager, labels || []);
         if (!resolved.keyRefId || !resolved.publicKey) {
           throw new StateError(

@@ -56,9 +56,10 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
     api.alias.availableOrThrow(validArgs.name, network);
 
     const treasury =
-      await api.keyResolver.resolveAccountCredentialsWithFallback(
+      await api.keyResolver.resolveAccountCredentials(
         validArgs.treasury,
         keyManager,
+        true,
         ['token:treasury'],
       );
     const admin = await resolveOptionalKey(

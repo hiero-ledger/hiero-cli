@@ -172,7 +172,7 @@ describe('createTokenHandler', () => {
       const { api, keyResolver } = makeApiMocks();
 
       // Mock keyResolver to throw error when no operator is available
-      keyResolver.resolveAccountCredentialsWithFallback.mockImplementation(() =>
+      keyResolver.resolveAccountCredentials.mockImplementation(() =>
         Promise.reject(new Error('No operator set')),
       );
 

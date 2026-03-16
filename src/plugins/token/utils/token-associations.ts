@@ -45,6 +45,7 @@ export async function processTokenAssociations(
       const account = await api.keyResolver.resolveAccountCredentials(
         association,
         keyManager,
+        false,
         ['token:associate'],
       );
 

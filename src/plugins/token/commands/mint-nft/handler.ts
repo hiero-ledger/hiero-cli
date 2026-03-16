@@ -82,6 +82,7 @@ export class TokenMintNftCommand extends BaseTransactionCommand<
     const supplyKeyResolved = await api.keyResolver.resolveSigningKey(
       validArgs.supplyKey,
       keyManager,
+      false,
       ['token:supply'],
     );
     if (tokenInfo.supply_key.key !== supplyKeyResolved.publicKey) {
