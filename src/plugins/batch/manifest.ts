@@ -95,6 +95,7 @@ export const batchPluginManifest: PluginManifest = {
       registeredHooks: [
         'account-create-batch-state',
         'topic-create-batch-state',
+        'token-create-ft-batch-state',
       ],
       options: [
         {
