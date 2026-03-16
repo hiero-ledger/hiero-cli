@@ -73,6 +73,7 @@ import {
   TokenViewOutputSchema,
 } from './commands/view';
 import { TokenCreateFtBatchStateHook } from './hooks/batch-create-ft';
+import { TokenCreateFtFromFileBatchStateHook } from './hooks/batch-create-ft-from-file';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
@@ -83,6 +84,11 @@ export const tokenPluginManifest: PluginManifest = {
     {
       name: 'token-create-ft-batch-state',
       hook: new TokenCreateFtBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-create-ft-from-file-batch-state',
+      hook: new TokenCreateFtFromFileBatchStateHook(),
       options: [],
     },
   ],
