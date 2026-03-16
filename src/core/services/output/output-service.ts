@@ -35,7 +35,7 @@ export class OutputServiceImpl implements OutputService {
     const formattedOutput = formatter.format(outputData, formatOptions);
 
     if (status === Status.Failure) {
-      console.error(formattedOutput);
+      console.log(formattedOutput);
     } else {
       console.log(formattedOutput);
     }
