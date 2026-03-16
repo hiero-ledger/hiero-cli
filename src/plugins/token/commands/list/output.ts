@@ -82,19 +82,19 @@ const TokenStatisticsSchema = z.object({
 /**
  * List Tokens Command Output Schema
  */
-export const ListTokensOutputSchema = z.object({
+export const TokenListOutputSchema = z.object({
   tokens: z.array(TokenListItemSchema),
   totalCount: z.int().nonnegative().describe('Total number of tokens'),
   stats: TokenStatisticsSchema.optional(),
 });
 
-export type ListTokensOutput = z.infer<typeof ListTokensOutputSchema>;
+export type TokenListOutput = z.infer<typeof TokenListOutputSchema>;
 export type TokenListItem = z.infer<typeof TokenListItemSchema>;
 
 /**
  * Human-readable template for list tokens output
  */
-export const LIST_TOKENS_TEMPLATE = `
+export const TOKEN_LIST_TEMPLATE = `
 {{#if (eq totalCount 0)}}
 📝 No tokens found
 {{else}}

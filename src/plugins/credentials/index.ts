@@ -2,9 +2,9 @@
  * Credentials Plugin Index
  * Exports the credentials plugin manifest and command handlers
  */
-import { listCredentials } from './commands/list';
-import { removeCredentials } from './commands/remove';
+import { credentialsList } from './commands/list';
+import { credentialsRemove } from './commands/remove';
 
 export { credentialsManifest } from './manifest';
 
-export { listCredentials, removeCredentials };
+export { credentialsList, credentialsRemove };

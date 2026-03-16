@@ -4,7 +4,7 @@
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { DeleteContractOutput } from './output';
+import type { ContractDeleteOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
@@ -60,7 +60,7 @@ export class DeleteContractCommand implements Command {
 
     contractState.deleteContract(contractToDelete.contractId);
 
-    const result: DeleteContractOutput = {
+    const result: ContractDeleteOutput = {
       deletedContract: {
         contractId: contractToDelete.contractId,
         contractName: contractToDelete.contractName,
@@ -72,7 +72,7 @@ export class DeleteContractCommand implements Command {
   }
 }
 
-export async function deleteContract(
+export async function contractDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new DeleteContractCommand().execute(args);

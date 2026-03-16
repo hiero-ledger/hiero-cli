@@ -8,7 +8,10 @@ import {
 } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { mintFt, MintFtOutputSchema } from '@/plugins/token/commands/mint-ft';
+import {
+  tokenMintFt,
+  TokenMintFtOutputSchema,
+} from '@/plugins/token/commands/mint-ft';
 import { TOKEN_NAMESPACE } from '@/plugins/token/constants';
 
 import { makeMintFtCommandArgs } from './helpers/fixtures';
@@ -22,7 +25,7 @@ import {
 const defaultSupplyKey =
   '0.0.200000:3333333333333333333333333333333333333333333333333333333333333333';
 
-describe('mintFtHandler', () => {
+describe('tokenMintFtHandler', () => {
   describe('success scenarios', () => {
     test('should mint tokens with token ID and display units', async () => {
       const { api } = makeMintFtSuccessMocks();
@@ -38,9 +41,9 @@ describe('mintFtHandler', () => {
         },
       });
 
-      const result = await mintFt(args);
+      const result = await tokenMintFt(args);
 
-      const output = assertOutput(result.result, MintFtOutputSchema);
+      const output = assertOutput(result.result, TokenMintFtOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
 
@@ -65,9 +68,9 @@ describe('mintFtHandler', () => {
         },
       });
 
-      const result = await mintFt(args);
+      const result = await tokenMintFt(args);
 
-      const output = assertOutput(result.result, MintFtOutputSchema);
+      const output = assertOutput(result.result, TokenMintFtOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.amount).toBe(5000n);
 
@@ -100,9 +103,9 @@ describe('mintFtHandler', () => {
         },
       });
 
-      const result = await mintFt(args);
+      const result = await tokenMintFt(args);
 
-      const output = assertOutput(result.result, MintFtOutputSchema);
+      const output = assertOutput(result.result, TokenMintFtOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.amount).toBe(10000n);
 
@@ -145,7 +148,7 @@ describe('mintFtHandler', () => {
         },
       });
 
-      await expect(mintFt(args)).rejects.toThrow(NotFoundError);
+      await expect(tokenMintFt(args)).rejects.toThrow(NotFoundError);
     });
 
     test('should handle token without supply key', async () => {
@@ -184,7 +187,7 @@ describe('mintFtHandler', () => {
         },
       });
 
-      await expect(mintFt(args)).rejects.toThrow(ValidationError);
+      await expect(tokenMintFt(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle NFT token (no decimals)', async () => {
@@ -244,7 +247,7 @@ describe('mintFtHandler', () => {
         },
       });
 
-      await expect(mintFt(args)).rejects.toThrow(ValidationError);
+      await expect(tokenMintFt(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle exceeding max supply for FINITE token', async () => {
@@ -270,7 +273,7 @@ describe('mintFtHandler', () => {
         },
       });
 
-      await expect(mintFt(args)).rejects.toThrow(ValidationError);
+      await expect(tokenMintFt(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle zero amount', async () => {
@@ -287,7 +290,7 @@ describe('mintFtHandler', () => {
         },
       });
 
-      await expect(mintFt(args)).rejects.toThrow(ValidationError);
+      await expect(tokenMintFt(args)).rejects.toThrow(ValidationError);
     });
 
     test('should handle transaction failure', async () => {
@@ -306,7 +309,7 @@ describe('mintFtHandler', () => {
         },
       });
 
-      await expect(mintFt(args)).rejects.toThrow(TransactionError);
+      await expect(tokenMintFt(args)).rejects.toThrow(TransactionError);
     });
   });
 });

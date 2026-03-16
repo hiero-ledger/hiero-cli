@@ -7,24 +7,24 @@ import type { PluginManifest } from '@/core/plugins/plugin.interface';
 import { OptionType } from '@/core/types/shared.types';
 
 import {
-  GET_OPERATOR_TEMPLATE,
-  getOperator,
-  GetOperatorOutputSchema,
+  NETWORK_GET_OPERATOR_TEMPLATE,
+  networkGetOperator,
+  NetworkGetOperatorOutputSchema,
 } from './commands/get-operator';
 import {
-  LIST_NETWORKS_TEMPLATE,
-  listNetworks,
-  ListNetworksOutputSchema,
+  NETWORK_LIST_TEMPLATE,
+  networkList,
+  NetworkListOutputSchema,
 } from './commands/list';
 import {
-  SET_OPERATOR_TEMPLATE,
-  setOperator,
-  SetOperatorOutputSchema,
+  NETWORK_SET_OPERATOR_TEMPLATE,
+  networkSetOperator,
+  NetworkSetOperatorOutputSchema,
 } from './commands/set-operator';
 import {
-  USE_NETWORK_TEMPLATE,
-  useNetwork,
-  UseNetworkOutputSchema,
+  NETWORK_USE_TEMPLATE,
+  networkUse,
+  NetworkUseOutputSchema,
 } from './commands/use';
 
 export const networkPluginManifest: PluginManifest = {
@@ -40,10 +40,10 @@ export const networkPluginManifest: PluginManifest = {
       description:
         'List all available networks with their configuration and health status',
       options: [],
-      handler: listNetworks,
+      handler: networkList,
       output: {
-        schema: ListNetworksOutputSchema,
-        humanTemplate: LIST_NETWORKS_TEMPLATE,
+        schema: NetworkListOutputSchema,
+        humanTemplate: NETWORK_LIST_TEMPLATE,
       },
     },
     {
@@ -59,10 +59,10 @@ export const networkPluginManifest: PluginManifest = {
           description: 'Network name (testnet, mainnet, previewnet, localnet)',
         },
       ],
-      handler: useNetwork,
+      handler: networkUse,
       output: {
-        schema: UseNetworkOutputSchema,
-        humanTemplate: USE_NETWORK_TEMPLATE,
+        schema: NetworkUseOutputSchema,
+        humanTemplate: NETWORK_USE_TEMPLATE,
       },
     },
     {
@@ -70,10 +70,10 @@ export const networkPluginManifest: PluginManifest = {
       summary: 'Get operator for a network',
       description: 'Get operator credentials for a specific network',
       options: [],
-      handler: getOperator,
+      handler: networkGetOperator,
       output: {
-        schema: GetOperatorOutputSchema,
-        humanTemplate: GET_OPERATOR_TEMPLATE,
+        schema: NetworkGetOperatorOutputSchema,
+        humanTemplate: NETWORK_GET_OPERATOR_TEMPLATE,
       },
     },
     {
@@ -99,10 +99,10 @@ export const networkPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: setOperator,
+      handler: networkSetOperator,
       output: {
-        schema: SetOperatorOutputSchema,
-        humanTemplate: SET_OPERATOR_TEMPLATE,
+        schema: NetworkSetOperatorOutputSchema,
+        humanTemplate: NETWORK_SET_OPERATOR_TEMPLATE,
       },
     },
   ],

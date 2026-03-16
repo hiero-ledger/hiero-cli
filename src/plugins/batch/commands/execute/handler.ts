@@ -8,7 +8,7 @@ import type {
   BatchNormalisedParams,
   BatchSignTransactionResult,
 } from '@/plugins/batch/commands/execute/types';
-import type { ExecuteBatchOutput } from './output';
+import type { BatchExecuteOutput } from './output';
 
 import { Transaction } from '@hashgraph/sdk';
 
@@ -18,7 +18,7 @@ import { NotFoundError } from '@/core/errors';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
-import { ExecuteBatchInputSchema } from './input';
+import { BatchExecuteInputSchema } from './input';
 
 export const BATCH_EXECUTE_COMMAND_NAME = 'batch_execute';
 
@@ -37,7 +37,7 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
   ): Promise<BatchNormalisedParams> {
     const { api, logger } = args;
     const batchState = new ZustandBatchStateHelper(api.state, logger);
-    const validArgs = ExecuteBatchInputSchema.parse(args.args);
+    const validArgs = BatchExecuteInputSchema.parse(args.args);
     const name = validArgs.name;
     const network = api.network.getCurrentNetwork();
     const key = composeKey(network, name);
@@ -146,7 +146,7 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
     _signTransactionResult: BatchSignTransactionResult,
     executeTransactionResult: BatchExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const outputData: ExecuteBatchOutput = {
+    const outputData: BatchExecuteOutput = {
       batchName: normalisedParams.name,
       transactionId:
         executeTransactionResult.transactionResult?.transactionId || '',

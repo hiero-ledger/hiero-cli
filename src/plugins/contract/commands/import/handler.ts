@@ -5,14 +5,14 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { ContractData } from '@/plugins/contract/schema';
-import type { ImportContractOutput } from './output';
+import type { ContractImportOutput } from './output';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
-import { ImportContractInputSchema } from './input';
+import { ContractImportInputSchema } from './input';
 
 export class ImportContractCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
@@ -20,7 +20,7 @@ export class ImportContractCommand implements Command {
 
     const contractState = new ZustandContractStateHelper(api.state, logger);
 
-    const validArgs = ImportContractInputSchema.parse(args.args);
+    const validArgs = ContractImportInputSchema.parse(args.args);
 
     const contractRef = validArgs.contract;
     const alias = validArgs.alias;
@@ -76,7 +76,7 @@ export class ImportContractCommand implements Command {
 
     contractState.saveContract(contractKey, contractData);
 
-    const result: ImportContractOutput = {
+    const result: ContractImportOutput = {
       contractId,
       contractName: contractName,
       contractEvmAddress,
@@ -90,7 +90,7 @@ export class ImportContractCommand implements Command {
   }
 }
 
-export async function importContract(
+export async function contractImport(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ImportContractCommand().execute(args);

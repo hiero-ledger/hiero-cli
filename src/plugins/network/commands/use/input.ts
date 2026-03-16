@@ -6,7 +6,7 @@ import { NetworkSchema } from '@/core/schemas';
  * Input schema for network use command
  * Validates arguments for switching to a specific network
  */
-export const UseNetworkInputSchema = z.object({
+export const NetworkUseInputSchema = z.object({
   global: NetworkSchema.describe(
     'Network to switch to (testnet, mainnet, previewnet, localnet)',
   ),
@@ -15,4 +15,4 @@ export const UseNetworkInputSchema = z.object({
   ),
 });
 
-export type UseNetworkInput = z.infer<typeof UseNetworkInputSchema>;
+export type UseNetworkInput = z.infer<typeof NetworkUseInputSchema>;

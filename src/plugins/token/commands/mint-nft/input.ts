@@ -10,7 +10,7 @@ import {
  * Input schema for mint-nft command
  * Validates arguments for minting a new NFT
  */
-export const MintNftInputSchema = z.object({
+export const TokenMintNftInputSchema = z.object({
   token: EntityReferenceSchema.describe('Token identifier (ID or name)'),
   metadata: z
     .string()
@@ -24,4 +24,4 @@ export const MintNftInputSchema = z.object({
   ),
 });
 
-export type MintNftInput = z.infer<typeof MintNftInputSchema>;
+export type TokenMintNftInput = z.infer<typeof TokenMintNftInputSchema>;

@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { DeleteAccountOutput } from './output';
+import type { AccountDeleteOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
@@ -8,15 +8,15 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
-import { DeleteAccountInputSchema } from './input';
+import { AccountDeleteInputSchema } from './input';
 
-export class DeleteAccountCommand implements Command {
+export class AccountDeleteCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
     const accountState = new ZustandAccountStateHelper(api.state, logger);
 
-    const validArgs = DeleteAccountInputSchema.parse(args.args);
+    const validArgs = AccountDeleteInputSchema.parse(args.args);
     const accountRef = validArgs.account;
     const isEntityId = EntityIdSchema.safeParse(accountRef).success;
     const network = api.network.getCurrentNetwork();
@@ -69,7 +69,7 @@ export class DeleteAccountCommand implements Command {
       api.kms.remove(accountToDelete.keyRefId);
     }
 
-    const outputData: DeleteAccountOutput = {
+    const outputData: AccountDeleteOutput = {
       deletedAccount: {
         name: accountToDelete.name,
         accountId: accountToDelete.accountId,
@@ -82,5 +82,5 @@ export class DeleteAccountCommand implements Command {
   }
 }
 
-export const deleteAccount = (args: CommandHandlerArgs) =>
-  new DeleteAccountCommand().execute(args);
+export const accountDelete = (args: CommandHandlerArgs) =>
+  new AccountDeleteCommand().execute(args);

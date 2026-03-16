@@ -4,19 +4,19 @@
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { DisablePluginOutput } from './output';
+import type { PluginManagementDisableOutput } from './output';
 
 import { NotFoundError, StateError } from '@/core/errors';
 import { PluginManagementDisableStatus } from '@/core/services/plugin-management/plugin-management-service.interface';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
-import { DisablePluginInputSchema } from './input';
+import { PluginManagementDisableInputSchema } from './input';
 
-export class DisablePluginCommand implements Command {
+export class PluginManagementDisableCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
-    const validArgs = DisablePluginInputSchema.parse(args.args);
+    const validArgs = PluginManagementDisableInputSchema.parse(args.args);
     const name = validArgs.name;
 
     logger.info('➖ Disabling plugin...');
@@ -41,7 +41,7 @@ export class DisablePluginCommand implements Command {
       });
     }
 
-    const outputData: DisablePluginOutput = {
+    const outputData: PluginManagementDisableOutput = {
       name,
       removed: true,
       message: `Plugin ${name} disabled successfully`,
@@ -51,8 +51,8 @@ export class DisablePluginCommand implements Command {
   }
 }
 
-export async function disablePlugin(
+export async function pluginManagementDisable(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new DisablePluginCommand().execute(args);
+  return new PluginManagementDisableCommand().execute(args);
 }

@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { ImportAccountOutput } from '@/plugins/account/commands/import';
-import type { ViewAccountOutput } from '@/plugins/account/commands/view';
+import type { AccountImportOutput } from '@/plugins/account/commands/import';
+import type { AccountViewOutput } from '@/plugins/account/commands/view';
 
 import '@/core/utils/json-serialize';
 
@@ -9,7 +9,7 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { importAccount, viewAccount } from '@/plugins/account';
+import { accountImport, accountView } from '@/plugins/account';
 
 describe('Import Account Integration Tests', () => {
   let coreApi: CoreApi;
@@ -40,7 +40,7 @@ describe('Import Account Integration Tests', () => {
         name: 'account-imported',
         key: `${accountId}:${accountKey}`,
       };
-      const importAccountResult = await importAccount({
+      const importAccountResult = await accountImport({
         args: importAccountArgs,
         api: coreApi,
         state: coreApi.state,
@@ -49,7 +49,7 @@ describe('Import Account Integration Tests', () => {
       });
 
       const importAccountOutput =
-        importAccountResult.result as ImportAccountOutput;
+        importAccountResult.result as AccountImportOutput;
       expect(importAccountOutput.accountId).toBe(accountId);
       expect(importAccountOutput.name).toBe('account-imported');
       expect(importAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
@@ -59,14 +59,14 @@ describe('Import Account Integration Tests', () => {
       const viewAccountArgs: Record<string, unknown> = {
         account: 'account-imported',
       };
-      const viewAccountResult = await viewAccount({
+      const viewAccountResult = await accountView({
         args: viewAccountArgs,
         api: coreApi,
         state: coreApi.state,
         logger: coreApi.logger,
         config: coreApi.config,
       });
-      const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
+      const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
       expect(viewAccountOutput.accountId).toBe(importAccountOutput.accountId);
       expect(viewAccountOutput.evmAddress).toBe(importAccountOutput.evmAddress);
     });

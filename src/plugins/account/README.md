@@ -145,7 +145,7 @@ The `result` field contains a structured object conforming to the Zod schema def
 Example output schema:
 
 ```typescript
-export const CreateAccountOutputSchema = z.object({
+export const AccountCreateOutputSchema = z.object({
   accountId: EntityIdSchema,
   name: z.string(),
   type: KeyTypeSchema,

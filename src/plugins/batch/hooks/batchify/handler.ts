@@ -21,7 +21,7 @@ import {
 } from '@/plugins/batch/hooks/batchify/output';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
-export class BatchBatchifyHook extends AbstractHook {
+export class BatchifyHook extends AbstractHook {
   static readonly BATCH_MAXIMUM_SIZE = 50;
 
   override preSignTransactionHook(
@@ -105,9 +105,9 @@ export class BatchBatchifyHook extends AbstractHook {
     if (!batch) {
       throw new NotFoundError(`Batch not found for name ${batchName}`);
     }
-    if (batch.transactions.length >= BatchBatchifyHook.BATCH_MAXIMUM_SIZE) {
+    if (batch.transactions.length >= BatchifyHook.BATCH_MAXIMUM_SIZE) {
       throw new ValidationError(
-        `Couldn't add new transaction to batch ${batchName} as it will exceed batch transaction maximum size ${BatchBatchifyHook.BATCH_MAXIMUM_SIZE}`,
+        `Couldn't add new transaction to batch ${batchName} as it will exceed batch transaction maximum size ${BatchifyHook.BATCH_MAXIMUM_SIZE}`,
       );
     }
     const transaction = params.signTransactionResult.signedTransaction;

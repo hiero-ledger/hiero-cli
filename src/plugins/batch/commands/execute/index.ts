@@ -3,5 +3,5 @@ export {
   batchExecute,
   BatchExecuteCommand,
 } from './handler';
-export type { ExecuteBatchOutput } from './output';
-export { EXECUTE_BATCH_TEMPLATE, ExecuteBatchOutputSchema } from './output';
+export type { BatchExecuteOutput } from './output';
+export { BATCH_EXECUTE_TEMPLATE, BatchExecuteOutputSchema } from './output';

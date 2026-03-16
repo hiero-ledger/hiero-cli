@@ -7,19 +7,19 @@ import type { PluginManifest } from '@/core';
 import { OptionType } from '@/core/types/shared.types';
 
 import {
-  GET_CONFIG_TEMPLATE,
-  getConfigOption,
-  GetConfigOutputSchema,
+  CONFIG_GET_TEMPLATE,
+  configGet,
+  ConfigGetOutputSchema,
 } from './commands/get';
 import {
-  LIST_CONFIG_TEMPLATE,
-  listConfigOptions,
-  ListConfigOutputSchema,
+  CONFIG_LIST_TEMPLATE,
+  configList,
+  ConfigListOutputSchema,
 } from './commands/list';
 import {
-  SET_CONFIG_TEMPLATE,
-  setConfigOption,
-  SetConfigOutputSchema,
+  CONFIG_SET_TEMPLATE,
+  configSet,
+  ConfigSetOutputSchema,
 } from './commands/set';
 
 export const configPluginManifest: PluginManifest = {
@@ -34,10 +34,10 @@ export const configPluginManifest: PluginManifest = {
       summary: 'List configuration options',
       description: 'List all configuration options with current values',
       options: [],
-      handler: listConfigOptions,
+      handler: configList,
       output: {
-        schema: ListConfigOutputSchema,
-        humanTemplate: LIST_CONFIG_TEMPLATE,
+        schema: ConfigListOutputSchema,
+        humanTemplate: CONFIG_LIST_TEMPLATE,
       },
     },
     {
@@ -53,10 +53,10 @@ export const configPluginManifest: PluginManifest = {
           description: 'Option name to read',
         },
       ],
-      handler: getConfigOption,
+      handler: configGet,
       output: {
-        schema: GetConfigOutputSchema,
-        humanTemplate: GET_CONFIG_TEMPLATE,
+        schema: ConfigGetOutputSchema,
+        humanTemplate: CONFIG_GET_TEMPLATE,
       },
     },
     {
@@ -81,10 +81,10 @@ export const configPluginManifest: PluginManifest = {
             'Value to set (boolean|number|string). Booleans: true/false.',
         },
       ],
-      handler: setConfigOption,
+      handler: configSet,
       output: {
-        schema: SetConfigOutputSchema,
-        humanTemplate: SET_CONFIG_TEMPLATE,
+        schema: ConfigSetOutputSchema,
+        humanTemplate: CONFIG_SET_TEMPLATE,
       },
     },
   ],
