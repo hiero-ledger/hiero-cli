@@ -28,7 +28,7 @@ export class BatchifyHook extends AbstractHook {
     args: CommandHandlerArgs,
     params: PreSignTransactionParams<
       Record<string, unknown>,
-      BatchifySignTransactionResult
+      BatchifyBuildTransactionResult
     >,
     _commandName: string,
   ): Promise<HookResult> {
@@ -110,7 +110,7 @@ export class BatchifyHook extends AbstractHook {
         `Couldn't add new transaction to batch ${batchName} as it will exceed batch transaction maximum size ${BatchifyHook.BATCH_MAXIMUM_SIZE}`,
       );
     }
-    const transaction = params.signTransactionResult.transaction;
+    const transaction = params.signTransactionResult.signedTransaction;
 
     const transactionBytes = Buffer.from(transaction.toBytes()).toString('hex');
     const highestOrder =

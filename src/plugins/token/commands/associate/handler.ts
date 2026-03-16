@@ -126,7 +126,7 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
       buildTransactionResult.transaction,
       [normalisedParams.account.keyRefId],
     );
-    return { transaction };
+    return { signedTransaction: transaction };
   }
 
   async executeTransaction(
@@ -137,7 +137,7 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
   ): Promise<AssociateExecuteTransactionResult> {
     if (
       normalisedParams.alreadyAssociated ||
-      !signTransactionResult.transaction
+      !signTransactionResult.signedTransaction
     ) {
       return { alreadyAssociated: true };
     }
@@ -145,7 +145,7 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
     const { api } = args;
     try {
       const transactionResult = await api.txExecute.execute(
-        signTransactionResult.transaction,
+        signTransactionResult.signedTransaction,
       );
       if (!transactionResult.success) {
         throw new TransactionError(

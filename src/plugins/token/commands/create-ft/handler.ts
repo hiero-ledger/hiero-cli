@@ -156,7 +156,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       buildTransactionResult.transaction,
       txSigners,
     );
-    return { transaction };
+    return { signedTransaction: transaction };
   }
 
   async executeTransaction(
@@ -167,7 +167,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
   ): Promise<TokenCreateFtExecuteTransactionResult> {
     const { api } = args;
     const transactionResult = await api.txExecute.execute(
-      signTransactionResult.transaction,
+      signTransactionResult.signedTransaction,
     );
 
     if (!transactionResult.success || !transactionResult.tokenId) {

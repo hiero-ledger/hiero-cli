@@ -1,6 +1,7 @@
 import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
+import { AccountCreateBatchStateHook } from '@/plugins/account/hooks/batch-create';
 
 import {
   ACCOUNT_BALANCE_TEMPLATE,
@@ -45,6 +46,13 @@ export const accountPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Account Plugin',
   description: 'Plugin for managing Hedera accounts',
+  hooks: [
+    {
+      name: 'account-create-batch-state',
+      hook: new AccountCreateBatchStateHook(),
+      options: [],
+    },
+  ],
   commands: [
     {
       name: 'create',

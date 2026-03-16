@@ -130,7 +130,7 @@ export class ContractErc20TransferFromCommand extends BaseTransactionCommand<
     );
 
     return {
-      transaction,
+      signedTransaction: transaction,
     };
   }
 
@@ -143,7 +143,7 @@ export class ContractErc20TransferFromCommand extends BaseTransactionCommand<
     const { api } = args;
 
     const result = await api.txExecute.execute(
-      signTransactionResult.transaction,
+      signTransactionResult.signedTransaction,
     );
 
     if (!result.success) {

@@ -4,7 +4,10 @@
  */
 import { z } from 'zod';
 
-import { AliasNameSchema } from '@/core/schemas/common-schemas';
+import {
+  AliasNameSchema,
+  TransactionIdSchema,
+} from '@/core/schemas/common-schemas';
 
 /** Schema for a single batch list item */
 export const BatchTransactionItemSchema = z.object({
@@ -20,6 +23,9 @@ export const BatchTransactionItemSchema = z.object({
     .describe(
       'Normalized params from the command that produced this transaction',
     ),
+  transactionId: TransactionIdSchema.optional().describe(
+    'Inner transaction ID',
+  ),
 });
 
 // Zod schema for runtime validation

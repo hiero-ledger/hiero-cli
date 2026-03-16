@@ -83,6 +83,7 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
           const transaction = Transaction.fromBytes(
             Uint8Array.from(Buffer.from(txItem.transactionBytes, 'hex')),
           );
+          txItem.transactionId = transaction.transactionId?.toString();
           return api.txSign.sign(transaction, signingKeys);
         }),
     );
@@ -104,7 +105,7 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
       [batchKey],
     );
     return {
-      transaction: signedTransaction,
+      signedTransaction: signedTransaction,
     };
   }
   async executeTransaction(
@@ -116,7 +117,7 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
     const { api, logger } = args;
     const batchState = new ZustandBatchStateHelper(api.state, logger);
     const result = await api.txExecute.execute(
-      signTransactionResult.transaction,
+      signTransactionResult.signedTransaction,
     );
     let updatedBatchData = normalisedParams.batchData;
     if (!result.success) {

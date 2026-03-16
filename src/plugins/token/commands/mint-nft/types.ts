@@ -14,7 +14,7 @@ export interface TokenMintNftBuildTransactionResult {
 }
 
 export interface TokenMintNftSignTransactionResult {
-  transaction: Transaction;
+  signedTransaction: Transaction;
 }
 
 export interface TokenMintNftExecuteTransactionResult {

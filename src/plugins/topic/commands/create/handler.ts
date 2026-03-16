@@ -108,7 +108,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       normalisedParams.adminKey ? [normalisedParams.adminKey.keyRefId] : [],
     );
 
-    return { transaction };
+    return { signedTransaction: transaction };
   }
 
   async executeTransaction(
@@ -120,7 +120,7 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     const { api } = args;
 
     const result = await api.txExecute.execute(
-      signTransactionResult.transaction,
+      signTransactionResult.signedTransaction,
     );
     if (!result.success || !result.topicId) {
       throw new TransactionError(

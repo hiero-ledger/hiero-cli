@@ -17,6 +17,7 @@ import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { ReceiptService } from '@/core/services/receipt/receipt-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
@@ -124,6 +125,9 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     batch: {
       createBatchTransaction: jest.fn(),
     } as unknown as BatchTransactionService,
+    receipt: {
+      getReceipt: jest.fn(),
+    } as unknown as ReceiptService,
     topic: {} as unknown as TopicService,
     txSign,
     txExecute,

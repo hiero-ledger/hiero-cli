@@ -129,7 +129,7 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
       normalisedParams.signerKeyRefId ? [normalisedParams.signerKeyRefId] : [],
     );
 
-    return { transaction };
+    return { signedTransaction: transaction };
   }
 
   async executeTransaction(
@@ -141,7 +141,7 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     const { api } = args;
 
     const txResult = await api.txExecute.execute(
-      signTransactionResult.transaction,
+      signTransactionResult.signedTransaction,
     );
     if (!txResult.success) {
       throw new TransactionError(
