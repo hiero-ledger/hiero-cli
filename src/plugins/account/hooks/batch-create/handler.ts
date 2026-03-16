@@ -1,9 +1,13 @@
-import type { CommandHandlerArgs } from '@/core';
+import type { CommandHandlerArgs, CoreApi, Logger } from '@/core';
 import type {
   HookResult,
   PreOutputPreparationParams,
 } from '@/core/hooks/types';
-import type { TransactionResult } from '@/core/types/shared.types';
+import type {
+  BatchDataItem,
+  BatchExecuteTransactionResult,
+  TransactionResult,
+} from '@/core/types/shared.types';
 import type { AccountData } from '@/plugins/account/schema';
 
 import { StateError } from '@/core';
@@ -11,11 +15,7 @@ import { AbstractHook } from '@/core/hooks/abstract-hook';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ACCOUNT_CREATE_COMMAND_NAME } from '@/plugins/account/commands/create';
-import {
-  AccountCreateNormalisedParamsSchema,
-  type BatchDataItem,
-  type BatchExecuteTransactionResult,
-} from '@/plugins/account/hooks/batch-create/types';
+import { AccountCreateNormalisedParamsSchema } from '@/plugins/account/hooks/batch-create/types';
 import { buildEvmAddressFromAccountId } from '@/plugins/account/utils/account-address';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -29,6 +29,7 @@ export class AccountCreateBatchStateHook extends AbstractHook {
       BatchExecuteTransactionResult
     >,
   ): Promise<HookResult> {
+    const { api, logger } = args;
     const batchData = params.executeTransactionResult.updatedBatchData;
     if (!batchData.success) {
       return Promise.resolve({
@@ -41,7 +42,7 @@ export class AccountCreateBatchStateHook extends AbstractHook {
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === ACCOUNT_CREATE_COMMAND_NAME,
     )) {
-      await this.saveAccount(args, batchDataItem);
+      await this.saveAccount(api, logger, batchDataItem);
     }
     return Promise.resolve({
       breakFlow: false,
@@ -52,10 +53,10 @@ export class AccountCreateBatchStateHook extends AbstractHook {
   }
 
   private async saveAccount(
-    args: CommandHandlerArgs,
+    api: CoreApi,
+    logger: Logger,
     batchDataItem: BatchDataItem,
   ): Promise<void> {
-    const { api, logger } = args;
     const parseResult = AccountCreateNormalisedParamsSchema.safeParse(
       batchDataItem.normalizedParams,
     );
