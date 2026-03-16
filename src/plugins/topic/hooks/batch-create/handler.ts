@@ -1,20 +1,20 @@
-import type { CommandHandlerArgs } from '@/core';
+import type { CommandHandlerArgs, CoreApi, Logger } from '@/core';
 import type {
   HookResult,
   PreOutputPreparationParams,
 } from '@/core/hooks/types';
-import type { TransactionResult } from '@/core/types/shared.types';
+import type {
+  BatchDataItem,
+  BatchExecuteTransactionResult,
+  TransactionResult,
+} from '@/core/types/shared.types';
 
 import { StateError } from '@/core';
 import { AbstractHook } from '@/core/hooks/abstract-hook';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOPIC_CREATE_COMMAND_NAME } from '@/plugins/topic/commands/create';
-import {
-  type BatchDataItem,
-  type BatchExecuteTransactionResult,
-  TopicCreateNormalisedParamsSchema,
-} from '@/plugins/topic/hooks/batch-create/types';
+import { TopicCreateNormalisedParamsSchema } from '@/plugins/topic/hooks/batch-create/types';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 export class TopicCreateBatchStateHook extends AbstractHook {
@@ -27,14 +27,12 @@ export class TopicCreateBatchStateHook extends AbstractHook {
       BatchExecuteTransactionResult
     >,
   ): Promise<HookResult> {
+    const { api, logger } = args;
     const batchData = params.executeTransactionResult.updatedBatchData;
-    const sortedTransactions = [...batchData.transactions].sort(
-      (a, b) => a.order - b.order,
-    );
-    for (const batchDataItem of sortedTransactions.filter(
+    for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOPIC_CREATE_COMMAND_NAME,
     )) {
-      await this.saveTopic(args, batchDataItem);
+      await this.saveTopic(api, logger, batchDataItem);
     }
     return {
       breakFlow: false,
@@ -45,10 +43,10 @@ export class TopicCreateBatchStateHook extends AbstractHook {
   }
 
   private async saveTopic(
-    args: CommandHandlerArgs,
+    api: CoreApi,
+    logger: Logger,
     batchDataItem: BatchDataItem,
   ): Promise<void> {
-    const { api, logger } = args;
     const parseResult = TopicCreateNormalisedParamsSchema.safeParse(
       batchDataItem.normalizedParams,
     );
