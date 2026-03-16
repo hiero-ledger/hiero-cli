@@ -135,7 +135,7 @@ export class CoreApiImplementation implements CoreApi {
       this.mirror,
     );
     this.batch = new BatchTransactionServiceImpl(this.logger);
-    this.receipt = new ReceiptServiceImpl(this.logger, this.kms, this.network);
+    this.receipt = new ReceiptServiceImpl(this.logger, this.network);
   }
 }
 

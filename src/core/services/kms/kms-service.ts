@@ -1,4 +1,5 @@
 import type {
+  Client,
   ContractCreateFlow,
   Transaction as HederaTransaction,
 } from '@hashgraph/sdk';
@@ -6,6 +7,7 @@ import type { ConfigService } from '@/core/services/config/config-service.interf
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { KeyManager } from './key-managers/key-manager.interface';
 import type { KmsService } from './kms-service.interface';
 import type {
@@ -14,7 +16,7 @@ import type {
 } from './kms-types.interface';
 import type { Signer } from './signers/signer.interface';
 
-import { AccountId, Client, PrivateKey, PublicKey } from '@hashgraph/sdk';
+import { AccountId, PrivateKey, PublicKey } from '@hashgraph/sdk';
 import { randomBytes } from 'crypto';
 
 import {
@@ -23,7 +25,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { createClient } from '@/core/utils/client-init';
 
 import { CredentialStorage } from './credential-storage';
 import { ALGORITHM_CONFIGS } from './encryption/algorithm-config';
@@ -340,36 +342,10 @@ export class KmsServiceImpl implements KmsService {
     }
 
     // Create client and set operator with credentials
-    let client: Client;
-    switch (network) {
-      case SupportedNetwork.MAINNET:
-        client = Client.forMainnet();
-        break;
-      case SupportedNetwork.TESTNET:
-        client = Client.forTestnet();
-        break;
-      case SupportedNetwork.PREVIEWNET:
-        client = Client.forPreviewnet();
-        break;
-      case SupportedNetwork.LOCALNET: {
-        // For localnet, get configuration from NetworkService
-        const localnetConfig = this.networkService.getLocalnetConfig();
-
-        const node = {
-          [localnetConfig.localNodeAddress]: AccountId.fromString(
-            localnetConfig.localNodeAccountId,
-          ),
-        };
-        client = Client.forNetwork(node);
-
-        if (localnetConfig.localNodeMirrorAddressGRPC) {
-          client.setMirrorNetwork(localnetConfig.localNodeMirrorAddressGRPC);
-        }
-        break;
-      }
-      default:
-        throw new ConfigurationError(`Unsupported network: ${String(network)}`);
-    }
+    const client = createClient(
+      network,
+      this.networkService.getLocalnetConfig(),
+    );
 
     const accountIdObj = AccountId.fromString(accountId);
 

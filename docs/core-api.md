@@ -23,6 +23,7 @@ interface CoreApi {
   kms: KmsService;
   hbar: HbarService;
   output: OutputService;
+  receipt: ReceiptService;
 }
 ```
 
@@ -199,6 +200,32 @@ type SignerRef = {
 
 ```typescript
 const result = await api.txExecution.signAndExecute(transaction);
+```
+
+### Receipt Service
+
+Fetches transaction receipts by transaction ID using Hedera's `TransactionGetReceiptQuery`. Useful for retrieving receipt data (e.g. entity IDs, status) for transactions that were submitted separately, such as batch inner transactions.
+
+```typescript
+interface ReceiptService {
+  getReceipt(params: TransactionReceiptParams): Promise<TransactionResult>;
+}
+
+interface TransactionReceiptParams {
+  transactionId: string;
+}
+```
+
+**Usage Example:**
+
+```typescript
+const result = await api.receipt.getReceipt({
+  transactionId: '0.0.1234@1234567890.000',
+});
+
+if (result.success && result.accountId) {
+  console.log(`Created account: ${result.accountId}`);
+}
 ```
 
 ### State Service

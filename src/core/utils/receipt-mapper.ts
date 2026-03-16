@@ -3,6 +3,12 @@ import type { TransactionResult } from '@/core';
 
 import { Status } from '@hashgraph/sdk';
 
+function toEntityIdString(
+  entity: { toString(): string } | null | undefined,
+): string | undefined {
+  return entity ? entity.toString() : undefined;
+}
+
 export function mapReceiptToTransactionResult(
   transactionId: string,
   receipt: TransactionReceipt,
@@ -36,8 +42,7 @@ export function mapReceiptToTransactionResult(
   }
 
   if (receipt.contractId) {
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    contractId = receipt.contractId.toString();
+    contractId = toEntityIdString(receipt.contractId);
   }
 
   const success = receipt.status === Status.Success;
@@ -45,7 +50,7 @@ export function mapReceiptToTransactionResult(
   return {
     transactionId,
     success,
-    consensusTimestamp: consensusTimestamp ?? '',
+    consensusTimestamp: consensusTimestamp ?? new Date().toISOString(),
     accountId,
     tokenId,
     topicId,
