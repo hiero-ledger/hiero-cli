@@ -38,10 +38,7 @@ export class AccountCreateBatchStateHook extends AbstractHook {
         },
       });
     }
-    const sortedTransactions = [...batchData.transactions].sort(
-      (a, b) => a.order - b.order,
-    );
-    for (const batchDataItem of sortedTransactions.filter(
+    for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === ACCOUNT_CREATE_COMMAND_NAME,
     )) {
       await this.saveAccount(args, batchDataItem);

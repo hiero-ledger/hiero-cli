@@ -27,11 +27,8 @@ export class TokenCreateFtBatchStateHook extends AbstractHook {
     >,
   ): Promise<HookResult> {
     const batchData = params.executeTransactionResult.updatedBatchData;
-    const sortedTransactions = [...batchData.transactions].sort(
-      (a, b) => a.order - b.order,
-    );
     await Promise.all(
-      sortedTransactions
+      [...batchData.transactions]
         .filter((item) => item.command === TOKEN_CREATE_FT_COMMAND_NAME)
         .map((batchDataItem) => this.saveCreateFt(args, batchDataItem)),
     );
