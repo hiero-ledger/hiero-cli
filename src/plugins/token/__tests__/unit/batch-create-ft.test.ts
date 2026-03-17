@@ -8,12 +8,12 @@ import {
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { StateError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_FT_COMMAND_NAME } from '@/plugins/token/commands/create-ft';
 import { TokenCreateFtBatchStateHook } from '@/plugins/token/hooks/batch-create-ft/handler';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
-import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),

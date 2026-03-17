@@ -8,11 +8,11 @@ import {
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { StateError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOPIC_CREATE_COMMAND_NAME } from '@/plugins/topic/commands/create';
 import { TopicCreateBatchStateHook } from '@/plugins/topic/hooks/batch-create/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
-import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTopicStateHelper: jest.fn(),

@@ -8,13 +8,13 @@ import {
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { StateError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-nft-from-file';
 import { TokenCreateNftFromFileBatchStateHook } from '@/plugins/token/hooks/batch-create-nft-from-file/handler';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { mockAccountIds, validNftTokenFile } from './helpers/fixtures';
-import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),

@@ -12,6 +12,7 @@ import {
   makeTxExecuteMock,
   makeTxSignMock,
 } from '@/__tests__/mocks/mocks';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 import {
@@ -20,7 +21,6 @@ import {
   OPERATOR_ACCOUNT_ID,
   OPERATOR_KEY_REF_ID,
 } from './fixtures';
-import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 export { makeGlobalLogger as makeLogger };
 

@@ -7,11 +7,11 @@ import {
   makeLogger,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_ASSOCIATE_COMMAND_NAME } from '@/plugins/token/commands/associate';
 import { TokenAssociateBatchStateHook } from '@/plugins/token/hooks/batch-associate/handler';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
-import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
