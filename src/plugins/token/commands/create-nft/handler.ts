@@ -218,10 +218,8 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       treasuryId: normalisedParams.treasury.accountId,
       supplyType: normalisedParams.supplyType,
       transactionId: result.transactionId,
-      adminAccountId: undefined,
-      adminPublicKey: normalisedParams.admin?.publicKey,
-      supplyAccountId: undefined,
-      supplyPublicKey: normalisedParams.supply?.publicKey,
+      adminPublicKey: normalisedParams.admin.publicKey,
+      supplyPublicKey: normalisedParams.supply.publicKey,
       alias: normalisedParams.alias,
       network: normalisedParams.network,
     };

@@ -53,12 +53,15 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       const resolved = this.resolveOperator();
       return this.assertSigningKey(resolved);
     }
+    if (!credential) {
+      throw new StateError('Credential is required when fallback is disabled');
+    }
     const resolved = await this.resolveCredential(
-      credential!,
+      credential,
       keyManager,
       labels,
     );
-    return this.assertSigningKey(resolved, credential!.rawValue);
+    return this.assertSigningKey(resolved, credential.rawValue);
   }
 
   public async getPublicKey(
@@ -72,8 +75,11 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       const { keyRefId, publicKey } = resolved;
       return { keyRefId: keyRefId!, publicKey: publicKey! };
     }
+    if (!credential) {
+      throw new StateError('Credential is required when fallback is disabled');
+    }
     const resolved = await this.resolveCredential(
-      credential!,
+      credential,
       keyManager,
       labels,
     );
@@ -110,8 +116,11 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
       return { keyRefId: keyRefId!, publicKey: publicKey! };
     }
+    if (!credential) {
+      throw new StateError('Credential is required when fallback is disabled');
+    }
     const resolved = await this.resolveCredential(
-      credential!,
+      credential,
       keyManager,
       labels,
     );
@@ -129,7 +138,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     if (!this.kms.hasPrivateKey(keyRefId)) {
       throw new StateError(
         'Credential cannot be used for signing: no private key available',
-        { context: { keyRefId, rawValue: credential!.rawValue } },
+        { context: { keyRefId, rawValue: credential.rawValue } },
       );
     }
 

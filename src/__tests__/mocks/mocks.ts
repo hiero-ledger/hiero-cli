@@ -717,7 +717,9 @@ export const makeKeyResolverMock = (
 
     resolveSigningKey: jest
       .fn()
-      .mockImplementation((credential, keyManager, _fallback, labels) => {
+      .mockImplementation((credential, keyManager, fallback, labels) => {
+        if (!credential && fallback && options.network)
+          return Promise.resolve(operatorFallback());
         const resolved = resolveCore(credential, keyManager, labels || []);
         if (!resolved.keyRefId || !resolved.publicKey) {
           throw new StateError(
