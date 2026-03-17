@@ -307,6 +307,12 @@ The Hiero CLI is built on a plugin architecture. The following default plugins a
 
 Each plugin has its own README with detailed documentation about available commands, usage examples, and architecture details. Click on the plugin name above to learn more.
 
+## AI Assistant (Claude Code)
+
+Hiero CLI ships with a [Claude Code skill](skills/hiero-cli/SKILL.md) that enables AI-assisted interaction with the CLI. The skill provides Claude with the full command specification so it can construct and execute `hcli` commands on your behalf.
+
+To use it, install [Claude Code](https://github.com/anthropics/claude-code) and open this repository — the skill is picked up automatically.
+
 # Configuration & State Storage
 
 The CLI externalizes both its immutable base configuration and mutable runtime state. No editable JSON lives in `src/state/` anymore.

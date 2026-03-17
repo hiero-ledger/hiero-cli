@@ -1,13 +1,13 @@
 import type { Transaction } from '@hashgraph/sdk';
 import type { SupportedNetwork, TransactionResult } from '@/core';
 import type { ResolvedAccountCredential } from '@/core/services/key-resolver/types';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 export interface AssociateNormalizedParams {
   network: SupportedNetwork;
   tokenId: string;
   account: ResolvedAccountCredential;
-  keyManager: KeyManagerName;
+  keyManager: KeyManager;
   alreadyAssociated: boolean;
 }
 
