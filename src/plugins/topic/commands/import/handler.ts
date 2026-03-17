@@ -8,6 +8,10 @@ import { ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { composeKey } from '@/core/utils/key-composer';
+import {
+  extractPublicKeysFromMirrorNodeKey,
+  matchKeysWithKms,
+} from '@/plugins/topic/utils/extract-public-keys';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { TopicImportInputSchema } from './input';
@@ -55,12 +59,31 @@ export class TopicImportCommand implements Command {
     }
 
     const createdAt = hederaTimestampToIso(topicInfo.created_timestamp);
+
+    const adminKeysExtracted = extractPublicKeysFromMirrorNodeKey(
+      topicInfo.admin_key,
+    );
+    const submitKeysExtracted = extractPublicKeysFromMirrorNodeKey(
+      topicInfo.submit_key,
+    );
+
+    const adminKeyRefIds =
+      adminKeysExtracted && adminKeysExtracted.publicKeys.length > 0
+        ? matchKeysWithKms(adminKeysExtracted.publicKeys, api.kms)
+        : [];
+    const submitKeyRefIds =
+      submitKeysExtracted && submitKeysExtracted.publicKeys.length > 0
+        ? matchKeysWithKms(submitKeysExtracted.publicKeys, api.kms)
+        : [];
+
     const topicData: TopicData = {
       name: normalisedParams.alias,
       topicId: normalisedParams.topicId,
       memo: topicInfo.memo || '(No memo)',
-      adminKeyRefIds: [],
-      submitKeyRefIds: [],
+      adminKeyRefIds: adminKeyRefIds.length > 0 ? adminKeyRefIds : undefined,
+      submitKeyRefIds: submitKeyRefIds.length > 0 ? submitKeyRefIds : undefined,
+      adminKeyThreshold: adminKeysExtracted?.threshold,
+      submitKeyThreshold: submitKeysExtracted?.threshold,
       network: normalisedParams.network,
       createdAt,
     };
@@ -74,6 +97,8 @@ export class TopicImportCommand implements Command {
       memo: topicInfo.memo || undefined,
       adminKeyPresent: Boolean(topicInfo.admin_key),
       submitKeyPresent: Boolean(topicInfo.submit_key),
+      adminKeysMatched: adminKeyRefIds.length,
+      submitKeysMatched: submitKeyRefIds.length,
     };
 
     return { result };

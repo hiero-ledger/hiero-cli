@@ -20,7 +20,7 @@ import type { Destination } from '@/core/services/key-resolver/types';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type {
   Credential,
-  KeyManager,
+  KmsCredentialRecord,
 } from '@/core/services/kms/kms-types.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
@@ -38,7 +38,10 @@ import type { TopicData } from '@/plugins/topic/schema';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import { StateError, ValidationError } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { CredentialType } from '@/core/services/kms/kms-types.interface';
+import {
+  CredentialType,
+  KeyManager,
+} from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -151,12 +154,29 @@ export const makeKmsMock = (): jest.Mocked<KmsService> => ({
 });
 
 /**
+ * Create a minimal KmsCredentialRecord
+ */
+export const createMockKmsRecord = (
+  keyRefId: string,
+  publicKey: string,
+): KmsCredentialRecord => {
+  const now = new Date().toISOString();
+  return {
+    keyRefId,
+    publicKey,
+    keyManager: KeyManager.local,
+    keyAlgorithm: KeyAlgorithm.ED25519,
+    createdAt: now,
+    updatedAt: now,
+  };
+};
+
+/**
  * Create a mocked AliasService
  */
 export const makeAliasMock = (): jest.Mocked<AliasService> => ({
   register: jest.fn(),
   resolve: jest.fn().mockImplementation((alias, type) => {
-    // Domyślnie zwracaj dane dla typowych aliasów używanych w testach
     if (type === AliasType.Account) {
       const accountAliases: Record<string, AccountAlias> = {
         'admin-key': {
