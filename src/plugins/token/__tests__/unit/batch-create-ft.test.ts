@@ -1,11 +1,12 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { PreOutputPreparationParams } from '@/core/hooks/types';
-import type {
-  BatchDataItem,
-  BatchExecuteTransactionResult,
-} from '@/core/types/shared.types';
+import type { BatchDataItem } from '@/core/types/shared.types';
 
-import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import {
+  createBatchExecuteParams,
+  makeArgs,
+  makeLogger,
+  makeStateMock,
+} from '@/__tests__/mocks/mocks';
 import { StateError } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
@@ -18,26 +19,6 @@ jest.mock('../../zustand-state-helper', () => ({
 }));
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
-
-const createBatchExecuteParams = (
-  batchData: BatchExecuteTransactionResult['updatedBatchData'],
-): PreOutputPreparationParams<
-  unknown,
-  unknown,
-  unknown,
-  BatchExecuteTransactionResult
-> =>
-  ({
-    normalisedParams: {},
-    buildTransactionResult: {},
-    signTransactionResult: {},
-    executeTransactionResult: { updatedBatchData: batchData },
-  }) as PreOutputPreparationParams<
-    unknown,
-    unknown,
-    unknown,
-    BatchExecuteTransactionResult
-  >;
 
 const createFtBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},

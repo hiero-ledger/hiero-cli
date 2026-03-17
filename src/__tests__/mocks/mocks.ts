@@ -3,6 +3,7 @@
  * Shared mocks for core services and utilities used across all plugin tests
  */
 import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { PreOutputPreparationParams } from '@/core/hooks/types';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type {
   AliasRecord,
@@ -28,7 +29,12 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
-import type { TransactionResult } from '@/core/types/shared.types';
+import type {
+  BatchData,
+  BatchExecuteTransactionResult,
+  SupportedNetwork,
+  TransactionResult,
+} from '@/core/types/shared.types';
 
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import { StateError, ValidationError } from '@/core';
@@ -39,7 +45,6 @@ import {
   type KeyManagerName,
 } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
 
 import {
   MOCK_CONTRACT_ID,
@@ -750,3 +755,23 @@ export const createMockContractInfo = (
   max_automatic_token_associations: 0,
   ...overrides,
 });
+
+export const createBatchExecuteParams = (
+  batchData: BatchData,
+): PreOutputPreparationParams<
+  unknown,
+  unknown,
+  unknown,
+  BatchExecuteTransactionResult
+> =>
+  ({
+    normalisedParams: {},
+    buildTransactionResult: {},
+    signTransactionResult: {},
+    executeTransactionResult: { updatedBatchData: batchData },
+  }) as PreOutputPreparationParams<
+    unknown,
+    unknown,
+    unknown,
+    BatchExecuteTransactionResult
+  >;
