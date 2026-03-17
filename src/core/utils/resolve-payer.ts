@@ -1,6 +1,6 @@
 import type { CoreApi } from '@/core';
 
-import { PrivateKeySchema } from '@/core';
+import { KeySchema } from '@/core';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 /**
@@ -18,7 +18,7 @@ export async function resolvePayer(
   const keyManager =
     coreApi.config.getOption<KeyManager>('default_key_manager') ||
     KeyManager.local;
-  const parsedPayer = PrivateKeySchema.parse(payerString);
+  const parsedPayer = KeySchema.parse(payerString);
   const resolvedPayer = await coreApi.keyResolver.resolveAccountCredentials(
     parsedPayer,
     keyManager,
