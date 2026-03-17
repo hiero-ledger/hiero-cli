@@ -7,7 +7,7 @@ import type {
 
 import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { StateError } from '@/core/errors';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-nft-from-file';
 import { TokenCreateNftFromFileBatchStateHook } from '@/plugins/token/hooks/batch-create-nft-from-file/handler';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -44,31 +44,40 @@ const createBatchExecuteParams = (
     BatchExecuteTransactionResult
   >;
 
+const createFlatNormalizedParams = (
+  overrides: Record<string, unknown> = {},
+) => ({
+  filename: 'nft.json',
+  name: validNftTokenFile.name,
+  symbol: validNftTokenFile.symbol,
+  supplyType:
+    validNftTokenFile.supplyType === 'finite'
+      ? SupplyType.FINITE
+      : SupplyType.INFINITE,
+  maxSupply: validNftTokenFile.maxSupply
+    ? BigInt(validNftTokenFile.maxSupply)
+    : undefined,
+  memo: validNftTokenFile.memo,
+  associations: validNftTokenFile.associations,
+  keyManager: 'local',
+  network: SupportedNetwork.TESTNET,
+  treasury: {
+    accountId: mockAccountIds.treasury,
+    keyRefId: 'kr-treasury',
+    publicKey: 'pk-treasury',
+  },
+  adminKey: { keyRefId: 'kr-admin', publicKey: 'pk-admin' },
+  supplyKey: { keyRefId: 'kr-supply', publicKey: 'pk-supply' },
+  ...overrides,
+});
+
 const createNftFromFileBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},
 ): BatchDataItem => ({
   transactionBytes: 'abcdef1234567890',
   order: 1,
   command: TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME,
-  normalizedParams: {
-    filename: 'nft.json',
-    keyManager: 'local',
-    network: SupportedNetwork.TESTNET,
-    tokenDefinition: validNftTokenFile,
-    treasury: {
-      accountId: mockAccountIds.treasury,
-      keyRefId: 'kr-treasury',
-      publicKey: 'pk-treasury',
-    },
-    adminKey: {
-      keyRefId: 'kr-admin',
-      publicKey: 'pk-admin',
-    },
-    supplyKey: {
-      keyRefId: 'kr-supply',
-      publicKey: 'pk-supply',
-    },
-  },
+  normalizedParams: createFlatNormalizedParams(),
   transactionId: '0.0.1234@1234567890.000000000',
   ...overrides,
 });
@@ -261,23 +270,10 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
       success: true,
       transactions: [
         createNftFromFileBatchDataItem({
-          normalizedParams: {
-            filename: 'my-nft.json',
-            keyManager: 'local',
-            network: SupportedNetwork.TESTNET,
-            tokenDefinition: {
-              ...validNftTokenFile,
-              name: 'MyNFT',
-              symbol: 'MNFT',
-            },
-            treasury: {
-              accountId: mockAccountIds.treasury,
-              keyRefId: 'kr-treasury',
-              publicKey: 'pk-treasury',
-            },
-            adminKey: { keyRefId: 'kr-admin', publicKey: 'pk-admin' },
-            supplyKey: { keyRefId: 'kr-supply', publicKey: 'pk-supply' },
-          },
+          normalizedParams: createFlatNormalizedParams({
+            name: 'MyNFT',
+            symbol: 'MNFT',
+          }),
         }),
       ],
     });
@@ -341,44 +337,18 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
         createNftFromFileBatchDataItem({
           order: 1,
           transactionId: '0.0.1001@1234567890.000000000',
-          normalizedParams: {
-            filename: 'nft1.json',
-            keyManager: 'local',
-            network: SupportedNetwork.TESTNET,
-            tokenDefinition: {
-              ...validNftTokenFile,
-              name: 'NFT1',
-              symbol: 'NF1',
-            },
-            treasury: {
-              accountId: mockAccountIds.treasury,
-              keyRefId: 'kr-treasury',
-              publicKey: 'pk-treasury',
-            },
-            adminKey: { keyRefId: 'kr-admin', publicKey: 'pk-admin' },
-            supplyKey: { keyRefId: 'kr-supply', publicKey: 'pk-supply' },
-          },
+          normalizedParams: createFlatNormalizedParams({
+            name: 'NFT1',
+            symbol: 'NF1',
+          }),
         }),
         createNftFromFileBatchDataItem({
           order: 2,
           transactionId: '0.0.1002@1234567890.000000001',
-          normalizedParams: {
-            filename: 'nft2.json',
-            keyManager: 'local',
-            network: SupportedNetwork.TESTNET,
-            tokenDefinition: {
-              ...validNftTokenFile,
-              name: 'NFT2',
-              symbol: 'NF2',
-            },
-            treasury: {
-              accountId: mockAccountIds.treasury,
-              keyRefId: 'kr-treasury',
-              publicKey: 'pk-treasury',
-            },
-            adminKey: { keyRefId: 'kr-admin', publicKey: 'pk-admin' },
-            supplyKey: { keyRefId: 'kr-supply', publicKey: 'pk-supply' },
-          },
+          normalizedParams: createFlatNormalizedParams({
+            name: 'NFT2',
+            symbol: 'NF2',
+          }),
         }),
       ],
     });

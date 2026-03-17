@@ -111,7 +111,12 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     return {
       filename: validArgs.file,
       keyManager,
-      tokenDefinition,
+      name: tokenDefinition.name,
+      symbol: tokenDefinition.symbol,
+      supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
+      maxSupply: tokenDefinition.maxSupply,
+      memo: tokenDefinition.memo,
+      associations: tokenDefinition.associations,
       network,
       treasury,
       adminKey,
@@ -129,16 +134,15 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     normalisedParams: TokenCreateNftFromFileNormalizedParams,
   ): Promise<TokenCreateNftFromFileBuildTransactionResult> {
     const { api } = args;
-    const { tokenDefinition } = normalisedParams;
     const transaction = api.token.createTokenTransaction({
-      name: tokenDefinition.name,
-      symbol: tokenDefinition.symbol,
+      name: normalisedParams.name,
+      symbol: normalisedParams.symbol,
       treasuryId: normalisedParams.treasury.accountId,
       decimals: 0,
       initialSupplyRaw: 0n,
       tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
-      supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
-      maxSupplyRaw: tokenDefinition.maxSupply ?? 0n,
+      supplyType: normalisedParams.supplyType,
+      maxSupplyRaw: normalisedParams.maxSupply ?? 0n,
       adminPublicKey: PublicKey.fromString(normalisedParams.adminKey.publicKey),
       supplyPublicKey: PublicKey.fromString(
         normalisedParams.supplyKey.publicKey,
@@ -148,7 +152,7 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       freezePublicKey: toPublicKey(normalisedParams.freezeKey),
       pausePublicKey: toPublicKey(normalisedParams.pauseKey),
       feeSchedulePublicKey: toPublicKey(normalisedParams.feeScheduleKey),
-      memo: tokenDefinition.memo,
+      memo: normalisedParams.memo,
     });
     return { transaction };
   }
@@ -204,25 +208,11 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     const { api, logger } = args;
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
     const result = executeTransactionResult.transactionResult;
-    const tokenData = buildNftTokenDataFromFile(
-      result,
-      normalisedParams.tokenDefinition,
-      normalisedParams.treasury.accountId,
-      normalisedParams.adminKey.publicKey,
-      normalisedParams.supplyKey.publicKey,
-      normalisedParams.network,
-      {
-        wipePublicKey: normalisedParams.wipeKey?.publicKey,
-        kycPublicKey: normalisedParams.kycKey?.publicKey,
-        freezePublicKey: normalisedParams.freezeKey?.publicKey,
-        pausePublicKey: normalisedParams.pauseKey?.publicKey,
-        feeSchedulePublicKey: normalisedParams.feeScheduleKey?.publicKey,
-      },
-    );
+    const tokenData = buildNftTokenDataFromFile(result, normalisedParams);
 
     const successfulAssociations = await processTokenAssociations(
       result.tokenId!,
-      normalisedParams.tokenDefinition.associations,
+      normalisedParams.associations,
       api,
       logger,
       normalisedParams.keyManager,
@@ -234,13 +224,13 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     logger.info('   Token data saved to state');
 
     api.alias.register({
-      alias: normalisedParams.tokenDefinition.name,
+      alias: normalisedParams.name,
       type: AliasType.Token,
       network: normalisedParams.network,
       entityId: result.tokenId!,
       createdAt: result.consensusTimestamp,
     });
-    logger.info(`   Name registered: ${normalisedParams.tokenDefinition.name}`);
+    logger.info(`   Name registered: ${normalisedParams.name}`);
 
     const associations: TokenCreateNftFromFileAssociationOutput[] =
       successfulAssociations.map((assoc) => ({
@@ -252,13 +242,12 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
 
     const outputData: TokenCreateNftFromFileOutput = {
       tokenId: result.tokenId!,
-      name: normalisedParams.tokenDefinition.name,
-      symbol: normalisedParams.tokenDefinition.symbol,
+      name: normalisedParams.name,
+      symbol: normalisedParams.symbol,
       treasuryId: normalisedParams.treasury.accountId,
       adminPublicKey: normalisedParams.adminKey.publicKey,
       supplyPublicKey: normalisedParams.supplyKey.publicKey,
-      supplyType:
-        normalisedParams.tokenDefinition.supplyType.toUpperCase() as SupplyType,
+      supplyType: normalisedParams.supplyType,
       transactionId: result.transactionId,
       network: normalisedParams.network,
       associations,

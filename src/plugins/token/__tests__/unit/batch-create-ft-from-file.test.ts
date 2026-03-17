@@ -7,7 +7,7 @@ import type {
 
 import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { StateError } from '@/core/errors';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_FT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-ft-from-file';
 import { TokenCreateFtFromFileBatchStateHook } from '@/plugins/token/hooks/batch-create-ft-from-file/handler';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -44,26 +44,38 @@ const createBatchExecuteParams = (
     BatchExecuteTransactionResult
   >;
 
+const createFlatNormalizedParams = (
+  overrides: Record<string, unknown> = {},
+) => ({
+  filename: 'token.json',
+  name: validTokenFile.name,
+  symbol: validTokenFile.symbol,
+  decimals: validTokenFile.decimals,
+  initialSupply: BigInt(validTokenFile.initialSupply),
+  maxSupply: BigInt(validTokenFile.maxSupply),
+  supplyType: SupplyType.FINITE,
+  memo: validTokenFile.memo,
+  tokenType: 'FungibleCommon' as const,
+  customFees: validTokenFile.customFees,
+  associations: validTokenFile.associations,
+  keyManager: 'local',
+  network: SupportedNetwork.TESTNET,
+  treasury: {
+    accountId: mockAccountIds.treasury,
+    keyRefId: 'kr-treasury',
+    publicKey: 'pk-treasury',
+  },
+  adminKey: { keyRefId: 'kr-admin', publicKey: 'pk-admin' },
+  ...overrides,
+});
+
 const createFtFromFileBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},
 ): BatchDataItem => ({
   transactionBytes: '0xabcdef1234567890',
   order: 1,
   command: TOKEN_CREATE_FT_FROM_FILE_COMMAND_NAME,
-  normalizedParams: {
-    keyManager: 'local',
-    network: SupportedNetwork.TESTNET,
-    tokenDefinition: validTokenFile,
-    treasury: {
-      accountId: mockAccountIds.treasury,
-      keyRefId: 'kr-treasury',
-      publicKey: 'pk-treasury',
-    },
-    adminKey: {
-      keyRefId: 'kr-admin',
-      publicKey: 'pk-admin',
-    },
-  },
+  normalizedParams: createFlatNormalizedParams(),
   transactionId: '0.0.1234@1234567890.000000000',
   ...overrides,
 });
@@ -256,28 +268,17 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
       success: true,
       transactions: [
         createFtFromFileBatchDataItem({
-          normalizedParams: {
-            keyManager: 'local',
-            network: SupportedNetwork.TESTNET,
-            tokenDefinition: {
-              ...validTokenFile,
-              name: 'MyToken',
-              symbol: 'MTK',
-              decimals: 6,
-              supplyType: 'infinite' as const,
-              initialSupply: '1000000',
-              maxSupply: '0',
-              associations: [],
-              customFees: [],
-              memo: 'My token memo',
-            },
-            treasury: {
-              accountId: mockAccountIds.treasury,
-              keyRefId: 'kr-treasury',
-              publicKey: 'pk-treasury',
-            },
-            adminKey: { keyRefId: 'kr-admin', publicKey: 'pk-admin' },
-          },
+          normalizedParams: createFlatNormalizedParams({
+            name: 'MyToken',
+            symbol: 'MTK',
+            decimals: 6,
+            supplyType: SupplyType.INFINITE,
+            initialSupply: 1000000n,
+            maxSupply: 0n,
+            associations: [],
+            customFees: [],
+            memo: 'My token memo',
+          }),
         }),
       ],
     });
@@ -341,52 +342,30 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
         createFtFromFileBatchDataItem({
           order: 1,
           transactionId: '0.0.1001@1234567890.000000000',
-          normalizedParams: {
-            keyManager: 'local',
-            network: SupportedNetwork.TESTNET,
-            tokenDefinition: {
-              ...validTokenFile,
-              name: 'Token1',
-              symbol: 'TK1',
-              initialSupply: '100',
-              maxSupply: '1000',
-              associations: [],
-              customFees: [],
-              memo: '',
-            },
-            treasury: {
-              accountId: mockAccountIds.treasury,
-              keyRefId: 'kr-treasury',
-              publicKey: 'pk-treasury',
-            },
-            adminKey: { keyRefId: 'kr-admin', publicKey: 'pk-admin' },
-          },
+          normalizedParams: createFlatNormalizedParams({
+            name: 'Token1',
+            symbol: 'TK1',
+            initialSupply: 100n,
+            maxSupply: 1000n,
+            associations: [],
+            customFees: [],
+            memo: '',
+          }),
         }),
         createFtFromFileBatchDataItem({
           order: 2,
           transactionId: '0.0.1002@1234567890.000000001',
-          normalizedParams: {
-            keyManager: 'local',
-            network: SupportedNetwork.TESTNET,
-            tokenDefinition: {
-              ...validTokenFile,
-              name: 'Token2',
-              symbol: 'TK2',
-              decimals: 6,
-              supplyType: 'infinite' as const,
-              initialSupply: '1000',
-              maxSupply: '0',
-              associations: [],
-              customFees: [],
-              memo: 'Token 2',
-            },
-            treasury: {
-              accountId: mockAccountIds.treasury,
-              keyRefId: 'kr-treasury',
-              publicKey: 'pk-treasury',
-            },
-            adminKey: { keyRefId: 'kr-admin', publicKey: 'pk-admin' },
-          },
+          normalizedParams: createFlatNormalizedParams({
+            name: 'Token2',
+            symbol: 'TK2',
+            decimals: 6,
+            supplyType: SupplyType.INFINITE,
+            initialSupply: 1000n,
+            maxSupply: 0n,
+            associations: [],
+            customFees: [],
+            memo: 'Token 2',
+          }),
         }),
       ],
     });

@@ -1,17 +1,29 @@
 import type { Transaction } from '@hashgraph/sdk';
-import type { TransactionResult } from '@/core';
+import type { HederaTokenType, SupplyType, TransactionResult } from '@/core';
 import type {
   ResolvedAccountCredential,
   ResolvedPublicKey,
 } from '@/core/services/key-resolver/types';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type {
+  Credential,
+  KeyManagerName,
+} from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { FungibleTokenFileDefinition } from '@/plugins/token/schema';
+import type { TokenCustomFeeType } from '@/plugins/token/schema';
 
 export interface TokenCreateFtFromFileNormalizedParams {
   filename: string;
+  name: string;
+  symbol: string;
+  decimals: number;
+  initialSupply: bigint;
+  maxSupply: bigint;
+  supplyType: SupplyType;
+  memo: string;
+  tokenType: HederaTokenType;
+  customFees: TokenCustomFeeType[];
+  associations: Credential[];
   keyManager: KeyManagerName;
-  tokenDefinition: FungibleTokenFileDefinition;
   network: SupportedNetwork;
   treasury: ResolvedAccountCredential;
   adminKey: ResolvedPublicKey;

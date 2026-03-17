@@ -1,16 +1,13 @@
 import type { TransactionResult } from '@/core';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type {
-  FungibleTokenFileDefinition,
-  NonFungibleTokenFileDefinition,
-  TokenData,
-} from '@/plugins/token/schema';
+import type { TokenCreateFtFromFileNormalizedParams } from '@/plugins/token/commands/create-ft-from-file/types';
+import type { TokenCreateNftFromFileNormalizedParams } from '@/plugins/token/commands/create-nft-from-file/types';
+import type { TokenData } from '@/plugins/token/schema';
 
 import { ValidationError } from '@/core/errors';
 import { HederaTokenType as HederaTokenTypeValues } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import { CustomFeeType } from '@/core/types/token.types';
 
 export function buildTokenData(
   result: TransactionResult,
@@ -59,86 +56,57 @@ export interface TokenKeyOptions {
 
 export function buildTokenDataFromFile(
   result: TransactionResult,
-  tokenDefinition: FungibleTokenFileDefinition,
-  treasuryId: string,
-  adminPublicKey: string,
-  network: SupportedNetwork,
-  keys?: TokenKeyOptions,
+  normalisedParams: TokenCreateFtFromFileNormalizedParams,
 ): TokenData {
   return {
     tokenId: result.tokenId!,
-    name: tokenDefinition.name,
-    symbol: tokenDefinition.symbol,
-    treasuryId,
-    adminPublicKey,
-    supplyPublicKey: keys?.supplyPublicKey,
-    wipePublicKey: keys?.wipePublicKey,
-    kycPublicKey: keys?.kycPublicKey,
-    freezePublicKey: keys?.freezePublicKey,
-    pausePublicKey: keys?.pausePublicKey,
-    feeSchedulePublicKey: keys?.feeSchedulePublicKey,
-    decimals: tokenDefinition.decimals,
-    initialSupply: tokenDefinition.initialSupply,
-    tokenType: tokenDefinition.tokenType,
-    supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
-    maxSupply: tokenDefinition.maxSupply,
-    network,
+    name: normalisedParams.name,
+    symbol: normalisedParams.symbol,
+    treasuryId: normalisedParams.treasury.accountId,
+    adminPublicKey: normalisedParams.adminKey.publicKey,
+    supplyPublicKey: normalisedParams.supplyKey?.publicKey,
+    wipePublicKey: normalisedParams.wipeKey?.publicKey,
+    kycPublicKey: normalisedParams.kycKey?.publicKey,
+    freezePublicKey: normalisedParams.freezeKey?.publicKey,
+    pausePublicKey: normalisedParams.pauseKey?.publicKey,
+    feeSchedulePublicKey: normalisedParams.feeScheduleKey?.publicKey,
+    decimals: normalisedParams.decimals,
+    initialSupply: normalisedParams.initialSupply,
+    tokenType: normalisedParams.tokenType,
+    supplyType: normalisedParams.supplyType,
+    maxSupply: normalisedParams.maxSupply,
+    network: normalisedParams.network,
     associations: [],
-    customFees: tokenDefinition.customFees.map((fee) => {
-      if (fee.type === CustomFeeType.FIXED) {
-        return {
-          type: fee.type,
-          amount: fee.amount,
-          unitType: fee.unitType,
-          collectorId: fee.collectorId,
-          exempt: fee.exempt,
-        };
-      }
-      return {
-        type: fee.type,
-        numerator: fee.numerator,
-        denominator: fee.denominator,
-        min: fee.min,
-        max: fee.max,
-        netOfTransfers: fee.netOfTransfers,
-        collectorId: fee.collectorId,
-        exempt: fee.exempt,
-      };
-    }),
-    memo: tokenDefinition.memo,
+    customFees: normalisedParams.customFees,
+    memo: normalisedParams.memo,
   };
 }
 
 export function buildNftTokenDataFromFile(
   result: TransactionResult,
-  tokenDefinition: NonFungibleTokenFileDefinition,
-  treasuryId: string,
-  adminPublicKey: string,
-  supplyPublicKey: string,
-  network: SupportedNetwork,
-  keys?: Omit<TokenKeyOptions, 'supplyPublicKey'>,
+  normalisedParams: TokenCreateNftFromFileNormalizedParams,
 ): TokenData {
   return {
     tokenId: result.tokenId!,
-    name: tokenDefinition.name,
-    symbol: tokenDefinition.symbol,
-    treasuryId,
-    adminPublicKey,
-    supplyPublicKey,
-    wipePublicKey: keys?.wipePublicKey,
-    kycPublicKey: keys?.kycPublicKey,
-    freezePublicKey: keys?.freezePublicKey,
-    pausePublicKey: keys?.pausePublicKey,
-    feeSchedulePublicKey: keys?.feeSchedulePublicKey,
+    name: normalisedParams.name,
+    symbol: normalisedParams.symbol,
+    treasuryId: normalisedParams.treasury.accountId,
+    adminPublicKey: normalisedParams.adminKey.publicKey,
+    supplyPublicKey: normalisedParams.supplyKey.publicKey,
+    wipePublicKey: normalisedParams.wipeKey?.publicKey,
+    kycPublicKey: normalisedParams.kycKey?.publicKey,
+    freezePublicKey: normalisedParams.freezeKey?.publicKey,
+    pausePublicKey: normalisedParams.pauseKey?.publicKey,
+    feeSchedulePublicKey: normalisedParams.feeScheduleKey?.publicKey,
     decimals: 0,
     initialSupply: 0n,
     tokenType: HederaTokenTypeValues.NON_FUNGIBLE_TOKEN,
-    supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
-    maxSupply: tokenDefinition.maxSupply ?? 0n,
-    network,
+    supplyType: normalisedParams.supplyType,
+    maxSupply: normalisedParams.maxSupply ?? 0n,
+    network: normalisedParams.network,
     associations: [],
     customFees: [],
-    memo: tokenDefinition.memo,
+    memo: normalisedParams.memo,
   };
 }
 
