@@ -75,15 +75,42 @@ src/plugins/token/
 │       ├── input.ts         # Input schema
 │       ├── output.ts        # Output schema and template
 │       └── index.ts         # Command exports
+├── hooks/
+│   ├── batch-create-ft/
+│   │   ├── handler.ts       # TokenCreateFtBatchStateHook - persists FT state after batch execution
+│   │   ├── types.ts         # CreateFtNormalisedParamsSchema for batch item validation
+│   │   └── index.ts         # Hook exports
+│   ├── batch-create-nft/
+│   │   ├── handler.ts       # TokenCreateNftBatchStateHook - persists NFT state after batch execution
+│   │   ├── types.ts         # CreateNftNormalisedParamsSchema for batch item validation
+│   │   └── index.ts         # Hook exports
+│   ├── batch-create-ft-from-file/
+│   │   ├── handler.ts       # TokenCreateFtFromFileBatchStateHook - persists FT-from-file state after batch execution
+│   │   ├── types.ts         # CreateFtFromFileNormalisedParamsSchema for batch item validation
+│   │   └── index.ts         # Hook exports
+│   ├── batch-create-nft-from-file/
+│   │   ├── handler.ts       # TokenCreateNftFromFileBatchStateHook - persists NFT-from-file state after batch execution
+│   │   ├── types.ts         # CreateNftFromFileNormalisedParamsSchema for batch item validation
+│   │   └── index.ts         # Hook exports
+│   └── batch-associate/
+│       ├── handler.ts       # TokenAssociateBatchStateHook - persists association results after batch execution
+│       ├── types.ts         # AssociateNormalisedParamsSchema for batch item validation
+│       └── index.ts         # Hook exports
 ├── utils/
 │   ├── nft-build-output.ts  # NFT output builder utilities
 │   ├── token-amount-helpers.ts  # Token amount processing helpers
+│   ├── token-data-builders.ts   # Token data builders for create-from-file
+│   ├── token-associations.ts   # Token association processing
 │   └── [other utility files...]
 ├── zustand-state-helper.ts  # State management helper
 ├── resolver-helper.ts       # Token and account resolver utilities
 ├── __tests__/               # Comprehensive test suite
 │   ├── unit/
 │   │   ├── adr007-compliance.test.ts  # Output structure compliance tests
+│   │   ├── batch-create-ft.test.ts
+│   │   ├── batch-create-nft.test.ts
+│   │   ├── batch-create-ft-from-file.test.ts
+│   │   ├── batch-create-nft-from-file.test.ts
 │   │   └── [other test files...]
 │   └── integration/
 │       └── [integration test files...]
@@ -123,6 +150,8 @@ hcli token create-ft \
   --supply-type INFINITE \
   --name mytoken-alias
 ```
+
+**Batch support:** Pass `--batch <batch-name>` to add token creation to a batch instead of executing immediately. See the [Batch Support](#-batch-support) section.
 
 ### Token Mint FT
 
@@ -260,6 +289,9 @@ hcli token associate \
 hcli token associate \
   --token 0.0.123456 \
   --account 0.0.789012:302e020100300506032b657004220420...
+
+# Add to batch
+hcli token associate --token mytoken-alias --account alice --batch my-batch
 ```
 
 ### Token Transfer (Fungible Token)
@@ -371,6 +403,9 @@ hcli token create-ft-from-file --file token-definition.json
 
 # With specific key manager
 hcli token create-ft-from-file --file token-definition.json --key-manager local_encrypted
+
+# Add to batch
+hcli token create-ft-from-file --file token-definition.json --batch my-batch
 ```
 
 **Token File Format:**
@@ -429,6 +464,9 @@ hcli token create-nft-from-file --file nft-definition.json
 
 # With specific key manager
 hcli token create-nft-from-file --file nft-definition.json --key-manager local_encrypted
+
+# Add to batch
+hcli token create-nft-from-file --file nft-definition.json --batch my-batch
 ```
 
 **Token File Format:**
@@ -492,6 +530,40 @@ This applies to:
 - Association keys in `create-from-file` command
 - Account keys in `treasury-id:key` format
 
+## 📦 Batch Support
+
+The following token commands support the `--batch` / `-B` flag via the batch plugin's `batchify` hook:
+
+- `create-ft` – `TokenCreateFtBatchStateHook` persists FT state after batch execution
+- `create-nft` – `TokenCreateNftBatchStateHook` persists NFT state after batch execution
+- `create-ft-from-file` – `TokenCreateFtFromFileBatchStateHook` persists FT-from-file state
+- `create-nft-from-file` – `TokenCreateNftFromFileBatchStateHook` persists NFT-from-file state
+- `associate` – `TokenAssociateBatchStateHook` persists association results
+- `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft` – can be batched (no state hook; transactions execute atomically)
+
+When you pass `--batch <batch-name>`:
+
+1. **No immediate execution** – The transaction is not submitted to the network. Instead, it is serialized and added to the specified batch.
+2. **Deferred execution** – Run `hcli batch execute --name <batch-name>` to submit all batched transactions atomically.
+3. **State persistence** – After successful batch execution, the corresponding batch-state hooks run for create/associate commands to persist token data, associations, and aliases.
+
+**Example workflow:**
+
+```bash
+# 1. Create a batch
+hcli batch create --name my-batch --key operator-alias
+
+# 2. Add token operations to the batch
+hcli token create-ft --token-name "Token A" --symbol "TA" --treasury alice --decimals 8 --initial-supply 1000 --supply-type FINITE --max-supply 10000 --admin-key alice --supply-key alice --name token-a --batch my-batch
+hcli token create-ft-from-file --file token-definition.json --batch my-batch
+hcli token associate --token token-a --account bob --batch my-batch
+
+# 3. Execute the batch
+hcli batch execute --name my-batch
+```
+
+The `--batch` option is automatically injected by the batchify hook. See the [Batch Plugin README](../batch/README.md) for full batch documentation.
+
 ## 🔧 Core API Integration
 
 The plugin uses the Core API services:
@@ -502,6 +574,7 @@ The plugin uses the Core API services:
 - `api.alias` - Account and token name resolution
 - `api.state` - Namespaced state management
 - `api.network` - Network information
+- `api.receipt` - Transaction receipt retrieval (used by batch-state hooks)
 - `api.logger` - Logging
 
 ## 📤 Output Formatting
@@ -574,6 +647,7 @@ describe('Token Plugin Output Structure', () => {
 
 - **Output Compliance**: `adr007-compliance.test.ts` - Tests all handlers return proper `CommandResult`
 - **Unit Tests**: Individual command handler tests with mocks and fixtures
+- **Batch Tests**: `batch-create-ft.test.ts`, `batch-create-nft.test.ts`, `batch-create-ft-from-file.test.ts`, `batch-create-nft-from-file.test.ts` - Tests batch-state hooks
 - **Integration Tests**: End-to-end token lifecycle tests
 - **Schema Tests**: Validation of input/output schemas
 

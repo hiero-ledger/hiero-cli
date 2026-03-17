@@ -230,7 +230,7 @@ interface CommandOutputSpec {
       "keyRefId": "key-ref-123"
     }
   ],
-  "count": 1
+  "totalCount": 1
 }
 ```
 
@@ -266,8 +266,7 @@ interface CommandOutputSpec {
 
 ```json
 {
-  "cleared": true,
-  "count": 5
+  "clearedCount": 5
 }
 ```
 
@@ -603,6 +602,87 @@ Lists all tokens from all networks stored in state.
 }
 ```
 
+### Batch Plugin
+
+The batch plugin manages batch transactions (HIP-551). See [Batch Plugin README](../src/plugins/batch/README.md) for full documentation.
+
+#### `batch create`
+
+**Output**:
+
+```json
+{
+  "name": "my-batch",
+  "keyRefId": "key-ref-123"
+}
+```
+
+#### `batch execute`
+
+**Output**:
+
+```json
+{
+  "batchName": "my-batch",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "success": true,
+  "network": "testnet"
+}
+```
+
+#### `batch list`
+
+**Output**:
+
+```json
+{
+  "batches": [
+    {
+      "name": "my-batch",
+      "batchKey": "02a1b2...",
+      "transactionCount": 3,
+      "executed": true,
+      "success": true
+    }
+  ],
+  "totalCount": 1
+}
+```
+
+**Note:** `batchKey` is optional (public key of the batch signing key).
+
+#### `batch delete`
+
+**Output** (delete entire batch):
+
+```json
+{
+  "name": "my-batch"
+}
+```
+
+**Output** (delete single transaction by order):
+
+```json
+{
+  "name": "my-batch",
+  "order": 2
+}
+```
+
+#### Batchify hook (when `--batch` is used)
+
+When a command that supports batching is invoked with `--batch <batch-name>`, the transaction is not executed. Instead, the batchify hook returns:
+
+**Output**:
+
+```json
+{
+  "batchName": "my-batch",
+  "transactionOrder": 1
+}
+```
+
 ### HBAR Plugin
 
 #### `hbar transfer`
@@ -719,10 +799,12 @@ Transaction ID:
 
 **Usage:** `{{hashscanLink entityId entityType network [displayText]}}`
 
-- `entityId` - Entity ID (e.g., `"0.0.12345"`)
-- `entityType` - Type: `"token"`, `"account"`, `"transaction"`, or `"topic"`
+- `entityId` - Entity ID (e.g., `"0.0.12345"`, transaction ID like `"0.0.123@1700000000.123456789"`)
+- `entityType` - Type: `"token"`, `"account"`, `"transaction"`, `"transactionsById"`, `"topic"`, or `"contract"`
 - `network` - Network name (e.g., `"testnet"`, `"mainnet"`)
 - `displayText` (optional) - Custom text to display (defaults to `entityId`)
+
+**Note:** Use `"transactionsById"` for transaction IDs when linking to Hashscan's transaction-by-ID view (e.g., batch execute output).
 
 **Note:** Links are clickable in terminals that support hyperlinks. In terminals without support, plain text is displayed. The link system is extensible, allowing easy addition of links to other explorers or services in the future.
 
@@ -732,20 +814,22 @@ Commands support multiple output formats:
 
 ```bash
 # Human-readable output (default)
-hedera account create --name my-account
+hcli account create --name my-account
 
 # JSON output
-hedera account create --name my-account --format json
+hcli account create --name my-account --format json
 
 # YAML output
-hedera account create --name my-account --format yaml
+hcli account create --name my-account --format yaml
 
 # Save to file
-hedera account list --output accounts.json --format json
+hcli account list --output accounts.json --format json
 
 # Script mode (suppress handler logs)
-hedera account create --name my-account --script
+hcli account create --name my-account --script
 ```
+
+**Batch support:** Commands that register the `batchify` hook (e.g., `account create`, `token create-ft`, `topic create`) accept `--batch <batch-name>` to defer execution. When used, the output follows the batchify schema (`batchName`, `transactionOrder`) instead of the command's normal output.
 
 ## Adding New Output Schemas
 
