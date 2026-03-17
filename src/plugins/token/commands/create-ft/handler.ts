@@ -58,13 +58,12 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
 
     api.alias.availableOrThrow(validArgs.name, network);
 
-    const treasury =
-      await api.keyResolver.resolveAccountCredentials(
-        validArgs.treasury,
-        keyManager,
-        true,
-        ['token:treasury'],
-      );
+    const treasury = await api.keyResolver.resolveAccountCredentials(
+      validArgs.treasury,
+      keyManager,
+      true,
+      ['token:treasury'],
+    );
 
     const admin = await resolveOptionalKey(
       validArgs.adminKey,

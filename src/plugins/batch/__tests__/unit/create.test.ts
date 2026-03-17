@@ -132,6 +132,7 @@ describe('batch plugin - create command', () => {
     expect(resolveSigningKeyMock).toHaveBeenCalledWith(
       expect.anything(),
       'local_encrypted',
+      false,
       ['batch:signer'],
     );
   });

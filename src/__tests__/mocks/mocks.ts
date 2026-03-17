@@ -605,24 +605,8 @@ export const makeKeyResolverMock = (
     credential: Credential,
     keyManager: KeyManager,
     labels?: string[],
-    publicKeyOnly = false,
   ) => {
     if (credential?.type === CredentialType.ACCOUNT_KEY_PAIR) {
-      if (publicKeyOnly) {
-        const importResult = options.kms?.importPublicKey
-          ? options.kms.importPublicKey(
-              KeyAlgorithm.ECDSA,
-              credential.privateKey,
-              keyManager,
-              labels || [],
-            )
-          : { keyRefId: 'imported-key-ref-id', publicKey: MOCK_PUBLIC_KEY };
-        return {
-          accountId: credential.accountId,
-          publicKey: MOCK_PUBLIC_KEY,
-          keyRefId: importResult.keyRefId,
-        };
-      }
       const importResult = options.kms?.importPrivateKey
         ? options.kms.importPrivateKey(
             KeyAlgorithm.ECDSA,
@@ -725,12 +709,21 @@ export const makeKeyResolverMock = (
     getPublicKey: jest
       .fn()
       .mockImplementation((credential, keyManager, _fallback, labels) => {
-        const resolved = resolveCore(
-          credential,
-          keyManager,
-          labels || [],
-          true,
-        );
+        if (credential?.type === CredentialType.ACCOUNT_KEY_PAIR) {
+          const importResult = options.kms?.importPublicKey
+            ? options.kms.importPublicKey(
+                KeyAlgorithm.ECDSA,
+                credential.privateKey,
+                keyManager,
+                labels || [],
+              )
+            : { keyRefId: 'imported-key-ref-id', publicKey: MOCK_PUBLIC_KEY };
+          return Promise.resolve({
+            keyRefId: importResult.keyRefId,
+            publicKey: MOCK_PUBLIC_KEY,
+          });
+        }
+        const resolved = resolveCore(credential, keyManager, labels || []);
         if (!resolved.keyRefId || !resolved.publicKey) {
           throw new StateError(
             'Mock: resolved key missing keyRefId or publicKey',

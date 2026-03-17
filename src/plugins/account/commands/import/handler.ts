@@ -30,6 +30,7 @@ export class AccountImportCommand implements Command {
     const resolved = await api.keyResolver.resolveAccountCredentials(
       validArgs.key,
       keyManager,
+      false,
       ['account:import'],
     );
 
