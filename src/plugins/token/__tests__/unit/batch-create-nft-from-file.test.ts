@@ -1,12 +1,14 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { PreOutputPreparationParams } from '@/core/hooks/types';
-import type {
-  BatchDataItem,
-  BatchExecuteTransactionResult,
-} from '@/core/types/shared.types';
+import type { BatchDataItem } from '@/core/types/shared.types';
 
-import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import {
+  createBatchExecuteParams,
+  makeArgs,
+  makeLogger,
+  makeStateMock,
+} from '@/__tests__/mocks/mocks';
 import { StateError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-nft-from-file';
 import { TokenCreateNftFromFileBatchStateHook } from '@/plugins/token/hooks/batch-create-nft-from-file/handler';
@@ -24,26 +26,6 @@ jest.mock('../../utils/token-associations', () => ({
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
 
-const createBatchExecuteParams = (
-  batchData: BatchExecuteTransactionResult['updatedBatchData'],
-): PreOutputPreparationParams<
-  unknown,
-  unknown,
-  unknown,
-  BatchExecuteTransactionResult
-> =>
-  ({
-    normalisedParams: {},
-    buildTransactionResult: {},
-    signTransactionResult: {},
-    executeTransactionResult: { updatedBatchData: batchData },
-  }) as PreOutputPreparationParams<
-    unknown,
-    unknown,
-    unknown,
-    BatchExecuteTransactionResult
-  >;
-
 const createFlatNormalizedParams = (
   overrides: Record<string, unknown> = {},
 ) => ({
@@ -59,7 +41,7 @@ const createFlatNormalizedParams = (
     : undefined,
   memo: validNftTokenFile.memo,
   associations: validNftTokenFile.associations,
-  keyManager: 'local',
+  keyManager: KeyManager.local,
   network: SupportedNetwork.TESTNET,
   treasury: {
     accountId: mockAccountIds.treasury,

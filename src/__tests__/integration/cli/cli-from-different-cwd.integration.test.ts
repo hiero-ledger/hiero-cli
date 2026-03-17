@@ -42,7 +42,7 @@ describe('CLI from different working directories', () => {
   });
 
   it('should return JSON error when required option is missing with --format json', () => {
-    let stderr = '';
+    let stdout = '';
     try {
       execSync(`node ${CLI_PATH} --format json topic submit-message`, {
         cwd: path.resolve(__dirname, '../../../..'),
@@ -50,11 +50,11 @@ describe('CLI from different working directories', () => {
         stdio: 'pipe',
       });
     } catch (e: unknown) {
-      const err = e as { stderr: string };
-      stderr = err.stderr;
+      const err = e as { stdout: string };
+      stdout = err.stdout;
     }
 
-    const parsed = JSON.parse(stderr) as { status: string; code: string };
+    const parsed = JSON.parse(stdout) as { status: string; code: string };
     expect(parsed.status).toBe('failure');
     expect(parsed.code).toBe('VALIDATION_ERROR');
   });

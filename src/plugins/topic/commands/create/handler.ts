@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { TopicCreateOutput } from './output';
 import type {
   CreateTopicBuildTransactionResult,
@@ -8,12 +8,11 @@ import type {
   CreateTopicSignTransactionResult,
 } from './types';
 
-import { PublicKey } from '@hashgraph/sdk';
-
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
+import { toHederaKey } from '@/plugins/topic/utils/keys-to-hedera-key';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { TopicCreateInputSchema } from './input';
@@ -37,8 +36,8 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     const validArgs = TopicCreateInputSchema.parse(args.args);
 
     const memo = validArgs.memo;
-    const adminKeyArg = validArgs.adminKey;
-    const submitKeyArg = validArgs.submitKey;
+    const adminKeyArgs = validArgs.adminKey;
+    const submitKeyArgs = validArgs.submitKey;
     const alias = validArgs.name;
     const keyManagerArg = validArgs.keyManager;
     const network = api.network.getCurrentNetwork();
@@ -46,32 +45,31 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     api.alias.availableOrThrow(alias, network);
 
     const keyManager =
-      keyManagerArg ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
     if (memo) {
       logger.info(`Creating topic with memo: ${memo}`);
     }
 
-    const adminKey =
-      adminKeyArg &&
-      (await api.keyResolver.resolveSigningKey(adminKeyArg, keyManager, [
-        'topic:admin',
-      ]));
+    const adminKeys = await Promise.all(
+      adminKeyArgs.map((cred) =>
+        api.keyResolver.resolveSigningKey(cred, keyManager, ['topic:admin']),
+      ),
+    );
 
-    const submitKey =
-      submitKeyArg &&
-      (await api.keyResolver.getPublicKey(submitKeyArg, keyManager, [
-        'topic:submit',
-      ]));
+    const submitKeys = await Promise.all(
+      submitKeyArgs.map((cred) =>
+        api.keyResolver.getPublicKey(cred, keyManager, ['topic:submit']),
+      ),
+    );
 
     return {
       memo,
       alias,
       keyManager,
       network,
-      adminKey,
-      submitKey,
+      adminKeys,
+      submitKeys,
     };
   }
 
@@ -81,14 +79,13 @@ export class TopicCreateCommand extends BaseTransactionCommand<
   ): Promise<CreateTopicBuildTransactionResult> {
     const { api } = args;
 
+    const adminKey = toHederaKey(normalisedParams.adminKeys);
+    const submitKey = toHederaKey(normalisedParams.submitKeys);
+
     const topicCreateResult = api.topic.createTopic({
       memo: normalisedParams.memo,
-      adminKey:
-        normalisedParams.adminKey &&
-        PublicKey.fromString(normalisedParams.adminKey.publicKey),
-      submitKey:
-        normalisedParams.submitKey &&
-        PublicKey.fromString(normalisedParams.submitKey.publicKey),
+      adminKey,
+      submitKey,
     });
 
     return {
@@ -103,9 +100,14 @@ export class TopicCreateCommand extends BaseTransactionCommand<
   ): Promise<CreateTopicSignTransactionResult> {
     const { api } = args;
 
+    const adminKeyRefIds =
+      normalisedParams.adminKeys.length > 0
+        ? [normalisedParams.adminKeys[0].keyRefId]
+        : [];
+
     const transaction = await api.txSign.sign(
       buildTransactionResult.transaction,
-      normalisedParams.adminKey ? [normalisedParams.adminKey.keyRefId] : [],
+      adminKeyRefIds,
     );
 
     return { signedTransaction: transaction };
@@ -153,8 +155,8 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       name: normalisedParams.alias,
       topicId,
       memo: normalisedParams.memo || '(No memo)',
-      adminKeyRefId: normalisedParams.adminKey?.keyRefId,
-      submitKeyRefId: normalisedParams.submitKey?.keyRefId,
+      adminKeyRefIds: normalisedParams.adminKeys.map((k) => k.keyRefId),
+      submitKeyRefIds: normalisedParams.submitKeys.map((k) => k.keyRefId),
       network: normalisedParams.network,
       createdAt: executeTransactionResult.consensusTimestamp,
     };
@@ -177,8 +179,8 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       name: topicData.name,
       network: topicData.network,
       memo: normalisedParams.memo,
-      adminKeyPresent: Boolean(topicData.adminKeyRefId),
-      submitKeyPresent: Boolean(topicData.submitKeyRefId),
+      adminKeyPresent: normalisedParams.adminKeys.length > 0,
+      submitKeyPresent: normalisedParams.submitKeys.length > 0,
       transactionId: executeTransactionResult.transactionId || '',
       createdAt: topicData.createdAt,
     };

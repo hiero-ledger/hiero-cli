@@ -1,10 +1,10 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { AccountData } from '@/plugins/account/schema';
 import type { AccountImportOutput } from './output';
 
-import { StateError, ValidationError } from '@/core/errors';
+import { StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
@@ -20,43 +20,34 @@ export class AccountImportCommand implements Command {
 
     const validArgs = AccountImportInputSchema.parse(args.args);
 
-    const key = validArgs.key;
     const alias = validArgs.name;
     const keyManagerArg = validArgs.keyManager;
-    const accountId = key.accountId;
     const network = api.network.getCurrentNetwork();
+
+    const keyManager =
+      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+
+    const resolved = await api.keyResolver.resolveAccountCredentials(
+      validArgs.key,
+      keyManager,
+      ['account:import'],
+    );
+
+    const accountId = resolved.accountId;
     const accountKey = composeKey(network, accountId);
 
     if (accountState.hasAccount(accountKey)) {
       throw new StateError('Account with this ID is already saved in state');
     }
-
-    const keyManager =
-      keyManagerArg ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
-
     api.alias.availableOrThrow(alias, network);
 
-    const accountInfo = await api.mirror.getAccount(key.accountId);
-
-    const { keyRefId, publicKey } = api.kms.importAndValidatePrivateKey(
-      accountInfo.keyAlgorithm,
-      key.privateKey,
-      accountInfo.accountPublicKey,
-      keyManager,
-    );
+    const accountInfo = await api.mirror.getAccount(accountId);
 
     logger.info(`Importing account: ${accountKey} (${accountId})`);
 
-    if (accountState.hasAccount(accountKey)) {
-      throw new ValidationError(
-        `Account with identifier '${accountKey}' already exists`,
-      );
-    }
-
     const evmAddress = buildAccountEvmAddress({
       accountId,
-      publicKey,
+      publicKey: resolved.publicKey,
       keyType: accountInfo.keyAlgorithm,
       existingEvmAddress: accountInfo.evmAddress,
     });
@@ -68,8 +59,8 @@ export class AccountImportCommand implements Command {
         network: api.network.getCurrentNetwork(),
         entityId: accountId,
         evmAddress,
-        publicKey,
-        keyRefId,
+        publicKey: resolved.publicKey,
+        keyRefId: resolved.keyRefId,
         createdAt: new Date().toISOString(),
       });
     }
@@ -78,9 +69,9 @@ export class AccountImportCommand implements Command {
       name: alias,
       accountId,
       type: accountInfo.keyAlgorithm,
-      publicKey: publicKey,
+      publicKey: resolved.publicKey,
       evmAddress,
-      keyRefId,
+      keyRefId: resolved.keyRefId,
       network: api.network.getCurrentNetwork(),
     };
 

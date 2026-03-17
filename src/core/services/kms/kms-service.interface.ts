@@ -5,10 +5,7 @@ import type {
 } from '@hashgraph/sdk';
 import type { KeyAlgorithm } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type {
-  KeyManagerName,
-  KmsCredentialRecord,
-} from './kms-types.interface';
+import type { KeyManager, KmsCredentialRecord } from './kms-types.interface';
 import type { Signer } from './signers/signer.interface';
 
 export interface KmsService {
@@ -21,7 +18,7 @@ export interface KmsService {
    */
   createLocalPrivateKey(
     keyType: KeyAlgorithm,
-    keyManager?: KeyManagerName,
+    keyManager?: KeyManager,
     labels?: string[],
   ): {
     keyRefId: string;
@@ -30,7 +27,7 @@ export interface KmsService {
   importPublicKey(
     keyType: KeyAlgorithm,
     publicKeyRaw: string,
-    keyManager?: KeyManagerName,
+    keyManager?: KeyManager,
     labels?: string[],
   ): { keyRefId: string; publicKey: string };
 
@@ -46,7 +43,7 @@ export interface KmsService {
   importPrivateKey(
     keyType: KeyAlgorithm,
     privateKey: string,
-    keyManager?: KeyManagerName,
+    keyManager?: KeyManager,
     labels?: string[],
   ): { keyRefId: string; publicKey: string };
 
@@ -64,7 +61,7 @@ export interface KmsService {
     keyType: KeyAlgorithm,
     privateKey: string,
     validationPublicKey: string,
-    keyManager?: KeyManagerName,
+    keyManager?: KeyManager,
     labels?: string[],
   ): { keyRefId: string; publicKey: string };
 
@@ -88,7 +85,7 @@ export interface KmsService {
    */
   list(): Array<{
     keyRefId: string;
-    keyManager: KeyManagerName;
+    keyManager: KeyManager;
     publicKey: string;
     labels?: string[];
   }>;

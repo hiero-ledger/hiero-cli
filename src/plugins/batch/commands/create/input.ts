@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   AliasNameSchema,
   KeyManagerTypeSchema,
-  PrivateKeySchema,
+  KeySchema,
 } from '@/core/schemas';
 
 /**
@@ -11,8 +11,8 @@ import {
  */
 export const BatchCreateInputSchema = z.object({
   name: AliasNameSchema.describe('Batch name'),
-  key: PrivateKeySchema.describe(
-    'Key to sign transactions in the batch. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias',
+  key: KeySchema.describe(
+    'Key to sign batch transactions. Accepts any key format.',
   ),
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type (defaults to config setting)',

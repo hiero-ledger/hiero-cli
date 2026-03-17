@@ -4,7 +4,7 @@ import type {
   ResolvedAccountCredential,
   ResolvedPublicKey,
 } from '@/core/services/key-resolver/types';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 
@@ -18,12 +18,11 @@ export interface TokenCreateFtNormalizedParams {
   memo?: string;
   tokenType: HederaTokenType;
   network: SupportedNetwork;
-  keyManager: KeyManagerName;
+  keyManager: KeyManager;
   treasury: ResolvedAccountCredential;
-  admin: ResolvedAccountCredential;
+  admin?: ResolvedPublicKey;
   supply?: ResolvedPublicKey;
   finalMaxSupply?: bigint;
-  adminKeyProvided: boolean;
 }
 
 export interface TokenCreateFtBuildTransactionResult {

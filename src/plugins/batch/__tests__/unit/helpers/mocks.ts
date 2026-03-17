@@ -12,6 +12,7 @@ import {
   makeTxExecuteMock,
   makeTxSignMock,
 } from '@/__tests__/mocks/mocks';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 import {
@@ -81,7 +82,7 @@ export const makeBatchApiMocks = (
   kmsMock.get = jest.fn().mockReturnValue({
     keyRefId: BATCH_KEY_REF_ID,
     publicKey: BATCH_PUBLIC_KEY,
-    keyManager: 'local',
+    keyManager: KeyManager.local,
     keyAlgorithm: 'ECDSA',
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',

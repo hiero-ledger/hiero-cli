@@ -6,7 +6,7 @@ import type {
 } from '@/core/services/key-resolver/types';
 import type {
   Credential,
-  KeyManagerName,
+  KeyManager,
 } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 
@@ -18,7 +18,7 @@ export interface TokenCreateNftFromFileNormalizedParams {
   maxSupply?: bigint;
   memo: string;
   associations: Credential[];
-  keyManager: KeyManagerName;
+  keyManager: KeyManager;
   network: SupportedNetwork;
   treasury: ResolvedAccountCredential;
   adminKey: ResolvedPublicKey;

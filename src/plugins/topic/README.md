@@ -73,16 +73,23 @@ Each command defines a Zod schema for output validation and a Handlebars templat
 
 ### Topic Create
 
-Create a Hedera topic with optional memo and admin/submit keys. Keys may be resolved from aliases or imported into KMS on-the-fly.
+Create a Hedera topic with optional memo and admin/submit keys. Keys may be resolved from aliases or imported into KMS on-the-fly. Pass `--admin-key` and `--submit-key` multiple times for multiple keys.
 
 ```bash
+# Single key per role
 hcli topic create \
   --name marketing-updates \
   --memo "Weekly digest" \
   --admin-key alice \
   --submit-key bob
 
-# Provide raw private keys (imported into KMS automatically)
+# Multiple keys (any one can sign for admin or submit)
+hcli topic create \
+  --name multi-sig-topic \
+  --admin-key alice --admin-key bob --admin-key carol \
+  --submit-key key1 --submit-key key2
+
+# Raw private keys (imported into KMS automatically)
 hcli topic create \
   --memo "Immutable topic" \
   --admin-key 302e020100300506032b6570... \
@@ -166,7 +173,7 @@ The `--batch` option is automatically injected by the batchify hook. See the [Ba
 ## 📝 Parameter Formats
 
 - **Topic reference**: alias registered in the CLI or explicit `0.0.x` ID
-- **Keys**: account alias (resolved via `api.alias`) or raw private key string (imported into KMS and referenced via `keyRefId`)
+- **Keys**: account alias (resolved via `api.alias`) or raw private key string (imported into KMS and referenced via `keyRefId`).
 - **Messages**: UTF-8 strings; mirror results are automatically Base64-decoded
 - **Sequence filters**: `--sequence-gt`, `--sequence-gte`, `--sequence-lt`, `--sequence-lte`, `--sequence-eq` (short forms: `-g`, `-G`, `-l`, `-L`, `-e`)
 
@@ -209,8 +216,8 @@ interface TopicData {
   name: string;
   topicId: string;
   memo?: string;
-  adminKeyRefId?: string;
-  submitKeyRefId?: string;
+  adminKeyRefIds?: string[];
+  submitKeyRefIds?: string[];
   autoRenewAccount?: string;
   autoRenewPeriod?: number;
   expirationTime?: string;

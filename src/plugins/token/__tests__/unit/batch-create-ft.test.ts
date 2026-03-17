@@ -1,12 +1,14 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { PreOutputPreparationParams } from '@/core/hooks/types';
-import type {
-  BatchDataItem,
-  BatchExecuteTransactionResult,
-} from '@/core/types/shared.types';
+import type { BatchDataItem } from '@/core/types/shared.types';
 
-import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import {
+  createBatchExecuteParams,
+  makeArgs,
+  makeLogger,
+  makeStateMock,
+} from '@/__tests__/mocks/mocks';
 import { StateError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_FT_COMMAND_NAME } from '@/plugins/token/commands/create-ft';
@@ -18,26 +20,6 @@ jest.mock('../../zustand-state-helper', () => ({
 }));
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
-
-const createBatchExecuteParams = (
-  batchData: BatchExecuteTransactionResult['updatedBatchData'],
-): PreOutputPreparationParams<
-  unknown,
-  unknown,
-  unknown,
-  BatchExecuteTransactionResult
-> =>
-  ({
-    normalisedParams: {},
-    buildTransactionResult: {},
-    signTransactionResult: {},
-    executeTransactionResult: { updatedBatchData: batchData },
-  }) as PreOutputPreparationParams<
-    unknown,
-    unknown,
-    unknown,
-    BatchExecuteTransactionResult
-  >;
 
 const createFtBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},
@@ -53,7 +35,7 @@ const createFtBatchDataItem = (
     supplyType: SupplyType.INFINITE,
     tokenType: HederaTokenType.FUNGIBLE_COMMON,
     network: SupportedNetwork.TESTNET,
-    keyManager: 'local',
+    keyManager: KeyManager.local,
     treasury: {
       accountId: '0.0.123456',
       keyRefId: 'kr-treasury',
@@ -241,7 +223,7 @@ describe('token plugin - batch-create-ft hook', () => {
             supplyType: SupplyType.FINITE,
             tokenType: HederaTokenType.FUNGIBLE_COMMON,
             network: SupportedNetwork.TESTNET,
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             treasury: {
               accountId: '0.0.123456',
               keyRefId: 'kr-treasury',
@@ -314,7 +296,7 @@ describe('token plugin - batch-create-ft hook', () => {
             supplyType: SupplyType.INFINITE,
             tokenType: HederaTokenType.FUNGIBLE_COMMON,
             network: SupportedNetwork.TESTNET,
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             alias: 'my-token-alias',
             treasury: {
               accountId: '0.0.123456',
@@ -394,7 +376,7 @@ describe('token plugin - batch-create-ft hook', () => {
             supplyType: SupplyType.INFINITE,
             tokenType: HederaTokenType.FUNGIBLE_COMMON,
             network: SupportedNetwork.TESTNET,
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             treasury: {
               accountId: '0.0.123456',
               keyRefId: 'kr-treasury',
@@ -418,7 +400,7 @@ describe('token plugin - batch-create-ft hook', () => {
             supplyType: SupplyType.FINITE,
             tokenType: HederaTokenType.FUNGIBLE_COMMON,
             network: SupportedNetwork.TESTNET,
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             treasury: {
               accountId: '0.0.123456',
               keyRefId: 'kr-treasury',
