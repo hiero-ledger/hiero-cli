@@ -22,7 +22,10 @@ import {
   buildTokenData,
   determineFiniteMaxSupply,
 } from '@/plugins/token/utils/token-data-builders';
-import { resolveOptionalKey } from '@/plugins/token/utils/token-resolve-optional-key';
+import {
+  resolveOptionalKey,
+  toPublicKey,
+} from '@/plugins/token/utils/token-resolve-optional-key';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 export const TOKEN_CREATE_NFT_COMMAND_NAME = 'token_create-nft';
@@ -64,10 +67,11 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       api.keyResolver,
       'token:admin',
     );
-    const supply = await api.keyResolver.resolveSigningKey(
+    const supply = await resolveOptionalKey(
       validArgs.supplyKey,
       keyManager,
-      ['token:supply'],
+      api.keyResolver,
+      'token:supply',
     );
 
     let finalMaxSupply: bigint | undefined;
@@ -84,7 +88,7 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
     logger.debug('=== NFT PARAMS DEBUG ===');
     logger.debug(`Treasury ID: ${treasury.keyRefId}`);
     logger.debug(`Admin Key (keyRefId): ${admin?.keyRefId}`);
-    logger.debug(`Supply Key (keyRefId): ${supply.keyRefId}`);
+    logger.debug(`Supply Key (keyRefId): ${supply?.keyRefId}`);
     logger.debug(`Use Custom Treasury: ${String(Boolean(treasury))}`);
     logger.debug('=========================');
 
@@ -123,7 +127,7 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       adminPublicKey: normalisedParams.admin
         ? PublicKey.fromString(normalisedParams.admin.publicKey)
         : undefined,
-      supplyPublicKey: PublicKey.fromString(normalisedParams.supply.publicKey),
+      supplyPublicKey: toPublicKey(normalisedParams.supply),
       memo: normalisedParams.memo,
     });
     return { transaction };
@@ -187,7 +191,7 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       tokenType: normalisedParams.tokenType,
       supplyType: normalisedParams.supplyType,
       adminPublicKey: normalisedParams.admin?.publicKey,
-      supplyPublicKey: normalisedParams.supply.publicKey,
+      supplyPublicKey: normalisedParams.supply?.publicKey,
       network: normalisedParams.network,
     });
 
@@ -216,7 +220,7 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       adminAccountId: undefined,
       adminPublicKey: normalisedParams.admin?.publicKey,
       supplyAccountId: undefined,
-      supplyPublicKey: normalisedParams.supply.publicKey,
+      supplyPublicKey: normalisedParams.supply?.publicKey,
       alias: normalisedParams.alias,
       network: normalisedParams.network,
     };

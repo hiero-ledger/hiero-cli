@@ -21,7 +21,7 @@ export interface TokenCreateNftNormalizedParams {
   keyManager: KeyManager;
   treasury: ResolvedAccountCredential;
   admin?: ResolvedPublicKey;
-  supply: ResolvedPublicKey;
+  supply?: ResolvedPublicKey;
   finalMaxSupply?: bigint;
 }
 

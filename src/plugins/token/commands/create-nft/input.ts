@@ -33,7 +33,9 @@ export const TokenCreateNftInputSchema = z
     adminKey: KeySchema.optional().describe(
       'Admin key. Accepts any key format.',
     ),
-    supplyKey: KeySchema.describe('Supply key. Accepts any key format.'),
+    supplyKey: KeySchema.optional().describe(
+      'Supply key. Accepts any key format.',
+    ),
     name: TokenAliasNameSchema.optional().describe(
       'Optional alias to register for the token',
     ),

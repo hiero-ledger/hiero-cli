@@ -132,7 +132,7 @@ describe('tokenCreateNftHandler', () => {
         },
       });
 
-      keyResolver.resolveSigningKey.mockResolvedValue({
+      keyResolver.getPublicKey.mockResolvedValue({
         keyRefId: 'supply-key-ref-id',
         publicKey: '302a300506032b6570032100' + '0'.repeat(64),
       });
