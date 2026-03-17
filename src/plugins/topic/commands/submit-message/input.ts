@@ -3,7 +3,7 @@ import { z } from 'zod';
 import {
   EntityReferenceSchema,
   KeyManagerTypeSchema,
-  PrivateKeySchema,
+  KeySchema,
 } from '@/core/schemas';
 
 /**
@@ -18,7 +18,7 @@ export const TopicSubmitMessageInputSchema = z.object({
     .min(1, 'Message cannot be empty')
     .describe('Message to submit to the topic'),
   signer: z
-    .array(PrivateKeySchema)
+    .array(KeySchema)
     .optional()
     .default([])
     .describe(

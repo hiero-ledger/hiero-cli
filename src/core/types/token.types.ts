@@ -63,7 +63,7 @@ export interface TokenCreateParams {
   tokenType: HederaTokenType;
   supplyType: SupplyType;
   maxSupplyRaw?: bigint; // Required for FINITE supply type
-  adminPublicKey: PublicKey;
+  adminPublicKey?: PublicKey;
   supplyPublicKey?: PublicKey;
   wipePublicKey?: PublicKey;
   kycPublicKey?: PublicKey;
