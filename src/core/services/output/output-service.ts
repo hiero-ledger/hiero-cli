@@ -3,7 +3,6 @@ import type { OutputFormat } from '@/core/shared/types/output-format';
 import type { FormatStrategyOptions } from './strategies';
 import type { OutputHandlerOptions } from './types';
 
-import { Status } from '@/core/shared/constants';
 import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
 
 import { OutputFormatterFactory } from './strategies';
@@ -34,11 +33,7 @@ export class OutputServiceImpl implements OutputService {
 
     const formattedOutput = formatter.format(outputData, formatOptions);
 
-    if (status === Status.Failure) {
-      console.log(formattedOutput);
-    } else {
-      console.log(formattedOutput);
-    }
+    console.log(formattedOutput);
   }
 
   emptyLine(): void {
