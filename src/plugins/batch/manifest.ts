@@ -92,7 +92,15 @@ export const batchPluginManifest: PluginManifest = {
       summary: 'Execute a batch',
       description:
         'Execute a batch by name, signing and submitting its transactions',
-      registeredHooks: ['account-create-batch-state'],
+      registeredHooks: [
+        'account-create-batch-state',
+        'topic-create-batch-state',
+        'token-create-ft-batch-state',
+        'token-create-ft-from-file-batch-state',
+        'token-create-nft-batch-state',
+        'token-create-nft-from-file-batch-state',
+        'token-associate-batch-state',
+      ],
       options: [
         {
           name: 'name',

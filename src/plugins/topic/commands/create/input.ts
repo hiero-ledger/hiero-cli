@@ -4,7 +4,6 @@ import {
   KeyManagerTypeSchema,
   KeySchema,
   MemoSchema,
-  PrivateKeySchema,
   TopicNameSchema,
 } from '@/core/schemas';
 
@@ -16,7 +15,7 @@ export const TopicCreateInputSchema = z
   .object({
     memo: MemoSchema.describe('Optional memo for the topic'),
     adminKey: z
-      .array(PrivateKeySchema)
+      .array(KeySchema)
       .optional()
       .default([])
       .describe(

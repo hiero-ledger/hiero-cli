@@ -72,12 +72,44 @@ import {
   tokenView,
   TokenViewOutputSchema,
 } from './commands/view';
+import { TokenAssociateBatchStateHook } from './hooks/batch-associate';
+import { TokenCreateFtBatchStateHook } from './hooks/batch-create-ft';
+import { TokenCreateFtFromFileBatchStateHook } from './hooks/batch-create-ft-from-file';
+import { TokenCreateNftBatchStateHook } from './hooks/batch-create-nft';
+import { TokenCreateNftFromFileBatchStateHook } from './hooks/batch-create-nft-from-file';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
   version: '1.0.0',
   displayName: 'Token Plugin',
   description: 'Plugin for managing Hedera fungible and non-fungible tokens',
+  hooks: [
+    {
+      name: 'token-create-ft-batch-state',
+      hook: new TokenCreateFtBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-create-ft-from-file-batch-state',
+      hook: new TokenCreateFtFromFileBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-create-nft-batch-state',
+      hook: new TokenCreateNftBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-create-nft-from-file-batch-state',
+      hook: new TokenCreateNftFromFileBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-associate-batch-state',
+      hook: new TokenAssociateBatchStateHook(),
+      options: [],
+    },
+  ],
   commands: [
     {
       name: 'mint-ft',

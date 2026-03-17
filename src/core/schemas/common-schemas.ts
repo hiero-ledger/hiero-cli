@@ -930,3 +930,14 @@ export const HexEncodedDataSchema = z
     'Data must be a hex encoded string starting in format "0x12abfe456123"',
   )
   .describe('HEX encoded data format');
+
+export const ResolvedAccountCredentialSchema = z.object({
+  keyRefId: z.string(),
+  accountId: z.string(),
+  publicKey: z.string(),
+});
+
+export const ResolvedPublicKeySchema = z.object({
+  keyRefId: z.string(),
+  publicKey: z.string(),
+});
