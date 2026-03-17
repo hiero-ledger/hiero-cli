@@ -20,10 +20,9 @@ export interface TokenCreateFtNormalizedParams {
   network: SupportedNetwork;
   keyManager: KeyManager;
   treasury: ResolvedAccountCredential;
-  admin: ResolvedAccountCredential;
+  admin?: ResolvedPublicKey;
   supply?: ResolvedPublicKey;
   finalMaxSupply?: bigint;
-  adminKeyProvided: boolean;
 }
 
 export interface TokenCreateFtBuildTransactionResult {

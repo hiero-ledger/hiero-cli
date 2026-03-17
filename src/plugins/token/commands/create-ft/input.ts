@@ -6,8 +6,6 @@ import {
   KeyManagerTypeSchema,
   KeySchema,
   MemoSchema,
-  PrivateKeySchema,
-  PrivateKeyWithAccountIdSchema,
   SupplyTypeSchema,
   TokenAliasNameSchema,
   TokenNameSchema,
@@ -24,8 +22,8 @@ export const TokenCreateFtInputSchema = z
   .object({
     tokenName: TokenNameSchema.describe('Token name'),
     symbol: TokenSymbolSchema.describe('Token symbol/ticker'),
-    treasury: PrivateKeyWithAccountIdSchema.optional().describe(
-      'Treasury account of token. Can be {accountId}:{privateKey} pair, key reference or account alias. Defaults to operator.',
+    treasury: KeySchema.optional().describe(
+      'Treasury account. Accepts any key format. Defaults to operator.',
     ),
     decimals: HtsDecimalsSchema.default(0).describe(
       'Token decimals (0-18). Default: 0',
@@ -42,11 +40,11 @@ export const TokenCreateFtInputSchema = z
     maxSupply: AmountInputSchema.optional().describe(
       'Maximum supply (required for FINITE supply type)',
     ),
-    adminKey: PrivateKeySchema.optional().describe(
-      'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Defaults to operator key.',
+    adminKey: KeySchema.optional().describe(
+      'Admin key. Accepts any key format.',
     ),
     supplyKey: KeySchema.optional().describe(
-      'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+      'Supply key. Accepts any key format.',
     ),
     name: TokenAliasNameSchema.optional().describe(
       'Optional alias to register for the token',

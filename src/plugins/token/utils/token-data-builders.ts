@@ -22,7 +22,7 @@ export function buildTokenData(
     initialSupply: bigint;
     tokenType: HederaTokenType;
     supplyType: string;
-    adminPublicKey: string;
+    adminPublicKey?: string;
     supplyPublicKey?: string;
     network: SupportedNetwork;
   },

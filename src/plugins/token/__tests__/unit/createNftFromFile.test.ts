@@ -628,7 +628,7 @@ describe('tokenCreateNftFromFileHandler', () => {
       });
 
       await expect(tokenCreateNftFromFile(args)).rejects.toThrow(
-        'Private key with account ID must be a valid account ID and private key pair in {account-id:private-key} format, key reference or alias name',
+        'Key must be a valid account ID and private key pair in format {account-id:private-key}, account ID, private key in format {ed25519|ecdsa}:{private-key}, public key in format {ed25519|ecdsa}:{public-key}, key reference, EVM address (0x...) or alias name',
       );
     });
 
@@ -672,7 +672,7 @@ describe('tokenCreateNftFromFileHandler', () => {
       });
 
       await expect(tokenCreateNftFromFile(args)).rejects.toThrow(
-        'Private key with account ID must be a valid account ID and private key pair in {account-id:private-key} format, key reference or alias name',
+        'Key must be a valid account ID and private key pair in format {account-id:private-key}, account ID, private key in format {ed25519|ecdsa}:{private-key}, public key in format {ed25519|ecdsa}:{public-key}, key reference, EVM address (0x...) or alias name',
       );
     });
 

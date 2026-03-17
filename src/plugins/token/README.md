@@ -416,6 +416,10 @@ The token file supports aliases and raw keys with optional key type prefixes:
 
 - **Alias**: `"my-account"` - resolved via alias service
 - **Account with key**: `"0.0.123456:privateKey"`
+- **Account ID only**: `"0.0.123456"`
+- **Public key**: `"ed25519:public:hex-key"` or `"ecdsa:public:hex-key"`
+- **Private key**: `"ed25519:private:hex-key"` or `"ecdsa:private:hex-key"`
+- **Key reference**: `"kr_xxx"` - managed by key manager
 
 **Note**: Token name is automatically registered as an alias after successful creation. Duplicate names are not allowed.
 
@@ -458,6 +462,10 @@ The NFT file supports aliases and raw keys with optional key type prefixes:
 
 - **Alias**: `"my-account"` - resolved via alias service
 - **Account with key**: `"0.0.123456:privateKey"`
+- **Account ID only**: `"0.0.123456"`
+- **Public key**: `"ed25519:public:hex-key"` or `"ecdsa:public:hex-key"`
+- **Private key**: `"ed25519:private:hex-key"` or `"ecdsa:private:hex-key"`
+- **Key reference**: `"kr_xxx"` - managed by key manager
 
 **Key Differences from Fungible Token:**
 
@@ -479,18 +487,17 @@ The plugin supports flexible parameter formats:
 - **Account name**: `alice` (resolved via alias service)
 - **Amount**: Display units (default) or base units with `t` suffix (e.g., `100t`)
 
-### Private Key Format
+### Key Format
 
-Private keys can optionally be prefixed with their key type:
+All key parameters accept any of the following formats:
 
-- **With prefix**: `ed25519:12345676543212345` or `ecdsa:12345676543212345`
-- **Without prefix**: `12345676543212345` (defaults to `ecdsa`)
-
-This applies to:
-
-- Treasury keys in `create-from-file` command
-- Association keys in `create-from-file` command
-- Account keys in `treasury-id:key` format
+- **Alias**: `"my-account"` - resolved via alias service
+- **Account with private key**: `"0.0.123456:privateKey"`
+- **Account ID only**: `"0.0.123456"`
+- **Public key with type prefix**: `"ed25519:public:hex-key"` or `"ecdsa:public:hex-key"`
+- **Private key with type prefix**: `"ed25519:private:hex-key"` or `"ecdsa:private:hex-key"`
+- **Key reference**: `"kr_xxx"` - managed by key manager
+- **EVM address**: `"0x..."` (where supported)
 
 ## 🔧 Core API Integration
 
