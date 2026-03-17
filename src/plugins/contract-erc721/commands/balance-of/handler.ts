@@ -79,7 +79,7 @@ export class ContractErc721BalanceOfCommand implements Command {
   }
 }
 
-export async function contractErc721BalanceOfFunctionCall(
+export async function contractErc721BalanceOf(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ContractErc721BalanceOfCommand().execute(args);

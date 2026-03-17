@@ -3,7 +3,7 @@
  * Utilities for filtering topic messages by sequence number
  */
 import type { Filter } from '@/core/services/mirrornode/types';
-import type { FindMessageInput } from '@/plugins/topic/commands/find-message/input';
+import type { TopicFindMessageInput } from '@/plugins/topic/commands/find-message/input';
 
 /**
  * Helper function to build all filters for API query
@@ -11,7 +11,7 @@ import type { FindMessageInput } from '@/plugins/topic/commands/find-message/inp
  * @param params - Validated input parameters containing filter values
  * @returns Array of Filter objects
  */
-export function buildApiFilters(params: FindMessageInput): Filter[] {
+export function buildApiFilters(params: TopicFindMessageInput): Filter[] {
   const filters: Filter[] = [];
 
   if (params.sequenceEq !== undefined) {

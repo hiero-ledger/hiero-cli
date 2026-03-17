@@ -6,7 +6,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ValidationError } from '@/core/errors';
 import {
   batchCreate,
-  CreateBatchOutputSchema,
+  BatchCreateOutputSchema,
 } from '@/plugins/batch/commands/create';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
@@ -68,7 +68,7 @@ describe('batch plugin - create command', () => {
       }),
     );
 
-    const output = assertOutput(result.result, CreateBatchOutputSchema);
+    const output = assertOutput(result.result, BatchCreateOutputSchema);
     expect(output.name).toBe(BATCH_NAME);
     expect(output.keyRefId).toBe(BATCH_KEY_REF_ID);
   });

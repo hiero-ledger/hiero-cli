@@ -7,7 +7,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError, ValidationError } from '@/core/errors';
 import {
   batchExecute,
-  ExecuteBatchOutputSchema,
+  BatchExecuteOutputSchema,
 } from '@/plugins/batch/commands/execute';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
@@ -90,7 +90,7 @@ describe('batch plugin - execute command', () => {
       }),
     );
 
-    const output = assertOutput(result.result, ExecuteBatchOutputSchema);
+    const output = assertOutput(result.result, BatchExecuteOutputSchema);
     expect(output.batchName).toBe(BATCH_NAME);
     expect(output.success).toBe(true);
     expect(output.transactionId).toBe('0.0.1234@1234567890.000000000');
@@ -143,7 +143,7 @@ describe('batch plugin - execute command', () => {
       }),
     );
 
-    const output = assertOutput(result.result, ExecuteBatchOutputSchema);
+    const output = assertOutput(result.result, BatchExecuteOutputSchema);
     expect(output.success).toBe(false);
   });
 

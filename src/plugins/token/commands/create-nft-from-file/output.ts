@@ -15,7 +15,7 @@ const TokenAssociationResultSchema = z.object({
   transactionId: TransactionIdSchema.optional(),
 });
 
-export const CreateNftFromFileOutputSchema = z.object({
+export const TokenCreateNftFromFileOutputSchema = z.object({
   tokenId: EntityIdSchema,
   name: z.string().describe('NFT token name'),
   symbol: z.string().describe('NFT token symbol'),
@@ -33,11 +33,11 @@ export const CreateNftFromFileOutputSchema = z.object({
     .describe('NFT token associations created'),
 });
 
-export type CreateNftFromFileOutput = z.infer<
-  typeof CreateNftFromFileOutputSchema
+export type TokenCreateNftFromFileOutput = z.infer<
+  typeof TokenCreateNftFromFileOutputSchema
 >;
 
-export const CREATE_NFT_FROM_FILE_TEMPLATE = `
+export const TOKEN_CREATE_NFT_FROM_FILE_TEMPLATE = `
 ✅ NFT token created from file successfully: {{hashscanLink tokenId "token" network}}
 
    Name: {{name}} ({{symbol}})

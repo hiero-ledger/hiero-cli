@@ -13,19 +13,19 @@ import {
 /**
  * Mint FT Command Output Schema
  */
-export const MintFtOutputSchema = z.object({
+export const TokenMintFtOutputSchema = z.object({
   transactionId: TransactionIdSchema,
   tokenId: EntityIdSchema,
   amount: TokenAmountSchema.describe('Amount minted in base units'),
   network: NetworkSchema,
 });
 
-export type MintFtOutput = z.infer<typeof MintFtOutputSchema>;
+export type TokenMintFtOutput = z.infer<typeof TokenMintFtOutputSchema>;
 
 /**
  * Human-readable template for mint-ft output
  */
-export const MINT_FT_TEMPLATE = `
+export const TOKEN_MINT_FT_TEMPLATE = `
 ✅ FT mint successful!
    Token ID: {{hashscanLink tokenId "token" network}}
    Amount minted: {{amount}}

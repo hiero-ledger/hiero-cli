@@ -1,11 +1,11 @@
 import { z } from 'zod';
 
-export const FooTestOutputSchema = z.object({
+export const TestFooOutputSchema = z.object({
   bar: z.string().trim(),
 });
 
-export type FooTestOutput = z.infer<typeof FooTestOutputSchema>;
+export type TestFooOutput = z.infer<typeof TestFooOutputSchema>;
 
-export const FOO_TEST_TEMPLATE = `
+export const TEST_FOO_TEMPLATE = `
 📝 FOO TEST Plugin {{bar}}
 `.trim();

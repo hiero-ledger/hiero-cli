@@ -7,14 +7,14 @@ import type { PluginManifest } from '@/core/plugins/plugin.interface';
 import { OptionType } from '@/core/types/shared.types';
 
 import {
-  LIST_CREDENTIALS_TEMPLATE,
-  listCredentials,
-  ListCredentialsOutputSchema,
+  CREDENTIALS_LIST_TEMPLATE,
+  credentialsList,
+  CredentialsListOutputSchema,
 } from './commands/list';
 import {
-  REMOVE_CREDENTIALS_TEMPLATE,
-  removeCredentials,
-  RemoveCredentialsOutputSchema,
+  CREDENTIALS_REMOVE_TEMPLATE,
+  credentialsRemove,
+  CredentialsRemoveOutputSchema,
 } from './commands/remove';
 
 export const CREDENTIALS_NAMESPACE = 'credentials';
@@ -30,10 +30,10 @@ export const credentialsManifest: PluginManifest = {
       summary: 'List all credentials',
       description: 'Show all stored credentials',
       options: [],
-      handler: listCredentials,
+      handler: credentialsList,
       output: {
-        schema: ListCredentialsOutputSchema,
-        humanTemplate: LIST_CREDENTIALS_TEMPLATE,
+        schema: CredentialsListOutputSchema,
+        humanTemplate: CREDENTIALS_LIST_TEMPLATE,
       },
     },
     {
@@ -49,10 +49,10 @@ export const credentialsManifest: PluginManifest = {
           description: 'Key reference ID to remove from KMS',
         },
       ],
-      handler: removeCredentials,
+      handler: credentialsRemove,
       output: {
-        schema: RemoveCredentialsOutputSchema,
-        humanTemplate: REMOVE_CREDENTIALS_TEMPLATE,
+        schema: CredentialsRemoveOutputSchema,
+        humanTemplate: CREDENTIALS_REMOVE_TEMPLATE,
       },
       requireConfirmation:
         "Are you sure you want to remove credentials with ID '{{id}}'? This action cannot be undone.",

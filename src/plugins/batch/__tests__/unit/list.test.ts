@@ -4,7 +4,7 @@ import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   batchList,
-  ListBatchesOutputSchema,
+  BatchListOutputSchema,
 } from '@/plugins/batch/commands/list';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
@@ -41,7 +41,7 @@ describe('batch plugin - list command', () => {
     const args = makeArgs(api, logger, {});
     const result = await batchList(args);
 
-    const output = assertOutput(result.result, ListBatchesOutputSchema);
+    const output = assertOutput(result.result, BatchListOutputSchema);
     expect(output.batches).toHaveLength(0);
     expect(output.totalCount).toBe(0);
   });
@@ -60,7 +60,7 @@ describe('batch plugin - list command', () => {
     const args = makeArgs(api, logger, {});
     const result = await batchList(args);
 
-    const output = assertOutput(result.result, ListBatchesOutputSchema);
+    const output = assertOutput(result.result, BatchListOutputSchema);
     expect(output.batches).toHaveLength(2);
     expect(output.totalCount).toBe(2);
     expect(output.batches[0].name).toBe(BATCH_NAME);
@@ -82,7 +82,7 @@ describe('batch plugin - list command', () => {
     const args = makeArgs(api, logger, {});
     const result = await batchList(args);
 
-    const output = assertOutput(result.result, ListBatchesOutputSchema);
+    const output = assertOutput(result.result, BatchListOutputSchema);
     expect(output.batches[0].batchKey).toBe(BATCH_PUBLIC_KEY);
     expect(kmsMock.get).toHaveBeenCalledWith(BATCH_KEY_REF_ID);
   });
@@ -99,7 +99,7 @@ describe('batch plugin - list command', () => {
     const args = makeArgs(api, logger, {});
     const result = await batchList(args);
 
-    const output = assertOutput(result.result, ListBatchesOutputSchema);
+    const output = assertOutput(result.result, BatchListOutputSchema);
     expect(output.batches[0].executed).toBe(true);
     expect(output.batches[0].success).toBe(true);
   });
@@ -117,7 +117,7 @@ describe('batch plugin - list command', () => {
     const args = makeArgs(api, logger, {});
     const result = await batchList(args);
 
-    const output = assertOutput(result.result, ListBatchesOutputSchema);
+    const output = assertOutput(result.result, BatchListOutputSchema);
     expect(output.batches[0].batchKey).toBeUndefined();
   });
 });

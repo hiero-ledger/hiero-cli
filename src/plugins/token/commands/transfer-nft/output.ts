@@ -6,7 +6,7 @@ import {
   TransactionIdSchema,
 } from '@/core/schemas/common-schemas';
 
-export const TransferNftOutputSchema = z.object({
+export const TokenTransferNftOutputSchema = z.object({
   transactionId: TransactionIdSchema,
   tokenId: EntityIdSchema,
   from: EntityIdSchema,
@@ -15,9 +15,11 @@ export const TransferNftOutputSchema = z.object({
   network: NetworkSchema,
 });
 
-export type TransferNftOutput = z.infer<typeof TransferNftOutputSchema>;
+export type TokenTransferNftOutput = z.infer<
+  typeof TokenTransferNftOutputSchema
+>;
 
-export const TRANSFER_NFT_TEMPLATE = `
+export const TOKEN_TRANSFER_NFT_TEMPLATE = `
 ✅ NFT transfer successful!
    Token ID: {{hashscanLink tokenId "token" network}}
    From: {{hashscanLink from "account" network}}

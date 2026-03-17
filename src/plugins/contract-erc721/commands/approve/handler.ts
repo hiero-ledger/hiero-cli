@@ -156,7 +156,7 @@ export class ContractErc721ApproveCommand extends BaseTransactionCommand<
   }
 }
 
-export async function contractErc721ApproveFunctionCall(
+export async function contractErc721Approve(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ContractErc721ApproveCommand().execute(args);

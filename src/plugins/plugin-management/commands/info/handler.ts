@@ -8,7 +8,7 @@ import type {
   PluginStateEntry,
 } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { PluginInfoOutput } from './output';
+import type { PluginManagementInfoOutput } from './output';
 
 import * as path from 'path';
 
@@ -16,13 +16,13 @@ import { NotFoundError } from '@/core/errors';
 import { loadPluginManifest } from '@/core/utils/load-plugin-manifest';
 import { ERROR_MESSAGES } from '@/plugins/plugin-management/error-messages';
 
-import { PluginInfoInputSchema } from './input';
+import { PluginManagementInfoInputSchema } from './input';
 
-export class PluginInfoCommand implements Command {
+export class PluginManagementInfoCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
-    const validArgs = PluginInfoInputSchema.parse(args.args);
+    const validArgs = PluginManagementInfoInputSchema.parse(args.args);
     const name = validArgs.name;
 
     logger.info(`ℹ️  Getting plugin information: ${name}`);
@@ -55,7 +55,7 @@ export class PluginInfoCommand implements Command {
       enabled: entry.enabled,
     };
 
-    const outputData: PluginInfoOutput = {
+    const outputData: PluginManagementInfoOutput = {
       plugin: pluginInfo,
       found: true,
       message: `Plugin ${name} information retrieved successfully`,
@@ -65,8 +65,8 @@ export class PluginInfoCommand implements Command {
   }
 }
 
-export async function getPluginInfo(
+export async function pluginManagementInfo(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new PluginInfoCommand().execute(args);
+  return new PluginManagementInfoCommand().execute(args);
 }

@@ -12,7 +12,7 @@ import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
-import { BatchBatchifyHook } from '@/plugins/batch/hooks/batchify/handler';
+import { BatchifyHook } from '@/plugins/batch/hooks/batchify/handler';
 import { BatchifyOutputSchema } from '@/plugins/batch/hooks/batchify/output';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
@@ -53,11 +53,11 @@ const createMockSignedTransaction = () => {
 };
 
 describe('batch plugin - batchify hook', () => {
-  let hook: BatchBatchifyHook;
+  let hook: BatchifyHook;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    hook = new BatchBatchifyHook();
+    hook = new BatchifyHook();
   });
 
   describe('preSignTransactionHook', () => {

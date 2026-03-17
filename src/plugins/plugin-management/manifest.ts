@@ -7,39 +7,39 @@ import type { PluginManifest } from '@/core/plugins/plugin.interface';
 import { OptionType } from '@/core/types/shared.types';
 
 import {
-  ADD_PLUGIN_TEMPLATE,
-  addPlugin,
-  AddPluginOutputSchema,
+  PLUGIN_MANAGEMENT_ADD_TEMPLATE,
+  pluginManagementAdd,
+  PluginManagementAddOutputSchema,
 } from './commands/add';
 import {
-  DISABLE_PLUGIN_TEMPLATE,
-  disablePlugin,
-  DisablePluginOutputSchema,
+  PLUGIN_MANAGEMENT_DISABLE_TEMPLATE,
+  pluginManagementDisable,
+  PluginManagementDisableOutputSchema,
 } from './commands/disable';
 import {
-  ENABLE_PLUGIN_TEMPLATE,
-  enablePlugin,
-  EnablePluginOutputSchema,
+  PLUGIN_MANAGEMENT_ENABLE_TEMPLATE,
+  pluginManagementEnable,
+  PluginManagementEnableOutputSchema,
 } from './commands/enable';
 import {
-  getPluginInfo,
-  PLUGIN_INFO_TEMPLATE,
-  PluginInfoOutputSchema,
+  PLUGIN_MANAGEMENT_INFO_TEMPLATE,
+  pluginManagementInfo,
+  PluginManagementInfoOutputSchema,
 } from './commands/info';
 import {
-  getPluginList,
-  LIST_PLUGINS_TEMPLATE,
-  ListPluginsOutputSchema,
+  PLUGIN_MANAGEMENT_LIST_TEMPLATE,
+  pluginManagementList,
+  PluginManagementListOutputSchema,
 } from './commands/list';
 import {
-  REMOVE_PLUGIN_TEMPLATE,
-  removePlugin,
-  RemovePluginOutputSchema,
+  PLUGIN_MANAGEMENT_REMOVE_TEMPLATE,
+  pluginManagementRemove,
+  PluginManagementRemoveOutputSchema,
 } from './commands/remove';
 import {
-  RESET_PLUGINS_TEMPLATE,
-  resetPlugins,
-  ResetPluginsOutputSchema,
+  PLUGIN_MANAGEMENT_RESET_TEMPLATE,
+  pluginManagementReset,
+  PluginManagementResetOutputSchema,
 } from './commands/reset';
 
 export const pluginManagementManifest: PluginManifest = {
@@ -72,10 +72,10 @@ export const pluginManagementManifest: PluginManifest = {
             'Name of a default plugin to add (e.g. account, token). Use --path for custom plugins.',
         },
       ],
-      handler: addPlugin,
+      handler: pluginManagementAdd,
       output: {
-        schema: AddPluginOutputSchema,
-        humanTemplate: ADD_PLUGIN_TEMPLATE,
+        schema: PluginManagementAddOutputSchema,
+        humanTemplate: PLUGIN_MANAGEMENT_ADD_TEMPLATE,
       },
     },
     {
@@ -91,10 +91,10 @@ export const pluginManagementManifest: PluginManifest = {
           description: 'Name of the plugin to remove from the state',
         },
       ],
-      handler: removePlugin,
+      handler: pluginManagementRemove,
       output: {
-        schema: RemovePluginOutputSchema,
-        humanTemplate: REMOVE_PLUGIN_TEMPLATE,
+        schema: PluginManagementRemoveOutputSchema,
+        humanTemplate: PLUGIN_MANAGEMENT_REMOVE_TEMPLATE,
       },
     },
     {
@@ -110,10 +110,10 @@ export const pluginManagementManifest: PluginManifest = {
           description: 'Name of the plugin to enable',
         },
       ],
-      handler: enablePlugin,
+      handler: pluginManagementEnable,
       output: {
-        schema: EnablePluginOutputSchema,
-        humanTemplate: ENABLE_PLUGIN_TEMPLATE,
+        schema: PluginManagementEnableOutputSchema,
+        humanTemplate: PLUGIN_MANAGEMENT_ENABLE_TEMPLATE,
       },
     },
     {
@@ -129,10 +129,10 @@ export const pluginManagementManifest: PluginManifest = {
           description: 'Name of the plugin to disable',
         },
       ],
-      handler: disablePlugin,
+      handler: pluginManagementDisable,
       output: {
-        schema: DisablePluginOutputSchema,
-        humanTemplate: DISABLE_PLUGIN_TEMPLATE,
+        schema: PluginManagementDisableOutputSchema,
+        humanTemplate: PLUGIN_MANAGEMENT_DISABLE_TEMPLATE,
       },
     },
     {
@@ -140,10 +140,10 @@ export const pluginManagementManifest: PluginManifest = {
       summary: 'List all plugins',
       description: 'Show all loaded plugins',
       options: [],
-      handler: getPluginList,
+      handler: pluginManagementList,
       output: {
-        schema: ListPluginsOutputSchema,
-        humanTemplate: LIST_PLUGINS_TEMPLATE,
+        schema: PluginManagementListOutputSchema,
+        humanTemplate: PLUGIN_MANAGEMENT_LIST_TEMPLATE,
       },
     },
     {
@@ -152,10 +152,10 @@ export const pluginManagementManifest: PluginManifest = {
       description:
         'Clear plugin-management state. Custom plugins will be removed.',
       options: [],
-      handler: resetPlugins,
+      handler: pluginManagementReset,
       output: {
-        schema: ResetPluginsOutputSchema,
-        humanTemplate: RESET_PLUGINS_TEMPLATE,
+        schema: PluginManagementResetOutputSchema,
+        humanTemplate: PLUGIN_MANAGEMENT_RESET_TEMPLATE,
       },
       requireConfirmation:
         'Are you sure you want to reset plugin state? Custom plugins will be removed.',
@@ -173,10 +173,10 @@ export const pluginManagementManifest: PluginManifest = {
           description: 'Name of the plugin for information display',
         },
       ],
-      handler: getPluginInfo,
+      handler: pluginManagementInfo,
       output: {
-        schema: PluginInfoOutputSchema,
-        humanTemplate: PLUGIN_INFO_TEMPLATE,
+        schema: PluginManagementInfoOutputSchema,
+        humanTemplate: PLUGIN_MANAGEMENT_INFO_TEMPLATE,
       },
     },
   ],

@@ -1,6 +1,6 @@
 import type { NftInfo, TokenInfo } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { ViewTokenOutput } from '@/plugins/token/commands/view';
+import type { TokenViewOutput } from '@/plugins/token/commands/view';
 
 import { SupplyType } from '@/core/types/shared.types';
 
@@ -51,7 +51,7 @@ export function buildOutput(
   tokenInfo: TokenInfo,
   nftInfo: NftInfo | null,
   network: SupportedNetwork,
-): ViewTokenOutput {
+): TokenViewOutput {
   // Determine supply type based on max_supply
   // If max_supply is "0", it's INFINITE, otherwise FINITE
   const supplyType: SupplyType =

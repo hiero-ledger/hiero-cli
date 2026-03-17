@@ -1,13 +1,13 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { KmsCredentialRecord } from '@/core/services/kms/kms-types.interface';
-import type { ListCredentialsOutput } from '@/plugins/credentials/commands/list/output';
-import type { RemoveCredentialsOutput } from '@/plugins/credentials/commands/remove/output';
+import type { CredentialsListOutput } from '@/plugins/credentials/commands/list/output';
+import type { CredentialsRemoveOutput } from '@/plugins/credentials/commands/remove/output';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { listCredentials, removeCredentials } from '@/plugins/credentials';
+import { credentialsList, credentialsRemove } from '@/plugins/credentials';
 
 describe('Credentials Integration Tests', () => {
   let coreApi: CoreApi;
@@ -29,36 +29,36 @@ describe('Credentials Integration Tests', () => {
     };
     coreApi.state.set('kms-credentials', record.keyRefId, record);
 
-    const listResult = await listCredentials({
+    const listResult = await credentialsList({
       args: {},
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const listOutput = listResult.result as ListCredentialsOutput;
+    const listOutput = listResult.result as CredentialsListOutput;
     const credentialNames = listOutput.credentials.map((c) => c.keyRefId);
     expect(credentialNames).toContain('test-key');
 
-    const removeResult = await removeCredentials({
+    const removeResult = await credentialsRemove({
       args: { id: 'test-key' },
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const removeOutput = removeResult.result as RemoveCredentialsOutput;
+    const removeOutput = removeResult.result as CredentialsRemoveOutput;
     expect(removeOutput.keyRefId).toBe('test-key');
     expect(removeOutput.removed).toBe(true);
 
-    const listAfterResult = await listCredentials({
+    const listAfterResult = await credentialsList({
       args: {},
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const listAfterOutput = listAfterResult.result as ListCredentialsOutput;
+    const listAfterOutput = listAfterResult.result as CredentialsListOutput;
     const credentialNamesAfterRemoval = listAfterOutput.credentials.map(
       (c) => c.keyRefId,
     );

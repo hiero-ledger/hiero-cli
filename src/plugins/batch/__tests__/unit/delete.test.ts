@@ -5,7 +5,7 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NotFoundError } from '@/core/errors';
 import {
   batchDelete,
-  DeleteBatchOutputSchema,
+  BatchDeleteOutputSchema,
 } from '@/plugins/batch/commands/delete';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
@@ -43,7 +43,7 @@ describe('batch plugin - delete command', () => {
 
     expect(deleteBatchMock).toHaveBeenCalled();
 
-    const output = assertOutput(result.result, DeleteBatchOutputSchema);
+    const output = assertOutput(result.result, BatchDeleteOutputSchema);
     expect(output.name).toBe(BATCH_NAME);
     expect(output.order).toBeUndefined();
   });
@@ -75,7 +75,7 @@ describe('batch plugin - delete command', () => {
       }),
     );
 
-    const output = assertOutput(result.result, DeleteBatchOutputSchema);
+    const output = assertOutput(result.result, BatchDeleteOutputSchema);
     expect(output.name).toBe(BATCH_NAME);
     expect(output.order).toBe(1);
   });

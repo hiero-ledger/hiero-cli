@@ -3,8 +3,8 @@
  */
 export {
   CONTRACT_ERC721_MINT_COMMAND_NAME,
+  contractErc721Mint,
   ContractErc721MintCommand,
-  contractErc721MintFunctionCall,
 } from './handler';
 export type { ContractErc721CallMintOutput } from './output';
 export {

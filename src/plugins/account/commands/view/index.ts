@@ -2,6 +2,6 @@
  * View Command Exports
  * For use by tests and external consumers
  */
-export { viewAccount, ViewAccountCommand } from './handler';
-export type { ViewAccountOutput } from './output';
-export { VIEW_ACCOUNT_TEMPLATE, ViewAccountOutputSchema } from './output';
+export { accountView, AccountViewCommand } from './handler';
+export type { AccountViewOutput } from './output';
+export { ACCOUNT_VIEW_TEMPLATE, AccountViewOutputSchema } from './output';

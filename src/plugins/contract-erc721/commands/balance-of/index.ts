@@ -3,8 +3,8 @@
  * For use by tests and external consumers
  */
 export {
+  contractErc721BalanceOf,
   ContractErc721BalanceOfCommand,
-  contractErc721BalanceOfFunctionCall,
 } from './handler';
 export type { ContractErc721CallBalanceOfOutput } from './output';
 export {

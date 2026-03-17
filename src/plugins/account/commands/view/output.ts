@@ -15,7 +15,7 @@ import {
 /**
  * View Account Command Output Schema
  */
-export const ViewAccountOutputSchema = z.object({
+export const AccountViewOutputSchema = z.object({
   accountId: EntityIdSchema,
   balance: TinybarSchema,
   evmAddress: EvmAddressSchema.optional(),
@@ -24,12 +24,12 @@ export const ViewAccountOutputSchema = z.object({
   network: NetworkSchema,
 });
 
-export type ViewAccountOutput = z.infer<typeof ViewAccountOutputSchema>;
+export type AccountViewOutput = z.infer<typeof AccountViewOutputSchema>;
 
 /**
  * Human-readable template for view account output
  */
-export const VIEW_ACCOUNT_TEMPLATE = `
+export const ACCOUNT_VIEW_TEMPLATE = `
 📋 Account Details:
    Account ID: {{hashscanLink accountId "account" network}}
    Balance: {{balance}} tinybars

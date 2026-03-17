@@ -264,7 +264,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
   }
 }
 
-export async function createContract(
+export async function contractCreate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new CreateContractCommand().execute(args);
