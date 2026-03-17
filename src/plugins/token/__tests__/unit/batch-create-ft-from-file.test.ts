@@ -14,6 +14,8 @@ import { TokenCreateFtFromFileBatchStateHook } from '@/plugins/token/hooks/batch
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { mockAccountIds, validTokenFile } from './helpers/fixtures';
+import { HederaTokenType } from '@/core';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
@@ -36,10 +38,10 @@ const createFlatNormalizedParams = (
   maxSupply: BigInt(validTokenFile.maxSupply),
   supplyType: SupplyType.FINITE,
   memo: validTokenFile.memo,
-  tokenType: 'FungibleCommon' as const,
+  tokenType: HederaTokenType.FUNGIBLE_COMMON,
   customFees: validTokenFile.customFees,
   associations: validTokenFile.associations,
-  keyManager: 'local',
+  keyManager: KeyManager.local,
   network: SupportedNetwork.TESTNET,
   treasury: {
     accountId: mockAccountIds.treasury,

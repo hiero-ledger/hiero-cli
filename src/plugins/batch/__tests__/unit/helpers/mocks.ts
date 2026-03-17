@@ -20,6 +20,7 @@ import {
   OPERATOR_ACCOUNT_ID,
   OPERATOR_KEY_REF_ID,
 } from './fixtures';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 export { makeGlobalLogger as makeLogger };
 
@@ -81,7 +82,7 @@ export const makeBatchApiMocks = (
   kmsMock.get = jest.fn().mockReturnValue({
     keyRefId: BATCH_KEY_REF_ID,
     publicKey: BATCH_PUBLIC_KEY,
-    keyManager: 'local',
+    keyManager: KeyManager.local,
     keyAlgorithm: 'ECDSA',
     createdAt: '2024-01-01T00:00:00.000Z',
     updatedAt: '2024-01-01T00:00:00.000Z',

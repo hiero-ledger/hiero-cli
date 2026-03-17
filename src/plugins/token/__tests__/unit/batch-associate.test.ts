@@ -11,6 +11,7 @@ import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_ASSOCIATE_COMMAND_NAME } from '@/plugins/token/commands/associate';
 import { TokenAssociateBatchStateHook } from '@/plugins/token/hooks/batch-associate/handler';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
@@ -32,7 +33,7 @@ const createAssociateBatchDataItem = (
       keyRefId: 'kr-account',
       publicKey: 'pk-account',
     },
-    keyManager: 'local',
+    keyManager: KeyManager.local,
     alreadyAssociated: false,
   },
   transactionId: '0.0.1234@1234567890.000000000',
@@ -168,7 +169,7 @@ describe('token plugin - batch-associate hook', () => {
               keyRefId: 'kr-account',
               publicKey: 'pk-account',
             },
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             alreadyAssociated: true,
           },
         }),
@@ -214,7 +215,7 @@ describe('token plugin - batch-associate hook', () => {
               keyRefId: 'kr-account',
               publicKey: 'pk-account',
             },
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             alreadyAssociated: false,
           },
         }),
@@ -297,7 +298,7 @@ describe('token plugin - batch-associate hook', () => {
               keyRefId: 'kr-1',
               publicKey: 'pk-1',
             },
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             alreadyAssociated: false,
           },
         }),
@@ -311,7 +312,7 @@ describe('token plugin - batch-associate hook', () => {
               keyRefId: 'kr-2',
               publicKey: 'pk-2',
             },
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             alreadyAssociated: false,
           },
         }),

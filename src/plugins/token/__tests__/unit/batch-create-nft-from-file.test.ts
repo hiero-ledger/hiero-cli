@@ -14,6 +14,7 @@ import { TokenCreateNftFromFileBatchStateHook } from '@/plugins/token/hooks/batc
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { mockAccountIds, validNftTokenFile } from './helpers/fixtures';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTokenStateHelper: jest.fn(),
@@ -40,7 +41,7 @@ const createFlatNormalizedParams = (
     : undefined,
   memo: validNftTokenFile.memo,
   associations: validNftTokenFile.associations,
-  keyManager: 'local',
+  keyManager: KeyManager.local,
   network: SupportedNetwork.TESTNET,
   treasury: {
     accountId: mockAccountIds.treasury,
