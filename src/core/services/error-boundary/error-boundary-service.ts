@@ -87,7 +87,7 @@ export class ErrorBoundaryServiceImpl implements ErrorBoundaryService {
         `[ERROR-BOUNDARY] Failed to render error output: ${outputFailureMessage}`,
       );
 
-      console.error(
+      console.log(
         JSON.stringify({
           status: Status.Failure,
           ...cliError.toJSON(),

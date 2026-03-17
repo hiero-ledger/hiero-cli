@@ -2,8 +2,8 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { TransactionResult } from '@/core/types/shared.types';
-import type { TopicData } from '@/plugins/topic/schema';
 
+import { MOCK_TOPIC_SUBMIT_KEY_REF_ID } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeAliasMock,
@@ -11,6 +11,7 @@ import {
   makeConfigMock,
   makeLogger,
   makeNetworkMock,
+  makeTopicData,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
@@ -29,15 +30,6 @@ jest.mock('../../zustand-state-helper', () => ({
 }));
 
 const MockedHelper = ZustandTopicStateHelper as jest.Mock;
-
-const makeTopicData = (overrides: Partial<TopicData> = {}): TopicData => ({
-  name: 'test-topic',
-  topicId: '0.0.1234',
-  memo: 'Test topic',
-  network: SupportedNetwork.TESTNET,
-  createdAt: new Date().toISOString(),
-  ...overrides,
-});
 
 const makeApiMocks = ({
   topicSubmitMessageImpl,
@@ -132,11 +124,10 @@ describe('topic plugin - message-submit command', () => {
 
   test('submits message successfully with signer option', async () => {
     const logger = makeLogger();
-    const submitKeyRefId = 'kr_submit123';
     const topicData = makeTopicData({
       topicId: '0.0.5678',
       memo: 'Test topic with key',
-      submitKeyRefId,
+      submitKeyRefIds: [MOCK_TOPIC_SUBMIT_KEY_REF_ID],
     });
     const loadTopicMock = jest.fn().mockReturnValue(topicData);
     MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
@@ -145,7 +136,7 @@ describe('topic plugin - message-submit command', () => {
       resolveSigningKey: jest.fn().mockResolvedValue({
         publicKey: '02abc123',
         accountId: '0.0.999',
-        keyRefId: submitKeyRefId,
+        keyRefId: MOCK_TOPIC_SUBMIT_KEY_REF_ID,
       }),
       resolveAccountCredentials: jest.fn(),
       resolveAccountCredentialsWithFallback: jest.fn(),
@@ -220,7 +211,7 @@ describe('topic plugin - message-submit command', () => {
     const logger = makeLogger();
     const topicData = makeTopicData({
       topicId: '0.0.1234',
-      submitKeyRefId: 'kr_correct_submit',
+      submitKeyRefIds: ['kr_correct_submit'],
     });
     const loadTopicMock = jest.fn().mockReturnValue(topicData);
     MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));

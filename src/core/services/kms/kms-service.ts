@@ -8,12 +8,9 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { KeyManager } from './key-managers/key-manager.interface';
+import type { KeyManager as IKeyManager } from './key-managers/key-manager.interface';
 import type { KmsService } from './kms-service.interface';
-import type {
-  KeyManagerName,
-  KmsCredentialRecord,
-} from './kms-types.interface';
+import type { KmsCredentialRecord } from './kms-types.interface';
 import type { Signer } from './signers/signer.interface';
 
 import { AccountId, PrivateKey, PublicKey } from '@hashgraph/sdk';
@@ -31,7 +28,7 @@ import { CredentialStorage } from './credential-storage';
 import { ALGORITHM_CONFIGS } from './encryption/algorithm-config';
 import { EncryptionServiceImpl } from './encryption/encryption-service-impl';
 import { LocalKeyManager } from './key-managers/local-key-manager';
-import { KEY_MANAGERS } from './kms-types.interface';
+import { KeyManager } from './kms-types.interface';
 import { EncryptedSecretStorage } from './storage/encrypted-secret-storage';
 import { LocalSecretStorage } from './storage/local-secret-storage';
 
@@ -47,7 +44,7 @@ export class KmsServiceImpl implements KmsService {
   private readonly logger: Logger;
   private readonly credentialStorage: CredentialStorage;
   private readonly networkService: NetworkService;
-  private readonly keyManagers: Map<KeyManagerName, KeyManager>;
+  private readonly keyManagers: Map<KeyManager, IKeyManager>;
   private readonly configService: ConfigService;
 
   constructor(
@@ -75,10 +72,10 @@ export class KmsServiceImpl implements KmsService {
     );
 
     // Initialize KeyManagers (each creates its own SecretStorage internally)
-    this.keyManagers = new Map<KeyManagerName, KeyManager>([
-      [KEY_MANAGERS.local, new LocalKeyManager(localSecretStorage)],
+    this.keyManagers = new Map<KeyManager, IKeyManager>([
+      [KeyManager.local, new LocalKeyManager(localSecretStorage)],
       [
-        KEY_MANAGERS.local_encrypted,
+        KeyManager.local_encrypted,
         new LocalKeyManager(localEncryptedSecretStorage),
       ],
     ]);
@@ -86,7 +83,7 @@ export class KmsServiceImpl implements KmsService {
 
   createLocalPrivateKey(
     keyType: KeyAlgorithm,
-    keyManager: KeyManagerName = KEY_MANAGERS.local,
+    keyManager: KeyManager = KeyManager.local,
     labels?: string[],
   ): {
     keyRefId: string;
@@ -127,7 +124,7 @@ export class KmsServiceImpl implements KmsService {
   importPublicKey(
     keyType: KeyAlgorithm,
     publicKeyRaw: string,
-    keyManager: KeyManagerName = KEY_MANAGERS.local,
+    keyManager: KeyManager = KeyManager.local,
     labels?: string[],
   ): { keyRefId: string; publicKey: string } {
     // Check if ED25519 support is enabled when using ED25519 key type
@@ -172,7 +169,7 @@ export class KmsServiceImpl implements KmsService {
   importPrivateKey(
     keyType: KeyAlgorithm,
     privateKey: string,
-    keyManager: KeyManagerName = KEY_MANAGERS.local,
+    keyManager: KeyManager = KeyManager.local,
     labels?: string[],
   ): { keyRefId: string; publicKey: string } {
     // Check if ED25519 support is enabled when using ED25519 key type
@@ -240,7 +237,7 @@ export class KmsServiceImpl implements KmsService {
     keyType: KeyAlgorithm,
     privateKeyRaw: string,
     validationPublicKey: string,
-    keyManager?: KeyManagerName,
+    keyManager?: KeyManager,
     labels?: string[],
   ): { keyRefId: string; publicKey: string } {
     const privateKey = this.createPrivateKey(keyType, privateKeyRaw);
@@ -280,7 +277,7 @@ export class KmsServiceImpl implements KmsService {
 
   list(): Array<{
     keyRefId: string;
-    keyManager: KeyManagerName;
+    keyManager: KeyManager;
     publicKey: string;
     labels?: string[];
   }> {
@@ -422,7 +419,7 @@ export class KmsServiceImpl implements KmsService {
     );
   }
 
-  private getKeyManager(name: KeyManagerName): KeyManager {
+  private getKeyManager(name: KeyManager): IKeyManager {
     const manager = this.keyManagers.get(name);
     if (!manager) {
       throw new ConfigurationError(`Key manager not registered: ${name}`);

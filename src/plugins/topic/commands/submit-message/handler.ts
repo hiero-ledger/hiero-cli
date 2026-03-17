@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { TopicSubmitMessageOutput } from './output';
 import type {
   SubmitMessageBuildTransactionResult,
@@ -45,8 +45,7 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     const keyManagerArg = validArgs.keyManager;
     const currentNetwork = api.network.getCurrentNetwork();
     const keyManager =
-      keyManagerArg ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
     let topicId = topicIdOrAlias;
     const topicAliasResult = api.alias.resolve(
@@ -67,6 +66,8 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
 
     let signerKeyRefId: string | undefined;
 
+    const allowedSubmitKeyRefIds = topicData.submitKeyRefIds ?? [];
+
     if (signerArg) {
       const resolvedSigner = await api.keyResolver.resolveSigningKey(
         signerArg,
@@ -76,15 +77,15 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
       signerKeyRefId = resolvedSigner.keyRefId;
 
       if (
-        topicData.submitKeyRefId &&
-        topicData.submitKeyRefId !== signerKeyRefId
+        allowedSubmitKeyRefIds.length > 0 &&
+        !allowedSubmitKeyRefIds.includes(signerKeyRefId)
       ) {
         throw new ValidationError(
-          'The provided signer is not authorized to submit messages to this topic. The topic has a different submit key configured.',
+          'The provided signer is not authorized to submit messages to this topic. The topic has different submit keys configured.',
         );
       }
 
-      if (topicData.submitKeyRefId) {
+      if (allowedSubmitKeyRefIds.length > 0) {
         logger.info(`Using provided signer (authorized submit key)`);
       } else {
         logger.info(`Using provided signer for public topic`);

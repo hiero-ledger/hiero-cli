@@ -1,7 +1,16 @@
 import type { CoreApi, TransactionResult } from '@/core';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 
-import { ED25519_DER_PRIVATE_KEY } from '@/__tests__/mocks/fixtures';
+import {
+  ED25519_DER_PRIVATE_KEY,
+  ED25519_DER_PRIVATE_KEY_ADMIN_2,
+  ED25519_DER_PRIVATE_KEY_SUBMIT_1,
+  ED25519_DER_PRIVATE_KEY_SUBMIT_2,
+  MOCK_TOPIC_ADMIN_KEY_REF_ID,
+  MOCK_TOPIC_ADMIN_KEY_REF_ID_2,
+  MOCK_TOPIC_SUBMIT_KEY_REF_ID,
+  MOCK_TOPIC_SUBMIT_KEY_REF_ID_2,
+} from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeAliasMock,
@@ -52,22 +61,13 @@ const makeApiMocks = ({
   const kms = makeKmsMock();
   kms.importPrivateKey.mockImplementation((keyType: string, key: string) => {
     const keyMap: Record<string, string> = {
-      [ED25519_DER_PRIVATE_KEY]: 'kr_admin',
-      '302e020100300506032b6570042204201111111111111111111111111111111111111111111111111111111111111111':
-        'kr_admin',
-      '302e020100300506032b6570042204202222222222222222222222222222222222222222222222222222222222222222':
-        'kr_submit',
-      '302e020100300506032b6570042204203333333333333333333333333333333333333333333333333333333333333333':
-        'kr_33333',
-      '302e020100300506032b657004220420admin': 'kr_admin',
-      '302e020100300506032b657004220420submit': 'kr_submit',
-      '302e020100300506032b6570042204204444444444444444444444444444444444444444444444444444444444444444':
-        'kr_44444',
-      '302e020100300506032b6570042204205555555555555555555555555555555555555555555555555555555555555555':
-        'kr_55555',
+      [ED25519_DER_PRIVATE_KEY]: MOCK_TOPIC_ADMIN_KEY_REF_ID,
+      [ED25519_DER_PRIVATE_KEY_ADMIN_2]: MOCK_TOPIC_ADMIN_KEY_REF_ID_2,
+      [ED25519_DER_PRIVATE_KEY_SUBMIT_1]: MOCK_TOPIC_SUBMIT_KEY_REF_ID,
+      [ED25519_DER_PRIVATE_KEY_SUBMIT_2]: MOCK_TOPIC_SUBMIT_KEY_REF_ID_2,
     };
     return {
-      keyRefId: keyMap[key] || `kr_${key.slice(-5)}`,
+      keyRefId: keyMap[key] ?? `kr_${key.slice(-5)}`,
       publicKey: 'mock-public-key',
     };
   });
@@ -144,8 +144,7 @@ describe('topic plugin - create command', () => {
     MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
 
     const adminKey = `0.0.123456:${ED25519_DER_PRIVATE_KEY}`;
-    const submitKey =
-      '0.0.789012:302e020100300506032b6570042204202222222222222222222222222222222222222222222222222222222222222222';
+    const submitKey = `0.0.789012:${ED25519_DER_PRIVATE_KEY_SUBMIT_1}`;
 
     const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
       makeApiMocks({
@@ -173,8 +172,8 @@ describe('topic plugin - create command', () => {
 
     const args = makeArgs(api, logger, {
       memo: 'Test topic',
-      adminKey,
-      submitKey,
+      adminKey: [adminKey],
+      submitKey: [submitKey],
     });
 
     const result = await topicCreate(args);
@@ -197,7 +196,7 @@ describe('topic plugin - create command', () => {
     );
     expect(kms.importPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
-      '302e020100300506032b6570042204202222222222222222222222222222222222222222222222222222222222222222',
+      ED25519_DER_PRIVATE_KEY_SUBMIT_1,
       'local',
       ['topic:submit'],
     );
@@ -207,8 +206,78 @@ describe('topic plugin - create command', () => {
       expect.objectContaining({
         topicId: '0.0.8888',
         memo: 'Test topic',
-        adminKeyRefId: 'kr_admin',
-        submitKeyRefId: 'kr_submit',
+        adminKeyRefIds: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
+        submitKeyRefIds: [MOCK_TOPIC_SUBMIT_KEY_REF_ID],
+        network: 'testnet',
+      }),
+    );
+  });
+
+  test('creates topic successfully with multiple admin and submit keys', async () => {
+    const logger = makeLogger();
+    const saveTopicMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
+
+    const adminKey1 = `0.0.111:${ED25519_DER_PRIVATE_KEY}`;
+    const adminKey2 = `0.0.222:${ED25519_DER_PRIVATE_KEY_ADMIN_2}`;
+    const submitKey1 = `0.0.333:${ED25519_DER_PRIVATE_KEY_SUBMIT_1}`;
+    const submitKey2 = `0.0.444:${ED25519_DER_PRIVATE_KEY_SUBMIT_2}`;
+
+    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
+      makeApiMocks({
+        topicCreateImpl: jest.fn().mockReturnValue({
+          transaction: {},
+        }),
+        executeImpl: jest.fn().mockResolvedValue({
+          transactionId: '0.0.100000@1700000000.000000003',
+          success: true,
+          topicId: '0.0.6666',
+          consensusTimestamp: '2024-01-01T00:00:00.000Z',
+          receipt: { status: { status: 'success' } },
+        } as TransactionResult),
+      });
+
+    const api: Partial<CoreApi> = {
+      topic: topicTransactions,
+      txSign,
+      txExecute,
+      network: networkMock,
+      kms,
+      alias: alias as AliasService,
+      logger,
+    };
+
+    const args = makeArgs(api, logger, {
+      memo: 'Multi-key topic',
+      adminKey: [adminKey1, adminKey2],
+      submitKey: [submitKey1, submitKey2],
+    });
+
+    const result = await topicCreate(args);
+
+    const output = assertOutput(result.result, TopicCreateOutputSchema);
+    expect(output.topicId).toBe('0.0.6666');
+    expect(output.adminKeyPresent).toBe(true);
+    expect(output.submitKeyPresent).toBe(true);
+
+    expect(topicTransactions.createTopic).toHaveBeenCalledWith({
+      memo: 'Multi-key topic',
+      adminKey: expect.any(Object),
+      submitKey: expect.any(Object),
+    });
+    expect(saveTopicMock).toHaveBeenCalledWith(
+      `${SupportedNetwork.TESTNET}:0.0.6666`,
+      expect.objectContaining({
+        topicId: '0.0.6666',
+        memo: 'Multi-key topic',
+        adminKeyRefIds: [
+          MOCK_TOPIC_ADMIN_KEY_REF_ID,
+          MOCK_TOPIC_ADMIN_KEY_REF_ID_2,
+        ],
+        submitKeyRefIds: [
+          MOCK_TOPIC_SUBMIT_KEY_REF_ID,
+          MOCK_TOPIC_SUBMIT_KEY_REF_ID_2,
+        ],
         network: 'testnet',
       }),
     );

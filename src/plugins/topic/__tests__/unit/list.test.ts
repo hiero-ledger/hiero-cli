@@ -1,7 +1,11 @@
 import type { CoreApi } from '@/core';
-import type { TopicData } from '@/plugins/topic/schema';
 
-import { makeArgs, makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import {
+  makeArgs,
+  makeLogger,
+  makeStateMock,
+  makeTopicData,
+} from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -14,15 +18,6 @@ jest.mock('../../zustand-state-helper', () => ({
 }));
 
 const MockedHelper = ZustandTopicStateHelper as jest.Mock;
-
-const makeTopicData = (overrides: Partial<TopicData> = {}): TopicData => ({
-  name: 'test-topic',
-  topicId: '0.0.1234',
-  memo: 'Test topic',
-  network: SupportedNetwork.TESTNET,
-  createdAt: new Date().toISOString(),
-  ...overrides,
-});
 
 describe('topic plugin - list command', () => {
   beforeEach(() => {
@@ -80,8 +75,8 @@ describe('topic plugin - list command', () => {
         topicId: '0.0.3333',
         memo: 'Topic 3',
         name: 'Topic 3',
-        adminKeyRefId: 'kr_admin123',
-        submitKeyRefId: 'kr_submit123',
+        adminKeyRefIds: ['kr_admin'],
+        submitKeyRefIds: ['kr_submit'],
       }),
     ];
 
@@ -164,14 +159,14 @@ describe('topic plugin - list command', () => {
         topicId: '0.0.1111',
         memo: 'Topic 1',
         name: 'Topic 1',
-        adminKeyRefId: 'kr_admin1',
+        adminKeyRefIds: ['kr_admin1'],
         network: SupportedNetwork.TESTNET,
       }),
       makeTopicData({
         topicId: '0.0.2222',
         memo: 'Topic 2',
         name: 'Topic 2',
-        submitKeyRefId: 'kr_submit1',
+        submitKeyRefIds: ['kr_submit1'],
         network: SupportedNetwork.MAINNET,
       }),
       makeTopicData({

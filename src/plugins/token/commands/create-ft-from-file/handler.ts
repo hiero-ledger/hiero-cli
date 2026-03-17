@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/shared.types';
 import type { CustomFee } from '@/core/types/token.types';
 import type { TokenCreateFtFromFileOutput } from './output';
@@ -49,7 +49,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     const validArgs = TokenCreateFtFromFileInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      api.config.getOption<KeyManager>('default_key_manager');
 
     logger.info(`Creating fungible token from file: ${validArgs.file}`);
 

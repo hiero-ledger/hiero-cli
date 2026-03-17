@@ -19,9 +19,13 @@ export const TopicDataSchema = z.object({
 
   memo: z.string().max(100, 'Memo must be 100 characters or less').optional(),
 
-  adminKeyRefId: z.string().min(1, 'Key reference ID is required').optional(),
+  adminKeyRefIds: z
+    .array(z.string().min(1, 'Key reference ID is required'))
+    .optional(),
 
-  submitKeyRefId: z.string().min(1, 'Key reference ID is required').optional(),
+  submitKeyRefIds: z
+    .array(z.string().min(1, 'Key reference ID is required'))
+    .optional(),
 
   autoRenewAccount: EntityIdSchema.optional(),
 

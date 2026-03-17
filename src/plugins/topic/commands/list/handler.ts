@@ -28,8 +28,12 @@ export class TopicListCommand implements Command {
     }
 
     const stats = {
-      withAdminKey: topics.filter((topic) => topic.adminKeyRefId).length,
-      withSubmitKey: topics.filter((topic) => topic.submitKeyRefId).length,
+      withAdminKey: topics.filter(
+        (topic) => (topic.adminKeyRefIds?.length ?? 0) > 0,
+      ).length,
+      withSubmitKey: topics.filter(
+        (topic) => (topic.submitKeyRefIds?.length ?? 0) > 0,
+      ).length,
       withMemo: topics.filter(
         (topic) => topic.memo && topic.memo !== '(No memo)',
       ).length,
@@ -47,8 +51,8 @@ export class TopicListCommand implements Command {
       topicId: topic.topicId,
       network: topic.network,
       memo: topic.memo && topic.memo !== '(No memo)' ? topic.memo : null,
-      adminKeyPresent: Boolean(topic.adminKeyRefId),
-      submitKeyPresent: Boolean(topic.submitKeyRefId),
+      adminKeyPresent: (topic.adminKeyRefIds?.length ?? 0) > 0,
+      submitKeyPresent: (topic.submitKeyRefIds?.length ?? 0) > 0,
       createdAt: topic.createdAt,
     }));
 

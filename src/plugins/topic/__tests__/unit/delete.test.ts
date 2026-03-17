@@ -1,5 +1,4 @@
 import type { CoreApi } from '@/core';
-import type { TopicData } from '@/plugins/topic/schema';
 
 import {
   makeAliasMock,
@@ -7,6 +6,7 @@ import {
   makeLogger,
   makeNetworkMock,
   makeStateMock,
+  makeTopicData,
   mockTopicAliasRecord,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
@@ -22,15 +22,6 @@ jest.mock('../../zustand-state-helper', () => ({
 }));
 
 const MockedHelper = ZustandTopicStateHelper as jest.Mock;
-
-const makeTopicData = (overrides: Partial<TopicData> = {}): TopicData => ({
-  name: 'test-topic',
-  topicId: '0.0.1234',
-  memo: 'Test topic',
-  network: SupportedNetwork.TESTNET,
-  createdAt: new Date().toISOString(),
-  ...overrides,
-});
 
 describe('topic plugin - delete command (ADR-007)', () => {
   beforeEach(() => {

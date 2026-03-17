@@ -19,6 +19,10 @@ import type { IdentityResolutionService } from '@/core/services/identity-resolut
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { Destination } from '@/core/services/key-resolver/types';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
+import type {
+  Credential,
+  KeyManager,
+} from '@/core/services/kms/kms-types.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { ContractInfo } from '@/core/services/mirrornode/types';
@@ -34,15 +38,12 @@ import type {
   BatchExecuteTransactionResult,
   TransactionResult,
 } from '@/core/types/shared.types';
+import type { TopicData } from '@/plugins/topic/schema';
 
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import { StateError, ValidationError } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
-import {
-  type Credential,
-  CredentialType,
-  type KeyManagerName,
-} from '@/core/services/kms/kms-types.interface';
+import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -231,6 +232,17 @@ export const makeAliasMock = (): jest.Mocked<AliasService> => ({
   exists: jest.fn().mockReturnValue(false),
   availableOrThrow: jest.fn(),
   clear: jest.fn(),
+});
+
+export const makeTopicData = (
+  overrides: Partial<TopicData> = {},
+): TopicData => ({
+  name: 'test-topic',
+  topicId: '0.0.1234',
+  memo: 'Test topic',
+  network: SupportedNetwork.TESTNET,
+  createdAt: new Date().toISOString(),
+  ...overrides,
 });
 
 export const mockTopicAliasRecord: AliasRecord = {
@@ -591,7 +603,7 @@ export const makeKeyResolverMock = (
 ): jest.Mocked<KeyResolverService> => {
   const resolveCore = (
     credential: Credential,
-    keyManager: KeyManagerName,
+    keyManager: KeyManager,
     labels?: string[],
   ) => {
     if (credential?.type === CredentialType.ACCOUNT_KEY_PAIR) {
