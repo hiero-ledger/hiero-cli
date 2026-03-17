@@ -5,7 +5,6 @@
   "supplyType": "finite",
   "initialSupply": "100t",
   "maxSupply": "1000",
-  "treasuryKey": "treasury-account",
-  "adminKey": "admin-account",
-  "supplyKey": "supply-account"
+  "treasuryKey": "<alias or accountId:privateKey>",
+  "adminKey": "<alias or accountId:privateKey>"
 }

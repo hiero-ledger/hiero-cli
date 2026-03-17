@@ -2,7 +2,7 @@
   "name": "nft-aliases-example",
   "symbol": "NAL",
   "supplyType": "infinite",
-  "treasuryKey": "treasury-account",
-  "adminKey": "admin-account",
-  "supplyKey": "supply-account"
+  "treasuryKey": "treasuryAccount",
+  "adminKey": "adminAccount",
+  "supplyKey": "supplyAccount"
 }
