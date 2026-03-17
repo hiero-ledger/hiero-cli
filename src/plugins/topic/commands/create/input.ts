@@ -4,7 +4,6 @@ import {
   KeyManagerTypeSchema,
   KeySchema,
   MemoSchema,
-  PrivateKeySchema,
   TopicNameSchema,
 } from '@/core/schemas';
 
@@ -14,12 +13,20 @@ import {
  */
 export const TopicCreateInputSchema = z.object({
   memo: MemoSchema.describe('Optional memo for the topic'),
-  adminKey: PrivateKeySchema.optional().describe(
-    'Admin key of topic. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias',
-  ),
-  submitKey: KeySchema.optional().describe(
-    'Submit key of topic. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
-  ),
+  adminKey: z
+    .array(KeySchema)
+    .optional()
+    .default([])
+    .describe(
+      'Admin key(s). Pass multiple times for multiple keys. Format: {accountId}:{privateKey}, public/private key in {ed25519|ecdsa}:public|private:{key} format, key reference or account alias',
+    ),
+  submitKey: z
+    .array(KeySchema)
+    .optional()
+    .default([])
+    .describe(
+      'Submit key(s). Pass multiple times for multiple keys. Format: {accountId}:{privateKey}, public/private key in {ed25519|ecdsa}:public|private:{key} format, key reference or account alias',
+    ),
   name: TopicNameSchema.optional().describe(
     'Optional name/alias for the topic',
   ),

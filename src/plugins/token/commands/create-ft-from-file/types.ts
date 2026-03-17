@@ -6,7 +6,7 @@ import type {
 } from '@/core/services/key-resolver/types';
 import type {
   Credential,
-  KeyManagerName,
+  KeyManager,
 } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TokenCustomFeeType } from '@/plugins/token/schema';
@@ -23,7 +23,7 @@ export interface TokenCreateFtFromFileNormalizedParams {
   tokenType: HederaTokenType;
   customFees: TokenCustomFeeType[];
   associations: Credential[];
-  keyManager: KeyManagerName;
+  keyManager: KeyManager;
   network: SupportedNetwork;
   treasury: ResolvedAccountCredential;
   adminKey: ResolvedPublicKey;

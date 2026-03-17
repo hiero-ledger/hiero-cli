@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { TokenCreateFtOutput } from './output';
 import type {
   TokenCreateFtBuildTransactionResult,
@@ -46,7 +46,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
 
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      api.config.getOption<KeyManager>('default_key_manager');
     const initialSupply = processTokenBalanceInput(
       validArgs.initialSupply,
       validArgs.decimals,
@@ -64,11 +64,14 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
         keyManager,
         ['token:treasury'],
       );
-    const admin = await api.keyResolver.resolveAccountCredentialsWithFallback(
+
+    const admin = await resolveOptionalKey(
       validArgs.adminKey,
       keyManager,
-      ['token:admin'],
+      api.keyResolver,
+      'token:admin',
     );
+
     const supply = await resolveOptionalKey(
       validArgs.supplyKey,
       keyManager,
@@ -94,7 +97,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
 
     logger.debug('=== TOKEN PARAMS DEBUG ===');
     logger.debug(`Treasury ID: ${treasury.keyRefId}`);
-    logger.debug(`Admin Key (keyRefId): ${admin.keyRefId}`);
+    logger.debug(`Admin Key (keyRefId): ${admin?.keyRefId}`);
     logger.debug(`Use Custom Treasury: ${String(Boolean(treasury))}`);
     logger.debug('=========================');
 
@@ -113,7 +116,6 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       admin,
       supply,
       finalMaxSupply,
-      adminKeyProvided: Boolean(validArgs.adminKey),
     };
   }
 
@@ -131,7 +133,9 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       tokenType: normalisedParams.tokenType,
       supplyType: normalisedParams.supplyType,
       maxSupplyRaw: normalisedParams.finalMaxSupply,
-      adminPublicKey: PublicKey.fromString(normalisedParams.admin.publicKey),
+      adminPublicKey: normalisedParams.admin
+        ? PublicKey.fromString(normalisedParams.admin.publicKey)
+        : undefined,
       supplyPublicKey: normalisedParams.supply
         ? PublicKey.fromString(normalisedParams.supply.publicKey)
         : undefined,
@@ -148,7 +152,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
     const { api } = args;
     const txSigners = [normalisedParams.treasury.keyRefId];
 
-    if (normalisedParams.adminKeyProvided) {
+    if (normalisedParams.admin) {
       txSigners.push(normalisedParams.admin.keyRefId);
     }
 
@@ -201,9 +205,9 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       initialSupply: normalisedParams.initialSupply,
       tokenType: normalisedParams.tokenType,
       supplyType: normalisedParams.supplyType,
-      adminPublicKey: normalisedParams.admin.publicKey,
+      adminPublicKey: normalisedParams.admin?.publicKey,
       supplyPublicKey: normalisedParams.supply?.publicKey,
-      network: normalisedParams.network,
+      network: api.network.getCurrentNetwork(),
     });
 
     const key = composeKey(normalisedParams.network, result.tokenId!);

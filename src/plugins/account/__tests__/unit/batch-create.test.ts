@@ -1,11 +1,11 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { PreOutputPreparationParams } from '@/core/hooks/types';
-import type {
-  BatchDataItem,
-  BatchExecuteTransactionResult,
-} from '@/core/types/shared.types';
+import type { BatchDataItem } from '@/core/types/shared.types';
 
-import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
+import {
+  createBatchExecuteParams,
+  makeLogger,
+  makeStateMock,
+} from '@/__tests__/mocks/mocks';
 import { StateError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -36,26 +36,6 @@ jest.mock('@hashgraph/sdk', () => {
 });
 
 const MockedHelper = ZustandAccountStateHelper as jest.Mock;
-
-const createBatchExecuteParams = (
-  batchData: BatchExecuteTransactionResult['updatedBatchData'],
-): PreOutputPreparationParams<
-  unknown,
-  unknown,
-  unknown,
-  BatchExecuteTransactionResult
-> =>
-  ({
-    normalisedParams: {},
-    buildTransactionResult: {},
-    signTransactionResult: {},
-    executeTransactionResult: { updatedBatchData: batchData },
-  }) as PreOutputPreparationParams<
-    unknown,
-    unknown,
-    unknown,
-    BatchExecuteTransactionResult
-  >;
 
 const createAccountBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},

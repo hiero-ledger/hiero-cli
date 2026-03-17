@@ -536,8 +536,9 @@ Lists all tokens from all networks stored in state.
   "memo": "Test topic",
   "network": "testnet",
   "transactionId": "0.0.123@1700000000.123456789",
-  "hasAdminKey": true,
-  "hasSubmitKey": false
+  "adminKeyPresent": true,
+  "submitKeyPresent": false,
+  "createdAt": "2024-10-20T12:34:56.789Z"
 }
 ```
 
@@ -554,13 +555,12 @@ Lists all tokens from all networks stored in state.
       "memo": "Test topic",
       "network": "testnet",
       "createdAt": "2024-10-20T12:34:56.789Z",
-      "hasAdminKey": true,
-      "hasSubmitKey": false
+      "adminKeyPresent": true,
+      "submitKeyPresent": false
     }
   ],
-  "count": 1,
+  "totalCount": 1,
   "stats": {
-    "total": 1,
     "withAdminKey": 1,
     "withSubmitKey": 0,
     "withMemo": 1,

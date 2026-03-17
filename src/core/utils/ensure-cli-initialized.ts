@@ -1,11 +1,11 @@
 import type { ZodSchema } from 'zod';
 import type { CoreApi } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 
 import * as clack from '@clack/prompts';
 
 import { ConfigurationError } from '@/core/errors';
 import { EntityIdSchema, PrivateKeyDefinitionSchema } from '@/core/schemas';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
 const NETWORK_DISPLAY_OPTIONS = [
@@ -30,12 +30,12 @@ const NETWORK_DISPLAY_OPTIONS = [
 const KEY_MANAGER_OPTIONS = [
   {
     label: 'Local Encrypted (Recommended)',
-    value: 'local_encrypted',
+    value: KeyManager.local_encrypted,
     hint: 'AES-256 encrypted storage',
   },
   {
     label: 'Local (unencrypted)',
-    value: 'local',
+    value: KeyManager.local,
     hint: 'Plain text storage',
   },
 ];
@@ -89,14 +89,14 @@ async function promptForAccountCredentials(): Promise<{
 }
 
 async function promptForGlobalConfig(): Promise<{
-  keyManager: KeyManagerName;
+  keyManager: KeyManager;
   ed25519Support: boolean;
 }> {
   let keyManager = (await clack.select({
     message: 'Select Key Manager:',
     options: KEY_MANAGER_OPTIONS,
-    initialValue: 'local_encrypted',
-  })) as KeyManagerName;
+    initialValue: KeyManager.local_encrypted,
+  })) as KeyManager;
   keyManager = ensureNotCanceled(keyManager);
 
   let ed25519Support = await clack.confirm({
@@ -120,7 +120,7 @@ async function promptForOverride(): Promise<boolean> {
 
 function saveGlobalConfiguration(
   api: CoreApi,
-  keyManager: KeyManagerName,
+  keyManager: KeyManager,
   ed25519Support: boolean,
 ): void {
   api.config.setOption('ed25519_support_enabled', ed25519Support);
@@ -131,7 +131,7 @@ async function importOperatorKey(
   api: CoreApi,
   accountId: string,
   privateKey: string,
-  keyManager?: KeyManagerName,
+  keyManager?: KeyManager,
 ): Promise<string> {
   const account = await api.mirror.getAccount(accountId);
   const finalKeyManager =

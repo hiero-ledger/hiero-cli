@@ -59,8 +59,8 @@ export class TopicImportCommand implements Command {
       name: normalisedParams.alias,
       topicId: normalisedParams.topicId,
       memo: topicInfo.memo || '(No memo)',
-      adminKeyRefId: undefined,
-      submitKeyRefId: undefined,
+      adminKeyRefIds: [],
+      submitKeyRefIds: [],
       network: normalisedParams.network,
       createdAt,
     };
