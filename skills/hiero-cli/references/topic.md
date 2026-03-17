@@ -15,12 +15,14 @@ Create a new Hedera Consensus Service topic.
 | `--submit-key`  | `-s`  | string | no       | —              | Submit key (restricts who can post). Formats: `accountId:privateKey`, account ID, `{ed25519\|ecdsa}:public:{hex}`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
 | `--name`        | `-n`  | string | no       | —              | Local alias for this topic                                                                                                                                                   |
 | `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                                                    |
+| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                                                                                    |
 
 **Example:**
 
 ```
 hcli topic create --name myTopic --memo "My topic"
 hcli topic create --name privateTopic --submit-key 0.0.123:302e...
+hcli topic create --name myTopic --batch myBatch
 ```
 
 **Output:** `{ topicId, name, transactionId }`
@@ -70,12 +72,14 @@ Submit a message to a Hedera Consensus Service topic.
 | `--message`     | `-m`  | string | **yes**  | —              | Message content to submit                                                                                                              |
 | `--signer`      | `-s`  | string | no       | —              | Key to sign with (required if topic has submit-key): `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
 | `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                              |
+| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                                              |
 
 **Example:**
 
 ```
 hcli topic submit-message --topic myTopic --message "Hello, Hedera!"
 hcli topic submit-message --topic privateTopic --message "Secret" --signer 0.0.123:302e...
+hcli topic submit-message --topic myTopic --message "Hello" --batch myBatch
 ```
 
 **Output:** `{ topicId, sequenceNumber, transactionId }`

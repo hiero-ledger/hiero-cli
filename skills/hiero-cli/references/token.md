@@ -26,11 +26,13 @@ Create a new fungible token with specified properties.
 | `--name`           | `-n`  | string | no       | —              | Local alias to register for this token                                                                                                     |
 | `--key-manager`    | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                  |
 | `--memo`           | `-M`  | string | no       | —              | Token memo (max 100 chars)                                                                                                                 |
+| `--batch`          | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                                                  |
 
 **Example:**
 
 ```
 hcli token create-ft --token-name "MyToken" --symbol MTK --decimals 2 --initial-supply 1000000 --name mytoken
+hcli token create-ft --token-name "MyToken" --symbol MTK --batch myBatch
 ```
 
 **Output:** `{ tokenId, name, symbol, decimals, initialSupply, transactionId }`
@@ -53,11 +55,13 @@ Create a new non-fungible token collection.
 | `--name`        | `-n`  | string | no       | —              | Local alias to register                                                                                                                    |
 | `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                  |
 | `--memo`        | `-M`  | string | no       | —              | Token memo (max 100 chars)                                                                                                                 |
+| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                                                  |
 
 **Example:**
 
 ```
 hcli token create-nft --token-name "MyNFT" --symbol MNFT --supply-key 0.0.123:302e... --name mynft
+hcli token create-nft --token-name "MyNFT" --symbol MNFT --supply-key 0.0.123:302e... --batch myBatch
 ```
 
 **Output:** `{ tokenId, name, symbol, transactionId }`
@@ -72,11 +76,13 @@ Create a fungible token from a JSON definition file (supports advanced features)
 | --------------- | ----- | ------ | -------- | -------------- | --------------------------------------------------------- |
 | `--file`        | `-f`  | string | **yes**  | —              | Path to JSON token definition file (absolute or relative) |
 | `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                 |
+| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately |
 
 **Example:**
 
 ```
 hcli token create-ft-from-file --file ./my-token.json
+hcli token create-ft-from-file --file ./my-token.json --batch myBatch
 ```
 
 ---
@@ -85,15 +91,17 @@ hcli token create-ft-from-file --file ./my-token.json
 
 Create a non-fungible token from a JSON definition file (supports advanced features).
 
-| Option          | Short | Type   | Required | Default        | Description                                             |
-| --------------- | ----- | ------ | -------- | -------------- | ------------------------------------------------------- |
-| `--file`        | `-f`  | string | **yes**  | —              | Path to JSON NFT definition file (absolute or relative) |
-| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`               |
+| Option          | Short | Type   | Required | Default        | Description                                               |
+| --------------- | ----- | ------ | -------- | -------------- | --------------------------------------------------------- |
+| `--file`        | `-f`  | string | **yes**  | —              | Path to JSON NFT definition file (absolute or relative)   |
+| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                 |
+| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately |
 
 **Example:**
 
 ```
 hcli token create-nft-from-file --file ./my-nft.json
+hcli token create-nft-from-file --file ./my-nft.json --batch myBatch
 ```
 
 ---
@@ -108,6 +116,7 @@ Mint additional fungible tokens to increase supply.
 | `--amount`      | `-a`  | string | **yes**  | —              | Amount to mint. Default: display units. Append `"t"` for raw units                            |
 | `--supply-key`  | `-s`  | string | **yes**  | —              | Supply key: `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
 | `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                     |
+| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                     |
 
 **Example:**
 
@@ -130,11 +139,13 @@ Mint a new NFT into an existing NFT collection.
 | `--metadata`    | `-m`  | string | **yes**  | —              | NFT metadata string (max 100 bytes)                                                           |
 | `--supply-key`  | `-s`  | string | **yes**  | —              | Supply key: `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
 | `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                     |
+| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                     |
 
 **Example:**
 
 ```
 hcli token mint-nft --token mynft --metadata "ipfs://QmABC..." --supply-key 0.0.123:302e...
+hcli token mint-nft --token mynft --metadata "ipfs://QmABC..." --supply-key 0.0.123:302e... --batch myBatch
 ```
 
 **Output:** `{ tokenId, serialNumber, transactionId }`
@@ -152,12 +163,14 @@ Transfer a fungible token from one account to another.
 | `--amount`      | `-a`  | string | **yes**  | —              | Amount to transfer. Default: display units. Append `"t"` for raw units |
 | `--from`        | `-f`  | string | no       | operator       | Sender: `accountId:privateKey`, key reference, or alias                |
 | `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                              |
+| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately              |
 
 **Example:**
 
 ```
 hcli token transfer-ft --token MTK --to alice --amount 100
 hcli token transfer-ft --token 0.0.456 --to 0.0.789 --amount 50 --from 0.0.123:302e...
+hcli token transfer-ft --token MTK --to alice --amount 100 --batch myBatch
 ```
 
 **Output:** `{ tokenId, from, to, amount, transactionId }`
@@ -168,18 +181,20 @@ hcli token transfer-ft --token 0.0.456 --to 0.0.789 --amount 50 --from 0.0.123:3
 
 Transfer one or more NFTs from one account to another.
 
-| Option          | Short | Type   | Required | Default        | Description                                             |
-| --------------- | ----- | ------ | -------- | -------------- | ------------------------------------------------------- |
-| `--token`       | `-T`  | string | **yes**  | —              | NFT token alias or token ID                             |
-| `--to`          | `-t`  | string | **yes**  | —              | Destination account ID or alias                         |
-| `--serials`     | `-s`  | string | **yes**  | —              | Comma-separated serial numbers, e.g. `"1,2,3"`          |
-| `--from`        | `-f`  | string | no       | operator       | Sender: `accountId:privateKey`, key reference, or alias |
-| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`               |
+| Option          | Short | Type   | Required | Default        | Description                                               |
+| --------------- | ----- | ------ | -------- | -------------- | --------------------------------------------------------- |
+| `--token`       | `-T`  | string | **yes**  | —              | NFT token alias or token ID                               |
+| `--to`          | `-t`  | string | **yes**  | —              | Destination account ID or alias                           |
+| `--serials`     | `-s`  | string | **yes**  | —              | Comma-separated serial numbers, e.g. `"1,2,3"`            |
+| `--from`        | `-f`  | string | no       | operator       | Sender: `accountId:privateKey`, key reference, or alias   |
+| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                 |
+| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately |
 
 **Example:**
 
 ```
 hcli token transfer-nft --token mynft --to alice --serials "1,2"
+hcli token transfer-nft --token mynft --to alice --serials "1,2" --batch myBatch
 ```
 
 **Output:** `{ tokenId, from, to, serials[], transactionId }`
@@ -195,12 +210,14 @@ Associate a token with an account to enable transfers to that account.
 | `--token`       | `-T`  | string | **yes**  | —              | Token alias or token ID                                               |
 | `--account`     | `-a`  | string | **yes**  | —              | Account to associate: `accountId:privateKey`, key reference, or alias |
 | `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                             |
+| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately             |
 
 **Example:**
 
 ```
 hcli token associate --token MTK --account alice
 hcli token associate --token 0.0.456 --account 0.0.789:302e...
+hcli token associate --token MTK --account alice --batch myBatch
 ```
 
 **Output:** `{ tokenId, accountId, transactionId }`

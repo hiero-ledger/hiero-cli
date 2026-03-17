@@ -42,6 +42,17 @@ Keys and signers accept multiple formats:
 - `kr_xxx` — key reference stored in KMS
 - account alias — name registered in local state
 
+## Local state storage
+
+State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namespace:
+
+| Plugin    | File                            |
+| --------- | ------------------------------- |
+| `account` | `account-accounts-storage.json` |
+| `token`   | `token-tokens-storage.json`     |
+| `topic`   | `topic-topics-storage.json`     |
+| `batch`   | `batch-batches-storage.json`    |
+
 ## Amount notation
 
 - `"1"` = 1 display unit (e.g. 1 HBAR, or 1 token with decimals applied)

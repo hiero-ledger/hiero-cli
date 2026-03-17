@@ -15,12 +15,14 @@ Transfer HBAR from one account to another.
 | `--from`        | `-f`  | string | no       | operator       | Sender: `accountId:privateKey`, key reference `kr_xxx`, or account alias. Defaults to network operator                        |
 | `--memo`        | `-m`  | string | no       | —              | Transaction memo                                                                                                              |
 | `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                     |
+| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                                     |
 
 **Example:**
 
 ```
 hcli hbar transfer --amount 5 --to 0.0.67890
 hcli hbar transfer --amount 1000t --to alice --from 0.0.12345:302e... --memo "payment"
+hcli hbar transfer --amount 5 --to alice --batch myBatch
 ```
 
 **Output:** `{ transactionId, from, to, amount, memo? }`

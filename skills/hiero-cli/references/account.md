@@ -16,11 +16,13 @@ Create a new Hedera account with specified balance and settings.
 | `--key-manager`       | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                 |
 | `--key-type`          | `-t`  | string | no       | `ecdsa`        | Key type: `ecdsa` or `ed25519`. Mutually exclusive with `--key`                                           |
 | `--key`               | `-K`  | string | no       | —              | Existing key (private/public key, key reference `kr_xxx`, or alias). Mutually exclusive with `--key-type` |
+| `--batch`             | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                 |
 
 **Example:**
 
 ```
 hcli account create --balance 10 --name myAccount --key-type ecdsa
+hcli account create --balance 10 --batch myBatch
 ```
 
 **Output:** `{ accountId, publicKey, privateKey, keyRef, name, balance }`
