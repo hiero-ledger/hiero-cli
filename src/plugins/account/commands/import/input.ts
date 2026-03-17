@@ -11,9 +11,7 @@ import {
  * Validates arguments for importing an existing account
  */
 export const AccountImportInputSchema = z.object({
-  key: KeySchema.describe(
-    'Account credentials. Can be accountId:privateKey pair, key reference or account alias.',
-  ),
+  key: KeySchema.describe('Account credentials. Accepts any key format.'),
   name: AccountNameSchema.optional().describe('Optional account name/alias'),
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type (defaults to config setting)',

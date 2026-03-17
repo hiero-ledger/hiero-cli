@@ -7,9 +7,7 @@ import { KeyManagerTypeSchema, KeySchema, NetworkSchema } from '@/core/schemas';
  * Validates arguments for setting operator credentials
  */
 export const NetworkSetOperatorInputSchema = z.object({
-  operator: KeySchema.describe(
-    'Operator credentials. Can be accountId:privateKey pair, key reference or account alias.',
-  ),
+  operator: KeySchema.describe('Operator credentials. Accepts any key format.'),
   network: NetworkSchema.optional().describe(
     'Target network (defaults to current network)',
   ),
