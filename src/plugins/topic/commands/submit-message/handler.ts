@@ -41,7 +41,7 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
 
     const topicIdOrAlias = validArgs.topic;
     const message = validArgs.message;
-    const signerArg = validArgs.signer;
+    const signerArgs = validArgs.signer;
     const keyManagerArg = validArgs.keyManager;
     const currentNetwork = api.network.getCurrentNetwork();
     const keyManager =
@@ -65,38 +65,54 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
       throw new NotFoundError(`Topic not found with ID or alias: ${topicId}`);
     }
 
-    let signerKeyRefId: string | undefined;
-
+    const signerKeyRefIds: string[] = [];
     const allowedSubmitKeyRefIds = topicData.submitKeyRefIds ?? [];
+    const submitKeyThreshold = topicData.submitKeyThreshold ?? 1;
 
-    if (signerArg) {
-      const resolvedSigner = await api.keyResolver.resolveSigningKey(
-        signerArg,
-        keyManager,
-        ['topic:signer'],
-      );
-      signerKeyRefId = resolvedSigner.keyRefId;
+    if (signerArgs.length > 0) {
+      for (const signerArg of signerArgs) {
+        const resolvedSigner = await api.keyResolver.resolveSigningKey(
+          signerArg,
+          keyManager,
+          ['topic:signer'],
+        );
+        if (
+          allowedSubmitKeyRefIds.length > 0 &&
+          !allowedSubmitKeyRefIds.includes(resolvedSigner.keyRefId)
+        ) {
+          throw new ValidationError(
+            `The provided signer is not authorized to submit messages to this topic. Key ${resolvedSigner.keyRefId} is not in the topic's submit keys.`,
+          );
+        }
+        signerKeyRefIds.push(resolvedSigner.keyRefId);
+      }
 
       if (
         allowedSubmitKeyRefIds.length > 0 &&
-        !allowedSubmitKeyRefIds.includes(signerKeyRefId)
+        signerKeyRefIds.length < submitKeyThreshold
       ) {
         throw new ValidationError(
-          'The provided signer is not authorized to submit messages to this topic. The topic has different submit keys configured.',
+          `Topic requires ${submitKeyThreshold} signature(s) for submit key (threshold ${submitKeyThreshold}-of-${allowedSubmitKeyRefIds.length}). Provided ${signerKeyRefIds.length} signer(s).`,
         );
       }
 
       if (allowedSubmitKeyRefIds.length > 0) {
-        logger.info(`Using provided signer (authorized submit key)`);
+        logger.info(
+          `Using ${signerKeyRefIds.length} signer(s) (authorized submit key)`,
+        );
       } else {
         logger.info(`Using provided signer for public topic`);
       }
+    } else if (allowedSubmitKeyRefIds.length > 0) {
+      throw new ValidationError(
+        `Topic has submit keys (threshold ${submitKeyThreshold}-of-${allowedSubmitKeyRefIds.length}). Provide signer(s) with -s option.`,
+      );
     }
 
     return {
       topicId,
       message,
-      signerKeyRefId,
+      signerKeyRefIds,
       keyManager,
       currentNetwork,
       topicData,
@@ -128,7 +144,7 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
 
     const transaction = await api.txSign.sign(
       buildTransactionResult.transaction,
-      normalisedParams.signerKeyRefId ? [normalisedParams.signerKeyRefId] : [],
+      normalisedParams.signerKeyRefIds,
     );
 
     return { signedTransaction: transaction };

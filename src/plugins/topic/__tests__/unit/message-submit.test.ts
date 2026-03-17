@@ -171,7 +171,7 @@ describe('topic plugin - message-submit command', () => {
     const args = makeArgs(api, logger, {
       topic: '0.0.5678',
       message: 'Signed message',
-      signer: 'my-account-alias',
+      signer: ['my-account-alias'],
     });
 
     const result = await topicSubmitMessage(args);
@@ -245,7 +245,7 @@ describe('topic plugin - message-submit command', () => {
     const args = makeArgs(api, logger, {
       topic: '0.0.1234',
       message: 'Test message',
-      signer: 'wrong-signer',
+      signer: ['wrong-signer'],
     });
 
     await expect(topicSubmitMessage(args)).rejects.toThrow(ValidationError);

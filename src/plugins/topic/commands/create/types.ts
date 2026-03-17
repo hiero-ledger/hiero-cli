@@ -11,6 +11,8 @@ export interface CreateTopicNormalisedParams {
   network: SupportedNetwork;
   adminKeys: ResolvedPublicKey[];
   submitKeys: ResolvedPublicKey[];
+  adminKeyThreshold?: number;
+  submitKeyThreshold?: number;
 }
 
 export interface CreateTopicBuildTransactionResult {

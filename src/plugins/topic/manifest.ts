@@ -65,7 +65,7 @@ export const topicPluginManifest: PluginManifest = {
           type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Admin key(s) of topic. Pass multiple times for multiple keys (any one can sign). Format: {accountId}:{privateKey}, private key in {ed25519|ecdsa}:private:{key} format, key reference or account alias',
+            'Admin key(s) of topic. Pass multiple times for multiple keys. Format: {accountId}:{privateKey}, private key in {ed25519|ecdsa}:private:{key} format, key reference or account alias',
           short: 'a',
         },
         {
@@ -73,8 +73,24 @@ export const topicPluginManifest: PluginManifest = {
           type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Submit key(s) of topic. Pass multiple times for multiple keys (any one can sign). Format: {accountId}:{privateKey}, public/private key in {ed25519|ecdsa}:public|private:{key} format, key reference or account alias',
+            'Submit key(s) of topic. Pass multiple times for multiple keys. Format: {accountId}:{privateKey}, public/private key in {ed25519|ecdsa}:public|private:{key} format, key reference or account alias',
           short: 's',
+        },
+        {
+          name: 'admin-key-threshold',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'Number of admin keys required to sign (M-of-N). Default: all keys must sign. Only applies when multiple admin keys are provided.',
+          short: 'A',
+        },
+        {
+          name: 'submit-key-threshold',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'Number of submit keys required to sign (M-of-N). Default: all keys must sign. Only applies when multiple submit keys are provided.',
+          short: 'S',
         },
         {
           name: 'name',
@@ -158,10 +174,10 @@ export const topicPluginManifest: PluginManifest = {
         },
         {
           name: 'signer',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Key to sign the message with. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+            'Key(s) to sign the message with. Pass multiple times for threshold topics. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
           short: 's',
         },
         {
