@@ -9,7 +9,7 @@ import {
 /**
  * Input schema for batch create command
  */
-export const CreateBatchInputSchema = z.object({
+export const BatchCreateInputSchema = z.object({
   name: AliasNameSchema.describe('Batch name'),
   key: PrivateKeySchema.describe(
     'Key to sign transactions in the batch. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias',
@@ -19,4 +19,4 @@ export const CreateBatchInputSchema = z.object({
   ),
 });
 
-export type CreateBatchInput = z.infer<typeof CreateBatchInputSchema>;
+export type BatchCreateInput = z.infer<typeof BatchCreateInputSchema>;

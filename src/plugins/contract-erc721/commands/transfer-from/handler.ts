@@ -181,7 +181,7 @@ export class ContractErc721TransferFromCommand extends BaseTransactionCommand<
   }
 }
 
-export async function contractErc721TransferFromFunctionCall(
+export async function contractErc721TransferFrom(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ContractErc721TransferFromCommand().execute(args);

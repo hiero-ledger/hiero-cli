@@ -4,13 +4,13 @@
  */
 import type { z } from 'zod';
 
-import { RemovePluginOutputSchema } from '@/plugins/plugin-management/schema';
+import { PluginManagementRemoveOutputSchema } from '@/plugins/plugin-management/schema';
 
 // Export the schema
-export { RemovePluginOutputSchema };
+export { PluginManagementRemoveOutputSchema };
 
 // Human-readable template
-export const REMOVE_PLUGIN_TEMPLATE = `{{#if removed}}
+export const PLUGIN_MANAGEMENT_REMOVE_TEMPLATE = `{{#if removed}}
 ✅ Plugin removed successfully
    Name: {{name}}
 {{else}}
@@ -20,4 +20,6 @@ export const REMOVE_PLUGIN_TEMPLATE = `{{#if removed}}
 {{/if}}`;
 
 // Type export
-export type RemovePluginOutput = z.infer<typeof RemovePluginOutputSchema>;
+export type PluginManagementRemoveOutput = z.infer<
+  typeof PluginManagementRemoveOutputSchema
+>;

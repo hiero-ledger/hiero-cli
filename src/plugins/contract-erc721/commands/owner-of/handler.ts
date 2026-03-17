@@ -61,7 +61,7 @@ export class ContractErc721OwnerOfCommand implements Command {
   }
 }
 
-export async function contractErc721OwnerOfFunctionCall(
+export async function contractErc721OwnerOf(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new ContractErc721OwnerOfCommand().execute(args);

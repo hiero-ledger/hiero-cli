@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { SubmitMessageOutput } from './output';
+import type { TopicSubmitMessageOutput } from './output';
 import type {
   SubmitMessageBuildTransactionResult,
   SubmitMessageExecuteTransactionResult,
@@ -18,11 +18,11 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
-import { SubmitMessageInputSchema } from './input';
+import { TopicSubmitMessageInputSchema } from './input';
 
 export const TOPIC_SUBMIT_MESSAGE_COMMAND_NAME = 'topic_submit-message';
 
-export class SubmitMessageCommand extends BaseTransactionCommand<
+export class TopicSubmitMessageCommand extends BaseTransactionCommand<
   SubmitMessageNormalisedParams,
   SubmitMessageBuildTransactionResult,
   SubmitMessageSignTransactionResult,
@@ -37,7 +37,7 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
   ): Promise<SubmitMessageNormalisedParams> {
     const { api, logger } = args;
     const topicState = new ZustandTopicStateHelper(api.state, logger);
-    const validArgs = SubmitMessageInputSchema.parse(args.args);
+    const validArgs = TopicSubmitMessageInputSchema.parse(args.args);
 
     const topicIdOrAlias = validArgs.topic;
     const message = validArgs.message;
@@ -160,7 +160,7 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
     _signTransactionResult: SubmitMessageSignTransactionResult,
     executeTransactionResult: SubmitMessageExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const outputData: SubmitMessageOutput = {
+    const outputData: TopicSubmitMessageOutput = {
       topicId: normalisedParams.topicId,
       message: normalisedParams.message,
       sequenceNumber: executeTransactionResult.topicSequenceNumber ?? 0,
@@ -173,8 +173,8 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
   }
 }
 
-export async function submitMessage(
+export async function topicSubmitMessage(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new SubmitMessageCommand().execute(args);
+  return new TopicSubmitMessageCommand().execute(args);
 }

@@ -1,4 +1,4 @@
-export { importTopic, ImportTopicCommand } from './handler';
-export { ImportTopicInputSchema } from './input';
-export type { ImportTopicOutput } from './output';
-export { IMPORT_TOPIC_TEMPLATE, ImportTopicOutputSchema } from './output';
+export { topicImport, TopicImportCommand } from './handler';
+export { TopicImportInputSchema } from './input';
+export type { TopicImportOutput } from './output';
+export { TOPIC_IMPORT_TEMPLATE, TopicImportOutputSchema } from './output';

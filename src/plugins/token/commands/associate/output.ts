@@ -12,7 +12,7 @@ import {
 /**
  * Associate Token Command Output Schema
  */
-export const AssociateTokenOutputSchema = z.object({
+export const TokenAssociateOutputSchema = z.object({
   transactionId: TransactionIdSchema.optional(),
   accountId: EntityIdSchema,
   tokenId: EntityIdSchema,
@@ -24,12 +24,12 @@ export const AssociateTokenOutputSchema = z.object({
   network: NetworkSchema,
 });
 
-export type AssociateTokenOutput = z.infer<typeof AssociateTokenOutputSchema>;
+export type TokenAssociateOutput = z.infer<typeof TokenAssociateOutputSchema>;
 
 /**
  * Human-readable template for associate token output
  */
-export const ASSOCIATE_TOKEN_TEMPLATE = `
+export const TOKEN_ASSOCIATE_TEMPLATE = `
 {{#if alreadyAssociated}}
 ✅ Token already associated!
 {{else}}

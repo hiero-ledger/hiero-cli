@@ -1,7 +1,7 @@
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { ConfigurationError } from '@/core';
-import { GetConfigOutputSchema } from '@/plugins/config/commands/get';
-import { getConfigOption } from '@/plugins/config/commands/get/handler';
+import { ConfigGetOutputSchema } from '@/plugins/config/commands/get';
+import { configGet } from '@/plugins/config/commands/get/handler';
 
 import { enumOption } from './helpers/fixtures';
 import {
@@ -22,8 +22,8 @@ describe('config plugin - get', () => {
       args: { option: 'default_key_manager' },
     });
 
-    const result = await getConfigOption(args);
-    const output = assertOutput(result.result, GetConfigOutputSchema);
+    const result = await configGet(args);
+    const output = assertOutput(result.result, ConfigGetOutputSchema);
     expect(output.name).toBe('default_key_manager');
     expect(output.type).toBe('enum');
     expect(output.value).toBe('local');
@@ -43,6 +43,6 @@ describe('config plugin - get', () => {
       args: { option: 'nonexistent_option' },
     });
 
-    await expect(getConfigOption(args)).rejects.toThrow('Option not found');
+    await expect(configGet(args)).rejects.toThrow('Option not found');
   });
 });

@@ -2,19 +2,19 @@ import type { CommandHandlerArgs } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { CommandResult } from '@/core/plugins/plugin.types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { GetOperatorOutput } from './output';
+import type { NetworkGetOperatorOutput } from './output';
 import type { GetOperatorNormalisedParams } from './types';
 
 import { ValidationError } from '@/core/errors';
 import { ERROR_MESSAGES } from '@/plugins/network/error-messages';
 
-import { GetOperatorInputSchema } from './input';
+import { NetworkGetOperatorInputSchema } from './input';
 
 const normalizeParams = (
   args: CommandHandlerArgs,
 ): GetOperatorNormalisedParams => {
   const { api } = args;
-  const validArgs = GetOperatorInputSchema.parse(args.args);
+  const validArgs = NetworkGetOperatorInputSchema.parse(args.args);
   const networkArg = validArgs.network;
 
   if (networkArg && !api.network.isNetworkAvailable(networkArg)) {
@@ -30,7 +30,7 @@ const normalizeParams = (
   };
 };
 
-export class GetOperatorCommand implements Command {
+export class NetworkGetOperatorCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { logger, api } = args;
     const normalisedParams = normalizeParams(args);
@@ -44,7 +44,7 @@ export class GetOperatorCommand implements Command {
       ? api.kms.get(operator.keyRefId)?.publicKey
       : undefined;
 
-    const output: GetOperatorOutput = operator
+    const output: NetworkGetOperatorOutput = operator
       ? {
           network: normalisedParams.targetNetwork,
           operator: {
@@ -61,6 +61,6 @@ export class GetOperatorCommand implements Command {
   }
 }
 
-export const getOperator = async (
+export const networkGetOperator = async (
   args: CommandHandlerArgs,
-): Promise<CommandResult> => new GetOperatorCommand().execute(args);
+): Promise<CommandResult> => new NetworkGetOperatorCommand().execute(args);

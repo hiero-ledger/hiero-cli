@@ -23,7 +23,7 @@ const TokenAssociationResultSchema = z.object({
 /**
  * Create Fungible Token From File Command Output Schema
  */
-export const CreateFungibleTokenFromFileOutputSchema = z.object({
+export const TokenCreateFtFromFileOutputSchema = z.object({
   tokenId: EntityIdSchema,
   name: z.string().describe('Fungible token name'),
   symbol: z.string().describe('Fungible token symbol'),
@@ -39,14 +39,14 @@ export const CreateFungibleTokenFromFileOutputSchema = z.object({
     .describe('Fungible token associations created'),
 });
 
-export type CreateFungibleTokenFromFileOutput = z.infer<
-  typeof CreateFungibleTokenFromFileOutputSchema
+export type TokenCreateFtFromFileOutput = z.infer<
+  typeof TokenCreateFtFromFileOutputSchema
 >;
 
 /**
  * Human-readable template for create fungible token from file output
  */
-export const CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE = `
+export const TOKEN_CREATE_FT_FROM_FILE_TEMPLATE = `
 ✅ Fungible token created from file successfully: {{hashscanLink tokenId "token" network}}
    Name: {{name}} ({{symbol}})
    Treasury: {{hashscanLink treasuryId "account" network}}

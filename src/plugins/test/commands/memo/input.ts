@@ -6,7 +6,7 @@ import { AliasNameSchema } from '@/core/schemas';
  * Input schema for plugin-management add command
  * Validates arguments for adding a plugin from filesystem path
  */
-export const MemoTestInputSchema = z.object({
+export const TestMemoInputSchema = z.object({
   memo: z
     .string()
     .max(100, 'Memo should have maximum of 100 characters')
@@ -14,4 +14,4 @@ export const MemoTestInputSchema = z.object({
   account: AliasNameSchema.describe('Alias for memo.'),
 });
 
-export type MemoTestInput = z.infer<typeof MemoTestInputSchema>;
+export type TestMemoInput = z.infer<typeof TestMemoInputSchema>;

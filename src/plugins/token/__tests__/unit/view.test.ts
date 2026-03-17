@@ -5,8 +5,8 @@ import '@/core/utils/json-serialize';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import {
-  viewToken,
-  ViewTokenOutputSchema,
+  tokenView,
+  TokenViewOutputSchema,
 } from '@/plugins/token/commands/view';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -22,7 +22,7 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandTokenStateHelper as jest.Mock;
 
-describe('viewTokenHandler', () => {
+describe('tokenViewHandler', () => {
   beforeEach(() => {
     mockZustandTokenStateHelper(MockedHelper);
   });
@@ -65,9 +65,9 @@ describe('viewTokenHandler', () => {
         logger,
       };
 
-      const result = await viewToken(args);
+      const result = await tokenView(args);
 
-      const output = assertOutput(result.result, ViewTokenOutputSchema);
+      const output = assertOutput(result.result, TokenViewOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -113,9 +113,9 @@ describe('viewTokenHandler', () => {
         logger,
       };
 
-      const result = await viewToken(args);
+      const result = await tokenView(args);
 
-      const output = assertOutput(result.result, ViewTokenOutputSchema);
+      const output = assertOutput(result.result, TokenViewOutputSchema);
       expect(output.tokenId).toBe('0.0.123456');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
@@ -150,7 +150,7 @@ describe('viewTokenHandler', () => {
         logger,
       };
 
-      await expect(viewToken(args)).rejects.toThrow();
+      await expect(tokenView(args)).rejects.toThrow();
     });
 
     test('should handle mirror node API error', async () => {
@@ -174,7 +174,7 @@ describe('viewTokenHandler', () => {
         logger,
       };
 
-      await expect(viewToken(args)).rejects.toThrow('API Error');
+      await expect(tokenView(args)).rejects.toThrow('API Error');
     });
   });
 });

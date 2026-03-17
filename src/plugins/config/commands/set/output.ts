@@ -8,16 +8,16 @@ import {
   ConfigValueSchema,
 } from '@/plugins/config/schema';
 
-export const SetConfigOutputSchema = z.object({
+export const ConfigSetOutputSchema = z.object({
   name: z.string(),
   type: ConfigOptionTypeSchema,
   previousValue: ConfigValueSchema.optional(),
   newValue: ConfigValueSchema,
 });
 
-export type SetConfigOutput = z.infer<typeof SetConfigOutputSchema>;
+export type ConfigSetOutput = z.infer<typeof ConfigSetOutputSchema>;
 
-export const SET_CONFIG_TEMPLATE = `
+export const CONFIG_SET_TEMPLATE = `
 ✅ Updated configuration option
    {{name}}
    Type: {{type}}

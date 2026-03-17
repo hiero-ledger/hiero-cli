@@ -6,7 +6,7 @@ import { FilePathSchema, PluginNameSchema } from '@/core/schemas';
  * Input schema for plugin-management add command
  * Validates arguments for adding a plugin - either by path (custom) or name (default)
  */
-export const AddPluginInputSchema = z
+export const PluginManagementAddInputSchema = z
   .object({
     path: FilePathSchema.optional().describe(
       'Filesystem path to the plugin directory containing manifest.js',
@@ -24,4 +24,6 @@ export const AddPluginInputSchema = z
     'Provide either --path or --name',
   );
 
-export type AddPluginInput = z.infer<typeof AddPluginInputSchema>;
+export type PluginManagementAddInput = z.infer<
+  typeof PluginManagementAddInputSchema
+>;

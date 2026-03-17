@@ -1,8 +1,8 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { ListCredentialsOutput } from './output';
+import type { CredentialsListOutput } from './output';
 
-export class ListCredentialsCommand implements Command {
+export class CredentialsListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { logger, api } = args;
 
@@ -10,7 +10,7 @@ export class ListCredentialsCommand implements Command {
 
     const credentials = api.kms.list();
 
-    const outputData: ListCredentialsOutput = {
+    const outputData: CredentialsListOutput = {
       credentials: credentials.map((cred) => ({
         keyRefId: cred.keyRefId,
         keyManager: cred.keyManager,
@@ -24,8 +24,8 @@ export class ListCredentialsCommand implements Command {
   }
 }
 
-export async function listCredentials(
+export async function credentialsList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ListCredentialsCommand().execute(args);
+  return new CredentialsListCommand().execute(args);
 }

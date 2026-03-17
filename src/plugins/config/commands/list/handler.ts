@@ -1,13 +1,13 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { ListConfigOutput } from './output';
+import type { ConfigListOutput } from './output';
 
-export class ListConfigCommand implements Command {
+export class ConfigListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
     const options = api.config.listOptions();
-    const output: ListConfigOutput = {
+    const output: ConfigListOutput = {
       options,
       totalCount: options.length,
     };
@@ -16,8 +16,8 @@ export class ListConfigCommand implements Command {
   }
 }
 
-export async function listConfigOptions(
+export async function configList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ListConfigCommand().execute(args);
+  return new ConfigListCommand().execute(args);
 }
