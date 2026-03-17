@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { TokenCreateNftOutput } from '@/plugins/token/commands/create-nft/output';
 import type {
   TokenCreateNftBuildTransactionResult,
@@ -43,7 +43,7 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
     const validArgs = TokenCreateNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      api.config.getOption<KeyManager>('default_key_manager');
     const maxSupply = validArgs.maxSupply
       ? processTokenBalanceInput(validArgs.maxSupply, 0)
       : undefined;

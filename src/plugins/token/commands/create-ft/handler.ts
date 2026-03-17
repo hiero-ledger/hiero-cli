@@ -1,5 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { TokenCreateFtOutput } from './output';
 import type {
   TokenCreateFtBuildTransactionResult,
@@ -46,7 +46,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
 
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      api.config.getOption<KeyManager>('default_key_manager');
     const initialSupply = processTokenBalanceInput(
       validArgs.initialSupply,
       validArgs.decimals,

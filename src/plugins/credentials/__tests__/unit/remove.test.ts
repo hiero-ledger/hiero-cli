@@ -3,6 +3,7 @@ import type { KmsCredentialRecord } from '@/core/services/kms/kms-types.interfac
 import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { CredentialsRemoveOutputSchema } from '@/plugins/credentials/commands/remove';
 import { credentialsRemove } from '@/plugins/credentials/commands/remove/handler';
@@ -16,7 +17,7 @@ describe('credentials plugin - remove command', () => {
     keyRefId: 'kr_test123',
     publicKey: 'pub-key-test',
     keyAlgorithm: KeyAlgorithm.ECDSA,
-    keyManager: 'local',
+    keyManager: KeyManager.local,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   };
