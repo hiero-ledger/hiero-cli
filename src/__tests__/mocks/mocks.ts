@@ -32,7 +32,6 @@ import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.inte
 import type {
   BatchData,
   BatchExecuteTransactionResult,
-  SupportedNetwork,
   TransactionResult,
 } from '@/core/types/shared.types';
 
@@ -45,6 +44,7 @@ import {
   type KeyManagerName,
 } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { SupportedNetwork } from '@/core/types/shared.types';
 
 import {
   MOCK_CONTRACT_ID,
