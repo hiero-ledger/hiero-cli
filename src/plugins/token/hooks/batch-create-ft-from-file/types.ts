@@ -5,9 +5,9 @@ import {
   KeySchema,
   MemoSchema,
   NetworkSchema,
-  PrivateKeyWithAccountIdSchema,
   ResolvedAccountCredentialSchema,
   ResolvedPublicKeySchema,
+  SupplyTypeSchema,
   TinybarSchema,
   TokenNameSchema,
   TokenSymbolSchema,
@@ -16,33 +16,22 @@ import {
 import { keyManagerNameSchema } from '@/core/services/kms/kms-types.interface';
 import { TokenFileCustomFeeSchema } from '@/plugins/token/schema';
 
-export const FungibleTokenFileSchema = z.object({
+export const CreateFtFromFileNormalizedParamsSchema = z.object({
+  filename: z.string(),
   name: TokenNameSchema,
   symbol: TokenSymbolSchema,
   decimals: HtsDecimalsSchema,
-  supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
   initialSupply: TinybarSchema,
   maxSupply: TinybarSchema,
-  treasuryKey: KeySchema,
-  adminKey: KeySchema,
-  supplyKey: KeySchema.optional(),
-  wipeKey: KeySchema.optional(),
-  kycKey: KeySchema.optional(),
-  freezeKey: KeySchema.optional(),
-  pauseKey: KeySchema.optional(),
-  feeScheduleKey: KeySchema.optional(),
-  associations: z.array(PrivateKeyWithAccountIdSchema).default([]),
+  supplyType: SupplyTypeSchema,
+  memo: MemoSchema.default(''),
+  tokenType: TokenTypeSchema,
   customFees: z
     .array(TokenFileCustomFeeSchema)
     .max(10, 'Maximum 10 custom fees allowed per token')
     .default([]),
-  memo: MemoSchema.default(''),
-  tokenType: TokenTypeSchema,
-});
-
-export const CreateFtFromFileNormalizedParamsSchema = z.object({
+  associations: z.array(KeySchema).default([]),
   keyManager: keyManagerNameSchema,
-  tokenDefinition: FungibleTokenFileSchema,
   network: NetworkSchema,
   treasury: ResolvedAccountCredentialSchema,
   adminKey: ResolvedPublicKeySchema,

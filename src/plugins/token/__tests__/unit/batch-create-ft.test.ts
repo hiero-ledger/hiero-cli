@@ -8,6 +8,7 @@ import {
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { StateError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_FT_COMMAND_NAME } from '@/plugins/token/commands/create-ft';
@@ -34,7 +35,7 @@ const createFtBatchDataItem = (
     supplyType: SupplyType.INFINITE,
     tokenType: HederaTokenType.FUNGIBLE_COMMON,
     network: SupportedNetwork.TESTNET,
-    keyManager: 'local',
+    keyManager: KeyManager.local,
     treasury: {
       accountId: '0.0.123456',
       keyRefId: 'kr-treasury',
@@ -222,7 +223,7 @@ describe('token plugin - batch-create-ft hook', () => {
             supplyType: SupplyType.FINITE,
             tokenType: HederaTokenType.FUNGIBLE_COMMON,
             network: SupportedNetwork.TESTNET,
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             treasury: {
               accountId: '0.0.123456',
               keyRefId: 'kr-treasury',
@@ -295,7 +296,7 @@ describe('token plugin - batch-create-ft hook', () => {
             supplyType: SupplyType.INFINITE,
             tokenType: HederaTokenType.FUNGIBLE_COMMON,
             network: SupportedNetwork.TESTNET,
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             alias: 'my-token-alias',
             treasury: {
               accountId: '0.0.123456',
@@ -375,7 +376,7 @@ describe('token plugin - batch-create-ft hook', () => {
             supplyType: SupplyType.INFINITE,
             tokenType: HederaTokenType.FUNGIBLE_COMMON,
             network: SupportedNetwork.TESTNET,
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             treasury: {
               accountId: '0.0.123456',
               keyRefId: 'kr-treasury',
@@ -399,7 +400,7 @@ describe('token plugin - batch-create-ft hook', () => {
             supplyType: SupplyType.FINITE,
             tokenType: HederaTokenType.FUNGIBLE_COMMON,
             network: SupportedNetwork.TESTNET,
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             treasury: {
               accountId: '0.0.123456',
               keyRefId: 'kr-treasury',

@@ -8,6 +8,7 @@ import {
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { StateError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOPIC_CREATE_COMMAND_NAME } from '@/plugins/topic/commands/create';
 import { TopicCreateBatchStateHook } from '@/plugins/topic/hooks/batch-create/handler';
@@ -26,7 +27,7 @@ const createTopicBatchDataItem = (
   order: 1,
   command: TOPIC_CREATE_COMMAND_NAME,
   normalizedParams: {
-    keyManager: 'local',
+    keyManager: KeyManager.local,
     network: SupportedNetwork.TESTNET,
   },
   transactionId: '0.0.1234@1234567890.000000000',
@@ -218,7 +219,7 @@ describe('topic plugin - batch-create hook', () => {
       transactions: [
         createTopicBatchDataItem({
           normalizedParams: {
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             network: SupportedNetwork.TESTNET,
             memo: 'My topic memo',
           },
@@ -269,7 +270,7 @@ describe('topic plugin - batch-create hook', () => {
         createTopicBatchDataItem({
           transactionId: '0.0.8888@1234567890.000000001',
           normalizedParams: {
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             network: SupportedNetwork.TESTNET,
             alias: 'my-topic-alias',
             memo: 'Aliased topic',
@@ -332,7 +333,7 @@ describe('topic plugin - batch-create hook', () => {
           order: 1,
           transactionId: '0.0.1001@1234567890.000000000',
           normalizedParams: {
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             network: SupportedNetwork.TESTNET,
             memo: 'Topic 1',
           },
@@ -341,7 +342,7 @@ describe('topic plugin - batch-create hook', () => {
           order: 2,
           transactionId: '0.0.1002@1234567890.000000001',
           normalizedParams: {
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             network: SupportedNetwork.TESTNET,
             alias: 'topic-2-alias',
             memo: 'Topic 2',

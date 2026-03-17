@@ -8,6 +8,7 @@ import {
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
 import { StateError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_NFT_COMMAND_NAME } from '@/plugins/token/commands/create-nft';
@@ -34,7 +35,7 @@ const createNftBatchDataItem = (
     supplyType: SupplyType.INFINITE,
     tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
     network: SupportedNetwork.TESTNET,
-    keyManager: 'local',
+    keyManager: KeyManager.local,
     adminKeyProvided: true,
     treasury: {
       accountId: '0.0.123456',
@@ -228,7 +229,7 @@ describe('token plugin - batch-create-nft hook', () => {
             supplyType: SupplyType.INFINITE,
             tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
             network: SupportedNetwork.TESTNET,
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             adminKeyProvided: true,
             treasury: {
               accountId: '0.0.123456',
@@ -310,7 +311,7 @@ describe('token plugin - batch-create-nft hook', () => {
             supplyType: SupplyType.INFINITE,
             tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
             network: SupportedNetwork.TESTNET,
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             adminKeyProvided: true,
             alias: 'my-nft-alias',
             treasury: {
@@ -396,7 +397,7 @@ describe('token plugin - batch-create-nft hook', () => {
             supplyType: SupplyType.INFINITE,
             tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
             network: SupportedNetwork.TESTNET,
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             adminKeyProvided: true,
             treasury: {
               accountId: '0.0.123456',
@@ -426,7 +427,7 @@ describe('token plugin - batch-create-nft hook', () => {
             supplyType: SupplyType.FINITE,
             tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
             network: SupportedNetwork.TESTNET,
-            keyManager: 'local',
+            keyManager: KeyManager.local,
             adminKeyProvided: false,
             treasury: {
               accountId: '0.0.123456',
