@@ -1,5 +1,5 @@
 {
-  "name": "token-base-example",
+  "name": "token-base-units-example",
   "symbol": "TBU",
   "decimals": 6,
   "supplyType": "finite",
