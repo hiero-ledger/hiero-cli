@@ -72,6 +72,7 @@ import {
   tokenView,
   TokenViewOutputSchema,
 } from './commands/view';
+import { TokenAssociateBatchStateHook } from './hooks/batch-associate';
 import { TokenCreateFtBatchStateHook } from './hooks/batch-create-ft';
 import { TokenCreateFtFromFileBatchStateHook } from './hooks/batch-create-ft-from-file';
 import { TokenCreateNftBatchStateHook } from './hooks/batch-create-nft';
@@ -101,6 +102,11 @@ export const tokenPluginManifest: PluginManifest = {
     {
       name: 'token-create-nft-from-file-batch-state',
       hook: new TokenCreateNftFromFileBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-associate-batch-state',
+      hook: new TokenAssociateBatchStateHook(),
       options: [],
     },
   ],
