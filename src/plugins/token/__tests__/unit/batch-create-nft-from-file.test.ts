@@ -47,7 +47,7 @@ const createBatchExecuteParams = (
 const createNftFromFileBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},
 ): BatchDataItem => ({
-  transactionBytes: 'deadbeef',
+  transactionBytes: 'abcdef1234567890',
   order: 1,
   command: TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME,
   normalizedParams: {

@@ -27,13 +27,13 @@ export const mockBatchDataWithTransactions: BatchData = {
   success: false,
   transactions: [
     {
-      transactionBytes: 'deadbeef01',
+      transactionBytes: 'abcdef123456789001',
       order: 1,
       command: 'account_create',
       normalizedParams: {},
     },
     {
-      transactionBytes: 'deadbeef02',
+      transactionBytes: 'abcdef123456789002',
       order: 2,
       command: 'token_create-ft',
       normalizedParams: {},

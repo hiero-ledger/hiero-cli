@@ -40,7 +40,7 @@ const createBatchExecuteParams = (
 const createAssociateBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},
 ): BatchDataItem => ({
-  transactionBytes: 'deadbeef',
+  transactionBytes: 'abcdef1234567890',
   order: 1,
   command: TOKEN_ASSOCIATE_COMMAND_NAME,
   normalizedParams: {

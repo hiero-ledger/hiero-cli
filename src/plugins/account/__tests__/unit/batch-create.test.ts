@@ -60,7 +60,7 @@ const createBatchExecuteParams = (
 const createAccountBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},
 ): BatchDataItem => ({
-  transactionBytes: 'deadbeef',
+  transactionBytes: 'abcdef1234567890',
   order: 1,
   command: ACCOUNT_CREATE_COMMAND_NAME,
   normalizedParams: {

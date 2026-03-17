@@ -41,7 +41,7 @@ const createBatchExecuteParams = (
 const createTopicBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},
 ): BatchDataItem => ({
-  transactionBytes: 'deadbeef',
+  transactionBytes: 'abcdef1234567890',
   order: 1,
   command: TOPIC_CREATE_COMMAND_NAME,
   normalizedParams: {

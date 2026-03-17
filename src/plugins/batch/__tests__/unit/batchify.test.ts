@@ -48,7 +48,7 @@ const createMockSignedTransaction = () => {
   > & { toBytes: jest.Mock };
   (mock as Record<string, unknown>).toBytes = jest
     .fn()
-    .mockReturnValue(Buffer.from('deadbeef', 'hex'));
+    .mockReturnValue(Buffer.from('abcdef1234567890', 'hex'));
   return mock;
 };
 
@@ -262,7 +262,7 @@ describe('batch plugin - batchify hook', () => {
       const fullBatch = {
         ...mockBatchDataWithTransactions,
         transactions: Array.from({ length: 50 }, (_, i) => ({
-          transactionBytes: `deadbeef${i}`,
+          transactionBytes: `abcdef1234567890${i}`,
           order: i + 1,
           command: 'account_create',
           normalizedParams: {},
@@ -397,7 +397,7 @@ describe('batch plugin - batchify hook', () => {
             expect.objectContaining({
               order: 1,
               command: 'token_create-ft',
-              transactionBytes: 'deadbeef',
+              transactionBytes: 'abcdef1234567890',
             }),
           ],
         }),
