@@ -1099,7 +1099,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         data: '0xabcdef',
         gas: 1_500_000,
       };
-      const mockResponse = { result: '0xdeadbeef' };
+      const mockResponse = { result: '0xabcdef1234567890' };
 
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
