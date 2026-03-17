@@ -67,6 +67,8 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
 
     let signerKeyRefId: string | undefined;
 
+    const allowedSubmitKeyRefIds = topicData.submitKeyRefIds ?? [];
+
     if (signerArg) {
       const resolvedSigner = await api.keyResolver.resolveSigningKey(
         signerArg,
@@ -76,15 +78,15 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
       signerKeyRefId = resolvedSigner.keyRefId;
 
       if (
-        topicData.submitKeyRefId &&
-        topicData.submitKeyRefId !== signerKeyRefId
+        allowedSubmitKeyRefIds.length > 0 &&
+        !allowedSubmitKeyRefIds.includes(signerKeyRefId)
       ) {
         throw new ValidationError(
-          'The provided signer is not authorized to submit messages to this topic. The topic has a different submit key configured.',
+          'The provided signer is not authorized to submit messages to this topic. The topic has different submit keys configured.',
         );
       }
 
-      if (topicData.submitKeyRefId) {
+      if (allowedSubmitKeyRefIds.length > 0) {
         logger.info(`Using provided signer (authorized submit key)`);
       } else {
         logger.info(`Using provided signer for public topic`);
