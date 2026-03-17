@@ -53,7 +53,9 @@ export class TopicCreateCommand extends BaseTransactionCommand<
 
     const adminKeys = await Promise.all(
       adminKeyArgs.map((cred) =>
-        api.keyResolver.resolveSigningKey(cred, keyManager, false, ['topic:admin']),
+        api.keyResolver.resolveSigningKey(cred, keyManager, false, [
+          'topic:admin',
+        ]),
       ),
     );
 

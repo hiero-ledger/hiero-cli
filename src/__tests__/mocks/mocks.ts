@@ -605,8 +605,24 @@ export const makeKeyResolverMock = (
     credential: Credential,
     keyManager: KeyManager,
     labels?: string[],
+    publicKeyOnly = false,
   ) => {
     if (credential?.type === CredentialType.ACCOUNT_KEY_PAIR) {
+      if (publicKeyOnly) {
+        const importResult = options.kms?.importPublicKey
+          ? options.kms.importPublicKey(
+              KeyAlgorithm.ECDSA,
+              credential.privateKey,
+              keyManager,
+              labels || [],
+            )
+          : { keyRefId: 'imported-key-ref-id', publicKey: MOCK_PUBLIC_KEY };
+        return {
+          accountId: credential.accountId,
+          publicKey: MOCK_PUBLIC_KEY,
+          keyRefId: importResult.keyRefId,
+        };
+      }
       const importResult = options.kms?.importPrivateKey
         ? options.kms.importPrivateKey(
             KeyAlgorithm.ECDSA,
@@ -628,6 +644,24 @@ export const makeKeyResolverMock = (
 
     if (credential?.type === CredentialType.ACCOUNT_ID) {
       return { accountId: credential.accountId };
+    }
+
+    if (credential?.type === CredentialType.PUBLIC_KEY) {
+      const importResult = options.kms?.importPublicKey
+        ? options.kms.importPublicKey(
+            credential.keyType,
+            credential.publicKey,
+            keyManager,
+            labels || [],
+          )
+        : {
+            keyRefId: 'imported-pub-key-ref-id',
+            publicKey: credential.publicKey,
+          };
+      return {
+        keyRefId: importResult.keyRefId,
+        publicKey: importResult.publicKey,
+      };
     }
 
     if (credential?.type === CredentialType.ALIAS && options.alias) {
@@ -691,7 +725,12 @@ export const makeKeyResolverMock = (
     getPublicKey: jest
       .fn()
       .mockImplementation((credential, keyManager, _fallback, labels) => {
-        const resolved = resolveCore(credential, keyManager, labels || []);
+        const resolved = resolveCore(
+          credential,
+          keyManager,
+          labels || [],
+          true,
+        );
         if (!resolved.keyRefId || !resolved.publicKey) {
           throw new StateError(
             'Mock: resolved key missing keyRefId or publicKey',
