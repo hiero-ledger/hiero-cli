@@ -101,12 +101,12 @@ export class CreateBatchCommand implements Command {
       validArgs.keyManager ||
       api.config.getOption<KeyManagerName>('default_key_manager');
 
-    const resolved =
-      await api.keyResolver.resolveAccountCredentialsWithFallback(
-        validArgs.key,
-        keyManager,
-        ['batch:signer'],
-      );
+    const resolved = await api.keyResolver.resolveSigningKey(
+      validArgs.key,
+      keyManager,
+      true,
+      ['batch:signer'],
+    );
 
     batchState.saveBatch(validArgs.name, {
       name: validArgs.name,
