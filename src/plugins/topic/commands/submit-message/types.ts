@@ -7,7 +7,7 @@ import type { TopicData } from '@/plugins/topic/schema';
 export interface SubmitMessageNormalisedParams {
   topicId: string;
   message: string;
-  signerKeyRefId?: string;
+  signerKeyRefIds: string[];
   keyManager: KeyManager;
   currentNetwork: SupportedNetwork;
   topicData: TopicData;
