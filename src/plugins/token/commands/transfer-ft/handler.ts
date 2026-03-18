@@ -1,11 +1,11 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { TransferFungibleTokenOutput } from './output';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenTransferFtOutput } from './output';
 import type {
-  TransferFtBuildTransactionResult,
-  TransferFtExecuteTransactionResult,
-  TransferFtNormalizedParams,
-  TransferFtSignTransactionResult,
+  TokenTransferFtBuildTransactionResult,
+  TokenTransferFtExecuteTransactionResult,
+  TokenTransferFtNormalizedParams,
+  TokenTransferFtSignTransactionResult,
 } from './types';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
@@ -18,22 +18,28 @@ import {
 import { isRawUnits } from '@/plugins/token/utils/token-amount-helpers';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { TransferFungibleTokenInputSchema } from './input';
+import { TokenTransferFtInputSchema } from './input';
 
-export class TransferFtCommand extends BaseTransactionCommand<
-  TransferFtNormalizedParams,
-  TransferFtBuildTransactionResult,
-  TransferFtSignTransactionResult,
-  TransferFtExecuteTransactionResult
+export const TOKEN_TRANSFER_FT_COMMAND_NAME = 'token_transfer-ft';
+
+export class TokenTransferFtCommand extends BaseTransactionCommand<
+  TokenTransferFtNormalizedParams,
+  TokenTransferFtBuildTransactionResult,
+  TokenTransferFtSignTransactionResult,
+  TokenTransferFtExecuteTransactionResult
 > {
+  constructor() {
+    super(TOKEN_TRANSFER_FT_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
-  ): Promise<TransferFtNormalizedParams> {
+  ): Promise<TokenTransferFtNormalizedParams> {
     const { api, logger } = args;
 
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
-    const validArgs = TransferFungibleTokenInputSchema.parse(args.args);
+    const validArgs = TokenTransferFtInputSchema.parse(args.args);
 
     const tokenIdOrAlias = validArgs.token;
     const from = validArgs.from;
@@ -41,8 +47,7 @@ export class TransferFtCommand extends BaseTransactionCommand<
     const keyManagerArg = validArgs.keyManager;
 
     const keyManager =
-      keyManagerArg ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
     const network = api.network.getCurrentNetwork();
 
@@ -72,12 +77,12 @@ export class TransferFtCommand extends BaseTransactionCommand<
 
     const rawAmount = processTokenBalanceInput(userAmountInput, tokenDecimals);
 
-    const resolvedFromAccount =
-      await api.keyResolver.resolveAccountCredentialsWithFallback(
-        from,
-        keyManager,
-        ['token:account'],
-      );
+    const resolvedFromAccount = await api.keyResolver.resolveAccountCredentials(
+      from,
+      keyManager,
+      true,
+      ['token:account'],
+    );
 
     const { accountId: fromAccountId, keyRefId: signerKeyRefId } =
       resolvedFromAccount;
@@ -115,8 +120,8 @@ export class TransferFtCommand extends BaseTransactionCommand<
 
   async buildTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: TransferFtNormalizedParams,
-  ): Promise<TransferFtBuildTransactionResult> {
+    normalisedParams: TokenTransferFtNormalizedParams,
+  ): Promise<TokenTransferFtBuildTransactionResult> {
     const { api, logger } = args;
     logger.debug('Building transfer transaction body');
     const transaction = api.token.createTransferTransaction({
@@ -132,9 +137,9 @@ export class TransferFtCommand extends BaseTransactionCommand<
 
   async signTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: TransferFtNormalizedParams,
-    buildTransactionResult: TransferFtBuildTransactionResult,
-  ): Promise<TransferFtSignTransactionResult> {
+    normalisedParams: TokenTransferFtNormalizedParams,
+    buildTransactionResult: TokenTransferFtBuildTransactionResult,
+  ): Promise<TokenTransferFtSignTransactionResult> {
     const { api, logger } = args;
     const signerKeyRefId = normalisedParams.signerKeyRefId;
     logger.debug(`Using key ${signerKeyRefId} for signing transaction`);
@@ -143,18 +148,18 @@ export class TransferFtCommand extends BaseTransactionCommand<
       [signerKeyRefId],
     );
     return {
-      transaction,
+      signedTransaction: transaction,
     };
   }
 
   async executeTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: TransferFtNormalizedParams,
-    _buildTransactionResult: TransferFtBuildTransactionResult,
-    signTransactionResult: TransferFtSignTransactionResult,
-  ): Promise<TransferFtExecuteTransactionResult> {
+    normalisedParams: TokenTransferFtNormalizedParams,
+    _buildTransactionResult: TokenTransferFtBuildTransactionResult,
+    signTransactionResult: TokenTransferFtSignTransactionResult,
+  ): Promise<TokenTransferFtExecuteTransactionResult> {
     const { api } = args;
-    const signedTransaction = signTransactionResult.transaction;
+    const signedTransaction = signTransactionResult.signedTransaction;
     const result = await api.txExecute.execute(signedTransaction);
 
     if (!result.success) {
@@ -171,12 +176,12 @@ export class TransferFtCommand extends BaseTransactionCommand<
 
   async outputPreparation(
     _args: CommandHandlerArgs,
-    normalisedParams: TransferFtNormalizedParams,
-    _buildTransactionResult: TransferFtBuildTransactionResult,
-    _signTransactionResult: TransferFtSignTransactionResult,
-    executeTransactionResult: TransferFtExecuteTransactionResult,
+    normalisedParams: TokenTransferFtNormalizedParams,
+    _buildTransactionResult: TokenTransferFtBuildTransactionResult,
+    _signTransactionResult: TokenTransferFtSignTransactionResult,
+    executeTransactionResult: TokenTransferFtExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const outputData: TransferFungibleTokenOutput = {
+    const outputData: TokenTransferFtOutput = {
       transactionId: executeTransactionResult.transactionResult.transactionId,
       tokenId: normalisedParams.tokenId,
       from: normalisedParams.fromAccountId,
@@ -188,8 +193,8 @@ export class TransferFtCommand extends BaseTransactionCommand<
   }
 }
 
-export async function transferFt(
+export async function tokenTransferFt(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TransferFtCommand().execute(args);
+  return new TokenTransferFtCommand().execute(args);
 }

@@ -2,8 +2,8 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { TransactionResult } from '@/core/types/shared.types';
-import type { TopicData } from '@/plugins/topic/schema';
 
+import { MOCK_TOPIC_SUBMIT_KEY_REF_ID } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeAliasMock,
@@ -11,6 +11,7 @@ import {
   makeConfigMock,
   makeLogger,
   makeNetworkMock,
+  makeTopicData,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
@@ -20,8 +21,8 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { SubmitMessageOutputSchema } from '@/plugins/topic/commands/submit-message';
-import { submitMessage } from '@/plugins/topic/commands/submit-message/handler';
+import { TopicSubmitMessageOutputSchema } from '@/plugins/topic/commands/submit-message';
+import { topicSubmitMessage } from '@/plugins/topic/commands/submit-message/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -30,29 +31,20 @@ jest.mock('../../zustand-state-helper', () => ({
 
 const MockedHelper = ZustandTopicStateHelper as jest.Mock;
 
-const makeTopicData = (overrides: Partial<TopicData> = {}): TopicData => ({
-  name: 'test-topic',
-  topicId: '0.0.1234',
-  memo: 'Test topic',
-  network: SupportedNetwork.TESTNET,
-  createdAt: new Date().toISOString(),
-  ...overrides,
-});
-
 const makeApiMocks = ({
-  submitMessageImpl,
+  topicSubmitMessageImpl,
   executeImpl,
   executeContractCreateFlowImpl,
   network = 'testnet',
 }: {
-  submitMessageImpl?: jest.Mock;
+  topicSubmitMessageImpl?: jest.Mock;
   executeImpl?: jest.Mock;
   executeContractCreateFlowImpl?: jest.Mock;
   network?: 'testnet' | 'mainnet' | 'previewnet';
 }) => {
   const topicTransactions = {
     createTopic: jest.fn(),
-    submitMessage: submitMessageImpl || jest.fn(),
+    submitMessage: topicSubmitMessageImpl || jest.fn(),
   };
 
   const txSign = {
@@ -87,7 +79,7 @@ describe('topic plugin - message-submit command', () => {
 
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({
-        submitMessageImpl: jest.fn().mockReturnValue({
+        topicSubmitMessageImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
@@ -113,9 +105,9 @@ describe('topic plugin - message-submit command', () => {
       message: 'Hello, World!',
     });
 
-    const result = await submitMessage(args);
+    const result = await topicSubmitMessage(args);
 
-    const output = assertOutput(result.result, SubmitMessageOutputSchema);
+    const output = assertOutput(result.result, TopicSubmitMessageOutputSchema);
     expect(output.topicId).toBe('0.0.1234');
     expect(output.message).toBe('Hello, World!');
     expect(output.sequenceNumber).toBe(5);
@@ -132,11 +124,10 @@ describe('topic plugin - message-submit command', () => {
 
   test('submits message successfully with signer option', async () => {
     const logger = makeLogger();
-    const submitKeyRefId = 'kr_submit123';
     const topicData = makeTopicData({
       topicId: '0.0.5678',
       memo: 'Test topic with key',
-      submitKeyRefId,
+      submitKeyRefIds: [MOCK_TOPIC_SUBMIT_KEY_REF_ID],
     });
     const loadTopicMock = jest.fn().mockReturnValue(topicData);
     MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
@@ -145,17 +136,16 @@ describe('topic plugin - message-submit command', () => {
       resolveSigningKey: jest.fn().mockResolvedValue({
         publicKey: '02abc123',
         accountId: '0.0.999',
-        keyRefId: submitKeyRefId,
+        keyRefId: MOCK_TOPIC_SUBMIT_KEY_REF_ID,
       }),
       resolveAccountCredentials: jest.fn(),
-      resolveAccountCredentialsWithFallback: jest.fn(),
       resolveDestination: jest.fn(),
       getPublicKey: jest.fn(),
     };
 
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({
-        submitMessageImpl: jest.fn().mockReturnValue({
+        topicSubmitMessageImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
@@ -180,12 +170,12 @@ describe('topic plugin - message-submit command', () => {
     const args = makeArgs(api, logger, {
       topic: '0.0.5678',
       message: 'Signed message',
-      signer: 'my-account-alias',
+      signer: ['my-account-alias'],
     });
 
-    const result = await submitMessage(args);
+    const result = await topicSubmitMessage(args);
 
-    const output = assertOutput(result.result, SubmitMessageOutputSchema);
+    const output = assertOutput(result.result, TopicSubmitMessageOutputSchema);
     expect(output.sequenceNumber).toBe(10);
 
     expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
@@ -213,26 +203,33 @@ describe('topic plugin - message-submit command', () => {
       message: 'Test message',
     });
 
-    await expect(submitMessage(args)).rejects.toThrow(NotFoundError);
+    await expect(topicSubmitMessage(args)).rejects.toThrow(NotFoundError);
   });
 
-  test('throws ValidationError when signer is not authorized', async () => {
+  test('throws ValidationError when valid signers do not meet threshold after filtering unauthorized', async () => {
     const logger = makeLogger();
     const topicData = makeTopicData({
       topicId: '0.0.1234',
-      submitKeyRefId: 'kr_correct_submit',
+      submitKeyRefIds: ['kr_a', 'kr_b'],
+      submitKeyThreshold: 2,
     });
     const loadTopicMock = jest.fn().mockReturnValue(topicData);
     MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
 
     const keyResolverMock = {
-      resolveSigningKey: jest.fn().mockResolvedValue({
-        publicKey: '02abc123',
-        accountId: '0.0.999',
-        keyRefId: 'kr_wrong_submit',
-      }),
+      resolveSigningKey: jest
+        .fn()
+        .mockResolvedValueOnce({
+          publicKey: '02abc123',
+          accountId: '0.0.999',
+          keyRefId: 'kr_a',
+        })
+        .mockResolvedValueOnce({
+          publicKey: '02wrong',
+          accountId: '0.0.888',
+          keyRefId: 'kr_unauthorized',
+        }),
       resolveAccountCredentials: jest.fn(),
-      resolveAccountCredentialsWithFallback: jest.fn(),
       resolveDestination: jest.fn(),
       getPublicKey: jest.fn(),
     };
@@ -254,10 +251,10 @@ describe('topic plugin - message-submit command', () => {
     const args = makeArgs(api, logger, {
       topic: '0.0.1234',
       message: 'Test message',
-      signer: 'wrong-signer',
+      signer: ['valid-signer', 'unauthorized-signer'],
     });
 
-    await expect(submitMessage(args)).rejects.toThrow(ValidationError);
+    await expect(topicSubmitMessage(args)).rejects.toThrow(ValidationError);
   });
 
   test('throws TransactionError when execute returns failure', async () => {
@@ -270,7 +267,7 @@ describe('topic plugin - message-submit command', () => {
 
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({
-        submitMessageImpl: jest.fn().mockReturnValue({
+        topicSubmitMessageImpl: jest.fn().mockReturnValue({
           transaction: {},
         }),
         executeImpl: jest.fn().mockResolvedValue({
@@ -294,10 +291,10 @@ describe('topic plugin - message-submit command', () => {
       message: 'Failed message',
     });
 
-    await expect(submitMessage(args)).rejects.toThrow(TransactionError);
+    await expect(topicSubmitMessage(args)).rejects.toThrow(TransactionError);
   });
 
-  test('throws when submitMessage throws', async () => {
+  test('throws when topicSubmitMessage throws', async () => {
     const logger = makeLogger();
     const topicData = makeTopicData({
       topicId: '0.0.1234',
@@ -307,7 +304,7 @@ describe('topic plugin - message-submit command', () => {
 
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({
-        submitMessageImpl: jest.fn().mockImplementation(() => {
+        topicSubmitMessageImpl: jest.fn().mockImplementation(() => {
           throw new NetworkError('network error');
         }),
       });
@@ -326,6 +323,6 @@ describe('topic plugin - message-submit command', () => {
       message: 'Error message',
     });
 
-    await expect(submitMessage(args)).rejects.toThrow('network error');
+    await expect(topicSubmitMessage(args)).rejects.toThrow('network error');
   });
 });

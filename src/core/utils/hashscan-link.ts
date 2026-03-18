@@ -13,6 +13,7 @@ export type HashscanEntityType =
   | 'token'
   | 'account'
   | 'transaction'
+  | 'transactionsById'
   | 'topic'
   | 'contract';
 

@@ -12,7 +12,7 @@ import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';
 
 const ERC_721_FUNCTION_NAME = 'tokenURI';
 
-export class TokenUriCommand implements Command {
+export class ContractErc721TokenUriCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
@@ -60,8 +60,8 @@ export class TokenUriCommand implements Command {
   }
 }
 
-export async function tokenUriFunctionCall(
+export async function contractErc721TokenUri(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenUriCommand().execute(args);
+  return new ContractErc721TokenUriCommand().execute(args);
 }

@@ -11,7 +11,7 @@ import {
  * Input schema for hbar transfer command
  * Validates arguments for transferring HBAR between accounts
  */
-export const TransferInputSchema = z.object({
+export const HbarTransferInputSchema = z.object({
   amount: AmountInputSchema.refine(
     (val) => {
       // Check if value is "0" or "0t"
@@ -21,9 +21,9 @@ export const TransferInputSchema = z.object({
       message: 'Transfer amount must be greater than zero',
     },
   ).describe('Amount to transfer. Format: "100" (HBAR) or "100t" (tinybars)'),
-  to: KeySchema.describe('Account ID, EVM address, or alias to transfer to'),
+  to: KeySchema.describe('Destination account. Accepts any key format.'),
   from: KeySchema.optional().describe(
-    'Account to transfer from with private key. Can be accountId:privateKey pair or key reference. Defaults to operator.',
+    'Source account. Accepts any key format. Defaults to operator.',
   ),
   memo: MemoSchema.describe('Optional memo for the transfer'),
   keyManager: KeyManagerTypeSchema.optional().describe(
@@ -31,4 +31,4 @@ export const TransferInputSchema = z.object({
   ),
 });
 
-export type TransferInput = z.infer<typeof TransferInputSchema>;
+export type HbarTransferInput = z.infer<typeof HbarTransferInputSchema>;

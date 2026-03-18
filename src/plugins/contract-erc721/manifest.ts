@@ -6,64 +6,64 @@ import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
 import {
-  approveFunctionCall,
   CONTRACT_ERC721_CALL_APPROVE_TEMPLATE,
+  contractErc721Approve,
   ContractErc721CallApproveOutputSchema,
 } from '@/plugins/contract-erc721/commands/approve';
 import {
-  balanceOfFunctionCall,
   CONTRACT_ERC721_CALL_BALANCE_OF_CREATE_TEMPLATE,
+  contractErc721BalanceOf,
   ContractErc721CallBalanceOfOutputSchema,
 } from '@/plugins/contract-erc721/commands/balance-of';
 import {
   CONTRACT_ERC721_CALL_GET_APPROVED_TEMPLATE,
   ContractErc721CallGetApprovedOutputSchema,
-  getApprovedFunctionCall,
+  contractErc721GetApproved,
 } from '@/plugins/contract-erc721/commands/get-approved';
 import {
   CONTRACT_ERC721_CALL_IS_APPROVED_FOR_ALL_TEMPLATE,
   ContractErc721CallIsApprovedForAllOutputSchema,
-  isApprovedForAllFunctionCall,
+  contractErc721IsApprovedForAll,
 } from '@/plugins/contract-erc721/commands/is-approved-for-all';
 import {
   CONTRACT_ERC721_CALL_MINT_TEMPLATE,
   ContractErc721CallMintOutputSchema,
-  mintFunctionCall,
+  contractErc721Mint,
 } from '@/plugins/contract-erc721/commands/mint';
 import {
   CONTRACT_ERC721_CALL_NAME_TEMPLATE,
   ContractErc721CallNameOutputSchema,
-  nameFunctionCall,
+  contractErc721Name,
 } from '@/plugins/contract-erc721/commands/name';
 import {
   CONTRACT_ERC721_CALL_OWNER_OF_TEMPLATE,
   ContractErc721CallOwnerOfOutputSchema,
-  ownerOfFunctionCall,
+  contractErc721OwnerOf,
 } from '@/plugins/contract-erc721/commands/owner-of';
 import {
   CONTRACT_ERC721_CALL_SAFE_TRANSFER_FROM_TEMPLATE,
   ContractErc721CallSafeTransferFromOutputSchema,
-  safeTransferFromFunctionCall,
+  contractErc721SafeTransferFrom,
 } from '@/plugins/contract-erc721/commands/safe-transfer-from';
 import {
   CONTRACT_ERC721_CALL_SET_APPROVAL_FOR_ALL_TEMPLATE,
   ContractErc721CallSetApprovalForAllOutputSchema,
-  setApprovalForAllFunctionCall,
+  contractErc721SetApprovalForAll,
 } from '@/plugins/contract-erc721/commands/set-approval-for-all';
 import {
   CONTRACT_ERC721_CALL_SYMBOL_TEMPLATE,
   ContractErc721CallSymbolOutputSchema,
-  symbolFunctionCall,
+  contractErc721Symbol,
 } from '@/plugins/contract-erc721/commands/symbol';
 import {
   CONTRACT_ERC721_CALL_TOKEN_URI_TEMPLATE,
   ContractErc721CallTokenUriOutputSchema,
-  tokenUriFunctionCall,
+  contractErc721TokenUri,
 } from '@/plugins/contract-erc721/commands/token-uri';
 import {
   CONTRACT_ERC721_CALL_TRANSFER_FROM_TEMPLATE,
   ContractErc721CallTransferFromOutputSchema,
-  transferFromFunctionCall,
+  contractErc721TransferFrom,
 } from '@/plugins/contract-erc721/commands/transfer-from';
 
 export const contractErc721PluginManifest: PluginManifest = {
@@ -93,7 +93,7 @@ export const contractErc721PluginManifest: PluginManifest = {
             'Account represented by alias, account ID, or EVM address',
         },
       ],
-      handler: balanceOfFunctionCall,
+      handler: contractErc721BalanceOf,
       output: {
         schema: ContractErc721CallBalanceOfOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_BALANCE_OF_CREATE_TEMPLATE,
@@ -138,7 +138,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           description: 'Gas for function call. Default: 100000',
         },
       ],
-      handler: approveFunctionCall,
+      handler: contractErc721Approve,
       output: {
         schema: ContractErc721CallApproveOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_APPROVE_TEMPLATE,
@@ -183,7 +183,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           description: 'Gas for function call. Default: 100000',
         },
       ],
-      handler: setApprovalForAllFunctionCall,
+      handler: contractErc721SetApprovalForAll,
       output: {
         schema: ContractErc721CallSetApprovalForAllOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_SET_APPROVAL_FOR_ALL_TEMPLATE,
@@ -220,7 +220,7 @@ export const contractErc721PluginManifest: PluginManifest = {
             'Parameter "operator" represented by alias, account ID or EVM address',
         },
       ],
-      handler: isApprovedForAllFunctionCall,
+      handler: contractErc721IsApprovedForAll,
       output: {
         schema: ContractErc721CallIsApprovedForAllOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_IS_APPROVED_FOR_ALL_TEMPLATE,
@@ -247,7 +247,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           description: 'Token ID (uint256) to query owner of',
         },
       ],
-      handler: ownerOfFunctionCall,
+      handler: contractErc721OwnerOf,
       output: {
         schema: ContractErc721CallOwnerOfOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_OWNER_OF_TEMPLATE,
@@ -274,7 +274,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           description: 'Token ID (uint256) to query approved address for',
         },
       ],
-      handler: getApprovedFunctionCall,
+      handler: contractErc721GetApproved,
       output: {
         schema: ContractErc721CallGetApprovedOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_GET_APPROVED_TEMPLATE,
@@ -301,7 +301,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           description: 'Token ID (uint256) to query URI for',
         },
       ],
-      handler: tokenUriFunctionCall,
+      handler: contractErc721TokenUri,
       output: {
         schema: ContractErc721CallTokenUriOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_TOKEN_URI_TEMPLATE,
@@ -321,7 +321,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           description: 'Smart contract ID represented by alias or contract ID',
         },
       ],
-      handler: nameFunctionCall,
+      handler: contractErc721Name,
       output: {
         schema: ContractErc721CallNameOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_NAME_TEMPLATE,
@@ -341,7 +341,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           description: 'Smart contract ID represented by alias or contract ID',
         },
       ],
-      handler: symbolFunctionCall,
+      handler: contractErc721Symbol,
       output: {
         schema: ContractErc721CallSymbolOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_SYMBOL_TEMPLATE,
@@ -401,7 +401,7 @@ export const contractErc721PluginManifest: PluginManifest = {
             'Optional arbitrary data for safeTransferFrom(address,address,uint256,bytes)',
         },
       ],
-      handler: safeTransferFromFunctionCall,
+      handler: contractErc721SafeTransferFrom,
       output: {
         schema: ContractErc721CallSafeTransferFromOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_SAFE_TRANSFER_FROM_TEMPLATE,
@@ -445,7 +445,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           description: 'Gas for function call. Default: 100000',
         },
       ],
-      handler: mintFunctionCall,
+      handler: contractErc721Mint,
       output: {
         schema: ContractErc721CallMintOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_MINT_TEMPLATE,
@@ -497,7 +497,7 @@ export const contractErc721PluginManifest: PluginManifest = {
           description: 'Gas for function call. Default: 100000',
         },
       ],
-      handler: transferFromFunctionCall,
+      handler: contractErc721TransferFrom,
       output: {
         schema: ContractErc721CallTransferFromOutputSchema,
         humanTemplate: CONTRACT_ERC721_CALL_TRANSFER_FROM_TEMPLATE,

@@ -13,7 +13,7 @@ import {
 /**
  * Token Info Schema
  */
-export const ViewTokenOutputSchema = z.object({
+export const TokenViewOutputSchema = z.object({
   // === Basic token info ===
   tokenId: EntityIdSchema,
   name: z.string(),
@@ -51,7 +51,7 @@ export const ViewTokenOutputSchema = z.object({
     .optional(),
 });
 
-export type ViewTokenOutput = z.infer<typeof ViewTokenOutputSchema>;
+export type TokenViewOutput = z.infer<typeof TokenViewOutputSchema>;
 
 /**
  * Human-readable template for view token output
@@ -59,7 +59,7 @@ export type ViewTokenOutput = z.infer<typeof ViewTokenOutputSchema>;
  * 1. NFT Serial View (when --serial provided) - shows collection info + specific NFT details
  * 2. Default View (no --serial) - shows full token info with supply emphasized for NFT
  */
-export const VIEW_TOKEN_TEMPLATE = `
+export const TOKEN_VIEW_TEMPLATE = `
 {{#if nftSerial}}
 🎨 NFT Instance #{{nftSerial.serialNumber}}
 

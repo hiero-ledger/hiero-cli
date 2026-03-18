@@ -100,5 +100,8 @@ export class ContractErc20BalanceOfCommand implements Command {
   }
 }
 
-export const balanceOf = (args: CommandHandlerArgs) =>
-  new ContractErc20BalanceOfCommand().execute(args);
+export async function contractErc20BalanceOf(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ContractErc20BalanceOfCommand().execute(args);
+}

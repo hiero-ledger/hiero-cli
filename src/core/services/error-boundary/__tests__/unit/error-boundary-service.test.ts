@@ -109,7 +109,7 @@ describe('ErrorBoundaryServiceImpl', () => {
         .spyOn(process, 'exit')
         .mockImplementation(() => undefined as never);
       const consoleErrorSpy = jest
-        .spyOn(console, 'error')
+        .spyOn(console, 'log')
         .mockImplementation(() => {});
 
       outputMock.handleOutput.mockImplementation(() => {

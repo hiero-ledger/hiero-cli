@@ -6,7 +6,7 @@ import { AliasNameSchema } from '@/core/schemas';
  * Input schema for batch delete command
  * Delete whole batch by name, or a single transaction by name and order
  */
-export const DeleteBatchInputSchema = z.object({
+export const BatchDeleteInputSchema = z.object({
   name: AliasNameSchema.describe('Batch name'),
   order: z
     .int()
@@ -17,4 +17,4 @@ export const DeleteBatchInputSchema = z.object({
     ),
 });
 
-export type DeleteBatchInput = z.infer<typeof DeleteBatchInputSchema>;
+export type BatchDeleteInput = z.infer<typeof BatchDeleteInputSchema>;

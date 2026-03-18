@@ -1,3 +1,3 @@
-export { createBatch, CreateBatchCommand } from './handler';
-export type { CreateBatchOutput } from './output';
-export { CREATE_BATCH_TEMPLATE, CreateBatchOutputSchema } from './output';
+export { batchCreate, BatchCreateCommand } from './handler';
+export type { BatchCreateOutput } from './output';
+export { BATCH_CREATE_TEMPLATE, BatchCreateOutputSchema } from './output';

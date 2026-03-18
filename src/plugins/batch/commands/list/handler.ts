@@ -8,11 +8,11 @@ import type {
   CommandHandlerArgs,
   CommandResult,
 } from '@/core/plugins/plugin.interface';
-import type { ListBatchesOutput } from './output';
+import type { BatchListOutput } from './output';
 
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
-export class ListBatchCommand implements Command {
+export class BatchListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
@@ -23,7 +23,7 @@ export class ListBatchCommand implements Command {
     const batches = batchState.listBatches();
 
     // Prepare output data
-    const outputData: ListBatchesOutput = {
+    const outputData: BatchListOutput = {
       batches: batches.map((batch) => ({
         name: batch.name,
         batchKey: api.kms.get(batch.keyRefId)?.publicKey ?? undefined,
@@ -38,8 +38,8 @@ export class ListBatchCommand implements Command {
   }
 }
 
-export async function listBatch(
+export async function batchList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new ListBatchCommand().execute(args);
+  return new BatchListCommand().execute(args);
 }

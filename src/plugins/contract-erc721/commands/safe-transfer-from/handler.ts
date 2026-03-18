@@ -17,12 +17,19 @@ import { ContractErc721CallSafeTransferFromInputSchema } from './input';
 
 const ERC_721_FUNCTION_NAME = 'safeTransferFrom';
 
-export class SafeTransferFromCommand extends BaseTransactionCommand<
+export const CONTRACT_ERC721_SAFE_TRANSFER_FROM_COMMAND_NAME =
+  'contract-erc721_safe-transfer-from';
+
+export class ContractErc721SafeTransferFromCommand extends BaseTransactionCommand<
   SafeTransferFromNormalisedParams,
   SafeTransferFromBuildTransactionResult,
   SafeTransferFromSignTransactionResult,
   SafeTransferFromExecuteTransactionResult
 > {
+  constructor() {
+    super(CONTRACT_ERC721_SAFE_TRANSFER_FROM_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<SafeTransferFromNormalisedParams> {
@@ -182,8 +189,8 @@ export class SafeTransferFromCommand extends BaseTransactionCommand<
   }
 }
 
-export async function safeTransferFromFunctionCall(
+export async function contractErc721SafeTransferFrom(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new SafeTransferFromCommand().execute(args);
+  return new ContractErc721SafeTransferFromCommand().execute(args);
 }

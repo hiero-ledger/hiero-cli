@@ -3,21 +3,21 @@
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { CreateBatchOutput } from './output';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { BatchCreateOutput } from './output';
 
 import { ValidationError } from '@/core/errors';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
-import { CreateBatchInputSchema } from './input';
+import { BatchCreateInputSchema } from './input';
 
-export class CreateBatchCommand implements Command {
+export class BatchCreateCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
     const batchState = new ZustandBatchStateHelper(api.state, logger);
-    const validArgs = CreateBatchInputSchema.parse(args.args);
+    const validArgs = BatchCreateInputSchema.parse(args.args);
     const name = validArgs.name;
     const batchKey = validArgs.key;
     const network = api.network.getCurrentNetwork();
@@ -29,14 +29,14 @@ export class CreateBatchCommand implements Command {
 
     const keyManager =
       validArgs.keyManager ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      api.config.getOption<KeyManager>('default_key_manager');
 
-    const resolved =
-      await api.keyResolver.resolveAccountCredentialsWithFallback(
-        batchKey,
-        keyManager,
-        ['batch:signer'],
-      );
+    const resolved = await api.keyResolver.resolveSigningKey(
+      batchKey,
+      keyManager,
+      false,
+      ['batch:signer'],
+    );
 
     const batchData = {
       name,
@@ -48,7 +48,7 @@ export class CreateBatchCommand implements Command {
 
     batchState.saveBatch(key, batchData);
 
-    const outputData: CreateBatchOutput = {
+    const outputData: BatchCreateOutput = {
       name: batchData.name,
       keyRefId: batchData.keyRefId,
     };
@@ -57,8 +57,8 @@ export class CreateBatchCommand implements Command {
   }
 }
 
-export async function createBatch(
+export async function batchCreate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new CreateBatchCommand().execute(args);
+  return new BatchCreateCommand().execute(args);
 }

@@ -11,7 +11,10 @@ import type { Credential } from '@/core/services/kms/kms-types.interface';
 import { z } from 'zod';
 
 import { ValidationError } from '@/core/errors';
-import { CredentialType } from '@/core/services/kms/kms-types.interface';
+import {
+  CredentialType,
+  KeyManager,
+} from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType, KeyAlgorithm } from '@/core/shared/constants';
 import {
   EntityReferenceType,
@@ -453,7 +456,7 @@ export const AmountInputSchema = z.coerce
  * Supported key manager implementations for private key storage
  */
 export const KeyManagerTypeSchema = z
-  .enum(['local', 'local_encrypted'])
+  .enum(KeyManager)
   .describe('Key manager type for storing private keys');
 
 /**
@@ -930,3 +933,14 @@ export const HexEncodedDataSchema = z
     'Data must be a hex encoded string starting in format "0x12abfe456123"',
   )
   .describe('HEX encoded data format');
+
+export const ResolvedAccountCredentialSchema = z.object({
+  keyRefId: z.string(),
+  accountId: z.string(),
+  publicKey: z.string(),
+});
+
+export const ResolvedPublicKeySchema = z.object({
+  keyRefId: z.string(),
+  publicKey: z.string(),
+});

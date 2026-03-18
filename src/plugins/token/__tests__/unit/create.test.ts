@@ -7,8 +7,8 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  CreateFungibleTokenOutputSchema,
-  createToken,
+  tokenCreateFt,
+  TokenCreateFtOutputSchema,
 } from '@/plugins/token/commands/create-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -96,7 +96,7 @@ describe('createTokenHandler', () => {
       const args = makeTokenCreateCommandArgs({ api, logger });
 
       // Act
-      const result = await createToken(args);
+      const result = await tokenCreateFt(args);
 
       // Assert
       // Note: importPrivateKey is NOT called because treasury is resolved from alias
@@ -105,7 +105,7 @@ describe('createTokenHandler', () => {
       );
       expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(mockSaveToken).toHaveBeenCalled();
-      assertOutput(result.result, CreateFungibleTokenOutputSchema);
+      assertOutput(result.result, TokenCreateFtOutputSchema);
     });
 
     test('should use default credentials when treasury not provided', async () => {
@@ -143,7 +143,7 @@ describe('createTokenHandler', () => {
       };
 
       // Act
-      const result = await createToken(args);
+      const result = await tokenCreateFt(args);
 
       // Assert
       // keyResolver.resolveKeyOrAliasWithFallback is called which internally uses getOperator
@@ -155,14 +155,14 @@ describe('createTokenHandler', () => {
         supplyType: SupplyType.INFINITE,
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
-        adminPublicKey: expect.any(Object),
+        adminPublicKey: undefined,
         tokenType: HederaTokenType.FUNGIBLE_COMMON,
         memo: undefined,
       });
       // When adminKey is not provided, only treasury signs (which is the operator)
       expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(mockSaveToken).toHaveBeenCalled();
-      assertOutput(result.result, CreateFungibleTokenOutputSchema);
+      assertOutput(result.result, TokenCreateFtOutputSchema);
     });
   });
 
@@ -172,7 +172,7 @@ describe('createTokenHandler', () => {
       const { api, keyResolver } = makeApiMocks();
 
       // Mock keyResolver to throw error when no operator is available
-      keyResolver.resolveAccountCredentialsWithFallback.mockImplementation(() =>
+      keyResolver.resolveAccountCredentials.mockImplementation(() =>
         Promise.reject(new Error('No operator set')),
       );
 
@@ -189,7 +189,7 @@ describe('createTokenHandler', () => {
       };
 
       // Act & Assert - Error is thrown before try-catch block in handler
-      await expect(createToken(args)).rejects.toThrow('No operator set');
+      await expect(tokenCreateFt(args)).rejects.toThrow('No operator set');
     });
   });
 
@@ -247,7 +247,7 @@ describe('createTokenHandler', () => {
       };
 
       // Act & Assert
-      await expect(createToken(args)).rejects.toThrow(StateError);
+      await expect(tokenCreateFt(args)).rejects.toThrow(StateError);
       expect(mockSaveToken).not.toHaveBeenCalled();
     });
 
@@ -281,7 +281,7 @@ describe('createTokenHandler', () => {
       };
 
       // Act & Assert
-      await expect(createToken(args)).rejects.toThrow('Service error');
+      await expect(tokenCreateFt(args)).rejects.toThrow('Service error');
     });
     test('should handle initial supply limit exceeded', async () => {
       const { api } = makeApiMocks({});
@@ -298,7 +298,7 @@ describe('createTokenHandler', () => {
         config: api.config,
         logger,
       };
-      await expect(createToken(args)).rejects.toThrow(
+      await expect(tokenCreateFt(args)).rejects.toThrow(
         'Maximum balance for token exceeded. Token balance cannot be greater than 9223372036854775807',
       );
     });
@@ -367,7 +367,7 @@ describe('createTokenHandler', () => {
       };
 
       // Act
-      await createToken(args);
+      await tokenCreateFt(args);
 
       // Assert
       expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);

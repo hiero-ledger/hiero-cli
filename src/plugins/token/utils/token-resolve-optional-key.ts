@@ -2,14 +2,14 @@ import type { KeyResolverService } from '@/core/services/key-resolver/key-resolv
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type {
   Credential,
-  KeyManagerName,
+  KeyManager,
 } from '@/core/services/kms/kms-types.interface';
 
 import { PublicKey } from '@hashgraph/sdk';
 
 export async function resolveOptionalKey(
   credential: Credential | undefined,
-  keyManager: KeyManagerName,
+  keyManager: KeyManager,
   keyResolver: KeyResolverService,
   tag: string,
 ): Promise<ResolvedPublicKey | undefined> {
@@ -17,7 +17,7 @@ export async function resolveOptionalKey(
     return undefined;
   }
 
-  return keyResolver.getPublicKey(credential, keyManager, [tag]);
+  return keyResolver.getPublicKey(credential, keyManager, false, [tag]);
 }
 
 export function toPublicKey(

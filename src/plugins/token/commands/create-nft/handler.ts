@@ -1,11 +1,11 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { CreateNftOutput } from '@/plugins/token/commands/create-nft/output';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenCreateNftOutput } from '@/plugins/token/commands/create-nft/output';
 import type {
-  CreateNftBuildTransactionResult,
-  CreateNftExecuteTransactionResult,
-  CreateNftNormalizedParams,
-  CreateNftSignTransactionResult,
+  TokenCreateNftBuildTransactionResult,
+  TokenCreateNftExecuteTransactionResult,
+  TokenCreateNftNormalizedParams,
+  TokenCreateNftSignTransactionResult,
 } from '@/plugins/token/commands/create-nft/types';
 
 import { PublicKey } from '@hashgraph/sdk';
@@ -17,27 +17,37 @@ import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
-import { CreateNftInputSchema } from '@/plugins/token/commands/create-nft/input';
+import { TokenCreateNftInputSchema } from '@/plugins/token/commands/create-nft/input';
 import {
   buildTokenData,
   determineFiniteMaxSupply,
 } from '@/plugins/token/utils/token-data-builders';
+import {
+  resolveOptionalKey,
+  toPublicKey,
+} from '@/plugins/token/utils/token-resolve-optional-key';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-export class CreateNftCommand extends BaseTransactionCommand<
-  CreateNftNormalizedParams,
-  CreateNftBuildTransactionResult,
-  CreateNftSignTransactionResult,
-  CreateNftExecuteTransactionResult
+export const TOKEN_CREATE_NFT_COMMAND_NAME = 'token_create-nft';
+
+export class TokenCreateNftCommand extends BaseTransactionCommand<
+  TokenCreateNftNormalizedParams,
+  TokenCreateNftBuildTransactionResult,
+  TokenCreateNftSignTransactionResult,
+  TokenCreateNftExecuteTransactionResult
 > {
+  constructor() {
+    super(TOKEN_CREATE_NFT_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
-  ): Promise<CreateNftNormalizedParams> {
+  ): Promise<TokenCreateNftNormalizedParams> {
     const { api, logger } = args;
-    const validArgs = CreateNftInputSchema.parse(args.args);
+    const validArgs = TokenCreateNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      api.config.getOption<KeyManager>('default_key_manager');
     const maxSupply = validArgs.maxSupply
       ? processTokenBalanceInput(validArgs.maxSupply, 0)
       : undefined;
@@ -45,21 +55,23 @@ export class CreateNftCommand extends BaseTransactionCommand<
 
     api.alias.availableOrThrow(validArgs.name, network);
 
-    const treasury =
-      await api.keyResolver.resolveAccountCredentialsWithFallback(
-        validArgs.treasury,
-        keyManager,
-        ['token:treasury'],
-      );
-    const admin = await api.keyResolver.resolveAccountCredentialsWithFallback(
+    const treasury = await api.keyResolver.resolveAccountCredentials(
+      validArgs.treasury,
+      keyManager,
+      true,
+      ['token:treasury'],
+    );
+    const admin = await resolveOptionalKey(
       validArgs.adminKey,
       keyManager,
-      ['token:admin'],
+      api.keyResolver,
+      'token:admin',
     );
-    const supply = await api.keyResolver.resolveAccountCredentialsWithFallback(
+    const supply = await resolveOptionalKey(
       validArgs.supplyKey,
       keyManager,
-      ['token:supply'],
+      api.keyResolver,
+      'token:supply',
     );
 
     let finalMaxSupply: bigint | undefined;
@@ -75,8 +87,8 @@ export class CreateNftCommand extends BaseTransactionCommand<
     logger.info(`Creating NFT: ${validArgs.tokenName} (${validArgs.symbol})`);
     logger.debug('=== NFT PARAMS DEBUG ===');
     logger.debug(`Treasury ID: ${treasury.keyRefId}`);
-    logger.debug(`Admin Key (keyRefId): ${admin.keyRefId}`);
-    logger.debug(`Supply Key (keyRefId): ${supply.keyRefId}`);
+    logger.debug(`Admin Key (keyRefId): ${admin?.keyRefId}`);
+    logger.debug(`Supply Key (keyRefId): ${supply?.keyRefId}`);
     logger.debug(`Use Custom Treasury: ${String(Boolean(treasury))}`);
     logger.debug('=========================');
 
@@ -95,14 +107,13 @@ export class CreateNftCommand extends BaseTransactionCommand<
       admin,
       supply,
       finalMaxSupply,
-      adminKeyProvided: Boolean(validArgs.adminKey),
     };
   }
 
   async buildTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: CreateNftNormalizedParams,
-  ): Promise<CreateNftBuildTransactionResult> {
+    normalisedParams: TokenCreateNftNormalizedParams,
+  ): Promise<TokenCreateNftBuildTransactionResult> {
     const { api } = args;
     const transaction = api.token.createTokenTransaction({
       name: normalisedParams.name,
@@ -113,8 +124,10 @@ export class CreateNftCommand extends BaseTransactionCommand<
       tokenType: normalisedParams.tokenType,
       supplyType: normalisedParams.supplyType,
       maxSupplyRaw: normalisedParams.finalMaxSupply,
-      adminPublicKey: PublicKey.fromString(normalisedParams.admin.publicKey),
-      supplyPublicKey: PublicKey.fromString(normalisedParams.supply.publicKey),
+      adminPublicKey: normalisedParams.admin
+        ? PublicKey.fromString(normalisedParams.admin.publicKey)
+        : undefined,
+      supplyPublicKey: toPublicKey(normalisedParams.supply),
       memo: normalisedParams.memo,
     });
     return { transaction };
@@ -122,13 +135,13 @@ export class CreateNftCommand extends BaseTransactionCommand<
 
   async signTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: CreateNftNormalizedParams,
-    buildTransactionResult: CreateNftBuildTransactionResult,
-  ): Promise<CreateNftSignTransactionResult> {
+    normalisedParams: TokenCreateNftNormalizedParams,
+    buildTransactionResult: TokenCreateNftBuildTransactionResult,
+  ): Promise<TokenCreateNftSignTransactionResult> {
     const { api } = args;
     const txSigners = [normalisedParams.treasury.keyRefId];
 
-    if (normalisedParams.adminKeyProvided) {
+    if (normalisedParams.admin) {
       txSigners.push(normalisedParams.admin.keyRefId);
     }
 
@@ -136,18 +149,18 @@ export class CreateNftCommand extends BaseTransactionCommand<
       buildTransactionResult.transaction,
       txSigners,
     );
-    return { transaction };
+    return { signedTransaction: transaction };
   }
 
   async executeTransaction(
     args: CommandHandlerArgs,
-    _normalisedParams: CreateNftNormalizedParams,
-    _buildTransactionResult: CreateNftBuildTransactionResult,
-    signTransactionResult: CreateNftSignTransactionResult,
-  ): Promise<CreateNftExecuteTransactionResult> {
+    _normalisedParams: TokenCreateNftNormalizedParams,
+    _buildTransactionResult: TokenCreateNftBuildTransactionResult,
+    signTransactionResult: TokenCreateNftSignTransactionResult,
+  ): Promise<TokenCreateNftExecuteTransactionResult> {
     const { api } = args;
     const transactionResult = await api.txExecute.execute(
-      signTransactionResult.transaction,
+      signTransactionResult.signedTransaction,
     );
 
     if (!transactionResult.success || !transactionResult.tokenId) {
@@ -161,10 +174,10 @@ export class CreateNftCommand extends BaseTransactionCommand<
 
   async outputPreparation(
     args: CommandHandlerArgs,
-    normalisedParams: CreateNftNormalizedParams,
-    _buildTransactionResult: CreateNftBuildTransactionResult,
-    _signTransactionResult: CreateNftSignTransactionResult,
-    executeTransactionResult: CreateNftExecuteTransactionResult,
+    normalisedParams: TokenCreateNftNormalizedParams,
+    _buildTransactionResult: TokenCreateNftBuildTransactionResult,
+    _signTransactionResult: TokenCreateNftSignTransactionResult,
+    executeTransactionResult: TokenCreateNftExecuteTransactionResult,
   ): Promise<CommandResult> {
     const { api, logger } = args;
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
@@ -177,8 +190,8 @@ export class CreateNftCommand extends BaseTransactionCommand<
       initialSupply: normalisedParams.initialSupply,
       tokenType: normalisedParams.tokenType,
       supplyType: normalisedParams.supplyType,
-      adminPublicKey: normalisedParams.admin.publicKey,
-      supplyPublicKey: normalisedParams.supply.publicKey,
+      adminPublicKey: normalisedParams.admin?.publicKey,
+      supplyPublicKey: normalisedParams.supply?.publicKey,
       network: normalisedParams.network,
     });
 
@@ -197,17 +210,15 @@ export class CreateNftCommand extends BaseTransactionCommand<
       logger.info(`   Name registered: ${normalisedParams.alias}`);
     }
 
-    const outputData: CreateNftOutput = {
+    const outputData: TokenCreateNftOutput = {
       tokenId: result.tokenId!,
       name: normalisedParams.name,
       symbol: normalisedParams.symbol,
       treasuryId: normalisedParams.treasury.accountId,
       supplyType: normalisedParams.supplyType,
       transactionId: result.transactionId,
-      adminAccountId: normalisedParams.admin.accountId,
-      adminPublicKey: normalisedParams.admin.publicKey,
-      supplyAccountId: normalisedParams.supply.accountId,
-      supplyPublicKey: normalisedParams.supply.publicKey,
+      adminPublicKey: normalisedParams.admin?.publicKey,
+      supplyPublicKey: normalisedParams.supply?.publicKey,
       alias: normalisedParams.alias,
       network: normalisedParams.network,
     };
@@ -216,5 +227,8 @@ export class CreateNftCommand extends BaseTransactionCommand<
   }
 }
 
-export const createNft = (args: CommandHandlerArgs) =>
-  new CreateNftCommand().execute(args);
+export async function tokenCreateNft(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new TokenCreateNftCommand().execute(args);
+}

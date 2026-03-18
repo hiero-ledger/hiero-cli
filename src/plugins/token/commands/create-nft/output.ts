@@ -16,7 +16,7 @@ import {
 /**
  * Create Token Command Output Schema
  */
-export const CreateNftOutputSchema = z.object({
+export const TokenCreateNftOutputSchema = z.object({
   tokenId: EntityIdSchema.describe('Token ID'),
   name: TokenNameSchema.describe('Token name'),
   symbol: TokenSymbolSchema.describe('Token symbol'),
@@ -28,19 +28,21 @@ export const CreateNftOutputSchema = z.object({
     'Hedera token create transaction ID',
   ),
   adminAccountId: EntityIdSchema.optional().describe('Admin account ID'),
-  adminPublicKey: PublicKeyDefinitionSchema.describe('Admin public key'),
+  adminPublicKey:
+    PublicKeyDefinitionSchema.optional().describe('Admin public key'),
   supplyAccountId: EntityIdSchema.optional().describe('Supply account ID'),
-  supplyPublicKey: PublicKeyDefinitionSchema.describe('Supply public key'),
+  supplyPublicKey:
+    PublicKeyDefinitionSchema.optional().describe('Supply public key'),
   alias: z.string().describe('Token alias').optional(),
   network: NetworkSchema.describe('Network on which token exists'),
 });
 
-export type CreateNftOutput = z.infer<typeof CreateNftOutputSchema>;
+export type TokenCreateNftOutput = z.infer<typeof TokenCreateNftOutputSchema>;
 
 /**
  * Human-readable template for create token output
  */
-export const CREATE_NFT_TEMPLATE = `
+export const TOKEN_CREATE_NFT_TEMPLATE = `
 ✅ NFT created successfully: {{hashscanLink tokenId "token" network}}
    Name: {{name}} ({{symbol}})
    Treasury: {{hashscanLink treasuryId "account" network}}
@@ -52,7 +54,9 @@ export const CREATE_NFT_TEMPLATE = `
 {{#if supplyAccountId}}
    Supply account: {{hashscanLink supplyAccountId "account" network}}
 {{/if}}
+{{#if supplyPublicKey}}
    Supply public key: {{supplyPublicKey}}
+{{/if}}
 {{#if alias}}
    Alias: {{alias}}
 {{/if}}

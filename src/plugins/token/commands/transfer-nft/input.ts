@@ -4,17 +4,17 @@ import {
   AccountReferenceSchema,
   EntityReferenceSchema,
   KeyManagerTypeSchema,
+  KeySchema,
   NftSerialNumbersSchema,
-  PrivateKeyWithAccountIdSchema,
 } from '@/core/schemas';
 
-export const TransferNftInputSchema = z.object({
+export const TokenTransferNftInputSchema = z.object({
   token: EntityReferenceSchema.describe('Token identifier (ID or name)'),
   to: AccountReferenceSchema.describe(
     'Destination account (ID, EVM address, or name)',
   ),
-  from: PrivateKeyWithAccountIdSchema.optional().describe(
-    'Source account. Can be {accountID}:{privateKey} pair, key reference or account alias. Defaults to operator.',
+  from: KeySchema.optional().describe(
+    'Source account. Accepts any key format. Defaults to operator.',
   ),
   serials: NftSerialNumbersSchema,
   keyManager: KeyManagerTypeSchema.optional().describe(
@@ -22,4 +22,4 @@ export const TransferNftInputSchema = z.object({
   ),
 });
 
-export type TransferNftInput = z.infer<typeof TransferNftInputSchema>;
+export type TokenTransferNftInput = z.infer<typeof TokenTransferNftInputSchema>;

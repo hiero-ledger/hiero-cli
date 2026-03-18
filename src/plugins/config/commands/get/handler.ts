@@ -1,23 +1,23 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { GetConfigOutput } from './output';
+import type { ConfigGetOutput } from './output';
 
 import { inferConfigOptionType } from '@/plugins/config/schema';
 
-import { GetConfigInputSchema } from './input';
+import { ConfigGetInputSchema } from './input';
 
-export class GetConfigCommand implements Command {
+export class ConfigGetCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
-    const validArgs = GetConfigInputSchema.parse(args.args);
+    const validArgs = ConfigGetInputSchema.parse(args.args);
     const name = validArgs.option;
 
     const value = api.config.getOption(name);
     const descriptor = api.config.listOptions().find((o) => o.name === name);
     const type = inferConfigOptionType(descriptor?.type, value);
 
-    const output: GetConfigOutput = {
+    const output: ConfigGetOutput = {
       name,
       type,
       value,
@@ -28,8 +28,8 @@ export class GetConfigCommand implements Command {
   }
 }
 
-export async function getConfigOption(
+export async function configGet(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new GetConfigCommand().execute(args);
+  return new ConfigGetCommand().execute(args);
 }

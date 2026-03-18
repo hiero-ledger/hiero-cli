@@ -5,13 +5,18 @@
 export { tokenPluginManifest } from './manifest';
 
 // Export command handlers and schemas
-export { associateToken } from './commands/associate';
-export { createToken } from './commands/create-ft';
-export { createTokenFromFile } from './commands/create-ft-from-file';
-export { deleteToken } from './commands/delete';
-export { importToken } from './commands/import';
-export { listTokens } from './commands/list';
-export { mintFt } from './commands/mint-ft';
-export { mintNft } from './commands/mint-nft';
-export { transferFt } from './commands/transfer-ft';
-export { transferNft } from './commands/transfer-nft';
+export { tokenAssociate } from './commands/associate';
+export { tokenCreateFt } from './commands/create-ft';
+export { tokenCreateFtFromFile } from './commands/create-ft-from-file';
+export { tokenCreateNft } from './commands/create-nft';
+export { tokenDelete } from './commands/delete';
+export { tokenImport } from './commands/import';
+export { tokenList } from './commands/list';
+export { TOKEN_MINT_FT_COMMAND_NAME, tokenMintFt } from './commands/mint-ft';
+export { tokenMintNft } from './commands/mint-nft';
+export {
+  TOKEN_TRANSFER_FT_COMMAND_NAME,
+  tokenTransferFt,
+} from './commands/transfer-ft';
+export { tokenTransferNft } from './commands/transfer-nft';
+export { tokenView } from './commands/view';

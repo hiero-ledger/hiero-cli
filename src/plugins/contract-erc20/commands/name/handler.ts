@@ -76,5 +76,8 @@ export class ContractErc20NameCommand implements Command {
   }
 }
 
-export const name = (args: CommandHandlerArgs) =>
-  new ContractErc20NameCommand().execute(args);
+export async function contractErc20Name(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ContractErc20NameCommand().execute(args);
+}

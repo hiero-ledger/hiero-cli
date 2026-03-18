@@ -17,12 +17,19 @@ import { ContractErc721CallTransferFromInputSchema } from './input';
 
 const ERC_721_FUNCTION_NAME = 'transferFrom';
 
-export class TransferFromCommand extends BaseTransactionCommand<
+export const CONTRACT_ERC721_TRANSFER_FROM_COMMAND_NAME =
+  'contract-erc721_transfer-from';
+
+export class ContractErc721TransferFromCommand extends BaseTransactionCommand<
   TransferFromNormalisedParams,
   TransferFromBuildTransactionResult,
   TransferFromSignTransactionResult,
   TransferFromExecuteTransactionResult
 > {
+  constructor() {
+    super(CONTRACT_ERC721_TRANSFER_FROM_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TransferFromNormalisedParams> {
@@ -174,8 +181,8 @@ export class TransferFromCommand extends BaseTransactionCommand<
   }
 }
 
-export async function transferFromFunctionCall(
+export async function contractErc721TransferFrom(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TransferFromCommand().execute(args);
+  return new ContractErc721TransferFromCommand().execute(args);
 }

@@ -1,10 +1,9 @@
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-
 import { makeArgs, makeKmsMock, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
-import { ListCredentialsOutputSchema } from '@/plugins/credentials/commands/list';
-import { listCredentials } from '@/plugins/credentials/commands/list/handler';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
+import { CredentialsListOutputSchema } from '@/plugins/credentials/commands/list';
+import { credentialsList } from '@/plugins/credentials/commands/list/handler';
 
 describe('credentials plugin - list command', () => {
   beforeEach(() => {
@@ -18,8 +17,8 @@ describe('credentials plugin - list command', () => {
 
     const args = makeArgs({ kms: kmsService }, logger, {});
 
-    const result = await listCredentials(args);
-    const output = assertOutput(result.result, ListCredentialsOutputSchema);
+    const result = await credentialsList(args);
+    const output = assertOutput(result.result, CredentialsListOutputSchema);
 
     expect(output.credentials).toHaveLength(0);
     expect(output.totalCount).toBe(0);
@@ -32,14 +31,14 @@ describe('credentials plugin - list command', () => {
     const mockCredentials = [
       {
         keyRefId: 'kr_test123',
-        keyManager: 'local' as KeyManagerName,
+        keyManager: KeyManager.local,
         publicKey:
           '02aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
         labels: ['test', 'dev'],
       },
       {
         keyRefId: 'kr_test456',
-        keyManager: 'local_encrypted' as KeyManagerName,
+        keyManager: KeyManager.local_encrypted,
         publicKey:
           '02bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
       },
@@ -49,8 +48,8 @@ describe('credentials plugin - list command', () => {
 
     const args = makeArgs({ kms: kmsService }, logger, {});
 
-    const result = await listCredentials(args);
-    const output = assertOutput(result.result, ListCredentialsOutputSchema);
+    const result = await credentialsList(args);
+    const output = assertOutput(result.result, CredentialsListOutputSchema);
 
     expect(output.totalCount).toBe(2);
     expect(output.credentials).toHaveLength(2);
@@ -79,6 +78,6 @@ describe('credentials plugin - list command', () => {
 
     const args = makeArgs({ kms: kmsService }, logger, {});
 
-    await expect(listCredentials(args)).rejects.toThrow('KMS service error');
+    await expect(credentialsList(args)).rejects.toThrow('KMS service error');
   });
 });

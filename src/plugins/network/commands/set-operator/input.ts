@@ -1,19 +1,13 @@
 import { z } from 'zod';
 
-import {
-  KeyManagerTypeSchema,
-  NetworkSchema,
-  PrivateKeyWithAccountIdSchema,
-} from '@/core/schemas';
+import { KeyManagerTypeSchema, KeySchema, NetworkSchema } from '@/core/schemas';
 
 /**
  * Input schema for network set-operator command
  * Validates arguments for setting operator credentials
  */
-export const SetOperatorInputSchema = z.object({
-  operator: PrivateKeyWithAccountIdSchema.describe(
-    'Operator credentials. Can be accountId:privateKey pair, key reference or account alias.',
-  ),
+export const NetworkSetOperatorInputSchema = z.object({
+  operator: KeySchema.describe('Operator credentials. Accepts any key format.'),
   network: NetworkSchema.optional().describe(
     'Target network (defaults to current network)',
   ),

@@ -1,3 +1,10 @@
-export { transferNft, TransferNftCommand } from './handler';
-export type { TransferNftOutput } from './output';
-export { TRANSFER_NFT_TEMPLATE, TransferNftOutputSchema } from './output';
+export {
+  TOKEN_TRANSFER_NFT_COMMAND_NAME,
+  tokenTransferNft,
+  TokenTransferNftCommand,
+} from './handler';
+export type { TokenTransferNftOutput } from './output';
+export {
+  TOKEN_TRANSFER_NFT_TEMPLATE,
+  TokenTransferNftOutputSchema,
+} from './output';

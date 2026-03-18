@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { DeleteTopicOutput } from './output';
+import type { TopicDeleteOutput } from './output';
 import type { DeleteTopicNormalisedParams } from './types';
 
 import { NotFoundError } from '@/core/errors';
@@ -9,9 +9,9 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
-import { DeleteTopicInputSchema } from './input';
+import { TopicDeleteInputSchema } from './input';
 
-export class DeleteTopicCommand implements Command {
+export class TopicDeleteCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
@@ -19,7 +19,7 @@ export class DeleteTopicCommand implements Command {
 
     logger.info(`Deleting topic...`);
 
-    const validArgs = DeleteTopicInputSchema.parse(args.args);
+    const validArgs = TopicDeleteInputSchema.parse(args.args);
     const topicRef = validArgs.topic;
     const isEntityId = EntityIdSchema.safeParse(topicRef).success;
     const network = api.network.getCurrentNetwork();
@@ -69,7 +69,7 @@ export class DeleteTopicCommand implements Command {
 
     topicState.deleteTopic(normalisedParams.key);
 
-    const result: DeleteTopicOutput = {
+    const result: TopicDeleteOutput = {
       deletedTopic: {
         name: topicToDelete.name,
         topicId: topicToDelete.topicId,
@@ -82,6 +82,8 @@ export class DeleteTopicCommand implements Command {
   }
 }
 
-const deleteTopicCommand = new DeleteTopicCommand();
-
-export const deleteTopic = deleteTopicCommand.execute.bind(deleteTopicCommand);
+export async function topicDelete(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new TopicDeleteCommand().execute(args);
+}

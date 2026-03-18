@@ -11,8 +11,6 @@ import {
   KeySchema,
   MemoSchema,
   NonNegativeNumberOrBigintSchema,
-  PrivateKeySchema,
-  PrivateKeyWithAccountIdSchema,
   TokenNameSchema,
   TokenSymbolSchema,
   TokenTypeSchema,
@@ -145,6 +143,7 @@ export const TokenDataSchema = z.object({
 
 // TypeScript type inferred from Zod schema
 export type TokenData = z.infer<typeof TokenDataSchema>;
+export type TokenCustomFeeType = z.infer<typeof TokenFileCustomFeeSchema>;
 
 // JSON Schema for manifest (automatically generated from Zod schema)
 // BigInt is not representable in JSON Schema, so we convert it to string with numeric pattern
@@ -184,15 +183,15 @@ export const FungibleTokenFileSchema = z
     supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
     initialSupply: AmountInputSchema,
     maxSupply: AmountInputSchema.default('0'),
-    treasuryKey: PrivateKeyWithAccountIdSchema,
-    adminKey: PrivateKeySchema,
+    treasuryKey: KeySchema,
+    adminKey: KeySchema,
     supplyKey: KeySchema.optional(),
     wipeKey: KeySchema.optional(),
     kycKey: KeySchema.optional(),
     freezeKey: KeySchema.optional(),
     pauseKey: KeySchema.optional(),
     feeScheduleKey: KeySchema.optional(),
-    associations: z.array(PrivateKeyWithAccountIdSchema).default([]),
+    associations: z.array(KeySchema).default([]),
     customFees: z
       .array(TokenFileCustomFeeSchema)
       .max(10, 'Maximum 10 custom fees allowed per token')
@@ -242,8 +241,8 @@ export const NonFungibleTokenFileSchema = z
     symbol: TokenSymbolSchema,
     supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
     maxSupply: NonNegativeNumberOrBigintSchema.optional(),
-    treasuryKey: PrivateKeyWithAccountIdSchema,
-    adminKey: PrivateKeySchema,
+    treasuryKey: KeySchema,
+    adminKey: KeySchema,
     supplyKey: KeySchema,
     wipeKey: KeySchema.optional(),
     kycKey: KeySchema.optional(),

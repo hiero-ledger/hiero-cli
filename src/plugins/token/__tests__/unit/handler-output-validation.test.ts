@@ -6,20 +6,20 @@ import { assertOutput } from '@/__tests__/utils/assert-output';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupplyType } from '@/core/types/shared.types';
 import {
-  associateToken,
-  AssociateTokenOutputSchema,
+  tokenAssociate,
+  TokenAssociateOutputSchema,
 } from '@/plugins/token/commands/associate';
 import {
-  CreateFungibleTokenOutputSchema,
-  createToken,
+  tokenCreateFt,
+  TokenCreateFtOutputSchema,
 } from '@/plugins/token/commands/create-ft';
 import {
-  listTokens,
-  ListTokensOutputSchema,
+  tokenList,
+  TokenListOutputSchema,
 } from '@/plugins/token/commands/list';
 import {
-  transferFt,
-  TransferFungibleTokenOutputSchema,
+  tokenTransferFt,
+  TokenTransferFtOutputSchema,
 } from '@/plugins/token/commands/transfer-ft';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -88,7 +88,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         supplyType: SupplyType.INFINITE,
       };
 
-      const result = await createToken({
+      const result = await tokenCreateFt({
         api,
         logger: makeLogger(),
         state: api.state,
@@ -96,10 +96,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      const output = assertOutput(
-        result.result,
-        CreateFungibleTokenOutputSchema,
-      );
+      const output = assertOutput(result.result, TokenCreateFtOutputSchema);
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TTK');
@@ -159,7 +156,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         amount: '100t',
       };
 
-      const result = await transferFt({
+      const result = await tokenTransferFt({
         api,
         logger: makeLogger(),
         state: api.state,
@@ -167,10 +164,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      const output = assertOutput(
-        result.result,
-        TransferFungibleTokenOutputSchema,
-      );
+      const output = assertOutput(result.result, TokenTransferFtOutputSchema);
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.transactionId).toBe('0.0.123@1700000000.123456789');
       expect(output.amount).toBe(100n);
@@ -207,7 +201,7 @@ describe('Handler Output Validation - Token Plugin', () => {
           '0.0.111:4444444444444444444444444444444444444444444444444444444444444444',
       };
 
-      const result = await associateToken({
+      const result = await tokenAssociate({
         api,
         logger: makeLogger(),
         state: api.state,
@@ -215,7 +209,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      const output = assertOutput(result.result, AssociateTokenOutputSchema);
+      const output = assertOutput(result.result, TokenAssociateOutputSchema);
       expect(output.tokenId).toBe('0.0.12345');
       expect(output.associated).toBe(true);
       expect(output.transactionId).toBe('0.0.123@1700000000.123456789');
@@ -228,7 +222,7 @@ describe('Handler Output Validation - Token Plugin', () => {
 
       const args = {};
 
-      const result = await listTokens({
+      const result = await tokenList({
         api,
         logger: makeLogger(),
         state: api.state,
@@ -236,7 +230,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      const output = assertOutput(result.result, ListTokensOutputSchema);
+      const output = assertOutput(result.result, TokenListOutputSchema);
       expect(output.tokens).toEqual([]);
       expect(output.totalCount).toBe(0);
       expect(output.stats).toBeDefined();
@@ -272,7 +266,7 @@ describe('Handler Output Validation - Token Plugin', () => {
 
       const args = {};
 
-      const result = await listTokens({
+      const result = await tokenList({
         api,
         logger: makeLogger(),
         state: api.state,
@@ -280,7 +274,7 @@ describe('Handler Output Validation - Token Plugin', () => {
         args,
       } as CommandHandlerArgs);
 
-      const output = assertOutput(result.result, ListTokensOutputSchema);
+      const output = assertOutput(result.result, TokenListOutputSchema);
       expect(output.tokens).toHaveLength(1);
       expect(output.tokens[0].tokenId).toBe('0.0.12345');
       expect(output.totalCount).toBe(1);

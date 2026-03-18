@@ -4,7 +4,7 @@
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { ContractVerificationResult } from '@/core/services/contract-verifier/types';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { ContractCreateOutput } from './output';
 import type {
   ContractCreateBuildTransactionResult,
@@ -32,12 +32,18 @@ import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-hel
 
 import { ContractCreateSchema } from './input';
 
+export const CONTRACT_CREATE_COMMAND_NAME = 'contract_create';
+
 export class CreateContractCommand extends BaseTransactionCommand<
   ContractCreateNormalisedParams,
   ContractCreateBuildTransactionResult,
   ContractCreateSignTransactionResult,
   ContractCreateExecuteTransactionResult
 > {
+  constructor() {
+    super(CONTRACT_CREATE_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<ContractCreateNormalisedParams> {
@@ -72,13 +78,13 @@ export class CreateContractCommand extends BaseTransactionCommand<
     api.alias.availableOrThrow(alias, network);
 
     const keyManager =
-      keyManagerArg ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
     const admin = validArgs.adminKey
       ? await api.keyResolver.resolveSigningKey(
           validArgs.adminKey,
           keyManager,
+          false,
           ['contract:admin'],
         )
       : undefined;
@@ -258,7 +264,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
   }
 }
 
-export async function createContract(
+export async function contractCreate(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new CreateContractCommand().execute(args);

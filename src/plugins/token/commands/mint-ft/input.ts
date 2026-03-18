@@ -4,24 +4,22 @@ import {
   AmountInputSchema,
   EntityReferenceSchema,
   KeyManagerTypeSchema,
-  PrivateKeySchema,
+  KeySchema,
 } from '@/core/schemas';
 
 /**
  * Input schema for token mint-ft command
  * Validates arguments for minting fungible tokens
  */
-export const MintFtInputSchema = z.object({
+export const TokenMintFtInputSchema = z.object({
   token: EntityReferenceSchema.describe('Token identifier (ID or name)'),
   amount: AmountInputSchema.describe(
     'Amount to mint (display units or base units with "t" suffix)',
   ),
-  supplyKey: PrivateKeySchema.describe(
-    'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
-  ),
+  supplyKey: KeySchema.describe('Supply key. Accepts any key format.'),
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type (defaults to config setting)',
   ),
 });
 
-export type MintFtInput = z.infer<typeof MintFtInputSchema>;
+export type TokenMintFtInput = z.infer<typeof TokenMintFtInputSchema>;

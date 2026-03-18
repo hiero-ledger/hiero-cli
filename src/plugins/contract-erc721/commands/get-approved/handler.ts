@@ -12,7 +12,7 @@ import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';
 
 const ERC_721_FUNCTION_NAME = 'getApproved';
 
-export class GetApprovedCommand implements Command {
+export class ContractErc721GetApprovedCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
@@ -68,8 +68,8 @@ export class GetApprovedCommand implements Command {
   }
 }
 
-export async function getApprovedFunctionCall(
+export async function contractErc721GetApproved(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new GetApprovedCommand().execute(args);
+  return new ContractErc721GetApprovedCommand().execute(args);
 }

@@ -15,7 +15,7 @@ export interface ContractErc20TransferFromBuildTransactionResult {
 }
 
 export interface ContractErc20TransferFromSignTransactionResult {
-  transaction: Transaction;
+  signedTransaction: Transaction;
 }
 
 export interface ContractErc20TransferFromExecuteTransactionResult {

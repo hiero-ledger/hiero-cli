@@ -13,7 +13,7 @@ import {
 /**
  * Import Contract Command Output Schema
  */
-export const ImportContractOutputSchema = z.object({
+export const ContractImportOutputSchema = z.object({
   contractId: EntityIdSchema,
   contractName: z.string().optional().describe('Contract name in state'),
   contractEvmAddress: EvmAddressSchema,
@@ -23,7 +23,7 @@ export const ImportContractOutputSchema = z.object({
   verified: z.boolean(),
 });
 
-export type ImportContractOutput = z.infer<typeof ImportContractOutputSchema>;
+export type ContractImportOutput = z.infer<typeof ContractImportOutputSchema>;
 
 /**
  * Human-readable template for import contract output

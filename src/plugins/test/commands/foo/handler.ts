@@ -4,21 +4,27 @@ import type {
   FooNormalizedParams,
   FooSignTransactionResult,
 } from '@/plugins/test/commands/foo/types';
-import type { FooTestOutput } from './output';
+import type { TestFooOutput } from './output';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
-import { FooTestInputSchema } from '@/plugins/test/commands/foo/input';
+import { TestFooInputSchema } from '@/plugins/test/commands/foo/input';
 
-export class FooTestCommand extends BaseTransactionCommand<
+export const TEST_FOO_COMMAND_NAME = 'test_foo';
+
+export class TestFooCommand extends BaseTransactionCommand<
   FooNormalizedParams,
   FooBuildTransactionResult,
   FooSignTransactionResult,
   void
 > {
+  constructor() {
+    super(TEST_FOO_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<FooNormalizedParams> {
-    const validArgs = FooTestInputSchema.parse(args.args);
+    const validArgs = TestFooInputSchema.parse(args.args);
     return {
       message: validArgs.message,
     };
@@ -65,21 +71,15 @@ export class FooTestCommand extends BaseTransactionCommand<
     void buildTransactionResult;
     void signTransactionResult;
     void executeTransactionResult;
-    const output: FooTestOutput = {
+    const output: TestFooOutput = {
       bar: normalisedParams.message,
     };
     return { result: output };
   }
 }
 
-export async function fooTestOptions(
+export async function testFoo(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new FooTestCommand().execute(args);
-}
-
-export async function fooTest(
-  args: CommandHandlerArgs,
-): Promise<CommandResult> {
-  return new FooTestCommand().execute(args);
+  return new TestFooCommand().execute(args);
 }

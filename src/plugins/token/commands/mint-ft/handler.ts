@@ -1,12 +1,12 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type {
   MintFtBuildTransactionResult,
   MintFtExecuteTransactionResult,
   MintFtNormalizedParams,
   MintFtSignTransactionResult,
 } from '@/plugins/token/commands/mint-ft/types';
-import type { MintFtOutput } from './output';
+import type { TokenMintFtOutput } from './output';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import {
@@ -20,14 +20,20 @@ import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { isRawUnits } from '@/plugins/token/utils/token-amount-helpers';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { MintFtInputSchema } from './input';
+import { TokenMintFtInputSchema } from './input';
 
-export class MintFtCommand extends BaseTransactionCommand<
+export const TOKEN_MINT_FT_COMMAND_NAME = 'token_mint-ft';
+
+export class TokenMintFtCommand extends BaseTransactionCommand<
   MintFtNormalizedParams,
   MintFtBuildTransactionResult,
   MintFtSignTransactionResult,
   MintFtExecuteTransactionResult
 > {
+  constructor() {
+    super(TOKEN_MINT_FT_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<MintFtNormalizedParams> {
@@ -35,15 +41,14 @@ export class MintFtCommand extends BaseTransactionCommand<
 
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
-    const validArgs = MintFtInputSchema.parse(args.args);
+    const validArgs = TokenMintFtInputSchema.parse(args.args);
 
     const tokenIdOrAlias = validArgs.token;
     const userAmountInput = validArgs.amount;
     const keyManagerArg = validArgs.keyManager;
 
     const keyManager =
-      keyManagerArg ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
     const network = api.network.getCurrentNetwork();
 
@@ -78,6 +83,7 @@ export class MintFtCommand extends BaseTransactionCommand<
     const supplyKeyResolved = await api.keyResolver.resolveSigningKey(
       validArgs.supplyKey,
       keyManager,
+      false,
       ['token:supply'],
     );
 
@@ -150,7 +156,7 @@ export class MintFtCommand extends BaseTransactionCommand<
       [supplyKeyRefId],
     );
     return {
-      transaction,
+      signedTransaction: transaction,
     };
   }
 
@@ -161,7 +167,7 @@ export class MintFtCommand extends BaseTransactionCommand<
     signTransactionResult: MintFtSignTransactionResult,
   ): Promise<MintFtExecuteTransactionResult> {
     const { api } = args;
-    const signedTransaction = signTransactionResult.transaction;
+    const signedTransaction = signTransactionResult.signedTransaction;
     const result = await api.txExecute.execute(signedTransaction);
 
     if (!result.success) {
@@ -182,7 +188,7 @@ export class MintFtCommand extends BaseTransactionCommand<
     _signTransactionResult: MintFtSignTransactionResult,
     executeTransactionResult: MintFtExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const outputData: MintFtOutput = {
+    const outputData: TokenMintFtOutput = {
       transactionId: executeTransactionResult.transactionResult.transactionId,
       tokenId: normalisedParams.tokenId,
       amount: normalisedParams.rawAmount,
@@ -192,6 +198,8 @@ export class MintFtCommand extends BaseTransactionCommand<
   }
 }
 
-export async function mintFt(args: CommandHandlerArgs): Promise<CommandResult> {
-  return new MintFtCommand().execute(args);
+export async function tokenMintFt(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new TokenMintFtCommand().execute(args);
 }

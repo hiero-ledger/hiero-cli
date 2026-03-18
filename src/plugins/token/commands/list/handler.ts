@@ -1,18 +1,18 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { ListTokensOutput } from './output';
+import type { TokenListOutput } from './output';
 import type { ListTokensNormalizedParams } from './types';
 
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { ListTokenInputSchema } from './input';
+import { TokenListInputSchema } from './input';
 
-export class ListTokensCommand implements Command {
+export class TokenListCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
-    const validArgs: ListTokensNormalizedParams = ListTokenInputSchema.parse(
+    const validArgs: ListTokensNormalizedParams = TokenListInputSchema.parse(
       args.args,
     );
 
@@ -62,7 +62,7 @@ export class ListTokensCommand implements Command {
     });
 
     const stats = tokenState.getTokensWithStats();
-    const outputData: ListTokensOutput = {
+    const outputData: TokenListOutput = {
       tokens: tokensList,
       totalCount: tokens.length,
       stats: {
@@ -79,7 +79,8 @@ export class ListTokensCommand implements Command {
   }
 }
 
-export const listTokensFlow = (args: CommandHandlerArgs) =>
-  new ListTokensCommand().execute(args);
-
-export const listTokens = listTokensFlow;
+export async function tokenList(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new TokenListCommand().execute(args);
+}

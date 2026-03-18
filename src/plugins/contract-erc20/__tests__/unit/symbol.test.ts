@@ -8,7 +8,7 @@ import { StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallSymbolOutputSchema } from '@/plugins/contract-erc20/commands/symbol';
-import { symbol as erc20SymbolHandler } from '@/plugins/contract-erc20/commands/symbol/handler';
+import { contractErc20Symbol } from '@/plugins/contract-erc20/commands/symbol/handler';
 import { ContractErc20CallSymbolInputSchema } from '@/plugins/contract-erc20/commands/symbol/input';
 
 jest.mock('@hashgraph/sdk', () => ({
@@ -43,7 +43,7 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
   test('calls ERC-20 symbol successfully and returns expected output', async () => {
     const args = makeContractErc20CallCommandArgs({ api, logger });
 
-    const result = await erc20SymbolHandler(args);
+    const result = await contractErc20Symbol(args);
 
     expect(result.result).toBeDefined();
 
@@ -81,7 +81,7 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
       queryResult: [],
     });
 
-    await expect(erc20SymbolHandler(args)).rejects.toThrow(StateError);
+    await expect(contractErc20Symbol(args)).rejects.toThrow(StateError);
   });
 
   test('throws when queryContractFunction throws', async () => {
@@ -90,7 +90,7 @@ describe('contract-erc20 plugin - symbol command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    await expect(erc20SymbolHandler(args)).rejects.toThrow(
+    await expect(contractErc20Symbol(args)).rejects.toThrow(
       'contract query error',
     );
   });

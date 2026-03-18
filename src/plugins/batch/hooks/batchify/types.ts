@@ -5,5 +5,5 @@ export interface BatchifyBuildTransactionResult {
 }
 
 export interface BatchifySignTransactionResult {
-  transaction: Transaction;
+  signedTransaction: Transaction;
 }

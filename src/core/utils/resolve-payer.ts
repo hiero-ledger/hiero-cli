@@ -1,7 +1,7 @@
 import type { CoreApi } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 
-import { PrivateKeySchema } from '@/core';
+import { KeySchema } from '@/core';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 
 /**
  * Resolves payer from string (alias or account-id:private-key format)
@@ -16,11 +16,13 @@ export async function resolvePayer(
   coreApi: CoreApi,
 ): Promise<void> {
   const keyManager =
-    coreApi.config.getOption<KeyManagerName>('default_key_manager') || 'local';
-  const parsedPayer = PrivateKeySchema.parse(payerString);
+    coreApi.config.getOption<KeyManager>('default_key_manager') ||
+    KeyManager.local;
+  const parsedPayer = KeySchema.parse(payerString);
   const resolvedPayer = await coreApi.keyResolver.resolveAccountCredentials(
     parsedPayer,
     keyManager,
+    false,
     ['payer:override'],
   );
   coreApi.network.setPayer(resolvedPayer);

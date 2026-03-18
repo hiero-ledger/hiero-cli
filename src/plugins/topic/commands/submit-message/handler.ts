@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { SubmitMessageOutput } from './output';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TopicSubmitMessageOutput } from './output';
 import type {
   SubmitMessageBuildTransactionResult,
   SubmitMessageExecuteTransactionResult,
@@ -18,29 +18,34 @@ import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
-import { SubmitMessageInputSchema } from './input';
+import { TopicSubmitMessageInputSchema } from './input';
 
-export class SubmitMessageCommand extends BaseTransactionCommand<
+export const TOPIC_SUBMIT_MESSAGE_COMMAND_NAME = 'topic_submit-message';
+
+export class TopicSubmitMessageCommand extends BaseTransactionCommand<
   SubmitMessageNormalisedParams,
   SubmitMessageBuildTransactionResult,
   SubmitMessageSignTransactionResult,
   SubmitMessageExecuteTransactionResult
 > {
+  constructor() {
+    super(TOPIC_SUBMIT_MESSAGE_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<SubmitMessageNormalisedParams> {
     const { api, logger } = args;
     const topicState = new ZustandTopicStateHelper(api.state, logger);
-    const validArgs = SubmitMessageInputSchema.parse(args.args);
+    const validArgs = TopicSubmitMessageInputSchema.parse(args.args);
 
     const topicIdOrAlias = validArgs.topic;
     const message = validArgs.message;
-    const signerArg = validArgs.signer;
+    const signerArgs = validArgs.signer;
     const keyManagerArg = validArgs.keyManager;
     const currentNetwork = api.network.getCurrentNetwork();
     const keyManager =
-      keyManagerArg ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
     let topicId = topicIdOrAlias;
     const topicAliasResult = api.alias.resolve(
@@ -59,36 +64,47 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
       throw new NotFoundError(`Topic not found with ID or alias: ${topicId}`);
     }
 
-    let signerKeyRefId: string | undefined;
+    const signerKeyRefIds: string[] = [];
+    const allowedSubmitKeyRefIds = topicData.submitKeyRefIds ?? [];
+    const submitKeyThreshold = topicData.submitKeyThreshold ?? 0;
 
-    if (signerArg) {
+    for (const signerArg of signerArgs) {
       const resolvedSigner = await api.keyResolver.resolveSigningKey(
         signerArg,
         keyManager,
+        false,
         ['topic:signer'],
       );
-      signerKeyRefId = resolvedSigner.keyRefId;
-
       if (
-        topicData.submitKeyRefId &&
-        topicData.submitKeyRefId !== signerKeyRefId
+        allowedSubmitKeyRefIds.length > 0 &&
+        !allowedSubmitKeyRefIds.includes(resolvedSigner.keyRefId)
       ) {
-        throw new ValidationError(
-          'The provided signer is not authorized to submit messages to this topic. The topic has a different submit key configured.',
+        logger.warn(
+          `Signer ${resolvedSigner.keyRefId} is not in the topic's submit keys and was ignored`,
         );
+        continue;
       }
+      signerKeyRefIds.push(resolvedSigner.keyRefId);
+    }
 
-      if (topicData.submitKeyRefId) {
-        logger.info(`Using provided signer (authorized submit key)`);
-      } else {
-        logger.info(`Using provided signer for public topic`);
-      }
+    if (signerKeyRefIds.length < submitKeyThreshold) {
+      throw new ValidationError(
+        `Topic requires ${submitKeyThreshold} signature(s) for submit key (threshold ${submitKeyThreshold}-of-${allowedSubmitKeyRefIds.length}). Provided ${signerKeyRefIds.length} signer(s).`,
+      );
+    }
+
+    if (allowedSubmitKeyRefIds.length > 0) {
+      logger.info(
+        `Using ${signerKeyRefIds.length} signer(s) (authorized submit key)`,
+      );
+    } else {
+      logger.info(`Using provided signer for public topic`);
     }
 
     return {
       topicId,
       message,
-      signerKeyRefId,
+      signerKeyRefIds,
       keyManager,
       currentNetwork,
       topicData,
@@ -120,10 +136,10 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
 
     const transaction = await api.txSign.sign(
       buildTransactionResult.transaction,
-      normalisedParams.signerKeyRefId ? [normalisedParams.signerKeyRefId] : [],
+      normalisedParams.signerKeyRefIds,
     );
 
-    return { transaction };
+    return { signedTransaction: transaction };
   }
 
   async executeTransaction(
@@ -135,7 +151,7 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
     const { api } = args;
 
     const txResult = await api.txExecute.execute(
-      signTransactionResult.transaction,
+      signTransactionResult.signedTransaction,
     );
     if (!txResult.success) {
       throw new TransactionError(
@@ -154,7 +170,7 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
     _signTransactionResult: SubmitMessageSignTransactionResult,
     executeTransactionResult: SubmitMessageExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const outputData: SubmitMessageOutput = {
+    const outputData: TopicSubmitMessageOutput = {
       topicId: normalisedParams.topicId,
       message: normalisedParams.message,
       sequenceNumber: executeTransactionResult.topicSequenceNumber ?? 0,
@@ -167,7 +183,8 @@ export class SubmitMessageCommand extends BaseTransactionCommand<
   }
 }
 
-const submitMessageCommand = new SubmitMessageCommand();
-
-export const submitMessage =
-  submitMessageCommand.execute.bind(submitMessageCommand);
+export async function topicSubmitMessage(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new TopicSubmitMessageCommand().execute(args);
+}

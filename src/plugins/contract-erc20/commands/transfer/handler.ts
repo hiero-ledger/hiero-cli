@@ -20,12 +20,18 @@ import { ContractErc20CallTransferInputSchema } from './input';
 
 const ERC_20_FUNCTION_NAME = 'transfer';
 
+export const CONTRACT_ERC20_TRANSFER_COMMAND_NAME = 'contract-erc20_transfer';
+
 export class ContractErc20TransferCommand extends BaseTransactionCommand<
   ContractErc20TransferNormalizedParams,
   ContractErc20TransferBuildTransactionResult,
   ContractErc20TransferSignTransactionResult,
   ContractErc20TransferExecuteTransactionResult
 > {
+  constructor() {
+    super(CONTRACT_ERC20_TRANSFER_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<ContractErc20TransferNormalizedParams> {
@@ -102,7 +108,7 @@ export class ContractErc20TransferCommand extends BaseTransactionCommand<
     );
 
     return {
-      transaction,
+      signedTransaction: transaction,
     };
   }
 
@@ -115,7 +121,7 @@ export class ContractErc20TransferCommand extends BaseTransactionCommand<
     const { api } = args;
 
     const result = await api.txExecute.execute(
-      signTransactionResult.transaction,
+      signTransactionResult.signedTransaction,
     );
 
     if (!result.success) {
@@ -148,5 +154,8 @@ export class ContractErc20TransferCommand extends BaseTransactionCommand<
   }
 }
 
-export const transfer = (args: CommandHandlerArgs) =>
-  new ContractErc20TransferCommand().execute(args);
+export async function contractErc20Transfer(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ContractErc20TransferCommand().execute(args);
+}

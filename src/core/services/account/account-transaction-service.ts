@@ -52,7 +52,6 @@ export class AccountServiceImpl implements AccountService {
       this.logger.debug(
         `[ACCOUNT TX] Created transaction for account with key: ${params.publicKey}`,
       );
-
       return {
         transaction,
         publicKey: params.publicKey,

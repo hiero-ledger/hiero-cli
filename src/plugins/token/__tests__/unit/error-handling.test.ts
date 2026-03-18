@@ -9,10 +9,10 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { transferFt } from '@/plugins/token';
-import { associateToken } from '@/plugins/token/commands/associate';
-import { createToken } from '@/plugins/token/commands/create-ft';
-import { createTokenFromFile } from '@/plugins/token/commands/create-ft-from-file';
+import { tokenTransferFt } from '@/plugins/token';
+import { tokenAssociate } from '@/plugins/token/commands/associate';
+import { tokenCreateFt } from '@/plugins/token/commands/create-ft';
+import { tokenCreateFtFromFile } from '@/plugins/token/commands/create-ft-from-file';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import {
@@ -93,7 +93,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createToken(args)).rejects.toThrow('Network timeout');
+      await expect(tokenCreateFt(args)).rejects.toThrow('Network timeout');
     });
 
     test('should handle network connectivity issues during association', async () => {
@@ -125,7 +125,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(associateToken(args)).rejects.toThrow('Connection refused');
+      await expect(tokenAssociate(args)).rejects.toThrow('Connection refused');
     });
 
     test('should handle network errors during transfer', async () => {
@@ -162,7 +162,9 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(transferFt(args)).rejects.toThrow('Network unreachable');
+      await expect(tokenTransferFt(args)).rejects.toThrow(
+        'Network unreachable',
+      );
     });
   });
 
@@ -203,7 +205,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert - Error is thrown before try-catch block in handler
-      await expect(createToken(args)).rejects.toThrow(
+      await expect(tokenCreateFt(args)).rejects.toThrow(
         'Invalid private key format',
       );
     });
@@ -248,7 +250,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createToken(args)).rejects.toThrow();
+      await expect(tokenCreateFt(args)).rejects.toThrow();
     });
 
     test('should handle insufficient permissions', async () => {
@@ -295,7 +297,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(associateToken(args)).rejects.toThrow();
+      await expect(tokenAssociate(args)).rejects.toThrow();
     });
   });
 
@@ -339,7 +341,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(transferFt(args)).rejects.toThrow();
+      await expect(tokenTransferFt(args)).rejects.toThrow();
     });
 
     test('should handle token not found', async () => {
@@ -371,7 +373,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(associateToken(args)).rejects.toThrow();
+      await expect(tokenAssociate(args)).rejects.toThrow();
     });
 
     test('should handle account not found', async () => {
@@ -412,7 +414,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(associateToken(args)).rejects.toThrow();
+      await expect(tokenAssociate(args)).rejects.toThrow();
     });
 
     test('should handle duplicate token name', async () => {
@@ -449,7 +451,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createToken(args)).rejects.toThrow();
+      await expect(tokenCreateFt(args)).rejects.toThrow();
     });
   });
 
@@ -469,7 +471,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createTokenFromFile(args)).rejects.toThrow();
+      await expect(tokenCreateFtFromFile(args)).rejects.toThrow();
     });
 
     test('should handle file permission error', async () => {
@@ -487,7 +489,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createTokenFromFile(args)).rejects.toThrow();
+      await expect(tokenCreateFtFromFile(args)).rejects.toThrow();
     });
 
     test('should handle corrupted JSON file', async () => {
@@ -505,7 +507,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createTokenFromFile(args)).rejects.toThrow();
+      await expect(tokenCreateFtFromFile(args)).rejects.toThrow();
     });
   });
 
@@ -560,7 +562,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createToken(args)).rejects.toThrow();
+      await expect(tokenCreateFt(args)).rejects.toThrow();
     });
   });
 
@@ -590,7 +592,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createToken(args)).rejects.toThrow();
+      await expect(tokenCreateFt(args)).rejects.toThrow();
     });
 
     test('should handle service throttling', async () => {
@@ -632,7 +634,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(transferFt(args)).rejects.toThrow();
+      await expect(tokenTransferFt(args)).rejects.toThrow();
     });
   });
 
@@ -680,7 +682,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(createToken(args)).rejects.toThrow(StateError);
+      await expect(tokenCreateFt(args)).rejects.toThrow(StateError);
     });
 
     test('should handle unexpected API responses', async () => {
@@ -708,7 +710,7 @@ describe('Token Plugin Error Handling', () => {
         logger,
       };
 
-      const result = await createToken(args);
+      const result = await tokenCreateFt(args);
       expect(result.result).toBeDefined();
     });
   });
@@ -754,7 +756,7 @@ describe('Token Plugin Error Handling', () => {
       };
 
       // Act & Assert
-      await expect(associateToken(associateArgs)).rejects.toThrow(
+      await expect(tokenAssociate(associateArgs)).rejects.toThrow(
         TransactionError,
       );
     });

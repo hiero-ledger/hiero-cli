@@ -9,16 +9,16 @@ import {
 /**
  * Output schema for mint-nft command
  */
-export const MintNftOutputSchema = z.object({
+export const TokenMintNftOutputSchema = z.object({
   transactionId: TransactionIdSchema,
   tokenId: EntityIdSchema,
   serialNumber: z.string().describe('Serial number of the minted NFT'),
   network: NetworkSchema,
 });
 
-export type MintNftOutput = z.infer<typeof MintNftOutputSchema>;
+export type TokenMintNftOutput = z.infer<typeof TokenMintNftOutputSchema>;
 
-export const MINT_NFT_TEMPLATE = `
+export const TOKEN_MINT_NFT_TEMPLATE = `
 ✅ NFT mint successful!
    Token ID: {{hashscanLink tokenId "token" network}}
    Serial Number: {{serialNumber}}

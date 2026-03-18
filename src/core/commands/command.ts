@@ -16,6 +16,12 @@ export abstract class BaseTransactionCommand<
   TSignTransactionResult = unknown,
   TExecuteTransactionResult = unknown,
 > implements Command {
+  private commandName: string;
+
+  constructor(commandName: string) {
+    this.commandName = commandName;
+  }
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const preNormalizationHookResult =
       await this.preParamsNormalizationHook(args);
@@ -99,7 +105,8 @@ export abstract class BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<HookResult> {
     return await this.executeHooks(
-      async (h) => h.preParamsPreparationAndNormalizationHook(args),
+      async (h) =>
+        h.preParamsPreparationAndNormalizationHook(args, this.commandName),
       args.hooks,
     );
   }
@@ -109,7 +116,7 @@ export abstract class BaseTransactionCommand<
     params: PreBuildTransactionParams<TNormalisedParams>,
   ): Promise<HookResult> {
     return await this.executeHooks(
-      async (h) => h.preBuildTransactionHook(args, params),
+      async (h) => h.preBuildTransactionHook(args, params, this.commandName),
       args.hooks,
     );
   }
@@ -122,7 +129,7 @@ export abstract class BaseTransactionCommand<
     >,
   ): Promise<HookResult> {
     return await this.executeHooks(
-      async (h) => h.preSignTransactionHook(args, params),
+      async (h) => h.preSignTransactionHook(args, params, this.commandName),
       args.hooks,
     );
   }
@@ -136,7 +143,7 @@ export abstract class BaseTransactionCommand<
     >,
   ): Promise<HookResult> {
     return await this.executeHooks(
-      async (h) => h.preExecuteTransactionHook(args, params),
+      async (h) => h.preExecuteTransactionHook(args, params, this.commandName),
       args.hooks,
     );
   }
@@ -151,7 +158,7 @@ export abstract class BaseTransactionCommand<
     >,
   ): Promise<HookResult> {
     return await this.executeHooks(
-      async (h) => h.preOutputPreparationHook(args, params),
+      async (h) => h.preOutputPreparationHook(args, params, this.commandName),
       args.hooks,
     );
   }
@@ -166,7 +173,7 @@ export abstract class BaseTransactionCommand<
     >,
   ): Promise<HookResult> {
     return await this.executeHooks(
-      async (h) => h.postOutputPreparationHook(args, params),
+      async (h) => h.postOutputPreparationHook(args, params, this.commandName),
       args.hooks,
     );
   }

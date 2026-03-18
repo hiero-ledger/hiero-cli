@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { TransferOutput } from './output';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { HbarTransferOutput } from './output';
 import type {
   TransferBuildTransactionResult,
   TransferExecuteTransactionResult,
@@ -13,17 +13,26 @@ import { TransactionError, ValidationError } from '@/core/errors';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 
-import { TransferInputSchema } from './input';
+import { HbarTransferInputSchema } from './input';
 
-export const transferHbar = (args: CommandHandlerArgs) =>
-  new TransferCommand().execute(args);
+export const HBAR_TRANSFER_COMMAND_NAME = 'hbar_transfer';
 
-export class TransferCommand extends BaseTransactionCommand<
+export async function hbarTransfer(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new HbarTransferCommand().execute(args);
+}
+
+export class HbarTransferCommand extends BaseTransactionCommand<
   TransferNormalisedParams,
   TransferBuildTransactionResult,
   TransferSignTransactionResult,
   TransferExecuteTransactionResult
 > {
+  constructor() {
+    super(HBAR_TRANSFER_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TransferNormalisedParams> {
@@ -31,7 +40,7 @@ export class TransferCommand extends BaseTransactionCommand<
 
     logger.info('[HBAR] Transfer command invoked');
 
-    const validArgs = TransferInputSchema.parse(args.args);
+    const validArgs = HbarTransferInputSchema.parse(args.args);
 
     const to = validArgs.to;
     const from = validArgs.from;
@@ -40,16 +49,16 @@ export class TransferCommand extends BaseTransactionCommand<
     const providedKeyManager = validArgs.keyManager;
     const keyManager =
       providedKeyManager ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      api.config.getOption<KeyManager>('default_key_manager');
 
     const amount = processBalanceInput(validArgs.amount, HBAR_DECIMALS);
     const currentNetwork = api.network.getCurrentNetwork();
 
-    const fromAccount =
-      await api.keyResolver.resolveAccountCredentialsWithFallback(
-        from,
-        keyManager,
-      );
+    const fromAccount = await api.keyResolver.resolveAccountCredentials(
+      from,
+      keyManager,
+      true,
+    );
     const toAccount = await api.keyResolver.resolveDestination(to, keyManager);
 
     // In resolved destination at least one field is present
@@ -134,7 +143,7 @@ export class TransferCommand extends BaseTransactionCommand<
       `[HBAR] Transfer submitted successfully, txId=${executeTransactionResult.transactionId}`,
     );
 
-    const outputData: TransferOutput = {
+    const outputData: HbarTransferOutput = {
       transactionId: executeTransactionResult.transactionId || '',
       fromAccountId: normalisedParams.fromAccount.accountId,
       toAccountId: normalisedParams.destination,

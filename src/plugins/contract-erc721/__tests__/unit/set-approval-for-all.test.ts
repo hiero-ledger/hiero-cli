@@ -21,7 +21,7 @@ import {
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 import {
   ContractErc721CallSetApprovalForAllOutputSchema,
-  setApprovalForAllFunctionCall,
+  contractErc721SetApprovalForAll,
 } from '@/plugins/contract-erc721/commands/set-approval-for-all';
 import { ContractErc721CallSetApprovalForAllInputSchema } from '@/plugins/contract-erc721/commands/set-approval-for-all/input';
 
@@ -90,7 +90,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       },
     });
 
-    const result = await setApprovalForAllFunctionCall(args);
+    const result = await contractErc721SetApprovalForAll(args);
 
     expect(result.result).toBeDefined();
     const output = assertOutput(
@@ -135,7 +135,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       },
     });
 
-    const result = await setApprovalForAllFunctionCall(args);
+    const result = await contractErc721SetApprovalForAll(args);
 
     expect(result.result).toBeDefined();
     expect(mockAddBool).toHaveBeenCalledWith(false);
@@ -154,7 +154,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       },
     });
 
-    const result = await setApprovalForAllFunctionCall(args);
+    const result = await contractErc721SetApprovalForAll(args);
 
     expect(result.result).toBeDefined();
     expect(args.api.identityResolution.resolveAccount).not.toHaveBeenCalled();
@@ -173,7 +173,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       },
     });
 
-    const result = await setApprovalForAllFunctionCall(args);
+    const result = await contractErc721SetApprovalForAll(args);
     expect(result.result).toBeDefined();
     expect(mockAddBool).toHaveBeenCalledWith(true);
   });
@@ -190,7 +190,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       },
     });
 
-    const result = await setApprovalForAllFunctionCall(args);
+    const result = await contractErc721SetApprovalForAll(args);
     expect(result.result).toBeDefined();
     expect(mockAddBool).toHaveBeenCalledWith(true);
   });
@@ -207,7 +207,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       },
     });
 
-    const result = await setApprovalForAllFunctionCall(args);
+    const result = await contractErc721SetApprovalForAll(args);
     expect(result.result).toBeDefined();
     expect(mockAddBool).toHaveBeenCalledWith(false);
   });
@@ -228,10 +228,10 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       receipt: { status: { status: 'FAILURE' } },
     });
 
-    await expect(setApprovalForAllFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721SetApprovalForAll(args)).rejects.toThrow(
       TransactionError,
     );
-    await expect(setApprovalForAllFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721SetApprovalForAll(args)).rejects.toThrow(
       'Failed to call setApprovalForAll on contract 0.0.1234 (txId: undefined, status: FAILURE)',
     );
   });
@@ -251,7 +251,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       new Error('network error'),
     );
 
-    await expect(setApprovalForAllFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721SetApprovalForAll(args)).rejects.toThrow(
       'network error',
     );
   });
@@ -276,7 +276,7 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       ),
     );
 
-    await expect(setApprovalForAllFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721SetApprovalForAll(args)).rejects.toThrow(
       'not found',
     );
   });
@@ -301,10 +301,10 @@ describe('contract-erc721 plugin - setApprovalForAll command (unit)', () => {
       },
     );
 
-    await expect(setApprovalForAllFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721SetApprovalForAll(args)).rejects.toThrow(
       NotFoundError,
     );
-    await expect(setApprovalForAllFunctionCall(args)).rejects.toThrow(
+    await expect(contractErc721SetApprovalForAll(args)).rejects.toThrow(
       "Couldn't resolve EVM address for an account",
     );
   });

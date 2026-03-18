@@ -1,6 +1,6 @@
 /**
  * View Token Command Exports
  */
-export { viewToken, ViewTokenCommand, viewTokenFlow } from './handler';
-export type { ViewTokenOutput } from './output';
-export { VIEW_TOKEN_TEMPLATE, ViewTokenOutputSchema } from './output';
+export { tokenView, TokenViewCommand } from './handler';
+export type { TokenViewOutput } from './output';
+export { TOKEN_VIEW_TEMPLATE, TokenViewOutputSchema } from './output';

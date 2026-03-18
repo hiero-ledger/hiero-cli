@@ -8,7 +8,7 @@ import { NotFoundError, StateError } from '@/core/errors';
 import { makeContractErc20CallCommandArgs } from '@/plugins/contract-erc20/__tests__/unit/helpers/fixtures';
 import { makeApiMocks } from '@/plugins/contract-erc20/__tests__/unit/helpers/mocks';
 import { ContractErc20CallAllowanceOutputSchema } from '@/plugins/contract-erc20/commands/allowance';
-import { allowance as erc20AllowanceHandler } from '@/plugins/contract-erc20/commands/allowance/handler';
+import { contractErc20Allowance } from '@/plugins/contract-erc20/commands/allowance/handler';
 import { ContractErc20CallAllowanceInputSchema } from '@/plugins/contract-erc20/commands/allowance/input';
 
 const CONTRACT_ID = '0.0.1234';
@@ -56,7 +56,7 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
       },
     });
 
-    const result = await erc20AllowanceHandler(args);
+    const result = await contractErc20Allowance(args);
 
     expect(result.result).toBeDefined();
 
@@ -104,7 +104,7 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
         evmAddress: SPENDER_EVM,
       });
 
-    const result = await erc20AllowanceHandler(args);
+    const result = await contractErc20Allowance(args);
 
     expect(result.result).toBeDefined();
 
@@ -157,7 +157,7 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
         evmAddress: SPENDER_EVM,
       });
 
-    const result = await erc20AllowanceHandler(args);
+    const result = await contractErc20Allowance(args);
 
     expect(result.result).toBeDefined();
 
@@ -190,7 +190,7 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
       queryResult: [],
     });
 
-    await expect(erc20AllowanceHandler(args)).rejects.toThrow(StateError);
+    await expect(contractErc20Allowance(args)).rejects.toThrow(StateError);
   });
 
   test('throws when queryContractFunction throws', async () => {
@@ -207,7 +207,7 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
       args.api.contractQuery.queryContractFunction as jest.Mock
     ).mockRejectedValue(new Error('contract query error'));
 
-    await expect(erc20AllowanceHandler(args)).rejects.toThrow(
+    await expect(contractErc20Allowance(args)).rejects.toThrow(
       'contract query error',
     );
   });
@@ -231,7 +231,7 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
       evmAddress: null, // Evm address not found
     });
 
-    await expect(erc20AllowanceHandler(args)).rejects.toThrow(NotFoundError);
+    await expect(contractErc20Allowance(args)).rejects.toThrow(NotFoundError);
   });
 
   test('throws NotFoundError when spender address cannot be resolved', async () => {
@@ -253,7 +253,7 @@ describe('contract-erc20 plugin - allowance command (unit)', () => {
       evmAddress: null, // Evm address not found
     });
 
-    await expect(erc20AllowanceHandler(args)).rejects.toThrow(NotFoundError);
+    await expect(contractErc20Allowance(args)).rejects.toThrow(NotFoundError);
   });
 
   test('schema validation fails when owner is missing', () => {

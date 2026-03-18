@@ -1,17 +1,29 @@
 import type { Transaction } from '@hashgraph/sdk';
-import type { TransactionResult } from '@/core';
+import type { HederaTokenType, SupplyType, TransactionResult } from '@/core';
 import type {
   ResolvedAccountCredential,
   ResolvedPublicKey,
 } from '@/core/services/key-resolver/types';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type {
+  Credential,
+  KeyManager,
+} from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { FungibleTokenFileDefinition } from '@/plugins/token/schema';
+import type { TokenCustomFeeType } from '@/plugins/token/schema';
 
-export interface CreateFtFromFileNormalizedParams {
+export interface TokenCreateFtFromFileNormalizedParams {
   filename: string;
-  keyManager: KeyManagerName;
-  tokenDefinition: FungibleTokenFileDefinition;
+  name: string;
+  symbol: string;
+  decimals: number;
+  initialSupply: bigint;
+  maxSupply: bigint;
+  supplyType: SupplyType;
+  memo: string;
+  tokenType: HederaTokenType;
+  customFees: TokenCustomFeeType[];
+  associations: Credential[];
+  keyManager: KeyManager;
   network: SupportedNetwork;
   treasury: ResolvedAccountCredential;
   adminKey: ResolvedPublicKey;
@@ -23,19 +35,19 @@ export interface CreateFtFromFileNormalizedParams {
   feeScheduleKey?: ResolvedPublicKey;
 }
 
-export interface CreateFtFromFileBuildTransactionResult {
+export interface TokenCreateFtFromFileBuildTransactionResult {
   transaction: Transaction;
 }
 
-export interface CreateFtFromFileSignTransactionResult {
-  transaction: Transaction;
+export interface TokenCreateFtFromFileSignTransactionResult {
+  signedTransaction: Transaction;
 }
 
-export interface CreateFtFromFileExecuteTransactionResult {
+export interface TokenCreateFtFromFileExecuteTransactionResult {
   transactionResult: TransactionResult;
 }
 
-export interface CreateFtFromFileAssociationOutput {
+export interface TokenCreateFtFromFileAssociationOutput {
   accountId: string;
   name: string;
   success: boolean;

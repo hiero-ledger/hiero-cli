@@ -2,8 +2,9 @@
  * Contract function setApprovalForAll Command Exports
  */
 export {
-  SetApprovalForAllCommand,
-  setApprovalForAllFunctionCall,
+  CONTRACT_ERC721_SET_APPROVAL_FOR_ALL_COMMAND_NAME,
+  contractErc721SetApprovalForAll,
+  ContractErc721SetApprovalForAllCommand,
 } from './handler';
 export type { ContractErc721CallSetApprovalForAllOutput } from './output';
 export {

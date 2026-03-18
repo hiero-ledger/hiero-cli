@@ -4,20 +4,20 @@
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { DeleteBatchOutput } from './output';
+import type { BatchDeleteOutput } from './output';
 
 import { NotFoundError } from '@/core/errors';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
-import { DeleteBatchInputSchema } from './input';
+import { BatchDeleteInputSchema } from './input';
 
-export class DeleteBatchCommand implements Command {
+export class BatchDeleteCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
     const batchState = new ZustandBatchStateHelper(api.state, logger);
-    const validArgs = DeleteBatchInputSchema.parse(args.args);
+    const validArgs = BatchDeleteInputSchema.parse(args.args);
     const name = validArgs.name;
     const order = validArgs.order;
     const network = api.network.getCurrentNetwork();
@@ -47,7 +47,7 @@ export class DeleteBatchCommand implements Command {
 
       logger.info(`Removed transaction at order ${order} from batch '${name}'`);
 
-      const outputData: DeleteBatchOutput = {
+      const outputData: BatchDeleteOutput = {
         name,
         order,
       };
@@ -58,15 +58,15 @@ export class DeleteBatchCommand implements Command {
     batchState.deleteBatch(key);
     logger.info(`Deleted batch '${name}'`);
 
-    const outputData: DeleteBatchOutput = {
+    const outputData: BatchDeleteOutput = {
       name,
     };
     return { result: outputData };
   }
 }
 
-export async function deleteBatch(
+export async function batchDelete(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new DeleteBatchCommand().execute(args);
+  return new BatchDeleteCommand().execute(args);
 }

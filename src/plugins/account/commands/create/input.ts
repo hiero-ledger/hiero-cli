@@ -9,7 +9,7 @@ import {
   KeyTypeSchema,
 } from '@/core/schemas';
 
-export const CreateAccountInputSchema = z
+export const AccountCreateInputSchema = z
   .object({
     balance: AmountInputSchema.describe(
       'Initial HBAR balance. Format: "100" (HBAR) or "100t" (tinybars)',
@@ -35,7 +35,7 @@ export const CreateAccountInputSchema = z
       'Cryptographic key type for the account',
     ),
     key: KeySchema.optional().describe(
-      'Existing key for the account. Formats: ecdsa|ed25519:private|public:{key}, kr_{ref}, {accountId}:{privateKey}, alias name',
+      'Existing key for the account. Accepts any key format.',
     ),
   })
   .superRefine((data, ctx) => {
@@ -48,4 +48,4 @@ export const CreateAccountInputSchema = z
     }
   });
 
-export type CreateAccountInput = z.infer<typeof CreateAccountInputSchema>;
+export type AccountCreateInput = z.infer<typeof AccountCreateInputSchema>;

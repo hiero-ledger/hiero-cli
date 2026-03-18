@@ -1,10 +1,10 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountBalanceOutput } from '@/plugins/account/commands/balance';
-import type { CreateAccountOutput } from '@/plugins/account/commands/create';
-import type { ViewAccountOutput } from '@/plugins/account/commands/view';
-import type { CreateFungibleTokenOutput } from '@/plugins/token/commands/create-ft';
-import type { MintFtOutput } from '@/plugins/token/commands/mint-ft';
+import type { AccountCreateOutput } from '@/plugins/account/commands/create';
+import type { AccountViewOutput } from '@/plugins/account/commands/view';
+import type { TokenCreateFtOutput } from '@/plugins/token/commands/create-ft';
+import type { TokenMintFtOutput } from '@/plugins/token/commands/mint-ft';
 
 import '@/core/utils/json-serialize';
 
@@ -14,12 +14,8 @@ import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-oper
 import { createCoreApi } from '@/core';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
-import {
-  createAccount,
-  getAccountBalance,
-  viewAccount,
-} from '@/plugins/account';
-import { createToken, mintFt } from '@/plugins/token';
+import { accountBalance, accountCreate, accountView } from '@/plugins/account';
+import { tokenCreateFt, tokenMintFt } from '@/plugins/token';
 
 describe('Mint FT Integration Tests', () => {
   let coreApi: CoreApi;
@@ -38,7 +34,7 @@ describe('Mint FT Integration Tests', () => {
       'key-type': 'ecdsa',
       'auto-associations': 10,
     };
-    const createAccountResult = await createAccount({
+    const createAccountResult = await accountCreate({
       args: createAccountArgs,
       api: coreApi,
       state: coreApi.state,
@@ -47,7 +43,7 @@ describe('Mint FT Integration Tests', () => {
     });
 
     const createAccountOutput =
-      createAccountResult.result as CreateAccountOutput;
+      createAccountResult.result as AccountCreateOutput;
     expect(createAccountOutput.name).toBe('account-mint-ft');
     expect(createAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
     expect(createAccountOutput.network).toBe(network);
@@ -57,14 +53,14 @@ describe('Mint FT Integration Tests', () => {
     const viewAccountArgs: Record<string, unknown> = {
       account: 'account-mint-ft',
     };
-    const viewAccountResult = await viewAccount({
+    const viewAccountResult = await accountView({
       args: viewAccountArgs,
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const viewAccountOutput = viewAccountResult.result as ViewAccountOutput;
+    const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
     expect(viewAccountOutput.accountId).toBe(createAccountOutput.accountId);
     expect(viewAccountOutput.balance).toBe(100000000n);
     expect(viewAccountOutput.evmAddress).toBe(createAccountOutput.evmAddress);
@@ -79,15 +75,14 @@ describe('Mint FT Integration Tests', () => {
       supplyKey: `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
       name: 'test-token-mint',
     };
-    const createTokenResult = await createToken({
+    const createTokenResult = await tokenCreateFt({
       args: createTokenArgs,
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const createTokenOutput =
-      createTokenResult.result as CreateFungibleTokenOutput;
+    const createTokenOutput = createTokenResult.result as TokenCreateFtOutput;
     expect(createTokenOutput.network).toBe(network);
     expect(createTokenOutput.decimals).toBe(0);
     expect(createTokenOutput.initialSupply).toBe('100');
@@ -104,7 +99,7 @@ describe('Mint FT Integration Tests', () => {
     };
     const accountBalanceBeforeMintOutput = await waitFor(
       () =>
-        getAccountBalance({
+        accountBalance({
           args: accountBalanceBeforeMintArgs,
           api: coreApi,
           state: coreApi.state,
@@ -128,14 +123,14 @@ describe('Mint FT Integration Tests', () => {
       amount: '50',
       supplyKey: `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
     };
-    const mintFtResult = await mintFt({
+    const mintFtResult = await tokenMintFt({
       args: mintFtArgs,
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,
       config: coreApi.config,
     });
-    const mintFtOutput = mintFtResult.result as MintFtOutput;
+    const mintFtOutput = mintFtResult.result as TokenMintFtOutput;
     expect(mintFtOutput.tokenId).toBe(createTokenOutput.tokenId);
     expect(mintFtOutput.amount).toBe(50n);
     expect(mintFtOutput.network).toBe(network);
@@ -148,7 +143,7 @@ describe('Mint FT Integration Tests', () => {
     };
     const accountBalanceAfterMintOutput = await waitFor(
       () =>
-        getAccountBalance({
+        accountBalance({
           args: accountBalanceAfterMintArgs,
           api: coreApi,
           state: coreApi.state,

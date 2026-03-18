@@ -5,13 +5,13 @@
 import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
-import { createMemo, MEMO_TEST_TEMPLATE } from '@/plugins/test/commands/memo';
-import { MemoTestOutputSchema } from '@/plugins/test/commands/memo/output';
+import { TEST_MEMO_TEMPLATE, testMemo } from '@/plugins/test/commands/memo';
+import { TestMemoOutputSchema } from '@/plugins/test/commands/memo/output';
 
 import {
-  FOO_TEST_TEMPLATE,
-  fooTestOptions,
-  FooTestOutputSchema,
+  TEST_FOO_TEMPLATE,
+  testFoo,
+  TestFooOutputSchema,
 } from './commands/foo';
 
 export const MEMO_NAMESPACE = 'memo-memos';
@@ -36,10 +36,10 @@ export const testPluginManifest: PluginManifest = {
           description: 'Message to print. Max size should be 100 characters',
         },
       ],
-      handler: fooTestOptions,
+      handler: testFoo,
       output: {
-        schema: FooTestOutputSchema,
-        humanTemplate: FOO_TEST_TEMPLATE,
+        schema: TestFooOutputSchema,
+        humanTemplate: TEST_FOO_TEMPLATE,
       },
     },
     {
@@ -63,10 +63,10 @@ export const testPluginManifest: PluginManifest = {
           description: 'Memo for an account. Max size should be 100 characters',
         },
       ],
-      handler: createMemo,
+      handler: testMemo,
       output: {
-        schema: MemoTestOutputSchema,
-        humanTemplate: MEMO_TEST_TEMPLATE,
+        schema: TestMemoOutputSchema,
+        humanTemplate: TEST_MEMO_TEMPLATE,
       },
     },
   ],

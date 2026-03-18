@@ -7,77 +7,109 @@ import type { PluginManifest } from '@/core/plugins/plugin.interface';
 
 import { OptionType, SupplyType } from '@/core/types/shared.types';
 import {
-  CREATE_NFT_TEMPLATE,
-  createNft,
-  CreateNftOutputSchema,
+  TOKEN_CREATE_NFT_TEMPLATE,
+  tokenCreateNft,
+  TokenCreateNftOutputSchema,
 } from '@/plugins/token/commands/create-nft';
 
 import {
-  associate,
-  ASSOCIATE_TOKEN_TEMPLATE,
-  AssociateTokenOutputSchema,
+  TOKEN_ASSOCIATE_TEMPLATE,
+  tokenAssociate,
+  TokenAssociateOutputSchema,
 } from './commands/associate';
 import {
-  CREATE_FUNGIBLE_TOKEN_TEMPLATE,
-  createFt,
-  CreateFungibleTokenOutputSchema,
+  TOKEN_CREATE_FT_TEMPLATE,
+  tokenCreateFt,
+  TokenCreateFtOutputSchema,
 } from './commands/create-ft';
 import {
-  CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE,
-  createFtFromFile,
-  CreateFungibleTokenFromFileOutputSchema,
+  TOKEN_CREATE_FT_FROM_FILE_TEMPLATE,
+  tokenCreateFtFromFile,
+  TokenCreateFtFromFileOutputSchema,
 } from './commands/create-ft-from-file';
 import {
-  CREATE_NFT_FROM_FILE_TEMPLATE,
-  createNftFromFile,
-  CreateNftFromFileOutputSchema,
+  TOKEN_CREATE_NFT_FROM_FILE_TEMPLATE,
+  tokenCreateNftFromFile,
+  TokenCreateNftFromFileOutputSchema,
 } from './commands/create-nft-from-file';
 import {
-  DELETE_TOKEN_TEMPLATE,
-  deleteTokenFlow,
-  DeleteTokenOutputSchema,
+  TOKEN_DELETE_TEMPLATE,
+  tokenDelete,
+  TokenDeleteOutputSchema,
 } from './commands/delete';
 import {
-  IMPORT_TOKEN_TEMPLATE,
-  importTokenFlow,
-  ImportTokenOutputSchema,
+  TOKEN_IMPORT_TEMPLATE,
+  tokenImport,
+  TokenImportOutputSchema,
 } from './commands/import';
 import {
-  LIST_TOKENS_TEMPLATE,
-  listTokensFlow,
-  ListTokensOutputSchema,
+  TOKEN_LIST_TEMPLATE,
+  tokenList,
+  TokenListOutputSchema,
 } from './commands/list';
 import {
-  MINT_FT_TEMPLATE,
-  mintFt,
-  MintFtOutputSchema,
+  TOKEN_MINT_FT_TEMPLATE,
+  tokenMintFt,
+  TokenMintFtOutputSchema,
 } from './commands/mint-ft';
 import {
-  MINT_NFT_TEMPLATE,
-  mintNft,
-  MintNftOutputSchema,
+  TOKEN_MINT_NFT_TEMPLATE,
+  tokenMintNft,
+  TokenMintNftOutputSchema,
 } from './commands/mint-nft';
 import {
-  TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
-  transferFt,
-  TransferFungibleTokenOutputSchema,
+  TOKEN_TRANSFER_FT_TEMPLATE,
+  tokenTransferFt,
+  TokenTransferFtOutputSchema,
 } from './commands/transfer-ft';
 import {
-  TRANSFER_NFT_TEMPLATE,
-  transferNft,
-  TransferNftOutputSchema,
+  TOKEN_TRANSFER_NFT_TEMPLATE,
+  tokenTransferNft,
+  TokenTransferNftOutputSchema,
 } from './commands/transfer-nft';
 import {
-  VIEW_TOKEN_TEMPLATE,
-  viewTokenFlow,
-  ViewTokenOutputSchema,
+  TOKEN_VIEW_TEMPLATE,
+  tokenView,
+  TokenViewOutputSchema,
 } from './commands/view';
+import { TokenAssociateBatchStateHook } from './hooks/batch-associate';
+import { TokenCreateFtBatchStateHook } from './hooks/batch-create-ft';
+import { TokenCreateFtFromFileBatchStateHook } from './hooks/batch-create-ft-from-file';
+import { TokenCreateNftBatchStateHook } from './hooks/batch-create-nft';
+import { TokenCreateNftFromFileBatchStateHook } from './hooks/batch-create-nft-from-file';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
   version: '1.0.0',
   displayName: 'Token Plugin',
   description: 'Plugin for managing Hedera fungible and non-fungible tokens',
+  hooks: [
+    {
+      name: 'token-create-ft-batch-state',
+      hook: new TokenCreateFtBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-create-ft-from-file-batch-state',
+      hook: new TokenCreateFtFromFileBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-create-nft-batch-state',
+      hook: new TokenCreateNftBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-create-nft-from-file-batch-state',
+      hook: new TokenCreateNftFromFileBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-associate-batch-state',
+      hook: new TokenAssociateBatchStateHook(),
+      options: [],
+    },
+  ],
   commands: [
     {
       name: 'mint-ft',
@@ -117,16 +149,17 @@ export const tokenPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: mintFt,
+      handler: tokenMintFt,
       output: {
-        schema: MintFtOutputSchema,
-        humanTemplate: MINT_FT_TEMPLATE,
+        schema: TokenMintFtOutputSchema,
+        humanTemplate: TOKEN_MINT_FT_TEMPLATE,
       },
     },
     {
       name: 'mint-nft',
       summary: 'Mint NFT',
       description: 'Mint a new NFT to an existing NFT collection.',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'token',
@@ -159,10 +192,10 @@ export const tokenPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: mintNft,
+      handler: tokenMintNft,
       output: {
-        schema: MintNftOutputSchema,
-        humanTemplate: MINT_NFT_TEMPLATE,
+        schema: TokenMintNftOutputSchema,
+        humanTemplate: TOKEN_MINT_NFT_TEMPLATE,
       },
     },
     {
@@ -210,16 +243,17 @@ export const tokenPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: transferFt,
+      handler: tokenTransferFt,
       output: {
-        schema: TransferFungibleTokenOutputSchema,
-        humanTemplate: TRANSFER_FUNGIBLE_TOKEN_TEMPLATE,
+        schema: TokenTransferFtOutputSchema,
+        humanTemplate: TOKEN_TRANSFER_FT_TEMPLATE,
       },
     },
     {
       name: 'transfer-nft',
       summary: 'Transfer a non-fungible token',
       description: 'Transfer one or more NFTs from one account to another',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'token',
@@ -260,16 +294,17 @@ export const tokenPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: transferNft,
+      handler: tokenTransferNft,
       output: {
-        schema: TransferNftOutputSchema,
-        humanTemplate: TRANSFER_NFT_TEMPLATE,
+        schema: TokenTransferNftOutputSchema,
+        humanTemplate: TOKEN_TRANSFER_NFT_TEMPLATE,
       },
     },
     {
       name: 'create-ft',
       summary: 'Create a new fungible token',
       description: 'Create a new fungible token with specified properties',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'token-name',
@@ -366,10 +401,10 @@ export const tokenPluginManifest: PluginManifest = {
             'Optional memo for the fungible token (max 100 characters)',
         },
       ],
-      handler: createFt,
+      handler: tokenCreateFt,
       output: {
-        schema: CreateFungibleTokenOutputSchema,
-        humanTemplate: CREATE_FUNGIBLE_TOKEN_TEMPLATE,
+        schema: TokenCreateFtOutputSchema,
+        humanTemplate: TOKEN_CREATE_FT_TEMPLATE,
       },
     },
 
@@ -377,6 +412,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'create-nft',
       summary: 'Create a new non-fungible token',
       description: 'Create a new non-fungible token with specified properties',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'token-name',
@@ -455,16 +491,17 @@ export const tokenPluginManifest: PluginManifest = {
           description: 'Optional memo for the token (max 100 characters)',
         },
       ],
-      handler: createNft,
+      handler: tokenCreateNft,
       output: {
-        schema: CreateNftOutputSchema,
-        humanTemplate: CREATE_NFT_TEMPLATE,
+        schema: TokenCreateNftOutputSchema,
+        humanTemplate: TOKEN_CREATE_NFT_TEMPLATE,
       },
     },
     {
       name: 'associate',
       summary: 'Associate a token with an account',
       description: 'Associate a token with an account to enable transfers',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'token',
@@ -490,10 +527,10 @@ export const tokenPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: associate,
+      handler: tokenAssociate,
       output: {
-        schema: AssociateTokenOutputSchema,
-        humanTemplate: ASSOCIATE_TOKEN_TEMPLATE,
+        schema: TokenAssociateOutputSchema,
+        humanTemplate: TOKEN_ASSOCIATE_TEMPLATE,
       },
     },
     {
@@ -501,6 +538,7 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Create a new fungible token from a file',
       description:
         'Create a new fungible token from a JSON file definition with advanced features',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'file',
@@ -519,10 +557,10 @@ export const tokenPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: createFtFromFile,
+      handler: tokenCreateFtFromFile,
       output: {
-        schema: CreateFungibleTokenFromFileOutputSchema,
-        humanTemplate: CREATE_FUNGIBLE_TOKEN_FROM_FILE_TEMPLATE,
+        schema: TokenCreateFtFromFileOutputSchema,
+        humanTemplate: TOKEN_CREATE_FT_FROM_FILE_TEMPLATE,
       },
     },
     {
@@ -530,6 +568,7 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Create a new NFT token from a file',
       description:
         'Create a new non-fungible token from a JSON file definition with advanced features',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'file',
@@ -548,10 +587,10 @@ export const tokenPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: createNftFromFile,
+      handler: tokenCreateNftFromFile,
       output: {
-        schema: CreateNftFromFileOutputSchema,
-        humanTemplate: CREATE_NFT_FROM_FILE_TEMPLATE,
+        schema: TokenCreateNftFromFileOutputSchema,
+        humanTemplate: TOKEN_CREATE_NFT_FROM_FILE_TEMPLATE,
       },
     },
     {
@@ -569,10 +608,10 @@ export const tokenPluginManifest: PluginManifest = {
           description: 'Show token key information (admin, supply, wipe, etc.)',
         },
       ],
-      handler: listTokensFlow,
+      handler: tokenList,
       output: {
-        schema: ListTokensOutputSchema,
-        humanTemplate: LIST_TOKENS_TEMPLATE,
+        schema: TokenListOutputSchema,
+        humanTemplate: TOKEN_LIST_TEMPLATE,
       },
     },
     {
@@ -596,10 +635,10 @@ export const tokenPluginManifest: PluginManifest = {
           description: 'Serial number of a specific NFT instance',
         },
       ],
-      handler: viewTokenFlow,
+      handler: tokenView,
       output: {
-        schema: ViewTokenOutputSchema,
-        humanTemplate: VIEW_TOKEN_TEMPLATE,
+        schema: TokenViewOutputSchema,
+        humanTemplate: TOKEN_VIEW_TEMPLATE,
       },
     },
     {
@@ -616,10 +655,10 @@ export const tokenPluginManifest: PluginManifest = {
           description: 'Token identifier: either a token alias or token-id',
         },
       ],
-      handler: deleteTokenFlow,
+      handler: tokenDelete,
       output: {
-        schema: DeleteTokenOutputSchema,
-        humanTemplate: DELETE_TOKEN_TEMPLATE,
+        schema: TokenDeleteOutputSchema,
+        humanTemplate: TOKEN_DELETE_TEMPLATE,
       },
     },
     {
@@ -643,10 +682,10 @@ export const tokenPluginManifest: PluginManifest = {
           description: 'Name/alias for the token',
         },
       ],
-      handler: importTokenFlow,
+      handler: tokenImport,
       output: {
-        schema: ImportTokenOutputSchema,
-        humanTemplate: IMPORT_TOKEN_TEMPLATE,
+        schema: TokenImportOutputSchema,
+        humanTemplate: TOKEN_IMPORT_TEMPLATE,
       },
     },
   ],

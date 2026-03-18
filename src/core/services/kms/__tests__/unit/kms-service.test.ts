@@ -7,7 +7,6 @@ import type {
   Transaction as HederaTransaction,
 } from '@hashgraph/sdk';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
 import type { Signer } from '@/core/services/kms/signers/signer.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
@@ -17,7 +16,7 @@ import { AccountId, Client, PrivateKey, PublicKey } from '@hashgraph/sdk';
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { ConfigurationError, NotFoundError } from '@/core/errors';
 import { KmsServiceImpl } from '@/core/services/kms/kms-service';
-import { KEY_MANAGERS } from '@/core/services/kms/kms-types.interface';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -103,8 +102,8 @@ jest.mock('@hashgraph/sdk', () => ({
   },
 }));
 
-const getLocalKeyManager = (name: KeyManagerName = KEY_MANAGERS.local) => {
-  const index = name === KEY_MANAGERS.local ? 0 : 1;
+const getLocalKeyManager = (name: KeyManager = KeyManager.local) => {
+  const index = name === KeyManager.local ? 0 : 1;
   return localKeyManagerInstances[index];
 };
 
@@ -159,12 +158,12 @@ describe('KmsServiceImpl', () => {
 
   it('creates ed25519 key when enabled and persists metadata', () => {
     const { service } = setupService({ ed25519Enabled: true });
-    const localManager = getLocalKeyManager(KEY_MANAGERS.local);
+    const localManager = getLocalKeyManager(KeyManager.local);
     localManager.generateKey.mockReturnValue('new-public-key');
 
     const result = service.createLocalPrivateKey(
       KeyAlgorithm.ED25519,
-      KEY_MANAGERS.local,
+      KeyManager.local,
       ['account:create'],
     );
 
@@ -175,7 +174,7 @@ describe('KmsServiceImpl', () => {
     expect(credentialStorageMockInstance.set).toHaveBeenCalledWith(
       'kr_0011223344556677',
       expect.objectContaining({
-        keyManager: KEY_MANAGERS.local,
+        keyManager: KeyManager.local,
         publicKey: 'new-public-key',
         labels: ['account:create'],
         keyAlgorithm: KeyAlgorithm.ED25519,
@@ -192,7 +191,7 @@ describe('KmsServiceImpl', () => {
     credentialStorageMockInstance.list.mockReturnValue([
       {
         keyRefId: 'kr_existing',
-        keyManager: KEY_MANAGERS.local,
+        keyManager: KeyManager.local,
         publicKey: 'existing-public',
       },
     ]);
@@ -203,7 +202,7 @@ describe('KmsServiceImpl', () => {
     const result = service.importPrivateKey(
       KeyAlgorithm.ECDSA,
       'private-key',
-      KEY_MANAGERS.local,
+      KeyManager.local,
     );
 
     expect(logger.debug).toHaveBeenCalledWith(
@@ -221,12 +220,12 @@ describe('KmsServiceImpl', () => {
     (PrivateKey.fromStringECDSA as jest.Mock).mockReturnValue({
       publicKey: { toStringRaw: jest.fn().mockReturnValue('new-public') },
     });
-    const localManager = getLocalKeyManager(KEY_MANAGERS.local);
+    const localManager = getLocalKeyManager(KeyManager.local);
 
     const result = service.importPrivateKey(
       KeyAlgorithm.ECDSA,
       'private-key-raw',
-      KEY_MANAGERS.local,
+      KeyManager.local,
       ['imported'],
     );
 
@@ -262,11 +261,11 @@ describe('KmsServiceImpl', () => {
     const { service } = setupService();
     credentialStorageMockInstance.get.mockReturnValue({
       keyRefId: 'kr_test',
-      keyManager: KEY_MANAGERS.local,
+      keyManager: KeyManager.local,
       publicKey: 'pk',
       keyAlgorithm: KeyAlgorithm.ECDSA,
     });
-    const localManager = getLocalKeyManager(KEY_MANAGERS.local);
+    const localManager = getLocalKeyManager(KeyManager.local);
     const signer = {
       sign: jest.fn(),
       getPublicKey: jest.fn(),
@@ -293,7 +292,7 @@ describe('KmsServiceImpl', () => {
       '[CRED] KeyRefId not found: kr_missing',
     );
     expect(
-      getLocalKeyManager(KEY_MANAGERS.local).removeSecret,
+      getLocalKeyManager(KeyManager.local).removeSecret,
     ).not.toHaveBeenCalled();
   });
 
@@ -301,7 +300,7 @@ describe('KmsServiceImpl', () => {
     const { service } = setupService();
     credentialStorageMockInstance.get.mockReturnValue({
       keyRefId: 'kr_delete',
-      keyManager: KEY_MANAGERS.local,
+      keyManager: KeyManager.local,
       publicKey: 'pk',
       keyAlgorithm: KeyAlgorithm.ECDSA,
     });
@@ -309,7 +308,7 @@ describe('KmsServiceImpl', () => {
     service.remove('kr_delete');
 
     expect(
-      getLocalKeyManager(KEY_MANAGERS.local).removeSecret,
+      getLocalKeyManager(KeyManager.local).removeSecret,
     ).toHaveBeenCalledWith('kr_delete');
     expect(credentialStorageMockInstance.remove).toHaveBeenCalledWith(
       'kr_delete',
@@ -320,7 +319,7 @@ describe('KmsServiceImpl', () => {
     const { service } = setupService();
     credentialStorageMockInstance.get.mockReturnValue({
       keyRefId: 'kr_sign',
-      keyManager: KEY_MANAGERS.local,
+      keyManager: KeyManager.local,
       publicKey: 'sign-public',
       keyAlgorithm: KeyAlgorithm.ECDSA,
     });
@@ -328,7 +327,7 @@ describe('KmsServiceImpl', () => {
       getPublicKey: jest.fn().mockReturnValue('sign-public'),
       sign: jest.fn().mockResolvedValue(new Uint8Array([9])),
     };
-    getLocalKeyManager(KEY_MANAGERS.local).createSigner.mockReturnValue(
+    getLocalKeyManager(KeyManager.local).createSigner.mockReturnValue(
       signerHandle as Signer,
     );
     const transaction = {
@@ -356,7 +355,7 @@ describe('KmsServiceImpl', () => {
     const { service } = setupService();
     credentialStorageMockInstance.get.mockReturnValue({
       keyRefId: 'kr_sign_flow',
-      keyManager: KEY_MANAGERS.local,
+      keyManager: KeyManager.local,
       publicKey: 'sign-flow-public',
       keyAlgorithm: KeyAlgorithm.ECDSA,
     });
@@ -364,7 +363,7 @@ describe('KmsServiceImpl', () => {
       getPublicKey: jest.fn().mockReturnValue('sign-flow-public'),
       sign: jest.fn().mockResolvedValue(new Uint8Array([42])),
     };
-    getLocalKeyManager(KEY_MANAGERS.local).createSigner.mockReturnValue(
+    getLocalKeyManager(KeyManager.local).createSigner.mockReturnValue(
       signerHandle as Signer,
     );
     const contractCreateFlow = {
@@ -396,11 +395,11 @@ describe('KmsServiceImpl', () => {
     });
     credentialStorageMockInstance.get.mockReturnValue({
       keyRefId: 'kr_operator',
-      keyManager: KEY_MANAGERS.local,
+      keyManager: KeyManager.local,
       publicKey: 'operator-public',
       keyAlgorithm: KeyAlgorithm.ECDSA,
     });
-    getLocalKeyManager(KEY_MANAGERS.local).readSecret.mockReturnValue({
+    getLocalKeyManager(KeyManager.local).readSecret.mockReturnValue({
       privateKey: 'operator-private-key',
     });
 

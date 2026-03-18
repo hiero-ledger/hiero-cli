@@ -89,7 +89,7 @@ export class CreateBatchCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
     const batchState = new ZustandBatchStateHelper(api.state, logger);
-    const validArgs = CreateBatchInputSchema.parse(args.args);
+    const validArgs = BatchCreateInputSchema.parse(args.args);
 
     if (batchState.hasBatch(validArgs.name)) {
       throw new ValidationError(
@@ -260,9 +260,9 @@ hooks: [
   description: '...',
   options: [ /* ... token-specific options ... */ ],
   registeredHooks: ['batchify'],
-  command: new MintNftCommand(),
-  handler: mintNft,
-  output: { schema: MintNftOutputSchema, humanTemplate: MINT_NFT_TEMPLATE },
+  command: new TokenMintNftCommand(),
+  handler: tokenMintNft,
+  output: { schema: TokenMintNftOutputSchema, humanTemplate: TOKEN_MINT_NFT_TEMPLATE },
 }
 
 // src/plugins/topic/manifest.ts (command example)
@@ -272,9 +272,9 @@ hooks: [
   description: '...',
   options: [ /* ... topic-specific options ... */ ],
   registeredHooks: ['batchify'],
-  command: new CreateTopicCommand(),
+  command: new TopicCreateCommand(),
   handler: createTopic,
-  output: { schema: CreateTopicOutputSchema, humanTemplate: CREATE_TOPIC_TEMPLATE },
+  output: { schema: TopicCreateOutputSchema, humanTemplate: TOPIC_CREATE_TEMPLATE },
 }
 ```
 
@@ -386,8 +386,8 @@ hooks: [
   options: [ /* ... */ ],
   registeredHooks: ['token-batch-state', 'topic-batch-state', 'account-batch-state'],
   command: new ExecuteBatchCommand(),
-  handler: executeBatch,
-  output: { schema: ExecuteBatchOutputSchema, humanTemplate: EXECUTE_BATCH_TEMPLATE },
+  handler: batchExecute,
+  output: { schema: BatchExecuteOutputSchema, humanTemplate: BATCH_EXECUTE_TEMPLATE },
 }
 ```
 
@@ -445,7 +445,7 @@ sequenceDiagram
     participant CLI
     participant CreateBatchCmd as CreateBatchCommand
     participant BatchState as ZustandBatchStateHelper
-    participant TokenCmd as MintNftCommand
+    participant TokenCmd as TokenMintNftCommand
     participant AddHook as BatchifyTransactionHook
     participant ExecuteCmd as ExecuteBatchCommand
     participant BatchSvc as BatchTransactionService

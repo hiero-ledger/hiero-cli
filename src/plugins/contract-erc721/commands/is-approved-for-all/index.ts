@@ -3,8 +3,8 @@
  * For use by tests and external consumers
  */
 export {
-  IsApprovedForAllCommand,
-  isApprovedForAllFunctionCall,
+  contractErc721IsApprovedForAll,
+  ContractErc721IsApprovedForAllCommand,
 } from './handler';
 export type { ContractErc721CallIsApprovedForAllOutput } from './output';
 export {

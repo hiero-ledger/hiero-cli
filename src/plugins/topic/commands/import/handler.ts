@@ -1,7 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { TopicData } from '@/plugins/topic/schema';
-import type { ImportTopicOutput } from './output';
+import type { TopicImportOutput } from './output';
 import type { ImportTopicNormalisedParams } from './types';
 
 import { ValidationError } from '@/core/errors';
@@ -10,14 +10,14 @@ import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
-import { ImportTopicInputSchema } from './input';
+import { TopicImportInputSchema } from './input';
 
-export class ImportTopicCommand implements Command {
+export class TopicImportCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
     const topicState = new ZustandTopicStateHelper(api.state, logger);
-    const validArgs = ImportTopicInputSchema.parse(args.args);
+    const validArgs = TopicImportInputSchema.parse(args.args);
     const network = api.network.getCurrentNetwork();
 
     const normalisedParams: ImportTopicNormalisedParams = {
@@ -59,15 +59,15 @@ export class ImportTopicCommand implements Command {
       name: normalisedParams.alias,
       topicId: normalisedParams.topicId,
       memo: topicInfo.memo || '(No memo)',
-      adminKeyRefId: undefined,
-      submitKeyRefId: undefined,
+      adminKeyRefIds: [],
+      submitKeyRefIds: [],
       network: normalisedParams.network,
       createdAt,
     };
 
     topicState.saveTopic(key, topicData);
 
-    const result: ImportTopicOutput = {
+    const result: TopicImportOutput = {
       topicId: normalisedParams.topicId,
       name: topicData.name,
       network: normalisedParams.network,
@@ -80,6 +80,8 @@ export class ImportTopicCommand implements Command {
   }
 }
 
-const importTopicCommand = new ImportTopicCommand();
-
-export const importTopic = importTopicCommand.execute.bind(importTopicCommand);
+export async function topicImport(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new TopicImportCommand().execute(args);
+}

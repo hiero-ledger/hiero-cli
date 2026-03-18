@@ -1,9 +1,6 @@
-import type {
-  Transaction as HederaTransaction,
-  TransferTransaction,
-} from '@hashgraph/sdk';
+import type { Transaction, TransferTransaction } from '@hashgraph/sdk';
 import type { ResolvedAccountCredential } from '@/core/services/key-resolver/types';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type {
   SupportedNetwork,
   TransactionResult,
@@ -12,7 +9,7 @@ import type {
 export interface TransferNormalisedParams {
   amount: bigint;
   memo: string | undefined;
-  keyManager: KeyManagerName;
+  keyManager: KeyManager;
   fromAccount: ResolvedAccountCredential;
   destination: string;
   currentNetwork: SupportedNetwork;
@@ -23,7 +20,7 @@ export interface TransferBuildTransactionResult {
 }
 
 export interface TransferSignTransactionResult {
-  signedTransaction: HederaTransaction;
+  signedTransaction: Transaction;
 }
 
 export type TransferExecuteTransactionResult = TransactionResult;

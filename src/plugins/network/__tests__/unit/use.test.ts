@@ -8,8 +8,8 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
 import {
-  useNetwork as useHandler,
-  UseNetworkOutputSchema,
+  networkUse,
+  NetworkUseOutputSchema,
 } from '@/plugins/network/commands/use';
 
 let exitSpy: jest.SpyInstance;
@@ -42,10 +42,10 @@ describe('network plugin - use command', () => {
       },
     );
 
-    const result = await useHandler(args);
+    const result = await networkUse(args);
 
     expect(networkService.switchNetwork).toHaveBeenCalledWith('mainnet');
-    const output = assertOutput(result.result, UseNetworkOutputSchema);
+    const output = assertOutput(result.result, NetworkUseOutputSchema);
     expect(output.activeNetwork).toBe('mainnet');
   });
 
@@ -60,7 +60,7 @@ describe('network plugin - use command', () => {
       global: 'testnet',
     });
 
-    await expect(useHandler(args)).rejects.toThrow(
+    await expect(networkUse(args)).rejects.toThrow(
       'Network not available: testnet',
     );
   });
@@ -80,10 +80,10 @@ describe('network plugin - use command', () => {
       },
     );
 
-    const result = await useHandler(args);
+    const result = await networkUse(args);
 
     expect(networkService.switchNetwork).toHaveBeenCalledWith('previewnet');
-    const output = assertOutput(result.result, UseNetworkOutputSchema);
+    const output = assertOutput(result.result, NetworkUseOutputSchema);
     expect(output.activeNetwork).toBe('previewnet');
   });
 
@@ -102,7 +102,7 @@ describe('network plugin - use command', () => {
       },
     );
 
-    await useHandler(args);
+    await networkUse(args);
 
     expect(logger.info).toHaveBeenCalledWith('Switching to network: mainnet');
   });
@@ -122,9 +122,9 @@ describe('network plugin - use command', () => {
       },
     );
 
-    const res1 = await useHandler(argsToMainnet);
+    const res1 = await networkUse(argsToMainnet);
     expect(
-      assertOutput(res1.result, UseNetworkOutputSchema).activeNetwork,
+      assertOutput(res1.result, NetworkUseOutputSchema).activeNetwork,
     ).toBe('mainnet');
     expect(networkService.switchNetwork).toHaveBeenCalledWith('mainnet');
 
@@ -138,9 +138,9 @@ describe('network plugin - use command', () => {
       },
     );
 
-    const res2 = await useHandler(argsToPreviewnet);
+    const res2 = await networkUse(argsToPreviewnet);
     expect(
-      assertOutput(res2.result, UseNetworkOutputSchema).activeNetwork,
+      assertOutput(res2.result, NetworkUseOutputSchema).activeNetwork,
     ).toBe('previewnet');
     expect(networkService.switchNetwork).toHaveBeenCalledWith('previewnet');
   });

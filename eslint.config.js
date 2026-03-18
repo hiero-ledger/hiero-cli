@@ -96,6 +96,15 @@ module.exports = [
         { allowSameFolder: true, rootDir: 'src', prefix: '@' },
       ],
 
+      // Allow underscore-prefixed params/vars for intentionally unused values
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+        },
+      ],
+
       'prettier/prettier': 'error',
     },
   },

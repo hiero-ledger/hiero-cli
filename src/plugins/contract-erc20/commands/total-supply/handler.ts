@@ -78,5 +78,8 @@ export class ContractErc20TotalSupplyCommand implements Command {
   }
 }
 
-export const totalSupply = (args: CommandHandlerArgs) =>
-  new ContractErc20TotalSupplyCommand().execute(args);
+export async function contractErc20TotalSupply(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new ContractErc20TotalSupplyCommand().execute(args);
+}

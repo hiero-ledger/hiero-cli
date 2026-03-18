@@ -16,9 +16,10 @@ import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, SupportedNetwork } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { CreateAccountOutputSchema } from '@/plugins/account/commands/create';
-import { createAccount } from '@/plugins/account/commands/create/handler';
+import { AccountCreateOutputSchema } from '@/plugins/account/commands/create';
+import { accountCreate } from '@/plugins/account/commands/create/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { makeApiMocksForAccountCreate } from './helpers/mocks';
@@ -70,7 +71,7 @@ describe('account plugin - create command (ADR-003)', () => {
       name: 'myAccount',
     });
 
-    const result = await createAccount(args);
+    const result = await accountCreate(args);
 
     expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
@@ -106,7 +107,7 @@ describe('account plugin - create command (ADR-003)', () => {
     );
 
     // Verify ADR-003 result
-    const output = assertOutput(result.result, CreateAccountOutputSchema);
+    const output = assertOutput(result.result, AccountCreateOutputSchema);
     expect(output.accountId).toBe('0.0.9999');
     expect(output.name).toBe('myAccount');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
@@ -146,10 +147,10 @@ describe('account plugin - create command (ADR-003)', () => {
 
     const args = makeArgs(api, logger, { name: 'failAccount', balance: '100' });
 
-    await expect(createAccount(args)).rejects.toThrow();
+    await expect(accountCreate(args)).rejects.toThrow();
   });
 
-  test('throws error when createAccount fails', async () => {
+  test('throws error when accountCreate fails', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({ saveAccount: jest.fn() }));
 
@@ -176,7 +177,7 @@ describe('account plugin - create command (ADR-003)', () => {
       balance: '100',
     });
 
-    await expect(createAccount(args)).rejects.toThrow();
+    await expect(accountCreate(args)).rejects.toThrow();
   });
 
   test('creates account with ECDSA key type', async () => {
@@ -215,7 +216,7 @@ describe('account plugin - create command (ADR-003)', () => {
       name: 'ecdsaAccount',
     });
 
-    const result = await createAccount(args);
+    const result = await accountCreate(args);
 
     expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
@@ -228,7 +229,7 @@ describe('account plugin - create command (ADR-003)', () => {
       }),
     );
 
-    const output = assertOutput(result.result, CreateAccountOutputSchema);
+    const output = assertOutput(result.result, AccountCreateOutputSchema);
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.evmAddress).toBe(ACCOUNT_ID_EVM_ADDRESS_8888);
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
@@ -269,7 +270,7 @@ describe('account plugin - create command (ADR-003)', () => {
       keyRefId: 'kr_provided123',
       publicKey: ECDSA_HEX_PUBLIC_KEY,
       keyAlgorithm: KeyAlgorithm.ECDSA,
-      keyManager: 'local',
+      keyManager: KeyManager.local,
       labels: [],
       createdAt: '',
       updatedAt: '',
@@ -292,7 +293,7 @@ describe('account plugin - create command (ADR-003)', () => {
       key: `ecdsa:private:${ECDSA_HEX_PRIVATE_KEY}`,
     });
 
-    const result = await createAccount(args);
+    const result = await accountCreate(args);
 
     expect(kms.createLocalPrivateKey).not.toHaveBeenCalled();
     expect(keyResolver.getPublicKey).toHaveBeenCalled();
@@ -302,7 +303,7 @@ describe('account plugin - create command (ADR-003)', () => {
       }),
     );
 
-    const output = assertOutput(result.result, CreateAccountOutputSchema);
+    const output = assertOutput(result.result, AccountCreateOutputSchema);
     expect(output.accountId).toBe('0.0.6666');
     expect(output.type).toBe(KeyAlgorithm.ECDSA);
     expect(output.publicKey).toBe(ECDSA_HEX_PUBLIC_KEY);
@@ -343,7 +344,7 @@ describe('account plugin - create command (ADR-003)', () => {
       keyRefId: 'kr_test123',
       publicKey: ECDSA_HEX_PUBLIC_KEY,
       keyAlgorithm: KeyAlgorithm.ECDSA,
-      keyManager: 'local',
+      keyManager: KeyManager.local,
       labels: [],
       createdAt: '',
       updatedAt: '',
@@ -366,7 +367,7 @@ describe('account plugin - create command (ADR-003)', () => {
       key: 'kr_test123',
     });
 
-    const result = await createAccount(args);
+    const result = await accountCreate(args);
 
     expect(kms.createLocalPrivateKey).not.toHaveBeenCalled();
     expect(keyResolver.getPublicKey).toHaveBeenCalled();
@@ -376,7 +377,7 @@ describe('account plugin - create command (ADR-003)', () => {
       }),
     );
 
-    const output = assertOutput(result.result, CreateAccountOutputSchema);
+    const output = assertOutput(result.result, AccountCreateOutputSchema);
     expect(output.accountId).toBe('0.0.5555');
   });
 
@@ -413,7 +414,7 @@ describe('account plugin - create command (ADR-003)', () => {
       keyType: KeyAlgorithm.ECDSA,
     });
 
-    await expect(createAccount(args)).rejects.toThrow();
+    await expect(accountCreate(args)).rejects.toThrow();
   });
 
   test('creates account with ED25519 key type', async () => {
@@ -452,7 +453,7 @@ describe('account plugin - create command (ADR-003)', () => {
       name: 'ed25519Account',
     });
 
-    const result = await createAccount(args);
+    const result = await accountCreate(args);
 
     expect(kms.createLocalPrivateKey).toHaveBeenCalledWith(
       KeyAlgorithm.ED25519,
@@ -465,7 +466,7 @@ describe('account plugin - create command (ADR-003)', () => {
       }),
     );
 
-    const output = assertOutput(result.result, CreateAccountOutputSchema);
+    const output = assertOutput(result.result, AccountCreateOutputSchema);
     expect(output.type).toBe(KeyAlgorithm.ED25519);
     expect(output.evmAddress).toBe(
       '0x0000000000000000000000000000000000001e61',

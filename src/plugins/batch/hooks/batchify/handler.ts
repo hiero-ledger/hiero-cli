@@ -28,8 +28,9 @@ export class BatchifyHook extends AbstractHook {
     args: CommandHandlerArgs,
     params: PreSignTransactionParams<
       Record<string, unknown>,
-      BatchifySignTransactionResult
+      BatchifyBuildTransactionResult
     >,
+    _commandName: string,
   ): Promise<HookResult> {
     const { api, logger } = args;
     const batchState = new ZustandBatchStateHelper(api.state, logger);
@@ -74,13 +75,14 @@ export class BatchifyHook extends AbstractHook {
     });
   }
 
-  override async preExecuteTransactionHook(
+  override preExecuteTransactionHook(
     args: CommandHandlerArgs,
     params: PreExecuteTransactionParams<
       Record<string, unknown>,
       BatchifyBuildTransactionResult,
       BatchifySignTransactionResult
     >,
+    commandName: string,
   ): Promise<HookResult> {
     const { api, logger } = args;
     const batchState = new ZustandBatchStateHelper(api.state, logger);
@@ -91,12 +93,12 @@ export class BatchifyHook extends AbstractHook {
       logger.debug(
         'No parameter "batch" found. Transaction will not be added to batch.',
       );
-      return {
+      return Promise.resolve({
         breakFlow: false,
         result: {
           message: 'No "batch" parameter found',
         },
-      };
+      });
     }
     const key = composeKey(network, batchName);
     const batch = batchState.getBatch(key);
@@ -108,14 +110,9 @@ export class BatchifyHook extends AbstractHook {
         `Couldn't add new transaction to batch ${batchName} as it will exceed batch transaction maximum size ${BatchifyHook.BATCH_MAXIMUM_SIZE}`,
       );
     }
-    const transaction = params.signTransactionResult.transaction;
-    const signedTransaction = await api.txSign.sign(transaction, [
-      batch.keyRefId,
-    ]);
+    const transaction = params.signTransactionResult.signedTransaction;
 
-    const transactionBytes = Buffer.from(signedTransaction.toBytes()).toString(
-      'hex',
-    );
+    const transactionBytes = Buffer.from(transaction.toBytes()).toString('hex');
     const highestOrder =
       batch.transactions.length === 0
         ? 0
@@ -125,6 +122,8 @@ export class BatchifyHook extends AbstractHook {
     batch.transactions.push({
       transactionBytes,
       order: nextOrder,
+      command: commandName,
+      normalizedParams: params.normalisedParams,
     });
     batchState.saveBatch(key, batch);
 
@@ -132,7 +131,7 @@ export class BatchifyHook extends AbstractHook {
       `Transaction added to batch '${batchName}' at position ${nextOrder}`,
     );
 
-    return {
+    return Promise.resolve({
       breakFlow: true,
       result: {
         batchName,
@@ -140,6 +139,6 @@ export class BatchifyHook extends AbstractHook {
       },
       schema: BatchifyOutputSchema,
       humanTemplate: BATCHIFY_TEMPLATE,
-    };
+    });
   }
 }

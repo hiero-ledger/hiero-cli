@@ -1,5 +1,4 @@
 import type { CoreApi } from '@/core';
-import type { TopicData } from '@/plugins/topic/schema';
 
 import {
   makeAliasMock,
@@ -7,14 +6,15 @@ import {
   makeLogger,
   makeNetworkMock,
   makeStateMock,
+  makeTopicData,
   mockTopicAliasRecord,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { DeleteTopicOutputSchema } from '@/plugins/topic/commands/delete';
-import { deleteTopic } from '@/plugins/topic/commands/delete/handler';
+import { TopicDeleteOutputSchema } from '@/plugins/topic/commands/delete';
+import { topicDelete } from '@/plugins/topic/commands/delete/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -22,15 +22,6 @@ jest.mock('../../zustand-state-helper', () => ({
 }));
 
 const MockedHelper = ZustandTopicStateHelper as jest.Mock;
-
-const makeTopicData = (overrides: Partial<TopicData> = {}): TopicData => ({
-  name: 'test-topic',
-  topicId: '0.0.1234',
-  memo: 'Test topic',
-  network: SupportedNetwork.TESTNET,
-  createdAt: new Date().toISOString(),
-  ...overrides,
-});
 
 describe('topic plugin - delete command (ADR-007)', () => {
   beforeEach(() => {
@@ -41,11 +32,11 @@ describe('topic plugin - delete command (ADR-007)', () => {
     const logger = makeLogger();
     const topic = makeTopicData({ name: 'topic1', topicId: '0.0.1111' });
 
-    const deleteTopicMock = jest.fn().mockReturnValue(undefined);
+    const topicDeleteMock = jest.fn().mockReturnValue(undefined);
     MockedHelper.mockImplementation(() => ({
       listTopics: jest.fn().mockReturnValue([topic]),
       loadTopic: jest.fn().mockReturnValue(topic),
-      deleteTopic: deleteTopicMock,
+      deleteTopic: topicDeleteMock,
     }));
 
     const alias = makeAliasMock();
@@ -65,12 +56,12 @@ describe('topic plugin - delete command (ADR-007)', () => {
     };
     const args = makeArgs(api, logger, { topic: 'topic1' });
 
-    const result = await deleteTopic(args);
+    const result = await topicDelete(args);
 
-    expect(deleteTopicMock).toHaveBeenCalledWith(
+    expect(topicDeleteMock).toHaveBeenCalledWith(
       `${SupportedNetwork.TESTNET}:0.0.1111`,
     );
-    const output = assertOutput(result.result, DeleteTopicOutputSchema);
+    const output = assertOutput(result.result, TopicDeleteOutputSchema);
     expect(output.deletedTopic.name).toBe('topic1');
     expect(output.deletedTopic.topicId).toBe('0.0.1111');
   });
@@ -79,11 +70,11 @@ describe('topic plugin - delete command (ADR-007)', () => {
     const logger = makeLogger();
     const topic = makeTopicData({ name: 'topic2', topicId: '0.0.2222' });
 
-    const deleteTopicMock = jest.fn().mockReturnValue(undefined);
+    const topicDeleteMock = jest.fn().mockReturnValue(undefined);
     MockedHelper.mockImplementation(() => ({
       listTopics: jest.fn(),
       loadTopic: jest.fn().mockReturnValue(topic),
-      deleteTopic: deleteTopicMock,
+      deleteTopic: topicDeleteMock,
     }));
 
     const alias = makeAliasMock();
@@ -98,12 +89,12 @@ describe('topic plugin - delete command (ADR-007)', () => {
     };
     const args = makeArgs(api, logger, { topic: '0.0.2222' });
 
-    const result = await deleteTopic(args);
+    const result = await topicDelete(args);
 
-    expect(deleteTopicMock).toHaveBeenCalledWith(
+    expect(topicDeleteMock).toHaveBeenCalledWith(
       `${SupportedNetwork.TESTNET}:0.0.2222`,
     );
-    const output = assertOutput(result.result, DeleteTopicOutputSchema);
+    const output = assertOutput(result.result, TopicDeleteOutputSchema);
     expect(output.deletedTopic.name).toBe('topic2');
     expect(output.deletedTopic.topicId).toBe('0.0.2222');
   });
@@ -129,7 +120,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     };
     const args = makeArgs(api, logger, {});
 
-    await expect(deleteTopic(args)).rejects.toThrow();
+    await expect(topicDelete(args)).rejects.toThrow();
   });
 
   test('throws when topic with given name not found', async () => {
@@ -157,7 +148,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     };
     const args = makeArgs(api, logger, { topic: 'missingTopic' });
 
-    await expect(deleteTopic(args)).rejects.toThrow(
+    await expect(topicDelete(args)).rejects.toThrow(
       "Topic with identifier 'missingTopic' not found",
     );
   });
@@ -183,12 +174,12 @@ describe('topic plugin - delete command (ADR-007)', () => {
     };
     const args = makeArgs(api, logger, { topic: '0.0.4444' });
 
-    await expect(deleteTopic(args)).rejects.toThrow(
+    await expect(topicDelete(args)).rejects.toThrow(
       "Topic with identifier '0.0.4444' not found",
     );
   });
 
-  test('throws when deleteTopic throws', async () => {
+  test('throws when topicDelete throws', async () => {
     const logger = makeLogger();
     const topic = makeTopicData({ name: 'topic5', topicId: '0.0.5555' });
 
@@ -212,7 +203,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     };
     const args = makeArgs(api, logger, { topic: 'topic5' });
 
-    await expect(deleteTopic(args)).rejects.toThrow('db error');
+    await expect(topicDelete(args)).rejects.toThrow('db error');
   });
 
   test('removes aliases of the topic for current network and type', async () => {
@@ -241,7 +232,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
     };
     const args = makeArgs(api, logger, { topic: 'topic-alias' });
 
-    const result = await deleteTopic(args);
+    const result = await topicDelete(args);
 
     expect(alias.list).toHaveBeenCalledWith({
       network: SupportedNetwork.TESTNET,
@@ -254,7 +245,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
       SupportedNetwork.TESTNET,
     );
 
-    const output = assertOutput(result.result, DeleteTopicOutputSchema);
+    const output = assertOutput(result.result, TopicDeleteOutputSchema);
     expect(output.deletedTopic.name).toBe('topic-alias');
     expect(output.deletedTopic.topicId).toBe('0.0.7777');
     expect(output.removedAliases).toBeDefined();

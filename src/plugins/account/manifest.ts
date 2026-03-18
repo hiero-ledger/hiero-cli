@@ -1,41 +1,42 @@
 import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
+import { AccountCreateBatchStateHook } from '@/plugins/account/hooks/batch-create';
 
 import {
   ACCOUNT_BALANCE_TEMPLATE,
+  accountBalance,
   AccountBalanceOutputSchema,
-  getAccountBalance,
 } from './commands/balance';
 import {
-  CLEAR_ACCOUNTS_TEMPLATE,
-  clearAccounts,
-  ClearAccountsOutputSchema,
+  ACCOUNT_CLEAR_TEMPLATE,
+  accountClear,
+  AccountClearOutputSchema,
 } from './commands/clear';
 import {
-  CREATE_ACCOUNT_TEMPLATE,
-  createAccount,
-  CreateAccountOutputSchema,
+  ACCOUNT_CREATE_TEMPLATE,
+  accountCreate,
+  AccountCreateOutputSchema,
 } from './commands/create';
 import {
-  DELETE_ACCOUNT_TEMPLATE,
-  deleteAccount,
-  DeleteAccountOutputSchema,
+  ACCOUNT_DELETE_TEMPLATE,
+  accountDelete,
+  AccountDeleteOutputSchema,
 } from './commands/delete';
 import {
-  IMPORT_ACCOUNT_TEMPLATE,
-  importAccount,
-  ImportAccountOutputSchema,
+  ACCOUNT_IMPORT_TEMPLATE,
+  accountImport,
+  AccountImportOutputSchema,
 } from './commands/import';
 import {
-  LIST_ACCOUNTS_TEMPLATE,
-  listAccounts,
-  ListAccountsOutputSchema,
+  ACCOUNT_LIST_TEMPLATE,
+  accountList,
+  AccountListOutputSchema,
 } from './commands/list';
 import {
-  VIEW_ACCOUNT_TEMPLATE,
-  viewAccount,
-  ViewAccountOutputSchema,
+  ACCOUNT_VIEW_TEMPLATE,
+  accountView,
+  AccountViewOutputSchema,
 } from './commands/view';
 
 export const ACCOUNT_NAMESPACE = 'account-accounts';
@@ -45,12 +46,20 @@ export const accountPluginManifest: PluginManifest = {
   version: '1.0.0',
   displayName: 'Account Plugin',
   description: 'Plugin for managing Hedera accounts',
+  hooks: [
+    {
+      name: 'account-create-batch-state',
+      hook: new AccountCreateBatchStateHook(),
+      options: [],
+    },
+  ],
   commands: [
     {
       name: 'create',
       summary: 'Create a new Hedera account',
       description:
         'Create a new Hedera account with specified balance and settings',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'balance',
@@ -101,10 +110,10 @@ export const accountPluginManifest: PluginManifest = {
             'Existing key for the new account (ecdsa/ed25519 private or public key, key reference kr_xxx, or alias name). Mutually exclusive with --key-type.',
         },
       ],
-      handler: createAccount,
+      handler: accountCreate,
       output: {
-        schema: CreateAccountOutputSchema,
-        humanTemplate: CREATE_ACCOUNT_TEMPLATE,
+        schema: AccountCreateOutputSchema,
+        humanTemplate: ACCOUNT_CREATE_TEMPLATE,
       },
     },
     {
@@ -144,7 +153,7 @@ export const accountPluginManifest: PluginManifest = {
             'Display balances in raw units (tinybars for HBAR, base units for tokens)',
         },
       ],
-      handler: getAccountBalance,
+      handler: accountBalance,
       output: {
         schema: AccountBalanceOutputSchema,
         humanTemplate: ACCOUNT_BALANCE_TEMPLATE,
@@ -164,10 +173,10 @@ export const accountPluginManifest: PluginManifest = {
           description: 'Include private keys reference ID in listing',
         },
       ],
-      handler: listAccounts,
+      handler: accountList,
       output: {
-        schema: ListAccountsOutputSchema,
-        humanTemplate: LIST_ACCOUNTS_TEMPLATE,
+        schema: AccountListOutputSchema,
+        humanTemplate: ACCOUNT_LIST_TEMPLATE,
       },
     },
     {
@@ -200,10 +209,10 @@ export const accountPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: importAccount,
+      handler: accountImport,
       output: {
-        schema: ImportAccountOutputSchema,
-        humanTemplate: IMPORT_ACCOUNT_TEMPLATE,
+        schema: AccountImportOutputSchema,
+        humanTemplate: ACCOUNT_IMPORT_TEMPLATE,
       },
     },
     {
@@ -211,10 +220,10 @@ export const accountPluginManifest: PluginManifest = {
       summary: 'Clear all accounts',
       description: 'Remove all account information from the address book',
       options: [],
-      handler: clearAccounts,
+      handler: accountClear,
       output: {
-        schema: ClearAccountsOutputSchema,
-        humanTemplate: CLEAR_ACCOUNTS_TEMPLATE,
+        schema: AccountClearOutputSchema,
+        humanTemplate: ACCOUNT_CLEAR_TEMPLATE,
       },
       requireConfirmation:
         'Are you sure you want to remove ALL accounts from the address book? This action cannot be undone.',
@@ -233,10 +242,10 @@ export const accountPluginManifest: PluginManifest = {
           description: 'Account ID or alias of the account present in state',
         },
       ],
-      handler: deleteAccount,
+      handler: accountDelete,
       output: {
-        schema: DeleteAccountOutputSchema,
-        humanTemplate: DELETE_ACCOUNT_TEMPLATE,
+        schema: AccountDeleteOutputSchema,
+        humanTemplate: ACCOUNT_DELETE_TEMPLATE,
       },
       requireConfirmation:
         'Are you sure you want to delete account {{account}}? This action cannot be undone.',
@@ -254,10 +263,10 @@ export const accountPluginManifest: PluginManifest = {
           description: 'Account ID or alias of the account present in state',
         },
       ],
-      handler: viewAccount,
+      handler: accountView,
       output: {
-        schema: ViewAccountOutputSchema,
-        humanTemplate: VIEW_ACCOUNT_TEMPLATE,
+        schema: AccountViewOutputSchema,
+        humanTemplate: ACCOUNT_VIEW_TEMPLATE,
       },
     },
   ],

@@ -5,7 +5,7 @@
 import type { CoreApi, Logger, SupportedNetwork } from '@/core';
 import type {
   Credential,
-  KeyManagerName,
+  KeyManager,
 } from '@/core/services/kms/kms-types.interface';
 import type { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -31,7 +31,7 @@ export async function processTokenAssociations(
   associations: Credential[],
   api: CoreApi,
   logger: Logger,
-  keyManager: KeyManagerName,
+  keyManager: KeyManager,
 ): Promise<Array<{ name: string; accountId: string }>> {
   if (associations.length === 0) {
     return [];
@@ -45,6 +45,7 @@ export async function processTokenAssociations(
       const account = await api.keyResolver.resolveAccountCredentials(
         association,
         keyManager,
+        false,
         ['token:associate'],
       );
 

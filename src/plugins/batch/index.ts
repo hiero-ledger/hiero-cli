@@ -2,8 +2,12 @@
  * Batch Plugin
  * Exports plugin manifest and command handlers
  */
-export { createBatch, CreateBatchCommand } from './commands/create';
-export { deleteBatch, DeleteBatchCommand } from './commands/delete';
-export { executeBatch, ExecuteBatchCommand } from './commands/execute';
-export { listBatch, ListBatchCommand } from './commands/list';
+export { batchCreate, BatchCreateCommand } from './commands/create';
+export { batchDelete, BatchDeleteCommand } from './commands/delete';
+export {
+  BATCH_EXECUTE_COMMAND_NAME,
+  batchExecute,
+  BatchExecuteCommand,
+} from './commands/execute';
+export { batchList, BatchListCommand } from './commands/list';
 export { batchPluginManifest } from './manifest';

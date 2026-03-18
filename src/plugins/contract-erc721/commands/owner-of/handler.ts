@@ -12,7 +12,7 @@ import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';
 
 const ERC_721_FUNCTION_NAME = 'ownerOf';
 
-export class OwnerOfCommand implements Command {
+export class ContractErc721OwnerOfCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api } = args;
 
@@ -61,8 +61,8 @@ export class OwnerOfCommand implements Command {
   }
 }
 
-export async function ownerOfFunctionCall(
+export async function contractErc721OwnerOf(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new OwnerOfCommand().execute(args);
+  return new ContractErc721OwnerOfCommand().execute(args);
 }

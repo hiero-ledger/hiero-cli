@@ -11,7 +11,7 @@ import type {
   AliasCredential,
   Credential,
   EvmAddressCredential,
-  KeyManagerName,
+  KeyManager,
   KeypairCredential,
   KeyReferenceCredential,
   PrivateKeyCredential,
@@ -44,10 +44,18 @@ export class KeyResolverServiceImpl implements KeyResolverService {
   }
 
   public async resolveAccountCredentials(
-    credential: Credential,
-    keyManager: KeyManagerName,
+    credential: Credential | undefined,
+    keyManager: KeyManager,
+    fallback?: boolean,
     labels?: string[],
   ): Promise<ResolvedAccountCredential> {
+    if (!credential && fallback) {
+      const resolved = this.resolveOperator();
+      return this.assertSigningKey(resolved);
+    }
+    if (!credential) {
+      throw new StateError('Credential is required when fallback is disabled');
+    }
     const resolved = await this.resolveCredential(
       credential,
       keyManager,
@@ -56,23 +64,20 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     return this.assertSigningKey(resolved, credential.rawValue);
   }
 
-  public async resolveAccountCredentialsWithFallback(
-    credential: Credential | undefined,
-    keyManager: KeyManagerName,
-    labels?: string[],
-  ): Promise<ResolvedAccountCredential> {
-    if (!credential) {
-      const resolved = this.resolveOperator();
-      return this.assertSigningKey(resolved);
-    }
-    return this.resolveAccountCredentials(credential, keyManager, labels);
-  }
-
   public async getPublicKey(
-    credential: Credential,
-    keyManager: KeyManagerName,
+    credential: Credential | undefined,
+    keyManager: KeyManager,
+    fallback?: boolean,
     labels?: string[],
   ): Promise<ResolvedPublicKey> {
+    if (!credential && fallback) {
+      const resolved = this.resolveOperator();
+      const { keyRefId, publicKey } = resolved;
+      return { keyRefId: keyRefId!, publicKey: publicKey! };
+    }
+    if (!credential) {
+      throw new StateError('Credential is required when fallback is disabled');
+    }
     const resolved = await this.resolveCredential(
       credential,
       keyManager,
@@ -93,10 +98,27 @@ export class KeyResolverServiceImpl implements KeyResolverService {
   }
 
   public async resolveSigningKey(
-    credential: Credential,
-    keyManager: KeyManagerName,
+    credential: Credential | undefined,
+    keyManager: KeyManager,
+    fallback?: boolean,
     labels?: string[],
   ): Promise<ResolvedPublicKey> {
+    if (!credential && fallback) {
+      const resolved = this.resolveOperator();
+      const { keyRefId, publicKey } = resolved;
+
+      if (!this.kms.hasPrivateKey(keyRefId!)) {
+        throw new StateError(
+          'Credential cannot be used for signing: no private key available',
+          { context: { keyRefId } },
+        );
+      }
+
+      return { keyRefId: keyRefId!, publicKey: publicKey! };
+    }
+    if (!credential) {
+      throw new StateError('Credential is required when fallback is disabled');
+    }
     const resolved = await this.resolveCredential(
       credential,
       keyManager,
@@ -125,7 +147,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
   public async resolveDestination(
     credential: Credential,
-    keyManager: KeyManagerName,
+    keyManager: KeyManager,
     labels?: string[],
   ): Promise<Destination> {
     const resolved = await this.resolveCredential(
@@ -149,7 +171,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
   private resolveCredential(
     credential: Credential,
-    keyManager: KeyManagerName,
+    keyManager: KeyManager,
     labels?: string[],
   ): Promise<ResolvedKey> {
     switch (credential.type) {
@@ -219,7 +241,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
   private async resolveAccountId(
     accountIdCredential: AccountIdCredential,
-    keyManager: KeyManagerName,
+    keyManager: KeyManager,
     labels?: string[],
   ): Promise<ResolvedKey> {
     const { accountId } = accountIdCredential;
@@ -256,7 +278,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
   private async resolveAccountKeyPair(
     keyPair: KeypairCredential,
-    keyManager: KeyManagerName,
+    keyManager: KeyManager,
     labels?: string[],
   ): Promise<ResolvedKey> {
     const { accountId, privateKey } = keyPair;
@@ -315,7 +337,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
   private async resolvePrivateKey(
     privateKeyCredential: PrivateKeyCredential,
-    keyManager: KeyManagerName,
+    keyManager: KeyManager,
     labels?: string[],
   ): Promise<ResolvedKey> {
     const keyReference = this.kms.importPrivateKey(
@@ -337,7 +359,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
   private async resolvePublicKey(
     publicKeyCredential: PublicKeyCredential,
-    keyManager: KeyManagerName,
+    keyManager: KeyManager,
     labels?: string[],
   ): Promise<ResolvedKey> {
     const keyReference = this.kms.importPublicKey(
@@ -359,7 +381,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
   private async resolveEvmAddress(
     credential: EvmAddressCredential,
-    keyManager: KeyManagerName,
+    keyManager: KeyManager,
     labels?: string[],
   ): Promise<ResolvedKey> {
     const { evmAddress } = credential;

@@ -1,6 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManagerName } from '@/core/services/kms/kms-types.interface';
-import type { TransferNftOutput } from './output';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { TokenTransferNftOutput } from './output';
 import type {
   TransferNftBuildTransactionResult,
   TransferNftExecuteTransactionResult,
@@ -19,22 +19,28 @@ import {
   resolveTokenParameter,
 } from '@/plugins/token/resolver-helper';
 
-import { TransferNftInputSchema } from './input';
+import { TokenTransferNftInputSchema } from './input';
 
-export class TransferNftCommand extends BaseTransactionCommand<
+export const TOKEN_TRANSFER_NFT_COMMAND_NAME = 'token_transfer-nft';
+
+export class TokenTransferNftCommand extends BaseTransactionCommand<
   TransferNftNormalizedParams,
   TransferNftBuildTransactionResult,
   TransferNftSignTransactionResult,
   TransferNftExecuteTransactionResult
 > {
+  constructor() {
+    super(TOKEN_TRANSFER_NFT_COMMAND_NAME);
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<TransferNftNormalizedParams> {
     const { api, logger } = args;
-    const validArgs = TransferNftInputSchema.parse(args.args);
+    const validArgs = TokenTransferNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ||
-      api.config.getOption<KeyManagerName>('default_key_manager');
+      api.config.getOption<KeyManager>('default_key_manager');
     const network = api.network.getCurrentNetwork();
     const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
 
@@ -52,12 +58,12 @@ export class TransferNftCommand extends BaseTransactionCommand<
       });
     }
 
-    const resolvedFromAccount =
-      await api.keyResolver.resolveAccountCredentialsWithFallback(
-        validArgs.from,
-        keyManager,
-        ['token:account'],
-      );
+    const resolvedFromAccount = await api.keyResolver.resolveAccountCredentials(
+      validArgs.from,
+      keyManager,
+      true,
+      ['token:account'],
+    );
     const fromAccountId = resolvedFromAccount.accountId;
     const signerKeyRefId = resolvedFromAccount.keyRefId;
 
@@ -133,7 +139,7 @@ export class TransferNftCommand extends BaseTransactionCommand<
       buildTransactionResult.transaction,
       [normalisedParams.signerKeyRefId],
     );
-    return { transaction };
+    return { signedTransaction: transaction };
   }
 
   async executeTransaction(
@@ -144,7 +150,7 @@ export class TransferNftCommand extends BaseTransactionCommand<
   ): Promise<TransferNftExecuteTransactionResult> {
     const { api } = args;
     const transactionResult = await api.txExecute.execute(
-      signTransactionResult.transaction,
+      signTransactionResult.signedTransaction,
     );
     if (!transactionResult.success) {
       throw new TransactionError(
@@ -162,7 +168,7 @@ export class TransferNftCommand extends BaseTransactionCommand<
     _signTransactionResult: TransferNftSignTransactionResult,
     executeTransactionResult: TransferNftExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const outputData: TransferNftOutput = {
+    const outputData: TokenTransferNftOutput = {
       transactionId: executeTransactionResult.transactionResult.transactionId,
       tokenId: normalisedParams.tokenId,
       from: normalisedParams.fromAccountId,
@@ -174,5 +180,8 @@ export class TransferNftCommand extends BaseTransactionCommand<
   }
 }
 
-export const transferNft = (args: CommandHandlerArgs) =>
-  new TransferNftCommand().execute(args);
+export async function tokenTransferNft(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new TokenTransferNftCommand().execute(args);
+}

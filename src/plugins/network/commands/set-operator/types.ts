@@ -1,12 +1,12 @@
 import type { ResolvedAccountCredential } from '@/core/services/key-resolver/types';
 import type {
   Credential,
-  KeyManagerName,
+  KeyManager,
 } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
 export interface SetOperatorNormalisedParams {
-  keyManager: KeyManagerName;
+  keyManager: KeyManager;
   operatorArg: Credential;
   targetNetwork: SupportedNetwork;
 }

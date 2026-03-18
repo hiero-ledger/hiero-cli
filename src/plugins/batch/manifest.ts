@@ -6,26 +6,26 @@ import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
 import {
-  LIST_BATCHES_TEMPLATE,
-  listBatch,
-  ListBatchesOutputSchema,
+  BATCH_LIST_TEMPLATE,
+  batchList,
+  BatchListOutputSchema,
 } from '@/plugins/batch/commands/list';
 import { BatchifyHook } from '@/plugins/batch/hooks/batchify/handler';
 
 import {
-  CREATE_BATCH_TEMPLATE,
-  createBatch,
-  CreateBatchOutputSchema,
+  BATCH_CREATE_TEMPLATE,
+  batchCreate,
+  BatchCreateOutputSchema,
 } from './commands/create';
 import {
-  DELETE_BATCH_TEMPLATE,
-  deleteBatch,
-  DeleteBatchOutputSchema,
+  BATCH_DELETE_TEMPLATE,
+  batchDelete,
+  BatchDeleteOutputSchema,
 } from './commands/delete';
 import {
-  EXECUTE_BATCH_TEMPLATE,
-  executeBatch,
-  ExecuteBatchOutputSchema,
+  BATCH_EXECUTE_TEMPLATE,
+  batchExecute,
+  BatchExecuteOutputSchema,
 } from './commands/execute';
 
 export const BATCH_NAMESPACE = 'batch-batches';
@@ -43,7 +43,7 @@ export const batchPluginManifest: PluginManifest = {
       options: [
         {
           name: 'batch',
-          short: 'b',
+          short: 'B',
           type: OptionType.STRING,
           description: 'Name of the batch',
         },
@@ -81,10 +81,10 @@ export const batchPluginManifest: PluginManifest = {
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
-      handler: createBatch,
+      handler: batchCreate,
       output: {
-        schema: CreateBatchOutputSchema,
-        humanTemplate: CREATE_BATCH_TEMPLATE,
+        schema: BatchCreateOutputSchema,
+        humanTemplate: BATCH_CREATE_TEMPLATE,
       },
     },
     {
@@ -92,6 +92,15 @@ export const batchPluginManifest: PluginManifest = {
       summary: 'Execute a batch',
       description:
         'Execute a batch by name, signing and submitting its transactions',
+      registeredHooks: [
+        'account-create-batch-state',
+        'topic-create-batch-state',
+        'token-create-ft-batch-state',
+        'token-create-ft-from-file-batch-state',
+        'token-create-nft-batch-state',
+        'token-create-nft-from-file-batch-state',
+        'token-associate-batch-state',
+      ],
       options: [
         {
           name: 'name',
@@ -101,10 +110,10 @@ export const batchPluginManifest: PluginManifest = {
           description: 'Name of the batch to execute',
         },
       ],
-      handler: executeBatch,
+      handler: batchExecute,
       output: {
-        schema: ExecuteBatchOutputSchema,
-        humanTemplate: EXECUTE_BATCH_TEMPLATE,
+        schema: BatchExecuteOutputSchema,
+        humanTemplate: BATCH_EXECUTE_TEMPLATE,
       },
     },
     {
@@ -112,10 +121,10 @@ export const batchPluginManifest: PluginManifest = {
       summary: 'List batches',
       description: 'List all available batches',
       options: [],
-      handler: listBatch,
+      handler: batchList,
       output: {
-        schema: ListBatchesOutputSchema,
-        humanTemplate: LIST_BATCHES_TEMPLATE,
+        schema: BatchListOutputSchema,
+        humanTemplate: BATCH_LIST_TEMPLATE,
       },
     },
     {
@@ -140,10 +149,10 @@ export const batchPluginManifest: PluginManifest = {
             'Order of transaction to remove. If omitted, deletes the entire batch',
         },
       ],
-      handler: deleteBatch,
+      handler: batchDelete,
       output: {
-        schema: DeleteBatchOutputSchema,
-        humanTemplate: DELETE_BATCH_TEMPLATE,
+        schema: BatchDeleteOutputSchema,
+        humanTemplate: BATCH_DELETE_TEMPLATE,
       },
     },
   ],

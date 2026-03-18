@@ -11,9 +11,8 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import type { TransactionResult } from '@/core/types/shared.types';
 import type { TxExecuteService } from './tx-execute-service.interface';
 
-import { Status } from '@hashgraph/sdk';
-
 import { TransactionError } from '@/core/errors';
+import { mapReceiptToTransactionResult } from '@/core/utils/receipt-mapper';
 
 export class TxExecuteServiceImpl implements TxExecuteService {
   private logger: Logger;
@@ -76,60 +75,15 @@ export class TxExecuteServiceImpl implements TxExecuteService {
     const receipt: TransactionReceipt = await response.getReceipt(client);
     const record = await response.getRecord(client);
 
-    const consensusTimestamp = record.consensusTimestamp.toDate().toISOString();
-
     this.logger.debug(
       `[TX-EXECUTE] Transaction executed successfully: ${response.transactionId.toString()}`,
     );
+    const consensusTimestamp = record.consensusTimestamp.toDate().toISOString();
 
-    let accountId: string | undefined;
-    let tokenId: string | undefined;
-    let topicId: string | undefined;
-    let topicSequenceNumber: number | undefined;
-    let serials: string[] | undefined;
-    let contractId: string | undefined;
-
-    if (receipt.accountId) {
-      accountId = receipt.accountId.toString();
-    }
-
-    if (receipt.tokenId) {
-      tokenId = receipt.tokenId.toString();
-    }
-
-    if (receipt.topicId) {
-      topicId = receipt.topicId.toString();
-    }
-
-    if (receipt.topicSequenceNumber) {
-      topicSequenceNumber = Number(receipt.topicSequenceNumber);
-    }
-
-    if (receipt.serials && receipt.serials.length > 0) {
-      serials = receipt.serials.map((serial) => serial.toString());
-    }
-
-    if (receipt.contractId) {
-      // eslint-disable-next-line @typescript-eslint/no-base-to-string
-      contractId = receipt.contractId.toString();
-    }
-
-    return {
-      transactionId: response.transactionId.toString(),
-      success: receipt.status === Status.Success,
+    return mapReceiptToTransactionResult(
+      response.transactionId.toString(),
+      receipt,
       consensusTimestamp,
-      accountId,
-      tokenId,
-      topicId,
-      contractId,
-      topicSequenceNumber,
-      receipt: {
-        status: {
-          status: receipt.status === Status.Success ? 'success' : 'failed',
-          transactionId: response.transactionId.toString(),
-        },
-        serials,
-      },
-    };
+    );
   }
 }
