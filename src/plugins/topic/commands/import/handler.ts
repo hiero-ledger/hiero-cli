@@ -67,21 +67,21 @@ export class TopicImportCommand implements Command {
       topicInfo.submit_key,
     );
 
-    const adminKeyRefIds =
-      adminKeysExtracted && adminKeysExtracted.publicKeys.length > 0
-        ? matchKeysWithKms(adminKeysExtracted.publicKeys, api.kms)
-        : [];
-    const submitKeyRefIds =
-      submitKeysExtracted && submitKeysExtracted.publicKeys.length > 0
-        ? matchKeysWithKms(submitKeysExtracted.publicKeys, api.kms)
-        : [];
+    const adminKeyRefIds = matchKeysWithKms(
+      adminKeysExtracted?.publicKeys ?? [],
+      api.kms,
+    );
+    const submitKeyRefIds = matchKeysWithKms(
+      submitKeysExtracted?.publicKeys ?? [],
+      api.kms,
+    );
 
     const topicData: TopicData = {
       name: normalisedParams.alias,
       topicId: normalisedParams.topicId,
       memo: topicInfo.memo || '(No memo)',
-      adminKeyRefIds: adminKeyRefIds.length > 0 ? adminKeyRefIds : undefined,
-      submitKeyRefIds: submitKeyRefIds.length > 0 ? submitKeyRefIds : undefined,
+      adminKeyRefIds: adminKeyRefIds.length ? adminKeyRefIds : undefined,
+      submitKeyRefIds: submitKeyRefIds.length ? submitKeyRefIds : undefined,
       adminKeyThreshold: adminKeysExtracted?.threshold,
       submitKeyThreshold: submitKeysExtracted?.threshold,
       network: normalisedParams.network,
