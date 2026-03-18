@@ -66,46 +66,41 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
 
     const signerKeyRefIds: string[] = [];
     const allowedSubmitKeyRefIds = topicData.submitKeyRefIds ?? [];
-    const submitKeyThreshold = topicData.submitKeyThreshold ?? 1;
+    const submitKeyThreshold =
+      allowedSubmitKeyRefIds.length > 0
+        ? (topicData.submitKeyThreshold ?? 1)
+        : 0;
 
-    if (signerArgs.length > 0) {
-      for (const signerArg of signerArgs) {
-        const resolvedSigner = await api.keyResolver.resolveSigningKey(
-          signerArg,
-          keyManager,
-          ['topic:signer'],
-        );
-        if (
-          allowedSubmitKeyRefIds.length > 0 &&
-          !allowedSubmitKeyRefIds.includes(resolvedSigner.keyRefId)
-        ) {
-          throw new ValidationError(
-            `The provided signer is not authorized to submit messages to this topic. Key ${resolvedSigner.keyRefId} is not in the topic's submit keys.`,
-          );
-        }
-        signerKeyRefIds.push(resolvedSigner.keyRefId);
-      }
-
+    for (const signerArg of signerArgs) {
+      const resolvedSigner = await api.keyResolver.resolveSigningKey(
+        signerArg,
+        keyManager,
+        ['topic:signer'],
+      );
       if (
         allowedSubmitKeyRefIds.length > 0 &&
-        signerKeyRefIds.length < submitKeyThreshold
+        !allowedSubmitKeyRefIds.includes(resolvedSigner.keyRefId)
       ) {
-        throw new ValidationError(
-          `Topic requires ${submitKeyThreshold} signature(s) for submit key (threshold ${submitKeyThreshold}-of-${allowedSubmitKeyRefIds.length}). Provided ${signerKeyRefIds.length} signer(s).`,
+        logger.warn(
+          `Signer ${resolvedSigner.keyRefId} is not in the topic's submit keys and was ignored`,
         );
+        continue;
       }
+      signerKeyRefIds.push(resolvedSigner.keyRefId);
+    }
 
-      if (allowedSubmitKeyRefIds.length > 0) {
-        logger.info(
-          `Using ${signerKeyRefIds.length} signer(s) (authorized submit key)`,
-        );
-      } else {
-        logger.info(`Using provided signer for public topic`);
-      }
-    } else if (allowedSubmitKeyRefIds.length > 0) {
+    if (signerKeyRefIds.length < submitKeyThreshold) {
       throw new ValidationError(
-        `Topic has submit keys (threshold ${submitKeyThreshold}-of-${allowedSubmitKeyRefIds.length}). Provide signer(s) with -s option.`,
+        `Topic requires ${submitKeyThreshold} signature(s) for submit key (threshold ${submitKeyThreshold}-of-${allowedSubmitKeyRefIds.length}). Provided ${signerKeyRefIds.length} signer(s).`,
       );
+    }
+
+    if (allowedSubmitKeyRefIds.length > 0) {
+      logger.info(
+        `Using ${signerKeyRefIds.length} signer(s) (authorized submit key)`,
+      );
+    } else {
+      logger.info(`Using provided signer for public topic`);
     }
 
     return {

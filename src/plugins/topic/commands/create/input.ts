@@ -48,12 +48,8 @@ export const TopicCreateInputSchema = z
     ),
   })
   .refine(
-    (data) => {
-      if (data.adminKeyThreshold !== undefined && data.adminKey.length < 2) {
-        return false;
-      }
-      return true;
-    },
+    (data) =>
+      !(data.adminKeyThreshold !== undefined && data.adminKey.length < 2),
     {
       message:
         'adminKeyThreshold can only be set when multiple admin keys are provided',
@@ -61,12 +57,10 @@ export const TopicCreateInputSchema = z
     },
   )
   .refine(
-    (data) => {
-      if (data.adminKeyThreshold !== undefined && data.adminKey.length >= 2) {
-        return data.adminKeyThreshold <= data.adminKey.length;
-      }
-      return true;
-    },
+    (data) =>
+      data.adminKeyThreshold === undefined ||
+      data.adminKey.length < 2 ||
+      data.adminKeyThreshold <= data.adminKey.length,
     {
       message:
         'adminKeyThreshold must not exceed the number of admin keys provided',
@@ -74,12 +68,8 @@ export const TopicCreateInputSchema = z
     },
   )
   .refine(
-    (data) => {
-      if (data.submitKeyThreshold !== undefined && data.submitKey.length < 2) {
-        return false;
-      }
-      return true;
-    },
+    (data) =>
+      !(data.submitKeyThreshold !== undefined && data.submitKey.length < 2),
     {
       message:
         'submitKeyThreshold can only be set when multiple submit keys are provided',
@@ -87,12 +77,10 @@ export const TopicCreateInputSchema = z
     },
   )
   .refine(
-    (data) => {
-      if (data.submitKeyThreshold !== undefined && data.submitKey.length >= 2) {
-        return data.submitKeyThreshold <= data.submitKey.length;
-      }
-      return true;
-    },
+    (data) =>
+      data.submitKeyThreshold === undefined ||
+      data.submitKey.length < 2 ||
+      data.submitKeyThreshold <= data.submitKey.length,
     {
       message:
         'submitKeyThreshold must not exceed the number of submit keys provided',
