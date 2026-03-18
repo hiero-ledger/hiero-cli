@@ -44,7 +44,7 @@ Import an existing topic into local state.
 hcli topic import --topic 0.0.123456 --name importedTopic
 ```
 
-**Output:** `{ topicId, name }`
+**Output:** `{ topicId, name?, network, memo?, adminKeyPresent, submitKeyPresent }`
 
 ---
 
@@ -66,13 +66,13 @@ hcli topic list
 
 Submit a message to a Hedera Consensus Service topic.
 
-| Option          | Short | Type   | Required | Default        | Description                                                                                                                            |
-| --------------- | ----- | ------ | -------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| `--topic`       | `-t`  | string | **yes**  | —              | Topic ID or alias                                                                                                                      |
-| `--message`     | `-m`  | string | **yes**  | —              | Message content to submit                                                                                                              |
-| `--signer`      | `-s`  | string | no       | —              | Key to sign with (required if topic has submit-key): `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
-| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                              |
-| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                                              |
+| Option          | Short | Type   | Required | Default        | Description                                                                                                                                                                                                                                  |
+| --------------- | ----- | ------ | -------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--topic`       | `-t`  | string | **yes**  | —              | Topic ID or alias                                                                                                                                                                                                                            |
+| `--message`     | `-m`  | string | **yes**  | —              | Message content to submit                                                                                                                                                                                                                    |
+| `--signer`      | `-s`  | string | no       | —              | Key to sign with (required if topic has submit-key). For threshold topics (e.g. 2-of-3), pass `--signer` multiple times for each required signer. Formats: `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
+| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                                                                                                                    |
+| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                                                                                                                                                    |
 
 **Example:**
 

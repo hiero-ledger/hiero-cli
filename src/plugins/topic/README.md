@@ -22,6 +22,10 @@ src/plugins/topic/
 │   │   ├── handler.ts       # Create topic
 │   │   ├── output.ts        # Output schema & template
 │   │   └── index.ts
+│   ├── import/
+│   │   ├── handler.ts       # Import topic from mirror node
+│   │   ├── output.ts
+│   │   └── index.ts
 │   ├── list/
 │   │   ├── handler.ts       # List topics from state
 │   │   ├── output.ts
@@ -69,6 +73,17 @@ hcli topic create \
   --submit-key 302e020100300506032b6570...
 ```
 
+### Topic Import
+
+Import an existing topic into local state by topic ID. Fetches topic info from
+mirror node, extracts admin/submit keys (including KeyList and ThresholdKey),
+matches them with KMS via `findByPublicKey`, and stores `adminKeyRefIds`,
+`submitKeyRefIds`, and thresholds for use with submit-message.
+
+```bash
+hcli topic import --topic 0.0.123456 --name importedTopic
+```
+
 ### Topic List
 
 List topics stored in the CLI state (filtered by network if needed) with quick stats about memos and attached keys.
@@ -80,7 +95,9 @@ hcli topic list --network testnet
 
 ### Topic Submit Message
 
-Submit a message to a topic using an alias or topic ID. Handles signing with the stored submit key when required.
+Submit a message to a topic using an alias or topic ID. Handles signing with
+the stored submit key when required. For threshold topics (e.g. 2-of-3), pass
+`--signer` multiple times to meet the required signature count.
 
 ```bash
 # Using alias registered during topic creation
@@ -92,6 +109,12 @@ hcli topic submit-message \
 hcli topic submit-message \
   --topic 0.0.900123 \
   --message '{"event":"mint","amount":10}'
+
+# Threshold topic (2-of-3): provide 2 signers
+hcli topic submit-message \
+  --topic multi-sig-topic \
+  --message "Approved" \
+  --signer alice --signer bob
 ```
 
 ### Topic Find Message
@@ -152,11 +175,13 @@ Topics are stored under `topic-topics` with the schema defined in `schema.ts`:
 
 ```ts
 interface TopicData {
-  name: string;
+  name?: string;
   topicId: string;
   memo?: string;
   adminKeyRefIds?: string[];
   submitKeyRefIds?: string[];
+  adminKeyThreshold?: number; // M-of-N for admin (from KeyList/ThresholdKey)
+  submitKeyThreshold?: number; // M-of-N for submit (from KeyList/ThresholdKey)
   autoRenewAccount?: string;
   autoRenewPeriod?: number;
   expirationTime?: string;
