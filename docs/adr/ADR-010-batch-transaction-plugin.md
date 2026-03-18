@@ -104,6 +104,7 @@ export class CreateBatchCommand implements Command {
     const resolved = await api.keyResolver.resolveSigningKey(
       validArgs.key,
       keyManager,
+      true,
       ['batch:signer'],
     );
 
@@ -117,7 +118,7 @@ export class CreateBatchCommand implements Command {
 }
 ```
 
-CLI usage: `hiero batch create --name my-batch --key <key>`
+CLI usage: `hiero batch create --name my-batch` (--key optional, defaults to operator)
 
 ### Part 4: Execute Command
 
@@ -451,7 +452,7 @@ sequenceDiagram
     participant Network as Hedera Network
     participant DomainHook as TokenStateHook
 
-    User->>CLI: batch create --name my-batch --key <key>
+    User->>CLI: batch create --name my-batch
     CLI->>CreateBatchCmd: execute(args)
     CreateBatchCmd->>BatchState: saveBatch("my-batch", data)
     CreateBatchCmd-->>User: Batch 'my-batch' created
