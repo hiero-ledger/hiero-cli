@@ -97,8 +97,6 @@ export class TopicImportCommand implements Command {
       memo: topicInfo.memo || undefined,
       adminKeyPresent: Boolean(topicInfo.admin_key),
       submitKeyPresent: Boolean(topicInfo.submit_key),
-      adminKeysMatched: adminKeyRefIds.length,
-      submitKeysMatched: submitKeyRefIds.length,
     };
 
     return { result };

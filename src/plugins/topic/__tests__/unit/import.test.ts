@@ -210,8 +210,6 @@ describe('topic plugin - import command (ADR-007)', () => {
     const output = assertOutput(result.result, TopicImportOutputSchema);
     expect(output.adminKeyPresent).toBe(true);
     expect(output.submitKeyPresent).toBe(true);
-    expect(output.adminKeysMatched).toBe(1);
-    expect(output.submitKeysMatched).toBe(1);
   });
 
   test('imports topic with admin_key when key is not in KMS', async () => {
@@ -260,7 +258,6 @@ describe('topic plugin - import command (ADR-007)', () => {
 
     const output = assertOutput(result.result, TopicImportOutputSchema);
     expect(output.adminKeyPresent).toBe(true);
-    expect(output.adminKeysMatched).toBe(0);
   });
 
   test('imports topic with submit_key when key is in KMS', async () => {
@@ -312,7 +309,6 @@ describe('topic plugin - import command (ADR-007)', () => {
 
     const output = assertOutput(result.result, TopicImportOutputSchema);
     expect(output.submitKeyPresent).toBe(true);
-    expect(output.submitKeysMatched).toBe(1);
   });
 
   test('throws when topic already exists in state', async () => {

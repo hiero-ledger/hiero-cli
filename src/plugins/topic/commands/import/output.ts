@@ -19,16 +19,6 @@ export const TopicImportOutputSchema = z.object({
   submitKeyPresent: z
     .boolean()
     .describe('Whether submit key is set on the topic'),
-  adminKeysMatched: z
-    .number()
-    .int()
-    .min(0)
-    .describe('Number of admin keys matched with KMS'),
-  submitKeysMatched: z
-    .number()
-    .int()
-    .min(0)
-    .describe('Number of submit keys matched with KMS'),
 });
 
 export type TopicImportOutput = z.infer<typeof TopicImportOutputSchema>;
@@ -45,7 +35,7 @@ export const TOPIC_IMPORT_TEMPLATE = `
 {{#if memo}}
    Memo: {{memo}}
 {{/if}}
-   Admin key: {{#if adminKeyPresent}}✅ Present{{#if adminKeysMatched}} ({{adminKeysMatched}} matched in KMS){{/if}}{{else}}❌ Not set{{/if}}
-   Submit key: {{#if submitKeyPresent}}✅ Present{{#if submitKeysMatched}} ({{submitKeysMatched}} matched in KMS){{/if}}{{else}}❌ Not set (public topic){{/if}}
+   Admin key: {{#if adminKeyPresent}}✅ Present{{else}}❌ Not set{{/if}}
+   Submit key: {{#if submitKeyPresent}}✅ Present{{else}}❌ Not set (public topic){{/if}}
 
 `.trim();
