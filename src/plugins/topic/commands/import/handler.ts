@@ -13,21 +13,21 @@ import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { TopicImportInputSchema } from './input';
 
-function matchPublicKeysToKmsRefIds(
-  publicKeys: string[],
-  kms: { findByPublicKey: (pk: string) => { keyRefId: string } | undefined },
-): string[] {
-  const keyRefIds: string[] = [];
-  for (const publicKey of publicKeys) {
-    const record = kms.findByPublicKey(publicKey);
-    if (record) {
-      keyRefIds.push(record.keyRefId);
-    }
-  }
-  return keyRefIds;
-}
-
 export class TopicImportCommand implements Command {
+  private matchPublicKeysToKmsRefIds(
+    publicKeys: string[],
+    kms: { findByPublicKey: (pk: string) => { keyRefId: string } | undefined },
+  ): string[] {
+    const keyRefIds: string[] = [];
+    for (const publicKey of publicKeys) {
+      const record = kms.findByPublicKey(publicKey);
+      if (record) {
+        keyRefIds.push(record.keyRefId);
+      }
+    }
+    return keyRefIds;
+  }
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
@@ -78,12 +78,12 @@ export class TopicImportCommand implements Command {
       topicInfo.submit_key,
     );
 
-    const adminKeyRefIds = matchPublicKeysToKmsRefIds(
-      adminKeysExtracted?.publicKeys ?? [],
+    const adminKeyRefIds = this.matchPublicKeysToKmsRefIds(
+      adminKeysExtracted.publicKeys,
       api.kms,
     );
-    const submitKeyRefIds = matchPublicKeysToKmsRefIds(
-      submitKeysExtracted?.publicKeys ?? [],
+    const submitKeyRefIds = this.matchPublicKeysToKmsRefIds(
+      submitKeysExtracted.publicKeys,
       api.kms,
     );
 
@@ -93,8 +93,8 @@ export class TopicImportCommand implements Command {
       memo: topicInfo.memo || '(No memo)',
       adminKeyRefIds,
       submitKeyRefIds,
-      adminKeyThreshold: adminKeysExtracted?.threshold ?? 0,
-      submitKeyThreshold: submitKeysExtracted?.threshold ?? 0,
+      adminKeyThreshold: adminKeysExtracted.threshold,
+      submitKeyThreshold: submitKeysExtracted.threshold,
       network: normalisedParams.network,
       createdAt,
     };

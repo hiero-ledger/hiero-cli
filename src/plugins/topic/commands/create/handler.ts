@@ -38,8 +38,6 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     const memo = validArgs.memo;
     const adminKeyArgs = validArgs.adminKey;
     const submitKeyArgs = validArgs.submitKey;
-    const adminKeyThreshold = validArgs.adminKeyThreshold;
-    const submitKeyThreshold = validArgs.submitKeyThreshold;
     const alias = validArgs.name;
     const keyManagerArg = validArgs.keyManager;
     const network = api.network.getCurrentNetwork();
@@ -74,8 +72,8 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       network,
       adminKeys,
       submitKeys,
-      adminKeyThreshold,
-      submitKeyThreshold,
+      adminKeyThreshold: validArgs.adminKeyThreshold ?? adminKeys.length,
+      submitKeyThreshold: validArgs.submitKeyThreshold ?? submitKeys.length,
     };
   }
 
@@ -113,12 +111,10 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     const { api } = args;
 
     const adminKeysCount = normalisedParams.adminKeys.length;
-    const adminKeyThreshold =
-      normalisedParams.adminKeyThreshold ?? adminKeysCount;
     const adminKeyRefIds =
       adminKeysCount > 0
         ? normalisedParams.adminKeys
-            .slice(0, adminKeyThreshold)
+            .slice(0, normalisedParams.adminKeyThreshold)
             .map((k) => k.keyRefId)
         : [];
 
@@ -168,14 +164,17 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       );
     }
 
+    const adminKeyCount = normalisedParams.adminKeys.length;
+    const submitKeyCount = normalisedParams.submitKeys.length;
+
     const topicData = {
       name: normalisedParams.alias,
       topicId,
       memo: normalisedParams.memo || '(No memo)',
       adminKeyRefIds: normalisedParams.adminKeys.map((k) => k.keyRefId),
       submitKeyRefIds: normalisedParams.submitKeys.map((k) => k.keyRefId),
-      adminKeyThreshold: normalisedParams.adminKeyThreshold ?? 0,
-      submitKeyThreshold: normalisedParams.submitKeyThreshold ?? 0,
+      adminKeyThreshold: normalisedParams.adminKeyThreshold,
+      submitKeyThreshold: normalisedParams.submitKeyThreshold,
       network: normalisedParams.network,
       createdAt: executeTransactionResult.consensusTimestamp,
     };
@@ -193,8 +192,6 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     const key = composeKey(normalisedParams.network, topicId);
     topicState.saveTopic(key, topicData);
 
-    const adminKeyCount = normalisedParams.adminKeys.length;
-    const submitKeyCount = normalisedParams.submitKeys.length;
     const outputData: TopicCreateOutput = {
       topicId: topicData.topicId,
       name: topicData.name,

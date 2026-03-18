@@ -102,8 +102,14 @@ export class TopicCreateBatchStateHook extends AbstractHook {
       name: normalisedParams.alias,
       topicId,
       memo: normalisedParams.memo || '(No memo)',
-      adminKeyRefId: normalisedParams.adminKey?.keyRefId,
-      submitKeyRefId: normalisedParams.submitKey?.keyRefId,
+      adminKeyRefIds: normalisedParams.adminKey
+        ? [normalisedParams.adminKey.keyRefId]
+        : [],
+      submitKeyRefIds: normalisedParams.submitKey
+        ? [normalisedParams.submitKey.keyRefId]
+        : [],
+      adminKeyThreshold: normalisedParams.adminKey ? 1 : 0,
+      submitKeyThreshold: normalisedParams.submitKey ? 1 : 0,
       network: normalisedParams.network,
       createdAt,
     };

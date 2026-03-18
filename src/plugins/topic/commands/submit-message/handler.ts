@@ -65,8 +65,8 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     }
 
     const signerKeyRefIds: string[] = [];
-    const allowedSubmitKeyRefIds = topicData.submitKeyRefIds ?? [];
-    const submitKeyThreshold = topicData.submitKeyThreshold ?? 0;
+    const allowedSubmitKeyRefIds = topicData.submitKeyRefIds;
+    const submitKeyThreshold = topicData.submitKeyThreshold;
 
     for (const signerArg of signerArgs) {
       const resolvedSigner = await api.keyResolver.resolveSigningKey(

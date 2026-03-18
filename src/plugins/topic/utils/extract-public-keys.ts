@@ -62,9 +62,9 @@ function extractFromKey(key: Key): ExtractedKeysResult {
 /** Parses mirror node key (simple or ProtobufEncoded) into raw public keys for KMS matching. */
 export function extractPublicKeysFromMirrorNodeKey(
   mirrorKey: { _type: string; key: string } | undefined,
-): ExtractedKeysResult | undefined {
+): ExtractedKeysResult {
   if (!mirrorKey?.key) {
-    return undefined;
+    return { publicKeys: [], threshold: 0 };
   }
 
   const { _type, key } = mirrorKey;
@@ -74,7 +74,7 @@ export function extractPublicKeysFromMirrorNodeKey(
       const pk = PublicKey.fromString(key);
       return { publicKeys: [pk.toStringRaw()], threshold: 1 };
     } catch {
-      return undefined;
+      return { publicKeys: [], threshold: 0 };
     }
   }
 
@@ -86,9 +86,9 @@ export function extractPublicKeysFromMirrorNodeKey(
       const sdkKey = Key._fromProtobufKey(decoded);
       return extractFromKey(sdkKey);
     } catch {
-      return undefined;
+      return { publicKeys: [], threshold: 0 };
     }
   }
 
-  return undefined;
+  return { publicKeys: [], threshold: 0 };
 }
