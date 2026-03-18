@@ -27,7 +27,7 @@ describe('Delete Account Integration Tests', () => {
       network === SupportedNetwork.LOCALNET ? '0.0.1003' : '0.0.7300370';
     accountKey =
       network === SupportedNetwork.LOCALNET
-        ? '3030020100300706052b8104000a042204206ec1f2e7d126a74a1d2ff9e1c5d90b92378c725e506651ff8bb8616a5c724628'
+        ? '3030020100300706052b8104000a042204200e2161b2e6f2d801ef364042e6c0792aa10e07fa38680de06d4db0036c44f4b6'
         : '3030020100300706052b8104000a042204206790ef7f62d1b4a2d2fdcf4e0fc0882b86786dfbb1efc9ace8a2e3656adea122';
     evmAddress =
       network === SupportedNetwork.LOCALNET

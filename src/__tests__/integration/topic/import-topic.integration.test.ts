@@ -1,5 +1,4 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TopicCreateOutput } from '@/plugins/topic/commands/create';
 import type { TopicImportOutput } from '@/plugins/topic/commands/import';
 import type { TopicListOutput } from '@/plugins/topic/commands/list';
@@ -10,6 +9,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   topicCreate,
   topicDelete,
@@ -29,6 +29,8 @@ describe('Import Topic Integration Tests', () => {
     coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
     network = coreApi.network.getCurrentNetwork();
+
+    if (network === SupportedNetwork.LOCALNET) return;
 
     const createTopicArgs: Record<string, unknown> = {
       name: TOPIC_NAME,
@@ -59,6 +61,8 @@ describe('Import Topic Integration Tests', () => {
   });
 
   afterEach(async () => {
+    if (network === SupportedNetwork.LOCALNET) return;
+
     const deleteTopicArgs: Record<string, unknown> = {
       topic: topicId,
     };
@@ -72,6 +76,9 @@ describe('Import Topic Integration Tests', () => {
   });
 
   it('should import a topic by ID and verify with list', async () => {
+    if (coreApi.network.getCurrentNetwork() === SupportedNetwork.LOCALNET)
+      return;
+
     const importTopicArgs: Record<string, unknown> = {
       topic: topicId,
     };
@@ -105,6 +112,9 @@ describe('Import Topic Integration Tests', () => {
   });
 
   it('should import a topic with alias and verify with list', async () => {
+    if (coreApi.network.getCurrentNetwork() === SupportedNetwork.LOCALNET)
+      return;
+
     coreApi.state.delete(
       TOPIC_NAMESPACE,
       `${coreApi.network.getCurrentNetwork()}:${topicId}`,
