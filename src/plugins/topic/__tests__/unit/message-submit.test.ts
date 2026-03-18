@@ -139,7 +139,6 @@ describe('topic plugin - message-submit command', () => {
         keyRefId: MOCK_TOPIC_SUBMIT_KEY_REF_ID,
       }),
       resolveAccountCredentials: jest.fn(),
-      resolveAccountCredentialsWithFallback: jest.fn(),
       resolveDestination: jest.fn(),
       getPublicKey: jest.fn(),
     };
@@ -207,23 +206,30 @@ describe('topic plugin - message-submit command', () => {
     await expect(topicSubmitMessage(args)).rejects.toThrow(NotFoundError);
   });
 
-  test('throws ValidationError when signer is not authorized', async () => {
+  test('throws ValidationError when valid signers do not meet threshold after filtering unauthorized', async () => {
     const logger = makeLogger();
     const topicData = makeTopicData({
       topicId: '0.0.1234',
-      submitKeyRefIds: ['kr_correct_submit'],
+      submitKeyRefIds: ['kr_a', 'kr_b'],
+      submitKeyThreshold: 2,
     });
     const loadTopicMock = jest.fn().mockReturnValue(topicData);
     MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
 
     const keyResolverMock = {
-      resolveSigningKey: jest.fn().mockResolvedValue({
-        publicKey: '02abc123',
-        accountId: '0.0.999',
-        keyRefId: 'kr_wrong_submit',
-      }),
+      resolveSigningKey: jest
+        .fn()
+        .mockResolvedValueOnce({
+          publicKey: '02abc123',
+          accountId: '0.0.999',
+          keyRefId: 'kr_a',
+        })
+        .mockResolvedValueOnce({
+          publicKey: '02wrong',
+          accountId: '0.0.888',
+          keyRefId: 'kr_unauthorized',
+        }),
       resolveAccountCredentials: jest.fn(),
-      resolveAccountCredentialsWithFallback: jest.fn(),
       resolveDestination: jest.fn(),
       getPublicKey: jest.fn(),
     };
@@ -245,7 +251,7 @@ describe('topic plugin - message-submit command', () => {
     const args = makeArgs(api, logger, {
       topic: '0.0.1234',
       message: 'Test message',
-      signer: ['wrong-signer'],
+      signer: ['valid-signer', 'unauthorized-signer'],
     });
 
     await expect(topicSubmitMessage(args)).rejects.toThrow(ValidationError);

@@ -63,6 +63,7 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
     const account = await api.keyResolver.resolveAccountCredentials(
       validArgs.account,
       keyManager,
+      false,
       ['token:associate'],
     );
 

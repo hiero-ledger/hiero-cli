@@ -68,6 +68,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
       const resolved = await api.keyResolver.getPublicKey(
         validArgs.key,
         keyManager,
+        false,
         ['account:create', `account:${name}`],
       );
       keyRefId = resolved.keyRefId;

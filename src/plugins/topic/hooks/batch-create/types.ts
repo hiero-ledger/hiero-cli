@@ -1,11 +1,7 @@
 import { z } from 'zod';
 
+import { ResolvedPublicKeySchema } from '@/core';
 import { SupportedNetwork } from '@/core/types/shared.types';
-
-const ResolvedPublicKeySchema = z.object({
-  keyRefId: z.string(),
-  publicKey: z.string(),
-});
 
 export const TopicCreateNormalisedParamsSchema = z.object({
   memo: z.string().optional(),

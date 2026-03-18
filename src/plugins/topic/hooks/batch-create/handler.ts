@@ -29,6 +29,14 @@ export class TopicCreateBatchStateHook extends AbstractHook {
   ): Promise<HookResult> {
     const { api, logger } = args;
     const batchData = params.executeTransactionResult.updatedBatchData;
+    if (!batchData.success) {
+      return Promise.resolve({
+        breakFlow: false,
+        result: {
+          message: 'Batch transaction status failure',
+        },
+      });
+    }
     for (const batchDataItem of [...batchData.transactions].filter(
       (item) => item.command === TOPIC_CREATE_COMMAND_NAME,
     )) {

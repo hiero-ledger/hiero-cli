@@ -300,7 +300,6 @@ export const makeApiMocksForAccountCreate = ({
         publicKey: 'provided-pub-key',
       }),
     resolveAccountCredentials: jest.fn(),
-    resolveAccountCredentialsWithFallback: jest.fn(),
     resolveDestination: jest.fn(),
     resolveSigningKey: jest.fn(),
   };

@@ -3,7 +3,6 @@ import type {
   HookResult,
   PreOutputPreparationParams,
 } from '@/core/hooks/types';
-import type { Credential } from '@/core/services/kms/kms-types.interface';
 import type {
   BatchDataItem,
   BatchExecuteTransactionResult,
@@ -91,23 +90,12 @@ export class TokenCreateFtFromFileBatchStateHook extends AbstractHook {
 
     const tokenData = buildTokenDataFromFile(
       innerTransactionResult,
-      normalisedParams.tokenDefinition,
-      normalisedParams.treasury.accountId,
-      normalisedParams.adminKey.publicKey,
-      normalisedParams.network,
-      {
-        supplyPublicKey: normalisedParams.supplyKey?.publicKey,
-        wipePublicKey: normalisedParams.wipeKey?.publicKey,
-        kycPublicKey: normalisedParams.kycKey?.publicKey,
-        freezePublicKey: normalisedParams.freezeKey?.publicKey,
-        pausePublicKey: normalisedParams.pauseKey?.publicKey,
-        feeSchedulePublicKey: normalisedParams.feeScheduleKey?.publicKey,
-      },
+      normalisedParams,
     );
 
     tokenData.associations = await processTokenAssociations(
       innerTransactionResult.tokenId,
-      normalisedParams.tokenDefinition.associations as Credential[],
+      normalisedParams.associations,
       api,
       logger,
       normalisedParams.keyManager,
@@ -122,12 +110,12 @@ export class TokenCreateFtFromFileBatchStateHook extends AbstractHook {
     logger.info('   Token data saved to state');
 
     api.alias.register({
-      alias: normalisedParams.tokenDefinition.name,
+      alias: normalisedParams.name,
       type: AliasType.Token,
       network: normalisedParams.network,
       entityId: innerTransactionResult.tokenId,
       createdAt: innerTransactionResult.consensusTimestamp,
     });
-    logger.info(`   Name registered: ${normalisedParams.tokenDefinition.name}`);
+    logger.info(`   Name registered: ${normalisedParams.name}`);
   }
 }

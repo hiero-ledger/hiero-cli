@@ -1,7 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/shared.types';
-import type { CustomFee } from '@/core/types/token.types';
 import type { TokenCreateFtFromFileOutput } from './output';
 import type {
   TokenCreateFtFromFileAssociationOutput,
@@ -16,7 +15,6 @@ import { PublicKey } from '@hashgraph/sdk';
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { CustomFeeType } from '@/core/types/token.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
 import { buildTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
@@ -63,11 +61,13 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     const treasury = await api.keyResolver.resolveAccountCredentials(
       tokenDefinition.treasuryKey,
       keyManager,
+      false,
       ['token:treasury'],
     );
     const adminKey = await api.keyResolver.resolveSigningKey(
       tokenDefinition.adminKey,
       keyManager,
+      false,
       ['token:admin', `token:${tokenDefinition.name}`],
     );
     logger.info('🔑 Resolved admin key for signing');
@@ -112,7 +112,16 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     return {
       filename: validArgs.file,
       keyManager,
-      tokenDefinition,
+      name: tokenDefinition.name,
+      symbol: tokenDefinition.symbol,
+      decimals: tokenDefinition.decimals,
+      initialSupply: tokenDefinition.initialSupply,
+      maxSupply: tokenDefinition.maxSupply,
+      supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
+      memo: tokenDefinition.memo,
+      tokenType: tokenDefinition.tokenType,
+      customFees: tokenDefinition.customFees,
+      associations: tokenDefinition.associations,
       network,
       treasury,
       adminKey,
@@ -130,16 +139,15 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     normalisedParams: TokenCreateFtFromFileNormalizedParams,
   ): Promise<TokenCreateFtFromFileBuildTransactionResult> {
     const { api } = args;
-    const { tokenDefinition } = normalisedParams;
     const transaction = api.token.createTokenTransaction({
-      name: tokenDefinition.name,
-      symbol: tokenDefinition.symbol,
+      name: normalisedParams.name,
+      symbol: normalisedParams.symbol,
       treasuryId: normalisedParams.treasury.accountId,
-      decimals: tokenDefinition.decimals,
-      initialSupplyRaw: tokenDefinition.initialSupply,
-      tokenType: tokenDefinition.tokenType,
-      supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
-      maxSupplyRaw: tokenDefinition.maxSupply,
+      decimals: normalisedParams.decimals,
+      initialSupplyRaw: normalisedParams.initialSupply,
+      tokenType: normalisedParams.tokenType,
+      supplyType: normalisedParams.supplyType.toUpperCase() as SupplyType,
+      maxSupplyRaw: normalisedParams.maxSupply,
       adminPublicKey: PublicKey.fromString(normalisedParams.adminKey.publicKey),
       supplyPublicKey: toPublicKey(normalisedParams.supplyKey),
       wipePublicKey: toPublicKey(normalisedParams.wipeKey),
@@ -147,28 +155,8 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       freezePublicKey: toPublicKey(normalisedParams.freezeKey),
       pausePublicKey: toPublicKey(normalisedParams.pauseKey),
       feeSchedulePublicKey: toPublicKey(normalisedParams.feeScheduleKey),
-      customFees: tokenDefinition.customFees.map((fee): CustomFee => {
-        if (fee.type === CustomFeeType.FIXED) {
-          return {
-            type: CustomFeeType.FIXED,
-            amount: fee.amount,
-            unitType: fee.unitType,
-            collectorId: fee.collectorId,
-            exempt: fee.exempt,
-          };
-        }
-        return {
-          type: CustomFeeType.FRACTIONAL,
-          numerator: fee.numerator,
-          denominator: fee.denominator,
-          min: fee.min,
-          max: fee.max,
-          netOfTransfers: fee.netOfTransfers,
-          collectorId: fee.collectorId,
-          exempt: fee.exempt,
-        };
-      }),
-      memo: tokenDefinition.memo,
+      customFees: normalisedParams.customFees,
+      memo: normalisedParams.memo,
     });
     return { transaction };
   }
@@ -226,25 +214,11 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     const { api, logger } = args;
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
     const result = executeTransactionResult.transactionResult;
-    const tokenData = buildTokenDataFromFile(
-      result,
-      normalisedParams.tokenDefinition,
-      normalisedParams.treasury.accountId,
-      normalisedParams.adminKey.publicKey,
-      normalisedParams.network,
-      {
-        supplyPublicKey: normalisedParams.supplyKey?.publicKey,
-        wipePublicKey: normalisedParams.wipeKey?.publicKey,
-        kycPublicKey: normalisedParams.kycKey?.publicKey,
-        freezePublicKey: normalisedParams.freezeKey?.publicKey,
-        pausePublicKey: normalisedParams.pauseKey?.publicKey,
-        feeSchedulePublicKey: normalisedParams.feeScheduleKey?.publicKey,
-      },
-    );
+    const tokenData = buildTokenDataFromFile(result, normalisedParams);
 
     const successfulAssociations = await processTokenAssociations(
       result.tokenId!,
-      normalisedParams.tokenDefinition.associations,
+      normalisedParams.associations,
       api,
       logger,
       normalisedParams.keyManager,
@@ -256,13 +230,13 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     logger.info('   Token data saved to state');
 
     api.alias.register({
-      alias: normalisedParams.tokenDefinition.name,
+      alias: normalisedParams.name,
       type: AliasType.Token,
       network: normalisedParams.network,
       entityId: result.tokenId!,
       createdAt: result.consensusTimestamp,
     });
-    logger.info(`   Name registered: ${normalisedParams.tokenDefinition.name}`);
+    logger.info(`   Name registered: ${normalisedParams.name}`);
 
     const associations: TokenCreateFtFromFileAssociationOutput[] =
       successfulAssociations.map((assoc) => ({
@@ -274,13 +248,12 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
 
     const outputData: TokenCreateFtFromFileOutput = {
       tokenId: result.tokenId!,
-      name: normalisedParams.tokenDefinition.name,
-      symbol: normalisedParams.tokenDefinition.symbol,
+      name: normalisedParams.name,
+      symbol: normalisedParams.symbol,
       treasuryId: normalisedParams.treasury.accountId,
-      decimals: normalisedParams.tokenDefinition.decimals,
-      initialSupply: normalisedParams.tokenDefinition.initialSupply.toString(),
-      supplyType:
-        normalisedParams.tokenDefinition.supplyType.toUpperCase() as SupplyType,
+      decimals: normalisedParams.decimals,
+      initialSupply: normalisedParams.initialSupply.toString(),
+      supplyType: normalisedParams.supplyType,
       transactionId: result.transactionId,
       network: normalisedParams.network,
       associations,

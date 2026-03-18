@@ -77,12 +77,12 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
 
     const rawAmount = processTokenBalanceInput(userAmountInput, tokenDecimals);
 
-    const resolvedFromAccount =
-      await api.keyResolver.resolveAccountCredentialsWithFallback(
-        from,
-        keyManager,
-        ['token:account'],
-      );
+    const resolvedFromAccount = await api.keyResolver.resolveAccountCredentials(
+      from,
+      keyManager,
+      true,
+      ['token:account'],
+    );
 
     const { accountId: fromAccountId, keyRefId: signerKeyRefId } =
       resolvedFromAccount;

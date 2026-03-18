@@ -84,6 +84,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
       ? await api.keyResolver.resolveSigningKey(
           validArgs.adminKey,
           keyManager,
+          false,
           ['contract:admin'],
         )
       : undefined;
