@@ -58,12 +58,12 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
       });
     }
 
-    const resolvedFromAccount =
-      await api.keyResolver.resolveAccountCredentialsWithFallback(
-        validArgs.from,
-        keyManager,
-        ['token:account'],
-      );
+    const resolvedFromAccount = await api.keyResolver.resolveAccountCredentials(
+      validArgs.from,
+      keyManager,
+      true,
+      ['token:account'],
+    );
     const fromAccountId = resolvedFromAccount.accountId;
     const signerKeyRefId = resolvedFromAccount.keyRefId;
 

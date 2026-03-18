@@ -62,20 +62,23 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     const treasury = await api.keyResolver.resolveAccountCredentials(
       tokenDefinition.treasuryKey,
       keyManager,
+      false,
       ['token:treasury'],
     );
     const adminKey = await api.keyResolver.resolveSigningKey(
       tokenDefinition.adminKey,
       keyManager,
+      false,
       ['token:admin', `token:${tokenDefinition.name}`],
     );
     logger.info('🔑 Resolved admin key for signing');
-    const supplyKey = await api.keyResolver.resolveSigningKey(
+    const supplyKey = await api.keyResolver.getPublicKey(
       tokenDefinition.supplyKey,
       keyManager,
+      false,
       ['token:supply'],
     );
-    logger.info('🔑 Resolved supply key for signing');
+    logger.info('🔑 Resolved supply key');
 
     const wipeKey = await resolveOptionalKey(
       tokenDefinition.wipeKey,
@@ -166,10 +169,9 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     const signingKeys = [
       normalisedParams.adminKey.keyRefId,
       normalisedParams.treasury.keyRefId,
-      normalisedParams.supplyKey.keyRefId,
     ];
     logger.info(
-      `🔑 Signing transaction with admin, treasury and supply keys (${signingKeys.length} keys)`,
+      `🔑 Signing transaction with admin and treasury keys (${signingKeys.length} keys)`,
     );
     const transaction = await api.txSign.sign(
       buildTransactionResult.transaction,

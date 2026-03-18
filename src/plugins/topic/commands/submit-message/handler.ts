@@ -72,6 +72,7 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
       const resolvedSigner = await api.keyResolver.resolveSigningKey(
         signerArg,
         keyManager,
+        false,
         ['topic:signer'],
       );
       signerKeyRefId = resolvedSigner.keyRefId;

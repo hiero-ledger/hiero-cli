@@ -2,6 +2,7 @@ import type { CoreApi, TransactionResult } from '@/core';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 
 import {
+  ECDSA_HEX_PUBLIC_KEY,
   ED25519_DER_PRIVATE_KEY,
   ED25519_DER_PRIVATE_KEY_ADMIN_2,
   ED25519_DER_PRIVATE_KEY_SUBMIT_1,
@@ -69,6 +70,17 @@ const makeApiMocks = ({
     return {
       keyRefId: keyMap[key] ?? `kr_${key.slice(-5)}`,
       publicKey: 'mock-public-key',
+    };
+  });
+  kms.importPublicKey.mockImplementation((keyType: string, key: string) => {
+    const keyMap: Record<string, string> = {
+      [ECDSA_HEX_PUBLIC_KEY]: 'kr_submit',
+      [ED25519_DER_PRIVATE_KEY_SUBMIT_1]: MOCK_TOPIC_SUBMIT_KEY_REF_ID,
+      [ED25519_DER_PRIVATE_KEY_SUBMIT_2]: MOCK_TOPIC_SUBMIT_KEY_REF_ID_2,
+    };
+    return {
+      keyRefId: keyMap[key] ?? `kr_${key.slice(-5)}`,
+      publicKey: key,
     };
   });
   const alias = makeAliasMock();
@@ -194,7 +206,7 @@ describe('topic plugin - create command', () => {
       'local',
       ['topic:admin'],
     );
-    expect(kms.importPrivateKey).toHaveBeenCalledWith(
+    expect(kms.importPublicKey).toHaveBeenCalledWith(
       KeyAlgorithm.ECDSA,
       ED25519_DER_PRIVATE_KEY_SUBMIT_1,
       'local',

@@ -48,6 +48,7 @@ export class NetworkSetOperatorCommand implements Command {
     const operator = await api.keyResolver.resolveAccountCredentials(
       normalisedParams.operatorArg,
       normalisedParams.keyManager,
+      false,
       ['network:operator', `network:${normalisedParams.targetNetwork}`],
     );
     const executeContext: SetOperatorExecuteContext = {
