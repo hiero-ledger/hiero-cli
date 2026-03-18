@@ -630,6 +630,24 @@ export const makeKeyResolverMock = (
       return { accountId: credential.accountId };
     }
 
+    if (credential?.type === CredentialType.PUBLIC_KEY) {
+      const importResult = options.kms?.importPublicKey
+        ? options.kms.importPublicKey(
+            credential.keyType,
+            credential.publicKey,
+            keyManager,
+            labels || [],
+          )
+        : {
+            keyRefId: 'imported-pub-key-ref-id',
+            publicKey: credential.publicKey,
+          };
+      return {
+        keyRefId: importResult.keyRefId,
+        publicKey: importResult.publicKey,
+      };
+    }
+
     if (credential?.type === CredentialType.ALIAS && options.alias) {
       const network =
         options.network?.getCurrentNetwork() || SupportedNetwork.TESTNET;
@@ -669,27 +687,8 @@ export const makeKeyResolverMock = (
   return {
     resolveAccountCredentials: jest
       .fn()
-      .mockImplementation((credential, keyManager, labels) => {
-        const resolved = resolveCore(credential, keyManager, labels || []);
-        if (!resolved.keyRefId || !resolved.accountId || !resolved.publicKey) {
-          throw new StateError(
-            'Mock: resolved key missing required signing fields',
-          );
-        }
-        if (options.kms && !options.kms.hasPrivateKey(resolved.keyRefId)) {
-          throw new StateError('Mock: no private key available');
-        }
-        return Promise.resolve({
-          keyRefId: resolved.keyRefId,
-          accountId: resolved.accountId,
-          publicKey: resolved.publicKey,
-        });
-      }),
-
-    resolveAccountCredentialsWithFallback: jest
-      .fn()
-      .mockImplementation((credential, keyManager, labels) => {
-        if (!credential && options.network)
+      .mockImplementation((credential, keyManager, fallback, labels) => {
+        if (!credential && fallback && options.network)
           return Promise.resolve(operatorFallback());
         const resolved = resolveCore(credential, keyManager, labels || []);
         if (!resolved.keyRefId || !resolved.accountId || !resolved.publicKey) {
@@ -709,7 +708,21 @@ export const makeKeyResolverMock = (
 
     getPublicKey: jest
       .fn()
-      .mockImplementation((credential, keyManager, labels) => {
+      .mockImplementation((credential, keyManager, _fallback, labels) => {
+        if (credential?.type === CredentialType.ACCOUNT_KEY_PAIR) {
+          const importResult = options.kms?.importPublicKey
+            ? options.kms.importPublicKey(
+                KeyAlgorithm.ECDSA,
+                credential.privateKey,
+                keyManager,
+                labels || [],
+              )
+            : { keyRefId: 'imported-key-ref-id', publicKey: MOCK_PUBLIC_KEY };
+          return Promise.resolve({
+            keyRefId: importResult.keyRefId,
+            publicKey: MOCK_PUBLIC_KEY,
+          });
+        }
         const resolved = resolveCore(credential, keyManager, labels || []);
         if (!resolved.keyRefId || !resolved.publicKey) {
           throw new StateError(
@@ -736,7 +749,9 @@ export const makeKeyResolverMock = (
 
     resolveSigningKey: jest
       .fn()
-      .mockImplementation((credential, keyManager, labels) => {
+      .mockImplementation((credential, keyManager, fallback, labels) => {
+        if (!credential && fallback && options.network)
+          return Promise.resolve(operatorFallback());
         const resolved = resolveCore(credential, keyManager, labels || []);
         if (!resolved.keyRefId || !resolved.publicKey) {
           throw new StateError(

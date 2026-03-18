@@ -54,11 +54,11 @@ export class HbarTransferCommand extends BaseTransactionCommand<
     const amount = processBalanceInput(validArgs.amount, HBAR_DECIMALS);
     const currentNetwork = api.network.getCurrentNetwork();
 
-    const fromAccount =
-      await api.keyResolver.resolveAccountCredentialsWithFallback(
-        from,
-        keyManager,
-      );
+    const fromAccount = await api.keyResolver.resolveAccountCredentials(
+      from,
+      keyManager,
+      true,
+    );
     const toAccount = await api.keyResolver.resolveDestination(to, keyManager);
 
     // In resolved destination at least one field is present

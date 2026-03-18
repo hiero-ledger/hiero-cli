@@ -21,6 +21,30 @@ export const TopicCreateOutputSchema = z.object({
   memo: z.string().describe('Topic memo').optional(),
   adminKeyPresent: z.boolean().describe('Whether admin key is set'),
   submitKeyPresent: z.boolean().describe('Whether submit key is set'),
+  adminKeyThreshold: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe('Admin key threshold (M-of-N) when multiple keys'),
+  adminKeyCount: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe('Total number of admin keys'),
+  submitKeyThreshold: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe('Submit key threshold (M-of-N) when multiple keys'),
+  submitKeyCount: z
+    .number()
+    .int()
+    .positive()
+    .optional()
+    .describe('Total number of submit keys'),
   transactionId: TransactionIdSchema,
   createdAt: IsoTimestampSchema,
 });
@@ -41,7 +65,7 @@ export const TOPIC_CREATE_TEMPLATE = `
 {{#if memo}}
    Memo: {{memo}}
 {{/if}}
-   Admin key: {{#if adminKeyPresent}}✅ Present{{else}}❌ Not set{{/if}}
-   Submit key: {{#if submitKeyPresent}}✅ Present{{else}}❌ Not set (public topic){{/if}}
+   Admin key: {{#if adminKeyPresent}}✅ Present{{#if adminKeyCount}}{{#if adminKeyThreshold}} ({{adminKeyThreshold}}-of-{{adminKeyCount}}){{else}} ({{adminKeyCount}}-of-{{adminKeyCount}}){{/if}}{{/if}}{{else}}❌ Not set{{/if}}
+   Submit key: {{#if submitKeyPresent}}✅ Present{{#if submitKeyCount}}{{#if submitKeyThreshold}} ({{submitKeyThreshold}}-of-{{submitKeyCount}}){{else}} ({{submitKeyCount}}-of-{{submitKeyCount}}){{/if}}{{/if}}{{else}}❌ Not set (public topic){{/if}}
    Transaction ID: {{hashscanLink transactionId "transaction" network}}
 `.trim();

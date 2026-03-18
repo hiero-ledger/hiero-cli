@@ -178,7 +178,7 @@ describe('tokenCreateNftHandler', () => {
       // Arrange
       const { api, keyResolver } = makeApiMocks();
 
-      keyResolver.resolveAccountCredentialsWithFallback.mockImplementation(() =>
+      keyResolver.resolveAccountCredentials.mockImplementation(() =>
         Promise.reject(new Error('No operator set')),
       );
       keyResolver.resolveSigningKey.mockImplementation(() =>

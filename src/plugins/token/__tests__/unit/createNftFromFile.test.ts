@@ -1011,9 +1011,7 @@ describe('tokenCreateNftFromFileHandler', () => {
       expect(logger.info).toHaveBeenCalledWith(
         '🔑 Resolved admin key for signing',
       );
-      expect(logger.info).toHaveBeenCalledWith(
-        '🔑 Resolved supply key for signing',
-      );
+      expect(logger.info).toHaveBeenCalledWith('🔑 Resolved supply key');
     });
   });
 });

@@ -14,33 +14,27 @@ export const TopicDataSchema = z.object({
     50,
     'Alias must be 50 characters or less',
   ).optional(),
-
   topicId: EntityIdSchema,
-
   memo: z.string().max(100, 'Memo must be 100 characters or less').optional(),
-
   adminKeyRefIds: z
     .array(z.string().min(1, 'Key reference ID is required'))
     .optional(),
-
   submitKeyRefIds: z
     .array(z.string().min(1, 'Key reference ID is required'))
     .optional(),
-
+  adminKeyThreshold: z.number().int().positive().optional(),
+  submitKeyThreshold: z.number().int().positive().optional(),
   autoRenewAccount: EntityIdSchema.optional(),
-
   autoRenewPeriod: z
     .number()
     .int()
     .positive()
     .optional()
     .describe('Auto renew period in seconds'),
-
   expirationTime: z
     .string()
     .optional()
     .describe('Topic expiration time as ISO string'),
-
   network: z.enum(SupportedNetwork, {
     error: () => ({
       message: 'Network must be mainnet, testnet, or previewnet',

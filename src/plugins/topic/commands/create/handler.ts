@@ -38,6 +38,8 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     const memo = validArgs.memo;
     const adminKeyArgs = validArgs.adminKey;
     const submitKeyArgs = validArgs.submitKey;
+    const adminKeyThreshold = validArgs.adminKeyThreshold;
+    const submitKeyThreshold = validArgs.submitKeyThreshold;
     const alias = validArgs.name;
     const keyManagerArg = validArgs.keyManager;
     const network = api.network.getCurrentNetwork();
@@ -53,13 +55,15 @@ export class TopicCreateCommand extends BaseTransactionCommand<
 
     const adminKeys = await Promise.all(
       adminKeyArgs.map((cred) =>
-        api.keyResolver.resolveSigningKey(cred, keyManager, ['topic:admin']),
+        api.keyResolver.resolveSigningKey(cred, keyManager, false, [
+          'topic:admin',
+        ]),
       ),
     );
 
     const submitKeys = await Promise.all(
       submitKeyArgs.map((cred) =>
-        api.keyResolver.getPublicKey(cred, keyManager, ['topic:submit']),
+        api.keyResolver.getPublicKey(cred, keyManager, false, ['topic:submit']),
       ),
     );
 
@@ -70,6 +74,8 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       network,
       adminKeys,
       submitKeys,
+      adminKeyThreshold,
+      submitKeyThreshold,
     };
   }
 
@@ -79,8 +85,14 @@ export class TopicCreateCommand extends BaseTransactionCommand<
   ): Promise<CreateTopicBuildTransactionResult> {
     const { api } = args;
 
-    const adminKey = toHederaKey(normalisedParams.adminKeys);
-    const submitKey = toHederaKey(normalisedParams.submitKeys);
+    const adminKey = toHederaKey(
+      normalisedParams.adminKeys,
+      normalisedParams.adminKeyThreshold,
+    );
+    const submitKey = toHederaKey(
+      normalisedParams.submitKeys,
+      normalisedParams.submitKeyThreshold,
+    );
 
     const topicCreateResult = api.topic.createTopic({
       memo: normalisedParams.memo,
@@ -100,9 +112,14 @@ export class TopicCreateCommand extends BaseTransactionCommand<
   ): Promise<CreateTopicSignTransactionResult> {
     const { api } = args;
 
+    const adminKeysCount = normalisedParams.adminKeys.length;
+    const adminKeyThreshold =
+      normalisedParams.adminKeyThreshold ?? adminKeysCount;
     const adminKeyRefIds =
-      normalisedParams.adminKeys.length > 0
-        ? [normalisedParams.adminKeys[0].keyRefId]
+      adminKeysCount > 0
+        ? normalisedParams.adminKeys
+            .slice(0, adminKeyThreshold)
+            .map((k) => k.keyRefId)
         : [];
 
     const transaction = await api.txSign.sign(
@@ -157,6 +174,8 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       memo: normalisedParams.memo || '(No memo)',
       adminKeyRefIds: normalisedParams.adminKeys.map((k) => k.keyRefId),
       submitKeyRefIds: normalisedParams.submitKeys.map((k) => k.keyRefId),
+      adminKeyThreshold: normalisedParams.adminKeyThreshold,
+      submitKeyThreshold: normalisedParams.submitKeyThreshold,
       network: normalisedParams.network,
       createdAt: executeTransactionResult.consensusTimestamp,
     };
@@ -174,13 +193,19 @@ export class TopicCreateCommand extends BaseTransactionCommand<
     const key = composeKey(normalisedParams.network, topicId);
     topicState.saveTopic(key, topicData);
 
+    const adminKeyCount = normalisedParams.adminKeys.length;
+    const submitKeyCount = normalisedParams.submitKeys.length;
     const outputData: TopicCreateOutput = {
       topicId: topicData.topicId,
       name: topicData.name,
       network: topicData.network,
       memo: normalisedParams.memo,
-      adminKeyPresent: normalisedParams.adminKeys.length > 0,
-      submitKeyPresent: normalisedParams.submitKeys.length > 0,
+      adminKeyPresent: adminKeyCount > 0,
+      submitKeyPresent: submitKeyCount > 0,
+      adminKeyThreshold: normalisedParams.adminKeyThreshold,
+      adminKeyCount: adminKeyCount > 1 ? adminKeyCount : undefined,
+      submitKeyThreshold: normalisedParams.submitKeyThreshold,
+      submitKeyCount: submitKeyCount > 1 ? submitKeyCount : undefined,
       transactionId: executeTransactionResult.transactionId || '',
       createdAt: topicData.createdAt,
     };

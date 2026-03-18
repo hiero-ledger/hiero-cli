@@ -22,6 +22,7 @@ export async function resolvePayer(
   const resolvedPayer = await coreApi.keyResolver.resolveAccountCredentials(
     parsedPayer,
     keyManager,
+    false,
     ['payer:override'],
   );
   coreApi.network.setPayer(resolvedPayer);
