@@ -8,13 +8,24 @@ import { ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { composeKey } from '@/core/utils/key-composer';
-import {
-  extractPublicKeysFromMirrorNodeKey,
-  matchKeysWithKms,
-} from '@/plugins/topic/utils/extract-public-keys';
+import { extractPublicKeysFromMirrorNodeKey } from '@/plugins/topic/utils/extract-public-keys';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { TopicImportInputSchema } from './input';
+
+function matchPublicKeysToKmsRefIds(
+  publicKeys: string[],
+  kms: { findByPublicKey: (pk: string) => { keyRefId: string } | undefined },
+): string[] {
+  const keyRefIds: string[] = [];
+  for (const publicKey of publicKeys) {
+    const record = kms.findByPublicKey(publicKey);
+    if (record) {
+      keyRefIds.push(record.keyRefId);
+    }
+  }
+  return keyRefIds;
+}
 
 export class TopicImportCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
@@ -67,11 +78,11 @@ export class TopicImportCommand implements Command {
       topicInfo.submit_key,
     );
 
-    const adminKeyRefIds = matchKeysWithKms(
+    const adminKeyRefIds = matchPublicKeysToKmsRefIds(
       adminKeysExtracted?.publicKeys ?? [],
       api.kms,
     );
-    const submitKeyRefIds = matchKeysWithKms(
+    const submitKeyRefIds = matchPublicKeysToKmsRefIds(
       submitKeysExtracted?.publicKeys ?? [],
       api.kms,
     );
@@ -80,10 +91,10 @@ export class TopicImportCommand implements Command {
       name: normalisedParams.alias,
       topicId: normalisedParams.topicId,
       memo: topicInfo.memo || '(No memo)',
-      adminKeyRefIds: adminKeyRefIds.length ? adminKeyRefIds : undefined,
-      submitKeyRefIds: submitKeyRefIds.length ? submitKeyRefIds : undefined,
-      adminKeyThreshold: adminKeysExtracted?.threshold,
-      submitKeyThreshold: submitKeysExtracted?.threshold,
+      adminKeyRefIds,
+      submitKeyRefIds,
+      adminKeyThreshold: adminKeysExtracted?.threshold ?? 0,
+      submitKeyThreshold: submitKeysExtracted?.threshold ?? 0,
       network: normalisedParams.network,
       createdAt,
     };

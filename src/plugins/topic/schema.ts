@@ -22,8 +22,8 @@ export const TopicDataSchema = z.object({
   submitKeyRefIds: z
     .array(z.string().min(1, 'Key reference ID is required'))
     .optional(),
-  adminKeyThreshold: z.number().int().positive().optional(),
-  submitKeyThreshold: z.number().int().positive().optional(),
+  adminKeyThreshold: z.number().int().min(0).optional(),
+  submitKeyThreshold: z.number().int().min(0).optional(),
   autoRenewAccount: EntityIdSchema.optional(),
   autoRenewPeriod: z
     .number()

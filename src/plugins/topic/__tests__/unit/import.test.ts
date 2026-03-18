@@ -252,7 +252,7 @@ describe('topic plugin - import command (ADR-007)', () => {
       `${SupportedNetwork.TESTNET}:0.0.123456`,
       expect.objectContaining({
         topicId: '0.0.123456',
-        adminKeyRefIds: undefined,
+        adminKeyRefIds: [],
       }),
     );
 

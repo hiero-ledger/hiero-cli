@@ -174,8 +174,8 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       memo: normalisedParams.memo || '(No memo)',
       adminKeyRefIds: normalisedParams.adminKeys.map((k) => k.keyRefId),
       submitKeyRefIds: normalisedParams.submitKeys.map((k) => k.keyRefId),
-      adminKeyThreshold: normalisedParams.adminKeyThreshold,
-      submitKeyThreshold: normalisedParams.submitKeyThreshold,
+      adminKeyThreshold: normalisedParams.adminKeyThreshold ?? 0,
+      submitKeyThreshold: normalisedParams.submitKeyThreshold ?? 0,
       network: normalisedParams.network,
       createdAt: executeTransactionResult.consensusTimestamp,
     };

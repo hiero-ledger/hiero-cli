@@ -1,10 +1,10 @@
 /**
- * Utilities for extracting public keys from mirror node topic keys and matching them with KMS.
+ * Utilities for extracting public keys from mirror node topic keys.
  *
  * Mirror node returns admin_key/submit_key in two formats: simple (ED25519, ECDSA) or
  * ProtobufEncoded (KeyList/ThresholdKey). The SDK has no public API to parse these, so we
  * decode protobuf manually and use Key._fromProtobufKey to get SDK Key objects, then
- * extract raw public key strings for KMS lookup (findByPublicKey).
+ * extract raw public key strings for KMS lookup.
  */
 
 import { Key, KeyList, PublicKey } from '@hashgraph/sdk';
@@ -12,10 +12,14 @@ import * as proto from '@hiero-ledger/proto';
 
 export interface ExtractedKeysResult {
   publicKeys: string[];
-  threshold?: number;
+  threshold: number;
 }
 
-const MIRROR_NODE_SIMPLE_KEY_TYPES = ['ED25519', 'ECDSA_SECP256K1'] as const;
+enum MirrorNodeKeyType {
+  ED25519 = 'ED25519',
+  ECDSA_SECP256K1 = 'ECDSA_SECP256K1',
+}
+
 const MIRROR_NODE_PROTOBUF_TYPE = 'ProtobufEncoded';
 
 /** Returns raw hex string for PublicKey, null for KeyList/ContractId. */
@@ -39,7 +43,7 @@ function extractFromKeyList(keyList: KeyList): ExtractedKeysResult {
       publicKeys.push(...nested.publicKeys);
     }
   }
-  const threshold = keyList.threshold ?? undefined;
+  const threshold = keyList.threshold ?? 0;
   return { publicKeys, threshold };
 }
 
@@ -47,12 +51,12 @@ function extractFromKeyList(keyList: KeyList): ExtractedKeysResult {
 function extractFromKey(key: Key): ExtractedKeysResult {
   const raw = keyToRawPublicKey(key);
   if (raw) {
-    return { publicKeys: [raw] };
+    return { publicKeys: [raw], threshold: 1 };
   }
   if (key instanceof KeyList) {
     return extractFromKeyList(key);
   }
-  return { publicKeys: [] };
+  return { publicKeys: [], threshold: 0 };
 }
 
 /** Parses mirror node key (simple or ProtobufEncoded) into raw public keys for KMS matching. */
@@ -65,14 +69,10 @@ export function extractPublicKeysFromMirrorNodeKey(
 
   const { _type, key } = mirrorKey;
 
-  if (
-    MIRROR_NODE_SIMPLE_KEY_TYPES.includes(
-      _type as (typeof MIRROR_NODE_SIMPLE_KEY_TYPES)[number],
-    )
-  ) {
+  if (Object.values(MirrorNodeKeyType).includes(_type as MirrorNodeKeyType)) {
     try {
       const pk = PublicKey.fromString(key);
-      return { publicKeys: [pk.toStringRaw()] };
+      return { publicKeys: [pk.toStringRaw()], threshold: 1 };
     } catch {
       return undefined;
     }
@@ -91,21 +91,4 @@ export function extractPublicKeysFromMirrorNodeKey(
   }
 
   return undefined;
-}
-
-/** Maps public keys to KMS keyRefIds via findByPublicKey; skips keys not found in KMS. */
-export function matchKeysWithKms(
-  publicKeys: string[],
-  kms: {
-    findByPublicKey: (publicKey: string) => { keyRefId: string } | undefined;
-  },
-): string[] {
-  const keyRefIds: string[] = [];
-  for (const publicKey of publicKeys) {
-    const record = kms.findByPublicKey(publicKey);
-    if (record) {
-      keyRefIds.push(record.keyRefId);
-    }
-  }
-  return keyRefIds;
 }
