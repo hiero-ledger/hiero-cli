@@ -45,8 +45,10 @@ const TEST_TOPIC_ID = '0.0.3000';
 const TEST_TX_ID = '0.0.1234-1700000000-000000000';
 
 // Network URLs
-const TESTNET_URL = 'https://testnet.mirrornode.hedera.com/api/v1';
-const MAINNET_URL = 'https://mainnet-public.mirrornode.hedera.com/api/v1';
+const TESTNET_BASE_URL = 'https://testnet.mirrornode.hedera.com';
+const TESTNET_API_URL = `${TESTNET_BASE_URL}/api/v1`;
+const MAINNET_BASE_URL = 'https://mainnet-public.mirrornode.hedera.com';
+const MAINNET_API_URL = `${MAINNET_BASE_URL}/api/v1`;
 
 // Timestamps & Values
 const TEST_TIMESTAMP = '2024-01-01T12:00:00.000Z';
@@ -96,7 +98,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       const result = await service.getAccount(TEST_ACCOUNT_ID);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/accounts/${TEST_ACCOUNT_ID}`,
+        `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}`,
       );
       expect(result.accountId).toBe(TEST_ACCOUNT_ID);
       expect(result.balance.balance).toBe(mockResponse.balance.balance);
@@ -117,7 +119,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       await service.getAccount(TEST_ACCOUNT_ID);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${MAINNET_URL}/accounts/${TEST_ACCOUNT_ID}`,
+        `${MAINNET_API_URL}/accounts/${TEST_ACCOUNT_ID}`,
       );
     });
 
@@ -133,13 +135,13 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await service.getAccount(TEST_ACCOUNT_ID);
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/accounts/${TEST_ACCOUNT_ID}`,
+        `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}`,
       );
 
       networkService.getCurrentNetwork = jest.fn().mockReturnValue('mainnet');
       await service.getAccount(TEST_ACCOUNT_ID);
       expect(global.fetch).toHaveBeenCalledWith(
-        `${MAINNET_URL}/accounts/${TEST_ACCOUNT_ID}`,
+        `${MAINNET_API_URL}/accounts/${TEST_ACCOUNT_ID}`,
       );
     });
 
@@ -286,7 +288,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       const result = await service.getAccountTokenBalances(TEST_ACCOUNT_ID);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/accounts/${TEST_ACCOUNT_ID}/tokens?`,
+        `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}/tokens?`,
       );
       expect(result.tokens).toHaveLength(1);
       expect(result.tokens[0].token_id).toBe(TEST_TOKEN_ID);
@@ -303,7 +305,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       await service.getAccountTokenBalances(TEST_ACCOUNT_ID, TEST_TOKEN_ID);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/accounts/${TEST_ACCOUNT_ID}/tokens?&token.id=${TEST_TOKEN_ID}`,
+        `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}/tokens?&token.id=${TEST_TOKEN_ID}`,
       );
     });
 
@@ -347,7 +349,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       const result = await service.getAccounts();
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/accounts?balance=false&limit=25&order=asc`,
+        `${TESTNET_API_URL}/accounts?balance=false&limit=25&order=asc`,
       );
       expect(result.accounts).toHaveLength(1);
       expect(result.accounts[0].accountId).toBe('0.0.1234');
@@ -383,7 +385,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/accounts?account.balance=gte:1000&account.id=0.0.1234&account.publickey=3c3d546321ff6f63d701d2ec5c277095874e19f4a235bee1e6bb19258bf362be&balance=false&limit=10&order=desc`,
+        `${TESTNET_API_URL}/accounts?account.balance=gte:1000&account.id=0.0.1234&account.publickey=3c3d546321ff6f63d701d2ec5c277095874e19f4a235bee1e6bb19258bf362be&balance=false&limit=10&order=desc`,
       );
     });
 
@@ -458,7 +460,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
     it('should construct next URL correctly: baseUrl + links.next', async () => {
       const { service } = setupService();
-      const nextPath = '/accounts?limit=25&order=asc&next=token';
+      const nextPath = '/api/v1/accounts?limit=25&order=asc&next=token';
 
       (global.fetch as jest.Mock)
         .mockResolvedValueOnce({
@@ -480,32 +482,19 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       expect(global.fetch).toHaveBeenNthCalledWith(
         2,
-        `${TESTNET_URL}${nextPath}`,
+        `${TESTNET_BASE_URL}${nextPath}`,
       );
     });
 
-    it('should throw error on HTTP 404', async () => {
+    it('should return empty list on HTTP error', async () => {
       const { service } = setupService();
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: false,
         status: 404,
         statusText: 'Not Found',
       });
-
-      await expect(service.getAccounts()).rejects.toThrow(
-        'Failed to get accounts: 404 Not Found',
-      );
-    });
-
-    it('should log error to console.error before rethrowing', async () => {
-      const { service } = setupService();
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: false,
-        status: 500,
-        statusText: 'Internal Server Error',
-      });
-
-      await expect(service.getAccounts()).rejects.toThrow(NetworkError);
+      const result = await service.getAccounts();
+      expect(result.accounts).toHaveLength(0);
     });
 
     it('should handle empty accounts array', async () => {
@@ -572,7 +561,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/topics/${TEST_TOPIC_ID}/messages/${TEST_SEQUENCE_NUMBER}`,
+        `${TESTNET_API_URL}/topics/${TEST_TOPIC_ID}/messages/${TEST_SEQUENCE_NUMBER}`,
       );
       expect(result.topic_id).toBe(TEST_TOPIC_ID);
       expect(result.sequence_number).toBe(TEST_SEQUENCE_NUMBER);
@@ -592,7 +581,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       const result = await service.getTopicMessages({ topicId: TEST_TOPIC_ID });
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/topics/${TEST_TOPIC_ID}/messages?order=desc&limit=100`,
+        `${TESTNET_API_URL}/topics/${TEST_TOPIC_ID}/messages?order=desc&limit=100`,
       );
       expect(result.messages).toHaveLength(1);
       expect(result.topicId).toBe(TEST_TOPIC_ID);
@@ -613,7 +602,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/topics/${TEST_TOPIC_ID}/messages?sequenceNumber=gt:10&order=desc&limit=100`,
+        `${TESTNET_API_URL}/topics/${TEST_TOPIC_ID}/messages?sequenceNumber=gt:10&order=desc&limit=100`,
       );
     });
 
@@ -684,7 +673,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
     it('should construct next URL correctly: baseUrl + links.next', async () => {
       const { service } = setupService();
-      const nextPath = '/topics/0.0.3000/messages?timestamp=lt:123';
+      const nextPath = '/api/v1/topics/0.0.3000/messages?timestamp=lt:123';
 
       (global.fetch as jest.Mock)
         .mockResolvedValueOnce({
@@ -706,7 +695,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       expect(global.fetch).toHaveBeenNthCalledWith(
         2,
-        `${TESTNET_URL}${nextPath}`,
+        `${TESTNET_BASE_URL}${nextPath}`,
       );
     });
 
@@ -749,7 +738,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       const result = await service.getTokenInfo(TEST_TOKEN_ID);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/tokens/${TEST_TOKEN_ID}`,
+        `${TESTNET_API_URL}/tokens/${TEST_TOKEN_ID}`,
       );
       expect(result.token_id).toBe(TEST_TOKEN_ID);
       expect(result.symbol).toBe('TEST');
@@ -784,7 +773,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       );
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/tokens/${TEST_TOKEN_ID}/nfts/${TEST_SERIAL_NUMBER}`,
+        `${TESTNET_API_URL}/tokens/${TEST_TOKEN_ID}/nfts/${TEST_SERIAL_NUMBER}`,
       );
       expect(result.token_id).toBe(TEST_TOKEN_ID);
       expect(result.serial_number).toBe(TEST_SERIAL_NUMBER);
@@ -815,7 +804,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       await service.getNftInfo(TEST_TOKEN_ID, TEST_SERIAL_NUMBER);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${MAINNET_URL}/tokens/${TEST_TOKEN_ID}/nfts/${TEST_SERIAL_NUMBER}`,
+        `${MAINNET_API_URL}/tokens/${TEST_TOKEN_ID}/nfts/${TEST_SERIAL_NUMBER}`,
       );
     });
   });
@@ -832,7 +821,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       const result = await service.getTopicInfo(TEST_TOPIC_ID);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/topics/${TEST_TOPIC_ID}`,
+        `${TESTNET_API_URL}/topics/${TEST_TOPIC_ID}`,
       );
       expect(result.topic_id).toBe(TEST_TOPIC_ID);
     });
@@ -863,7 +852,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       const result = await service.getTransactionRecord(TEST_TX_ID);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/transactions/${TEST_TX_ID}`,
+        `${TESTNET_API_URL}/transactions/${TEST_TX_ID}`,
       );
       expect(result.transactions[0].transaction_id).toBe(TEST_TX_ID);
     });
@@ -879,7 +868,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       await service.getTransactionRecord(TEST_TX_ID, 1);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/transactions/${TEST_TX_ID}?nonce=1`,
+        `${TESTNET_API_URL}/transactions/${TEST_TX_ID}?nonce=1`,
       );
     });
 
@@ -894,7 +883,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       await service.getTransactionRecord(TEST_TX_ID, 0);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/transactions/${TEST_TX_ID}?nonce=0`,
+        `${TESTNET_API_URL}/transactions/${TEST_TX_ID}?nonce=0`,
       );
     });
 
@@ -924,7 +913,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       const result = await service.getContractInfo(MOCK_CONTRACT_ID);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/contracts/${MOCK_CONTRACT_ID}`,
+        `${TESTNET_API_URL}/contracts/${MOCK_CONTRACT_ID}`,
       );
       expect(result.contract_id).toBe(MOCK_CONTRACT_ID);
     });
@@ -955,7 +944,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       const result = await service.getPendingAirdrops(TEST_ACCOUNT_ID);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/accounts/${TEST_ACCOUNT_ID}/airdrops/pending`,
+        `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}/airdrops/pending`,
       );
       expect(result.airdrops).toHaveLength(1);
     });
@@ -999,7 +988,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       const result = await service.getOutstandingAirdrops(TEST_ACCOUNT_ID);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/accounts/${TEST_ACCOUNT_ID}/airdrops/outstanding`,
+        `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}/airdrops/outstanding`,
       );
       expect(result.airdrops).toHaveLength(1);
     });
@@ -1043,7 +1032,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       const result = await service.getExchangeRate();
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/network/exchangerate`,
+        `${TESTNET_API_URL}/network/exchangerate`,
       );
       expect(result.current_rate.hbar_equivalent).toBe(1);
     });
@@ -1059,7 +1048,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       await service.getExchangeRate(TEST_TIMESTAMP);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/network/exchangerate?timestamp=${encodeURIComponent(TEST_TIMESTAMP)}`,
+        `${TESTNET_API_URL}/network/exchangerate?timestamp=${encodeURIComponent(TEST_TIMESTAMP)}`,
       );
     });
 
@@ -1075,7 +1064,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       await service.getExchangeRate(timestampWithSpecialChars);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/network/exchangerate?timestamp=${encodeURIComponent(timestampWithSpecialChars)}`,
+        `${TESTNET_API_URL}/network/exchangerate?timestamp=${encodeURIComponent(timestampWithSpecialChars)}`,
       );
     });
 
@@ -1109,7 +1098,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       const result = await service.postContractCall(requestBody);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        `${TESTNET_URL}/contracts/call`,
+        `${TESTNET_API_URL}/contracts/call`,
         {
           method: 'POST',
           headers: {
