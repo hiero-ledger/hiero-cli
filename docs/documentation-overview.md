@@ -17,22 +17,55 @@ Technical documentation for developers and contributors working on the Hiero CLI
 hiero-cli/
 ├── src/
 │   ├── core/                    # Core API and services
-│   │   ├── core-api/           # Main Core API
-│   │   ├── services/           # Service implementations
-│   │   ├── plugins/            # Plugin system
-│   │   └── types/              # Shared types
+│   │   ├── core-api/            # Main Core API and interface
+│   │   ├── commands/            # Base command classes and interfaces
+│   │   ├── errors/              # Typed error classes (ValidationError, NotFoundError, etc.)
+│   │   ├── hooks/               # Hook system (AbstractHook, PreExecuteTransactionParams, etc.)
+│   │   ├── plugins/             # Plugin manager and plugin interfaces
+│   │   ├── schemas/             # Shared Zod schemas (common-schemas, etc.)
+│   │   ├── services/            # Service implementations
+│   │   │   ├── account/         # Account transaction creation
+│   │   │   ├── alias/           # Alias resolution and registration
+│   │   │   ├── batch/           # Batch transaction service (HIP-551)
+│   │   │   ├── config/          # CLI configuration
+│   │   │   ├── contract-compiler/    # Solidity compilation
+│   │   │   ├── contract-query/      # Contract view calls
+│   │   │   ├── contract-transaction/   # Contract transaction building
+│   │   │   ├── contract-verifier/   # Contract verification
+│   │   │   ├── error-boundary/      # Error handling and output
+│   │   │   ├── hbar/            # HBAR transfer transactions
+│   │   │   ├── identity-resolution/ # Identity resolution
+│   │   │   ├── key-resolver/    # Key and account credential resolution
+│   │   │   ├── kms/             # Key management (local, encrypted)
+│   │   │   ├── logger/          # Logging service
+│   │   │   ├── mirrornode/      # Hedera Mirror Node API
+│   │   │   ├── network/         # Network and operator management
+│   │   │   ├── output/          # Output formatting (human, JSON, YAML)
+│   │   │   ├── plugin-management/   # Plugin loading and management
+│   │   │   ├── process-exit/    # Process exit handling
+│   │   │   ├── receipt/         # Transaction receipt retrieval
+│   │   │   ├── state/           # Zustand state storage
+│   │   │   ├── token/           # Token transaction creation
+│   │   │   ├── topic/           # Topic transaction creation
+│   │   │   ├── tx-execute/      # Transaction execution
+│   │   │   └── tx-sign/         # Transaction signing
+│   │   ├── shared/              # Shared config, constants, validation
+│   │   ├── types/               # Shared types
+│   │   └── utils/               # Core utilities (key-composer, receipt-mapper, etc.)
 │   ├── plugins/                # Built-in plugins
 │   │   ├── account/            # Account management plugin
-│   │   ├── token/              # Fungible and non-fungible token management plugin
-│   │   ├── network/            # Network selection and operator management
-│   │   ├── hbar/               # HBAR transfer plugin
-│   │   ├── credentials/        # Credentials plugin
+│   │   ├── batch/              # Batch transaction plugin (create, execute, list, delete)
 │   │   ├── config/             # CLI configuration plugin
-│   │   ├── plugin-management/  # Plugin management plugin
-│   │   ├── topic/              # Topic management plugin
 │   │   ├── contract/           # Smart contract plugin
 │   │   ├── contract-erc20/     # ERC-20 contract plugin
-│   │   └── contract-erc721/    # ERC-721 (NFT) contract plugin
+│   │   ├── contract-erc721/    # ERC-721 (NFT) contract plugin
+│   │   ├── credentials/        # Credentials plugin
+│   │   ├── hbar/               # HBAR transfer plugin
+│   │   ├── network/            # Network selection and operator management
+│   │   ├── plugin-management/  # Plugin management plugin
+│   │   ├── token/              # Fungible and non-fungible token management plugin
+│   │   ├── topic/              # Topic (HCS) management plugin
+│   │   └── test/               # Test plugin (development/testing)
 │   └── hiero-cli.ts           # Main CLI entry point
 ├── docs/                       # Technical documentation
 └── coverage/                   # Test coverage reports
