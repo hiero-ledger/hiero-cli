@@ -24,9 +24,8 @@ export const TopicCreateOutputSchema = z.object({
   adminKeyThreshold: z
     .number()
     .int()
-    .positive()
-    .optional()
-    .describe('Admin key threshold (M-of-N) when multiple keys'),
+    .min(0)
+    .describe('Admin key threshold (M-of-N)'),
   adminKeyCount: z
     .number()
     .int()
@@ -36,9 +35,8 @@ export const TopicCreateOutputSchema = z.object({
   submitKeyThreshold: z
     .number()
     .int()
-    .positive()
-    .optional()
-    .describe('Submit key threshold (M-of-N) when multiple keys'),
+    .min(0)
+    .describe('Submit key threshold (M-of-N)'),
   submitKeyCount: z
     .number()
     .int()
