@@ -123,6 +123,7 @@ export class CoreApiImplementation implements CoreApi {
       this.alias,
       this.network,
       this.kms,
+      this.logger,
     );
 
     this.hbar = new HbarServiceImpl(this.logger);

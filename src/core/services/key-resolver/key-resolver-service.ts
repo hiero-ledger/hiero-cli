@@ -1,3 +1,4 @@
+import type { Logger } from '@/core';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type {
   Destination,
@@ -30,17 +31,20 @@ export class KeyResolverServiceImpl implements KeyResolverService {
   private readonly alias: AliasService;
   private readonly network: NetworkService;
   private readonly kms: KmsService;
+  private readonly logger: Logger;
 
   constructor(
     mirrorNodeService: HederaMirrornodeService,
     aliasService: AliasService,
     networkService: NetworkService,
     kmsService: KmsService,
+    logger: Logger,
   ) {
     this.mirror = mirrorNodeService;
     this.alias = aliasService;
     this.network = networkService;
     this.kms = kmsService;
+    this.logger = logger;
   }
 
   public async resolveAccountCredentials(
@@ -328,8 +332,17 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       accountPublicKey: keyReference.publicKey,
     });
 
+    let accountId;
+    if (accounts.length == 1) {
+      accountId = accounts[0].accountId;
+    } else {
+      this.logger.warn(
+        `There cannot be one single account ID assigned to key as there are ${accounts.length} results from Hedera Mirror Node`,
+      );
+    }
+
     return {
-      accountId: accounts[0]?.accountId,
+      accountId,
       publicKey: keyReference.publicKey,
       keyRefId: keyReference.keyRefId,
     };
@@ -349,9 +362,17 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     const { accounts } = await this.mirror.getAccounts({
       accountPublicKey: keyReference.publicKey,
     });
+    let accountId;
+    if (accounts.length == 1) {
+      accountId = accounts[0].accountId;
+    } else {
+      this.logger.warn(
+        `There cannot be one single account ID assigned to key as there are ${accounts.length} results from Hedera Mirror Node`,
+      );
+    }
 
     return {
-      accountId: accounts[0]?.accountId,
+      accountId,
       publicKey: keyReference.publicKey,
       keyRefId: keyReference.keyRefId,
     };
@@ -371,9 +392,17 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     const { accounts } = await this.mirror.getAccounts({
       accountPublicKey: keyReference.publicKey,
     });
+    let accountId;
+    if (accounts.length == 1) {
+      accountId = accounts[0].accountId;
+    } else {
+      this.logger.warn(
+        `There cannot be one single account ID assigned to key as there are ${accounts.length} results from Hedera Mirror Node`,
+      );
+    }
 
     return {
-      accountId: accounts[0]?.accountId,
+      accountId,
       publicKey: keyReference.publicKey,
       keyRefId: keyReference.keyRefId,
     };
