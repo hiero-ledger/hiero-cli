@@ -494,7 +494,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         statusText: 'Not Found',
       });
       const result = await service.getAccounts();
-      expect(result.accounts).toBe([]);
+      expect(result.accounts).toHaveLength(0);
     });
 
     it('should handle empty accounts array', async () => {
