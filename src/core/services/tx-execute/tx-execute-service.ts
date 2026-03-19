@@ -11,7 +11,10 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import type { TransactionResult } from '@/core/types/shared.types';
 import type { TxExecuteService } from './tx-execute-service.interface';
 
-import { TransactionError } from '@/core/errors';
+import { PrecheckStatusError, ReceiptStatusError } from '@hashgraph/sdk';
+
+import { TransactionError, TransactionPrecheckError } from '@/core/errors';
+import { getCauseMessage } from '@/core/utils/get-cause-message';
 import { mapReceiptToTransactionResult } from '@/core/utils/receipt-mapper';
 
 export class TxExecuteServiceImpl implements TxExecuteService {
@@ -30,6 +33,30 @@ export class TxExecuteServiceImpl implements TxExecuteService {
     return this.kms.createClient(network);
   }
 
+  private wrapTransactionError(
+    error: unknown,
+    fallbackTxId?: string,
+  ): TransactionError | TransactionPrecheckError {
+    const txId =
+      error instanceof PrecheckStatusError ||
+      error instanceof ReceiptStatusError
+        ? error.transactionId?.toString()
+        : (fallbackTxId ?? 'unknown');
+    const detailedMessage = getCauseMessage(error);
+
+    if (error instanceof PrecheckStatusError) {
+      return new TransactionPrecheckError(txId, detailedMessage, {
+        cause: error,
+      });
+    }
+
+    const network = this.networkService.getCurrentNetwork();
+    return new TransactionError('Transaction execution failed', false, {
+      cause: error,
+      context: { transactionId: txId, network, detailedMessage },
+    });
+  }
+
   async execute(transaction: HederaTransaction): Promise<TransactionResult> {
     this.logger.debug('[TX-EXECUTE] Executing transaction');
     const client = this.getClient();
@@ -38,10 +65,9 @@ export class TxExecuteServiceImpl implements TxExecuteService {
       const response: TransactionResponse = await transaction.execute(client);
       return await this.processTransactionResponse(response, client);
     } catch (error) {
-      throw new TransactionError(
-        `Transaction execution failed (txId: ${transaction.transactionId?.toString() ?? 'unknown'})`,
-        false,
-        { cause: error },
+      throw this.wrapTransactionError(
+        error,
+        transaction.transactionId?.toString(),
       );
     } finally {
       client.close();
@@ -58,11 +84,7 @@ export class TxExecuteServiceImpl implements TxExecuteService {
       const response: TransactionResponse = await flow.execute(client);
       return await this.processTransactionResponse(response, client);
     } catch (error) {
-      throw new TransactionError(
-        'Contract create flow execution failed',
-        false,
-        { cause: error },
-      );
+      throw this.wrapTransactionError(error);
     } finally {
       client.close();
     }
