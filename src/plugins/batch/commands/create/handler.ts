@@ -34,7 +34,7 @@ export class BatchCreateCommand implements Command {
     const resolved = await api.keyResolver.resolveSigningKey(
       batchKey,
       keyManager,
-      false,
+      true,
       ['batch:signer'],
     );
 

@@ -21,32 +21,48 @@ src/plugins/account/
 ├── commands/
 │   ├── create/
 │   │   ├── handler.ts      # Account creation handler
+│   │   ├── input.ts        # Input schema
 │   │   ├── output.ts       # Output schema and template
+│   │   ├── types.ts        # Command types
 │   │   └── index.ts        # Command exports
 │   ├── import/
 │   │   ├── handler.ts      # Account import handler
+│   │   ├── input.ts        # Input schema
 │   │   ├── output.ts       # Output schema and template
 │   │   └── index.ts        # Command exports
 │   ├── balance/
 │   │   ├── handler.ts      # Balance retrieval handler
+│   │   ├── input.ts        # Input schema
 │   │   ├── output.ts       # Output schema and template
 │   │   └── index.ts        # Command exports
 │   ├── list/
 │   │   ├── handler.ts      # List accounts handler
+│   │   ├── input.ts        # Input schema
 │   │   ├── output.ts       # Output schema and template
 │   │   └── index.ts        # Command exports
 │   ├── view/
 │   │   ├── handler.ts      # View account details handler
+│   │   ├── input.ts        # Input schema
 │   │   ├── output.ts       # Output schema and template
 │   │   └── index.ts        # Command exports
 │   ├── delete/
 │   │   ├── handler.ts      # Delete account handler
+│   │   ├── input.ts        # Input schema
 │   │   ├── output.ts       # Output schema and template
 │   │   └── index.ts        # Command exports
 │   └── clear/
 │       ├── handler.ts      # Clear all accounts handler
 │       ├── output.ts       # Output schema and template
 │       └── index.ts        # Command exports
+├── hooks/
+│   └── batch-create/
+│       ├── handler.ts      # AccountCreateBatchStateHook - persists account state after batch execution
+│       ├── types.ts        # AccountCreateNormalisedParamsSchema for batch item validation
+│       └── index.ts        # Hook exports
+├── utils/
+│   ├── account-address.ts  # EVM address derivation helpers
+│   ├── balance-helpers.ts  # Balance retrieval utilities
+│   └── account-validation.ts
 ├── zustand-state-helper.ts  # State management helper
 ├── __tests__/unit/          # Unit tests
 └── index.ts                # Plugin exports
@@ -60,13 +76,28 @@ Each command defines a Zod schema for output validation and a Handlebars templat
 
 ### Account Create
 
+Create a new Hedera account with specified balance and settings.
+
 ```bash
+# Basic usage
 hcli account create \
   --balance 100000000 \
   --auto-associations 10 \
   --name myaccount \
   --payer operator-name
+
+# With specific key manager
+hcli account create --balance 1.0 --name alice --key-manager local_encrypted
 ```
+
+**Batch support:** The `account create` command registers the `batchify` hook, so you can add account creation to a batch instead of executing immediately. Pass `--batch <batch-name>` to defer execution:
+
+```bash
+# Add account creation to a batch (transaction not executed until batch execute)
+hcli account create --balance 1.0 --name alice --batch my-batch
+```
+
+When the batch is executed via `hcli batch execute --name my-batch`, the `AccountCreateBatchStateHook` runs to persist each created account to state (including alias registration and EVM address derivation).
 
 ### Account Import
 
@@ -111,6 +142,30 @@ hcli account delete --account 0.0.123456
 hcli account clear
 ```
 
+## 📦 Batch Support
+
+The `account create` command supports the `--batch` / `-B` flag via the batch plugin's `batchify` hook. When you pass `--batch <batch-name>`:
+
+1. **No immediate execution** – The transaction is not submitted to the network. Instead, it is serialized and added to the specified batch.
+2. **Deferred execution** – Run `hcli batch execute --name <batch-name>` to submit all batched transactions atomically.
+3. **State persistence** – After successful batch execution, `AccountCreateBatchStateHook` runs for each account creation in the batch. It fetches the receipt, derives the EVM address, saves account data to state, and registers aliases.
+
+**Example workflow:**
+
+```bash
+# 1. Create a batch
+hcli batch create --name my-batch --key operator-alias
+
+# 2. Add account creations to the batch
+hcli account create --balance 1.0 --name alice --batch my-batch
+hcli account create --balance 1.0 --name bob --batch my-batch
+
+# 3. Execute the batch (creates both accounts atomically)
+hcli batch execute --name my-batch
+```
+
+The `--batch` option is automatically injected by the batchify hook—no need to declare it in the account plugin. See the [Batch Plugin README](../batch/README.md) for full batch documentation.
+
 ## 🔧 Core API Integration
 
 The plugin uses the Core API services:
@@ -122,6 +177,7 @@ The plugin uses the Core API services:
 - `api.kms` - Secure key management
 - `api.alias` - Name registration and resolution
 - `api.mirror` - Mirror node queries
+- `api.receipt` - Transaction receipt retrieval (used by `AccountCreateBatchStateHook`)
 - `api.logger` - Logging
 
 ## 📤 Output Formatting
@@ -202,6 +258,7 @@ npm test -- src/plugins/account/__tests__/unit
 Test coverage:
 
 - Account creation (happy path, failures)
+- Account creation in batch (batch-create hook)
 - Account import with names
 - Balance retrieval (HBAR only, with tokens, errors)
 - Account listing
