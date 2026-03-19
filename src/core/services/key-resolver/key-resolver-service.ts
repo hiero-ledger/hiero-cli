@@ -337,7 +337,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       accountId = accounts[0].accountId;
     } else {
       this.logger.warn(
-        `There cannot be one single account ID assigned to key as there are ${accounts.length} results from Hedera Mirror Node`,
+        `There cannot be one single account ID assigned to credential as there are ${accounts.length} results from Hedera Mirror Node`,
       );
     }
 
