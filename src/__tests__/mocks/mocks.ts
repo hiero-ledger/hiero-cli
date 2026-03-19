@@ -315,8 +315,8 @@ export const makeTransactionResultMock = (
 
 export const createMirrorNodeMock =
   (): jest.Mocked<HederaMirrornodeService> => ({
+    getAccountOrThrow: jest.fn(),
     getAccount: jest.fn(),
-    getAccountHBarBalance: jest.fn(),
     getAccountTokenBalances: jest.fn(),
     getAccounts: jest.fn(),
     getTopicMessage: jest.fn(),
@@ -371,10 +371,24 @@ export const makeMirrorMock = (
     >;
   } = {},
 ): Partial<HederaMirrornodeService> => ({
-  getAccountHBarBalance: jest.fn().mockResolvedValue(options.hbarBalance ?? 0n),
   getAccountTokenBalances: options.tokenError
     ? jest.fn().mockRejectedValue(options.tokenError)
     : jest.fn().mockResolvedValue({ tokens: options.tokenBalances ?? [] }),
+  getAccountOrThrow:
+    options.getAccountImpl ||
+    jest.fn().mockResolvedValue(
+      options.accountInfo ?? {
+        accountId: '0.0.1234',
+        balance: {
+          balance: Number(options.hbarBalance ?? 0n),
+          timestamp: '1234567890.000000000',
+        },
+        evmAddress: '0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+        accountPublicKey:
+          '0230a1f42abc4794541e4a4389ec7e822666b8a7693c4cc3dedd2746b32f9c015b',
+        keyAlgorithm: KeyAlgorithm.ECDSA,
+      },
+    ),
   getAccount:
     options.getAccountImpl ||
     jest.fn().mockResolvedValue(
@@ -525,8 +539,8 @@ export const makeArgs = (
     } as unknown as StateService,
     mirror: {
       setBaseUrl: jest.fn(),
+      getAccountOrThrow: jest.fn(),
       getAccount: jest.fn(),
-      getAccountHBarBalance: jest.fn(),
       getAccountTokenBalances: jest.fn(),
       getAccounts: jest.fn(),
       getTopicMessage: jest.fn(),

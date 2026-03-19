@@ -35,7 +35,7 @@ export class IdentityResolutionServiceImpl implements IdentityResolutionService 
         network: params.network,
         aliasType: AliasType.Account,
       });
-    const accountInfo = await this.mirrorService.getAccount(
+    const accountInfo = await this.mirrorService.getAccountOrThrow(
       accountReferenceResolutionResult.entityIdOrEvmAddress,
     );
     return {

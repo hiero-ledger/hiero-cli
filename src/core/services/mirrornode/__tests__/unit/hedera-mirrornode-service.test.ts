@@ -100,10 +100,11 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       expect(global.fetch).toHaveBeenCalledWith(
         `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}`,
       );
-      expect(result.accountId).toBe(TEST_ACCOUNT_ID);
-      expect(result.balance.balance).toBe(mockResponse.balance.balance);
-      expect(result.accountPublicKey).toBe('ed25519_abcd1234');
-      expect(result.evmAddress).toBe(
+      expect(result).not.toBeNull();
+      expect(result!.accountId).toBe(TEST_ACCOUNT_ID);
+      expect(result!.balance.balance).toBe(mockResponse.balance.balance);
+      expect(result!.accountPublicKey).toBe('ed25519_abcd1234');
+      expect(result!.evmAddress).toBe(
         '0x1234567890123456789012345678901234567890',
       );
     });
@@ -170,10 +171,11 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       const result = await service.getAccount(TEST_ACCOUNT_ID);
 
-      expect(result.evmAddress).toBeUndefined();
+      expect(result).not.toBeNull();
+      expect(result!.evmAddress).toBeUndefined();
     });
 
-    it('should throw error on HTTP 404', async () => {
+    it('should return null on HTTP 404', async () => {
       const { service } = setupService();
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: false,
@@ -181,9 +183,53 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         statusText: 'Not Found',
       });
 
+      const result = await service.getAccount(TEST_ACCOUNT_ID);
+
+      expect(result).toBeNull();
+    });
+
+    it('should throw NetworkError on HTTP 400', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+      });
+
       await expect(service.getAccount(TEST_ACCOUNT_ID)).rejects.toThrow(
-        NotFoundError,
+        NetworkError,
       );
+    });
+
+    it('should include mirror node API messages in NetworkError on HTTP 400', async () => {
+      const { service } = setupService();
+      const apiErrorBody = {
+        _status: {
+          messages: [
+            { message: 'Invalid parameter: account.id' },
+            {
+              message:
+                'Invalid Transaction id. Please use \\shard.realm.num-sss-nnn\\ format where sss are seconds and nnn are nanoseconds',
+            },
+          ],
+        },
+      };
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        json: jest.fn().mockResolvedValue(apiErrorBody),
+      });
+
+      const error = await service.getAccount(TEST_ACCOUNT_ID).catch((e) => e);
+
+      expect(error).toBeInstanceOf(NetworkError);
+      expect(error.context?.apiMessages).toEqual([
+        'Invalid parameter: account.id',
+        'Invalid Transaction id. Please use \\shard.realm.num-sss-nnn\\ format where sss are seconds and nnn are nanoseconds',
+      ]);
+      expect(error.getTemplate()).toContain('Detailed message:');
+      expect(error.getTemplate()).toContain('{{#each context.apiMessages}}');
     });
 
     it('should throw error on HTTP 500', async () => {
@@ -215,54 +261,23 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
     });
   });
 
-  describe('getAccountHBarBalance', () => {
-    it('should fetch and convert balance to BigInt', async () => {
+  describe('getAccountOrThrow', () => {
+    it('should return account when getAccount returns valid data', async () => {
       const { service } = setupService();
-      const mockResponse = createMockAccountAPIResponse({
-        balance: { balance: 1000000000, timestamp: TEST_TIMESTAMP },
-      });
+      const mockResponse = createMockAccountAPIResponse();
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
         json: jest.fn().mockResolvedValue(mockResponse),
       });
 
-      const result = await service.getAccountHBarBalance(TEST_ACCOUNT_ID);
+      const result = await service.getAccountOrThrow(TEST_ACCOUNT_ID);
 
-      expect(result).toBe(1000000000n);
+      expect(result.accountId).toBe(TEST_ACCOUNT_ID);
+      expect(result.balance.balance).toBe(mockResponse.balance.balance);
+      expect(result.accountPublicKey).toBe('ed25519_abcd1234');
     });
 
-    it('should handle large balance values', async () => {
-      const { service } = setupService();
-      const largeBalance = 9007199254740991; // 2^53 - 1
-      const mockResponse = createMockAccountAPIResponse({
-        balance: { balance: largeBalance, timestamp: TEST_TIMESTAMP },
-      });
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue(mockResponse),
-      });
-
-      const result = await service.getAccountHBarBalance(TEST_ACCOUNT_ID);
-
-      expect(result).toBe(BigInt(largeBalance));
-    });
-
-    it('should handle zero balance', async () => {
-      const { service } = setupService();
-      const mockResponse = createMockAccountAPIResponse({
-        balance: { balance: 0, timestamp: TEST_TIMESTAMP },
-      });
-      (global.fetch as jest.Mock).mockResolvedValue({
-        ok: true,
-        json: jest.fn().mockResolvedValue(mockResponse),
-      });
-
-      const result = await service.getAccountHBarBalance(TEST_ACCOUNT_ID);
-
-      expect(result).toBe(0n);
-    });
-
-    it('should throw error when getAccount fails', async () => {
+    it('should throw NotFoundError when getAccount returns null (404)', async () => {
       const { service } = setupService();
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: false,
@@ -270,9 +285,25 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         statusText: 'Not Found',
       });
 
-      await expect(
-        service.getAccountHBarBalance(TEST_ACCOUNT_ID),
-      ).rejects.toThrow(NotFoundError);
+      await expect(service.getAccountOrThrow(TEST_ACCOUNT_ID)).rejects.toThrow(
+        NotFoundError,
+      );
+      await expect(service.getAccountOrThrow(TEST_ACCOUNT_ID)).rejects.toThrow(
+        `Account ${TEST_ACCOUNT_ID} not found`,
+      );
+    });
+
+    it('should propagate NetworkError when getAccount throws (e.g. 400)', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+      });
+
+      await expect(service.getAccountOrThrow(TEST_ACCOUNT_ID)).rejects.toThrow(
+        NetworkError,
+      );
     });
   });
 
@@ -333,6 +364,28 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       await expect(
         service.getAccountTokenBalances(TEST_ACCOUNT_ID),
       ).rejects.toThrow(NotFoundError);
+    });
+
+    it('should throw NetworkError on HTTP 400 with apiMessages', async () => {
+      const { service } = setupService();
+      const apiErrorBody = {
+        _status: {
+          messages: [{ message: 'Invalid account id' }],
+        },
+      };
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        json: jest.fn().mockResolvedValue(apiErrorBody),
+      });
+
+      const error = await service
+        .getAccountTokenBalances(TEST_ACCOUNT_ID)
+        .catch((e) => e);
+
+      expect(error).toBeInstanceOf(NetworkError);
+      expect(error.context?.apiMessages).toEqual(['Invalid account id']);
     });
   });
 
@@ -486,7 +539,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       );
     });
 
-    it('should return empty list on HTTP error', async () => {
+    it('should return empty list on HTTP 404', async () => {
       const { service } = setupService();
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: false,
@@ -495,6 +548,26 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       });
       const result = await service.getAccounts();
       expect(result.accounts).toHaveLength(0);
+    });
+
+    it('should throw NetworkError on HTTP 400 with apiMessages', async () => {
+      const { service } = setupService();
+      const apiErrorBody = {
+        _status: {
+          messages: [{ message: 'Invalid query parameter' }],
+        },
+      };
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        json: jest.fn().mockResolvedValue(apiErrorBody),
+      });
+
+      const error = await service.getAccounts().catch((e) => e);
+
+      expect(error).toBeInstanceOf(NetworkError);
+      expect(error.context?.apiMessages).toEqual(['Invalid query parameter']);
     });
 
     it('should handle empty accounts array', async () => {
@@ -699,7 +772,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       );
     });
 
-    it('should throw error on HTTP 404', async () => {
+    it('should return empty messages on HTTP 404', async () => {
       const { service } = setupService();
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: false,
@@ -707,9 +780,34 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         statusText: 'Not Found',
       });
 
-      await expect(
-        service.getTopicMessages({ topicId: TEST_TOPIC_ID }),
-      ).rejects.toThrow(NetworkError);
+      const result = await service.getTopicMessages({
+        topicId: TEST_TOPIC_ID,
+      });
+
+      expect(result.messages).toHaveLength(0);
+      expect(result.topicId).toBe(TEST_TOPIC_ID);
+    });
+
+    it('should throw NetworkError on HTTP 400 with apiMessages', async () => {
+      const { service } = setupService();
+      const apiErrorBody = {
+        _status: {
+          messages: [{ message: 'Invalid topic id' }],
+        },
+      };
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        json: jest.fn().mockResolvedValue(apiErrorBody),
+      });
+
+      const error = await service
+        .getTopicMessages({ topicId: TEST_TOPIC_ID })
+        .catch((e) => e);
+
+      expect(error).toBeInstanceOf(NetworkError);
+      expect(error.context?.apiMessages).toEqual(['Invalid topic id']);
     });
 
     it('should handle empty messages array', async () => {
