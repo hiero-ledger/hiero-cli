@@ -228,7 +228,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         'Invalid parameter: account.id',
         'Invalid Transaction id. Please use \\shard.realm.num-sss-nnn\\ format where sss are seconds and nnn are nanoseconds',
       ]);
-      expect(error.getTemplate()).toContain('Detailed message:');
+      expect(error.getTemplate()).toContain('Detailed error message:');
       expect(error.getTemplate()).toContain('{{#each context.apiMessages}}');
     });
 
