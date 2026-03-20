@@ -380,6 +380,13 @@ describe('tokenCreateFtFromFileHandler', () => {
         supplyType: SupplyType.INFINITE,
         maxSupplyRaw: 0n,
         adminPublicKey: expect.any(Object),
+        supplyPublicKey: undefined,
+        freezePublicKey: undefined,
+        wipePublicKey: undefined,
+        kycPublicKey: undefined,
+        pausePublicKey: undefined,
+        feeSchedulePublicKey: undefined,
+        metadataPublicKey: undefined,
         customFees: [
           {
             type: 'fixed',

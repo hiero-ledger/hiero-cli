@@ -22,6 +22,12 @@ export interface TokenCreateFtNormalizedParams {
   treasury: ResolvedAccountCredential;
   admin?: ResolvedPublicKey;
   supply?: ResolvedPublicKey;
+  freeze?: ResolvedPublicKey;
+  wipe?: ResolvedPublicKey;
+  kyc?: ResolvedPublicKey;
+  pause?: ResolvedPublicKey;
+  feeSchedule?: ResolvedPublicKey;
+  metadata?: ResolvedPublicKey;
   finalMaxSupply?: bigint;
 }
 

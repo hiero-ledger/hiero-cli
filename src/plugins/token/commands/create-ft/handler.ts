@@ -8,8 +8,6 @@ import type {
   TokenCreateFtSignTransactionResult,
 } from './types';
 
-import { PublicKey } from '@hashgraph/sdk';
-
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
@@ -21,7 +19,10 @@ import {
   buildTokenData,
   determineFiniteMaxSupply,
 } from '@/plugins/token/utils/token-data-builders';
-import { resolveOptionalKey } from '@/plugins/token/utils/token-resolve-optional-key';
+import {
+  resolveOptionalKey,
+  toPublicKey,
+} from '@/plugins/token/utils/token-resolve-optional-key';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenCreateFtInputSchema } from './input';
@@ -78,6 +79,42 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       api.keyResolver,
       'token:supply',
     );
+    const freeze = await resolveOptionalKey(
+      validArgs.freezeKey,
+      keyManager,
+      api.keyResolver,
+      'token:freeze',
+    );
+    const wipe = await resolveOptionalKey(
+      validArgs.wipeKey,
+      keyManager,
+      api.keyResolver,
+      'token:wipe',
+    );
+    const kyc = await resolveOptionalKey(
+      validArgs.kycKey,
+      keyManager,
+      api.keyResolver,
+      'token:kyc',
+    );
+    const pause = await resolveOptionalKey(
+      validArgs.pauseKey,
+      keyManager,
+      api.keyResolver,
+      'token:pause',
+    );
+    const feeSchedule = await resolveOptionalKey(
+      validArgs.feeScheduleKey,
+      keyManager,
+      api.keyResolver,
+      'token:feeSchedule',
+    );
+    const metadata = await resolveOptionalKey(
+      validArgs.metadataKey,
+      keyManager,
+      api.keyResolver,
+      'token:metadata',
+    );
 
     let finalMaxSupply: bigint | undefined;
     if (validArgs.supplyType === SupplyType.FINITE) {
@@ -115,6 +152,12 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       treasury,
       admin,
       supply,
+      freeze,
+      wipe,
+      kyc,
+      pause,
+      feeSchedule,
+      metadata,
       finalMaxSupply,
     };
   }
@@ -133,12 +176,14 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       tokenType: normalisedParams.tokenType,
       supplyType: normalisedParams.supplyType,
       maxSupplyRaw: normalisedParams.finalMaxSupply,
-      adminPublicKey: normalisedParams.admin
-        ? PublicKey.fromString(normalisedParams.admin.publicKey)
-        : undefined,
-      supplyPublicKey: normalisedParams.supply
-        ? PublicKey.fromString(normalisedParams.supply.publicKey)
-        : undefined,
+      adminPublicKey: toPublicKey(normalisedParams.admin),
+      supplyPublicKey: toPublicKey(normalisedParams.supply),
+      freezePublicKey: toPublicKey(normalisedParams.freeze),
+      wipePublicKey: toPublicKey(normalisedParams.wipe),
+      kycPublicKey: toPublicKey(normalisedParams.kyc),
+      pausePublicKey: toPublicKey(normalisedParams.pause),
+      feeSchedulePublicKey: toPublicKey(normalisedParams.feeSchedule),
+      metadataPublicKey: toPublicKey(normalisedParams.metadata),
       memo: normalisedParams.memo,
     });
     return { transaction };
@@ -207,6 +252,12 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       supplyType: normalisedParams.supplyType,
       adminPublicKey: normalisedParams.admin?.publicKey,
       supplyPublicKey: normalisedParams.supply?.publicKey,
+      freezePublicKey: normalisedParams.freeze?.publicKey,
+      wipePublicKey: normalisedParams.wipe?.publicKey,
+      kycPublicKey: normalisedParams.kyc?.publicKey,
+      pausePublicKey: normalisedParams.pause?.publicKey,
+      feeSchedulePublicKey: normalisedParams.feeSchedule?.publicKey,
+      metadataPublicKey: normalisedParams.metadata?.publicKey,
       network: api.network.getCurrentNetwork(),
     });
 

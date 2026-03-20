@@ -25,6 +25,7 @@ export const createMockTokenCreateTransaction = () => ({
   setFreezeKey: jest.fn().mockReturnThis(),
   setPauseKey: jest.fn().mockReturnThis(),
   setFeeScheduleKey: jest.fn().mockReturnThis(),
+  setMetadataKey: jest.fn().mockReturnThis(),
 });
 
 export const createMockTokenAssociateTransaction = () => ({

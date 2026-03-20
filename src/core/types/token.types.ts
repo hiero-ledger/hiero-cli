@@ -70,6 +70,7 @@ export interface TokenCreateParams {
   freezePublicKey?: PublicKey;
   pausePublicKey?: PublicKey;
   feeSchedulePublicKey?: PublicKey;
+  metadataPublicKey?: PublicKey;
   customFees?: CustomFee[];
   memo?: string;
 }

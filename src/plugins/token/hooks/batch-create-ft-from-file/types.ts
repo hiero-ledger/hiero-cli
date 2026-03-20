@@ -34,11 +34,12 @@ export const CreateFtFromFileNormalizedParamsSchema = z.object({
   keyManager: keyManagerNameSchema,
   network: NetworkSchema,
   treasury: ResolvedAccountCredentialSchema,
-  adminKey: ResolvedPublicKeySchema,
+  adminKey: ResolvedPublicKeySchema.optional(),
   supplyKey: ResolvedPublicKeySchema.optional(),
   wipeKey: ResolvedPublicKeySchema.optional(),
   kycKey: ResolvedPublicKeySchema.optional(),
   freezeKey: ResolvedPublicKeySchema.optional(),
   pauseKey: ResolvedPublicKeySchema.optional(),
   feeScheduleKey: ResolvedPublicKeySchema.optional(),
+  metadataKey: ResolvedPublicKeySchema.optional(),
 });

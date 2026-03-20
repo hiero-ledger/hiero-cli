@@ -26,13 +26,14 @@ export interface TokenCreateFtFromFileNormalizedParams {
   keyManager: KeyManager;
   network: SupportedNetwork;
   treasury: ResolvedAccountCredential;
-  adminKey: ResolvedPublicKey;
+  adminKey?: ResolvedPublicKey;
   supplyKey?: ResolvedPublicKey;
   wipeKey?: ResolvedPublicKey;
   kycKey?: ResolvedPublicKey;
   freezeKey?: ResolvedPublicKey;
   pauseKey?: ResolvedPublicKey;
   feeScheduleKey?: ResolvedPublicKey;
+  metadataKey?: ResolvedPublicKey;
 }
 
 export interface TokenCreateFtFromFileBuildTransactionResult {

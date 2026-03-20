@@ -10,8 +10,6 @@ import type {
   TokenCreateFtFromFileSignTransactionResult,
 } from './types';
 
-import { PublicKey } from '@hashgraph/sdk';
-
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
@@ -64,13 +62,15 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       false,
       ['token:treasury'],
     );
-    const adminKey = await api.keyResolver.resolveSigningKey(
+    const adminKey = await resolveOptionalKey(
       tokenDefinition.adminKey,
       keyManager,
-      false,
-      ['token:admin', `token:${tokenDefinition.name}`],
+      api.keyResolver,
+      'token:admin',
     );
-    logger.info('🔑 Resolved admin key for signing');
+    if (adminKey) {
+      logger.info('🔑 Resolved admin key for signing');
+    }
 
     const supplyKey = await resolveOptionalKey(
       tokenDefinition.supplyKey,
@@ -108,6 +108,12 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       api.keyResolver,
       'token:feeSchedule',
     );
+    const metadataKey = await resolveOptionalKey(
+      tokenDefinition.metadataKey,
+      keyManager,
+      api.keyResolver,
+      'token:metadata',
+    );
 
     return {
       filename: validArgs.file,
@@ -131,6 +137,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       freezeKey,
       pauseKey,
       feeScheduleKey,
+      metadataKey,
     };
   }
 
@@ -148,13 +155,14 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       tokenType: normalisedParams.tokenType,
       supplyType: normalisedParams.supplyType.toUpperCase() as SupplyType,
       maxSupplyRaw: normalisedParams.maxSupply,
-      adminPublicKey: PublicKey.fromString(normalisedParams.adminKey.publicKey),
+      adminPublicKey: toPublicKey(normalisedParams.adminKey),
       supplyPublicKey: toPublicKey(normalisedParams.supplyKey),
       wipePublicKey: toPublicKey(normalisedParams.wipeKey),
       kycPublicKey: toPublicKey(normalisedParams.kycKey),
       freezePublicKey: toPublicKey(normalisedParams.freezeKey),
       pausePublicKey: toPublicKey(normalisedParams.pauseKey),
       feeSchedulePublicKey: toPublicKey(normalisedParams.feeScheduleKey),
+      metadataPublicKey: toPublicKey(normalisedParams.metadataKey),
       customFees: normalisedParams.customFees,
       memo: normalisedParams.memo,
     });
@@ -168,11 +176,13 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
   ): Promise<TokenCreateFtFromFileSignTransactionResult> {
     const { api, logger } = args;
     const signingKeys = [
-      normalisedParams.adminKey.keyRefId,
       normalisedParams.treasury.keyRefId,
+      ...(normalisedParams.adminKey
+        ? [normalisedParams.adminKey.keyRefId]
+        : []),
     ];
     logger.info(
-      `🔑 Signing transaction with admin key and treasury key (${signingKeys.length} keys)`,
+      `🔑 Signing token create with treasury${normalisedParams.adminKey ? ' and admin' : ''} (${signingKeys.length} key(s))`,
     );
     const transaction = await api.txSign.sign(
       buildTransactionResult.transaction,

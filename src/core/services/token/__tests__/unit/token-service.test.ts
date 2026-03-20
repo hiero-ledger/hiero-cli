@@ -337,6 +337,27 @@ describe('TokenServiceImpl', () => {
       expect(mockTokenCreateTransaction.setTokenMemo).not.toHaveBeenCalled();
     });
 
+    it('should not set admin key when omitted', () => {
+      const { adminPublicKey: _admin, ...paramsWithoutAdmin } = baseParams;
+
+      tokenService.createTokenTransaction(paramsWithoutAdmin);
+
+      expect(mockTokenCreateTransaction.setAdminKey).not.toHaveBeenCalled();
+    });
+
+    it('should set metadata key when provided', () => {
+      const params = {
+        ...baseParams,
+        metadataPublicKey: mockPublicKeyInstance as unknown as PublicKey,
+      };
+
+      tokenService.createTokenTransaction(params);
+
+      expect(mockTokenCreateTransaction.setMetadataKey).toHaveBeenCalledWith(
+        mockPublicKeyInstance,
+      );
+    });
+
     it('should set custom fees when provided', () => {
       const customFees: CustomFee[] = [
         {

@@ -156,6 +156,13 @@ describe('createTokenHandler', () => {
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
         adminPublicKey: undefined,
+        supplyPublicKey: undefined,
+        freezePublicKey: undefined,
+        wipePublicKey: undefined,
+        kycPublicKey: undefined,
+        pausePublicKey: undefined,
+        feeSchedulePublicKey: undefined,
+        metadataPublicKey: undefined,
         tokenType: HederaTokenType.FUNGIBLE_COMMON,
         memo: undefined,
       });

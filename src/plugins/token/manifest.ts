@@ -367,7 +367,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Defaults to operator key.',
+            'Optional admin key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Omit for a token without an admin key.',
         },
         {
           name: 'supply-key',
@@ -376,6 +376,48 @@ export const tokenPluginManifest: PluginManifest = {
           required: false,
           description:
             'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'freeze-key',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional freeze key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'wipe-key',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional wipe key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'kyc-key',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional KYC key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'pause-key',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional pause key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'fee-schedule-key',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional fee schedule key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'metadata-key',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional metadata key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
           name: 'name',

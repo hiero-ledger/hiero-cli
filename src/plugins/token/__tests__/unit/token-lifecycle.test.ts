@@ -166,6 +166,13 @@ describe('Token Lifecycle Integration', () => {
         maxSupplyRaw: 100000n,
         treasuryId: _treasuryAccountId,
         adminPublicKey: expect.any(Object),
+        supplyPublicKey: undefined,
+        freezePublicKey: undefined,
+        wipePublicKey: undefined,
+        kycPublicKey: undefined,
+        pausePublicKey: undefined,
+        feeSchedulePublicKey: undefined,
+        metadataPublicKey: undefined,
         tokenType: HederaTokenType.FUNGIBLE_COMMON,
         memo: undefined,
       });

@@ -99,6 +99,7 @@ export const TokenDataSchema = z.object({
   freezePublicKey: z.string().optional(),
   pausePublicKey: z.string().optional(),
   feeSchedulePublicKey: z.string().optional(),
+  metadataPublicKey: z.string().optional(),
 
   decimals: z
     .number()
@@ -184,13 +185,14 @@ export const FungibleTokenFileSchema = z
     initialSupply: AmountInputSchema,
     maxSupply: AmountInputSchema.default('0'),
     treasuryKey: KeySchema,
-    adminKey: KeySchema,
+    adminKey: KeySchema.optional(),
     supplyKey: KeySchema.optional(),
     wipeKey: KeySchema.optional(),
     kycKey: KeySchema.optional(),
     freezeKey: KeySchema.optional(),
     pauseKey: KeySchema.optional(),
     feeScheduleKey: KeySchema.optional(),
+    metadataKey: KeySchema.optional(),
     associations: z.array(KeySchema).default([]),
     customFees: z
       .array(TokenFileCustomFeeSchema)

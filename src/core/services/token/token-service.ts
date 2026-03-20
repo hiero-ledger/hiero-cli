@@ -94,6 +94,7 @@ export class TokenServiceImpl implements TokenService {
       freezePublicKey,
       pausePublicKey,
       feeSchedulePublicKey,
+      metadataPublicKey,
       customFees,
       memo,
     } = params;
@@ -170,6 +171,11 @@ export class TokenServiceImpl implements TokenService {
     if (feeSchedulePublicKey) {
       tokenCreateTx.setFeeScheduleKey(feeSchedulePublicKey);
       this.logger.debug(`[TOKEN SERVICE] Set fee schedule key`);
+    }
+
+    if (metadataPublicKey) {
+      tokenCreateTx.setMetadataKey(metadataPublicKey);
+      this.logger.debug(`[TOKEN SERVICE] Set metadata key`);
     }
 
     this.logger.debug(

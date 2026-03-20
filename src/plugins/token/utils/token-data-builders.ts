@@ -21,6 +21,12 @@ export function buildTokenData(
     supplyType: string;
     adminPublicKey?: string;
     supplyPublicKey?: string;
+    wipePublicKey?: string;
+    kycPublicKey?: string;
+    freezePublicKey?: string;
+    pausePublicKey?: string;
+    feeSchedulePublicKey?: string;
+    metadataPublicKey?: string;
     network: SupportedNetwork;
   },
 ): TokenData {
@@ -38,7 +44,13 @@ export function buildTokenData(
         ? params.initialSupply
         : 0n,
     adminPublicKey: params.adminPublicKey,
-    supplyPublicKey: params?.supplyPublicKey,
+    supplyPublicKey: params.supplyPublicKey,
+    wipePublicKey: params.wipePublicKey,
+    kycPublicKey: params.kycPublicKey,
+    freezePublicKey: params.freezePublicKey,
+    pausePublicKey: params.pausePublicKey,
+    feeSchedulePublicKey: params.feeSchedulePublicKey,
+    metadataPublicKey: params.metadataPublicKey,
     network: params.network,
     associations: [],
     customFees: [],
@@ -52,6 +64,7 @@ export interface TokenKeyOptions {
   freezePublicKey?: string;
   pausePublicKey?: string;
   feeSchedulePublicKey?: string;
+  metadataPublicKey?: string;
 }
 
 export function buildTokenDataFromFile(
@@ -63,13 +76,14 @@ export function buildTokenDataFromFile(
     name: normalisedParams.name,
     symbol: normalisedParams.symbol,
     treasuryId: normalisedParams.treasury.accountId,
-    adminPublicKey: normalisedParams.adminKey.publicKey,
+    adminPublicKey: normalisedParams.adminKey?.publicKey,
     supplyPublicKey: normalisedParams.supplyKey?.publicKey,
     wipePublicKey: normalisedParams.wipeKey?.publicKey,
     kycPublicKey: normalisedParams.kycKey?.publicKey,
     freezePublicKey: normalisedParams.freezeKey?.publicKey,
     pausePublicKey: normalisedParams.pauseKey?.publicKey,
     feeSchedulePublicKey: normalisedParams.feeScheduleKey?.publicKey,
+    metadataPublicKey: normalisedParams.metadataKey?.publicKey,
     decimals: normalisedParams.decimals,
     initialSupply: normalisedParams.initialSupply,
     tokenType: normalisedParams.tokenType,

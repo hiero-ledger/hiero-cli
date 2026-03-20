@@ -46,6 +46,20 @@ export const TokenCreateFtInputSchema = z
     supplyKey: KeySchema.optional().describe(
       'Supply key. Accepts any key format.',
     ),
+    freezeKey: KeySchema.optional().describe(
+      'Freeze key. Accepts any key format.',
+    ),
+    wipeKey: KeySchema.optional().describe('Wipe key. Accepts any key format.'),
+    kycKey: KeySchema.optional().describe('KYC key. Accepts any key format.'),
+    pauseKey: KeySchema.optional().describe(
+      'Pause key. Accepts any key format.',
+    ),
+    feeScheduleKey: KeySchema.optional().describe(
+      'Fee schedule key. Accepts any key format.',
+    ),
+    metadataKey: KeySchema.optional().describe(
+      'Metadata key. Accepts any key format.',
+    ),
     name: TokenAliasNameSchema.optional().describe(
       'Optional alias to register for the token',
     ),
