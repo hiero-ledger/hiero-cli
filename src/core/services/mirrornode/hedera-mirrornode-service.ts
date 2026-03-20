@@ -28,7 +28,7 @@ import type {
 
 import { ConfigurationError, NetworkError, NotFoundError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { parseMirrorNodeErrorMessages } from '@/core/utils/parse-mirror-node-error-messages';
+import { handleMirrorNodeErrorResponse } from '@/core/utils/handle-mirror-node-error-response';
 
 import { NetworkToBaseUrl } from './types';
 
@@ -67,23 +67,12 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       const response = await fetch(url);
 
       if (!response.ok) {
-        if (response.status === 404) {
-          return null;
-        } else if (response.status === 400) {
-          const apiMessages = await parseMirrorNodeErrorMessages(response);
-          throw new NetworkError(
-            `Failed to fetch account ${accountId}: ${response.status} ${response.statusText}`,
-            {
-              context: { apiMessages },
-              recoverable: false,
-            },
-          );
-        } else {
-          throw new NetworkError(
-            `Failed to fetch account ${accountId}: ${response.status} ${response.statusText}`,
-            { recoverable: true },
-          );
-        }
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to fetch account ${accountId}`,
+          false,
+        );
+        return null;
       }
 
       const data = (await response.json()) as AccountAPIResponse;
@@ -125,23 +114,12 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       const response = await fetch(url);
 
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new NotFoundError(`Account ${accountId} not found`);
-        } else if (response.status === 400) {
-          const apiMessages = await parseMirrorNodeErrorMessages(response);
-          throw new NetworkError(
-            `Failed to fetch balance for an account ${accountId}: ${response.status} ${response.statusText}`,
-            {
-              context: { apiMessages },
-              recoverable: false,
-            },
-          );
-        } else {
-          throw new NetworkError(
-            `Failed to fetch balance for an account ${accountId}: ${response.status} ${response.statusText}`,
-            { recoverable: true },
-          );
-        }
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to fetch balance for an account ${accountId}`,
+          true,
+          `Account ${accountId} not found`,
+        );
       }
 
       return (await response.json()) as TokenBalancesResponse;
@@ -186,23 +164,12 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         const response = await fetch(url);
 
         if (!response.ok) {
-          if (response.status === 404) {
-            break;
-          } else if (response.status === 400) {
-            const apiMessages = await parseMirrorNodeErrorMessages(response);
-            throw new NetworkError(
-              `Failed to get accounts: ${response.status} ${response.statusText}`,
-              {
-                context: { apiMessages },
-                recoverable: false,
-              },
-            );
-          } else {
-            throw new NetworkError(
-              `Failed to get accounts: ${response.status} ${response.statusText}`,
-              { recoverable: true },
-            );
-          }
+          await handleMirrorNodeErrorResponse(
+            response,
+            'Failed to get accounts',
+            false,
+          );
+          break;
         }
 
         const data = (await response.json()) as GetAccountsAPIResponse;
@@ -269,25 +236,12 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       const response = await fetch(url);
 
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new NotFoundError(
-            `Topic message ${queryParams.sequenceNumber} not found for topic ${queryParams.topicId}`,
-          );
-        } else if (response.status === 400) {
-          const apiMessages = await parseMirrorNodeErrorMessages(response);
-          throw new NetworkError(
-            `Failed to get topic message for ${queryParams.topicId}: ${response.status} ${response.statusText}`,
-            {
-              context: { apiMessages },
-              recoverable: false,
-            },
-          );
-        } else {
-          throw new NetworkError(
-            `Failed to get topic message for ${queryParams.topicId}: ${response.status} ${response.statusText}`,
-            { recoverable: true },
-          );
-        }
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to get topic message for ${queryParams.topicId}`,
+          true,
+          `Topic message ${queryParams.sequenceNumber} not found for topic ${queryParams.topicId}`,
+        );
       }
 
       return (await response.json()) as TopicMessage;
@@ -327,23 +281,12 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         const response = await fetch(url);
 
         if (!response.ok) {
-          if (response.status === 404) {
-            break;
-          } else if (response.status === 400) {
-            const apiMessages = await parseMirrorNodeErrorMessages(response);
-            throw new NetworkError(
-              `Failed to get topic messages for ${queryParams.topicId}: ${response.status} ${response.statusText}`,
-              {
-                context: { apiMessages },
-                recoverable: false,
-              },
-            );
-          } else {
-            throw new NetworkError(
-              `Failed to get topic messages for ${queryParams.topicId}: ${response.status} ${response.statusText}`,
-              { recoverable: true },
-            );
-          }
+          await handleMirrorNodeErrorResponse(
+            response,
+            `Failed to get topic messages for ${queryParams.topicId}`,
+            false,
+          );
+          break;
         }
 
         const data = (await response.json()) as TopicMessagesAPIResponse;
@@ -373,23 +316,12 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       const response = await fetch(url);
 
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new NotFoundError(`Token ${tokenId} not found`);
-        } else if (response.status === 400) {
-          const apiMessages = await parseMirrorNodeErrorMessages(response);
-          throw new NetworkError(
-            `Failed to get token info for a token ${tokenId}: ${response.status} ${response.statusText}`,
-            {
-              context: { apiMessages },
-              recoverable: false,
-            },
-          );
-        } else {
-          throw new NetworkError(
-            `Failed to get token info for a token ${tokenId}: ${response.status} ${response.statusText}`,
-            { recoverable: true },
-          );
-        }
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to get token info for a token ${tokenId}`,
+          true,
+          `Token ${tokenId} not found`,
+        );
       }
 
       return (await response.json()) as TokenInfo;
@@ -409,25 +341,12 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       const response = await fetch(url);
 
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new NotFoundError(
-            `NFT ${tokenId} serial ${serialNumber} not found`,
-          );
-        } else if (response.status === 400) {
-          const apiMessages = await parseMirrorNodeErrorMessages(response);
-          throw new NetworkError(
-            `Failed to get NFT info for token ${tokenId} serial ${serialNumber}: ${response.status} ${response.statusText}`,
-            {
-              context: { apiMessages },
-              recoverable: false,
-            },
-          );
-        } else {
-          throw new NetworkError(
-            `Failed to get NFT info for token ${tokenId} serial ${serialNumber}: ${response.status} ${response.statusText}`,
-            { recoverable: true },
-          );
-        }
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to get NFT info for token ${tokenId} serial ${serialNumber}`,
+          true,
+          `NFT ${tokenId} serial ${serialNumber} not found`,
+        );
       }
 
       return (await response.json()) as NftInfo;
@@ -447,23 +366,12 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       const response = await fetch(url);
 
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new NotFoundError(`Topic ${topicId} not found`);
-        } else if (response.status === 400) {
-          const apiMessages = await parseMirrorNodeErrorMessages(response);
-          throw new NetworkError(
-            `Failed to get topic info for ${topicId}: ${response.status} ${response.statusText}`,
-            {
-              context: { apiMessages },
-              recoverable: false,
-            },
-          );
-        } else {
-          throw new NetworkError(
-            `Failed to get topic info for ${topicId}: ${response.status} ${response.statusText}`,
-            { recoverable: true },
-          );
-        }
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to get topic info for ${topicId}`,
+          true,
+          `Topic ${topicId} not found`,
+        );
       }
 
       return (await response.json()) as TopicInfo;
@@ -489,23 +397,12 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       const response = await fetch(url);
 
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new NotFoundError(`Transaction ${transactionId} not found`);
-        } else if (response.status === 400) {
-          const apiMessages = await parseMirrorNodeErrorMessages(response);
-          throw new NetworkError(
-            `Failed to get transaction record for ${transactionId}: ${response.status} ${response.statusText}`,
-            {
-              context: { apiMessages },
-              recoverable: false,
-            },
-          );
-        } else {
-          throw new NetworkError(
-            `Failed to get transaction record for ${transactionId}: ${response.status} ${response.statusText}`,
-            { recoverable: true },
-          );
-        }
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to get transaction record for ${transactionId}`,
+          true,
+          `Transaction ${transactionId} not found`,
+        );
       }
 
       return (await response.json()) as TransactionDetailsResponse;
@@ -525,23 +422,12 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       const response = await fetch(url);
 
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new NotFoundError(`Contract ${contractId} not found`);
-        } else if (response.status === 400) {
-          const apiMessages = await parseMirrorNodeErrorMessages(response);
-          throw new NetworkError(
-            `Failed to get contract info for ${contractId}: ${response.status} ${response.statusText}`,
-            {
-              context: { apiMessages },
-              recoverable: false,
-            },
-          );
-        } else {
-          throw new NetworkError(
-            `Failed to get contract info for ${contractId}: ${response.status} ${response.statusText}`,
-            { recoverable: true },
-          );
-        }
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to get contract info for ${contractId}`,
+          true,
+          `Contract ${contractId} not found`,
+        );
       }
 
       return (await response.json()) as ContractInfo;
@@ -561,23 +447,12 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       const response = await fetch(url);
 
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new NotFoundError(`Account ${accountId} not found`);
-        } else if (response.status === 400) {
-          const apiMessages = await parseMirrorNodeErrorMessages(response);
-          throw new NetworkError(
-            `Failed to fetch pending airdrops for an account ${accountId}: ${response.status} ${response.statusText}`,
-            {
-              context: { apiMessages },
-              recoverable: false,
-            },
-          );
-        } else {
-          throw new NetworkError(
-            `Failed to fetch pending airdrops for an account ${accountId}: ${response.status} ${response.statusText}`,
-            { recoverable: true },
-          );
-        }
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to fetch pending airdrops for an account ${accountId}`,
+          true,
+          `Account ${accountId} not found`,
+        );
       }
 
       return (await response.json()) as TokenAirdropsResponse;
@@ -599,23 +474,12 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       const response = await fetch(url);
 
       if (!response.ok) {
-        if (response.status === 404) {
-          throw new NotFoundError(`Account ${accountId} not found`);
-        } else if (response.status === 400) {
-          const apiMessages = await parseMirrorNodeErrorMessages(response);
-          throw new NetworkError(
-            `Failed to fetch outstanding airdrops for an account ${accountId}: ${response.status} ${response.statusText}`,
-            {
-              context: { apiMessages },
-              recoverable: false,
-            },
-          );
-        } else {
-          throw new NetworkError(
-            `Failed to fetch outstanding airdrops for an account ${accountId}: ${response.status} ${response.statusText}`,
-            { recoverable: true },
-          );
-        }
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to fetch outstanding airdrops for an account ${accountId}`,
+          true,
+          `Account ${accountId} not found`,
+        );
       }
 
       return (await response.json()) as TokenAirdropsResponse;
