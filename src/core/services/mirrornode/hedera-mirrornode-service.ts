@@ -130,7 +130,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         } else if (response.status === 400) {
           const apiMessages = await parseMirrorNodeErrorMessages(response);
           throw new NetworkError(
-            `Failed to fetch account ${accountId}: ${response.status} ${response.statusText}`,
+            `Failed to fetch balance for an account ${accountId}: ${response.status} ${response.statusText}`,
             {
               context: { apiMessages },
               recoverable: false,
