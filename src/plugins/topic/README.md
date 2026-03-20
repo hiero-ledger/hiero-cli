@@ -20,21 +20,52 @@ src/plugins/topic/
 ├── commands/
 │   ├── create/
 │   │   ├── handler.ts       # Create topic
+│   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema & template
+│   │   ├── types.ts         # Command types
+│   │   └── index.ts
+│   ├── import/
+│   │   ├── handler.ts       # Import topic from mirror node
+│   │   ├── output.ts
 │   │   └── index.ts
 │   ├── list/
 │   │   ├── handler.ts       # List topics from state
+│   │   ├── input.ts         # Input schema
 │   │   ├── output.ts
 │   │   └── index.ts
 │   ├── submit-message/
 │   │   ├── handler.ts       # Submit HCS message
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts
+│   │   ├── types.ts         # Command types
+│   │   └── index.ts
+│   ├── find-message/
+│   │   ├── handler.ts       # Mirror node lookups
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts
+│   │   ├── types.ts         # Command types
+│   │   └── index.ts
+│   ├── import/
+│   │   ├── handler.ts       # Import existing topic
+│   │   ├── input.ts         # Input schema
 │   │   ├── output.ts
 │   │   └── index.ts
-│   └── find-message/
-│       ├── handler.ts       # Mirror node lookups
+│   └── delete/
+│       ├── handler.ts       # Delete topic from state
+│       ├── input.ts         # Input schema
 │       ├── output.ts
 │       └── index.ts
+├── hooks/
+│   └── batch-create/
+│       ├── handler.ts       # TopicCreateBatchStateHook - persists topic state after batch execution
+│       ├── types.ts         # TopicCreateNormalisedParamsSchema for batch item validation
+│       └── index.ts         # Hook exports
+├── utils/
+│   ├── message-helpers.ts   # Message handling utilities
+│   ├── messageFilters.ts    # Message filter helpers
+│   └── topicResolver.ts     # Topic resolution utilities
 ├── zustand-state-helper.ts  # Helper around `api.state`
+├── __tests__/unit/          # Unit tests
 └── index.ts                 # Plugin exports
 ```
 
@@ -69,6 +100,25 @@ hcli topic create \
   --submit-key 302e020100300506032b6570...
 ```
 
+**Batch support:** The `topic create` command registers the `batchify` hook. Pass `--batch <batch-name>` to add topic creation to a batch instead of executing immediately:
+
+```bash
+hcli topic create --name marketing-updates --memo "Weekly digest" --batch my-batch
+```
+
+When the batch is executed via `hcli batch execute --name my-batch`, the `TopicCreateBatchStateHook` runs to persist each created topic to state.
+
+### Topic Import
+
+Import an existing topic into local state by topic ID. Fetches topic info from
+mirror node, extracts admin/submit keys (including KeyList and ThresholdKey),
+matches them with KMS via `findByPublicKey`, and stores `adminKeyRefIds`,
+`submitKeyRefIds`, and thresholds for use with submit-message.
+
+```bash
+hcli topic import --topic 0.0.123456 --name importedTopic
+```
+
 ### Topic List
 
 List topics stored in the CLI state (filtered by network if needed) with quick stats about memos and attached keys.
@@ -80,7 +130,9 @@ hcli topic list --network testnet
 
 ### Topic Submit Message
 
-Submit a message to a topic using an alias or topic ID. Handles signing with the stored submit key when required.
+Submit a message to a topic using an alias or topic ID. Handles signing with
+the stored submit key when required. For threshold topics (e.g. 2-of-3), pass
+`--signer` multiple times to meet the required signature count.
 
 ```bash
 # Using alias registered during topic creation
@@ -92,7 +144,15 @@ hcli topic submit-message \
 hcli topic submit-message \
   --topic 0.0.900123 \
   --message '{"event":"mint","amount":10}'
+
+# Threshold topic (2-of-3): provide 2 signers
+hcli topic submit-message \
+  --topic multi-sig-topic \
+  --message "Approved" \
+  --signer alice --signer bob
 ```
+
+**Batch support:** The `topic submit-message` command registers the `batchify` hook. Pass `--batch <batch-name>` to add message submission to a batch instead of executing immediately.
 
 ### Topic Find Message
 
@@ -110,6 +170,29 @@ hcli topic find-message \
   --sequence-gt 100
 ```
 
+## 📦 Batch Support
+
+The `topic create` and `topic submit-message` commands support the `--batch` / `-B` flag via the batch plugin's `batchify` hook. When you pass `--batch <batch-name>`:
+
+1. **No immediate execution** – The transaction is not submitted to the network. Instead, it is serialized and added to the specified batch.
+2. **Deferred execution** – Run `hcli batch execute --name <batch-name>` to submit all batched transactions atomically.
+3. **State persistence** – After successful batch execution, `TopicCreateBatchStateHook` runs for each topic creation in the batch. It fetches the receipt and saves topic data to state (including alias registration).
+
+**Example workflow:**
+
+```bash
+# 1. Create a batch
+hcli batch create --name my-batch --key operator-alias
+
+# 2. Add topic creation to the batch
+hcli topic create --name marketing-updates --memo "Weekly digest" --batch my-batch
+
+# 3. Execute the batch
+hcli batch execute --name my-batch
+```
+
+The `--batch` option is automatically injected by the batchify hook. See the [Batch Plugin README](../batch/README.md) for full batch documentation.
+
 ## 📝 Parameter Formats
 
 - **Topic reference**: alias registered in the CLI or explicit `0.0.x` ID
@@ -126,6 +209,7 @@ hcli topic find-message \
 - `api.mirror` – query messages via Hedera Mirror Node
 - `api.state` – namespaced topic storage through `ZustandTopicStateHelper`
 - `api.network` – current network resolution for IDs and filters
+- `api.receipt` – transaction receipt retrieval (used by `TopicCreateBatchStateHook`)
 - `api.logger` – progress logging (suppressed automatically in `--script` mode)
 
 ## 📤 Output Formatting
@@ -152,11 +236,13 @@ Topics are stored under `topic-topics` with the schema defined in `schema.ts`:
 
 ```ts
 interface TopicData {
-  name: string;
+  name?: string;
   topicId: string;
   memo?: string;
   adminKeyRefIds?: string[];
   submitKeyRefIds?: string[];
+  adminKeyThreshold?: number; // M-of-N for admin (from KeyList/ThresholdKey)
+  submitKeyThreshold?: number; // M-of-N for submit (from KeyList/ThresholdKey)
   autoRenewAccount?: string;
   autoRenewPeriod?: number;
   expirationTime?: string;
@@ -172,3 +258,4 @@ Validation is enforced via Zod at runtime and the generated JSON Schema is embed
 - Handlers are unit-tested in isolation with mocked Core API services.
 - Schema parsing is covered through `TopicDataSchema`.
 - Output structure compliance tests ensure every handler returns a valid `CommandResult`.
+- Topic creation in batch (batch-create hook) is covered by `batch-create.test.ts`.

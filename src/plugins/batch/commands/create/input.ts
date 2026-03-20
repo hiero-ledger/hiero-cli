@@ -11,8 +11,8 @@ import {
  */
 export const BatchCreateInputSchema = z.object({
   name: AliasNameSchema.describe('Batch name'),
-  key: KeySchema.describe(
-    'Key to sign batch transactions. Accepts any key format.',
+  key: KeySchema.optional().describe(
+    'Key to sign transactions in the batch. Defaults to operator when omitted.',
   ),
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type (defaults to config setting)',

@@ -8,6 +8,8 @@ export const TopicCreateNormalisedParamsSchema = z.object({
   alias: z.string().optional(),
   keyManager: z.string(),
   network: z.enum(SupportedNetwork),
-  adminKey: ResolvedPublicKeySchema.optional(),
-  submitKey: ResolvedPublicKeySchema.optional(),
+  adminKeys: z.array(ResolvedPublicKeySchema).default([]),
+  submitKeys: z.array(ResolvedPublicKeySchema).default([]),
+  adminKeyThreshold: z.number().int().min(0).default(0),
+  submitKeyThreshold: z.number().int().min(0).default(0),
 });

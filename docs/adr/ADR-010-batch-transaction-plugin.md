@@ -21,7 +21,7 @@ This ADR builds on the class-based command system and hook architecture defined 
 
 ### Part 1: Batch Plugin Structure
 
-The batch plugin lives at `src/plugins/batch/` and exposes two commands:
+The batch plugin is located at `src/plugins/batch/` and exposes four commands: `create`, `execute`, `list`, and `delete`.
 
 ```
 src/plugins/batch/
@@ -29,24 +29,43 @@ src/plugins/batch/
 ├── manifest.ts
 ├── schema.ts
 ├── zustand-state-helper.ts
+├── README.md
 ├── hooks/
 │   └── batchify/
 │       ├── handler.ts
 │       ├── index.ts
+│       ├── input.ts
 │       ├── output.ts
 │       └── types.ts
-└── commands/
-    ├── create/
-    │   ├── handler.ts
-    │   ├── index.ts
-    │   ├── input.ts
-    │   └── output.ts
-    └── execute/
-        ├── handler.ts
-        ├── index.ts
-        ├── input.ts
-        ├── output.ts
-        └── types.ts
+├── commands/
+│   ├── create/
+│   │   ├── handler.ts
+│   │   ├── index.ts
+│   │   ├── input.ts
+│   │   └── output.ts
+│   ├── execute/
+│   │   ├── handler.ts
+│   │   ├── index.ts
+│   │   ├── input.ts
+│   │   ├── output.ts
+│   │   └── types.ts
+│   ├── list/
+│   │   ├── handler.ts
+│   │   ├── index.ts
+│   │   └── output.ts
+│   └── delete/
+│       ├── handler.ts
+│       ├── index.ts
+│       ├── input.ts
+│       └── output.ts
+└── __tests__/
+    └── unit/
+        ├── create.test.ts
+        ├── execute.test.ts
+        ├── list.test.ts
+        ├── delete.test.ts
+        ├── batchify.test.ts
+        └── helpers/
 ```
 
 ### Part 2: State Model
@@ -55,46 +74,69 @@ Batch state is persisted via Zustand under the namespace `batch-batches`. The sc
 
 ```ts
 export const BatchTransactionItemSchema = z.object({
-  transactionBytes: z.string().min(1, 'Transaction raw bytes'),
+  transactionBytes: z.string().min(1).describe('Transaction raw bytes'),
   order: z
     .number()
     .int()
     .describe('Order of inner transaction in batch transaction'),
+  command: z.string().min(1).describe('Name of the command entry point'),
+  normalizedParams: z
+    .record(z.string(), z.unknown())
+    .default({})
+    .describe(
+      'Normalized params from the command that produced this transaction',
+    ),
+  transactionId: TransactionIdSchema.optional().describe(
+    'Inner transaction ID',
+  ),
 });
 
 export const BatchDataSchema = z.object({
   name: AliasNameSchema,
   keyRefId: z.string().min(1, 'Key reference ID is required'),
-  transactions: z.array(BatchTransactionItemSchema).default([]),
+  executed: z.boolean().default(false).describe('Batch executed'),
+  success: z.boolean().default(false).describe('Batch execution success'),
+  transactions: z
+    .array(BatchTransactionItemSchema)
+    .default([])
+    .describe('Inner transactions for a batch'),
 });
 ```
 
-| Field                             | Type                     | Purpose                                                                     |
-| --------------------------------- | ------------------------ | --------------------------------------------------------------------------- |
-| `name`                            | `string`                 | Unique batch alias (validated with `AliasNameSchema`)                       |
-| `keyRefId`                        | `string`                 | Reference to the signing key resolved at batch creation time                |
-| `transactions`                    | `BatchTransactionItem[]` | Ordered list of serialized inner transactions collected from other commands |
-| `transactions[].transactionBytes` | `string`                 | Hex-encoded bytes of a signed Hedera `Transaction`                          |
-| `transactions[].order`            | `number`                 | Integer determining execution order (ascending)                             |
+| Field                             | Type                      | Purpose                                                                     |
+| --------------------------------- | ------------------------- | --------------------------------------------------------------------------- |
+| `name`                            | `string`                  | Unique batch alias (validated with `AliasNameSchema`)                       |
+| `keyRefId`                        | `string`                  | Reference to the signing key resolved at batch creation time                |
+| `executed`                        | `boolean`                 | Whether the batch has been executed                                         |
+| `success`                         | `boolean`                 | Whether the batch execution succeeded                                       |
+| `transactions`                    | `BatchTransactionItem[]`  | Ordered list of serialized inner transactions collected from other commands |
+| `transactions[].transactionBytes` | `string`                  | Hex-encoded bytes of a signed Hedera `Transaction`                          |
+| `transactions[].order`            | `number`                  | Integer determining execution order (ascending)                             |
+| `transactions[].command`          | `string`                  | Name of the command that produced this transaction (e.g. `token_create-ft`) |
+| `transactions[].normalizedParams` | `Record<string, unknown>` | Normalized params from the command (used by domain-state hooks)             |
+| `transactions[].transactionId`    | `string?`                 | Inner transaction ID (set after execution)                                  |
 
-State access is encapsulated in `ZustandBatchStateHelper` with methods: `saveBatch`, `getBatch`, `hasBatch`, `listBatches`.
+**Storage key:** Batches are stored using `composeKey(network, name)` (e.g. `testnet:my-batch`) for per-network isolation.
+
+State access is encapsulated in `ZustandBatchStateHelper` with methods: `saveBatch`, `getBatch`, `hasBatch`, `listBatches`, `deleteBatch`.
 
 ### Part 3: Create Command
 
-`CreateBatchCommand` implements the `Command` interface directly (not `BaseTransactionCommand`) because it does not involve a network transaction -- it only persists local state.
+`BatchCreateCommand` implements the `Command` interface directly (not `BaseTransactionCommand`) because it does not involve a network transaction -- it only persists local state.
 
 ```ts
 // src/plugins/batch/commands/create/handler.ts
-export class CreateBatchCommand implements Command {
+export class BatchCreateCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
     const batchState = new ZustandBatchStateHelper(api.state, logger);
     const validArgs = BatchCreateInputSchema.parse(args.args);
+    const name = validArgs.name;
+    const network = api.network.getCurrentNetwork();
+    const key = composeKey(network, name);
 
-    if (batchState.hasBatch(validArgs.name)) {
-      throw new ValidationError(
-        `Batch with name '${validArgs.name}' already exists`,
-      );
+    if (batchState.hasBatch(key)) {
+      throw new ValidationError(`Batch with name '${key}' already exists`);
     }
 
     const keyManager =
@@ -104,54 +146,69 @@ export class CreateBatchCommand implements Command {
     const resolved = await api.keyResolver.resolveSigningKey(
       validArgs.key,
       keyManager,
+      true,
       ['batch:signer'],
     );
 
-    batchState.saveBatch(validArgs.name, {
-      name: validArgs.name,
+    const batchData = {
+      name,
       keyRefId: resolved.keyRefId,
-    });
+      executed: false,
+      success: false,
+      transactions: [],
+    };
+    batchState.saveBatch(key, batchData);
 
-    return { result: { name: validArgs.name, keyRefId: resolved.keyRefId } };
+    return { result: { name: batchData.name, keyRefId: batchData.keyRefId } };
   }
 }
 ```
 
-CLI usage: `hiero batch create --name my-batch --key <key>`
+CLI usage: `hcli batch create --name my-batch --key <key>`
 
 ### Part 4: Execute Command
 
-`ExecuteBatchCommand` extends `BaseTransactionCommand` from ADR-009, decomposing execution into five lifecycle phases:
+`BatchExecuteCommand` extends `BaseTransactionCommand` from ADR-009, decomposing execution into five lifecycle phases:
 
-| Phase                | Responsibility                                                                                                                              |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `normalizeParams`    | Parse input, resolve batch from state by name + network key, throw `NotFoundError` if missing                                               |
-| `buildTransaction`   | Deserialize inner transactions from hex bytes, sort by `order` (ascending), wrap them in a `BatchTransaction` via `BatchTransactionService` |
-| `signTransaction`    | Sign the `BatchTransaction` with the batch's `keyRefId`                                                                                     |
-| `executeTransaction` | Submit the signed `BatchTransaction` to the network                                                                                         |
-| `outputPreparation`  | Map the `TransactionResult` into the output schema                                                                                          |
+| Phase                | Responsibility                                                                                                                                                         |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `normalizeParams`    | Parse input, resolve batch from state by `composeKey(network, name)`, throw `NotFoundError` if missing or already executed                                             |
+| `buildTransaction`   | Deserialize inner transactions, sort by `order`, sign each with batch key (+ operator if different), wrap in `BatchTransaction` via `api.batch.createBatchTransaction` |
+| `signTransaction`    | Sign the `BatchTransaction` with the batch's `keyRefId`                                                                                                                |
+| `executeTransaction` | Submit the signed `BatchTransaction` via `api.txExecute.execute`; update batch state (`executed`, `success`)                                                           |
+| `outputPreparation`  | Map the `TransactionResult` into the output schema                                                                                                                     |
 
 ```ts
 // src/plugins/batch/commands/execute/handler.ts (simplified)
-export class ExecuteBatchCommand extends BaseTransactionCommand<
+export class BatchExecuteCommand extends BaseTransactionCommand<
   BatchNormalisedParams,
   BatchBuildTransactionResult,
   BatchSignTransactionResult,
-  TransactionResult
+  BatchExecuteTransactionResult
 > {
   async buildTransaction(
     args,
     normalisedParams,
   ): Promise<BatchBuildTransactionResult> {
-    const innerTransactions = [...normalisedParams.batchData.transactions]
-      .sort((a, b) => a.order - b.order)
-      .map((txItem) =>
-        Transaction.fromBytes(
-          Uint8Array.from(Buffer.from(txItem.transactionBytes, 'hex')),
-        ),
-      );
+    const signingKeys = [normalisedParams.batchKey.keyRefId];
+    if (
+      normalisedParams.operatorKeyRefId !== normalisedParams.batchKey.keyRefId
+    ) {
+      signingKeys.push(normalisedParams.operatorKeyRefId);
+    }
+    const innerTransactions = await Promise.all(
+      [...normalisedParams.batchData.transactions]
+        .sort((a, b) => a.order - b.order)
+        .map(async (txItem) => {
+          const transaction = Transaction.fromBytes(
+            Uint8Array.from(Buffer.from(txItem.transactionBytes, 'hex')),
+          );
+          return args.api.txSign.sign(transaction, signingKeys);
+        }),
+    );
     const result = args.api.batch.createBatchTransaction({
       transactions: innerTransactions,
+      batchKey: normalisedParams.batchKey.publicKey,
     });
     return { transaction: result.transaction };
   }
@@ -161,41 +218,47 @@ export class ExecuteBatchCommand extends BaseTransactionCommand<
     normalisedParams,
     buildTransactionResult,
   ): Promise<BatchSignTransactionResult> {
-    const signedTransaction = await args.api.signer.sign({
-      transaction: buildTransactionResult.transaction,
-      signerKeys: [normalisedParams.batchData.keyRefId],
-    });
-    return { transaction: signedTransaction };
+    const signedTransaction = await args.api.txSign.sign(
+      buildTransactionResult.transaction,
+      [normalisedParams.batchData.keyRefId],
+    );
+    return { signedTransaction };
   }
 
   async executeTransaction(
     args,
     normalisedParams,
-    buildTransactionResult,
+    _buildTransactionResult,
     signTransactionResult,
-  ): Promise<TransactionResult> {
-    const result = await args.api.txExecution.execute(
-      signTransactionResult.transaction,
+  ): Promise<BatchExecuteTransactionResult> {
+    const result = await args.api.txExecute.execute(
+      signTransactionResult.signedTransaction,
     );
-    if (!result.success) {
-      throw new TransactionError(
-        `Failed to execute batch (txId: ${result.transactionId})`,
-        false,
-      );
-    }
-    return result;
+    const updatedBatchData = {
+      ...normalisedParams.batchData,
+      executed: true,
+      success: result.success,
+    };
+    const batchState = new ZustandBatchStateHelper(args.api.state, args.logger);
+    batchState.saveBatch(normalisedParams.batchId, updatedBatchData);
+    return { transactionResult: result, updatedBatchData };
   }
   // normalizeParams and outputPreparation omitted for brevity
 }
 ```
 
-CLI usage: `hiero batch execute --name my-batch`
+CLI usage: `hcli batch execute --name my-batch`
 
 ### Part 5: BatchTransactionService
 
 The core service at `src/core/services/batch/batch-transaction-service.ts` wraps the Hedera SDK `BatchTransaction` class:
 
 ```ts
+export interface CreateBatchTransactionParams {
+  transactions: Transaction[];
+  batchKey: string; // Public key for the batch signer (HIP-551)
+}
+
 export class BatchTransactionServiceImpl implements BatchTransactionService {
   createBatchTransaction(
     params: CreateBatchTransactionParams,
@@ -209,25 +272,30 @@ export class BatchTransactionServiceImpl implements BatchTransactionService {
 }
 ```
 
-The service accepts an array of deserialized `Transaction` objects and returns a `BatchTransaction` ready for signing and submission.
+The service accepts an array of signed inner `Transaction` objects and a `batchKey` (public key string). It returns a `BatchTransaction` ready for signing with the batch key and submission.
 
 ### Part 6: Hook System
 
 Because `ExecuteBatchCommand` extends `BaseTransactionCommand`, it participates in the full hook lifecycle defined in ADR-009. Two concrete hook types are planned to enable cross-plugin batch integration:
 
-#### 6.1 BatchifyTransactionHook
+#### 6.1 BatchifyHook
 
 **Owner:** Batch plugin (`src/plugins/batch/hooks/batchify/handler.ts`)
 
 **Purpose:** Intercept transaction-producing commands from other plugins (e.g. `token mint-nft`, `token create-nft`, `topic create`) and, instead of submitting the transaction to the network, serialize it and append it to the active batch's state.
 
-**Lifecycle point:** `preExecuteTransactionHook` -- fires after `buildTransaction` and `signTransaction` have produced a signed transaction but before `executeTransaction` would submit it to the network.
+**Lifecycle points:**
 
-**Flow control:** Returns `breakFlow: true` to prevent the original command from executing the transaction on-chain. The inner transaction bytes are stored in batch state for later execution via `batch execute`.
+- `preSignTransactionHook` -- Sets the batch key on the transaction via `transaction.setBatchKey()` so inner transactions are signed for batch context.
+- `preExecuteTransactionHook` -- Fires after `buildTransaction` and `signTransaction` have produced a signed transaction. Serializes it, appends to batch state with `command` and `normalizedParams`, returns `breakFlow: true` to prevent execution.
+
+**Flow control:** Returns `breakFlow: true` from `preExecuteTransactionHook` to prevent the original command from executing the transaction on-chain. The inner transaction bytes, command name, and normalized params are stored in batch state for later execution via `batch execute`.
 
 **Hook registration:** Following ADR-009, the hook is defined in the batch plugin manifest. Each command that wants batch support opts in by including `'batchify'` in its `registeredHooks` array.
 
-The hook declares an `options` array with a `--batch` / `-b` option. This option is automatically injected into every command that registers the hook (per ADR-009 Hook Option Injection), so commands do not need to declare it themselves.
+The hook declares an `options` array with a `--batch` / `-B` option. This option is automatically injected into every command that registers the hook (per ADR-009 Hook Option Injection), so commands do not need to declare it themselves.
+
+**Batch limit:** Maximum 50 transactions per batch (`BatchifyHook.BATCH_MAXIMUM_SIZE`), per Hedera HIP-551.
 
 **Registration in batch plugin manifest:**
 
@@ -236,13 +304,13 @@ The hook declares an `options` array with a `--batch` / `-b` option. This option
 hooks: [
   {
     name: 'batchify',
-    hook: new BatchifyTransactionHook(),
+    hook: new BatchifyHook(),
     options: [
       {
         name: 'batch',
         type: OptionType.STRING,
-        description: 'Name of the batch to add this transaction to',
-        short: 'b',
+        description: 'Name of the batch',
+        short: 'B',
       },
     ],
   },
@@ -259,7 +327,6 @@ hooks: [
   description: '...',
   options: [ /* ... token-specific options ... */ ],
   registeredHooks: ['batchify'],
-  command: new TokenMintNftCommand(),
   handler: tokenMintNft,
   output: { schema: TokenMintNftOutputSchema, humanTemplate: TOKEN_MINT_NFT_TEMPLATE },
 }
@@ -271,168 +338,133 @@ hooks: [
   description: '...',
   options: [ /* ... topic-specific options ... */ ],
   registeredHooks: ['batchify'],
-  command: new TopicCreateCommand(),
-  handler: createTopic,
+  handler: topicCreate,
   output: { schema: TopicCreateOutputSchema, humanTemplate: TOPIC_CREATE_TEMPLATE },
 }
 ```
 
-Any command that includes `'batchify'` in its `registeredHooks` automatically gains the `--batch` / `-b` option without modifying its own option list.
+Any command that includes `'batchify'` in its `registeredHooks` automatically gains the `--batch` / `-B` option without modifying its own option list.
 
-**Hook implementation:**
+**Hook implementation (simplified):**
 
 ```ts
 // src/plugins/batch/hooks/batchify/handler.ts
-import { AbstractHook } from '@/core/hooks/abstract-hook';
-import type { CommandHandlerArgs } from '@/core';
-import type {
-  HookResult,
-  PreExecuteTransactionParams,
-} from '@/core/hooks/types';
-import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
+export class BatchifyHook extends AbstractHook {
+  static readonly BATCH_MAXIMUM_SIZE = 50;
 
-export class BatchifyTransactionHook extends AbstractHook {
+  override preSignTransactionHook(args, params, _commandName): Promise<HookResult> {
+    // When --batch is present: set batch key on transaction via
+    // params.buildTransactionResult.transaction.setBatchKey(PublicKey.fromString(batchKey.publicKey))
+    // Return breakFlow: false to continue to signTransaction
+  }
+
   override async preExecuteTransactionHook(
     args: CommandHandlerArgs,
-    params: PreExecuteTransactionParams,
+    params: PreExecuteTransactionParams<..., BatchifyBuildTransactionResult, BatchifySignTransactionResult>,
+    commandName: string,
   ): Promise<HookResult> {
-    const { api, logger } = args;
-    const batchName = args.args.batch as string | undefined;
+    const batchName = BatchifyInputSchema.parse(args.args).batch;
+    if (!batchName) return { breakFlow: false, result: { message: 'No "batch" parameter found' } };
 
-    // If no --batch flag was provided, let the command execute normally
-    if (!batchName) {
-      return { breakFlow: false, result: { message: 'no batch context' } };
+    const key = composeKey(network, batchName);
+    const batch = batchState.getBatch(key);
+    if (!batch) throw new NotFoundError(`Batch not found for name ${batchName}`);
+    if (batch.transactions.length >= BatchifyHook.BATCH_MAXIMUM_SIZE) {
+      throw new ValidationError(`...exceed batch transaction maximum size ${BatchifyHook.BATCH_MAXIMUM_SIZE}`);
     }
 
-    const batchState = new ZustandBatchStateHelper(api.state, logger);
-    const batch = batchState.getBatch(batchName);
+    const transaction = params.signTransactionResult.signedTransaction;
+    const transactionBytes = Buffer.from(transaction.toBytes()).toString('hex');
+    const nextOrder = batch.transactions.length === 0 ? 1 : Math.max(...batch.transactions.map(tx => tx.order)) + 1;
 
-    if (!batch) {
-      return {
-        breakFlow: false,
-        result: { message: 'batch not found, proceeding normally' },
-      };
-    }
-
-    // Serialize the signed transaction produced by signTransaction
-    const signedTransaction = params.signTransactionResult;
-    const transactionBytes = Buffer.from(signedTransaction.toBytes()).toString(
-      'hex',
-    );
-
-    // Determine the next order index
-    const nextOrder = batch.transactions.length;
-
-    // Append the inner transaction to batch state
     batch.transactions.push({
       transactionBytes,
       order: nextOrder,
+      command: commandName,
+      normalizedParams: params.normalisedParams,
     });
-    batchState.saveBatch(batchName, batch);
+    batchState.saveBatch(key, batch);
 
-    logger.info(
-      `Transaction added to batch '${batchName}' at position ${nextOrder}`,
-    );
-
-    // Break flow: prevent the original command from executing the transaction on-chain
     return {
       breakFlow: true,
-      result: {
-        message: `Transaction added to batch '${batchName}'`,
-        batchName,
-        order: nextOrder,
-      },
-      humanTemplate: `Transaction added to batch '{{batchName}}' (position {{order}})`,
+      result: { batchName, transactionOrder: nextOrder },
+      schema: BatchifyOutputSchema,
+      humanTemplate: BATCHIFY_TEMPLATE,
     };
   }
 }
 ```
 
-**How the `--batch` flag reaches the hook:** The `batchify` hook declares a `batch` option in its `HookSpec.options`. When a command lists `'batchify'` in its `registeredHooks`, `PluginManager` automatically injects the `--batch` / `-b` option into that command (as non-required). If the user passes `--batch my-batch`, the hook detects it in `args.args.batch` and activates the interception logic. If absent, the hook is a no-op and the command executes normally.
+**How the `--batch` flag reaches the hook:** The `batchify` hook declares a `batch` option in its `HookSpec.options`. When a command lists `'batchify'` in its `registeredHooks`, `PluginManager` automatically injects the `--batch` / `-B` option into that command (as non-required). If the user passes `--batch my-batch`, the hook detects it in `args.args.batch` (parsed via `BatchifyInputSchema`) and activates the interception logic. If absent, the hook is a no-op and the command executes normally.
 
-#### 6.2 StateHook (for example TokenStateHook)
+#### 6.2 Domain-State Hooks (e.g. TokenCreateFtBatchStateHook)
 
 **Owner:** Each domain plugin (token, topic, account) that needs to persist state after batch execution.
 
 **Purpose:** After `batch execute` successfully submits a `BatchTransaction` to the network, domain plugins need to update their own state to reflect the results of the inner transactions (e.g. store a new token ID, record a new topic, update account associations).
 
-**Lifecycle point:** `postExecuteTransactionHook` -- fires after `executeTransaction` has successfully submitted the batch and a receipt is available.
+**Lifecycle point:** `preOutputPreparationHook` -- fires after `executeTransaction` has completed, before output preparation. Receives `params.executeTransactionResult.updatedBatchData` with transaction IDs populated for each inner transaction.
 
-**Flow control:** Returns `breakFlow: false` to allow the batch execute command to continue to output preparation and any subsequent hooks.
+**Flow control:** Returns `breakFlow: false` to allow the batch execute command to continue to output preparation.
 
 **Consuming command:** `batch execute` -- the `ExecuteBatchCommand` opts in to domain-state hooks by listing them in its `registeredHooks`.
 
-**Registration in token plugin manifest (example):**
-
-```ts
-// src/plugins/token/manifest.ts (hooks section)
-hooks: [
-  {
-    name: 'token-batch-state',
-    hook: new TokenBatchStateHook(),
-  },
-],
-```
-
-**Registration in batch execute command (example):**
+**Registration in batch execute command:**
 
 ```ts
 // src/plugins/batch/manifest.ts (execute command)
 {
   name: 'execute',
-  summary: 'Execute a batch transaction',
-  description: '...',
-  options: [ /* ... */ ],
-  registeredHooks: ['token-batch-state', 'topic-batch-state', 'account-batch-state'],
-  command: new ExecuteBatchCommand(),
+  summary: 'Execute a batch',
+  registeredHooks: [
+    'account-create-batch-state',
+    'topic-create-batch-state',
+    'token-create-ft-batch-state',
+    'token-create-ft-from-file-batch-state',
+    'token-create-nft-batch-state',
+    'token-create-nft-from-file-batch-state',
+    'token-associate-batch-state',
+  ],
   handler: batchExecute,
   output: { schema: BatchExecuteOutputSchema, humanTemplate: BATCH_EXECUTE_TEMPLATE },
 }
 ```
 
+**Implementation pattern:** Each domain-state hook iterates over `batchData.transactions`, filters by `item.command === COMMAND_NAME`, calls `api.receipt.getReceipt({ transactionId: item.transactionId })` for each, then persists state using the normalized params and receipt result:
+
 ```ts
-// src/plugins/token/hooks/batch-state/handler.ts
-import { AbstractHook } from '@/core/hooks/abstract-hook';
-import type { CommandHandlerArgs } from '@/core';
-import type { HookResult, PostExecuteTransactionParams } from '@/core/hooks/types';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
-
-export class TokenStateHook extends AbstractHook {
-  override async postExecuteTransactionHook(
+// src/plugins/token/hooks/batch-create-ft/handler.ts (pattern)
+export class TokenCreateFtBatchStateHook extends AbstractHook {
+  override async preOutputPreparationHook(
     args: CommandHandlerArgs,
-    params: PostExecuteTransactionParams,
+    params: PreOutputPreparationParams<..., BatchExecuteTransactionResult>,
   ): Promise<HookResult> {
-    const { api, logger } = args;
-    const batchData = params.normalisedParams.batchData; // BatchData with all inner transactions
-    const executeTransactionResult = params.executeTransactionResult; // TransactionResult from batch execution
+    const batchData = params.executeTransactionResult.updatedBatchData;
+    if (!batchData.success) return { breakFlow: false, result: { message: 'Batch transaction status failure' } };
 
-    if (!executeTransactionResult?.success) {
-      return { breakFlow: false, result: { message: 'batch failed, skipping state update' } };
+    for (const item of batchData.transactions.filter(i => i.command === TOKEN_CREATE_FT_COMMAND_NAME)) {
+      const normalisedParams = CreateFtNormalisedParamsSchema.parse(item.normalizedParams);
+      const receipt = await api.receipt.getReceipt({ transactionId: item.transactionId });
+      // Persist token state using receipt.tokenId and normalisedParams
+      tokenState.saveToken(key, buildTokenDataFromParams(receipt, normalisedParams));
+      api.alias.register({ alias: normalisedParams.name, ... });
     }
-
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
-    const receipt = executeTransactionResult.receipt;
-
-    // Inspect the batch receipt for token-related child receipts
-    // and persist state for each token operation that was part of the batch
-    if (receipt.children) {
-      ...
-    }
-
-    return { breakFlow: false, result: { message: 'token state updated' } };
+    return { breakFlow: false, result: { message: 'success' } };
   }
 }
 ```
 
-Analogous hooks would be created for other domain plugins:
+| Hook Class                             | Plugin  | Purpose                                               |
+| -------------------------------------- | ------- | ----------------------------------------------------- |
+| `AccountCreateBatchStateHook`          | account | Persist newly created accounts                        |
+| `TopicCreateBatchStateHook`            | topic   | Persist newly created topics                          |
+| `TokenCreateFtBatchStateHook`          | token   | Persist FT tokens created via `create-ft`             |
+| `TokenCreateFtFromFileBatchStateHook`  | token   | Persist FT tokens created via `create-ft-from-file`   |
+| `TokenCreateNftBatchStateHook`         | token   | Persist NFT tokens created via `create-nft`           |
+| `TokenCreateNftFromFileBatchStateHook` | token   | Persist NFT tokens created via `create-nft-from-file` |
+| `TokenAssociateBatchStateHook`         | token   | Persist association results                           |
 
-| Hook Class         | Plugin  | Purpose                                                 |
-| ------------------ | ------- | ------------------------------------------------------- |
-| `TokenStateHook`   | token   | Persist newly created tokens, minted NFTs, associations |
-| `TopicStateHook`   | topic   | Persist newly created topics                            |
-| `AccountStateHook` | account | Persist newly created accounts                          |
-
-Each domain-state hook inspects the batch execution receipt for child receipts relevant to its domain and updates its plugin's state accordingly.
+Each domain-state hook uses `item.normalizedParams` (validated by a schema) and `api.receipt.getReceipt()` to fetch individual receipt data, then updates its plugin's state accordingly.
 
 ## Execution Flow
 
@@ -445,13 +477,13 @@ sequenceDiagram
     participant CreateBatchCmd as CreateBatchCommand
     participant BatchState as ZustandBatchStateHelper
     participant TokenCmd as TokenMintNftCommand
-    participant AddHook as BatchifyTransactionHook
+    participant AddHook as BatchifyHook
     participant ExecuteCmd as ExecuteBatchCommand
     participant BatchSvc as BatchTransactionService
     participant Network as Hedera Network
-    participant DomainHook as TokenStateHook
+    participant DomainHook as TokenCreateFtBatchStateHook
 
-    User->>CLI: batch create --name my-batch --key <key>
+    User->>CLI: batch create --name my-batch
     CLI->>CreateBatchCmd: execute(args)
     CreateBatchCmd->>BatchState: saveBatch("my-batch", data)
     CreateBatchCmd-->>User: Batch 'my-batch' created
@@ -485,7 +517,7 @@ sequenceDiagram
     ExecuteCmd->>Network: executeTransaction(signedBatchTx)
     Network-->>ExecuteCmd: TransactionResult
 
-    ExecuteCmd->>DomainHook: postExecuteTransactionHook(args, params)
+    ExecuteCmd->>DomainHook: preOutputPreparationHook(args, params)
     DomainHook->>DomainHook: inspect receipt children
     DomainHook->>DomainHook: persist domain state
     DomainHook-->>ExecuteCmd: breakFlow: false
@@ -502,7 +534,7 @@ flowchart TD
     B --> C[buildTransaction]
     C --> C2[signTransaction]
     C2 --> D{"preExecuteTransactionHook"}
-    D -->|"--batch flag present"| E[BatchifyTransactionHook activates]
+    D -->|"--batch flag present"| E[BatchifyHook activates]
     E --> F[Serialize signed transaction to hex]
     F --> G[Append to batch state]
     G --> H["Return breakFlow: true"]
@@ -516,7 +548,7 @@ flowchart TD
 ### Pros
 
 - **Atomic multi-operation execution.** Multiple operations from different plugins (token, topic, account) can be grouped and submitted as a single `BatchTransaction`, providing all-or-nothing semantics at the network level.
-- **Non-intrusive collection.** The `BatchifyTransactionHook` intercepts existing commands at `preExecuteTransactionHook` without modifying the command's own code. Adding batch support to a new command only requires listing `'batchify'` in the command's `registeredHooks` -- the `--batch` option is injected automatically via hook option injection (ADR-009).
+- **Non-intrusive collection.** The `BatchifyHook` intercepts existing commands at `preExecuteTransactionHook` without modifying the command's own code. Adding batch support to a new command only requires listing `'batchify'` in the command's `registeredHooks` -- the `--batch` option is injected automatically via hook option injection (ADR-009).
 - **Leverages ADR-009 architecture.** Both hooks (`BatchifyTransactionHook` and domain-state hooks) use the established `AbstractHook` lifecycle, `HookResult` flow control, command-driven hook registration (`registeredHooks`), and hook option injection, requiring no changes to the core framework.
 - **Decoupled state persistence.** Domain plugins own their state hooks. The batch plugin does not need to know about token, topic, or account data models. The `batch execute` command registers domain-state hooks (e.g. `'token-batch-state'`) in its `registeredHooks`.
 - **Order control.** The `order` field on `BatchTransactionItem` gives deterministic transaction ordering within the batch, important for operations with dependencies (e.g. create token before mint).
@@ -527,7 +559,7 @@ flowchart TD
 - **Deferred execution complexity.** When a transaction is added to a batch, the user does not get immediate feedback on whether it will succeed on-chain. Validation happens at build time, but network-level failures are only surfaced at `batch execute`.
 - **State consistency risk.** If `batch execute` partially fails at the network level, the domain-state hooks may not fire, leaving state out of sync with the ledger. Recovery mechanisms (retry, rollback) are not yet defined.
 - **Receipt parsing complexity.** Domain-state hooks must parse `BatchTransaction` child receipts to find results relevant to their domain. The mapping between inner transaction position and receipt child index must be reliable and well-documented.
-- **Implicit coupling via `--batch` flag.** The `BatchifyTransactionHook` relies on a `--batch` option being present in `args.args`. While hook option injection (ADR-009) eliminates the need to manually declare the option in each command, the hook still assumes the option name convention.
+- **Implicit coupling via `--batch` flag.** The `BatchifyHook` relies on a `--batch` option being present in `args.args`. While hook option injection (ADR-009) eliminates the need to manually declare the option in each command, the hook still assumes the option name convention.
 - **No partial execution.** `BatchTransaction` is all-or-nothing. If one inner transaction fails, the entire batch fails. There is no mechanism for partial success or selective retry of individual inner transactions.
 
 ## Consequences
@@ -538,10 +570,6 @@ flowchart TD
 - Domain plugins that need to persist state after batch execution must define a state hook (e.g. `'token-batch-state'`) in their manifest. The `batch execute` command must list these hooks in its `registeredHooks`.
 - The `order` field must be managed carefully. When `BatchifyTransactionHook` appends a transaction, it should assign the next sequential order value.
 - Error handling in `batch execute` should provide clear messages about which inner transaction caused a failure, mapping back to the original command when possible.
-- Future enhancements may include:
-  - A `batch list` command to view collected transactions before execution.
-  - A `batch remove` command to remove a transaction from the batch by order.
-  - A `batch clear` command to discard all transactions in a batch.
 
 ## Testing Strategy
 
@@ -552,8 +580,8 @@ flowchart TD
   - `signTransaction`: verify the batch transaction is signed with the correct `keyRefId`.
   - `executeTransaction`: verify `TransactionError` on failed submission.
   - `outputPreparation`: verify output schema conformance.
-- **Unit: BatchifyTransactionHook.** Invoke `preExecuteTransactionHook` with mock args containing `--batch` flag. Assert that the transaction bytes are appended to batch state and `breakFlow: true` is returned. Invoke without `--batch` flag and assert `breakFlow: false`.
-- **Unit: TokenStateHook (and domain hooks).** Invoke `postExecuteTransactionHook` with a mock `TransactionResult` containing child receipts. Assert that domain state is updated. Invoke with a failed result and assert no state changes.
+- **Unit: BatchifyHook.** Invoke `preExecuteTransactionHook` with mock args containing `--batch` flag. Assert that the transaction bytes, command, and normalizedParams are appended to batch state and `breakFlow: true` is returned. Invoke without `--batch` flag and assert `breakFlow: false`.
+- **Unit: Domain-state hooks (e.g. TokenCreateFtBatchStateHook).** Invoke `preOutputPreparationHook` with mock `BatchExecuteTransactionResult` containing `updatedBatchData` with transactions. Assert that domain state is updated via receipt fetching. Invoke with a failed batch and assert no state changes.
 - **Unit: BatchTransactionService.** Verify that `createBatchTransaction` correctly adds each inner transaction to the `BatchTransaction` via `addInnerTransaction`.
 - **Unit: Schema validation.** Test `BatchDataSchema` and `BatchTransactionItemSchema` with valid and invalid inputs.
 - **Integration: Full batch lifecycle.** Create a batch, run a command with `--batch` flag (verifying interception), then execute the batch and verify both the network submission and domain state updates.

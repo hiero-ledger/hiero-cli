@@ -8,11 +8,26 @@ import { ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { composeKey } from '@/core/utils/key-composer';
+import { extractPublicKeysFromMirrorNodeKey } from '@/plugins/topic/utils/extract-public-keys';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { TopicImportInputSchema } from './input';
 
 export class TopicImportCommand implements Command {
+  private matchPublicKeysToKmsRefIds(
+    publicKeys: string[],
+    kms: { findByPublicKey: (pk: string) => { keyRefId: string } | undefined },
+  ): string[] {
+    const keyRefIds: string[] = [];
+    for (const publicKey of publicKeys) {
+      const record = kms.findByPublicKey(publicKey);
+      if (record) {
+        keyRefIds.push(record.keyRefId);
+      }
+    }
+    return keyRefIds;
+  }
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
@@ -55,12 +70,31 @@ export class TopicImportCommand implements Command {
     }
 
     const createdAt = hederaTimestampToIso(topicInfo.created_timestamp);
+
+    const adminKeysExtracted = extractPublicKeysFromMirrorNodeKey(
+      topicInfo.admin_key,
+    );
+    const submitKeysExtracted = extractPublicKeysFromMirrorNodeKey(
+      topicInfo.submit_key,
+    );
+
+    const adminKeyRefIds = this.matchPublicKeysToKmsRefIds(
+      adminKeysExtracted.publicKeys,
+      api.kms,
+    );
+    const submitKeyRefIds = this.matchPublicKeysToKmsRefIds(
+      submitKeysExtracted.publicKeys,
+      api.kms,
+    );
+
     const topicData: TopicData = {
       name: normalisedParams.alias,
       topicId: normalisedParams.topicId,
       memo: topicInfo.memo || '(No memo)',
-      adminKeyRefIds: [],
-      submitKeyRefIds: [],
+      adminKeyRefIds,
+      submitKeyRefIds,
+      adminKeyThreshold: adminKeysExtracted.threshold,
+      submitKeyThreshold: submitKeysExtracted.threshold,
       network: normalisedParams.network,
       createdAt,
     };
