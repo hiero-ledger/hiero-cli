@@ -14,7 +14,6 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { KeySchema } from '@/core/schemas';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/plugins/topic/utils/keys-to-hedera-key';
 import { resolveTopicId } from '@/plugins/topic/utils/topicResolver';
@@ -57,9 +56,6 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
 
     const memo = validArgs.memo === NULL_TOKEN ? null : validArgs.memo;
 
-    const isSubmitKeyClear =
-      validArgs.submitKey.length === 1 && validArgs.submitKey[0] === NULL_TOKEN;
-
     const autoRenewAccountId =
       validArgs.autoRenewAccount === NULL_TOKEN
         ? null
@@ -70,7 +66,6 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       validArgs.expirationTime !== undefined &&
       memo === undefined &&
       validArgs.adminKey.length === 0 &&
-      !isSubmitKeyClear &&
       validArgs.submitKey.length === 0 &&
       autoRenewAccountId === undefined &&
       validArgs.autoRenewPeriod === undefined;
@@ -87,16 +82,10 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
     const keyManager =
       keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
-    const adminKeyArgs = validArgs.adminKey;
-    const submitKeyRawArgs = isSubmitKeyClear
-      ? []
-      : validArgs.submitKey.filter((k) => k !== NULL_TOKEN);
-    const submitKeyArgs = submitKeyRawArgs.map((raw) => KeySchema.parse(raw));
-
     const newAdminKeys =
-      adminKeyArgs.length > 0
+      validArgs.adminKey.length > 0
         ? await Promise.all(
-            adminKeyArgs.map((cred) =>
+            validArgs.adminKey.map((cred) =>
               api.keyResolver.resolveSigningKey(cred, keyManager, false, [
                 'topic:admin',
               ]),
@@ -104,11 +93,10 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
           )
         : undefined;
 
-    const newSubmitKeys = isSubmitKeyClear
-      ? null
-      : submitKeyArgs.length > 0
+    const newSubmitKeys =
+      validArgs.submitKey.length > 0
         ? await Promise.all(
-            submitKeyArgs.map((cred) =>
+            validArgs.submitKey.map((cred) =>
               api.keyResolver.getPublicKey(cred, keyManager, false, [
                 'topic:submit',
               ]),

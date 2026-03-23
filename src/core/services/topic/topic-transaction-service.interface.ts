@@ -4,9 +4,9 @@ import type {
   MessageSubmitResult,
   SubmitMessageParams,
   TopicCreateResult,
+  TopicDeleteResult,
   TopicUpdateResult,
   UpdateTopicParams,
-  TopicDeleteResult,
 } from './types';
 
 /**

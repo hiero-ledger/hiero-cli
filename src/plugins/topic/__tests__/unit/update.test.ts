@@ -59,6 +59,7 @@ const makeApiMocks = ({
   const topicTransactions = {
     createTopic: jest.fn(),
     submitMessage: jest.fn(),
+    deleteTopic: jest.fn(),
     updateTopic:
       updateTopicImpl || jest.fn().mockReturnValue({ transaction: {} }),
   };
@@ -471,12 +472,10 @@ describe('topic plugin - update command', () => {
     expect(savedData.memo).toBeUndefined();
   });
 
-  test('clears submitKey when value is ["null"]', async () => {
+  test('rejects submitKey when array contains "null"', async () => {
     const logger = makeLogger();
-    const saveTopicMock = jest.fn();
     MockedHelper.mockImplementation(() => ({
       loadTopic: jest.fn().mockReturnValue({ ...EXISTING_TOPIC }),
-      saveTopic: saveTopicMock,
     }));
 
     const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
@@ -493,19 +492,7 @@ describe('topic plugin - update command', () => {
     };
 
     const args = makeUpdateArgs(api, logger, { submitKey: ['null'] });
-    const result = await topicUpdate(args);
-
-    const output = assertOutput(result.result, TopicUpdateOutputSchema);
-    expect(output.updatedFields).toContain('submitKey (cleared)');
-    expect(output.submitKeyPresent).toBe(false);
-
-    expect(topicTransactions.updateTopic).toHaveBeenCalledWith(
-      expect.objectContaining({ submitKey: null }),
-    );
-
-    const savedData = saveTopicMock.mock.calls[0][1];
-    expect(savedData.submitKeyRefIds).toEqual([]);
-    expect(savedData.submitKeyThreshold).toBe(0);
+    await expect(topicUpdate(args)).rejects.toThrow();
   });
 
   test('clears autoRenewAccount when value is "null"', async () => {
