@@ -171,7 +171,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       metadataPublicKey: toPublicKey(normalisedParams.metadataKey),
       freezeDefault: normalisedParams.freezeKey
         ? normalisedParams.freezeDefault
-        : false,
+        : undefined,
       customFees: normalisedParams.customFees,
       memo: normalisedParams.memo,
     });

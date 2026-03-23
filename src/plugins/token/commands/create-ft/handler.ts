@@ -192,7 +192,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       metadataPublicKey: toPublicKey(normalisedParams.metadata),
       freezeDefault: normalisedParams.freeze
         ? normalisedParams.freezeDefault
-        : false,
+        : undefined,
       memo: normalisedParams.memo,
     });
     return { transaction };
