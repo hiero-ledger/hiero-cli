@@ -1,86 +1,240 @@
-import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { Command } from '@/core/commands/command.interface';
+import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
+import type { SupportedNetwork } from '@/core/types/shared.types';
+import type { AccountData } from '@/plugins/account/schema';
 import type { AccountDeleteOutput } from './output';
+import type {
+  DeleteBuildTransactionResult,
+  DeleteExecuteTransactionResult,
+  DeleteNormalisedParams,
+  DeleteSignTransactionResult,
+} from './types';
 
-import { NotFoundError } from '@/core/errors';
+import { BaseTransactionCommand } from '@/core/commands/command';
+import {
+  NotFoundError,
+  TransactionError,
+  ValidationError,
+} from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { AccountDeleteInputSchema } from './input';
+import { removeAccountFromLocalState } from './remove-account-from-state';
 
-export class AccountDeleteCommand implements Command {
-  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+export const ACCOUNT_DELETE_COMMAND_NAME = 'account_delete';
+
+export class AccountDeleteCommand extends BaseTransactionCommand<
+  DeleteNormalisedParams,
+  DeleteBuildTransactionResult,
+  DeleteSignTransactionResult,
+  DeleteExecuteTransactionResult
+> {
+  constructor() {
+    super(ACCOUNT_DELETE_COMMAND_NAME);
+  }
+
+  override async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+    const validArgs = AccountDeleteInputSchema.parse(args.args);
+    if (validArgs.stateOnly) {
+      return this.executeStateOnlyDelete(args);
+    }
+    return super.execute(args);
+  }
+
+  private async executeStateOnlyDelete(
+    args: CommandHandlerArgs,
+  ): Promise<CommandResult> {
     const { api, logger } = args;
+    const resolved = await this.resolveAccountFromState(args);
+    const removedAliases = removeAccountFromLocalState(
+      api,
+      logger,
+      resolved.accountToDelete,
+      resolved.network,
+    );
 
+    const outputData: AccountDeleteOutput = {
+      deletedAccount: {
+        name: resolved.accountToDelete.name,
+        accountId: resolved.accountToDelete.accountId,
+      },
+      removedAliases,
+      network: resolved.network,
+      stateOnly: true,
+    };
+
+    return { result: outputData };
+  }
+
+  private async resolveAccountFromState(args: CommandHandlerArgs): Promise<{
+    accountToDelete: AccountData;
+    network: SupportedNetwork;
+    stateKey: string;
+    accountRef: string;
+  }> {
+    const { api, logger } = args;
     const accountState = new ZustandAccountStateHelper(api.state, logger);
-
     const validArgs = AccountDeleteInputSchema.parse(args.args);
     const accountRef = validArgs.account;
     const isEntityId = EntityIdSchema.safeParse(accountRef).success;
     const network = api.network.getCurrentNetwork();
-    let key: string;
+    let stateKey: string;
 
     if (isEntityId) {
-      key = composeKey(network, accountRef);
+      stateKey = composeKey(network, accountRef);
     } else {
       const alias = api.alias.resolveOrThrow(
         accountRef,
         AliasType.Account,
         network,
       );
-      if (!alias.entityId) {
-        throw new NotFoundError(
-          `Alias for account ${accountRef} is missing account ID in its record`,
-        );
-      }
-      key = composeKey(network, alias.entityId);
+      stateKey = composeKey(network, alias.entityId!);
     }
 
-    const accountToDelete = accountState.getAccount(key);
+    const accountToDelete = accountState.getAccount(stateKey);
     if (!accountToDelete) {
       throw new NotFoundError(`Account with ID '${accountRef}' not found`);
     }
 
-    const aliasesForAccount = api.alias
-      .list({ network, type: AliasType.Account })
-      .filter((rec) => rec.entityId === accountToDelete.accountId);
+    return { accountToDelete, network, stateKey, accountRef };
+  }
 
-    const removedAliases: string[] = [];
-    for (const rec of aliasesForAccount) {
-      api.alias.remove(rec.alias, network);
-      removedAliases.push(`${rec.alias} (${network})`);
-      logger.info(`🧹 Removed alias '${rec.alias}' on ${network}`);
+  private resolveTransferAccountId(
+    transferRef: string,
+    network: SupportedNetwork,
+    api: CoreApi,
+  ): string {
+    if (EntityIdSchema.safeParse(transferRef).success) {
+      return transferRef;
+    }
+    const alias = api.alias.resolveOrThrow(
+      transferRef,
+      AliasType.Account,
+      network,
+    );
+    return alias.entityId!;
+  }
+
+  async normalizeParams(
+    args: CommandHandlerArgs,
+  ): Promise<DeleteNormalisedParams> {
+    const resolved = await this.resolveAccountFromState(args);
+    const validArgs = AccountDeleteInputSchema.parse(args.args);
+    const transferId = validArgs.transferId;
+    if (!transferId) {
+      throw new ValidationError(
+        'transfer-id is required when deleting on Hedera (use --state-only to remove only from local state)',
+      );
+    }
+    const transferAccountId = this.resolveTransferAccountId(
+      transferId,
+      resolved.network,
+      args.api,
+    );
+
+    if (transferAccountId === resolved.accountToDelete.accountId) {
+      throw new ValidationError(
+        'Transfer account must be different from the account being deleted',
+        {
+          context: {
+            accountId: resolved.accountToDelete.accountId,
+            transferAccountId,
+          },
+        },
+      );
     }
 
-    accountState.deleteAccount(key);
+    return {
+      network: resolved.network,
+      stateKey: resolved.stateKey,
+      accountToDelete: resolved.accountToDelete,
+      transferAccountId,
+      accountRef: resolved.accountRef,
+    };
+  }
 
-    const accountsWithSameKeyRef = accountState
-      .listAccounts()
-      .filter((acc) => acc.keyRefId === accountToDelete.keyRefId);
-    const isOtherAccountUseSameKey = accountsWithSameKeyRef.length > 1;
+  async buildTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: DeleteNormalisedParams,
+  ): Promise<DeleteBuildTransactionResult> {
+    const { api } = args;
+    return api.account.deleteAccount({
+      accountId: normalisedParams.accountToDelete.accountId,
+      transferAccountId: normalisedParams.transferAccountId,
+    });
+  }
 
-    const operator = api.network.getCurrentOperatorOrThrow();
-    const isOperatorHaveSameKeyRef =
-      operator.keyRefId === accountToDelete.keyRefId;
+  async signTransaction(
+    args: CommandHandlerArgs,
+    normalisedParams: DeleteNormalisedParams,
+    buildTransactionResult: DeleteBuildTransactionResult,
+  ): Promise<DeleteSignTransactionResult> {
+    const { api } = args;
+    const signedTransaction = await api.txSign.sign(
+      buildTransactionResult.transaction,
+      [normalisedParams.accountToDelete.keyRefId],
+    );
+    return { signedTransaction };
+  }
 
-    if (!isOtherAccountUseSameKey && !isOperatorHaveSameKeyRef) {
-      api.kms.remove(accountToDelete.keyRefId);
+  async executeTransaction(
+    args: CommandHandlerArgs,
+    _normalisedParams: DeleteNormalisedParams,
+    _buildTransactionResult: DeleteBuildTransactionResult,
+    signTransactionResult: DeleteSignTransactionResult,
+  ): Promise<DeleteExecuteTransactionResult> {
+    const { api } = args;
+    return api.txExecute.execute(signTransactionResult.signedTransaction);
+  }
+
+  async outputPreparation(
+    args: CommandHandlerArgs,
+    normalisedParams: DeleteNormalisedParams,
+    _buildTransactionResult: DeleteBuildTransactionResult,
+    _signTransactionResult: DeleteSignTransactionResult,
+    executeTransactionResult: DeleteExecuteTransactionResult,
+  ): Promise<CommandResult> {
+    const { api, logger } = args;
+
+    if (!executeTransactionResult.success) {
+      throw new TransactionError(
+        `Failed to delete account (txId: ${executeTransactionResult.transactionId})`,
+        false,
+        {
+          context: {
+            transactionId: executeTransactionResult.transactionId,
+            network: normalisedParams.network,
+          },
+        },
+      );
     }
+
+    const removedAliases = removeAccountFromLocalState(
+      api,
+      logger,
+      normalisedParams.accountToDelete,
+      normalisedParams.network,
+    );
 
     const outputData: AccountDeleteOutput = {
       deletedAccount: {
-        name: accountToDelete.name,
-        accountId: accountToDelete.accountId,
+        name: normalisedParams.accountToDelete.name,
+        accountId: normalisedParams.accountToDelete.accountId,
       },
       removedAliases,
-      network,
+      network: normalisedParams.network,
+      transactionId: executeTransactionResult.transactionId,
+      stateOnly: false,
     };
 
     return { result: outputData };
   }
 }
 
-export const accountDelete = (args: CommandHandlerArgs) =>
-  new AccountDeleteCommand().execute(args);
+export async function accountDelete(
+  args: CommandHandlerArgs,
+): Promise<CommandResult> {
+  return new AccountDeleteCommand().execute(args);
+}

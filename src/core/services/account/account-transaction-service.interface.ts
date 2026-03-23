@@ -2,11 +2,22 @@
  * Interface for Account-related operations
  * All account services must implement this interface
  */
+import type {
+  AccountCreateTransaction,
+  AccountDeleteTransaction,
+  AccountInfoQuery,
+} from '@hashgraph/sdk';
+
 export interface AccountService {
   /**
    * Create a new Hedera account
    */
   createAccount(params: CreateAccountParams): AccountCreateResult;
+
+  /**
+   * Build an account delete transaction (must be signed by the deleted account)
+   */
+  deleteAccount(params: DeleteAccountParams): AccountDeleteResult;
 
   /**
    * Get account information (creates a transaction to query account info)
@@ -19,6 +30,10 @@ export interface AccountCreateResult {
   publicKey: string;
 }
 
+export interface AccountDeleteResult {
+  transaction: AccountDeleteTransaction;
+}
+
 // Parameter types for account operations
 export interface CreateAccountParams {
   balanceRaw: bigint;
@@ -26,8 +41,7 @@ export interface CreateAccountParams {
   publicKey: string;
 }
 
-// Import Hedera SDK types
-import type {
-  AccountCreateTransaction,
-  AccountInfoQuery,
-} from '@hashgraph/sdk';
+export interface DeleteAccountParams {
+  accountId: string;
+  transferAccountId: string;
+}

@@ -250,13 +250,32 @@ interface CommandOutputSpec {
 
 #### `account delete`
 
-**Output**:
+**Output** (network delete):
 
 ```json
 {
-  "name": "my-account",
-  "accountId": "0.0.12345",
-  "deleted": true
+  "deletedAccount": {
+    "name": "my-account",
+    "accountId": "0.0.12345"
+  },
+  "removedAliases": ["alias-a (testnet)"],
+  "network": "testnet",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "stateOnly": false
+}
+```
+
+**Output** (`--state-only`):
+
+```json
+{
+  "deletedAccount": {
+    "name": "my-account",
+    "accountId": "0.0.12345"
+  },
+  "removedAliases": ["alias-a (testnet)"],
+  "network": "testnet",
+  "stateOnly": true
 }
 ```
 

@@ -85,6 +85,7 @@ export const makeAccountTransactionServiceMock = (
   overrides?: Partial<jest.Mocked<AccountService>>,
 ): jest.Mocked<AccountService> => ({
   createAccount: jest.fn(),
+  deleteAccount: jest.fn(),
   getAccountInfo: jest.fn(),
   ...overrides,
 });
@@ -264,6 +265,7 @@ export const makeApiMocksForAccountCreate = ({
 }: ApiMocksConfig) => {
   const account: jest.Mocked<AccountService> = {
     createAccount: createAccountImpl || jest.fn(),
+    deleteAccount: jest.fn(),
     getAccountInfo: jest.fn(),
   };
 
@@ -313,5 +315,48 @@ export const makeApiMocksForAccountCreate = ({
     alias,
     mirror,
     keyResolver,
+  };
+};
+
+export interface ApiMocksDeleteConfig {
+  deleteAccountImpl?: jest.Mock;
+  executeImpl?: jest.Mock;
+  network?: 'testnet' | 'mainnet' | 'previewnet';
+}
+
+export const makeApiMocksForAccountDelete = ({
+  deleteAccountImpl,
+  executeImpl,
+  network = 'testnet',
+}: ApiMocksDeleteConfig) => {
+  const account: jest.Mocked<AccountService> = {
+    createAccount: jest.fn(),
+    deleteAccount:
+      deleteAccountImpl ||
+      jest.fn().mockReturnValue({
+        transaction: createMockTransaction(),
+      }),
+    getAccountInfo: jest.fn(),
+  };
+
+  const txSign = makeTxSignServiceMock();
+  const txExecute = makeTxExecuteMock({ executeImpl });
+  const networkMock = makeGlobalNetworkMock(network);
+
+  networkMock.getOperator = jest.fn().mockReturnValue({
+    accountId: OPERATOR_ACCOUNT_ID,
+    keyRefId: OPERATOR_KEY_REF_ID,
+  });
+
+  const kms = makeGlobalKmsMock();
+  const alias = makeGlobalAliasMock();
+
+  return {
+    account,
+    txSign,
+    txExecute,
+    networkMock,
+    kms,
+    alias,
   };
 };
