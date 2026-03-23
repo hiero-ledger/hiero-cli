@@ -387,6 +387,7 @@ describe('tokenCreateFtFromFileHandler', () => {
         pausePublicKey: undefined,
         feeSchedulePublicKey: undefined,
         metadataPublicKey: undefined,
+        freezeDefault: undefined,
         customFees: [
           {
             type: 'fixed',

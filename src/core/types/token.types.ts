@@ -68,6 +68,7 @@ export interface TokenCreateParams {
   wipePublicKey?: PublicKey;
   kycPublicKey?: PublicKey;
   freezePublicKey?: PublicKey;
+  freezeDefault?: boolean;
   pausePublicKey?: PublicKey;
   feeSchedulePublicKey?: PublicKey;
   metadataPublicKey?: PublicKey;

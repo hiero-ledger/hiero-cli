@@ -42,4 +42,5 @@ export const CreateFtFromFileNormalizedParamsSchema = z.object({
   pauseKey: ResolvedPublicKeySchema.optional(),
   feeScheduleKey: ResolvedPublicKeySchema.optional(),
   metadataKey: ResolvedPublicKeySchema.optional(),
+  freezeDefault: z.boolean().default(false),
 });

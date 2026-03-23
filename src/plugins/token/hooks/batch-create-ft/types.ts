@@ -34,4 +34,5 @@ export const CreateFtNormalizedParamsSchema = z.object({
   pause: ResolvedPublicKeySchema.optional(),
   feeSchedule: ResolvedPublicKeySchema.optional(),
   metadata: ResolvedPublicKeySchema.optional(),
+  freezeDefault: z.boolean().default(false),
 });

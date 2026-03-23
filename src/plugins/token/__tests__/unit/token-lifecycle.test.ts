@@ -173,6 +173,7 @@ describe('Token Lifecycle Integration', () => {
         pausePublicKey: undefined,
         feeSchedulePublicKey: undefined,
         metadataPublicKey: undefined,
+        freezeDefault: undefined,
         tokenType: HederaTokenType.FUNGIBLE_COMMON,
         memo: undefined,
       });

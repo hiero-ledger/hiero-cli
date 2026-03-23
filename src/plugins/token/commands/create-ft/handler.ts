@@ -85,6 +85,11 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       api.keyResolver,
       'token:freeze',
     );
+    if (validArgs.freezeDefault && !freeze) {
+      logger.warn(
+        'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
+      );
+    }
     const wipe = await resolveOptionalKey(
       validArgs.wipeKey,
       keyManager,
@@ -158,6 +163,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       pause,
       feeSchedule,
       metadata,
+      freezeDefault: validArgs.freezeDefault,
       finalMaxSupply,
     };
   }
@@ -184,6 +190,9 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       pausePublicKey: toPublicKey(normalisedParams.pause),
       feeSchedulePublicKey: toPublicKey(normalisedParams.feeSchedule),
       metadataPublicKey: toPublicKey(normalisedParams.metadata),
+      freezeDefault: normalisedParams.freeze
+        ? normalisedParams.freezeDefault
+        : false,
       memo: normalisedParams.memo,
     });
     return { transaction };

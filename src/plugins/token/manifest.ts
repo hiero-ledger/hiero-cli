@@ -379,13 +379,24 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'freeze-key',
+          short: 'f',
           type: OptionType.STRING,
           required: false,
           description:
             'Optional freeze key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
+          name: 'freeze-default',
+          short: 'F',
+          type: OptionType.BOOLEAN,
+          required: false,
+          default: false,
+          description:
+            'When true and a freeze key is set, new token associations are frozen by default. Ignored without a freeze key (a warning is logged).',
+        },
+        {
           name: 'wipe-key',
+          short: 'w',
           type: OptionType.STRING,
           required: false,
           description:
@@ -393,6 +404,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'kyc-key',
+          short: 'y',
           type: OptionType.STRING,
           required: false,
           description:
@@ -400,6 +412,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'pause-key',
+          short: 'p',
           type: OptionType.STRING,
           required: false,
           description:
@@ -407,6 +420,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'fee-schedule-key',
+          short: 'e',
           type: OptionType.STRING,
           required: false,
           description:
@@ -414,6 +428,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'metadata-key',
+          short: 'D',
           type: OptionType.STRING,
           required: false,
           description:

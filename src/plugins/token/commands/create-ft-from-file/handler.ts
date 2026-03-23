@@ -96,6 +96,11 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       api.keyResolver,
       'token:freeze',
     );
+    if (tokenDefinition.freezeDefault && !freezeKey) {
+      logger.warn(
+        'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
+      );
+    }
     const pauseKey = await resolveOptionalKey(
       tokenDefinition.pauseKey,
       keyManager,
@@ -138,6 +143,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       pauseKey,
       feeScheduleKey,
       metadataKey,
+      freezeDefault: tokenDefinition.freezeDefault,
     };
   }
 
@@ -163,6 +169,9 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       pausePublicKey: toPublicKey(normalisedParams.pauseKey),
       feeSchedulePublicKey: toPublicKey(normalisedParams.feeScheduleKey),
       metadataPublicKey: toPublicKey(normalisedParams.metadataKey),
+      freezeDefault: normalisedParams.freezeKey
+        ? normalisedParams.freezeDefault
+        : false,
       customFees: normalisedParams.customFees,
       memo: normalisedParams.memo,
     });

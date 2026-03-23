@@ -34,6 +34,7 @@ export interface TokenCreateFtFromFileNormalizedParams {
   pauseKey?: ResolvedPublicKey;
   feeScheduleKey?: ResolvedPublicKey;
   metadataKey?: ResolvedPublicKey;
+  freezeDefault: boolean;
 }
 
 export interface TokenCreateFtFromFileBuildTransactionResult {

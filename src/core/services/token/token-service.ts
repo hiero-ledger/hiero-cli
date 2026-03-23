@@ -92,6 +92,7 @@ export class TokenServiceImpl implements TokenService {
       wipePublicKey,
       kycPublicKey,
       freezePublicKey,
+      freezeDefault,
       pausePublicKey,
       feeSchedulePublicKey,
       metadataPublicKey,
@@ -161,6 +162,10 @@ export class TokenServiceImpl implements TokenService {
     if (freezePublicKey) {
       tokenCreateTx.setFreezeKey(freezePublicKey);
       this.logger.debug(`[TOKEN SERVICE] Set freeze key`);
+      tokenCreateTx.setFreezeDefault(freezeDefault ?? false);
+      this.logger.debug(
+        `[TOKEN SERVICE] Set freeze default: ${String(freezeDefault ?? false)}`,
+      );
     }
 
     if (pausePublicKey) {

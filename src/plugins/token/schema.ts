@@ -190,6 +190,12 @@ export const FungibleTokenFileSchema = z
     wipeKey: KeySchema.optional(),
     kycKey: KeySchema.optional(),
     freezeKey: KeySchema.optional(),
+    freezeDefault: z
+      .boolean()
+      .default(false)
+      .describe(
+        'When true and freezeKey is set, new associations are frozen by default.',
+      ),
     pauseKey: KeySchema.optional(),
     feeScheduleKey: KeySchema.optional(),
     metadataKey: KeySchema.optional(),

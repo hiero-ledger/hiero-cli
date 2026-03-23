@@ -493,6 +493,7 @@ export const expectedTokenTransactionParams = {
   pausePublicKey: undefined,
   feeSchedulePublicKey: undefined,
   metadataPublicKey: undefined,
+  freezeDefault: undefined,
   memo: undefined,
 };
 
@@ -542,6 +543,7 @@ export const expectedTokenTransactionParamsFromFile = {
     },
   ],
   tokenType: HederaTokenType.FUNGIBLE_COMMON,
+  freezeDefault: undefined,
   memo: 'Test token created from file',
 };
 

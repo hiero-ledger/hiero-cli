@@ -283,6 +283,15 @@ describe('TokenServiceImpl', () => {
       expect(result).toBe(mockTokenCreateTransaction);
     });
 
+    it('should not set freeze key or freeze default when freeze key omitted', () => {
+      tokenService.createTokenTransaction(baseParams);
+
+      expect(mockTokenCreateTransaction.setFreezeKey).not.toHaveBeenCalled();
+      expect(
+        mockTokenCreateTransaction.setFreezeDefault,
+      ).not.toHaveBeenCalled();
+    });
+
     it('should create token with FINITE supply type and max supply', () => {
       const params = {
         ...baseParams,
@@ -355,6 +364,36 @@ describe('TokenServiceImpl', () => {
 
       expect(mockTokenCreateTransaction.setMetadataKey).toHaveBeenCalledWith(
         mockPublicKeyInstance,
+      );
+    });
+
+    it('should set freeze default when freeze key is set', () => {
+      const paramsWithFreeze = {
+        ...baseParams,
+        freezePublicKey: mockPublicKeyInstance as unknown as PublicKey,
+        freezeDefault: true,
+      };
+
+      tokenService.createTokenTransaction(paramsWithFreeze);
+
+      expect(mockTokenCreateTransaction.setFreezeKey).toHaveBeenCalledWith(
+        mockPublicKeyInstance,
+      );
+      expect(mockTokenCreateTransaction.setFreezeDefault).toHaveBeenCalledWith(
+        true,
+      );
+    });
+
+    it('should set freeze default false when freeze key is set without freezeDefault', () => {
+      const paramsWithFreeze = {
+        ...baseParams,
+        freezePublicKey: mockPublicKeyInstance as unknown as PublicKey,
+      };
+
+      tokenService.createTokenTransaction(paramsWithFreeze);
+
+      expect(mockTokenCreateTransaction.setFreezeDefault).toHaveBeenCalledWith(
+        false,
       );
     });
 

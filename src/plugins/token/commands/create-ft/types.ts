@@ -28,6 +28,7 @@ export interface TokenCreateFtNormalizedParams {
   pause?: ResolvedPublicKey;
   feeSchedule?: ResolvedPublicKey;
   metadata?: ResolvedPublicKey;
+  freezeDefault: boolean;
   finalMaxSupply?: bigint;
 }
 
