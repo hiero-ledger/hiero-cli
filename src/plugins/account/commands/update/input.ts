@@ -2,8 +2,13 @@ import { z } from 'zod';
 
 import {
   AccountReferenceSchema,
+  AutoRenewPeriodSchema,
+  EntityIdSchema,
   KeyManagerTypeSchema,
   KeySchema,
+  MaxAutoAssociationsSchema,
+  MemoSchema,
+  NodeIdSchema,
 } from '@/core/schemas';
 
 const UPDATE_FIELDS = [
@@ -29,37 +34,17 @@ export const AccountUpdateInputSchema = z
     keyManager: KeyManagerTypeSchema.optional().describe(
       'Key manager to use: local or local_encrypted (defaults to config setting)',
     ),
-    memo: z
-      .string()
-      .max(100, 'Memo must be 100 characters or less')
-      .optional()
-      .describe('Account memo (max 100 characters)'),
-    maxAutoAssociations: z
-      .number()
-      .int()
-      .min(-1, 'Value must be -1 (unlimited) or a non-negative integer')
-      .max(5000, 'Maximum value is 5000')
-      .optional()
-      .describe(
-        'Max automatic token associations (-1 for unlimited, 0 to disable)',
-      ),
-    stakedAccountId: z.string().optional().describe('Account ID to stake to'),
-    stakedNodeId: z
-      .number()
-      .int()
-      .min(0)
-      .optional()
-      .describe('Node ID to stake to'),
+    memo: MemoSchema.describe('Account memo (max 100 characters)'),
+    maxAutoAssociations: MaxAutoAssociationsSchema,
+    stakedAccountId: EntityIdSchema.optional().describe(
+      'Account ID to stake to',
+    ),
+    stakedNodeId: NodeIdSchema.describe('Node ID to stake to'),
     declineStakingReward: z
       .boolean()
       .optional()
       .describe('Decline staking reward'),
-    autoRenewPeriod: z
-      .number()
-      .int()
-      .min(1)
-      .optional()
-      .describe('Auto renew period in seconds'),
+    autoRenewPeriod: AutoRenewPeriodSchema,
     receiverSignatureRequired: z
       .boolean()
       .optional()

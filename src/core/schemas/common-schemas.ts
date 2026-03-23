@@ -944,3 +944,27 @@ export const ResolvedPublicKeySchema = z.object({
   keyRefId: z.string(),
   publicKey: z.string(),
 });
+
+export const MaxAutoAssociationsSchema = z
+  .number()
+  .int()
+  .min(-1, 'Value must be -1 (unlimited) or a non-negative integer')
+  .max(5000, 'Maximum value is 5000')
+  .optional()
+  .describe(
+    'Max automatic token associations (-1 for unlimited, 0 to disable)',
+  );
+
+export const NodeIdSchema = z
+  .number()
+  .int()
+  .min(0, 'Node ID must be a non-negative integer')
+  .optional()
+  .describe('Hedera network node ID');
+
+export const AutoRenewPeriodSchema = z
+  .number()
+  .int()
+  .min(1, 'Auto renew period must be at least 1 second')
+  .optional()
+  .describe('Auto renew period in seconds');
