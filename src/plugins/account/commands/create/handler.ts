@@ -53,11 +53,17 @@ export class AccountCreateCommand extends BaseTransactionCommand<
       keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
     const operator = api.network.getCurrentOperatorOrThrow();
-    const operatorAccount = await api.mirror.getAccountOrThrow(
+    const payer = api.network.getPayer();
+    const balanceCheckAccountId = payer?.accountId ?? operator.accountId;
+    const payerOrOperator = await api.mirror.getAccountOrThrow(
       operator.accountId,
     );
-    const operatorBalance = BigInt(operatorAccount.balance.balance);
-    validateSufficientBalance(operatorBalance, balance, operator.accountId);
+    const payerOrOperatorBalance = BigInt(payerOrOperator.balance.balance);
+    validateSufficientBalance(
+      payerOrOperatorBalance,
+      balance,
+      balanceCheckAccountId,
+    );
 
     logger.info(`Creating account with name: ${alias}`);
 
