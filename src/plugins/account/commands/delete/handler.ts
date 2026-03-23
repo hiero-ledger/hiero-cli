@@ -1,4 +1,9 @@
-import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
+import type {
+  CommandHandlerArgs,
+  CommandResult,
+  CoreApi,
+  Logger,
+} from '@/core';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountData } from '@/plugins/account/schema';
 import type { AccountDeleteOutput } from './output';
@@ -18,10 +23,10 @@ import {
 import { EntityIdSchema } from '@/core/schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
+import { AccountHelper } from '@/plugins/account/account-helper';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { AccountDeleteInputSchema } from './input';
-import { removeAccountFromLocalState } from './remove-account-from-state';
 
 export const ACCOUNT_DELETE_COMMAND_NAME = 'account_delete';
 
@@ -43,17 +48,25 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     return super.execute(args);
   }
 
+  private createAccountHelper(api: CoreApi, logger: Logger): AccountHelper {
+    return new AccountHelper(
+      api.state,
+      logger,
+      api.alias,
+      api.kms,
+      api.network,
+    );
+  }
+
   private async executeStateOnlyDelete(
     args: CommandHandlerArgs,
   ): Promise<CommandResult> {
     const { api, logger } = args;
     const resolved = await this.resolveAccountFromState(args);
-    const removedAliases = removeAccountFromLocalState(
+    const removedAliases = this.createAccountHelper(
       api,
       logger,
-      resolved.accountToDelete,
-      resolved.network,
-    );
+    ).removeAccountFromLocalState(resolved.accountToDelete, resolved.network);
 
     const outputData: AccountDeleteOutput = {
       deletedAccount: {
@@ -211,9 +224,10 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
       );
     }
 
-    const removedAliases = removeAccountFromLocalState(
+    const removedAliases = this.createAccountHelper(
       api,
       logger,
+    ).removeAccountFromLocalState(
       normalisedParams.accountToDelete,
       normalisedParams.network,
     );

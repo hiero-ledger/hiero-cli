@@ -9,8 +9,8 @@ import type {
 } from '@/core/types/shared.types';
 
 import { AbstractHook } from '@/core/hooks/abstract-hook';
+import { AccountHelper } from '@/plugins/account/account-helper';
 import { ACCOUNT_DELETE_COMMAND_NAME } from '@/plugins/account/commands/delete/handler';
-import { removeAccountFromLocalState } from '@/plugins/account/commands/delete/remove-account-from-state';
 import { AccountDeleteNormalisedParamsSchema } from '@/plugins/account/hooks/batch-delete/types';
 
 export class AccountDeleteBatchStateHook extends AbstractHook {
@@ -61,9 +61,14 @@ export class AccountDeleteBatchStateHook extends AbstractHook {
       return;
     }
     const normalisedParams = parseResult.data;
-    removeAccountFromLocalState(
-      api,
+    const accountHelper = new AccountHelper(
+      api.state,
       logger,
+      api.alias,
+      api.kms,
+      api.network,
+    );
+    accountHelper.removeAccountFromLocalState(
       normalisedParams.accountToDelete,
       normalisedParams.network,
     );
