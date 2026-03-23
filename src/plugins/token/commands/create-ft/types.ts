@@ -30,6 +30,9 @@ export interface TokenCreateFtNormalizedParams {
   metadata?: ResolvedPublicKey;
   freezeDefault: boolean;
   finalMaxSupply?: bigint;
+  autoRenewPeriodSeconds?: number;
+  autoRenewAccountId?: string;
+  expirationTime?: Date;
 }
 
 export interface TokenCreateFtBuildTransactionResult {

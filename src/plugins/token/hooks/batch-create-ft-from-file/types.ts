@@ -43,4 +43,7 @@ export const CreateFtFromFileNormalizedParamsSchema = z.object({
   feeScheduleKey: ResolvedPublicKeySchema.optional(),
   metadataKey: ResolvedPublicKeySchema.optional(),
   freezeDefault: z.boolean().default(false),
+  autoRenewPeriodSeconds: z.number().optional(),
+  autoRenewAccountId: z.string().optional(),
+  expirationTime: z.coerce.date().optional(),
 });

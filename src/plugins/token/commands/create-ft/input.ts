@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import {
   AmountInputSchema,
+  AutoRenewPeriodSecondsSchema,
+  ExpirationTimeSchema,
   HtsDecimalsSchema,
   KeyManagerTypeSchema,
   KeySchema,
@@ -75,7 +77,17 @@ export const TokenCreateFtInputSchema = z
     memo: MemoSchema.describe(
       'Optional memo for the token (max 100 characters)',
     ),
+    autoRenewPeriod: AutoRenewPeriodSecondsSchema.describe(
+      'Auto-renew period: integer seconds, or with suffix s/m/h/d (e.g. 500, 500s, 50m, 2h, 1d). Requires auto renew account property.',
+    ),
+    autoRenewAccount: KeySchema.optional().describe(
+      'Account that pays auto-renewal. Required when auto renew period property is set.',
+    ),
+    expirationTime: ExpirationTimeSchema.describe(
+      'Absolute token expiration (ISO 8601). Ignored when auto-renew period and account are set.',
+    ),
   })
   .superRefine(validateSupplyTypeAndMaxSupply);
 
-export type TokenCreateFtInput = z.infer<typeof TokenCreateFtInputSchema>;
+/** Parsed CLI args (after transforms); use with `TokenCreateFtInputSchema.parse`. */
+export type TokenCreateFtInput = z.output<typeof TokenCreateFtInputSchema>;

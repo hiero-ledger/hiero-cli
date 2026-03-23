@@ -6,7 +6,9 @@ import { z } from 'zod';
 
 import {
   AmountInputSchema,
+  AutoRenewPeriodSecondsSchema,
   EntityIdSchema,
+  ExpirationTimeSchema,
   HtsDecimalsSchema,
   KeySchema,
   MemoSchema,
@@ -206,6 +208,9 @@ export const FungibleTokenFileSchema = z
       .default([]),
     memo: MemoSchema.default(''),
     tokenType: TokenTypeSchema,
+    autoRenewPeriod: AutoRenewPeriodSecondsSchema,
+    autoRenewAccount: KeySchema.optional(),
+    expirationTime: ExpirationTimeSchema,
   })
   .transform((data) => ({
     ...data,

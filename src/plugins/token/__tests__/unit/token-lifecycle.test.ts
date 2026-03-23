@@ -176,6 +176,9 @@ describe('Token Lifecycle Integration', () => {
         freezeDefault: undefined,
         tokenType: HederaTokenType.FUNGIBLE_COMMON,
         memo: undefined,
+        autoRenewPeriodSeconds: undefined,
+        autoRenewAccountId: undefined,
+        expirationTime: undefined,
       });
 
       expect(

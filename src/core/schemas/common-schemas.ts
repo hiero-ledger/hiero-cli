@@ -944,3 +944,88 @@ export const ResolvedPublicKeySchema = z.object({
   keyRefId: z.string(),
   publicKey: z.string(),
 });
+
+const DURATION_SUFFIX_SECONDS: Record<string, number> = {
+  s: 1,
+  m: 60,
+  h: 3600,
+  d: 86400,
+};
+
+/**
+ * Parses auto-renew period CLI/file input into seconds for Hedera `TokenCreateTransaction.setAutoRenewPeriod`.
+ *
+ * - Plain integer (no suffix) → seconds (e.g. `500` → 500)
+ * - `500s` → 500 seconds
+ * - `50m` → minutes → seconds
+ * - `2h` → hours → seconds
+ * - `1d` → days → seconds
+ */
+export function parseAutoRenewPeriodToSeconds(raw: string): number {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    throw new Error('Auto-renew period cannot be empty');
+  }
+
+  const withSuffix = trimmed.match(/^(\d+)([smhd])$/i);
+  if (withSuffix) {
+    const n = parseInt(withSuffix[1], 10);
+    const mult = DURATION_SUFFIX_SECONDS[withSuffix[2].toLowerCase()];
+    if (mult === undefined) {
+      throw new Error(`Unsupported suffix in "${raw}"`);
+    }
+    return n * mult;
+  }
+
+  if (/^\d+$/.test(trimmed)) {
+    return parseInt(trimmed, 10);
+  }
+
+  throw new Error(
+    `Invalid auto-renew period "${raw}". Use a non-negative integer (seconds), or add suffix s, m, h, or d (e.g. 500, 500s, 50m, 2h, 1d).`,
+  );
+}
+
+/**
+ * Optional field from CLI (string/number) or JSON → seconds, or `undefined`.
+ */
+export const AutoRenewPeriodSecondsSchema: z.ZodType<number | undefined> = z
+  .union([z.string(), z.number()])
+  .optional()
+  .transform((val): number | undefined => {
+    if (val === undefined || val === null || val === '') {
+      return undefined;
+    }
+    return parseAutoRenewPeriodToSeconds(String(val));
+  })
+  .pipe(
+    z
+      .number()
+      .optional()
+      .refine((sec) => sec === undefined || sec >= 0, {
+        message: 'Auto-renew period must be non-negative',
+      }),
+  );
+
+/** Optional ISO 8601 datetime string → `Date` */
+export const ExpirationTimeSchema: z.ZodType<Date | undefined> = z
+  .string()
+  .optional()
+  .superRefine((s, ctx) => {
+    if (s === undefined || s.trim() === '') {
+      return;
+    }
+    if (Number.isNaN(new Date(s).getTime())) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          'Invalid expiration time. Use an ISO 8601 datetime (e.g. 2026-12-31T23:59:59.000Z).',
+      });
+    }
+  })
+  .transform((s): Date | undefined => {
+    if (s === undefined || s.trim() === '') {
+      return undefined;
+    }
+    return new Date(s);
+  });

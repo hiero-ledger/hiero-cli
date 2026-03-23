@@ -399,6 +399,9 @@ describe('tokenCreateFtFromFileHandler', () => {
         ],
         memo: 'Test token created from file',
         tokenType: HederaTokenType.FUNGIBLE_COMMON,
+        autoRenewPeriodSeconds: undefined,
+        autoRenewAccountId: undefined,
+        expirationTime: undefined,
       });
     });
 

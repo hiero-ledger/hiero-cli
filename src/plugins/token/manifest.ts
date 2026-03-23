@@ -457,6 +457,30 @@ export const tokenPluginManifest: PluginManifest = {
           description:
             'Optional memo for the fungible token (max 100 characters)',
         },
+        {
+          name: 'auto-renew-period',
+          short: 'R',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Auto-renew period: seconds as integer, or with suffix s/m/h/d (e.g. 500, 500s, 50m, 2h, 1d). Requires --auto-renew-account.',
+        },
+        {
+          name: 'auto-renew-account',
+          short: 'r',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account that pays auto-renewal (account id, alias, or key reference). Required when --auto-renew-period is set.',
+        },
+        {
+          name: 'expiration-time',
+          short: 'x',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Absolute token expiration as ISO 8601 datetime. Ignored when --auto-renew-period and --auto-renew-account are set.',
+        },
       ],
       handler: tokenCreateFt,
       output: {

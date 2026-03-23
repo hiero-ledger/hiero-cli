@@ -35,4 +35,7 @@ export const CreateFtNormalizedParamsSchema = z.object({
   feeSchedule: ResolvedPublicKeySchema.optional(),
   metadata: ResolvedPublicKeySchema.optional(),
   freezeDefault: z.boolean().default(false),
+  autoRenewPeriodSeconds: z.number().optional(),
+  autoRenewAccountId: z.string().optional(),
+  expirationTime: z.coerce.date().optional(),
 });

@@ -9,7 +9,7 @@ import type {
 } from './types';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
-import { StateError } from '@/core/errors';
+import { StateError, ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
@@ -25,7 +25,7 @@ import {
 } from '@/plugins/token/utils/token-resolve-optional-key';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
-import { TokenCreateFtInputSchema } from './input';
+import { type TokenCreateFtInput, TokenCreateFtInputSchema } from './input';
 
 export const TOKEN_CREATE_FT_COMMAND_NAME = 'token_create-ft';
 
@@ -43,7 +43,9 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<TokenCreateFtNormalizedParams> {
     const { api, logger } = args;
-    const validArgs = TokenCreateFtInputSchema.parse(args.args);
+    const validArgs: TokenCreateFtInput = TokenCreateFtInputSchema.parse(
+      args.args,
+    );
 
     const keyManager =
       validArgs.keyManager ??
@@ -121,6 +123,40 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       'token:metadata',
     );
 
+    const autoRenewPeriodSeconds = validArgs.autoRenewPeriod;
+    const autoRenewAccountCredential = validArgs.autoRenewAccount
+      ? await api.keyResolver.resolveAccountCredentials(
+          validArgs.autoRenewAccount,
+          keyManager,
+          false,
+          ['token:auto-renew'],
+        )
+      : undefined;
+
+    if (autoRenewPeriodSeconds && !autoRenewAccountCredential) {
+      throw new ValidationError(
+        'Auto-renew account is required when auto-renew period is set',
+        {
+          context: {
+            autoRenewPeriodSeconds,
+          },
+        },
+      );
+    }
+
+    let expirationTime: Date | undefined = validArgs.expirationTime;
+    if (
+      autoRenewPeriodSeconds !== undefined &&
+      autoRenewAccountCredential !== undefined
+    ) {
+      if (expirationTime) {
+        logger.warn(
+          'Expiration time is ignored because auto-renew period is set; auto-renew period takes precedence over fixed expiration.',
+        );
+      }
+      expirationTime = undefined;
+    }
+
     let finalMaxSupply: bigint | undefined;
     if (validArgs.supplyType === SupplyType.FINITE) {
       finalMaxSupply = determineFiniteMaxSupply(maxSupply, initialSupply);
@@ -165,6 +201,11 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       metadata,
       freezeDefault: validArgs.freezeDefault,
       finalMaxSupply,
+      autoRenewPeriodSeconds: autoRenewAccountCredential
+        ? autoRenewPeriodSeconds
+        : undefined,
+      autoRenewAccountId: autoRenewAccountCredential?.accountId,
+      expirationTime,
     };
   }
 
@@ -194,6 +235,9 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
         ? normalisedParams.freezeDefault
         : undefined,
       memo: normalisedParams.memo,
+      autoRenewPeriodSeconds: normalisedParams.autoRenewPeriodSeconds,
+      autoRenewAccountId: normalisedParams.autoRenewAccountId,
+      expirationTime: normalisedParams.expirationTime,
     });
     return { transaction };
   }
@@ -296,6 +340,9 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       transactionId: result.transactionId,
       alias: normalisedParams.alias,
       network: normalisedParams.network,
+      autoRenewPeriodSeconds: normalisedParams.autoRenewPeriodSeconds,
+      autoRenewAccountId: normalisedParams.autoRenewAccountId,
+      expirationTime: normalisedParams.expirationTime?.toISOString(),
     };
 
     return { result: outputData };

@@ -35,6 +35,9 @@ export interface TokenCreateFtFromFileNormalizedParams {
   feeScheduleKey?: ResolvedPublicKey;
   metadataKey?: ResolvedPublicKey;
   freezeDefault: boolean;
+  autoRenewPeriodSeconds?: number;
+  autoRenewAccountId?: string;
+  expirationTime?: Date;
 }
 
 export interface TokenCreateFtFromFileBuildTransactionResult {

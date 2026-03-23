@@ -633,6 +633,61 @@ describe('TokenServiceImpl', () => {
         mockCustomFractionalFee.setAllCollectorsAreExempt,
       ).toHaveBeenCalledWith(true);
     });
+
+    it('should set auto-renew account and period when both provided', () => {
+      const params = {
+        ...baseParams,
+        autoRenewAccountId: '0.0.7777',
+        autoRenewPeriodSeconds: 86400,
+      };
+
+      tokenService.createTokenTransaction(params);
+
+      expect(
+        mockTokenCreateTransaction.setAutoRenewAccountId,
+      ).toHaveBeenCalledWith(mockAccountIdInstance);
+      expect(
+        mockTokenCreateTransaction.setAutoRenewPeriod,
+      ).toHaveBeenCalledWith(86400);
+      expect(
+        mockTokenCreateTransaction.setExpirationTime,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should set expiration time when auto-renew period is not used', () => {
+      const exp = new Date('2028-01-01T00:00:00.000Z');
+      const params = {
+        ...baseParams,
+        expirationTime: exp,
+      };
+
+      tokenService.createTokenTransaction(params);
+
+      expect(mockTokenCreateTransaction.setExpirationTime).toHaveBeenCalledWith(
+        exp,
+      );
+      expect(
+        mockTokenCreateTransaction.setAutoRenewPeriod,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should prefer auto-renew over expiration when both are passed', () => {
+      const params = {
+        ...baseParams,
+        autoRenewAccountId: '0.0.7777',
+        autoRenewPeriodSeconds: 3600,
+        expirationTime: new Date('2028-01-01T00:00:00.000Z'),
+      };
+
+      tokenService.createTokenTransaction(params);
+
+      expect(
+        mockTokenCreateTransaction.setAutoRenewPeriod,
+      ).toHaveBeenCalledWith(3600);
+      expect(
+        mockTokenCreateTransaction.setExpirationTime,
+      ).not.toHaveBeenCalled();
+    });
   });
 
   describe('createTokenAssociationTransaction', () => {

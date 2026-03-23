@@ -495,6 +495,9 @@ export const expectedTokenTransactionParams = {
   metadataPublicKey: undefined,
   freezeDefault: undefined,
   memo: undefined,
+  autoRenewPeriodSeconds: undefined,
+  autoRenewAccountId: undefined,
+  expirationTime: undefined,
 };
 
 /**
@@ -545,6 +548,9 @@ export const expectedTokenTransactionParamsFromFile = {
   tokenType: HederaTokenType.FUNGIBLE_COMMON,
   freezeDefault: undefined,
   memo: 'Test token created from file',
+  autoRenewPeriodSeconds: undefined,
+  autoRenewAccountId: undefined,
+  expirationTime: undefined,
 };
 
 /**

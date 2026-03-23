@@ -11,7 +11,7 @@ import type {
 } from './types';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
-import { StateError } from '@/core/errors';
+import { StateError, ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
@@ -120,6 +120,40 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       'token:metadata',
     );
 
+    const autoRenewPeriodSeconds = tokenDefinition.autoRenewPeriod;
+    const autoRenewAccountCredential = tokenDefinition.autoRenewAccount
+      ? await api.keyResolver.resolveAccountCredentials(
+          tokenDefinition.autoRenewAccount,
+          keyManager,
+          false,
+          ['token:auto-renew'],
+        )
+      : undefined;
+
+    if (autoRenewPeriodSeconds !== undefined && !autoRenewAccountCredential) {
+      throw new ValidationError(
+        'autoRenewAccount is required when autoRenewPeriod is set',
+        {
+          context: {
+            autoRenewPeriodSeconds,
+          },
+        },
+      );
+    }
+
+    let expirationTime: Date | undefined = tokenDefinition.expirationTime;
+    if (
+      autoRenewPeriodSeconds !== undefined &&
+      autoRenewAccountCredential !== undefined
+    ) {
+      if (expirationTime !== undefined) {
+        logger.warn(
+          'expirationTime is ignored because autoRenewPeriod is set; auto-renew period takes precedence over fixed expiration.',
+        );
+      }
+      expirationTime = undefined;
+    }
+
     return {
       filename: validArgs.file,
       keyManager,
@@ -144,6 +178,11 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       feeScheduleKey,
       metadataKey,
       freezeDefault: tokenDefinition.freezeDefault,
+      autoRenewPeriodSeconds: autoRenewAccountCredential
+        ? autoRenewPeriodSeconds
+        : undefined,
+      autoRenewAccountId: autoRenewAccountCredential?.accountId,
+      expirationTime,
     };
   }
 
@@ -174,6 +213,9 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
         : undefined,
       customFees: normalisedParams.customFees,
       memo: normalisedParams.memo,
+      autoRenewPeriodSeconds: normalisedParams.autoRenewPeriodSeconds,
+      autoRenewAccountId: normalisedParams.autoRenewAccountId,
+      expirationTime: normalisedParams.expirationTime,
     });
     return { transaction };
   }
@@ -276,6 +318,9 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       transactionId: result.transactionId,
       network: normalisedParams.network,
       associations,
+      autoRenewPeriodSeconds: normalisedParams.autoRenewPeriodSeconds,
+      autoRenewAccountId: normalisedParams.autoRenewAccountId,
+      expirationTime: normalisedParams.expirationTime?.toISOString(),
     };
 
     return { result: outputData };

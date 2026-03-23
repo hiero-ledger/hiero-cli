@@ -98,6 +98,9 @@ export class TokenServiceImpl implements TokenService {
       metadataPublicKey,
       customFees,
       memo,
+      autoRenewPeriodSeconds,
+      autoRenewAccountId,
+      expirationTime,
     } = params;
 
     // Convert supply type string to enum
@@ -181,6 +184,20 @@ export class TokenServiceImpl implements TokenService {
     if (metadataPublicKey) {
       tokenCreateTx.setMetadataKey(metadataPublicKey);
       this.logger.debug(`[TOKEN SERVICE] Set metadata key`);
+    }
+
+    if (autoRenewPeriodSeconds && autoRenewAccountId) {
+      tokenCreateTx
+        .setAutoRenewAccountId(AccountId.fromString(autoRenewAccountId))
+        .setAutoRenewPeriod(autoRenewPeriodSeconds);
+      this.logger.debug(
+        `[TOKEN SERVICE] Set auto-renew: account ${autoRenewAccountId}, period ${String(autoRenewPeriodSeconds)}s`,
+      );
+    } else if (expirationTime) {
+      tokenCreateTx.setExpirationTime(expirationTime);
+      this.logger.debug(
+        `[TOKEN SERVICE] Set expiration time: ${expirationTime.toISOString()}`,
+      );
     }
 
     this.logger.debug(
