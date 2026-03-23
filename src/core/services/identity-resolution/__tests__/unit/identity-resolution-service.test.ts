@@ -31,7 +31,7 @@ describe('IdentityResolutionServiceImpl', () => {
 
     mirrorService = {
       getAccount: jest.fn(),
-      getAccountHBarBalance: jest.fn(),
+      getAccountOrThrow: jest.fn(),
       getAccountTokenBalances: jest.fn(),
       getTopicMessage: jest.fn(),
       getTopicMessages: jest.fn(),
@@ -54,7 +54,7 @@ describe('IdentityResolutionServiceImpl', () => {
       (aliasService.resolveOrThrow as jest.Mock).mockReturnValue({
         entityId: '0.0.1234',
       });
-      (mirrorService.getAccount as jest.Mock).mockResolvedValue({
+      (mirrorService.getAccountOrThrow as jest.Mock).mockResolvedValue({
         accountId: '0.0.1234',
         accountPublicKey: 'pub-key',
         evmAddress: '0xabc',
@@ -73,7 +73,7 @@ describe('IdentityResolutionServiceImpl', () => {
         AliasType.Account,
         SupportedNetwork.TESTNET,
       );
-      expect(mirrorService.getAccount).toHaveBeenCalledWith('0.0.1234');
+      expect(mirrorService.getAccountOrThrow).toHaveBeenCalledWith('0.0.1234');
       expect(result).toEqual({
         accountId: '0.0.1234',
         accountPublicKey: 'pub-key',
@@ -82,7 +82,7 @@ describe('IdentityResolutionServiceImpl', () => {
     });
 
     it('resolves account when reference is an entity ID without alias lookup', async () => {
-      (mirrorService.getAccount as jest.Mock).mockResolvedValue({
+      (mirrorService.getAccountOrThrow as jest.Mock).mockResolvedValue({
         accountId: '0.0.5678',
         accountPublicKey: 'pub-key-2',
         evmAddress: '0xdef',
@@ -97,7 +97,7 @@ describe('IdentityResolutionServiceImpl', () => {
       const result = await service.resolveAccount(params);
 
       expect(aliasService.resolveOrThrow).not.toHaveBeenCalled();
-      expect(mirrorService.getAccount).toHaveBeenCalledWith('0.0.5678');
+      expect(mirrorService.getAccountOrThrow).toHaveBeenCalledWith('0.0.5678');
       expect(result).toEqual({
         accountId: '0.0.5678',
         accountPublicKey: 'pub-key-2',
@@ -106,7 +106,7 @@ describe('IdentityResolutionServiceImpl', () => {
     });
 
     it('resolves account when reference is an EVM address without alias lookup', async () => {
-      (mirrorService.getAccount as jest.Mock).mockResolvedValue({
+      (mirrorService.getAccountOrThrow as jest.Mock).mockResolvedValue({
         accountId: '0.0.9999',
         accountPublicKey: 'pub-key-3',
         evmAddress: '0x123',
@@ -121,7 +121,7 @@ describe('IdentityResolutionServiceImpl', () => {
       const result = await service.resolveAccount(params);
 
       expect(aliasService.resolveOrThrow).not.toHaveBeenCalled();
-      expect(mirrorService.getAccount).toHaveBeenCalledWith('0x123');
+      expect(mirrorService.getAccountOrThrow).toHaveBeenCalledWith('0x123');
       expect(result).toEqual({
         accountId: '0.0.9999',
         accountPublicKey: 'pub-key-3',

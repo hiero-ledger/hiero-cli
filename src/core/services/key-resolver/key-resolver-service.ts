@@ -251,7 +251,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     const { accountId } = accountIdCredential;
 
     const { keyAlgorithm, accountPublicKey } =
-      await this.mirror.getAccount(accountId);
+      await this.mirror.getAccountOrThrow(accountId);
 
     if (!keyAlgorithm || !accountPublicKey) {
       throw new StateError(
@@ -287,7 +287,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
   ): Promise<ResolvedKey> {
     const { accountId, privateKey } = keyPair;
 
-    const accountData = await this.mirror.getAccount(accountId);
+    const accountData = await this.mirror.getAccountOrThrow(accountId);
 
     const { keyAlgorithm, accountPublicKey } = accountData;
 
@@ -417,7 +417,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
     let accountData;
     try {
-      accountData = await this.mirror.getAccount(evmAddress);
+      accountData = await this.mirror.getAccountOrThrow(evmAddress);
     } catch (error) {
       if (error instanceof NotFoundError) {
         return { evmAddress };

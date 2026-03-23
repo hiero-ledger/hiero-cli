@@ -1,7 +1,15 @@
 import { CliError } from './cli-error';
 
 export class NetworkError extends CliError {
-  static readonly CODE = 'NETWORK_ERROR';
+  private static readonly CODE = 'NETWORK_ERROR';
+  private static readonly TEMPLATE = `
+{{message}}
+{{#if context.apiMessages}}{{#if (gt (length context.apiMessages) 0)}}
+Detailed error message:
+{{#each context.apiMessages}}  
+  • {{this}}{{/each}}
+{{/if}}{{/if}}
+`.trim();
 
   constructor(
     message: string,
@@ -18,5 +26,9 @@ export class NetworkError extends CliError {
       context: options?.context,
       cause: options?.cause,
     });
+  }
+
+  override getTemplate(): string {
+    return NetworkError.TEMPLATE;
   }
 }

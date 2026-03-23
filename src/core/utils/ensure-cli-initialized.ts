@@ -133,7 +133,7 @@ async function importOperatorKey(
   privateKey: string,
   keyManager?: KeyManager,
 ): Promise<string> {
-  const account = await api.mirror.getAccount(accountId);
+  const account = await api.mirror.getAccountOrThrow(accountId);
   const finalKeyManager =
     keyManager ?? api.config.getOption('default_key_manager');
 

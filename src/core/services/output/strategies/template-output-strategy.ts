@@ -78,6 +78,13 @@ export class TemplateOutputStrategy implements OutputFormatterStrategy {
       return value + 1;
     });
 
+    // Helper for array/string length
+    Handlebars.registerHelper('length', function (value: unknown) {
+      if (Array.isArray(value)) return value.length;
+      if (typeof value === 'string') return value.length;
+      return 0;
+    });
+
     // Helper for conditional rendering
     Handlebars.registerHelper(
       'if_eq',
