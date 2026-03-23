@@ -12,21 +12,24 @@ Commands marked **[batchify]** support the `--batch <name>` flag to queue into a
 
 Create a new fungible token with specified properties.
 
-| Option             | Short | Type   | Required | Default        | Description                                                                                                                                |
-| ------------------ | ----- | ------ | -------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--token-name`     | `-T`  | string | **yes**  | —              | Token name                                                                                                                                 |
-| `--symbol`         | `-Y`  | string | **yes**  | —              | Token symbol                                                                                                                               |
-| `--treasury`       | `-t`  | string | no       | operator       | Treasury account: `accountId:privateKey`, key reference, or alias                                                                          |
-| `--decimals`       | `-d`  | number | no       | `0`            | Number of decimal places                                                                                                                   |
-| `--initial-supply` | `-i`  | string | no       | `1000000`      | Initial supply. Default: display units. Append `"t"` for raw units                                                                         |
-| `--supply-type`    | `-S`  | string | no       | `INFINITE`     | Supply type: `INFINITE` or `FINITE`                                                                                                        |
-| `--max-supply`     | `-m`  | string | no       | —              | Max supply (required when `supply-type=FINITE`). Append `"t"` for raw units                                                                |
-| `--admin-key`      | `-a`  | string | no       | operator key   | Admin key: `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias                                               |
-| `--supply-key`     | `-s`  | string | no       | —              | Supply key: `accountId:privateKey`, account ID, `{ed25519\|ecdsa}:public:{hex}`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
-| `--name`           | `-n`  | string | no       | —              | Local alias to register for this token                                                                                                     |
-| `--key-manager`    | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                  |
-| `--memo`           | `-M`  | string | no       | —              | Token memo (max 100 chars)                                                                                                                 |
-| `--batch`          | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                                                  |
+| Option                 | Short | Type   | Required | Default        | Description                                                                                                                                |
+| ---------------------- | ----- | ------ | -------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--token-name`         | `-T`  | string | **yes**  | —              | Token name                                                                                                                                 |
+| `--symbol`             | `-Y`  | string | **yes**  | —              | Token symbol                                                                                                                               |
+| `--treasury`           | `-t`  | string | no       | operator       | Treasury account: `accountId:privateKey`, key reference, or alias                                                                          |
+| `--decimals`           | `-d`  | number | no       | `0`            | Number of decimal places                                                                                                                   |
+| `--initial-supply`     | `-i`  | string | no       | `1000000`      | Initial supply. Default: display units. Append `"t"` for raw units                                                                         |
+| `--supply-type`        | `-S`  | string | no       | `INFINITE`     | Supply type: `INFINITE` or `FINITE`                                                                                                        |
+| `--max-supply`         | `-m`  | string | no       | —              | Max supply (required when `supply-type=FINITE`). Append `"t"` for raw units                                                                |
+| `--admin-key`          | `-a`  | string | no       | operator key   | Admin key: `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias                                               |
+| `--supply-key`         | `-s`  | string | no       | —              | Supply key: `accountId:privateKey`, account ID, `{ed25519\|ecdsa}:public:{hex}`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
+| `--name`               | `-n`  | string | no       | —              | Local alias to register for this token                                                                                                     |
+| `--key-manager`        | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                  |
+| `--memo`               | `-M`  | string | no       | —              | Token memo (max 100 chars)                                                                                                                 |
+| `--auto-renew-period`  | `-R`  | string | no       | —              | Auto-renew interval: integer = seconds, or suffix `s` / `m` / `h` / `d`. Requires `--auto-renew-account`                                   |
+| `--auto-renew-account` | `-A`  | string | no       | —              | Account that pays auto-renewal (alias, `accountId:key`, key reference, etc.)                                                               |
+| `--expiration-time`    | `-x`  | string | no       | —              | Fixed expiration (ISO 8601). Ignored (with warning) if auto-renew period + account are set                                                 |
+| `--batch`              | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                                                  |
 
 **Example:**
 
@@ -35,7 +38,7 @@ hcli token create-ft --token-name "MyToken" --symbol MTK --decimals 2 --initial-
 hcli token create-ft --token-name "MyToken" --symbol MTK --batch myBatch
 ```
 
-**Output:** `{ tokenId, name, symbol, decimals, initialSupply, transactionId }`
+**Output:** `{ tokenId, name, symbol, treasuryId, decimals, initialSupply, supplyType, transactionId, alias?, network, autoRenewPeriodSeconds?, autoRenewAccountId?, expirationTime? }` — `expirationTime` is an ISO string when fixed expiration was used; lifecycle fields are omitted when not set.
 
 ---
 
@@ -84,6 +87,10 @@ Create a fungible token from a JSON definition file (supports advanced features)
 hcli token create-ft-from-file --file ./my-token.json
 hcli token create-ft-from-file --file ./my-token.json --batch myBatch
 ```
+
+Optional JSON fields in the definition file: `autoRenewPeriod` (seconds or suffixed duration), `autoRenewAccount` (same formats as treasury/keys), `expirationTime` (ISO 8601). If `autoRenewPeriod` is set, `autoRenewAccount` is required; if both auto-renew fields are set, `expirationTime` is ignored (warning logged).
+
+**Output:** Same shape as CLI `create-ft`, plus `associations[]`, including optional `autoRenewPeriodSeconds`, `autoRenewAccountId`, `expirationTime`.
 
 ---
 

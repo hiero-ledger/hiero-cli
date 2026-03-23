@@ -299,9 +299,15 @@ interface CommandOutputSpec {
   "initialSupply": "1000000",
   "supplyType": "INFINITE",
   "transactionId": "0.0.123@1700000000.123456789",
-  "alias": "my-token"
+  "alias": "my-token",
+  "network": "testnet",
+  "autoRenewPeriodSeconds": 2592000,
+  "autoRenewAccountId": "0.0.11111",
+  "expirationTime": "2030-01-01T00:00:00.000Z"
 }
 ```
+
+`autoRenewPeriodSeconds`, `autoRenewAccountId`, and `expirationTime` are **optional**. They are present when auto-renew or fixed expiration was configured; `expirationTime` is an ISO 8601 string when a fixed expiration was used (omitted when auto-renew period + account take precedence).
 
 #### `token transfer-ft`
 
@@ -398,9 +404,14 @@ interface CommandOutputSpec {
       "success": true,
       "transactionId": "0.0.123@1700000000.123456789"
     }
-  ]
+  ],
+  "autoRenewPeriodSeconds": 2592000,
+  "autoRenewAccountId": "0.0.11111",
+  "expirationTime": "2030-01-01T00:00:00.000Z"
 }
 ```
+
+Same optional lifecycle fields as `token create-ft`: `autoRenewPeriodSeconds`, `autoRenewAccountId`, `expirationTime` (ISO string when fixed expiration was applied).
 
 #### `token create-nft-from-file`
 
