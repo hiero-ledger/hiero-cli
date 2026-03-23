@@ -36,6 +36,11 @@ import {
   topicSubmitMessage,
   TopicSubmitMessageOutputSchema,
 } from './commands/submit-message';
+import {
+  TOPIC_UPDATE_TEMPLATE,
+  topicUpdate,
+  TopicUpdateOutputSchema,
+} from './commands/update';
 import { TopicCreateBatchStateHook } from './hooks/batch-create';
 import { TopicDeleteBatchStateHook } from './hooks/batch-delete';
 
@@ -207,6 +212,95 @@ export const topicPluginManifest: PluginManifest = {
       output: {
         schema: TopicSubmitMessageOutputSchema,
         humanTemplate: TOPIC_SUBMIT_MESSAGE_TEMPLATE,
+      },
+    },
+    {
+      name: 'update',
+      summary: 'Update an existing Hedera topic',
+      description:
+        'Update a Hedera Consensus Service topic. Requires admin key for most updates. Pass "null" to clear memo, submit key, or auto-renew account.',
+      options: [
+        {
+          name: 'topic',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Topic ID or alias to update',
+        },
+        {
+          name: 'memo',
+          short: 'm',
+          type: OptionType.STRING,
+          required: false,
+          description: 'New memo for the topic. Pass "null" to clear.',
+        },
+        {
+          name: 'admin-key',
+          short: 'a',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New admin key(s). Pass multiple times for multiple keys. Cannot be cleared, only replaced.',
+        },
+        {
+          name: 'submit-key',
+          short: 's',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New submit key(s). Pass "null" to clear (makes topic public).',
+        },
+        {
+          name: 'admin-key-threshold',
+          short: 'A',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'Number of admin keys required to sign (M-of-N). Only applies when multiple admin keys are provided.',
+        },
+        {
+          name: 'submit-key-threshold',
+          short: 'S',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'Number of submit keys required to sign (M-of-N). Only applies when multiple submit keys are provided.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+        {
+          name: 'auto-renew-account',
+          short: 'r',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Auto-renew account ID or alias. Pass "null" to clear.',
+        },
+        {
+          name: 'auto-renew-period',
+          short: 'p',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'Auto-renew period in seconds (min 2592000 / 30 days, max 8000000 / ~92 days)',
+        },
+        {
+          name: 'expiration-time',
+          short: 'e',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Expiration time as ISO datetime string',
+        },
+      ],
+      handler: topicUpdate,
+      output: {
+        schema: TopicUpdateOutputSchema,
+        humanTemplate: TOPIC_UPDATE_TEMPLATE,
       },
     },
     {
