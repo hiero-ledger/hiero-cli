@@ -3,7 +3,11 @@
  * Exports the topic plugin manifest and command handlers
  */
 export { topicCreate, TopicCreateCommand } from './commands/create/handler';
-export { topicDelete, TopicDeleteCommand } from './commands/delete/handler';
+export {
+  TOPIC_DELETE_COMMAND_NAME,
+  topicDelete,
+  TopicDeleteCommand,
+} from './commands/delete/handler';
 export {
   topicFindMessage,
   TopicFindMessageCommand,

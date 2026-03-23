@@ -18,6 +18,10 @@ export const createMockTopicCreateTransaction = () => ({
   setSubmitKey: jest.fn().mockReturnThis(),
 });
 
+export const createMockTopicDeleteTransaction = () => ({
+  setTopicId: jest.fn().mockReturnThis(),
+});
+
 /**
  * Create mock TopicMessageSubmitTransaction
  * Constructor-based, stores params for verification
@@ -65,4 +69,8 @@ export const createSubmitMessageParams = (
   topicId: '0.0.1001',
   message: 'Test message',
   ...overrides,
+});
+
+export const createDeleteTopicParams = (topicId = '0.0.1001') => ({
+  topicId,
 });

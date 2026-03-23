@@ -140,6 +140,7 @@ Commands that support `--batch` (via `registeredHooks`):
 
 - `account create`
 - `topic create`
+- `topic delete`
 - `token create-ft`
 - `token create-ft-from-file`
 - `token create-nft`
