@@ -35,6 +35,11 @@ import {
   AccountListOutputSchema,
 } from './commands/list';
 import {
+  ACCOUNT_UPDATE_TEMPLATE,
+  accountUpdate,
+  AccountUpdateOutputSchema,
+} from './commands/update';
+import {
   ACCOUNT_VIEW_TEMPLATE,
   accountView,
   AccountViewOutputSchema,
@@ -120,6 +125,92 @@ export const accountPluginManifest: PluginManifest = {
       output: {
         schema: AccountCreateOutputSchema,
         humanTemplate: ACCOUNT_CREATE_TEMPLATE,
+      },
+    },
+    {
+      name: 'update',
+      summary: 'Update an existing Hedera account',
+      description: 'Update properties of an existing Hedera account on-chain',
+      options: [
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Account ID or alias of the account to update',
+        },
+        {
+          name: 'key',
+          short: 'K',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'New key for the account (private/public key, key reference, or alias). Requires private key in KMS.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+        {
+          name: 'memo',
+          short: 'm',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Account memo (max 100 characters)',
+        },
+        {
+          name: 'max-auto-associations',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'Max automatic token associations (-1 for unlimited, 0 to disable)',
+        },
+        {
+          name: 'staked-account-id',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Account ID to stake to',
+        },
+        {
+          name: 'staked-node-id',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'Node ID to stake to',
+        },
+        {
+          name: 'decline-staking-reward',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Decline staking reward',
+        },
+        {
+          name: 'auto-renew-period',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'Auto renew period in seconds',
+        },
+        {
+          name: 'receiver-signature-required',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Require receiver signature for transfers',
+        },
+        {
+          name: 'expiration-time',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Expiration time (ISO 8601 or Unix timestamp in seconds)',
+        },
+      ],
+      handler: accountUpdate,
+      output: {
+        schema: AccountUpdateOutputSchema,
+        humanTemplate: ACCOUNT_UPDATE_TEMPLATE,
       },
     },
     {

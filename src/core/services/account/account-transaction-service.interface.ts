@@ -6,23 +6,31 @@ import type {
   AccountCreateTransaction,
   AccountDeleteTransaction,
   AccountInfoQuery,
+  AccountUpdateTransaction,
 } from '@hashgraph/sdk';
 
 export interface AccountService {
-  /**
-   * Create a new Hedera account
-   */
   createAccount(params: CreateAccountParams): AccountCreateResult;
-
-  /**
-   * Build an account delete transaction (must be signed by the deleted account)
-   */
   deleteAccount(params: DeleteAccountParams): AccountDeleteResult;
-
-  /**
-   * Get account information (creates a transaction to query account info)
-   */
+  updateAccount(params: UpdateAccountParams): AccountUpdateResult;
   getAccountInfo(accountId: string): AccountInfoQuery;
+}
+
+export interface UpdateAccountParams {
+  accountId: string;
+  key?: string;
+  memo?: string;
+  maxAutoAssociations?: number;
+  stakedAccountId?: string;
+  stakedNodeId?: number;
+  declineStakingReward?: boolean;
+  autoRenewPeriod?: number;
+  receiverSignatureRequired?: boolean;
+  expirationTime?: Date;
+}
+
+export interface AccountUpdateResult {
+  transaction: AccountUpdateTransaction;
 }
 
 export interface AccountCreateResult {

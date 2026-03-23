@@ -83,6 +83,7 @@ export const makeAccountTransactionServiceMock = (
   overrides?: Partial<jest.Mocked<AccountService>>,
 ): jest.Mocked<AccountService> => ({
   createAccount: jest.fn(),
+  updateAccount: jest.fn(),
   deleteAccount: jest.fn(),
   getAccountInfo: jest.fn(),
   ...overrides,
@@ -264,6 +265,7 @@ export const makeApiMocksForAccountCreate = ({
 }: ApiMocksConfig) => {
   const account: jest.Mocked<AccountService> = {
     createAccount: createAccountImpl || jest.fn(),
+    updateAccount: jest.fn(),
     deleteAccount: jest.fn(),
     getAccountInfo: jest.fn(),
   };

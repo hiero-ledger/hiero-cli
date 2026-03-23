@@ -16,10 +16,12 @@ import { AccountServiceImpl } from '@/core/services/account/account-transaction-
 import {
   createMockAccountCreateTransaction,
   createMockAccountInfoQuery,
+  createMockAccountUpdateTransaction,
 } from './mocks';
 
 const mockTransaction = createMockAccountCreateTransaction();
 const mockInfoQuery = createMockAccountInfoQuery();
+const mockUpdateTransaction = createMockAccountUpdateTransaction();
 
 const mockPublicKeyInstance = {
   toString: jest.fn().mockReturnValue('mock-pk'),
@@ -31,6 +33,7 @@ const mockHbarInstance = { toString: jest.fn().mockReturnValue('100 ℏ') };
 
 jest.mock('@hashgraph/sdk', () => ({
   AccountCreateTransaction: jest.fn(() => mockTransaction),
+  AccountUpdateTransaction: jest.fn(() => mockUpdateTransaction),
   AccountInfoQuery: jest.fn(() => mockInfoQuery),
   AccountId: {
     fromString: jest.fn(() => mockAccountIdInstance),
@@ -189,6 +192,189 @@ describe('AccountServiceImpl', () => {
       );
 
       HbarMock.fromTinybars.mockReturnValue(mockHbarInstance);
+    });
+  });
+
+  describe('updateAccount', () => {
+    it('should update account with only accountId (minimum params)', () => {
+      const result = accountService.updateAccount({ accountId: '0.0.1234' });
+
+      expect(mockUpdateTransaction.setAccountId).toHaveBeenCalledWith(
+        '0.0.1234',
+      );
+      expect(result.transaction).toBe(mockUpdateTransaction);
+      expect(mockUpdateTransaction.setKey).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.setAccountMemo).not.toHaveBeenCalled();
+      expect(
+        mockUpdateTransaction.setMaxAutomaticTokenAssociations,
+      ).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.setStakedAccountId).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.setStakedNodeId).not.toHaveBeenCalled();
+      expect(
+        mockUpdateTransaction.setDeclineStakingReward,
+      ).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.setAutoRenewPeriod).not.toHaveBeenCalled();
+      expect(
+        mockUpdateTransaction.setReceiverSignatureRequired,
+      ).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.setExpirationTime).not.toHaveBeenCalled();
+    });
+
+    it('should set key when key param provided', () => {
+      accountService.updateAccount({
+        accountId: '0.0.1234',
+        key: ECDSA_HEX_PUBLIC_KEY,
+      });
+
+      expect(PublicKey.fromString).toHaveBeenCalledWith(ECDSA_HEX_PUBLIC_KEY);
+      expect(mockUpdateTransaction.setKey).toHaveBeenCalledWith(
+        mockPublicKeyInstance,
+      );
+    });
+
+    it('should set memo when memo param provided', () => {
+      accountService.updateAccount({
+        accountId: '0.0.1234',
+        memo: 'test memo',
+      });
+
+      expect(mockUpdateTransaction.setAccountMemo).toHaveBeenCalledWith(
+        'test memo',
+      );
+    });
+
+    it('should set maxAutoAssociations when param provided', () => {
+      accountService.updateAccount({
+        accountId: '0.0.1234',
+        maxAutoAssociations: 10,
+      });
+
+      expect(
+        mockUpdateTransaction.setMaxAutomaticTokenAssociations,
+      ).toHaveBeenCalledWith(10);
+    });
+
+    it('should set stakedAccountId when param provided', () => {
+      accountService.updateAccount({
+        accountId: '0.0.1234',
+        stakedAccountId: '0.0.5',
+      });
+
+      expect(mockUpdateTransaction.setStakedAccountId).toHaveBeenCalledWith(
+        '0.0.5',
+      );
+    });
+
+    it('should set stakedNodeId when param provided', () => {
+      accountService.updateAccount({ accountId: '0.0.1234', stakedNodeId: 3 });
+
+      expect(mockUpdateTransaction.setStakedNodeId).toHaveBeenCalledWith(3);
+    });
+
+    it('should set declineStakingReward when param provided', () => {
+      accountService.updateAccount({
+        accountId: '0.0.1234',
+        declineStakingReward: true,
+      });
+
+      expect(
+        mockUpdateTransaction.setDeclineStakingReward,
+      ).toHaveBeenCalledWith(true);
+    });
+
+    it('should set autoRenewPeriod when param provided', () => {
+      accountService.updateAccount({
+        accountId: '0.0.1234',
+        autoRenewPeriod: 7776000,
+      });
+
+      expect(mockUpdateTransaction.setAutoRenewPeriod).toHaveBeenCalledWith(
+        7776000,
+      );
+    });
+
+    it('should set receiverSignatureRequired when param provided', () => {
+      accountService.updateAccount({
+        accountId: '0.0.1234',
+        receiverSignatureRequired: true,
+      });
+
+      expect(
+        mockUpdateTransaction.setReceiverSignatureRequired,
+      ).toHaveBeenCalledWith(true);
+    });
+
+    it('should set expirationTime when param provided', () => {
+      const expDate = new Date('2025-01-01');
+      accountService.updateAccount({
+        accountId: '0.0.1234',
+        expirationTime: expDate,
+      });
+
+      expect(mockUpdateTransaction.setExpirationTime).toHaveBeenCalledWith(
+        expDate,
+      );
+    });
+
+    it('should set multiple fields in single transaction', () => {
+      accountService.updateAccount({
+        accountId: '0.0.1234',
+        memo: 'test',
+        maxAutoAssociations: 5,
+        declineStakingReward: false,
+      });
+
+      expect(mockUpdateTransaction.setAccountMemo).toHaveBeenCalledWith('test');
+      expect(
+        mockUpdateTransaction.setMaxAutomaticTokenAssociations,
+      ).toHaveBeenCalledWith(5);
+      expect(
+        mockUpdateTransaction.setDeclineStakingReward,
+      ).toHaveBeenCalledWith(false);
+    });
+
+    it('should not call optional setters when params are undefined', () => {
+      accountService.updateAccount({ accountId: '0.0.1234' });
+
+      expect(mockUpdateTransaction.setKey).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.setAccountMemo).not.toHaveBeenCalled();
+      expect(
+        mockUpdateTransaction.setMaxAutomaticTokenAssociations,
+      ).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.setStakedAccountId).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.setStakedNodeId).not.toHaveBeenCalled();
+      expect(
+        mockUpdateTransaction.setDeclineStakingReward,
+      ).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.setAutoRenewPeriod).not.toHaveBeenCalled();
+      expect(
+        mockUpdateTransaction.setReceiverSignatureRequired,
+      ).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.setExpirationTime).not.toHaveBeenCalled();
+    });
+
+    it('should throw ValidationError when AccountUpdateTransaction throws', () => {
+      const { AccountUpdateTransaction: MockTx } =
+        jest.requireMock('@hashgraph/sdk');
+      MockTx.mockImplementationOnce(() => {
+        throw new Error('SDK error');
+      });
+
+      expect(() =>
+        accountService.updateAccount({ accountId: '0.0.1234' }),
+      ).toThrow(
+        expect.objectContaining({
+          message: 'Invalid account update parameters',
+        }),
+      );
+    });
+
+    it('should log debug message during update', () => {
+      accountService.updateAccount({ accountId: '0.0.1234' });
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        expect.stringContaining('[ACCOUNT TX] Updating account:'),
+      );
     });
   });
 
