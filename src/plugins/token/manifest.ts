@@ -87,6 +87,7 @@ import { TokenCreateFtBatchStateHook } from './hooks/batch-create-ft';
 import { TokenCreateFtFromFileBatchStateHook } from './hooks/batch-create-ft-from-file';
 import { TokenCreateNftBatchStateHook } from './hooks/batch-create-nft';
 import { TokenCreateNftFromFileBatchStateHook } from './hooks/batch-create-nft-from-file';
+import { TokenDeleteBatchStateHook } from './hooks/batch-delete';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
@@ -117,6 +118,11 @@ export const tokenPluginManifest: PluginManifest = {
     {
       name: 'token-associate-batch-state',
       hook: new TokenAssociateBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-delete-batch-state',
+      hook: new TokenDeleteBatchStateHook(),
       options: [],
     },
   ],
@@ -786,16 +792,42 @@ export const tokenPluginManifest: PluginManifest = {
     },
     {
       name: 'delete',
-      summary: 'Delete a token from state',
+      summary: 'Delete a token from the Hedera network',
       description:
-        'Delete a token from local state. This only removes the token from the local address book, not from the Hedera network.',
+        'Delete a token from the Hedera network. Requires admin key. Also removes token from local state if present. Use --state-only to remove only from local state.',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'token',
           short: 'T',
           type: OptionType.STRING,
           required: true,
-          description: 'Token identifier: either a token alias or token-id',
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'admin-key',
+          short: 'a',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Required unless --state-only is used.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+        {
+          name: 'state-only',
+          short: 's',
+          type: OptionType.BOOLEAN,
+          required: false,
+          default: false,
+          description:
+            'Remove the token only from local CLI state; do not submit TokenDeleteTransaction to the network. Mutually exclusive with --admin-key.',
         },
       ],
       handler: tokenDelete,

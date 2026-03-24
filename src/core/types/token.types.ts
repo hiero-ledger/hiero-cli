@@ -107,6 +107,10 @@ export interface NftTransferParams {
   serialNumbers: number[];
 }
 
+export interface TokenDeleteParams {
+  tokenId: string;
+}
+
 /**
  * Parameters for approving NFT allowance for specific serial numbers
  */

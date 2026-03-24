@@ -64,6 +64,7 @@ export const makeTokenServiceMock = (
   createNftTransferTransaction: jest.fn(),
   createNftAllowanceApproveTransaction: jest.fn(),
   createFungibleTokenAllowanceTransaction: jest.fn(),
+  createDeleteTransaction: jest.fn(),
   ...overrides,
 });
 
@@ -832,4 +833,47 @@ export const makeMintNftSuccessMocks = (overrides?: {
     ...apiMocks,
     mockMintTransaction,
   };
+};
+
+export const makeDeleteSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    admin_key?: { key: string } | null;
+    name?: string;
+  };
+  adminKeyPublicKey?: string;
+}) => {
+  const mockDeleteTransaction = { test: 'delete-transaction' };
+  const defaultAdminKeyPublicKey =
+    overrides?.adminKeyPublicKey ?? 'admin-public-key';
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createDeleteTransaction: jest.fn().mockReturnValue(mockDeleteTransaction),
+    },
+    txExecute: {
+      execute: jest
+        .fn()
+        .mockResolvedValue(makeTransactionResult({ success: true })),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        admin_key:
+          overrides?.tokenInfo && 'admin_key' in overrides.tokenInfo
+            ? overrides.tokenInfo.admin_key
+            : { key: defaultAdminKeyPublicKey },
+        name: overrides?.tokenInfo?.name ?? 'TestToken',
+      }),
+    },
+    alias: makeAliasServiceMock({
+      list: jest.fn().mockReturnValue([]),
+    }),
+  });
+
+  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
+    accountId: '0.0.200000',
+    publicKey: defaultAdminKeyPublicKey,
+    keyRefId: 'admin-key-ref-id',
+  });
+
+  return { ...apiMocks, mockDeleteTransaction };
 };
