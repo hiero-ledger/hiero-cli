@@ -3,12 +3,14 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import '@/core/utils/json-serialize';
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
+import { KeyAlgorithm } from '@/core';
 import {
   NotFoundError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import {
   tokenDelete,
   TokenDeleteOutputSchema,
@@ -138,6 +140,25 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
       const output = assertOutput(result.result, TokenDeleteOutputSchema);
       expect(output.deletedToken.name).toBe('MirrorName');
     });
+
+    test('auto-resolves admin key from KMS when not provided', async () => {
+      const { api } = makeDeleteSuccessMocks();
+      (api.kms.findByPublicKey as jest.Mock).mockReturnValue({
+        keyRefId: 'kms-key-ref-id',
+        publicKey: 'admin-public-key',
+        keyManager: KeyManager.local,
+        keyAlgorithm: KeyAlgorithm.ED25519,
+        createdAt: '',
+        updatedAt: '',
+      });
+      const args = makeArgs(api, { adminKey: undefined });
+
+      const result = await tokenDelete(args);
+
+      const output = assertOutput(result.result, TokenDeleteOutputSchema);
+      expect(output.transactionId).toBeDefined();
+      expect(output.deletedToken.tokenId).toBe('0.0.123456');
+    });
   });
 
   describe('error scenarios', () => {
@@ -180,13 +201,13 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
       await expect(tokenDelete(args)).rejects.toThrow(TransactionError);
     });
 
-    test('throws ValidationError when admin-key missing for network delete', async () => {
+    test('throws ValidationError when admin-key not provided and not in KMS', async () => {
       const { api } = makeDeleteSuccessMocks();
       const args = makeArgs(api, { adminKey: undefined });
 
       await expect(tokenDelete(args)).rejects.toThrow(ValidationError);
       await expect(tokenDelete(args)).rejects.toThrow(
-        '--admin-key is required',
+        'Admin key not found in key manager',
       );
     });
   });

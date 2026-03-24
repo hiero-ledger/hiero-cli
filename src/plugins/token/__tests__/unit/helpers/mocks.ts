@@ -875,5 +875,7 @@ export const makeDeleteSuccessMocks = (overrides?: {
     keyRefId: 'admin-key-ref-id',
   });
 
+  apiMocks.kms.findByPublicKey = jest.fn().mockReturnValue(undefined);
+
   return { ...apiMocks, mockDeleteTransaction };
 };

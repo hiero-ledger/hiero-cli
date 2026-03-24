@@ -1,5 +1,9 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
+import type {
+  KeyManager,
+  KmsCredentialRecord,
+} from '@/core/services/kms/kms-types.interface';
 import type { TokenDeleteInput } from './input';
 import type { TokenDeleteOutput } from './output';
 import type {
@@ -102,12 +106,6 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
 
     const validArgs = TokenDeleteInputSchema.parse(args.args);
 
-    if (!validArgs.adminKey) {
-      throw new ValidationError(
-        '--admin-key is required for network token deletion',
-      );
-    }
-
     const keyManager =
       validArgs.keyManager ||
       api.config.getOption<KeyManager>('default_key_manager');
@@ -126,18 +124,13 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
       );
     }
 
-    const adminKeyResolved = await api.keyResolver.resolveSigningKey(
-      validArgs.adminKey,
+    const adminKeyResolved = await this.resolveAdminKey(
+      api,
+      validArgs,
       keyManager,
-      false,
-      ['token:admin'],
+      tokenInfo.admin_key.key,
+      tokenId,
     );
-
-    if (tokenInfo.admin_key.key !== adminKeyResolved.publicKey) {
-      throw new ValidationError('Admin key mismatch', {
-        context: { tokenId },
-      });
-    }
 
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
     const key = composeKey(network, tokenId);
@@ -145,6 +138,39 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     const tokenName = tokenInState?.name ?? tokenInfo.name;
 
     return { network, tokenId, tokenName, adminKeyResolved };
+  }
+
+  private async resolveAdminKey(
+    api: CommandHandlerArgs['api'],
+    validArgs: TokenDeleteInput,
+    keyManager: KeyManager,
+    tokenAdminPublicKey: string,
+    tokenId: string,
+  ): Promise<ResolvedPublicKey> {
+    if (validArgs.adminKey) {
+      const adminKeyResolved = await api.keyResolver.resolveSigningKey(
+        validArgs.adminKey,
+        keyManager,
+        false,
+        ['token:admin'],
+      );
+      if (tokenAdminPublicKey !== adminKeyResolved.publicKey) {
+        throw new ValidationError('Admin key mismatch', {
+          context: { tokenId },
+        });
+      }
+      return adminKeyResolved;
+    }
+
+    const kmsRecord: KmsCredentialRecord | undefined =
+      api.kms.findByPublicKey(tokenAdminPublicKey);
+    if (!kmsRecord) {
+      throw new ValidationError(
+        'Admin key not found in key manager. Provide --admin-key.',
+        { context: { tokenId } },
+      );
+    }
+    return { keyRefId: kmsRecord.keyRefId, publicKey: kmsRecord.publicKey };
   }
 
   async buildTransaction(
