@@ -25,7 +25,7 @@ export type TopicDeleteOutput = z.infer<typeof TopicDeleteOutputSchema>;
  * Human-readable template for delete topic output
  */
 export const TOPIC_DELETE_TEMPLATE = `
-✅ Topic deleted successfully: {{#if deletedTopic.name}}{{deletedTopic.name}}{{/if}} ({{hashscanLink deletedTopic.topicId "topic" network}})
+✅ Topic deleted successfully: {{#if deletedTopic.name}}{{deletedTopic.name}} {{/if}}{{hashscanLink deletedTopic.topicId "topic" network}}
 {{#if transactionId}}Transaction ID: {{hashscanLink transactionId "transaction" network}}{{/if}}
 {{#if stateOnly}}(local state only — no on-chain delete){{/if}}
 {{#if removedAliases}}

@@ -1,5 +1,4 @@
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
-import type { KmsService } from '@/core/services/kms/kms-service.interface';
 
 import { ValidationError } from '@/core/errors';
 
@@ -44,34 +43,4 @@ export function resolveSigningKeyRefsFromExplicitCredentials(
   }
 
   return { signingKeyRefIds, ignoredKeyRefIds };
-}
-
-export function resolveSigningKeyRefsFromState(
-  adminKeyRefIds: string[],
-  kms: KmsService,
-  adminPublicKeysSet: Set<string>,
-  requiredSignatures: number,
-): string[] {
-  const matchedRefIds: string[] = [];
-  const seenPublicKeys = new Set<string>();
-
-  for (const refId of adminKeyRefIds) {
-    const rec = kms.get(refId);
-    if (!rec?.publicKey) {
-      continue;
-    }
-    const pk = normalizePk(rec.publicKey);
-    if (adminPublicKeysSet.has(pk) && !seenPublicKeys.has(pk)) {
-      seenPublicKeys.add(pk);
-      matchedRefIds.push(refId);
-    }
-  }
-
-  if (matchedRefIds.length < requiredSignatures) {
-    throw new ValidationError(
-      `Topic requires ${requiredSignatures} admin signature(s) on Hedera, but local state only has ${matchedRefIds.length} matching key(s). Pass --admin-key with additional admin credentials (see topic create key format).`,
-    );
-  }
-
-  return matchedRefIds;
 }

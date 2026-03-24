@@ -27,7 +27,6 @@ import {
 import {
   buildAdminPublicKeySet,
   resolveSigningKeyRefsFromExplicitCredentials,
-  resolveSigningKeyRefsFromState,
 } from '@/plugins/topic/utils/topic-delete-admin-keys';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -54,6 +53,36 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
         `Admin key ${keyRefId} does not match the topic admin key on the network (mirror node) and was ignored`,
       );
     }
+  }
+
+  private resolveSigningKeyRefsFromState(
+    args: CommandHandlerArgs,
+    adminKeyRefIds: string[],
+    adminPublicKeysSet: Set<string>,
+    requiredSignatures: number,
+  ): string[] {
+    const matchedRefIds: string[] = [];
+    const seenPublicKeys = new Set<string>();
+
+    for (const refId of adminKeyRefIds) {
+      const rec = args.api.kms.get(refId);
+      if (!rec?.publicKey) {
+        continue;
+      }
+      const pk = rec.publicKey.toLowerCase();
+      if (adminPublicKeysSet.has(pk) && !seenPublicKeys.has(pk)) {
+        seenPublicKeys.add(pk);
+        matchedRefIds.push(refId);
+      }
+    }
+
+    if (matchedRefIds.length < requiredSignatures) {
+      throw new ValidationError(
+        `Topic requires ${requiredSignatures} admin signature(s) on Hedera, but local state only has ${matchedRefIds.length} matching key(s). Pass --admin-key with additional admin credentials (see topic create key format).`,
+      );
+    }
+
+    return matchedRefIds;
   }
 
   override async execute(args: CommandHandlerArgs): Promise<CommandResult> {
@@ -216,9 +245,9 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
           adminKeyThreshold: requirement.requiredSignatures,
         };
       } else {
-        signingKeyRefIds = resolveSigningKeyRefsFromState(
+        signingKeyRefIds = this.resolveSigningKeyRefsFromState(
+          args,
           loaded.adminKeyRefIds,
-          api.kms,
           adminPublicKeysSet,
           requirement.requiredSignatures,
         );
