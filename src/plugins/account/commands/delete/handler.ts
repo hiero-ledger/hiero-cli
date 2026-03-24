@@ -1,9 +1,4 @@
-import type {
-  CommandHandlerArgs,
-  CommandResult,
-  CoreApi,
-  Logger,
-} from '@/core';
+import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountData } from '@/plugins/account/schema';
 import type { AccountDeleteOutput } from './output';
@@ -48,25 +43,23 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     return super.execute(args);
   }
 
-  private createAccountHelper(api: CoreApi, logger: Logger): AccountHelper {
-    return new AccountHelper(
+  private async executeStateOnlyDelete(
+    args: CommandHandlerArgs,
+  ): Promise<CommandResult> {
+    const { api } = args;
+    const resolved = await this.resolveAccountFromState(args);
+    const accountHelper = new AccountHelper(
       api.state,
-      logger,
+      api.logger,
       api.alias,
       api.kms,
       api.network,
     );
-  }
 
-  private async executeStateOnlyDelete(
-    args: CommandHandlerArgs,
-  ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const resolved = await this.resolveAccountFromState(args);
-    const removedAliases = this.createAccountHelper(
-      api,
-      logger,
-    ).removeAccountFromLocalState(resolved.accountToDelete, resolved.network);
+    const removedAliases = accountHelper.removeAccountFromLocalState(
+      resolved.accountToDelete,
+      resolved.network,
+    );
 
     const outputData: AccountDeleteOutput = {
       deletedAccount: {
@@ -209,7 +202,7 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     _signTransactionResult: DeleteSignTransactionResult,
     executeTransactionResult: DeleteExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
+    const { api } = args;
 
     if (!executeTransactionResult.success) {
       throw new TransactionError(
@@ -224,10 +217,15 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
       );
     }
 
-    const removedAliases = this.createAccountHelper(
-      api,
-      logger,
-    ).removeAccountFromLocalState(
+    const accountHelper = new AccountHelper(
+      api.state,
+      api.logger,
+      api.alias,
+      api.kms,
+      api.network,
+    );
+
+    const removedAliases = accountHelper.removeAccountFromLocalState(
       normalisedParams.accountToDelete,
       normalisedParams.network,
     );
