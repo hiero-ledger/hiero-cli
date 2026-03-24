@@ -162,9 +162,7 @@ describe('Delete Topic Integration Tests', () => {
           logger: coreApi.logger,
           config: coreApi.config,
         }),
-      ).rejects.toThrow(
-        `Topic with identifier '${MOCK_NONEXISTENT_ENTITY_ID}' not found`,
-      );
+      ).rejects.toThrow(`Topic ${MOCK_NONEXISTENT_ENTITY_ID} not found`);
     });
   });
 });

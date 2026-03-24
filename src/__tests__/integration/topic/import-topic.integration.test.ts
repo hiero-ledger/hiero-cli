@@ -46,6 +46,7 @@ describe('Import Topic Integration Tests', () => {
 
     const deleteTopicArgs: Record<string, unknown> = {
       topic: topicId,
+      stateOnly: true,
     };
     await topicDelete({
       args: deleteTopicArgs,
@@ -61,6 +62,7 @@ describe('Import Topic Integration Tests', () => {
   afterEach(async () => {
     const deleteTopicArgs: Record<string, unknown> = {
       topic: topicId,
+      stateOnly: true,
     };
     await topicDelete({
       args: deleteTopicArgs,
