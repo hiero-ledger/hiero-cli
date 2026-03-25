@@ -97,6 +97,7 @@ describe('tokenViewHandler', () => {
         admin_key: null,
         supply_key: null,
         memo: 'Test memo',
+        freeze_default: false,
         created_timestamp: '1700000000.000000000',
       };
 

@@ -46,7 +46,7 @@ describe('token plugin - import command (ADR-007)', () => {
       decimals: '6',
       total_supply: '1000000',
       max_supply: '1000000',
-      treasury: '0.0.100',
+      treasury_account_id: '0.0.100',
       memo: 'Imported token memo',
       admin_key: { _type: 'ED25519', key: 'admin-key-123' },
       supply_key: { _type: 'ED25519', key: 'supply-key-456' },
