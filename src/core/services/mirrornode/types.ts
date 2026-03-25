@@ -108,7 +108,7 @@ export interface TokenInfo {
   default_kyc_status: boolean;
   auto_renew_account?: string;
   auto_renew_period?: number;
-  expiry_timestamp?: string;
+  expiry_timestamp?: number | string;
   pause_status: string;
   memo: string;
 }
