@@ -128,24 +128,24 @@ jobs:
           sudo curl -fLo /usr/local/lib/docker/cli-plugins/docker-compose https://github.com/docker/compose/releases/download/v2.29.1/docker-compose-linux-x86_64
           sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
 
-      - name: Install kubectl and kind (if tests are performed on localnet)
+      - name: Setup Kind
         env:
           INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
         if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
-        run: |
-          ARCH="$(dpkg --print-architecture)"
-          curl -fsSLo kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${ARCH}/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/kubectl
-          curl -Lo ./kind https://kind.sigs.k8s.io/dl/latest/kind-linux-amd64
-          chmod +x ./kind
-          sudo mv ./kind /usr/local/bin/kind
+        uses: helm/kind-action@a1b0e391336a6ee6713a0583f8c6240d70863de3 # v1.12.0
+        with:
+          install_only: true
+          node_image: kindest/node:v1.32.5@sha256:e3b2327e3a5ab8c76f5ece68936e4cafaa82edf58486b769727ab0b3b97a5b0d
+          version: v0.29.0
+          kubectl_version: v1.32.5
+          verbosity: 3
+          wait: 120s
 
       - name: Install solo (Integration Tests) (if tests are performed on localnet)
         env:
           INTEGRATION_TESTS_NETWORK: ${{ secrets.integration-tests-network }}
         if: ${{ inputs.enable-integration-tests && env.INTEGRATION_TESTS_NETWORK == 'localnet' && !cancelled() && !failure() }}
-        run: npm install -g @hashgraph/solo@latest
+        run: npm install -g @hashgraph/solo@0.63.0
 
       - name: Setup Local Node using solo (Integration Tests) (if tests are performed on localnet)
         id: setup-local-node
