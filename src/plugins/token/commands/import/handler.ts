@@ -67,6 +67,7 @@ export class TokenImportCommand implements Command {
       freezePublicKey: tokenInfo.freeze_key?.key,
       pausePublicKey: tokenInfo.pause_key?.key,
       feeSchedulePublicKey: tokenInfo.fee_schedule_key?.key,
+      metadataPublicKey: tokenInfo.metadata_key?.key,
       decimals: parseInt(tokenInfo.decimals, 10) || 0,
       initialSupply: BigInt(tokenInfo.total_supply),
       tokenType,

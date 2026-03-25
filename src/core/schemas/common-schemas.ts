@@ -971,7 +971,7 @@ export function parseAutoRenewPeriodToSeconds(raw: string): number {
   if (withSuffix) {
     const n = parseInt(withSuffix[1], 10);
     const mult = DURATION_SUFFIX_SECONDS[withSuffix[2].toLowerCase()];
-    if (mult === undefined) {
+    if (!mult) {
       throw new Error(`Unsupported suffix in "${raw}"`);
     }
     return n * mult;
@@ -993,7 +993,7 @@ export const AutoRenewPeriodSecondsSchema: z.ZodType<number | undefined> = z
   .union([z.string(), z.number()])
   .optional()
   .transform((val): number | undefined => {
-    if (val === undefined || val === null || val === '') {
+    if (!val || val === '') {
       return undefined;
     }
     return parseAutoRenewPeriodToSeconds(String(val));
@@ -1002,8 +1002,8 @@ export const AutoRenewPeriodSecondsSchema: z.ZodType<number | undefined> = z
     z
       .number()
       .optional()
-      .refine((sec) => sec === undefined || sec >= 0, {
-        message: 'Auto-renew period must be non-negative',
+      .refine((sec) => !sec || sec > 0, {
+        message: 'Auto-renew period must be positive number',
       }),
   );
 
@@ -1012,7 +1012,7 @@ export const ExpirationTimeSchema: z.ZodType<Date | undefined> = z
   .string()
   .optional()
   .superRefine((s, ctx) => {
-    if (s === undefined || s.trim() === '') {
+    if (!s || s.trim() === '') {
       return;
     }
     if (Number.isNaN(new Date(s).getTime())) {
@@ -1024,7 +1024,7 @@ export const ExpirationTimeSchema: z.ZodType<Date | undefined> = z
     }
   })
   .transform((s): Date | undefined => {
-    if (s === undefined || s.trim() === '') {
+    if (!s || s.trim() === '') {
       return undefined;
     }
     return new Date(s);

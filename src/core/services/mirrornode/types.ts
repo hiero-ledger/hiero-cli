@@ -94,6 +94,10 @@ export interface TokenInfo {
     _type: string;
     key: string;
   };
+  metadata_key?: {
+    _type: string;
+    key: string;
+  };
   pause_key?: {
     _type: string;
     key: string;
