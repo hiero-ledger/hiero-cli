@@ -953,6 +953,13 @@ const DURATION_SUFFIX_SECONDS: Record<string, number> = {
 };
 
 /**
+ * Hedera network allows auto-renew period between 30 and 92 days (inclusive), in seconds.
+ * @see https://docs.hedera.com/hedera/core-concepts/smart-contracts/tokens#auto-renewal
+ */
+export const HEDERA_AUTO_RENEW_PERIOD_SECONDS_MIN = 2592000; // 30 days
+export const HEDERA_AUTO_RENEW_PERIOD_SECONDS_MAX = 8000001; // 92 days (per network rules)
+
+/**
  * Parses auto-renew period CLI/file input into seconds for Hedera `TokenCreateTransaction.setAutoRenewPeriod`.
  *
  * - Plain integer (no suffix) → seconds (e.g. `500` → 500)
@@ -986,6 +993,14 @@ export function parseAutoRenewPeriodToSeconds(raw: string): number {
   );
 }
 
+/** Output / mirror fields: optional seconds, validated when present. */
+export const HederaAutoRenewPeriodSecondsOptionalSchema = z
+  .number()
+  .int()
+  .min(HEDERA_AUTO_RENEW_PERIOD_SECONDS_MIN)
+  .max(HEDERA_AUTO_RENEW_PERIOD_SECONDS_MAX)
+  .optional();
+
 /**
  * Optional field from CLI (string/number) or JSON → seconds, or `undefined`.
  */
@@ -1002,8 +1017,17 @@ export const AutoRenewPeriodSecondsSchema: z.ZodType<number | undefined> = z
     z
       .number()
       .optional()
-      .refine((sec) => !sec || sec > 0, {
-        message: 'Auto-renew period must be positive number',
+      .superRefine((sec, ctx) => {
+        if (sec === undefined) return;
+        if (
+          sec < HEDERA_AUTO_RENEW_PERIOD_SECONDS_MIN ||
+          sec > HEDERA_AUTO_RENEW_PERIOD_SECONDS_MAX
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: `Auto-renew period must be between ${HEDERA_AUTO_RENEW_PERIOD_SECONDS_MIN} and ${HEDERA_AUTO_RENEW_PERIOD_SECONDS_MAX} seconds (30–92 days inclusive).`,
+          });
+        }
       }),
   );
 

@@ -211,7 +211,7 @@ describe('createTokenHandler', () => {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
-          autoRenewPeriod: '3600',
+          autoRenewPeriod: '30d',
         },
         api,
         state: api.state,

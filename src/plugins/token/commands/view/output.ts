@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import {
   EntityIdSchema,
+  HederaAutoRenewPeriodSecondsOptionalSchema,
   NetworkSchema,
   PublicKeyDefinitionSchema,
   SupplyTypeSchema,
@@ -35,7 +36,7 @@ export const TokenViewOutputSchema = z.object({
   createdTimestamp: z.string().optional(),
 
   freezeDefault: z.boolean(),
-  autoRenewPeriodSeconds: z.number().int().nonnegative().optional(),
+  autoRenewPeriodSeconds: HederaAutoRenewPeriodSecondsOptionalSchema,
   autoRenewAccountId: EntityIdSchema.optional(),
   expirationTime: z.string().optional(),
 

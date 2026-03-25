@@ -638,7 +638,7 @@ describe('TokenServiceImpl', () => {
       const params = {
         ...baseParams,
         autoRenewAccountId: '0.0.7777',
-        autoRenewPeriodSeconds: 86400,
+        autoRenewPeriodSeconds: 2592000,
       };
 
       tokenService.createTokenTransaction(params);
@@ -648,7 +648,7 @@ describe('TokenServiceImpl', () => {
       ).toHaveBeenCalledWith(mockAccountIdInstance);
       expect(
         mockTokenCreateTransaction.setAutoRenewPeriod,
-      ).toHaveBeenCalledWith(86400);
+      ).toHaveBeenCalledWith(2592000);
       expect(
         mockTokenCreateTransaction.setExpirationTime,
       ).not.toHaveBeenCalled();
@@ -675,7 +675,7 @@ describe('TokenServiceImpl', () => {
       const params = {
         ...baseParams,
         autoRenewAccountId: '0.0.7777',
-        autoRenewPeriodSeconds: 3600,
+        autoRenewPeriodSeconds: 2592000,
         expirationTime: new Date('2028-01-01T00:00:00.000Z'),
       };
 
@@ -683,7 +683,7 @@ describe('TokenServiceImpl', () => {
 
       expect(
         mockTokenCreateTransaction.setAutoRenewPeriod,
-      ).toHaveBeenCalledWith(3600);
+      ).toHaveBeenCalledWith(2592000);
       expect(
         mockTokenCreateTransaction.setExpirationTime,
       ).not.toHaveBeenCalled();
