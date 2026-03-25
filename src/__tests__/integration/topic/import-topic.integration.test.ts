@@ -18,7 +18,14 @@ import {
 } from '@/plugins/topic';
 import { TOPIC_NAMESPACE } from '@/plugins/topic/manifest';
 
-describe('Import Topic Integration Tests', () => {
+/*
+Tests in this suite are only executed when we do not use localnet as selected network due to the fact that
+there is a problem with acquiring topic information on Hedera local node when using hiero-local-node or solo to deploy it.
+This behavior prevents us from fully testing the topic command's like import here
+*/
+const describeSuite =
+  process.env.NETWORK === SupportedNetwork.LOCALNET ? describe.skip : describe;
+describeSuite('Import Topic Integration Tests', () => {
   const TOPIC_NAME = 'TopicImport';
 
   let coreApi: CoreApi;
@@ -29,8 +36,6 @@ describe('Import Topic Integration Tests', () => {
     coreApi = createCoreApi(STATE_STORAGE_FILE_PATH);
     await setDefaultOperatorForNetwork(coreApi);
     network = coreApi.network.getCurrentNetwork();
-
-    if (network === SupportedNetwork.LOCALNET) return;
 
     const createTopicArgs: Record<string, unknown> = {
       name: TOPIC_NAME,
@@ -61,8 +66,6 @@ describe('Import Topic Integration Tests', () => {
   });
 
   afterEach(async () => {
-    if (network === SupportedNetwork.LOCALNET) return;
-
     const deleteTopicArgs: Record<string, unknown> = {
       topic: topicId,
     };
@@ -76,9 +79,6 @@ describe('Import Topic Integration Tests', () => {
   });
 
   it('should import a topic by ID and verify with list', async () => {
-    if (coreApi.network.getCurrentNetwork() === SupportedNetwork.LOCALNET)
-      return;
-
     const importTopicArgs: Record<string, unknown> = {
       topic: topicId,
     };
@@ -112,9 +112,6 @@ describe('Import Topic Integration Tests', () => {
   });
 
   it('should import a topic with alias and verify with list', async () => {
-    if (coreApi.network.getCurrentNetwork() === SupportedNetwork.LOCALNET)
-      return;
-
     coreApi.state.delete(
       TOPIC_NAMESPACE,
       `${coreApi.network.getCurrentNetwork()}:${topicId}`,
