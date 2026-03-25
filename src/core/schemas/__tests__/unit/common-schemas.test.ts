@@ -9,7 +9,10 @@ import {
   SHORT_KEY,
   TEST_ACCOUNT_ID,
 } from '@/core/schemas/__tests__/helpers/fixtures';
-import { AccountIdWithPrivateKeySchema } from '@/core/schemas/common-schemas';
+import {
+  AccountIdWithPrivateKeySchema,
+  ExpirationTimeSchema,
+} from '@/core/schemas/common-schemas';
 import { INVALID_KEY } from '@/core/services/topic/__tests__/unit/mocks';
 
 describe('AccountIdWithPrivateKeySchema', () => {
@@ -130,5 +133,28 @@ describe('AccountIdWithPrivateKeySchema', () => {
         false,
       );
     });
+  });
+});
+
+describe('ExpirationTimeSchema', () => {
+  test('accepts undefined and omits expiration', () => {
+    expect(ExpirationTimeSchema.parse(undefined)).toBeUndefined();
+  });
+
+  test('accepts empty string as omitted expiration', () => {
+    expect(ExpirationTimeSchema.parse('')).toBeUndefined();
+  });
+
+  test('rejects expiration in the past', () => {
+    expect(() =>
+      ExpirationTimeSchema.parse('2000-01-01T00:00:00.000Z'),
+    ).toThrow();
+  });
+
+  test('accepts expiration strictly in the future', () => {
+    const future = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const d = ExpirationTimeSchema.parse(future);
+    expect(d).toBeInstanceOf(Date);
+    expect(d!.getTime()).toBeGreaterThan(Date.now());
   });
 });

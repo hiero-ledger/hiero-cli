@@ -45,24 +45,9 @@ function formatHederaTimestamp(timestamp?: string): string | undefined {
 }
 
 /** Converts Mirror Node `expiry_timestamp` (nanoseconds since epoch) to ISO 8601. */
-function expiryTimestampToIso(
-  expiry?: number | string | null,
-): string | undefined {
-  if (expiry === undefined || expiry === null) return undefined;
-  if (typeof expiry === 'number') {
-    if (!Number.isFinite(expiry) || expiry === 0) return undefined;
-    return new Date(expiry / 1e6).toISOString();
-  }
-  const trimmed = String(expiry).trim();
-  if (!trimmed) return undefined;
-  if (trimmed.includes('T')) {
-    const d = new Date(trimmed);
-    return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
-  }
-  const seconds = trimmed.split('.')[0];
-  const ms = Number(seconds) * 1000;
-  if (!Number.isFinite(ms)) return undefined;
-  return new Date(ms).toISOString();
+function expiryTimestampToIso(expiry?: number | null): string | undefined {
+  if (!expiry || !Number.isFinite(expiry) || expiry === 0) return undefined;
+  return new Date(expiry / 1e6).toISOString();
 }
 
 /**

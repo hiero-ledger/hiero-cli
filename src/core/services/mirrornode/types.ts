@@ -59,7 +59,6 @@ export interface TokenBalanceInfo {
   balance: number;
   decimals: number;
 }
-
 // Token Info
 export interface TokenInfo {
   token_id: string;
@@ -108,7 +107,7 @@ export interface TokenInfo {
   default_kyc_status: boolean;
   auto_renew_account?: string;
   auto_renew_period?: number;
-  expiry_timestamp?: number | string;
+  expiry_timestamp?: number;
   pause_status: string;
   memo: string;
 }

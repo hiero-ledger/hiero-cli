@@ -1031,7 +1031,10 @@ export const AutoRenewPeriodSecondsSchema: z.ZodType<number | undefined> = z
       }),
   );
 
-/** Optional ISO 8601 datetime string → `Date` */
+/**
+ * Optional ISO 8601 datetime string → `Date`.
+ * When set, the instant must be strictly after the current time.
+ */
 export const ExpirationTimeSchema: z.ZodType<Date | undefined> = z
   .string()
   .optional()
@@ -1052,4 +1055,8 @@ export const ExpirationTimeSchema: z.ZodType<Date | undefined> = z
       return undefined;
     }
     return new Date(s);
+  })
+  .refine((d) => d === undefined || d.getTime() > Date.now(), {
+    message:
+      'Expiration time must be in the future (strictly after the current time).',
   });

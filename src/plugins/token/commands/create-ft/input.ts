@@ -84,7 +84,7 @@ export const TokenCreateFtInputSchema = z
       'Account that pays auto-renewal. Required when auto renew period property is set.',
     ),
     expirationTime: ExpirationTimeSchema.describe(
-      'Absolute token expiration (ISO 8601). Ignored when auto-renew period and account are set.',
+      'Absolute token expiration (ISO 8601), must be after the current time. Ignored when auto-renew period and account are set.',
     ),
   })
   .superRefine(validateSupplyTypeAndMaxSupply);
