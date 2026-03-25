@@ -1,5 +1,10 @@
 import type { Transaction } from '@hashgraph/sdk';
-import type { TransactionResult } from '@/core';
+import type {
+  BatchifyBuildTransactionResult,
+  BatchifyNormalizedParams,
+  BatchifySignTransactionResult,
+  TransactionResult,
+} from '@/core';
 import type {
   ResolvedAccountCredential,
   ResolvedPublicKey,
@@ -8,7 +13,7 @@ import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 
-export interface TokenCreateFtNormalizedParams {
+export interface TokenCreateFtNormalizedParams extends BatchifyNormalizedParams {
   name: string;
   symbol: string;
   decimals: number;
@@ -25,11 +30,11 @@ export interface TokenCreateFtNormalizedParams {
   finalMaxSupply?: bigint;
 }
 
-export interface TokenCreateFtBuildTransactionResult {
+export interface TokenCreateFtBuildTransactionResult extends BatchifyBuildTransactionResult {
   transaction: Transaction;
 }
 
-export interface TokenCreateFtSignTransactionResult {
+export interface TokenCreateFtSignTransactionResult extends BatchifySignTransactionResult {
   signedTransaction: Transaction;
 }
 

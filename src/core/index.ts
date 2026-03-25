@@ -63,6 +63,11 @@ export {
   SupplyType,
   SupportedNetwork,
 } from './types/shared.types';
+export type {
+  BatchifyBuildTransactionResult,
+  BatchifyNormalizedParams,
+  BatchifySignTransactionResult,
+} from './types/transaction.types';
 
 // ============================================================================
 // Shared Constants

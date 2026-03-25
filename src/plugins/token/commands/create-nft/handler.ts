@@ -92,6 +92,9 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
     logger.debug(`Use Custom Treasury: ${String(Boolean(treasury))}`);
     logger.debug('=========================');
 
+    const adminKeyRefIds = admin ? [admin.keyRefId] : [];
+    const supplyKeyRefIds = supply ? [supply.keyRefId] : [];
+
     return {
       name: validArgs.tokenName,
       symbol: validArgs.symbol,
@@ -107,6 +110,7 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       admin,
       supply,
       finalMaxSupply,
+      keyRefIds: [treasury.keyRefId, ...adminKeyRefIds, ...supplyKeyRefIds],
     };
   }
 
@@ -143,6 +147,10 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
 
     if (normalisedParams.admin) {
       txSigners.push(normalisedParams.admin.keyRefId);
+    }
+
+    if (normalisedParams.supply) {
+      txSigners.push(normalisedParams.supply.keyRefId);
     }
 
     const transaction = await api.txSign.sign(

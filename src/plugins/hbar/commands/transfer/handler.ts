@@ -75,6 +75,7 @@ export class HbarTransferCommand extends BaseTransactionCommand<
       fromAccount,
       destination,
       currentNetwork,
+      keyRefIds: [fromAccount.keyRefId],
     };
   }
 

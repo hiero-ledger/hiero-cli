@@ -109,6 +109,7 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
       toAccountId: resolvedToAccount.accountId,
       serials: validArgs.serials,
       signerKeyRefId,
+      keyRefIds: [signerKeyRefId],
     };
   }
 

@@ -1,9 +1,13 @@
 import type { Transaction } from '@hashgraph/sdk';
-import type { SupportedNetwork, TransactionResult } from '@/core';
+import type {
+  BatchifyNormalizedParams,
+  SupportedNetwork,
+  TransactionResult,
+} from '@/core';
 import type { ResolvedAccountCredential } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 
-export interface AssociateNormalizedParams {
+export interface AssociateNormalizedParams extends BatchifyNormalizedParams {
   network: SupportedNetwork;
   tokenId: string;
   account: ResolvedAccountCredential;

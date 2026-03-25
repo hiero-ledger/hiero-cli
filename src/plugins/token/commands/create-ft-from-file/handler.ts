@@ -131,6 +131,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       freezeKey,
       pauseKey,
       feeScheduleKey,
+      keyRefIds: [adminKey.keyRefId, treasury.keyRefId],
     };
   }
 

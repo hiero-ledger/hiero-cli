@@ -23,6 +23,7 @@ export const BatchTransactionItemSchema = z.object({
     .describe(
       'Normalized params from the command that produced this transaction',
     ),
+  keyRefIds: z.array(z.string()),
   transactionId: TransactionIdSchema.optional().describe(
     'Inner transaction ID',
   ),
