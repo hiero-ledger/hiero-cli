@@ -35,12 +35,9 @@ Handles Hedera account creation and management operations.
 
 ```typescript
 interface AccountService {
-  createAccount(params: CreateAccountParams): Promise<AccountCreateResult>;
-  getAccountInfo(accountId: string): Promise<AccountInfoQuery>;
-  getAccountBalance(
-    accountId: string,
-    tokenId?: string,
-  ): Promise<AccountBalanceQuery>;
+  createAccount(params: CreateAccountParams): AccountCreateResult;
+  deleteAccount(params: DeleteAccountParams): AccountDeleteResult;
+  getAccountInfo(accountId: string): AccountInfoQuery;
 }
 
 interface CreateAccountParams {
@@ -54,15 +51,23 @@ interface AccountCreateResult {
   transaction: AccountCreateTransaction;
   publicKey: string;
 }
+
+interface DeleteAccountParams {
+  accountId: string;
+  transferAccountId: string;
+}
+
+interface AccountDeleteResult {
+  transaction: AccountDeleteTransaction;
+}
 ```
 
 **Usage Example:**
 
 ```typescript
-const result = await api.account.createAccount({
+const result = api.account.createAccount({
   balanceRaw: 100000000n, // tinybars (bigint)
   publicKey: '302e020100300506032b6570...',
-  keyType: 'ECDSA',
   maxAutoAssociations: 10,
 });
 ```
@@ -323,8 +328,8 @@ Provides comprehensive access to Hedera Mirror Node API.
 ```typescript
 interface HederaMirrornodeService {
   // Account operations
-  getAccount(accountId: string): Promise<AccountResponse>;
-  getAccountHBarBalance(accountId: string): Promise<bigint>;
+  getAccountOrThrow(accountId: string): Promise<AccountResponse>;
+  getAccount(accountId: string): Promise<AccountResponse | null>;
   getAccountTokenBalances(
     accountId: string,
     tokenId?: string,
@@ -357,15 +362,17 @@ interface HederaMirrornodeService {
 **Usage Examples:**
 
 ```typescript
-// Get account information
+// Get account information (null if mirror returns 404)
 const account = await api.mirror.getAccount('0.0.123456');
-console.log(
-  `Account: ${account.accountId}, Balance: ${account.balance.balance}`,
-);
+if (account) {
+  console.log(
+    `Account: ${account.accountId}, Balance: ${account.balance.balance}`,
+  );
+}
 
-// Get HBAR balance
-const balance = await api.mirror.getAccountHBarBalance('0.0.123456');
-console.log(`Balance: ${balance.toString()} tinybars`);
+// Or require the account to exist (throws on 404 / other mirror errors)
+const accountOrThrow = await api.mirror.getAccountOrThrow('0.0.123456');
+console.log(`Balance: ${accountOrThrow.balance.balance} tinybars`);
 
 // Get token balances
 const tokenBalances = await api.mirror.getAccountTokenBalances('0.0.123456');

@@ -24,14 +24,13 @@ import type {
 
 export interface HederaMirrornodeService {
   /**
+   * Get account information or throw
+   */
+  getAccountOrThrow(accountId: string): Promise<AccountResponse>;
+  /**
    * Get account information
    */
-  getAccount(accountId: string): Promise<AccountResponse>;
-
-  /**
-   * Get account HBAR balance
-   */
-  getAccountHBarBalance(accountId: string): Promise<bigint>;
+  getAccount(accountId: string): Promise<AccountResponse | null>;
 
   /**
    * Get account token balances

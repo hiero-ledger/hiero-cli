@@ -2,6 +2,7 @@ import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
 import { AccountCreateBatchStateHook } from '@/plugins/account/hooks/batch-create';
+import { AccountDeleteBatchStateHook } from '@/plugins/account/hooks/batch-delete';
 
 import {
   ACCOUNT_BALANCE_TEMPLATE,
@@ -50,6 +51,11 @@ export const accountPluginManifest: PluginManifest = {
     {
       name: 'account-create-batch-state',
       hook: new AccountCreateBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'account-delete-batch-state',
+      hook: new AccountDeleteBatchStateHook(),
       options: [],
     },
   ],
@@ -232,7 +238,8 @@ export const accountPluginManifest: PluginManifest = {
       name: 'delete',
       summary: 'Delete an account',
       description:
-        'Delete an account from state. Specify account by name or account ID',
+        'Delete an account on Hedera and remove it from local state (default). Requires --transfer-id for the beneficiary account. Use --state-only to remove only from local state without a network transaction.',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'account',
@@ -241,6 +248,23 @@ export const accountPluginManifest: PluginManifest = {
           required: true,
           description: 'Account ID or alias of the account present in state',
         },
+        {
+          name: 'transfer-id',
+          short: 't',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Required when deleting on Hedera: account that receives remaining HBAR (Hedera ID or alias). Mutually exclusive with --state-only',
+        },
+        {
+          name: 'state-only',
+          short: 's',
+          type: OptionType.BOOLEAN,
+          required: false,
+          default: false,
+          description:
+            'Remove the account only from local CLI state; do not submit AccountDeleteTransaction. Mutually exclusive with --transfer-id',
+        },
       ],
       handler: accountDelete,
       output: {
@@ -248,7 +272,7 @@ export const accountPluginManifest: PluginManifest = {
         humanTemplate: ACCOUNT_DELETE_TEMPLATE,
       },
       requireConfirmation:
-        'Are you sure you want to delete account {{account}}? This action cannot be undone.',
+        'Are you sure you want to delete account {{account}}? This cannot be undone.',
     },
     {
       name: 'view',

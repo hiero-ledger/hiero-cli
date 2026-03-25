@@ -63,7 +63,7 @@ describe('account plugin - import command (ADR-003)', () => {
 
     const result = await accountImport(args);
 
-    expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.9999');
+    expect(mirrorMock.getAccountOrThrow).toHaveBeenCalledWith('0.0.9999');
     expect(alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
         alias: 'imported',

@@ -61,7 +61,7 @@ describe('account plugin - view command (ADR-003)', () => {
     const result = await accountView(args);
 
     expect(logger.info).toHaveBeenCalledWith('Viewing account details: acc1');
-    expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.1111');
+    expect(mirrorMock.getAccountOrThrow).toHaveBeenCalledWith('0.0.1111');
 
     const output = assertOutput(result.result, AccountViewOutputSchema);
     expect(output.accountId).toBe('0.0.1111');
@@ -104,13 +104,13 @@ describe('account plugin - view command (ADR-003)', () => {
     const result = await accountView(args);
 
     expect(logger.info).toHaveBeenCalledWith('Viewing account details: acc2');
-    expect(mirrorMock.getAccount).toHaveBeenCalledWith('0.0.2222');
+    expect(mirrorMock.getAccountOrThrow).toHaveBeenCalledWith('0.0.2222');
 
     const output = assertOutput(result.result, AccountViewOutputSchema);
     expect(output.accountId).toBe('0.0.2222');
   });
 
-  test('throws error when mirror.getAccount throws', async () => {
+  test('throws error when mirror.getAccountOrThrow throws', async () => {
     const logger = makeLogger();
 
     MockedHelper.mockImplementation(() => ({
