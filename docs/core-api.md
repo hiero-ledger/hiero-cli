@@ -35,12 +35,9 @@ Handles Hedera account creation and management operations.
 
 ```typescript
 interface AccountService {
-  createAccount(params: CreateAccountParams): Promise<AccountCreateResult>;
-  getAccountInfo(accountId: string): Promise<AccountInfoQuery>;
-  getAccountBalance(
-    accountId: string,
-    tokenId?: string,
-  ): Promise<AccountBalanceQuery>;
+  createAccount(params: CreateAccountParams): AccountCreateResult;
+  deleteAccount(params: DeleteAccountParams): AccountDeleteResult;
+  getAccountInfo(accountId: string): AccountInfoQuery;
 }
 
 interface CreateAccountParams {
@@ -54,15 +51,23 @@ interface AccountCreateResult {
   transaction: AccountCreateTransaction;
   publicKey: string;
 }
+
+interface DeleteAccountParams {
+  accountId: string;
+  transferAccountId: string;
+}
+
+interface AccountDeleteResult {
+  transaction: AccountDeleteTransaction;
+}
 ```
 
 **Usage Example:**
 
 ```typescript
-const result = await api.account.createAccount({
+const result = api.account.createAccount({
   balanceRaw: 100000000n, // tinybars (bigint)
   publicKey: '302e020100300506032b6570...',
-  keyType: 'ECDSA',
   maxAutoAssociations: 10,
 });
 ```

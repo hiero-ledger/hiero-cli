@@ -4,13 +4,16 @@
  */
 import type {
   AccountCreateResult,
+  AccountDeleteResult,
   AccountService,
   CreateAccountParams,
+  DeleteAccountParams,
 } from '@/core';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 
 import {
   AccountCreateTransaction,
+  AccountDeleteTransaction,
   AccountId,
   AccountInfoQuery,
   Hbar,
@@ -59,6 +62,28 @@ export class AccountServiceImpl implements AccountService {
     } catch (error) {
       throw new ValidationError('Invalid account creation parameters', {
         context: { publicKey: params.publicKey, balance: params.balanceRaw },
+        cause: error,
+      });
+    }
+  }
+
+  deleteAccount(params: DeleteAccountParams): AccountDeleteResult {
+    this.logger.debug(
+      `[ACCOUNT TX] Deleting account ${params.accountId}, transfer to ${params.transferAccountId}`,
+    );
+
+    try {
+      const transaction = new AccountDeleteTransaction()
+        .setAccountId(AccountId.fromString(params.accountId))
+        .setTransferAccountId(AccountId.fromString(params.transferAccountId));
+
+      return { transaction };
+    } catch (error) {
+      throw new ValidationError('Invalid account delete parameters', {
+        context: {
+          accountId: params.accountId,
+          transferAccountId: params.transferAccountId,
+        },
         cause: error,
       });
     }

@@ -131,10 +131,15 @@ hcli account view --account 0.0.123456
 
 ### Account Delete
 
+Deletes the account on Hedera (default) or only from local CLI state (`--state-only`). Network delete requires a beneficiary for remaining HBAR (`--transfer-id`).
+
 ```bash
-hcli account delete --account myaccount
-hcli account delete --account 0.0.123456
+hcli account delete --account myaccount --transfer-id 0.0.98
+hcli account delete --account 0.0.123456 --transfer-id operator-alias
+hcli account delete --account myaccount --state-only
 ```
+
+`account delete` also supports `--batch` / `-B` like `account create`; after `batch execute`, `AccountDeleteBatchStateHook` removes the account from local state.
 
 ### Account Clear
 
@@ -144,11 +149,11 @@ hcli account clear
 
 ## 📦 Batch Support
 
-The `account create` command supports the `--batch` / `-B` flag via the batch plugin's `batchify` hook. When you pass `--batch <batch-name>`:
+The `account create` and `account delete` commands support the `--batch` / `-B` flag via the batch plugin's `batchify` hook. When you pass `--batch <batch-name>`:
 
 1. **No immediate execution** – The transaction is not submitted to the network. Instead, it is serialized and added to the specified batch.
 2. **Deferred execution** – Run `hcli batch execute --name <batch-name>` to submit all batched transactions atomically.
-3. **State persistence** – After successful batch execution, `AccountCreateBatchStateHook` runs for each account creation in the batch. It fetches the receipt, derives the EVM address, saves account data to state, and registers aliases.
+3. **State persistence** – After successful batch execution, `AccountCreateBatchStateHook` runs for each account creation in the batch (receipt, EVM address, save to state, aliases). `AccountDeleteBatchStateHook` removes accounts from local state for batched account deletes.
 
 **Example workflow:**
 

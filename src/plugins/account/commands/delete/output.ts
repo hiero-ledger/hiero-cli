@@ -15,6 +15,14 @@ export const AccountDeleteOutputSchema = z.object({
   }),
   removedAliases: z.array(z.string().describe('Removed alias')).optional(),
   network: NetworkSchema,
+  transactionId: z
+    .string()
+    .describe('Hedera transaction ID when deleted on network')
+    .optional(),
+  stateOnly: z
+    .boolean()
+    .describe('True when only local state was removed')
+    .optional(),
 });
 
 export type AccountDeleteOutput = z.infer<typeof AccountDeleteOutputSchema>;
@@ -23,10 +31,14 @@ export type AccountDeleteOutput = z.infer<typeof AccountDeleteOutputSchema>;
  * Human-readable template for delete account output
  */
 export const ACCOUNT_DELETE_TEMPLATE = `
-{{#if removedAliases}}
-✅ Account deleted successfully: {{deletedAccount.name}} ({{hashscanLink deletedAccount.accountId "account" network}})
+{{#if stateOnly}}
+✅ Account removed from local state only: {{hashscanLink deletedAccount.accountId "account" network}}
+{{else}}
+{{#if transactionId}}
+✅ Account deleted on network: {{hashscanLink transactionId "transaction" network}}
 {{else}}
 ✅ Account deleted successfully: {{hashscanLink deletedAccount.accountId "account" network}}
+{{/if}}
 {{/if}}
 {{#if removedAliases}}
 🧹 Removed {{removedAliases.length}} alias(es):
