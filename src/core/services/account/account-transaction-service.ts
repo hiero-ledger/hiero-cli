@@ -103,20 +103,31 @@ export class AccountServiceImpl implements AccountService {
       if (params.key !== undefined) {
         transaction.setKey(PublicKey.fromString(params.key));
       }
-      if (params.memo !== undefined) {
+
+      if (params.memo === null) {
+        transaction.clearAccountMemo();
+      } else if (params.memo !== undefined) {
         transaction.setAccountMemo(params.memo);
       }
+
       if (params.maxAutoAssociations !== undefined) {
         transaction.setMaxAutomaticTokenAssociations(
           params.maxAutoAssociations,
         );
       }
-      if (params.stakedAccountId !== undefined) {
+
+      if (params.stakedAccountId === null) {
+        transaction.clearStakedAccountId();
+      } else if (params.stakedAccountId !== undefined) {
         transaction.setStakedAccountId(params.stakedAccountId);
       }
-      if (params.stakedNodeId !== undefined) {
+
+      if (params.stakedNodeId === null) {
+        transaction.clearStakedNodeId();
+      } else if (params.stakedNodeId !== undefined) {
         transaction.setStakedNodeId(params.stakedNodeId);
       }
+
       if (params.declineStakingReward !== undefined) {
         transaction.setDeclineStakingReward(params.declineStakingReward);
       }
@@ -127,9 +138,6 @@ export class AccountServiceImpl implements AccountService {
         transaction.setReceiverSignatureRequired(
           params.receiverSignatureRequired,
         );
-      }
-      if (params.expirationTime !== undefined) {
-        transaction.setExpirationTime(params.expirationTime);
       }
 
       return { transaction };

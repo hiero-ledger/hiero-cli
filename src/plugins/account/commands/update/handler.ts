@@ -25,11 +25,6 @@ import { AccountUpdateInputSchema } from './input';
 
 export const ACCOUNT_UPDATE_COMMAND_NAME = 'account_update';
 
-function parseExpirationTime(value: string): Date {
-  const isUnixTimestamp = /^\d+$/.test(value);
-  return isUnixTimestamp ? new Date(Number(value) * 1000) : new Date(value);
-}
-
 export class AccountUpdateCommand extends BaseTransactionCommand<
   UpdateNormalisedParams,
   UpdateBuildTransactionResult,
@@ -102,11 +97,6 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
       }
     }
 
-    const expirationTime =
-      validArgs.expirationTime !== undefined
-        ? parseExpirationTime(validArgs.expirationTime)
-        : undefined;
-
     const updatedFields: string[] = [];
     if (validArgs.key !== undefined) updatedFields.push('key');
     if (validArgs.memo !== undefined) updatedFields.push('memo');
@@ -122,7 +112,6 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
       updatedFields.push('autoRenewPeriod');
     if (validArgs.receiverSignatureRequired !== undefined)
       updatedFields.push('receiverSignatureRequired');
-    if (expirationTime !== undefined) updatedFields.push('expirationTime');
 
     return {
       accountId: existingAccount.accountId,
@@ -139,7 +128,6 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
       declineStakingReward: validArgs.declineStakingReward,
       autoRenewPeriod: validArgs.autoRenewPeriod,
       receiverSignatureRequired: validArgs.receiverSignatureRequired,
-      expirationTime,
       updatedFields,
     };
   }
@@ -159,7 +147,6 @@ export class AccountUpdateCommand extends BaseTransactionCommand<
       declineStakingReward: normalisedParams.declineStakingReward,
       autoRenewPeriod: normalisedParams.autoRenewPeriod,
       receiverSignatureRequired: normalisedParams.receiverSignatureRequired,
-      expirationTime: normalisedParams.expirationTime,
     });
   }
 

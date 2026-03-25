@@ -212,6 +212,135 @@ describe('account plugin - update command', () => {
     ).rejects.toThrow();
   });
 
+  test('clears memo when "null" string passed', async () => {
+    const logger = makeLogger();
+    const account = makeAccountData({ accountId: '0.0.1234' });
+    MockedHelper.mockImplementation(() => ({
+      getAccount: jest.fn().mockReturnValue(account),
+      saveAccount: jest.fn(),
+    }));
+
+    const updateAccountMock = jest.fn().mockReturnValue({ transaction: {} });
+    const api = buildApi({
+      account: makeAccountTransactionServiceMock({
+        updateAccount: updateAccountMock,
+      }),
+    });
+
+    const result = await accountUpdate(
+      makeArgs(api, logger, { account: '0.0.1234', memo: 'null' }),
+    );
+
+    expect(updateAccountMock).toHaveBeenCalledWith(
+      expect.objectContaining({ accountId: '0.0.1234', memo: null }),
+    );
+    const output = assertOutput(result.result, AccountUpdateOutputSchema);
+    expect(output.updatedFields).toContain('memo');
+  });
+
+  test('clears memo when empty string passed', async () => {
+    const logger = makeLogger();
+    const account = makeAccountData({ accountId: '0.0.1234' });
+    MockedHelper.mockImplementation(() => ({
+      getAccount: jest.fn().mockReturnValue(account),
+      saveAccount: jest.fn(),
+    }));
+
+    const updateAccountMock = jest.fn().mockReturnValue({ transaction: {} });
+    const api = buildApi({
+      account: makeAccountTransactionServiceMock({
+        updateAccount: updateAccountMock,
+      }),
+    });
+
+    await accountUpdate(
+      makeArgs(api, logger, { account: '0.0.1234', memo: '' }),
+    );
+
+    expect(updateAccountMock).toHaveBeenCalledWith(
+      expect.objectContaining({ memo: null }),
+    );
+  });
+
+  test('clears stakedAccountId when "null" string passed', async () => {
+    const logger = makeLogger();
+    const account = makeAccountData({ accountId: '0.0.1234' });
+    MockedHelper.mockImplementation(() => ({
+      getAccount: jest.fn().mockReturnValue(account),
+      saveAccount: jest.fn(),
+    }));
+
+    const updateAccountMock = jest.fn().mockReturnValue({ transaction: {} });
+    const api = buildApi({
+      account: makeAccountTransactionServiceMock({
+        updateAccount: updateAccountMock,
+      }),
+    });
+
+    await accountUpdate(
+      makeArgs(api, logger, { account: '0.0.1234', stakedAccountId: 'null' }),
+    );
+
+    expect(updateAccountMock).toHaveBeenCalledWith(
+      expect.objectContaining({ stakedAccountId: null }),
+    );
+  });
+
+  test('clears stakedNodeId when "null" string passed', async () => {
+    const logger = makeLogger();
+    const account = makeAccountData({ accountId: '0.0.1234' });
+    MockedHelper.mockImplementation(() => ({
+      getAccount: jest.fn().mockReturnValue(account),
+      saveAccount: jest.fn(),
+    }));
+
+    const updateAccountMock = jest.fn().mockReturnValue({ transaction: {} });
+    const api = buildApi({
+      account: makeAccountTransactionServiceMock({
+        updateAccount: updateAccountMock,
+      }),
+    });
+
+    await accountUpdate(
+      makeArgs(api, logger, { account: '0.0.1234', stakedNodeId: 'null' }),
+    );
+
+    expect(updateAccountMock).toHaveBeenCalledWith(
+      expect.objectContaining({ stakedNodeId: null }),
+    );
+  });
+
+  test('allows clearing both staking fields simultaneously', async () => {
+    const logger = makeLogger();
+    const account = makeAccountData({ accountId: '0.0.1234' });
+    MockedHelper.mockImplementation(() => ({
+      getAccount: jest.fn().mockReturnValue(account),
+      saveAccount: jest.fn(),
+    }));
+
+    const updateAccountMock = jest.fn().mockReturnValue({ transaction: {} });
+    const api = buildApi({
+      account: makeAccountTransactionServiceMock({
+        updateAccount: updateAccountMock,
+      }),
+    });
+
+    const result = await accountUpdate(
+      makeArgs(api, logger, {
+        account: '0.0.1234',
+        stakedAccountId: 'null',
+        stakedNodeId: 'null',
+      }),
+    );
+
+    expect(updateAccountMock).toHaveBeenCalledWith(
+      expect.objectContaining({ stakedAccountId: null, stakedNodeId: null }),
+    );
+    const output = assertOutput(result.result, AccountUpdateOutputSchema);
+    expect(output.updatedFields).toContain('stakedAccountId');
+    expect(output.updatedFields).toContain('stakedNodeId');
+  });
+
   test('key rotation — signs with both old and new key', async () => {
     const logger = makeLogger();
     const account = makeAccountData({

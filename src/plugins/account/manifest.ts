@@ -160,7 +160,8 @@ export const accountPluginManifest: PluginManifest = {
           short: 'm',
           type: OptionType.STRING,
           required: false,
-          description: 'Account memo (max 100 characters)',
+          description:
+            'Account memo (max 100 characters). Pass "null" to clear.',
         },
         {
           name: 'max-auto-associations',
@@ -173,13 +174,13 @@ export const accountPluginManifest: PluginManifest = {
           name: 'staked-account-id',
           type: OptionType.STRING,
           required: false,
-          description: 'Account ID to stake to',
+          description: 'Account ID to stake to. Pass "null" to clear.',
         },
         {
           name: 'staked-node-id',
           type: OptionType.NUMBER,
           required: false,
-          description: 'Node ID to stake to',
+          description: 'Node ID to stake to. Pass "null" to clear.',
         },
         {
           name: 'decline-staking-reward',
@@ -198,13 +199,6 @@ export const accountPluginManifest: PluginManifest = {
           type: OptionType.BOOLEAN,
           required: false,
           description: 'Require receiver signature for transfers',
-        },
-        {
-          name: 'expiration-time',
-          type: OptionType.STRING,
-          required: false,
-          description:
-            'Expiration time (ISO 8601 or Unix timestamp in seconds)',
         },
       ],
       handler: accountUpdate,

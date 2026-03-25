@@ -20,7 +20,6 @@ const UPDATE_FIELDS = [
   'declineStakingReward',
   'autoRenewPeriod',
   'receiverSignatureRequired',
-  'expirationTime',
 ] as const;
 
 export const AccountUpdateInputSchema = z
@@ -34,12 +33,25 @@ export const AccountUpdateInputSchema = z
     keyManager: KeyManagerTypeSchema.optional().describe(
       'Key manager to use: local or local_encrypted (defaults to config setting)',
     ),
-    memo: MemoSchema.describe('Account memo (max 100 characters)'),
+    memo: z
+      .preprocess(
+        (v) => (v === 'null' || v === '' ? null : v),
+        MemoSchema.nullable().optional(),
+      )
+      .describe('Account memo (max 100 characters). Pass "null" to clear.'),
     maxAutoAssociations: MaxAutoAssociationsSchema,
-    stakedAccountId: EntityIdSchema.optional().describe(
-      'Account ID to stake to',
-    ),
-    stakedNodeId: NodeIdSchema.describe('Node ID to stake to'),
+    stakedAccountId: z
+      .preprocess(
+        (v) => (v === 'null' ? null : v),
+        EntityIdSchema.nullable().optional(),
+      )
+      .describe('Account ID to stake to. Pass "null" to clear.'),
+    stakedNodeId: z
+      .preprocess(
+        (v) => (v === 'null' ? null : v),
+        NodeIdSchema.nullable().optional(),
+      )
+      .describe('Node ID to stake to. Pass "null" to clear.'),
     declineStakingReward: z
       .boolean()
       .optional()
@@ -49,15 +61,14 @@ export const AccountUpdateInputSchema = z
       .boolean()
       .optional()
       .describe('Require receiver signature for transfers'),
-    expirationTime: z
-      .string()
-      .optional()
-      .describe(
-        'Expiration time (ISO 8601 string or Unix timestamp in seconds)',
-      ),
   })
   .superRefine((data, ctx) => {
-    if (data.stakedAccountId !== undefined && data.stakedNodeId !== undefined) {
+    const stakedAccountSet =
+      data.stakedAccountId !== null && data.stakedAccountId !== undefined;
+    const stakedNodeSet =
+      data.stakedNodeId !== null && data.stakedNodeId !== undefined;
+
+    if (stakedAccountSet && stakedNodeSet) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Cannot specify both --staked-account-id and --staked-node-id',
@@ -72,7 +83,7 @@ export const AccountUpdateInputSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message:
-          'At least one field to update must be provided (key, memo, max-auto-associations, staked-account-id, staked-node-id, decline-staking-reward, auto-renew-period, receiver-signature-required, expiration-time)',
+          'At least one field to update must be provided (key, memo, max-auto-associations, staked-account-id, staked-node-id, decline-staking-reward, auto-renew-period, receiver-signature-required)',
         path: [],
       });
     }

@@ -19,14 +19,13 @@ export interface AccountService {
 export interface UpdateAccountParams {
   accountId: string;
   key?: string;
-  memo?: string;
+  memo?: string | null;
   maxAutoAssociations?: number;
-  stakedAccountId?: string;
-  stakedNodeId?: number;
+  stakedAccountId?: string | null;
+  stakedNodeId?: number | null;
   declineStakingReward?: boolean;
   autoRenewPeriod?: number;
   receiverSignatureRequired?: boolean;
-  expirationTime?: Date;
 }
 
 export interface AccountUpdateResult {

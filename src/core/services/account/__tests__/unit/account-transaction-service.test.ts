@@ -205,11 +205,14 @@ describe('AccountServiceImpl', () => {
       expect(result.transaction).toBe(mockUpdateTransaction);
       expect(mockUpdateTransaction.setKey).not.toHaveBeenCalled();
       expect(mockUpdateTransaction.setAccountMemo).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.clearAccountMemo).not.toHaveBeenCalled();
       expect(
         mockUpdateTransaction.setMaxAutomaticTokenAssociations,
       ).not.toHaveBeenCalled();
       expect(mockUpdateTransaction.setStakedAccountId).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.clearStakedAccountId).not.toHaveBeenCalled();
       expect(mockUpdateTransaction.setStakedNodeId).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.clearStakedNodeId).not.toHaveBeenCalled();
       expect(
         mockUpdateTransaction.setDeclineStakingReward,
       ).not.toHaveBeenCalled();
@@ -217,7 +220,6 @@ describe('AccountServiceImpl', () => {
       expect(
         mockUpdateTransaction.setReceiverSignatureRequired,
       ).not.toHaveBeenCalled();
-      expect(mockUpdateTransaction.setExpirationTime).not.toHaveBeenCalled();
     });
 
     it('should set key when key param provided', () => {
@@ -304,16 +306,42 @@ describe('AccountServiceImpl', () => {
       ).toHaveBeenCalledWith(true);
     });
 
-    it('should set expirationTime when param provided', () => {
-      const expDate = new Date('2025-01-01');
+    it('should call clearAccountMemo when memo is null', () => {
+      accountService.updateAccount({ accountId: '0.0.1234', memo: null });
+
+      expect(mockUpdateTransaction.clearAccountMemo).toHaveBeenCalled();
+      expect(mockUpdateTransaction.setAccountMemo).not.toHaveBeenCalled();
+    });
+
+    it('should call clearStakedAccountId when stakedAccountId is null', () => {
       accountService.updateAccount({
         accountId: '0.0.1234',
-        expirationTime: expDate,
+        stakedAccountId: null,
       });
 
-      expect(mockUpdateTransaction.setExpirationTime).toHaveBeenCalledWith(
-        expDate,
-      );
+      expect(mockUpdateTransaction.clearStakedAccountId).toHaveBeenCalled();
+      expect(mockUpdateTransaction.setStakedAccountId).not.toHaveBeenCalled();
+    });
+
+    it('should call clearStakedNodeId when stakedNodeId is null', () => {
+      accountService.updateAccount({
+        accountId: '0.0.1234',
+        stakedNodeId: null,
+      });
+
+      expect(mockUpdateTransaction.clearStakedNodeId).toHaveBeenCalled();
+      expect(mockUpdateTransaction.setStakedNodeId).not.toHaveBeenCalled();
+    });
+
+    it('should clear both staking fields simultaneously', () => {
+      accountService.updateAccount({
+        accountId: '0.0.1234',
+        stakedAccountId: null,
+        stakedNodeId: null,
+      });
+
+      expect(mockUpdateTransaction.clearStakedAccountId).toHaveBeenCalled();
+      expect(mockUpdateTransaction.clearStakedNodeId).toHaveBeenCalled();
     });
 
     it('should set multiple fields in single transaction', () => {
@@ -338,11 +366,14 @@ describe('AccountServiceImpl', () => {
 
       expect(mockUpdateTransaction.setKey).not.toHaveBeenCalled();
       expect(mockUpdateTransaction.setAccountMemo).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.clearAccountMemo).not.toHaveBeenCalled();
       expect(
         mockUpdateTransaction.setMaxAutomaticTokenAssociations,
       ).not.toHaveBeenCalled();
       expect(mockUpdateTransaction.setStakedAccountId).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.clearStakedAccountId).not.toHaveBeenCalled();
       expect(mockUpdateTransaction.setStakedNodeId).not.toHaveBeenCalled();
+      expect(mockUpdateTransaction.clearStakedNodeId).not.toHaveBeenCalled();
       expect(
         mockUpdateTransaction.setDeclineStakingReward,
       ).not.toHaveBeenCalled();
@@ -350,7 +381,6 @@ describe('AccountServiceImpl', () => {
       expect(
         mockUpdateTransaction.setReceiverSignatureRequired,
       ).not.toHaveBeenCalled();
-      expect(mockUpdateTransaction.setExpirationTime).not.toHaveBeenCalled();
     });
 
     it('should throw ValidationError when AccountUpdateTransaction throws', () => {
