@@ -1,8 +1,10 @@
 import type {
   ContractCreateFlowParams,
   ContractCreateFlowResult,
+  ContractDeleteResult,
   ContractExecuteParams,
   ContractExecuteResult,
+  DeleteContractParams,
 } from '@/core/services/contract-transaction/types';
 
 export interface ContractTransactionService {
@@ -18,4 +20,8 @@ export interface ContractTransactionService {
   contractExecuteTransaction(
     params: ContractExecuteParams,
   ): ContractExecuteResult;
+  /**
+   * Build a ContractDeleteTransaction (sign with contract admin key + operator)
+   */
+  deleteContract(params: DeleteContractParams): ContractDeleteResult;
 }
