@@ -45,46 +45,136 @@ export function detectKeyAlgorithm(keyBytes: Uint8Array): string {
  * QRS = (key_score * 0.40) + (algo_diversity * 0.20) +
  *        (rotation_readiness * 0.20) + (compliance_alignment * 0.20)
  */
+/**
+ * Calculate the total QRS score (convenience wrapper).
+ */
 export function calculateQRS(
   keys: KeyAuditResult[],
   hasAdminKey: boolean,
 ): number {
-  if (keys.length === 0) return 0;
+  return calculateQRSWithBreakdown(keys, hasAdminKey).total;
+}
 
-  // Key score: weighted average of vulnerability tiers (Tier 0=100, Tier 4=0)
+/**
+ * QRS breakdown components returned alongside the total score.
+ */
+export interface QRSBreakdown {
+  keyScore: number;
+  algorithmDiversity: number;
+  rotationReadiness: number;
+  complianceAlignment: number;
+  total: number;
+}
+
+/**
+ * Calculate QRS with detailed breakdown for the score command.
+ */
+export function calculateQRSWithBreakdown(
+  keys: KeyAuditResult[],
+  hasAdminKey: boolean,
+): QRSBreakdown {
+  if (keys.length === 0) {
+    return {
+      keyScore: 0,
+      algorithmDiversity: 0,
+      rotationReadiness: 0,
+      complianceAlignment: 0,
+      total: 0,
+    };
+  }
+
   const keyScore =
     keys.reduce((sum, k) => {
       const tierScore = ((4 - k.vulnerabilityTier) / 4) * 100;
       return sum + tierScore;
     }, 0) / keys.length;
 
-  // Algorithm diversity: penalise single-algorithm dependency
   const uniqueAlgorithms = new Set(keys.map((k) => k.algorithm));
   const algorithmDiversity =
     uniqueAlgorithms.size > 1
       ? Math.min(uniqueAlgorithms.size * 25, 100)
       : 10;
 
-  // Rotation readiness: can keys be rotated when PQC is available?
   const rotationReadiness = hasAdminKey ? 80 : 0;
 
-  // Compliance alignment: days until CNSA 2.0 deadline
   const now = new Date();
   const daysUntilDeadline = Math.max(
     0,
     (CNSA_2_DEADLINE.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
   );
-  // More days remaining = higher score (more time to prepare)
   const complianceAlignment = Math.min((daysUntilDeadline / 365) * 50, 100);
 
-  const qrs = Math.round(
-    keyScore * QRS_WEIGHTS.keyScore +
-      algorithmDiversity * QRS_WEIGHTS.algorithmDiversity +
-      rotationReadiness * QRS_WEIGHTS.rotationReadiness +
-      complianceAlignment * QRS_WEIGHTS.complianceAlignment,
+  const total = Math.max(
+    0,
+    Math.min(
+      100,
+      Math.round(
+        keyScore * QRS_WEIGHTS.keyScore +
+          algorithmDiversity * QRS_WEIGHTS.algorithmDiversity +
+          rotationReadiness * QRS_WEIGHTS.rotationReadiness +
+          complianceAlignment * QRS_WEIGHTS.complianceAlignment,
+      ),
+    ),
   );
 
-  return Math.max(0, Math.min(100, qrs));
+  return {
+    keyScore: Math.round(keyScore),
+    algorithmDiversity: Math.round(algorithmDiversity),
+    rotationReadiness: Math.round(rotationReadiness),
+    complianceAlignment: Math.round(complianceAlignment),
+    total,
+  };
+}
+
+/**
+ * Analyse a Hedera Key object and return audit results.
+ * Handles ED25519, ECDSA, KeyList, and ThresholdKey structures.
+ *
+ * NOTE: KeyList detection uses the internal `_keys` property from
+ * @hashgraph/sdk 2.80.0. If the SDK changes its internal structure,
+ * this will fall through to the UNKNOWN branch safely.
+ */
+export function analyseKey(
+  keyType: string,
+  keyData: unknown,
+  hasAdminKey: boolean,
+): KeyAuditResult[] {
+  const results: KeyAuditResult[] = [];
+
+  if (!keyData) return results;
+
+  const key = keyData as Record<string, unknown>;
+
+  if (typeof key.toBytes === 'function') {
+    const bytes = (key as { toBytes: () => Uint8Array }).toBytes();
+    const algorithm = detectKeyAlgorithm(bytes);
+    const { tier, label } = classifyAlgorithm(algorithm);
+
+    results.push({
+      keyType,
+      algorithm,
+      vulnerabilityTier: tier,
+      vulnerabilityLabel: label,
+      canRotate: hasAdminKey,
+    });
+  } else if (key._keys && Array.isArray(key._keys)) {
+    // KeyList or ThresholdKey (@hashgraph/sdk 2.80.0 internal property)
+    for (const subKey of key._keys) {
+      results.push(
+        ...analyseKey(`${keyType} (multi-sig)`, subKey, hasAdminKey),
+      );
+    }
+  } else {
+    results.push({
+      keyType,
+      algorithm: 'UNKNOWN',
+      vulnerabilityTier: VulnerabilityTier.CRITICAL,
+      vulnerabilityLabel: VULNERABILITY_LABELS[VulnerabilityTier.CRITICAL],
+      canRotate: hasAdminKey,
+    });
+  }
+
+  return results;
 }
 
 /**

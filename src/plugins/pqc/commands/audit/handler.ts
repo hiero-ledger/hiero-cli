@@ -8,64 +8,13 @@ import type { PqcAuditOutput } from './output';
 import type { KeyAuditResult } from '../../types';
 
 import { PqcAuditInputSchema } from './input';
-import { VulnerabilityTier, VULNERABILITY_LABELS } from '../../types';
+import { VulnerabilityTier } from '../../types';
 import {
+  analyseKey,
   classifyAlgorithm,
-  detectKeyAlgorithm,
   calculateQRS,
   generateRecommendations,
 } from '../../utils';
-
-export const PQC_AUDIT_COMMAND_NAME = 'audit';
-
-/**
- * Analyse a Hedera Key object and return audit results.
- * Handles ED25519, ECDSA, KeyList, and ThresholdKey structures.
- */
-function analyseKey(
-  keyType: string,
-  keyData: unknown,
-  hasAdminKey: boolean,
-): KeyAuditResult[] {
-  const results: KeyAuditResult[] = [];
-
-  if (!keyData) return results;
-
-  // The Hedera SDK key objects expose toBytes() for the public key
-  const key = keyData as Record<string, unknown>;
-
-  if (typeof key.toBytes === 'function') {
-    const bytes = (key as { toBytes: () => Uint8Array }).toBytes();
-    const algorithm = detectKeyAlgorithm(bytes);
-    const { tier, label } = classifyAlgorithm(algorithm);
-
-    results.push({
-      keyType,
-      algorithm,
-      vulnerabilityTier: tier,
-      vulnerabilityLabel: label,
-      canRotate: hasAdminKey,
-    });
-  } else if (key._keys && Array.isArray(key._keys)) {
-    // KeyList or ThresholdKey — recurse into sub-keys
-    for (const subKey of key._keys) {
-      results.push(
-        ...analyseKey(`${keyType} (multi-sig)`, subKey, hasAdminKey),
-      );
-    }
-  } else {
-    // Unknown key structure — flag as critical
-    results.push({
-      keyType,
-      algorithm: 'UNKNOWN',
-      vulnerabilityTier: VulnerabilityTier.CRITICAL,
-      vulnerabilityLabel: VULNERABILITY_LABELS[VulnerabilityTier.CRITICAL],
-      canRotate: hasAdminKey,
-    });
-  }
-
-  return results;
-}
 
 export class PqcAuditCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
@@ -87,7 +36,7 @@ export class PqcAuditCommand implements Command {
     const accountNamespace = 'account-accounts';
     const storedAccounts = accountState.list(accountNamespace);
 
-    for (const [, value] of Object.entries(storedAccounts)) {
+    for (const value of storedAccounts) {
       const accountData = value as Record<string, unknown>;
       if (validArgs.account && accountData.accountId !== validArgs.account) {
         continue;

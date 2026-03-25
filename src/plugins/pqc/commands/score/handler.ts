@@ -11,8 +11,9 @@ import { NotFoundError } from '@/core';
 import { PqcScoreInputSchema } from './input';
 import { VulnerabilityTier } from '../../types';
 import {
+  analyseKey,
   classifyAlgorithm,
-  calculateQRS,
+  calculateQRSWithBreakdown,
 } from '../../utils';
 
 export const PQC_SCORE_COMMAND_NAME = 'score';
@@ -36,7 +37,7 @@ export class PqcScoreCommand implements Command {
     const storedAccounts = api.state.list(accountNamespace);
     let targetAccount: Record<string, unknown> | null = null;
 
-    for (const [, value] of Object.entries(storedAccounts)) {
+    for (const value of storedAccounts) {
       const acc = value as Record<string, unknown>;
       if (
         acc.accountId === validArgs.account ||
@@ -58,57 +59,42 @@ export class PqcScoreCommand implements Command {
     const hasAdminKey = !!targetAccount.adminKey;
     const keys: KeyAuditResult[] = [];
 
-    // Default: all Hiero accounts use ED25519 unless specified otherwise
-    const { tier, label } = classifyAlgorithm('ED25519');
-    keys.push({
-      keyType: 'account',
-      algorithm: 'ED25519',
-      vulnerabilityTier: tier,
-      vulnerabilityLabel: label,
-      canRotate: hasAdminKey,
-    });
+    // Analyse actual key data from state (reuses shared analyseKey)
+    if (targetAccount.adminKey) {
+      keys.push(...analyseKey('admin', targetAccount.adminKey, true));
+    }
+    if (targetAccount.keyData) {
+      keys.push(
+        ...analyseKey('account', targetAccount.keyData, hasAdminKey),
+      );
+    }
 
-    if (hasAdminKey) {
-      const adminClassification = classifyAlgorithm('ED25519');
+    // If no keys found in state, all Hiero accounts default to ED25519
+    if (keys.length === 0) {
+      const { tier, label } = classifyAlgorithm('ED25519');
       keys.push({
-        keyType: 'admin',
+        keyType: 'account (default)',
         algorithm: 'ED25519',
-        vulnerabilityTier: adminClassification.tier,
-        vulnerabilityLabel: adminClassification.label,
-        canRotate: true,
+        vulnerabilityTier: tier,
+        vulnerabilityLabel: label,
+        canRotate: hasAdminKey,
       });
     }
 
-    const qrs = calculateQRS(keys, hasAdminKey);
-
-    // Calculate individual breakdown scores
-    const keyScore =
-      keys.reduce((sum, k) => sum + ((4 - k.vulnerabilityTier) / 4) * 100, 0) /
-      keys.length;
-    const uniqueAlgs = new Set(keys.map((k) => k.algorithm));
-    const algorithmDiversity =
-      uniqueAlgs.size > 1 ? Math.min(uniqueAlgs.size * 25, 100) : 10;
-    const rotationReadiness = hasAdminKey ? 80 : 0;
-
-    const now = new Date();
-    const deadline = new Date('2027-01-01T00:00:00Z');
-    const daysUntil = Math.max(
-      0,
-      (deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
-    );
-    const complianceAlignment = Math.min((daysUntil / 365) * 50, 100);
+    // Single source of truth for QRS calculation + breakdown
+    const breakdown = calculateQRSWithBreakdown(keys, hasAdminKey);
 
     const outputData: PqcScoreOutput = {
       entityId: targetAccount.accountId as string,
       network: (targetAccount.network as string) as PqcScoreOutput['network'],
-      quantumReadinessScore: qrs,
+      quantumReadinessScore: breakdown.total,
       breakdown: {
-        keyScore: Math.round(keyScore),
-        algorithmDiversity: Math.round(algorithmDiversity),
-        rotationReadiness: Math.round(rotationReadiness),
-        complianceAlignment: Math.round(complianceAlignment),
+        keyScore: breakdown.keyScore,
+        algorithmDiversity: breakdown.algorithmDiversity,
+        rotationReadiness: breakdown.rotationReadiness,
+        complianceAlignment: breakdown.complianceAlignment,
       },
-      grade: qrsToGrade(qrs),
+      grade: qrsToGrade(breakdown.total),
       keyCount: keys.length,
       criticalKeyCount: keys.filter(
         (k) => k.vulnerabilityTier === VulnerabilityTier.CRITICAL,

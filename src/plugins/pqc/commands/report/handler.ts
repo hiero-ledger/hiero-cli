@@ -12,6 +12,24 @@ import type { PqcAuditOutput } from '../audit/output';
 
 export const PQC_REPORT_COMMAND_NAME = 'report';
 
+/**
+ * Escape a value for safe CSV output.
+ * Prevents formula injection and handles commas/quotes.
+ */
+function escapeCSV(val: unknown): string {
+  const str = String(val);
+  // Prevent CSV formula injection (=, +, -, @)
+  const sanitised = /^[=+\-@]/.test(str) ? `'${str}` : str;
+  if (
+    sanitised.includes(',') ||
+    sanitised.includes('"') ||
+    sanitised.includes('\n')
+  ) {
+    return `"${sanitised.replace(/"/g, '""')}"`;
+  }
+  return sanitised;
+}
+
 export class PqcReportCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { logger } = args;
@@ -51,17 +69,17 @@ export class PqcReportCommand implements Command {
         const rows = auditData.entities.flatMap((entity) =>
           entity.keys.map((key) =>
             [
-              entity.entityId,
-              entity.entityType,
-              entity.network,
-              entity.quantumReadinessScore,
-              key.keyType,
-              key.algorithm,
-              key.vulnerabilityLabel,
-              key.canRotate,
-              entity.complianceFlags.cnsa2_2027,
-              entity.complianceFlags.nist_fips_203,
-              entity.complianceFlags.nist_fips_204,
+              escapeCSV(entity.entityId),
+              escapeCSV(entity.entityType),
+              escapeCSV(entity.network),
+              escapeCSV(entity.quantumReadinessScore),
+              escapeCSV(key.keyType),
+              escapeCSV(key.algorithm),
+              escapeCSV(key.vulnerabilityLabel),
+              escapeCSV(key.canRotate),
+              escapeCSV(entity.complianceFlags.cnsa2_2027),
+              escapeCSV(entity.complianceFlags.nist_fips_203),
+              escapeCSV(entity.complianceFlags.nist_fips_204),
             ].join(','),
           ),
         );

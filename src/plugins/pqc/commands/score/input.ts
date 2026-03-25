@@ -3,12 +3,10 @@
  */
 import { z } from 'zod';
 
-import { NetworkSchema } from '@/core/schemas';
+import { EntityReferenceSchema, NetworkSchema } from '@/core/schemas';
 
 export const PqcScoreInputSchema = z.object({
-  account: z
-    .string()
-    .describe('Account ID or alias to score'),
+  account: EntityReferenceSchema.describe('Account ID or alias to score'),
   network: NetworkSchema.optional().describe('Network of the account'),
 });
 
