@@ -144,7 +144,10 @@ describe('Delete Topic Integration Tests', () => {
     it('should fail when deleting non-existent topic by name', async () => {
       await expect(
         topicDelete({
-          args: { topic: 'non-existent-topic-name' },
+          args: {
+            topic: 'non-existent-topic-name',
+            stateOnly: true,
+          },
           api: coreApi,
           state: coreApi.state,
           logger: coreApi.logger,
@@ -156,7 +159,12 @@ describe('Delete Topic Integration Tests', () => {
     it('should fail when deleting non-existent topic by topicId', async () => {
       await expect(
         topicDelete({
-          args: { topic: MOCK_NONEXISTENT_ENTITY_ID },
+          args: {
+            topic: MOCK_NONEXISTENT_ENTITY_ID,
+            adminKey: [
+              `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
+            ],
+          },
           api: coreApi,
           state: coreApi.state,
           logger: coreApi.logger,

@@ -22,7 +22,7 @@ export const TopicDeleteInputSchema = z.object({
     .optional()
     .default([])
     .describe(
-      'Admin key(s) for signing when the topic is not in local state, or to override keys stored in state',
+      'Admin credential(s) for signing TopicDeleteTransaction on Hedera (required unless -s / state-only)',
     ),
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager when resolving --admin-key (defaults to config)',

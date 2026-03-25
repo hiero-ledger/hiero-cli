@@ -58,6 +58,18 @@ function mirrorWithTopic(topicId: string): HederaMirrornodeService {
   } as unknown as HederaMirrornodeService;
 }
 
+function mirrorWithTopicNoAdminKey(topicId: string): HederaMirrornodeService {
+  return {
+    ...makeMirrorMock(),
+    getTopicInfo: jest.fn().mockResolvedValue(
+      createMockTopicInfo({
+        topic_id: topicId,
+        deleted: false,
+      }),
+    ),
+  } as unknown as HederaMirrornodeService;
+}
+
 function kmsWithKrAdmin() {
   const kms = makeKmsMock();
   kms.get = jest.fn().mockImplementation((refId: string) => {
@@ -364,6 +376,13 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias.list = jest.fn().mockReturnValue([]);
       const network = makeNetworkMock(SupportedNetwork.TESTNET);
 
+      const keyResolver: Pick<KeyResolverService, 'resolveSigningKey'> = {
+        resolveSigningKey: jest.fn().mockResolvedValue({
+          keyRefId: MOCK_TOPIC_ADMIN_KEY_REF_ID,
+          publicKey: ED25519_HEX_PUBLIC_KEY,
+        }),
+      };
+
       const api: Partial<CoreApi> = {
         state: makeStateMock(),
         logger,
@@ -378,11 +397,13 @@ describe('topic plugin - delete command (ADR-007)', () => {
         },
         txSign,
         txExecute,
+        keyResolver: keyResolver as KeyResolverService,
       };
 
       const args = makeArgs(api, logger, {
         topic: 'topic-net',
         stateOnly: false,
+        adminKey: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
       });
 
       const result = await topicDelete(args);
@@ -422,9 +443,12 @@ describe('topic plugin - delete command (ADR-007)', () => {
         logger,
         alias,
         network,
-        mirror: mirrorWithTopic(MOCK_HEDERA_ENTITY_ID_1),
+        mirror: mirrorWithTopicNoAdminKey(MOCK_HEDERA_ENTITY_ID_1),
       };
-      const args = makeArgs(api, logger, { topic: MOCK_HEDERA_ENTITY_ID_1 });
+      const args = makeArgs(api, logger, {
+        topic: MOCK_HEDERA_ENTITY_ID_1,
+        adminKey: [MOCK_TOPIC_CLI_ADMIN_KEY_REF_ID],
+      });
 
       await expect(topicDelete(args)).rejects.toThrow(ValidationError);
     });
@@ -461,6 +485,13 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias.list = jest.fn().mockReturnValue([]);
       const network = makeNetworkMock(SupportedNetwork.TESTNET);
 
+      const keyResolver: Pick<KeyResolverService, 'resolveSigningKey'> = {
+        resolveSigningKey: jest.fn().mockResolvedValue({
+          keyRefId: MOCK_TOPIC_ADMIN_KEY_REF_ID,
+          publicKey: ED25519_HEX_PUBLIC_KEY,
+        }),
+      };
+
       const api: Partial<CoreApi> = {
         state: makeStateMock(),
         logger,
@@ -475,9 +506,13 @@ describe('topic plugin - delete command (ADR-007)', () => {
         },
         txSign,
         txExecute,
+        keyResolver: keyResolver as KeyResolverService,
       };
 
-      const args = makeArgs(api, logger, { topic: MOCK_HEDERA_ENTITY_ID_1 });
+      const args = makeArgs(api, logger, {
+        topic: MOCK_HEDERA_ENTITY_ID_1,
+        adminKey: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
+      });
 
       await expect(topicDelete(args)).rejects.toThrow(TransactionError);
     });

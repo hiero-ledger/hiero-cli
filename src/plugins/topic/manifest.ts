@@ -236,7 +236,7 @@ export const topicPluginManifest: PluginManifest = {
           type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Admin key(s) for signing when the topic is not in local state, or to override keys from state. Same format as topic create. Required signatures (M-of-N) are read from the mirror node.',
+            'Admin credential(s) for signing TopicDeleteTransaction on Hedera.  Required for network delete unless -s flag is used.',
           short: 'a',
         },
         {

@@ -18,6 +18,7 @@ import {
 } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { TopicHelper } from '@/plugins/topic/topic-helper';
 import {
@@ -53,36 +54,6 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
         `Admin key ${keyRefId} does not match the topic admin key on the network (mirror node) and was ignored`,
       );
     }
-  }
-
-  private resolveSigningKeyRefsFromState(
-    args: CommandHandlerArgs,
-    adminKeyRefIds: string[],
-    adminPublicKeysSet: Set<string>,
-    requiredSignatures: number,
-  ): string[] {
-    const matchedRefIds: string[] = [];
-    const seenPublicKeys = new Set<string>();
-
-    for (const refId of adminKeyRefIds) {
-      const rec = args.api.kms.get(refId);
-      if (!rec?.publicKey) {
-        continue;
-      }
-      const pk = rec.publicKey.toLowerCase();
-      if (adminPublicKeysSet.has(pk) && !seenPublicKeys.has(pk)) {
-        seenPublicKeys.add(pk);
-        matchedRefIds.push(refId);
-      }
-    }
-
-    if (matchedRefIds.length < requiredSignatures) {
-      throw new ValidationError(
-        `Topic requires ${requiredSignatures} admin signature(s) on Hedera, but local state only has ${matchedRefIds.length} matching key(s). Pass --admin-key with additional admin credentials (see topic create key format).`,
-      );
-    }
-
-    return matchedRefIds;
   }
 
   override async execute(args: CommandHandlerArgs): Promise<CommandResult> {
@@ -182,7 +153,7 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     return topicAlias.entityId;
   }
 
-  private async resolveNetworkDeleteParams(
+  async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<DeleteTopicNormalisedParams> {
     const { api, logger } = args;
@@ -193,10 +164,16 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     const topicState = new ZustandTopicStateHelper(api.state, logger);
     const keyManager =
       validArgs.keyManager ||
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
+
+    if (validArgs.adminKey.length === 0) {
+      throw new ValidationError('No --admin-key was provided.');
+    }
 
     const topicEntityId = this.resolveTopicEntityId(args, topicRef, isEntityId);
     const key = composeKey(network, topicEntityId);
+
+    const loaded = topicState.loadTopic(key);
 
     const topicInfo = await api.mirror.getTopicInfo(topicEntityId);
     if (topicInfo.deleted) {
@@ -217,45 +194,30 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
       requirement.adminPublicKeys,
     );
 
-    const loaded = topicState.loadTopic(key);
-    const hasExplicitAdminKeys = validArgs.adminKey.length > 0;
+    const adminKeys = await Promise.all(
+      validArgs.adminKey.map((cred) =>
+        api.keyResolver.resolveSigningKey(cred, keyManager, false, [
+          'topic:admin',
+        ]),
+      ),
+    );
+    const explicitFromKeys = resolveSigningKeyRefsFromExplicitCredentials(
+      adminKeys,
+      adminPublicKeysSet,
+      requirement.requiredSignatures,
+    );
+    this.warnIgnoredTopicDeleteAdminKeys(
+      logger,
+      explicitFromKeys.ignoredKeyRefIds,
+    );
+    const signingKeyRefIds = explicitFromKeys.signingKeyRefIds;
 
     if (loaded) {
-      let topicToDelete: TopicData = loaded;
-      let signingKeyRefIds: string[];
-
-      if (hasExplicitAdminKeys) {
-        const adminKeys = await Promise.all(
-          validArgs.adminKey.map((cred) =>
-            api.keyResolver.resolveSigningKey(cred, keyManager, false, [
-              'topic:admin',
-            ]),
-          ),
-        );
-        const explicit = resolveSigningKeyRefsFromExplicitCredentials(
-          adminKeys,
-          adminPublicKeysSet,
-          requirement.requiredSignatures,
-        );
-        this.warnIgnoredTopicDeleteAdminKeys(logger, explicit.ignoredKeyRefIds);
-        signingKeyRefIds = explicit.signingKeyRefIds;
-        topicToDelete = {
-          ...loaded,
-          adminKeyRefIds: signingKeyRefIds,
-          adminKeyThreshold: requirement.requiredSignatures,
-        };
-      } else {
-        signingKeyRefIds = this.resolveSigningKeyRefsFromState(
-          args,
-          loaded.adminKeyRefIds,
-          adminPublicKeysSet,
-          requirement.requiredSignatures,
-        );
-        topicToDelete = {
-          ...loaded,
-          adminKeyThreshold: requirement.requiredSignatures,
-        };
-      }
+      const topicToDelete: TopicData = {
+        ...loaded,
+        adminKeyRefIds: signingKeyRefIds,
+        adminKeyThreshold: requirement.requiredSignatures,
+      };
 
       return {
         topicRef,
@@ -267,27 +229,7 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
       };
     }
 
-    if (!hasExplicitAdminKeys) {
-      throw new ValidationError(
-        'Topic is not in local state. Pass topic ID or alias and --admin-key (repeatable) with admin credentials to delete on Hedera, or import the topic first.',
-      );
-    }
-
-    const adminKeys = await Promise.all(
-      validArgs.adminKey.map((cred) =>
-        api.keyResolver.resolveSigningKey(cred, keyManager, false, [
-          'topic:admin',
-        ]),
-      ),
-    );
     const entityId = EntityIdSchema.parse(topicEntityId);
-    const explicit = resolveSigningKeyRefsFromExplicitCredentials(
-      adminKeys,
-      adminPublicKeysSet,
-      requirement.requiredSignatures,
-    );
-    this.warnIgnoredTopicDeleteAdminKeys(logger, explicit.ignoredKeyRefIds);
-    const signingKeyRefIds = explicit.signingKeyRefIds;
 
     const topicToDelete: TopicData = {
       topicId: entityId,
@@ -307,12 +249,6 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
       stateOnly: false,
       signingKeyRefIds,
     };
-  }
-
-  async normalizeParams(
-    args: CommandHandlerArgs,
-  ): Promise<DeleteTopicNormalisedParams> {
-    return this.resolveNetworkDeleteParams(args);
   }
 
   async buildTransaction(
