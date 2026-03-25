@@ -62,7 +62,6 @@ export const makeAccountData = (
  * Creates mock HederaMirrornodeService methods for testing account balances
  */
 export const makeMirrorMocks = ({
-  hbarBalance = 0n,
   tokenBalances,
   tokenError,
 }: {
@@ -71,7 +70,6 @@ export const makeMirrorMocks = ({
   tokenError?: Error;
 }): Partial<HederaMirrornodeService> => {
   return {
-    getAccountHBarBalance: jest.fn().mockResolvedValue(hbarBalance),
     getAccountTokenBalances: tokenError
       ? jest.fn().mockRejectedValue(tokenError)
       : jest.fn().mockResolvedValue({ tokens: tokenBalances ?? [] }),
@@ -151,6 +149,7 @@ export const makeNetworkServiceMock = (
 export const makeMirrorNodeMock = (
   overrides?: Partial<jest.Mocked<HederaMirrornodeService>>,
 ): Partial<HederaMirrornodeService> => ({
+  getAccountOrThrow: jest.fn().mockResolvedValue(mockMirrorAccountData.default),
   getAccount: jest.fn().mockResolvedValue(mockMirrorAccountData.default),
   ...overrides,
 });

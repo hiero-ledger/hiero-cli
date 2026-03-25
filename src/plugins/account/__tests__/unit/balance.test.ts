@@ -56,7 +56,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     const result = await accountBalance(args);
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
 
-    expect(mirrorMock.getAccountHBarBalance).not.toHaveBeenCalled();
+    expect(mirrorMock.getAccountOrThrow).not.toHaveBeenCalled();
     expect(mirrorMock.getAccountTokenBalances).toHaveBeenCalledWith(
       '0.0.1234',
       '0.0.7777',
@@ -110,7 +110,7 @@ describe('account plugin - balance command (ADR-003)', () => {
 
     const result = await accountBalance(args);
 
-    expect(mirrorMock.getAccountHBarBalance).not.toHaveBeenCalled();
+    expect(mirrorMock.getAccountOrThrow).not.toHaveBeenCalled();
     expect(mirrorMock.getAccountTokenBalances).toHaveBeenCalledWith(
       '0.0.1234',
       '0.0.7777',
@@ -153,7 +153,7 @@ describe('account plugin - balance command (ADR-003)', () => {
 
     const result = await accountBalance(args);
 
-    expect(mirrorMock.getAccountHBarBalance).toHaveBeenCalledWith('0.0.1001');
+    expect(mirrorMock.getAccountOrThrow).toHaveBeenCalledWith('0.0.1001');
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
     expect(output.accountId).toBe('0.0.1001');
     expect(output.hbarBalance).toBe(123456n);
@@ -189,7 +189,7 @@ describe('account plugin - balance command (ADR-003)', () => {
 
     const result = await accountBalance(args);
 
-    expect(mirrorMock.getAccountHBarBalance).toHaveBeenCalledWith('0.0.2002');
+    expect(mirrorMock.getAccountOrThrow).toHaveBeenCalledWith('0.0.2002');
     expect(mirrorMock.getAccountTokenBalances).toHaveBeenCalledWith(
       '0.0.2002',
       undefined,
@@ -241,7 +241,7 @@ describe('account plugin - balance command (ADR-003)', () => {
 
     const result = await accountBalance(args);
 
-    expect(mirrorMock.getAccountHBarBalance).toHaveBeenCalledWith('0.0.7777');
+    expect(mirrorMock.getAccountOrThrow).toHaveBeenCalledWith('0.0.7777');
     const output = assertOutput(result.result, AccountBalanceOutputSchema);
     expect(output.accountId).toBe('0.0.7777');
     expect(output.hbarBalance).toBe(999n);
@@ -311,8 +311,8 @@ describe('account plugin - balance command (ADR-003)', () => {
       }),
     }));
 
-    const mirrorMock: Pick<HederaMirrornodeService, 'getAccountHBarBalance'> = {
-      getAccountHBarBalance: jest.fn(),
+    const mirrorMock: Pick<HederaMirrornodeService, 'getAccountOrThrow'> = {
+      getAccountOrThrow: jest.fn(),
     };
 
     const api: Partial<CoreApi> = {
@@ -329,7 +329,7 @@ describe('account plugin - balance command (ADR-003)', () => {
     const logger = makeLogger();
 
     const mirrorMock = makeMirrorMock({ hbarBalance: 100n });
-    mirrorMock.getAccountHBarBalance = jest.fn().mockImplementation(() => {
+    mirrorMock.getAccountOrThrow = jest.fn().mockImplementation(() => {
       throw new InternalError('Mirror service error');
     });
 

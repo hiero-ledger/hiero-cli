@@ -276,8 +276,8 @@ Provides comprehensive access to Hedera Mirror Node API.
 ```typescript
 interface HederaMirrornodeService {
   // Account operations
-  getAccount(accountId: string): Promise<AccountResponse>;
-  getAccountHBarBalance(accountId: string): Promise<bigint>;
+  getAccountOrThrow(accountId: string): Promise<AccountResponse>;
+  getAccount(accountId: string): Promise<AccountResponse | null>;
   getAccountTokenBalances(
     accountId: string,
     tokenId?: string,
@@ -310,15 +310,17 @@ interface HederaMirrornodeService {
 **Usage Examples:**
 
 ```typescript
-// Get account information
+// Get account information (null if mirror returns 404)
 const account = await api.mirror.getAccount('0.0.123456');
-console.log(
-  `Account: ${account.accountId}, Balance: ${account.balance.balance}`,
-);
+if (account) {
+  console.log(
+    `Account: ${account.accountId}, Balance: ${account.balance.balance}`,
+  );
+}
 
-// Get HBAR balance
-const balance = await api.mirror.getAccountHBarBalance('0.0.123456');
-console.log(`Balance: ${balance.toString()} tinybars`);
+// Or require the account to exist (throws on 404 / other mirror errors)
+const accountOrThrow = await api.mirror.getAccountOrThrow('0.0.123456');
+console.log(`Balance: ${accountOrThrow.balance.balance} tinybars`);
 
 // Get token balances
 const tokenBalances = await api.mirror.getAccountTokenBalances('0.0.123456');

@@ -55,9 +55,10 @@ export class AccountCreateCommand extends BaseTransactionCommand<
     const operator = api.network.getCurrentOperatorOrThrow();
     const payer = api.network.getPayer();
     const balanceCheckAccountId = payer?.accountId ?? operator.accountId;
-    const payerOrOperatorBalance = await api.mirror.getAccountHBarBalance(
-      balanceCheckAccountId,
+    const payerOrOperator = await api.mirror.getAccountOrThrow(
+      operator.accountId,
     );
+    const payerOrOperatorBalance = BigInt(payerOrOperator.balance.balance);
     validateSufficientBalance(
       payerOrOperatorBalance,
       balance,

@@ -42,7 +42,7 @@ export class AccountImportCommand implements Command {
     }
     api.alias.availableOrThrow(alias, network);
 
-    const accountInfo = await api.mirror.getAccount(accountId);
+    const accountInfo = await api.mirror.getAccountOrThrow(accountId);
 
     logger.info(`Importing account: ${accountKey} (${accountId})`);
 
