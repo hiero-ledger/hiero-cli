@@ -44,10 +44,31 @@ function formatHederaTimestamp(timestamp?: string): string | undefined {
   return date.toISOString().replace('T', ' ').substring(0, 19);
 }
 
+/** Converts Mirror Node `expiry_timestamp` (nanoseconds since epoch) to ISO 8601. */
+function expiryTimestampToIso(
+  expiry?: number | string | null,
+): string | undefined {
+  if (expiry === undefined || expiry === null) return undefined;
+  if (typeof expiry === 'number') {
+    if (!Number.isFinite(expiry) || expiry === 0) return undefined;
+    return new Date(expiry / 1e6).toISOString();
+  }
+  const trimmed = String(expiry).trim();
+  if (!trimmed) return undefined;
+  if (trimmed.includes('T')) {
+    const d = new Date(trimmed);
+    return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
+  }
+  const seconds = trimmed.split('.')[0];
+  const ms = Number(seconds) * 1000;
+  if (!Number.isFinite(ms)) return undefined;
+  return new Date(ms).toISOString();
+}
+
 /**
  * Build output object based on token type and mode
  */
-export function buildOutput(
+export function tokenBuildOutput(
   tokenInfo: TokenInfo,
   nftInfo: NftInfo | null,
   network: SupportedNetwork,
@@ -66,11 +87,15 @@ export function buildOutput(
     totalSupply: tokenInfo.total_supply,
     maxSupply: tokenInfo.max_supply,
     supplyType,
-    treasury: tokenInfo.treasury || undefined,
+    treasury: tokenInfo.treasury_account_id,
     memo: tokenInfo.memo || undefined,
     createdTimestamp: formatHederaTimestamp(tokenInfo.created_timestamp),
     adminKey: tokenInfo.admin_key?.key || null,
     supplyKey: tokenInfo.supply_key?.key || null,
+    freezeDefault: tokenInfo.freeze_default,
+    autoRenewPeriodSeconds: tokenInfo.auto_renew_period,
+    autoRenewAccountId: tokenInfo.auto_renew_account || undefined,
+    expirationTime: expiryTimestampToIso(tokenInfo.expiry_timestamp),
   };
 
   // Add decimals only for Fungible Tokens

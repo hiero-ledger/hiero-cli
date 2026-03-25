@@ -97,7 +97,7 @@ src/plugins/token/
 │       ├── types.ts         # AssociateNormalisedParamsSchema for batch item validation
 │       └── index.ts         # Hook exports
 ├── utils/
-│   ├── nft-build-output.ts  # NFT output builder utilities
+│   ├── token-build-output.ts  # NFT output builder utilities
 │   ├── token-amount-helpers.ts  # Token amount processing helpers
 │   ├── token-data-builders.ts   # Token data builders for create-from-file
 │   ├── token-associations.ts   # Token association processing

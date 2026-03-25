@@ -69,7 +69,7 @@ export interface TokenInfo {
   total_supply: string;
   max_supply: string;
   type: string;
-  treasury: string;
+  treasury_account_id: string;
   admin_key?: {
     _type: string;
     key: string;
@@ -104,8 +104,11 @@ export interface TokenInfo {
   };
   created_timestamp: string;
   deleted: boolean;
-  default_freeze_status: boolean;
+  freeze_default: boolean;
   default_kyc_status: boolean;
+  auto_renew_account?: string;
+  auto_renew_period?: number;
+  expiry_timestamp?: string;
   pause_status: string;
   memo: string;
 }

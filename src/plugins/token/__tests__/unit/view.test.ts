@@ -39,6 +39,10 @@ describe('tokenViewHandler', () => {
         type: 'FUNGIBLE_COMMON',
         supply_type: 'INFINITE',
         treasury_account_id: '0.0.789012',
+        freeze_default: true,
+        auto_renew_period: 2592000,
+        auto_renew_account: '0.0.789012',
+        expiry_timestamp: 1893456000000000000,
         admin_key: null,
         supply_key: null,
         memo: 'Test memo',
@@ -72,6 +76,11 @@ describe('tokenViewHandler', () => {
       expect(output.name).toBe('TestToken');
       expect(output.symbol).toBe('TEST');
       expect(output.type).toBe('FUNGIBLE_COMMON');
+      expect(output.freezeDefault).toBe(true);
+      expect(output.treasury).toBe('0.0.789012');
+      expect(output.autoRenewPeriodSeconds).toBe(2592000);
+      expect(output.autoRenewAccountId).toBe('0.0.789012');
+      expect(output.expirationTime).toBe('2030-01-01T00:00:00.000Z');
     });
 
     test('should view token using alias', async () => {

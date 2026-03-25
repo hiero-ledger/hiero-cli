@@ -59,7 +59,7 @@ export class TokenImportCommand implements Command {
       tokenId: validArgs.tokenId,
       name: tokenInfo.name,
       symbol: tokenInfo.symbol,
-      treasuryId: tokenInfo.treasury,
+      treasuryId: tokenInfo.treasury_account_id,
       adminPublicKey: tokenInfo.admin_key?.key,
       supplyPublicKey: tokenInfo.supply_key?.key,
       wipePublicKey: tokenInfo.wipe_key?.key,

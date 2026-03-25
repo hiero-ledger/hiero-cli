@@ -34,6 +34,11 @@ export const TokenViewOutputSchema = z.object({
   memo: z.string().optional(),
   createdTimestamp: z.string().optional(),
 
+  freezeDefault: z.boolean(),
+  autoRenewPeriodSeconds: z.number().int().nonnegative().optional(),
+  autoRenewAccountId: EntityIdSchema.optional(),
+  expirationTime: z.string().optional(),
+
   // === Token keys ===
   adminKey: PublicKeyDefinitionSchema.nullable().optional(),
   supplyKey: PublicKeyDefinitionSchema.nullable().optional(),
@@ -75,6 +80,16 @@ export const TOKEN_VIEW_TEMPLATE = `
 {{#if treasury}}
    Treasury: {{hashscanLink treasury "account" network}}
 {{/if}}
+   Freeze default: {{freezeDefault}}
+{{#if autoRenewPeriodSeconds}}
+   Auto-renew period: {{autoRenewPeriodSeconds}}s
+{{/if}}
+{{#if autoRenewAccountId}}
+   Auto-renew account: {{hashscanLink autoRenewAccountId "account" network}}
+{{/if}}
+{{#if expirationTime}}
+   Expiration: {{expirationTime}}
+{{/if}}
 
  NFT Details:
  
@@ -99,7 +114,7 @@ export const TOKEN_VIEW_TEMPLATE = `
    ID: {{hashscanLink tokenId "token" network}}
    Name: {{name}}
    Symbol: {{symbol}}
-
+   Freeze default: {{freezeDefault}}
 {{#if (eq type "NON_FUNGIBLE_UNIQUE")}}
    Current Supply: {{totalSupply}}
 {{#if (eq supplyType "FINITE")}}
@@ -117,6 +132,15 @@ export const TOKEN_VIEW_TEMPLATE = `
 {{#if treasury}}
    Treasury: {{hashscanLink treasury "account" network}}
 {{/if~}}
+{{#if autoRenewPeriodSeconds}}
+   Auto-renew period: {{autoRenewPeriodSeconds}}s
+{{/if}}
+{{#if autoRenewAccountId}}
+   Auto-renew account: {{hashscanLink autoRenewAccountId "account" network}}
+{{/if}}
+{{#if expirationTime}}
+   Expiration: {{expirationTime}}
+{{/if}}
 {{#if adminKey}}
    Admin Key: {{adminKey}}
 {{/if~}}
