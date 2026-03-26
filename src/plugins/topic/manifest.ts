@@ -43,6 +43,7 @@ import {
 } from './commands/update';
 import { TopicCreateBatchStateHook } from './hooks/batch-create';
 import { TopicDeleteBatchStateHook } from './hooks/batch-delete';
+import { TopicUpdateBatchStateHook } from './hooks/batch-update';
 
 export const TOPIC_NAMESPACE = 'topic-topics';
 
@@ -61,6 +62,11 @@ export const topicPluginManifest: PluginManifest = {
     {
       name: 'topic-delete-batch-state',
       hook: new TopicDeleteBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'topic-update-batch-state',
+      hook: new TopicUpdateBatchStateHook(),
       options: [],
     },
   ],
@@ -217,6 +223,7 @@ export const topicPluginManifest: PluginManifest = {
     {
       name: 'update',
       summary: 'Update an existing Hedera topic',
+      registeredHooks: ['batchify'],
       description:
         'Update a Hedera Consensus Service topic. Requires admin key for most updates. Pass "null" to clear memo, submit key, or auto-renew account.',
       options: [
