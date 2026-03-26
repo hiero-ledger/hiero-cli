@@ -21,6 +21,7 @@ import {
   SupplyType,
   SupportedNetwork,
 } from '@/core/types/shared.types';
+import { parseAutoRenewPeriodToSeconds } from '@/core/utils/parse-auto-renew-period';
 
 // Raw key patterns (without prefix) for validation
 const PUBLIC_KEY_PATTERN =
@@ -945,53 +946,12 @@ export const ResolvedPublicKeySchema = z.object({
   publicKey: z.string(),
 });
 
-const DURATION_SUFFIX_SECONDS: Record<string, number> = {
-  s: 1,
-  m: 60,
-  h: 3600,
-  d: 86400,
-};
-
 /**
  * Hedera network allows auto-renew period between 30 and 92 days (inclusive), in seconds.
  * @see https://docs.hedera.com/hedera/core-concepts/smart-contracts/tokens#auto-renewal
  */
 export const HEDERA_AUTO_RENEW_PERIOD_SECONDS_MIN = 2592000; // 30 days
 export const HEDERA_AUTO_RENEW_PERIOD_SECONDS_MAX = 8000001; // 92 days (per network rules)
-
-/**
- * Parses auto-renew period CLI/file input into seconds for Hedera `TokenCreateTransaction.setAutoRenewPeriod`.
- *
- * - Plain integer (no suffix) → seconds (e.g. `500` → 500)
- * - `500s` → 500 seconds
- * - `50m` → minutes → seconds
- * - `2h` → hours → seconds
- * - `1d` → days → seconds
- */
-export function parseAutoRenewPeriodToSeconds(raw: string): number {
-  const trimmed = raw.trim();
-  if (!trimmed) {
-    throw new Error('Auto-renew period cannot be empty');
-  }
-
-  const withSuffix = trimmed.match(/^(\d+)([smhd])$/i);
-  if (withSuffix) {
-    const n = parseInt(withSuffix[1], 10);
-    const mult = DURATION_SUFFIX_SECONDS[withSuffix[2].toLowerCase()];
-    if (!mult) {
-      throw new Error(`Unsupported suffix in "${raw}"`);
-    }
-    return n * mult;
-  }
-
-  if (/^\d+$/.test(trimmed)) {
-    return parseInt(trimmed, 10);
-  }
-
-  throw new Error(
-    `Invalid auto-renew period "${raw}". Use a non-negative integer (seconds), or add suffix s, m, h, or d (e.g. 500, 500s, 50m, 2h, 1d).`,
-  );
-}
 
 /** Output / mirror fields: optional seconds, validated when present. */
 export const HederaAutoRenewPeriodSecondsOptionalSchema = z
