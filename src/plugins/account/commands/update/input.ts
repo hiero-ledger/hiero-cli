@@ -38,7 +38,9 @@ export const AccountUpdateInputSchema = z
         (v) => (v === 'null' || v === '' ? null : v),
         MemoSchema.nullable().optional(),
       )
-      .describe('Account memo (max 100 characters). Pass "null" to clear.'),
+      .describe(
+        'Account memo (max 100 characters). Pass "null" or "" to clear.',
+      ),
     maxAutoAssociations: MaxAutoAssociationsSchema,
     stakedAccountId: z
       .preprocess(
