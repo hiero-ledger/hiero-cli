@@ -66,7 +66,7 @@ export function buildOutput(
     totalSupply: tokenInfo.total_supply,
     maxSupply: tokenInfo.max_supply,
     supplyType,
-    treasury: tokenInfo.treasury || undefined,
+    treasury: tokenInfo.treasury_account_id || undefined,
     memo: tokenInfo.memo || undefined,
     createdTimestamp: formatHederaTimestamp(tokenInfo.created_timestamp),
     adminKey: tokenInfo.admin_key?.key || null,

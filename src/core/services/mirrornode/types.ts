@@ -69,7 +69,7 @@ export interface TokenInfo {
   total_supply: string;
   max_supply: string;
   type: string;
-  treasury: string;
+  treasury_account_id: string;
   admin_key?: {
     _type: string;
     key: string;
