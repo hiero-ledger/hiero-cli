@@ -1,4 +1,5 @@
 import {
+  DAY_IN_SECONDS,
   ED25519_DER_PRIVATE_KEY,
   ED25519_HEX_PRIVATE_KEY,
   ED25519_HEX_PRIVATE_KEY_WITH_0X,
@@ -152,7 +153,7 @@ describe('ExpirationTimeSchema', () => {
   });
 
   test('accepts expiration strictly in the future', () => {
-    const future = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    const future = new Date(Date.now() + 7 * DAY_IN_SECONDS).toISOString();
     const d = ExpirationTimeSchema.parse(future);
     expect(d).toBeInstanceOf(Date);
     expect(d!.getTime()).toBeGreaterThan(Date.now());
