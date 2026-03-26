@@ -1,13 +1,13 @@
 import type { Transaction } from '@hashgraph/sdk';
 
-export interface BatchifyBuildTransactionResult {
+export interface BaseBuildTransactionResult {
   transaction: Transaction;
 }
 
-export interface BatchifySignTransactionResult {
+export interface BaseSignTransactionResult {
   signedTransaction: Transaction;
 }
 
-export interface BatchifyNormalizedParams {
+export interface BaseNormalizedParams {
   keyRefIds: string[];
 }

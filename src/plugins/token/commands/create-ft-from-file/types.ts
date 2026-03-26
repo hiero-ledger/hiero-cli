@@ -1,8 +1,8 @@
 import type { Transaction } from '@hashgraph/sdk';
 import type {
-  BatchifyBuildTransactionResult,
-  BatchifyNormalizedParams,
-  BatchifySignTransactionResult,
+  BaseBuildTransactionResult,
+  BaseNormalizedParams,
+  BaseSignTransactionResult,
   HederaTokenType,
   SupplyType,
   TransactionResult,
@@ -18,7 +18,7 @@ import type {
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TokenCustomFeeType } from '@/plugins/token/schema';
 
-export interface TokenCreateFtFromFileNormalizedParams extends BatchifyNormalizedParams {
+export interface TokenCreateFtFromFileNormalizedParams extends BaseNormalizedParams {
   filename: string;
   name: string;
   symbol: string;
@@ -42,11 +42,11 @@ export interface TokenCreateFtFromFileNormalizedParams extends BatchifyNormalize
   feeScheduleKey?: ResolvedPublicKey;
 }
 
-export interface TokenCreateFtFromFileBuildTransactionResult extends BatchifyBuildTransactionResult {
+export interface TokenCreateFtFromFileBuildTransactionResult extends BaseBuildTransactionResult {
   transaction: Transaction;
 }
 
-export interface TokenCreateFtFromFileSignTransactionResult extends BatchifySignTransactionResult {
+export interface TokenCreateFtFromFileSignTransactionResult extends BaseSignTransactionResult {
   signedTransaction: Transaction;
 }
 

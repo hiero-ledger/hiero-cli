@@ -1,8 +1,8 @@
 import type { Transaction, TransferTransaction } from '@hashgraph/sdk';
 import type {
-  BatchifyBuildTransactionResult,
-  BatchifyNormalizedParams,
-  BatchifySignTransactionResult,
+  BaseBuildTransactionResult,
+  BaseNormalizedParams,
+  BaseSignTransactionResult,
 } from '@/core';
 import type { ResolvedAccountCredential } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
@@ -11,7 +11,7 @@ import type {
   TransactionResult,
 } from '@/core/types/shared.types';
 
-export interface TransferNormalisedParams extends BatchifyNormalizedParams {
+export interface TransferNormalisedParams extends BaseNormalizedParams {
   amount: bigint;
   memo: string | undefined;
   keyManager: KeyManager;
@@ -20,11 +20,11 @@ export interface TransferNormalisedParams extends BatchifyNormalizedParams {
   currentNetwork: SupportedNetwork;
 }
 
-export interface TransferBuildTransactionResult extends BatchifyBuildTransactionResult {
+export interface TransferBuildTransactionResult extends BaseBuildTransactionResult {
   transaction: TransferTransaction;
 }
 
-export interface TransferSignTransactionResult extends BatchifySignTransactionResult {
+export interface TransferSignTransactionResult extends BaseSignTransactionResult {
   signedTransaction: Transaction;
 }
 

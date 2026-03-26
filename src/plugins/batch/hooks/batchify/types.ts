@@ -1,5 +1,5 @@
-import type { BatchifyNormalizedParams } from '@/core';
+import type { BaseNormalizedParams } from '@/core';
 
-export interface BatchifyHookBaseParams extends BatchifyNormalizedParams {
+export interface BatchifyHookBaseParams extends BaseNormalizedParams {
   [key: string]: unknown;
 }

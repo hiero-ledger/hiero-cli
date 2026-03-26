@@ -3,9 +3,9 @@ import type {
   Transaction as HederaTransaction,
 } from '@hashgraph/sdk';
 import type {
-  BatchifyBuildTransactionResult,
-  BatchifyNormalizedParams,
-  BatchifySignTransactionResult,
+  BaseBuildTransactionResult,
+  BaseNormalizedParams,
+  BaseSignTransactionResult,
 } from '@/core';
 import type { KeyAlgorithm } from '@/core/shared/constants';
 import type {
@@ -13,7 +13,7 @@ import type {
   TransactionResult,
 } from '@/core/types/shared.types';
 
-export interface CreateNormalisedParams extends BatchifyNormalizedParams {
+export interface CreateNormalisedParams extends BaseNormalizedParams {
   balance: bigint;
   maxAutoAssociations: number;
   alias: string | undefined;
@@ -24,12 +24,12 @@ export interface CreateNormalisedParams extends BatchifyNormalizedParams {
   network: SupportedNetwork;
 }
 
-export interface CreateBuildTransactionResult extends BatchifyBuildTransactionResult {
+export interface CreateBuildTransactionResult extends BaseBuildTransactionResult {
   transaction: AccountCreateTransaction;
   publicKey: string;
 }
 
-export interface CreateSignTransactionResult extends BatchifySignTransactionResult {
+export interface CreateSignTransactionResult extends BaseSignTransactionResult {
   signedTransaction: HederaTransaction;
 }
 

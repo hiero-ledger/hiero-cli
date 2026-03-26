@@ -64,9 +64,9 @@ export {
   SupportedNetwork,
 } from './types/shared.types';
 export type {
-  BatchifyBuildTransactionResult,
-  BatchifyNormalizedParams,
-  BatchifySignTransactionResult,
+  BaseBuildTransactionResult,
+  BaseNormalizedParams,
+  BaseSignTransactionResult,
 } from './types/transaction.types';
 
 // ============================================================================

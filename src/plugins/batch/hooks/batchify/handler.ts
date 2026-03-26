@@ -5,8 +5,8 @@ import type {
   PreSignTransactionParams,
 } from '@/core/hooks/types';
 import type {
-  BatchifyBuildTransactionResult,
-  BatchifySignTransactionResult,
+  BaseBuildTransactionResult,
+  BaseSignTransactionResult,
 } from '@/core/types/transaction.types';
 import type { BatchifyHookBaseParams } from './types';
 
@@ -29,7 +29,7 @@ export class BatchifyHook extends AbstractHook {
     args: CommandHandlerArgs,
     params: PreSignTransactionParams<
       Record<string, unknown>,
-      BatchifyBuildTransactionResult
+      BaseBuildTransactionResult
     >,
     _commandName: string,
   ): Promise<HookResult> {
@@ -80,8 +80,8 @@ export class BatchifyHook extends AbstractHook {
     args: CommandHandlerArgs,
     params: PreExecuteTransactionParams<
       BatchifyHookBaseParams,
-      BatchifyBuildTransactionResult,
-      BatchifySignTransactionResult
+      BaseBuildTransactionResult,
+      BaseSignTransactionResult
     >,
     commandName: string,
   ): Promise<HookResult> {

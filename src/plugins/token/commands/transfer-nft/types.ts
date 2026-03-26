@@ -1,13 +1,13 @@
 import type { Transaction } from '@hashgraph/sdk';
 import type {
-  BatchifyBuildTransactionResult,
-  BatchifyNormalizedParams,
-  BatchifySignTransactionResult,
+  BaseBuildTransactionResult,
+  BaseNormalizedParams,
+  BaseSignTransactionResult,
   SupportedNetwork,
   TransactionResult,
 } from '@/core';
 
-export interface TransferNftNormalizedParams extends BatchifyNormalizedParams {
+export interface TransferNftNormalizedParams extends BaseNormalizedParams {
   network: SupportedNetwork;
   tokenId: string;
   fromAccountId: string;
@@ -16,11 +16,11 @@ export interface TransferNftNormalizedParams extends BatchifyNormalizedParams {
   signerKeyRefId: string;
 }
 
-export interface TransferNftBuildTransactionResult extends BatchifyBuildTransactionResult {
+export interface TransferNftBuildTransactionResult extends BaseBuildTransactionResult {
   transaction: Transaction;
 }
 
-export interface TransferNftSignTransactionResult extends BatchifySignTransactionResult {
+export interface TransferNftSignTransactionResult extends BaseSignTransactionResult {
   signedTransaction: Transaction;
 }
 

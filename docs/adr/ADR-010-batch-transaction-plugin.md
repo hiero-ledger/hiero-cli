@@ -360,7 +360,7 @@ export class BatchifyHook extends AbstractHook {
 
   override async preExecuteTransactionHook(
     args: CommandHandlerArgs,
-    params: PreExecuteTransactionParams<..., BatchifyBuildTransactionResult, BatchifySignTransactionResult>,
+    params: PreExecuteTransactionParams<..., BaseBuildTransactionResult, BaseSignTransactionResult>,
     commandName: string,
   ): Promise<HookResult> {
     const batchName = BatchifyInputSchema.parse(args.args).batch;

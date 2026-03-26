@@ -1,15 +1,15 @@
 import type { Transaction as Transaction } from '@hashgraph/sdk';
 import type {
-  BatchifyBuildTransactionResult,
-  BatchifyNormalizedParams,
-  BatchifySignTransactionResult,
+  BaseBuildTransactionResult,
+  BaseNormalizedParams,
+  BaseSignTransactionResult,
   TransactionResult,
 } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TopicData } from '@/plugins/topic/schema';
 
-export interface SubmitMessageNormalisedParams extends BatchifyNormalizedParams {
+export interface SubmitMessageNormalisedParams extends BaseNormalizedParams {
   topicId: string;
   message: string;
   signerKeyRefIds: string[];
@@ -18,11 +18,11 @@ export interface SubmitMessageNormalisedParams extends BatchifyNormalizedParams 
   topicData: TopicData;
 }
 
-export interface SubmitMessageBuildTransactionResult extends BatchifyBuildTransactionResult {
+export interface SubmitMessageBuildTransactionResult extends BaseBuildTransactionResult {
   transaction: Transaction;
 }
 
-export interface SubmitMessageSignTransactionResult extends BatchifySignTransactionResult {
+export interface SubmitMessageSignTransactionResult extends BaseSignTransactionResult {
   signedTransaction: Transaction;
 }
 

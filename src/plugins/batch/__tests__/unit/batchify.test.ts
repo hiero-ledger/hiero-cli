@@ -1,6 +1,6 @@
 import type {
-  BatchifyBuildTransactionResult,
-  BatchifySignTransactionResult,
+  BaseBuildTransactionResult,
+  BaseSignTransactionResult,
 } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type {
@@ -78,7 +78,7 @@ describe('batch plugin - batchify hook', () => {
         },
       } as unknown as PreSignTransactionParams<
         Record<string, unknown>,
-        BatchifyBuildTransactionResult
+        BaseBuildTransactionResult
       >;
 
       const result = await hook.preSignTransactionHook(
@@ -111,7 +111,7 @@ describe('batch plugin - batchify hook', () => {
         buildTransactionResult: { transaction: mockTransaction },
       } as unknown as PreSignTransactionParams<
         Record<string, unknown>,
-        BatchifyBuildTransactionResult
+        BaseBuildTransactionResult
       >;
 
       expect(() =>
@@ -135,7 +135,7 @@ describe('batch plugin - batchify hook', () => {
         buildTransactionResult: { transaction: mockTransaction },
       } as unknown as PreSignTransactionParams<
         Record<string, unknown>,
-        BatchifyBuildTransactionResult
+        BaseBuildTransactionResult
       >;
 
       expect(() =>
@@ -160,7 +160,7 @@ describe('batch plugin - batchify hook', () => {
         buildTransactionResult: { transaction: mockTransaction },
       } as unknown as PreSignTransactionParams<
         Record<string, unknown>,
-        BatchifyBuildTransactionResult
+        BaseBuildTransactionResult
       >;
 
       expect(() =>
@@ -187,7 +187,7 @@ describe('batch plugin - batchify hook', () => {
         },
       } as unknown as PreSignTransactionParams<
         Record<string, unknown>,
-        BatchifyBuildTransactionResult
+        BaseBuildTransactionResult
       >;
 
       const result = await hook.preSignTransactionHook(
@@ -217,8 +217,8 @@ describe('batch plugin - batchify hook', () => {
         signTransactionResult: { signedTransaction: mockSignedTx },
       } as unknown as PreExecuteTransactionParams<
         BatchifyHookBaseParams,
-        BatchifyBuildTransactionResult,
-        BatchifySignTransactionResult
+        BaseBuildTransactionResult,
+        BaseSignTransactionResult
       >;
 
       const result = await hook.preExecuteTransactionHook(
@@ -249,8 +249,8 @@ describe('batch plugin - batchify hook', () => {
         signTransactionResult: { signedTransaction: mockSignedTx },
       } as unknown as PreExecuteTransactionParams<
         BatchifyHookBaseParams,
-        BatchifyBuildTransactionResult,
-        BatchifySignTransactionResult
+        BaseBuildTransactionResult,
+        BaseSignTransactionResult
       >;
 
       expect(() =>
@@ -286,8 +286,8 @@ describe('batch plugin - batchify hook', () => {
         signTransactionResult: { signedTransaction: mockSignedTx },
       } as unknown as PreExecuteTransactionParams<
         BatchifyHookBaseParams,
-        BatchifyBuildTransactionResult,
-        BatchifySignTransactionResult
+        BaseBuildTransactionResult,
+        BaseSignTransactionResult
       >;
 
       expect(() =>
@@ -323,8 +323,8 @@ describe('batch plugin - batchify hook', () => {
         signTransactionResult: { signedTransaction: mockSignedTx },
       } as unknown as PreExecuteTransactionParams<
         BatchifyHookBaseParams,
-        BatchifyBuildTransactionResult,
-        BatchifySignTransactionResult
+        BaseBuildTransactionResult,
+        BaseSignTransactionResult
       >;
 
       const result = await hook.preExecuteTransactionHook(
@@ -381,8 +381,8 @@ describe('batch plugin - batchify hook', () => {
         signTransactionResult: { signedTransaction: mockSignedTx },
       } as unknown as PreExecuteTransactionParams<
         BatchifyHookBaseParams,
-        BatchifyBuildTransactionResult,
-        BatchifySignTransactionResult
+        BaseBuildTransactionResult,
+        BaseSignTransactionResult
       >;
 
       const result = await hook.preExecuteTransactionHook(
