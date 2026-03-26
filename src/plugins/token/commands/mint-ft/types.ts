@@ -1,4 +1,3 @@
-import type { Transaction } from '@hashgraph/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,
@@ -15,13 +14,9 @@ export interface MintFtNormalizedParams extends BaseNormalizedParams {
   supplyKeyResolved: ResolvedPublicKey;
 }
 
-export interface MintFtBuildTransactionResult extends BaseBuildTransactionResult {
-  transaction: Transaction;
-}
+export interface MintFtBuildTransactionResult extends BaseBuildTransactionResult {}
 
-export interface MintFtSignTransactionResult extends BaseSignTransactionResult {
-  signedTransaction: Transaction;
-}
+export interface MintFtSignTransactionResult extends BaseSignTransactionResult {}
 
 export interface MintFtExecuteTransactionResult {
   transactionResult: TransactionResult;

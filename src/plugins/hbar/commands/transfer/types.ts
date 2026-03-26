@@ -1,4 +1,4 @@
-import type { Transaction, TransferTransaction } from '@hashgraph/sdk';
+import type { TransferTransaction } from '@hashgraph/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,
@@ -24,8 +24,6 @@ export interface TransferBuildTransactionResult extends BaseBuildTransactionResu
   transaction: TransferTransaction;
 }
 
-export interface TransferSignTransactionResult extends BaseSignTransactionResult {
-  signedTransaction: Transaction;
-}
+export interface TransferSignTransactionResult extends BaseSignTransactionResult {}
 
 export type TransferExecuteTransactionResult = TransactionResult;

@@ -1,4 +1,3 @@
-import type { Transaction } from '@hashgraph/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,
@@ -42,13 +41,9 @@ export interface TokenCreateFtFromFileNormalizedParams extends BaseNormalizedPar
   feeScheduleKey?: ResolvedPublicKey;
 }
 
-export interface TokenCreateFtFromFileBuildTransactionResult extends BaseBuildTransactionResult {
-  transaction: Transaction;
-}
+export interface TokenCreateFtFromFileBuildTransactionResult extends BaseBuildTransactionResult {}
 
-export interface TokenCreateFtFromFileSignTransactionResult extends BaseSignTransactionResult {
-  signedTransaction: Transaction;
-}
+export interface TokenCreateFtFromFileSignTransactionResult extends BaseSignTransactionResult {}
 
 export interface TokenCreateFtFromFileExecuteTransactionResult {
   transactionResult: TransactionResult;

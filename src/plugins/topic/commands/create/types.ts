@@ -1,4 +1,3 @@
-import type { Transaction } from '@hashgraph/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,
@@ -20,12 +19,8 @@ export interface CreateTopicNormalisedParams extends BaseNormalizedParams {
   submitKeyThreshold: number;
 }
 
-export interface CreateTopicBuildTransactionResult extends BaseBuildTransactionResult {
-  transaction: Transaction;
-}
+export interface CreateTopicBuildTransactionResult extends BaseBuildTransactionResult {}
 
-export interface CreateTopicSignTransactionResult extends BaseSignTransactionResult {
-  signedTransaction: Transaction;
-}
+export interface CreateTopicSignTransactionResult extends BaseSignTransactionResult {}
 
 export type CreateTopicExecuteTransactionResult = TransactionResult;

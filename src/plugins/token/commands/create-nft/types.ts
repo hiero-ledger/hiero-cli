@@ -1,4 +1,3 @@
-import type { Transaction } from '@hashgraph/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,
@@ -30,13 +29,9 @@ export interface TokenCreateNftNormalizedParams extends BaseNormalizedParams {
   finalMaxSupply?: bigint;
 }
 
-export interface TokenCreateNftBuildTransactionResult extends BaseBuildTransactionResult {
-  transaction: Transaction;
-}
+export interface TokenCreateNftBuildTransactionResult extends BaseBuildTransactionResult {}
 
-export interface TokenCreateNftSignTransactionResult extends BaseSignTransactionResult {
-  signedTransaction: Transaction;
-}
+export interface TokenCreateNftSignTransactionResult extends BaseSignTransactionResult {}
 
 export interface TokenCreateNftExecuteTransactionResult {
   transactionResult: TransactionResult;

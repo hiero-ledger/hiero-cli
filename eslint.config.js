@@ -127,6 +127,14 @@ module.exports = [
     },
   },
 
+  // Type definition files - allow empty object types (used as named aliases for base types)
+  {
+    files: ['**/types.ts'],
+    rules: {
+      '@typescript-eslint/no-empty-object-type': 'off',
+    },
+  },
+
   // Command handlers - allow sync handlers
   {
     files: ['src/plugins/**/commands/**/handler.ts'],

@@ -1,4 +1,3 @@
-import type { Transaction } from '@hashgraph/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,
@@ -15,13 +14,9 @@ export interface TokenMintNftNormalizedParams extends BaseNormalizedParams {
   supplyKeyResolved: ResolvedPublicKey;
 }
 
-export interface TokenMintNftBuildTransactionResult extends BaseBuildTransactionResult {
-  transaction: Transaction;
-}
+export interface TokenMintNftBuildTransactionResult extends BaseBuildTransactionResult {}
 
-export interface TokenMintNftSignTransactionResult extends BaseSignTransactionResult {
-  signedTransaction: Transaction;
-}
+export interface TokenMintNftSignTransactionResult extends BaseSignTransactionResult {}
 
 export interface TokenMintNftExecuteTransactionResult {
   transactionResult: TransactionResult;

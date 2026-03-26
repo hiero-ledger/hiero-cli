@@ -1,4 +1,3 @@
-import type { Transaction } from '@hashgraph/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,
@@ -16,13 +15,9 @@ export interface TransferNftNormalizedParams extends BaseNormalizedParams {
   signerKeyRefId: string;
 }
 
-export interface TransferNftBuildTransactionResult extends BaseBuildTransactionResult {
-  transaction: Transaction;
-}
+export interface TransferNftBuildTransactionResult extends BaseBuildTransactionResult {}
 
-export interface TransferNftSignTransactionResult extends BaseSignTransactionResult {
-  signedTransaction: Transaction;
-}
+export interface TransferNftSignTransactionResult extends BaseSignTransactionResult {}
 
 export interface TransferNftExecuteTransactionResult {
   transactionResult: TransactionResult;

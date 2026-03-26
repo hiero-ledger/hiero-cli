@@ -1,4 +1,3 @@
-import type { Transaction } from '@hashgraph/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,
@@ -16,13 +15,9 @@ export interface TokenTransferFtNormalizedParams extends BaseNormalizedParams {
   signerKeyRefId: string;
 }
 
-export interface TokenTransferFtBuildTransactionResult extends BaseBuildTransactionResult {
-  transaction: Transaction;
-}
+export interface TokenTransferFtBuildTransactionResult extends BaseBuildTransactionResult {}
 
-export interface TokenTransferFtSignTransactionResult extends BaseSignTransactionResult {
-  signedTransaction: Transaction;
-}
+export interface TokenTransferFtSignTransactionResult extends BaseSignTransactionResult {}
 
 export interface TokenTransferFtExecuteTransactionResult {
   transactionResult: TransactionResult;

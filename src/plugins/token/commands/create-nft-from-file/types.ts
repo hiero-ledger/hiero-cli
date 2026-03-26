@@ -1,4 +1,3 @@
-import type { Transaction } from '@hashgraph/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,
@@ -35,13 +34,9 @@ export interface TokenCreateNftFromFileNormalizedParams extends BaseNormalizedPa
   feeScheduleKey?: ResolvedPublicKey;
 }
 
-export interface TokenCreateNftFromFileBuildTransactionResult extends BaseBuildTransactionResult {
-  transaction: Transaction;
-}
+export interface TokenCreateNftFromFileBuildTransactionResult extends BaseBuildTransactionResult {}
 
-export interface TokenCreateNftFromFileSignTransactionResult extends BaseSignTransactionResult {
-  signedTransaction: Transaction;
-}
+export interface TokenCreateNftFromFileSignTransactionResult extends BaseSignTransactionResult {}
 
 export interface TokenCreateNftFromFileExecuteTransactionResult {
   transactionResult: TransactionResult;
