@@ -435,8 +435,7 @@ export const makeMirrorMock = (
         treasury_account_id: '0.0.1234',
         created_timestamp: '1234567890',
         deleted: false,
-        default_freeze_status: false,
-        default_kyc_status: false,
+        freeze_default: false,
         pause_status: 'NOT_APPLICABLE',
         memo: '',
       });
@@ -451,8 +450,7 @@ export const makeMirrorMock = (
       treasury_account_id: '0.0.1234',
       created_timestamp: '1234567890',
       deleted: false,
-      default_freeze_status: false,
-      default_kyc_status: false,
+      freeze_default: false,
       pause_status: 'NOT_APPLICABLE',
       memo: '',
     });
