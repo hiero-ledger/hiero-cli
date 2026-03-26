@@ -43,7 +43,7 @@ export class AccountViewCommand implements Command {
       accountId = accountIdParseResult.data;
     }
 
-    const accountInfo = await api.mirror.getAccount(accountId);
+    const accountInfo = await api.mirror.getAccountOrThrow(accountId);
 
     const outputData: AccountViewOutput = {
       accountId: accountInfo.accountId,

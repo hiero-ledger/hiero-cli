@@ -7,5 +7,7 @@ export { accountCreate, AccountCreateCommand } from './commands/create/handler';
 export { accountDelete, AccountDeleteCommand } from './commands/delete/handler';
 export { accountImport, AccountImportCommand } from './commands/import/handler';
 export { accountList, AccountListCommand } from './commands/list/handler';
+export { accountUpdate, AccountUpdateCommand } from './commands/update/handler';
 export { accountView, AccountViewCommand } from './commands/view/handler';
+export { AccountDeleteBatchStateHook } from './hooks/batch-delete';
 export { accountPluginManifest } from './manifest';

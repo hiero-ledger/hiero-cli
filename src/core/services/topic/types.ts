@@ -1,11 +1,16 @@
 import type {
   Key,
   TopicCreateTransaction,
+  TopicDeleteTransaction,
   TopicMessageSubmitTransaction,
 } from '@hashgraph/sdk';
 
 export interface TopicCreateResult {
   transaction: TopicCreateTransaction;
+}
+
+export interface TopicDeleteResult {
+  transaction: TopicDeleteTransaction;
 }
 
 export interface MessageSubmitResult {
@@ -23,4 +28,8 @@ export interface CreateTopicParams {
 export interface SubmitMessageParams {
   topicId: string;
   message: string;
+}
+
+export interface DeleteTopicParams {
+  topicId: string;
 }

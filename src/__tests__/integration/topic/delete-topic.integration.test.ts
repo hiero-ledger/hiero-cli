@@ -6,6 +6,7 @@ import type { TopicListOutput } from '@/plugins/topic/commands/list';
 
 import '@/core/utils/json-serialize';
 
+import { MOCK_NONEXISTENT_ENTITY_ID } from '@/__tests__/mocks/fixtures';
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi, NotFoundError } from '@/core';
@@ -57,6 +58,7 @@ describe('Delete Topic Integration Tests', () => {
 
       const deleteTopicArgs: Record<string, unknown> = {
         topic: 'topic-to-be-deleted',
+        stateOnly: true,
       };
       const deleteTopicResult = await topicDelete({
         args: deleteTopicArgs,
@@ -104,6 +106,7 @@ describe('Delete Topic Integration Tests', () => {
 
       const deleteTopicArgs: Record<string, unknown> = {
         topic: createTopicOutput.topicId,
+        stateOnly: true,
       };
       const deleteTopicResult = await topicDelete({
         args: deleteTopicArgs,
@@ -141,7 +144,10 @@ describe('Delete Topic Integration Tests', () => {
     it('should fail when deleting non-existent topic by name', async () => {
       await expect(
         topicDelete({
-          args: { topic: 'non-existent-topic-name' },
+          args: {
+            topic: 'non-existent-topic-name',
+            stateOnly: true,
+          },
           api: coreApi,
           state: coreApi.state,
           logger: coreApi.logger,
@@ -153,13 +159,18 @@ describe('Delete Topic Integration Tests', () => {
     it('should fail when deleting non-existent topic by topicId', async () => {
       await expect(
         topicDelete({
-          args: { topic: '0.0.999999999' },
+          args: {
+            topic: MOCK_NONEXISTENT_ENTITY_ID,
+            adminKey: [
+              `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
+            ],
+          },
           api: coreApi,
           state: coreApi.state,
           logger: coreApi.logger,
           config: coreApi.config,
         }),
-      ).rejects.toThrow("Topic with identifier '0.0.999999999' not found");
+      ).rejects.toThrow(`Topic ${MOCK_NONEXISTENT_ENTITY_ID} not found`);
     });
   });
 });

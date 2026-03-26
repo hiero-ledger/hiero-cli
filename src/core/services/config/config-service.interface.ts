@@ -7,6 +7,14 @@ import { LOG_LEVEL_VALUES } from '@/core/services/logger/logger-service.interfac
 
 export const CONFIG_NAMESPACE = 'config';
 
+/** Keys of options in CONFIG_OPTIONS — use instead of string literals when calling getOption/setOption. */
+export enum ConfigOptionKey {
+  ed25519_support_enabled = 'ed25519_support_enabled',
+  log_level = 'log_level',
+  default_key_manager = 'default_key_manager',
+  skip_confirmations = 'skip_confirmations',
+}
+
 type OptionSpec =
   | {
       type: 'boolean';

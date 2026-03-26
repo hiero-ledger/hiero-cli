@@ -62,7 +62,6 @@ export const makeAccountData = (
  * Creates mock HederaMirrornodeService methods for testing account balances
  */
 export const makeMirrorMocks = ({
-  hbarBalance = 0n,
   tokenBalances,
   tokenError,
 }: {
@@ -71,7 +70,6 @@ export const makeMirrorMocks = ({
   tokenError?: Error;
 }): Partial<HederaMirrornodeService> => {
   return {
-    getAccountHBarBalance: jest.fn().mockResolvedValue(hbarBalance),
     getAccountTokenBalances: tokenError
       ? jest.fn().mockRejectedValue(tokenError)
       : jest.fn().mockResolvedValue({ tokens: tokenBalances ?? [] }),
@@ -85,6 +83,8 @@ export const makeAccountTransactionServiceMock = (
   overrides?: Partial<jest.Mocked<AccountService>>,
 ): jest.Mocked<AccountService> => ({
   createAccount: jest.fn(),
+  updateAccount: jest.fn(),
+  deleteAccount: jest.fn(),
   getAccountInfo: jest.fn(),
   ...overrides,
 });
@@ -150,6 +150,7 @@ export const makeNetworkServiceMock = (
 export const makeMirrorNodeMock = (
   overrides?: Partial<jest.Mocked<HederaMirrornodeService>>,
 ): Partial<HederaMirrornodeService> => ({
+  getAccountOrThrow: jest.fn().mockResolvedValue(mockMirrorAccountData.default),
   getAccount: jest.fn().mockResolvedValue(mockMirrorAccountData.default),
   ...overrides,
 });
@@ -264,6 +265,8 @@ export const makeApiMocksForAccountCreate = ({
 }: ApiMocksConfig) => {
   const account: jest.Mocked<AccountService> = {
     createAccount: createAccountImpl || jest.fn(),
+    updateAccount: jest.fn(),
+    deleteAccount: jest.fn(),
     getAccountInfo: jest.fn(),
   };
 
@@ -313,5 +316,49 @@ export const makeApiMocksForAccountCreate = ({
     alias,
     mirror,
     keyResolver,
+  };
+};
+
+export interface ApiMocksDeleteConfig {
+  deleteAccountImpl?: jest.Mock;
+  executeImpl?: jest.Mock;
+  network?: 'testnet' | 'mainnet' | 'previewnet';
+}
+
+export const makeApiMocksForAccountDelete = ({
+  deleteAccountImpl,
+  executeImpl,
+  network = 'testnet',
+}: ApiMocksDeleteConfig) => {
+  const account: jest.Mocked<AccountService> = {
+    createAccount: jest.fn(),
+    deleteAccount:
+      deleteAccountImpl ||
+      jest.fn().mockReturnValue({
+        transaction: createMockTransaction(),
+      }),
+    updateAccount: jest.fn(),
+    getAccountInfo: jest.fn(),
+  };
+
+  const txSign = makeTxSignServiceMock();
+  const txExecute = makeTxExecuteMock({ executeImpl });
+  const networkMock = makeGlobalNetworkMock(network);
+
+  networkMock.getOperator = jest.fn().mockReturnValue({
+    accountId: OPERATOR_ACCOUNT_ID,
+    keyRefId: OPERATOR_KEY_REF_ID,
+  });
+
+  const kms = makeGlobalKmsMock();
+  const alias = makeGlobalAliasMock();
+
+  return {
+    account,
+    txSign,
+    txExecute,
+    networkMock,
+    kms,
+    alias,
   };
 };

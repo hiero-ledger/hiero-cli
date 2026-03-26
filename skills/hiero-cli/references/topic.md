@@ -110,20 +110,26 @@ hcli topic find-message --topic myTopic --sequence-gte 5 --sequence-lte 10
 
 ---
 
-### `hcli topic delete`
+### `hcli topic delete` [batchify]
 
-Delete a topic from local state.
+Delete a Hedera topic on the network and remove it from local state, or remove from local state only.
 
 ⚠️ Requires confirmation. Use `--confirm` to skip.
 
-| Option    | Short | Type   | Required | Default | Description                                 |
-| --------- | ----- | ------ | -------- | ------- | ------------------------------------------- |
-| `--topic` | `-t`  | string | **yes**  | —       | Topic name or topic ID to delete from state |
+| Option          | Short | Type    | Required | Default | Description                                                                                                                                    |
+| --------------- | ----- | ------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--topic`       | `-t`  | string  | **yes**  | —       | Topic name or topic ID                                                                                                                         |
+| `--state-only`  | `-s`  | boolean | no       | false   | Remove only from local CLI state (no `TopicDeleteTransaction` on Hedera)                                                                       |
+| `--admin-key`   | `-a`  | string  | no       | —       | Admin key(s) when the topic is not in state, or to override keys from state (same formats as `topic create`; repeatable for KeyList/threshold) |
+| `--key-manager` | `-k`  | string  | no       | config  | Key manager when resolving `--admin-key`                                                                                                       |
+| `--batch`       | `-B`  | string  | no       | —       | Queue into a named batch instead of executing immediately                                                                                      |
 
 **Example:**
 
 ```
 hcli topic delete --topic myTopic --confirm
+hcli topic delete --topic 0.0.123456 --state-only --confirm
+hcli topic delete --topic importedTopic --admin-key alice --confirm
 ```
 
-**Output:** `{ topicId, deleted }`
+**Output:** `{ deletedTopic: { name?, topicId }, removedAliases?, network, transactionId?, stateOnly? }`

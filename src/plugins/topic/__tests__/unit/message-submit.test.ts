@@ -45,6 +45,7 @@ const makeApiMocks = ({
   const topicTransactions = {
     createTopic: jest.fn(),
     submitMessage: topicSubmitMessageImpl || jest.fn(),
+    deleteTopic: jest.fn(),
   };
 
   const txSign = {

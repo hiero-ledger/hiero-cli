@@ -418,6 +418,8 @@ export class BatchifyHook extends AbstractHook {
   summary: 'Execute a batch',
   registeredHooks: [
     'account-create-batch-state',
+    'account-update-batch-state',
+    'account-delete-batch-state',
     'topic-create-batch-state',
     'token-create-ft-batch-state',
     'token-create-ft-from-file-batch-state',
@@ -457,6 +459,8 @@ export class TokenCreateFtBatchStateHook extends AbstractHook {
 | Hook Class                             | Plugin  | Purpose                                               |
 | -------------------------------------- | ------- | ----------------------------------------------------- |
 | `AccountCreateBatchStateHook`          | account | Persist newly created accounts                        |
+| `AccountUpdateBatchStateHook`          | account | Update account key data in state after key rotation   |
+| `AccountDeleteBatchStateHook`          | account | Remove deleted accounts from local state              |
 | `TopicCreateBatchStateHook`            | topic   | Persist newly created topics                          |
 | `TokenCreateFtBatchStateHook`          | token   | Persist FT tokens created via `create-ft`             |
 | `TokenCreateFtFromFileBatchStateHook`  | token   | Persist FT tokens created via `create-ft-from-file`   |
@@ -464,7 +468,7 @@ export class TokenCreateFtBatchStateHook extends AbstractHook {
 | `TokenCreateNftFromFileBatchStateHook` | token   | Persist NFT tokens created via `create-nft-from-file` |
 | `TokenAssociateBatchStateHook`         | token   | Persist association results                           |
 
-Each domain-state hook uses `item.normalizedParams` (validated by a schema) and `api.receipt.getReceipt()` to fetch individual receipt data, then updates its plugin's state accordingly.
+Each domain-state hook uses `item.normalizedParams` (validated by a schema) to determine what state changes are needed. Create hooks additionally call `api.receipt.getReceipt()` to fetch entity IDs from the receipt. Update and delete hooks work directly from `normalizedParams` without a receipt fetch.
 
 ## Execution Flow
 

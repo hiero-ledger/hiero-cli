@@ -61,7 +61,8 @@ export class AccountBalanceCommand implements Command {
     };
 
     if (!tokenOnly) {
-      const hbarBalanceRaw = await api.mirror.getAccountHBarBalance(accountId);
+      const account = await api.mirror.getAccountOrThrow(accountId);
+      const hbarBalanceRaw = BigInt(account.balance.balance);
       outputData.hbarBalance = hbarBalanceRaw;
 
       if (!raw) {

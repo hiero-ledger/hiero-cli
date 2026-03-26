@@ -1,4 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { AccountBalanceOutput } from '@/plugins/account/commands/balance';
+import type { AccountCreateOutput } from '@/plugins/account/commands/create';
 import type { AccountDeleteOutput } from '@/plugins/account/commands/delete';
 import type { AccountImportOutput } from '@/plugins/account/commands/import';
 import type { AccountViewOutput } from '@/plugins/account/commands/view';
@@ -6,11 +8,25 @@ import type { AccountViewOutput } from '@/plugins/account/commands/view';
 import '@/core/utils/json-serialize';
 
 import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
+import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
-import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { accountDelete, accountImport, accountView } from '@/plugins/account';
+import {
+  accountBalance,
+  accountCreate,
+  accountDelete,
+  accountImport,
+  accountView,
+} from '@/plugins/account';
+
+const NETWORK_DELETE_INTEGRATION_TEST_TIMEOUT_MS = 120_000;
+
+function tinybarsFromBalanceResult(
+  result: AccountBalanceOutput | undefined,
+): bigint {
+  return BigInt(String(result?.hbarBalance ?? 0));
+}
 
 describe('Delete Account Integration Tests', () => {
   let coreApi: CoreApi;
@@ -27,7 +43,7 @@ describe('Delete Account Integration Tests', () => {
       network === SupportedNetwork.LOCALNET ? '0.0.1003' : '0.0.7300370';
     accountKey =
       network === SupportedNetwork.LOCALNET
-        ? '3030020100300706052b8104000a042204206ec1f2e7d126a74a1d2ff9e1c5d90b92378c725e506651ff8bb8616a5c724628'
+        ? '3030020100300706052b8104000a042204200e2161b2e6f2d801ef364042e6c0792aa10e07fa38680de06d4db0036c44f4b6'
         : '3030020100300706052b8104000a042204206790ef7f62d1b4a2d2fdcf4e0fc0882b86786dfbb1efc9ace8a2e3656adea122';
     evmAddress =
       network === SupportedNetwork.LOCALNET
@@ -35,10 +51,10 @@ describe('Delete Account Integration Tests', () => {
         : '0x91d9247415c979a289aa178c4c67181e11d38872';
   });
 
-  describe('Valid Delete Account Scenarios', () => {
-    it('should delete imported account by name and verify empty result with view method', async () => {
+  describe('State-only delete', () => {
+    it('should remove account from local state only and leave account queryable on network by ID', async () => {
       const importAccountArgs: Record<string, unknown> = {
-        name: 'account-to-be-deleted',
+        name: 'account-state-only-delete',
         key: `${accountId}:${accountKey}`,
       };
       const importAccountResult = await accountImport({
@@ -52,27 +68,10 @@ describe('Delete Account Integration Tests', () => {
       const importAccountOutput =
         importAccountResult.result as AccountImportOutput;
       expect(importAccountOutput.accountId).toBe(accountId);
-      expect(importAccountOutput.name).toBe('account-to-be-deleted');
-      expect(importAccountOutput.type).toBe(KeyAlgorithm.ECDSA);
-      expect(importAccountOutput.network).toBe(network);
-      expect(importAccountOutput.evmAddress).toBe(evmAddress);
-
-      const viewAccountArgs: Record<string, unknown> = {
-        account: 'account-to-be-deleted',
-      };
-      const viewAccountResult = await accountView({
-        args: viewAccountArgs,
-        api: coreApi,
-        state: coreApi.state,
-        logger: coreApi.logger,
-        config: coreApi.config,
-      });
-      const viewAccountOutput = viewAccountResult.result as AccountViewOutput;
-      expect(viewAccountOutput.accountId).toBe(importAccountOutput.accountId);
-      expect(viewAccountOutput.evmAddress).toBe(importAccountOutput.evmAddress);
 
       const deleteAccountArgs: Record<string, unknown> = {
-        account: 'account-to-be-deleted',
+        account: 'account-state-only-delete',
+        stateOnly: true,
       };
       const deleteAccountResult = await accountDelete({
         args: deleteAccountArgs,
@@ -84,21 +83,136 @@ describe('Delete Account Integration Tests', () => {
       const deleteAccountOutput =
         deleteAccountResult.result as AccountDeleteOutput;
       expect(deleteAccountOutput.deletedAccount.accountId).toBe(accountId);
-      expect(deleteAccountOutput.deletedAccount.name).toBe(
-        'account-to-be-deleted',
-      );
+      expect(deleteAccountOutput.stateOnly).toBe(true);
+      expect(deleteAccountOutput.transactionId).toBeUndefined();
 
       await expect(
         accountView({
-          args: viewAccountArgs,
+          args: { account: 'account-state-only-delete' },
           api: coreApi,
           state: coreApi.state,
           logger: coreApi.logger,
           config: coreApi.config,
         }),
       ).rejects.toThrow(
-        'Account not found with ID or alias: account-to-be-deleted',
+        'Account not found with ID or alias: account-state-only-delete',
       );
+
+      const viewById = await accountView({
+        args: { account: accountId },
+        api: coreApi,
+        state: coreApi.state,
+        logger: coreApi.logger,
+        config: coreApi.config,
+      });
+      const viewByIdOutput = viewById.result as AccountViewOutput;
+      expect(viewByIdOutput.accountId).toBe(accountId);
+      expect(viewByIdOutput.evmAddress).toBe(evmAddress);
     });
+  });
+
+  describe('Network delete (Hedera)', () => {
+    it(
+      'should submit AccountDeleteTransaction, transfer funds to beneficiary, and remove local state',
+      async () => {
+        const createVictimResult = await accountCreate({
+          args: {
+            name: 'account-network-delete',
+            balance: 1,
+            'key-type': 'ecdsa',
+            'auto-associations': 10,
+          },
+          api: coreApi,
+          state: coreApi.state,
+          logger: coreApi.logger,
+          config: coreApi.config,
+        });
+        const victimAccountId = (
+          createVictimResult.result as AccountCreateOutput
+        ).accountId;
+
+        const createBeneficiaryResult = await accountCreate({
+          args: {
+            name: 'beneficiary-network-delete',
+            balance: 1,
+            'key-type': 'ecdsa',
+            'auto-associations': 10,
+          },
+          api: coreApi,
+          state: coreApi.state,
+          logger: coreApi.logger,
+          config: coreApi.config,
+        });
+        const beneficiaryAccountId = (
+          createBeneficiaryResult.result as AccountCreateOutput
+        ).accountId;
+
+        await delay(5000);
+
+        const balanceBeneficiaryBeforeResult = await accountBalance({
+          args: {
+            account: beneficiaryAccountId,
+            raw: true,
+            'hbar-only': true,
+          },
+          api: coreApi,
+          state: coreApi.state,
+          logger: coreApi.logger,
+          config: coreApi.config,
+        });
+        const beneficiaryBefore = tinybarsFromBalanceResult(
+          balanceBeneficiaryBeforeResult.result as AccountBalanceOutput,
+        );
+
+        const deleteAccountResult = await accountDelete({
+          args: {
+            account: 'account-network-delete',
+            transferId: beneficiaryAccountId,
+          },
+          api: coreApi,
+          state: coreApi.state,
+          logger: coreApi.logger,
+          config: coreApi.config,
+        });
+
+        const deleteAccountOutput =
+          deleteAccountResult.result as AccountDeleteOutput;
+        expect(deleteAccountOutput.deletedAccount.accountId).toBe(
+          victimAccountId,
+        );
+        expect(deleteAccountOutput.transactionId).toBeDefined();
+        expect(deleteAccountOutput.stateOnly).toBe(false);
+
+        await delay(5000);
+
+        const balanceBeneficiaryAfterResult = await accountBalance({
+          args: {
+            account: beneficiaryAccountId,
+            raw: true,
+            'hbar-only': true,
+          },
+          api: coreApi,
+          state: coreApi.state,
+          logger: coreApi.logger,
+          config: coreApi.config,
+        });
+        const beneficiaryAfter = tinybarsFromBalanceResult(
+          balanceBeneficiaryAfterResult.result as AccountBalanceOutput,
+        );
+
+        expect(beneficiaryAfter).toBeGreaterThan(beneficiaryBefore);
+
+        await expect(
+          accountView({
+            args: { account: 'account-network-delete' },
+            api: coreApi,
+            state: coreApi.state,
+            logger: coreApi.logger,
+            config: coreApi.config,
+          }),
+        ).rejects.toThrow();
+      },
+      NETWORK_DELETE_INTEGRATION_TEST_TIMEOUT_MS,
+    );
   });
 });

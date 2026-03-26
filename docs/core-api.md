@@ -35,12 +35,10 @@ Handles Hedera account creation and management operations.
 
 ```typescript
 interface AccountService {
-  createAccount(params: CreateAccountParams): Promise<AccountCreateResult>;
-  getAccountInfo(accountId: string): Promise<AccountInfoQuery>;
-  getAccountBalance(
-    accountId: string,
-    tokenId?: string,
-  ): Promise<AccountBalanceQuery>;
+  createAccount(params: CreateAccountParams): AccountCreateResult;
+  updateAccount(params: UpdateAccountParams): AccountUpdateResult;
+  deleteAccount(params: DeleteAccountParams): AccountDeleteResult;
+  getAccountInfo(accountId: string): AccountInfoQuery;
 }
 
 interface CreateAccountParams {
@@ -54,15 +52,39 @@ interface AccountCreateResult {
   transaction: AccountCreateTransaction;
   publicKey: string;
 }
+
+interface UpdateAccountParams {
+  accountId: string;
+  key?: string;
+  memo?: string | null; // null clears the memo
+  maxAutoAssociations?: number;
+  stakedAccountId?: string | null; // null clears staked account
+  stakedNodeId?: number | null; // null clears staked node
+  declineStakingReward?: boolean;
+  autoRenewPeriod?: number;
+  receiverSignatureRequired?: boolean;
+}
+
+interface AccountUpdateResult {
+  transaction: AccountUpdateTransaction;
+}
+
+interface DeleteAccountParams {
+  accountId: string;
+  transferAccountId: string;
+}
+
+interface AccountDeleteResult {
+  transaction: AccountDeleteTransaction;
+}
 ```
 
 **Usage Example:**
 
 ```typescript
-const result = await api.account.createAccount({
+const result = api.account.createAccount({
   balanceRaw: 100000000n, // tinybars (bigint)
   publicKey: '302e020100300506032b6570...',
-  keyType: 'ECDSA',
   maxAutoAssociations: 10,
 });
 ```
@@ -152,6 +174,58 @@ const nftTransferTx = api.token.createNftTransferTransaction({
 const result = await api.txExecution.signAndExecuteWith(nftTransferTx, [
   keyRefId,
 ]);
+```
+
+### Topic Service
+
+Builds Hedera Consensus Service topic transactions (`TopicCreateTransaction`, `TopicDeleteTransaction`, `TopicMessageSubmitTransaction`). Signing and execution are typically done via `txSign` / `txExecute` (or batch flows).
+
+```typescript
+interface TopicService {
+  createTopic(params: CreateTopicParams): TopicCreateResult;
+  deleteTopic(params: DeleteTopicParams): TopicDeleteResult;
+  submitMessage(params: SubmitMessageParams): MessageSubmitResult;
+}
+
+interface CreateTopicParams {
+  memo?: string;
+  adminKey?: Key;
+  submitKey?: Key;
+}
+
+interface DeleteTopicParams {
+  topicId: string;
+}
+
+interface SubmitMessageParams {
+  topicId: string;
+  message: string;
+}
+
+interface TopicCreateResult {
+  transaction: TopicCreateTransaction;
+}
+
+interface TopicDeleteResult {
+  transaction: TopicDeleteTransaction;
+}
+
+interface MessageSubmitResult {
+  transaction: TopicMessageSubmitTransaction;
+  sequenceNumber?: number;
+}
+```
+
+`Key`, `TopicCreateTransaction`, `TopicDeleteTransaction`, and `TopicMessageSubmitTransaction` are Hedera SDK types (`@hashgraph/sdk`).
+
+**Usage Example:**
+
+```typescript
+const { transaction } = api.topic.deleteTopic({
+  topicId: '0.0.13579',
+});
+const signed = await api.txSign.sign(transaction, ['admin-key-ref']);
+await api.txExecute.execute(signed);
 ```
 
 ### TxExecutionService
@@ -271,8 +345,8 @@ Provides comprehensive access to Hedera Mirror Node API.
 ```typescript
 interface HederaMirrornodeService {
   // Account operations
-  getAccount(accountId: string): Promise<AccountResponse>;
-  getAccountHBarBalance(accountId: string): Promise<bigint>;
+  getAccountOrThrow(accountId: string): Promise<AccountResponse>;
+  getAccount(accountId: string): Promise<AccountResponse | null>;
   getAccountTokenBalances(
     accountId: string,
     tokenId?: string,
@@ -305,15 +379,17 @@ interface HederaMirrornodeService {
 **Usage Examples:**
 
 ```typescript
-// Get account information
+// Get account information (null if mirror returns 404)
 const account = await api.mirror.getAccount('0.0.123456');
-console.log(
-  `Account: ${account.accountId}, Balance: ${account.balance.balance}`,
-);
+if (account) {
+  console.log(
+    `Account: ${account.accountId}, Balance: ${account.balance.balance}`,
+  );
+}
 
-// Get HBAR balance
-const balance = await api.mirror.getAccountHBarBalance('0.0.123456');
-console.log(`Balance: ${balance.toString()} tinybars`);
+// Or require the account to exist (throws on 404 / other mirror errors)
+const accountOrThrow = await api.mirror.getAccountOrThrow('0.0.123456');
+console.log(`Balance: ${accountOrThrow.balance.balance} tinybars`);
 
 // Get token balances
 const tokenBalances = await api.mirror.getAccountTokenBalances('0.0.123456');

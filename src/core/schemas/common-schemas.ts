@@ -16,7 +16,9 @@ import {
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
 import {
-  DAY_IN_SECONDS,
+  HEDERA_AUTO_RENEW_PERIOD_MAX,
+  HEDERA_AUTO_RENEW_PERIOD_MIN,
+  HEDERA_EXPIRATION_TIME_MAX,
   HederaTokenType,
   KeyAlgorithm,
 } from '@/core/shared/constants';
@@ -952,13 +954,29 @@ export const ResolvedPublicKeySchema = z.object({
   publicKey: z.string(),
 });
 
-/**
- * Hedera network allows auto-renew period between 30 and 92 days (inclusive), in seconds.
- * @see https://docs.hedera.com/hedera/core-concepts/smart-contracts/tokens#auto-renewal
- */
-const HEDERA_AUTO_RENEW_PERIOD_MIN = 30 * DAY_IN_SECONDS; // 30 days
-const HEDERA_AUTO_RENEW_PERIOD_MAX = 92 * DAY_IN_SECONDS; // 92 days (per network rules)
-const HEDERA_EXPIRATION_TIME_MAX = 92 * DAY_IN_SECONDS * 1000; // 92 days (per network rules)
+export const MaxAutoAssociationsSchema = z
+  .number()
+  .int()
+  .min(-1, 'Value must be -1 (unlimited) or a non-negative integer')
+  .max(5000, 'Maximum value is 5000')
+  .optional()
+  .describe(
+    'Max automatic token associations (-1 for unlimited, 0 to disable)',
+  );
+
+export const NodeIdSchema = z
+  .number()
+  .int()
+  .min(0, 'Node ID must be a non-negative integer')
+  .optional()
+  .describe('Hedera network node ID');
+
+export const AutoRenewPeriodSchema = z
+  .number()
+  .int()
+  .min(1, 'Auto renew period must be at least 1 second')
+  .optional()
+  .describe('Auto renew period in seconds');
 
 /** Output / mirror fields: optional seconds, validated when present. */
 export const HederaAutoRenewPeriodSecondsOptionalSchema = z

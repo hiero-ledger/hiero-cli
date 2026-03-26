@@ -41,3 +41,7 @@ export const MirrorTokenTypeToHederaTokenType = {
 export const MINUTE_IN_SECONDS = 60;
 export const HOUR_IN_SECONDS = 60 * MINUTE_IN_SECONDS;
 export const DAY_IN_SECONDS = 24 * HOUR_IN_SECONDS;
+
+export const HEDERA_AUTO_RENEW_PERIOD_MIN = 30 * DAY_IN_SECONDS; // 30 days
+export const HEDERA_AUTO_RENEW_PERIOD_MAX = 92 * DAY_IN_SECONDS; // 92 days (per network rules)
+export const HEDERA_EXPIRATION_TIME_MAX = 92 * DAY_IN_SECONDS * 1000; // 92 days (per network rules)

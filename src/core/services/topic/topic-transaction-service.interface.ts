@@ -1,8 +1,10 @@
 import type {
   CreateTopicParams,
+  DeleteTopicParams,
   MessageSubmitResult,
   SubmitMessageParams,
   TopicCreateResult,
+  TopicDeleteResult,
 } from './types';
 
 /**
@@ -14,6 +16,11 @@ export interface TopicService {
    * Create a new Hedera topic
    */
   createTopic(params: CreateTopicParams): TopicCreateResult;
+
+  /**
+   * Delete a topic on the Hedera network
+   */
+  deleteTopic(params: DeleteTopicParams): TopicDeleteResult;
 
   /**
    * Submit a message to a topic

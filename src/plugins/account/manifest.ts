@@ -2,6 +2,8 @@ import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
 import { AccountCreateBatchStateHook } from '@/plugins/account/hooks/batch-create';
+import { AccountDeleteBatchStateHook } from '@/plugins/account/hooks/batch-delete';
+import { AccountUpdateBatchStateHook } from '@/plugins/account/hooks/batch-update';
 
 import {
   ACCOUNT_BALANCE_TEMPLATE,
@@ -34,6 +36,11 @@ import {
   AccountListOutputSchema,
 } from './commands/list';
 import {
+  ACCOUNT_UPDATE_TEMPLATE,
+  accountUpdate,
+  AccountUpdateOutputSchema,
+} from './commands/update';
+import {
   ACCOUNT_VIEW_TEMPLATE,
   accountView,
   AccountViewOutputSchema,
@@ -50,6 +57,16 @@ export const accountPluginManifest: PluginManifest = {
     {
       name: 'account-create-batch-state',
       hook: new AccountCreateBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'account-update-batch-state',
+      hook: new AccountUpdateBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'account-delete-batch-state',
+      hook: new AccountDeleteBatchStateHook(),
       options: [],
     },
   ],
@@ -114,6 +131,87 @@ export const accountPluginManifest: PluginManifest = {
       output: {
         schema: AccountCreateOutputSchema,
         humanTemplate: ACCOUNT_CREATE_TEMPLATE,
+      },
+    },
+    {
+      name: 'update',
+      summary: 'Update an existing Hedera account',
+      description: 'Update properties of an existing Hedera account on-chain',
+      registeredHooks: ['batchify'],
+      options: [
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Account ID or alias of the account to update',
+        },
+        {
+          name: 'key',
+          short: 'K',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'New key for the account (private/public key, key reference, or alias). Requires private key in KMS.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+        {
+          name: 'memo',
+          short: 'm',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account memo (max 100 characters). Pass "null" to clear.',
+        },
+        {
+          name: 'max-auto-associations',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'Max automatic token associations (-1 for unlimited, 0 to disable)',
+        },
+        {
+          name: 'staked-account-id',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Account ID to stake to. Pass "null" to clear.',
+        },
+        {
+          name: 'staked-node-id',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'Node ID to stake to. Pass "null" to clear.',
+        },
+        {
+          name: 'decline-staking-reward',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Decline staking reward',
+        },
+        {
+          name: 'auto-renew-period',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'Auto renew period in seconds',
+        },
+        {
+          name: 'receiver-signature-required',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Require receiver signature for transfers',
+        },
+      ],
+      handler: accountUpdate,
+      output: {
+        schema: AccountUpdateOutputSchema,
+        humanTemplate: ACCOUNT_UPDATE_TEMPLATE,
       },
     },
     {
@@ -232,7 +330,8 @@ export const accountPluginManifest: PluginManifest = {
       name: 'delete',
       summary: 'Delete an account',
       description:
-        'Delete an account from state. Specify account by name or account ID',
+        'Delete an account on Hedera and remove it from local state (default). Requires --transfer-id for the beneficiary account. Use --state-only to remove only from local state without a network transaction.',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'account',
@@ -241,6 +340,23 @@ export const accountPluginManifest: PluginManifest = {
           required: true,
           description: 'Account ID or alias of the account present in state',
         },
+        {
+          name: 'transfer-id',
+          short: 't',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Required when deleting on Hedera: account that receives remaining HBAR (Hedera ID or alias). Mutually exclusive with --state-only',
+        },
+        {
+          name: 'state-only',
+          short: 's',
+          type: OptionType.BOOLEAN,
+          required: false,
+          default: false,
+          description:
+            'Remove the account only from local CLI state; do not submit AccountDeleteTransaction. Mutually exclusive with --transfer-id',
+        },
       ],
       handler: accountDelete,
       output: {
@@ -248,7 +364,7 @@ export const accountPluginManifest: PluginManifest = {
         humanTemplate: ACCOUNT_DELETE_TEMPLATE,
       },
       requireConfirmation:
-        'Are you sure you want to delete account {{account}}? This action cannot be undone.',
+        'Are you sure you want to delete account {{account}}? This cannot be undone.',
     },
     {
       name: 'view',
