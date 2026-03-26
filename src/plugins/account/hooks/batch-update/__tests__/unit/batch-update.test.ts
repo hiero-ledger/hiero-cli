@@ -2,6 +2,10 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { BatchDataItem } from '@/core/types/shared.types';
 
 import {
+  MOCK_ACCOUNT_ID,
+  MOCK_ACCOUNT_ID_ALT,
+} from '@/__tests__/mocks/fixtures';
+import {
   createBatchExecuteParams,
   makeLogger,
   makeStateMock,
@@ -21,7 +25,7 @@ const MockedHelper = ZustandAccountStateHelper as jest.Mock;
 
 const existingAccountData = {
   name: 'test-account',
-  accountId: '0.0.1234',
+  accountId: MOCK_ACCOUNT_ID,
   type: KeyAlgorithm.ECDSA,
   publicKey: 'old-pk',
   evmAddress: '0x0000000000000000000000000000000000000000',
@@ -36,14 +40,14 @@ const createUpdateBatchDataItem = (
   order: 1,
   command: ACCOUNT_UPDATE_COMMAND_NAME,
   normalizedParams: {
-    accountId: '0.0.1234',
+    accountId: MOCK_ACCOUNT_ID,
     network: SupportedNetwork.TESTNET,
-    accountStateKey: 'testnet:0.0.1234',
+    accountStateKey: `testnet:${MOCK_ACCOUNT_ID}`,
     newPublicKey: 'new-pk',
     newKeyRefId: 'kr_new',
     newKeyType: KeyAlgorithm.ECDSA,
   },
-  transactionId: '0.0.1234@1234567890.000000000',
+  transactionId: `${MOCK_ACCOUNT_ID}@1234567890.000000000`,
   ...overrides,
 });
 
@@ -178,9 +182,9 @@ describe('account plugin - batch-update hook', () => {
       transactions: [
         createUpdateBatchDataItem({
           normalizedParams: {
-            accountId: '0.0.1234',
+            accountId: MOCK_ACCOUNT_ID,
             network: SupportedNetwork.TESTNET,
-            accountStateKey: 'testnet:0.0.1234',
+            accountStateKey: `testnet:${MOCK_ACCOUNT_ID}`,
           },
         }),
       ],
@@ -259,7 +263,7 @@ describe('account plugin - batch-update hook', () => {
     expect(result.breakFlow).toBe(false);
     expect(result.result).toEqual({ message: 'success' });
     expect(saveAccountMock).toHaveBeenCalledWith(
-      'testnet:0.0.1234',
+      `testnet:${MOCK_ACCOUNT_ID}`,
       expect.objectContaining({
         keyRefId: 'kr_new',
         publicKey: 'new-pk',
@@ -281,7 +285,7 @@ describe('account plugin - batch-update hook', () => {
       alias: 'my-account',
       type: 'account',
       network: SupportedNetwork.TESTNET,
-      entityId: '0.0.1234',
+      entityId: MOCK_ACCOUNT_ID,
       publicKey: 'old-pk',
       keyRefId: 'kr_old',
       createdAt: '2024-01-01T00:00:00.000Z',
@@ -345,9 +349,9 @@ describe('account plugin - batch-update hook', () => {
         createUpdateBatchDataItem({
           order: 1,
           normalizedParams: {
-            accountId: '0.0.1234',
+            accountId: MOCK_ACCOUNT_ID,
             network: SupportedNetwork.TESTNET,
-            accountStateKey: 'testnet:0.0.1234',
+            accountStateKey: `testnet:${MOCK_ACCOUNT_ID}`,
             newPublicKey: 'new-pk-1',
             newKeyRefId: 'kr_new_1',
           },
@@ -355,9 +359,9 @@ describe('account plugin - batch-update hook', () => {
         createUpdateBatchDataItem({
           order: 2,
           normalizedParams: {
-            accountId: '0.0.5678',
+            accountId: MOCK_ACCOUNT_ID_ALT,
             network: SupportedNetwork.TESTNET,
-            accountStateKey: 'testnet:0.0.5678',
+            accountStateKey: `testnet:${MOCK_ACCOUNT_ID_ALT}`,
             newPublicKey: 'new-pk-2',
             newKeyRefId: 'kr_new_2',
           },
@@ -370,11 +374,11 @@ describe('account plugin - batch-update hook', () => {
     expect(result.breakFlow).toBe(false);
     expect(saveAccountMock).toHaveBeenCalledTimes(2);
     expect(saveAccountMock).toHaveBeenCalledWith(
-      'testnet:0.0.1234',
+      `testnet:${MOCK_ACCOUNT_ID}`,
       expect.objectContaining({ keyRefId: 'kr_new_1', publicKey: 'new-pk-1' }),
     );
     expect(saveAccountMock).toHaveBeenCalledWith(
-      'testnet:0.0.5678',
+      `testnet:${MOCK_ACCOUNT_ID_ALT}`,
       expect.objectContaining({ keyRefId: 'kr_new_2', publicKey: 'new-pk-2' }),
     );
   });

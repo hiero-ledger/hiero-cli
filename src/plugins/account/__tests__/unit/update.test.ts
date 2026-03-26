@@ -4,7 +4,10 @@ import type { KmsService } from '@/core/services/kms/kms-service.interface';
 
 import '@/core/utils/json-serialize';
 
-import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
+import {
+  ECDSA_HEX_PUBLIC_KEY,
+  MOCK_ACCOUNT_ID,
+} from '@/__tests__/mocks/fixtures';
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
@@ -79,7 +82,7 @@ describe('account plugin - update command', () => {
 
   test('updates account memo successfully by account ID', async () => {
     const logger = makeLogger();
-    const account = makeAccountData({ accountId: '0.0.1234' });
+    const account = makeAccountData({ accountId: MOCK_ACCOUNT_ID });
     const saveAccountMock = jest.fn();
     MockedHelper.mockImplementation(() => ({
       getAccount: jest.fn().mockReturnValue(account),
@@ -98,11 +101,11 @@ describe('account plugin - update command', () => {
     });
 
     const result = await accountUpdate(
-      makeArgs(api, logger, { account: '0.0.1234', memo: 'new memo' }),
+      makeArgs(api, logger, { account: MOCK_ACCOUNT_ID, memo: 'new memo' }),
     );
 
     expect(updateAccountMock).toHaveBeenCalledWith(
-      expect.objectContaining({ accountId: '0.0.1234', memo: 'new memo' }),
+      expect.objectContaining({ accountId: MOCK_ACCOUNT_ID, memo: 'new memo' }),
     );
     expect(executeMock).toHaveBeenCalled();
     const output = assertOutput(result.result, AccountUpdateOutputSchema);
@@ -111,7 +114,7 @@ describe('account plugin - update command', () => {
 
   test('updates account by alias', async () => {
     const logger = makeLogger();
-    const account = makeAccountData({ accountId: '0.0.1234' });
+    const account = makeAccountData({ accountId: MOCK_ACCOUNT_ID });
     MockedHelper.mockImplementation(() => ({
       getAccount: jest.fn().mockReturnValue(account),
       saveAccount: jest.fn(),
@@ -121,7 +124,7 @@ describe('account plugin - update command', () => {
     const alias = makeAliasServiceMock();
     alias.resolveOrThrow = jest
       .fn()
-      .mockReturnValue({ alias: 'myAlias', entityId: '0.0.1234' });
+      .mockReturnValue({ alias: 'myAlias', entityId: MOCK_ACCOUNT_ID });
 
     const api = buildApi({
       account: makeAccountTransactionServiceMock({
@@ -135,7 +138,7 @@ describe('account plugin - update command', () => {
     );
 
     expect(updateAccountMock).toHaveBeenCalledWith(
-      expect.objectContaining({ accountId: '0.0.1234' }),
+      expect.objectContaining({ accountId: MOCK_ACCOUNT_ID }),
     );
   });
 
@@ -157,7 +160,7 @@ describe('account plugin - update command', () => {
 
   test('throws TransactionError when execute returns success: false', async () => {
     const logger = makeLogger();
-    const account = makeAccountData({ accountId: '0.0.1234' });
+    const account = makeAccountData({ accountId: MOCK_ACCOUNT_ID });
     MockedHelper.mockImplementation(() => ({
       getAccount: jest.fn().mockReturnValue(account),
       saveAccount: jest.fn(),
@@ -173,7 +176,7 @@ describe('account plugin - update command', () => {
 
     await expect(
       accountUpdate(
-        makeArgs(api, logger, { account: '0.0.1234', memo: 'test' }),
+        makeArgs(api, logger, { account: MOCK_ACCOUNT_ID, memo: 'test' }),
       ),
     ).rejects.toThrow(TransactionError);
   });
@@ -188,7 +191,7 @@ describe('account plugin - update command', () => {
     const api = buildApi();
 
     await expect(
-      accountUpdate(makeArgs(api, logger, { account: '0.0.1234' })),
+      accountUpdate(makeArgs(api, logger, { account: MOCK_ACCOUNT_ID })),
     ).rejects.toThrow();
   });
 
@@ -204,7 +207,7 @@ describe('account plugin - update command', () => {
     await expect(
       accountUpdate(
         makeArgs(api, logger, {
-          account: '0.0.1234',
+          account: MOCK_ACCOUNT_ID,
           stakedAccountId: '0.0.5',
           stakedNodeId: 3,
         }),
@@ -214,7 +217,7 @@ describe('account plugin - update command', () => {
 
   test('clears memo when "null" string passed', async () => {
     const logger = makeLogger();
-    const account = makeAccountData({ accountId: '0.0.1234' });
+    const account = makeAccountData({ accountId: MOCK_ACCOUNT_ID });
     MockedHelper.mockImplementation(() => ({
       getAccount: jest.fn().mockReturnValue(account),
       saveAccount: jest.fn(),
@@ -228,11 +231,11 @@ describe('account plugin - update command', () => {
     });
 
     const result = await accountUpdate(
-      makeArgs(api, logger, { account: '0.0.1234', memo: 'null' }),
+      makeArgs(api, logger, { account: MOCK_ACCOUNT_ID, memo: 'null' }),
     );
 
     expect(updateAccountMock).toHaveBeenCalledWith(
-      expect.objectContaining({ accountId: '0.0.1234', memo: null }),
+      expect.objectContaining({ accountId: MOCK_ACCOUNT_ID, memo: null }),
     );
     const output = assertOutput(result.result, AccountUpdateOutputSchema);
     expect(output.updatedFields).toContain('memo');
@@ -240,7 +243,7 @@ describe('account plugin - update command', () => {
 
   test('clears memo when empty string passed', async () => {
     const logger = makeLogger();
-    const account = makeAccountData({ accountId: '0.0.1234' });
+    const account = makeAccountData({ accountId: MOCK_ACCOUNT_ID });
     MockedHelper.mockImplementation(() => ({
       getAccount: jest.fn().mockReturnValue(account),
       saveAccount: jest.fn(),
@@ -254,7 +257,7 @@ describe('account plugin - update command', () => {
     });
 
     await accountUpdate(
-      makeArgs(api, logger, { account: '0.0.1234', memo: '' }),
+      makeArgs(api, logger, { account: MOCK_ACCOUNT_ID, memo: '' }),
     );
 
     expect(updateAccountMock).toHaveBeenCalledWith(
@@ -264,7 +267,7 @@ describe('account plugin - update command', () => {
 
   test('clears stakedAccountId when "null" string passed', async () => {
     const logger = makeLogger();
-    const account = makeAccountData({ accountId: '0.0.1234' });
+    const account = makeAccountData({ accountId: MOCK_ACCOUNT_ID });
     MockedHelper.mockImplementation(() => ({
       getAccount: jest.fn().mockReturnValue(account),
       saveAccount: jest.fn(),
@@ -278,7 +281,10 @@ describe('account plugin - update command', () => {
     });
 
     await accountUpdate(
-      makeArgs(api, logger, { account: '0.0.1234', stakedAccountId: 'null' }),
+      makeArgs(api, logger, {
+        account: MOCK_ACCOUNT_ID,
+        stakedAccountId: 'null',
+      }),
     );
 
     expect(updateAccountMock).toHaveBeenCalledWith(
@@ -288,7 +294,7 @@ describe('account plugin - update command', () => {
 
   test('clears stakedNodeId when "null" string passed', async () => {
     const logger = makeLogger();
-    const account = makeAccountData({ accountId: '0.0.1234' });
+    const account = makeAccountData({ accountId: MOCK_ACCOUNT_ID });
     MockedHelper.mockImplementation(() => ({
       getAccount: jest.fn().mockReturnValue(account),
       saveAccount: jest.fn(),
@@ -302,7 +308,7 @@ describe('account plugin - update command', () => {
     });
 
     await accountUpdate(
-      makeArgs(api, logger, { account: '0.0.1234', stakedNodeId: 'null' }),
+      makeArgs(api, logger, { account: MOCK_ACCOUNT_ID, stakedNodeId: 'null' }),
     );
 
     expect(updateAccountMock).toHaveBeenCalledWith(
@@ -312,7 +318,7 @@ describe('account plugin - update command', () => {
 
   test('allows clearing both staking fields simultaneously', async () => {
     const logger = makeLogger();
-    const account = makeAccountData({ accountId: '0.0.1234' });
+    const account = makeAccountData({ accountId: MOCK_ACCOUNT_ID });
     MockedHelper.mockImplementation(() => ({
       getAccount: jest.fn().mockReturnValue(account),
       saveAccount: jest.fn(),
@@ -327,7 +333,7 @@ describe('account plugin - update command', () => {
 
     const result = await accountUpdate(
       makeArgs(api, logger, {
-        account: '0.0.1234',
+        account: MOCK_ACCOUNT_ID,
         stakedAccountId: 'null',
         stakedNodeId: 'null',
       }),
@@ -344,7 +350,7 @@ describe('account plugin - update command', () => {
   test('key rotation — signs with both old and new key', async () => {
     const logger = makeLogger();
     const account = makeAccountData({
-      accountId: '0.0.1234',
+      accountId: MOCK_ACCOUNT_ID,
       keyRefId: EXISTING_KEY_REF_ID,
     });
     MockedHelper.mockImplementation(() => ({
@@ -361,7 +367,7 @@ describe('account plugin - update command', () => {
     });
 
     await accountUpdate(
-      makeArgs(api, logger, { account: '0.0.1234', key: NEW_KEY_REF_ID }),
+      makeArgs(api, logger, { account: MOCK_ACCOUNT_ID, key: NEW_KEY_REF_ID }),
     );
 
     expect(signMock).toHaveBeenCalledWith(
@@ -373,7 +379,7 @@ describe('account plugin - update command', () => {
   test('key rotation — updates state and aliases after success', async () => {
     const logger = makeLogger();
     const account = makeAccountData({
-      accountId: '0.0.1234',
+      accountId: MOCK_ACCOUNT_ID,
       keyRefId: EXISTING_KEY_REF_ID,
     });
     const saveAccountMock = jest.fn();
@@ -384,7 +390,7 @@ describe('account plugin - update command', () => {
 
     const aliasRecord = {
       ...mockAliasRecords.accountTestnet,
-      entityId: '0.0.1234',
+      entityId: MOCK_ACCOUNT_ID,
     };
     const alias = makeAliasServiceMock();
     alias.list = jest.fn().mockReturnValue([aliasRecord]);
@@ -392,7 +398,7 @@ describe('account plugin - update command', () => {
     const api = buildApi({ alias });
 
     await accountUpdate(
-      makeArgs(api, logger, { account: '0.0.1234', key: NEW_KEY_REF_ID }),
+      makeArgs(api, logger, { account: MOCK_ACCOUNT_ID, key: NEW_KEY_REF_ID }),
     );
 
     expect(saveAccountMock).toHaveBeenCalledWith(
@@ -411,7 +417,7 @@ describe('account plugin - update command', () => {
 
   test('key rotation — throws ValidationError when new key has no private key', async () => {
     const logger = makeLogger();
-    const account = makeAccountData({ accountId: '0.0.1234' });
+    const account = makeAccountData({ accountId: MOCK_ACCOUNT_ID });
     MockedHelper.mockImplementation(() => ({
       getAccount: jest.fn().mockReturnValue(account),
       saveAccount: jest.fn(),
@@ -423,14 +429,17 @@ describe('account plugin - update command', () => {
 
     await expect(
       accountUpdate(
-        makeArgs(api, logger, { account: '0.0.1234', key: NEW_KEY_REF_ID }),
+        makeArgs(api, logger, {
+          account: MOCK_ACCOUNT_ID,
+          key: NEW_KEY_REF_ID,
+        }),
       ),
     ).rejects.toThrow(ValidationError);
   });
 
   test('output schema valid — updatedFields tracks all changed fields', async () => {
     const logger = makeLogger();
-    const account = makeAccountData({ accountId: '0.0.1234' });
+    const account = makeAccountData({ accountId: MOCK_ACCOUNT_ID });
     MockedHelper.mockImplementation(() => ({
       getAccount: jest.fn().mockReturnValue(account),
       saveAccount: jest.fn(),
@@ -440,7 +449,7 @@ describe('account plugin - update command', () => {
 
     const result = await accountUpdate(
       makeArgs(api, logger, {
-        account: '0.0.1234',
+        account: MOCK_ACCOUNT_ID,
         memo: 'x',
         maxAutoAssociations: 5,
         declineStakingReward: true,

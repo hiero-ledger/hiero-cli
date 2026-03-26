@@ -8,7 +8,10 @@ import '@/core/utils/json-serialize';
 
 import { AccountId, Hbar, PublicKey } from '@hashgraph/sdk';
 
-import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
+import {
+  ECDSA_HEX_PUBLIC_KEY,
+  MOCK_ACCOUNT_ID,
+} from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { ValidationError } from '@/core/errors';
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
@@ -27,7 +30,7 @@ const mockPublicKeyInstance = {
   toString: jest.fn().mockReturnValue('mock-pk'),
 };
 const mockAccountIdInstance = {
-  toString: jest.fn().mockReturnValue('0.0.1234'),
+  toString: jest.fn().mockReturnValue(MOCK_ACCOUNT_ID),
 };
 const mockHbarInstance = { toString: jest.fn().mockReturnValue('100 ℏ') };
 
@@ -197,10 +200,12 @@ describe('AccountServiceImpl', () => {
 
   describe('updateAccount', () => {
     it('should update account with only accountId (minimum params)', () => {
-      const result = accountService.updateAccount({ accountId: '0.0.1234' });
+      const result = accountService.updateAccount({
+        accountId: MOCK_ACCOUNT_ID,
+      });
 
       expect(mockUpdateTransaction.setAccountId).toHaveBeenCalledWith(
-        '0.0.1234',
+        MOCK_ACCOUNT_ID,
       );
       expect(result.transaction).toBe(mockUpdateTransaction);
       expect(mockUpdateTransaction.setKey).not.toHaveBeenCalled();
@@ -224,7 +229,7 @@ describe('AccountServiceImpl', () => {
 
     it('should set key when key param provided', () => {
       accountService.updateAccount({
-        accountId: '0.0.1234',
+        accountId: MOCK_ACCOUNT_ID,
         key: ECDSA_HEX_PUBLIC_KEY,
       });
 
@@ -236,7 +241,7 @@ describe('AccountServiceImpl', () => {
 
     it('should set memo when memo param provided', () => {
       accountService.updateAccount({
-        accountId: '0.0.1234',
+        accountId: MOCK_ACCOUNT_ID,
         memo: 'test memo',
       });
 
@@ -247,7 +252,7 @@ describe('AccountServiceImpl', () => {
 
     it('should set maxAutoAssociations when param provided', () => {
       accountService.updateAccount({
-        accountId: '0.0.1234',
+        accountId: MOCK_ACCOUNT_ID,
         maxAutoAssociations: 10,
       });
 
@@ -258,7 +263,7 @@ describe('AccountServiceImpl', () => {
 
     it('should set stakedAccountId when param provided', () => {
       accountService.updateAccount({
-        accountId: '0.0.1234',
+        accountId: MOCK_ACCOUNT_ID,
         stakedAccountId: '0.0.5',
       });
 
@@ -268,14 +273,17 @@ describe('AccountServiceImpl', () => {
     });
 
     it('should set stakedNodeId when param provided', () => {
-      accountService.updateAccount({ accountId: '0.0.1234', stakedNodeId: 3 });
+      accountService.updateAccount({
+        accountId: MOCK_ACCOUNT_ID,
+        stakedNodeId: 3,
+      });
 
       expect(mockUpdateTransaction.setStakedNodeId).toHaveBeenCalledWith(3);
     });
 
     it('should set declineStakingReward when param provided', () => {
       accountService.updateAccount({
-        accountId: '0.0.1234',
+        accountId: MOCK_ACCOUNT_ID,
         declineStakingReward: true,
       });
 
@@ -286,7 +294,7 @@ describe('AccountServiceImpl', () => {
 
     it('should set autoRenewPeriod when param provided', () => {
       accountService.updateAccount({
-        accountId: '0.0.1234',
+        accountId: MOCK_ACCOUNT_ID,
         autoRenewPeriod: 7776000,
       });
 
@@ -297,7 +305,7 @@ describe('AccountServiceImpl', () => {
 
     it('should set receiverSignatureRequired when param provided', () => {
       accountService.updateAccount({
-        accountId: '0.0.1234',
+        accountId: MOCK_ACCOUNT_ID,
         receiverSignatureRequired: true,
       });
 
@@ -307,7 +315,7 @@ describe('AccountServiceImpl', () => {
     });
 
     it('should call clearAccountMemo when memo is null', () => {
-      accountService.updateAccount({ accountId: '0.0.1234', memo: null });
+      accountService.updateAccount({ accountId: MOCK_ACCOUNT_ID, memo: null });
 
       expect(mockUpdateTransaction.clearAccountMemo).toHaveBeenCalled();
       expect(mockUpdateTransaction.setAccountMemo).not.toHaveBeenCalled();
@@ -315,7 +323,7 @@ describe('AccountServiceImpl', () => {
 
     it('should call clearStakedAccountId when stakedAccountId is null', () => {
       accountService.updateAccount({
-        accountId: '0.0.1234',
+        accountId: MOCK_ACCOUNT_ID,
         stakedAccountId: null,
       });
 
@@ -325,7 +333,7 @@ describe('AccountServiceImpl', () => {
 
     it('should call clearStakedNodeId when stakedNodeId is null', () => {
       accountService.updateAccount({
-        accountId: '0.0.1234',
+        accountId: MOCK_ACCOUNT_ID,
         stakedNodeId: null,
       });
 
@@ -335,7 +343,7 @@ describe('AccountServiceImpl', () => {
 
     it('should clear both staking fields simultaneously', () => {
       accountService.updateAccount({
-        accountId: '0.0.1234',
+        accountId: MOCK_ACCOUNT_ID,
         stakedAccountId: null,
         stakedNodeId: null,
       });
@@ -346,7 +354,7 @@ describe('AccountServiceImpl', () => {
 
     it('should set multiple fields in single transaction', () => {
       accountService.updateAccount({
-        accountId: '0.0.1234',
+        accountId: MOCK_ACCOUNT_ID,
         memo: 'test',
         maxAutoAssociations: 5,
         declineStakingReward: false,
@@ -362,7 +370,7 @@ describe('AccountServiceImpl', () => {
     });
 
     it('should not call optional setters when params are undefined', () => {
-      accountService.updateAccount({ accountId: '0.0.1234' });
+      accountService.updateAccount({ accountId: MOCK_ACCOUNT_ID });
 
       expect(mockUpdateTransaction.setKey).not.toHaveBeenCalled();
       expect(mockUpdateTransaction.setAccountMemo).not.toHaveBeenCalled();
@@ -391,7 +399,7 @@ describe('AccountServiceImpl', () => {
       });
 
       expect(() =>
-        accountService.updateAccount({ accountId: '0.0.1234' }),
+        accountService.updateAccount({ accountId: MOCK_ACCOUNT_ID }),
       ).toThrow(
         expect.objectContaining({
           message: 'Invalid account update parameters',
@@ -400,7 +408,7 @@ describe('AccountServiceImpl', () => {
     });
 
     it('should log debug message during update', () => {
-      accountService.updateAccount({ accountId: '0.0.1234' });
+      accountService.updateAccount({ accountId: MOCK_ACCOUNT_ID });
 
       expect(logger.debug).toHaveBeenCalledWith(
         expect.stringContaining('[ACCOUNT TX] Updating account:'),
@@ -410,7 +418,7 @@ describe('AccountServiceImpl', () => {
 
   describe('getAccountInfo', () => {
     it('should create account info query with correct account ID', () => {
-      const accountId = '0.0.1234';
+      const accountId = MOCK_ACCOUNT_ID;
 
       const result = accountService.getAccountInfo(accountId);
 
@@ -422,15 +430,15 @@ describe('AccountServiceImpl', () => {
     });
 
     it('should log debug messages when getting account info', () => {
-      const accountId = '0.0.5678';
+      const accountId = MOCK_ACCOUNT_ID;
 
       accountService.getAccountInfo(accountId);
 
       expect(logger.debug).toHaveBeenCalledWith(
-        '[ACCOUNT TX] Getting account info for: 0.0.5678',
+        `[ACCOUNT TX] Getting account info for: ${accountId}`,
       );
       expect(logger.debug).toHaveBeenCalledWith(
-        '[ACCOUNT TX] Created account info query for: 0.0.5678',
+        `[ACCOUNT TX] Created account info query for: ${accountId}`,
       );
     });
 
