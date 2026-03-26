@@ -1,5 +1,4 @@
 import {
-  DAY_IN_SECONDS,
   ED25519_DER_PRIVATE_KEY,
   ED25519_HEX_PRIVATE_KEY,
   ED25519_HEX_PRIVATE_KEY_WITH_0X,
@@ -15,6 +14,7 @@ import {
   ExpirationTimeSchema,
 } from '@/core/schemas/common-schemas';
 import { INVALID_KEY } from '@/core/services/topic/__tests__/unit/mocks';
+import { DAY_IN_SECONDS } from '@/core/shared/constants';
 
 describe('AccountIdWithPrivateKeySchema', () => {
   const accountId = TEST_ACCOUNT_ID;

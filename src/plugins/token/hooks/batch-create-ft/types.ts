@@ -6,6 +6,7 @@ import {
   ResolvedPublicKeySchema,
   SupplyTypeSchema,
   TinybarSchema,
+  TokenFreezeDefaultSchema,
 } from '@/core/schemas/common-schemas';
 import { keyManagerNameSchema } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType } from '@/core/shared/constants';
@@ -34,7 +35,7 @@ export const CreateFtNormalizedParamsSchema = z.object({
   pause: ResolvedPublicKeySchema.optional(),
   feeSchedule: ResolvedPublicKeySchema.optional(),
   metadata: ResolvedPublicKeySchema.optional(),
-  freezeDefault: z.boolean().default(false),
+  freezeDefault: TokenFreezeDefaultSchema,
   autoRenewPeriodSeconds: z.number().optional(),
   autoRenewAccountId: z.string().optional(),
   expirationTime: z.coerce.date().optional(),

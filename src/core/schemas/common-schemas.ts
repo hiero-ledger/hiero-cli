@@ -15,7 +15,11 @@ import {
   CredentialType,
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
-import { HederaTokenType, KeyAlgorithm } from '@/core/shared/constants';
+import {
+  DAY_IN_SECONDS,
+  HederaTokenType,
+  KeyAlgorithm,
+} from '@/core/shared/constants';
 import {
   EntityReferenceType,
   SupplyType,
@@ -474,6 +478,8 @@ export const TopicNameSchema = AliasNameSchema.describe('Topic name or alias');
 export const TokenAliasNameSchema = AliasNameSchema.describe(
   'Token alias name (local identifier, not on-chain name)',
 );
+
+export const TokenFreezeDefaultSchema = z.boolean().default(false);
 
 /**
  * Memo Input
@@ -950,15 +956,16 @@ export const ResolvedPublicKeySchema = z.object({
  * Hedera network allows auto-renew period between 30 and 92 days (inclusive), in seconds.
  * @see https://docs.hedera.com/hedera/core-concepts/smart-contracts/tokens#auto-renewal
  */
-export const HEDERA_AUTO_RENEW_PERIOD_SECONDS_MIN = 2592000; // 30 days
-export const HEDERA_AUTO_RENEW_PERIOD_SECONDS_MAX = 8000001; // 92 days (per network rules)
+const HEDERA_AUTO_RENEW_PERIOD_MIN = 30 * DAY_IN_SECONDS; // 30 days
+const HEDERA_AUTO_RENEW_PERIOD_MAX = 92 * DAY_IN_SECONDS; // 92 days (per network rules)
+const HEDERA_EXPIRATION_TIME_MAX = 92 * DAY_IN_SECONDS * 1000; // 92 days (per network rules)
 
 /** Output / mirror fields: optional seconds, validated when present. */
 export const HederaAutoRenewPeriodSecondsOptionalSchema = z
   .number()
   .int()
-  .min(HEDERA_AUTO_RENEW_PERIOD_SECONDS_MIN)
-  .max(HEDERA_AUTO_RENEW_PERIOD_SECONDS_MAX)
+  .min(HEDERA_AUTO_RENEW_PERIOD_MIN)
+  .max(HEDERA_AUTO_RENEW_PERIOD_MAX)
   .optional();
 
 /**
@@ -977,18 +984,15 @@ export const AutoRenewPeriodSecondsSchema: z.ZodType<number | undefined> = z
     z
       .number()
       .optional()
-      .superRefine((sec, ctx) => {
-        if (sec === undefined) return;
-        if (
-          sec < HEDERA_AUTO_RENEW_PERIOD_SECONDS_MIN ||
-          sec > HEDERA_AUTO_RENEW_PERIOD_SECONDS_MAX
-        ) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: `Auto-renew period must be between ${HEDERA_AUTO_RENEW_PERIOD_SECONDS_MIN} and ${HEDERA_AUTO_RENEW_PERIOD_SECONDS_MAX} seconds (30–92 days inclusive).`,
-          });
-        }
-      }),
+      .refine(
+        (sec) =>
+          !sec ||
+          (sec >= HEDERA_AUTO_RENEW_PERIOD_MIN &&
+            sec <= HEDERA_AUTO_RENEW_PERIOD_MAX),
+        {
+          message: `Auto-renew period must be between ${HEDERA_AUTO_RENEW_PERIOD_MIN} and ${HEDERA_AUTO_RENEW_PERIOD_MAX} seconds (30–92 days inclusive).`,
+        },
+      ),
   );
 
 /**
@@ -998,25 +1002,23 @@ export const AutoRenewPeriodSecondsSchema: z.ZodType<number | undefined> = z
 export const ExpirationTimeSchema: z.ZodType<Date | undefined> = z
   .string()
   .optional()
-  .superRefine((s, ctx) => {
-    if (!s || s.trim() === '') {
-      return;
-    }
-    if (Number.isNaN(new Date(s).getTime())) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message:
-          'Invalid expiration time. Use an ISO 8601 datetime (e.g. 2026-12-31T23:59:59.000Z).',
-      });
-    }
+  .refine((s) => !s || !Number.isNaN(new Date(s).getTime()), {
+    message:
+      'Invalid expiration time. Use an ISO 8601 datetime (e.g. 2026-12-31T23:59:59.000Z).',
   })
   .transform((s): Date | undefined => {
-    if (!s || s.trim() === '') {
+    if (!s) {
       return undefined;
     }
     return new Date(s);
   })
-  .refine((d) => d === undefined || d.getTime() > Date.now(), {
-    message:
-      'Expiration time must be in the future (strictly after the current time).',
-  });
+  .refine(
+    (d) =>
+      !d ||
+      (d.getTime() > Date.now() &&
+        d.getTime() <=
+          new Date(Date.now() + HEDERA_EXPIRATION_TIME_MAX).getTime()),
+    {
+      message: 'Expiration time must be set in 92 days period.',
+    },
+  );

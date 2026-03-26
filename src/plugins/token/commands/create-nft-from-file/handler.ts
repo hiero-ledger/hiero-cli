@@ -23,7 +23,7 @@ import { readAndValidateNftTokenFile } from '@/plugins/token/utils/token-file-he
 import {
   resolveOptionalKey,
   toPublicKey,
-} from '@/plugins/token/utils/token-resolve-optional-key';
+} from '@/plugins/token/utils/token-key-resolver';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenCreateNftFromFileInputSchema } from './input';

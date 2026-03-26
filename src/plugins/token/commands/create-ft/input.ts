@@ -10,6 +10,7 @@ import {
   MemoSchema,
   SupplyTypeSchema,
   TokenAliasNameSchema,
+  TokenFreezeDefaultSchema,
   TokenNameSchema,
   TokenSymbolSchema,
 } from '@/core/schemas';
@@ -51,12 +52,9 @@ export const TokenCreateFtInputSchema = z
     freezeKey: KeySchema.optional().describe(
       'Freeze key. Accepts any key format.',
     ),
-    freezeDefault: z
-      .boolean()
-      .default(false)
-      .describe(
-        'When true and a freeze key is set, new token associations are frozen by default. Ignored without a freeze key.',
-      ),
+    freezeDefault: TokenFreezeDefaultSchema.describe(
+      'When true and a freeze key is set, new token associations are frozen by default. Ignored without a freeze key.',
+    ),
     wipeKey: KeySchema.optional().describe('Wipe key. Accepts any key format.'),
     kycKey: KeySchema.optional().describe('KYC key. Accepts any key format.'),
     pauseKey: KeySchema.optional().describe(

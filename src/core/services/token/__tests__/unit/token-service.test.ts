@@ -7,10 +7,13 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 
 import { AccountId, Hbar, TokenId, TokenType } from '@hashgraph/sdk';
 
-import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
+import {
+  ECDSA_HEX_PUBLIC_KEY,
+  MOCK_ACCOUNT_ID,
+} from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { TokenServiceImpl } from '@/core/services/token/token-service';
-import { HederaTokenType } from '@/core/shared/constants';
+import { DAY_IN_SECONDS, HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
   type CustomFee,
@@ -637,8 +640,8 @@ describe('TokenServiceImpl', () => {
     it('should set auto-renew account and period when both provided', () => {
       const params = {
         ...baseParams,
-        autoRenewAccountId: '0.0.7777',
-        autoRenewPeriodSeconds: 2592000,
+        autoRenewAccountId: MOCK_ACCOUNT_ID,
+        autoRenewPeriodSeconds: 30 * DAY_IN_SECONDS,
       };
 
       tokenService.createTokenTransaction(params);
@@ -648,7 +651,7 @@ describe('TokenServiceImpl', () => {
       ).toHaveBeenCalledWith(mockAccountIdInstance);
       expect(
         mockTokenCreateTransaction.setAutoRenewPeriod,
-      ).toHaveBeenCalledWith(2592000);
+      ).toHaveBeenCalledWith(30 * DAY_IN_SECONDS);
       expect(
         mockTokenCreateTransaction.setExpirationTime,
       ).not.toHaveBeenCalled();
@@ -674,8 +677,8 @@ describe('TokenServiceImpl', () => {
     it('should prefer auto-renew over expiration when both are passed', () => {
       const params = {
         ...baseParams,
-        autoRenewAccountId: '0.0.7777',
-        autoRenewPeriodSeconds: 2592000,
+        autoRenewAccountId: MOCK_ACCOUNT_ID,
+        autoRenewPeriodSeconds: 30 * DAY_IN_SECONDS,
         expirationTime: new Date('2028-01-01T00:00:00.000Z'),
       };
 
@@ -683,7 +686,7 @@ describe('TokenServiceImpl', () => {
 
       expect(
         mockTokenCreateTransaction.setAutoRenewPeriod,
-      ).toHaveBeenCalledWith(2592000);
+      ).toHaveBeenCalledWith(30 * DAY_IN_SECONDS);
       expect(
         mockTokenCreateTransaction.setExpirationTime,
       ).not.toHaveBeenCalled();

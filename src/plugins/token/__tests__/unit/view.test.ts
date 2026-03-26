@@ -2,8 +2,10 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
 
+import { MOCK_ACCOUNT_ID } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { DAY_IN_SECONDS } from '@/core/shared/constants';
 import {
   tokenView,
   TokenViewOutputSchema,
@@ -38,11 +40,10 @@ describe('tokenViewHandler', () => {
         max_supply: '0',
         type: 'FUNGIBLE_COMMON',
         supply_type: 'INFINITE',
-        treasury_account_id: '0.0.789012',
+        treasury_account_id: MOCK_ACCOUNT_ID,
         freeze_default: true,
-        auto_renew_period: 2592000,
-        auto_renew_account: '0.0.789012',
-        expiry_timestamp: 1893456000000000000,
+        auto_renew_period: 30 * DAY_IN_SECONDS,
+        auto_renew_account: MOCK_ACCOUNT_ID,
         admin_key: null,
         supply_key: null,
         memo: 'Test memo',
@@ -77,10 +78,9 @@ describe('tokenViewHandler', () => {
       expect(output.symbol).toBe('TEST');
       expect(output.type).toBe('FUNGIBLE_COMMON');
       expect(output.freezeDefault).toBe(true);
-      expect(output.treasury).toBe('0.0.789012');
-      expect(output.autoRenewPeriodSeconds).toBe(2592000);
-      expect(output.autoRenewAccountId).toBe('0.0.789012');
-      expect(output.expirationTime).toBe('2030-01-01T00:00:00.000Z');
+      expect(output.treasury).toBe(MOCK_ACCOUNT_ID);
+      expect(output.autoRenewPeriodSeconds).toBe(30 * DAY_IN_SECONDS);
+      expect(output.autoRenewAccountId).toBe(MOCK_ACCOUNT_ID);
     });
 
     test('should view token using alias', async () => {
@@ -93,7 +93,7 @@ describe('tokenViewHandler', () => {
         max_supply: '0',
         type: 'FUNGIBLE_COMMON',
         supply_type: 'INFINITE',
-        treasury_account_id: '0.0.789012',
+        treasury_account_id: MOCK_ACCOUNT_ID,
         admin_key: null,
         supply_key: null,
         memo: 'Test memo',

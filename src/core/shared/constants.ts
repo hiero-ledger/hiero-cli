@@ -37,3 +37,7 @@ export const MirrorTokenTypeToHederaTokenType = {
   [TokenType.FungibleCommon.toString()]: HederaTokenType.FUNGIBLE_COMMON,
   [TokenType.NonFungibleUnique.toString()]: HederaTokenType.NON_FUNGIBLE_TOKEN,
 } satisfies Record<string, HederaTokenType>;
+
+export const MINUTE_IN_SECONDS = 60;
+export const HOUR_IN_SECONDS = 60 * MINUTE_IN_SECONDS;
+export const DAY_IN_SECONDS = 24 * HOUR_IN_SECONDS;

@@ -22,7 +22,7 @@ import {
 import {
   resolveOptionalKey,
   toPublicKey,
-} from '@/plugins/token/utils/token-resolve-optional-key';
+} from '@/plugins/token/utils/token-key-resolver';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { type TokenCreateFtInput, TokenCreateFtInputSchema } from './input';

@@ -1,8 +1,14 @@
+import {
+  DAY_IN_SECONDS,
+  HOUR_IN_SECONDS,
+  MINUTE_IN_SECONDS,
+} from '@/core/shared/constants';
+
 const DURATION_SUFFIX_SECONDS: Record<string, number> = {
   s: 1,
-  m: 60,
-  h: 3600,
-  d: 86400,
+  m: MINUTE_IN_SECONDS,
+  h: HOUR_IN_SECONDS,
+  d: DAY_IN_SECONDS,
 };
 
 /**
