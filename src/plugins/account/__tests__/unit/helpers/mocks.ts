@@ -337,6 +337,7 @@ export const makeApiMocksForAccountDelete = ({
       jest.fn().mockReturnValue({
         transaction: createMockTransaction(),
       }),
+    updateAccount: jest.fn(),
     getAccountInfo: jest.fn(),
   };
 

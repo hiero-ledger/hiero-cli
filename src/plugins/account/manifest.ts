@@ -3,6 +3,7 @@ import type { PluginManifest } from '@/core';
 import { OptionType } from '@/core/types/shared.types';
 import { AccountCreateBatchStateHook } from '@/plugins/account/hooks/batch-create';
 import { AccountDeleteBatchStateHook } from '@/plugins/account/hooks/batch-delete';
+import { AccountUpdateBatchStateHook } from '@/plugins/account/hooks/batch-update';
 
 import {
   ACCOUNT_BALANCE_TEMPLATE,
@@ -56,6 +57,11 @@ export const accountPluginManifest: PluginManifest = {
     {
       name: 'account-create-batch-state',
       hook: new AccountCreateBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'account-update-batch-state',
+      hook: new AccountUpdateBatchStateHook(),
       options: [],
     },
     {
@@ -131,6 +137,7 @@ export const accountPluginManifest: PluginManifest = {
       name: 'update',
       summary: 'Update an existing Hedera account',
       description: 'Update properties of an existing Hedera account on-chain',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'account',
