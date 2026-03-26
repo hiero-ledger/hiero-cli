@@ -6,8 +6,10 @@ import type {
   AccountCreateResult,
   AccountDeleteResult,
   AccountService,
+  AccountUpdateResult,
   CreateAccountParams,
   DeleteAccountParams,
+  UpdateAccountParams,
 } from '@/core';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 
@@ -16,6 +18,7 @@ import {
   AccountDeleteTransaction,
   AccountId,
   AccountInfoQuery,
+  AccountUpdateTransaction,
   Hbar,
   PublicKey,
 } from '@hashgraph/sdk';
@@ -89,9 +92,63 @@ export class AccountServiceImpl implements AccountService {
     }
   }
 
-  /**
-   * Get account information
-   */
+  updateAccount(params: UpdateAccountParams): AccountUpdateResult {
+    this.logger.debug(`[ACCOUNT TX] Updating account: ${params.accountId}`);
+
+    try {
+      const transaction = new AccountUpdateTransaction().setAccountId(
+        params.accountId,
+      );
+
+      if (params.key !== undefined) {
+        transaction.setKey(PublicKey.fromString(params.key));
+      }
+
+      if (params.memo === null) {
+        transaction.clearAccountMemo();
+      } else if (params.memo !== undefined) {
+        transaction.setAccountMemo(params.memo);
+      }
+
+      if (params.maxAutoAssociations !== undefined) {
+        transaction.setMaxAutomaticTokenAssociations(
+          params.maxAutoAssociations,
+        );
+      }
+
+      if (params.stakedAccountId === null) {
+        transaction.clearStakedAccountId();
+      } else if (params.stakedAccountId !== undefined) {
+        transaction.setStakedAccountId(params.stakedAccountId);
+      }
+
+      if (params.stakedNodeId === null) {
+        transaction.clearStakedNodeId();
+      } else if (params.stakedNodeId !== undefined) {
+        transaction.setStakedNodeId(params.stakedNodeId);
+      }
+
+      if (params.declineStakingReward !== undefined) {
+        transaction.setDeclineStakingReward(params.declineStakingReward);
+      }
+      if (params.autoRenewPeriod !== undefined) {
+        transaction.setAutoRenewPeriod(params.autoRenewPeriod);
+      }
+      if (params.receiverSignatureRequired !== undefined) {
+        transaction.setReceiverSignatureRequired(
+          params.receiverSignatureRequired,
+        );
+      }
+
+      return { transaction };
+    } catch (error) {
+      throw new ValidationError('Invalid account update parameters', {
+        context: { accountId: params.accountId },
+        cause: error,
+      });
+    }
+  }
+
   getAccountInfo(accountId: string): AccountInfoQuery {
     this.logger.debug(`[ACCOUNT TX] Getting account info for: ${accountId}`);
 

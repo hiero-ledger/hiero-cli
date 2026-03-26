@@ -36,6 +36,7 @@ Handles Hedera account creation and management operations.
 ```typescript
 interface AccountService {
   createAccount(params: CreateAccountParams): AccountCreateResult;
+  updateAccount(params: UpdateAccountParams): AccountUpdateResult;
   deleteAccount(params: DeleteAccountParams): AccountDeleteResult;
   getAccountInfo(accountId: string): AccountInfoQuery;
 }
@@ -50,6 +51,22 @@ interface CreateAccountParams {
 interface AccountCreateResult {
   transaction: AccountCreateTransaction;
   publicKey: string;
+}
+
+interface UpdateAccountParams {
+  accountId: string;
+  key?: string;
+  memo?: string | null; // null clears the memo
+  maxAutoAssociations?: number;
+  stakedAccountId?: string | null; // null clears staked account
+  stakedNodeId?: number | null; // null clears staked node
+  declineStakingReward?: boolean;
+  autoRenewPeriod?: number;
+  receiverSignatureRequired?: boolean;
+}
+
+interface AccountUpdateResult {
+  transaction: AccountUpdateTransaction;
 }
 
 interface DeleteAccountParams {
