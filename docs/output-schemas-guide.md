@@ -589,6 +589,37 @@ Lists all tokens from all networks stored in state.
 }
 ```
 
+#### `topic delete`
+
+**Output** (on-chain delete after a successful `TopicDeleteTransaction`):
+
+```json
+{
+  "deletedTopic": {
+    "name": "my-topic",
+    "topicId": "0.0.13579"
+  },
+  "removedAliases": ["my-topic (testnet)"],
+  "network": "testnet",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "stateOnly": false
+}
+```
+
+**Output** (`--state-only` — local CLI state only, no transaction):
+
+```json
+{
+  "deletedTopic": {
+    "name": "my-topic",
+    "topicId": "0.0.13579"
+  },
+  "removedAliases": ["my-topic (testnet)"],
+  "network": "testnet",
+  "stateOnly": true
+}
+```
+
 #### `topic submit-message`
 
 **Output**:
@@ -848,7 +879,7 @@ hcli account list --output accounts.json --format json
 hcli account create --name my-account --script
 ```
 
-**Batch support:** Commands that register the `batchify` hook (e.g., `account create`, `token create-ft`, `topic create`) accept `--batch <batch-name>` to defer execution. When used, the output follows the batchify schema (`batchName`, `transactionOrder`) instead of the command's normal output.
+**Batch support:** Commands that register the `batchify` hook (e.g., `account create`, `token create-ft`, `topic create`, `topic delete`) accept `--batch <batch-name>` to defer execution. When used, the output follows the batchify schema (`batchName`, `transactionOrder`) instead of the command's normal output.
 
 ## Adding New Output Schemas
 

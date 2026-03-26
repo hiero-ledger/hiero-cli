@@ -37,6 +37,7 @@ import {
   TopicSubmitMessageOutputSchema,
 } from './commands/submit-message';
 import { TopicCreateBatchStateHook } from './hooks/batch-create';
+import { TopicDeleteBatchStateHook } from './hooks/batch-delete';
 
 export const TOPIC_NAMESPACE = 'topic-topics';
 
@@ -50,6 +51,11 @@ export const topicPluginManifest: PluginManifest = {
     {
       name: 'topic-create-batch-state',
       hook: new TopicCreateBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'topic-delete-batch-state',
+      hook: new TopicDeleteBatchStateHook(),
       options: [],
     },
   ],
@@ -207,14 +213,39 @@ export const topicPluginManifest: PluginManifest = {
       name: 'delete',
       summary: 'Delete a topic',
       description:
-        'Delete a topic from state. Specify topic by name or topic ID',
+        'Delete a Hedera topic on the network and remove it from local state, or remove from local state only',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'topic',
           short: 't',
           type: OptionType.STRING,
           required: true,
-          description: 'Topic name or topic ID to delete from state',
+          description: 'Topic name or topic ID',
+        },
+        {
+          name: 'state-only',
+          short: 's',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description:
+            'Remove only from local CLI state (no TopicDeleteTransaction on Hedera)',
+        },
+        {
+          name: 'admin-key',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'Admin credential(s) for signing TopicDeleteTransaction on Hedera.  Required for network delete unless -s flag is used.',
+          short: 'a',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager when resolving --admin-key (defaults to config)',
         },
       ],
       handler: topicDelete,

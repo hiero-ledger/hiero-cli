@@ -159,6 +159,58 @@ const result = await api.txExecution.signAndExecuteWith(nftTransferTx, [
 ]);
 ```
 
+### Topic Service
+
+Builds Hedera Consensus Service topic transactions (`TopicCreateTransaction`, `TopicDeleteTransaction`, `TopicMessageSubmitTransaction`). Signing and execution are typically done via `txSign` / `txExecute` (or batch flows).
+
+```typescript
+interface TopicService {
+  createTopic(params: CreateTopicParams): TopicCreateResult;
+  deleteTopic(params: DeleteTopicParams): TopicDeleteResult;
+  submitMessage(params: SubmitMessageParams): MessageSubmitResult;
+}
+
+interface CreateTopicParams {
+  memo?: string;
+  adminKey?: Key;
+  submitKey?: Key;
+}
+
+interface DeleteTopicParams {
+  topicId: string;
+}
+
+interface SubmitMessageParams {
+  topicId: string;
+  message: string;
+}
+
+interface TopicCreateResult {
+  transaction: TopicCreateTransaction;
+}
+
+interface TopicDeleteResult {
+  transaction: TopicDeleteTransaction;
+}
+
+interface MessageSubmitResult {
+  transaction: TopicMessageSubmitTransaction;
+  sequenceNumber?: number;
+}
+```
+
+`Key`, `TopicCreateTransaction`, `TopicDeleteTransaction`, and `TopicMessageSubmitTransaction` are Hedera SDK types (`@hashgraph/sdk`).
+
+**Usage Example:**
+
+```typescript
+const { transaction } = api.topic.deleteTopic({
+  topicId: '0.0.13579',
+});
+const signed = await api.txSign.sign(transaction, ['admin-key-ref']);
+await api.txExecute.execute(signed);
+```
+
 ### TxExecutionService
 
 Manages transaction signing and execution.

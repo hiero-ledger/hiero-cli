@@ -1,0 +1,1 @@
+export { TopicDeleteBatchStateHook } from './handler';

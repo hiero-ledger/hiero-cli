@@ -31,7 +31,18 @@ export const MOCK_ACCOUNT_ID = '0.0.5678';
 export const MOCK_ACCOUNT_ID_ALT = '0.0.5679';
 export const MOCK_TOPIC_ID = '0.0.7777';
 
+export const MOCK_HEDERA_ENTITY_ID_1 = '0.0.1111';
+export const MOCK_HEDERA_ENTITY_ID_2 = '0.0.2222';
+export const MOCK_HEDERA_ENTITY_ID_3 = '0.0.3333';
+
+export const MOCK_NONEXISTENT_ENTITY_ID = '0.0.999999999';
+
+export const MOCK_TX_ID_1 = '0.0.100000@1700000000.000000000';
+export const MOCK_TX_ID_2 = '0.0.100000@1700000000.000000001';
+export const MOCK_TX_ID_3 = '0.0.100000@1700000000.000000002';
+
 export const MOCK_TOPIC_ADMIN_KEY_REF_ID = 'kr_admin';
+export const MOCK_TOPIC_CLI_ADMIN_KEY_REF_ID = 'kr_cli_admin';
 export const MOCK_TOPIC_SUBMIT_KEY_REF_ID = 'kr_submit';
 export const MOCK_TOPIC_ADMIN_KEY_REF_ID_2 = 'kr_44444';
 export const MOCK_TOPIC_SUBMIT_KEY_REF_ID_2 = 'kr_55555';

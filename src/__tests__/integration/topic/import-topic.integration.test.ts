@@ -53,6 +53,7 @@ describeSuite('Import Topic Integration Tests', () => {
 
     const deleteTopicArgs: Record<string, unknown> = {
       topic: topicId,
+      stateOnly: true,
     };
     await topicDelete({
       args: deleteTopicArgs,
@@ -68,6 +69,7 @@ describeSuite('Import Topic Integration Tests', () => {
   afterEach(async () => {
     const deleteTopicArgs: Record<string, unknown> = {
       topic: topicId,
+      stateOnly: true,
     };
     await topicDelete({
       args: deleteTopicArgs,
