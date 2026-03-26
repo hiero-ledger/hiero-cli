@@ -1,5 +1,11 @@
+import type { Key } from '@hashgraph/sdk';
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
+import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
+import type {
+  Credential,
+  KeyManager,
+} from '@/core/services/kms/kms-types.interface';
 import type { TopicUpdateOutput } from './output';
 import type {
   UpdateTopicBuildTransactionResult,
@@ -24,6 +30,41 @@ import { TopicUpdateInputSchema } from './input';
 export const TOPIC_UPDATE_COMMAND_NAME = 'topic_update';
 
 const NULL_TOKEN = 'null';
+
+async function resolveAdminKeys(
+  keys: Credential[],
+  keyResolver: KeyResolverService,
+  keyManager: KeyManager,
+): Promise<ResolvedPublicKey[] | undefined> {
+  if (keys.length === 0) return undefined;
+  return Promise.all(
+    keys.map((cred) =>
+      keyResolver.resolveSigningKey(cred, keyManager, false, ['topic:admin']),
+    ),
+  );
+}
+
+async function resolveSubmitKeys(
+  keys: Credential[],
+  keyResolver: KeyResolverService,
+  keyManager: KeyManager,
+): Promise<ResolvedPublicKey[] | undefined> {
+  if (keys.length === 0) return undefined;
+  return Promise.all(
+    keys.map((cred) =>
+      keyResolver.getPublicKey(cred, keyManager, false, ['topic:submit']),
+    ),
+  );
+}
+
+function resolveFieldUpdate<T>(
+  newVal: T | null | undefined,
+  existing: T | undefined,
+): T | undefined {
+  if (newVal === null) return undefined;
+  if (newVal !== undefined) return newVal;
+  return existing;
+}
 
 export class TopicUpdateCommand extends BaseTransactionCommand<
   UpdateTopicNormalisedParams,
@@ -55,22 +96,27 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
     }
 
     const memo = validArgs.memo === NULL_TOKEN ? null : validArgs.memo;
-
     const autoRenewAccountId =
       validArgs.autoRenewAccount === NULL_TOKEN
         ? null
         : validArgs.autoRenewAccount;
+
+    const submitKeyInput =
+      validArgs.submitKey === NULL_TOKEN ? null : validArgs.submitKey;
+    const isSubmitKeyClear = submitKeyInput === null;
+    const submitKeyCredentials = isSubmitKeyClear
+      ? []
+      : (submitKeyInput as Credential[]);
 
     const hasAdminKey = existingTopicData.adminKeyRefIds.length > 0;
     const hasOnlyExpirationTime =
       validArgs.expirationTime !== undefined &&
       memo === undefined &&
       validArgs.adminKey.length === 0 &&
-      validArgs.submitKey.length === 0 &&
+      !isSubmitKeyClear &&
+      submitKeyCredentials.length === 0 &&
       autoRenewAccountId === undefined &&
       validArgs.autoRenewPeriod === undefined;
-
-    const isExpirationOnlyUpdate = !hasAdminKey && hasOnlyExpirationTime;
 
     if (!hasAdminKey && !hasOnlyExpirationTime) {
       throw new ValidationError(
@@ -82,27 +128,18 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
     const keyManager =
       keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
-    const newAdminKeys =
-      validArgs.adminKey.length > 0
-        ? await Promise.all(
-            validArgs.adminKey.map((cred) =>
-              api.keyResolver.resolveSigningKey(cred, keyManager, false, [
-                'topic:admin',
-              ]),
-            ),
-          )
-        : undefined;
-
-    const newSubmitKeys =
-      validArgs.submitKey.length > 0
-        ? await Promise.all(
-            validArgs.submitKey.map((cred) =>
-              api.keyResolver.getPublicKey(cred, keyManager, false, [
-                'topic:submit',
-              ]),
-            ),
-          )
-        : undefined;
+    const newAdminKeys = await resolveAdminKeys(
+      validArgs.adminKey,
+      api.keyResolver,
+      keyManager,
+    );
+    const newSubmitKeys = isSubmitKeyClear
+      ? null
+      : await resolveSubmitKeys(
+          submitKeyCredentials,
+          api.keyResolver,
+          keyManager,
+        );
 
     const adminThreshold =
       existingTopicData.adminKeyThreshold ||
@@ -111,6 +148,8 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       0,
       adminThreshold,
     );
+
+    const isExpirationOnlyUpdate = !hasAdminKey && hasOnlyExpirationTime;
 
     logger.info(`Updating topic ${topicId} on ${network}`);
 
@@ -139,24 +178,25 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
   ): Promise<UpdateTopicBuildTransactionResult> {
     const { api } = args;
 
-    const adminKey = normalisedParams.newAdminKeys
-      ? toHederaKey(
-          normalisedParams.newAdminKeys,
-          normalisedParams.newAdminKeyThreshold ??
-            normalisedParams.newAdminKeys.length,
-        )
-      : undefined;
+    let adminKey: Key | undefined;
+    if (normalisedParams.newAdminKeys !== undefined) {
+      adminKey = toHederaKey(
+        normalisedParams.newAdminKeys,
+        normalisedParams.newAdminKeyThreshold ??
+          normalisedParams.newAdminKeys.length,
+      );
+    }
 
-    const submitKey =
-      normalisedParams.newSubmitKeys === null
-        ? null
-        : normalisedParams.newSubmitKeys
-          ? toHederaKey(
-              normalisedParams.newSubmitKeys,
-              normalisedParams.newSubmitKeyThreshold ??
-                normalisedParams.newSubmitKeys.length,
-            )
-          : undefined;
+    let submitKey: Key | null | undefined;
+    if (normalisedParams.newSubmitKeys === null) {
+      submitKey = null;
+    } else if (normalisedParams.newSubmitKeys !== undefined) {
+      submitKey = toHederaKey(
+        normalisedParams.newSubmitKeys,
+        normalisedParams.newSubmitKeyThreshold ??
+          normalisedParams.newSubmitKeys.length,
+      );
+    }
 
     const expirationTime = normalisedParams.expirationTime
       ? new Date(normalisedParams.expirationTime)
@@ -245,12 +285,10 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
 
     const updatedFields: string[] = [];
 
-    const updatedMemo =
-      normalisedParams.memo === null
-        ? undefined
-        : normalisedParams.memo !== undefined
-          ? normalisedParams.memo
-          : existing.memo;
+    const updatedMemo = resolveFieldUpdate(
+      normalisedParams.memo,
+      existing.memo,
+    );
     if (normalisedParams.memo !== undefined) {
       updatedFields.push(
         normalisedParams.memo === null ? 'memo (cleared)' : 'memo',
@@ -268,19 +306,22 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       updatedFields.push('adminKey');
     }
 
-    const updatedSubmitKeyRefIds =
-      normalisedParams.newSubmitKeys === null
-        ? []
-        : normalisedParams.newSubmitKeys
-          ? normalisedParams.newSubmitKeys.map((k) => k.keyRefId)
-          : existing.submitKeyRefIds;
-    const updatedSubmitKeyThreshold =
-      normalisedParams.newSubmitKeys === null
-        ? 0
-        : normalisedParams.newSubmitKeys
-          ? (normalisedParams.newSubmitKeyThreshold ??
-            normalisedParams.newSubmitKeys.length)
-          : existing.submitKeyThreshold;
+    let updatedSubmitKeyRefIds: string[];
+    let updatedSubmitKeyThreshold: number;
+    if (normalisedParams.newSubmitKeys === null) {
+      updatedSubmitKeyRefIds = [];
+      updatedSubmitKeyThreshold = 0;
+    } else if (normalisedParams.newSubmitKeys !== undefined) {
+      updatedSubmitKeyRefIds = normalisedParams.newSubmitKeys.map(
+        (k) => k.keyRefId,
+      );
+      updatedSubmitKeyThreshold =
+        normalisedParams.newSubmitKeyThreshold ??
+        normalisedParams.newSubmitKeys.length;
+    } else {
+      updatedSubmitKeyRefIds = existing.submitKeyRefIds;
+      updatedSubmitKeyThreshold = existing.submitKeyThreshold;
+    }
     if (normalisedParams.newSubmitKeys !== undefined) {
       updatedFields.push(
         normalisedParams.newSubmitKeys === null
@@ -289,10 +330,10 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       );
     }
 
-    const updatedAutoRenewAccount =
-      normalisedParams.autoRenewAccountId === null
-        ? undefined
-        : (normalisedParams.autoRenewAccountId ?? existing.autoRenewAccount);
+    const updatedAutoRenewAccount = resolveFieldUpdate(
+      normalisedParams.autoRenewAccountId,
+      existing.autoRenewAccount,
+    );
     if (normalisedParams.autoRenewAccountId !== undefined) {
       updatedFields.push(
         normalisedParams.autoRenewAccountId === null

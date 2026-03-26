@@ -25,9 +25,10 @@ export const TopicUpdateInputSchema = z
       .describe('New admin key(s). Cannot be cleared, only replaced.'),
     submitKey: z
       .array(KeySchema)
+      .or(NullLiteralSchema)
       .optional()
       .default([])
-      .describe('New submit key(s).'),
+      .describe('New submit key(s). Pass "null" to clear.'),
     adminKeyThreshold: KeyThresholdSchema.optional().describe(
       'Number of admin keys required to sign (M-of-N)',
     ),
@@ -47,74 +48,58 @@ export const TopicUpdateInputSchema = z
       'Expiration time as ISO datetime string',
     ),
   })
-  .refine(
-    (data) =>
+  .superRefine((data, ctx) => {
+    const submitKeys = Array.isArray(data.submitKey) ? data.submitKey : [];
+    const hasAnyUpdate =
       data.memo !== undefined ||
       data.adminKey.length > 0 ||
-      data.submitKey.length > 0 ||
+      data.submitKey === 'null' ||
+      submitKeys.length > 0 ||
       data.autoRenewAccount !== undefined ||
       data.autoRenewPeriod !== undefined ||
-      data.expirationTime !== undefined,
-    {
-      message: 'At least one field to update must be provided',
-      path: ['topic'],
-    },
-  )
-  .refine(
-    (data) =>
-      !(data.adminKeyThreshold !== undefined && data.adminKey.length === 0),
-    {
-      message: 'adminKeyThreshold requires admin keys to be provided',
-      path: ['adminKeyThreshold'],
-    },
-  )
-  .refine(
-    (data) =>
-      !(data.submitKeyThreshold !== undefined && data.submitKey.length === 0),
-    {
-      message: 'submitKeyThreshold requires submit keys to be provided',
-      path: ['submitKeyThreshold'],
-    },
-  )
-  .refine(
-    (data) =>
-      !(data.adminKeyThreshold !== undefined && data.adminKey.length < 2),
-    {
-      message:
-        'adminKeyThreshold can only be set when multiple admin keys are provided',
-      path: ['adminKeyThreshold'],
-    },
-  )
-  .refine(
-    (data) =>
-      data.adminKeyThreshold === undefined ||
-      data.adminKey.length < 2 ||
-      data.adminKeyThreshold <= data.adminKey.length,
-    {
-      message:
-        'adminKeyThreshold must not exceed the number of admin keys provided',
-      path: ['adminKeyThreshold'],
-    },
-  )
-  .refine(
-    (data) =>
-      !(data.submitKeyThreshold !== undefined && data.submitKey.length < 2),
-    {
-      message:
-        'submitKeyThreshold can only be set when multiple submit keys are provided',
-      path: ['submitKeyThreshold'],
-    },
-  )
-  .refine(
-    (data) =>
-      data.submitKeyThreshold === undefined ||
-      data.submitKey.length < 2 ||
-      data.submitKeyThreshold <= data.submitKey.length,
-    {
-      message:
-        'submitKeyThreshold must not exceed the number of submit keys provided',
-      path: ['submitKeyThreshold'],
-    },
-  );
+      data.expirationTime !== undefined;
+
+    if (!hasAnyUpdate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'At least one field to update must be provided',
+        path: ['topic'],
+      });
+    }
+
+    if (data.adminKeyThreshold !== undefined) {
+      if (data.adminKey.length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'adminKeyThreshold requires at least 2 admin keys',
+          path: ['adminKeyThreshold'],
+        });
+      } else if (data.adminKeyThreshold > data.adminKey.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'adminKeyThreshold must not exceed the number of admin keys provided',
+          path: ['adminKeyThreshold'],
+        });
+      }
+    }
+
+    if (data.submitKeyThreshold !== undefined) {
+      if (submitKeys.length < 2) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'submitKeyThreshold requires at least 2 submit keys',
+          path: ['submitKeyThreshold'],
+        });
+      } else if (data.submitKeyThreshold > submitKeys.length) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            'submitKeyThreshold must not exceed the number of submit keys provided',
+          path: ['submitKeyThreshold'],
+        });
+      }
+    }
+  });
 
 export type TopicUpdateInput = z.infer<typeof TopicUpdateInputSchema>;

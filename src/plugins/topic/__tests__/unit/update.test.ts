@@ -534,6 +534,48 @@ describe('topic plugin - update command', () => {
     expect(savedData.autoRenewAccount).toBeUndefined();
   });
 
+  test('clears submitKey when value is "null"', async () => {
+    const logger = makeLogger();
+    const topicWithSubmitKey = {
+      ...EXISTING_TOPIC,
+      submitKeyRefIds: [MOCK_TOPIC_SUBMIT_KEY_REF_ID],
+      submitKeyThreshold: 1,
+    };
+    const saveTopicMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({
+      loadTopic: jest.fn().mockReturnValue(topicWithSubmitKey),
+      saveTopic: saveTopicMock,
+    }));
+
+    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
+      makeApiMocks({});
+
+    const api: Partial<CoreApi> = {
+      topic: topicTransactions,
+      txSign,
+      txExecute,
+      network: networkMock,
+      kms,
+      alias: alias as AliasService,
+      logger,
+    };
+
+    const args = makeUpdateArgs(api, logger, { submitKey: 'null' });
+    const result = await topicUpdate(args);
+
+    const output = assertOutput(result.result, TopicUpdateOutputSchema);
+    expect(output.updatedFields).toContain('submitKey (cleared)');
+    expect(output.submitKeyPresent).toBe(false);
+
+    expect(topicTransactions.updateTopic).toHaveBeenCalledWith(
+      expect.objectContaining({ submitKey: null }),
+    );
+
+    const savedData = saveTopicMock.mock.calls[0][1];
+    expect(savedData.submitKeyRefIds).toEqual([]);
+    expect(savedData.submitKeyThreshold).toBe(0);
+  });
+
   test('updates autoRenewPeriod', async () => {
     const logger = makeLogger();
     const saveTopicMock = jest.fn();
