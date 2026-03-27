@@ -72,19 +72,24 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
     const { api } = args;
     const batchKey = normalisedParams.batchKey;
     const operatorKeyRefId = normalisedParams.operatorKeyRefId;
-    const signingKeys = [batchKey.keyRefId];
-    if (operatorKeyRefId != batchKey.keyRefId) {
-      signingKeys.push(operatorKeyRefId);
-    }
+
+    const signingKeys = [batchKey.keyRefId, operatorKeyRefId];
+
     const innerTransactions = await Promise.all(
-      [...normalisedParams.batchData.transactions]
+      normalisedParams.batchData.transactions
         .sort((a, b) => a.order - b.order)
         .map(async (txItem) => {
           const transaction = Transaction.fromBytes(
             Uint8Array.from(Buffer.from(txItem.transactionBytes, 'hex')),
           );
           txItem.transactionId = transaction.transactionId?.toString();
-          return api.txSign.sign(transaction, signingKeys);
+
+          const alreadySignedBy = txItem.keyRefIds;
+          const uniqueKeyRefs = signingKeys.filter(
+            (k) => !alreadySignedBy.includes(k),
+          );
+
+          return api.txSign.sign(transaction, [...uniqueKeyRefs]);
         }),
     );
     const result = api.batch.createBatchTransaction({

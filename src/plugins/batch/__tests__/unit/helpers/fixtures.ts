@@ -31,12 +31,14 @@ export const mockBatchDataWithTransactions: BatchData = {
       order: 1,
       command: 'account_create',
       normalizedParams: {},
+      keyRefIds: [],
     },
     {
       transactionBytes: 'abcdef123456789002',
       order: 2,
       command: 'token_create-ft',
       normalizedParams: {},
+      keyRefIds: [],
     },
   ],
 };

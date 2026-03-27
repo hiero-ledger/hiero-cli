@@ -1,4 +1,9 @@
-import type { Transaction, TransferTransaction } from '@hashgraph/sdk';
+import type { TransferTransaction } from '@hashgraph/sdk';
+import type {
+  BaseBuildTransactionResult,
+  BaseNormalizedParams,
+  BaseSignTransactionResult,
+} from '@/core';
 import type { ResolvedAccountCredential } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type {
@@ -6,7 +11,7 @@ import type {
   TransactionResult,
 } from '@/core/types/shared.types';
 
-export interface TransferNormalisedParams {
+export interface TransferNormalisedParams extends BaseNormalizedParams {
   amount: bigint;
   memo: string | undefined;
   keyManager: KeyManager;
@@ -15,12 +20,10 @@ export interface TransferNormalisedParams {
   currentNetwork: SupportedNetwork;
 }
 
-export interface TransferBuildTransactionResult {
+export interface TransferBuildTransactionResult extends BaseBuildTransactionResult {
   transaction: TransferTransaction;
 }
 
-export interface TransferSignTransactionResult {
-  signedTransaction: Transaction;
-}
+export interface TransferSignTransactionResult extends BaseSignTransactionResult {}
 
 export type TransferExecuteTransactionResult = TransactionResult;

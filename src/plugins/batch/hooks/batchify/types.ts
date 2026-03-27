@@ -1,9 +1,5 @@
-import type { Transaction } from '@hashgraph/sdk';
+import type { BaseNormalizedParams } from '@/core';
 
-export interface BatchifyBuildTransactionResult {
-  transaction: Transaction;
-}
-
-export interface BatchifySignTransactionResult {
-  signedTransaction: Transaction;
+export interface BatchifyHookBaseParams extends BaseNormalizedParams {
+  [key: string]: unknown;
 }

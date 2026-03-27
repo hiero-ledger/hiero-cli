@@ -115,6 +115,7 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
       toAccountId,
       rawAmount,
       signerKeyRefId,
+      keyRefIds: [signerKeyRefId],
     };
   }
 
