@@ -100,6 +100,9 @@ export const createMockTopicMessagesAPIResponse = (
   ...overrides,
 });
 
+/**
+ * Domain `TokenInfo` after `getTokenInfo` (for mocks that bypass HTTP and return a resolved value).
+ */
 export const createMockTokenInfo = (
   overrides: Partial<TokenInfo> = {},
 ): TokenInfo => ({
@@ -110,11 +113,32 @@ export const createMockTokenInfo = (
   total_supply: '1000000000',
   max_supply: '1000000000',
   type: 'NON_FUNGIBLE_UNIQUE',
-  treasury: '0.0.1234',
+  treasury_account_id: '0.0.1234',
   created_timestamp: '2024-01-01T12:00:00.000Z',
   deleted: false,
-  default_freeze_status: false,
-  default_kyc_status: false,
+  freeze_default: false,
+  pause_status: 'UNPAUSED',
+  memo: '',
+  ...overrides,
+});
+
+/**
+ * Raw JSON body for GET /api/v1/tokens/{id} (Mirror Node). Use with `fetch` mocks.
+ */
+export const createMockMirrorNodeTokenByIdJson = (
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> => ({
+  token_id: '0.0.2000',
+  symbol: 'TEST',
+  name: 'Test Token',
+  decimals: '6',
+  total_supply: '1000000000',
+  max_supply: '1000000000',
+  type: 'NON_FUNGIBLE_UNIQUE',
+  treasury_account_id: '0.0.1234',
+  created_timestamp: '2024-01-01T12:00:00.000Z',
+  deleted: false,
+  freeze_default: false,
   pause_status: 'UNPAUSED',
   memo: '',
   ...overrides,

@@ -13,3 +13,7 @@ export { StateError } from './state-error';
 export { TransactionError } from './transaction-error';
 export { TransactionPrecheckError } from './transaction-precheck-error';
 export { ValidationError } from './validation-error';
+export {
+  formatZodIssueLine,
+  formatZodIssuesForMessage,
+} from '@/core/utils/format-zod-issues';

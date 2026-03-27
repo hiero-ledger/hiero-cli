@@ -21,10 +21,10 @@ import {
   createMockAccountListItemAPIResponse,
   createMockExchangeRateResponse,
   createMockGetAccountsAPIResponse,
+  createMockMirrorNodeTokenByIdJson,
   createMockNftInfo,
   createMockTokenAirdropsResponse,
   createMockTokenBalancesResponse,
-  createMockTokenInfo,
   createMockTopicInfo,
   createMockTopicMessage,
   createMockTopicMessagesAPIResponse,
@@ -827,10 +827,10 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
   describe('getTokenInfo', () => {
     it('should fetch token info with correct URL', async () => {
       const { service } = setupService();
-      const mockTokenInfo = createMockTokenInfo();
+      const mockJson = createMockMirrorNodeTokenByIdJson();
       (global.fetch as jest.Mock).mockResolvedValue({
         ok: true,
-        json: jest.fn().mockResolvedValue(mockTokenInfo),
+        json: jest.fn().mockResolvedValue(mockJson),
       });
 
       const result = await service.getTokenInfo(TEST_TOKEN_ID);
@@ -840,6 +840,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       );
       expect(result.token_id).toBe(TEST_TOKEN_ID);
       expect(result.symbol).toBe('TEST');
+      expect(result.treasury_account_id).toBe('0.0.1234');
     });
 
     it('should throw error on HTTP 404', async () => {

@@ -1,5 +1,10 @@
 import type { ZodError } from 'zod';
 
+import {
+  formatZodIssueLine,
+  formatZodIssuesForMessage,
+} from '@/core/utils/format-zod-issues';
+
 import { CliError } from './cli-error';
 
 export class ValidationError extends CliError {
@@ -21,11 +26,13 @@ export class ValidationError extends CliError {
   }
 
   static fromZod(zodError: ZodError): ValidationError {
-    const issues = zodError.issues.map((i) => i.message);
-    const message = `Validation failed:\n${issues.map((i) => `  - ${i}`).join('\n')}`;
+    const issueLines = zodError.issues.map((issue) =>
+      formatZodIssueLine(issue),
+    );
+    const message = `Validation failed:\n${formatZodIssuesForMessage(zodError)}`;
 
     return new ValidationError(message, {
-      context: { issues },
+      context: { issues: issueLines },
       cause: zodError,
     });
   }
