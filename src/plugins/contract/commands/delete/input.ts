@@ -25,13 +25,9 @@ export const ContractDeleteInputSchema = z
     transferContractId: ContractReferenceSchema.optional().describe(
       'Contract ID or alias as the network delete transfer target; alternative to --transfer-id',
     ),
-    adminKey: z
-      .array(KeySchema)
-      .optional()
-      .default([])
-      .describe(
-        'Contract admin key for signing the delete (same formats as contract create). Use when this CLI cannot sign with a key it already has for that contract',
-      ),
+    adminKey: KeySchema.optional().describe(
+      'Contract admin key for signing the delete (same formats as contract create). Use when this CLI cannot sign with a key it already has for that contract',
+    ),
     keyManager: KeyManagerTypeSchema.optional(),
   })
   .superRefine((data, ctx) => {
@@ -68,7 +64,7 @@ export const ContractDeleteInputSchema = z
         path: ['transferContractId'],
       });
     }
-    if (data.stateOnly && data.adminKey.length > 0) {
+    if (data.stateOnly && data.adminKey !== undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'admin-key cannot be used with --state-only',

@@ -7,6 +7,7 @@ import type { AliasService } from '@/core/services/alias/alias-service.interface
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { ContractData } from '@/plugins/contract/schema';
+import type { ContractDeleteInput } from './input';
 import type { ContractDeleteOutput } from './output';
 import type {
   ContractDeleteBuildTransactionResult,
@@ -27,7 +28,7 @@ import { composeKey } from '@/core/utils/key-composer';
 import { ContractHelper } from '@/plugins/contract/contract-helper';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
-import { type ContractDeleteInput, ContractDeleteInputSchema } from './input';
+import { ContractDeleteInputSchema } from './input';
 
 export const CONTRACT_DELETE_COMMAND_NAME = 'contract_delete';
 
@@ -37,33 +38,24 @@ export class DeleteContractCommand extends BaseTransactionCommand<
   ContractDeleteSignTransactionResult,
   ContractDeleteExecuteTransactionResult
 > {
-  private parsedDeleteArgs?: ContractDeleteInput;
-
   constructor() {
     super(CONTRACT_DELETE_COMMAND_NAME);
   }
 
   override async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    this.parsedDeleteArgs = ContractDeleteInputSchema.parse(args.args);
-    try {
-      if (this.parsedDeleteArgs.stateOnly) {
-        return this.executeStateOnlyDelete(args);
-      }
-      return await super.execute(args);
-    } finally {
-      this.parsedDeleteArgs = undefined;
+    const input = ContractDeleteInputSchema.parse(args.args);
+    if (input.stateOnly) {
+      return this.executeStateOnlyDelete(args, input);
     }
-  }
-
-  private getParsedDeleteArgs(args: CommandHandlerArgs): ContractDeleteInput {
-    return this.parsedDeleteArgs ?? ContractDeleteInputSchema.parse(args.args);
+    return await super.execute(args);
   }
 
   private async executeStateOnlyDelete(
     args: CommandHandlerArgs,
+    parsedInput: ContractDeleteInput,
   ): Promise<CommandResult> {
     const { api } = args;
-    const resolved = await this.resolveContractFromState(args);
+    const resolved = await this.resolveContractFromState(args, parsedInput);
     const contractHelper = new ContractHelper(api.state, api.logger, api.alias);
     const removedAliases = contractHelper.removeContractFromLocalState(
       resolved.contractToDelete,
@@ -83,7 +75,10 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     return { result: outputData };
   }
 
-  private async resolveContractFromState(args: CommandHandlerArgs): Promise<{
+  private async resolveContractFromState(
+    args: CommandHandlerArgs,
+    parsedInput?: ContractDeleteInput,
+  ): Promise<{
     contractToDelete: ContractData;
     network: SupportedNetwork;
     stateKey: string;
@@ -91,7 +86,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
   }> {
     const { api, logger } = args;
     const contractState = new ZustandContractStateHelper(api.state, logger);
-    const validArgs = this.getParsedDeleteArgs(args);
+    const validArgs = parsedInput ?? ContractDeleteInputSchema.parse(args.args);
     const contractRef = validArgs.contract;
     const isEntityId = EntityIdSchema.safeParse(contractRef).success;
     const network = api.network.getCurrentNetwork();
@@ -105,7 +100,13 @@ export class DeleteContractCommand extends BaseTransactionCommand<
         AliasType.Contract,
         network,
       );
-      stateKey = composeKey(network, aliasRecord.entityId!);
+      if (!aliasRecord.entityId) {
+        throw new NotFoundError(
+          `Contract "${contractRef}" has no associated contract ID`,
+          { context: { alias: contractRef, network } },
+        );
+      }
+      stateKey = composeKey(network, aliasRecord.entityId);
     }
 
     const contractToDelete = contractState.getContract(stateKey);
@@ -120,6 +121,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
 
   private async resolveContractForNetworkDelete(
     args: CommandHandlerArgs,
+    parsedInput?: ContractDeleteInput,
   ): Promise<{
     contractToDelete: ContractData;
     network: SupportedNetwork;
@@ -129,7 +131,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
   }> {
     const { api, logger } = args;
     const contractState = new ZustandContractStateHelper(api.state, logger);
-    const validArgs = this.getParsedDeleteArgs(args);
+    const validArgs = parsedInput ?? ContractDeleteInputSchema.parse(args.args);
     const contractRef = validArgs.contract;
     const isEntityId = EntityIdSchema.safeParse(contractRef).success;
     const network = api.network.getCurrentNetwork();
@@ -145,7 +147,13 @@ export class DeleteContractCommand extends BaseTransactionCommand<
         AliasType.Contract,
         network,
       );
-      resolvedEntityId = aliasRecord.entityId!;
+      if (!aliasRecord.entityId) {
+        throw new NotFoundError(
+          `Contract "${contractRef}" has no associated contract ID`,
+          { context: { alias: contractRef, network } },
+        );
+      }
+      resolvedEntityId = aliasRecord.entityId;
       stateKey = composeKey(network, resolvedEntityId);
     }
 
@@ -221,7 +229,13 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       AliasType.Account,
       network,
     );
-    return alias.entityId!;
+    if (!alias.entityId) {
+      throw new NotFoundError(
+        `Account "${transferRef}" has no associated account ID`,
+        { context: { alias: transferRef, network } },
+      );
+    }
+    return alias.entityId;
   }
 
   private resolveTransferContractId(
@@ -237,14 +251,23 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       AliasType.Contract,
       network,
     );
-    return alias.entityId!;
+    if (!alias.entityId) {
+      throw new NotFoundError(
+        `Contract "${transferRef}" has no associated contract ID`,
+        { context: { alias: transferRef, network } },
+      );
+    }
+    return alias.entityId;
   }
 
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<ContractDeleteNormalisedParams> {
-    const resolved = await this.resolveContractForNetworkDelete(args);
-    const validArgs = this.getParsedDeleteArgs(args);
+    const validArgs = ContractDeleteInputSchema.parse(args.args);
+    const resolved = await this.resolveContractForNetworkDelete(
+      args,
+      validArgs,
+    );
     const { api } = args;
     const keyManager =
       validArgs.keyManager ||
@@ -253,9 +276,9 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     let adminSignerKeyRefId: string | undefined =
       resolved.contractToDelete.adminKeyRefId;
 
-    if (validArgs.adminKey.length > 0) {
+    if (validArgs.adminKey !== undefined) {
       const signing = await api.keyResolver.resolveSigningKey(
-        validArgs.adminKey[0],
+        validArgs.adminKey,
         keyManager,
         false,
         ['contract:admin'],

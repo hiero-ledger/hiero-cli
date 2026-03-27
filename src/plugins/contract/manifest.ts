@@ -221,7 +221,7 @@ export const contractPluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: OptionType.REPEATABLE,
+          type: OptionType.STRING,
           required: false,
           description:
             'Admin key for signing (same formats as contract create). Network delete only',
