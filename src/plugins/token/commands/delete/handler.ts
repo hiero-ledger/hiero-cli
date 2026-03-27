@@ -137,7 +137,13 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     const tokenInState = tokenState.getToken(key);
     const tokenName = tokenInState?.name ?? tokenInfo.name;
 
-    return { network, tokenId, tokenName, adminKeyResolved };
+    return {
+      network,
+      tokenId,
+      tokenName,
+      adminKeyResolved,
+      keyRefIds: [adminKeyResolved.keyRefId],
+    };
   }
 
   private async resolveAdminKey(
@@ -218,7 +224,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
       );
     }
 
-    return { transactionResult: result };
+    return result;
   }
 
   async outputPreparation(
@@ -251,7 +257,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     }
 
     const outputData: TokenDeleteOutput = {
-      transactionId: executeTransactionResult.transactionResult.transactionId,
+      transactionId: executeTransactionResult.transactionId,
       deletedToken: { name: tokenName, tokenId },
       network,
     };

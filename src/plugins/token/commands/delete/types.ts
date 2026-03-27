@@ -1,22 +1,21 @@
-import type { Transaction } from '@hashgraph/sdk';
-import type { SupportedNetwork, TransactionResult } from '@/core';
+import type {
+  BaseBuildTransactionResult,
+  BaseNormalizedParams,
+  BaseSignTransactionResult,
+  SupportedNetwork,
+  TransactionResult,
+} from '@/core';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 
-export interface TokenDeleteNormalizedParams {
+export interface TokenDeleteNormalizedParams extends BaseNormalizedParams {
   network: SupportedNetwork;
   tokenId: string;
   tokenName: string;
   adminKeyResolved: ResolvedPublicKey;
 }
 
-export interface TokenDeleteBuildTransactionResult {
-  transaction: Transaction;
-}
+export interface TokenDeleteBuildTransactionResult extends BaseBuildTransactionResult {}
 
-export interface TokenDeleteSignTransactionResult {
-  signedTransaction: Transaction;
-}
+export interface TokenDeleteSignTransactionResult extends BaseSignTransactionResult {}
 
-export interface TokenDeleteExecuteTransactionResult {
-  transactionResult: TransactionResult;
-}
+export type TokenDeleteExecuteTransactionResult = TransactionResult;
