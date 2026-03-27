@@ -33,6 +33,19 @@ export const TokenCreateNftOutputSchema = z.object({
   supplyAccountId: EntityIdSchema.optional().describe('Supply account ID'),
   supplyPublicKey:
     PublicKeyDefinitionSchema.optional().describe('Supply public key'),
+  freezePublicKey:
+    PublicKeyDefinitionSchema.optional().describe('Freeze public key'),
+  wipePublicKey:
+    PublicKeyDefinitionSchema.optional().describe('Wipe public key'),
+  pausePublicKey:
+    PublicKeyDefinitionSchema.optional().describe('Pause public key'),
+  kycPublicKey: PublicKeyDefinitionSchema.optional().describe('KYC public key'),
+  feeSchedulePublicKey: PublicKeyDefinitionSchema.optional().describe(
+    'Fee schedule public key',
+  ),
+  metadataPublicKey: PublicKeyDefinitionSchema.optional().describe(
+    'Metadata public key',
+  ),
   alias: z.string().describe('Token alias').optional(),
   network: NetworkSchema.describe('Network on which token exists'),
 });
@@ -50,12 +63,32 @@ export const TOKEN_CREATE_NFT_TEMPLATE = `
 {{#if adminAccountId}}
    Admin account: {{hashscanLink adminAccountId "account" network}}
 {{/if}}
+{{#if adminPublicKey}}
    Admin public key: {{adminPublicKey}}
+{{/if}}
 {{#if supplyAccountId}}
    Supply account: {{hashscanLink supplyAccountId "account" network}}
 {{/if}}
 {{#if supplyPublicKey}}
    Supply public key: {{supplyPublicKey}}
+{{/if}}
+{{#if freezePublicKey}}
+   Freeze public key: {{freezePublicKey}}
+{{/if}}
+{{#if wipePublicKey}}
+   Wipe public key: {{wipePublicKey}}
+{{/if}}
+{{#if pausePublicKey}}
+   Pause public key: {{pausePublicKey}}
+{{/if}}
+{{#if kycPublicKey}}
+   KYC public key: {{kycPublicKey}}
+{{/if}}
+{{#if feeSchedulePublicKey}}
+   Fee schedule public key: {{feeSchedulePublicKey}}
+{{/if}}
+{{#if metadataPublicKey}}
+   Metadata public key: {{metadataPublicKey}}
 {{/if}}
 {{#if alias}}
    Alias: {{alias}}

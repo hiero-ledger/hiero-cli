@@ -21,10 +21,10 @@ export function buildTokenData(
     supplyType: string;
     adminPublicKey?: string;
     supplyPublicKey?: string;
-    wipePublicKey?: string;
-    kycPublicKey?: string;
     freezePublicKey?: string;
+    wipePublicKey?: string;
     pausePublicKey?: string;
+    kycPublicKey?: string;
     feeSchedulePublicKey?: string;
     metadataPublicKey?: string;
     network: SupportedNetwork;
@@ -45,10 +45,10 @@ export function buildTokenData(
         : 0n,
     adminPublicKey: params.adminPublicKey,
     supplyPublicKey: params.supplyPublicKey,
-    wipePublicKey: params.wipePublicKey,
-    kycPublicKey: params.kycPublicKey,
     freezePublicKey: params.freezePublicKey,
+    wipePublicKey: params.wipePublicKey,
     pausePublicKey: params.pausePublicKey,
+    kycPublicKey: params.kycPublicKey,
     feeSchedulePublicKey: params.feeSchedulePublicKey,
     metadataPublicKey: params.metadataPublicKey,
     network: params.network,

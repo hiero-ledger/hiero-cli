@@ -560,6 +560,72 @@ export const tokenPluginManifest: PluginManifest = {
             'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
+          name: 'freeze-key',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Freeze key. Allows freezing token transfers for specific accounts.',
+        },
+        {
+          name: 'wipe-key',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Wipe key. Allows wiping token balance from specific accounts.',
+        },
+        {
+          name: 'pause-key',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Pause key. Allows pausing all token transfers.',
+        },
+        {
+          name: 'kyc-key',
+          type: OptionType.STRING,
+          required: false,
+          description: 'KYC key. Allows granting/revoking KYC status.',
+        },
+        {
+          name: 'fee-schedule-key',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Fee schedule key. Allows modifying custom fees.',
+        },
+        {
+          name: 'metadata-key',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Metadata key. Allows updating token metadata.',
+        },
+        {
+          name: 'freeze-default',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description:
+            'Default freeze status for new token associations. Requires freeze-key.',
+        },
+        {
+          name: 'auto-renew-period',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'Auto-renew period in seconds (e.g. 7776000 for 90 days).',
+        },
+        {
+          name: 'auto-renew-account-id',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account ID that pays for token auto-renewal fees (e.g. 0.0.12345).',
+        },
+        {
+          name: 'expiration-time',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Token expiration time in ISO 8601 format (e.g. 2027-01-01T00:00:00Z).',
+        },
+        {
           name: 'name',
           short: 'n',
           type: OptionType.STRING,

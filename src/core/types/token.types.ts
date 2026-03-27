@@ -72,11 +72,12 @@ export interface TokenCreateParams {
   pausePublicKey?: PublicKey;
   feeSchedulePublicKey?: PublicKey;
   metadataPublicKey?: PublicKey;
+  autoRenewPeriod?: number;
+  autoRenewAccountId?: string;
+  expirationTime?: Date;
   customFees?: CustomFee[];
   memo?: string;
   autoRenewPeriodSeconds?: number;
-  autoRenewAccountId?: string;
-  expirationTime?: Date;
 }
 
 /**
