@@ -2,6 +2,10 @@ import type {
   AccountAPIBalance,
   AccountAPIKey,
   AccountAPIResponse,
+  AccountListItemAPIResponse,
+  AccountListItemBalance,
+  AccountListItemTokenBalance,
+  GetAccountsAPIResponse,
   TokenInfo,
 } from './types';
 
@@ -62,3 +66,38 @@ export const AccountAPIResponseSchema: z.ZodType<AccountAPIResponse> = z.object(
     receiver_sig_required: z.boolean(),
   },
 );
+
+const accountListItemTokenBalanceSchema: z.ZodType<AccountListItemTokenBalance> =
+  z.object({
+    token_id: z.string(),
+    balance: z.number(),
+  });
+
+export const AccountListItemBalanceSchema: z.ZodType<AccountListItemBalance> =
+  z.object({
+    timestamp: z.string(),
+    balance: z.number(),
+    tokens: z.array(accountListItemTokenBalanceSchema).optional(),
+  });
+
+export const AccountListItemAPIResponseSchema: z.ZodType<AccountListItemAPIResponse> =
+  z.object({
+    account: z.string(),
+    alias: z.string().optional(),
+    balance: AccountListItemBalanceSchema.optional(),
+    created_timestamp: z.string(),
+    evm_address: z.string().optional(),
+    key: z.union([AccountAPIKeySchema, z.null()]).optional(),
+    deleted: z.boolean().optional(),
+    memo: z.string().optional(),
+  });
+
+export const GetAccountsAPIResponseSchema: z.ZodType<GetAccountsAPIResponse> =
+  z.object({
+    accounts: z.array(AccountListItemAPIResponseSchema),
+    links: z
+      .object({
+        next: z.string().nullable().optional(),
+      })
+      .optional(),
+  });

@@ -284,17 +284,24 @@ export interface GetAccountsQueryParams {
   order?: MirrorNodeRequestOrderParameter;
 }
 
+export interface AccountListItemTokenBalance {
+  token_id: string;
+  balance: number;
+}
+
+export interface AccountListItemBalance {
+  timestamp: string;
+  balance: number;
+  tokens?: AccountListItemTokenBalance[];
+}
+
 export interface AccountListItemAPIResponse {
   account: string;
   alias?: string;
-  balance?: {
-    timestamp: string;
-    balance: number;
-    tokens?: Array<{ token_id: string; balance: number }>;
-  };
+  balance?: AccountListItemBalance;
   created_timestamp: string;
   evm_address?: string;
-  key?: { _type: MirrorNodeKeyType; key: string } | null;
+  key?: AccountAPIKey | null;
   deleted?: boolean;
   memo?: string;
 }
