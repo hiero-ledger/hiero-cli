@@ -1,10 +1,10 @@
 import type { z } from 'zod';
 
+import { ValidationError } from '@/core/errors';
 import {
   formatZodIssueLine,
   formatZodIssuesForMessage,
-  ValidationError,
-} from '@/core/errors';
+} from '@/core/utils/format-zod-issues';
 
 export function parseWithSchema<T>(
   schema: z.ZodType<T>,
