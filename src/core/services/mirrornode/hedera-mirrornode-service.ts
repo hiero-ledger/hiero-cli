@@ -1,7 +1,6 @@
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { HederaMirrornodeService } from './hedera-mirrornode-service.interface';
 import type {
-  AccountAPIResponse,
   AccountListItemAPIResponse,
   AccountListItemDto,
   AccountResponse,
@@ -36,7 +35,7 @@ import { KeyAlgorithm } from '@/core/shared/constants';
 import { parseWithSchema } from '@/core/shared/validation/parse-with-schema.zod';
 import { handleMirrorNodeErrorResponse } from '@/core/utils/handle-mirror-node-error-response';
 
-import { TokenInfoSchema } from './schema';
+import { AccountAPIResponseSchema, TokenInfoSchema } from './schemas';
 import { NetworkToBaseUrl } from './types';
 
 export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeService {
@@ -82,7 +81,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         return null;
       }
 
-      const data = (await response.json()) as AccountAPIResponse;
+      const data = parseWithSchema(
+        AccountAPIResponseSchema,
+        await response.json(),
+        `Mirror Node GET /accounts/${accountId}`,
+      );
 
       if (!data.account) {
         throw new NotFoundError(`Account ${accountId} not found`);
@@ -102,8 +105,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         keyAlgorithm: this.getKeyAlgorithm(data.key._type),
       };
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof NetworkError)
-        throw error;
+      if (error instanceof CliError) throw error;
       throw new NetworkError(`Failed to fetch account ${accountId}`, {
         cause: error,
         recoverable: true,
