@@ -101,6 +101,8 @@ For a detailed, step‑by‑step plugin development guide, see [`PLUGIN_ARCHITEC
 **Key Features**:
 
 - Account creation with custom parameters
+- Account update (memo, key rotation, staking, auto-associations, etc.)
+- Account deletion with beneficiary transfer
 - Key generation and management
 - Transaction building and validation
 
@@ -108,8 +110,10 @@ For a detailed, step‑by‑step plugin development guide, see [`PLUGIN_ARCHITEC
 
 ```typescript
 interface AccountService {
-  createAccount(params: CreateAccountParams): Promise<AccountCreateResult>;
-  // ... other methods
+  createAccount(params: CreateAccountParams): AccountCreateResult;
+  updateAccount(params: UpdateAccountParams): AccountUpdateResult;
+  deleteAccount(params: DeleteAccountParams): AccountDeleteResult;
+  getAccountInfo(accountId: string): AccountInfoQuery;
 }
 ```
 

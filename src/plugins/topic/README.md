@@ -56,10 +56,14 @@ src/plugins/topic/
 │       ├── output.ts
 │       └── index.ts
 ├── hooks/
-│   └── batch-create/
-│       ├── handler.ts       # TopicCreateBatchStateHook - persists topic state after batch execution
-│       ├── types.ts         # TopicCreateNormalisedParamsSchema for batch item validation
-│       └── index.ts         # Hook exports
+│   ├── batch-create/
+│   │   ├── handler.ts       # TopicCreateBatchStateHook - persists topic state after batch execution
+│   │   ├── types.ts         # TopicCreateNormalisedParamsSchema for batch item validation
+│   │   └── index.ts         # Hook exports
+│   └── batch-delete/
+│       ├── handler.ts       # TopicDeleteBatchStateHook - updates state after batched topic delete
+│       ├── types.ts         # TopicDeleteNormalisedParamsSchema for batch item validation
+│       └── index.ts
 ├── utils/
 │   ├── message-helpers.ts   # Message handling utilities
 │   ├── messageFilters.ts    # Message filter helpers
@@ -128,6 +132,17 @@ hcli topic list
 hcli topic list --network testnet
 ```
 
+### Topic Delete
+
+Remove a topic from the network and local state, or only from local state. Without `--state-only`, the handler submits a `TopicDeleteTransaction` (admin keys are taken from state, mirror node, or explicit `--admin-key`). With `--state-only`, only CLI state is cleared.
+
+```bash
+hcli topic delete --topic myTopic --confirm
+hcli topic delete --topic 0.0.123456 --state-only --confirm
+```
+
+**Batch support:** `topic delete` registers `batchify`. Pass `--batch <batch-name>` to queue the delete; after `hcli batch execute`, `TopicDeleteBatchStateHook` reconciles local state.
+
 ### Topic Submit Message
 
 Submit a message to a topic using an alias or topic ID. Handles signing with
@@ -172,11 +187,11 @@ hcli topic find-message \
 
 ## 📦 Batch Support
 
-The `topic create` and `topic submit-message` commands support the `--batch` / `-B` flag via the batch plugin's `batchify` hook. When you pass `--batch <batch-name>`:
+The `topic create`, `topic submit-message`, and `topic delete` commands support the `--batch` / `-B` flag via the batch plugin's `batchify` hook. When you pass `--batch <batch-name>`:
 
 1. **No immediate execution** – The transaction is not submitted to the network. Instead, it is serialized and added to the specified batch.
 2. **Deferred execution** – Run `hcli batch execute --name <batch-name>` to submit all batched transactions atomically.
-3. **State persistence** – After successful batch execution, `TopicCreateBatchStateHook` runs for each topic creation in the batch. It fetches the receipt and saves topic data to state (including alias registration).
+3. **State persistence** – After successful batch execution, `TopicCreateBatchStateHook` runs for each topic creation in the batch. It fetches the receipt and saves topic data to state (including alias registration). For queued topic deletes, `TopicDeleteBatchStateHook` updates state after execution.
 
 **Example workflow:**
 

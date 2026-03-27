@@ -129,6 +129,7 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       freezeKey,
       pauseKey,
       feeScheduleKey,
+      keyRefIds: [adminKey.keyRefId, treasury.keyRefId],
     };
   }
 

@@ -5,15 +5,21 @@
 import type { TopicService } from './topic-transaction-service.interface';
 import type {
   CreateTopicParams,
+  DeleteTopicParams,
   MessageSubmitResult,
   SubmitMessageParams,
   TopicCreateResult,
+  TopicDeleteResult,
 } from './types';
 
 import {
   TopicCreateTransaction,
+  TopicDeleteTransaction,
+  TopicId,
   TopicMessageSubmitTransaction,
 } from '@hashgraph/sdk';
+
+import { ValidationError } from '@/core/errors';
 
 export class TopicServiceImpl implements TopicService {
   createTopic(params: CreateTopicParams): TopicCreateResult {
@@ -38,6 +44,20 @@ export class TopicServiceImpl implements TopicService {
     };
 
     return resultResponse;
+  }
+
+  deleteTopic(params: DeleteTopicParams): TopicDeleteResult {
+    try {
+      const transaction = new TopicDeleteTransaction().setTopicId(
+        TopicId.fromString(params.topicId),
+      );
+      return { transaction };
+    } catch (error) {
+      throw new ValidationError('Invalid topic ID for delete', {
+        context: { topicId: params.topicId },
+        cause: error,
+      });
+    }
   }
 
   submitMessage(params: SubmitMessageParams): MessageSubmitResult {

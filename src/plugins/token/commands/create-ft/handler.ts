@@ -101,6 +101,8 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
     logger.debug(`Use Custom Treasury: ${String(Boolean(treasury))}`);
     logger.debug('=========================');
 
+    const adminKeyRefIds = admin ? [admin.keyRefId] : [];
+
     return {
       name: validArgs.tokenName,
       symbol: validArgs.symbol,
@@ -116,6 +118,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       admin,
       supply,
       finalMaxSupply,
+      keyRefIds: [treasury.keyRefId, ...adminKeyRefIds],
     };
   }
 

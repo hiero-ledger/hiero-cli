@@ -55,9 +55,17 @@ src/plugins/account/
 │       ├── output.ts       # Output schema and template
 │       └── index.ts        # Command exports
 ├── hooks/
-│   └── batch-create/
-│       ├── handler.ts      # AccountCreateBatchStateHook - persists account state after batch execution
-│       ├── types.ts        # AccountCreateNormalisedParamsSchema for batch item validation
+│   ├── batch-create/
+│   │   ├── handler.ts      # AccountCreateBatchStateHook - persists account state after batch execution
+│   │   ├── types.ts        # AccountCreateNormalisedParamsSchema for batch item validation
+│   │   └── index.ts        # Hook exports
+│   ├── batch-update/
+│   │   ├── handler.ts      # AccountUpdateBatchStateHook - updates account key state after batch execution
+│   │   ├── types.ts        # AccountUpdateNormalisedParamsSchema for batch item validation
+│   │   └── index.ts        # Hook exports
+│   └── batch-delete/
+│       ├── handler.ts      # AccountDeleteBatchStateHook - removes account from state after batch execution
+│       ├── types.ts        # AccountDeleteNormalisedParamsSchema for batch item validation
 │       └── index.ts        # Hook exports
 ├── utils/
 │   ├── account-address.ts  # EVM address derivation helpers
@@ -98,6 +106,48 @@ hcli account create --balance 1.0 --name alice --batch my-batch
 ```
 
 When the batch is executed via `hcli batch execute --name my-batch`, the `AccountCreateBatchStateHook` runs to persist each created account to state (including alias registration and EVM address derivation).
+
+### Account Update
+
+Update properties of an existing Hedera account on-chain.
+
+```bash
+# Update memo
+hcli account update --account myaccount --memo "new memo"
+
+# Clear memo
+hcli account update --account myaccount --memo null
+
+# Update key (key rotation — signs with both old and new key)
+hcli account update --account myaccount --key <key-ref-or-private-key>
+
+# Update staking
+hcli account update --account myaccount --staked-node-id 3
+hcli account update --account myaccount --staked-account-id 0.0.98
+
+# Clear staking
+hcli account update --account myaccount --staked-node-id null
+
+# Update multiple fields
+hcli account update --account myaccount \
+  --memo "updated" \
+  --max-auto-associations 10 \
+  --decline-staking-reward true
+```
+
+**Nullable fields** — pass `null` (as a string) to reset a field to its Hedera default:
+
+- `--memo null` — clears the account memo
+- `--staked-account-id null` — clears staked account
+- `--staked-node-id null` — clears staked node
+
+**Batch support:** The `account update` command registers the `batchify` hook:
+
+```bash
+hcli account update --account myaccount --memo "new memo" --batch my-batch
+```
+
+When the batch is executed via `hcli batch execute --name my-batch`, the `AccountUpdateBatchStateHook` updates the account's key data in local state (runs only when a key rotation was part of the update).
 
 ### Account Import
 
@@ -149,11 +199,14 @@ hcli account clear
 
 ## 📦 Batch Support
 
-The `account create` and `account delete` commands support the `--batch` / `-B` flag via the batch plugin's `batchify` hook. When you pass `--batch <batch-name>`:
+The `account create`, `account update`, and `account delete` commands support the `--batch` / `-B` flag via the batch plugin's `batchify` hook. When you pass `--batch <batch-name>`:
 
 1. **No immediate execution** – The transaction is not submitted to the network. Instead, it is serialized and added to the specified batch.
 2. **Deferred execution** – Run `hcli batch execute --name <batch-name>` to submit all batched transactions atomically.
-3. **State persistence** – After successful batch execution, `AccountCreateBatchStateHook` runs for each account creation in the batch (receipt, EVM address, save to state, aliases). `AccountDeleteBatchStateHook` removes accounts from local state for batched account deletes.
+3. **State persistence** – After successful batch execution, domain-state hooks run:
+   - `AccountCreateBatchStateHook` — fetches receipt, derives EVM address, saves account to state, registers aliases
+   - `AccountUpdateBatchStateHook` — updates account key data in state (only when key rotation occurred)
+   - `AccountDeleteBatchStateHook` — removes account from local state
 
 **Example workflow:**
 
@@ -161,11 +214,12 @@ The `account create` and `account delete` commands support the `--batch` / `-B` 
 # 1. Create a batch
 hcli batch create --name my-batch --key operator-alias
 
-# 2. Add account creations to the batch
+# 2. Add operations to the batch
 hcli account create --balance 1.0 --name alice --batch my-batch
-hcli account create --balance 1.0 --name bob --batch my-batch
+hcli account update --account bob --memo "updated" --batch my-batch
+hcli account delete --account old-account --transfer-id 0.0.98 --batch my-batch
 
-# 3. Execute the batch (creates both accounts atomically)
+# 3. Execute the batch (all operations atomically)
 hcli batch execute --name my-batch
 ```
 
@@ -264,6 +318,7 @@ Test coverage:
 
 - Account creation (happy path, failures)
 - Account creation in batch (batch-create hook)
+- Account update (all fields, null clearing, key rotation, batch-update hook)
 - Account import with names
 - Balance retrieval (HBAR only, with tokens, errors)
 - Account listing

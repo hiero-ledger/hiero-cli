@@ -543,6 +543,7 @@ export const makeArgs = (
     topic: {
       createTopic: jest.fn(),
       submitMessage: jest.fn(),
+      deleteTopic: jest.fn(),
     } as unknown,
     state: {
       list: jest.fn().mockReturnValue([]),

@@ -15,6 +15,8 @@ export const TopicDeleteOutputSchema = z.object({
   }),
   removedAliases: z.array(z.string().describe('Removed alias')).optional(),
   network: NetworkSchema,
+  transactionId: z.string().optional(),
+  stateOnly: z.boolean().optional(),
 });
 
 export type TopicDeleteOutput = z.infer<typeof TopicDeleteOutputSchema>;
@@ -23,7 +25,9 @@ export type TopicDeleteOutput = z.infer<typeof TopicDeleteOutputSchema>;
  * Human-readable template for delete topic output
  */
 export const TOPIC_DELETE_TEMPLATE = `
-✅ Topic deleted successfully: {{#if deletedTopic.name}}{{deletedTopic.name}}{{/if}} ({{hashscanLink deletedTopic.topicId "topic" network}})
+✅ Topic deleted successfully: {{#if deletedTopic.name}}{{deletedTopic.name}} {{/if}}{{hashscanLink deletedTopic.topicId "topic" network}}
+{{#if transactionId}}Transaction ID: {{hashscanLink transactionId "transaction" network}}{{/if}}
+{{#if stateOnly}}(local state only — no on-chain delete){{/if}}
 {{#if removedAliases}}
 🧹 Removed {{removedAliases.length}} alias(es):
 {{#each removedAliases}}

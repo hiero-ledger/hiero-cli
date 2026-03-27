@@ -1,5 +1,11 @@
-import type { Transaction } from '@hashgraph/sdk';
-import type { HederaTokenType, SupplyType, TransactionResult } from '@/core';
+import type {
+  BaseBuildTransactionResult,
+  BaseNormalizedParams,
+  BaseSignTransactionResult,
+  HederaTokenType,
+  SupplyType,
+  TransactionResult,
+} from '@/core';
 import type {
   ResolvedAccountCredential,
   ResolvedPublicKey,
@@ -11,7 +17,7 @@ import type {
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TokenCustomFeeType } from '@/plugins/token/schema';
 
-export interface TokenCreateFtFromFileNormalizedParams {
+export interface TokenCreateFtFromFileNormalizedParams extends BaseNormalizedParams {
   filename: string;
   name: string;
   symbol: string;
@@ -35,13 +41,9 @@ export interface TokenCreateFtFromFileNormalizedParams {
   feeScheduleKey?: ResolvedPublicKey;
 }
 
-export interface TokenCreateFtFromFileBuildTransactionResult {
-  transaction: Transaction;
-}
+export interface TokenCreateFtFromFileBuildTransactionResult extends BaseBuildTransactionResult {}
 
-export interface TokenCreateFtFromFileSignTransactionResult {
-  signedTransaction: Transaction;
-}
+export interface TokenCreateFtFromFileSignTransactionResult extends BaseSignTransactionResult {}
 
 export interface TokenCreateFtFromFileExecuteTransactionResult {
   transactionResult: TransactionResult;

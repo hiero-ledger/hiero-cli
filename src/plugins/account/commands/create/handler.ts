@@ -104,6 +104,7 @@ export class AccountCreateCommand extends BaseTransactionCommand<
       keyRefId,
       keyType,
       network,
+      keyRefIds: [],
     };
   }
 

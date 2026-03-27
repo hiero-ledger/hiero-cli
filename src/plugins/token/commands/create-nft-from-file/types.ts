@@ -1,5 +1,9 @@
-import type { Transaction } from '@hashgraph/sdk';
-import type { TransactionResult } from '@/core';
+import type {
+  BaseBuildTransactionResult,
+  BaseNormalizedParams,
+  BaseSignTransactionResult,
+  TransactionResult,
+} from '@/core';
 import type {
   ResolvedAccountCredential,
   ResolvedPublicKey,
@@ -10,7 +14,7 @@ import type {
 } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 
-export interface TokenCreateNftFromFileNormalizedParams {
+export interface TokenCreateNftFromFileNormalizedParams extends BaseNormalizedParams {
   filename: string;
   name: string;
   symbol: string;
@@ -30,13 +34,9 @@ export interface TokenCreateNftFromFileNormalizedParams {
   feeScheduleKey?: ResolvedPublicKey;
 }
 
-export interface TokenCreateNftFromFileBuildTransactionResult {
-  transaction: Transaction;
-}
+export interface TokenCreateNftFromFileBuildTransactionResult extends BaseBuildTransactionResult {}
 
-export interface TokenCreateNftFromFileSignTransactionResult {
-  signedTransaction: Transaction;
-}
+export interface TokenCreateNftFromFileSignTransactionResult extends BaseSignTransactionResult {}
 
 export interface TokenCreateNftFromFileExecuteTransactionResult {
   transactionResult: TransactionResult;

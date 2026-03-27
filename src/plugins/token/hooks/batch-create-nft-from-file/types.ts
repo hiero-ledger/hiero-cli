@@ -20,6 +20,7 @@ export const CreateNftFromFileNormalizedParamsSchema = z.object({
   maxSupply: z.bigint().optional(),
   memo: MemoSchema.default(''),
   associations: z.array(KeySchema).default([]),
+  keyRefIds: z.array(z.string()),
   keyManager: keyManagerNameSchema,
   network: NetworkSchema,
   treasury: ResolvedAccountCredentialSchema,

@@ -1,5 +1,4 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TopicCreateOutput } from '@/plugins/topic/commands/create';
 import type { TopicImportOutput } from '@/plugins/topic/commands/import';
 import type { TopicListOutput } from '@/plugins/topic/commands/list';
@@ -10,6 +9,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   topicCreate,
   topicDelete,
@@ -18,7 +18,14 @@ import {
 } from '@/plugins/topic';
 import { TOPIC_NAMESPACE } from '@/plugins/topic/manifest';
 
-describe('Import Topic Integration Tests', () => {
+/*
+Tests in this suite are only executed when we do not use localnet as selected network due to the fact that
+there is a problem with acquiring topic information on Hedera local node when using hiero-local-node or solo to deploy it.
+This behavior prevents us from fully testing the topic command's like import here
+*/
+const describeSuite =
+  process.env.NETWORK === SupportedNetwork.LOCALNET ? describe.skip : describe;
+describeSuite('Import Topic Integration Tests', () => {
   const TOPIC_NAME = 'TopicImport';
 
   let coreApi: CoreApi;
@@ -46,6 +53,7 @@ describe('Import Topic Integration Tests', () => {
 
     const deleteTopicArgs: Record<string, unknown> = {
       topic: topicId,
+      stateOnly: true,
     };
     await topicDelete({
       args: deleteTopicArgs,
@@ -61,6 +69,7 @@ describe('Import Topic Integration Tests', () => {
   afterEach(async () => {
     const deleteTopicArgs: Record<string, unknown> = {
       topic: topicId,
+      stateOnly: true,
     };
     await topicDelete({
       args: deleteTopicArgs,

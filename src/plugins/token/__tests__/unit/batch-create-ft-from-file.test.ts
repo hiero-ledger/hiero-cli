@@ -41,6 +41,7 @@ const createFlatNormalizedParams = (
   tokenType: HederaTokenType.FUNGIBLE_COMMON,
   customFees: validTokenFile.customFees,
   associations: validTokenFile.associations,
+  keyRefIds: [],
   keyManager: KeyManager.local,
   network: SupportedNetwork.TESTNET,
   treasury: {

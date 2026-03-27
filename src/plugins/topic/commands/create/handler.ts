@@ -65,6 +65,8 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       ),
     );
 
+    const adminKeyThreshold = validArgs.adminKeyThreshold ?? adminKeys.length;
+
     return {
       memo,
       alias,
@@ -72,8 +74,9 @@ export class TopicCreateCommand extends BaseTransactionCommand<
       network,
       adminKeys,
       submitKeys,
-      adminKeyThreshold: validArgs.adminKeyThreshold ?? adminKeys.length,
+      adminKeyThreshold,
       submitKeyThreshold: validArgs.submitKeyThreshold ?? submitKeys.length,
+      keyRefIds: adminKeys.slice(0, adminKeyThreshold).map((k) => k.keyRefId),
     };
   }
 

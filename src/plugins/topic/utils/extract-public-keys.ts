@@ -92,3 +92,22 @@ export function extractPublicKeysFromMirrorNodeKey(
 
   return { publicKeys: [], threshold: 0 };
 }
+
+/**
+ * Derives how many distinct admin signatures are required on Hedera from mirror
+ * key extraction (single key, threshold key list, or KeyList where all must sign).
+ */
+export function getEffectiveAdminKeyRequirement(
+  extracted: ExtractedKeysResult,
+): { adminPublicKeys: string[]; requiredSignatures: number } {
+  const { publicKeys, threshold } = extracted;
+  if (publicKeys.length === 0) {
+    return { adminPublicKeys: [], requiredSignatures: 0 };
+  }
+  if (publicKeys.length === 1) {
+    return { adminPublicKeys: publicKeys, requiredSignatures: 1 };
+  }
+  const requiredSignatures =
+    threshold > 0 ? Math.min(threshold, publicKeys.length) : publicKeys.length;
+  return { adminPublicKeys: publicKeys, requiredSignatures };
+}

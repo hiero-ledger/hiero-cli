@@ -41,6 +41,7 @@ const createFlatNormalizedParams = (
     : undefined,
   memo: validNftTokenFile.memo,
   associations: validNftTokenFile.associations,
+  keyRefIds: [],
   keyManager: KeyManager.local,
   network: SupportedNetwork.TESTNET,
   treasury: {
