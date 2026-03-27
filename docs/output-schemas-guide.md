@@ -368,11 +368,21 @@ interface CommandOutputSpec {
   "supplyType": "FINITE",
   "transactionId": "0.0.123@1700000000.123456789",
   "adminAccountId": "0.0.12345",
+  "adminPublicKey": "302a300506032b6570032100...",
   "supplyAccountId": "0.0.12345",
+  "supplyPublicKey": "302a300506032b6570032100...",
+  "freezePublicKey": "302a300506032b6570032100...",
+  "wipePublicKey": "302a300506032b6570032100...",
+  "pausePublicKey": "302a300506032b6570032100...",
+  "kycPublicKey": "302a300506032b6570032100...",
+  "feeSchedulePublicKey": "302a300506032b6570032100...",
+  "metadataPublicKey": "302a300506032b6570032100...",
   "alias": "my-nft",
   "network": "testnet"
 }
 ```
+
+All key fields (`adminPublicKey`, `supplyPublicKey`, `freezePublicKey`, `wipePublicKey`, `pausePublicKey`, `kycPublicKey`, `feeSchedulePublicKey`, `metadataPublicKey`) are optional and only appear when the corresponding key was provided.
 
 #### `token mint-ft`
 
