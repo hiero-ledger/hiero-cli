@@ -13,6 +13,11 @@ import {
 } from '@/plugins/token/commands/create-nft';
 
 import {
+  TOKEN_ALLOWANCE_FT_TEMPLATE,
+  tokenAllowanceFt,
+  TokenAllowanceFtOutputSchema,
+} from './commands/allowance-ft';
+import {
   TOKEN_ASSOCIATE_TEMPLATE,
   tokenAssociate,
   TokenAssociateOutputSchema,
@@ -591,6 +596,58 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenCreateNftFromFileOutputSchema,
         humanTemplate: TOKEN_CREATE_NFT_FROM_FILE_TEMPLATE,
+      },
+    },
+    {
+      name: 'allowance-ft',
+      summary: 'Approve fungible token allowance',
+      description:
+        'Approve (or revoke by setting amount to 0) a spender allowance for fungible tokens on behalf of the owner.',
+      registeredHooks: ['batchify'],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Owner account. Can be {accountId}:{privateKey} pair, key reference or account alias. Defaults to operator.',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Spender account: account-id or alias',
+        },
+        {
+          name: 'amount',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Allowance amount. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "100t"). Set to 0 to revoke.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenAllowanceFt,
+      output: {
+        schema: TokenAllowanceFtOutputSchema,
+        humanTemplate: TOKEN_ALLOWANCE_FT_TEMPLATE,
       },
     },
     {

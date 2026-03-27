@@ -101,3 +101,10 @@ export interface NftTransferParams {
   toAccountId: string;
   serialNumbers: number[];
 }
+
+export interface TokenAllowanceFtParams {
+  tokenId: string;
+  ownerAccountId: string;
+  spenderAccountId: string;
+  amount: bigint;
+}
