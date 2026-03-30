@@ -1,4 +1,7 @@
-// Main token data schema
+/**
+ * Contract Plugin State Schema
+ * Single source of truth for contract data structure and validation
+ */
 import { z } from 'zod';
 
 import {
@@ -18,6 +21,10 @@ export const ContractDataSchema = z.object({
     'Deployed contract EVM address',
   ),
   adminPublicKey: z.string().optional(),
+  adminKeyRefId: z
+    .string()
+    .optional()
+    .describe('KMS key ref for contract admin when set at create'),
 
   network: z.enum(SupportedNetwork, {
     error: () => ({

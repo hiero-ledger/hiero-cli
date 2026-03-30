@@ -182,16 +182,56 @@ export const contractPluginManifest: PluginManifest = {
     },
     {
       name: 'delete',
-      summary: 'Delete contract from state',
+      summary: 'Delete contract',
       description:
-        'Remove contract information from state by contract ID or alias',
+        'By default, submits ContractDeleteTransaction on Hedera and removes the contract from local CLI state.',
       options: [
         {
           name: 'contract',
           short: 'c',
           type: OptionType.STRING,
           required: true,
-          description: 'Contract ID (0.0.xxx) or alias to delete from state',
+          description: 'Contract ID (0.0.xxx) or alias',
+        },
+        {
+          name: 'state-only',
+          short: 's',
+          type: OptionType.BOOLEAN,
+          required: false,
+          default: false,
+          description:
+            'Remove from local CLI state only; no network transaction',
+        },
+        {
+          name: 'transfer-id',
+          short: 't',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account receiving remaining HBAR (ID or alias). Required for network delete unless using --state-only',
+        },
+        {
+          name: 'transfer-contract-id',
+          short: 'r',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Contract receiving remaining HBAR (ID or alias). Alternative to --transfer-id',
+        },
+        {
+          name: 'admin-key',
+          short: 'a',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Admin key for signing (same formats as contract create). Network delete only',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Key manager for --admin-key (default: config)',
         },
       ],
       handler: contractDelete,
@@ -199,6 +239,8 @@ export const contractPluginManifest: PluginManifest = {
         schema: DeleteContractOutputSchema,
         humanTemplate: DELETE_CONTRACT_TEMPLATE,
       },
+      requireConfirmation:
+        'Are you sure you want to delete contract {{contract}}? This cannot be undone.',
     },
   ],
 };
