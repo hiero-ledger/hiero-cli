@@ -67,8 +67,6 @@ export const createMockGetAccountsAPIResponse = (
 export const createMockTokenBalancesResponse = (
   overrides: Partial<TokenBalancesResponse> = {},
 ): TokenBalancesResponse => ({
-  account: '0.0.1234',
-  balance: 0,
   tokens: [
     {
       token_id: '0.0.2000',
@@ -76,7 +74,7 @@ export const createMockTokenBalancesResponse = (
       decimals: 6,
     },
   ],
-  timestamp: '2024-01-01T12:00:00.000Z',
+  links: { next: null },
   ...overrides,
 });
 
