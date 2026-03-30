@@ -59,7 +59,12 @@ export interface TokenBalanceInfo {
   balance: number;
   decimals: number;
 }
-// Token Info
+
+export type MirrorNodeTokenKey = {
+  _type: string;
+  key: string;
+};
+
 export interface TokenInfo {
   token_id: string;
   symbol: string;
@@ -69,41 +74,17 @@ export interface TokenInfo {
   max_supply: string;
   type: string;
   treasury_account_id: string;
-  admin_key?: {
-    _type: string;
-    key: string;
-  };
-  kyc_key?: {
-    _type: string;
-    key: string;
-  };
-  freeze_key?: {
-    _type: string;
-    key: string;
-  };
-  wipe_key?: {
-    _type: string;
-    key: string;
-  };
-  supply_key?: {
-    _type: string;
-    key: string;
-  };
-  fee_schedule_key?: {
-    _type: string;
-    key: string;
-  };
-  metadata_key?: {
-    _type: string;
-    key: string;
-  };
-  pause_key?: {
-    _type: string;
-    key: string;
-  };
+  admin_key?: MirrorNodeTokenKey | null;
+  kyc_key?: MirrorNodeTokenKey | null;
+  freeze_key?: MirrorNodeTokenKey | null;
+  wipe_key?: MirrorNodeTokenKey | null;
+  supply_key?: MirrorNodeTokenKey | null;
+  fee_schedule_key?: MirrorNodeTokenKey | null;
+  metadata_key?: MirrorNodeTokenKey | null;
+  pause_key?: MirrorNodeTokenKey | null;
   created_timestamp: string;
-  deleted: boolean;
-  freeze_default: boolean;
+  deleted?: boolean | null;
+  freeze_default?: boolean;
   default_kyc_status: boolean;
   auto_renew_account?: string;
   auto_renew_period?: number;

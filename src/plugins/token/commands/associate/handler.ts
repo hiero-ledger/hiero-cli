@@ -93,6 +93,7 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
       account,
       keyManager,
       alreadyAssociated,
+      keyRefIds: [account.keyRefId],
     };
   }
 

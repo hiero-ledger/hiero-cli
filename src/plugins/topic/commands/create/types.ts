@@ -1,10 +1,14 @@
-import type { Transaction } from '@hashgraph/sdk';
-import type { TransactionResult } from '@/core';
+import type {
+  BaseBuildTransactionResult,
+  BaseNormalizedParams,
+  BaseSignTransactionResult,
+  TransactionResult,
+} from '@/core';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
-export interface CreateTopicNormalisedParams {
+export interface CreateTopicNormalisedParams extends BaseNormalizedParams {
   memo?: string;
   alias?: string;
   keyManager: KeyManager;
@@ -15,12 +19,8 @@ export interface CreateTopicNormalisedParams {
   submitKeyThreshold: number;
 }
 
-export interface CreateTopicBuildTransactionResult {
-  transaction: Transaction;
-}
+export interface CreateTopicBuildTransactionResult extends BaseBuildTransactionResult {}
 
-export interface CreateTopicSignTransactionResult {
-  signedTransaction: Transaction;
-}
+export interface CreateTopicSignTransactionResult extends BaseSignTransactionResult {}
 
 export type CreateTopicExecuteTransactionResult = TransactionResult;

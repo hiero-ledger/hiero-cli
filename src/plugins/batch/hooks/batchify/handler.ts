@@ -5,9 +5,10 @@ import type {
   PreSignTransactionParams,
 } from '@/core/hooks/types';
 import type {
-  BatchifyBuildTransactionResult,
-  BatchifySignTransactionResult,
-} from '@/plugins/batch/hooks/batchify/types';
+  BaseBuildTransactionResult,
+  BaseSignTransactionResult,
+} from '@/core/types/transaction.types';
+import type { BatchifyHookBaseParams } from './types';
 
 import { PublicKey } from '@hashgraph/sdk';
 
@@ -28,7 +29,7 @@ export class BatchifyHook extends AbstractHook {
     args: CommandHandlerArgs,
     params: PreSignTransactionParams<
       Record<string, unknown>,
-      BatchifyBuildTransactionResult
+      BaseBuildTransactionResult
     >,
     _commandName: string,
   ): Promise<HookResult> {
@@ -78,9 +79,9 @@ export class BatchifyHook extends AbstractHook {
   override preExecuteTransactionHook(
     args: CommandHandlerArgs,
     params: PreExecuteTransactionParams<
-      Record<string, unknown>,
-      BatchifyBuildTransactionResult,
-      BatchifySignTransactionResult
+      BatchifyHookBaseParams,
+      BaseBuildTransactionResult,
+      BaseSignTransactionResult
     >,
     commandName: string,
   ): Promise<HookResult> {
@@ -111,6 +112,7 @@ export class BatchifyHook extends AbstractHook {
       );
     }
     const transaction = params.signTransactionResult.signedTransaction;
+    const keyRefIds = params.normalisedParams.keyRefIds;
 
     const transactionBytes = Buffer.from(transaction.toBytes()).toString('hex');
     const highestOrder =
@@ -124,6 +126,7 @@ export class BatchifyHook extends AbstractHook {
       order: nextOrder,
       command: commandName,
       normalizedParams: params.normalisedParams,
+      keyRefIds,
     });
     batchState.saveBatch(key, batch);
 

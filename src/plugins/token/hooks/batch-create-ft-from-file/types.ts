@@ -32,6 +32,7 @@ export const CreateFtFromFileNormalizedParamsSchema = z.object({
     .max(10, 'Maximum 10 custom fees allowed per token')
     .default([]),
   associations: z.array(KeySchema).default([]),
+  keyRefIds: z.array(z.string()),
   keyManager: keyManagerNameSchema,
   network: NetworkSchema,
   treasury: ResolvedAccountCredentialSchema,

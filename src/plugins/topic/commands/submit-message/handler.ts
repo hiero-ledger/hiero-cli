@@ -108,6 +108,7 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
       keyManager,
       currentNetwork,
       topicData,
+      keyRefIds: signerKeyRefIds,
     };
   }
 

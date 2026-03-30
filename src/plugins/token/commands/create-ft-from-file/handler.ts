@@ -55,6 +55,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     );
     const network = api.network.getCurrentNetwork();
     api.alias.availableOrThrow(tokenDefinition.name, network);
+    const keyRefIds: string[] = [];
 
     const treasury = await api.keyResolver.resolveAccountCredentials(
       tokenDefinition.treasuryKey,
@@ -62,6 +63,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       false,
       ['token:treasury'],
     );
+    keyRefIds.push(treasury.keyRefId);
     const adminKey = await resolveOptionalKey(
       tokenDefinition.adminKey,
       keyManager,
@@ -69,6 +71,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       'token:admin',
     );
     if (adminKey) {
+      keyRefIds.push(adminKey.keyRefId);
       logger.info('🔑 Resolved admin key for signing');
     }
 
@@ -176,6 +179,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       freezeKey,
       pauseKey,
       feeScheduleKey,
+      keyRefIds,
       metadataKey,
       freezeDefault: tokenDefinition.freezeDefault,
       autoRenewPeriodSeconds: autoRenewAccountCredential

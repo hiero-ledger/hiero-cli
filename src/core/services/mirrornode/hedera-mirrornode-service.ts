@@ -26,10 +26,17 @@ import type {
   TransactionDetailsResponse,
 } from './types';
 
-import { ConfigurationError, NetworkError, NotFoundError } from '@/core/errors';
+import {
+  CliError,
+  ConfigurationError,
+  NetworkError,
+  NotFoundError,
+} from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { parseWithSchema } from '@/core/shared/validation/parse-with-schema.zod';
 import { handleMirrorNodeErrorResponse } from '@/core/utils/handle-mirror-node-error-response';
 
+import { TokenInfoSchema } from './schema';
 import { NetworkToBaseUrl } from './types';
 
 export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeService {
@@ -324,10 +331,13 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as TokenInfo;
+      return parseWithSchema(
+        TokenInfoSchema,
+        await response.json(),
+        `Mirror Node GET /tokens/${tokenId}`,
+      );
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof NetworkError)
-        throw error;
+      if (error instanceof CliError) throw error;
       throw new NetworkError(`Failed to fetch token info for ${tokenId}`, {
         cause: error,
         recoverable: true,

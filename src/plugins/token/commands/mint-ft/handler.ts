@@ -125,6 +125,7 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
       tokenId,
       rawAmount,
       supplyKeyResolved,
+      keyRefIds: [supplyKeyResolved.keyRefId],
     };
   }
 

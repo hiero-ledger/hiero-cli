@@ -112,6 +112,7 @@ export class TokenMintNftCommand extends BaseTransactionCommand<
       tokenId,
       metadataBytes,
       supplyKeyResolved,
+      keyRefIds: [supplyKeyResolved.keyRefId],
     };
   }
 
