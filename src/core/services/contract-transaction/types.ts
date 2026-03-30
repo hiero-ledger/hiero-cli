@@ -1,5 +1,6 @@
 import type {
   ContractCreateFlow,
+  ContractDeleteTransaction,
   ContractExecuteTransaction,
   ContractFunctionParameters,
   Key,
@@ -27,4 +28,14 @@ export interface ContractExecuteParams {
 
 export interface ContractExecuteResult {
   transaction: ContractExecuteTransaction;
+}
+
+export interface DeleteContractParams {
+  contractId: string;
+  transferAccountId?: string;
+  transferContractId?: string;
+}
+
+export interface ContractDeleteResult {
+  transaction: ContractDeleteTransaction;
 }

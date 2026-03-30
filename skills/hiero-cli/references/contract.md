@@ -73,16 +73,24 @@ hcli contract import --contract 0xAbCd1234... --alias myAlias
 
 ### `hcli contract delete`
 
-Remove a contract from local state (does NOT delete from the Hedera network).
+**Default:** submits `ContractDeleteTransaction` on Hedera, then removes the contract from local CLI state. **With `--state-only`:** only removes it from local CLI state (no network transaction). Hedera does not allow deleting a contract on the network if it has no admin key; in that case use `--state-only` for local cleanup only. When the contract has an admin key, pass `--admin-key` (or keep a stored admin reference from `contract create --admin-key`) if signing material is not already in state.
 
-| Option       | Short | Type   | Required | Default | Description                      |
-| ------------ | ----- | ------ | -------- | ------- | -------------------------------- |
-| `--contract` | `-c`  | string | **yes**  | —       | Contract ID (`0.0.xxx`) or alias |
+⚠️ Requires confirmation unless using `--confirm` / script mode.
+
+| Option                   | Short | Type       | Required | Default | Description                                                                                                               |
+| ------------------------ | ----- | ---------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `--contract`             | `-c`  | string     | **yes**  | —       | Contract ID (`0.0.xxx`) or alias; for network delete, state entry optional if mirror can resolve ID                       |
+| `--state-only`           | `-s`  | boolean    | no       | `false` | Remove only from local CLI state; do not submit a network delete                                                          |
+| `--transfer-id`          | `-t`  | string     | no†      | —       | Account receiving remaining HBAR (ID or alias). †One of `-t` or `-r` required for network delete. Not with `--state-only` |
+| `--transfer-contract-id` | `-r`  | string     | no†      | —       | Contract receiving remaining HBAR. †One of `-t` or `-r` required for network delete. Not with `--state-only`              |
+| `--admin-key`            | `-a`  | repeatable | no       | —       | Admin key if not stored in state (same as create). Not with `--state-only`                                                |
+| `--key-manager`          | `-k`  | string     | no       | config  | Key manager when resolving `--admin-key`                                                                                  |
 
 **Example:**
 
 ```
-hcli contract delete --contract myErc20
+hcli contract delete --contract myErc20 --transfer-id 0.0.1234 --confirm
+hcli contract delete --contract 0.0.123456 --state-only --confirm
 ```
 
-**Output:** `{ contractId, deleted }`
+**Output:** `{ deletedContract, network, removedAliases?, transactionId?, stateOnly? }`

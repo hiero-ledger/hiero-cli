@@ -16,23 +16,19 @@ This plugin follows the plugin architecture principles:
 
 ```
 src/plugins/contract/
-├── manifest.ts              # Plugin manifest with command definitions
-├── schema.ts                # Contract data schema with Zod validation
+├── manifest.ts
+├── schema.ts
+├── contract-helper.ts       # Local state cleanup after delete
 ├── commands/
 │   ├── create/
-│   │   ├── handler.ts      # Contract creation handler
-│   │   ├── input.ts        # Input schema and validation
-│   │   ├── output.ts       # Output schema and template
-│   │   └── index.ts        # Command exports
-│   └── list/
-│       ├── handler.ts      # List contracts handler
-│       ├── output.ts       # Output schema and template
-│       └── index.ts        # Command exports
+│   ├── import/
+│   ├── list/
+│   └── delete/
 ├── utils/
-│   └── contract-file-helpers.ts  # Contract file reading utilities
-├── zustand-state-helper.ts # State management helper
-├── __tests__/unit/         # Unit tests
-└── index.ts               # Plugin exports
+│   └── contract-file-helpers.ts
+├── zustand-state-helper.ts
+├── __tests__/unit/
+└── index.ts
 ```
 
 ## 🚀 Commands
@@ -95,6 +91,16 @@ hcli contract create --name my-nft --default erc721
 hcli contract create --name my-token --default erc20 -c "CustomToken" -c "CTK" -c "500000"
 ```
 
+### Contract Import
+
+Imports an existing contract from Hedera (by contract ID or EVM address) into local state.
+
+**Main options:** `--contract` (`-c`, required), optional `--name`, `--alias`, `--verified`.
+
+```bash
+hcli contract import --contract 0.0.123456 --name myContract
+```
+
 ### Contract List
 
 Lists all deployed contracts stored in the state across all networks.
@@ -103,17 +109,29 @@ Lists all deployed contracts stored in the state across all networks.
 hcli contract list
 ```
 
+### Contract Delete
+
+**Default:** submits `ContractDeleteTransaction` on Hedera, then removes the contract from local CLI state. **With `--state-only`:** only removes from local CLI state (no network transaction).
+
+When deleting on Hedera (default), pass **`--transfer-id` (`-t`)** or **`--transfer-contract-id` (`-r`)** so remaining HBAR has a destination (avoids `OBTAINER_REQUIRED` from the network). Use `--admin-key` when signing material for the contract admin key is not already in state (same formats as create). Contracts **without** an admin key on Hedera cannot be deleted on the network—use `--state-only` to drop local CLI state only. If the contract is not in local state, the CLI loads contract info from the mirror node.
+
+```bash
+hcli contract delete --contract myAlias --transfer-id 0.0.5678
+hcli contract delete --contract 0.0.123456 --state-only
+```
+
 ## 🔧 Core API Integration
 
 The plugin uses the Core API services:
 
-- `api.contract` - Contract deployment transaction creation
+- `api.contract` - Contract deployment and `ContractDeleteTransaction` construction
 - `api.contractCompiler` - Solidity compilation
 - `api.contractVerifier` - HashScan verification
-- `api.txExecution` - Transaction signing and execution
+- `api.txSign` / `api.txExecute` - Signing and execution (including contract create flow)
 - `api.state` - Namespaced state management
 - `api.network` - Network information
 - `api.alias` - Name registration and resolution
+- `api.mirror` - Contract info when deleting on network without a local state entry
 - `api.config` - Configuration (key manager default)
 - `api.keyResolver` - Key resolution for admin key
 - `api.logger` - Logging
@@ -131,7 +149,9 @@ interface CommandResult {
 **Output schemas:**
 
 - **Create**: `contractId`, `contractName`, `contractEvmAddress`, `alias`, `network`, `transactionId`, `adminPublicKey`
+- **Import**: `contractId`, `contractName`, `contractEvmAddress`, `alias`, `network`, `memo`, `verified`
 - **List**: `contracts` (array with `contractId`, `contractName`, `contractEvmAddress`, `alias`, `adminPublicKey`, `network`), `totalCount`
+- **Delete**: `deletedContract`, `network`, optional `removedAliases`, `transactionId`, `stateOnly`
 
 Human-readable output uses Handlebars templates with HashScan links for contract and transaction IDs.
 
@@ -142,12 +162,14 @@ Contract data is stored in the `contract-contracts` namespace with the following
 ```typescript
 interface ContractData {
   contractId: string; // Hedera contract ID (0.0.xxxxx)
-  contractName: string; // Contract name from Solidity source
-  contractEvmAddress: string; // Deployed EVM address
-  adminPublicKey?: string; // Optional admin public key
+  alias?: string; // Local alias for `--contract` lookups (optional)
+  contractName?: string; // Human-readable name (e.g. from Solidity or import)
+  contractEvmAddress: string; // Deployed contract EVM address
+  adminPublicKey?: string; // Optional admin public key (from network / create)
+  adminKeyRefId?: string; // KMS key ref for admin when set at create (for signing delete on network)
   network: SupportedNetwork; // Network
   memo?: string; // Optional memo (max 100 chars)
-  verified?: boolean; // Contract verification status
+  verified?: boolean; // Contract verification status (e.g. HashScan)
 }
 ```
 

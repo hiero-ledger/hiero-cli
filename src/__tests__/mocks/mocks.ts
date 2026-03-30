@@ -492,6 +492,8 @@ const makePluginManagementServiceMock = (): PluginManagementService =>
 const makeContractTransactionServiceMock = (): ContractTransactionService =>
   ({
     contractCreateFlowTransaction: jest.fn(),
+    contractExecuteTransaction: jest.fn(),
+    deleteContract: jest.fn(),
   }) as unknown as ContractTransactionService;
 
 const makeContractVerifierServiceMock = (): ContractVerifierService =>
