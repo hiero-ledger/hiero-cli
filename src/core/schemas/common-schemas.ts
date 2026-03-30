@@ -996,39 +996,28 @@ export const AutoRenewPeriodSecondsSchema: z.ZodType<number | undefined> = z
     if (!val || val === '') {
       return undefined;
     }
-    return parseAutoRenewPeriodToSeconds(String(val));
+    return typeof val === 'number' ? val : parseAutoRenewPeriodToSeconds(val);
   })
-  .pipe(
-    z
-      .number()
-      .optional()
-      .refine(
-        (sec) =>
-          !sec ||
-          (sec >= HEDERA_AUTO_RENEW_PERIOD_MIN &&
-            sec <= HEDERA_AUTO_RENEW_PERIOD_MAX),
-        {
-          message: `Auto-renew period must be between ${HEDERA_AUTO_RENEW_PERIOD_MIN} and ${HEDERA_AUTO_RENEW_PERIOD_MAX} seconds (30–92 days inclusive).`,
-        },
-      ),
+  .refine(
+    (sec) =>
+      !sec ||
+      (sec >= HEDERA_AUTO_RENEW_PERIOD_MIN &&
+        sec <= HEDERA_AUTO_RENEW_PERIOD_MAX),
+    {
+      message: `Auto-renew period must be between ${HEDERA_AUTO_RENEW_PERIOD_MIN} and ${HEDERA_AUTO_RENEW_PERIOD_MAX} seconds (30–92 days inclusive).`,
+    },
   );
 
 /**
  * Optional ISO 8601 datetime string → `Date`.
  * When set, the instant must be strictly after the current time.
  */
-export const ExpirationTimeSchema: z.ZodType<Date | undefined> = z
-  .string()
+export const ExpirationTimeSchema: z.ZodType<Date | undefined> = z.coerce
+  .date()
   .optional()
   .refine((s) => !s || !Number.isNaN(new Date(s).getTime()), {
     message:
       'Invalid expiration time. Use an ISO 8601 datetime (e.g. 2026-12-31T23:59:59.000Z).',
-  })
-  .transform((s): Date | undefined => {
-    if (!s) {
-      return undefined;
-    }
-    return new Date(s);
   })
   .refine(
     (d) =>
