@@ -190,8 +190,6 @@ export class TokenServiceImpl implements TokenService {
       tokenCreateTx
         .setAutoRenewAccountId(AccountId.fromString(autoRenewAccountId))
         .setAutoRenewPeriod(autoRenewPeriodSeconds);
-      console.log('BLA BLA');
-      console.log(autoRenewPeriodSeconds);
       this.logger.debug(
         `[TOKEN SERVICE] Set auto-renew: account ${autoRenewAccountId}, period ${String(autoRenewPeriodSeconds)}s`,
       );
