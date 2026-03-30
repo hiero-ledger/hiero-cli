@@ -1,6 +1,11 @@
-import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
+import type {
+  ResolvedAccountCredential,
+  ResolvedPublicKey,
+} from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupplyType } from '@/core/types/shared.types';
+import type { FungibleTokenFileDefinition } from '@/plugins/token/schema';
 import type { TokenCreateFtFromFileOutput } from './output';
 import type {
   TokenCreateFtFromFileAssociationOutput,
@@ -55,73 +60,19 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     );
     const network = api.network.getCurrentNetwork();
     api.alias.availableOrThrow(tokenDefinition.name, network);
-    const keyRefIds: string[] = [];
 
-    const treasury = await api.keyResolver.resolveAccountCredentials(
-      tokenDefinition.treasuryKey,
-      keyManager,
-      false,
-      ['token:treasury'],
-    );
-    keyRefIds.push(treasury.keyRefId);
-    const adminKey = await resolveOptionalKey(
-      tokenDefinition.adminKey,
-      keyManager,
-      api.keyResolver,
-      'token:admin',
-    );
-    if (adminKey) {
-      keyRefIds.push(adminKey.keyRefId);
-      logger.info('🔑 Resolved admin key for signing');
-    }
-
-    const supplyKey = await resolveOptionalKey(
-      tokenDefinition.supplyKey,
-      keyManager,
-      api.keyResolver,
-      'token:supply',
-    );
-    const wipeKey = await resolveOptionalKey(
-      tokenDefinition.wipeKey,
-      keyManager,
-      api.keyResolver,
-      'token:wipe',
-    );
-    const kycKey = await resolveOptionalKey(
-      tokenDefinition.kycKey,
-      keyManager,
-      api.keyResolver,
-      'token:kyc',
-    );
-    const freezeKey = await resolveOptionalKey(
-      tokenDefinition.freezeKey,
-      keyManager,
-      api.keyResolver,
-      'token:freeze',
-    );
-    if (tokenDefinition.freezeDefault && !freezeKey) {
-      logger.warn(
-        'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
-      );
-    }
-    const pauseKey = await resolveOptionalKey(
-      tokenDefinition.pauseKey,
-      keyManager,
-      api.keyResolver,
-      'token:pause',
-    );
-    const feeScheduleKey = await resolveOptionalKey(
-      tokenDefinition.feeScheduleKey,
-      keyManager,
-      api.keyResolver,
-      'token:feeSchedule',
-    );
-    const metadataKey = await resolveOptionalKey(
-      tokenDefinition.metadataKey,
-      keyManager,
-      api.keyResolver,
-      'token:metadata',
-    );
+    const {
+      treasury,
+      adminKey,
+      supplyKey,
+      wipeKey,
+      kycKey,
+      freezeKey,
+      pauseKey,
+      feeScheduleKey,
+      metadataKey,
+      keyRefIds,
+    } = await this.resolveKeys(api, tokenDefinition, keyManager);
 
     const autoRenewPeriodSeconds = tokenDefinition.autoRenewPeriod;
     const autoRenewAccountCredential = tokenDefinition.autoRenewAccount
@@ -181,6 +132,14 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       feeScheduleKey,
       keyRefIds,
       metadataKey,
+      adminPublicKey: toPublicKey(adminKey),
+      supplyPublicKey: toPublicKey(supplyKey),
+      wipePublicKey: toPublicKey(wipeKey),
+      kycPublicKey: toPublicKey(kycKey),
+      freezePublicKey: toPublicKey(freezeKey),
+      pausePublicKey: toPublicKey(pauseKey),
+      feeSchedulePublicKey: toPublicKey(feeScheduleKey),
+      metadataPublicKey: toPublicKey(metadataKey),
       freezeDefault: tokenDefinition.freezeDefault,
       autoRenewPeriodSeconds: autoRenewAccountCredential
         ? autoRenewPeriodSeconds
@@ -204,14 +163,14 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       tokenType: normalisedParams.tokenType,
       supplyType: normalisedParams.supplyType.toUpperCase() as SupplyType,
       maxSupplyRaw: normalisedParams.maxSupply,
-      adminPublicKey: toPublicKey(normalisedParams.adminKey),
-      supplyPublicKey: toPublicKey(normalisedParams.supplyKey),
-      wipePublicKey: toPublicKey(normalisedParams.wipeKey),
-      kycPublicKey: toPublicKey(normalisedParams.kycKey),
-      freezePublicKey: toPublicKey(normalisedParams.freezeKey),
-      pausePublicKey: toPublicKey(normalisedParams.pauseKey),
-      feeSchedulePublicKey: toPublicKey(normalisedParams.feeScheduleKey),
-      metadataPublicKey: toPublicKey(normalisedParams.metadataKey),
+      adminPublicKey: normalisedParams.adminPublicKey,
+      supplyPublicKey: normalisedParams.supplyPublicKey,
+      wipePublicKey: normalisedParams.wipePublicKey,
+      kycPublicKey: normalisedParams.kycPublicKey,
+      freezePublicKey: normalisedParams.freezePublicKey,
+      pausePublicKey: normalisedParams.pausePublicKey,
+      feeSchedulePublicKey: normalisedParams.feeSchedulePublicKey,
+      metadataPublicKey: normalisedParams.metadataPublicKey,
       freezeDefault: normalisedParams.freezeKey
         ? normalisedParams.freezeDefault
         : undefined,
@@ -328,6 +287,103 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     };
 
     return { result: outputData };
+  }
+
+  private async resolveKeys(
+    api: CoreApi,
+    tokenDefinition: FungibleTokenFileDefinition,
+    keyManager: KeyManager,
+  ): Promise<{
+    treasury: ResolvedAccountCredential;
+    adminKey?: ResolvedPublicKey;
+    supplyKey?: ResolvedPublicKey;
+    wipeKey?: ResolvedPublicKey;
+    kycKey?: ResolvedPublicKey;
+    freezeKey?: ResolvedPublicKey;
+    pauseKey?: ResolvedPublicKey;
+    feeScheduleKey?: ResolvedPublicKey;
+    metadataKey?: ResolvedPublicKey;
+    keyRefIds: string[];
+  }> {
+    const treasury = await api.keyResolver.resolveAccountCredentials(
+      tokenDefinition.treasuryKey,
+      keyManager,
+      false,
+      ['token:treasury'],
+    );
+    const keyRefIds: string[] = [treasury.keyRefId];
+
+    const adminKey = await resolveOptionalKey(
+      tokenDefinition.adminKey,
+      keyManager,
+      api.keyResolver,
+      'token:admin',
+    );
+    if (adminKey) {
+      keyRefIds.push(adminKey.keyRefId);
+      api.logger.info('🔑 Resolved admin key for signing');
+    }
+
+    const supplyKey = await resolveOptionalKey(
+      tokenDefinition.supplyKey,
+      keyManager,
+      api.keyResolver,
+      'token:supply',
+    );
+    const wipeKey = await resolveOptionalKey(
+      tokenDefinition.wipeKey,
+      keyManager,
+      api.keyResolver,
+      'token:wipe',
+    );
+    const kycKey = await resolveOptionalKey(
+      tokenDefinition.kycKey,
+      keyManager,
+      api.keyResolver,
+      'token:kyc',
+    );
+    const freezeKey = await resolveOptionalKey(
+      tokenDefinition.freezeKey,
+      keyManager,
+      api.keyResolver,
+      'token:freeze',
+    );
+    if (tokenDefinition.freezeDefault && !freezeKey) {
+      api.logger.warn(
+        'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
+      );
+    }
+    const pauseKey = await resolveOptionalKey(
+      tokenDefinition.pauseKey,
+      keyManager,
+      api.keyResolver,
+      'token:pause',
+    );
+    const feeScheduleKey = await resolveOptionalKey(
+      tokenDefinition.feeScheduleKey,
+      keyManager,
+      api.keyResolver,
+      'token:feeSchedule',
+    );
+    const metadataKey = await resolveOptionalKey(
+      tokenDefinition.metadataKey,
+      keyManager,
+      api.keyResolver,
+      'token:metadata',
+    );
+
+    return {
+      treasury,
+      adminKey,
+      supplyKey,
+      wipeKey,
+      kycKey,
+      freezeKey,
+      pauseKey,
+      feeScheduleKey,
+      metadataKey,
+      keyRefIds,
+    };
   }
 }
 

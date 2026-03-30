@@ -1,4 +1,8 @@
-import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
+import type {
+  ResolvedAccountCredential,
+  ResolvedPublicKey,
+} from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { TokenCreateFtOutput } from './output';
 import type {
@@ -61,67 +65,17 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
 
     api.alias.availableOrThrow(validArgs.name, network);
 
-    const treasury = await api.keyResolver.resolveAccountCredentials(
-      validArgs.treasury,
-      keyManager,
-      true,
-      ['token:treasury'],
-    );
-
-    const admin = await resolveOptionalKey(
-      validArgs.adminKey,
-      keyManager,
-      api.keyResolver,
-      'token:admin',
-    );
-
-    const supply = await resolveOptionalKey(
-      validArgs.supplyKey,
-      keyManager,
-      api.keyResolver,
-      'token:supply',
-    );
-    const freeze = await resolveOptionalKey(
-      validArgs.freezeKey,
-      keyManager,
-      api.keyResolver,
-      'token:freeze',
-    );
-    if (validArgs.freezeDefault && !freeze) {
-      logger.warn(
-        'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
-      );
-    }
-    const wipe = await resolveOptionalKey(
-      validArgs.wipeKey,
-      keyManager,
-      api.keyResolver,
-      'token:wipe',
-    );
-    const kyc = await resolveOptionalKey(
-      validArgs.kycKey,
-      keyManager,
-      api.keyResolver,
-      'token:kyc',
-    );
-    const pause = await resolveOptionalKey(
-      validArgs.pauseKey,
-      keyManager,
-      api.keyResolver,
-      'token:pause',
-    );
-    const feeSchedule = await resolveOptionalKey(
-      validArgs.feeScheduleKey,
-      keyManager,
-      api.keyResolver,
-      'token:feeSchedule',
-    );
-    const metadata = await resolveOptionalKey(
-      validArgs.metadataKey,
-      keyManager,
-      api.keyResolver,
-      'token:metadata',
-    );
+    const {
+      treasury,
+      admin,
+      supply,
+      freeze,
+      wipe,
+      kyc,
+      pause,
+      feeSchedule,
+      metadata,
+    } = await this.resolveKeys(api, validArgs, keyManager);
 
     const autoRenewPeriodSeconds = validArgs.autoRenewPeriod;
     const autoRenewAccountCredential = validArgs.autoRenewAccount
@@ -201,6 +155,14 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       pause,
       feeSchedule,
       metadata,
+      adminPublicKey: toPublicKey(admin),
+      supplyPublicKey: toPublicKey(supply),
+      wipePublicKey: toPublicKey(wipe),
+      kycPublicKey: toPublicKey(kyc),
+      freezePublicKey: toPublicKey(freeze),
+      pausePublicKey: toPublicKey(pause),
+      feeSchedulePublicKey: toPublicKey(feeSchedule),
+      metadataPublicKey: toPublicKey(metadata),
       freezeDefault: validArgs.freezeDefault,
       finalMaxSupply,
       autoRenewPeriodSeconds: autoRenewAccountCredential
@@ -226,14 +188,14 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       tokenType: normalisedParams.tokenType,
       supplyType: normalisedParams.supplyType,
       maxSupplyRaw: normalisedParams.finalMaxSupply,
-      adminPublicKey: toPublicKey(normalisedParams.admin),
-      supplyPublicKey: toPublicKey(normalisedParams.supply),
-      freezePublicKey: toPublicKey(normalisedParams.freeze),
-      wipePublicKey: toPublicKey(normalisedParams.wipe),
-      kycPublicKey: toPublicKey(normalisedParams.kyc),
-      pausePublicKey: toPublicKey(normalisedParams.pause),
-      feeSchedulePublicKey: toPublicKey(normalisedParams.feeSchedule),
-      metadataPublicKey: toPublicKey(normalisedParams.metadata),
+      adminPublicKey: normalisedParams.adminPublicKey,
+      supplyPublicKey: normalisedParams.supplyPublicKey,
+      wipePublicKey: normalisedParams.wipePublicKey,
+      kycPublicKey: normalisedParams.kycPublicKey,
+      freezePublicKey: normalisedParams.freezePublicKey,
+      pausePublicKey: normalisedParams.pausePublicKey,
+      feeSchedulePublicKey: normalisedParams.feeSchedulePublicKey,
+      metadataPublicKey: normalisedParams.metadataPublicKey,
       freezeDefault: normalisedParams.freeze
         ? normalisedParams.freezeDefault
         : undefined,
@@ -314,7 +276,7 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
       pausePublicKey: normalisedParams.pause?.publicKey,
       feeSchedulePublicKey: normalisedParams.feeSchedule?.publicKey,
       metadataPublicKey: normalisedParams.metadata?.publicKey,
-      network: api.network.getCurrentNetwork(),
+      network: normalisedParams.network,
     });
 
     const key = composeKey(normalisedParams.network, result.tokenId!);
@@ -349,6 +311,96 @@ export class TokenCreateFtCommand extends BaseTransactionCommand<
     };
 
     return { result: outputData };
+  }
+
+  private async resolveKeys(
+    api: CoreApi,
+    validArgs: TokenCreateFtInput,
+    keyManager: KeyManager,
+  ): Promise<{
+    treasury: ResolvedAccountCredential;
+    admin?: ResolvedPublicKey;
+    supply?: ResolvedPublicKey;
+    freeze?: ResolvedPublicKey;
+    wipe?: ResolvedPublicKey;
+    kyc?: ResolvedPublicKey;
+    pause?: ResolvedPublicKey;
+    feeSchedule?: ResolvedPublicKey;
+    metadata?: ResolvedPublicKey;
+  }> {
+    const treasury = await api.keyResolver.resolveAccountCredentials(
+      validArgs.treasury,
+      keyManager,
+      true,
+      ['token:treasury'],
+    );
+
+    const admin = await resolveOptionalKey(
+      validArgs.adminKey,
+      keyManager,
+      api.keyResolver,
+      'token:admin',
+    );
+
+    const supply = await resolveOptionalKey(
+      validArgs.supplyKey,
+      keyManager,
+      api.keyResolver,
+      'token:supply',
+    );
+    const freeze = await resolveOptionalKey(
+      validArgs.freezeKey,
+      keyManager,
+      api.keyResolver,
+      'token:freeze',
+    );
+    if (validArgs.freezeDefault && !freeze) {
+      api.logger.warn(
+        'freezeDefault was requested but no freeze key is set; freeze default will be skipped.',
+      );
+    }
+    const wipe = await resolveOptionalKey(
+      validArgs.wipeKey,
+      keyManager,
+      api.keyResolver,
+      'token:wipe',
+    );
+    const kyc = await resolveOptionalKey(
+      validArgs.kycKey,
+      keyManager,
+      api.keyResolver,
+      'token:kyc',
+    );
+    const pause = await resolveOptionalKey(
+      validArgs.pauseKey,
+      keyManager,
+      api.keyResolver,
+      'token:pause',
+    );
+    const feeSchedule = await resolveOptionalKey(
+      validArgs.feeScheduleKey,
+      keyManager,
+      api.keyResolver,
+      'token:feeSchedule',
+    );
+    const metadata = await resolveOptionalKey(
+      validArgs.metadataKey,
+      keyManager,
+      api.keyResolver,
+      'token:metadata',
+    );
+
+    return {
+      treasury,
+      admin,
+      supply,
+      freeze,
+      wipe,
+      kyc,
+      pause,
+      feeSchedule,
+      metadata,
+    };
   }
 }
 

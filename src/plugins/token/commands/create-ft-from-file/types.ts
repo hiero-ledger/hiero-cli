@@ -1,3 +1,4 @@
+import type { PublicKey } from '@hashgraph/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,
@@ -40,6 +41,14 @@ export interface TokenCreateFtFromFileNormalizedParams extends BaseNormalizedPar
   pauseKey?: ResolvedPublicKey;
   feeScheduleKey?: ResolvedPublicKey;
   metadataKey?: ResolvedPublicKey;
+  adminPublicKey?: PublicKey;
+  supplyPublicKey?: PublicKey;
+  wipePublicKey?: PublicKey;
+  kycPublicKey?: PublicKey;
+  freezePublicKey?: PublicKey;
+  pausePublicKey?: PublicKey;
+  feeSchedulePublicKey?: PublicKey;
+  metadataPublicKey?: PublicKey;
   freezeDefault: boolean;
   autoRenewPeriodSeconds?: number;
   autoRenewAccountId?: string;
