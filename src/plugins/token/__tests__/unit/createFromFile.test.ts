@@ -857,6 +857,8 @@ describe('tokenCreateFtFromFileHandler', () => {
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/test.json');
 
+      const logger = makeLogger();
+
       const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
@@ -904,8 +906,7 @@ describe('tokenCreateFtFromFileHandler', () => {
           }),
         },
       });
-
-      const logger = makeLogger();
+      api.logger = logger;
       const args: CommandHandlerArgs = {
         args: {
           file: 'test',

@@ -321,7 +321,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
     );
     if (adminKey) {
       keyRefIds.push(adminKey.keyRefId);
-      api.logger.info('Resolved admin key for signing');
+      api.logger.info('🔑 Resolved admin key for signing');
     }
 
     const supplyKey = await resolveOptionalKey(
