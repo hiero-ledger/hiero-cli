@@ -1,6 +1,5 @@
 import type { Key } from '@hashgraph/sdk';
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type {
   Credential,
@@ -20,7 +19,9 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { NULL_TOKEN } from '@/core/shared/constants';
 import { composeKey } from '@/core/utils/key-composer';
+import { resolveFieldUpdate } from '@/core/utils/resolve-field-update';
 import { toHederaKey } from '@/plugins/topic/utils/keys-to-hedera-key';
 import { resolveTopicId } from '@/plugins/topic/utils/topicResolver';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -28,43 +29,6 @@ import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 import { TopicUpdateInputSchema } from './input';
 
 export const TOPIC_UPDATE_COMMAND_NAME = 'topic_update';
-
-const NULL_TOKEN = 'null';
-
-async function resolveAdminKeys(
-  keys: Credential[],
-  keyResolver: KeyResolverService,
-  keyManager: KeyManager,
-): Promise<ResolvedPublicKey[] | undefined> {
-  if (keys.length === 0) return undefined;
-  return Promise.all(
-    keys.map((cred) =>
-      keyResolver.resolveSigningKey(cred, keyManager, false, ['topic:admin']),
-    ),
-  );
-}
-
-async function resolveSubmitKeys(
-  keys: Credential[],
-  keyResolver: KeyResolverService,
-  keyManager: KeyManager,
-): Promise<ResolvedPublicKey[] | undefined> {
-  if (keys.length === 0) return undefined;
-  return Promise.all(
-    keys.map((cred) =>
-      keyResolver.getPublicKey(cred, keyManager, false, ['topic:submit']),
-    ),
-  );
-}
-
-function resolveFieldUpdate<T>(
-  newVal: T | null | undefined,
-  existing: T | undefined,
-): T | undefined {
-  if (newVal === null) return undefined;
-  if (newVal !== undefined) return newVal;
-  return existing;
-}
 
 export class TopicUpdateCommand extends BaseTransactionCommand<
   UpdateTopicNormalisedParams,
@@ -128,18 +92,29 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
     const keyManager =
       keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
 
-    const newAdminKeys = await resolveAdminKeys(
-      validArgs.adminKey,
-      api.keyResolver,
-      keyManager,
-    );
-    const newSubmitKeys = isSubmitKeyClear
-      ? null
-      : await resolveSubmitKeys(
-          submitKeyCredentials,
-          api.keyResolver,
-          keyManager,
-        );
+    let newAdminKeys: ResolvedPublicKey[] | undefined;
+    if (validArgs.adminKey.length > 0) {
+      newAdminKeys = await Promise.all(
+        validArgs.adminKey.map((cred) =>
+          api.keyResolver.resolveSigningKey(cred, keyManager, false, [
+            'topic:admin',
+          ]),
+        ),
+      );
+    }
+
+    let newSubmitKeys: ResolvedPublicKey[] | null | undefined;
+    if (isSubmitKeyClear) {
+      newSubmitKeys = null;
+    } else if (submitKeyCredentials.length > 0) {
+      newSubmitKeys = await Promise.all(
+        submitKeyCredentials.map((cred) =>
+          api.keyResolver.getPublicKey(cred, keyManager, false, [
+            'topic:submit',
+          ]),
+        ),
+      );
+    }
 
     const adminThreshold =
       existingTopicData.adminKeyThreshold ||

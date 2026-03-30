@@ -9,8 +9,8 @@ import {
   KeyThresholdSchema,
   MemoSchema,
   NullLiteralSchema,
-  TopicAutoRenewPeriodSchema,
 } from '@/core/schemas';
+import { NULL_TOKEN } from '@/core/shared/constants';
 
 export const TopicUpdateInputSchema = z
   .object({
@@ -41,9 +41,21 @@ export const TopicUpdateInputSchema = z
     autoRenewAccount: AccountReferenceSchema.or(NullLiteralSchema)
       .optional()
       .describe('Auto-renew account ID. Pass "null" to clear.'),
-    autoRenewPeriod: TopicAutoRenewPeriodSchema.optional().describe(
-      'Auto-renew period in seconds',
-    ),
+    autoRenewPeriod: z
+      .number()
+      .int()
+      .positive()
+      .min(
+        2_592_000,
+        'Auto-renew period must be at least 30 days (2592000 seconds)',
+      )
+      .max(
+        8_000_000,
+        'Auto-renew period must not exceed ~92 days (8000000 seconds)',
+      )
+      .describe('Auto-renew period in seconds (30–92 days)')
+      .optional()
+      .describe('Auto-renew period in seconds'),
     expirationTime: IsoTimestampSchema.optional().describe(
       'Expiration time as ISO datetime string',
     ),
@@ -53,7 +65,7 @@ export const TopicUpdateInputSchema = z
     const hasAnyUpdate =
       data.memo !== undefined ||
       data.adminKey.length > 0 ||
-      data.submitKey === 'null' ||
+      data.submitKey === NULL_TOKEN ||
       submitKeys.length > 0 ||
       data.autoRenewAccount !== undefined ||
       data.autoRenewPeriod !== undefined ||
