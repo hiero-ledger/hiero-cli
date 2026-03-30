@@ -436,7 +436,6 @@ export const makeMirrorMock = (
         created_timestamp: '1234567890',
         deleted: false,
         freeze_default: false,
-        default_kyc_status: false,
         pause_status: 'NOT_APPLICABLE',
         memo: '',
       });
@@ -452,7 +451,6 @@ export const makeMirrorMock = (
       created_timestamp: '1234567890',
       deleted: false,
       freeze_default: false,
-      default_kyc_status: false,
       pause_status: 'NOT_APPLICABLE',
       memo: '',
     });

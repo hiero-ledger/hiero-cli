@@ -85,7 +85,6 @@ export interface TokenInfo {
   created_timestamp: string;
   deleted?: boolean | null;
   freeze_default?: boolean;
-  default_kyc_status: boolean;
   auto_renew_account?: string;
   auto_renew_period?: number;
   expiry_timestamp?: number;

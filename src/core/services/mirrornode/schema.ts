@@ -29,7 +29,6 @@ export const TokenInfoSchema: z.ZodType<TokenInfo> = z.object({
   created_timestamp: z.string(),
   deleted: z.boolean().nullable().optional(),
   freeze_default: z.boolean().optional(),
-  default_kyc_status: z.boolean(),
   auto_renew_account: z.string(),
   auto_renew_period: z.number(),
   expiry_timestamp: z.number(),
