@@ -2,16 +2,22 @@ import type { ContractTransactionService } from '@/core/services/contract-transa
 import type {
   ContractCreateFlowParams,
   ContractCreateFlowResult,
+  ContractDeleteResult,
   ContractExecuteParams,
   ContractExecuteResult,
+  DeleteContractParams,
 } from '@/core/services/contract-transaction/types';
 
 import {
+  AccountId,
   ContractCreateFlow,
+  ContractDeleteTransaction,
   ContractExecuteTransaction,
   ContractId,
 } from '@hashgraph/sdk';
 import { ethers, getBytes } from 'ethers';
+
+import { ValidationError } from '@/core/errors';
 
 export class ContractTransactionServiceImpl implements ContractTransactionService {
   contractCreateFlowTransaction(
@@ -52,5 +58,33 @@ export class ContractTransactionServiceImpl implements ContractTransactionServic
     return {
       transaction: contractExecuteTx,
     };
+  }
+
+  deleteContract(params: DeleteContractParams): ContractDeleteResult {
+    try {
+      const transaction = new ContractDeleteTransaction().setContractId(
+        ContractId.fromString(params.contractId),
+      );
+      if (params.transferAccountId) {
+        transaction.setTransferAccountId(
+          AccountId.fromString(params.transferAccountId),
+        );
+      }
+      if (params.transferContractId) {
+        transaction.setTransferContractId(
+          ContractId.fromString(params.transferContractId),
+        );
+      }
+      return { transaction };
+    } catch (error) {
+      throw new ValidationError('Invalid contract delete parameters', {
+        context: {
+          contractId: params.contractId,
+          transferAccountId: params.transferAccountId,
+          transferContractId: params.transferContractId,
+        },
+        cause: error,
+      });
+    }
   }
 }
