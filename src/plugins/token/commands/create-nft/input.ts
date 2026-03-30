@@ -66,8 +66,7 @@ export const TokenCreateNftInputSchema = z
     autoRenewAccountId: EntityIdSchema.optional().describe(
       'Account ID that pays for token auto-renewal fees (e.g. 0.0.12345).',
     ),
-    expirationTime: z
-      .string()
+    expirationTime: z.iso
       .datetime()
       .optional()
       .describe(
