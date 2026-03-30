@@ -227,7 +227,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       accountId: apiAccount.account,
       createdTimestamp: apiAccount.created_timestamp,
     };
-    if (apiAccount.alias !== undefined) dto.alias = apiAccount.alias;
+    if (apiAccount.alias != null) dto.alias = apiAccount.alias;
     if (apiAccount.deleted !== undefined) dto.deleted = apiAccount.deleted;
     if (apiAccount.memo !== undefined) dto.memo = apiAccount.memo;
     if (apiAccount.evm_address !== undefined)

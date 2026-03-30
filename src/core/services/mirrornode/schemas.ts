@@ -58,7 +58,7 @@ export const AccountAPIKeySchema: z.ZodType<AccountAPIKey> = z.object({
 export const AccountAPIResponseSchema: z.ZodType<AccountAPIResponse> = z.object(
   {
     account: z.string(),
-    alias: z.string().optional(),
+    alias: z.string().nullable().optional(),
     balance: AccountAPIBalanceSchema,
     created_timestamp: z.string(),
     evm_address: z.string().optional(),
@@ -85,7 +85,7 @@ export const AccountListItemBalanceSchema: z.ZodType<AccountListItemBalance> =
 export const AccountListItemAPIResponseSchema: z.ZodType<AccountListItemAPIResponse> =
   z.object({
     account: z.string(),
-    alias: z.string().optional(),
+    alias: z.string().nullable().optional(),
     balance: AccountListItemBalanceSchema.optional(),
     created_timestamp: z.string(),
     evm_address: z.string().optional(),

@@ -28,7 +28,7 @@ export interface AccountAPIKey {
 
 export interface AccountAPIResponse {
   account: string;
-  alias?: string;
+  alias?: string | null;
   balance: AccountAPIBalance;
   created_timestamp: string;
   evm_address?: string;
@@ -296,7 +296,7 @@ export interface AccountListItemBalance {
 
 export interface AccountListItemAPIResponse {
   account: string;
-  alias?: string;
+  alias?: string | null;
   balance?: AccountListItemBalance;
   created_timestamp: string;
   evm_address?: string;
