@@ -38,6 +38,7 @@ import { handleMirrorNodeErrorResponse } from '@/core/utils/handle-mirror-node-e
 import {
   AccountAPIResponseSchema,
   GetAccountsAPIResponseSchema,
+  TokenBalancesResponseSchema,
   TokenInfoSchema,
 } from './schemas';
 import { NetworkToBaseUrl } from './types';
@@ -135,8 +136,13 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as TokenBalancesResponse;
+      return parseWithSchema(
+        TokenBalancesResponseSchema,
+        await response.json(),
+        `Mirror Node GET /accounts/${accountId}/tokens`,
+      );
     } catch (error) {
+      if (error instanceof CliError) throw error;
       if (error instanceof NotFoundError || error instanceof NetworkError)
         throw error;
       throw new NetworkError(

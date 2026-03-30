@@ -6,6 +6,8 @@ import type {
   AccountListItemBalance,
   AccountListItemTokenBalance,
   GetAccountsAPIResponse,
+  TokenBalanceInfo,
+  TokenBalancesResponse,
   TokenInfo,
 } from './types';
 
@@ -95,6 +97,22 @@ export const AccountListItemAPIResponseSchema: z.ZodType<AccountListItemAPIRespo
 export const GetAccountsAPIResponseSchema: z.ZodType<GetAccountsAPIResponse> =
   z.object({
     accounts: z.array(AccountListItemAPIResponseSchema),
+    links: z
+      .object({
+        next: z.string().nullable().optional(),
+      })
+      .optional(),
+  });
+
+export const TokenBalanceInfoSchema: z.ZodType<TokenBalanceInfo> = z.object({
+  token_id: z.string(),
+  balance: z.number(),
+  decimals: z.number().optional(),
+});
+
+export const TokenBalancesResponseSchema: z.ZodType<TokenBalancesResponse> =
+  z.object({
+    tokens: z.array(TokenBalanceInfoSchema),
     links: z
       .object({
         next: z.string().nullable().optional(),
