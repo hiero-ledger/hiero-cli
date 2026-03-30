@@ -7,6 +7,9 @@ import type {
   AccountListItemTokenBalance,
   GetAccountsAPIResponse,
   TokenInfo,
+  TopicMessage,
+  TopicMessageChunkInfo,
+  TopicMessagesAPIResponse,
 } from './types';
 
 import { z } from 'zod';
@@ -95,6 +98,31 @@ export const AccountListItemAPIResponseSchema: z.ZodType<AccountListItemAPIRespo
 export const GetAccountsAPIResponseSchema: z.ZodType<GetAccountsAPIResponse> =
   z.object({
     accounts: z.array(AccountListItemAPIResponseSchema),
+    links: z
+      .object({
+        next: z.string().nullable().optional(),
+      })
+      .optional(),
+  });
+
+const TopicMessageChunkInfoSchema: z.ZodType<TopicMessageChunkInfo> = z.object({
+  initial_transaction_id: z.string(),
+  number: z.number(),
+  total: z.number(),
+});
+
+export const TopicMessageSchema: z.ZodType<TopicMessage> = z.object({
+  consensus_timestamp: z.string(),
+  topic_id: z.string(),
+  message: z.string(),
+  running_hash: z.string(),
+  sequence_number: z.number(),
+  chunk_info: TopicMessageChunkInfoSchema.optional(),
+});
+
+export const TopicMessagesAPIResponseSchema: z.ZodType<TopicMessagesAPIResponse> =
+  z.object({
+    messages: z.array(TopicMessageSchema),
     links: z
       .object({
         next: z.string().nullable().optional(),

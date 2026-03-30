@@ -114,23 +114,25 @@ export interface TopicInfo {
 }
 
 // Topic Messages
+export interface TopicMessageChunkInfo {
+  initial_transaction_id: string;
+  number: number;
+  total: number;
+}
+
 export interface TopicMessage {
   consensus_timestamp: string;
   topic_id: string;
   message: string;
   running_hash: string;
   sequence_number: number;
-  chunk_info?: {
-    initial_transaction_id: string;
-    number: number;
-    total: number;
-  };
+  chunk_info?: TopicMessageChunkInfo;
 }
 
 export interface TopicMessagesAPIResponse {
   messages: TopicMessage[];
   links?: {
-    next?: string;
+    next?: string | null;
   };
 }
 
