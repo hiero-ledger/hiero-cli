@@ -67,7 +67,7 @@ src/plugins/token/
 │   │   ├── types.ts         # Internal types
 │   │   └── index.ts         # Command exports
 │   ├── delete/
-│   │   ├── handler.ts       # Token delete handler (local state only)
+│   │   ├── handler.ts       # Token delete handler (network or local state)
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
@@ -520,21 +520,30 @@ hcli token allowance-ft \
 
 ### Token Delete
 
-Delete a token from local state. This only removes the token from the local address book, not from the Hedera network.
+Delete a token from the Hedera network and remove it from local state. The token must have an admin key to be deleted from the network.
 
 ```bash
-# Delete by token alias
+# Delete by token alias (network delete)
 hcli token delete --token mytoken-alias
 
-# Delete by token ID
+# Delete by token ID (network delete)
 hcli token delete --token 0.0.123456
+
+# Provide admin key explicitly
+hcli token delete --token 0.0.123456 --admin-key <key-ref>
+
+# Remove from local state only (no network transaction)
+hcli token delete --token mytoken-alias --state-only
 ```
 
 **Parameters:**
 
 - `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
+- `--admin-key`: Admin key reference for signing (auto-resolved from key manager if omitted) - **Optional**
+- `--key-manager`: Key manager type, defaults to config setting - **Optional**
+- `--state-only`: Remove token from local state only, without a network transaction - **Optional**
 
-Any aliases associated with the token on the current network will also be removed.
+`--state-only` and `--admin-key` are mutually exclusive. Any aliases associated with the token on the current network will also be removed.
 
 ### Token List
 

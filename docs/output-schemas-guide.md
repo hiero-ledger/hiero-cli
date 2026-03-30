@@ -552,6 +552,37 @@ Lists all tokens from all networks stored in state.
 }
 ```
 
+#### `token delete`
+
+**Output** (network delete):
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "deletedToken": {
+    "name": "MyToken",
+    "tokenId": "0.0.67890"
+  },
+  "network": "testnet",
+  "removedAliases": ["my-token (testnet)"]
+}
+```
+
+**Output** (`--state-only`):
+
+```json
+{
+  "deletedToken": {
+    "name": "MyToken",
+    "tokenId": "0.0.67890"
+  },
+  "network": "testnet",
+  "removedAliases": ["my-token (testnet)"]
+}
+```
+
+`transactionId` is absent for `--state-only`. `removedAliases` is omitted when no aliases exist.
+
 #### `token allowance-nft`
 
 **Output** (specific serials):

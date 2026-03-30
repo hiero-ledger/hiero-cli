@@ -1,4 +1,4 @@
-import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type {
   KeyManager,
@@ -62,7 +62,12 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
 
     const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
-    const tokenId = resolvedToken!.tokenId;
+    if (!resolvedToken) {
+      throw new NotFoundError('Token not found', {
+        context: { token: validArgs.token },
+      });
+    }
+    const tokenId = resolvedToken.tokenId;
     const key = composeKey(network, tokenId);
 
     const tokenInState = tokenState.getToken(key);
@@ -113,7 +118,12 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     const network = api.network.getCurrentNetwork();
 
     const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
-    const tokenId = resolvedToken!.tokenId;
+    if (!resolvedToken) {
+      throw new NotFoundError('Token not found', {
+        context: { token: validArgs.token },
+      });
+    }
+    const tokenId = resolvedToken.tokenId;
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
@@ -147,7 +157,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
   }
 
   private async resolveAdminKey(
-    api: CommandHandlerArgs['api'],
+    api: CoreApi,
     validArgs: TokenDeleteInput,
     keyManager: KeyManager,
     tokenAdminPublicKey: string,
