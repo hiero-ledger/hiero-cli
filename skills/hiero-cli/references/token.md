@@ -224,6 +224,31 @@ hcli token associate --token MTK --account alice --batch myBatch
 
 ---
 
+### `hcli token allowance-ft` [batchify]
+
+Approve (or revoke) a spender allowance for fungible tokens on behalf of the owner.
+
+| Option          | Short | Type   | Required | Default        | Description                                                                                |
+| --------------- | ----- | ------ | -------- | -------------- | ------------------------------------------------------------------------------------------ |
+| `--token`       | `-T`  | string | **yes**  | —              | Token alias or token ID                                                                    |
+| `--owner`       | `-o`  | string | **yes**  | —              | Owner account: `accountId:privateKey`, key reference, or alias                             |
+| `--spender`     | `-s`  | string | **yes**  | —              | Spender account: account ID or alias                                                       |
+| `--amount`      | `-a`  | string | **yes**  | —              | Allowance amount. Default: display units. Append `"t"` for raw units. Set to `0` to revoke |
+| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                  |
+| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                  |
+
+**Example:**
+
+```
+hcli token allowance-ft --token MTK --owner alice --spender bob --amount 500
+hcli token allowance-ft --token 0.0.456 --owner 0.0.123:302e... --spender 0.0.789 --amount 0
+hcli token allowance-ft --token MTK --owner alice --spender bob --amount 500 --batch myBatch
+```
+
+**Output:** `{ tokenId, ownerAccountId, spenderAccountId, amount, transactionId, network }`
+
+---
+
 ### `hcli token list`
 
 List all tokens (FT and NFT) stored in local state across all networks.

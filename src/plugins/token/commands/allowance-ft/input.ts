@@ -10,7 +10,7 @@ import {
 
 export const TokenAllowanceFtInputSchema = z.object({
   token: EntityReferenceSchema.describe('Token identifier (ID or alias)'),
-  owner: KeySchema.describe(
+  owner: KeySchema.optional().describe(
     'Owner account. Accepts any key format. Defaults to operator.',
   ),
   spender: AccountReferenceSchema.describe('Spender account (ID or alias)'),
