@@ -71,6 +71,12 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── allowance-nft/
+│   │   ├── handler.ts       # NFT allowance approval handler
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Command-specific type definitions
+│   │   └── index.ts         # Command exports
 │   ├── list/
 │   │   ├── handler.ts       # Token list handler
 │   │   ├── input.ts         # Input schema
@@ -296,6 +302,88 @@ hcli token mint-nft \
 
 # 3. View minted NFT
 hcli token view --token my-collection --serial 1
+```
+
+### Token Allowance NFT
+
+Approve a spender to transfer NFTs on behalf of the owner. This command creates an AccountAllowanceApproveTransaction that grants permission to a spender account to transfer specific or all NFT serials from the owner's account.
+
+```bash
+# Approve specific serial numbers
+hcli token allowance-nft \
+  --token mynft-alias \
+  --spender bob \
+  --owner alice \
+  --serials 1,2,3
+
+# Approve all serials in the collection
+hcli token allowance-nft \
+  --token mynft-alias \
+  --spender bob \
+  --owner alice \
+  --all-serials
+
+# Owner defaults to operator
+hcli token allowance-nft \
+  --token mynft-alias \
+  --spender 0.0.222222 \
+  --serials 1,5,10
+
+# Using account-id:private-key pair for owner
+hcli token allowance-nft \
+  --token 0.0.123456 \
+  --spender bob \
+  --owner 0.0.111111:302e020100300506032b657004220420... \
+  --all-serials
+```
+
+**Parameters:**
+
+- `--token` / `-T`: NFT token identifier (alias or token ID) - **Required**
+  - Must be an NFT collection (type: `NON_FUNGIBLE_UNIQUE`)
+- `--spender` / `-s`: Spender account (ID, EVM address, or alias) - **Required**
+  - Account that will be granted permission to transfer NFTs
+- `--owner` / `-o`: Owner account - **Optional** (defaults to operator)
+  - Accepts any key format
+  - Account ID only: `0.0.111111`
+  - Account with key: `0.0.111111:private-key`
+  - Account alias: `alice`
+- `--serials`: Specific NFT serial numbers to approve (comma-separated, e.g., `1,2,3`) - **Optional**
+  - Mutually exclusive with `--all-serials`
+- `--all-serials`: Approve all serials in the collection - **Optional**
+  - Mutually exclusive with `--serials`
+  - One of `--serials` or `--all-serials` must be specified
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Output:**
+
+The command returns the transaction details and approval confirmation:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "ownerAccountId": "0.0.111111",
+  "spenderAccountId": "0.0.222222",
+  "serials": [1, 2, 3],
+  "allSerials": false,
+  "network": "testnet"
+}
+```
+
+When using `--all-serials`:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "ownerAccountId": "0.0.111111",
+  "spenderAccountId": "0.0.222222",
+  "serials": null,
+  "allSerials": true,
+  "network": "testnet"
+}
 ```
 
 ### Token Associate
@@ -634,7 +722,7 @@ The following token commands support the `--batch` / `-B` flag via the batch plu
 - `create-ft-from-file` – `TokenCreateFtFromFileBatchStateHook` persists FT-from-file state
 - `create-nft-from-file` – `TokenCreateNftFromFileBatchStateHook` persists NFT-from-file state
 - `associate` – `TokenAssociateBatchStateHook` persists association results
-- `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-ft` – can be batched (no state hook; transactions execute atomically)
+- `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft` – can be batched (no state hook; transactions execute atomically)
 
 When you pass `--batch <batch-name>`:
 

@@ -5,6 +5,10 @@
 export { tokenPluginManifest } from './manifest';
 
 // Export command handlers and schemas
+export {
+  TOKEN_ALLOWANCE_NFT_COMMAND_NAME,
+  tokenAllowanceNft,
+} from './commands/allowance-nft';
 export { tokenAssociate } from './commands/associate';
 export { tokenCreateFt } from './commands/create-ft';
 export { tokenCreateFtFromFile } from './commands/create-ft-from-file';

@@ -6,6 +6,7 @@ import type { CustomFee } from '@hashgraph/sdk';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type {
   CustomFee as CustomFeeParams,
+  NftAllowanceApproveParams,
   NftTransferParams,
   TokenAllowanceFtParams,
   TokenAssociationParams,
@@ -310,6 +311,35 @@ export class TokenServiceImpl implements TokenService {
       AccountId.fromString(spenderAccountId),
       amount,
     );
+  }
+
+  createNftAllowanceApproveTransaction(
+    params: NftAllowanceApproveParams,
+  ): AccountAllowanceApproveTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating NFT allowance approve transaction: token ${params.tokenId}, owner ${params.ownerAccountId}, spender ${params.spenderAccountId}`,
+    );
+
+    const tx = new AccountAllowanceApproveTransaction();
+    const tokenId = TokenId.fromString(params.tokenId);
+    const owner = AccountId.fromString(params.ownerAccountId);
+    const spender = AccountId.fromString(params.spenderAccountId);
+
+    if (params.allSerials) {
+      tx.approveTokenNftAllowanceAllSerials(tokenId, owner, spender);
+      this.logger.debug(
+        `[TOKEN SERVICE] Approved all serials for token ${params.tokenId}`,
+      );
+    } else {
+      for (const serial of params.serialNumbers) {
+        tx.approveTokenNftAllowance(new NftId(tokenId, serial), owner, spender);
+      }
+      this.logger.debug(
+        `[TOKEN SERVICE] Approved ${params.serialNumbers.length} serial(s) for token ${params.tokenId}`,
+      );
+    }
+
+    return tx;
   }
 
   /**
