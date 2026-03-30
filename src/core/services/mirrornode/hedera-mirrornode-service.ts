@@ -39,6 +39,7 @@ import {
   AccountAPIResponseSchema,
   GetAccountsAPIResponseSchema,
   TokenInfoSchema,
+  TopicInfoSchema,
   TopicMessagesAPIResponseSchema,
   TopicMessageSchema,
 } from './schemas';
@@ -405,7 +406,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as TopicInfo;
+      return parseWithSchema(
+        TopicInfoSchema,
+        await response.json(),
+        `Mirror Node GET /topics/${topicId}`,
+      );
     } catch (error) {
       if (error instanceof CliError) throw error;
       throw new NetworkError(`Failed to fetch topic info for ${topicId}`, {

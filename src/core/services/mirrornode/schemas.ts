@@ -7,6 +7,7 @@ import type {
   AccountListItemTokenBalance,
   GetAccountsAPIResponse,
   TokenInfo,
+  TopicInfo,
   TopicMessage,
   TopicMessageChunkInfo,
   TopicMessagesAPIResponse,
@@ -129,3 +130,18 @@ export const TopicMessagesAPIResponseSchema: z.ZodType<TopicMessagesAPIResponse>
       })
       .optional(),
   });
+
+export const TopicInfoSchema: z.ZodType<TopicInfo> = z.object({
+  topic_id: z.string(),
+  admin_key: mirrorKeyObject.optional(),
+  submit_key: mirrorKeyObject.optional(),
+  memo: z.string(),
+  running_hash: z.string(),
+  sequence_number: z.number(),
+  consensus_timestamp: z.string(),
+  auto_renew_account: z.string().optional(),
+  auto_renew_period: z.number(),
+  expiration_timestamp: z.string().optional(),
+  created_timestamp: z.string(),
+  deleted: z.boolean(),
+});
