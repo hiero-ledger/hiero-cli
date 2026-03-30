@@ -16,20 +16,23 @@ export const NetworkToBaseUrl = new Map<SupportedNetwork, string>([
 
 export type MirrorNodeKeyType = 'ECDSA_SECP256K1' | 'ED25519';
 
-// Account API Response
+export interface AccountAPIBalance {
+  balance: number;
+  timestamp: string;
+}
+
+export interface AccountAPIKey {
+  _type: MirrorNodeKeyType;
+  key: string;
+}
+
 export interface AccountAPIResponse {
   account: string;
-  alias?: string;
-  balance: {
-    balance: number;
-    timestamp: string;
-  };
+  alias?: string | null;
+  balance: AccountAPIBalance;
   created_timestamp: string;
   evm_address?: string;
-  key?: {
-    _type: MirrorNodeKeyType;
-    key: string;
-  };
+  key?: AccountAPIKey;
   max_automatic_token_associations: number;
   memo: string;
   receiver_sig_required: boolean;
@@ -285,17 +288,24 @@ export interface GetAccountsQueryParams {
   order?: MirrorNodeRequestOrderParameter;
 }
 
+export interface AccountListItemTokenBalance {
+  token_id: string;
+  balance: number;
+}
+
+export interface AccountListItemBalance {
+  timestamp: string;
+  balance: number;
+  tokens?: AccountListItemTokenBalance[];
+}
+
 export interface AccountListItemAPIResponse {
   account: string;
-  alias?: string;
-  balance?: {
-    timestamp: string;
-    balance: number;
-    tokens?: Array<{ token_id: string; balance: number }>;
-  };
+  alias?: string | null;
+  balance?: AccountListItemBalance;
   created_timestamp: string;
   evm_address?: string;
-  key?: { _type: MirrorNodeKeyType; key: string } | null;
+  key?: AccountAPIKey | null;
   deleted?: boolean;
   memo?: string;
 }

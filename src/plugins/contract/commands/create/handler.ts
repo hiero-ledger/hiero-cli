@@ -229,6 +229,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
       contractName: normalisedParams.contractName,
       contractEvmAddress,
       adminPublicKey: normalisedParams.admin?.publicKey,
+      adminKeyRefId: normalisedParams.admin?.keyRefId,
       network: normalisedParams.network,
       memo: normalisedParams.memo,
       verified: verificationResult.success,

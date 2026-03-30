@@ -1,7 +1,6 @@
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { HederaMirrornodeService } from './hedera-mirrornode-service.interface';
 import type {
-  AccountAPIResponse,
   AccountListItemAPIResponse,
   AccountListItemDto,
   AccountResponse,
@@ -36,7 +35,11 @@ import { KeyAlgorithm } from '@/core/shared/constants';
 import { parseWithSchema } from '@/core/shared/validation/parse-with-schema.zod';
 import { handleMirrorNodeErrorResponse } from '@/core/utils/handle-mirror-node-error-response';
 
-import { TokenInfoSchema } from './schema';
+import {
+  AccountAPIResponseSchema,
+  GetAccountsAPIResponseSchema,
+  TokenInfoSchema,
+} from './schemas';
 import { NetworkToBaseUrl } from './types';
 
 export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeService {
@@ -82,7 +85,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         return null;
       }
 
-      const data = (await response.json()) as AccountAPIResponse;
+      const data = parseWithSchema(
+        AccountAPIResponseSchema,
+        await response.json(),
+        `Mirror Node GET /accounts/${accountId}`,
+      );
 
       if (!data.account) {
         throw new NotFoundError(`Account ${accountId} not found`);
@@ -102,8 +109,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         keyAlgorithm: this.getKeyAlgorithm(data.key._type),
       };
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof NetworkError)
-        throw error;
+      if (error instanceof CliError) throw error;
       throw new NetworkError(`Failed to fetch account ${accountId}`, {
         cause: error,
         recoverable: true,
@@ -179,14 +185,21 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
           break;
         }
 
-        const data = (await response.json()) as GetAccountsAPIResponse;
+        const pagePayload: GetAccountsAPIResponse = parseWithSchema(
+          GetAccountsAPIResponseSchema,
+          await response.json(),
+          `Mirror Node GET /accounts (page ${fetchedPages})`,
+        );
 
-        allAccounts.push(...(data.accounts ?? []));
+        allAccounts.push(...(pagePayload.accounts ?? []));
         if (fetchedPages >= 100) {
           break;
         }
-        url = data.links?.next ? this.getBaseUrl() + data.links.next : null;
+        url = pagePayload.links?.next
+          ? this.getBaseUrl() + pagePayload.links.next
+          : null;
       } catch (error) {
+        if (error instanceof CliError) throw error;
         if (error instanceof NetworkError) throw error;
         throw new NetworkError(`Failed to fetch accounts`, {
           cause: error,
@@ -208,7 +221,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
       accountId: apiAccount.account,
       createdTimestamp: apiAccount.created_timestamp,
     };
-    if (apiAccount.alias !== undefined) dto.alias = apiAccount.alias;
+    if (apiAccount.alias != null) dto.alias = apiAccount.alias;
     if (apiAccount.deleted !== undefined) dto.deleted = apiAccount.deleted;
     if (apiAccount.memo !== undefined) dto.memo = apiAccount.memo;
     if (apiAccount.evm_address !== undefined)
