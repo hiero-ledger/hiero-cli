@@ -93,12 +93,12 @@ export interface TokenInfo {
 // Topic Info
 export interface TopicInfo {
   topic_id: string;
-  admin_key?: MirrorNodeKey;
-  submit_key?: MirrorNodeKey;
+  admin_key?: MirrorNodeKey | null;
+  submit_key?: MirrorNodeKey | null;
   memo: string;
-  running_hash: string;
-  sequence_number: number;
-  consensus_timestamp: string;
+  running_hash?: string;
+  sequence_number?: number;
+  consensus_timestamp?: string;
   auto_renew_account?: string;
   auto_renew_period: number;
   expiration_timestamp?: string;
@@ -108,7 +108,7 @@ export interface TopicInfo {
 
 // Topic Messages
 export interface TopicMessageChunkInfo {
-  initial_transaction_id: string;
+  initial_transaction_id: string | Record<string, unknown>;
   number: number;
   total: number;
 }

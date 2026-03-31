@@ -108,8 +108,13 @@ export const GetAccountsAPIResponseSchema: z.ZodType<GetAccountsAPIResponse> =
       .optional(),
   });
 
+const topicMessageChunkInitialTxIdSchema = z.union([
+  z.string(),
+  z.record(z.string(), z.unknown()),
+]);
+
 const TopicMessageChunkInfoSchema: z.ZodType<TopicMessageChunkInfo> = z.object({
-  initial_transaction_id: z.string(),
+  initial_transaction_id: topicMessageChunkInitialTxIdSchema,
   number: z.number(),
   total: z.number(),
 });
@@ -151,12 +156,12 @@ export const TokenBalancesResponseSchema: z.ZodType<TokenBalancesResponse> =
 
 export const TopicInfoSchema: z.ZodType<TopicInfo> = z.object({
   topic_id: z.string(),
-  admin_key: mirrorKeyObject.optional(),
-  submit_key: mirrorKeyObject.optional(),
+  admin_key: optionalKeyRef,
+  submit_key: optionalKeyRef,
   memo: z.string(),
-  running_hash: z.string(),
-  sequence_number: z.number(),
-  consensus_timestamp: z.string(),
+  running_hash: z.string().optional(),
+  sequence_number: z.number().optional(),
+  consensus_timestamp: z.string().optional(),
   auto_renew_account: z.string().optional(),
   auto_renew_period: z.number(),
   expiration_timestamp: z.string().optional(),
