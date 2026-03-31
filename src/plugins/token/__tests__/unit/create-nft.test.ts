@@ -1,4 +1,5 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { TokenCreateNftOutput } from '@/plugins/token/commands/create-nft/output';
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
@@ -14,6 +15,7 @@ import {
   expectedNftTransactionParams,
   makeNftCreateCommandArgs,
   mockAccountIds,
+  mockAccountKeyPairs,
   mockTransactions,
 } from './helpers/fixtures';
 import {
@@ -173,7 +175,167 @@ describe('tokenCreateNftHandler', () => {
     });
   });
 
+  describe('optional key scenarios', () => {
+    test('should create NFT with all optional keys', async () => {
+      const mockSaveToken = jest.fn();
+      const mockSignResult = makeTransactionResult({
+        tokenId: mockAccountIds.treasury,
+      });
+
+      MockedHelper.mockImplementation(() => ({
+        saveToken: mockSaveToken,
+      }));
+
+      const { api, tokenTransactions } = makeApiMocks({
+        tokenTransactions: {
+          createTokenTransaction: jest
+            .fn()
+            .mockReturnValue(mockTransactions.token),
+        },
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
+        },
+        alias: {
+          resolve: jest.fn().mockImplementation((alias, type) => {
+            if (type === AliasType.Account && alias === 'treasury-account') {
+              return {
+                entityId: '0.0.123456',
+                publicKey: '302a300506032b6570032100' + '1'.repeat(64),
+                keyRefId: 'treasury-key-ref-id',
+              };
+            }
+            return null;
+          }),
+        },
+      });
+
+      const logger = makeLogger();
+      const args: CommandHandlerArgs = {
+        args: {
+          tokenName: 'TestNFT',
+          symbol: 'TNFT',
+          supplyType: SupplyType.INFINITE,
+          treasury: 'treasury-account',
+          freezeKey: mockAccountKeyPairs.freeze,
+          wipeKey: mockAccountKeyPairs.wipe,
+          pauseKey: mockAccountKeyPairs.pause,
+          kycKey: mockAccountKeyPairs.kyc,
+          feeScheduleKey: mockAccountKeyPairs.feeSchedule,
+          metadataKey: mockAccountKeyPairs.supply,
+        },
+        api,
+        state: api.state,
+        config: api.config,
+        logger,
+      };
+
+      const result = await tokenCreateNft(args);
+
+      expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          freezePublicKey: expect.any(Object),
+          wipePublicKey: expect.any(Object),
+          pausePublicKey: expect.any(Object),
+          kycPublicKey: expect.any(Object),
+          feeSchedulePublicKey: expect.any(Object),
+          metadataPublicKey: expect.any(Object),
+        }),
+      );
+      assertOutput(result.result, TokenCreateNftOutputSchema);
+      const output = result.result as TokenCreateNftOutput;
+      expect(output.freezePublicKey).toBeDefined();
+      expect(output.wipePublicKey).toBeDefined();
+      expect(output.pausePublicKey).toBeDefined();
+      expect(output.kycPublicKey).toBeDefined();
+      expect(output.feeSchedulePublicKey).toBeDefined();
+      expect(output.metadataPublicKey).toBeDefined();
+    });
+
+    test('should create NFT with lifecycle params', async () => {
+      const mockSaveToken = jest.fn();
+      const mockSignResult = makeTransactionResult({
+        tokenId: mockAccountIds.treasury,
+      });
+
+      MockedHelper.mockImplementation(() => ({
+        saveToken: mockSaveToken,
+      }));
+
+      const { api, tokenTransactions } = makeApiMocks({
+        tokenTransactions: {
+          createTokenTransaction: jest
+            .fn()
+            .mockReturnValue(mockTransactions.token),
+        },
+        txExecute: {
+          execute: jest.fn().mockResolvedValue(mockSignResult),
+        },
+        alias: {
+          resolve: jest.fn().mockImplementation((alias, type) => {
+            if (type === AliasType.Account && alias === 'treasury-account') {
+              return {
+                entityId: '0.0.123456',
+                publicKey: '302a300506032b6570032100' + '1'.repeat(64),
+                keyRefId: 'treasury-key-ref-id',
+              };
+            }
+            return null;
+          }),
+        },
+      });
+
+      const logger = makeLogger();
+      const args: CommandHandlerArgs = {
+        args: {
+          tokenName: 'TestNFT',
+          symbol: 'TNFT',
+          supplyType: SupplyType.INFINITE,
+          treasury: 'treasury-account',
+          autoRenewPeriod: 7776000,
+          autoRenewAccountId: '0.0.100000',
+          expirationTime: '2027-01-01T00:00:00Z',
+        },
+        api,
+        state: api.state,
+        config: api.config,
+        logger,
+      };
+
+      const result = await tokenCreateNft(args);
+
+      expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          autoRenewPeriod: 7776000,
+          autoRenewAccountId: '0.0.100000',
+          expirationTime: expect.any(Date),
+        }),
+      );
+      assertOutput(result.result, TokenCreateNftOutputSchema);
+    });
+  });
+
   describe('validation scenarios', () => {
+    test('should reject freezeDefault without freezeKey', async () => {
+      const { api } = makeApiMocks();
+      const logger = makeLogger();
+      const args: CommandHandlerArgs = {
+        args: {
+          tokenName: 'TestNFT',
+          symbol: 'TNFT',
+          supplyType: SupplyType.INFINITE,
+          freezeDefault: true,
+        },
+        api,
+        state: api.state,
+        config: api.config,
+        logger,
+      };
+
+      await expect(tokenCreateNft(args)).rejects.toThrow(
+        /freezeDefault requires freezeKey/,
+      );
+    });
+
     test('should exit with error when no credentials found', async () => {
       // Arrange
       const { api, keyResolver } = makeApiMocks();

@@ -182,6 +182,103 @@ hcli token create-ft \
 
 **Batch support:** Pass `--batch <batch-name>` to add token creation to a batch instead of executing immediately. See the [Batch Support](#-batch-support) section.
 
+### Token Create NFT
+
+Create a new non-fungible token (NFT) collection with specified properties.
+
+```bash
+# Using account alias
+hcli token create-nft \
+  --token-name "My NFT Collection" \
+  --symbol "MNFT" \
+  --treasury alice \
+  --supply-type FINITE \
+  --max-supply 1000 \
+  --admin-key alice \
+  --supply-key alice \
+  --freeze-key alice \
+  --wipe-key alice \
+  --name my-nft-collection
+
+# With additional optional keys and settings
+hcli token create-nft \
+  --token-name "My Collection" \
+  --symbol "MC" \
+  --treasury 0.0.123456:302e020100300506032b657004220420... \
+  --supply-type INFINITE \
+  --admin-key alice \
+  --supply-key alice \
+  --kyc-key alice \
+  --pause-key alice \
+  --fee-schedule-key alice \
+  --metadata-key alice \
+  --auto-renew-period 7776000 \
+  --auto-renew-account-id 0.0.123456 \
+  --freeze-default false \
+  --name my-collection
+```
+
+**Parameters:**
+
+- `--token-name` / `-T`: Token name - **Required**
+- `--symbol` / `-s`: Token symbol/ticker - **Required**
+- `--treasury`: Treasury account for the NFT collection - **Optional** (defaults to operator)
+  - Account alias: `alice`
+  - Account with key: `0.0.123456:private-key`
+- `--supply-type`: Supply type - **Optional** (defaults to `INFINITE`)
+  - `INFINITE` - Unlimited supply
+  - `FINITE` - Fixed maximum supply (requires `--max-supply`)
+- `--max-supply`: Maximum number of NFTs in collection (required for FINITE) - **Optional**
+- `--admin-key`: Admin key for administrative operations - **Optional**
+- `--supply-key`: Supply key for minting NFTs - **Optional**
+- `--freeze-key`: Freeze key to freeze token transfers for accounts - **Optional**
+- `--wipe-key`: Wipe key to wipe token balances - **Optional**
+- `--kyc-key`: KYC key to grant/revoke KYC status - **Optional**
+- `--pause-key`: Pause key to pause all token transfers - **Optional**
+- `--fee-schedule-key`: Fee schedule key to modify custom fees - **Optional**
+- `--metadata-key`: Metadata key to update token metadata - **Optional**
+- `--freeze-default`: Default freeze status for new associations (requires `--freeze-key`) - **Optional** (defaults to false)
+- `--auto-renew-period`: Token auto-renewal period in seconds (e.g., 7776000 for 90 days) - **Optional**
+- `--auto-renew-account-id`: Account ID that pays for token auto-renewal fees - **Optional**
+- `--expiration-time`: Token expiration time in ISO 8601 format (e.g., 2027-01-01T00:00:00Z) - **Optional**
+- `--name`: Token alias to register - **Optional**
+- `--key-manager`: Key manager type - **Optional** (defaults to config setting)
+  - `local` or `local_encrypted`
+- `--memo`: Optional memo for the token (max 100 characters) - **Optional**
+- `--batch`: Add to batch instead of executing immediately - **Optional**
+
+**Output:**
+
+```json
+{
+  "tokenId": "0.0.123456",
+  "name": "My NFT Collection",
+  "symbol": "MNFT",
+  "treasuryId": "0.0.111",
+  "supplyType": "FINITE",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "adminPublicKey": "302e020100300506032b657004220420...",
+  "supplyPublicKey": "302e020100300506032b657004220420...",
+  "freezePublicKey": "302e020100300506032b657004220420...",
+  "wipePublicKey": "302e020100300506032b657004220420...",
+  "kycPublicKey": "302e020100300506032b657004220420...",
+  "pausePublicKey": "302e020100300506032b657004220420...",
+  "feeSchedulePublicKey": "302e020100300506032b657004220420...",
+  "metadataPublicKey": "302e020100300506032b657004220420...",
+  "network": "testnet"
+}
+```
+
+**Notes:**
+
+- NFTs are non-fungible, meaning each NFT is unique and tracked by serial number
+- No decimals field applies to NFTs
+- Use `mint-nft` command to mint individual NFTs to the collection
+- Token name is automatically registered as an alias after successful creation
+- Freeze default requires freeze key to be set
+
+**Batch support:** Pass `--batch <batch-name>` to add NFT collection creation to a batch instead of executing immediately. See the [Batch Support](#-batch-support) section.
+
 ### Token Mint FT
 
 Mint additional fungible tokens to increase supply. Tokens are minted to the token's treasury account.
@@ -609,6 +706,11 @@ The token file supports aliases and raw keys with optional key type prefixes:
   "freezeKey": "<alias or accountId:privateKey>",
   "pauseKey": "<alias or accountId:privateKey>",
   "feeScheduleKey": "<alias or accountId:privateKey>",
+  "metadataKey": "<alias or accountId:privateKey>",
+  "freezeDefault": false,
+  "autoRenewPeriod": 7776000,
+  "autoRenewAccountId": "<accountId>",
+  "expirationTime": "2027-01-01T00:00:00Z",
   "memo": "Optional token memo",
   "autoRenewPeriod": "86400",
   "autoRenewAccount": "<alias or accountId:privateKey>",
@@ -676,6 +778,11 @@ The NFT file supports aliases and raw keys with optional key type prefixes:
   "freezeKey": "<alias or accountId:privateKey>",
   "pauseKey": "<alias or accountId:privateKey>",
   "feeScheduleKey": "<alias or accountId:privateKey>",
+  "metadataKey": "<alias or accountId:privateKey>",
+  "freezeDefault": false,
+  "autoRenewPeriod": 7776000,
+  "autoRenewAccountId": "<accountId>",
+  "expirationTime": "2027-01-01T00:00:00Z",
   "memo": "Optional NFT collection memo",
   "associations": ["<alias or accountId:privateKey>", "..."]
 }
@@ -803,6 +910,14 @@ interface TokenData {
   supplyType: SupplyType;
   maxSupply: number;
   memo?: string;
+  adminPublicKey?: string;
+  supplyPublicKey?: string;
+  wipePublicKey?: string;
+  kycPublicKey?: string;
+  freezePublicKey?: string;
+  pausePublicKey?: string;
+  feeSchedulePublicKey?: string;
+  metadataPublicKey?: string;
   keys: TokenKeys;
   network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
   associations: TokenAssociation[];
@@ -810,7 +925,21 @@ interface TokenData {
 }
 ```
 
-The `tokenType` field discriminates fungible tokens (`FUNGIBLE_COMMON`) from NFT collections (`NON_FUNGIBLE_UNIQUE`). NFT tokens use zero for `decimals` and `initialSupply`; minted NFTs are tracked by serial number on the ledger. The schema is validated using Zod (`TokenDataSchema`) and stored as JSON Schema in the plugin manifest for runtime validation.
+**Field Descriptions:**
+
+- `tokenType`: Discriminates fungible tokens (`FUNGIBLE_COMMON`) from NFT collections (`NON_FUNGIBLE_UNIQUE`)
+- `decimals`: Number of decimal places for fungible tokens; zero for NFTs
+- `initialSupply`: Initial supply amount; zero for NFTs
+- `adminPublicKey`: Public key with admin privileges for token operations
+- `supplyPublicKey`: Public key authorized to mint/burn tokens
+- `wipePublicKey`: Public key authorized to wipe token balances
+- `kycPublicKey`: Public key authorized to grant/revoke KYC status
+- `freezePublicKey`: Public key authorized to freeze token transfers
+- `pausePublicKey`: Public key authorized to pause all token transfers
+- `feeSchedulePublicKey`: Public key authorized to update custom fees
+- `metadataPublicKey`: Public key authorized to update token metadata
+
+NFT tokens use zero for `decimals` and `initialSupply`; minted NFTs are tracked by serial number on the ledger. The schema is validated using Zod (`TokenDataSchema`) and stored as JSON Schema in the plugin manifest for runtime validation.
 
 ## 🧪 Testing
 
@@ -849,7 +978,7 @@ All commands support multiple output formats:
 
 ### Human-Readable (Default)
 
-**Token Create:**
+**Fungible Token Create:**
 
 ```
 ✅ Token created successfully: 0.0.12345
@@ -858,6 +987,17 @@ All commands support multiple output formats:
    Decimals: 2
    Initial Supply: 1000000
    Supply Type: INFINITE
+   Network: testnet
+   Transaction ID: 0.0.123@1700000000.123456789
+```
+
+**Non-Fungible Token Create:**
+
+```
+✅ NFT created successfully: 0.0.123456
+   Name: My NFT Collection (MNFT)
+   Treasury: 0.0.111
+   Supply Type: FINITE
    Network: testnet
    Transaction ID: 0.0.123@1700000000.123456789
 ```
@@ -894,6 +1034,28 @@ All commands support multiple output formats:
   "initialSupply": "1000000",
   "supplyType": "INFINITE",
   "transactionId": "0.0.123@1700000000.123456789",
+  "network": "testnet"
+}
+```
+
+**Non-Fungible Token Create:**
+
+```json
+{
+  "tokenId": "0.0.123456",
+  "name": "My NFT Collection",
+  "symbol": "MNFT",
+  "treasuryId": "0.0.111",
+  "supplyType": "FINITE",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "adminPublicKey": "302e020100300506032b657004220420...",
+  "supplyPublicKey": "302e020100300506032b657004220420...",
+  "freezePublicKey": "302e020100300506032b657004220420...",
+  "wipePublicKey": "302e020100300506032b657004220420...",
+  "kycPublicKey": "302e020100300506032b657004220420...",
+  "pausePublicKey": "302e020100300506032b657004220420...",
+  "feeSchedulePublicKey": "302e020100300506032b657004220420...",
+  "metadataPublicKey": "302e020100300506032b657004220420...",
   "network": "testnet"
 }
 ```
