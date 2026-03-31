@@ -10,6 +10,7 @@ import type {
   TransferTransaction,
 } from '@hashgraph/sdk';
 import type {
+  NftAllowanceApproveParams,
   NftTransferParams,
   TokenAllowanceFtParams,
   TokenAssociationParams,
@@ -46,6 +47,14 @@ export interface TokenService {
    * Create an NFT transfer transaction (without execution)
    */
   createNftTransferTransaction(params: NftTransferParams): TransferTransaction;
+
+  /**
+   * Create an NFT allowance approve transaction (without execution)
+   * Supports approving specific serial numbers or all serials in a collection
+   */
+  createNftAllowanceApproveTransaction(
+    params: NftAllowanceApproveParams,
+  ): AccountAllowanceApproveTransaction;
 
   createFungibleTokenAllowanceTransaction(
     params: TokenAllowanceFtParams,
