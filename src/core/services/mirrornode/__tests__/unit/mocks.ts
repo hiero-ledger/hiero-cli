@@ -1,19 +1,20 @@
 /**
  * Mock factory functions for HederaMirrornodeService tests
  */
-import type {
-  AccountAPIResponse,
-  AccountListItemAPIResponse,
-  ExchangeRateResponse,
-  GetAccountsAPIResponse,
-  NftInfo,
-  TokenAirdropsResponse,
-  TokenBalancesResponse,
-  TokenInfo,
-  TopicInfo,
-  TopicMessage,
-  TopicMessagesAPIResponse,
-  TransactionDetailsResponse,
+import {
+  type AccountAPIResponse,
+  type AccountListItemAPIResponse,
+  type ExchangeRateResponse,
+  type GetAccountsAPIResponse,
+  MirrorNodeKeyType,
+  type NftInfo,
+  type TokenAirdropsResponse,
+  type TokenBalancesResponse,
+  type TokenInfo,
+  type TopicInfo,
+  type TopicMessage,
+  type TopicMessagesAPIResponse,
+  type TransactionDetailsResponse,
 } from '@/core/services/mirrornode/types';
 
 export const createMockAccountAPIResponse = (
@@ -27,7 +28,7 @@ export const createMockAccountAPIResponse = (
   created_timestamp: '2024-01-01T12:00:00.000Z',
   evm_address: '0x1234567890123456789012345678901234567890',
   key: {
-    _type: 'ED25519',
+    _type: MirrorNodeKeyType.ED25519,
     key: 'ed25519_abcd1234',
   },
   max_automatic_token_associations: 0,
@@ -48,7 +49,7 @@ export const createMockAccountListItemAPIResponse = (
   },
   evm_address: '0x1234567890123456789012345678901234567890',
   key: {
-    _type: 'ED25519',
+    _type: MirrorNodeKeyType.ED25519,
     key: 'ed25519_abcd1234',
   },
   memo: 'test memo',
