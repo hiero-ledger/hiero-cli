@@ -14,7 +14,10 @@ export const NetworkToBaseUrl = new Map<SupportedNetwork, string>([
   [SupportedNetwork.LOCALNET, 'http://localhost:5551'],
 ]);
 
-export type MirrorNodeKeyType = 'ECDSA_SECP256K1' | 'ED25519';
+export enum MirrorNodeKeyType {
+  ECDSA_SECP256K1 = 'ECDSA_SECP256K1',
+  ED25519 = 'ED25519',
+}
 
 export interface AccountAPIBalance {
   balance: number;
@@ -49,21 +52,20 @@ export interface AccountResponse {
   keyAlgorithm: KeyAlgorithm;
 }
 
-// Token Balance Response
-export interface TokenBalancesResponse {
-  account: string;
-  balance: number;
-  tokens: TokenBalanceInfo[];
-  timestamp: string;
-}
-
 export interface TokenBalanceInfo {
   token_id: string;
   balance: number;
-  decimals: number;
+  decimals?: number;
 }
 
-export type MirrorNodeTokenKey = {
+export interface TokenBalancesResponse {
+  tokens: TokenBalanceInfo[];
+  links?: {
+    next?: string | null;
+  };
+}
+
+export type MirrorNodeKey = {
   _type: string;
   key: string;
 };
@@ -77,16 +79,20 @@ export interface TokenInfo {
   max_supply: string;
   type: string;
   treasury_account_id: string;
-  admin_key?: MirrorNodeTokenKey | null;
-  kyc_key?: MirrorNodeTokenKey | null;
-  freeze_key?: MirrorNodeTokenKey | null;
-  wipe_key?: MirrorNodeTokenKey | null;
-  supply_key?: MirrorNodeTokenKey | null;
-  fee_schedule_key?: MirrorNodeTokenKey | null;
-  pause_key?: MirrorNodeTokenKey | null;
+  admin_key?: MirrorNodeKey | null;
+  kyc_key?: MirrorNodeKey | null;
+  freeze_key?: MirrorNodeKey | null;
+  wipe_key?: MirrorNodeKey | null;
+  supply_key?: MirrorNodeKey | null;
+  fee_schedule_key?: MirrorNodeKey | null;
+  metadata_key?: MirrorNodeKey | null;
+  pause_key?: MirrorNodeKey | null;
   created_timestamp: string;
   deleted?: boolean | null;
   freeze_default?: boolean;
+  auto_renew_account?: string;
+  auto_renew_period?: number;
+  expiry_timestamp?: number;
   pause_status: string;
   memo: string;
 }
@@ -94,18 +100,12 @@ export interface TokenInfo {
 // Topic Info
 export interface TopicInfo {
   topic_id: string;
-  admin_key?: {
-    _type: string;
-    key: string;
-  };
-  submit_key?: {
-    _type: string;
-    key: string;
-  };
+  admin_key?: MirrorNodeKey | null;
+  submit_key?: MirrorNodeKey | null;
   memo: string;
-  running_hash: string;
-  sequence_number: number;
-  consensus_timestamp: string;
+  running_hash?: string;
+  sequence_number?: number;
+  consensus_timestamp?: string;
   auto_renew_account?: string;
   auto_renew_period: number;
   expiration_timestamp?: string;
@@ -114,23 +114,25 @@ export interface TopicInfo {
 }
 
 // Topic Messages
+export interface TopicMessageChunkInfo {
+  initial_transaction_id: string | Record<string, unknown>;
+  number: number;
+  total: number;
+}
+
 export interface TopicMessage {
   consensus_timestamp: string;
   topic_id: string;
   message: string;
   running_hash: string;
   sequence_number: number;
-  chunk_info?: {
-    initial_transaction_id: string;
-    number: number;
-    total: number;
-  };
+  chunk_info?: TopicMessageChunkInfo;
 }
 
 export interface TopicMessagesAPIResponse {
   messages: TopicMessage[];
   links?: {
-    next?: string;
+    next?: string | null;
   };
 }
 
@@ -217,13 +219,15 @@ export interface ContractInfo {
 }
 
 // Token Airdrops
+export interface TokenAirdropItem {
+  account_id: string;
+  amount: number;
+  token_id: string;
+  timestamp: string;
+}
+
 export interface TokenAirdropsResponse {
-  airdrops: Array<{
-    account_id: string;
-    amount: number;
-    token_id: string;
-    timestamp: string;
-  }>;
+  airdrops: TokenAirdropItem[];
 }
 
 // Exchange Rate
@@ -243,14 +247,14 @@ export interface ExchangeRateResponse {
 
 // NFT Info
 export interface NftInfo {
-  account_id: string;
+  account_id: string | null;
   created_timestamp: string;
   delegating_spender?: string | null;
   deleted: boolean;
   metadata?: string;
   modified_timestamp: string;
   serial_number: number;
-  spender_id?: string | null;
+  spender?: string | null;
   token_id: string;
 }
 

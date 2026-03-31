@@ -6,15 +6,19 @@ import type { CustomFee } from '@hashgraph/sdk';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type {
   CustomFee as CustomFeeParams,
+  NftAllowanceApproveParams,
   NftTransferParams,
+  TokenAllowanceFtParams,
   TokenAssociationParams,
   TokenCreateParams,
+  TokenDeleteParams,
   TokenMintParams,
   TokenTransferParams,
 } from '@/core/types/token.types';
 import type { TokenService } from './token-service.interface';
 
 import {
+  AccountAllowanceApproveTransaction,
   AccountId,
   CustomFixedFee,
   CustomFractionalFee,
@@ -23,6 +27,7 @@ import {
   NftId,
   TokenAssociateTransaction,
   TokenCreateTransaction,
+  TokenDeleteTransaction,
   TokenId,
   TokenMintTransaction,
   TokenSupplyType,
@@ -94,8 +99,13 @@ export class TokenServiceImpl implements TokenService {
       freezePublicKey,
       pausePublicKey,
       feeSchedulePublicKey,
+      metadataPublicKey,
+      freezeDefault,
       customFees,
       memo,
+      autoRenewPeriodSeconds,
+      autoRenewAccountId,
+      expirationTime,
     } = params;
 
     // Convert supply type string to enum
@@ -160,6 +170,10 @@ export class TokenServiceImpl implements TokenService {
     if (freezePublicKey) {
       tokenCreateTx.setFreezeKey(freezePublicKey);
       this.logger.debug(`[TOKEN SERVICE] Set freeze key`);
+      tokenCreateTx.setFreezeDefault(freezeDefault ?? false);
+      this.logger.debug(
+        `[TOKEN SERVICE] Set freeze default: ${String(freezeDefault ?? false)}`,
+      );
     }
 
     if (pausePublicKey) {
@@ -170,6 +184,30 @@ export class TokenServiceImpl implements TokenService {
     if (feeSchedulePublicKey) {
       tokenCreateTx.setFeeScheduleKey(feeSchedulePublicKey);
       this.logger.debug(`[TOKEN SERVICE] Set fee schedule key`);
+    }
+
+    if (metadataPublicKey) {
+      tokenCreateTx.setMetadataKey(metadataPublicKey);
+      this.logger.debug(`[TOKEN SERVICE] Set metadata key`);
+    }
+
+    if (freezeDefault !== undefined) {
+      tokenCreateTx.setFreezeDefault(freezeDefault);
+      this.logger.debug(`[TOKEN SERVICE] Set freeze default: ${freezeDefault}`);
+    }
+
+    if (autoRenewPeriodSeconds && autoRenewAccountId) {
+      tokenCreateTx
+        .setAutoRenewAccountId(AccountId.fromString(autoRenewAccountId))
+        .setAutoRenewPeriod(autoRenewPeriodSeconds);
+      this.logger.debug(
+        `[TOKEN SERVICE] Set auto-renew: account ${autoRenewAccountId}, period ${String(autoRenewPeriodSeconds)}s`,
+      );
+    } else if (expirationTime) {
+      tokenCreateTx.setExpirationTime(expirationTime);
+      this.logger.debug(
+        `[TOKEN SERVICE] Set expiration time: ${expirationTime.toISOString()}`,
+      );
     }
 
     this.logger.debug(
@@ -265,6 +303,59 @@ export class TokenServiceImpl implements TokenService {
     );
 
     return transferTx;
+  }
+
+  createFungibleTokenAllowanceTransaction(
+    params: TokenAllowanceFtParams,
+  ): AccountAllowanceApproveTransaction {
+    const { tokenId, ownerAccountId, spenderAccountId, amount } = params;
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating FT allowance: ${amount.toString()} tokens of ${tokenId} from ${ownerAccountId} to spender ${spenderAccountId}`,
+    );
+    return new AccountAllowanceApproveTransaction().approveTokenAllowance(
+      TokenId.fromString(tokenId),
+      AccountId.fromString(ownerAccountId),
+      AccountId.fromString(spenderAccountId),
+      amount,
+    );
+  }
+
+  createNftAllowanceApproveTransaction(
+    params: NftAllowanceApproveParams,
+  ): AccountAllowanceApproveTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating NFT allowance approve transaction: token ${params.tokenId}, owner ${params.ownerAccountId}, spender ${params.spenderAccountId}`,
+    );
+
+    const tx = new AccountAllowanceApproveTransaction();
+    const tokenId = TokenId.fromString(params.tokenId);
+    const owner = AccountId.fromString(params.ownerAccountId);
+    const spender = AccountId.fromString(params.spenderAccountId);
+
+    if (params.allSerials) {
+      tx.approveTokenNftAllowanceAllSerials(tokenId, owner, spender);
+      this.logger.debug(
+        `[TOKEN SERVICE] Approved all serials for token ${params.tokenId}`,
+      );
+    } else {
+      for (const serial of params.serialNumbers) {
+        tx.approveTokenNftAllowance(new NftId(tokenId, serial), owner, spender);
+      }
+      this.logger.debug(
+        `[TOKEN SERVICE] Approved ${params.serialNumbers.length} serial(s) for token ${params.tokenId}`,
+      );
+    }
+
+    return tx;
+  }
+
+  createDeleteTransaction(params: TokenDeleteParams): TokenDeleteTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating delete transaction for token ${params.tokenId}`,
+    );
+    return new TokenDeleteTransaction().setTokenId(
+      TokenId.fromString(params.tokenId),
+    );
   }
 
   /**

@@ -45,10 +45,11 @@ src/plugins/topic/
 │   │   ├── output.ts
 │   │   ├── types.ts         # Command types
 │   │   └── index.ts
-│   ├── import/
-│   │   ├── handler.ts       # Import existing topic
+│   ├── update/
+│   │   ├── handler.ts       # Update topic fields
 │   │   ├── input.ts         # Input schema
-│   │   ├── output.ts
+│   │   ├── output.ts        # Output schema & template
+│   │   ├── types.ts         # Command types
 │   │   └── index.ts
 │   └── delete/
 │       ├── handler.ts       # Delete topic from state
@@ -60,6 +61,10 @@ src/plugins/topic/
 │   │   ├── handler.ts       # TopicCreateBatchStateHook - persists topic state after batch execution
 │   │   ├── types.ts         # TopicCreateNormalisedParamsSchema for batch item validation
 │   │   └── index.ts         # Hook exports
+│   ├── batch-update/
+│   │   ├── handler.ts       # TopicUpdateBatchStateHook - updates state after batched topic update
+│   │   ├── types.ts         # TopicUpdateNormalisedParamsSchema for batch item validation
+│   │   └── index.ts
 │   └── batch-delete/
 │       ├── handler.ts       # TopicDeleteBatchStateHook - updates state after batched topic delete
 │       ├── types.ts         # TopicDeleteNormalisedParamsSchema for batch item validation
@@ -132,6 +137,39 @@ hcli topic list
 hcli topic list --network testnet
 ```
 
+### Topic Update
+
+Update an existing topic's fields. Requires admin key for most updates. Fields not provided remain unchanged. Pass `"null"` to clear memo, submit key, or auto-renew account.
+
+```bash
+# Update memo
+hcli topic update --topic my-topic --memo "Updated description"
+
+# Clear memo
+hcli topic update --topic my-topic --memo null
+
+# Replace submit key
+hcli topic update --topic my-topic --submit-key new-key
+
+# Clear submit key (make topic public)
+hcli topic update --topic my-topic --submit-key null
+
+# Update multiple keys with threshold
+hcli topic update --topic my-topic \
+  --admin-key alice --admin-key bob --admin-key carol \
+  --admin-key-threshold 2
+
+# Update auto-renew settings
+hcli topic update --topic my-topic \
+  --auto-renew-account operator \
+  --auto-renew-period 7776000
+
+# Update expiration time
+hcli topic update --topic my-topic --expiration-time 2026-01-01T00:00:00Z
+```
+
+**Batch support:** `topic update` registers `batchify`. Pass `--batch <batch-name>` to queue the update; after `hcli batch execute`, `TopicUpdateBatchStateHook` reconciles local state.
+
 ### Topic Delete
 
 Remove a topic from the network and local state, or only from local state. Without `--state-only`, the handler submits a `TopicDeleteTransaction` (admin keys are taken from state, mirror node, or explicit `--admin-key`). With `--state-only`, only CLI state is cleared.
@@ -187,11 +225,11 @@ hcli topic find-message \
 
 ## 📦 Batch Support
 
-The `topic create`, `topic submit-message`, and `topic delete` commands support the `--batch` / `-B` flag via the batch plugin's `batchify` hook. When you pass `--batch <batch-name>`:
+The `topic create`, `topic update`, `topic submit-message`, and `topic delete` commands support the `--batch` / `-B` flag via the batch plugin's `batchify` hook. When you pass `--batch <batch-name>`:
 
 1. **No immediate execution** – The transaction is not submitted to the network. Instead, it is serialized and added to the specified batch.
 2. **Deferred execution** – Run `hcli batch execute --name <batch-name>` to submit all batched transactions atomically.
-3. **State persistence** – After successful batch execution, `TopicCreateBatchStateHook` runs for each topic creation in the batch. It fetches the receipt and saves topic data to state (including alias registration). For queued topic deletes, `TopicDeleteBatchStateHook` updates state after execution.
+3. **State persistence** – After successful batch execution, the relevant state hook runs: `TopicCreateBatchStateHook` persists new topics (fetches receipt, saves alias), `TopicUpdateBatchStateHook` reconciles updated fields, and `TopicDeleteBatchStateHook` removes deleted topics from state.
 
 **Example workflow:**
 

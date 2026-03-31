@@ -1,19 +1,20 @@
 /**
  * Mock factory functions for HederaMirrornodeService tests
  */
-import type {
-  AccountAPIResponse,
-  AccountListItemAPIResponse,
-  ExchangeRateResponse,
-  GetAccountsAPIResponse,
-  NftInfo,
-  TokenAirdropsResponse,
-  TokenBalancesResponse,
-  TokenInfo,
-  TopicInfo,
-  TopicMessage,
-  TopicMessagesAPIResponse,
-  TransactionDetailsResponse,
+import {
+  type AccountAPIResponse,
+  type AccountListItemAPIResponse,
+  type ExchangeRateResponse,
+  type GetAccountsAPIResponse,
+  MirrorNodeKeyType,
+  type NftInfo,
+  type TokenAirdropsResponse,
+  type TokenBalancesResponse,
+  type TokenInfo,
+  type TopicInfo,
+  type TopicMessage,
+  type TopicMessagesAPIResponse,
+  type TransactionDetailsResponse,
 } from '@/core/services/mirrornode/types';
 
 export const createMockAccountAPIResponse = (
@@ -27,7 +28,7 @@ export const createMockAccountAPIResponse = (
   created_timestamp: '2024-01-01T12:00:00.000Z',
   evm_address: '0x1234567890123456789012345678901234567890',
   key: {
-    _type: 'ED25519',
+    _type: MirrorNodeKeyType.ED25519,
     key: 'ed25519_abcd1234',
   },
   max_automatic_token_associations: 0,
@@ -48,7 +49,7 @@ export const createMockAccountListItemAPIResponse = (
   },
   evm_address: '0x1234567890123456789012345678901234567890',
   key: {
-    _type: 'ED25519',
+    _type: MirrorNodeKeyType.ED25519,
     key: 'ed25519_abcd1234',
   },
   memo: 'test memo',
@@ -67,8 +68,6 @@ export const createMockGetAccountsAPIResponse = (
 export const createMockTokenBalancesResponse = (
   overrides: Partial<TokenBalancesResponse> = {},
 ): TokenBalancesResponse => ({
-  account: '0.0.1234',
-  balance: 0,
   tokens: [
     {
       token_id: '0.0.2000',
@@ -76,7 +75,7 @@ export const createMockTokenBalancesResponse = (
       decimals: 6,
     },
   ],
-  timestamp: '2024-01-01T12:00:00.000Z',
+  links: { next: null },
   ...overrides,
 });
 
@@ -117,6 +116,9 @@ export const createMockTokenInfo = (
   created_timestamp: '2024-01-01T12:00:00.000Z',
   deleted: false,
   freeze_default: false,
+  auto_renew_period: 7776000,
+  auto_renew_account: '0.0.1234',
+  expiry_timestamp: 1893456000000000000,
   pause_status: 'UNPAUSED',
   memo: '',
   ...overrides,
@@ -139,6 +141,9 @@ export const createMockMirrorNodeTokenByIdJson = (
   created_timestamp: '2024-01-01T12:00:00.000Z',
   deleted: false,
   freeze_default: false,
+  auto_renew_period: 7776000,
+  auto_renew_account: '0.0.1234',
+  expiry_timestamp: 1893456000000000000,
   pause_status: 'UNPAUSED',
   memo: '',
   ...overrides,
@@ -218,10 +223,12 @@ export const createMockNftInfo = (
 ): NftInfo => ({
   account_id: '0.0.1234',
   created_timestamp: '2024-01-01T12:00:00.000Z',
+  delegating_spender: null,
   deleted: false,
   metadata: 'VGhpcyBpcyBhIHRlc3QgTkZU',
   modified_timestamp: '2024-01-01T12:00:00.000Z',
   serial_number: 1,
+  spender: null,
   token_id: '0.0.2000',
   ...overrides,
 });

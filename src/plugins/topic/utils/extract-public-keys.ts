@@ -7,17 +7,16 @@
  * extract raw public key strings for KMS lookup.
  */
 
+import type { MirrorNodeKey } from '@/core/services/mirrornode/types';
+
 import { Key, KeyList, PublicKey } from '@hashgraph/sdk';
 import * as proto from '@hiero-ledger/proto';
+
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 
 export interface ExtractedKeysResult {
   publicKeys: string[];
   threshold: number;
-}
-
-enum MirrorNodeKeyType {
-  ED25519 = 'ED25519',
-  ECDSA_SECP256K1 = 'ECDSA_SECP256K1',
 }
 
 const MIRROR_NODE_PROTOBUF_TYPE = 'ProtobufEncoded';
@@ -61,7 +60,7 @@ function extractFromKey(key: Key): ExtractedKeysResult {
 
 /** Parses mirror node key (simple or ProtobufEncoded) into raw public keys for KMS matching. */
 export function extractPublicKeysFromMirrorNodeKey(
-  mirrorKey: { _type: string; key: string } | undefined,
+  mirrorKey: MirrorNodeKey | undefined | null,
 ): ExtractedKeysResult {
   if (!mirrorKey?.key) {
     return { publicKeys: [], threshold: 0 };

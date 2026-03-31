@@ -1,14 +1,13 @@
-/**
- * Delete Token Command Output Schema and Template
- */
 import { z } from 'zod';
 
-import { EntityIdSchema, NetworkSchema } from '@/core/schemas/common-schemas';
+import {
+  EntityIdSchema,
+  NetworkSchema,
+  TransactionIdSchema,
+} from '@/core/schemas/common-schemas';
 
-/**
- * Delete Token Command Output Schema
- */
 export const TokenDeleteOutputSchema = z.object({
+  transactionId: TransactionIdSchema.optional(),
   deletedToken: z.object({
     name: z.string().describe('Token name'),
     tokenId: EntityIdSchema,
@@ -19,11 +18,12 @@ export const TokenDeleteOutputSchema = z.object({
 
 export type TokenDeleteOutput = z.infer<typeof TokenDeleteOutputSchema>;
 
-/**
- * Human-readable template for delete token output
- */
 export const TOKEN_DELETE_TEMPLATE = `
-✅ Token deleted successfully: {{deletedToken.name}} ({{hashscanLink deletedToken.tokenId "token" network}})
+✅ Token deleted successfully!
+   Token: {{deletedToken.name}} ({{hashscanLink deletedToken.tokenId "token" network}})
+{{#if transactionId}}
+   Transaction ID: {{hashscanLink transactionId "transaction" network}}
+{{/if}}
 {{#if removedAliases}}
 🧹 Removed {{removedAliases.length}} alias(es):
 {{#each removedAliases}}

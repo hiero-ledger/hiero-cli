@@ -2,7 +2,7 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TransactionResult } from '@/core/types/shared.types';
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { InternalError, StateError } from '@/core/errors';
+import { InternalError, StateError, ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
@@ -156,8 +156,19 @@ describe('createTokenHandler', () => {
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
         adminPublicKey: undefined,
+        supplyPublicKey: undefined,
+        freezePublicKey: undefined,
+        wipePublicKey: undefined,
+        kycPublicKey: undefined,
+        pausePublicKey: undefined,
+        feeSchedulePublicKey: undefined,
+        metadataPublicKey: undefined,
+        freezeDefault: undefined,
         tokenType: HederaTokenType.FUNGIBLE_COMMON,
         memo: undefined,
+        autoRenewPeriodSeconds: undefined,
+        autoRenewAccountId: undefined,
+        expirationTime: undefined,
       });
       // When adminKey is not provided, only treasury signs (which is the operator)
       expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
@@ -190,6 +201,25 @@ describe('createTokenHandler', () => {
 
       // Act & Assert - Error is thrown before try-catch block in handler
       await expect(tokenCreateFt(args)).rejects.toThrow('No operator set');
+    });
+
+    test('throws ValidationError when autoRenewPeriod is set without autoRenewAccount', async () => {
+      const { api } = makeApiMocks();
+
+      const logger = makeLogger();
+      const args: CommandHandlerArgs = {
+        args: {
+          tokenName: 'TestToken',
+          symbol: 'TEST',
+          autoRenewPeriod: '30d',
+        },
+        api,
+        state: api.state,
+        config: api.config,
+        logger,
+      };
+
+      await expect(tokenCreateFt(args)).rejects.toThrow(ValidationError);
     });
   });
 

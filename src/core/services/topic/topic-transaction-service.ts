@@ -10,13 +10,17 @@ import type {
   SubmitMessageParams,
   TopicCreateResult,
   TopicDeleteResult,
+  TopicUpdateResult,
+  UpdateTopicParams,
 } from './types';
 
 import {
+  AccountId,
   TopicCreateTransaction,
   TopicDeleteTransaction,
   TopicId,
   TopicMessageSubmitTransaction,
+  TopicUpdateTransaction,
 } from '@hashgraph/sdk';
 
 import { ValidationError } from '@/core/errors';
@@ -70,5 +74,41 @@ export class TopicServiceImpl implements TopicService {
     return {
       transaction: submitMessageTx,
     };
+  }
+
+  updateTopic(params: UpdateTopicParams): TopicUpdateResult {
+    const tx = new TopicUpdateTransaction().setTopicId(params.topicId);
+
+    if (params.memo === null) {
+      tx.clearTopicMemo();
+    } else if (params.memo !== undefined) {
+      tx.setTopicMemo(params.memo);
+    }
+
+    if (params.adminKey) {
+      tx.setAdminKey(params.adminKey);
+    }
+
+    if (params.submitKey === null) {
+      tx.clearSubmitKey();
+    } else if (params.submitKey) {
+      tx.setSubmitKey(params.submitKey);
+    }
+
+    if (params.autoRenewAccountId === null) {
+      tx.clearAutoRenewAccountId();
+    } else if (params.autoRenewAccountId) {
+      tx.setAutoRenewAccountId(AccountId.fromString(params.autoRenewAccountId));
+    }
+
+    if (params.autoRenewPeriod !== undefined) {
+      tx.setAutoRenewPeriod(params.autoRenewPeriod);
+    }
+
+    if (params.expirationTime) {
+      tx.setExpirationTime(params.expirationTime);
+    }
+
+    return { transaction: tx };
   }
 }

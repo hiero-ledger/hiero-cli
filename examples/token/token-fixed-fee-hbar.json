@@ -8,6 +8,8 @@
   "treasuryKey": "<alias or accountId:privateKey>",
   "adminKey": "<alias or accountId:privateKey>",
   "memo": "Token with fixed fee paid in HBAR (tinybars)",
+  "autoRenewPeriod": "30d",
+  "autoRenewAccount": "<alias or accountId:privateKey>",
   "customFees": [
     {
       "type": "fixed",

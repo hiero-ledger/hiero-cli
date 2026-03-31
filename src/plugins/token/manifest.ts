@@ -13,6 +13,16 @@ import {
 } from '@/plugins/token/commands/create-nft';
 
 import {
+  TOKEN_ALLOWANCE_FT_TEMPLATE,
+  tokenAllowanceFt,
+  TokenAllowanceFtOutputSchema,
+} from './commands/allowance-ft';
+import {
+  TOKEN_ALLOWANCE_NFT_TEMPLATE,
+  tokenAllowanceNft,
+  TokenAllowanceNftOutputSchema,
+} from './commands/allowance-nft';
+import {
   TOKEN_ASSOCIATE_TEMPLATE,
   tokenAssociate,
   TokenAssociateOutputSchema,
@@ -77,6 +87,7 @@ import { TokenCreateFtBatchStateHook } from './hooks/batch-create-ft';
 import { TokenCreateFtFromFileBatchStateHook } from './hooks/batch-create-ft-from-file';
 import { TokenCreateNftBatchStateHook } from './hooks/batch-create-nft';
 import { TokenCreateNftFromFileBatchStateHook } from './hooks/batch-create-nft-from-file';
+import { TokenDeleteBatchStateHook } from './hooks/batch-delete';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
@@ -107,6 +118,11 @@ export const tokenPluginManifest: PluginManifest = {
     {
       name: 'token-associate-batch-state',
       hook: new TokenAssociateBatchStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-delete-batch-state',
+      hook: new TokenDeleteBatchStateHook(),
       options: [],
     },
   ],
@@ -367,7 +383,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Defaults to operator key.',
+            'Optional admin key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Omit for a token without an admin key.',
         },
         {
           name: 'supply-key',
@@ -376,6 +392,63 @@ export const tokenPluginManifest: PluginManifest = {
           required: false,
           description:
             'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'freeze-key',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional freeze key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'freeze-default',
+          short: 'F',
+          type: OptionType.BOOLEAN,
+          required: false,
+          default: false,
+          description:
+            'When true and a freeze key is set, new token associations are frozen by default. Ignored without a freeze key (a warning is logged).',
+        },
+        {
+          name: 'wipe-key',
+          short: 'w',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional wipe key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'kyc-key',
+          short: 'y',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional KYC key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'pause-key',
+          short: 'p',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional pause key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'fee-schedule-key',
+          short: 'e',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional fee schedule key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'metadata-key',
+          short: 'D',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional metadata key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
           name: 'name',
@@ -399,6 +472,30 @@ export const tokenPluginManifest: PluginManifest = {
           required: false,
           description:
             'Optional memo for the fungible token (max 100 characters)',
+        },
+        {
+          name: 'auto-renew-period',
+          short: 'R',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Auto-renew period: seconds as integer, or with suffix s/m/h/d (e.g. 500, 500s, 50m, 2h, 1d). Requires --auto-renew-account.',
+        },
+        {
+          name: 'auto-renew-account',
+          short: 'r',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account that pays auto-renewal (account id, alias, or key reference). Required when --auto-renew-period is set.',
+        },
+        {
+          name: 'expiration-time',
+          short: 'x',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Absolute token expiration as ISO 8601 datetime. Ignored when --auto-renew-period and --auto-renew-account are set.',
         },
       ],
       handler: tokenCreateFt,
@@ -467,6 +564,82 @@ export const tokenPluginManifest: PluginManifest = {
           required: false,
           description:
             'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'freeze-key',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Freeze key. Allows freezing token transfers for specific accounts.',
+        },
+        {
+          name: 'wipe-key',
+          short: 'w',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Wipe key. Allows wiping token balance from specific accounts.',
+        },
+        {
+          name: 'pause-key',
+          short: 'p',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Pause key. Allows pausing all token transfers.',
+        },
+        {
+          name: 'kyc-key',
+          short: 'y',
+          type: OptionType.STRING,
+          required: false,
+          description: 'KYC key. Allows granting/revoking KYC status.',
+        },
+        {
+          name: 'fee-schedule-key',
+          short: 'e',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Fee schedule key. Allows modifying custom fees.',
+        },
+        {
+          name: 'metadata-key',
+          short: 'D',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Metadata key. Allows updating token metadata.',
+        },
+        {
+          name: 'freeze-default',
+          short: 'F',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description:
+            'Default freeze status for new token associations. Requires freeze-key.',
+        },
+        {
+          name: 'auto-renew-period',
+          short: 'R',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'Auto-renew period in seconds (e.g. 7776000 for 90 days).',
+        },
+        {
+          name: 'auto-renew-account-id',
+          short: 'r',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account ID that pays for token auto-renewal fees (e.g. 0.0.12345).',
+        },
+        {
+          name: 'expiration-time',
+          short: 'x',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Token expiration time in ISO 8601 format (e.g. 2027-01-01T00:00:00Z).',
         },
         {
           name: 'name',
@@ -594,6 +767,58 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
+      name: 'allowance-ft',
+      summary: 'Approve fungible token allowance',
+      description:
+        'Approve (or revoke by setting amount to 0) a spender allowance for fungible tokens on behalf of the owner.',
+      registeredHooks: ['batchify'],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Owner account. Can be {accountId}:{privateKey} pair, key reference or account alias. Defaults to operator.',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Spender account: account-id or alias',
+        },
+        {
+          name: 'amount',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Allowance amount. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "100t"). Set to 0 to revoke.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenAllowanceFt,
+      output: {
+        schema: TokenAllowanceFtOutputSchema,
+        humanTemplate: TOKEN_ALLOWANCE_FT_TEMPLATE,
+      },
+    },
+    {
       name: 'list',
       summary: 'List all tokens',
       description:
@@ -643,22 +868,106 @@ export const tokenPluginManifest: PluginManifest = {
     },
     {
       name: 'delete',
-      summary: 'Delete a token from state',
+      summary: 'Delete a token from the Hedera network',
       description:
-        'Delete a token from local state. This only removes the token from the local address book, not from the Hedera network.',
+        'Delete a token from the Hedera network. Requires admin key. Also removes token from local state if present. Use --state-only to remove only from local state.',
+      registeredHooks: ['batchify'],
       options: [
         {
           name: 'token',
           short: 'T',
           type: OptionType.STRING,
           required: true,
-          description: 'Token identifier: either a token alias or token-id',
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'admin-key',
+          short: 'a',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Admin key of token. Required unless the admin key is stored in the key manager (auto-resolved by public key). Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+        {
+          name: 'state-only',
+          short: 's',
+          type: OptionType.BOOLEAN,
+          required: false,
+          default: false,
+          description:
+            'Remove the token only from local CLI state; do not submit TokenDeleteTransaction to the network. Mutually exclusive with --admin-key.',
         },
       ],
       handler: tokenDelete,
       output: {
         schema: TokenDeleteOutputSchema,
         humanTemplate: TOKEN_DELETE_TEMPLATE,
+      },
+    },
+    {
+      name: 'allowance-nft',
+      summary: 'Approve NFT allowance',
+      description:
+        'Approve a spender to transfer NFTs on behalf of the owner. Use --serials for specific serial numbers or --all-serials for the entire collection.',
+      registeredHooks: ['batchify'],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'NFT token: either a token alias or token-id',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Spender account (ID, EVM address, or alias)',
+        },
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Owner account. Accepts any key format. Defaults to operator.',
+        },
+        {
+          name: 'serials',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Specific NFT serial numbers to approve (e.g. "1,2,3"). Mutually exclusive with --all-serials.',
+        },
+        {
+          name: 'all-serials',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description:
+            'Approve all serials in the collection. Mutually exclusive with --serials.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenAllowanceNft,
+      output: {
+        schema: TokenAllowanceNftOutputSchema,
+        humanTemplate: TOKEN_ALLOWANCE_NFT_TEMPLATE,
       },
     },
     {

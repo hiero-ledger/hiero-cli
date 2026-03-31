@@ -60,10 +60,22 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
-│   ├── delete/
-│   │   ├── handler.ts       # Token delete handler (local state only)
+│   ├── allowance-ft/
+│   │   ├── handler.ts       # Fungible token allowance handler
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Internal types
+│   │   └── index.ts         # Command exports
+│   ├── delete/
+│   │   ├── handler.ts       # Token delete handler (network or local state)
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts         # Command exports
+│   ├── allowance-nft/
+│   │   ├── handler.ts       # NFT allowance approval handler
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Command-specific type definitions
 │   │   └── index.ts         # Command exports
 │   ├── list/
 │   │   ├── handler.ts       # Token list handler
@@ -97,7 +109,7 @@ src/plugins/token/
 │       ├── types.ts         # AssociateNormalisedParamsSchema for batch item validation
 │       └── index.ts         # Hook exports
 ├── utils/
-│   ├── nft-build-output.ts  # NFT output builder utilities
+│   ├── token-build-output.ts  # NFT output builder utilities
 │   ├── token-amount-helpers.ts  # Token amount processing helpers
 │   ├── token-data-builders.ts   # Token data builders for create-from-file
 │   ├── token-associations.ts   # Token association processing
@@ -151,7 +163,121 @@ hcli token create-ft \
   --name mytoken-alias
 ```
 
+**Auto-renew and expiration** (optional):
+
+- `--auto-renew-period` / `-R`: Auto-renew interval. A plain integer is **seconds** (e.g. `500`). You may use a suffix: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), e.g. `500s`, `50m`, `2h`, `1d`. **Requires** `--auto-renew-account`; if the period is set without an account, validation fails.
+- `--auto-renew-account` / `-r`: Account that pays for auto-renewal (same accepted formats as `--treasury`: alias, `accountId:privateKey`, key reference, etc.).
+- `--expiration-time` / `-x`: Fixed expiration as an **ISO 8601** datetime (e.g. `2030-12-31T23:59:59.000Z`). If both **auto-renew period and account** are set, **expiration is ignored** and a warning is logged (auto-renew takes precedence).
+
+Command output includes optional `autoRenewPeriodSeconds`, `autoRenewAccountId`, and `expirationTime` (ISO string when a fixed expiration was applied).
+
+```bash
+# Auto-renew every 30 days, paid by a dedicated account
+hcli token create-ft \
+  --token-name "My Token" \
+  --symbol "MTK" \
+  --auto-renew-period 30d \
+  --auto-renew-account 0.0.789012:302e020100300506032b657004220420...
+```
+
 **Batch support:** Pass `--batch <batch-name>` to add token creation to a batch instead of executing immediately. See the [Batch Support](#-batch-support) section.
+
+### Token Create NFT
+
+Create a new non-fungible token (NFT) collection with specified properties.
+
+```bash
+# Using account alias
+hcli token create-nft \
+  --token-name "My NFT Collection" \
+  --symbol "MNFT" \
+  --treasury alice \
+  --supply-type FINITE \
+  --max-supply 1000 \
+  --admin-key alice \
+  --supply-key alice \
+  --freeze-key alice \
+  --wipe-key alice \
+  --name my-nft-collection
+
+# With additional optional keys and settings
+hcli token create-nft \
+  --token-name "My Collection" \
+  --symbol "MC" \
+  --treasury 0.0.123456:302e020100300506032b657004220420... \
+  --supply-type INFINITE \
+  --admin-key alice \
+  --supply-key alice \
+  --kyc-key alice \
+  --pause-key alice \
+  --fee-schedule-key alice \
+  --metadata-key alice \
+  --auto-renew-period 7776000 \
+  --auto-renew-account-id 0.0.123456 \
+  --freeze-default false \
+  --name my-collection
+```
+
+**Parameters:**
+
+- `--token-name` / `-T`: Token name - **Required**
+- `--symbol` / `-s`: Token symbol/ticker - **Required**
+- `--treasury`: Treasury account for the NFT collection - **Optional** (defaults to operator)
+  - Account alias: `alice`
+  - Account with key: `0.0.123456:private-key`
+- `--supply-type`: Supply type - **Optional** (defaults to `INFINITE`)
+  - `INFINITE` - Unlimited supply
+  - `FINITE` - Fixed maximum supply (requires `--max-supply`)
+- `--max-supply`: Maximum number of NFTs in collection (required for FINITE) - **Optional**
+- `--admin-key`: Admin key for administrative operations - **Optional**
+- `--supply-key`: Supply key for minting NFTs - **Optional**
+- `--freeze-key`: Freeze key to freeze token transfers for accounts - **Optional**
+- `--wipe-key`: Wipe key to wipe token balances - **Optional**
+- `--kyc-key`: KYC key to grant/revoke KYC status - **Optional**
+- `--pause-key`: Pause key to pause all token transfers - **Optional**
+- `--fee-schedule-key`: Fee schedule key to modify custom fees - **Optional**
+- `--metadata-key`: Metadata key to update token metadata - **Optional**
+- `--freeze-default`: Default freeze status for new associations (requires `--freeze-key`) - **Optional** (defaults to false)
+- `--auto-renew-period`: Token auto-renewal period in seconds (e.g., 7776000 for 90 days) - **Optional**
+- `--auto-renew-account-id`: Account ID that pays for token auto-renewal fees - **Optional**
+- `--expiration-time`: Token expiration time in ISO 8601 format (e.g., 2027-01-01T00:00:00Z) - **Optional**
+- `--name`: Token alias to register - **Optional**
+- `--key-manager`: Key manager type - **Optional** (defaults to config setting)
+  - `local` or `local_encrypted`
+- `--memo`: Optional memo for the token (max 100 characters) - **Optional**
+- `--batch`: Add to batch instead of executing immediately - **Optional**
+
+**Output:**
+
+```json
+{
+  "tokenId": "0.0.123456",
+  "name": "My NFT Collection",
+  "symbol": "MNFT",
+  "treasuryId": "0.0.111",
+  "supplyType": "FINITE",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "adminPublicKey": "302e020100300506032b657004220420...",
+  "supplyPublicKey": "302e020100300506032b657004220420...",
+  "freezePublicKey": "302e020100300506032b657004220420...",
+  "wipePublicKey": "302e020100300506032b657004220420...",
+  "kycPublicKey": "302e020100300506032b657004220420...",
+  "pausePublicKey": "302e020100300506032b657004220420...",
+  "feeSchedulePublicKey": "302e020100300506032b657004220420...",
+  "metadataPublicKey": "302e020100300506032b657004220420...",
+  "network": "testnet"
+}
+```
+
+**Notes:**
+
+- NFTs are non-fungible, meaning each NFT is unique and tracked by serial number
+- No decimals field applies to NFTs
+- Use `mint-nft` command to mint individual NFTs to the collection
+- Token name is automatically registered as an alias after successful creation
+- Freeze default requires freeze key to be set
+
+**Batch support:** Pass `--batch <batch-name>` to add NFT collection creation to a batch instead of executing immediately. See the [Batch Support](#-batch-support) section.
 
 ### Token Mint FT
 
@@ -275,6 +401,88 @@ hcli token mint-nft \
 hcli token view --token my-collection --serial 1
 ```
 
+### Token Allowance NFT
+
+Approve a spender to transfer NFTs on behalf of the owner. This command creates an AccountAllowanceApproveTransaction that grants permission to a spender account to transfer specific or all NFT serials from the owner's account.
+
+```bash
+# Approve specific serial numbers
+hcli token allowance-nft \
+  --token mynft-alias \
+  --spender bob \
+  --owner alice \
+  --serials 1,2,3
+
+# Approve all serials in the collection
+hcli token allowance-nft \
+  --token mynft-alias \
+  --spender bob \
+  --owner alice \
+  --all-serials
+
+# Owner defaults to operator
+hcli token allowance-nft \
+  --token mynft-alias \
+  --spender 0.0.222222 \
+  --serials 1,5,10
+
+# Using account-id:private-key pair for owner
+hcli token allowance-nft \
+  --token 0.0.123456 \
+  --spender bob \
+  --owner 0.0.111111:302e020100300506032b657004220420... \
+  --all-serials
+```
+
+**Parameters:**
+
+- `--token` / `-T`: NFT token identifier (alias or token ID) - **Required**
+  - Must be an NFT collection (type: `NON_FUNGIBLE_UNIQUE`)
+- `--spender` / `-s`: Spender account (ID, EVM address, or alias) - **Required**
+  - Account that will be granted permission to transfer NFTs
+- `--owner` / `-o`: Owner account - **Optional** (defaults to operator)
+  - Accepts any key format
+  - Account ID only: `0.0.111111`
+  - Account with key: `0.0.111111:private-key`
+  - Account alias: `alice`
+- `--serials`: Specific NFT serial numbers to approve (comma-separated, e.g., `1,2,3`) - **Optional**
+  - Mutually exclusive with `--all-serials`
+- `--all-serials`: Approve all serials in the collection - **Optional**
+  - Mutually exclusive with `--serials`
+  - One of `--serials` or `--all-serials` must be specified
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Output:**
+
+The command returns the transaction details and approval confirmation:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "ownerAccountId": "0.0.111111",
+  "spenderAccountId": "0.0.222222",
+  "serials": [1, 2, 3],
+  "allSerials": false,
+  "network": "testnet"
+}
+```
+
+When using `--all-serials`:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "ownerAccountId": "0.0.111111",
+  "spenderAccountId": "0.0.222222",
+  "serials": null,
+  "allSerials": true,
+  "network": "testnet"
+}
+```
+
 ### Token Associate
 
 Associate a fungible or non-fungible token with an account to enable transfers. Use `token associate` for both FT and NFT tokens.
@@ -351,23 +559,88 @@ hcli token transfer-nft \
 
 **Note:** Maximum 10 serial numbers per transaction (Hedera limit). The command verifies NFT ownership before transfer.
 
-### Token Delete
+### Token Allowance FT
 
-Delete a token from local state. This only removes the token from the local address book, not from the Hedera network.
+Approve (or revoke) a spender allowance for fungible tokens on behalf of the owner. Set amount to `0` to revoke an existing allowance.
 
 ```bash
-# Delete by token alias
+# Approve allowance using aliases
+hcli token allowance-ft \
+  --token mytoken-alias \
+  --owner alice \
+  --spender bob \
+  --amount 500
+
+# Approve using token ID and account-id:key pairs
+hcli token allowance-ft \
+  --token 0.0.123456 \
+  --owner 0.0.111111:302e020100300506032b657004220420... \
+  --spender 0.0.222222 \
+  --amount 1000t
+
+# Revoke allowance (set amount to 0)
+hcli token allowance-ft \
+  --token mytoken-alias \
+  --owner alice \
+  --spender bob \
+  --amount 0
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+- `--owner` / `-o`: Owner account. Accepts any key format (alias, `accountId:privateKey`, key reference) - **Required**
+- `--spender` / `-s`: Spender account (ID or alias) - **Required**
+- `--amount` / `-a`: Allowance amount - **Required**
+  - Display units (default): `100` (will be multiplied by token decimals)
+  - Base units: `100t` (raw amount without decimals)
+  - `0` to revoke the allowance
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Batch support:** Pass `--batch <batch-name>` to add to a batch instead of executing immediately.
+
+**Output:**
+
+```json
+{
+  "tokenId": "0.0.123456",
+  "ownerAccountId": "0.0.111111",
+  "spenderAccountId": "0.0.222222",
+  "amount": "100000",
+  "transactionId": "0.0.111111@1700000000.123456789",
+  "network": "testnet"
+}
+```
+
+**Note:** Amount in the output is always in base units (raw). The token must have been associated with the spender account before the allowance can be used.
+
+### Token Delete
+
+Delete a token from the Hedera network and remove it from local state. The token must have an admin key to be deleted from the network.
+
+```bash
+# Delete by token alias (network delete)
 hcli token delete --token mytoken-alias
 
-# Delete by token ID
+# Delete by token ID (network delete)
 hcli token delete --token 0.0.123456
+
+# Provide admin key explicitly
+hcli token delete --token 0.0.123456 --admin-key <key-ref>
+
+# Remove from local state only (no network transaction)
+hcli token delete --token mytoken-alias --state-only
 ```
 
 **Parameters:**
 
 - `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
+- `--admin-key`: Admin key reference for signing (auto-resolved from key manager if omitted) - **Optional**
+- `--key-manager`: Key manager type, defaults to config setting - **Optional**
+- `--state-only`: Remove token from local state only, without a network transaction - **Optional**
 
-Any aliases associated with the token on the current network will also be removed.
+`--state-only` and `--admin-key` are mutually exclusive. Any aliases associated with the token on the current network will also be removed.
 
 ### Token List
 
@@ -433,7 +706,15 @@ The token file supports aliases and raw keys with optional key type prefixes:
   "freezeKey": "<alias or accountId:privateKey>",
   "pauseKey": "<alias or accountId:privateKey>",
   "feeScheduleKey": "<alias or accountId:privateKey>",
+  "metadataKey": "<alias or accountId:privateKey>",
+  "freezeDefault": false,
+  "autoRenewPeriod": 7776000,
+  "autoRenewAccountId": "<accountId>",
+  "expirationTime": "2027-01-01T00:00:00Z",
   "memo": "Optional token memo",
+  "autoRenewPeriod": "86400",
+  "autoRenewAccount": "<alias or accountId:privateKey>",
+  "expirationTime": "2030-12-31T23:59:59.000Z",
   "associations": ["<alias or accountId:privateKey>", "..."],
   "customFees": [
     {
@@ -446,6 +727,12 @@ The token file supports aliases and raw keys with optional key type prefixes:
   ]
 }
 ```
+
+Optional lifecycle fields (same rules as `token create-ft`):
+
+- `autoRenewPeriod`: string or number; parsed to seconds (plain number = seconds; suffixes `s`, `m`, `h`, `d` supported). **Requires** `autoRenewAccount` when set.
+- `autoRenewAccount`: account that pays auto-renewal (same key formats as other keys).
+- `expirationTime`: ISO 8601 string. Ignored with a warning if both `autoRenewPeriod` and `autoRenewAccount` are set.
 
 **Supported formats for treasury and keys:**
 
@@ -491,6 +778,11 @@ The NFT file supports aliases and raw keys with optional key type prefixes:
   "freezeKey": "<alias or accountId:privateKey>",
   "pauseKey": "<alias or accountId:privateKey>",
   "feeScheduleKey": "<alias or accountId:privateKey>",
+  "metadataKey": "<alias or accountId:privateKey>",
+  "freezeDefault": false,
+  "autoRenewPeriod": 7776000,
+  "autoRenewAccountId": "<accountId>",
+  "expirationTime": "2027-01-01T00:00:00Z",
   "memo": "Optional NFT collection memo",
   "associations": ["<alias or accountId:privateKey>", "..."]
 }
@@ -546,7 +838,7 @@ The following token commands support the `--batch` / `-B` flag via the batch plu
 - `create-ft-from-file` – `TokenCreateFtFromFileBatchStateHook` persists FT-from-file state
 - `create-nft-from-file` – `TokenCreateNftFromFileBatchStateHook` persists NFT-from-file state
 - `associate` – `TokenAssociateBatchStateHook` persists association results
-- `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft` – can be batched (no state hook; transactions execute atomically)
+- `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft` – can be batched (no state hook; transactions execute atomically)
 
 When you pass `--batch <batch-name>`:
 
@@ -618,6 +910,14 @@ interface TokenData {
   supplyType: SupplyType;
   maxSupply: number;
   memo?: string;
+  adminPublicKey?: string;
+  supplyPublicKey?: string;
+  wipePublicKey?: string;
+  kycPublicKey?: string;
+  freezePublicKey?: string;
+  pausePublicKey?: string;
+  feeSchedulePublicKey?: string;
+  metadataPublicKey?: string;
   keys: TokenKeys;
   network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
   associations: TokenAssociation[];
@@ -625,7 +925,21 @@ interface TokenData {
 }
 ```
 
-The `tokenType` field discriminates fungible tokens (`FUNGIBLE_COMMON`) from NFT collections (`NON_FUNGIBLE_UNIQUE`). NFT tokens use zero for `decimals` and `initialSupply`; minted NFTs are tracked by serial number on the ledger. The schema is validated using Zod (`TokenDataSchema`) and stored as JSON Schema in the plugin manifest for runtime validation.
+**Field Descriptions:**
+
+- `tokenType`: Discriminates fungible tokens (`FUNGIBLE_COMMON`) from NFT collections (`NON_FUNGIBLE_UNIQUE`)
+- `decimals`: Number of decimal places for fungible tokens; zero for NFTs
+- `initialSupply`: Initial supply amount; zero for NFTs
+- `adminPublicKey`: Public key with admin privileges for token operations
+- `supplyPublicKey`: Public key authorized to mint/burn tokens
+- `wipePublicKey`: Public key authorized to wipe token balances
+- `kycPublicKey`: Public key authorized to grant/revoke KYC status
+- `freezePublicKey`: Public key authorized to freeze token transfers
+- `pausePublicKey`: Public key authorized to pause all token transfers
+- `feeSchedulePublicKey`: Public key authorized to update custom fees
+- `metadataPublicKey`: Public key authorized to update token metadata
+
+NFT tokens use zero for `decimals` and `initialSupply`; minted NFTs are tracked by serial number on the ledger. The schema is validated using Zod (`TokenDataSchema`) and stored as JSON Schema in the plugin manifest for runtime validation.
 
 ## 🧪 Testing
 
@@ -664,7 +978,7 @@ All commands support multiple output formats:
 
 ### Human-Readable (Default)
 
-**Token Create:**
+**Fungible Token Create:**
 
 ```
 ✅ Token created successfully: 0.0.12345
@@ -673,6 +987,17 @@ All commands support multiple output formats:
    Decimals: 2
    Initial Supply: 1000000
    Supply Type: INFINITE
+   Network: testnet
+   Transaction ID: 0.0.123@1700000000.123456789
+```
+
+**Non-Fungible Token Create:**
+
+```
+✅ NFT created successfully: 0.0.123456
+   Name: My NFT Collection (MNFT)
+   Treasury: 0.0.111
+   Supply Type: FINITE
    Network: testnet
    Transaction ID: 0.0.123@1700000000.123456789
 ```
@@ -709,6 +1034,28 @@ All commands support multiple output formats:
   "initialSupply": "1000000",
   "supplyType": "INFINITE",
   "transactionId": "0.0.123@1700000000.123456789",
+  "network": "testnet"
+}
+```
+
+**Non-Fungible Token Create:**
+
+```json
+{
+  "tokenId": "0.0.123456",
+  "name": "My NFT Collection",
+  "symbol": "MNFT",
+  "treasuryId": "0.0.111",
+  "supplyType": "FINITE",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "adminPublicKey": "302e020100300506032b657004220420...",
+  "supplyPublicKey": "302e020100300506032b657004220420...",
+  "freezePublicKey": "302e020100300506032b657004220420...",
+  "wipePublicKey": "302e020100300506032b657004220420...",
+  "kycPublicKey": "302e020100300506032b657004220420...",
+  "pausePublicKey": "302e020100300506032b657004220420...",
+  "feeSchedulePublicKey": "302e020100300506032b657004220420...",
+  "metadataPublicKey": "302e020100300506032b657004220420...",
   "network": "testnet"
 }
 ```

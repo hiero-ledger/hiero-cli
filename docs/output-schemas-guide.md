@@ -318,9 +318,15 @@ interface CommandOutputSpec {
   "initialSupply": "1000000",
   "supplyType": "INFINITE",
   "transactionId": "0.0.123@1700000000.123456789",
-  "alias": "my-token"
+  "alias": "my-token",
+  "network": "testnet",
+  "autoRenewPeriodSeconds": 2592000,
+  "autoRenewAccountId": "0.0.11111",
+  "expirationTime": "2030-01-01T00:00:00.000Z"
 }
 ```
+
+`autoRenewPeriodSeconds`, `autoRenewAccountId`, and `expirationTime` are **optional**. They are present when auto-renew or fixed expiration was configured; `expirationTime` is an ISO 8601 string when a fixed expiration was used (omitted when auto-renew period + account take precedence).
 
 #### `token transfer-ft`
 
@@ -362,11 +368,21 @@ interface CommandOutputSpec {
   "supplyType": "FINITE",
   "transactionId": "0.0.123@1700000000.123456789",
   "adminAccountId": "0.0.12345",
+  "adminPublicKey": "302a300506032b6570032100...",
   "supplyAccountId": "0.0.12345",
+  "supplyPublicKey": "302a300506032b6570032100...",
+  "freezePublicKey": "302a300506032b6570032100...",
+  "wipePublicKey": "302a300506032b6570032100...",
+  "pausePublicKey": "302a300506032b6570032100...",
+  "kycPublicKey": "302a300506032b6570032100...",
+  "feeSchedulePublicKey": "302a300506032b6570032100...",
+  "metadataPublicKey": "302a300506032b6570032100...",
   "alias": "my-nft",
   "network": "testnet"
 }
 ```
+
+All key fields (`adminPublicKey`, `supplyPublicKey`, `freezePublicKey`, `wipePublicKey`, `pausePublicKey`, `kycPublicKey`, `feeSchedulePublicKey`, `metadataPublicKey`) are optional and only appear when the corresponding key was provided.
 
 #### `token mint-ft`
 
@@ -417,9 +433,14 @@ interface CommandOutputSpec {
       "success": true,
       "transactionId": "0.0.123@1700000000.123456789"
     }
-  ]
+  ],
+  "autoRenewPeriodSeconds": 2592000,
+  "autoRenewAccountId": "0.0.11111",
+  "expirationTime": "2030-01-01T00:00:00.000Z"
 }
 ```
+
+Same optional lifecycle fields as `token create-ft`: `autoRenewPeriodSeconds`, `autoRenewAccountId`, `expirationTime` (ISO string when fixed expiration was applied).
 
 #### `token create-nft-from-file`
 
@@ -541,6 +562,67 @@ Lists all tokens from all networks stored in state.
 }
 ```
 
+#### `token delete`
+
+**Output** (network delete):
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "deletedToken": {
+    "name": "MyToken",
+    "tokenId": "0.0.67890"
+  },
+  "network": "testnet",
+  "removedAliases": ["my-token (testnet)"]
+}
+```
+
+**Output** (`--state-only`):
+
+```json
+{
+  "deletedToken": {
+    "name": "MyToken",
+    "tokenId": "0.0.67890"
+  },
+  "network": "testnet",
+  "removedAliases": ["my-token (testnet)"]
+}
+```
+
+`transactionId` is absent for `--state-only`. `removedAliases` is omitted when no aliases exist.
+
+#### `token allowance-nft`
+
+**Output** (specific serials):
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "ownerAccountId": "0.0.12345",
+  "spenderAccountId": "0.0.54321",
+  "serials": [1, 2, 3],
+  "allSerials": false,
+  "network": "testnet"
+}
+```
+
+**Output** (`--all-serials`):
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "ownerAccountId": "0.0.12345",
+  "spenderAccountId": "0.0.54321",
+  "serials": null,
+  "allSerials": true,
+  "network": "testnet"
+}
+```
+
 ### Topic Plugin
 
 #### `topic create`
@@ -619,6 +701,37 @@ Lists all tokens from all networks stored in state.
   "stateOnly": true
 }
 ```
+
+#### `topic update`
+
+**Output**:
+
+```json
+{
+  "topicId": "0.0.13579",
+  "name": "my-topic",
+  "network": "testnet",
+  "updatedFields": ["memo", "submitKey"],
+  "memo": "Updated memo",
+  "adminKeyPresent": true,
+  "adminKeyThreshold": 0,
+  "adminKeyCount": 1,
+  "submitKeyPresent": true,
+  "submitKeyThreshold": 0,
+  "submitKeyCount": 1,
+  "autoRenewAccount": "0.0.12345",
+  "autoRenewPeriod": 7776000,
+  "expirationTime": "2025-01-01T00:00:00.000Z",
+  "transactionId": "0.0.123@1700000000.123456789"
+}
+```
+
+**Notes:**
+
+- `name` is present only if the topic has a stored alias.
+- `memo`, `autoRenewAccount`, `autoRenewPeriod`, `expirationTime`, `adminKeyCount`, `submitKeyCount` are optional — only present when set.
+- `updatedFields` lists the fields that were actually changed in this update.
+- `adminKeyThreshold` / `submitKeyThreshold` — `0` means all keys must sign (default).
 
 #### `topic submit-message`
 
@@ -879,7 +992,7 @@ hcli account list --output accounts.json --format json
 hcli account create --name my-account --script
 ```
 
-**Batch support:** Commands that register the `batchify` hook (e.g., `account create`, `token create-ft`, `topic create`, `topic delete`) accept `--batch <batch-name>` to defer execution. When used, the output follows the batchify schema (`batchName`, `transactionOrder`) instead of the command's normal output.
+**Batch support:** Commands that register the `batchify` hook (e.g., `account create`, `token create-ft`, `topic create`, `topic update`, `topic delete`) accept `--batch <batch-name>` to defer execution. When used, the output follows the batchify schema (`batchName`, `transactionOrder`) instead of the command's normal output.
 
 ## Adding New Output Schemas
 

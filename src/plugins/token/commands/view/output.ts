@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import {
   EntityIdSchema,
+  HederaAutoRenewPeriodSecondsOptionalSchema,
   NetworkSchema,
   PublicKeyDefinitionSchema,
   SupplyTypeSchema,
@@ -34,6 +35,11 @@ export const TokenViewOutputSchema = z.object({
   memo: z.string().optional(),
   createdTimestamp: z.string().optional(),
 
+  freezeDefault: z.boolean(),
+  autoRenewPeriodSeconds: HederaAutoRenewPeriodSecondsOptionalSchema,
+  autoRenewAccountId: EntityIdSchema.optional(),
+  expirationTime: z.string().optional(),
+
   // === Token keys ===
   adminKey: PublicKeyDefinitionSchema.nullable().optional(),
   supplyKey: PublicKeyDefinitionSchema.nullable().optional(),
@@ -42,7 +48,7 @@ export const TokenViewOutputSchema = z.object({
   nftSerial: z
     .object({
       serialNumber: z.number(),
-      owner: z.string(),
+      owner: z.string().nullable(),
       metadata: z.string().optional(), // Decoded from base64
       metadataRaw: z.string().optional(), // Original base64
       createdTimestamp: z.string().optional(),
@@ -75,11 +81,25 @@ export const TOKEN_VIEW_TEMPLATE = `
 {{#if treasury}}
    Treasury: {{hashscanLink treasury "account" network}}
 {{/if}}
+   Freeze default: {{freezeDefault}}
+{{#if autoRenewPeriodSeconds}}
+   Auto-renew period: {{autoRenewPeriodSeconds}}s
+{{/if}}
+{{#if autoRenewAccountId}}
+   Auto-renew account: {{hashscanLink autoRenewAccountId "account" network}}
+{{/if}}
+{{#if expirationTime}}
+   Expiration: {{expirationTime}}
+{{/if}}
 
  NFT Details:
  
    Serial: #{{nftSerial.serialNumber}}
+{{#if nftSerial.owner}}
    Owner: {{hashscanLink nftSerial.owner "account" network}}
+{{else}}
+   Owner: —
+{{/if}}
 {{#if nftSerial.createdTimestamp}}
    Created: {{nftSerial.createdTimestamp}}
 {{/if~}}
@@ -99,7 +119,7 @@ export const TOKEN_VIEW_TEMPLATE = `
    ID: {{hashscanLink tokenId "token" network}}
    Name: {{name}}
    Symbol: {{symbol}}
-
+   Freeze default: {{freezeDefault}}
 {{#if (eq type "NON_FUNGIBLE_UNIQUE")}}
    Current Supply: {{totalSupply}}
 {{#if (eq supplyType "FINITE")}}
@@ -117,6 +137,15 @@ export const TOKEN_VIEW_TEMPLATE = `
 {{#if treasury}}
    Treasury: {{hashscanLink treasury "account" network}}
 {{/if~}}
+{{#if autoRenewPeriodSeconds}}
+   Auto-renew period: {{autoRenewPeriodSeconds}}s
+{{/if}}
+{{#if autoRenewAccountId}}
+   Auto-renew account: {{hashscanLink autoRenewAccountId "account" network}}
+{{/if}}
+{{#if expirationTime}}
+   Expiration: {{expirationTime}}
+{{/if}}
 {{#if adminKey}}
    Admin Key: {{adminKey}}
 {{/if~}}

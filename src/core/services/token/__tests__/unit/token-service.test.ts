@@ -7,10 +7,13 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 
 import { AccountId, Hbar, TokenId, TokenType } from '@hashgraph/sdk';
 
-import { ECDSA_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
+import {
+  ECDSA_HEX_PUBLIC_KEY,
+  MOCK_ACCOUNT_ID,
+} from '@/__tests__/mocks/fixtures';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { TokenServiceImpl } from '@/core/services/token/token-service';
-import { HederaTokenType } from '@/core/shared/constants';
+import { DAY_IN_SECONDS, HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
   type CustomFee,
@@ -23,6 +26,7 @@ import {
   createMockCustomFractionalFee,
   createMockTokenAssociateTransaction,
   createMockTokenCreateTransaction,
+  createMockTokenDeleteTransaction,
   createMockTransferTransaction,
 } from './mocks';
 
@@ -46,6 +50,7 @@ const TRANSFER_AMOUNT = 100n;
 const mockTransferTransaction = createMockTransferTransaction();
 const mockTokenCreateTransaction = createMockTokenCreateTransaction();
 const mockTokenAssociateTransaction = createMockTokenAssociateTransaction();
+const mockTokenDeleteTransaction = createMockTokenDeleteTransaction();
 const mockCustomFixedFee = createMockCustomFixedFee();
 const mockCustomFractionalFee = createMockCustomFractionalFee();
 
@@ -65,6 +70,7 @@ jest.mock('@hashgraph/sdk', () => ({
   TransferTransaction: jest.fn(() => mockTransferTransaction),
   TokenCreateTransaction: jest.fn(() => mockTokenCreateTransaction),
   TokenAssociateTransaction: jest.fn(() => mockTokenAssociateTransaction),
+  TokenDeleteTransaction: jest.fn(() => mockTokenDeleteTransaction),
   CustomFixedFee: jest.fn(() => mockCustomFixedFee),
   CustomFractionalFee: jest.fn(() => mockCustomFractionalFee),
   FeeAssessmentMethod: {
@@ -283,6 +289,15 @@ describe('TokenServiceImpl', () => {
       expect(result).toBe(mockTokenCreateTransaction);
     });
 
+    it('should not set freeze key or freeze default when freeze key omitted', () => {
+      tokenService.createTokenTransaction(baseParams);
+
+      expect(mockTokenCreateTransaction.setFreezeKey).not.toHaveBeenCalled();
+      expect(
+        mockTokenCreateTransaction.setFreezeDefault,
+      ).not.toHaveBeenCalled();
+    });
+
     it('should create token with FINITE supply type and max supply', () => {
       const params = {
         ...baseParams,
@@ -335,6 +350,57 @@ describe('TokenServiceImpl', () => {
       tokenService.createTokenTransaction(baseParams);
 
       expect(mockTokenCreateTransaction.setTokenMemo).not.toHaveBeenCalled();
+    });
+
+    it('should not set admin key when omitted', () => {
+      const { adminPublicKey: _admin, ...paramsWithoutAdmin } = baseParams;
+
+      tokenService.createTokenTransaction(paramsWithoutAdmin);
+
+      expect(mockTokenCreateTransaction.setAdminKey).not.toHaveBeenCalled();
+    });
+
+    it('should set metadata key when provided', () => {
+      const params = {
+        ...baseParams,
+        metadataPublicKey: mockPublicKeyInstance as unknown as PublicKey,
+      };
+
+      tokenService.createTokenTransaction(params);
+
+      expect(mockTokenCreateTransaction.setMetadataKey).toHaveBeenCalledWith(
+        mockPublicKeyInstance,
+      );
+    });
+
+    it('should set freeze default when freeze key is set', () => {
+      const paramsWithFreeze = {
+        ...baseParams,
+        freezePublicKey: mockPublicKeyInstance as unknown as PublicKey,
+        freezeDefault: true,
+      };
+
+      tokenService.createTokenTransaction(paramsWithFreeze);
+
+      expect(mockTokenCreateTransaction.setFreezeKey).toHaveBeenCalledWith(
+        mockPublicKeyInstance,
+      );
+      expect(mockTokenCreateTransaction.setFreezeDefault).toHaveBeenCalledWith(
+        true,
+      );
+    });
+
+    it('should set freeze default false when freeze key is set without freezeDefault', () => {
+      const paramsWithFreeze = {
+        ...baseParams,
+        freezePublicKey: mockPublicKeyInstance as unknown as PublicKey,
+      };
+
+      tokenService.createTokenTransaction(paramsWithFreeze);
+
+      expect(mockTokenCreateTransaction.setFreezeDefault).toHaveBeenCalledWith(
+        false,
+      );
     });
 
     it('should set custom fees when provided', () => {
@@ -573,6 +639,61 @@ describe('TokenServiceImpl', () => {
         mockCustomFractionalFee.setAllCollectorsAreExempt,
       ).toHaveBeenCalledWith(true);
     });
+
+    it('should set auto-renew account and period when both provided', () => {
+      const params = {
+        ...baseParams,
+        autoRenewAccountId: MOCK_ACCOUNT_ID,
+        autoRenewPeriodSeconds: 30 * DAY_IN_SECONDS,
+      };
+
+      tokenService.createTokenTransaction(params);
+
+      expect(
+        mockTokenCreateTransaction.setAutoRenewAccountId,
+      ).toHaveBeenCalledWith(mockAccountIdInstance);
+      expect(
+        mockTokenCreateTransaction.setAutoRenewPeriod,
+      ).toHaveBeenCalledWith(30 * DAY_IN_SECONDS);
+      expect(
+        mockTokenCreateTransaction.setExpirationTime,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should set expiration time when auto-renew period is not used', () => {
+      const exp = new Date('2028-01-01T00:00:00.000Z');
+      const params = {
+        ...baseParams,
+        expirationTime: exp,
+      };
+
+      tokenService.createTokenTransaction(params);
+
+      expect(mockTokenCreateTransaction.setExpirationTime).toHaveBeenCalledWith(
+        exp,
+      );
+      expect(
+        mockTokenCreateTransaction.setAutoRenewPeriod,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should prefer auto-renew over expiration when both are passed', () => {
+      const params = {
+        ...baseParams,
+        autoRenewAccountId: MOCK_ACCOUNT_ID,
+        autoRenewPeriodSeconds: 30 * DAY_IN_SECONDS,
+        expirationTime: new Date('2028-01-01T00:00:00.000Z'),
+      };
+
+      tokenService.createTokenTransaction(params);
+
+      expect(
+        mockTokenCreateTransaction.setAutoRenewPeriod,
+      ).toHaveBeenCalledWith(30 * DAY_IN_SECONDS);
+      expect(
+        mockTokenCreateTransaction.setExpirationTime,
+      ).not.toHaveBeenCalled();
+    });
   });
 
   describe('createTokenAssociationTransaction', () => {
@@ -621,6 +742,28 @@ describe('TokenServiceImpl', () => {
 
       expect(TokenId.fromString).toHaveBeenCalledWith('0.0.9999');
       expect(AccountId.fromString).toHaveBeenCalledWith('0.0.8888');
+    });
+  });
+
+  describe('createDeleteTransaction', () => {
+    it('should create delete transaction with correct tokenId', () => {
+      const params = { tokenId: TOKEN_ID };
+
+      const result = tokenService.createDeleteTransaction(params);
+
+      expect(TokenId.fromString).toHaveBeenCalledWith(TOKEN_ID);
+      expect(mockTokenDeleteTransaction.setTokenId).toHaveBeenCalledWith(
+        mockTokenIdInstance,
+      );
+      expect(result).toBe(mockTokenDeleteTransaction);
+    });
+
+    it('should log debug messages during delete transaction creation', () => {
+      tokenService.createDeleteTransaction({ tokenId: TOKEN_ID });
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        `[TOKEN SERVICE] Creating delete transaction for token ${TOKEN_ID}`,
+      );
     });
   });
 });

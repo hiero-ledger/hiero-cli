@@ -3,15 +3,20 @@
  * All token services must implement this interface
  */
 import type {
+  AccountAllowanceApproveTransaction,
   TokenAssociateTransaction,
   TokenCreateTransaction,
+  TokenDeleteTransaction,
   TokenMintTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
 import type {
+  NftAllowanceApproveParams,
   NftTransferParams,
+  TokenAllowanceFtParams,
   TokenAssociationParams,
   TokenCreateParams,
+  TokenDeleteParams,
   TokenMintParams,
   TokenTransferParams,
 } from '@/core/types/token.types';
@@ -44,4 +49,18 @@ export interface TokenService {
    * Create an NFT transfer transaction (without execution)
    */
   createNftTransferTransaction(params: NftTransferParams): TransferTransaction;
+
+  /**
+   * Create an NFT allowance approve transaction (without execution)
+   * Supports approving specific serial numbers or all serials in a collection
+   */
+  createNftAllowanceApproveTransaction(
+    params: NftAllowanceApproveParams,
+  ): AccountAllowanceApproveTransaction;
+
+  createFungibleTokenAllowanceTransaction(
+    params: TokenAllowanceFtParams,
+  ): AccountAllowanceApproveTransaction;
+
+  createDeleteTransaction(params: TokenDeleteParams): TokenDeleteTransaction;
 }

@@ -380,6 +380,14 @@ describe('tokenCreateFtFromFileHandler', () => {
         supplyType: SupplyType.INFINITE,
         maxSupplyRaw: 0n,
         adminPublicKey: expect.any(Object),
+        supplyPublicKey: undefined,
+        freezePublicKey: undefined,
+        wipePublicKey: undefined,
+        kycPublicKey: undefined,
+        pausePublicKey: undefined,
+        feeSchedulePublicKey: undefined,
+        metadataPublicKey: undefined,
+        freezeDefault: undefined,
         customFees: [
           {
             type: 'fixed',
@@ -391,6 +399,9 @@ describe('tokenCreateFtFromFileHandler', () => {
         ],
         memo: 'Test token created from file',
         tokenType: HederaTokenType.FUNGIBLE_COMMON,
+        autoRenewPeriodSeconds: undefined,
+        autoRenewAccountId: undefined,
+        expirationTime: undefined,
       });
     });
 
@@ -846,6 +857,8 @@ describe('tokenCreateFtFromFileHandler', () => {
       mockFs.access.mockResolvedValue(undefined);
       mockPath.resolve.mockReturnValue('/resolved/path/to/test.json');
 
+      const logger = makeLogger();
+
       const { api } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
@@ -893,8 +906,7 @@ describe('tokenCreateFtFromFileHandler', () => {
           }),
         },
       });
-
-      const logger = makeLogger();
+      api.logger = logger;
       const args: CommandHandlerArgs = {
         args: {
           file: 'test',

@@ -1,15 +1,25 @@
-import type {
-  AccountAPIBalance,
-  AccountAPIKey,
-  AccountAPIResponse,
-  AccountListItemAPIResponse,
-  AccountListItemBalance,
-  AccountListItemTokenBalance,
-  GetAccountsAPIResponse,
-  TokenInfo,
-} from './types';
-
 import { z } from 'zod';
+
+import {
+  type AccountAPIBalance,
+  type AccountAPIKey,
+  type AccountAPIResponse,
+  type AccountListItemAPIResponse,
+  type AccountListItemBalance,
+  type AccountListItemTokenBalance,
+  type GetAccountsAPIResponse,
+  MirrorNodeKeyType,
+  type NftInfo,
+  type TokenAirdropItem,
+  type TokenAirdropsResponse,
+  type TokenBalanceInfo,
+  type TokenBalancesResponse,
+  type TokenInfo,
+  type TopicInfo,
+  type TopicMessage,
+  type TopicMessageChunkInfo,
+  type TopicMessagesAPIResponse,
+} from './types';
 
 const mirrorKeyObject = z.object({
   _type: z.string(),
@@ -33,15 +43,19 @@ export const TokenInfoSchema: z.ZodType<TokenInfo> = z.object({
   wipe_key: optionalKeyRef,
   supply_key: optionalKeyRef,
   fee_schedule_key: optionalKeyRef,
+  metadata_key: optionalKeyRef,
   pause_key: optionalKeyRef,
   created_timestamp: z.string(),
   deleted: z.boolean().nullable().optional(),
   freeze_default: z.boolean().optional(),
+  auto_renew_account: z.string(),
+  auto_renew_period: z.number(),
+  expiry_timestamp: z.number(),
   pause_status: z.string(),
   memo: z.string(),
 });
 
-const mirrorNodeKeyTypeSchema = z.enum(['ECDSA_SECP256K1', 'ED25519']);
+const mirrorNodeKeyTypeSchema = z.enum(MirrorNodeKeyType);
 
 export const AccountAPIBalanceSchema: z.ZodType<AccountAPIBalance> = z.object({
   balance: z.number(),
@@ -101,3 +115,90 @@ export const GetAccountsAPIResponseSchema: z.ZodType<GetAccountsAPIResponse> =
       })
       .optional(),
   });
+
+const topicMessageChunkInitialTxIdSchema = z.union([
+  z.string(),
+  z.record(z.string(), z.unknown()),
+]);
+
+const TopicMessageChunkInfoSchema: z.ZodType<TopicMessageChunkInfo> = z.object({
+  initial_transaction_id: topicMessageChunkInitialTxIdSchema,
+  number: z.number(),
+  total: z.number(),
+});
+
+export const TopicMessageSchema: z.ZodType<TopicMessage> = z.object({
+  consensus_timestamp: z.string(),
+  topic_id: z.string(),
+  message: z.string(),
+  running_hash: z.string(),
+  sequence_number: z.number(),
+  chunk_info: TopicMessageChunkInfoSchema.optional(),
+});
+
+export const TopicMessagesAPIResponseSchema: z.ZodType<TopicMessagesAPIResponse> =
+  z.object({
+    messages: z.array(TopicMessageSchema),
+    links: z
+      .object({
+        next: z.string().nullable().optional(),
+      })
+      .optional(),
+  });
+
+export const TokenBalanceInfoSchema: z.ZodType<TokenBalanceInfo> = z.object({
+  token_id: z.string(),
+  balance: z.number(),
+  decimals: z.number().optional(),
+});
+
+export const TokenBalancesResponseSchema: z.ZodType<TokenBalancesResponse> =
+  z.object({
+    tokens: z.array(TokenBalanceInfoSchema),
+    links: z
+      .object({
+        next: z.string().nullable().optional(),
+      })
+      .optional(),
+  });
+
+const TokenAirdropItemSchema: z.ZodType<TokenAirdropItem> = z.object({
+  account_id: z.string(),
+  amount: z.number(),
+  token_id: z.string(),
+  timestamp: z.string(),
+});
+
+export const TokenAirdropsResponseSchema: z.ZodType<TokenAirdropsResponse> =
+  z.object({
+    airdrops: z.array(TokenAirdropItemSchema),
+  });
+
+const nullableStringKey = z.union([z.string(), z.null()]).optional();
+
+export const NftInfoSchema: z.ZodType<NftInfo> = z.object({
+  account_id: z.union([z.string(), z.null()]),
+  created_timestamp: z.string(),
+  delegating_spender: nullableStringKey,
+  deleted: z.boolean(),
+  metadata: z.string().optional(),
+  modified_timestamp: z.string(),
+  serial_number: z.number(),
+  spender: nullableStringKey,
+  token_id: z.string(),
+});
+
+export const TopicInfoSchema: z.ZodType<TopicInfo> = z.object({
+  topic_id: z.string(),
+  admin_key: optionalKeyRef,
+  submit_key: optionalKeyRef,
+  memo: z.string(),
+  running_hash: z.string().optional(),
+  sequence_number: z.number().optional(),
+  consensus_timestamp: z.string().optional(),
+  auto_renew_account: z.string().optional(),
+  auto_renew_period: z.number(),
+  expiration_timestamp: z.string().optional(),
+  created_timestamp: z.string(),
+  deleted: z.boolean(),
+});

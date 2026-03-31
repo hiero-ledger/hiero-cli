@@ -87,8 +87,14 @@ export class TokenCreateFtBatchStateHook extends AbstractHook {
       initialSupply: normalisedParams.initialSupply,
       tokenType: normalisedParams.tokenType,
       supplyType: normalisedParams.supplyType,
-      adminPublicKey: normalisedParams.admin.publicKey,
+      adminPublicKey: normalisedParams.admin?.publicKey,
       supplyPublicKey: normalisedParams.supply?.publicKey,
+      freezePublicKey: normalisedParams.freeze?.publicKey,
+      wipePublicKey: normalisedParams.wipe?.publicKey,
+      kycPublicKey: normalisedParams.kyc?.publicKey,
+      pausePublicKey: normalisedParams.pause?.publicKey,
+      feeSchedulePublicKey: normalisedParams.feeSchedule?.publicKey,
+      metadataPublicKey: normalisedParams.metadata?.publicKey,
       network: normalisedParams.network,
     });
 

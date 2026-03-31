@@ -11,7 +11,6 @@ import type {
   GetAccountsAPIResponse,
   GetAccountsQueryParams,
   GetAccountsResponse,
-  MirrorNodeKeyType,
   NftInfo,
   TokenAirdropsResponse,
   TokenBalancesResponse,
@@ -38,9 +37,15 @@ import { handleMirrorNodeErrorResponse } from '@/core/utils/handle-mirror-node-e
 import {
   AccountAPIResponseSchema,
   GetAccountsAPIResponseSchema,
+  NftInfoSchema,
+  TokenAirdropsResponseSchema,
+  TokenBalancesResponseSchema,
   TokenInfoSchema,
+  TopicInfoSchema,
+  TopicMessagesAPIResponseSchema,
+  TopicMessageSchema,
 } from './schemas';
-import { NetworkToBaseUrl } from './types';
+import { MirrorNodeKeyType, NetworkToBaseUrl } from './types';
 
 export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeService {
   private static readonly API_PATH = '/api/v1';
@@ -135,10 +140,13 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as TokenBalancesResponse;
+      return parseWithSchema(
+        TokenBalancesResponseSchema,
+        await response.json(),
+        `Mirror Node GET /accounts/${accountId}/tokens`,
+      );
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof NetworkError)
-        throw error;
+      if (error instanceof CliError) throw error;
       throw new NetworkError(
         `Failed to fetch token balances for ${accountId}`,
         { cause: error, recoverable: true },
@@ -200,7 +208,6 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
           : null;
       } catch (error) {
         if (error instanceof CliError) throw error;
-        if (error instanceof NetworkError) throw error;
         throw new NetworkError(`Failed to fetch accounts`, {
           cause: error,
           recoverable: true,
@@ -264,10 +271,13 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as TopicMessage;
+      return parseWithSchema(
+        TopicMessageSchema,
+        await response.json(),
+        `Mirror Node GET /topics/${queryParams.topicId}/messages/${queryParams.sequenceNumber}`,
+      );
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof NetworkError)
-        throw error;
+      if (error instanceof CliError) throw error;
       throw new NetworkError(
         `Failed to fetch topic message for ${queryParams.topicId}`,
         { cause: error, recoverable: true },
@@ -309,14 +319,20 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
           break;
         }
 
-        const data = (await response.json()) as TopicMessagesAPIResponse;
-        arrayOfMessages.push(...data.messages);
+        const pagePayload: TopicMessagesAPIResponse = parseWithSchema(
+          TopicMessagesAPIResponseSchema,
+          await response.json(),
+          `Mirror Node GET /topics/${queryParams.topicId}/messages (page ${fetchedMessages})`,
+        );
+        arrayOfMessages.push(...pagePayload.messages);
 
         if (fetchedMessages >= 100) break;
 
-        url = data.links?.next ? this.getBaseUrl() + data.links.next : null;
+        url = pagePayload.links?.next
+          ? this.getBaseUrl() + pagePayload.links.next
+          : null;
       } catch (error) {
-        if (error instanceof NetworkError) throw error;
+        if (error instanceof CliError) throw error;
         throw new NetworkError(
           `Failed to fetch topic messages for ${queryParams.topicId}`,
           { cause: error, recoverable: true },
@@ -372,10 +388,13 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as NftInfo;
+      return parseWithSchema(
+        NftInfoSchema,
+        await response.json(),
+        `Mirror Node GET /tokens/${tokenId}/nfts/${serialNumber}`,
+      );
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof NetworkError)
-        throw error;
+      if (error instanceof CliError) throw error;
       throw new NetworkError(
         `Failed to fetch NFT info for ${tokenId} serial ${serialNumber}`,
         { cause: error, recoverable: true },
@@ -397,10 +416,13 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as TopicInfo;
+      return parseWithSchema(
+        TopicInfoSchema,
+        await response.json(),
+        `Mirror Node GET /topics/${topicId}`,
+      );
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof NetworkError)
-        throw error;
+      if (error instanceof CliError) throw error;
       throw new NetworkError(`Failed to fetch topic info for ${topicId}`, {
         cause: error,
         recoverable: true,
@@ -430,8 +452,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
 
       return (await response.json()) as TransactionDetailsResponse;
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof NetworkError)
-        throw error;
+      if (error instanceof CliError) throw error;
       throw new NetworkError(
         `Failed to fetch transaction record for ${transactionId}`,
         { cause: error, recoverable: true },
@@ -455,8 +476,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
 
       return (await response.json()) as ContractInfo;
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof NetworkError)
-        throw error;
+      if (error instanceof CliError) throw error;
       throw new NetworkError(
         `Failed to fetch contract info for ${contractId}`,
         { cause: error, recoverable: true },
@@ -478,10 +498,13 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as TokenAirdropsResponse;
+      return parseWithSchema(
+        TokenAirdropsResponseSchema,
+        await response.json(),
+        `Mirror Node GET /accounts/${accountId}/airdrops/pending`,
+      );
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof NetworkError)
-        throw error;
+      if (error instanceof CliError) throw error;
       throw new NetworkError(
         `Failed to fetch pending airdrops for ${accountId}`,
         { cause: error, recoverable: true },
@@ -505,10 +528,13 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as TokenAirdropsResponse;
+      return parseWithSchema(
+        TokenAirdropsResponseSchema,
+        await response.json(),
+        `Mirror Node GET /accounts/${accountId}/airdrops/outstanding`,
+      );
     } catch (error) {
-      if (error instanceof NotFoundError || error instanceof NetworkError)
-        throw error;
+      if (error instanceof CliError) throw error;
       throw new NetworkError(
         `Failed to fetch outstanding airdrops for ${accountId}`,
         { cause: error, recoverable: true },
@@ -533,7 +559,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
 
       return (await response.json()) as ExchangeRateResponse;
     } catch (error) {
-      if (error instanceof NetworkError) throw error;
+      if (error instanceof CliError) throw error;
       throw new NetworkError('Failed to fetch exchange rate', {
         cause: error,
         recoverable: true,
@@ -563,7 +589,7 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
 
       return (await response.json()) as ContractCallResponse;
     } catch (error) {
-      if (error instanceof NetworkError) throw error;
+      if (error instanceof CliError) throw error;
       throw new NetworkError('Failed to call contract via mirror node', {
         cause: error,
         recoverable: true,
@@ -573,9 +599,9 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
 
   private getKeyAlgorithm(keyType: MirrorNodeKeyType): KeyAlgorithm {
     switch (keyType) {
-      case 'ECDSA_SECP256K1':
+      case MirrorNodeKeyType.ECDSA_SECP256K1:
         return KeyAlgorithm.ECDSA;
-      case 'ED25519':
+      case MirrorNodeKeyType.ED25519:
         return KeyAlgorithm.ED25519;
     }
   }

@@ -46,6 +46,7 @@ const createFtBatchDataItem = (
       keyRefId: 'kr-admin',
       publicKey: 'pk-admin',
     },
+    freezeDefault: false,
   },
   transactionId: '0.0.1234@1234567890.000000000',
   ...overrides,
