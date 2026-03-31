@@ -6,7 +6,9 @@ import { z } from 'zod';
 
 import {
   AmountInputSchema,
+  AutoRenewPeriodSecondsSchema,
   EntityIdSchema,
+  ExpirationTimeSchema,
   HtsDecimalsSchema,
   KeySchema,
   MemoSchema,
@@ -99,6 +101,7 @@ export const TokenDataSchema = z.object({
   freezePublicKey: z.string().optional(),
   pausePublicKey: z.string().optional(),
   feeSchedulePublicKey: z.string().optional(),
+  metadataPublicKey: z.string().optional(),
 
   decimals: z
     .number()
@@ -184,13 +187,20 @@ export const FungibleTokenFileSchema = z
     initialSupply: AmountInputSchema,
     maxSupply: AmountInputSchema.default('0'),
     treasuryKey: KeySchema,
-    adminKey: KeySchema,
+    adminKey: KeySchema.optional(),
     supplyKey: KeySchema.optional(),
     wipeKey: KeySchema.optional(),
     kycKey: KeySchema.optional(),
     freezeKey: KeySchema.optional(),
+    freezeDefault: z
+      .boolean()
+      .default(false)
+      .describe(
+        'When true and freezeKey is set, new associations are frozen by default.',
+      ),
     pauseKey: KeySchema.optional(),
     feeScheduleKey: KeySchema.optional(),
+    metadataKey: KeySchema.optional(),
     associations: z.array(KeySchema).default([]),
     customFees: z
       .array(TokenFileCustomFeeSchema)
@@ -198,6 +208,9 @@ export const FungibleTokenFileSchema = z
       .default([]),
     memo: MemoSchema.default(''),
     tokenType: TokenTypeSchema,
+    autoRenewPeriod: AutoRenewPeriodSecondsSchema,
+    autoRenewAccount: KeySchema.optional(),
+    expirationTime: ExpirationTimeSchema,
   })
   .transform((data) => ({
     ...data,

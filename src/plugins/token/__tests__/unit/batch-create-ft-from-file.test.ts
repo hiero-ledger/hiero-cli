@@ -50,6 +50,7 @@ const createFlatNormalizedParams = (
     publicKey: 'pk-treasury',
   },
   adminKey: { keyRefId: 'kr-admin', publicKey: 'pk-admin' },
+  freezeDefault: false,
   ...overrides,
 });
 

@@ -8,6 +8,8 @@
   "treasuryKey": "<alias or accountId:privateKey>",
   "adminKey": "<alias or accountId:privateKey>",
   "memo": "Token with fixed fee paid in same token units",
+  "autoRenewPeriod": "30d",
+  "autoRenewAccount": "<alias or accountId:privateKey>",
   "customFees": [
     {
       "type": "fixed",

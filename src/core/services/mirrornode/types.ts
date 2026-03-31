@@ -82,10 +82,14 @@ export interface TokenInfo {
   wipe_key?: MirrorNodeKey | null;
   supply_key?: MirrorNodeKey | null;
   fee_schedule_key?: MirrorNodeKey | null;
+  metadata_key?: MirrorNodeKey | null;
   pause_key?: MirrorNodeKey | null;
   created_timestamp: string;
   deleted?: boolean | null;
   freeze_default?: boolean;
+  auto_renew_account?: string;
+  auto_renew_period?: number;
+  expiry_timestamp?: number;
   pause_status: string;
   memo: string;
 }

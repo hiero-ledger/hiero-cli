@@ -25,7 +25,7 @@ import {
 import {
   resolveOptionalKey,
   toPublicKey,
-} from '@/plugins/token/utils/token-resolve-optional-key';
+} from '@/plugins/token/utils/token-key-resolver';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 export const TOKEN_CREATE_NFT_COMMAND_NAME = 'token_create-nft';

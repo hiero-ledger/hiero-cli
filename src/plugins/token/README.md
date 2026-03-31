@@ -97,7 +97,7 @@ src/plugins/token/
 │       ├── types.ts         # AssociateNormalisedParamsSchema for batch item validation
 │       └── index.ts         # Hook exports
 ├── utils/
-│   ├── nft-build-output.ts  # NFT output builder utilities
+│   ├── token-build-output.ts  # NFT output builder utilities
 │   ├── token-amount-helpers.ts  # Token amount processing helpers
 │   ├── token-data-builders.ts   # Token data builders for create-from-file
 │   ├── token-associations.ts   # Token association processing
@@ -149,6 +149,23 @@ hcli token create-ft \
   --initial-supply 1000 \
   --supply-type INFINITE \
   --name mytoken-alias
+```
+
+**Auto-renew and expiration** (optional):
+
+- `--auto-renew-period` / `-R`: Auto-renew interval. A plain integer is **seconds** (e.g. `500`). You may use a suffix: `s` (seconds), `m` (minutes), `h` (hours), `d` (days), e.g. `500s`, `50m`, `2h`, `1d`. **Requires** `--auto-renew-account`; if the period is set without an account, validation fails.
+- `--auto-renew-account` / `-r`: Account that pays for auto-renewal (same accepted formats as `--treasury`: alias, `accountId:privateKey`, key reference, etc.).
+- `--expiration-time` / `-x`: Fixed expiration as an **ISO 8601** datetime (e.g. `2030-12-31T23:59:59.000Z`). If both **auto-renew period and account** are set, **expiration is ignored** and a warning is logged (auto-renew takes precedence).
+
+Command output includes optional `autoRenewPeriodSeconds`, `autoRenewAccountId`, and `expirationTime` (ISO string when a fixed expiration was applied).
+
+```bash
+# Auto-renew every 30 days, paid by a dedicated account
+hcli token create-ft \
+  --token-name "My Token" \
+  --symbol "MTK" \
+  --auto-renew-period 30d \
+  --auto-renew-account 0.0.789012:302e020100300506032b657004220420...
 ```
 
 **Batch support:** Pass `--batch <batch-name>` to add token creation to a batch instead of executing immediately. See the [Batch Support](#-batch-support) section.
@@ -434,6 +451,9 @@ The token file supports aliases and raw keys with optional key type prefixes:
   "pauseKey": "<alias or accountId:privateKey>",
   "feeScheduleKey": "<alias or accountId:privateKey>",
   "memo": "Optional token memo",
+  "autoRenewPeriod": "86400",
+  "autoRenewAccount": "<alias or accountId:privateKey>",
+  "expirationTime": "2030-12-31T23:59:59.000Z",
   "associations": ["<alias or accountId:privateKey>", "..."],
   "customFees": [
     {
@@ -446,6 +466,12 @@ The token file supports aliases and raw keys with optional key type prefixes:
   ]
 }
 ```
+
+Optional lifecycle fields (same rules as `token create-ft`):
+
+- `autoRenewPeriod`: string or number; parsed to seconds (plain number = seconds; suffixes `s`, `m`, `h`, `d` supported). **Requires** `autoRenewAccount` when set.
+- `autoRenewAccount`: account that pays auto-renewal (same key formats as other keys).
+- `expirationTime`: ISO 8601 string. Ignored with a warning if both `autoRenewPeriod` and `autoRenewAccount` are set.
 
 **Supported formats for treasury and keys:**
 

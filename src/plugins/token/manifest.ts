@@ -367,7 +367,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Defaults to operator key.',
+            'Optional admin key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Omit for a token without an admin key.',
         },
         {
           name: 'supply-key',
@@ -376,6 +376,63 @@ export const tokenPluginManifest: PluginManifest = {
           required: false,
           description:
             'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'freeze-key',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional freeze key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'freeze-default',
+          short: 'F',
+          type: OptionType.BOOLEAN,
+          required: false,
+          default: false,
+          description:
+            'When true and a freeze key is set, new token associations are frozen by default. Ignored without a freeze key (a warning is logged).',
+        },
+        {
+          name: 'wipe-key',
+          short: 'w',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional wipe key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'kyc-key',
+          short: 'y',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional KYC key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'pause-key',
+          short: 'p',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional pause key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'fee-schedule-key',
+          short: 'e',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional fee schedule key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'metadata-key',
+          short: 'D',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Optional metadata key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
           name: 'name',
@@ -399,6 +456,30 @@ export const tokenPluginManifest: PluginManifest = {
           required: false,
           description:
             'Optional memo for the fungible token (max 100 characters)',
+        },
+        {
+          name: 'auto-renew-period',
+          short: 'R',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Auto-renew period: seconds as integer, or with suffix s/m/h/d (e.g. 500, 500s, 50m, 2h, 1d). Requires --auto-renew-account.',
+        },
+        {
+          name: 'auto-renew-account',
+          short: 'r',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account that pays auto-renewal (account id, alias, or key reference). Required when --auto-renew-period is set.',
+        },
+        {
+          name: 'expiration-time',
+          short: 'x',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Absolute token expiration as ISO 8601 datetime. Ignored when --auto-renew-period and --auto-renew-account are set.',
         },
       ],
       handler: tokenCreateFt,
