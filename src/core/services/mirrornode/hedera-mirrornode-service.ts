@@ -38,6 +38,7 @@ import { handleMirrorNodeErrorResponse } from '@/core/utils/handle-mirror-node-e
 import {
   AccountAPIResponseSchema,
   GetAccountsAPIResponseSchema,
+  TokenAirdropsResponseSchema,
   TokenBalancesResponseSchema,
   TokenInfoSchema,
   TopicInfoSchema,
@@ -493,7 +494,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as TokenAirdropsResponse;
+      return parseWithSchema(
+        TokenAirdropsResponseSchema,
+        await response.json(),
+        `Mirror Node GET /accounts/${accountId}/airdrops/pending`,
+      );
     } catch (error) {
       if (error instanceof CliError) throw error;
       throw new NetworkError(
@@ -519,7 +524,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as TokenAirdropsResponse;
+      return parseWithSchema(
+        TokenAirdropsResponseSchema,
+        await response.json(),
+        `Mirror Node GET /accounts/${accountId}/airdrops/outstanding`,
+      );
     } catch (error) {
       if (error instanceof CliError) throw error;
       throw new NetworkError(

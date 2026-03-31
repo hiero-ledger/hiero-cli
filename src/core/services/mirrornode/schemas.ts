@@ -6,6 +6,8 @@ import type {
   AccountListItemBalance,
   AccountListItemTokenBalance,
   GetAccountsAPIResponse,
+  TokenAirdropItem,
+  TokenAirdropsResponse,
   TokenBalanceInfo,
   TokenBalancesResponse,
   TokenInfo,
@@ -156,6 +158,18 @@ export const TokenBalancesResponseSchema: z.ZodType<TokenBalancesResponse> =
         next: z.string().nullable().optional(),
       })
       .optional(),
+  });
+
+const TokenAirdropItemSchema: z.ZodType<TokenAirdropItem> = z.object({
+  account_id: z.string(),
+  amount: z.number(),
+  token_id: z.string(),
+  timestamp: z.string(),
+});
+
+export const TokenAirdropsResponseSchema: z.ZodType<TokenAirdropsResponse> =
+  z.object({
+    airdrops: z.array(TokenAirdropItemSchema),
   });
 
 export const TopicInfoSchema: z.ZodType<TopicInfo> = z.object({

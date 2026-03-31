@@ -216,13 +216,15 @@ export interface ContractInfo {
 }
 
 // Token Airdrops
+export interface TokenAirdropItem {
+  account_id: string;
+  amount: number;
+  token_id: string;
+  timestamp: string;
+}
+
 export interface TokenAirdropsResponse {
-  airdrops: Array<{
-    account_id: string;
-    amount: number;
-    token_id: string;
-    timestamp: string;
-  }>;
+  airdrops: TokenAirdropItem[];
 }
 
 // Exchange Rate
