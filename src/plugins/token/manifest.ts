@@ -561,6 +561,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'freeze-key',
+          short: 'f',
           type: OptionType.STRING,
           required: false,
           description:
@@ -568,6 +569,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'wipe-key',
+          short: 'w',
           type: OptionType.STRING,
           required: false,
           description:
@@ -575,30 +577,35 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'pause-key',
+          short: 'p',
           type: OptionType.STRING,
           required: false,
           description: 'Pause key. Allows pausing all token transfers.',
         },
         {
           name: 'kyc-key',
+          short: 'y',
           type: OptionType.STRING,
           required: false,
           description: 'KYC key. Allows granting/revoking KYC status.',
         },
         {
           name: 'fee-schedule-key',
+          short: 'e',
           type: OptionType.STRING,
           required: false,
           description: 'Fee schedule key. Allows modifying custom fees.',
         },
         {
           name: 'metadata-key',
+          short: 'D',
           type: OptionType.STRING,
           required: false,
           description: 'Metadata key. Allows updating token metadata.',
         },
         {
           name: 'freeze-default',
+          short: 'F',
           type: OptionType.BOOLEAN,
           required: false,
           description:
@@ -606,6 +613,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'auto-renew-period',
+          short: 'R',
           type: OptionType.NUMBER,
           required: false,
           description:
@@ -613,6 +621,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'auto-renew-account-id',
+          short: 'r',
           type: OptionType.STRING,
           required: false,
           description:
@@ -620,6 +629,7 @@ export const tokenPluginManifest: PluginManifest = {
         },
         {
           name: 'expiration-time',
+          short: 'x',
           type: OptionType.STRING,
           required: false,
           description:
