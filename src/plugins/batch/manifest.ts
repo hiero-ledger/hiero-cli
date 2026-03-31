@@ -98,6 +98,7 @@ export const batchPluginManifest: PluginManifest = {
         'account-delete-batch-state',
         'topic-create-batch-state',
         'topic-delete-batch-state',
+        'topic-update-batch-state',
         'token-create-ft-batch-state',
         'token-create-ft-from-file-batch-state',
         'token-create-nft-batch-state',

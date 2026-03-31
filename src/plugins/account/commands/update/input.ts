@@ -10,6 +10,7 @@ import {
   MemoSchema,
   NodeIdSchema,
 } from '@/core/schemas';
+import { NULL_TOKEN } from '@/core/shared/constants';
 
 const UPDATE_FIELDS = [
   'key',
@@ -35,7 +36,7 @@ export const AccountUpdateInputSchema = z
     ),
     memo: z
       .preprocess(
-        (v) => (v === 'null' || v === '' ? null : v),
+        (v) => (v === NULL_TOKEN || v === '' ? null : v),
         MemoSchema.nullable().optional(),
       )
       .describe(
@@ -44,13 +45,13 @@ export const AccountUpdateInputSchema = z
     maxAutoAssociations: MaxAutoAssociationsSchema,
     stakedAccountId: z
       .preprocess(
-        (v) => (v === 'null' ? null : v),
+        (v) => (v === NULL_TOKEN ? null : v),
         EntityIdSchema.nullable().optional(),
       )
       .describe('Account ID to stake to. Pass "null" to clear.'),
     stakedNodeId: z
       .preprocess(
-        (v) => (v === 'null' ? null : v),
+        (v) => (v === NULL_TOKEN ? null : v),
         NodeIdSchema.nullable().optional(),
       )
       .describe('Node ID to stake to. Pass "null" to clear.'),

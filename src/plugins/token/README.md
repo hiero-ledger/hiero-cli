@@ -60,10 +60,22 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── allowance-ft/
+│   │   ├── handler.ts       # Fungible token allowance handler
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Internal types
+│   │   └── index.ts         # Command exports
 │   ├── delete/
 │   │   ├── handler.ts       # Token delete handler (local state only)
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts         # Command exports
+│   ├── allowance-nft/
+│   │   ├── handler.ts       # NFT allowance approval handler
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Command-specific type definitions
 │   │   └── index.ts         # Command exports
 │   ├── list/
 │   │   ├── handler.ts       # Token list handler
@@ -292,6 +304,88 @@ hcli token mint-nft \
 hcli token view --token my-collection --serial 1
 ```
 
+### Token Allowance NFT
+
+Approve a spender to transfer NFTs on behalf of the owner. This command creates an AccountAllowanceApproveTransaction that grants permission to a spender account to transfer specific or all NFT serials from the owner's account.
+
+```bash
+# Approve specific serial numbers
+hcli token allowance-nft \
+  --token mynft-alias \
+  --spender bob \
+  --owner alice \
+  --serials 1,2,3
+
+# Approve all serials in the collection
+hcli token allowance-nft \
+  --token mynft-alias \
+  --spender bob \
+  --owner alice \
+  --all-serials
+
+# Owner defaults to operator
+hcli token allowance-nft \
+  --token mynft-alias \
+  --spender 0.0.222222 \
+  --serials 1,5,10
+
+# Using account-id:private-key pair for owner
+hcli token allowance-nft \
+  --token 0.0.123456 \
+  --spender bob \
+  --owner 0.0.111111:302e020100300506032b657004220420... \
+  --all-serials
+```
+
+**Parameters:**
+
+- `--token` / `-T`: NFT token identifier (alias or token ID) - **Required**
+  - Must be an NFT collection (type: `NON_FUNGIBLE_UNIQUE`)
+- `--spender` / `-s`: Spender account (ID, EVM address, or alias) - **Required**
+  - Account that will be granted permission to transfer NFTs
+- `--owner` / `-o`: Owner account - **Optional** (defaults to operator)
+  - Accepts any key format
+  - Account ID only: `0.0.111111`
+  - Account with key: `0.0.111111:private-key`
+  - Account alias: `alice`
+- `--serials`: Specific NFT serial numbers to approve (comma-separated, e.g., `1,2,3`) - **Optional**
+  - Mutually exclusive with `--all-serials`
+- `--all-serials`: Approve all serials in the collection - **Optional**
+  - Mutually exclusive with `--serials`
+  - One of `--serials` or `--all-serials` must be specified
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Output:**
+
+The command returns the transaction details and approval confirmation:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "ownerAccountId": "0.0.111111",
+  "spenderAccountId": "0.0.222222",
+  "serials": [1, 2, 3],
+  "allSerials": false,
+  "network": "testnet"
+}
+```
+
+When using `--all-serials`:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "ownerAccountId": "0.0.111111",
+  "spenderAccountId": "0.0.222222",
+  "serials": null,
+  "allSerials": true,
+  "network": "testnet"
+}
+```
+
 ### Token Associate
 
 Associate a fungible or non-fungible token with an account to enable transfers. Use `token associate` for both FT and NFT tokens.
@@ -367,6 +461,62 @@ hcli token transfer-nft \
   - `local` or `local_encrypted`
 
 **Note:** Maximum 10 serial numbers per transaction (Hedera limit). The command verifies NFT ownership before transfer.
+
+### Token Allowance FT
+
+Approve (or revoke) a spender allowance for fungible tokens on behalf of the owner. Set amount to `0` to revoke an existing allowance.
+
+```bash
+# Approve allowance using aliases
+hcli token allowance-ft \
+  --token mytoken-alias \
+  --owner alice \
+  --spender bob \
+  --amount 500
+
+# Approve using token ID and account-id:key pairs
+hcli token allowance-ft \
+  --token 0.0.123456 \
+  --owner 0.0.111111:302e020100300506032b657004220420... \
+  --spender 0.0.222222 \
+  --amount 1000t
+
+# Revoke allowance (set amount to 0)
+hcli token allowance-ft \
+  --token mytoken-alias \
+  --owner alice \
+  --spender bob \
+  --amount 0
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+- `--owner` / `-o`: Owner account. Accepts any key format (alias, `accountId:privateKey`, key reference) - **Required**
+- `--spender` / `-s`: Spender account (ID or alias) - **Required**
+- `--amount` / `-a`: Allowance amount - **Required**
+  - Display units (default): `100` (will be multiplied by token decimals)
+  - Base units: `100t` (raw amount without decimals)
+  - `0` to revoke the allowance
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Batch support:** Pass `--batch <batch-name>` to add to a batch instead of executing immediately.
+
+**Output:**
+
+```json
+{
+  "tokenId": "0.0.123456",
+  "ownerAccountId": "0.0.111111",
+  "spenderAccountId": "0.0.222222",
+  "amount": "100000",
+  "transactionId": "0.0.111111@1700000000.123456789",
+  "network": "testnet"
+}
+```
+
+**Note:** Amount in the output is always in base units (raw). The token must have been associated with the spender account before the allowance can be used.
 
 ### Token Delete
 
@@ -572,7 +722,7 @@ The following token commands support the `--batch` / `-B` flag via the batch plu
 - `create-ft-from-file` – `TokenCreateFtFromFileBatchStateHook` persists FT-from-file state
 - `create-nft-from-file` – `TokenCreateNftFromFileBatchStateHook` persists NFT-from-file state
 - `associate` – `TokenAssociateBatchStateHook` persists association results
-- `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft` – can be batched (no state hook; transactions execute atomically)
+- `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft` – can be batched (no state hook; transactions execute atomically)
 
 When you pass `--batch <batch-name>`:
 

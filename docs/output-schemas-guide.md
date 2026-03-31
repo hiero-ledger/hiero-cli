@@ -552,6 +552,36 @@ Lists all tokens from all networks stored in state.
 }
 ```
 
+#### `token allowance-nft`
+
+**Output** (specific serials):
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "ownerAccountId": "0.0.12345",
+  "spenderAccountId": "0.0.54321",
+  "serials": [1, 2, 3],
+  "allSerials": false,
+  "network": "testnet"
+}
+```
+
+**Output** (`--all-serials`):
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "ownerAccountId": "0.0.12345",
+  "spenderAccountId": "0.0.54321",
+  "serials": null,
+  "allSerials": true,
+  "network": "testnet"
+}
+```
+
 ### Topic Plugin
 
 #### `topic create`
@@ -630,6 +660,37 @@ Lists all tokens from all networks stored in state.
   "stateOnly": true
 }
 ```
+
+#### `topic update`
+
+**Output**:
+
+```json
+{
+  "topicId": "0.0.13579",
+  "name": "my-topic",
+  "network": "testnet",
+  "updatedFields": ["memo", "submitKey"],
+  "memo": "Updated memo",
+  "adminKeyPresent": true,
+  "adminKeyThreshold": 0,
+  "adminKeyCount": 1,
+  "submitKeyPresent": true,
+  "submitKeyThreshold": 0,
+  "submitKeyCount": 1,
+  "autoRenewAccount": "0.0.12345",
+  "autoRenewPeriod": 7776000,
+  "expirationTime": "2025-01-01T00:00:00.000Z",
+  "transactionId": "0.0.123@1700000000.123456789"
+}
+```
+
+**Notes:**
+
+- `name` is present only if the topic has a stored alias.
+- `memo`, `autoRenewAccount`, `autoRenewPeriod`, `expirationTime`, `adminKeyCount`, `submitKeyCount` are optional — only present when set.
+- `updatedFields` lists the fields that were actually changed in this update.
+- `adminKeyThreshold` / `submitKeyThreshold` — `0` means all keys must sign (default).
 
 #### `topic submit-message`
 
@@ -890,7 +951,7 @@ hcli account list --output accounts.json --format json
 hcli account create --name my-account --script
 ```
 
-**Batch support:** Commands that register the `batchify` hook (e.g., `account create`, `token create-ft`, `topic create`, `topic delete`) accept `--batch <batch-name>` to defer execution. When used, the output follows the batchify schema (`batchName`, `transactionOrder`) instead of the command's normal output.
+**Batch support:** Commands that register the `batchify` hook (e.g., `account create`, `token create-ft`, `topic create`, `topic update`, `topic delete`) accept `--batch <batch-name>` to defer execution. When used, the output follows the batchify schema (`batchName`, `transactionOrder`) instead of the command's normal output.
 
 ## Adding New Output Schemas
 
