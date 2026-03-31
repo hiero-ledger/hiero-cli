@@ -11,7 +11,6 @@ import type {
   GetAccountsAPIResponse,
   GetAccountsQueryParams,
   GetAccountsResponse,
-  MirrorNodeKeyType,
   NftInfo,
   TokenAirdropsResponse,
   TokenBalancesResponse,
@@ -38,6 +37,7 @@ import { handleMirrorNodeErrorResponse } from '@/core/utils/handle-mirror-node-e
 import {
   AccountAPIResponseSchema,
   GetAccountsAPIResponseSchema,
+  NftInfoSchema,
   TokenAirdropsResponseSchema,
   TokenBalancesResponseSchema,
   TokenInfoSchema,
@@ -45,7 +45,7 @@ import {
   TopicMessagesAPIResponseSchema,
   TopicMessageSchema,
 } from './schemas';
-import { NetworkToBaseUrl } from './types';
+import { MirrorNodeKeyType, NetworkToBaseUrl } from './types';
 
 export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeService {
   private static readonly API_PATH = '/api/v1';
@@ -388,7 +388,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as NftInfo;
+      return parseWithSchema(
+        NftInfoSchema,
+        await response.json(),
+        `Mirror Node GET /tokens/${tokenId}/nfts/${serialNumber}`,
+      );
     } catch (error) {
       if (error instanceof CliError) throw error;
       throw new NetworkError(
@@ -595,9 +599,9 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
 
   private getKeyAlgorithm(keyType: MirrorNodeKeyType): KeyAlgorithm {
     switch (keyType) {
-      case 'ECDSA_SECP256K1':
+      case MirrorNodeKeyType.ECDSA_SECP256K1:
         return KeyAlgorithm.ECDSA;
-      case 'ED25519':
+      case MirrorNodeKeyType.ED25519:
         return KeyAlgorithm.ED25519;
     }
   }

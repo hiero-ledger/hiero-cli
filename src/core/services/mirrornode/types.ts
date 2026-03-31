@@ -14,7 +14,10 @@ export const NetworkToBaseUrl = new Map<SupportedNetwork, string>([
   [SupportedNetwork.LOCALNET, 'http://localhost:5551'],
 ]);
 
-export type MirrorNodeKeyType = 'ECDSA_SECP256K1' | 'ED25519';
+export enum MirrorNodeKeyType {
+  ECDSA_SECP256K1 = 'ECDSA_SECP256K1',
+  ED25519 = 'ED25519',
+}
 
 export interface AccountAPIBalance {
   balance: number;
@@ -244,14 +247,14 @@ export interface ExchangeRateResponse {
 
 // NFT Info
 export interface NftInfo {
-  account_id: string;
+  account_id: string | null;
   created_timestamp: string;
   delegating_spender?: string | null;
   deleted: boolean;
   metadata?: string;
   modified_timestamp: string;
   serial_number: number;
-  spender_id?: string | null;
+  spender?: string | null;
   token_id: string;
 }
 

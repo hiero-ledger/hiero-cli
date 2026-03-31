@@ -1,23 +1,25 @@
-import type {
-  AccountAPIBalance,
-  AccountAPIKey,
-  AccountAPIResponse,
-  AccountListItemAPIResponse,
-  AccountListItemBalance,
-  AccountListItemTokenBalance,
-  GetAccountsAPIResponse,
-  TokenAirdropItem,
-  TokenAirdropsResponse,
-  TokenBalanceInfo,
-  TokenBalancesResponse,
-  TokenInfo,
-  TopicInfo,
-  TopicMessage,
-  TopicMessageChunkInfo,
-  TopicMessagesAPIResponse,
-} from './types';
-
 import { z } from 'zod';
+
+import {
+  type AccountAPIBalance,
+  type AccountAPIKey,
+  type AccountAPIResponse,
+  type AccountListItemAPIResponse,
+  type AccountListItemBalance,
+  type AccountListItemTokenBalance,
+  type GetAccountsAPIResponse,
+  MirrorNodeKeyType,
+  type NftInfo,
+  type TokenAirdropItem,
+  type TokenAirdropsResponse,
+  type TokenBalanceInfo,
+  type TokenBalancesResponse,
+  type TokenInfo,
+  type TopicInfo,
+  type TopicMessage,
+  type TopicMessageChunkInfo,
+  type TopicMessagesAPIResponse,
+} from './types';
 
 const mirrorKeyObject = z.object({
   _type: z.string(),
@@ -53,7 +55,7 @@ export const TokenInfoSchema: z.ZodType<TokenInfo> = z.object({
   memo: z.string(),
 });
 
-const mirrorNodeKeyTypeSchema = z.enum(['ECDSA_SECP256K1', 'ED25519']);
+const mirrorNodeKeyTypeSchema = z.enum(MirrorNodeKeyType);
 
 export const AccountAPIBalanceSchema: z.ZodType<AccountAPIBalance> = z.object({
   balance: z.number(),
@@ -171,6 +173,20 @@ export const TokenAirdropsResponseSchema: z.ZodType<TokenAirdropsResponse> =
   z.object({
     airdrops: z.array(TokenAirdropItemSchema),
   });
+
+const nullableStringKey = z.union([z.string(), z.null()]).optional();
+
+export const NftInfoSchema: z.ZodType<NftInfo> = z.object({
+  account_id: z.union([z.string(), z.null()]),
+  created_timestamp: z.string(),
+  delegating_spender: nullableStringKey,
+  deleted: z.boolean(),
+  metadata: z.string().optional(),
+  modified_timestamp: z.string(),
+  serial_number: z.number(),
+  spender: nullableStringKey,
+  token_id: z.string(),
+});
 
 export const TopicInfoSchema: z.ZodType<TopicInfo> = z.object({
   topic_id: z.string(),

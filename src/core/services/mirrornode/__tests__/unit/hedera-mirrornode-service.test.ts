@@ -10,7 +10,10 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { NetworkError, NotFoundError } from '@/core/errors';
 import { HederaMirrornodeServiceDefaultImpl } from '@/core/services/mirrornode/hedera-mirrornode-service';
-import { AccountBalanceOperator } from '@/core/services/mirrornode/types';
+import {
+  AccountBalanceOperator,
+  MirrorNodeKeyType,
+} from '@/core/services/mirrornode/types';
 import {
   MirrorNodeRequestOrderParameter,
   SupportedNetwork,
@@ -604,7 +607,10 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
     it('should map account with key and keyAlgorithm', async () => {
       const { service } = setupService();
       const mockAccount = createMockAccountListItemAPIResponse({
-        key: { _type: 'ECDSA_SECP256K1', key: 'ecdsa_key_123' },
+        key: {
+          _type: MirrorNodeKeyType.ECDSA_SECP256K1,
+          key: 'ecdsa_key_123',
+        },
       });
       const mockResponse = createMockGetAccountsAPIResponse([mockAccount]);
       (global.fetch as jest.Mock).mockResolvedValue({
