@@ -9,6 +9,10 @@ import type {
   TokenBalanceInfo,
   TokenBalancesResponse,
   TokenInfo,
+  TopicInfo,
+  TopicMessage,
+  TopicMessageChunkInfo,
+  TopicMessagesAPIResponse,
 } from './types';
 
 import { z } from 'zod';
@@ -108,6 +112,36 @@ export const GetAccountsAPIResponseSchema: z.ZodType<GetAccountsAPIResponse> =
       .optional(),
   });
 
+const topicMessageChunkInitialTxIdSchema = z.union([
+  z.string(),
+  z.record(z.string(), z.unknown()),
+]);
+
+const TopicMessageChunkInfoSchema: z.ZodType<TopicMessageChunkInfo> = z.object({
+  initial_transaction_id: topicMessageChunkInitialTxIdSchema,
+  number: z.number(),
+  total: z.number(),
+});
+
+export const TopicMessageSchema: z.ZodType<TopicMessage> = z.object({
+  consensus_timestamp: z.string(),
+  topic_id: z.string(),
+  message: z.string(),
+  running_hash: z.string(),
+  sequence_number: z.number(),
+  chunk_info: TopicMessageChunkInfoSchema.optional(),
+});
+
+export const TopicMessagesAPIResponseSchema: z.ZodType<TopicMessagesAPIResponse> =
+  z.object({
+    messages: z.array(TopicMessageSchema),
+    links: z
+      .object({
+        next: z.string().nullable().optional(),
+      })
+      .optional(),
+  });
+
 export const TokenBalanceInfoSchema: z.ZodType<TokenBalanceInfo> = z.object({
   token_id: z.string(),
   balance: z.number(),
@@ -123,3 +157,18 @@ export const TokenBalancesResponseSchema: z.ZodType<TokenBalancesResponse> =
       })
       .optional(),
   });
+
+export const TopicInfoSchema: z.ZodType<TopicInfo> = z.object({
+  topic_id: z.string(),
+  admin_key: optionalKeyRef,
+  submit_key: optionalKeyRef,
+  memo: z.string(),
+  running_hash: z.string().optional(),
+  sequence_number: z.number().optional(),
+  consensus_timestamp: z.string().optional(),
+  auto_renew_account: z.string().optional(),
+  auto_renew_period: z.number(),
+  expiration_timestamp: z.string().optional(),
+  created_timestamp: z.string(),
+  deleted: z.boolean(),
+});
