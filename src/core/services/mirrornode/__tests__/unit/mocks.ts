@@ -206,15 +206,15 @@ export const createMockExchangeRateResponse = (
 ): ExchangeRateResponse => ({
   current_rate: {
     cent_equivalent: 12,
-    expiration_time: '2024-01-01T12:00:00.000Z',
+    expiration_time: 1774962000,
     hbar_equivalent: 1,
   },
   next_rate: {
     cent_equivalent: 12,
-    expiration_time: '2024-01-01T12:00:00.000Z',
+    expiration_time: 1774965600,
     hbar_equivalent: 1,
   },
-  timestamp: '2024-01-01T12:00:00.000Z',
+  timestamp: '1774958462.794936000',
   ...overrides,
 });
 

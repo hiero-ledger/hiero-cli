@@ -231,12 +231,12 @@ export interface TokenAirdropsResponse {
 export interface ExchangeRateResponse {
   current_rate: {
     cent_equivalent: number;
-    expiration_time: string;
+    expiration_time: number;
     hbar_equivalent: number;
   };
   next_rate: {
     cent_equivalent: number;
-    expiration_time: string;
+    expiration_time: number;
     hbar_equivalent: number;
   };
   timestamp: string;
