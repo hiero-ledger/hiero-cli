@@ -14,7 +14,10 @@ export const NetworkToBaseUrl = new Map<SupportedNetwork, string>([
   [SupportedNetwork.LOCALNET, 'http://localhost:5551'],
 ]);
 
-export type MirrorNodeKeyType = 'ECDSA_SECP256K1' | 'ED25519';
+export enum MirrorNodeKeyType {
+  ECDSA_SECP256K1 = 'ECDSA_SECP256K1',
+  ED25519 = 'ED25519',
+}
 
 export interface AccountAPIBalance {
   balance: number;

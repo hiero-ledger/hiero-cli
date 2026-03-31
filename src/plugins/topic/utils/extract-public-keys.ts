@@ -12,14 +12,11 @@ import type { MirrorNodeKey } from '@/core/services/mirrornode/types';
 import { Key, KeyList, PublicKey } from '@hashgraph/sdk';
 import * as proto from '@hiero-ledger/proto';
 
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
+
 export interface ExtractedKeysResult {
   publicKeys: string[];
   threshold: number;
-}
-
-enum MirrorNodeKeyType {
-  ED25519 = 'ED25519',
-  ECDSA_SECP256K1 = 'ECDSA_SECP256K1',
 }
 
 const MIRROR_NODE_PROTOBUF_TYPE = 'ProtobufEncoded';

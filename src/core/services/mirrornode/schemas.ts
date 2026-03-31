@@ -1,24 +1,25 @@
-import type {
-  AccountAPIBalance,
-  AccountAPIKey,
-  AccountAPIResponse,
-  AccountListItemAPIResponse,
-  AccountListItemBalance,
-  AccountListItemTokenBalance,
-  GetAccountsAPIResponse,
-  NftInfo,
-  TokenAirdropItem,
-  TokenAirdropsResponse,
-  TokenBalanceInfo,
-  TokenBalancesResponse,
-  TokenInfo,
-  TopicInfo,
-  TopicMessage,
-  TopicMessageChunkInfo,
-  TopicMessagesAPIResponse,
-} from './types';
-
 import { z } from 'zod';
+
+import {
+  type AccountAPIBalance,
+  type AccountAPIKey,
+  type AccountAPIResponse,
+  type AccountListItemAPIResponse,
+  type AccountListItemBalance,
+  type AccountListItemTokenBalance,
+  type GetAccountsAPIResponse,
+  MirrorNodeKeyType,
+  type NftInfo,
+  type TokenAirdropItem,
+  type TokenAirdropsResponse,
+  type TokenBalanceInfo,
+  type TokenBalancesResponse,
+  type TokenInfo,
+  type TopicInfo,
+  type TopicMessage,
+  type TopicMessageChunkInfo,
+  type TopicMessagesAPIResponse,
+} from './types';
 
 const mirrorKeyObject = z.object({
   _type: z.string(),
@@ -54,7 +55,7 @@ export const TokenInfoSchema: z.ZodType<TokenInfo> = z.object({
   memo: z.string(),
 });
 
-const mirrorNodeKeyTypeSchema = z.enum(['ECDSA_SECP256K1', 'ED25519']);
+const mirrorNodeKeyTypeSchema = z.enum(MirrorNodeKeyType);
 
 export const AccountAPIBalanceSchema: z.ZodType<AccountAPIBalance> = z.object({
   balance: z.number(),
