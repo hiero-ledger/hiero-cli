@@ -11,6 +11,7 @@ import type {
   TokenAllowanceFtParams,
   TokenAssociationParams,
   TokenCreateParams,
+  TokenDeleteParams,
   TokenMintParams,
   TokenTransferParams,
 } from '@/core/types/token.types';
@@ -26,6 +27,7 @@ import {
   NftId,
   TokenAssociateTransaction,
   TokenCreateTransaction,
+  TokenDeleteTransaction,
   TokenId,
   TokenMintTransaction,
   TokenSupplyType,
@@ -340,6 +342,15 @@ export class TokenServiceImpl implements TokenService {
     }
 
     return tx;
+  }
+
+  createDeleteTransaction(params: TokenDeleteParams): TokenDeleteTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating delete transaction for token ${params.tokenId}`,
+    );
+    return new TokenDeleteTransaction().setTokenId(
+      TokenId.fromString(params.tokenId),
+    );
   }
 
   /**

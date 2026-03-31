@@ -37,6 +37,7 @@ describe('Import Token Integration Tests', () => {
       initialSupply: '10',
       supplyType: SupplyType.INFINITE,
       name: `token-import-${Date.now()}`,
+      adminKey: `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
     };
     const createTokenResult = await tokenCreateFt({
       args: createTokenArgs,
@@ -57,11 +58,18 @@ describe('Import Token Integration Tests', () => {
   });
 
   afterEach(async () => {
-    const deleteTokenArgs: Record<string, unknown> = {
-      token: tokenId,
-    };
     await tokenDelete({
-      args: deleteTokenArgs,
+      args: { token: tokenId, stateOnly: true },
+      api: coreApi,
+      state: coreApi.state,
+      logger: coreApi.logger,
+      config: coreApi.config,
+    });
+  });
+
+  afterAll(async () => {
+    await tokenDelete({
+      args: { token: tokenId },
       api: coreApi,
       state: coreApi.state,
       logger: coreApi.logger,

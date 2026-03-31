@@ -26,6 +26,7 @@ import {
   createMockCustomFractionalFee,
   createMockTokenAssociateTransaction,
   createMockTokenCreateTransaction,
+  createMockTokenDeleteTransaction,
   createMockTransferTransaction,
 } from './mocks';
 
@@ -49,6 +50,7 @@ const TRANSFER_AMOUNT = 100n;
 const mockTransferTransaction = createMockTransferTransaction();
 const mockTokenCreateTransaction = createMockTokenCreateTransaction();
 const mockTokenAssociateTransaction = createMockTokenAssociateTransaction();
+const mockTokenDeleteTransaction = createMockTokenDeleteTransaction();
 const mockCustomFixedFee = createMockCustomFixedFee();
 const mockCustomFractionalFee = createMockCustomFractionalFee();
 
@@ -68,6 +70,7 @@ jest.mock('@hashgraph/sdk', () => ({
   TransferTransaction: jest.fn(() => mockTransferTransaction),
   TokenCreateTransaction: jest.fn(() => mockTokenCreateTransaction),
   TokenAssociateTransaction: jest.fn(() => mockTokenAssociateTransaction),
+  TokenDeleteTransaction: jest.fn(() => mockTokenDeleteTransaction),
   CustomFixedFee: jest.fn(() => mockCustomFixedFee),
   CustomFractionalFee: jest.fn(() => mockCustomFractionalFee),
   FeeAssessmentMethod: {
@@ -739,6 +742,28 @@ describe('TokenServiceImpl', () => {
 
       expect(TokenId.fromString).toHaveBeenCalledWith('0.0.9999');
       expect(AccountId.fromString).toHaveBeenCalledWith('0.0.8888');
+    });
+  });
+
+  describe('createDeleteTransaction', () => {
+    it('should create delete transaction with correct tokenId', () => {
+      const params = { tokenId: TOKEN_ID };
+
+      const result = tokenService.createDeleteTransaction(params);
+
+      expect(TokenId.fromString).toHaveBeenCalledWith(TOKEN_ID);
+      expect(mockTokenDeleteTransaction.setTokenId).toHaveBeenCalledWith(
+        mockTokenIdInstance,
+      );
+      expect(result).toBe(mockTokenDeleteTransaction);
+    });
+
+    it('should log debug messages during delete transaction creation', () => {
+      tokenService.createDeleteTransaction({ tokenId: TOKEN_ID });
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        `[TOKEN SERVICE] Creating delete transaction for token ${TOKEN_ID}`,
+      );
     });
   });
 });

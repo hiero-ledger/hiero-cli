@@ -1,14 +1,24 @@
 import { z } from 'zod';
 
-import { TokenReferenceObjectSchema } from '@/core/schemas/common-schemas';
+import {
+  EntityReferenceSchema,
+  KeyManagerTypeSchema,
+  KeySchema,
+} from '@/core/schemas';
 
-/**
- * Input schema for token delete command
- */
 export const TokenDeleteInputSchema = z.object({
-  token: TokenReferenceObjectSchema.describe(
-    'Token identifier: either a token alias or token-id',
+  token: EntityReferenceSchema.describe('Token identifier (ID or name)'),
+  adminKey: KeySchema.optional().describe('Admin key for token deletion'),
+  keyManager: KeyManagerTypeSchema.optional().describe(
+    'Key manager type (defaults to config setting)',
   ),
+  stateOnly: z
+    .boolean()
+    .optional()
+    .default(false)
+    .describe(
+      'Remove token only from local CLI state without network transaction',
+    ),
 });
 
 export type TokenDeleteInput = z.infer<typeof TokenDeleteInputSchema>;
