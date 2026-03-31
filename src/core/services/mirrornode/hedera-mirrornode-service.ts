@@ -38,6 +38,7 @@ import { handleMirrorNodeErrorResponse } from '@/core/utils/handle-mirror-node-e
 import {
   AccountAPIResponseSchema,
   GetAccountsAPIResponseSchema,
+  NftInfoSchema,
   TokenAirdropsResponseSchema,
   TokenBalancesResponseSchema,
   TokenInfoSchema,
@@ -388,7 +389,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as NftInfo;
+      return parseWithSchema(
+        NftInfoSchema,
+        await response.json(),
+        `Mirror Node GET /tokens/${tokenId}/nfts/${serialNumber}`,
+      );
     } catch (error) {
       if (error instanceof CliError) throw error;
       throw new NetworkError(

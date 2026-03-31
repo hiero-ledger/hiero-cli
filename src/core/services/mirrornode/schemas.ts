@@ -6,6 +6,7 @@ import type {
   AccountListItemBalance,
   AccountListItemTokenBalance,
   GetAccountsAPIResponse,
+  NftInfo,
   TokenAirdropItem,
   TokenAirdropsResponse,
   TokenBalanceInfo,
@@ -171,6 +172,20 @@ export const TokenAirdropsResponseSchema: z.ZodType<TokenAirdropsResponse> =
   z.object({
     airdrops: z.array(TokenAirdropItemSchema),
   });
+
+const nullableStringKey = z.union([z.string(), z.null()]).optional();
+
+export const NftInfoSchema: z.ZodType<NftInfo> = z.object({
+  account_id: z.union([z.string(), z.null()]),
+  created_timestamp: z.string(),
+  delegating_spender: nullableStringKey,
+  deleted: z.boolean(),
+  metadata: z.string().optional(),
+  modified_timestamp: z.string(),
+  serial_number: z.number(),
+  spender: nullableStringKey,
+  token_id: z.string(),
+});
 
 export const TopicInfoSchema: z.ZodType<TopicInfo> = z.object({
   topic_id: z.string(),

@@ -244,14 +244,14 @@ export interface ExchangeRateResponse {
 
 // NFT Info
 export interface NftInfo {
-  account_id: string;
+  account_id: string | null;
   created_timestamp: string;
   delegating_spender?: string | null;
   deleted: boolean;
   metadata?: string;
   modified_timestamp: string;
   serial_number: number;
-  spender_id?: string | null;
+  spender?: string | null;
   token_id: string;
 }
 

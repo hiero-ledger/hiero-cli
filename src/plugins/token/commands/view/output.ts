@@ -48,7 +48,7 @@ export const TokenViewOutputSchema = z.object({
   nftSerial: z
     .object({
       serialNumber: z.number(),
-      owner: z.string(),
+      owner: z.string().nullable(),
       metadata: z.string().optional(), // Decoded from base64
       metadataRaw: z.string().optional(), // Original base64
       createdTimestamp: z.string().optional(),
@@ -95,7 +95,11 @@ export const TOKEN_VIEW_TEMPLATE = `
  NFT Details:
  
    Serial: #{{nftSerial.serialNumber}}
+{{#if nftSerial.owner}}
    Owner: {{hashscanLink nftSerial.owner "account" network}}
+{{else}}
+   Owner: —
+{{/if}}
 {{#if nftSerial.createdTimestamp}}
    Created: {{nftSerial.createdTimestamp}}
 {{/if~}}

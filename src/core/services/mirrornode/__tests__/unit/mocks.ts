@@ -222,10 +222,12 @@ export const createMockNftInfo = (
 ): NftInfo => ({
   account_id: '0.0.1234',
   created_timestamp: '2024-01-01T12:00:00.000Z',
+  delegating_spender: null,
   deleted: false,
   metadata: 'VGhpcyBpcyBhIHRlc3QgTkZU',
   modified_timestamp: '2024-01-01T12:00:00.000Z',
   serial_number: 1,
+  spender: null,
   token_id: '0.0.2000',
   ...overrides,
 });
