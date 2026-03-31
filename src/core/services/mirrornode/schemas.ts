@@ -6,6 +6,8 @@ import type {
   AccountListItemBalance,
   AccountListItemTokenBalance,
   GetAccountsAPIResponse,
+  TokenBalanceInfo,
+  TokenBalancesResponse,
   TokenInfo,
   TopicInfo,
   TopicMessage,
@@ -124,6 +126,22 @@ export const TopicMessageSchema: z.ZodType<TopicMessage> = z.object({
 export const TopicMessagesAPIResponseSchema: z.ZodType<TopicMessagesAPIResponse> =
   z.object({
     messages: z.array(TopicMessageSchema),
+    links: z
+      .object({
+        next: z.string().nullable().optional(),
+      })
+      .optional(),
+  });
+
+export const TokenBalanceInfoSchema: z.ZodType<TokenBalanceInfo> = z.object({
+  token_id: z.string(),
+  balance: z.number(),
+  decimals: z.number().optional(),
+});
+
+export const TokenBalancesResponseSchema: z.ZodType<TokenBalancesResponse> =
+  z.object({
+    tokens: z.array(TokenBalanceInfoSchema),
     links: z
       .object({
         next: z.string().nullable().optional(),

@@ -49,18 +49,17 @@ export interface AccountResponse {
   keyAlgorithm: KeyAlgorithm;
 }
 
-// Token Balance Response
-export interface TokenBalancesResponse {
-  account: string;
-  balance: number;
-  tokens: TokenBalanceInfo[];
-  timestamp: string;
-}
-
 export interface TokenBalanceInfo {
   token_id: string;
   balance: number;
-  decimals: number;
+  decimals?: number;
+}
+
+export interface TokenBalancesResponse {
+  tokens: TokenBalanceInfo[];
+  links?: {
+    next?: string | null;
+  };
 }
 
 export type MirrorNodeKey = {
