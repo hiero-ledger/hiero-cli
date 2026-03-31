@@ -13,15 +13,15 @@ import {
 } from '@/plugins/token/commands/create-nft';
 
 import {
-  TOKEN_ALLOWANCE_NFT_TEMPLATE,
-  tokenAllowanceNft,
-  TokenAllowanceNftOutputSchema,
-} from './commands/allowance-nft';
-import {
   TOKEN_ALLOWANCE_FT_TEMPLATE,
   tokenAllowanceFt,
   TokenAllowanceFtOutputSchema,
 } from './commands/allowance-ft';
+import {
+  TOKEN_ALLOWANCE_NFT_TEMPLATE,
+  tokenAllowanceNft,
+  TokenAllowanceNftOutputSchema,
+} from './commands/allowance-nft';
 import {
   TOKEN_ASSOCIATE_TEMPLATE,
   tokenAssociate,
