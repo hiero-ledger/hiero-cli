@@ -33,6 +33,7 @@ import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeIdentityResolutionServiceMock as makeGlobalIdentityResolutionServiceMock,
   makeKeyResolverMock as makeGlobalKeyResolverMock,
+  makeScheduleTransactionServiceMock,
 } from '@/__tests__/mocks/mocks';
 import { InternalError, KeyAlgorithm } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
@@ -443,6 +444,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       ...makeGlobalIdentityResolutionServiceMock(),
       ...(config?.identityResolution || {}),
     },
+    schedule: makeScheduleTransactionServiceMock(),
     keyResolver,
   };
 

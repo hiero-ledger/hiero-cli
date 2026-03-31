@@ -33,6 +33,7 @@ import {
   makeKeyResolverMock,
   makeKmsMock,
   makeNetworkMock,
+  makeScheduleTransactionServiceMock,
   makeStateMock,
   makeTxExecuteMock,
   makeTxSignMock,
@@ -169,6 +170,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     } as unknown as ContractVerifierService,
     contractQuery,
     identityResolution,
+    schedule: makeScheduleTransactionServiceMock(),
     keyResolver,
   };
 
