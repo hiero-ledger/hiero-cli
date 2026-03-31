@@ -954,6 +954,14 @@ export const ResolvedPublicKeySchema = z.object({
   publicKey: z.string(),
 });
 
+export const NullLiteralSchema = z.literal('null');
+
+export const KeyThresholdSchema = z
+  .number()
+  .int()
+  .positive()
+  .describe('M-of-N signing threshold');
+
 export const MaxAutoAssociationsSchema = z
   .number()
   .int()

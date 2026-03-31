@@ -1,0 +1,1 @@
+export { TopicUpdateBatchStateHook } from './handler';

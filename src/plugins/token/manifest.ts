@@ -13,6 +13,16 @@ import {
 } from '@/plugins/token/commands/create-nft';
 
 import {
+  TOKEN_ALLOWANCE_FT_TEMPLATE,
+  tokenAllowanceFt,
+  TokenAllowanceFtOutputSchema,
+} from './commands/allowance-ft';
+import {
+  TOKEN_ALLOWANCE_NFT_TEMPLATE,
+  tokenAllowanceNft,
+  TokenAllowanceNftOutputSchema,
+} from './commands/allowance-nft';
+import {
   TOKEN_ASSOCIATE_TEMPLATE,
   tokenAssociate,
   TokenAssociateOutputSchema,
@@ -675,6 +685,58 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
+      name: 'allowance-ft',
+      summary: 'Approve fungible token allowance',
+      description:
+        'Approve (or revoke by setting amount to 0) a spender allowance for fungible tokens on behalf of the owner.',
+      registeredHooks: ['batchify'],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Owner account. Can be {accountId}:{privateKey} pair, key reference or account alias. Defaults to operator.',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Spender account: account-id or alias',
+        },
+        {
+          name: 'amount',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Allowance amount. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "100t"). Set to 0 to revoke.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenAllowanceFt,
+      output: {
+        schema: TokenAllowanceFtOutputSchema,
+        humanTemplate: TOKEN_ALLOWANCE_FT_TEMPLATE,
+      },
+    },
+    {
       name: 'list',
       summary: 'List all tokens',
       description:
@@ -740,6 +802,64 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenDeleteOutputSchema,
         humanTemplate: TOKEN_DELETE_TEMPLATE,
+      },
+    },
+    {
+      name: 'allowance-nft',
+      summary: 'Approve NFT allowance',
+      description:
+        'Approve a spender to transfer NFTs on behalf of the owner. Use --serials for specific serial numbers or --all-serials for the entire collection.',
+      registeredHooks: ['batchify'],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'NFT token: either a token alias or token-id',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Spender account (ID, EVM address, or alias)',
+        },
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Owner account. Accepts any key format. Defaults to operator.',
+        },
+        {
+          name: 'serials',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Specific NFT serial numbers to approve (e.g. "1,2,3"). Mutually exclusive with --all-serials.',
+        },
+        {
+          name: 'all-serials',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description:
+            'Approve all serials in the collection. Mutually exclusive with --serials.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenAllowanceNft,
+      output: {
+        schema: TokenAllowanceNftOutputSchema,
+        humanTemplate: TOKEN_ALLOWANCE_NFT_TEMPLATE,
       },
     },
     {

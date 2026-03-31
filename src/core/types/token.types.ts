@@ -106,3 +106,35 @@ export interface NftTransferParams {
   toAccountId: string;
   serialNumbers: number[];
 }
+
+/**
+ * Parameters for approving NFT allowance for specific serial numbers
+ */
+export interface NftAllowanceApproveSpecificParams {
+  tokenId: string;
+  ownerAccountId: string;
+  spenderAccountId: string;
+  serialNumbers: number[];
+  allSerials?: false;
+}
+
+/**
+ * Parameters for approving NFT allowance for all serials in a collection
+ */
+export interface NftAllowanceApproveAllSerialsParams {
+  tokenId: string;
+  ownerAccountId: string;
+  spenderAccountId: string;
+  allSerials: true;
+}
+
+export type NftAllowanceApproveParams =
+  | NftAllowanceApproveSpecificParams
+  | NftAllowanceApproveAllSerialsParams;
+
+export interface TokenAllowanceFtParams {
+  tokenId: string;
+  ownerAccountId: string;
+  spenderAccountId: string;
+  amount: bigint;
+}
