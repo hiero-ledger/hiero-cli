@@ -45,6 +45,7 @@ import {
   TopicInfoSchema,
   TopicMessagesAPIResponseSchema,
   TopicMessageSchema,
+  TransactionDetailsResponseSchema,
 } from './schemas';
 import { MirrorNodeKeyType, NetworkToBaseUrl } from './types';
 
@@ -451,7 +452,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as TransactionDetailsResponse;
+      return parseWithSchema(
+        TransactionDetailsResponseSchema,
+        await response.json(),
+        `Mirror Node GET /transactions/${transactionId}`,
+      );
     } catch (error) {
       if (error instanceof CliError) throw error;
       throw new NetworkError(

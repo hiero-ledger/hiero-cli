@@ -97,10 +97,10 @@ export class TokenServiceImpl implements TokenService {
       wipePublicKey,
       kycPublicKey,
       freezePublicKey,
-      freezeDefault,
       pausePublicKey,
       feeSchedulePublicKey,
       metadataPublicKey,
+      freezeDefault,
       customFees,
       memo,
       autoRenewPeriodSeconds,
@@ -189,6 +189,11 @@ export class TokenServiceImpl implements TokenService {
     if (metadataPublicKey) {
       tokenCreateTx.setMetadataKey(metadataPublicKey);
       this.logger.debug(`[TOKEN SERVICE] Set metadata key`);
+    }
+
+    if (freezeDefault !== undefined) {
+      tokenCreateTx.setFreezeDefault(freezeDefault);
+      this.logger.debug(`[TOKEN SERVICE] Set freeze default: ${freezeDefault}`);
     }
 
     if (autoRenewPeriodSeconds && autoRenewAccountId) {

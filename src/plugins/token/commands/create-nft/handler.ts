@@ -73,6 +73,45 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       api.keyResolver,
       'token:supply',
     );
+    const freeze = await resolveOptionalKey(
+      validArgs.freezeKey,
+      keyManager,
+      api.keyResolver,
+      'token:freeze',
+    );
+    const wipe = await resolveOptionalKey(
+      validArgs.wipeKey,
+      keyManager,
+      api.keyResolver,
+      'token:wipe',
+    );
+    const pause = await resolveOptionalKey(
+      validArgs.pauseKey,
+      keyManager,
+      api.keyResolver,
+      'token:pause',
+    );
+    const kyc = await resolveOptionalKey(
+      validArgs.kycKey,
+      keyManager,
+      api.keyResolver,
+      'token:kyc',
+    );
+    const feeSchedule = await resolveOptionalKey(
+      validArgs.feeScheduleKey,
+      keyManager,
+      api.keyResolver,
+      'token:feeSchedule',
+    );
+    const metadata = await resolveOptionalKey(
+      validArgs.metadataKey,
+      keyManager,
+      api.keyResolver,
+      'token:metadata',
+    );
+    const expirationTime = validArgs.expirationTime
+      ? new Date(validArgs.expirationTime)
+      : undefined;
 
     let finalMaxSupply: bigint | undefined;
     if (validArgs.supplyType === SupplyType.FINITE) {
@@ -109,7 +148,17 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       treasury,
       admin,
       supply,
+      freeze,
+      wipe,
+      pause,
+      kyc,
+      feeSchedule,
+      metadata,
       finalMaxSupply,
+      freezeDefault: validArgs.freezeDefault,
+      autoRenewPeriod: validArgs.autoRenewPeriod,
+      autoRenewAccountId: validArgs.autoRenewAccountId,
+      expirationTime,
       keyRefIds: [treasury.keyRefId, ...adminKeyRefIds, ...supplyKeyRefIds],
     };
   }
@@ -132,6 +181,16 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
         ? PublicKey.fromString(normalisedParams.admin.publicKey)
         : undefined,
       supplyPublicKey: toPublicKey(normalisedParams.supply),
+      freezePublicKey: toPublicKey(normalisedParams.freeze),
+      wipePublicKey: toPublicKey(normalisedParams.wipe),
+      pausePublicKey: toPublicKey(normalisedParams.pause),
+      kycPublicKey: toPublicKey(normalisedParams.kyc),
+      feeSchedulePublicKey: toPublicKey(normalisedParams.feeSchedule),
+      metadataPublicKey: toPublicKey(normalisedParams.metadata),
+      freezeDefault: normalisedParams.freezeDefault,
+      autoRenewPeriod: normalisedParams.autoRenewPeriod,
+      autoRenewAccountId: normalisedParams.autoRenewAccountId,
+      expirationTime: normalisedParams.expirationTime,
       memo: normalisedParams.memo,
     });
     return { transaction };
@@ -200,6 +259,12 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       supplyType: normalisedParams.supplyType,
       adminPublicKey: normalisedParams.admin?.publicKey,
       supplyPublicKey: normalisedParams.supply?.publicKey,
+      freezePublicKey: normalisedParams.freeze?.publicKey,
+      wipePublicKey: normalisedParams.wipe?.publicKey,
+      pausePublicKey: normalisedParams.pause?.publicKey,
+      kycPublicKey: normalisedParams.kyc?.publicKey,
+      feeSchedulePublicKey: normalisedParams.feeSchedule?.publicKey,
+      metadataPublicKey: normalisedParams.metadata?.publicKey,
       network: normalisedParams.network,
     });
 
@@ -227,6 +292,12 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       transactionId: result.transactionId,
       adminPublicKey: normalisedParams.admin?.publicKey,
       supplyPublicKey: normalisedParams.supply?.publicKey,
+      freezePublicKey: normalisedParams.freeze?.publicKey,
+      wipePublicKey: normalisedParams.wipe?.publicKey,
+      pausePublicKey: normalisedParams.pause?.publicKey,
+      kycPublicKey: normalisedParams.kyc?.publicKey,
+      feeSchedulePublicKey: normalisedParams.feeSchedule?.publicKey,
+      metadataPublicKey: normalisedParams.metadata?.publicKey,
       alias: normalisedParams.alias,
       network: normalisedParams.network,
     };

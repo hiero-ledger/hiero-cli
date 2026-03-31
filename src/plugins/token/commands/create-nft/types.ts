@@ -26,7 +26,17 @@ export interface TokenCreateNftNormalizedParams extends BaseNormalizedParams {
   treasury: ResolvedAccountCredential;
   admin?: ResolvedPublicKey;
   supply?: ResolvedPublicKey;
+  freeze?: ResolvedPublicKey;
+  wipe?: ResolvedPublicKey;
+  pause?: ResolvedPublicKey;
+  kyc?: ResolvedPublicKey;
+  feeSchedule?: ResolvedPublicKey;
+  metadata?: ResolvedPublicKey;
   finalMaxSupply?: bigint;
+  freezeDefault?: boolean;
+  autoRenewPeriod?: number;
+  autoRenewAccountId?: string;
+  expirationTime?: Date;
 }
 
 export interface TokenCreateNftBuildTransactionResult extends BaseBuildTransactionResult {}
