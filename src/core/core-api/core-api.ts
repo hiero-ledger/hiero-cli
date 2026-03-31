@@ -24,6 +24,7 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { ReceiptService } from '@/core/services/receipt/receipt-service.interface';
+import type { ScheduleTransactionService } from '@/core/services/schedule-transaction/schedule-transaction-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
@@ -48,6 +49,7 @@ import { NetworkServiceImpl } from '@/core/services/network/network-service';
 import { OutputServiceImpl } from '@/core/services/output/output-service';
 import { PluginManagementServiceImpl } from '@/core/services/plugin-management/plugin-management-service';
 import { ReceiptServiceImpl } from '@/core/services/receipt/receipt-service';
+import { ScheduleTransactionServiceImpl } from '@/core/services/schedule-transaction/schedule-transaction-service';
 import { ZustandGenericStateServiceImpl } from '@/core/services/state/state-service';
 import { TokenServiceImpl } from '@/core/services/token/token-service';
 import { TopicServiceImpl } from '@/core/services/topic/topic-transaction-service';
@@ -77,6 +79,7 @@ export class CoreApiImplementation implements CoreApi {
   public contractQuery: ContractQueryService;
   public identityResolution: IdentityResolutionService;
   public batch: BatchTransactionService;
+  public schedule: ScheduleTransactionService;
   public receipt: ReceiptService;
 
   constructor(storageDir?: string) {
@@ -136,6 +139,7 @@ export class CoreApiImplementation implements CoreApi {
       this.mirror,
     );
     this.batch = new BatchTransactionServiceImpl(this.logger);
+    this.schedule = new ScheduleTransactionServiceImpl(this.logger);
     this.receipt = new ReceiptServiceImpl(this.logger, this.network);
   }
 }

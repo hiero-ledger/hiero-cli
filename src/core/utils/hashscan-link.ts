@@ -15,6 +15,7 @@ export type HashscanEntityType =
   | 'transaction'
   | 'transactionsById'
   | 'topic'
+  | 'schedule'
   | 'contract';
 
 /**

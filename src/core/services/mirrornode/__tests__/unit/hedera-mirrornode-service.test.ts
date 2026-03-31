@@ -24,6 +24,7 @@ import {
   createMockAccountListItemAPIResponse,
   createMockExchangeRateResponse,
   createMockGetAccountsAPIResponse,
+  createMockMirrorNodeScheduleByIdJson,
   createMockMirrorNodeTokenByIdJson,
   createMockNftInfo,
   createMockTokenAirdropsResponse,
@@ -45,6 +46,7 @@ const TEST_ACCOUNT_ID = '0.0.1234';
 const TEST_TOKEN_ID = '0.0.2000';
 const TEST_SERIAL_NUMBER = 1;
 const TEST_TOPIC_ID = '0.0.3000';
+const TEST_SCHEDULE_ID = '0.0.5678';
 const TEST_TX_ID = '0.0.1234-1700000000-000000000';
 
 // Network URLs
@@ -859,6 +861,57 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await expect(service.getTokenInfo(TEST_TOKEN_ID)).rejects.toThrow(
         NotFoundError,
+      );
+    });
+  });
+
+  describe('getScheduled', () => {
+    it('should fetch schedule info with correct URL', async () => {
+      const { service } = setupService();
+      const mockJson = createMockMirrorNodeScheduleByIdJson({
+        schedule_id: TEST_SCHEDULE_ID,
+      });
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockJson),
+      });
+
+      const result = await service.getScheduled(TEST_SCHEDULE_ID);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_API_URL}/schedules/${TEST_SCHEDULE_ID}`,
+      );
+      expect(result.schedule_id).toBe(TEST_SCHEDULE_ID);
+      expect(result.creator_account_id).toBe('0.0.1234');
+      expect(result.payer_account_id).toBe('0.0.1234');
+      expect(result.wait_for_expiry).toBe(false);
+    });
+
+    it('should throw error on HTTP 404', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      await expect(service.getScheduled(TEST_SCHEDULE_ID)).rejects.toThrow(
+        NotFoundError,
+      );
+    });
+
+    it('should work with mainnet network', async () => {
+      const { service } = setupService(SupportedNetwork.MAINNET);
+      const mockJson = createMockMirrorNodeScheduleByIdJson();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockJson),
+      });
+
+      await service.getScheduled(TEST_SCHEDULE_ID);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${MAINNET_API_URL}/schedules/${TEST_SCHEDULE_ID}`,
       );
     });
   });

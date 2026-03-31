@@ -45,6 +45,11 @@ export function mapReceiptToTransactionResult(
     contractId = toEntityIdString(receipt.contractId);
   }
 
+  let scheduleId: string | undefined;
+  if (receipt.scheduleId) {
+    scheduleId = receipt.scheduleId.toString();
+  }
+
   const success = receipt.status === Status.Success;
 
   return {
@@ -56,6 +61,7 @@ export function mapReceiptToTransactionResult(
     topicId,
     contractId,
     topicSequenceNumber,
+    scheduleId,
     receipt: {
       status: {
         status: success ? 'success' : 'failed',

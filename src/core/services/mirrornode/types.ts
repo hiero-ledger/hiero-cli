@@ -15,6 +15,7 @@ export const NetworkToBaseUrl = new Map<SupportedNetwork, string>([
 ]);
 
 export enum MirrorNodeKeyType {
+  PROTOBUF_ENCODED = 'ProtobufEncoded',
   ECDSA_SECP256K1 = 'ECDSA_SECP256K1',
   ED25519 = 'ED25519',
 }
@@ -66,7 +67,7 @@ export interface TokenBalancesResponse {
 }
 
 export type MirrorNodeKey = {
-  _type: string;
+  _type: MirrorNodeKeyType;
   key: string;
 };
 
@@ -256,6 +257,30 @@ export interface NftInfo {
   serial_number: number;
   spender?: string | null;
   token_id: string;
+}
+
+/** Mirror Node `ScheduleSignature` — GET /api/v1/schedules/{scheduleId} */
+export interface ScheduleSignatureInfo {
+  consensus_timestamp: string;
+  public_key_prefix?: string;
+  signature?: string;
+  type?: string;
+}
+
+/** Mirror Node `Schedule` — GET /api/v1/schedules/{scheduleId} */
+export interface ScheduleInfo {
+  admin_key?: MirrorNodeKey | null;
+  consensus_timestamp: string;
+  creator_account_id: string;
+  deleted: boolean;
+  executed_timestamp?: string | null;
+  expiration_time?: string | null;
+  memo: string;
+  payer_account_id: string;
+  schedule_id: string;
+  signatures?: ScheduleSignatureInfo[];
+  transaction_body?: string;
+  wait_for_expiry: boolean;
 }
 
 export interface Filter {
