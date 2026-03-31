@@ -92,10 +92,15 @@ export class TokenServiceImpl implements TokenService {
       wipePublicKey,
       kycPublicKey,
       freezePublicKey,
+      freezeDefault,
       pausePublicKey,
       feeSchedulePublicKey,
+      metadataPublicKey,
       customFees,
       memo,
+      autoRenewPeriodSeconds,
+      autoRenewAccountId,
+      expirationTime,
     } = params;
 
     // Convert supply type string to enum
@@ -160,6 +165,10 @@ export class TokenServiceImpl implements TokenService {
     if (freezePublicKey) {
       tokenCreateTx.setFreezeKey(freezePublicKey);
       this.logger.debug(`[TOKEN SERVICE] Set freeze key`);
+      tokenCreateTx.setFreezeDefault(freezeDefault ?? false);
+      this.logger.debug(
+        `[TOKEN SERVICE] Set freeze default: ${String(freezeDefault ?? false)}`,
+      );
     }
 
     if (pausePublicKey) {
@@ -170,6 +179,25 @@ export class TokenServiceImpl implements TokenService {
     if (feeSchedulePublicKey) {
       tokenCreateTx.setFeeScheduleKey(feeSchedulePublicKey);
       this.logger.debug(`[TOKEN SERVICE] Set fee schedule key`);
+    }
+
+    if (metadataPublicKey) {
+      tokenCreateTx.setMetadataKey(metadataPublicKey);
+      this.logger.debug(`[TOKEN SERVICE] Set metadata key`);
+    }
+
+    if (autoRenewPeriodSeconds && autoRenewAccountId) {
+      tokenCreateTx
+        .setAutoRenewAccountId(AccountId.fromString(autoRenewAccountId))
+        .setAutoRenewPeriod(autoRenewPeriodSeconds);
+      this.logger.debug(
+        `[TOKEN SERVICE] Set auto-renew: account ${autoRenewAccountId}, period ${String(autoRenewPeriodSeconds)}s`,
+      );
+    } else if (expirationTime) {
+      tokenCreateTx.setExpirationTime(expirationTime);
+      this.logger.debug(
+        `[TOKEN SERVICE] Set expiration time: ${expirationTime.toISOString()}`,
+      );
     }
 
     this.logger.debug(

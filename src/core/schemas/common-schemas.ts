@@ -15,12 +15,19 @@ import {
   CredentialType,
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
-import { HederaTokenType, KeyAlgorithm } from '@/core/shared/constants';
+import {
+  HEDERA_AUTO_RENEW_PERIOD_MAX,
+  HEDERA_AUTO_RENEW_PERIOD_MIN,
+  HEDERA_EXPIRATION_TIME_MAX,
+  HederaTokenType,
+  KeyAlgorithm,
+} from '@/core/shared/constants';
 import {
   EntityReferenceType,
   SupplyType,
   SupportedNetwork,
 } from '@/core/types/shared.types';
+import { parseAutoRenewPeriodToSeconds } from '@/core/utils/parse-auto-renew-period';
 
 // Raw key patterns (without prefix) for validation
 const PUBLIC_KEY_PATTERN =
@@ -473,6 +480,8 @@ export const TopicNameSchema = AliasNameSchema.describe('Topic name or alias');
 export const TokenAliasNameSchema = AliasNameSchema.describe(
   'Token alias name (local identifier, not on-chain name)',
 );
+
+export const TokenFreezeDefaultSchema = z.boolean().default(false);
 
 /**
  * Memo Input
@@ -968,3 +977,55 @@ export const AutoRenewPeriodSchema = z
   .min(1, 'Auto renew period must be at least 1 second')
   .optional()
   .describe('Auto renew period in seconds');
+
+/** Output / mirror fields: optional seconds, validated when present. */
+export const HederaAutoRenewPeriodSecondsOptionalSchema = z
+  .number()
+  .int()
+  .min(HEDERA_AUTO_RENEW_PERIOD_MIN)
+  .max(HEDERA_AUTO_RENEW_PERIOD_MAX)
+  .optional();
+
+/**
+ * Optional field from CLI (string/number) or JSON → seconds, or `undefined`.
+ */
+export const AutoRenewPeriodSecondsSchema: z.ZodType<number | undefined> = z
+  .union([z.string(), z.number()])
+  .optional()
+  .transform((val): number | undefined => {
+    if (!val || val === '') {
+      return undefined;
+    }
+    return typeof val === 'number' ? val : parseAutoRenewPeriodToSeconds(val);
+  })
+  .refine(
+    (sec) =>
+      !sec ||
+      (sec >= HEDERA_AUTO_RENEW_PERIOD_MIN &&
+        sec <= HEDERA_AUTO_RENEW_PERIOD_MAX),
+    {
+      message: `Auto-renew period must be between ${HEDERA_AUTO_RENEW_PERIOD_MIN} and ${HEDERA_AUTO_RENEW_PERIOD_MAX} seconds (30–92 days inclusive).`,
+    },
+  );
+
+/**
+ * Optional ISO 8601 datetime string → `Date`.
+ * When set, the instant must be strictly after the current time.
+ */
+export const ExpirationTimeSchema: z.ZodType<Date | undefined> = z.coerce
+  .date()
+  .optional()
+  .refine((s) => !s || !Number.isNaN(new Date(s).getTime()), {
+    message:
+      'Invalid expiration time. Use an ISO 8601 datetime (e.g. 2026-12-31T23:59:59.000Z).',
+  })
+  .refine(
+    (d) =>
+      !d ||
+      (d.getTime() > Date.now() &&
+        d.getTime() <=
+          new Date(Date.now() + HEDERA_EXPIRATION_TIME_MAX).getTime()),
+    {
+      message: 'Expiration time must be set in 92 days period.',
+    },
+  );

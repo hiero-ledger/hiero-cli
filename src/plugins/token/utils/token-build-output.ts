@@ -44,10 +44,16 @@ function formatHederaTimestamp(timestamp?: string): string | undefined {
   return date.toISOString().replace('T', ' ').substring(0, 19);
 }
 
+/** Converts Mirror Node `expiry_timestamp` (nanoseconds since epoch) to ISO 8601. */
+function expiryTimestampToIso(expiry?: number | null): string | undefined {
+  if (!expiry || !Number.isFinite(expiry) || expiry === 0) return undefined;
+  return new Date(expiry / 1e6).toISOString();
+}
+
 /**
  * Build output object based on token type and mode
  */
-export function buildOutput(
+export function tokenBuildOutput(
   tokenInfo: TokenInfo,
   nftInfo: NftInfo | null,
   network: SupportedNetwork,
@@ -71,6 +77,10 @@ export function buildOutput(
     createdTimestamp: formatHederaTimestamp(tokenInfo.created_timestamp),
     adminKey: tokenInfo.admin_key?.key || null,
     supplyKey: tokenInfo.supply_key?.key || null,
+    freezeDefault: tokenInfo.freeze_default ?? false,
+    autoRenewPeriodSeconds: tokenInfo.auto_renew_period,
+    autoRenewAccountId: tokenInfo.auto_renew_account || undefined,
+    expirationTime: expiryTimestampToIso(tokenInfo.expiry_timestamp),
   };
 
   // Add decimals only for Fungible Tokens

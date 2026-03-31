@@ -6,6 +6,7 @@ import {
   ResolvedPublicKeySchema,
   SupplyTypeSchema,
   TinybarSchema,
+  TokenFreezeDefaultSchema,
 } from '@/core/schemas/common-schemas';
 import { keyManagerNameSchema } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType } from '@/core/shared/constants';
@@ -18,6 +19,7 @@ export const CreateFtNormalizedParamsSchema = z.object({
   supplyType: SupplyTypeSchema,
   alias: z.string().optional(),
   memo: z.string().optional(),
+  finalMaxSupply: TinybarSchema.optional(),
   tokenType: z.enum([
     HederaTokenType.NON_FUNGIBLE_TOKEN,
     HederaTokenType.FUNGIBLE_COMMON,
@@ -25,6 +27,16 @@ export const CreateFtNormalizedParamsSchema = z.object({
   network: NetworkSchema,
   keyManager: keyManagerNameSchema,
   treasury: ResolvedAccountCredentialSchema,
-  admin: ResolvedAccountCredentialSchema,
+  admin: ResolvedPublicKeySchema.optional(),
   supply: ResolvedPublicKeySchema.optional(),
+  freeze: ResolvedPublicKeySchema.optional(),
+  wipe: ResolvedPublicKeySchema.optional(),
+  kyc: ResolvedPublicKeySchema.optional(),
+  pause: ResolvedPublicKeySchema.optional(),
+  feeSchedule: ResolvedPublicKeySchema.optional(),
+  metadata: ResolvedPublicKeySchema.optional(),
+  freezeDefault: TokenFreezeDefaultSchema,
+  autoRenewPeriodSeconds: z.number().optional(),
+  autoRenewAccountId: z.string().optional(),
+  expirationTime: z.coerce.date().optional(),
 });

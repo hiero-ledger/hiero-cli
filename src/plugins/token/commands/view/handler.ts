@@ -6,7 +6,7 @@ import type { ViewTokenNormalizedParams } from './types';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { buildOutput } from '@/plugins/token/utils/nft-build-output';
+import { tokenBuildOutput } from '@/plugins/token/utils/token-build-output';
 
 import { TokenViewInputSchema } from './input';
 
@@ -48,7 +48,11 @@ export class TokenViewCommand implements Command {
       nftInfo = await api.mirror.getNftInfo(tokenId, serialNum);
     }
 
-    const output: TokenViewOutput = buildOutput(tokenInfo, nftInfo, network);
+    const output: TokenViewOutput = tokenBuildOutput(
+      tokenInfo,
+      nftInfo,
+      network,
+    );
     return { result: output };
   }
 }

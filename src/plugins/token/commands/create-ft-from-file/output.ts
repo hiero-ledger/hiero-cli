@@ -5,6 +5,7 @@ import { z } from 'zod';
 
 import {
   EntityIdSchema,
+  HederaAutoRenewPeriodSecondsOptionalSchema,
   NetworkSchema,
   SupplyTypeSchema,
   TransactionIdSchema,
@@ -37,6 +38,16 @@ export const TokenCreateFtFromFileOutputSchema = z.object({
   associations: z
     .array(TokenAssociationResultSchema)
     .describe('Fungible token associations created'),
+  autoRenewPeriodSeconds: HederaAutoRenewPeriodSecondsOptionalSchema.describe(
+    'Auto-renew period in seconds when set (30–92 days)',
+  ),
+  autoRenewAccountId: EntityIdSchema.optional().describe(
+    'Account paying auto-renewal when set',
+  ),
+  expirationTime: z
+    .string()
+    .optional()
+    .describe('Token expiration as ISO 8601 when fixed expiration was set'),
 });
 
 export type TokenCreateFtFromFileOutput = z.infer<
@@ -55,6 +66,15 @@ export const TOKEN_CREATE_FT_FROM_FILE_TEMPLATE = `
    Supply Type: {{supplyType}}
 {{#if alias}}
    Alias: {{alias}}
+{{/if}}
+{{#if autoRenewPeriodSeconds}}
+   Auto-renew period: {{autoRenewPeriodSeconds}}s
+{{/if}}
+{{#if autoRenewAccountId}}
+   Auto-renew account: {{hashscanLink autoRenewAccountId "account" network}}
+{{/if}}
+{{#if expirationTime}}
+   Expiration: {{expirationTime}}
 {{/if}}
    Network: {{network}}
    Transaction ID: {{hashscanLink transactionId "transaction" network}}

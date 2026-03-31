@@ -307,6 +307,7 @@ export const validTokenKeys = {
   freezeKey: 'freeze-key',
   pauseKey: 'pause-key',
   feeScheduleKey: 'fee-schedule-key',
+  metadataKey: 'metadata-key',
   treasuryKey: 'treasury-key',
 };
 
@@ -485,7 +486,18 @@ export const expectedTokenTransactionParams = {
   maxSupplyRaw: undefined,
   treasuryId: '0.0.123456',
   adminPublicKey: expect.any(Object),
+  supplyPublicKey: undefined,
+  freezePublicKey: undefined,
+  wipePublicKey: undefined,
+  kycPublicKey: undefined,
+  pausePublicKey: undefined,
+  feeSchedulePublicKey: undefined,
+  metadataPublicKey: undefined,
+  freezeDefault: undefined,
   memo: undefined,
+  autoRenewPeriodSeconds: undefined,
+  autoRenewAccountId: undefined,
+  expirationTime: undefined,
 };
 
 /**
@@ -517,6 +529,13 @@ export const expectedTokenTransactionParamsFromFile = {
   maxSupplyRaw: 10000n,
   treasuryId: '0.0.123456',
   adminPublicKey: expect.any(Object), // PublicKey object from keyResolver
+  supplyPublicKey: undefined,
+  freezePublicKey: undefined,
+  wipePublicKey: undefined,
+  kycPublicKey: undefined,
+  pausePublicKey: undefined,
+  feeSchedulePublicKey: undefined,
+  metadataPublicKey: undefined,
   customFees: [
     {
       type: CustomFeeType.FIXED,
@@ -527,7 +546,11 @@ export const expectedTokenTransactionParamsFromFile = {
     },
   ],
   tokenType: HederaTokenType.FUNGIBLE_COMMON,
+  freezeDefault: undefined,
   memo: 'Test token created from file',
+  autoRenewPeriodSeconds: undefined,
+  autoRenewAccountId: undefined,
+  expirationTime: undefined,
 };
 
 /**
