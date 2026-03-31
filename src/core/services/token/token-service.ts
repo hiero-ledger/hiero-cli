@@ -7,6 +7,7 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type {
   CustomFee as CustomFeeParams,
   NftTransferParams,
+  TokenAllowanceFtParams,
   TokenAssociationParams,
   TokenCreateParams,
   TokenMintParams,
@@ -15,6 +16,7 @@ import type {
 import type { TokenService } from './token-service.interface';
 
 import {
+  AccountAllowanceApproveTransaction,
   AccountId,
   CustomFixedFee,
   CustomFractionalFee,
@@ -293,6 +295,21 @@ export class TokenServiceImpl implements TokenService {
     );
 
     return transferTx;
+  }
+
+  createFungibleTokenAllowanceTransaction(
+    params: TokenAllowanceFtParams,
+  ): AccountAllowanceApproveTransaction {
+    const { tokenId, ownerAccountId, spenderAccountId, amount } = params;
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating FT allowance: ${amount.toString()} tokens of ${tokenId} from ${ownerAccountId} to spender ${spenderAccountId}`,
+    );
+    return new AccountAllowanceApproveTransaction().approveTokenAllowance(
+      TokenId.fromString(tokenId),
+      AccountId.fromString(ownerAccountId),
+      AccountId.fromString(spenderAccountId),
+      amount,
+    );
   }
 
   /**

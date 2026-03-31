@@ -60,6 +60,12 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── allowance-ft/
+│   │   ├── handler.ts       # Fungible token allowance handler
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Internal types
+│   │   └── index.ts         # Command exports
 │   ├── delete/
 │   │   ├── handler.ts       # Token delete handler (local state only)
 │   │   ├── input.ts         # Input schema
@@ -368,6 +374,62 @@ hcli token transfer-nft \
 
 **Note:** Maximum 10 serial numbers per transaction (Hedera limit). The command verifies NFT ownership before transfer.
 
+### Token Allowance FT
+
+Approve (or revoke) a spender allowance for fungible tokens on behalf of the owner. Set amount to `0` to revoke an existing allowance.
+
+```bash
+# Approve allowance using aliases
+hcli token allowance-ft \
+  --token mytoken-alias \
+  --owner alice \
+  --spender bob \
+  --amount 500
+
+# Approve using token ID and account-id:key pairs
+hcli token allowance-ft \
+  --token 0.0.123456 \
+  --owner 0.0.111111:302e020100300506032b657004220420... \
+  --spender 0.0.222222 \
+  --amount 1000t
+
+# Revoke allowance (set amount to 0)
+hcli token allowance-ft \
+  --token mytoken-alias \
+  --owner alice \
+  --spender bob \
+  --amount 0
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+- `--owner` / `-o`: Owner account. Accepts any key format (alias, `accountId:privateKey`, key reference) - **Required**
+- `--spender` / `-s`: Spender account (ID or alias) - **Required**
+- `--amount` / `-a`: Allowance amount - **Required**
+  - Display units (default): `100` (will be multiplied by token decimals)
+  - Base units: `100t` (raw amount without decimals)
+  - `0` to revoke the allowance
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Batch support:** Pass `--batch <batch-name>` to add to a batch instead of executing immediately.
+
+**Output:**
+
+```json
+{
+  "tokenId": "0.0.123456",
+  "ownerAccountId": "0.0.111111",
+  "spenderAccountId": "0.0.222222",
+  "amount": "100000",
+  "transactionId": "0.0.111111@1700000000.123456789",
+  "network": "testnet"
+}
+```
+
+**Note:** Amount in the output is always in base units (raw). The token must have been associated with the spender account before the allowance can be used.
+
 ### Token Delete
 
 Delete a token from local state. This only removes the token from the local address book, not from the Hedera network.
@@ -572,7 +634,7 @@ The following token commands support the `--batch` / `-B` flag via the batch plu
 - `create-ft-from-file` – `TokenCreateFtFromFileBatchStateHook` persists FT-from-file state
 - `create-nft-from-file` – `TokenCreateNftFromFileBatchStateHook` persists NFT-from-file state
 - `associate` – `TokenAssociateBatchStateHook` persists association results
-- `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft` – can be batched (no state hook; transactions execute atomically)
+- `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-ft` – can be batched (no state hook; transactions execute atomically)
 
 When you pass `--batch <batch-name>`:
 

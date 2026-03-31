@@ -3,6 +3,7 @@
  * All token services must implement this interface
  */
 import type {
+  AccountAllowanceApproveTransaction,
   TokenAssociateTransaction,
   TokenCreateTransaction,
   TokenMintTransaction,
@@ -10,6 +11,7 @@ import type {
 } from '@hashgraph/sdk';
 import type {
   NftTransferParams,
+  TokenAllowanceFtParams,
   TokenAssociationParams,
   TokenCreateParams,
   TokenMintParams,
@@ -44,4 +46,8 @@ export interface TokenService {
    * Create an NFT transfer transaction (without execution)
    */
   createNftTransferTransaction(params: NftTransferParams): TransferTransaction;
+
+  createFungibleTokenAllowanceTransaction(
+    params: TokenAllowanceFtParams,
+  ): AccountAllowanceApproveTransaction;
 }
