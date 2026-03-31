@@ -10,6 +10,8 @@ export enum Status {
   Failure = 'failure',
 }
 
+export const NULL_TOKEN = 'null';
+
 export const PLUGIN_MANAGEMENT_NAMESPACE = 'plugin-management';
 
 export const PLUGIN_INITIALIZED_DEFAULTS_KEY = 'initialized-defaults';

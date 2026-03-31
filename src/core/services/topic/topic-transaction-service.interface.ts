@@ -5,6 +5,8 @@ import type {
   SubmitMessageParams,
   TopicCreateResult,
   TopicDeleteResult,
+  TopicUpdateResult,
+  UpdateTopicParams,
 } from './types';
 
 /**
@@ -26,4 +28,6 @@ export interface TopicService {
    * Submit a message to a topic
    */
   submitMessage(params: SubmitMessageParams): MessageSubmitResult;
+
+  updateTopic(params: UpdateTopicParams): TopicUpdateResult;
 }
