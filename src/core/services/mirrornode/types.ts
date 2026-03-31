@@ -15,7 +15,6 @@ export const NetworkToBaseUrl = new Map<SupportedNetwork, string>([
 ]);
 
 export enum MirrorNodeKeyType {
-  PROTOBUF_ENCODED = 'ProtobufEncoded',
   ECDSA_SECP256K1 = 'ECDSA_SECP256K1',
   ED25519 = 'ED25519',
 }
@@ -67,7 +66,7 @@ export interface TokenBalancesResponse {
 }
 
 export type MirrorNodeKey = {
-  _type: MirrorNodeKeyType;
+  _type: string;
   key: string;
 };
 

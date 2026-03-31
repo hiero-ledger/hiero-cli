@@ -8,9 +8,9 @@ import {
   EntityIdSchema,
   KeyManagerTypeSchema,
   KeyReferenceSchema,
+  NetworkSchema,
   PublicKeyDefinitionSchema,
 } from '@/core/schemas/common-schemas';
-import { SupportedNetwork } from '@/core/types/shared.types';
 
 /** Zustand namespace for persisted schedule entries */
 export const SCHEDULE_NAMESPACE = 'schedule-transactions';
@@ -18,7 +18,7 @@ export const SCHEDULE_NAMESPACE = 'schedule-transactions';
 export const ScheduledTransactionDataSchema = z.object({
   name: AliasNameSchema,
   scheduledId: EntityIdSchema.optional(),
-  network: z.enum(SupportedNetwork),
+  network: NetworkSchema,
   keyManager: KeyManagerTypeSchema,
   adminKeyRefId: KeyReferenceSchema.optional(),
   adminPublicKey: PublicKeyDefinitionSchema.optional(),

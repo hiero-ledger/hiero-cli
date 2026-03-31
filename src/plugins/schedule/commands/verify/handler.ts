@@ -69,7 +69,8 @@ export class ScheduleVerifyCommand implements Command {
             type: CredentialType.PUBLIC_KEY,
             publicKey: scheduleResponse.admin_key.key,
             keyType:
-              scheduleResponse.admin_key?._type === MirrorNodeKeyType.ED25519
+              scheduleResponse.admin_key?._type ===
+              MirrorNodeKeyType.ED25519.toString()
                 ? KeyAlgorithm.ED25519
                 : KeyAlgorithm.ECDSA,
             rawValue: scheduleResponse.admin_key.key,

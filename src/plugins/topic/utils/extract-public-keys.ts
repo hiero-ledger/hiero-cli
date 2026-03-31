@@ -19,6 +19,8 @@ export interface ExtractedKeysResult {
   threshold: number;
 }
 
+const MIRROR_NODE_PROTOBUF_TYPE = 'ProtobufEncoded';
+
 /** Returns raw hex string for PublicKey, null for KeyList/ContractId. */
 function keyToRawPublicKey(key: Key): string | null {
   if (key instanceof PublicKey) {
@@ -66,11 +68,7 @@ export function extractPublicKeysFromMirrorNodeKey(
 
   const { _type, key } = mirrorKey;
 
-  if (
-    [MirrorNodeKeyType.ED25519, MirrorNodeKeyType.ECDSA_SECP256K1].includes(
-      _type,
-    )
-  ) {
+  if (Object.values(MirrorNodeKeyType).includes(_type as MirrorNodeKeyType)) {
     try {
       const pk = PublicKey.fromString(key);
       return { publicKeys: [pk.toStringRaw()], threshold: 1 };
@@ -79,7 +77,7 @@ export function extractPublicKeysFromMirrorNodeKey(
     }
   }
 
-  if (_type === MirrorNodeKeyType.PROTOBUF_ENCODED) {
+  if (_type === MIRROR_NODE_PROTOBUF_TYPE) {
     try {
       const hexKey = key.startsWith('0x') ? key.slice(2) : key;
       const bytes = Buffer.from(hexKey, 'hex');
