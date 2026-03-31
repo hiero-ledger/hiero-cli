@@ -196,26 +196,23 @@ export interface TransactionDetailsResponse {
 // Contract Info
 export interface ContractInfo {
   contract_id: string;
-  account: string;
+  account?: string;
   created_timestamp: string;
   deleted: boolean;
   memo: string;
   evm_address?: string;
-  admin_key?: {
-    _type: string;
-    key: string;
-  };
-  auto_renew_account?: string;
+  admin_key?: MirrorNodeKey | null;
+  auto_renew_account?: string | null;
   auto_renew_period: number;
-  expiration_timestamp?: string;
-  file_id?: string;
+  expiration_timestamp?: string | null;
+  file_id?: string | null;
   max_automatic_token_associations: number;
-  obtainer_id?: string;
-  permanent_removal?: boolean;
-  proxy_account_id?: string;
-  staked_account_id?: string;
-  staked_node_id?: number;
-  stake_period_start?: string;
+  obtainer_id?: string | null;
+  permanent_removal?: boolean | null;
+  proxy_account_id?: string | null;
+  staked_account_id?: string | null;
+  staked_node_id?: number | null;
+  stake_period_start?: string | null;
 }
 
 // Token Airdrops
