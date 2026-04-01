@@ -2,7 +2,7 @@
 
 - Status: Proposed
 - Date: 2026-03-26
-- Related: `src/plugins/schedule/*`, `src/core/services/schedule-transaction/*`, `src/core/commands/command.ts`, `src/core/hooks/abstract-hook.ts`, `docs/adr/ADR-001-plugin-architecture.md`, `docs/adr/ADR-009-class-based-handler-and-hook-architecture.md`, `docs/adr/ADR-010-batch-transaction-plugin.md`
+- Related: `src/plugins/schedule/*`, `src/core/services/schedule-transaction/*`, `src/core/services/mirrornode/*`, `src/core/commands/command.ts`, `src/core/hooks/abstract-hook.ts`, `docs/adr/ADR-001-plugin-architecture.md`, `docs/adr/ADR-009-class-based-handler-and-hook-architecture.md`, `docs/adr/ADR-010-batch-transaction-plugin.md`
 
 ## Context
 
@@ -13,8 +13,8 @@ The CLI already supports individual commands for token, topic, account, and HBAR
 1. A way to **register** schedule options (admin key, execution payer, memo, expiration, wait-for-expiry) in local state before any transaction is wrapped.
 2. A **hook** that intercepts any supported command's built transaction and wraps it in a `ScheduleCreateTransaction`, submitting it to the network as a scheduled entity rather than executing it directly.
 3. A way to **sign** a pending scheduled transaction with additional keys, collecting the signatures required for eventual execution.
-4. A way to **delete** a pending scheduled transaction from the network (requires an admin key).
-5. A way to **verify** the on-chain status of a scheduled transaction (executed, deleted, expiration) — particularly important when `waitForExpiry` is enabled, since the transaction will not execute until its expiration time even if all signatures are collected.
+4. A way to **delete** a pending scheduled transaction from the network (requires an admin key) — with smart state-only cleanup when the schedule is not yet on-chain or already executed.
+5. A way to **verify** the on-chain status of a scheduled transaction (executed, deleted, expiration) via the Mirror Node REST API — particularly important when `waitForExpiry` is enabled.
 
 This ADR builds on the class-based command system and hook architecture defined in ADR-009, and follows the same plugin-plus-hook pattern established by the batch transaction plugin in ADR-010.
 
@@ -30,7 +30,9 @@ src/plugins/schedule/
 ├── manifest.ts
 ├── schema.ts
 ├── zustand-state-helper.ts
-├── resolve-schedule-id.ts
+├── schedule-helper.ts
+├── shared/
+│   └── types.ts
 ├── hooks/
 │   └── scheduled/
 │       ├── handler.ts
@@ -42,8 +44,7 @@ src/plugins/schedule/
 │   │   ├── handler.ts
 │   │   ├── index.ts
 │   │   ├── input.ts
-│   │   ├── output.ts
-│   │   └── types.ts
+│   │   └── output.ts
 │   ├── sign/
 │   │   ├── handler.ts
 │   │   ├── index.ts
@@ -63,12 +64,6 @@ src/plugins/schedule/
 │       └── output.ts
 └── __tests__/
     └── unit/
-        ├── create.test.ts
-        ├── sign.test.ts
-        ├── delete.test.ts
-        ├── verify.test.ts
-        ├── scheduled-hook.test.ts
-        └── helpers/
 ```
 
 ### Part 2: State Model
@@ -125,12 +120,66 @@ export const ScheduledTransactionDataSchema = z.object({
 
 State access is encapsulated in `ZustandScheduleStateHelper` with methods: `saveScheduled`, `getScheduled`, `hasScheduled`, `listScheduled`, `deleteScheduled`.
 
-### Part 3: Create Command
+### Part 3: Schedule ID Resolution — `ScheduleHelper`
+
+Schedule ID resolution is centralized in `ScheduleHelper` (`src/plugins/schedule/schedule-helper.ts`), which depends on `StateService`, `HederaMirrornodeService`, and `Logger` (no `CoreApi` dependency).
+
+`ScheduleHelper` provides two resolution strategies:
+
+1. **`resolveScheduleIdByEntityReference`** — used by `sign` and `delete` commands. Accepts a unified `ScheduleReferenceObjectSchema` value (which can be either an entity ID like `0.0.x` or a local alias). When the reference is an alias, it reads from local state. When it's an entity ID, it queries the Mirror Node REST API (`GET /api/v1/schedules/{scheduleId}`) to confirm the schedule exists and determine execution status.
+
+2. **`resolveScheduleIdFromArgs`** — legacy method that accepts separate `name?` / `scheduleId?` fields.
+
+```ts
+export class ScheduleHelper {
+  constructor(
+    private readonly state: StateService,
+    private readonly mirror: HederaMirrornodeService,
+    private readonly logger: Logger,
+  ) {}
+
+  async resolveScheduleIdByEntityReference(
+    params: ScheduleHelperResolveParams,
+  ): Promise<ResolvedSchedule> {
+    if (params.type === EntityReferenceType.ALIAS) {
+      const scheduleState = new ZustandScheduleStateHelper(
+        this.state,
+        this.logger,
+      );
+      const key = composeKey(params.network, params.scheduleReference);
+      const entry = scheduleState.getScheduled(key);
+      if (!entry) {
+        throw new NotFoundError(
+          `No saved schedule found for name: ${params.scheduleReference}`,
+        );
+      }
+      return {
+        name: entry.name,
+        scheduleId: entry.scheduledId,
+        scheduled: entry.scheduled,
+        executed: entry.executed,
+      };
+    } else {
+      const response = await this.mirror.getScheduled(params.scheduleReference);
+      return {
+        scheduleId: response.schedule_id,
+        scheduled: true,
+        executed: !!response.executed_timestamp,
+      };
+    }
+  }
+}
+```
+
+The `ResolvedSchedule` type contains `name?`, `scheduleId?`, `scheduled`, and `executed`, allowing commands to make decisions based on schedule state (e.g. delete can skip on-chain submission if the schedule was never submitted or already executed).
+
+### Part 4: Create Command
 
 `ScheduleCreateCommand` implements the `Command` interface directly (not `BaseTransactionCommand`) because it does not submit a network transaction — it only persists schedule options in local state for later use by the `scheduled` hook.
 
+The input schema uses `KeySchema` for `adminKey` and `payerAccount` (both optional), `MemoSchema`, `ScheduleExpirationSchema` (which validates ISO 8601, enforces max 62 days), and `WaitForExpirySchema`.
+
 ```ts
-// src/plugins/schedule/commands/create/handler.ts
 export class ScheduleCreateCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
@@ -138,42 +187,45 @@ export class ScheduleCreateCommand implements Command {
     const validArgs = ScheduleCreateInputSchema.parse(args.args);
     const name = validArgs.name;
     const network = api.network.getCurrentNetwork();
-    const scheduleKey = composeKey(network, name);
 
-    if (scheduleState.hasScheduled(scheduleKey)) {
+    if (scheduleState.hasScheduled(composeKey(network, name))) {
       throw new ValidationError(
         `Schedule with name '${name}' already exists on this network`,
       );
     }
 
-    let payerCredential: ResolvedAccountCredential | undefined;
-    if (payer) {
+    // Resolve payer account credentials and admin signing key from KeySchema
+    // (already parsed by Zod — no double KeySchema.parse())
+    let payerCredential, admin;
+    if (validArgs.payerAccount) {
       payerCredential = await api.keyResolver.resolveAccountCredentials(
-        KeySchema.parse(payer),
+        validArgs.payerAccount,
         keyManager,
         true,
       );
     }
-
-    let admin: ResolvedPublicKey | undefined;
-    if (adminKey) {
+    if (validArgs.adminKey) {
       admin = await api.keyResolver.resolveSigningKey(
-        adminKey,
+        validArgs.adminKey,
         keyManager,
         false,
         ['schedule:admin'],
       );
     }
 
-    scheduleState.saveScheduled(scheduleKey, {
+    scheduleState.saveScheduled(composeKey(network, name), {
       name,
       network,
+      keyManager,
       adminKeyRefId: admin?.keyRefId,
+      adminPublicKey: admin?.publicKey,
       payerAccountId: payerCredential?.accountId,
       payerKeyRefId: payerCredential?.keyRefId,
       memo,
-      expirationTime,
+      expirationTime: expirationTime?.toISOString(),
       waitForExpiry,
+      scheduled: false,
+      executed: false,
       createdAt: new Date().toISOString(),
     });
 
@@ -192,34 +244,21 @@ export class ScheduleCreateCommand implements Command {
 }
 ```
 
-CLI usage: `hcli schedule create --name my-schedule --admin-key <key> --payer <account> --memo "transfer approval" --expiration 2026-04-01T00:00:00Z --wait-for-expiry`
+CLI usage: `hcli schedule create --name my-schedule --admin-key <key> --payer-account <account> --memo "transfer approval" --expiration 2026-04-01T00:00:00Z --wait-for-expiry`
 
-### Part 4: ScheduledHook (Core Mechanism)
+### Part 5: ScheduledHook (Core Mechanism)
 
-The `ScheduledHook` is the central mechanism that enables any supported command to produce a scheduled transaction instead of executing immediately. It extends `AbstractHook` and operates analogously to the `BatchifyHook` from ADR-010, but with a key architectural difference: **it does not break the execution flow**. Instead of serializing the transaction for later execution (like batchify), it **wraps** the inner transaction in a `ScheduleCreateTransaction` and lets the command proceed to execute it on-chain immediately.
+The `ScheduledHook` is the central mechanism that enables any supported command to produce a scheduled transaction instead of executing immediately. It extends `AbstractHook` and operates analogously to the `BatchifyHook` from ADR-010.
+
+**Key architectural difference from ADR-010:** The `ScheduledHook` uses **only** `preSignTransactionHook` and **returns `breakFlow: true`**. It builds, signs, executes, and persists the `ScheduleCreateTransaction` entirely within the hook, then breaks the flow so the original command does not also execute. This is because the wrapped transaction needs additional key signatures (admin, payer) that the original command's `signTransaction` phase would not know about.
 
 **Owner:** Schedule plugin (`src/plugins/schedule/hooks/scheduled/handler.ts`)
 
-**Purpose:** Intercept the built transaction from any registered command (e.g. `token create-ft`, `topic create`, `hbar transfer`), wrap it in a `ScheduleCreateTransaction` with the stored schedule options, add necessary extra signatures, and persist the resulting `scheduleId` back to local state after execution.
-
-**Lifecycle points:**
-
-| Point                       | Responsibility                                                                                            |
-| --------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `preSignTransactionHook`    | Replace the built transaction with a `ScheduleCreateTransaction` that wraps it, using options from state  |
-| `preExecuteTransactionHook` | Add extra signatures (admin key, execution payer key) to the signed transaction before network submission |
-| `preOutputPreparationHook`  | Read `scheduleId` from the execution receipt and persist it back to the schedule entry in state           |
-
-**Flow control:** All three lifecycle points return `breakFlow: false`. The wrapped `ScheduleCreateTransaction` is submitted to the network by the original command's `executeTransaction` phase — unlike batchify, no deferred execution is needed.
-
-**Hook registration:** The hook is defined in the schedule plugin manifest. Each command that wants schedule support opts in by including `'scheduled'` in its `registeredHooks` array.
-
-The hook declares an `options` array with a `--scheduled` / `-S` option. This option is automatically injected into every command that registers the hook (per ADR-009 Hook Option Injection), so commands do not need to declare it themselves.
+**Purpose:** Intercept the built transaction from any registered command, wrap it in a `ScheduleCreateTransaction` with the stored schedule options, sign it with all required keys (command signer + admin + payer), execute it, persist the resulting `scheduleId` to state, and break the flow with a custom output.
 
 **Registration in schedule plugin manifest:**
 
 ```ts
-// src/plugins/schedule/manifest.ts (hooks section)
 hooks: [
   {
     name: 'scheduled',
@@ -227,7 +266,7 @@ hooks: [
     options: [
       {
         name: 'scheduled',
-        short: 'S',
+        short: 'X',
         type: OptionType.STRING,
         description:
           'Local schedule name (from schedule create). Wraps this command transaction in ScheduleCreateTransaction with stored options.',
@@ -237,151 +276,128 @@ hooks: [
 ],
 ```
 
-**Commands opting in (examples):**
-
-```ts
-// src/plugins/token/manifest.ts (command example)
-{
-  name: 'create-ft',
-  summary: 'Create a new fungible token',
-  options: [ /* ... token-specific options ... */ ],
-  registeredHooks: ['batchify', 'scheduled'],
-  handler: tokenCreateFt,
-  output: { schema: TokenCreateFtOutputSchema, humanTemplate: TOKEN_CREATE_FT_TEMPLATE },
-}
-
-// src/plugins/hbar/manifest.ts (command example)
-{
-  name: 'transfer',
-  summary: 'Transfer HBAR',
-  options: [ /* ... transfer-specific options ... */ ],
-  registeredHooks: ['batchify', 'scheduled'],
-  handler: hbarTransfer,
-  output: { schema: HbarTransferOutputSchema, humanTemplate: HBAR_TRANSFER_TEMPLATE },
-}
-```
-
-Any command that includes `'scheduled'` in its `registeredHooks` automatically gains the `--scheduled` / `-S` option without modifying its own option list.
-
 **Hook implementation:**
 
 ```ts
-// src/plugins/schedule/hooks/scheduled/handler.ts
 export class ScheduledHook extends AbstractHook {
-  override preSignTransactionHook(
+  override async preSignTransactionHook(
     args: CommandHandlerArgs,
-    params: PreSignTransactionParams<Record<string, unknown>, BuildTx>,
+    params: PreSignTransactionParams<
+      ScheduledNormalizedParams,
+      BaseBuildTransactionResult
+    >,
     _commandName: string,
   ): Promise<HookResult> {
     const { api, logger } = args;
-    const parsed = ScheduledHookArgsSchema.safeParse(args.args);
-    const scheduleName = parsed.success ? parsed.data.scheduled : undefined;
-
-    if (!scheduleName) {
-      return Promise.resolve({ breakFlow: false, result: {} });
-    }
-
+    const scheduledState = new ZustandScheduleStateHelper(api.state, logger);
+    const validArgs = ScheduledInputSchema.parse(args.args);
+    const scheduledName = validArgs.scheduled;
     const network = api.network.getCurrentNetwork();
-    const state = new ZustandScheduleStateHelper(api.state, logger);
-    const key = composeKey(network, scheduleName);
-    const entry = state.getScheduled(key);
-    if (!entry) {
-      throw new NotFoundError(
-        `No schedule state for name "${scheduleName}". Run: schedule create --name ${scheduleName} ...`,
-      );
-    }
-    if (entry.scheduledId) {
-      throw new ValidationError(
-        `Schedule "${scheduleName}" already has schedule id ${entry.scheduledId} on chain.`,
-      );
+
+    if (!scheduledName) {
+      return Promise.resolve({
+        breakFlow: false,
+        result: { message: 'No "scheduled" parameter found' },
+      });
     }
 
-    // Resolve admin key from KMS if present
-    let adminKey: PublicKey | undefined;
-    if (entry.adminKeyRefId) {
-      const rec = api.kms.get(entry.adminKeyRefId);
-      adminKey = PublicKey.fromString(rec.publicKey);
-    }
+    const key = composeKey(network, scheduledName);
+    const scheduledRecord = scheduledState.getScheduled(key);
+    if (!scheduledRecord)
+      throw new NotFoundError(`Scheduled not found for name ${scheduledName}`);
+    if (scheduledRecord.scheduled)
+      throw new ValidationError('Transaction is already scheduled');
 
-    // Wrap the inner transaction in ScheduleCreateTransaction
-    const inner = params.buildTransactionResult.transaction;
-    const scheduleTx = api.schedule.buildScheduleCreateTransactionWrapping({
-      innerTransaction: inner,
-      options: {
-        payerAccountId: entry.executionPayerAccountId,
-        adminKey,
-        scheduleMemo: entry.scheduleMemo,
-        expirationTime: expirationDate,
-        waitForExpiry: entry.waitForExpiry,
-      },
+    // Build ScheduleCreateTransaction wrapping the inner transaction
+    const scheduleTx = api.schedule.buildScheduleCreateTransaction({
+      innerTransaction: params.buildTransactionResult.transaction,
+      payerAccountId: scheduledRecord.payerAccountId,
+      adminKey: scheduledRecord.adminPublicKey,
+      scheduleMemo: scheduledRecord.memo,
+      expirationTime: scheduledRecord.expirationTime
+        ? new Date(scheduledRecord.expirationTime)
+        : undefined,
+      waitForExpiry: scheduledRecord.waitForExpiry,
     });
 
-    params.buildTransactionResult.transaction = scheduleTx;
-    return Promise.resolve({ breakFlow: false, result: {} });
-  }
+    // Collect all required key references (command signer + admin + payer)
+    const keyRefIds = params.normalisedParams.keyRefIds;
+    if (scheduledRecord.adminKeyRefId)
+      keyRefIds.push(scheduledRecord.adminKeyRefId);
+    if (scheduledRecord.payerKeyRefId)
+      keyRefIds.push(scheduledRecord.payerKeyRefId);
 
-  override async preExecuteTransactionHook(
-    args: CommandHandlerArgs,
-    params: PreExecuteTransactionParams<...>,
-    _commandName: string,
-  ): Promise<HookResult> {
-    // Add extra signatures (admin key, execution payer key) if configured
-    const extraKeys = new Set<string>();
-    if (entry.adminKeyRefId) extraKeys.add(entry.adminKeyRefId);
-    if (entry.executionPayerKeyRefId) extraKeys.add(entry.executionPayerKeyRefId);
+    // Sign and execute within the hook
+    const signedTx = await api.txSign.sign(scheduleTx, keyRefIds);
+    const result = await api.txExecute.execute(signedTx);
 
-    if (extraKeys.size > 0) {
-      await api.txSign.sign(params.signTransactionResult.signedTransaction, [...extraKeys]);
-    }
-    return Promise.resolve({ breakFlow: false, result: {} });
-  }
+    if (!result.success)
+      throw new TransactionError(
+        `Failed to schedule (txId: ${result.transactionId})`,
+        false,
+      );
+    if (!result.scheduleId)
+      throw new StateError(
+        'Transaction completed but did not return a schedule ID',
+      );
 
-  override preOutputPreparationHook(
-    args: CommandHandlerArgs,
-    params: PreOutputPreparationParams<..., TransactionResult>,
-    _commandName: string,
-  ): Promise<HookResult> {
-    // Persist scheduleId from the receipt back to state
-    const scheduledId = params.executeTransactionResult.scheduledId;
-    if (scheduledId && exec.success) {
-      state.saveScheduled(key, { ...entry, scheduledId });
-    }
-    return Promise.resolve({ breakFlow: false, result: {} });
+    // Persist scheduleId and normalized params to state
+    scheduledState.saveScheduled(key, {
+      ...scheduledRecord,
+      scheduledId: result.scheduleId,
+      normalizedParams: params.normalisedParams,
+      scheduled: true,
+      executed: false,
+    });
+
+    return Promise.resolve({
+      breakFlow: true,
+      result: {
+        scheduledName,
+        scheduledId: result.scheduleId,
+        network,
+        transactionId: result.transactionId,
+      },
+      schema: ScheduledOutputSchema,
+      humanTemplate: SCHEDULED_TEMPLATE,
+    });
   }
 }
 ```
 
-**How the `--scheduled` flag reaches the hook:** The `scheduled` hook declares a `scheduled` option in its `HookSpec.options`. When a command lists `'scheduled'` in its `registeredHooks`, `PluginManager` automatically injects the `--scheduled` / `-S` option into that command (as non-required). If the user passes `--scheduled my-schedule`, the hook detects it in `args.args.scheduled` (parsed via `ScheduledHookArgsSchema`) and activates the wrapping logic. If absent, the hook is a no-op and the command executes normally.
+**How the `--scheduled` flag reaches the hook:** The `scheduled` hook declares a `scheduled` option in its `HookSpec.options`. When a command lists `'scheduled'` in its `registeredHooks`, `PluginManager` automatically injects the `--scheduled` / `-X` option into that command (as non-required). If the user passes `--scheduled my-schedule`, the hook detects it in `args.args.scheduled` (parsed via `ScheduledInputSchema`) and activates the wrapping logic. If absent, the hook is a no-op and the command executes normally.
 
 **Comparison with BatchifyHook:**
 
-| Aspect                | BatchifyHook (ADR-010)                                | ScheduledHook (ADR-011)                                                           |
-| --------------------- | ----------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Lifecycle points used | `preSignTransactionHook`, `preExecuteTransactionHook` | `preSignTransactionHook`, `preExecuteTransactionHook`, `preOutputPreparationHook` |
-| Flow control          | `breakFlow: true` — prevents on-chain execution       | `breakFlow: false` — transaction executes immediately                             |
-| Transaction wrapping  | Sets batch key on inner tx for later batch submission | Replaces inner tx with `ScheduleCreateTransaction`                                |
-| State persistence     | Serializes tx bytes to batch state                    | Persists `scheduleId` from receipt after execution                                |
-| CLI flag              | `--batch` / `-B`                                      | `--scheduled` / `-S`                                                              |
-| On-chain effect       | None (deferred to `batch execute`)                    | Submits `ScheduleCreateTransaction` immediately                                   |
+| Aspect                | BatchifyHook (ADR-010)                                | ScheduledHook (ADR-011)                                                        |
+| --------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Lifecycle points used | `preSignTransactionHook`, `preExecuteTransactionHook` | `preSignTransactionHook` only                                                  |
+| Flow control          | `breakFlow: true` — prevents on-chain execution       | `breakFlow: true` — hook handles sign + execute + state persistence internally |
+| Transaction wrapping  | Sets batch key on inner tx for later batch submission | Wraps inner tx in `ScheduleCreateTransaction` and executes immediately         |
+| State persistence     | Serializes tx bytes to batch state                    | Persists `scheduleId` from receipt after execution                             |
+| CLI flag              | `--batch` / `-B`                                      | `--scheduled` / `-X`                                                           |
+| On-chain effect       | None (deferred to `batch execute`)                    | Submits `ScheduleCreateTransaction` immediately                                |
+| Extra signatures      | N/A                                                   | Adds admin key + payer key refs to the signing set                             |
 
-### Part 5: Sign, Delete, and Verify Commands
+### Part 6: Sign, Delete, and Verify Commands
 
 These three commands manage the lifecycle of a scheduled transaction after it has been created on-chain.
 
-#### 5.1 Sign Command
+#### 6.1 Sign Command
 
 `ScheduleSignCommand` extends `BaseTransactionCommand` (ADR-009) and submits a `ScheduleSignTransaction` to add a required signature to an existing scheduled transaction.
 
-| Phase                | Responsibility                                                                |
-| -------------------- | ----------------------------------------------------------------------------- |
-| `normalizeParams`    | Parse input, resolve schedule ID (by name or explicit ID), resolve signer key |
-| `buildTransaction`   | `api.schedule.buildScheduleSignTransaction({ scheduleId })`                   |
-| `signTransaction`    | Sign with the signer's `keyRefId`                                             |
-| `executeTransaction` | Submit via `api.txExecute.execute`; throw `TransactionError` on failure       |
-| `outputPreparation`  | Return `scheduleId`, `transactionId`, `network`, optional `status`            |
+The input uses a unified `ScheduleReferenceObjectSchema` (`--schedule` flag) that accepts either an entity ID (`0.0.x`) or a local alias. When an entity ID is provided, the command queries the Mirror Node to verify the schedule exists and checks `scheduled` / `executed` status before proceeding.
+
+| Phase                | Responsibility                                                                                    |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| `normalizeParams`    | Parse input via `ScheduleReferenceObjectSchema`, resolve via `ScheduleHelper`, validate status    |
+| `buildTransaction`   | `api.schedule.buildScheduleSignTransaction({ scheduleId })`                                       |
+| `signTransaction`    | Sign with the signer's `keyRefId` via `keyRefIds` array                                           |
+| `executeTransaction` | Submit via `api.txExecute.execute`; throw `TransactionError` on failure                           |
+| `outputPreparation`  | Return `scheduleId`, `transactionId`, `network`, optional `name` (when resolved from local alias) |
 
 ```ts
-// src/plugins/schedule/commands/sign/handler.ts (simplified)
 export class ScheduleSignCommand extends BaseTransactionCommand<
   ScheduleSignNormalisedParams,
   ScheduleSignBuildTransactionResult,
@@ -393,165 +409,255 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
   ): Promise<ScheduleSignNormalisedParams> {
     const validArgs = ScheduleSignInputSchema.parse(args.args);
     const currentNetwork = api.network.getCurrentNetwork();
-    const scheduleId = resolveScheduleIdFromArgs(api, logger, currentNetwork, {
-      name: validArgs.name,
-      scheduleId: validArgs.scheduleId,
+    const scheduleHelper = new ScheduleHelper(
+      api.state,
+      api.mirror,
+      api.logger,
+    );
+    const schedule = await scheduleHelper.resolveScheduleIdByEntityReference({
+      scheduleReference: validArgs.schedule.value,
+      type: validArgs.schedule.type,
+      network: currentNetwork,
     });
+
+    // Validate schedule is on-chain and not already executed
+    if (!schedule.scheduled)
+      throw new ValidationError(
+        `Schedule has not been yet submitted on Hedera network`,
+      );
+    if (schedule.executed)
+      throw new ValidationError(`Schedule is already executed`);
+    if (!schedule.scheduleId)
+      throw new ValidationError(`Couldn't resolve schedule ID for signing`);
+
+    // KeySchema already parsed key to Credential — pass directly, no double parse
     const signer = await api.keyResolver.resolveSigningKey(
-      KeySchema.parse(validArgs.key),
+      validArgs.key,
       keyManager,
       false,
       ['schedule:signer'],
     );
-    return { scheduleId, currentNetwork, keyManager, signer };
-  }
 
-  async buildTransaction(
-    args,
-    normalisedParams,
-  ): Promise<ScheduleSignBuildTransactionResult> {
-    const transaction = args.api.schedule.buildScheduleSignTransaction({
-      scheduleId: normalisedParams.scheduleId,
-    });
-    return { transaction };
-  }
-  // signTransaction, executeTransaction, outputPreparation follow BaseTransactionCommand pattern
-}
-```
-
-CLI usage: `hcli schedule sign --name my-schedule --key <signer-key>`
-
-#### 5.2 Delete Command
-
-`ScheduleDeleteCommand` extends `BaseTransactionCommand` and submits a `ScheduleDeleteTransaction`. Deletion requires the admin key that was set during schedule creation.
-
-```ts
-// src/plugins/schedule/commands/delete/handler.ts (simplified)
-export class ScheduleDeleteCommand extends BaseTransactionCommand<
-  ScheduleDeleteNormalisedParams,
-  ScheduleDeleteBuildTransactionResult,
-  ScheduleDeleteSignTransactionResult,
-  ScheduleDeleteExecuteTransactionResult
-> {
-  async normalizeParams(
-    args: CommandHandlerArgs,
-  ): Promise<ScheduleDeleteNormalisedParams> {
-    const validArgs = ScheduleDeleteInputSchema.parse(args.args);
-    const currentNetwork = api.network.getCurrentNetwork();
-    const scheduleId = resolveScheduleIdFromArgs(api, logger, currentNetwork, {
-      name: validArgs.name,
-      scheduleId: validArgs.scheduleId,
-    });
-    const admin = await api.keyResolver.resolveSigningKey(
-      KeySchema.parse(validArgs.adminKey),
+    return {
+      scheduleName: schedule.name,
+      scheduleId: schedule.scheduleId,
+      scheduled: schedule.scheduled,
+      executed: schedule.executed,
+      network: currentNetwork,
       keyManager,
-      false,
-      ['schedule:admin'],
-    );
-    return { scheduleId, currentNetwork, keyManager, admin };
+      signer,
+      keyRefIds: [signer.keyRefId],
+    };
   }
-
-  async buildTransaction(
-    args,
-    normalisedParams,
-  ): Promise<ScheduleDeleteBuildTransactionResult> {
-    const transaction = args.api.schedule.buildScheduleDeleteTransaction({
-      scheduleId: normalisedParams.scheduleId,
-    });
-    return { transaction };
-  }
-  // signTransaction, executeTransaction, outputPreparation follow BaseTransactionCommand pattern
 }
 ```
 
-CLI usage: `hcli schedule delete --name my-schedule --admin-key <admin-key>`
+**Human-readable output template:**
 
-#### 5.3 Verify Command
+```handlebars
+✅ Schedule signed successfully:
+{{hashscanLink scheduleId 'scheduled' network}}
+{{#if name}}
+  Name:
+  {{name}}
+{{/if}}
+Transaction ID:
+{{hashscanLink transactionId 'transaction' network}}
+```
 
-`ScheduleVerifyCommand` implements the `Command` interface directly (not `BaseTransactionCommand`) because it performs a **query** rather than a transaction. It uses `ScheduleInfoQuery` to fetch the current state of a scheduled transaction from the network.
+CLI usage: `hcli schedule sign --schedule my-schedule --key <signer-key>`
+or: `hcli schedule sign --schedule 0.0.8452958 --key <signer-key>`
 
-This command is particularly important when `waitForExpiry` is set to `true`: in that case the scheduled transaction will not execute until its expiration time, even if all signatures are collected. The user needs a way to check whether execution has occurred.
+#### 6.2 Delete Command
+
+`ScheduleDeleteCommand` extends `BaseTransactionCommand` and submits a `ScheduleDeleteTransaction`. It **overrides `execute()`** to add smart pre-flight logic: if the schedule was never submitted on-chain or is already executed, it performs a **state-only delete** without sending a network transaction.
 
 ```ts
-// src/plugins/schedule/commands/verify/handler.ts (simplified)
+export class ScheduleDeleteCommand extends BaseTransactionCommand<...> {
+  override async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+    const validArgs = ScheduleDeleteInputSchema.parse(args.args);
+    const scheduleHelper = new ScheduleHelper(api.state, api.mirror, api.logger);
+    const schedule = await scheduleHelper.resolveScheduleIdByEntityReference({
+      scheduleReference: validArgs.schedule.value,
+      type: validArgs.schedule.type,
+      network,
+    });
+
+    const submitOnChainDelete = schedule.scheduled && !schedule.executed;
+
+    if (!submitOnChainDelete) {
+      // State-only delete: remove from local state, skip on-chain transaction
+      stateHelper.deleteScheduled(composeKey(network, schedule.name));
+      return { result: { name: schedule.name, scheduleId: schedule.scheduleId, network } };
+    }
+
+    return super.execute(args); // Proceeds to normalizeParams → build → sign → execute → output
+  }
+
+  async normalizeParams(args: CommandHandlerArgs): Promise<ScheduleDeleteNormalisedParams> {
+    // KeySchema already parsed adminKey to Credential — pass directly
+    const admin = await api.keyResolver.resolveSigningKey(validArgs.adminKey, keyManager, false, ['schedule:admin']);
+    return {
+      scheduleName: schedule.name,
+      scheduleId: schedule.scheduleId,
+      scheduled: schedule.scheduled,
+      executed: schedule.executed,
+      network: currentNetwork,
+      keyManager, admin,
+      keyRefIds: [admin.keyRefId],
+    };
+  }
+
+  async outputPreparation(...): Promise<CommandResult> {
+    // After successful on-chain delete, also remove from local state
+    if (normalisedParams.scheduleName) {
+      stateHelper.deleteScheduled(composeKey(network, scheduleName));
+    }
+    return { result: { name: displayName, scheduleId, transactionId, network } };
+  }
+}
+```
+
+**Human-readable output template:**
+
+```handlebars
+✅ Scheduled record deleted successfully:
+{{hashscanLink scheduleId 'scheduled' network}}
+Name:
+{{name}}
+{{#if transactionId}}
+  Transaction ID:
+  {{hashscanLink transactionId 'transaction' network}}
+{{/if}}
+```
+
+CLI usage: `hcli schedule delete --schedule my-schedule --admin-key <admin-key>`
+
+#### 6.3 Verify Command
+
+`ScheduleVerifyCommand` implements the `Command` interface directly (not `BaseTransactionCommand`) because it performs a **query** rather than a transaction. It uses the **Mirror Node REST API** (`GET /api/v1/schedules/{scheduleId}`) via `api.mirror.getScheduled()` to fetch the current state of a scheduled transaction.
+
+When `--name` is provided:
+
+- If a state record exists, verify updates `scheduled` and `executed` flags in local state.
+- If no state record exists but a name is given, verify **creates** a new state record from the Mirror Node response, resolving admin and payer keys.
+
+```ts
 export class ScheduleVerifyCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const validArgs = ScheduleVerifyInputSchema.parse(args.args);
-    const currentNetwork = api.network.getCurrentNetwork();
-    const scheduleId = resolveScheduleIdFromArgs(api, logger, currentNetwork, {
-      name: validArgs.name,
-      scheduleId: validArgs.scheduleId,
-    });
+    const stateHelper = new ZustandScheduleStateHelper(api.state, api.logger);
+    const scheduleName = validArgs.name;
+    const scheduleId = validArgs.scheduleId;
+    const network = api.network.getCurrentNetwork();
 
-    const client = api.kms.createClient(currentNetwork);
-    try {
-      const info = await new ScheduleInfoQuery()
-        .setScheduleId(scheduleId)
-        .execute(client);
-
-      return {
-        result: {
-          scheduleId,
-          network: currentNetwork,
-          executedAt: tsToIso(info.executed),
-          deletedAt: tsToIso(info.deleted),
-          waitForExpiry: info.waitForExpiry,
-          scheduledTransactionId:
-            info.scheduledTransactionId?.toString() ?? null,
-          scheduleMemo: info.scheduleMemo,
-          expirationTime: tsToIso(info.expirationTime),
-          payerAccountId: info.payerAccountId?.toString() ?? null,
-        },
-      };
-    } finally {
-      client.close();
+    // Resolve schedule ID from name (state lookup) or use provided ID
+    let scheduleRecord;
+    if (scheduleName) {
+      scheduleRecord = stateHelper.getScheduled(composeKey(network, scheduleName));
     }
+    const resolvedScheduleId = scheduleRecord?.scheduledId ?? scheduleId;
+    if (!resolvedScheduleId) throw new NotFoundError(`Schedule ID is missing`);
+
+    // Query Mirror Node REST API
+    const scheduleResponse = await api.mirror.getScheduled(resolvedScheduleId);
+
+    // Update or create local state record
+    if (scheduleRecord) {
+      stateHelper.saveScheduled(composeKey(network, scheduleRecord.name), {
+        ...scheduleRecord,
+        scheduled: true,
+        executed: !!scheduleResponse.executed_timestamp,
+      });
+    } else if (scheduleName) {
+      // Import schedule from Mirror Node into local state
+      // Resolves payer and admin key references from the response
+      stateHelper.saveScheduled(composeKey(network, scheduleName), { ... });
+    }
+
+    return {
+      result: {
+        scheduleId: resolvedScheduleId,
+        network,
+        name: scheduleName,
+        executedAt: scheduleResponse.executed_timestamp ? hederaTimestampToIso(...) : undefined,
+        deleted: scheduleResponse.deleted,
+        waitForExpiry: scheduleResponse.wait_for_expiry,
+        scheduleMemo: scheduleResponse.memo,
+        expirationTime: scheduleResponse.expiration_time ? hederaTimestampToIso(...) : undefined,
+        payerAccountId: scheduleResponse.payer_account_id,
+      },
+    };
   }
 }
+```
+
+**Human-readable output template:**
+
+```handlebars
+✅ Schedule verified:
+{{hashscanLink scheduleId 'scheduled' network}}
+{{#if name}}
+  Name:
+  {{name}}
+{{/if}}
+{{#if executedAt}}
+  Executed:
+  {{executedAt}}
+{{/if}}
+Deleted:
+{{deleted}}
+Wait for expiry:
+{{waitForExpiry}}
+{{#if scheduleMemo}}
+  Memo:
+  {{scheduleMemo}}
+{{/if}}
+{{#if expirationTime}}
+  Expiration:
+  {{expirationTime}}
+{{/if}}
+{{#if payerAccountId}}
+  Payer:
+  {{payerAccountId}}
+{{/if}}
 ```
 
 CLI usage: `hcli schedule verify --name my-schedule`
+or: `hcli schedule verify --schedule-id 0.0.456`
 
-#### 5.4 Schedule ID Resolution
+### Part 7: Mirror Node Integration
 
-All three commands (`sign`, `delete`, `verify`) accept either `--name` (local alias) or `--schedule-id` (on-chain ID), but not both. Resolution is centralized in `resolveScheduleIdFromArgs`:
+The `verify` command queries the Hedera Mirror Node REST API rather than the SDK's `ScheduleInfoQuery`. This avoids the need for a `Client` instance and leverages the existing `HederaMirrornodeService` infrastructure.
+
+**New service method:** `getScheduled(scheduleId: string): Promise<ScheduleInfo>` on `HederaMirrornodeService`, calling `GET /api/v1/schedules/{scheduleId}`.
+
+**Zod schemas:** `ScheduleInfoSchema` and `ScheduleSignatureInfoSchema` in `src/core/services/mirrornode/schemas.ts` validate the Mirror Node response, following the same `parseWithSchema` pattern as `getTokenInfo`.
+
+**Types:** `ScheduleInfo` and `ScheduleSignatureInfo` in `src/core/services/mirrornode/types.ts`.
 
 ```ts
-// src/plugins/schedule/resolve-schedule-id.ts
-export function resolveScheduleIdFromArgs(
-  api: CoreApi,
-  logger: Logger,
-  network: SupportedNetwork,
-  args: { name?: string; scheduleId?: string },
-): string {
-  if (args.scheduleId && args.name) {
-    throw new ValidationError('Provide only one of: name, schedule-id');
-  }
-  if (!args.scheduleId && !args.name) {
-    throw new ValidationError('Provide one of: name, schedule-id');
-  }
-  if (args.scheduleId) return args.scheduleId;
-
-  const entry = new ZustandScheduleStateHelper(api.state, logger).getScheduled(
-    composeKey(network, args.name!),
-  );
-  if (!entry)
-    throw new NotFoundError(`No saved schedule found for name: ${args.name}`);
-  if (!entry.scheduledId) {
-    throw new ValidationError(
-      `Schedule "${args.name}" has no schedule id yet. Submit a transaction with --scheduled ${args.name} first.`,
-    );
-  }
-  return entry.scheduledId;
+export interface ScheduleInfo {
+  admin_key?: MirrorNodeTokenKey | null;
+  consensus_timestamp: string;
+  creator_account_id: string;
+  deleted: boolean;
+  executed_timestamp?: string | null;
+  expiration_time?: string | null;
+  memo: string;
+  payer_account_id: string;
+  schedule_id: string;
+  signatures?: ScheduleSignatureInfo[];
+  transaction_body?: string;
+  wait_for_expiry: boolean;
 }
 ```
 
-### Part 6: ScheduleTransactionService
+### Part 8: ScheduleTransactionService
 
 The core service at `src/core/services/schedule-transaction/` wraps the Hedera SDK schedule transaction classes:
 
 ```ts
-// src/core/services/schedule-transaction/schedule-transaction-service.interface.ts
 export interface ScheduleTransactionService {
   buildScheduleCreateTransaction(
     params: ScheduleCreateParams,
@@ -566,7 +672,6 @@ export interface ScheduleTransactionService {
 ```
 
 ```ts
-// src/core/services/schedule-transaction/types.ts
 export interface ScheduleCreateParams {
   innerTransaction: Transaction;
   payerAccountId?: string;
@@ -575,56 +680,37 @@ export interface ScheduleCreateParams {
   expirationTime?: Date;
   waitForExpiry: boolean;
 }
-
-export interface ScheduleSignTransactionParams {
-  scheduleId: string;
-}
-
-export interface ScheduleDeleteTransactionParams {
-  scheduleId: string;
-}
 ```
 
-```ts
-// src/core/services/schedule-transaction/schedule-transaction-service.ts (simplified)
-export class ScheduleTransactionServiceImpl implements ScheduleTransactionService {
-  buildScheduleCreateTransaction(
-    params: ScheduleCreateParams,
-  ): ScheduleCreateTransaction {
-    let tx = new ScheduleCreateTransaction()
-      .setScheduledTransaction(params.innerTransaction)
-      .setWaitForExpiry(params.waitForExpiry);
-
-    if (params.payerAccountId)
-      tx = tx.setPayerAccountId(AccountId.fromString(params.payerAccountId));
-    if (params.adminKey)
-      tx = tx.setAdminKey(PublicKey.fromString(params.adminKey));
-    if (params.scheduleMemo) tx = tx.setScheduleMemo(params.scheduleMemo);
-    if (params.expirationTime)
-      tx = tx.setExpirationTime(Timestamp.fromDate(params.expirationTime));
-
-    return tx;
-  }
-
-  buildScheduleSignTransaction(
-    params: ScheduleSignTransactionParams,
-  ): ScheduleSignTransaction {
-    return new ScheduleSignTransaction().setScheduleId(params.scheduleId);
-  }
-
-  buildScheduleDeleteTransaction(
-    params: ScheduleDeleteTransactionParams,
-  ): ScheduleDeleteTransaction {
-    return new ScheduleDeleteTransaction().setScheduleId(params.scheduleId);
-  }
-}
-```
+The implementation uses `ScheduleCreateTransaction.setScheduledTransaction()`, `setWaitForExpiry()`, and conditionally sets `setPayerAccountId()`, `setAdminKey()`, `setScheduleMemo()`, and `setExpirationTime(Timestamp.fromDate(...))`.
 
 The service is wired into `CoreApi` as `api.schedule` and only depends on `Logger`.
 
-**Receipt mapping:** `src/core/utils/receipt-mapper.ts` was updated to read `receipt.scheduleId` and pass it through on `TransactionResult.scheduleId`. The `src/core/types/shared.types.ts` `TransactionResult` type includes an optional `scheduleId: string` field. This is how the `scheduled` hook's `preOutputPreparationHook` reads the schedule entity ID after execution.
+**Receipt mapping:** `src/core/utils/receipt-mapper.ts` reads `receipt.scheduleId` and passes it through on `TransactionResult.scheduleId`. This is how the `ScheduledHook` reads the schedule entity ID after execution.
 
-**Hashscan support:** `src/core/utils/hashscan-link.ts` includes `'schedule'` in `HashscanEntityType`, enabling explorer links for schedule IDs in command output templates.
+### Part 9: Input Schemas — `ScheduleReferenceObjectSchema`
+
+The `sign` and `delete` commands use `ScheduleReferenceObjectSchema` from `src/core/schemas/common-schemas.ts` for their `--schedule` argument. This schema accepts a string and transforms it into a discriminated union:
+
+```ts
+export const ScheduleReferenceObjectSchema = z
+  .string()
+  .trim()
+  .min(1, 'Schedule identifier cannot be empty')
+  .transform((val): { type: EntityReferenceType; value: string } => {
+    if (EntityIdSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ENTITY_ID, value: val };
+    }
+    if (AliasNameSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ALIAS, value: val };
+    }
+    throw new ValidationError(
+      'Schedule reference must be a valid Hedera ID (0.0.xxx) or alias name',
+    );
+  });
+```
+
+**Important:** Since `KeySchema` and `ScheduleReferenceObjectSchema` are Zod `.transform()` schemas, the parsed output is already the transformed type (e.g. `Credential` for keys, `{ type, value }` for schedule references). Handlers must **not** double-parse with `KeySchema.parse(validArgs.key)` — this would fail with "expected string, received object".
 
 ## Execution Flow
 
@@ -641,6 +727,7 @@ sequenceDiagram
     participant SchedSvc as ScheduleTransactionService
     participant Network as Hedera Network
     participant SignCmd as ScheduleSignCommand
+    participant Mirror as Mirror Node API
     participant VerifyCmd as ScheduleVerifyCommand
 
     User->>CLI: schedule create --name my-schedule --admin-key <key>
@@ -658,35 +745,26 @@ sequenceDiagram
     Hook->>SchedState: getScheduled("testnet:my-schedule")
     Hook->>SchedSvc: buildScheduleCreateTransaction(innerTx, options)
     SchedSvc-->>Hook: ScheduleCreateTransaction
-    Hook->>Hook: replace params.buildTransactionResult.transaction
-    Hook-->>TokenCmd: breakFlow: false
-
-    TokenCmd->>TokenCmd: signTransaction(args, params, buildResult)
-    Note over TokenCmd: ScheduleCreateTransaction signed
-
-    TokenCmd->>Hook: preExecuteTransactionHook(args, params)
-    Hook->>Hook: add admin/payer extra signatures
-    Hook-->>TokenCmd: breakFlow: false
-
-    TokenCmd->>Network: executeTransaction(signedScheduleTx)
-    Network-->>TokenCmd: TransactionResult with scheduleId
-
-    TokenCmd->>Hook: preOutputPreparationHook(args, params)
-    Hook->>SchedState: saveScheduled(key, {...entry, scheduledId})
-    Hook-->>TokenCmd: breakFlow: false
-
+    Hook->>Hook: Collect keyRefIds (signer + admin + payer)
+    Hook->>Hook: sign(scheduleTx, keyRefIds)
+    Hook->>Network: execute(signedScheduleTx)
+    Network-->>Hook: TransactionResult with scheduleId
+    Hook->>SchedState: saveScheduled(key, {...entry, scheduledId, scheduled: true})
+    Hook-->>TokenCmd: breakFlow: true + custom output
     TokenCmd-->>User: Transaction scheduled (scheduleId: 0.0.456)
 
-    User->>CLI: schedule sign --name my-schedule --key <signer-key>
+    User->>CLI: schedule sign --schedule my-schedule --key <signer-key>
     CLI->>SignCmd: execute(args)
+    SignCmd->>SchedState: resolve alias → scheduleId
     SignCmd->>Network: ScheduleSignTransaction(scheduleId: 0.0.456)
     Network-->>SignCmd: TransactionResult
     SignCmd-->>User: Signature added to schedule 0.0.456
 
     User->>CLI: schedule verify --name my-schedule
     CLI->>VerifyCmd: execute(args)
-    VerifyCmd->>Network: ScheduleInfoQuery(scheduleId: 0.0.456)
-    Network-->>VerifyCmd: ScheduleInfo
+    VerifyCmd->>Mirror: GET /api/v1/schedules/0.0.456
+    Mirror-->>VerifyCmd: ScheduleInfo (JSON)
+    VerifyCmd->>SchedState: update scheduled/executed flags
     VerifyCmd-->>User: Status: executed / pending / deleted
 ```
 
@@ -700,15 +778,11 @@ flowchart TD
     D -->|"--scheduled flag present"| E[ScheduledHook activates]
     E --> F[Load schedule options from state]
     F --> G["Wrap inner tx in ScheduleCreateTransaction"]
-    G --> H[Replace buildTransactionResult.transaction]
-    H --> I["breakFlow: false — continue"]
-    I --> J[signTransaction]
-    J --> K{"preExecuteTransactionHook"}
-    K --> L[Add extra signatures if needed]
-    L --> M[executeTransaction — submit to network]
-    M --> N{"preOutputPreparationHook"}
-    N --> O[Persist scheduleId to state]
-    O --> P[outputPreparation]
+    G --> H["Collect all keyRefIds (signer + admin + payer)"]
+    H --> I["Sign ScheduleCreateTransaction"]
+    I --> J["Execute on network"]
+    J --> K["Persist scheduleId to state"]
+    K --> L["breakFlow: true — return custom output"]
     D -->|"no --scheduled flag"| J2[signTransaction — normal flow]
     J2 --> M2[executeTransaction — submit directly]
     M2 --> P2[outputPreparation]
@@ -720,45 +794,48 @@ flowchart TD
 
 - **Non-intrusive scheduling.** The `ScheduledHook` intercepts existing commands at `preSignTransactionHook` without modifying the command's own code. Adding schedule support to a new command only requires listing `'scheduled'` in the command's `registeredHooks` — the `--scheduled` option is injected automatically via hook option injection (ADR-009).
 - **Leverages ADR-009 architecture.** The hook uses the established `AbstractHook` lifecycle, `HookResult` flow control, command-driven hook registration (`registeredHooks`), and hook option injection, requiring no changes to the core framework.
-- **Familiar pattern.** The plugin structure, state model, and hook approach mirror the batch plugin (ADR-010), making it straightforward for developers already familiar with the codebase. The `ScheduledHook` is to `schedule create` what `BatchifyHook` is to `batch create`.
-- **Complete lifecycle management.** The four commands (`create`, `sign`, `delete`, `verify`) cover the entire scheduled transaction lifecycle: registration, submission via hook, additional signature collection, cancellation, and status verification.
-- **Immediate on-chain submission.** Unlike batchify which defers execution, the scheduled hook wraps and submits the `ScheduleCreateTransaction` immediately, giving the user an on-chain `scheduleId` right away. This simplifies error handling — the user knows immediately whether the schedule was created successfully.
-- **Incremental adoption.** Commands that are not yet migrated to `BaseTransactionCommand` (and therefore lack hook support) simply cannot participate in scheduling. Migration can happen command by command, with schedule support becoming available automatically once a command adopts the class-based pattern.
+- **Familiar pattern.** The plugin structure, state model, and hook approach mirror the batch plugin (ADR-010), making it straightforward for developers already familiar with the codebase.
+- **Complete lifecycle management.** The four commands (`create`, `sign`, `delete`, `verify`) cover the entire scheduled transaction lifecycle: registration, submission via hook, additional signature collection, cancellation (with smart state-only cleanup), and status verification via Mirror Node.
+- **Immediate on-chain submission.** The scheduled hook wraps and submits the `ScheduleCreateTransaction` immediately, giving the user an on-chain `scheduleId` right away. Error handling is straightforward — the user knows immediately whether the schedule was created successfully.
+- **Smart delete.** The delete command checks whether the schedule was submitted and not yet executed before sending an on-chain delete. State-only entries and already-executed schedules are cleaned up locally without a network transaction.
+- **Mirror Node verification.** The verify command uses the REST API rather than an SDK query, avoiding `Client` management. It can also **import** a schedule from the network into local state when given a `--name`, bridging the gap between on-chain and local state.
+- **Unified schedule reference.** The `sign` and `delete` commands use `ScheduleReferenceObjectSchema`, accepting either `0.0.x` entity IDs or local aliases in a single `--schedule` flag. Entity IDs are verified against the Mirror Node; aliases are resolved from local state.
 - **Coexistence with batch.** Commands can register both `'batchify'` and `'scheduled'` hooks simultaneously. The hooks are independent — the user activates one at a time via `--batch` or `--scheduled` flags.
 
 ### Cons
 
-- **Multi-step UX complexity.** Scheduling a transaction requires at least two commands (`schedule create` + original command with `--scheduled`), plus additional `schedule sign` calls for each required signer. This is inherently more complex than direct execution, though it reflects the nature of multi-party approval workflows.
-- **State–network divergence.** Local state tracks whether a schedule has been created (`scheduledId` present) but may become stale if the schedule is deleted or executed externally (e.g. by another party or via expiration). The `verify` command mitigates this but requires manual invocation.
+- **Multi-step UX complexity.** Scheduling a transaction requires at least two commands (`schedule create` + original command with `--scheduled`), plus additional `schedule sign` calls for each required signer.
+- **State–network divergence.** Local state tracks whether a schedule has been created (`scheduledId` present) but may become stale if the schedule is deleted or executed externally. The `verify` command mitigates this but requires manual invocation.
 - **waitForExpiry uncertainty.** When `waitForExpiry` is `true`, the user has no feedback on whether all required signatures have been collected until expiration time passes and they run `schedule verify`. There is no notification mechanism.
-- **Implicit coupling via `--scheduled` flag.** The `ScheduledHook` relies on a `--scheduled` option being present in `args.args`. While hook option injection (ADR-009) eliminates the need to manually declare the option in each command, the hook still assumes the option name convention.
-- **No automatic state cleanup.** If a scheduled transaction expires without execution or is deleted externally, the local state entry remains. Manual cleanup via `schedule delete` (which also removes the local entry) or future garbage collection would be needed.
+- **No automatic state cleanup.** If a scheduled transaction expires without execution or is deleted externally, the local state entry remains. Manual cleanup via `schedule delete` (which handles state-only cleanup) or `schedule verify` (which updates flags) is needed.
 
 ## Consequences
 
 - Commands that produce transactions and need schedule support must:
   1. Be migrated to `BaseTransactionCommand` (per ADR-009) so they participate in the hook lifecycle.
-  2. Include `'scheduled'` in their `registeredHooks` array. The `--scheduled` option is then injected automatically via hook option injection.
-- The `ScheduleTransactionService` is wired into `CoreApi` as `api.schedule`, alongside existing services like `api.batch`, `api.txSign`, and `api.txExecute`.
-- `TransactionResult` in `src/core/types/shared.types.ts` includes an optional `scheduleId` field, and `receipt-mapper.ts` populates it from the SDK receipt. This is a cross-cutting change that enables the hook's `preOutputPreparationHook` to persist the on-chain schedule ID.
+  2. Include `'scheduled'` in their `registeredHooks` array. The `--scheduled` option is then injected automatically.
+  3. Expose `keyRefIds` on their normalized params (`BaseNormalizedParams`) so the hook can append admin/payer key references.
+- The `ScheduleTransactionService` is wired into `CoreApi` as `api.schedule`, alongside existing services.
+- `HederaMirrornodeService` gains a `getScheduled` method querying `GET /api/v1/schedules/{scheduleId}`, with `ScheduleInfoSchema` / `ScheduleSignatureInfoSchema` Zod schemas for response validation.
+- `TransactionResult` in `src/core/types/shared.types.ts` includes an optional `scheduleId` field, and `receipt-mapper.ts` populates it from the SDK receipt.
 - The `verify` command should be used to check the status of scheduled transactions with `waitForExpiry: true`, since execution is deferred and no automatic notification is provided.
-- Error handling in `sign` and `delete` should provide clear messages when a schedule does not exist or has already been executed/deleted on-chain.
+- Zod `.transform()` schemas (`KeySchema`, `ScheduleReferenceObjectSchema`) produce parsed objects — handlers must pass the parsed value directly to service methods rather than double-parsing.
 
 ## Testing Strategy
 
 - **Unit: ScheduleCreateCommand.** Test that a schedule entry is created in state with the correct name, network, and options. Verify `ValidationError` when a duplicate name is used on the same network.
 - **Unit: ScheduleSignCommand phases.** Test each `BaseTransactionCommand` phase independently:
-  - `normalizeParams`: verify `NotFoundError` for missing schedule name, `ValidationError` when both `name` and `scheduleId` are provided.
+  - `normalizeParams`: verify `ValidationError` for not-yet-submitted schedule, already-executed schedule, and unresolvable schedule ID. Verify Mirror Node is queried when entity ID is provided directly.
   - `buildTransaction`: verify `ScheduleSignTransaction` is built with the correct `scheduleId`.
-  - `signTransaction`: verify the transaction is signed with the correct signer `keyRefId`.
+  - `signTransaction`: verify the transaction is signed with the correct signer `keyRefId` via `keyRefIds`.
   - `executeTransaction`: verify `TransactionError` on failed submission.
-  - `outputPreparation`: verify output schema conformance.
-- **Unit: ScheduleDeleteCommand phases.** Same pattern as sign, but with admin key resolution and `ScheduleDeleteTransaction`.
-- **Unit: ScheduleVerifyCommand.** Mock `ScheduleInfoQuery` response and verify that the output includes correct `executedAt`, `deletedAt`, `waitForExpiry`, `scheduleMemo`, `expirationTime`, and `payerAccountId` values. Verify error when schedule ID does not exist on-chain.
-- **Unit: ScheduledHook.** Invoke `preSignTransactionHook` with mock args containing `--scheduled` flag. Assert that the transaction is replaced with a `ScheduleCreateTransaction` wrapping the original and `breakFlow: false` is returned. Invoke without `--scheduled` flag and assert the transaction is unchanged. Test `preExecuteTransactionHook` adds extra signatures when admin/payer keys are present. Test `preOutputPreparationHook` persists `scheduleId` to state when execution succeeds.
+  - `outputPreparation`: verify output includes optional `name` only when resolved from alias.
+- **Unit: ScheduleDeleteCommand phases.** Test the `execute()` override: state-only delete when `scheduled === false` or `executed === true`; on-chain delete path (via `super.execute()`) otherwise. Test `outputPreparation` removes local state entry after successful on-chain delete.
+- **Unit: ScheduleVerifyCommand.** Mock `api.mirror.getScheduled()` response and verify that the output includes correct `executedAt`, `deleted` (boolean), `waitForExpiry`, `scheduleMemo`, `expirationTime`, and `payerAccountId` values. Verify state is updated when `--name` is provided. Verify new state record is created when a name is given but no existing state record exists.
+- **Unit: ScheduledHook.** Invoke `preSignTransactionHook` with mock args containing `--scheduled` flag. Assert that the hook builds, signs, and executes the `ScheduleCreateTransaction`, persists `scheduleId` to state, and returns `breakFlow: true` with `ScheduledOutputSchema`. Invoke without `--scheduled` flag and assert `breakFlow: false`.
+- **Unit: ScheduleHelper.** Test `resolveScheduleIdByEntityReference` for alias resolution (state lookup), entity ID resolution (Mirror Node query), and EVM address rejection. Test `resolveScheduleIdFromArgs` for error when both/neither args provided.
 - **Unit: ScheduleTransactionService.** Verify that `buildScheduleCreateTransaction` correctly sets `scheduledTransaction`, `waitForExpiry`, and optional fields (payer, admin key, memo, expiration). Verify `buildScheduleSignTransaction` and `buildScheduleDeleteTransaction` set the correct `scheduleId`.
+- **Unit: Mirror Node getScheduled.** Verify correct URL construction, Zod schema parsing, 404 → `NotFoundError`, and network error handling.
 - **Unit: Schema validation.** Test `ScheduledTransactionDataSchema` with valid and invalid inputs, including expiration boundary (62 days).
-- **Unit: resolveScheduleIdFromArgs.** Verify error when both `name` and `scheduleId` are provided, error when neither is provided, resolution from state when `name` is used, pass-through when `scheduleId` is used directly.
 - **Integration: Full schedule lifecycle.** Create a schedule, run a command with `--scheduled` flag (verifying wrapping and on-chain submission), add signatures via `schedule sign`, then verify status via `schedule verify`.
-- **Integration: Hook filtering.** Verify that `ScheduledHook` is only injected into commands that include `'scheduled'` in their `registeredHooks` and not into unrelated commands.
-- **Integration: Hook option injection.** Verify that commands with `registeredHooks: ['batchify', 'scheduled']` automatically gain both `--batch` / `-B` and `--scheduled` / `-S` options without declaring them in their own `CommandSpec.options`.
+- **Integration: Hook option injection.** Verify that commands with `registeredHooks: ['batchify', 'scheduled']` automatically gain both `--batch` / `-B` and `--scheduled` / `-X` options.
