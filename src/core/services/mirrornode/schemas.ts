@@ -21,6 +21,12 @@ import {
   type TopicMessage,
   type TopicMessageChunkInfo,
   type TopicMessagesAPIResponse,
+  type TransactionAssessedCustomFeeItem,
+  type TransactionDetailItem,
+  type TransactionDetailsResponse,
+  type TransactionNftTransferItem,
+  type TransactionTokenTransferItem,
+  type TransactionTransferItem,
 } from './types';
 
 const mirrorKeyObject = z.object({
@@ -237,4 +243,61 @@ export const ExchangeRateResponseSchema: z.ZodType<ExchangeRateResponse> =
     current_rate: exchangeRateBandSchema,
     next_rate: exchangeRateBandSchema,
     timestamp: z.string(),
+  });
+
+const transactionTransferItemSchema: z.ZodType<TransactionTransferItem> =
+  z.object({
+    account: z.string(),
+    amount: z.number(),
+    is_approval: z.boolean().optional(),
+  });
+
+const transactionTokenTransferItemSchema: z.ZodType<TransactionTokenTransferItem> =
+  z.object({
+    token_id: z.string(),
+    account: z.string(),
+    amount: z.number(),
+    is_approval: z.boolean().optional(),
+  });
+
+const transactionNftTransferItemSchema: z.ZodType<TransactionNftTransferItem> =
+  z.object({
+    is_approval: z.boolean(),
+    receiver_account_id: z.string(),
+    sender_account_id: z.string(),
+    serial_number: z.number(),
+    token_id: z.string(),
+  });
+
+const transactionAssessedCustomFeeItemSchema: z.ZodType<TransactionAssessedCustomFeeItem> =
+  z.object({
+    amount: z.number(),
+    collector_account_id: z.string(),
+    token_id: z.string().nullable().optional(),
+    effective_payer_account_ids: z.array(z.string()).optional(),
+  });
+
+export const TransactionDetailItemSchema: z.ZodType<TransactionDetailItem> =
+  z.object({
+    transaction_id: z.string(),
+    consensus_timestamp: z.string(),
+    valid_start_timestamp: z.string(),
+    charged_tx_fee: z.number(),
+    memo_base64: z.union([z.string(), z.null()]).optional(),
+    result: z.string(),
+    transaction_hash: z.string(),
+    name: z.string(),
+    node: z.string(),
+    scheduled: z.boolean(),
+    transfers: z.array(transactionTransferItemSchema),
+    token_transfers: z.array(transactionTokenTransferItemSchema).optional(),
+    nft_transfers: z.array(transactionNftTransferItemSchema).optional(),
+    assessed_custom_fees: z
+      .array(transactionAssessedCustomFeeItemSchema)
+      .optional(),
+  });
+
+export const TransactionDetailsResponseSchema: z.ZodType<TransactionDetailsResponse> =
+  z.object({
+    transactions: z.array(TransactionDetailItemSchema),
   });

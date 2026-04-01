@@ -157,40 +157,53 @@ export interface TopicMessagesResponse {
 }
 
 // Transaction Details
+export interface TransactionTransferItem {
+  account: string;
+  amount: number;
+  is_approval?: boolean;
+}
+
+export interface TransactionTokenTransferItem {
+  token_id: string;
+  account: string;
+  amount: number;
+  is_approval?: boolean;
+}
+
+export interface TransactionNftTransferItem {
+  is_approval: boolean;
+  receiver_account_id: string;
+  sender_account_id: string;
+  serial_number: number;
+  token_id: string;
+}
+
+export interface TransactionAssessedCustomFeeItem {
+  amount: number;
+  collector_account_id: string;
+  token_id?: string | null;
+  effective_payer_account_ids?: string[];
+}
+
+export interface TransactionDetailItem {
+  transaction_id: string;
+  consensus_timestamp: string;
+  valid_start_timestamp: string;
+  charged_tx_fee: number;
+  memo_base64?: string | null;
+  result: string;
+  transaction_hash: string;
+  name: string;
+  node: string;
+  scheduled: boolean;
+  transfers: TransactionTransferItem[];
+  token_transfers?: TransactionTokenTransferItem[];
+  nft_transfers?: TransactionNftTransferItem[];
+  assessed_custom_fees?: TransactionAssessedCustomFeeItem[];
+}
+
 export interface TransactionDetailsResponse {
-  transactions: Array<{
-    transaction_id: string;
-    consensus_timestamp: string;
-    valid_start_timestamp: string;
-    charged_tx_fee: number;
-    memo_base64?: string;
-    result: string;
-    transaction_hash: string;
-    name: string;
-    node: string;
-    transaction_fee: number;
-    scheduled: boolean;
-    transfers: Array<{
-      account: string;
-      amount: number;
-    }>;
-    token_transfers?: Array<{
-      account: string;
-      amount: number;
-      token_id: string;
-    }>;
-    nft_transfers?: Array<{
-      account: string;
-      amount: number;
-      token_id: string;
-      serial_number: number;
-    }>;
-    assessed_custom_fees?: Array<{
-      amount: number;
-      collector_account_id: string;
-      token_id?: string;
-    }>;
-  }>;
+  transactions: TransactionDetailItem[];
 }
 
 // Contract Info

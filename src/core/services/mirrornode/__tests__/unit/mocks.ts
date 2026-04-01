@@ -176,7 +176,6 @@ export const createMockTransactionDetailsResponse = (
       transaction_hash: 'hash123',
       name: 'CRYPTOTRANSFER',
       node: '0.0.3',
-      transaction_fee: 100000,
       scheduled: false,
       transfers: [
         { account: '0.0.1234', amount: -1000000 },
