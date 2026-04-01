@@ -36,6 +36,7 @@ import { handleMirrorNodeErrorResponse } from '@/core/utils/handle-mirror-node-e
 
 import {
   AccountAPIResponseSchema,
+  ContractCallResponseSchema,
   ContractInfoSchema,
   ExchangeRateResponseSchema,
   GetAccountsAPIResponseSchema,
@@ -602,7 +603,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as ContractCallResponse;
+      return parseWithSchema(
+        ContractCallResponseSchema,
+        await response.json(),
+        'Mirror Node POST /contracts/call',
+      );
     } catch (error) {
       if (error instanceof CliError) throw error;
       throw new NetworkError('Failed to call contract via mirror node', {

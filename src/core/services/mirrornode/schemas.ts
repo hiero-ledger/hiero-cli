@@ -7,6 +7,7 @@ import {
   type AccountListItemAPIResponse,
   type AccountListItemBalance,
   type AccountListItemTokenBalance,
+  type ContractCallResponse,
   type ContractInfo,
   type ExchangeRateResponse,
   type GetAccountsAPIResponse,
@@ -231,6 +232,11 @@ export const ContractInfoSchema: z.ZodType<ContractInfo> = z.object({
   staked_node_id: z.union([z.number(), z.null()]).optional(),
   stake_period_start: nullableStringKey,
 });
+
+export const ContractCallResponseSchema: z.ZodType<ContractCallResponse> =
+  z.object({
+    result: z.string(),
+  });
 
 const exchangeRateBandSchema = z.object({
   cent_equivalent: z.number(),
