@@ -8,6 +8,7 @@ import {
   type AccountListItemBalance,
   type AccountListItemTokenBalance,
   type ContractInfo,
+  type ExchangeRateResponse,
   type GetAccountsAPIResponse,
   MirrorNodeKeyType,
   type NftInfo,
@@ -230,6 +231,19 @@ export const ContractInfoSchema: z.ZodType<ContractInfo> = z.object({
   staked_node_id: z.union([z.number(), z.null()]).optional(),
   stake_period_start: nullableStringKey,
 });
+
+const exchangeRateBandSchema = z.object({
+  cent_equivalent: z.number(),
+  expiration_time: z.number(),
+  hbar_equivalent: z.number(),
+});
+
+export const ExchangeRateResponseSchema: z.ZodType<ExchangeRateResponse> =
+  z.object({
+    current_rate: exchangeRateBandSchema,
+    next_rate: exchangeRateBandSchema,
+    timestamp: z.string(),
+  });
 
 const transactionTransferItemSchema: z.ZodType<TransactionTransferItem> =
   z.object({
