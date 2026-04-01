@@ -7,6 +7,7 @@ import {
   type AccountListItemAPIResponse,
   type AccountListItemBalance,
   type AccountListItemTokenBalance,
+  type ContractInfo,
   type GetAccountsAPIResponse,
   MirrorNodeKeyType,
   type NftInfo,
@@ -207,6 +208,27 @@ export const TopicInfoSchema: z.ZodType<TopicInfo> = z.object({
   expiration_timestamp: z.string().optional(),
   created_timestamp: z.string(),
   deleted: z.boolean(),
+});
+
+export const ContractInfoSchema: z.ZodType<ContractInfo> = z.object({
+  contract_id: z.string(),
+  account: z.string().optional(),
+  created_timestamp: z.string(),
+  deleted: z.boolean(),
+  memo: z.string(),
+  evm_address: z.string().optional(),
+  admin_key: optionalKeyRef,
+  auto_renew_account: nullableStringKey,
+  auto_renew_period: z.number(),
+  expiration_timestamp: nullableStringKey,
+  file_id: nullableStringKey,
+  max_automatic_token_associations: z.number(),
+  obtainer_id: nullableStringKey,
+  permanent_removal: z.union([z.boolean(), z.null()]).optional(),
+  proxy_account_id: nullableStringKey,
+  staked_account_id: nullableStringKey,
+  staked_node_id: z.union([z.number(), z.null()]).optional(),
+  stake_period_start: nullableStringKey,
 });
 
 const transactionTransferItemSchema: z.ZodType<TransactionTransferItem> =

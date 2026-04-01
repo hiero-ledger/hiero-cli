@@ -36,6 +36,7 @@ import { handleMirrorNodeErrorResponse } from '@/core/utils/handle-mirror-node-e
 
 import {
   AccountAPIResponseSchema,
+  ContractInfoSchema,
   GetAccountsAPIResponseSchema,
   NftInfoSchema,
   TokenAirdropsResponseSchema,
@@ -479,7 +480,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as ContractInfo;
+      return parseWithSchema(
+        ContractInfoSchema,
+        await response.json(),
+        `Mirror Node GET /contracts/${contractId}`,
+      );
     } catch (error) {
       if (error instanceof CliError) throw error;
       throw new NetworkError(
