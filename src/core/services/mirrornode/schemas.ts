@@ -9,6 +9,7 @@ import {
   type AccountListItemTokenBalance,
   type ContractCallResponse,
   type ContractInfo,
+  type ExchangeRateResponse,
   type GetAccountsAPIResponse,
   MirrorNodeKeyType,
   type NftInfo,
@@ -235,6 +236,19 @@ export const ContractInfoSchema: z.ZodType<ContractInfo> = z.object({
 export const ContractCallResponseSchema: z.ZodType<ContractCallResponse> =
   z.object({
     result: z.string(),
+  });
+
+const exchangeRateBandSchema = z.object({
+  cent_equivalent: z.number(),
+  expiration_time: z.number(),
+  hbar_equivalent: z.number(),
+});
+
+export const ExchangeRateResponseSchema: z.ZodType<ExchangeRateResponse> =
+  z.object({
+    current_rate: exchangeRateBandSchema,
+    next_rate: exchangeRateBandSchema,
+    timestamp: z.string(),
   });
 
 const transactionTransferItemSchema: z.ZodType<TransactionTransferItem> =

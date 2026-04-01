@@ -38,6 +38,7 @@ import {
   AccountAPIResponseSchema,
   ContractCallResponseSchema,
   ContractInfoSchema,
+  ExchangeRateResponseSchema,
   GetAccountsAPIResponseSchema,
   NftInfoSchema,
   TokenAirdropsResponseSchema,
@@ -568,7 +569,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as ExchangeRateResponse;
+      return parseWithSchema(
+        ExchangeRateResponseSchema,
+        await response.json(),
+        'Mirror Node GET /network/exchangerate',
+      );
     } catch (error) {
       if (error instanceof CliError) throw error;
       throw new NetworkError('Failed to fetch exchange rate', {
