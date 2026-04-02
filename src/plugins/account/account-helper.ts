@@ -46,19 +46,24 @@ export class AccountHelper {
 
     this.accountState.deleteAccount(key);
 
-    const accountsWithSameKeyRef = this.accountState
+    return removedAliases;
+  }
+
+  removeKmsCredentialIfUnusedAfterAccountRemoved(
+    accountToDelete: AccountData,
+  ): void {
+    const otherAccountsWithSameKey = this.accountState
       .listAccounts()
       .filter((acc) => acc.keyRefId === accountToDelete.keyRefId);
-    const isOtherAccountUseSameKey = accountsWithSameKeyRef.length > 1;
-
-    const operator = this.network.getCurrentOperatorOrThrow();
-    const isOperatorHaveSameKeyRef =
-      operator.keyRefId === accountToDelete.keyRefId;
-
-    if (!isOtherAccountUseSameKey && !isOperatorHaveSameKeyRef) {
-      this.kms.remove(accountToDelete.keyRefId);
+    if (otherAccountsWithSameKey.length > 0) {
+      return;
     }
 
-    return removedAliases;
+    const operator = this.network.getCurrentOperatorOrThrow();
+    if (operator.keyRefId === accountToDelete.keyRefId) {
+      return;
+    }
+
+    this.kms.remove(accountToDelete.keyRefId);
   }
 }

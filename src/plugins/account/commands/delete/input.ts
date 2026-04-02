@@ -4,9 +4,7 @@ import { AccountReferenceSchema } from '@/core/schemas';
 
 export const AccountDeleteInputSchema = z
   .object({
-    account: AccountReferenceSchema.describe(
-      'Account ID or alias of the account present in state',
-    ),
+    account: AccountReferenceSchema.describe('Account ID or alias'),
     transferId: AccountReferenceSchema.optional().describe(
       'Account that receives remaining HBAR (Hedera ID or alias). Required when deleting on Hedera; do not use with --state-only',
     ),

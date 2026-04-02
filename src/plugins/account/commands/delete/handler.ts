@@ -9,6 +9,8 @@ import type {
   DeleteSignTransactionResult,
 } from './types';
 
+import { AccountId, PublicKey } from '@hashgraph/sdk';
+
 import { BaseTransactionCommand } from '@/core/commands/command';
 import {
   NotFoundError,
@@ -19,6 +21,7 @@ import { EntityIdSchema } from '@/core/schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { AccountHelper } from '@/plugins/account/account-helper';
+import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { AccountDeleteInputSchema } from './input';
@@ -74,6 +77,25 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     return { result: outputData };
   }
 
+  private resolveEntityIdFromAccountRef(args: CommandHandlerArgs): {
+    entityId: string;
+    stateKey: string;
+    accountRef: string;
+    network: SupportedNetwork;
+  } {
+    const { api } = args;
+    const validArgs = AccountDeleteInputSchema.parse(args.args);
+    const accountRef = validArgs.account;
+    const network = api.network.getCurrentNetwork();
+    const isEntityId = EntityIdSchema.safeParse(accountRef).success;
+    const entityId = isEntityId
+      ? AccountId.fromString(accountRef).toString()
+      : api.alias.resolveOrThrow(accountRef, AliasType.Account, network)
+          .entityId!;
+    const stateKey = composeKey(network, entityId);
+    return { entityId, stateKey, accountRef, network };
+  }
+
   private async resolveAccountFromState(args: CommandHandlerArgs): Promise<{
     accountToDelete: AccountData;
     network: SupportedNetwork;
@@ -82,22 +104,8 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
   }> {
     const { api, logger } = args;
     const accountState = new ZustandAccountStateHelper(api.state, logger);
-    const validArgs = AccountDeleteInputSchema.parse(args.args);
-    const accountRef = validArgs.account;
-    const isEntityId = EntityIdSchema.safeParse(accountRef).success;
-    const network = api.network.getCurrentNetwork();
-    let stateKey: string;
-
-    if (isEntityId) {
-      stateKey = composeKey(network, accountRef);
-    } else {
-      const alias = api.alias.resolveOrThrow(
-        accountRef,
-        AliasType.Account,
-        network,
-      );
-      stateKey = composeKey(network, alias.entityId!);
-    }
+    const { stateKey, accountRef, network } =
+      this.resolveEntityIdFromAccountRef(args);
 
     const accountToDelete = accountState.getAccount(stateKey);
     if (!accountToDelete) {
@@ -105,6 +113,65 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     }
 
     return { accountToDelete, network, stateKey, accountRef };
+  }
+
+  private async resolveAccountForNetworkDelete(
+    args: CommandHandlerArgs,
+  ): Promise<{
+    accountToDelete: AccountData;
+    network: SupportedNetwork;
+    stateKey: string;
+    accountRef: string;
+  }> {
+    const { api, logger } = args;
+    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const { entityId, stateKey, accountRef, network } =
+      this.resolveEntityIdFromAccountRef(args);
+
+    const localAccount = accountState.getAccount(stateKey);
+    if (localAccount) {
+      return {
+        accountToDelete: localAccount,
+        network,
+        stateKey,
+        accountRef,
+      };
+    }
+
+    const accountInfo = await api.mirror.getAccountOrThrow(entityId);
+    const publicKeyRaw = PublicKey.fromString(
+      accountInfo.accountPublicKey,
+    ).toStringRaw();
+    const kmsRecord = api.kms.findByPublicKey(publicKeyRaw);
+    if (!kmsRecord) {
+      throw new ValidationError(
+        'Account key not found in key manager. Import the account or add the private key before deleting on the network.',
+        { context: { accountId: entityId } },
+      );
+    }
+
+    const evmAddress = buildAccountEvmAddress({
+      accountId: accountInfo.accountId,
+      publicKey: kmsRecord.publicKey,
+      keyType: accountInfo.keyAlgorithm,
+      existingEvmAddress: accountInfo.evmAddress,
+    });
+
+    const accountToDelete: AccountData = {
+      keyRefId: kmsRecord.keyRefId,
+      accountId: AccountId.fromString(accountInfo.accountId).toString(),
+      type: accountInfo.keyAlgorithm,
+      publicKey: kmsRecord.publicKey,
+      evmAddress,
+      network,
+    };
+
+    return {
+      accountToDelete,
+      network,
+      stateKey,
+      accountRef,
+    };
   }
 
   private resolveTransferAccountId(
@@ -126,7 +193,7 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<DeleteNormalisedParams> {
-    const resolved = await this.resolveAccountFromState(args);
+    const resolved = await this.resolveAccountForNetworkDelete(args);
     const validArgs = AccountDeleteInputSchema.parse(args.args);
     const transferId = validArgs.transferId;
     if (!transferId) {
@@ -228,6 +295,9 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     const removedAliases = accountHelper.removeAccountFromLocalState(
       normalisedParams.accountToDelete,
       normalisedParams.network,
+    );
+    accountHelper.removeKmsCredentialIfUnusedAfterAccountRemoved(
+      normalisedParams.accountToDelete,
     );
 
     const outputData: AccountDeleteOutput = {

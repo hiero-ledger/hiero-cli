@@ -330,7 +330,7 @@ export const accountPluginManifest: PluginManifest = {
       name: 'delete',
       summary: 'Delete an account',
       description:
-        'Delete an account on Hedera and remove it from local state (default). Requires --transfer-id for the beneficiary account. Use --state-only to remove only from local state without a network transaction.',
+        'Delete an account on Hedera and remove it from local state if present. Requires --transfer-id for the beneficiary. Use --state-only to remove only from local state without a network transaction.',
       registeredHooks: ['batchify'],
       options: [
         {
@@ -338,7 +338,7 @@ export const accountPluginManifest: PluginManifest = {
           short: 'a',
           type: OptionType.STRING,
           required: true,
-          description: 'Account ID or alias of the account present in state',
+          description: 'Account ID or alias',
         },
         {
           name: 'transfer-id',
