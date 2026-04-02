@@ -33,8 +33,7 @@ export const schedulePluginManifest: PluginManifest = {
   name: 'schedule',
   version: '1.0.0',
   displayName: 'Schedule Plugin',
-  description:
-    'Register schedule options in state, wrap transactions via the scheduled hook, then sign/delete/verify on chain',
+  description: 'Plugin for managing Hedera scheduled transaction',
   hooks: [
     {
       name: 'scheduled',
@@ -44,8 +43,7 @@ export const schedulePluginManifest: PluginManifest = {
           name: 'scheduled',
           short: 'X',
           type: OptionType.STRING,
-          description:
-            'Local schedule name (from schedule create). Wraps this command transaction in ScheduleCreateTransaction with stored options.',
+          description: 'Name of the schedule record in the local state',
         },
       ],
     },
@@ -55,14 +53,14 @@ export const schedulePluginManifest: PluginManifest = {
       name: 'create',
       summary: 'Register a named schedule in local state',
       description:
-        'Like batch create: stores a name and schedule options (admin, execution payer, memo, expiration, wait-for-expiry). Use --scheduled <name> on a supported transaction command to submit ScheduleCreateTransaction.',
+        'Create a new schedule record by providing parameters for scheduled transaction creation',
       options: [
         {
           name: 'name',
           short: 'n',
           type: OptionType.STRING,
           required: true,
-          description: 'Local alias for this schedule',
+          description: 'Name of the schedule. Option required',
         },
         {
           name: 'admin-key',
@@ -70,7 +68,7 @@ export const schedulePluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Admin key for the schedule (optional; enables delete later; omit for immutable schedule)',
+            'Admin key for the schedule for managing scheduled transaction on Hedera chain',
         },
         {
           name: 'payer-account',
@@ -78,7 +76,7 @@ export const schedulePluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Account id or key reference for the execution fee payer (optional)',
+            'Payer account of token. Must be resolved to account ID with private key. Defaults to operator.',
         },
         {
           name: 'memo',
@@ -107,7 +105,8 @@ export const schedulePluginManifest: PluginManifest = {
           short: 'k',
           type: OptionType.STRING,
           required: false,
-          description: 'Key manager (local or local_encrypted)',
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
       handler: scheduleCreate,
@@ -119,30 +118,30 @@ export const schedulePluginManifest: PluginManifest = {
     {
       name: 'sign',
       summary: 'Add a signature to a scheduled transaction',
-      description:
-        'Submit a ScheduleSignTransaction for the schedule given by --schedule (entity id or local alias)',
+      description: 'Signs scheduled transaction with the given key',
       options: [
         {
           name: 'schedule',
           short: 's',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Schedule id (0.0.x) or local alias from schedule create',
+          description: 'Schedule ID in format (0.0.x) or local schedule name',
         },
         {
           name: 'key',
           short: 'k',
           type: OptionType.STRING,
           required: true,
-          description: 'Key whose signature to add to the schedule',
+          description:
+            'Key whose signature to add to the schedule. Key must be resolved to private key',
         },
         {
           name: 'key-manager',
           short: 'K',
           type: OptionType.STRING,
           required: false,
-          description: 'Key manager (local or local_encrypted)',
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
       handler: scheduleSign,
@@ -155,29 +154,30 @@ export const schedulePluginManifest: PluginManifest = {
       name: 'delete',
       summary: 'Delete a scheduled transaction',
       description:
-        'Submit ScheduleDeleteTransaction for the schedule given by --schedule (entity id or local alias); requires admin key if one was set at create',
+        'Delete schedule record from local state and from Hedera chain if it was created and executed. Admin key must be set to perform this operation',
       options: [
         {
           name: 'schedule',
           short: 's',
           type: OptionType.STRING,
           required: true,
-          description:
-            'Schedule id (0.0.x) or local alias from schedule create',
+          description: 'Schedule id (0.0.x) or local schedule name',
         },
         {
           name: 'admin-key',
           short: 'a',
           type: OptionType.STRING,
           required: false,
-          description: 'Admin key that was set on schedule create',
+          description:
+            'Admin key to sign the transaction. If not provided the admin key from state is used to perform this operation.',
         },
         {
           name: 'key-manager',
           short: 'k',
           type: OptionType.STRING,
           required: false,
-          description: 'Key manager (local or local_encrypted)',
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
       handler: scheduleDelete,
@@ -188,30 +188,31 @@ export const schedulePluginManifest: PluginManifest = {
     },
     {
       name: 'verify',
-      summary: 'Query schedule execution state',
+      summary: 'Verify schedule execution state',
       description:
-        'Run ScheduleInfoQuery to see whether the schedule executed, was deleted, expiration, etc.',
+        'Verify if scheduled transaction was executed and/or import scheduled transaction information to the local state',
       options: [
         {
           name: 'name',
           short: 'n',
           type: OptionType.STRING,
           required: false,
-          description: 'Local alias from schedule create',
+          description: 'Local name of schedule record',
         },
         {
           name: 'schedule-id',
           short: 's',
           type: OptionType.STRING,
           required: false,
-          description: 'Schedule id (0.0.x)',
+          description: 'Schedule ID in format (0.0.x)',
         },
         {
           name: 'key-manager',
           short: 'k',
           type: OptionType.STRING,
           required: false,
-          description: 'Key manager (local or local_encrypted)',
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
       ],
       handler: scheduleVerify,

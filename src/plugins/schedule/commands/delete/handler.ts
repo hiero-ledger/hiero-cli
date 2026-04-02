@@ -1,5 +1,8 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type {
+  Credential,
+  KeyManager,
+} from '@/core/services/kms/kms-types.interface';
 import type { ScheduleDeleteOutput } from './output';
 import type {
   ScheduleDeleteBuildTransactionResult,
@@ -12,6 +15,7 @@ import { ValidationError } from '@/core';
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { ScheduleHelper, ZustandScheduleStateHelper } from '@/plugins/schedule';
 
@@ -99,9 +103,29 @@ export class ScheduleDeleteCommand extends BaseTransactionCommand<
         `Could not resolve schedule ID for ${validArgs.schedule.value}`,
       );
     }
-
+    let adminCredential: Credential;
+    if (validArgs.adminKey) {
+      adminCredential = validArgs.adminKey;
+    } else if (schedule.adminKeyRefId) {
+      adminCredential = {
+        type: CredentialType.KEY_REFERENCE,
+        keyReference: schedule.adminKeyRefId,
+        rawValue: schedule.adminKeyRefId,
+      };
+    } else if (schedule.adminPublicKey && schedule.adminKeyType) {
+      adminCredential = {
+        type: CredentialType.PUBLIC_KEY,
+        keyType: schedule.adminKeyType,
+        publicKey: schedule.adminPublicKey,
+        rawValue: `${schedule.adminKeyType}:${schedule.adminPublicKey}`,
+      };
+    } else {
+      throw new ValidationError(
+        `Missing admin key to sign the transaction with`,
+      );
+    }
     const admin = await api.keyResolver.resolveSigningKey(
-      validArgs.adminKey,
+      adminCredential,
       keyManager,
       false,
       ['schedule:admin'],

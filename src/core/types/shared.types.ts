@@ -162,7 +162,6 @@ export interface TransactionResult {
   topicId?: string;
   contractId?: string;
   topicSequenceNumber?: number;
-  /** Present on ScheduleCreateTransaction receipts when the schedule entity is created. */
   scheduleId?: string;
   consensusTimestamp: string;
 }

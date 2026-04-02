@@ -8,16 +8,16 @@ import {
 
 export const ScheduleVerifyInputSchema = z
   .object({
-    name: AliasNameSchema.optional().describe(
-      'Local alias of a schedule created with schedule create',
-    ),
+    name: AliasNameSchema.optional().describe('Local name of schedule record'),
     scheduleId: EntityIdSchema.optional().describe(
-      'Schedule id (0.0.x) when not using a saved name',
+      'Schedule ID in format (0.0.x)',
     ),
-    keyManager: KeyManagerTypeSchema.optional(),
+    keyManager: KeyManagerTypeSchema.optional().describe(
+      'Key manager to use: local or local_encrypted (defaults to config setting)',
+    ),
   })
   .refine(
-    (schema) => !(schema.name && schema.scheduleId),
+    (schema) => schema.name !== undefined || schema.scheduleId !== undefined,
     'Either schedule name or schedule ID must be provided',
   );
 

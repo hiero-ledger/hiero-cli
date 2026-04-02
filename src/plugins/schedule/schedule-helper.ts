@@ -1,12 +1,12 @@
 import type { HederaMirrornodeService, Logger, StateService } from '@/core';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type {
   ResolvedSchedule,
   ScheduleHelperResolveParams,
 } from '@/plugins/schedule/shared/types';
 
-import { EntityReferenceType } from '@/core';
+import { EntityReferenceType, KeyAlgorithm } from '@/core';
 import { NotFoundError, ValidationError } from '@/core/errors';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
 
@@ -46,6 +46,7 @@ export class ScheduleHelper {
         scheduleId: entry.scheduledId,
         scheduled: entry.scheduled,
         executed: entry.executed,
+        adminKeyRefId: entry.adminKeyRefId,
       };
     } else {
       const response = await this.mirror.getScheduled(params.scheduleReference);
@@ -53,41 +54,13 @@ export class ScheduleHelper {
         scheduleId: response.schedule_id,
         scheduled: true,
         executed: !!response.executed_timestamp,
+        //@TODO: change if you add support for threshold key
+        adminPublicKey: response.admin_key?.key,
+        adminKeyType:
+          response.admin_key?._type === MirrorNodeKeyType.ED25519
+            ? KeyAlgorithm.ED25519
+            : KeyAlgorithm.ECDSA,
       };
     }
-  }
-  /**
-   * Resolves a schedule id from CLI args: explicit id or a saved name that already has an on-chain id.
-   */
-  resolveScheduleIdFromArgs(
-    network: SupportedNetwork,
-    args: ResolveScheduleIdArgs,
-  ): string {
-    if (args.scheduleId && args.name) {
-      throw new ValidationError('Provide only one of: name, schedule-id');
-    }
-    if (!args.scheduleId && !args.name) {
-      throw new ValidationError('Provide one of: name, schedule-id');
-    }
-
-    if (args.scheduleId) {
-      return args.scheduleId;
-    }
-
-    const scheduleState = new ZustandScheduleStateHelper(
-      this.state,
-      this.logger,
-    );
-    const key = composeKey(network, args.name!);
-    const entry = scheduleState.getScheduled(key);
-    if (!entry) {
-      throw new NotFoundError(`No saved schedule found for name: ${args.name}`);
-    }
-    if (!entry.scheduledId) {
-      throw new ValidationError(
-        `Schedule "${args.name}" has no schedule id yet. Submit a transaction with --scheduled ${args.name} first.`,
-      );
-    }
-    return entry.scheduledId;
   }
 }

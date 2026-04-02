@@ -13,17 +13,21 @@ import {
  * schedule create — same idea as batch create: local state + key ref + schedule options for the hook
  */
 export const ScheduleCreateInputSchema = z.object({
-  name: AliasNameSchema.describe('Local name for this schedule'),
+  name: AliasNameSchema.describe('Name of the schedule. Option required'),
   adminKey: KeySchema.optional().describe(
-    'Admin key for the schedule (optional). Enables schedule delete later.',
+    'Admin key for the schedule for managing scheduled transaction on Hedera chain',
   ),
   payerAccount: KeySchema.optional().describe(
-    'Account that pays execution fees for the scheduled transaction (optional).',
+    'Payer account of token. Must be resolved to account ID with private key. Defaults to operator.',
   ),
   memo: MemoSchema.describe('Public schedule memo (max 100 bytes)'),
   expiration: ScheduleExpirationSchema,
-  waitForExpiry: WaitForExpirySchema,
-  keyManager: KeyManagerTypeSchema.optional(),
+  waitForExpiry: WaitForExpirySchema.describe(
+    'Execute at expiration time instead of when signatures are complete',
+  ),
+  keyManager: KeyManagerTypeSchema.optional().describe(
+    'Key manager to use: local or local_encrypted (defaults to config setting)',
+  ),
 });
 
 export type ScheduleCreateInput = z.infer<typeof ScheduleCreateInputSchema>;
