@@ -6,7 +6,7 @@ import type {
   StateService,
 } from '@/core';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { AccountData } from '@/plugins/account/schema';
+import type { AccountDeleteContext } from '@/plugins/account/commands/delete/types';
 
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
@@ -28,7 +28,7 @@ export class AccountHelper {
   }
 
   removeAccountFromLocalState(
-    accountToDelete: AccountData,
+    accountToDelete: Pick<AccountDeleteContext, 'accountId'>,
     network: SupportedNetwork,
   ): string[] {
     const key = composeKey(network, accountToDelete.accountId);
@@ -50,7 +50,7 @@ export class AccountHelper {
   }
 
   removeKmsCredentialIfUnusedAfterAccountRemoved(
-    accountToDelete: AccountData,
+    accountToDelete: Pick<AccountDeleteContext, 'keyRefId'>,
   ): void {
     const otherAccountsWithSameKey = this.accountState
       .listAccounts()

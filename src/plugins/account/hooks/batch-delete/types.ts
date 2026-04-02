@@ -1,13 +1,16 @@
 import { z } from 'zod';
 
-import { EntityIdSchema } from '@/core/schemas/common-schemas';
+import { AliasNameSchema, EntityIdSchema } from '@/core/schemas/common-schemas';
 import { SupportedNetwork } from '@/core/types/shared.types';
-import { AccountDataSchema } from '@/plugins/account/schema';
 
 export const AccountDeleteNormalisedParamsSchema = z.object({
   network: z.enum(SupportedNetwork),
   stateKey: z.string().min(1),
-  accountToDelete: AccountDataSchema,
+  accountToDelete: z.object({
+    accountId: EntityIdSchema,
+    keyRefId: z.string().min(1),
+    name: AliasNameSchema.max(50).optional(),
+  }),
   transferAccountId: EntityIdSchema,
   accountRef: z.string(),
 });

@@ -6,12 +6,17 @@ import type {
   SupportedNetwork,
   TransactionResult,
 } from '@/core/types/shared.types';
-import type { AccountData } from '@/plugins/account/schema';
+
+export interface AccountDeleteContext {
+  accountId: string;
+  keyRefId: string;
+  name?: string;
+}
 
 export interface DeleteNormalisedParams {
   network: SupportedNetwork;
   stateKey: string;
-  accountToDelete: AccountData;
+  accountToDelete: AccountDeleteContext;
   transferAccountId: string;
   accountRef: string;
 }

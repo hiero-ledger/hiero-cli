@@ -3,6 +3,7 @@ import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountData } from '@/plugins/account/schema';
 import type { AccountDeleteOutput } from './output';
 import type {
+  AccountDeleteContext,
   DeleteBuildTransactionResult,
   DeleteExecuteTransactionResult,
   DeleteNormalisedParams,
@@ -19,9 +20,9 @@ import {
 } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { EntityReferenceType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { AccountHelper } from '@/plugins/account/account-helper';
-import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { AccountDeleteInputSchema } from './input';
@@ -87,11 +88,21 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     const validArgs = AccountDeleteInputSchema.parse(args.args);
     const accountRef = validArgs.account;
     const network = api.network.getCurrentNetwork();
-    const isEntityId = EntityIdSchema.safeParse(accountRef).success;
-    const entityId = isEntityId
-      ? AccountId.fromString(accountRef).toString()
-      : api.alias.resolveOrThrow(accountRef, AliasType.Account, network)
-          .entityId!;
+    const referenceType: EntityReferenceType = EntityIdSchema.safeParse(
+      accountRef,
+    ).success
+      ? EntityReferenceType.ENTITY_ID
+      : EntityReferenceType.ALIAS;
+
+    const { entityIdOrEvmAddress } =
+      api.identityResolution.resolveReferenceToEntityOrEvmAddress({
+        entityReference: accountRef,
+        referenceType,
+        network,
+        aliasType: AliasType.Account,
+      });
+
+    const entityId = AccountId.fromString(entityIdOrEvmAddress).toString();
     const stateKey = composeKey(network, entityId);
     return { entityId, stateKey, accountRef, network };
   }
@@ -118,7 +129,7 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
   private async resolveAccountForNetworkDelete(
     args: CommandHandlerArgs,
   ): Promise<{
-    accountToDelete: AccountData;
+    accountToDelete: AccountDeleteContext;
     network: SupportedNetwork;
     stateKey: string;
     accountRef: string;
@@ -131,7 +142,11 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     const localAccount = accountState.getAccount(stateKey);
     if (localAccount) {
       return {
-        accountToDelete: localAccount,
+        accountToDelete: {
+          accountId: localAccount.accountId,
+          keyRefId: localAccount.keyRefId,
+          name: localAccount.name,
+        },
         network,
         stateKey,
         accountRef,
@@ -150,24 +165,11 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
       );
     }
 
-    const evmAddress = buildAccountEvmAddress({
-      accountId: accountInfo.accountId,
-      publicKey: kmsRecord.publicKey,
-      keyType: accountInfo.keyAlgorithm,
-      existingEvmAddress: accountInfo.evmAddress,
-    });
-
-    const accountToDelete: AccountData = {
-      keyRefId: kmsRecord.keyRefId,
-      accountId: AccountId.fromString(accountInfo.accountId).toString(),
-      type: accountInfo.keyAlgorithm,
-      publicKey: kmsRecord.publicKey,
-      evmAddress,
-      network,
-    };
-
     return {
-      accountToDelete,
+      accountToDelete: {
+        accountId: AccountId.fromString(accountInfo.accountId).toString(),
+        keyRefId: kmsRecord.keyRefId,
+      },
       network,
       stateKey,
       accountRef,

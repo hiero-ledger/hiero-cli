@@ -24,6 +24,7 @@ import {
   makeArgs,
   makeLogger,
   makeNetworkServiceMock,
+  mockIdentityResolution,
 } from './helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -93,6 +94,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         alias,
         network,
         kms: kms as unknown as KmsService,
+        identityResolution: mockIdentityResolution('0.0.1111'),
       };
       const args = makeArgs(api, logger, {
         account: 'acc1',
@@ -130,6 +132,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         alias,
         network,
         kms: kms as unknown as KmsService,
+        identityResolution: mockIdentityResolution('0.0.2222'),
       };
       const args = makeArgs(api, logger, {
         account: '0.0.2222',
@@ -162,6 +165,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         logger,
         alias,
         network,
+        identityResolution: mockIdentityResolution('0.0.1'),
       };
       const args = makeArgs(api, logger, { stateOnly: true });
 
@@ -190,6 +194,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         logger,
         alias,
         network,
+        identityResolution: mockIdentityResolution('0.0.1111'),
       };
       const args = makeArgs(api, logger, {
         account: 'missingAcc',
@@ -218,6 +223,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         logger,
         alias,
         network,
+        identityResolution: mockIdentityResolution('0.0.4444'),
       };
       const args = makeArgs(api, logger, {
         account: '0.0.4444',
@@ -252,6 +258,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         logger,
         alias,
         network,
+        identityResolution: mockIdentityResolution('0.0.5555'),
       };
       const args = makeArgs(api, logger, {
         account: 'acc5',
@@ -290,6 +297,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         alias,
         network,
         kms: kms as unknown as KmsService,
+        identityResolution: mockIdentityResolution('0.0.7777'),
       };
       const args = makeArgs(api, logger, {
         account: 'acc-alias',
@@ -384,6 +392,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         account: accountSvc,
         txSign,
         txExecute,
+        identityResolution: mockIdentityResolution('0.0.1111'),
       };
 
       const args = makeArgs(api, logger, {
@@ -447,6 +456,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         account: accountSvc,
         txSign,
         txExecute,
+        identityResolution: mockIdentityResolution('0.0.1111'),
       };
 
       const args = makeArgs(api, logger, {

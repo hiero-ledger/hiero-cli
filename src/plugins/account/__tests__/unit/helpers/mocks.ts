@@ -6,6 +6,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
@@ -18,6 +19,7 @@ import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeAliasMock as makeGlobalAliasMock,
   makeConfigMock,
+  makeIdentityResolutionServiceMock,
   makeKmsMock as makeGlobalKmsMock,
   makeMirrorMock as makeGlobalMirrorMock,
   makeNetworkMock as makeGlobalNetworkMock,
@@ -236,6 +238,18 @@ export const makeArgs = (
   config: makeConfigMock(),
   args,
 });
+
+export function mockIdentityResolution(
+  entityId: string,
+): jest.Mocked<IdentityResolutionService> {
+  const identityResolutionService = makeIdentityResolutionServiceMock();
+  identityResolutionService.resolveReferenceToEntityOrEvmAddress.mockReturnValue(
+    {
+      entityIdOrEvmAddress: entityId,
+    },
+  );
+  return identityResolutionService;
+}
 
 /**
  * Configuration options for makeApiMocksForAccountCreate
