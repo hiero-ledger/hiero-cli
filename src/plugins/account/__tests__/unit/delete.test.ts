@@ -2,7 +2,11 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { TransactionResult } from '@/core/types/shared.types';
 
-import { makeAliasMock, makeStateMock } from '@/__tests__/mocks/mocks';
+import {
+  makeAliasMock,
+  makeConfigMock,
+  makeStateMock,
+} from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
@@ -365,6 +369,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         networkMock,
         kms,
         alias,
+        keyResolver,
       } = makeApiMocksForAccountDelete({
         deleteAccountImpl,
         executeImpl: jest.fn().mockResolvedValue(executeResult),
@@ -392,6 +397,8 @@ describe('account plugin - delete command (ADR-003)', () => {
         account: accountSvc,
         txSign,
         txExecute,
+        keyResolver,
+        config: makeConfigMock(),
         identityResolution: mockIdentityResolution('0.0.1111'),
       };
 
@@ -432,6 +439,7 @@ describe('account plugin - delete command (ADR-003)', () => {
         networkMock,
         kms,
         alias,
+        keyResolver,
       } = makeApiMocksForAccountDelete({
         executeImpl: jest.fn().mockResolvedValue({
           ...mockTransactionResults.failure,
@@ -456,6 +464,8 @@ describe('account plugin - delete command (ADR-003)', () => {
         account: accountSvc,
         txSign,
         txExecute,
+        keyResolver,
+        config: makeConfigMock(),
         identityResolution: mockIdentityResolution('0.0.1111'),
       };
 

@@ -367,6 +367,18 @@ export const makeApiMocksForAccountDelete = ({
   const kms = makeGlobalKmsMock();
   const alias = makeGlobalAliasMock();
 
+  const keyResolver = {
+    resolveAccountCredentials: jest.fn().mockResolvedValue({
+      keyRefId: 'kr_deleted',
+      accountId: '0.0.1111',
+      publicKey:
+        '302a300506032b657003210000000000000000000000000000000000000000',
+    }),
+    resolveDestination: jest.fn(),
+    getPublicKey: jest.fn(),
+    resolveSigningKey: jest.fn(),
+  };
+
   return {
     account,
     txSign,
@@ -374,5 +386,6 @@ export const makeApiMocksForAccountDelete = ({
     networkMock,
     kms,
     alias,
+    keyResolver,
   };
 };
