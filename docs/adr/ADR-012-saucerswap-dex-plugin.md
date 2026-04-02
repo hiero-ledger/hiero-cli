@@ -156,8 +156,8 @@ export function computeMinOutput(
   amount: bigint,
   slippagePercent: number,
 ): bigint {
-  const factor = BigInt(Math.floor((1 - slippagePercent / 100) * 10000));
-  return (amount * factor) / 10000n;
+  const factor = BigInt(Math.floor(1 - slippagePercent / 100));
+  return amount * factor;
 }
 
 // src/plugins/saucerswap/utils/deadline.ts
