@@ -15,9 +15,8 @@ import {
  */
 export const ContractImportOutputSchema = z.object({
   contractId: EntityIdSchema,
-  contractName: z.string().optional().describe('Contract name in state'),
   contractEvmAddress: EvmAddressSchema,
-  alias: AliasNameSchema.optional(),
+  name: AliasNameSchema.optional(),
   network: NetworkSchema,
   memo: z.string().optional(),
   verified: z.boolean(),
@@ -30,13 +29,10 @@ export type ContractImportOutput = z.infer<typeof ContractImportOutputSchema>;
  */
 export const IMPORT_CONTRACT_TEMPLATE = `
 ✅ Contract imported successfully: {{hashscanLink contractId "contract" network}}
-{{#if contractName}}
-   Contract name: {{contractName}}
+{{#if name}}
+   Name: {{name}}
 {{/if}}
    Contract EVM address: {{contractEvmAddress}}
-{{#if alias}}
-   Alias: {{alias}}
-{{/if}}
 {{#if memo}}
    Memo: {{memo}}
 {{/if}}

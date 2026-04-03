@@ -23,7 +23,7 @@ export class ListContractsCommand implements Command {
 
     contracts.forEach((contract, index) => {
       logger.debug(
-        `[CONTRACT LIST]   ${index + 1}. ${contract.contractName} - ${contract.contractId} on ${contract.network}`,
+        `[CONTRACT LIST]   ${index + 1}. ${contract.name ?? contract.contractId} - ${contract.contractId} on ${contract.network}`,
       );
     });
 
