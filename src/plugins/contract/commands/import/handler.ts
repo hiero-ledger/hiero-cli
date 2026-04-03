@@ -9,6 +9,7 @@ import type { ContractImportOutput } from './output';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ensureEvmAddress0xPrefix } from '@/core/utils/evm-address';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
@@ -44,6 +45,9 @@ export class ImportContractCommand implements Command {
       );
     }
 
+    const normalizedContractEvmAddress =
+      ensureEvmAddress0xPrefix(contractEvmAddress);
+
     if (contractState.hasContract(contractId)) {
       throw new ValidationError(
         `Contract with ID '${contractId}' already exists in state`,
@@ -58,7 +62,7 @@ export class ImportContractCommand implements Command {
         type: AliasType.Contract,
         network,
         entityId: contractId,
-        evmAddress: contractEvmAddress,
+        evmAddress: normalizedContractEvmAddress,
         createdAt: new Date().toISOString(),
       });
     }
@@ -66,7 +70,7 @@ export class ImportContractCommand implements Command {
     const contractData: ContractData = {
       contractId,
       contractName: contractName,
-      contractEvmAddress,
+      contractEvmAddress: normalizedContractEvmAddress,
       adminPublicKey: contractInfo.admin_key?.key,
       network,
       memo: contractInfo.memo || undefined,
@@ -79,7 +83,7 @@ export class ImportContractCommand implements Command {
     const result: ContractImportOutput = {
       contractId,
       contractName: contractName,
-      contractEvmAddress,
+      contractEvmAddress: normalizedContractEvmAddress,
       alias,
       network,
       memo: contractInfo.memo || undefined,
