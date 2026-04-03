@@ -95,7 +95,13 @@ hcli contract create --name my-token --default erc20 -c "CustomToken" -c "CTK" -
 
 Imports an existing contract from Hedera (by contract ID or EVM address) into local state.
 
-**Main options:** `--contract` (`-c`, required), optional `--name`, `--alias`, `--verified`.
+**Main options:** `--contract` (`-c`, required), optional `--name`, `--verified`.
+
+| Option     | Short | Description                                                                   |
+| ---------- | ----- | ----------------------------------------------------------------------------- |
+| `contract` | `c`   | Contract ID or EVM address (required)                                         |
+| `name`     | `n`   | Optional local name (stored in state and registered for `--contract` lookups) |
+| `verified` | `v`   | Whether the contract is verified on Hashscan (default: false)                 |
 
 ```bash
 hcli contract import --contract 0.0.123456 --name myContract
@@ -148,9 +154,9 @@ interface CommandResult {
 
 **Output schemas:**
 
-- **Create**: `contractId`, `contractName`, `contractEvmAddress`, `alias`, `network`, `transactionId`, `adminPublicKey`
-- **Import**: `contractId`, `contractName`, `contractEvmAddress`, `alias`, `network`, `memo`, `verified`
-- **List**: `contracts` (array with `contractId`, `contractName`, `contractEvmAddress`, `alias`, `adminPublicKey`, `network`), `totalCount`
+- **Create**: `contractId`, `contractName`, `contractEvmAddress`, `name`, `network`, `transactionId`, `adminPublicKey`
+- **Import**: `contractId`, `contractEvmAddress`, `name`, `network`, `memo`, `verified`
+- **List**: `contracts` (array with `contractId`, `name`, `contractEvmAddress`, `adminPublicKey`, `network`), `totalCount`
 - **Delete**: `deletedContract`, `network`, optional `removedAliases`, `transactionId`, `stateOnly`
 
 Human-readable output uses Handlebars templates with HashScan links for contract and transaction IDs.
@@ -162,8 +168,7 @@ Contract data is stored in the `contract-contracts` namespace with the following
 ```typescript
 interface ContractData {
   contractId: string; // Hedera contract ID (0.0.xxxxx)
-  alias?: string; // Local alias for `--contract` lookups (optional)
-  contractName?: string; // Human-readable name (e.g. from Solidity or import)
+  name?: string; // Optional local name for `--contract` lookups (same idea as account `name`)
   contractEvmAddress: string; // Deployed contract EVM address
   adminPublicKey?: string; // Optional admin public key (from network / create)
   adminKeyRefId?: string; // KMS key ref for admin when set at create (for signing delete on network)

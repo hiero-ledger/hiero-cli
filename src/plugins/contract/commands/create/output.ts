@@ -15,7 +15,7 @@ export const ContractCreateOutputSchema = z.object({
   contractId: EntityIdSchema,
   contractName: ContractNameSchema,
   contractEvmAddress: EvmAddressSchema,
-  alias: AliasNameSchema.optional(),
+  name: AliasNameSchema.optional(),
   network: NetworkSchema,
   transactionId: TransactionIdSchema,
   adminPublicKey: PublicKeyDefinitionSchema.optional(),
@@ -28,8 +28,8 @@ export const CONTRACT_CREATE_TEMPLATE = `
 ✅ Contract created successfully: {{hashscanLink contractId "contract" network}}
    Contract name: {{contractName}}
    Contract EVM address: {{contractEvmAddress}}
-{{#if alias}}
-   Alias: {{alias}}
+{{#if name}}
+   Name: {{name}}
 {{/if}}
 {{#if adminPublicKey}}
    Admin public key: {{adminPublicKey}}
