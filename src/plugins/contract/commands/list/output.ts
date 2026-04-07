@@ -5,7 +5,6 @@ import { z } from 'zod';
 
 import {
   AliasNameSchema,
-  ContractNameSchema,
   ContractVerifiedSchema,
   EntityIdSchema,
   EvmAddressSchema,
@@ -17,13 +16,12 @@ import { SupportedNetwork } from '@/core/types/shared.types';
  */
 const ContractListItemSchema = z.object({
   contractId: EntityIdSchema.describe('Contract ID'),
-  contractName: ContractNameSchema.optional(),
+  name: AliasNameSchema.optional(),
 
   contractEvmAddress: EvmAddressSchema.describe(
     'Deployed contract EVM address',
   ),
   adminPublicKey: z.string().optional(),
-  alias: AliasNameSchema.optional(),
 
   network: z.enum(SupportedNetwork, {
     error: () => ({
@@ -59,13 +57,10 @@ export const CONTRACT_LIST_TEMPLATE = `
 
 {{#each contracts}}
 {{add1 @index}}. Contract ID: {{hashscanLink contractId "contract" network}}
-{{#if contractName}}
-   Contract name: {{contractName}}
+{{#if name}}
+   Name: {{name}}
 {{/if}}
    Contract EVM address: {{contractEvmAddress}}
-{{#if alias}}
-   Alias: {{alias}}
-{{/if}}
 {{#if adminPublicKey}}
    Admin public key: {{adminPublicKey}}
 {{/if}}

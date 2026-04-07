@@ -35,7 +35,7 @@ const expectedStateKey = composeKey(SupportedNetwork.TESTNET, MOCK_CONTRACT_ID);
 function makeContractData(overrides: Partial<ContractData> = {}): ContractData {
   return {
     contractId: MOCK_CONTRACT_ID,
-    contractName: 'MyContract',
+    name: 'MyContract',
     contractEvmAddress: MOCK_EVM_ADDRESS,
     network: SupportedNetwork.TESTNET,
     ...overrides,
@@ -79,7 +79,7 @@ describe('contract plugin - delete command', () => {
 
   test('deletes contract successfully by contract ID', async () => {
     const contract = makeContractData({
-      contractName: 'MyContract',
+      name: 'MyContract',
     });
     const alias = makeAliasServiceMock();
     alias.list.mockReturnValue([]);
@@ -100,14 +100,14 @@ describe('contract plugin - delete command', () => {
     expect(contractDeleteMock).toHaveBeenCalledWith(expectedStateKey);
     const output = assertOutput(result.result, DeleteContractOutputSchema);
     expect(output.deletedContract.contractId).toBe(MOCK_CONTRACT_ID);
-    expect(output.deletedContract.contractName).toBe('MyContract');
+    expect(output.deletedContract.name).toBe('MyContract');
     expect(output.stateOnly).toBe(true);
   });
 
   test('deletes contract on network successfully when stateOnly is false', async () => {
     const adminKeyRefId = 'test-admin-key-ref';
     const contract = makeContractData({
-      contractName: 'MyContract',
+      name: 'MyContract',
       adminKeyRefId,
     });
     const alias = makeAliasServiceMock();
@@ -140,7 +140,7 @@ describe('contract plugin - delete command', () => {
     expect(contractDeleteMock).toHaveBeenCalledWith(expectedStateKey);
     const output = assertOutput(result.result, DeleteContractOutputSchema);
     expect(output.deletedContract.contractId).toBe(MOCK_CONTRACT_ID);
-    expect(output.deletedContract.contractName).toBe('MyContract');
+    expect(output.deletedContract.name).toBe('MyContract');
     expect(output.stateOnly).toBe(false);
     expect(output.transactionId).toBe(MOCK_TX_ID);
     expect(output.network).toBe(SupportedNetwork.TESTNET);
@@ -150,8 +150,7 @@ describe('contract plugin - delete command', () => {
   test('deletes contract successfully by alias', async () => {
     const contract = makeContractData({
       contractId: MOCK_CONTRACT_ID,
-      alias: 'my-contract',
-      contractName: 'ImportedContract',
+      name: 'ImportedContract',
     });
 
     const contractDeleteMock = jest.fn().mockReturnValue(undefined);
@@ -204,7 +203,7 @@ describe('contract plugin - delete command', () => {
     );
     const output = assertOutput(result.result, DeleteContractOutputSchema);
     expect(output.deletedContract.contractId).toBe(MOCK_CONTRACT_ID);
-    expect(output.deletedContract.contractName).toBe('ImportedContract');
+    expect(output.deletedContract.name).toBe('ImportedContract');
   });
 
   test('throws when contract param is missing', async () => {

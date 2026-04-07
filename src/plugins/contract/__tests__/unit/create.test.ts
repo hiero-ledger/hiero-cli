@@ -95,7 +95,7 @@ describe('contract plugin - create command', () => {
       expect(
         EvmAddressSchema.safeParse(output.contractEvmAddress).success,
       ).toBe(true);
-      expect(output.alias).toBe('my-token');
+      expect(output.name).toBe('my-token');
     });
   });
 
@@ -134,7 +134,7 @@ describe('contract plugin - create command', () => {
       const output = result.result as ContractCreateOutput;
       expect(output.contractId).toBe(MOCK_CONTRACT_ID);
       expect(output.contractName).toBe('ERC721');
-      expect(output.alias).toBe('my-nft');
+      expect(output.name).toBe('my-nft');
     });
   });
 

@@ -225,8 +225,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
 
     const contractData = {
       contractId: executeTransactionResult.contractId,
-      alias: normalisedParams.alias,
-      contractName: normalisedParams.contractName,
+      name: normalisedParams.alias,
       contractEvmAddress,
       adminPublicKey: normalisedParams.admin?.publicKey,
       adminKeyRefId: normalisedParams.admin?.keyRefId,
@@ -255,7 +254,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
       contractName: normalisedParams.contractName,
       contractEvmAddress,
       network: normalisedParams.network,
-      alias: normalisedParams.alias,
+      name: normalisedParams.alias,
       transactionId: executeTransactionResult.transactionId,
       adminPublicKey: normalisedParams.admin?.publicKey,
       verified: verificationResult.success,
