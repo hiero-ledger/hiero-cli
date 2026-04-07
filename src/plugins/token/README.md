@@ -45,6 +45,12 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── airdrop-ft/
+│   │   ├── handler.ts       # Fungible token airdrop handler (multi-recipient)
+│   │   ├── input.ts         # Input schema with REPEATABLE --to/--amount
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Command-specific type definitions
+│   │   └── index.ts         # Command exports
 │   ├── transfer-ft/
 │   │   ├── handler.ts       # Fungible token transfer handler
 │   │   ├── input.ts         # Input schema
@@ -590,6 +596,55 @@ hcli token associate \
 # Add to batch
 hcli token associate --token mytoken-alias --account alice --batch my-batch
 ```
+
+### Token Airdrop (Fungible Token)
+
+Airdrop fungible tokens from one account to one or more recipients in a single transaction. If a recipient lacks auto-association slots or has "receiver signature required" set, the transfer becomes a **pending airdrop** (not a failure) that the recipient must claim separately.
+
+```bash
+# Airdrop to a single recipient
+hcli token airdrop-ft \
+  --token mytoken-alias \
+  --to alice \
+  --amount 100
+
+# Airdrop to multiple recipients (index-mapped: to[0]↔amount[0])
+hcli token airdrop-ft \
+  --token 0.0.123456 \
+  --to 0.0.100001 --amount 100 \
+  --to 0.0.100002 --amount 200 \
+  --to 0.0.100003 --amount 50
+
+# Using raw base units with "t" suffix
+hcli token airdrop-ft \
+  --token mytoken-alias \
+  --to alice --amount 1000t \
+  --to bob --amount 500t \
+  --from 0.0.111111:302e020100300506032b657004220420...
+
+# Add to a batch
+hcli token airdrop-ft \
+  --token mytoken-alias \
+  --to alice --amount 100 \
+  --batch my-airdrop-batch
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Fungible token identifier (alias or token ID) - **Required**
+- `--to` / `-t`: Recipient account (alias, account-id, or EVM address) — pass multiple times for multiple recipients - **Required**
+- `--amount` / `-a`: Amount to airdrop — index-mapped to `--to`. Default: display units (decimals applied). Append `t` for raw base units — pass multiple times to match `--to` - **Required**
+- `--from` / `-f`: Sender account (alias or account-id:private-key pair) - **Optional** (defaults to operator)
+- `--key-manager` / `-k`: Key manager type - **Optional** (defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Notes:**
+
+- The number of `--to` flags must equal the number of `--amount` flags (validated at input)
+- Maximum 9 recipients per transaction (Hedera limit: 10 balance adjustments including sender debit)
+- Batch support: pass `--batch <batch-name>` to queue the transaction for batch execution
+
+**Implementation:** [`src/plugins/token/commands/airdrop-ft/handler.ts`](./commands/airdrop-ft/handler.ts)
 
 ### Token Transfer (Fungible Token)
 

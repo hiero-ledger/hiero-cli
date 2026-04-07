@@ -161,3 +161,14 @@ export interface TokenAllowanceFtParams {
   spenderAccountId: string;
   amount: bigint;
 }
+
+export interface TokenAirdropFtTransfer {
+  recipientAccountId: string;
+  amount: bigint;
+}
+
+export interface TokenAirdropFtParams {
+  tokenId: string;
+  senderAccountId: string;
+  transfers: TokenAirdropFtTransfer[];
+}

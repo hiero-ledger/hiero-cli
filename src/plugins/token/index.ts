@@ -6,6 +6,10 @@ export { tokenPluginManifest } from './manifest';
 
 // Export command handlers and schemas
 export {
+  TOKEN_AIRDROP_FT_COMMAND_NAME,
+  tokenAirdropFt,
+} from './commands/airdrop-ft';
+export {
   TOKEN_ALLOWANCE_NFT_COMMAND_NAME,
   tokenAllowanceNft,
 } from './commands/allowance-nft';

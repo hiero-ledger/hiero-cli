@@ -66,6 +66,7 @@ export const makeTokenServiceMock = (
   createNftAllowanceDeleteTransaction: jest.fn(),
   createFungibleTokenAllowanceTransaction: jest.fn(),
   createDeleteTransaction: jest.fn(),
+  createAirdropFtTransaction: jest.fn(),
   ...overrides,
 });
 

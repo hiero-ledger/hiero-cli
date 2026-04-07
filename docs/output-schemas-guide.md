@@ -328,6 +328,25 @@ interface CommandOutputSpec {
 
 `autoRenewPeriodSeconds`, `autoRenewAccountId`, and `expirationTime` are **optional**. They are present when auto-renew or fixed expiration was configured; `expirationTime` is an ISO 8601 string when a fixed expiration was used (omitted when auto-renew period + account take precedence).
 
+#### `token airdrop-ft`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "from": "0.0.12345",
+  "recipients": [
+    { "to": "0.0.54321", "amount": "100" },
+    { "to": "0.0.54322", "amount": "200" }
+  ],
+  "network": "testnet"
+}
+```
+
+`recipients` is an array of `{ to, amount }` pairs, index-mapped to the `--to`/`--amount` CLI flags. Maximum 9 recipients per transaction (Hedera limit). If a recipient lacks auto-association slots, the transfer becomes a pending airdrop on-chain.
+
 #### `token transfer-ft`
 
 **Output**:
