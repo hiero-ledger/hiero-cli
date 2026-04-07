@@ -19,7 +19,7 @@ export const TokenDeleteAllowanceNftInputSchema = z
     ),
     allSerials: z
       .boolean()
-      .optional()
+      .default(false)
       .describe(
         'Revoke all-serials blanket approval for a specific spender. Mutually exclusive with --serials.',
       ),

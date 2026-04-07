@@ -14,6 +14,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import {
   resolveDestinationAccountParameter,
   resolveTokenParameter,
@@ -41,7 +42,7 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
     const validArgs = TokenDeleteAllowanceNftInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
 
     const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
@@ -95,7 +96,7 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
       ownerAccountId: resolvedOwner.accountId,
       spenderAccountId,
       serials: validArgs.serials ?? null,
-      allSerials: validArgs.allSerials ?? false,
+      allSerials: validArgs.allSerials,
       signerKeyRefId: resolvedOwner.keyRefId,
       keyRefIds: [resolvedOwner.keyRefId],
     };
