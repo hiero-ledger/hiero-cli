@@ -11,6 +11,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError, ValidationError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import {
   resolveDestinationAccountParameter,
@@ -58,7 +59,8 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
     }
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
 
