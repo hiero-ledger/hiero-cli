@@ -51,21 +51,20 @@ describe('contract plugin - list command', () => {
     expect(output.totalCount).toBe(0);
   });
 
-  test('lists contracts and includes aliases', async () => {
+  test('lists contracts and includes names', async () => {
     const logger = makeLogger();
 
     const contracts = [
       {
         contractId: '0.0.1001',
-        contractName: 'ContractOne',
+        name: 'contract-alias-one',
         contractEvmAddress: '0x1111111111111111111111111111111111111111',
         adminPublicKey: 'admin-key-1',
-        alias: 'contract-alias-one',
         network: NETWORK_TESTNET,
       },
       {
         contractId: '0.0.2002',
-        contractName: 'ContractTwo',
+        name: 'ContractTwo',
         contractEvmAddress: '0x2222222222222222222222222222222222222222',
         network: NETWORK_MAINNET,
       },
@@ -92,22 +91,20 @@ describe('contract plugin - list command', () => {
     expect(output.totalCount).toBe(2);
 
     expect(output.contracts[0].contractId).toBe('0.0.1001');
-    expect(output.contracts[0].contractName).toBe('ContractOne');
+    expect(output.contracts[0].name).toBe('contract-alias-one');
     expect(output.contracts[0].contractEvmAddress).toBe(
       '0x1111111111111111111111111111111111111111',
     );
     expect(output.contracts[0].adminPublicKey).toBe('admin-key-1');
     expect(output.contracts[0].network).toBe(NETWORK_TESTNET);
-    expect(output.contracts[0].alias).toBe('contract-alias-one');
 
     expect(output.contracts[1].contractId).toBe('0.0.2002');
-    expect(output.contracts[1].contractName).toBe('ContractTwo');
+    expect(output.contracts[1].name).toBe('ContractTwo');
     expect(output.contracts[1].contractEvmAddress).toBe(
       '0x2222222222222222222222222222222222222222',
     );
     expect(output.contracts[1].adminPublicKey).toBe(undefined);
     expect(output.contracts[1].network).toBe(NETWORK_MAINNET);
-    expect(output.contracts[1].alias).toBe(undefined);
   });
 
   test('throws when listing contracts fails', async () => {

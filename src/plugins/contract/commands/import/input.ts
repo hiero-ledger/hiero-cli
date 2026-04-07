@@ -2,7 +2,6 @@ import { z } from 'zod';
 
 import {
   AliasNameSchema,
-  ContractNameSchema,
   EntityIdSchema,
   EvmAddressSchema,
 } from '@/core/schemas';
@@ -17,12 +16,13 @@ export const ContractImportInputSchema = z.object({
     .describe(
       'Contract ID (0.0.xxx) or EVM address (0x...) to import from Hedera network',
     ),
-  alias: AliasNameSchema.optional().describe(
-    'Optional contract alias for the imported contract',
-  ),
-  name: ContractNameSchema.optional().describe(
-    'Optional contract name for the imported contract',
-  ),
+  name: AliasNameSchema.optional(),
+  verified: z
+    .boolean()
+    .default(false)
+    .describe(
+      'Whether the contract was verified on Hashscan. Defaults to false.',
+    ),
 });
 
 export type ContractImportInput = z.infer<typeof ContractImportInputSchema>;

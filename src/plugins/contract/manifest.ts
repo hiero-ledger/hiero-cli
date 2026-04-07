@@ -152,13 +152,6 @@ export const contractPluginManifest: PluginManifest = {
             'Contract ID (0.0.xxx) or EVM address (0x...) to import from Hedera network',
         },
         {
-          name: 'alias',
-          short: 'a',
-          type: OptionType.STRING,
-          required: false,
-          description: 'Optional alias for the imported contract',
-        },
-        {
           name: 'name',
           short: 'n',
           type: OptionType.STRING,
