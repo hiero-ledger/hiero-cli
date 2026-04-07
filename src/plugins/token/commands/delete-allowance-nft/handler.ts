@@ -107,20 +107,35 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
     normalisedParams: DeleteAllowanceNftNormalizedParams,
   ): Promise<DeleteAllowanceNftBuildTransactionResult> {
     const { api } = args;
-    const transaction = api.token.createNftAllowanceDeleteTransaction(
-      normalisedParams.allSerials
-        ? {
-            tokenId: normalisedParams.tokenId,
-            ownerAccountId: normalisedParams.ownerAccountId,
-            spenderAccountId: normalisedParams.spenderAccountId!,
-            allSerials: true,
-          }
-        : {
-            tokenId: normalisedParams.tokenId,
-            ownerAccountId: normalisedParams.ownerAccountId,
-            serialNumbers: normalisedParams.serials!,
-          },
-    );
+
+    if (normalisedParams.allSerials) {
+      if (!normalisedParams.spenderAccountId) {
+        throw new TransactionError(
+          'Spender account is required for all-serials allowance deletion',
+          false,
+        );
+      }
+      const transaction = api.token.createNftAllowanceDeleteTransaction({
+        tokenId: normalisedParams.tokenId,
+        ownerAccountId: normalisedParams.ownerAccountId,
+        spenderAccountId: normalisedParams.spenderAccountId,
+        allSerials: true,
+      });
+      return { transaction };
+    }
+
+    if (!normalisedParams.serials) {
+      throw new TransactionError(
+        'Serial numbers are required for specific allowance deletion',
+        false,
+      );
+    }
+
+    const transaction = api.token.createNftAllowanceDeleteTransaction({
+      tokenId: normalisedParams.tokenId,
+      ownerAccountId: normalisedParams.ownerAccountId,
+      serialNumbers: normalisedParams.serials,
+    });
     return { transaction };
   }
 
