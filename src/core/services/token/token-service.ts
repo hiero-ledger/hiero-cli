@@ -7,6 +7,7 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type {
   CustomFee as CustomFeeParams,
   NftAllowanceApproveParams,
+  NftAllowanceDeleteParams,
   NftTransferParams,
   TokenAllowanceFtParams,
   TokenAssociationParams,
@@ -19,6 +20,7 @@ import type { TokenService } from './token-service.interface';
 
 import {
   AccountAllowanceApproveTransaction,
+  AccountAllowanceDeleteTransaction,
   AccountId,
   CustomFixedFee,
   CustomFractionalFee,
@@ -346,6 +348,33 @@ export class TokenServiceImpl implements TokenService {
       );
     }
 
+    return tx;
+  }
+
+  createNftAllowanceDeleteTransaction(
+    params: NftAllowanceDeleteParams,
+  ): AccountAllowanceApproveTransaction | AccountAllowanceDeleteTransaction {
+    const tokenId = TokenId.fromString(params.tokenId);
+    const owner = AccountId.fromString(params.ownerAccountId);
+
+    if (params.allSerials) {
+      this.logger.debug(
+        `[TOKEN SERVICE] Revoking all-serials NFT allowance: token ${params.tokenId}, owner ${params.ownerAccountId}, spender ${params.spenderAccountId}`,
+      );
+      return new AccountAllowanceApproveTransaction().deleteTokenNftAllowanceAllSerials(
+        tokenId,
+        owner,
+        AccountId.fromString(params.spenderAccountId),
+      );
+    }
+
+    this.logger.debug(
+      `[TOKEN SERVICE] Deleting NFT allowance for ${params.serialNumbers.length} serial(s) of token ${params.tokenId}`,
+    );
+    const tx = new AccountAllowanceDeleteTransaction();
+    for (const serial of params.serialNumbers) {
+      tx.deleteAllTokenNftAllowances(new NftId(tokenId, serial), owner);
+    }
     return tx;
   }
 

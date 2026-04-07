@@ -14,6 +14,10 @@ export { tokenCreateFt } from './commands/create-ft';
 export { tokenCreateFtFromFile } from './commands/create-ft-from-file';
 export { tokenCreateNft } from './commands/create-nft';
 export { tokenDelete } from './commands/delete';
+export {
+  TOKEN_DELETE_ALLOWANCE_NFT_COMMAND_NAME,
+  tokenDeleteAllowanceNft,
+} from './commands/delete-allowance-nft';
 export { tokenImport } from './commands/import';
 export { tokenList } from './commands/list';
 export { TOKEN_MINT_FT_COMMAND_NAME, tokenMintFt } from './commands/mint-ft';
