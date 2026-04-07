@@ -1,4 +1,5 @@
 import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
+import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountData } from '@/plugins/account/schema';
 import type { AccountDeleteOutput } from './output';
@@ -15,8 +16,13 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { EntityIdSchema } from '@/core/schemas';
+import {
+  AccountReferenceObjectSchema,
+  EntityIdSchema,
+  KeySchema,
+} from '@/core/schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
 import { AccountHelper } from '@/plugins/account/account-helper';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -74,6 +80,27 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     return { result: outputData };
   }
 
+  private async resolveEntityIdFromAccountRef(
+    args: CommandHandlerArgs,
+  ): Promise<{
+    stateKey: string;
+    accountRef: string;
+    network: SupportedNetwork;
+  }> {
+    const { api } = args;
+    const validArgs = AccountDeleteInputSchema.parse(args.args);
+    const accountRef = validArgs.account;
+    const network = api.network.getCurrentNetwork();
+    const parsed = AccountReferenceObjectSchema.parse(accountRef);
+    const { accountId } = await api.identityResolution.resolveAccount({
+      accountReference: parsed.value,
+      type: parsed.type,
+      network,
+    });
+    const stateKey = composeKey(network, accountId);
+    return { stateKey, accountRef, network };
+  }
+
   private async resolveAccountFromState(args: CommandHandlerArgs): Promise<{
     accountToDelete: AccountData;
     network: SupportedNetwork;
@@ -82,22 +109,8 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
   }> {
     const { api, logger } = args;
     const accountState = new ZustandAccountStateHelper(api.state, logger);
-    const validArgs = AccountDeleteInputSchema.parse(args.args);
-    const accountRef = validArgs.account;
-    const isEntityId = EntityIdSchema.safeParse(accountRef).success;
-    const network = api.network.getCurrentNetwork();
-    let stateKey: string;
-
-    if (isEntityId) {
-      stateKey = composeKey(network, accountRef);
-    } else {
-      const alias = api.alias.resolveOrThrow(
-        accountRef,
-        AliasType.Account,
-        network,
-      );
-      stateKey = composeKey(network, alias.entityId!);
-    }
+    const { stateKey, accountRef, network } =
+      await this.resolveEntityIdFromAccountRef(args);
 
     const accountToDelete = accountState.getAccount(stateKey);
     if (!accountToDelete) {
@@ -126,26 +139,41 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<DeleteNormalisedParams> {
-    const resolved = await this.resolveAccountFromState(args);
+    const { api, logger } = args;
     const validArgs = AccountDeleteInputSchema.parse(args.args);
+    const credential = KeySchema.parse(validArgs.account);
+    const keyManager = api.config.getOption<KeyManager>(
+      ConfigOptionKey.default_key_manager,
+    );
+    const resolvedCredential = await api.keyResolver.resolveAccountCredentials(
+      credential,
+      keyManager,
+      false,
+      ['account:delete'],
+    );
     const transferId = validArgs.transferId;
     if (!transferId) {
       throw new ValidationError(
         'transfer-id is required when deleting on Hedera (use --state-only to remove only from local state)',
       );
     }
+    const network = api.network.getCurrentNetwork();
+    const stateKey = composeKey(network, resolvedCredential.accountId);
+    const accountState = new ZustandAccountStateHelper(api.state, logger);
+    const localAccount = accountState.getAccount(stateKey);
+
     const transferAccountId = this.resolveTransferAccountId(
       transferId,
-      resolved.network,
+      network,
       args.api,
     );
 
-    if (transferAccountId === resolved.accountToDelete.accountId) {
+    if (transferAccountId === resolvedCredential.accountId) {
       throw new ValidationError(
         'Transfer account must be different from the account being deleted',
         {
           context: {
-            accountId: resolved.accountToDelete.accountId,
+            accountId: resolvedCredential.accountId,
             transferAccountId,
           },
         },
@@ -153,11 +181,15 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     }
 
     return {
-      network: resolved.network,
-      stateKey: resolved.stateKey,
-      accountToDelete: resolved.accountToDelete,
+      network,
+      stateKey,
+      accountToDelete: {
+        accountId: resolvedCredential.accountId,
+        keyRefId: resolvedCredential.keyRefId,
+        name: localAccount?.name,
+      },
       transferAccountId,
-      accountRef: resolved.accountRef,
+      accountRef: validArgs.account,
     };
   }
 
@@ -228,6 +260,9 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     const removedAliases = accountHelper.removeAccountFromLocalState(
       normalisedParams.accountToDelete,
       normalisedParams.network,
+    );
+    accountHelper.removeKmsCredentialIfUnusedAfterAccountRemoved(
+      normalisedParams.accountToDelete,
     );
 
     const outputData: AccountDeleteOutput = {

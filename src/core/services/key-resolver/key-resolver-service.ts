@@ -24,6 +24,7 @@ import type { KeyResolverService } from './key-resolver-service.interface';
 
 import { NotFoundError, StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ERROR_MESSAGES } from '@/core/services/key-resolver/error-messages';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
 
 export class KeyResolverServiceImpl implements KeyResolverService {
@@ -112,10 +113,9 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       const { keyRefId, publicKey } = resolved;
 
       if (!this.kms.hasPrivateKey(keyRefId!)) {
-        throw new StateError(
-          'Credential cannot be used for signing: no private key available',
-          { context: { keyRefId } },
-        );
+        throw new StateError(ERROR_MESSAGES.credentialCannotSignNoPrivateKey, {
+          context: { keyRefId },
+        });
       }
 
       return { keyRefId: keyRefId!, publicKey: publicKey! };
@@ -140,10 +140,9 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     }
 
     if (!this.kms.hasPrivateKey(keyRefId)) {
-      throw new StateError(
-        'Credential cannot be used for signing: no private key available',
-        { context: { keyRefId, rawValue: credential.rawValue } },
-      );
+      throw new StateError(ERROR_MESSAGES.credentialCannotSignNoPrivateKey, {
+        context: { keyRefId, rawValue: credential.rawValue },
+      });
     }
 
     return { keyRefId, publicKey };
@@ -234,10 +233,9 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     }
 
     if (!this.kms.hasPrivateKey(keyRefId)) {
-      throw new StateError(
-        'Credential cannot be used for signing: no private key available',
-        { context: { keyRefId, rawValue } },
-      );
+      throw new StateError(ERROR_MESSAGES.credentialCannotSignNoPrivateKey, {
+        context: { keyRefId, rawValue },
+      });
     }
 
     return { keyRefId, accountId, publicKey };
