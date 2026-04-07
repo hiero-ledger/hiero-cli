@@ -10,18 +10,19 @@ import type {
   DeleteSignTransactionResult,
 } from './types';
 
-import { AccountId } from '@hashgraph/sdk';
-
 import { BaseTransactionCommand } from '@/core/commands/command';
 import {
   NotFoundError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { EntityIdSchema, KeySchema } from '@/core/schemas';
+import {
+  AccountReferenceObjectSchema,
+  EntityIdSchema,
+  KeySchema,
+} from '@/core/schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { EntityReferenceType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { AccountHelper } from '@/plugins/account/account-helper';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -79,33 +80,25 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     return { result: outputData };
   }
 
-  private resolveEntityIdFromAccountRef(args: CommandHandlerArgs): {
-    entityId: string;
+  private async resolveEntityIdFromAccountRef(
+    args: CommandHandlerArgs,
+  ): Promise<{
     stateKey: string;
     accountRef: string;
     network: SupportedNetwork;
-  } {
+  }> {
     const { api } = args;
     const validArgs = AccountDeleteInputSchema.parse(args.args);
     const accountRef = validArgs.account;
     const network = api.network.getCurrentNetwork();
-    const referenceType: EntityReferenceType = EntityIdSchema.safeParse(
-      accountRef,
-    ).success
-      ? EntityReferenceType.ENTITY_ID
-      : EntityReferenceType.ALIAS;
-
-    const { entityIdOrEvmAddress } =
-      api.identityResolution.resolveReferenceToEntityOrEvmAddress({
-        entityReference: accountRef,
-        referenceType,
-        network,
-        aliasType: AliasType.Account,
-      });
-
-    const entityId = AccountId.fromString(entityIdOrEvmAddress).toString();
-    const stateKey = composeKey(network, entityId);
-    return { entityId, stateKey, accountRef, network };
+    const parsed = AccountReferenceObjectSchema.parse(accountRef);
+    const { accountId } = await api.identityResolution.resolveAccount({
+      accountReference: parsed.value,
+      type: parsed.type,
+      network,
+    });
+    const stateKey = composeKey(network, accountId);
+    return { stateKey, accountRef, network };
   }
 
   private async resolveAccountFromState(args: CommandHandlerArgs): Promise<{
@@ -117,7 +110,7 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     const { api, logger } = args;
     const accountState = new ZustandAccountStateHelper(api.state, logger);
     const { stateKey, accountRef, network } =
-      this.resolveEntityIdFromAccountRef(args);
+      await this.resolveEntityIdFromAccountRef(args);
 
     const accountToDelete = accountState.getAccount(stateKey);
     if (!accountToDelete) {

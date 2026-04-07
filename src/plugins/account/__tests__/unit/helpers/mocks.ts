@@ -248,6 +248,11 @@ export function mockIdentityResolution(
       entityIdOrEvmAddress: entityId,
     },
   );
+  identityResolutionService.resolveAccount.mockResolvedValue({
+    accountId: entityId,
+    accountPublicKey:
+      '302a300506032b657003210000000000000000000000000000000000000000',
+  });
   return identityResolutionService;
 }
 
