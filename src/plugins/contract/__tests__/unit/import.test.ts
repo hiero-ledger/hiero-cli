@@ -197,7 +197,7 @@ describe('contract plugin - import command', () => {
     );
 
     await expect(contractImport(args)).rejects.toThrow(
-      `Contract with ID '${MOCK_CONTRACT_ID}' is already saved in state`,
+      `Contract with ID '${MOCK_CONTRACT_ID}' already exists in state`,
     );
     expect(hasContractMock).toHaveBeenCalledWith(
       `${SupportedNetwork.TESTNET}:${MOCK_CONTRACT_ID}`,
