@@ -410,7 +410,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         `${TESTNET_API_URL}/accounts?balance=false&limit=25&order=asc`,
       );
       expect(result.accounts).toHaveLength(1);
-      expect(result.accounts[0].accountId).toBe('0.0.1234');
+      expect(result.accounts[0].accountId).toBe(TEST_ACCOUNT_ID);
       expect(result.accounts[0].createdTimestamp).toBe(
         mockAccount.created_timestamp,
       );
@@ -434,7 +434,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       await service.getAccounts({
         accountBalance: { operator: AccountBalanceOperator.GTE, value: 1000 },
-        accountId: '0.0.1234',
+        accountId: TEST_ACCOUNT_ID,
         accountPublicKey:
           '3c3d546321ff6f63d701d2ec5c277095874e19f4a235bee1e6bb19258bf362be',
         balance: false,
@@ -601,7 +601,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       const result = await service.getAccounts();
 
-      expect(result.accounts[0].accountId).toBe('0.0.1234');
+      expect(result.accounts[0].accountId).toBe(TEST_ACCOUNT_ID);
       expect(result.accounts[0].accountPublicKey).toBeUndefined();
       expect(result.accounts[0].keyAlgorithm).toBeUndefined();
     });
@@ -848,7 +848,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       );
       expect(result.token_id).toBe(TEST_TOKEN_ID);
       expect(result.symbol).toBe('TEST');
-      expect(result.treasury_account_id).toBe('0.0.1234');
+      expect(result.treasury_account_id).toBe(TEST_ACCOUNT_ID);
     });
 
     it('should throw error on HTTP 404', async () => {
@@ -882,8 +882,8 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         `${TESTNET_API_URL}/schedules/${TEST_SCHEDULE_ID}`,
       );
       expect(result.schedule_id).toBe(TEST_SCHEDULE_ID);
-      expect(result.creator_account_id).toBe('0.0.1234');
-      expect(result.payer_account_id).toBe('0.0.1234');
+      expect(result.creator_account_id).toBe(TEST_ACCOUNT_ID);
+      expect(result.payer_account_id).toBe(TEST_ACCOUNT_ID);
       expect(result.wait_for_expiry).toBe(false);
     });
 
@@ -935,7 +935,7 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       );
       expect(result.token_id).toBe(TEST_TOKEN_ID);
       expect(result.serial_number).toBe(TEST_SERIAL_NUMBER);
-      expect(result.account_id).toBe('0.0.1234');
+      expect(result.account_id).toBe(TEST_ACCOUNT_ID);
     });
 
     it('should throw error on HTTP 404', async () => {
