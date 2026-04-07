@@ -65,7 +65,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     const outputData: ContractDeleteOutput = {
       deletedContract: {
         contractId: resolved.contractToDelete.contractId,
-        contractName: resolved.contractToDelete.contractName,
+        name: resolved.contractToDelete.name,
       },
       network: resolved.network,
       removedAliases,
@@ -197,7 +197,6 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     const contractToDelete: ContractData = {
       contractId: contractInfo.contract_id,
       contractEvmAddress,
-      contractName: undefined,
       network,
       adminPublicKey: contractInfo.admin_key?.key,
       adminKeyRefId: undefined,
@@ -403,7 +402,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     const outputData: ContractDeleteOutput = {
       deletedContract: {
         contractId: normalisedParams.contractToDelete.contractId,
-        contractName: normalisedParams.contractToDelete.contractName,
+        name: normalisedParams.contractToDelete.name,
       },
       removedAliases,
       network: normalisedParams.network,

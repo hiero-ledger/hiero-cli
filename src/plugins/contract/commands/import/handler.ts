@@ -7,7 +7,7 @@ import type { Command } from '@/core/commands/command.interface';
 import type { ContractData } from '@/plugins/contract/schema';
 import type { ContractImportOutput } from './output';
 
-import { NotFoundError, ValidationError } from '@/core/errors';
+import { NotFoundError, StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ensureEvmAddress0xPrefix } from '@/core/utils/evm-address';
 import { composeKey } from '@/core/utils/key-composer';
@@ -24,14 +24,13 @@ export class ImportContractCommand implements Command {
     const validArgs = ContractImportInputSchema.parse(args.args);
 
     const contractRef = validArgs.contract;
-    const alias = validArgs.alias;
-    const contractName = validArgs.name;
+    const name = validArgs.name;
     const verified = validArgs.verified;
 
     const network = api.network.getCurrentNetwork();
 
-    if (alias) {
-      api.alias.availableOrThrow(alias, network);
+    if (name) {
+      api.alias.availableOrThrow(name, network);
     }
 
     const contractInfo = await api.mirror.getContractInfo(contractRef);
@@ -49,16 +48,20 @@ export class ImportContractCommand implements Command {
       ensureEvmAddress0xPrefix(contractEvmAddress);
 
     if (contractState.hasContract(contractId)) {
-      throw new ValidationError(
+      throw new StateError(
         `Contract with ID '${contractId}' already exists in state`,
       );
     }
 
-    logger.info(`Importing contract ${contractId} ${contractName}`);
+    logger.info(
+      name
+        ? `Importing contract ${contractId} (name: ${name})`
+        : `Importing contract ${contractId}`,
+    );
 
-    if (alias) {
+    if (name) {
       api.alias.register({
-        alias,
+        alias: name,
         type: AliasType.Contract,
         network,
         entityId: contractId,
@@ -69,22 +72,21 @@ export class ImportContractCommand implements Command {
 
     const contractData: ContractData = {
       contractId,
-      contractName: contractName,
+      name,
       contractEvmAddress: normalizedContractEvmAddress,
       adminPublicKey: contractInfo.admin_key?.key,
       network,
       memo: contractInfo.memo || undefined,
-      verified: false,
+      verified,
     };
-    const contractKey = composeKey(network, contractId);
 
+    const contractKey = composeKey(network, contractId);
     contractState.saveContract(contractKey, contractData);
 
     const result: ContractImportOutput = {
       contractId,
-      contractName: contractName,
       contractEvmAddress: normalizedContractEvmAddress,
-      alias,
+      name,
       network,
       memo: contractInfo.memo || undefined,
       verified: verified,

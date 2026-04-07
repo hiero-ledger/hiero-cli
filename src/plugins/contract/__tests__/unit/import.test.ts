@@ -65,9 +65,10 @@ describe('contract plugin - import command', () => {
 
   test('imports contract successfully by contract ID', async () => {
     const saveContractMock = jest.fn().mockReturnValue(undefined);
+    const hasContractMock = jest.fn().mockReturnValue(false);
 
     MockedHelper.mockImplementation(() => ({
-      hasContract: jest.fn().mockReturnValue(false),
+      hasContract: hasContractMock,
       saveContract: saveContractMock,
     }));
 
@@ -83,14 +84,16 @@ describe('contract plugin - import command', () => {
       logger,
       {
         contract: MOCK_CONTRACT_ID,
-        name: 'ImportedContract',
-        alias: 'imported-contract',
+        name: 'imported-contract',
         verified: true,
       },
     );
 
     const result = await contractImport(args);
 
+    expect(hasContractMock).toHaveBeenCalledWith(
+      `${SupportedNetwork.TESTNET}:${MOCK_CONTRACT_ID}`,
+    );
     expect(mirrorMock.getContractInfo).toHaveBeenCalledWith(MOCK_CONTRACT_ID);
     expect(api.alias.register).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -105,18 +108,18 @@ describe('contract plugin - import command', () => {
       `${SupportedNetwork.TESTNET}:${MOCK_CONTRACT_ID}`,
       expect.objectContaining({
         contractId: MOCK_CONTRACT_ID,
-        contractName: 'ImportedContract',
+        name: 'imported-contract',
         contractEvmAddress: MOCK_EVM_ADDRESS,
         network: 'testnet',
         memo: 'test contract',
+        verified: true,
       }),
     );
 
     const output = assertOutput(result.result, ContractImportOutputSchema);
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
-    expect(output.contractName).toBe('ImportedContract');
     expect(output.contractEvmAddress).toBe(MOCK_EVM_ADDRESS);
-    expect(output.alias).toBe('imported-contract');
+    expect(output.name).toBe('imported-contract');
     expect(output.network).toBe('testnet');
     expect(output.memo).toBe('test contract');
     expect(output.verified).toBe(true);
@@ -124,9 +127,10 @@ describe('contract plugin - import command', () => {
 
   test('imports contract successfully by EVM address', async () => {
     const saveContractMock = jest.fn().mockReturnValue(undefined);
+    const hasContractMock = jest.fn().mockReturnValue(false);
 
     MockedHelper.mockImplementation(() => ({
-      hasContract: jest.fn().mockReturnValue(false),
+      hasContract: hasContractMock,
       saveContract: saveContractMock,
     }));
 
@@ -147,6 +151,9 @@ describe('contract plugin - import command', () => {
 
     const result = await contractImport(args);
 
+    expect(hasContractMock).toHaveBeenCalledWith(
+      `${SupportedNetwork.TESTNET}:${MOCK_CONTRACT_ID}`,
+    );
     expect(mirrorMock.getContractInfo).toHaveBeenCalledWith(MOCK_EVM_ADDRESS);
     expect(api.alias.register).not.toHaveBeenCalled();
     expect(saveContractMock).toHaveBeenCalledWith(
@@ -162,8 +169,10 @@ describe('contract plugin - import command', () => {
   });
 
   test('throws if contract already exists', async () => {
+    const hasContractMock = jest.fn().mockReturnValue(true);
+
     MockedHelper.mockImplementation(() => ({
-      hasContract: jest.fn().mockReturnValue(true),
+      hasContract: hasContractMock,
       saveContract: jest.fn(),
     }));
 
@@ -179,13 +188,15 @@ describe('contract plugin - import command', () => {
       logger,
       {
         contract: MOCK_CONTRACT_ID,
-        alias: 'my-contract',
-        name: 'MyContract',
+        name: 'my-contract',
       },
     );
 
     await expect(contractImport(args)).rejects.toThrow(
-      `Contract with ID '${MOCK_CONTRACT_ID}' already exists in state`,
+      `Contract with ID '${MOCK_CONTRACT_ID}' is already saved in state`,
+    );
+    expect(hasContractMock).toHaveBeenCalledWith(
+      `${SupportedNetwork.TESTNET}:${MOCK_CONTRACT_ID}`,
     );
   });
 
