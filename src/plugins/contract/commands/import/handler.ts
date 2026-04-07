@@ -47,7 +47,9 @@ export class ImportContractCommand implements Command {
     const normalizedContractEvmAddress =
       ensureEvmAddress0xPrefix(contractEvmAddress);
 
-    if (contractState.hasContract(contractId)) {
+    const contractKey = composeKey(network, contractId);
+
+    if (contractState.hasContract(contractKey)) {
       throw new StateError(
         `Contract with ID '${contractId}' already exists in state`,
       );
@@ -80,7 +82,6 @@ export class ImportContractCommand implements Command {
       verified,
     };
 
-    const contractKey = composeKey(network, contractId);
     contractState.saveContract(contractKey, contractData);
 
     const result: ContractImportOutput = {
