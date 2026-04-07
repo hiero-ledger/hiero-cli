@@ -13,7 +13,7 @@ The SaucerSwap V1 protocol exposes its functionality through two on-chain contra
 | Component                | Mainnet ID                                                                                                 | Purpose                                                                |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
 | **SaucerSwapV1RouterV3** | `0.0.3045981`                                                                                              | All write operations: pool creation, add/remove liquidity, swaps       |
-| **UniswapV2Factory**     | TBD (from [deployed contracts](https://docs.saucerswap.finance/developerx/contract-deployments))           | Pool existence checks (`getPair`), pool creation fee (`pairCreateFee`) |
+| **UniswapV2Factory**     | `0.0.2895920`                                                                                              | Pool existence checks (`getPair`), pool creation fee (`pairCreateFee`) |
 | **WHBAR**                | `0.0.1456986`                                                                                              | Wrapped HBAR token used when HBAR is one side of a pair                |
 | **SaucerSwap REST API**  | `https://api.saucerswap.finance/pools/` (mainnet) / `https://test-api.saucerswap.finance/pools/` (testnet) | Read-only pool listing with metadata                                   |
 
@@ -129,12 +129,9 @@ A core design concern is that SaucerSwap uses different Solidity functions depen
 
 ```ts
 // src/plugins/saucerswap/utils/hbar-detection.ts
-export function isHbar(
-  tokenIdOrAlias: string,
-  config: SaucerSwapNetworkConfig,
-): boolean {
+export function isHbar(tokenIdOrAlias: string): boolean {
   const normalized = tokenIdOrAlias.toUpperCase();
-  return normalized === 'HBAR' || tokenIdOrAlias === config.whbarTokenId;
+  return normalized === 'HBAR';
 }
 ```
 
@@ -156,8 +153,9 @@ export function computeMinOutput(
   amount: bigint,
   slippagePercent: number,
 ): bigint {
-  const factor = BigInt(Math.floor(1 - slippagePercent / 100));
-  return amount * factor;
+  // Use 10000n for basis points (0.01%) to avoid floating point errors with BigInt
+  const slippageBps = BigInt(Math.floor(slippagePercent * 100));
+  return (amount * (10000n - slippageBps)) / 10000n;
 }
 
 // src/plugins/saucerswap/utils/deadline.ts
@@ -280,8 +278,8 @@ export class SaucerSwapCreatePoolCommand extends BaseTransactionCommand<...> {
         gas: params.gas,
         functionName: 'addLiquidityETHNewPool',
         functionParameters,
+        payableAmount: params.hbarAmountIn + params.poolCreationFeeHbar,
       });
-      // setPayableAmount = hbar input + pool creation fee
       return { transaction: result.transaction };
     } else {
       // addLiquidityNewPool — tokenA + tokenB + amounts + recipient + deadline
@@ -300,8 +298,8 @@ export class SaucerSwapCreatePoolCommand extends BaseTransactionCommand<...> {
         gas: params.gas,
         functionName: 'addLiquidityNewPool',
         functionParameters,
+        payableAmount: params.poolCreationFeeHbar,
       });
-      // setPayableAmount = pool creation fee only
       return { transaction: result.transaction };
     }
   }
@@ -423,8 +421,8 @@ async buildTransaction(args, params): Promise<BuildTransactionResult> {
       gas: params.gas,
       functionName: 'swapExactETHForTokens',
       functionParameters,
+      payableAmount: params.amountIn,
     });
-    // setPayableAmount = input HBAR amount
     return { transaction: result.transaction };
   } else if (params.toIsHbar) {
     // swapExactTokensForETH
@@ -531,7 +529,11 @@ export class SaucerSwapListCommand implements Command {
             p.tokenA.id === validArgs.token ||
             p.tokenB.id === validArgs.token ||
             p.tokenA.symbol.toUpperCase() === validArgs.token.toUpperCase() ||
-            p.tokenB.symbol.toUpperCase() === validArgs.token.toUpperCase(),
+            p.tokenB.symbol.toUpperCase() === validArgs.token.toUpperCase() ||
+            p.tokenA.name
+              .toUpperCase()
+              .includes(validArgs.token.toUpperCase()) ||
+            p.tokenB.name.toUpperCase().includes(validArgs.token.toUpperCase()),
         )
       : pools;
 
