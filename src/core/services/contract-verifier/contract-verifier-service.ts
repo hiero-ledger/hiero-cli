@@ -14,13 +14,15 @@ import {
   SmartContractVerifyApiErrorResponseSchema,
   SmartContractVerifyApiOkResponseSchema,
 } from '@/core/services/contract-verifier/schema';
+import {
+  HASHSCAN_VERIFICATION_STATUS_PERFECT,
+  HASHSCAN_VERIFY_ORIGIN,
+} from '@/core/shared/constants';
 import { parseWithSchema } from '@/core/shared/validation/parse-with-schema.zod';
 import { NetworkChainMap } from '@/core/types/shared.types';
 import { scanSolidityFiles } from '@/core/utils/solidity-file-importer';
 
 export class ContractVerifierServiceImpl implements ContractVerifierService {
-  private static readonly HASHSCAN_VERIFY_ORIGIN =
-    'https://server-verify.hashscan.io';
   private networkService: NetworkService;
 
   constructor(networkService: NetworkService) {
@@ -52,16 +54,13 @@ export class ContractVerifierServiceImpl implements ContractVerifierService {
       files,
     };
     try {
-      const response = await fetch(
-        `${ContractVerifierServiceImpl.HASHSCAN_VERIFY_ORIGIN}/verify`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
+      const response = await fetch(`${HASHSCAN_VERIFY_ORIGIN}/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-      );
+        body: JSON.stringify(payload),
+      });
 
       if (!response.ok) {
         let errorMessage: string;
@@ -112,7 +111,7 @@ export class ContractVerifierServiceImpl implements ContractVerifierService {
       addresses: contractEvmAddress,
       chainIds: String(chainId),
     });
-    const url = `${ContractVerifierServiceImpl.HASHSCAN_VERIFY_ORIGIN}/check-by-addresses?${query.toString()}`;
+    const url = `${HASHSCAN_VERIFY_ORIGIN}/check-by-addresses?${query.toString()}`;
 
     try {
       const response = await fetch(url, {
@@ -134,7 +133,7 @@ export class ContractVerifierServiceImpl implements ContractVerifierService {
       );
 
       const verificationCheck = checkByAddressResults[0];
-      return verificationCheck.status === 'perfect';
+      return verificationCheck.status === HASHSCAN_VERIFICATION_STATUS_PERFECT;
     } catch (error) {
       if (error instanceof CliError) {
         throw error;
