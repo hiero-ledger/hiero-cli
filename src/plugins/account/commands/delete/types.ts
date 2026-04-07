@@ -13,6 +13,14 @@ export interface AccountDeleteContext {
   name?: string;
 }
 
+export interface AccountDeleteLocalStateInput {
+  accountId: string;
+}
+
+export interface AccountDeleteKmsCleanupInput {
+  keyRefId: string;
+}
+
 export interface DeleteNormalisedParams {
   network: SupportedNetwork;
   stateKey: string;
