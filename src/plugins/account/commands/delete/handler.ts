@@ -1,5 +1,4 @@
 import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
-import type { ResolvedAccountCredential } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { AccountData } from '@/plugins/account/schema';
@@ -16,12 +15,12 @@ import { AccountId } from '@hashgraph/sdk';
 import { BaseTransactionCommand } from '@/core/commands/command';
 import {
   NotFoundError,
-  StateError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
 import { EntityIdSchema, KeySchema } from '@/core/schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { EntityReferenceType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { AccountHelper } from '@/plugins/account/account-helper';
@@ -150,24 +149,15 @@ export class AccountDeleteCommand extends BaseTransactionCommand<
     const { api, logger } = args;
     const validArgs = AccountDeleteInputSchema.parse(args.args);
     const credential = KeySchema.parse(validArgs.account);
-    const keyManager = api.config.getOption<KeyManager>('default_key_manager');
-    let resolvedCredential: ResolvedAccountCredential;
-    try {
-      resolvedCredential = await api.keyResolver.resolveAccountCredentials(
-        credential,
-        keyManager,
-        false,
-        ['account:delete'],
-      );
-    } catch (error) {
-      if (error instanceof StateError) {
-        throw new ValidationError(
-          'Cannot delete this account on Hedera without a private key to sign the transaction. Pass the account ID and private key together (for example 0.0.x:your-private-key), or run `account import` with that key first so this CLI can store it; then run delete again using the account ID or alias.',
-          { cause: error, context: { account: validArgs.account } },
-        );
-      }
-      throw error;
-    }
+    const keyManager = api.config.getOption<KeyManager>(
+      ConfigOptionKey.default_key_manager,
+    );
+    const resolvedCredential = await api.keyResolver.resolveAccountCredentials(
+      credential,
+      keyManager,
+      false,
+      ['account:delete'],
+    );
     const transferId = validArgs.transferId;
     if (!transferId) {
       throw new ValidationError(
