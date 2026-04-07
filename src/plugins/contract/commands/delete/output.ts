@@ -11,7 +11,7 @@ import { EntityIdSchema, NetworkSchema } from '@/core/schemas/common-schemas';
 export const DeleteContractOutputSchema = z.object({
   deletedContract: z.object({
     contractId: EntityIdSchema,
-    contractName: z.string().optional(),
+    name: z.string().optional(),
   }),
   network: NetworkSchema,
   removedAliases: z.array(z.string().describe('Removed alias')).optional(),
@@ -32,12 +32,12 @@ export type ContractDeleteOutput = z.infer<typeof DeleteContractOutputSchema>;
  */
 export const DELETE_CONTRACT_TEMPLATE = `
 {{#if stateOnly}}
-✅ Contract removed from local state only: {{deletedContract.contractId}}{{#if deletedContract.contractName}} ({{deletedContract.contractName}}){{/if}} ({{hashscanLink deletedContract.contractId "contract" network}})
+✅ Contract removed from local state only: {{deletedContract.contractId}}{{#if deletedContract.name}} ({{deletedContract.name}}){{/if}} ({{hashscanLink deletedContract.contractId "contract" network}})
 {{else}}
 {{#if transactionId}}
 ✅ Contract deleted on network: {{hashscanLink transactionId "transaction" network}}
 {{else}}
-✅ Contract deleted successfully: {{deletedContract.contractId}}{{#if deletedContract.contractName}} ({{deletedContract.contractName}}){{/if}} ({{hashscanLink deletedContract.contractId "contract" network}})
+✅ Contract deleted successfully: {{deletedContract.contractId}}{{#if deletedContract.name}} ({{deletedContract.name}}){{/if}} ({{hashscanLink deletedContract.contractId "contract" network}})
 {{/if}}
 {{/if}}
 {{#if removedAliases}}

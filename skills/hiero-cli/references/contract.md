@@ -10,7 +10,7 @@ Compile and deploy a smart contract. Accepts a Solidity file or a built-in templ
 
 | Option                    | Short | Type       | Required | Default        | Description                                                                                                                               |
 | ------------------------- | ----- | ---------- | -------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `--name`                  | `-n`  | string     | **yes**  | —              | Alias for the contract in local state                                                                                                     |
+| `--name`                  | `-n`  | string     | **yes**  | —              | Local name for the contract in CLI state                                                                                                  |
 | `--file`                  | `-f`  | string     | no       | —              | Path to Solidity file (absolute or relative). Mutually exclusive with `--default`                                                         |
 | `--default`               | `-d`  | string     | no       | —              | Built-in template: `erc20` or `erc721`. Mutually exclusive with `--file`                                                                  |
 | `--base-path`             | `-b`  | string     | no       | current dir    | Base directory for resolving Solidity imports                                                                                             |
@@ -53,21 +53,20 @@ hcli contract list
 
 Import an existing contract from the Hedera network by contract ID or EVM address.
 
-| Option       | Short | Type    | Required | Default | Description                                                                                          |
-| ------------ | ----- | ------- | -------- | ------- | ---------------------------------------------------------------------------------------------------- |
-| `--contract` | `-c`  | string  | **yes**  | —       | Contract ID (`0.0.xxx`) or EVM address (`0x...`)                                                     |
-| `--name`     | `-n`  | string  | no       | —       | Human-readable label stored in local state (used in listings and `--contract` lookups by name)       |
-| `--alias`    | `-a`  | string  | no       | —       | Short identifier used as a lookup key in `--contract` (alternative to using the numeric contract ID) |
-| `--verified` | `-v`  | boolean | no       | `false` | Whether the contract is verified on Hashscan                                                         |
+| Option       | Short | Type    | Required | Default | Description                                                                   |
+| ------------ | ----- | ------- | -------- | ------- | ----------------------------------------------------------------------------- |
+| `--contract` | `-c`  | string  | **yes**  | —       | Contract ID (`0.0.xxx`) or EVM address (`0x...`)                              |
+| `--name`     | `-n`  | string  | no       | —       | Optional local name (stored in state and registered for `--contract` lookups) |
+| `--verified` | `-v`  | boolean | no       | `false` | Whether the contract is verified on Hashscan                                  |
 
 **Example:**
 
 ```
-hcli contract import --contract 0.0.123456 --name importedContract
-hcli contract import --contract 0xAbCd1234... --alias myAlias
+hcli contract import --contract 0.0.123456 --name myContract
+hcli contract import --contract 0xAbCd1234... --name myAlias
 ```
 
-**Output:** `{ contractId, evmAddress, name, alias, verified }`
+**Output:** `{ contractId, evmAddress, name, verified, ... }`
 
 ---
 

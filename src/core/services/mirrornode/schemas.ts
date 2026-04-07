@@ -7,6 +7,9 @@ import {
   type AccountListItemAPIResponse,
   type AccountListItemBalance,
   type AccountListItemTokenBalance,
+  type ContractCallResponse,
+  type ContractInfo,
+  type ExchangeRateResponse,
   type GetAccountsAPIResponse,
   MirrorNodeKeyType,
   type NftInfo,
@@ -21,6 +24,12 @@ import {
   type TopicMessage,
   type TopicMessageChunkInfo,
   type TopicMessagesAPIResponse,
+  type TransactionAssessedCustomFeeItem,
+  type TransactionDetailItem,
+  type TransactionDetailsResponse,
+  type TransactionNftTransferItem,
+  type TransactionTokenTransferItem,
+  type TransactionTransferItem,
 } from './types';
 
 const mirrorKeyObject = z.object({
@@ -204,6 +213,102 @@ export const TopicInfoSchema: z.ZodType<TopicInfo> = z.object({
   created_timestamp: z.string(),
   deleted: z.boolean(),
 });
+
+export const ContractInfoSchema: z.ZodType<ContractInfo> = z.object({
+  contract_id: z.string(),
+  account: z.string().optional(),
+  created_timestamp: z.string(),
+  deleted: z.boolean(),
+  memo: z.string(),
+  evm_address: z.string().optional(),
+  admin_key: optionalKeyRef,
+  auto_renew_account: nullableStringKey,
+  auto_renew_period: z.number(),
+  expiration_timestamp: nullableStringKey,
+  file_id: nullableStringKey,
+  max_automatic_token_associations: z.number(),
+  obtainer_id: nullableStringKey,
+  permanent_removal: z.union([z.boolean(), z.null()]).optional(),
+  proxy_account_id: nullableStringKey,
+  staked_account_id: nullableStringKey,
+  staked_node_id: z.union([z.number(), z.null()]).optional(),
+  stake_period_start: nullableStringKey,
+});
+
+export const ContractCallResponseSchema: z.ZodType<ContractCallResponse> =
+  z.object({
+    result: z.string(),
+  });
+
+const exchangeRateBandSchema = z.object({
+  cent_equivalent: z.number(),
+  expiration_time: z.number(),
+  hbar_equivalent: z.number(),
+});
+
+export const ExchangeRateResponseSchema: z.ZodType<ExchangeRateResponse> =
+  z.object({
+    current_rate: exchangeRateBandSchema,
+    next_rate: exchangeRateBandSchema,
+    timestamp: z.string(),
+  });
+
+const transactionTransferItemSchema: z.ZodType<TransactionTransferItem> =
+  z.object({
+    account: z.string(),
+    amount: z.number(),
+    is_approval: z.boolean().optional(),
+  });
+
+const transactionTokenTransferItemSchema: z.ZodType<TransactionTokenTransferItem> =
+  z.object({
+    token_id: z.string(),
+    account: z.string(),
+    amount: z.number(),
+    is_approval: z.boolean().optional(),
+  });
+
+const transactionNftTransferItemSchema: z.ZodType<TransactionNftTransferItem> =
+  z.object({
+    is_approval: z.boolean(),
+    receiver_account_id: z.string(),
+    sender_account_id: z.string(),
+    serial_number: z.number(),
+    token_id: z.string(),
+  });
+
+const transactionAssessedCustomFeeItemSchema: z.ZodType<TransactionAssessedCustomFeeItem> =
+  z.object({
+    amount: z.number(),
+    collector_account_id: z.string(),
+    token_id: z.string().nullable().optional(),
+    effective_payer_account_ids: z.array(z.string()).optional(),
+  });
+
+export const TransactionDetailItemSchema: z.ZodType<TransactionDetailItem> =
+  z.object({
+    transaction_id: z.string(),
+    consensus_timestamp: z.string(),
+    valid_start_timestamp: z.string(),
+    charged_tx_fee: z.number(),
+    memo_base64: z.union([z.string(), z.null()]).optional(),
+    result: z.string(),
+    transaction_hash: z.string(),
+    name: z.string(),
+    node: z.string(),
+    scheduled: z.boolean(),
+    transfers: z.array(transactionTransferItemSchema),
+    token_transfers: z.array(transactionTokenTransferItemSchema).optional(),
+    nft_transfers: z.array(transactionNftTransferItemSchema).optional(),
+    assessed_custom_fees: z
+      .array(transactionAssessedCustomFeeItemSchema)
+      .optional(),
+  });
+
+export const TransactionDetailsResponseSchema: z.ZodType<TransactionDetailsResponse> =
+  z.object({
+    transactions: z.array(TransactionDetailItemSchema),
+  });
 
 export const ScheduleSignatureInfoSchema: z.ZodType<ScheduleSignatureInfo> =
   z.object({

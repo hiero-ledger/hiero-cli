@@ -83,7 +83,7 @@ export class ZustandContractStateHelper {
       contracts.forEach((contract, index) => {
         if (contract && contract.contractId) {
           this.logger.debug(
-            `[CONTRACT STATE]   ${index + 1}. ${contract.contractName} - ${contract.contractId} on ${contract.network}`,
+            `[CONTRACT STATE]   ${index + 1}. ${contract.name ?? contract.contractId} - ${contract.contractId} on ${contract.network}`,
           );
         } else {
           this.logger.debug(

@@ -37,6 +37,9 @@ import { handleMirrorNodeErrorResponse } from '@/core/utils/handle-mirror-node-e
 
 import {
   AccountAPIResponseSchema,
+  ContractCallResponseSchema,
+  ContractInfoSchema,
+  ExchangeRateResponseSchema,
   GetAccountsAPIResponseSchema,
   NftInfoSchema,
   ScheduleInfoSchema,
@@ -46,6 +49,7 @@ import {
   TopicInfoSchema,
   TopicMessagesAPIResponseSchema,
   TopicMessageSchema,
+  TransactionDetailsResponseSchema,
 } from './schemas';
 import { MirrorNodeKeyType, NetworkToBaseUrl } from './types';
 
@@ -480,7 +484,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as TransactionDetailsResponse;
+      return parseWithSchema(
+        TransactionDetailsResponseSchema,
+        await response.json(),
+        `Mirror Node GET /transactions/${transactionId}`,
+      );
     } catch (error) {
       if (error instanceof CliError) throw error;
       throw new NetworkError(
@@ -504,7 +512,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as ContractInfo;
+      return parseWithSchema(
+        ContractInfoSchema,
+        await response.json(),
+        `Mirror Node GET /contracts/${contractId}`,
+      );
     } catch (error) {
       if (error instanceof CliError) throw error;
       throw new NetworkError(
@@ -587,7 +599,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as ExchangeRateResponse;
+      return parseWithSchema(
+        ExchangeRateResponseSchema,
+        await response.json(),
+        'Mirror Node GET /network/exchangerate',
+      );
     } catch (error) {
       if (error instanceof CliError) throw error;
       throw new NetworkError('Failed to fetch exchange rate', {
@@ -617,7 +633,11 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         );
       }
 
-      return (await response.json()) as ContractCallResponse;
+      return parseWithSchema(
+        ContractCallResponseSchema,
+        await response.json(),
+        'Mirror Node POST /contracts/call',
+      );
     } catch (error) {
       if (error instanceof CliError) throw error;
       throw new NetworkError('Failed to call contract via mirror node', {

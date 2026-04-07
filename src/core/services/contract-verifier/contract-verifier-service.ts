@@ -3,13 +3,16 @@ import type { ContractVerifierService } from '@/core/services/contract-verifier/
 import type {
   ContractVerificationParams,
   ContractVerificationResult,
-  SmartContractVerifyApiErrorResponse,
-  SmartContractVerifyApiOkResponse,
 } from '@/core/services/contract-verifier/types';
 
 import fs from 'fs/promises';
 import path from 'path';
 
+import {
+  SmartContractVerifyApiErrorResponseSchema,
+  SmartContractVerifyApiOkResponseSchema,
+} from '@/core/services/contract-verifier/schema';
+import { parseWithSchema } from '@/core/shared/validation/parse-with-schema.zod';
 import { NetworkChainMap } from '@/core/types/shared.types';
 import { scanSolidityFiles } from '@/core/utils/solidity-file-importer';
 
@@ -57,10 +60,12 @@ export class ContractVerifierServiceImpl implements ContractVerifierService {
       if (!response.ok) {
         let errorMessage: string;
         try {
-          const errorData =
-            (await response.json()) as SmartContractVerifyApiErrorResponse;
-          errorMessage =
-            errorData.error ?? `${response.status} ${response.statusText}`;
+          const parsed = SmartContractVerifyApiErrorResponseSchema.safeParse(
+            await response.json(),
+          );
+          errorMessage = parsed.success
+            ? (parsed.data.error ?? `${response.status} ${response.statusText}`)
+            : `${response.status} ${response.statusText}`;
         } catch {
           errorMessage = `${response.status} ${response.statusText}`;
         }
@@ -71,7 +76,11 @@ export class ContractVerifierServiceImpl implements ContractVerifierService {
         };
       }
 
-      const data = (await response.json()) as SmartContractVerifyApiOkResponse;
+      const data = parseWithSchema(
+        SmartContractVerifyApiOkResponseSchema,
+        await response.json(),
+        'Hashscan verify API POST /verify',
+      );
 
       return {
         success: true,

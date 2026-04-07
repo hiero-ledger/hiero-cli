@@ -157,65 +157,75 @@ export interface TopicMessagesResponse {
 }
 
 // Transaction Details
+export interface TransactionTransferItem {
+  account: string;
+  amount: number;
+  is_approval?: boolean;
+}
+
+export interface TransactionTokenTransferItem {
+  token_id: string;
+  account: string;
+  amount: number;
+  is_approval?: boolean;
+}
+
+export interface TransactionNftTransferItem {
+  is_approval: boolean;
+  receiver_account_id: string;
+  sender_account_id: string;
+  serial_number: number;
+  token_id: string;
+}
+
+export interface TransactionAssessedCustomFeeItem {
+  amount: number;
+  collector_account_id: string;
+  token_id?: string | null;
+  effective_payer_account_ids?: string[];
+}
+
+export interface TransactionDetailItem {
+  transaction_id: string;
+  consensus_timestamp: string;
+  valid_start_timestamp: string;
+  charged_tx_fee: number;
+  memo_base64?: string | null;
+  result: string;
+  transaction_hash: string;
+  name: string;
+  node: string;
+  scheduled: boolean;
+  transfers: TransactionTransferItem[];
+  token_transfers?: TransactionTokenTransferItem[];
+  nft_transfers?: TransactionNftTransferItem[];
+  assessed_custom_fees?: TransactionAssessedCustomFeeItem[];
+}
+
 export interface TransactionDetailsResponse {
-  transactions: Array<{
-    transaction_id: string;
-    consensus_timestamp: string;
-    valid_start_timestamp: string;
-    charged_tx_fee: number;
-    memo_base64?: string;
-    result: string;
-    transaction_hash: string;
-    name: string;
-    node: string;
-    transaction_fee: number;
-    scheduled: boolean;
-    transfers: Array<{
-      account: string;
-      amount: number;
-    }>;
-    token_transfers?: Array<{
-      account: string;
-      amount: number;
-      token_id: string;
-    }>;
-    nft_transfers?: Array<{
-      account: string;
-      amount: number;
-      token_id: string;
-      serial_number: number;
-    }>;
-    assessed_custom_fees?: Array<{
-      amount: number;
-      collector_account_id: string;
-      token_id?: string;
-    }>;
-  }>;
+  transactions: TransactionDetailItem[];
 }
 
 // Contract Info
 export interface ContractInfo {
   contract_id: string;
-  account: string;
+  account?: string;
   created_timestamp: string;
   deleted: boolean;
   memo: string;
   evm_address?: string;
-  admin_key?: {
-    _type: string;
-    key: string;
-  };
-  auto_renew_account?: string;
+  admin_key?: MirrorNodeKey | null;
+  auto_renew_account?: string | null;
   auto_renew_period: number;
-  expiration_timestamp?: string;
-  file_id?: string;
+  expiration_timestamp?: string | null;
+  file_id?: string | null;
   max_automatic_token_associations: number;
-  obtainer_id?: string;
-  permanent_removal?: boolean;
-  proxy_account_id?: string;
-  staked_account_id?: string;
-  staked_node_id?: number;
-  stake_period_start?: string;
+  obtainer_id?: string | null;
+  permanent_removal?: boolean | null;
+  proxy_account_id?: string | null;
+  staked_account_id?: string | null;
+  staked_node_id?: number | null;
+  stake_period_start?: string | null;
 }
 
 // Token Airdrops
@@ -234,12 +244,12 @@ export interface TokenAirdropsResponse {
 export interface ExchangeRateResponse {
   current_rate: {
     cent_equivalent: number;
-    expiration_time: string;
+    expiration_time: number;
     hbar_equivalent: number;
   };
   next_rate: {
     cent_equivalent: number;
-    expiration_time: string;
+    expiration_time: number;
     hbar_equivalent: number;
   };
   timestamp: string;
