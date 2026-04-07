@@ -166,6 +166,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     } as unknown as ContractCompilerService,
     contractVerifier: {
       verifyContract: jest.fn(),
+      isVerifiedFullMatchOnRepository: jest.fn().mockResolvedValue(false),
     } as unknown as ContractVerifierService,
     contractQuery,
     identityResolution,

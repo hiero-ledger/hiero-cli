@@ -435,6 +435,8 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     } as ContractCompilerService,
     contractVerifier: {
       verifyContract: jest.fn(),
+      isVerifiedFullMatchOnRepository: jest.fn().mockResolvedValue(false),
+      ...(config?.contractVerifier || {}),
     } as ContractVerifierService,
     contractQuery: {
       queryContractFunction: jest.fn(),

@@ -23,12 +23,6 @@ export const ContractImportInputSchema = z.object({
   name: ContractNameSchema.optional().describe(
     'Optional contract name for the imported contract',
   ),
-  verified: z
-    .boolean()
-    .default(false)
-    .describe(
-      'Whether the contract was verified on Hashscan. Defaults to false.',
-    ),
 });
 
 export type ContractImportInput = z.infer<typeof ContractImportInputSchema>;

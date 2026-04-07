@@ -52,11 +52,12 @@ export function makeContractCreateApiMocks(): { api: jest.Mocked<CoreApi> } {
     },
   });
 
-  (api.contractCompiler as { compileContract: jest.Mock }).compileContract =
-    jest.fn().mockResolvedValue(MOCK_COMPILATION_RESULT);
-  (api.contractVerifier as { verifyContract: jest.Mock }).verifyContract = jest
-    .fn()
-    .mockResolvedValue({ success: true });
+  (
+    api.contractCompiler as unknown as { compileContract: jest.Mock }
+  ).compileContract = jest.fn().mockResolvedValue(MOCK_COMPILATION_RESULT);
+  (
+    api.contractVerifier as unknown as { verifyContract: jest.Mock }
+  ).verifyContract = jest.fn().mockResolvedValue({ success: true });
 
   return { api };
 }

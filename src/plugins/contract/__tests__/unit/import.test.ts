@@ -75,6 +75,10 @@ describe('contract plugin - import command', () => {
     const mirrorMock = createMirrorNodeMock();
     mirrorMock.getContractInfo.mockResolvedValue(mockContractInfo);
 
+    (
+      api.contractVerifier.isVerifiedFullMatchOnRepository as jest.Mock
+    ).mockResolvedValueOnce(true);
+
     const args = makeArgs(
       {
         ...api,
@@ -85,7 +89,6 @@ describe('contract plugin - import command', () => {
         contract: MOCK_CONTRACT_ID,
         name: 'ImportedContract',
         alias: 'imported-contract',
-        verified: true,
       },
     );
 
@@ -109,6 +112,7 @@ describe('contract plugin - import command', () => {
         contractEvmAddress: MOCK_EVM_ADDRESS,
         network: 'testnet',
         memo: 'test contract',
+        verified: true,
       }),
     );
 
