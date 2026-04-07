@@ -5,6 +5,10 @@ export const TOKEN_BALANCE_LIMIT = 9_223_372_036_854_775_807n; // Based on Token
 
 export const HASHSCAN_BASE_URL = 'https://hashscan.io/';
 
+export const HASHSCAN_VERIFY_ORIGIN = 'https://server-verify.hashscan.io';
+
+export const HASHSCAN_VERIFICATION_STATUS_PERFECT = 'perfect';
+
 export enum Status {
   Success = 'success',
   Failure = 'failure',

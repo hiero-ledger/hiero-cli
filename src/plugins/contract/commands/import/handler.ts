@@ -24,7 +24,6 @@ export class ImportContractCommand implements Command {
 
     const contractRef = validArgs.contract;
     const name = validArgs.name;
-    const verified = validArgs.verified;
 
     const network = api.network.getCurrentNetwork();
 
@@ -51,11 +50,12 @@ export class ImportContractCommand implements Command {
       );
     }
 
-    logger.info(
-      name
-        ? `Importing contract ${contractId} (name: ${name})`
-        : `Importing contract ${contractId}`,
-    );
+    const verified =
+      await api.contractVerifier.isVerifiedFullMatchOnRepository(
+        contractEvmAddress,
+      );
+
+    logger.info(`Importing contract ${contractId}`);
 
     if (name) {
       api.alias.register({

@@ -76,6 +76,10 @@ describe('contract plugin - import command', () => {
     const mirrorMock = createMirrorNodeMock();
     mirrorMock.getContractInfo.mockResolvedValue(mockContractInfo);
 
+    (
+      api.contractVerifier.isVerifiedFullMatchOnRepository as jest.Mock
+    ).mockResolvedValueOnce(true);
+
     const args = makeArgs(
       {
         ...api,

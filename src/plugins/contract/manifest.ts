@@ -158,14 +158,6 @@ export const contractPluginManifest: PluginManifest = {
           required: false,
           description: 'Optional name of the imported contract',
         },
-        {
-          name: 'verified',
-          short: 'v',
-          type: OptionType.BOOLEAN,
-          required: false,
-          default: false,
-          description: 'Whether the contract is verified on Hashscan',
-        },
       ],
       handler: contractImport,
       output: {
