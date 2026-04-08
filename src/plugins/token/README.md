@@ -55,6 +55,12 @@ src/plugins/token/
 │   │   ├── input.ts         # Input validation schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── airdrop-nft/
+│   │   ├── handler.ts       # NFT airdrop handler (multi-recipient)
+│   │   ├── input.ts         # Input schema with REPEATABLE --to/--serials
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Command-specific type definitions
+│   │   └── index.ts         # Command exports
 │   ├── associate/
 │   │   ├── handler.ts       # Token association handler
 │   │   ├── input.ts         # Input schema
@@ -610,6 +616,56 @@ hcli token transfer-ft \
   --to 0.0.222222 \
   --amount 100t
 ```
+
+### Token Airdrop (Non-Fungible Token)
+
+Airdrop specific NFT serial numbers from one account to one or more recipients in a single transaction. If a recipient lacks auto-association slots, the transfer becomes a **pending airdrop** (not a failure) that the recipient must claim separately.
+
+```bash
+# Airdrop a single serial to one recipient
+hcli token airdrop-nft \
+  --token mynft-alias \
+  --to alice \
+  --serials 1
+
+# Airdrop multiple serials to one recipient
+hcli token airdrop-nft \
+  --token mynft-alias \
+  --to alice \
+  --serials 1,2,3
+
+# Airdrop to multiple recipients (index-mapped: to[0]↔serials[0])
+hcli token airdrop-nft \
+  --token 0.0.123456 \
+  --to 0.0.100001 --serials 1,2 \
+  --to 0.0.100002 --serials 3,4 \
+  --from 0.0.111111:302e020100300506032b657004220420...
+
+# Add to a batch
+hcli token airdrop-nft \
+  --token mynft-alias \
+  --to alice --serials 1 \
+  --to bob --serials 2 \
+  --batch my-airdrop-batch
+```
+
+**Parameters:**
+
+- `--token` / `-T`: NFT token identifier (alias or token ID) - **Required**
+- `--to` / `-t`: Recipient account(s) (ID, EVM address, or alias) — pass multiple times for multiple recipients - **Required**
+- `--serials` / `-s`: Serial numbers per recipient (comma-separated). Index-mapped to `--to` — pass multiple times to match `--to` - **Required**
+- `--from` / `-f`: Sender account (alias or account-id:private-key pair) - **Optional** (defaults to operator)
+- `--key-manager` / `-k`: Key manager type - **Optional** (defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Notes:**
+
+- The number of `--to` flags must equal the number of `--serials` flags (validated at input)
+- Serial numbers must be unique across all recipients (no duplicates allowed)
+- Maximum 20 NFT serial transfers per transaction (Hedera limit)
+- Batch support: pass `--batch <batch-name>` to queue the transaction for batch execution
+
+**Implementation:** [`src/plugins/token/commands/airdrop-nft/handler.ts`](./commands/airdrop-nft/handler.ts)
 
 ### Token Transfer NFT
 

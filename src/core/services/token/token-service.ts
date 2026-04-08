@@ -9,6 +9,7 @@ import type {
   NftAllowanceApproveParams,
   NftAllowanceDeleteParams,
   NftTransferParams,
+  TokenAirdropNftParams,
   TokenAllowanceFtParams,
   TokenAssociationParams,
   TokenCreateParams,
@@ -27,6 +28,7 @@ import {
   FeeAssessmentMethod,
   Hbar,
   NftId,
+  TokenAirdropTransaction,
   TokenAssociateTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
@@ -385,6 +387,27 @@ export class TokenServiceImpl implements TokenService {
     return new TokenDeleteTransaction().setTokenId(
       TokenId.fromString(params.tokenId),
     );
+  }
+
+  createAirdropNftTransaction(
+    params: TokenAirdropNftParams,
+  ): TokenAirdropTransaction {
+    const { tokenId, senderAccountId, transfers } = params;
+    const tid = TokenId.fromString(tokenId);
+    const sender = AccountId.fromString(senderAccountId);
+
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating NFT airdrop transaction: ${tokenId} from ${senderAccountId} to ${transfers.length} recipient(s)`,
+    );
+
+    const tx = new TokenAirdropTransaction();
+    for (const transfer of transfers) {
+      const recipient = AccountId.fromString(transfer.recipientAccountId);
+      for (const serial of transfer.serialNumbers) {
+        tx.addNftTransfer(new NftId(tid, serial), sender, recipient);
+      }
+    }
+    return tx;
   }
 
   /**
