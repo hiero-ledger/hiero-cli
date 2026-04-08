@@ -623,6 +623,38 @@ Lists all tokens from all networks stored in state.
 }
 ```
 
+#### `token delete-allowance-nft`
+
+**Output** (specific serials):
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "ownerAccountId": "0.0.12345",
+  "spenderAccountId": null,
+  "serials": [1, 2, 3],
+  "allSerials": false,
+  "network": "testnet"
+}
+```
+
+**Output** (`--all-serials`):
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "ownerAccountId": "0.0.12345",
+  "spenderAccountId": "0.0.54321",
+  "serials": null,
+  "allSerials": true,
+  "network": "testnet"
+}
+```
+
+`spenderAccountId` is `null` when deleting specific serials (allowance removed for all spenders). When using `--all-serials`, `spenderAccountId` identifies the spender whose blanket approval is revoked.
+
 ### Topic Plugin
 
 #### `topic create`

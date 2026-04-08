@@ -4,6 +4,7 @@
  */
 import type {
   AccountAllowanceApproveTransaction,
+  AccountAllowanceDeleteTransaction,
   TokenAssociateTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
@@ -12,6 +13,7 @@ import type {
 } from '@hashgraph/sdk';
 import type {
   NftAllowanceApproveParams,
+  NftAllowanceDeleteParams,
   NftTransferParams,
   TokenAllowanceFtParams,
   TokenAssociationParams,
@@ -61,6 +63,10 @@ export interface TokenService {
   createFungibleTokenAllowanceTransaction(
     params: TokenAllowanceFtParams,
   ): AccountAllowanceApproveTransaction;
+
+  createNftAllowanceDeleteTransaction(
+    params: NftAllowanceDeleteParams,
+  ): AccountAllowanceApproveTransaction | AccountAllowanceDeleteTransaction;
 
   createDeleteTransaction(params: TokenDeleteParams): TokenDeleteTransaction;
 }

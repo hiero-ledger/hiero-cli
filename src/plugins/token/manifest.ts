@@ -48,6 +48,11 @@ import {
   TokenDeleteOutputSchema,
 } from './commands/delete';
 import {
+  TOKEN_DELETE_ALLOWANCE_NFT_TEMPLATE,
+  tokenDeleteAllowanceNft,
+  TokenDeleteAllowanceNftOutputSchema,
+} from './commands/delete-allowance-nft';
+import {
   TOKEN_IMPORT_TEMPLATE,
   tokenImport,
   TokenImportOutputSchema,
@@ -968,6 +973,65 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenAllowanceNftOutputSchema,
         humanTemplate: TOKEN_ALLOWANCE_NFT_TEMPLATE,
+      },
+    },
+    {
+      name: 'delete-allowance-nft',
+      summary: 'Delete NFT allowance',
+      description:
+        'Delete NFT allowances. Use --serials to remove allowance for specific serial numbers (all spenders). Use --all-serials with --spender to revoke a blanket all-serials approval for a specific spender.',
+      registeredHooks: ['batchify'],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'NFT token: either a token alias or token-id',
+        },
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Owner account. Accepts any key format. Defaults to operator.',
+        },
+        {
+          name: 'serials',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Specific NFT serial numbers to delete allowance for (e.g. "1,2,3"). Removes allowance for ALL spenders. Mutually exclusive with --all-serials.',
+        },
+        {
+          name: 'all-serials',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description:
+            'Revoke the all-serials blanket approval for a specific spender. Requires --spender. Mutually exclusive with --serials.',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Spender account (ID, EVM address, or alias). Required with --all-serials, not used with --serials.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenDeleteAllowanceNft,
+      output: {
+        schema: TokenDeleteAllowanceNftOutputSchema,
+        humanTemplate: TOKEN_DELETE_ALLOWANCE_NFT_TEMPLATE,
       },
     },
     {
