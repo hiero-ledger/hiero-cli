@@ -21,8 +21,8 @@ import {
 } from '@/core/errors';
 import { NULL_TOKEN } from '@/core/shared/constants';
 import { composeKey } from '@/core/utils/key-composer';
+import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { resolveFieldUpdate } from '@/core/utils/resolve-field-update';
-import { toHederaKey } from '@/plugins/topic/utils/keys-to-hedera-key';
 import { resolveTopicId } from '@/plugins/topic/utils/topicResolver';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 

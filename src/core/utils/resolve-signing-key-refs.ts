@@ -6,39 +6,39 @@ function normalizePk(pk: string): string {
   return pk.toLowerCase();
 }
 
-export function buildAdminPublicKeySet(adminPublicKeys: string[]): Set<string> {
-  return new Set(adminPublicKeys.map((p) => normalizePk(p)));
+export function buildPublicKeySet(publicKeys: string[]): Set<string> {
+  return new Set(publicKeys.map((p) => normalizePk(p)));
 }
 
-export interface ResolveExplicitAdminKeysResult {
+export interface ResolveExplicitSigningKeysResult {
   signingKeyRefIds: string[];
   ignoredKeyRefIds: string[];
 }
 
 export function resolveSigningKeyRefsFromExplicitCredentials(
   resolved: ResolvedPublicKey[],
-  adminPublicKeysSet: Set<string>,
+  allowedPublicKeysSet: Set<string>,
   requiredSignatures: number,
-): ResolveExplicitAdminKeysResult {
+): ResolveExplicitSigningKeysResult {
   const signingKeyRefIds: string[] = [];
   const ignoredKeyRefIds: string[] = [];
   const seenPublicKeys = new Set<string>();
 
-  for (const r of resolved) {
-    const pk = normalizePk(r.publicKey);
-    if (!adminPublicKeysSet.has(pk)) {
-      ignoredKeyRefIds.push(r.keyRefId);
+  for (const resolvedKey of resolved) {
+    const pk = normalizePk(resolvedKey.publicKey);
+    if (!allowedPublicKeysSet.has(pk)) {
+      ignoredKeyRefIds.push(resolvedKey.keyRefId);
       continue;
     }
     if (!seenPublicKeys.has(pk)) {
       seenPublicKeys.add(pk);
-      signingKeyRefIds.push(r.keyRefId);
+      signingKeyRefIds.push(resolvedKey.keyRefId);
     }
   }
 
   if (signingKeyRefIds.length < requiredSignatures) {
     throw new ValidationError(
-      `Topic requires ${requiredSignatures} admin signature(s) on Hedera, but the matching --admin-key credential(s) are insufficient.`,
+      `Required ${requiredSignatures} signature(s), but only ${signingKeyRefIds.length} matching credential(s) were provided.`,
     );
   }
 
