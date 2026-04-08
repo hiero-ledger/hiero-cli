@@ -161,3 +161,14 @@ export interface TokenAllowanceFtParams {
   spenderAccountId: string;
   amount: bigint;
 }
+
+export interface TokenAirdropNftTransfer {
+  recipientAccountId: string;
+  serialNumbers: number[];
+}
+
+export interface TokenAirdropNftParams {
+  tokenId: string;
+  senderAccountId: string;
+  transfers: TokenAirdropNftTransfer[];
+}

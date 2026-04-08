@@ -328,6 +328,25 @@ interface CommandOutputSpec {
 
 `autoRenewPeriodSeconds`, `autoRenewAccountId`, and `expirationTime` are **optional**. They are present when auto-renew or fixed expiration was configured; `expirationTime` is an ISO 8601 string when a fixed expiration was used (omitted when auto-renew period + account take precedence).
 
+#### `token airdrop-nft`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "from": "0.0.12345",
+  "recipients": [
+    { "to": "0.0.54321", "serials": [1, 2, 3] },
+    { "to": "0.0.54322", "serials": [4, 5] }
+  ],
+  "network": "testnet"
+}
+```
+
+`recipients` is an array of `{ to, serials }` pairs, index-mapped to the `--to`/`--serials` CLI flags. Maximum 20 total serial transfers per transaction (Hedera limit). Serial numbers must be unique across all recipients. If a recipient lacks auto-association slots, the transfer becomes a pending airdrop on-chain.
+
 #### `token transfer-ft`
 
 **Output**:

@@ -13,6 +13,11 @@ import {
 } from '@/plugins/token/commands/create-nft';
 
 import {
+  TOKEN_AIRDROP_NFT_TEMPLATE,
+  tokenAirdropNft,
+  TokenAirdropNftOutputSchema,
+} from './commands/airdrop-nft';
+import {
   TOKEN_ALLOWANCE_FT_TEMPLATE,
   tokenAllowanceFt,
   TokenAllowanceFtOutputSchema,
@@ -319,6 +324,59 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenTransferNftOutputSchema,
         humanTemplate: TOKEN_TRANSFER_NFT_TEMPLATE,
+      },
+    },
+    {
+      name: 'airdrop-nft',
+      summary: 'Airdrop NFTs to multiple recipients',
+      description:
+        'Airdrop specific NFT serial numbers from one account to one or more recipients in a single transaction. If a recipient lacks auto-association slots, the transfer becomes a pending airdrop.',
+      registeredHooks: ['batchify'],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'NFT token: either a token alias or token-id',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: OptionType.REPEATABLE,
+          required: true,
+          description:
+            'Destination account(s) to airdrop to. Can be accountID or alias. Pass multiple times for multiple recipients.',
+        },
+        {
+          name: 'serials',
+          short: 's',
+          type: OptionType.REPEATABLE,
+          required: true,
+          description:
+            'Serial numbers per recipient (comma-separated). Index-mapped to --to. Pass multiple times for multiple recipients.',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account to airdrop from. Can be {accountId}:{privateKey pair}, key reference or account alias. Defaults to operator.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenAirdropNft,
+      output: {
+        schema: TokenAirdropNftOutputSchema,
+        humanTemplate: TOKEN_AIRDROP_NFT_TEMPLATE,
       },
     },
     {
