@@ -58,6 +58,7 @@ export type {
 export type { SolcCompiler } from './types/shared.types';
 export {
   EntityReferenceType,
+  MirrorTransactionResult,
   NetworkChainId,
   NetworkChainMap,
   OptionType,

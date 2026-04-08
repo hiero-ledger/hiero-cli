@@ -1,14 +1,15 @@
 import type { CommandHandlerArgs, CoreApi } from '@/core';
 import type { CustomHandlerHookParams, HookResult } from '@/core/hooks/types';
-import type {
-  ScheduledData,
-  ScheduledDataVerifyResult,
-} from '@/core/types/shared.types';
 import type { AccountData } from '@/plugins/account/schema';
 
 import { formatTransactionIdToDashFormat, StateError } from '@/core';
 import { AbstractHook } from '@/core/hooks/abstract-hook';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import {
+  MirrorTransactionResult,
+  type ScheduledData,
+  type ScheduledDataVerifyResult,
+} from '@/core/types/shared.types';
 import { ACCOUNT_UPDATE_COMMAND_NAME } from '@/plugins/account/commands/update/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -78,13 +79,13 @@ export class AccountUpdateScheduleStateHook extends AbstractHook {
       (tx) => tx.scheduled === true,
     );
     const result = scheduledMirrorTx?.result;
-    if (result !== 'SUCCESS') {
+    if (result !== MirrorTransactionResult.SUCCESS) {
       throw new StateError(
-        `Scheduled transaction result is not SUCCESS: ${result}`,
+        `Scheduled transaction result is not ${MirrorTransactionResult.SUCCESS}: ${result}`,
       );
     }
 
-    const entityId = scheduledMirrorTx?.entity_id ?? undefined;
+    const entityId = scheduledMirrorTx?.entity_id;
     if (entityId && entityId !== normalisedParams.accountId) {
       throw new StateError(
         `Account ID mismatch: expected ${normalisedParams.accountId}, got ${entityId}`,

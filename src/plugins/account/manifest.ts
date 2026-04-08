@@ -5,6 +5,7 @@ import { AccountCreateBatchStateHook } from '@/plugins/account/hooks/batch-creat
 import { AccountDeleteBatchStateHook } from '@/plugins/account/hooks/batch-delete';
 import { AccountUpdateBatchStateHook } from '@/plugins/account/hooks/batch-update';
 import { AccountCreateScheduleStateHook } from '@/plugins/account/hooks/schedule-create';
+import { AccountUpdateScheduleStateHook } from '@/plugins/account/hooks/schedule-update';
 
 import {
   ACCOUNT_BALANCE_TEMPLATE,
@@ -73,6 +74,11 @@ export const accountPluginManifest: PluginManifest = {
     {
       name: 'account-create-schedule-state',
       hook: new AccountCreateScheduleStateHook(),
+      options: [],
+    },
+    {
+      name: 'account-update-schedule-state',
+      hook: new AccountUpdateScheduleStateHook(),
       options: [],
     },
   ],

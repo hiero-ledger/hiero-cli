@@ -5,7 +5,10 @@ import { MOCK_ACCOUNT_ID } from '@/__tests__/mocks/fixtures';
 import { StateError } from '@/core/errors';
 import { createMockTransactionDetailsResponse } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import {
+  MirrorTransactionResult,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import {
   makeArgs,
   makeLogger,
@@ -28,7 +31,7 @@ const scheduledDetailItem = (
   consensus_timestamp: '1700000000.000000000',
   valid_start_timestamp: '1700000000.000000000',
   charged_tx_fee: 100000,
-  result: 'SUCCESS',
+  result: MirrorTransactionResult.SUCCESS,
   transaction_hash: 'abc123',
   name: 'CRYPTOCREATEACCOUNT',
   node: '0.0.3',

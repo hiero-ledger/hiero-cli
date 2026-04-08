@@ -138,6 +138,11 @@ export enum MirrorNodeRequestOrderParameter {
   DESC = 'desc',
 }
 
+export enum MirrorTransactionResult {
+  SUCCESS = 'SUCCESS',
+  FAILURE = 'FAILURE',
+}
+
 export interface TransactionStatus {
   status: 'pending' | 'success' | 'failed';
   transactionId: string;
