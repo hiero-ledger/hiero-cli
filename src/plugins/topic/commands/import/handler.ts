@@ -65,13 +65,16 @@ export class TopicImportCommand implements Command {
       topicInfo.submit_key,
     );
 
+    const findByPublicKey = (publicKey: string) =>
+      api.kms.findByPublicKey(publicKey);
+
     const adminKeyRefIds = matchPublicKeysToKmsRefIds(
       adminKeysExtracted.publicKeys,
-      api.kms.findByPublicKey.bind(api.kms),
+      findByPublicKey,
     );
     const submitKeyRefIds = matchPublicKeysToKmsRefIds(
       submitKeysExtracted.publicKeys,
-      api.kms.findByPublicKey.bind(api.kms),
+      findByPublicKey,
     );
 
     const topicData: TopicData = {

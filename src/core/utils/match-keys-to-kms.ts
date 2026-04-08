@@ -1,6 +1,8 @@
+type FindByPublicKey = (pk: string) => { keyRefId: string } | undefined;
+
 export function matchPublicKeysToKmsRefIds(
   publicKeys: string[],
-  findByPublicKey: (pk: string) => { keyRefId: string } | undefined,
+  findByPublicKey: FindByPublicKey,
 ): string[] {
   const keyRefIds: string[] = [];
   for (const publicKey of publicKeys) {

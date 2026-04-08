@@ -6,7 +6,7 @@ import {
   IsoTimestampSchema,
   KeyManagerTypeSchema,
   KeySchema,
-  KeyThresholdSchema,
+  KeyThresholdOptionalSchema,
   MemoSchema,
   NullLiteralSchema,
 } from '@/core/schemas';
@@ -29,10 +29,10 @@ const topicUpdateInputObjectSchema = z.object({
     .optional()
     .default([])
     .describe('New submit key(s). Pass "null" to clear.'),
-  adminKeyThreshold: KeyThresholdSchema.optional().describe(
+  adminKeyThreshold: KeyThresholdOptionalSchema.describe(
     'Number of admin keys required to sign (M-of-N)',
   ),
-  submitKeyThreshold: KeyThresholdSchema.optional().describe(
+  submitKeyThreshold: KeyThresholdOptionalSchema.describe(
     'Number of submit keys required to sign (M-of-N)',
   ),
   keyManager: KeyManagerTypeSchema.optional().describe(

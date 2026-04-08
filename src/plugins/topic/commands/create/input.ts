@@ -2,8 +2,9 @@ import { z } from 'zod';
 
 import {
   KeyManagerTypeSchema,
-  KeySchema,
+  KeyThresholdOptionalSchema,
   MemoSchema,
+  OptionalDefaultEmptyKeyListSchema,
   TopicNameSchema,
 } from '@/core/schemas';
 import { applyKeyThresholdSuperRefine } from '@/core/utils/key-threshold-input-schema';
@@ -14,32 +15,18 @@ import { applyKeyThresholdSuperRefine } from '@/core/utils/key-threshold-input-s
  */
 const topicCreateInputObjectSchema = z.object({
   memo: MemoSchema.describe('Optional memo for the topic'),
-  adminKey: z
-    .array(KeySchema)
-    .optional()
-    .default([])
-    .describe(
-      'Admin key(s). Pass multiple times for multiple keys. Format: {accountId}:{privateKey}, private key in {ed25519|ecdsa}:private:{key} format, key reference or account alias',
-    ),
-  submitKey: z
-    .array(KeySchema)
-    .optional()
-    .default([])
-    .describe(
-      'Submit key(s). Pass multiple times for multiple keys. Format: {accountId}:{privateKey}, public/private key in {ed25519|ecdsa}:public|private:{key} format, key reference or account alias',
-    ),
-  adminKeyThreshold: z
-    .number()
-    .int()
-    .positive()
-    .optional()
-    .describe('Number of admin keys required to sign (M-of-N)'),
-  submitKeyThreshold: z
-    .number()
-    .int()
-    .positive()
-    .optional()
-    .describe('Number of submit keys required to sign (M-of-N)'),
+  adminKey: OptionalDefaultEmptyKeyListSchema.describe(
+    'Admin key(s). Pass multiple times for multiple keys. Format: {accountId}:{privateKey}, private key in {ed25519|ecdsa}:private:{key} format, key reference or account alias',
+  ),
+  submitKey: OptionalDefaultEmptyKeyListSchema.describe(
+    'Submit key(s). Pass multiple times for multiple keys. Format: {accountId}:{privateKey}, public/private key in {ed25519|ecdsa}:public|private:{key} format, key reference or account alias',
+  ),
+  adminKeyThreshold: KeyThresholdOptionalSchema.describe(
+    'Number of admin keys required to sign (M-of-N)',
+  ),
+  submitKeyThreshold: KeyThresholdOptionalSchema.describe(
+    'Number of submit keys required to sign (M-of-N)',
+  ),
   name: TopicNameSchema.optional().describe(
     'Optional name/alias for the topic',
   ),
