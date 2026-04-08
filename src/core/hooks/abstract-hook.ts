@@ -1,5 +1,6 @@
 import type { CommandHandlerArgs } from '@/core';
 import type {
+  CustomHandlerHookParams,
   HookResult,
   PostOutputPreparationParams,
   PreBuildTransactionParams,
@@ -76,6 +77,19 @@ export abstract class AbstractHook {
   public postOutputPreparationHook(
     _args: CommandHandlerArgs,
     _params: PostOutputPreparationParams,
+    _commandName: string,
+  ): Promise<HookResult> {
+    return Promise.resolve({
+      breakFlow: false,
+      result: {
+        message: 'success',
+      },
+    });
+  }
+
+  public customHandlerHook(
+    _args: CommandHandlerArgs,
+    _params: CustomHandlerHookParams,
     _commandName: string,
   ): Promise<HookResult> {
     return Promise.resolve({

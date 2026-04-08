@@ -237,7 +237,7 @@ export const NetworkSchema = z
  * Supported key types in Hedera
  */
 export const KeyTypeSchema = z
-  .enum([KeyAlgorithm.ECDSA, KeyAlgorithm.ED25519])
+  .enum(KeyAlgorithm)
   .describe('Cryptographic key type');
 
 /**

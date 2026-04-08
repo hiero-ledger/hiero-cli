@@ -185,3 +185,16 @@ export interface BatchData {
 export interface BatchExecuteTransactionResult {
   updatedBatchData: BatchData;
 }
+
+export interface ScheduledData {
+  name: string;
+  executed: boolean;
+  success: boolean;
+  command: string;
+  transactionId: string;
+  normalizedParams: Record<string, unknown>;
+}
+
+export interface ScheduledDataVerifyResult {
+  scheduledData: ScheduledData;
+}

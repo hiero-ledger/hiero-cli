@@ -1,6 +1,10 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
+import type { AbstractHook } from '@/core/hooks/abstract-hook';
+import type { CustomHandlerHookParams, HookResult } from '@/core/hooks/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { ScheduledTransactionData } from '@/plugins/schedule';
+import type { ScheduleVerifyTransactionResult } from '@/plugins/schedule/commands/verify/types';
 import type { ScheduleVerifyOutput } from './output';
 
 import { KeyAlgorithm, NotFoundError } from '@/core';
@@ -12,6 +16,8 @@ import { composeKey } from '@/core/utils/key-composer';
 import { ZustandScheduleStateHelper } from '@/plugins/schedule';
 
 import { ScheduleVerifyInputSchema } from './input';
+
+export const SCHEDULE_VERIFY_COMMAND_NAME = 'schedule_verify';
 
 export class ScheduleVerifyCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
@@ -39,12 +45,27 @@ export class ScheduleVerifyCommand implements Command {
       );
     }
     const scheduleResponse = await api.mirror.getScheduled(resolvedScheduleId);
-    if (scheduleRecord) {
-      stateHelper.saveScheduled(composeKey(network, scheduleRecord.name), {
+    let updatedScheduledRecord: ScheduledTransactionData | undefined;
+    if (scheduleRecord && !scheduleRecord.executed) {
+      updatedScheduledRecord = {
         ...scheduleRecord,
         scheduled: true,
         executed: !!scheduleResponse.executed_timestamp,
-      });
+      };
+      stateHelper.saveScheduled(
+        composeKey(network, scheduleRecord.name),
+        updatedScheduledRecord,
+      );
+      if (updatedScheduledRecord.executed && updatedScheduledRecord.command) {
+        const customHandlerHookResult = await this.customHandlerHook(args, {
+          customHandlerParams: {
+            scheduledData: updatedScheduledRecord,
+          },
+        });
+        if (customHandlerHookResult.breakFlow) {
+          return this.processHookResult(customHandlerHookResult);
+        }
+      }
     } else if (scheduleName) {
       let payer;
       if (scheduleResponse.payer_account_id) {
@@ -80,7 +101,7 @@ export class ScheduleVerifyCommand implements Command {
           ['schedule:admin'],
         );
       }
-      stateHelper.saveScheduled(composeKey(network, scheduleName), {
+      updatedScheduledRecord = {
         name: scheduleName,
         network,
         keyManager,
@@ -98,7 +119,11 @@ export class ScheduleVerifyCommand implements Command {
         createdAt: scheduleResponse.consensus_timestamp
           ? hederaTimestampToIso(scheduleResponse.consensus_timestamp)
           : new Date().toISOString(),
-      });
+      };
+      stateHelper.saveScheduled(
+        composeKey(network, scheduleName),
+        updatedScheduledRecord,
+      );
     }
 
     const outputData: ScheduleVerifyOutput = {
@@ -117,6 +142,52 @@ export class ScheduleVerifyCommand implements Command {
       payerAccountId: scheduleResponse.payer_account_id,
     };
     return { result: outputData };
+  }
+
+  async customHandlerHook(
+    args: CommandHandlerArgs,
+    params: CustomHandlerHookParams<ScheduleVerifyTransactionResult>,
+  ): Promise<HookResult> {
+    return await this.executeHooks(
+      async (h) =>
+        h.customHandlerHook(args, params, SCHEDULE_VERIFY_COMMAND_NAME),
+      args.hooks,
+    );
+  }
+
+  async executeHooks(
+    hookExecutor: (hook: AbstractHook) => Promise<HookResult>,
+    hooks?: AbstractHook[],
+  ): Promise<HookResult> {
+    if (!hooks) {
+      return {
+        breakFlow: false,
+        result: {
+          message: 'no hooks available',
+        },
+      };
+    }
+
+    for (const hook of hooks) {
+      const hookResult = await hookExecutor(hook);
+      if (hookResult.breakFlow) {
+        return hookResult;
+      }
+    }
+    return {
+      breakFlow: false,
+      result: {
+        message: 'success',
+      },
+    };
+  }
+
+  async processHookResult(hookResult: HookResult): Promise<CommandResult> {
+    return Promise.resolve({
+      result: hookResult.result,
+      overrideSchema: hookResult.schema,
+      overrideHumanTemplate: hookResult.humanTemplate,
+    });
   }
 }
 

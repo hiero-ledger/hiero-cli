@@ -48,6 +48,10 @@ export interface PostOutputPreparationParams<
   outputResult: CommandResult;
 }
 
+export interface CustomHandlerHookParams<TCustomHandlerParams = unknown> {
+  customHandlerParams: TCustomHandlerParams;
+}
+
 export interface HookResult {
   breakFlow: boolean;
   result: object;

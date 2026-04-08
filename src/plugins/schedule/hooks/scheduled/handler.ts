@@ -20,7 +20,7 @@ export class ScheduledHook extends AbstractHook {
       ScheduledNormalizedParams,
       BaseBuildTransactionResult
     >,
-    _commandName: string,
+    commandName: string,
   ): Promise<HookResult> {
     const { api, logger } = args;
     const scheduledState = new ZustandScheduleStateHelper(api.state, logger);
@@ -83,8 +83,10 @@ export class ScheduledHook extends AbstractHook {
     scheduledState.saveScheduled(key, {
       ...scheduledRecord,
       scheduledId: result.scheduleId,
+      transactionId: result.transactionId,
       normalizedParams: params.normalisedParams,
       scheduled: true,
+      command: commandName,
       executed: false,
     });
 

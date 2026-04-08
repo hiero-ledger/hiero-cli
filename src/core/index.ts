@@ -94,6 +94,7 @@ export * from './schemas';
 // ============================================================================
 // Utilities
 // ============================================================================
+export { formatTransactionIdToDashFormat } from './utils/transaction-id-format-transformer';
 export { zodToJsonSchema } from './utils/zod-to-json-schema';
 
 // ============================================================================

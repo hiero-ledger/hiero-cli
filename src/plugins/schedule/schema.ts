@@ -10,6 +10,7 @@ import {
   KeyReferenceSchema,
   NetworkSchema,
   PublicKeyDefinitionSchema,
+  TransactionIdSchema,
 } from '@/core/schemas/common-schemas';
 
 /** Zustand namespace for persisted schedule entries */
@@ -29,6 +30,11 @@ export const ScheduledTransactionDataSchema = z.object({
   waitForExpiry: z.boolean().default(false),
   scheduled: z.boolean().default(false),
   executed: z.boolean().default(false),
+  command: z
+    .string()
+    .min(1)
+    .optional()
+    .describe('Name of the command entry point'),
   normalizedParams: z
     .record(z.string(), z.unknown())
     .default({})
@@ -36,6 +42,9 @@ export const ScheduledTransactionDataSchema = z.object({
     .describe(
       'Normalized params from the command that produced this transaction',
     ),
+  transactionId: TransactionIdSchema.optional().describe(
+    'Inner transaction ID',
+  ),
   createdAt: z.string().optional(),
 });
 
