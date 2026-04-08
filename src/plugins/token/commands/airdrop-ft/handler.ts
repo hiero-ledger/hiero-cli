@@ -65,7 +65,10 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
     const network = api.network.getCurrentNetwork();
 
     const resolvedToken = resolveTokenParameter(tokenIdOrAlias, api, network);
-    const tokenId = resolvedToken!.tokenId;
+    if (!resolvedToken?.tokenId) {
+      throw new ValidationError(`Failed to resolve token: ${tokenIdOrAlias}`);
+    }
+    const tokenId = resolvedToken.tokenId;
 
     const needsDecimals = amounts.some((a) => !isRawUnits(a));
     let tokenDecimals = 0;
@@ -89,9 +92,14 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
         api,
         network,
       );
+      if (!resolvedAccount?.accountId) {
+        throw new ValidationError(
+          `Failed to resolve recipient: ${recipientInput}`,
+        );
+      }
       const rawAmount = processTokenBalanceInput(amountInput, tokenDecimals);
       resolvedRecipients.push({
-        accountId: resolvedAccount!.accountId,
+        accountId: resolvedAccount.accountId,
         rawAmount,
       });
     }
@@ -102,6 +110,13 @@ export class TokenAirdropFtCommand extends BaseTransactionCommand<
       true,
       ['token:account'],
     );
+
+    if (!resolvedFromAccount?.accountId || !resolvedFromAccount?.keyRefId) {
+      const fromDisplay = from?.rawValue ?? 'unknown';
+      throw new ValidationError(
+        `Failed to resolve from account: ${fromDisplay}`,
+      );
+    }
 
     const { accountId: fromAccountId, keyRefId: signerKeyRefId } =
       resolvedFromAccount;
