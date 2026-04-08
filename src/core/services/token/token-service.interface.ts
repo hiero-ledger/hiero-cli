@@ -16,6 +16,7 @@ import type {
   NftAllowanceApproveParams,
   NftAllowanceDeleteParams,
   NftTransferParams,
+  TokenAirdropFtParams,
   TokenAirdropNftParams,
   TokenAllowanceFtParams,
   TokenAssociationParams,
@@ -71,6 +72,10 @@ export interface TokenService {
   ): AccountAllowanceApproveTransaction | AccountAllowanceDeleteTransaction;
 
   createDeleteTransaction(params: TokenDeleteParams): TokenDeleteTransaction;
+
+  createAirdropFtTransaction(
+    params: TokenAirdropFtParams,
+  ): TokenAirdropTransaction;
 
   createAirdropNftTransaction(
     params: TokenAirdropNftParams,
