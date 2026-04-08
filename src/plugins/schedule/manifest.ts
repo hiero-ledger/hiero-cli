@@ -191,7 +191,10 @@ export const schedulePluginManifest: PluginManifest = {
       summary: 'Verify schedule execution state',
       description:
         'Verify if scheduled transaction was executed and/or import scheduled transaction information to the local state',
-      registeredHooks: ['account-create-schedule-state'],
+      registeredHooks: [
+        'account-create-schedule-state',
+        'account-update-schedule-state',
+      ],
       options: [
         {
           name: 'name',

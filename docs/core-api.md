@@ -368,6 +368,9 @@ interface HederaMirrornodeService {
     nonce?: number,
   ): Promise<TransactionDetailsResponse>;
 
+  // Scheduled operations
+  getScheduled(scheduleId: string): Promise<ScheduleInfo>;
+
   // Contract operations
   getContractInfo(contractId: string): Promise<ContractInfo>;
 
@@ -401,6 +404,14 @@ const messages = await api.mirror.getTopicMessages({
   limit: 10,
 });
 console.log(`Messages: ${messages.messages.length}`);
+
+// Schedule entity (used by `schedule verify` and schedule resolution)
+const scheduleInfo = await api.mirror.getScheduled('0.0.8452958');
+
+// Transaction record (inner tx id from a scheduled execution; use dash form for the path segment)
+const txRecord = await api.mirror.getTransactionRecord(
+  '0.0.1234567-1234567890-123456789',
+);
 ```
 
 ### Network Service

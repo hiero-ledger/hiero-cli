@@ -131,6 +131,8 @@ At least one of `--name` or `--schedule-id` is required.
 
 - `--key-manager` / `-k`: Key manager when resolving keys for display (optional; defaults to config)
 
+**Account plugin integration:** `schedule verify` registers `account-create-schedule-state` and `account-update-schedule-state`. When verify detects that a local schedule record has **just transitioned to executed** (`executed` becomes true), it runs those hooks so account state can be reconciled from the Mirror Node (e.g. new account id after a scheduled `account create`, or key rotation metadata after a scheduled `account update` with a new key). Hooks no-op unless the stored `command` on the schedule record matches their handler.
+
 ## Usage: Scheduling Inner Transactions (`scheduled` Hook)
 
 The `scheduled` hook wraps a supported command’s inner transaction in a `ScheduleCreateTransaction`, signs and submits it, then stores the returned schedule ID in local state.
@@ -141,7 +143,7 @@ Pass **`--scheduled <name>`** (short **`-X`**) where `<name>` matches a record c
 
 Commands that register the `scheduled` hook (alongside `batchify` where applicable):
 
-- **Account**: `account create`
+- **Account**: `account create`, `account update`
 - **HBAR**: `hbar transfer`
 - **Topic**: `topic create`, `topic submit-message`
 - **Token**: `token mint-ft`, `token mint-nft`, `token transfer-ft`, `token transfer-nft`, `token create-ft`, `token create-nft`, `token associate`, `token create-ft-from-file`, `token create-nft-from-file`
@@ -219,4 +221,4 @@ Machine-readable output uses the CLI `--format` option (e.g. `json`) like other 
 
 ## Testing
 
-Unit tests for schedule commands and the `scheduled` hook can be added under `src/plugins/schedule/__tests__/` following the same patterns as other plugins (e.g. `batch`). Core mocks should include `api.schedule` and Mirror Node `getScheduled` where verify tests are concerned.
+Unit tests for schedule commands and the `scheduled` hook live under `src/plugins/schedule/__tests__/` (and related paths) following the same patterns as other plugins (e.g. `batch`). Mocks should include `api.schedule`, `api.mirror.getScheduled`, and—where account verify hooks are tested—`api.mirror.getTransactionRecord` with a `transactions` array containing a row with `scheduled: true` when exercising account schedule-state hooks.
