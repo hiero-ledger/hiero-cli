@@ -496,8 +496,16 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
     }
   }
 
-  async getPendingAirdrops(accountId: string): Promise<TokenAirdropsResponse> {
-    const url = `${this.getApiBaseUrl()}/accounts/${accountId}/airdrops/pending`;
+  async getPendingAirdrops(
+    accountId: string,
+    params?: { limit?: number; cursor?: string },
+  ): Promise<TokenAirdropsResponse> {
+    const query = new URLSearchParams();
+    if (params?.limit !== undefined) query.set('limit', String(params.limit));
+    if (params?.cursor !== undefined) query.set('cursor', params.cursor);
+    const queryString = query.toString();
+    const qs = queryString ? `?${queryString}` : '';
+    const url = `${this.getApiBaseUrl()}/accounts/${accountId}/airdrops/pending${qs}`;
     try {
       const response = await fetch(url);
 

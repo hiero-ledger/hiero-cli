@@ -347,6 +347,39 @@ interface CommandOutputSpec {
 
 `recipients` is an array of `{ to, serials }` pairs, index-mapped to the `--to`/`--serials` CLI flags. Maximum 20 total serial transfers per transaction (Hedera limit). Serial numbers must be unique across all recipients. If a recipient lacks auto-association slots, the transfer becomes a pending airdrop on-chain.
 
+#### `token pending-airdrops`
+
+**Output**:
+
+```json
+{
+  "account": "0.0.1234",
+  "network": "testnet",
+  "total": 2,
+  "hasMore": false,
+  "airdrops": [
+    {
+      "tokenId": "0.0.5678",
+      "tokenName": "FungibleToken",
+      "tokenSymbol": "FT",
+      "senderId": "0.0.9999",
+      "type": "FUNGIBLE",
+      "amount": 1000
+    },
+    {
+      "tokenId": "0.0.5679",
+      "tokenName": "MyNFT",
+      "tokenSymbol": "NFT",
+      "senderId": "0.0.9999",
+      "type": "NFT",
+      "serialNumber": 42
+    }
+  ]
+}
+```
+
+`type` is `"FUNGIBLE"` or `"NFT"`. For FT entries `amount` is present; for NFT entries `serialNumber` is present. `hasMore: true` indicates more results exist — use `--show-all` to fetch all pages. Token name and symbol are fetched from the mirror node.
+
 #### `token transfer-ft`
 
 **Output**:

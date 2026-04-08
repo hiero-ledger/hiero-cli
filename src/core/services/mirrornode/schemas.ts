@@ -57,9 +57,9 @@ export const TokenInfoSchema: z.ZodType<TokenInfo> = z.object({
   created_timestamp: z.string(),
   deleted: z.boolean().nullable().optional(),
   freeze_default: z.boolean().optional(),
-  auto_renew_account: z.string(),
-  auto_renew_period: z.number(),
-  expiry_timestamp: z.number(),
+  auto_renew_account: z.string().nullable().optional(),
+  auto_renew_period: z.number().optional(),
+  expiry_timestamp: z.number().nullable().optional(),
   pause_status: z.string(),
   memo: z.string(),
 });
@@ -172,15 +172,23 @@ export const TokenBalancesResponseSchema: z.ZodType<TokenBalancesResponse> =
   });
 
 const TokenAirdropItemSchema: z.ZodType<TokenAirdropItem> = z.object({
-  account_id: z.string(),
-  amount: z.number(),
+  amount: z.number().nullable(),
+  receiver_id: z.string(),
+  sender_id: z.string(),
+  serial_number: z.number().nullable(),
+  timestamp: z.object({
+    from: z.string(),
+    to: z.string().nullable(),
+  }),
   token_id: z.string(),
-  timestamp: z.string(),
 });
 
 export const TokenAirdropsResponseSchema: z.ZodType<TokenAirdropsResponse> =
   z.object({
     airdrops: z.array(TokenAirdropItemSchema),
+    links: z.object({
+      next: z.string().nullable(),
+    }),
   });
 
 const nullableStringKey = z.union([z.string(), z.null()]).optional();

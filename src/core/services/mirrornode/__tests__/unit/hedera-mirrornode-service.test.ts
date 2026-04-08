@@ -1079,6 +1079,24 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         NotFoundError,
       );
     });
+
+    it('should append limit and cursor as query params', async () => {
+      const { service } = setupService();
+      const mockAirdrops = createMockTokenAirdropsResponse();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockAirdrops),
+      });
+
+      await service.getPendingAirdrops(TEST_ACCOUNT_ID, {
+        limit: 100,
+        cursor: 'abc123',
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}/airdrops/pending?limit=100&cursor=abc123`,
+      );
+    });
   });
 
   describe('getOutstandingAirdrops', () => {

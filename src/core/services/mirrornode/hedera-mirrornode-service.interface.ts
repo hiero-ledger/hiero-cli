@@ -90,7 +90,10 @@ export interface HederaMirrornodeService {
   /**
    * Get pending airdrops for an account
    */
-  getPendingAirdrops(accountId: string): Promise<TokenAirdropsResponse>;
+  getPendingAirdrops(
+    accountId: string,
+    params?: { limit?: number; cursor?: string },
+  ): Promise<TokenAirdropsResponse>;
 
   /**
    * Get outstanding airdrops for an account
