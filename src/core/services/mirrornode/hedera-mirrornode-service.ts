@@ -12,6 +12,7 @@ import type {
   GetAccountsQueryParams,
   GetAccountsResponse,
   NftInfo,
+  ScheduleInfo,
   TokenAirdropsResponse,
   TokenBalancesResponse,
   TokenInfo,
@@ -41,6 +42,7 @@ import {
   ExchangeRateResponseSchema,
   GetAccountsAPIResponseSchema,
   NftInfoSchema,
+  ScheduleInfoSchema,
   TokenAirdropsResponseSchema,
   TokenBalancesResponseSchema,
   TokenInfoSchema,
@@ -372,6 +374,34 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
     } catch (error) {
       if (error instanceof CliError) throw error;
       throw new NetworkError(`Failed to fetch token info for ${tokenId}`, {
+        cause: error,
+        recoverable: true,
+      });
+    }
+  }
+
+  async getScheduled(scheduleId: string): Promise<ScheduleInfo> {
+    const url = `${this.getApiBaseUrl()}/schedules/${scheduleId}`;
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to get schedule for ${scheduleId}`,
+          true,
+          `Schedule ${scheduleId} not found`,
+        );
+      }
+
+      return parseWithSchema(
+        ScheduleInfoSchema,
+        await response.json(),
+        `Mirror Node GET /schedules/${scheduleId}`,
+      );
+    } catch (error) {
+      if (error instanceof CliError) throw error;
+      throw new NetworkError(`Failed to fetch schedule ${scheduleId}`, {
         cause: error,
         recoverable: true,
       });

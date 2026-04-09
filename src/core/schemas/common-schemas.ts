@@ -19,6 +19,7 @@ import {
   HEDERA_AUTO_RENEW_PERIOD_MAX,
   HEDERA_AUTO_RENEW_PERIOD_MIN,
   HEDERA_EXPIRATION_TIME_MAX,
+  HEDERA_SCHEDULE_EXPIRATION_MAX,
   HederaTokenType,
   KeyAlgorithm,
 } from '@/core/shared/constants';
@@ -409,6 +410,26 @@ export const TokenReferenceObjectSchema = z
     );
   })
   .describe('Token identifier (ID or alias)');
+
+/**
+ * Parsed token reference as a discriminated object by type (entity ID or alias).
+ */
+export const ScheduleReferenceObjectSchema = z
+  .string()
+  .trim()
+  .min(1, 'Schedule identifier cannot be empty')
+  .transform((val): { type: EntityReferenceType; value: string } => {
+    if (EntityIdSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ENTITY_ID, value: val };
+    }
+    if (AliasNameSchema.safeParse(val).success) {
+      return { type: EntityReferenceType.ALIAS, value: val };
+    }
+    throw new ValidationError(
+      'Schedule reference must be a valid Hedera ID (0.0.xxx) or alias name',
+    );
+  })
+  .describe('Schedule identifier (ID or alias)');
 
 /**
  * Account Reference Input (ID or Name)
@@ -1036,4 +1057,31 @@ export const ExpirationTimeSchema: z.ZodType<Date | undefined> = z.coerce
     {
       message: 'Expiration time must be set in 92 days period.',
     },
+  );
+
+export const ScheduleExpirationSchema: z.ZodType<Date | undefined> = z.coerce
+  .date()
+  .optional()
+  .refine((s) => !s || !Number.isNaN(new Date(s).getTime()), {
+    message:
+      'Invalid expiration time. Use an ISO 8601 datetime (e.g. 2026-12-31T23:59:59.000Z).',
+  })
+  .refine(
+    (d) =>
+      !d ||
+      (d.getTime() > Date.now() &&
+        d.getTime() <=
+          new Date(Date.now() + HEDERA_SCHEDULE_EXPIRATION_MAX).getTime()),
+    {
+      message: 'Expiration time must be set in 62 days period.',
+    },
+  )
+  .describe('Expiration time (ISO 8601). Max 62 days from now.');
+
+export const WaitForExpirySchema = z
+  .boolean()
+  .optional()
+  .default(false)
+  .describe(
+    'If true, execute at expiration instead of when signatures are complete.',
   );

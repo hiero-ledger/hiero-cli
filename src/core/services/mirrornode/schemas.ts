@@ -13,6 +13,8 @@ import {
   type GetAccountsAPIResponse,
   MirrorNodeKeyType,
   type NftInfo,
+  type ScheduleInfo,
+  type ScheduleSignatureInfo,
   type TokenAirdropItem,
   type TokenAirdropsResponse,
   type TokenBalanceInfo,
@@ -307,3 +309,26 @@ export const TransactionDetailsResponseSchema: z.ZodType<TransactionDetailsRespo
   z.object({
     transactions: z.array(TransactionDetailItemSchema),
   });
+
+export const ScheduleSignatureInfoSchema: z.ZodType<ScheduleSignatureInfo> =
+  z.object({
+    consensus_timestamp: z.string(),
+    public_key_prefix: z.string().optional(),
+    signature: z.string().optional(),
+    type: z.string().optional(),
+  });
+
+export const ScheduleInfoSchema: z.ZodType<ScheduleInfo> = z.object({
+  admin_key: optionalKeyRef,
+  consensus_timestamp: z.string(),
+  creator_account_id: z.string(),
+  deleted: z.boolean(),
+  executed_timestamp: z.string().nullable().optional(),
+  expiration_time: z.string().nullable().optional(),
+  memo: z.string(),
+  payer_account_id: z.string(),
+  schedule_id: z.string(),
+  signatures: z.array(ScheduleSignatureInfoSchema).optional(),
+  transaction_body: z.string().optional(),
+  wait_for_expiry: z.boolean(),
+});

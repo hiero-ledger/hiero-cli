@@ -146,7 +146,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'mint-ft',
       summary: 'Mint fungible tokens',
       description: 'Mint additional fungible tokens to increase supply.',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'token',
@@ -190,7 +190,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'mint-nft',
       summary: 'Mint NFT',
       description: 'Mint a new NFT to an existing NFT collection.',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'token',
@@ -233,7 +233,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'transfer-ft',
       summary: 'Transfer a fungible token',
       description: 'Transfer a fungible token from one account to another',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'token',
@@ -337,7 +337,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'transfer-nft',
       summary: 'Transfer a non-fungible token',
       description: 'Transfer one or more NFTs from one account to another',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'token',
@@ -441,7 +441,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'create-ft',
       summary: 'Create a new fungible token',
       description: 'Create a new fungible token with specified properties',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'token-name',
@@ -630,7 +630,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'create-nft',
       summary: 'Create a new non-fungible token',
       description: 'Create a new non-fungible token with specified properties',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'token-name',
@@ -795,7 +795,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'associate',
       summary: 'Associate a token with an account',
       description: 'Associate a token with an account to enable transfers',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'token',
@@ -832,7 +832,7 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Create a new fungible token from a file',
       description:
         'Create a new fungible token from a JSON file definition with advanced features',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'file',
@@ -862,7 +862,7 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Create a new NFT token from a file',
       description:
         'Create a new non-fungible token from a JSON file definition with advanced features',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'file',

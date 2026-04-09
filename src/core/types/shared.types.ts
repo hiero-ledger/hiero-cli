@@ -162,6 +162,7 @@ export interface TransactionResult {
   topicId?: string;
   contractId?: string;
   topicSequenceNumber?: number;
+  scheduleId?: string;
   consensusTimestamp: string;
 }
 
