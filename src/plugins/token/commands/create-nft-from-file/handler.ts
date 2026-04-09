@@ -114,6 +114,7 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     return {
       filename: validArgs.file,
       keyManager,
+      alias: tokenDefinition.name,
       name: tokenDefinition.name,
       symbol: tokenDefinition.symbol,
       supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
@@ -226,14 +227,16 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     tokenState.saveToken(key, tokenData);
     logger.info('   Token data saved to state');
 
-    api.alias.register({
-      alias: normalisedParams.name,
-      type: AliasType.Token,
-      network: normalisedParams.network,
-      entityId: result.tokenId!,
-      createdAt: result.consensusTimestamp,
-    });
-    logger.info(`   Name registered: ${normalisedParams.name}`);
+    if (normalisedParams.alias && result.tokenId) {
+      api.alias.register({
+        alias: normalisedParams.alias,
+        type: AliasType.Token,
+        network: normalisedParams.network,
+        entityId: result.tokenId,
+        createdAt: result.consensusTimestamp,
+      });
+      logger.info(`   Name registered: ${normalisedParams.alias}`);
+    }
 
     const associations: TokenCreateNftFromFileAssociationOutput[] =
       successfulAssociations.map((assoc) => ({

@@ -110,13 +110,15 @@ export class TokenCreateNftFromFileBatchStateHook extends AbstractHook {
     tokenState.saveToken(key, tokenData);
     logger.info('   Non-fungible token data saved to state');
 
-    api.alias.register({
-      alias: normalisedParams.name,
-      type: AliasType.Token,
-      network: normalisedParams.network,
-      entityId: innerTransactionResult.tokenId,
-      createdAt: innerTransactionResult.consensusTimestamp,
-    });
-    logger.info(`   Name registered: ${normalisedParams.name}`);
+    if (normalisedParams.alias) {
+      api.alias.register({
+        alias: normalisedParams.alias,
+        type: AliasType.Token,
+        network: normalisedParams.network,
+        entityId: innerTransactionResult.tokenId,
+        createdAt: innerTransactionResult.consensusTimestamp,
+      });
+      logger.info(`   Name registered: ${normalisedParams.alias}`);
+    }
   }
 }

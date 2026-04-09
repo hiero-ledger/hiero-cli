@@ -30,6 +30,7 @@ const createFlatNormalizedParams = (
   overrides: Record<string, unknown> = {},
 ) => ({
   filename: 'nft.json',
+  alias: validNftTokenFile.name,
   name: validNftTokenFile.name,
   symbol: validNftTokenFile.symbol,
   supplyType:
@@ -254,6 +255,7 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
       transactions: [
         createNftFromFileBatchDataItem({
           normalizedParams: createFlatNormalizedParams({
+            alias: 'MyNFT',
             name: 'MyNFT',
             symbol: 'MNFT',
           }),
@@ -321,6 +323,7 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
           order: 1,
           transactionId: '0.0.1001@1234567890.000000000',
           normalizedParams: createFlatNormalizedParams({
+            alias: 'NFT1',
             name: 'NFT1',
             symbol: 'NF1',
           }),
@@ -329,6 +332,7 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
           order: 2,
           transactionId: '0.0.1002@1234567890.000000001',
           normalizedParams: createFlatNormalizedParams({
+            alias: 'NFT2',
             name: 'NFT2',
             symbol: 'NF2',
           }),

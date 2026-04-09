@@ -111,6 +111,20 @@ export class BatchifyHook extends AbstractHook {
         `Couldn't add new transaction to batch ${batchName} as it will exceed batch transaction maximum size ${BatchifyHook.BATCH_MAXIMUM_SIZE}`,
       );
     }
+
+    const incomingAlias = params.normalisedParams.alias as string | undefined;
+    if (incomingAlias) {
+      const duplicate = batch.transactions.find(
+        (tx) =>
+          (tx.normalizedParams.alias as string | undefined) === incomingAlias,
+      );
+      if (duplicate) {
+        throw new ValidationError(
+          `Alias "${incomingAlias}" is already used by transaction #${duplicate.order} (${duplicate.command}) in batch "${batchName}"`,
+        );
+      }
+    }
+
     const transaction = params.signTransactionResult.signedTransaction;
     const keyRefIds = params.normalisedParams.keyRefIds;
 

@@ -31,6 +31,7 @@ const createFlatNormalizedParams = (
   overrides: Record<string, unknown> = {},
 ) => ({
   filename: 'token.json',
+  alias: validTokenFile.name,
   name: validTokenFile.name,
   symbol: validTokenFile.symbol,
   decimals: validTokenFile.decimals,
@@ -254,6 +255,7 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
       transactions: [
         createFtFromFileBatchDataItem({
           normalizedParams: createFlatNormalizedParams({
+            alias: 'MyToken',
             name: 'MyToken',
             symbol: 'MTK',
             decimals: 6,
@@ -328,6 +330,7 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
           order: 1,
           transactionId: '0.0.1001@1234567890.000000000',
           normalizedParams: createFlatNormalizedParams({
+            alias: 'Token1',
             name: 'Token1',
             symbol: 'TK1',
             initialSupply: 100n,
@@ -341,6 +344,7 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
           order: 2,
           transactionId: '0.0.1002@1234567890.000000001',
           normalizedParams: createFlatNormalizedParams({
+            alias: 'Token2',
             name: 'Token2',
             symbol: 'TK2',
             decimals: 6,

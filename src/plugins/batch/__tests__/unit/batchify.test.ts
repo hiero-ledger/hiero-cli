@@ -12,7 +12,7 @@ import type { BatchifyHookBaseParams } from '@/plugins/batch/hooks/batchify/type
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { NotFoundError } from '@/core/errors';
+import { NotFoundError, ValidationError } from '@/core/errors';
 import { BatchifyHook } from '@/plugins/batch/hooks/batchify/handler';
 import { BatchifyOutputSchema } from '@/plugins/batch/hooks/batchify/output';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
@@ -22,6 +22,7 @@ import {
   BATCH_KEY_REF_ID,
   BATCH_NAME,
   mockBatchData,
+  mockBatchDataWithAliasedTransaction,
   mockBatchDataWithTransactions,
   mockExecutedBatchData,
 } from './helpers/fixtures';
@@ -359,6 +360,134 @@ describe('batch plugin - batchify hook', () => {
       expect(logger.info).toHaveBeenCalledWith(
         `Transaction added to batch '${BATCH_NAME}' at position 3`,
       );
+    });
+
+    test('throws ValidationError when alias duplicates existing batch transaction', () => {
+      const logger = makeLogger();
+      MockedHelper.mockImplementation(() => ({
+        getBatch: jest.fn().mockReturnValue({
+          ...mockBatchDataWithAliasedTransaction,
+          transactions: [...mockBatchDataWithAliasedTransaction.transactions],
+        }),
+        saveBatch: jest.fn(),
+      }));
+
+      const { networkMock, kmsMock } = makeBatchApiMocks();
+      const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
+      const args = makeArgs(api, logger, { batch: BATCH_NAME });
+      const mockSignedTx = createMockSignedTransaction();
+      const params = {
+        normalisedParams: { keyRefIds: [], alias: 'my-account' },
+        buildTransactionResult: { transaction: {} },
+        signTransactionResult: { signedTransaction: mockSignedTx },
+      } as unknown as PreExecuteTransactionParams<
+        BatchifyHookBaseParams,
+        BaseBuildTransactionResult,
+        BaseSignTransactionResult
+      >;
+
+      expect(() =>
+        hook.preExecuteTransactionHook(args, params, 'account_create'),
+      ).toThrow(ValidationError);
+    });
+
+    test('throws ValidationError for cross-command alias duplicate', () => {
+      const logger = makeLogger();
+      MockedHelper.mockImplementation(() => ({
+        getBatch: jest.fn().mockReturnValue({
+          ...mockBatchDataWithAliasedTransaction,
+          transactions: [...mockBatchDataWithAliasedTransaction.transactions],
+        }),
+        saveBatch: jest.fn(),
+      }));
+
+      const { networkMock, kmsMock } = makeBatchApiMocks();
+      const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
+      const args = makeArgs(api, logger, { batch: BATCH_NAME });
+      const mockSignedTx = createMockSignedTransaction();
+      const params = {
+        normalisedParams: { keyRefIds: [], alias: 'my-account' },
+        buildTransactionResult: { transaction: {} },
+        signTransactionResult: { signedTransaction: mockSignedTx },
+      } as unknown as PreExecuteTransactionParams<
+        BatchifyHookBaseParams,
+        BaseBuildTransactionResult,
+        BaseSignTransactionResult
+      >;
+
+      expect(() =>
+        hook.preExecuteTransactionHook(args, params, 'token_create-ft'),
+      ).toThrow('already used by transaction #1');
+    });
+
+    test('allows different aliases in the same batch', async () => {
+      const logger = makeLogger();
+      const saveBatchMock = jest.fn();
+      MockedHelper.mockImplementation(() => ({
+        getBatch: jest.fn().mockReturnValue({
+          ...mockBatchDataWithAliasedTransaction,
+          transactions: [...mockBatchDataWithAliasedTransaction.transactions],
+        }),
+        saveBatch: saveBatchMock,
+      }));
+
+      const { networkMock, kmsMock } = makeBatchApiMocks();
+      const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
+      const args = makeArgs(api, logger, { batch: BATCH_NAME });
+      const mockSignedTx = createMockSignedTransaction();
+      const params = {
+        normalisedParams: { keyRefIds: [], alias: 'different-account' },
+        buildTransactionResult: { transaction: {} },
+        signTransactionResult: { signedTransaction: mockSignedTx },
+      } as unknown as PreExecuteTransactionParams<
+        BatchifyHookBaseParams,
+        BaseBuildTransactionResult,
+        BaseSignTransactionResult
+      >;
+
+      const result = await hook.preExecuteTransactionHook(
+        args,
+        params,
+        'account_create',
+      );
+
+      expect(result.breakFlow).toBe(true);
+      expect(saveBatchMock).toHaveBeenCalled();
+    });
+
+    test('skips alias check and adds transaction when no alias in normalizedParams', async () => {
+      const logger = makeLogger();
+      const saveBatchMock = jest.fn();
+      MockedHelper.mockImplementation(() => ({
+        getBatch: jest.fn().mockReturnValue({
+          ...mockBatchDataWithAliasedTransaction,
+          transactions: [...mockBatchDataWithAliasedTransaction.transactions],
+        }),
+        saveBatch: saveBatchMock,
+      }));
+
+      const { networkMock, kmsMock } = makeBatchApiMocks();
+      const api: Partial<CoreApi> = { network: networkMock, kms: kmsMock };
+      const args = makeArgs(api, logger, { batch: BATCH_NAME });
+      const mockSignedTx = createMockSignedTransaction();
+      const params = {
+        normalisedParams: { keyRefIds: [] },
+        buildTransactionResult: { transaction: {} },
+        signTransactionResult: { signedTransaction: mockSignedTx },
+      } as unknown as PreExecuteTransactionParams<
+        BatchifyHookBaseParams,
+        BaseBuildTransactionResult,
+        BaseSignTransactionResult
+      >;
+
+      const result = await hook.preExecuteTransactionHook(
+        args,
+        params,
+        'token_associate',
+      );
+
+      expect(result.breakFlow).toBe(true);
+      expect(saveBatchMock).toHaveBeenCalled();
     });
 
     test('adds first transaction to empty batch with order 1', async () => {
