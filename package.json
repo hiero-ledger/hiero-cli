@@ -38,10 +38,12 @@
     "lint:staged": "lint-staged && eslint . --quiet",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:unit": "cross-env JEST_SUITE_NAME=\"Unit Tests\" JEST_JUNIT_OUTPUT_NAME=\"junit.xml\" jest -c jest.unit.config.js --coverage --coverageDirectory=coverage/unit --detectOpenHandles",
+    "typecheck": "tsc -p tsconfig.test.json --noEmit",
+    "test:unit": "npm run typecheck && cross-env JEST_SUITE_NAME=\"Unit Tests\" JEST_JUNIT_OUTPUT_NAME=\"junit.xml\" jest -c jest.unit.config.js --coverage --coverageDirectory=coverage/unit",
+    "test:unit:run": "cross-env JEST_SUITE_NAME=\"Unit Tests\" JEST_JUNIT_OUTPUT_NAME=\"junit.xml\" jest -c jest.unit.config.js --coverage --coverageDirectory=coverage/unit",
     "test:integration": "cross-env JEST_SUITE_NAME=\"Integration Tests\" JEST_JUNIT_OUTPUT_NAME=\"junit-integration.xml\" jest -c jest.integration.config.js --coverage --coverageDirectory=coverage/integration --detectOpenHandles",
     "test:e2e": "cross-env JEST_SUITE_NAME=\"E2E Tests\" JEST_JUNIT_OUTPUT_NAME=\"junit-e2e.xml\" jest -c jest.e2e.config.js --coverage --coverageDirectory=coverage/e2e --runInBand --passWithNoTests",
-    "test:all": "npm run test:unit && npm run test:integration",
+    "test:all": "npm run typecheck && npm run test:unit:run && npm run test:integration",
     "test": "npm run test:unit",
     "single-test": "jest",
     "dev": "ts-node src/hiero-cli.ts",
@@ -79,6 +81,8 @@
     "zustand": "5.0.11"
   },
   "devDependencies": {
+    "@swc/core": "^1.15.24",
+    "@swc/jest": "^0.2.39",
     "@types/jest": "30.0.0",
     "@types/node": "25.2.2",
     "@typescript-eslint/eslint-plugin": "8.50.0",
@@ -98,7 +102,6 @@
     "lint-staged": "16.2.7",
     "prettier": "3.8.1",
     "rimraf": "6.1.2",
-    "ts-jest": "29.4.6",
     "tsc-alias": "1.8.16",
     "tsconfig-paths": "4.2.0",
     "typescript": "5.9.3"

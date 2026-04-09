@@ -1,0 +1,28 @@
+{
+  "$schema": "https://swc.rs/schema.json",
+  "sourceMaps": true,
+  "module": {
+    "type": "commonjs",
+    "strict": true,
+    "noInterop": false
+  },
+  "jsc": {
+    "target": "es2020",
+    "parser": {
+      "syntax": "typescript",
+      "decorators": false,
+      "dynamicImport": true
+    },
+    "transform": {
+      "treatConstEnumAsEnum": true,
+      "hidden": {
+        "jest": true
+      }
+    },
+    "keepClassNames": true,
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "baseUrl": "."
+  }
+}
