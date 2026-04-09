@@ -6,7 +6,10 @@ import type {
   StateService,
 } from '@/core';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { AccountData } from '@/plugins/account/schema';
+import type {
+  AccountDeleteKmsCleanupInput,
+  AccountDeleteLocalStateInput,
+} from '@/plugins/account/commands/delete/types';
 
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
@@ -28,7 +31,7 @@ export class AccountHelper {
   }
 
   removeAccountFromLocalState(
-    accountToDelete: AccountData,
+    accountToDelete: AccountDeleteLocalStateInput,
     network: SupportedNetwork,
   ): string[] {
     const key = composeKey(network, accountToDelete.accountId);
@@ -46,19 +49,24 @@ export class AccountHelper {
 
     this.accountState.deleteAccount(key);
 
-    const accountsWithSameKeyRef = this.accountState
+    return removedAliases;
+  }
+
+  removeKmsCredentialIfUnusedAfterAccountRemoved(
+    accountToDelete: AccountDeleteKmsCleanupInput,
+  ): void {
+    const otherAccountsWithSameKey = this.accountState
       .listAccounts()
       .filter((acc) => acc.keyRefId === accountToDelete.keyRefId);
-    const isOtherAccountUseSameKey = accountsWithSameKeyRef.length > 1;
-
-    const operator = this.network.getCurrentOperatorOrThrow();
-    const isOperatorHaveSameKeyRef =
-      operator.keyRefId === accountToDelete.keyRefId;
-
-    if (!isOtherAccountUseSameKey && !isOperatorHaveSameKeyRef) {
-      this.kms.remove(accountToDelete.keyRefId);
+    if (otherAccountsWithSameKey.length > 0) {
+      return;
     }
 
-    return removedAliases;
+    const operator = this.network.getCurrentOperatorOrThrow();
+    if (operator.keyRefId === accountToDelete.keyRefId) {
+      return;
+    }
+
+    this.kms.remove(accountToDelete.keyRefId);
   }
 }

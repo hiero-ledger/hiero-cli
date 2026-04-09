@@ -7,4 +7,6 @@ export interface ContractVerifierService {
   verifyContract(
     params: ContractVerificationParams,
   ): Promise<ContractVerificationResult>;
+
+  isVerifiedFullMatchOnRepository(contractEvmAddress: string): Promise<boolean>;
 }

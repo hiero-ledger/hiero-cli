@@ -328,6 +328,44 @@ interface CommandOutputSpec {
 
 `autoRenewPeriodSeconds`, `autoRenewAccountId`, and `expirationTime` are **optional**. They are present when auto-renew or fixed expiration was configured; `expirationTime` is an ISO 8601 string when a fixed expiration was used (omitted when auto-renew period + account take precedence).
 
+#### `token airdrop-ft`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "from": "0.0.12345",
+  "recipients": [
+    { "to": "0.0.54321", "amount": "100" },
+    { "to": "0.0.54322", "amount": "200" }
+  ],
+  "network": "testnet"
+}
+```
+
+`recipients` is an array of `{ to, amount }` pairs, index-mapped to the `--to`/`--amount` CLI flags. Maximum 9 recipients per transaction (Hedera limit). If a recipient lacks auto-association slots, the transfer becomes a pending airdrop on-chain.
+
+#### `token airdrop-nft`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "from": "0.0.12345",
+  "recipients": [
+    { "to": "0.0.54321", "serials": [1, 2, 3] },
+    { "to": "0.0.54322", "serials": [4, 5] }
+  ],
+  "network": "testnet"
+}
+```
+
+`recipients` is an array of `{ to, serials }` pairs, index-mapped to the `--to`/`--serials` CLI flags. Maximum 20 total serial transfers per transaction (Hedera limit). Serial numbers must be unique across all recipients. If a recipient lacks auto-association slots, the transfer becomes a pending airdrop on-chain.
+
 #### `token transfer-ft`
 
 **Output**:
@@ -622,6 +660,38 @@ Lists all tokens from all networks stored in state.
   "network": "testnet"
 }
 ```
+
+#### `token delete-allowance-nft`
+
+**Output** (specific serials):
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "ownerAccountId": "0.0.12345",
+  "spenderAccountId": null,
+  "serials": [1, 2, 3],
+  "allSerials": false,
+  "network": "testnet"
+}
+```
+
+**Output** (`--all-serials`):
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "ownerAccountId": "0.0.12345",
+  "spenderAccountId": "0.0.54321",
+  "serials": null,
+  "allSerials": true,
+  "network": "testnet"
+}
+```
+
+`spenderAccountId` is `null` when deleting specific serials (allowance removed for all spenders). When using `--all-serials`, `spenderAccountId` identifies the spender whose blanket approval is revoked.
 
 ### Topic Plugin
 

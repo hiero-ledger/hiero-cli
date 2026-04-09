@@ -6,6 +6,7 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
@@ -18,6 +19,7 @@ import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeAliasMock as makeGlobalAliasMock,
   makeConfigMock,
+  makeIdentityResolutionServiceMock,
   makeKmsMock as makeGlobalKmsMock,
   makeMirrorMock as makeGlobalMirrorMock,
   makeNetworkMock as makeGlobalNetworkMock,
@@ -237,6 +239,23 @@ export const makeArgs = (
   args,
 });
 
+export function mockIdentityResolution(
+  entityId: string,
+): jest.Mocked<IdentityResolutionService> {
+  const identityResolutionService = makeIdentityResolutionServiceMock();
+  identityResolutionService.resolveReferenceToEntityOrEvmAddress.mockReturnValue(
+    {
+      entityIdOrEvmAddress: entityId,
+    },
+  );
+  identityResolutionService.resolveAccount.mockResolvedValue({
+    accountId: entityId,
+    accountPublicKey:
+      '302a300506032b657003210000000000000000000000000000000000000000',
+  });
+  return identityResolutionService;
+}
+
 /**
  * Configuration options for makeApiMocksForAccountCreate
  */
@@ -353,6 +372,18 @@ export const makeApiMocksForAccountDelete = ({
   const kms = makeGlobalKmsMock();
   const alias = makeGlobalAliasMock();
 
+  const keyResolver = {
+    resolveAccountCredentials: jest.fn().mockResolvedValue({
+      keyRefId: 'kr_deleted',
+      accountId: '0.0.1111',
+      publicKey:
+        '302a300506032b657003210000000000000000000000000000000000000000',
+    }),
+    resolveDestination: jest.fn(),
+    getPublicKey: jest.fn(),
+    resolveSigningKey: jest.fn(),
+  };
+
   return {
     account,
     txSign,
@@ -360,5 +391,6 @@ export const makeApiMocksForAccountDelete = ({
     networkMock,
     kms,
     alias,
+    keyResolver,
   };
 };
