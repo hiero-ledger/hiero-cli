@@ -1,6 +1,7 @@
 import type { ContractCreateFlow } from '@hashgraph/sdk';
 import type { CompilationResult } from '@/core/services/contract-compiler/types';
 import type { ContractCreateFlowResult } from '@/core/services/contract-transaction/types';
+import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type {
   SupportedNetwork,
   TransactionResult,
@@ -19,7 +20,8 @@ export interface ContractCreateNormalisedParams {
   contractName: string;
   contractFileContent: string;
   contractBasename: string;
-  admin?: { keyRefId: string; publicKey: string };
+  adminKeys: ResolvedPublicKey[];
+  adminKeyThreshold: number;
   network: SupportedNetwork;
 }
 

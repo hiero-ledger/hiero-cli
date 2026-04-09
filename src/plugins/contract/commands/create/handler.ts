@@ -13,14 +13,16 @@ import type {
   ContractCreateSignTransactionResult,
 } from './types';
 
-import { ContractId, PublicKey } from '@hashgraph/sdk';
+import { ContractId } from '@hashgraph/sdk';
 import path from 'path';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
+import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import {
   DEFAULT_CONSTRUCTOR_PARAMS,
   getDefaultContractFilePath,
@@ -78,18 +80,20 @@ export class CreateContractCommand extends BaseTransactionCommand<
     api.alias.availableOrThrow(alias, network);
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
-    const admin = validArgs.adminKey
-      ? await api.keyResolver.resolveSigningKey(
-          validArgs.adminKey,
-          keyManager,
-          false,
-          ['contract:admin'],
-        )
-      : undefined;
+    const adminKeys = await Promise.all(
+      validArgs.adminKeys.map((cred) =>
+        api.keyResolver.resolveSigningKey(cred, keyManager, false, [
+          'contract:admin',
+        ]),
+      ),
+    );
 
-    if (!admin) {
+    const adminKeyThreshold = validArgs.adminKeyThreshold ?? adminKeys.length;
+
+    if (adminKeys.length === 0) {
       logger.warn(
         `Admin key not specified. Smart contract will lack admin key set`,
       );
@@ -115,9 +119,8 @@ export class CreateContractCommand extends BaseTransactionCommand<
       contractName,
       contractFileContent,
       contractBasename,
-      admin: admin
-        ? { keyRefId: admin.keyRefId, publicKey: admin.publicKey }
-        : undefined,
+      adminKeys,
+      adminKeyThreshold,
       network,
     };
   }
@@ -136,16 +139,17 @@ export class CreateContractCommand extends BaseTransactionCommand<
       solidityVersion: normalisedParams.solidityVersion,
     });
 
-    const adminPublicKey = normalisedParams.admin
-      ? PublicKey.fromString(normalisedParams.admin.publicKey)
-      : undefined;
+    const adminKey = toHederaKey(
+      normalisedParams.adminKeys,
+      normalisedParams.adminKeyThreshold,
+    );
 
     const contractCreateFlowTx = api.contract.contractCreateFlowTransaction({
       bytecode: compilationResult.bytecode,
       gas: normalisedParams.gas,
       abiDefinition: compilationResult.abiDefinition,
       constructorParameters: normalisedParams.constructorParameters,
-      adminKey: adminPublicKey,
+      adminKey,
       memo: normalisedParams.memo,
     });
 
@@ -159,9 +163,13 @@ export class CreateContractCommand extends BaseTransactionCommand<
   ): Promise<ContractCreateSignTransactionResult> {
     const { api } = _args;
 
-    const txSigners = normalisedParams.admin
-      ? [normalisedParams.admin.keyRefId]
-      : [];
+    const adminKeysCount = normalisedParams.adminKeys.length;
+    const txSigners =
+      adminKeysCount > 0
+        ? normalisedParams.adminKeys
+            .slice(0, normalisedParams.adminKeyThreshold)
+            .map((k) => k.keyRefId)
+        : [];
     const signedFlow = api.txSign.signContractCreateFlow(
       buildTransactionResult.contractCreateFlowTx.transaction,
       txSigners,
@@ -227,8 +235,8 @@ export class CreateContractCommand extends BaseTransactionCommand<
       contractId: executeTransactionResult.contractId,
       name: normalisedParams.alias,
       contractEvmAddress,
-      adminPublicKey: normalisedParams.admin?.publicKey,
-      adminKeyRefId: normalisedParams.admin?.keyRefId,
+      adminKeyRefIds: normalisedParams.adminKeys.map((k) => k.keyRefId),
+      adminKeyThreshold: normalisedParams.adminKeyThreshold,
       network: normalisedParams.network,
       memo: normalisedParams.memo,
       verified: verificationResult.success,
@@ -249,6 +257,8 @@ export class CreateContractCommand extends BaseTransactionCommand<
       });
     }
 
+    const adminKeyCount = normalisedParams.adminKeys.length;
+
     const output: ContractCreateOutput = {
       contractId: executeTransactionResult.contractId,
       contractName: normalisedParams.contractName,
@@ -256,7 +266,9 @@ export class CreateContractCommand extends BaseTransactionCommand<
       network: normalisedParams.network,
       name: normalisedParams.alias,
       transactionId: executeTransactionResult.transactionId,
-      adminPublicKey: normalisedParams.admin?.publicKey,
+      adminKeyPresent: adminKeyCount > 0,
+      adminKeyThreshold: normalisedParams.adminKeyThreshold,
+      adminKeyCount: adminKeyCount > 0 ? adminKeyCount : undefined,
       verified: verificationResult.success,
     };
 

@@ -43,6 +43,7 @@ import type { TopicData } from '@/plugins/topic/schema';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import { StateError, ValidationError } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { KeyResolverServiceImpl } from '@/core/services/key-resolver/key-resolver-service';
 import {
   CredentialType,
   KeyManager,
@@ -725,6 +726,8 @@ export const makeKeyResolverMock = (
     };
   };
 
+  const kms = options.kms ?? makeKmsMock();
+
   return {
     resolveAccountCredentials: jest
       .fn()
@@ -807,6 +810,15 @@ export const makeKeyResolverMock = (
           publicKey: resolved.publicKey,
         });
       }),
+
+    resolvedPublicKeysForStoredKeyRefs: jest
+      .fn()
+      .mockImplementation((keyRefIds: string[]) =>
+        KeyResolverServiceImpl.prototype.resolvedPublicKeysForStoredKeyRefs.call(
+          { kms } as unknown as KeyResolverServiceImpl,
+          keyRefIds,
+        ),
+      ),
   };
 };
 

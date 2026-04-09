@@ -21,7 +21,7 @@ const ContractListItemSchema = z.object({
   contractEvmAddress: EvmAddressSchema.describe(
     'Deployed contract EVM address',
   ),
-  adminPublicKey: z.string().optional(),
+  adminKeyPresent: z.boolean().describe('Whether contract admin key is set'),
 
   network: z.enum(SupportedNetwork, {
     error: () => ({
@@ -61,9 +61,7 @@ export const CONTRACT_LIST_TEMPLATE = `
    Name: {{name}}
 {{/if}}
    Contract EVM address: {{contractEvmAddress}}
-{{#if adminPublicKey}}
-   Admin public key: {{adminPublicKey}}
-{{/if}}
+   Admin key: {{#if adminKeyPresent}}✅ Present{{else}}❌ Not set{{/if}}
    Network: {{network}}
    Contract Verified: {{#if verified}}Yes{{else}}No{{/if}}
 

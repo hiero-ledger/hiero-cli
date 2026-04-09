@@ -17,7 +17,7 @@ export const ContractDeleteInputSchema = z
       .optional()
       .default(false)
       .describe(
-        'Remove only from local CLI state; do not submit ContractDeleteTransaction',
+        'Remove only from local CLI state; do not delete the contract on Hedera',
       ),
     transferId: AccountReferenceSchema.optional().describe(
       'Account ID or alias as the network delete transfer target (required for network delete unless --state-only)',
@@ -25,9 +25,13 @@ export const ContractDeleteInputSchema = z
     transferContractId: ContractReferenceSchema.optional().describe(
       'Contract ID or alias as the network delete transfer target; alternative to --transfer-id',
     ),
-    adminKey: KeySchema.optional().describe(
-      'Contract admin key for signing the delete (same formats as contract create). Use when this CLI cannot sign with a key it already has for that contract',
-    ),
+    adminKey: z
+      .array(KeySchema)
+      .optional()
+      .default([])
+      .describe(
+        'Contract admin credential(s) so the network delete can be signed (required when deleting on Hedera). Pass multiple times if multiple credentials are needed. Each value may be: account ID with private key in {accountId}:{private_key} format; account public key in {ed25519|ecdsa}:public:{public-key} format; account private key in {ed25519|ecdsa}:private:{private-key} format; account ID; account name/alias; or account key reference.',
+      ),
     keyManager: KeyManagerTypeSchema.optional(),
   })
   .superRefine((data, ctx) => {
@@ -64,7 +68,7 @@ export const ContractDeleteInputSchema = z
         path: ['transferContractId'],
       });
     }
-    if (data.stateOnly && data.adminKey !== undefined) {
+    if (data.stateOnly && data.adminKey.length > 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'admin-key cannot be used with --state-only',

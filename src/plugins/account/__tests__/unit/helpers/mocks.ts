@@ -20,6 +20,7 @@ import {
   makeAliasMock as makeGlobalAliasMock,
   makeConfigMock,
   makeIdentityResolutionServiceMock,
+  makeKeyResolverMock,
   makeKmsMock as makeGlobalKmsMock,
   makeMirrorMock as makeGlobalMirrorMock,
   makeNetworkMock as makeGlobalNetworkMock,
@@ -315,6 +316,7 @@ export const makeApiMocksForAccountCreate = ({
   const alias = makeGlobalAliasMock();
 
   const keyResolver = {
+    ...makeKeyResolverMock({ network: networkMock, alias, kms }),
     getPublicKey:
       keyResolverGetPublicKeyImpl ??
       jest.fn().mockResolvedValue({
@@ -373,6 +375,7 @@ export const makeApiMocksForAccountDelete = ({
   const alias = makeGlobalAliasMock();
 
   const keyResolver = {
+    ...makeKeyResolverMock({ network: networkMock, alias, kms }),
     resolveAccountCredentials: jest.fn().mockResolvedValue({
       keyRefId: 'kr_deleted',
       accountId: '0.0.1111',

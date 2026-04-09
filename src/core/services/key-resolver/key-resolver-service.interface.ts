@@ -39,4 +39,9 @@ export interface KeyResolverService {
     fallback?: boolean,
     labels?: string[],
   ): Promise<ResolvedPublicKey>;
+
+  /**
+   * Maps stored KMS key reference IDs (e.g. from CLI entity state) to public keys for signing flows.
+   */
+  resolvedPublicKeysForStoredKeyRefs(keyRefIds: string[]): ResolvedPublicKey[];
 }

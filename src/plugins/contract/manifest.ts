@@ -84,10 +84,18 @@ export const contractPluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Smart contract admin key as account ID with private key in {accountId}:{private_key} format, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, account ID, account name/alias or account key reference.',
+            'Smart contract admin key(s). Pass multiple times for multiple keys. Each value may be: account ID with private key in {accountId}:{private_key} format; account public key in {ed25519|ecdsa}:public:{public-key} format; account private key in {ed25519|ecdsa}:private:{private-key} format; account ID; account name/alias; or account key reference.',
+        },
+        {
+          name: 'admin-key-threshold',
+          short: 'A',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of admin keys required to sign the contract create flow (only when multiple --admin-key values are set).',
         },
         {
           name: 'memo',
@@ -169,7 +177,7 @@ export const contractPluginManifest: PluginManifest = {
       name: 'delete',
       summary: 'Delete contract',
       description:
-        'By default, submits ContractDeleteTransaction on Hedera and removes the contract from local CLI state.',
+        'By default, deletes the contract on Hedera and removes it from local CLI state.',
       options: [
         {
           name: 'contract',
@@ -206,10 +214,10 @@ export const contractPluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Admin key for signing (same formats as contract create). Network delete only',
+            'Contract admin credential(s) so the network delete can be signed (required when deleting on Hedera). Pass multiple times if multiple credentials are needed. Each value may be: account ID with private key in {accountId}:{private_key} format; account public key in {ed25519|ecdsa}:public:{public-key} format; account private key in {ed25519|ecdsa}:private:{private-key} format; account ID; account name/alias; or account key reference.',
         },
         {
           name: 'key-manager',

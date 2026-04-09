@@ -18,11 +18,10 @@ export const ContractDataSchema = z.object({
   contractEvmAddress: EvmAddressSchema.describe(
     'Deployed contract EVM address',
   ),
-  adminPublicKey: z.string().optional(),
-  adminKeyRefId: z
-    .string()
-    .optional()
-    .describe('KMS key ref for contract admin when set at create'),
+  adminKeyRefIds: z
+    .array(z.string().min(1, 'Key reference ID is required'))
+    .default([]),
+  adminKeyThreshold: z.number().int().min(0).default(0),
 
   network: z.enum(SupportedNetwork, {
     error: () => ({

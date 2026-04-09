@@ -114,6 +114,8 @@ describe('contract plugin - import command', () => {
         contractId: MOCK_CONTRACT_ID,
         name: 'imported-contract',
         contractEvmAddress: MOCK_EVM_ADDRESS,
+        adminKeyRefIds: [],
+        adminKeyThreshold: 0,
         network: 'testnet',
         memo: 'test contract',
         verified: true,
