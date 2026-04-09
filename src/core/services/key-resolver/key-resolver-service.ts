@@ -22,7 +22,7 @@ import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { KeyResolverService } from './key-resolver-service.interface';
 
-import { NotFoundError, StateError } from '@/core/errors';
+import { NotFoundError, StateError, ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ERROR_MESSAGES } from '@/core/services/key-resolver/error-messages';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
@@ -146,6 +146,26 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     }
 
     return { keyRefId, publicKey };
+  }
+
+  public resolvedPublicKeysForStoredKeyRefs(
+    keyRefIds: string[],
+  ): ResolvedPublicKey[] {
+    const resolvedPublicKeys: ResolvedPublicKey[] = [];
+    for (const keyRefId of keyRefIds) {
+      const credentialRecord = this.kms.get(keyRefId);
+      if (!credentialRecord) {
+        throw new ValidationError(
+          `No local credential record for key reference "${keyRefId}". Import the key or pass credentials on the command line.`,
+          { context: { keyRefId } },
+        );
+      }
+      resolvedPublicKeys.push({
+        keyRefId,
+        publicKey: credentialRecord.publicKey,
+      });
+    }
+    return resolvedPublicKeys;
   }
 
   public async resolveDestination(

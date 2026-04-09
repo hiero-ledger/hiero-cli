@@ -10,7 +10,9 @@ import type { ContractImportOutput } from './output';
 import { NotFoundError, StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ensureEvmAddress0xPrefix } from '@/core/utils/evm-address';
+import { extractPublicKeysFromMirrorNodeKey } from '@/core/utils/extract-public-keys';
 import { composeKey } from '@/core/utils/key-composer';
+import { matchPublicKeysToKmsRefIds } from '@/core/utils/match-keys-to-kms';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
 import { ContractImportInputSchema } from './input';
@@ -72,11 +74,24 @@ export class ImportContractCommand implements Command {
       });
     }
 
+    const adminKeysExtracted = extractPublicKeysFromMirrorNodeKey(
+      contractInfo.admin_key,
+    );
+
+    const findByPublicKey = (publicKey: string) =>
+      api.kms.findByPublicKey(publicKey);
+
+    const adminKeyRefIds = matchPublicKeysToKmsRefIds(
+      adminKeysExtracted.publicKeys,
+      findByPublicKey,
+    );
+
     const contractData: ContractData = {
       contractId,
       name,
       contractEvmAddress: normalizedContractEvmAddress,
-      adminPublicKey: contractInfo.admin_key?.key,
+      adminKeyRefIds,
+      adminKeyThreshold: adminKeysExtracted.threshold,
       network,
       memo: contractInfo.memo || undefined,
       verified,

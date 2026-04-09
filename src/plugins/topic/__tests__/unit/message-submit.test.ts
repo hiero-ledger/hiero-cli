@@ -9,6 +9,8 @@ import {
   makeAliasMock,
   makeArgs,
   makeConfigMock,
+  makeKeyResolverMock,
+  makeKmsMock,
   makeLogger,
   makeNetworkMock,
   makeTopicData,
@@ -134,17 +136,6 @@ describe('topic plugin - message-submit command', () => {
     const loadTopicMock = jest.fn().mockReturnValue(topicData);
     MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
 
-    const keyResolverMock = {
-      resolveSigningKey: jest.fn().mockResolvedValue({
-        publicKey: '02abc123',
-        accountId: '0.0.999',
-        keyRefId: MOCK_TOPIC_SUBMIT_KEY_REF_ID,
-      }),
-      resolveAccountCredentials: jest.fn(),
-      resolveDestination: jest.fn(),
-      getPublicKey: jest.fn(),
-    };
-
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({
         topicSubmitMessageImpl: jest.fn().mockReturnValue({
@@ -157,6 +148,16 @@ describe('topic plugin - message-submit command', () => {
           receipt: { status: { status: 'success' } },
         } as TransactionResult),
       });
+
+    const kms = makeKmsMock();
+    const keyResolverMock = {
+      ...makeKeyResolverMock({ network: networkMock, alias, kms }),
+      resolveSigningKey: jest.fn().mockResolvedValue({
+        publicKey: '02abc123',
+        accountId: '0.0.999',
+        keyRefId: MOCK_TOPIC_SUBMIT_KEY_REF_ID,
+      }),
+    };
 
     const api: Partial<CoreApi> = {
       topic: topicTransactions,
@@ -218,7 +219,12 @@ describe('topic plugin - message-submit command', () => {
     const loadTopicMock = jest.fn().mockReturnValue(topicData);
     MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
 
+    const { topicTransactions, txSign, txExecute, networkMock, alias } =
+      makeApiMocks({});
+
+    const kms = makeKmsMock();
     const keyResolverMock = {
+      ...makeKeyResolverMock({ network: networkMock, alias, kms }),
       resolveSigningKey: jest
         .fn()
         .mockResolvedValueOnce({
@@ -231,13 +237,7 @@ describe('topic plugin - message-submit command', () => {
           accountId: '0.0.888',
           keyRefId: 'kr_unauthorized',
         }),
-      resolveAccountCredentials: jest.fn(),
-      resolveDestination: jest.fn(),
-      getPublicKey: jest.fn(),
     };
-
-    const { topicTransactions, txSign, txExecute, networkMock, alias } =
-      makeApiMocks({});
 
     const api: Partial<CoreApi> = {
       topic: topicTransactions,

@@ -15,7 +15,7 @@ export interface ContractDeleteNormalisedParams {
   contractToDelete: ContractData;
   transferAccountId?: string;
   transferContractId?: string;
-  adminSignerKeyRefId: string;
+  signingKeyRefIds: string[];
 }
 
 export interface ContractDeleteBuildTransactionResult {
