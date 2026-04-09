@@ -268,7 +268,7 @@ export class CreateContractCommand extends BaseTransactionCommand<
       transactionId: executeTransactionResult.transactionId,
       adminKeyPresent: adminKeyCount > 0,
       adminKeyThreshold: normalisedParams.adminKeyThreshold,
-      adminKeyCount: adminKeyCount > 0 ? adminKeyCount : undefined,
+      adminKeyCount: adminKeyCount > 1 ? adminKeyCount : undefined,
       verified: verificationResult.success,
     };
 

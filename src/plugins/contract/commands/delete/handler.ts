@@ -78,7 +78,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     parsedInput: ContractDeleteInput,
   ): Promise<CommandResult> {
     const { api } = args;
-    const resolved = await this.resolveContractFromState(args, parsedInput);
+    const resolved = this.resolveContractFromState(args, parsedInput);
     const contractHelper = new ContractHelper(api.state, api.logger, api.alias);
     const removedAliases = contractHelper.removeContractFromLocalState(
       resolved.contractToDelete,
@@ -98,39 +98,53 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     return { result: outputData };
   }
 
-  private async resolveContractFromState(
+  private resolveContractRef(
+    contractRef: string,
+    network: SupportedNetwork,
+    aliasService: AliasService,
+  ): { resolvedEntityId: string; stateKey: string } {
+    if (EntityIdSchema.safeParse(contractRef).success) {
+      return {
+        resolvedEntityId: contractRef,
+        stateKey: composeKey(network, contractRef),
+      };
+    }
+    const aliasRecord = aliasService.resolveOrThrow(
+      contractRef,
+      AliasType.Contract,
+      network,
+    );
+    if (!aliasRecord.entityId) {
+      throw new NotFoundError(
+        `Contract "${contractRef}" has no associated contract ID`,
+        { context: { alias: contractRef, network } },
+      );
+    }
+    return {
+      resolvedEntityId: aliasRecord.entityId,
+      stateKey: composeKey(network, aliasRecord.entityId),
+    };
+  }
+
+  private resolveContractFromState(
     args: CommandHandlerArgs,
     parsedInput?: ContractDeleteInput,
-  ): Promise<{
+  ): {
     contractToDelete: ContractData;
     network: SupportedNetwork;
     stateKey: string;
     contractRef: string;
-  }> {
+  } {
     const { api, logger } = args;
     const contractState = new ZustandContractStateHelper(api.state, logger);
     const validArgs = parsedInput ?? ContractDeleteInputSchema.parse(args.args);
     const contractRef = validArgs.contract;
-    const isEntityId = EntityIdSchema.safeParse(contractRef).success;
     const network = api.network.getCurrentNetwork();
-    let stateKey: string;
-
-    if (isEntityId) {
-      stateKey = composeKey(network, contractRef);
-    } else {
-      const aliasRecord = api.alias.resolveOrThrow(
-        contractRef,
-        AliasType.Contract,
-        network,
-      );
-      if (!aliasRecord.entityId) {
-        throw new NotFoundError(
-          `Contract "${contractRef}" has no associated contract ID`,
-          { context: { alias: contractRef, network } },
-        );
-      }
-      stateKey = composeKey(network, aliasRecord.entityId);
-    }
+    const { stateKey } = this.resolveContractRef(
+      contractRef,
+      network,
+      api.alias,
+    );
 
     const contractToDelete = contractState.getContract(stateKey);
     if (!contractToDelete) {
@@ -156,29 +170,12 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     const contractState = new ZustandContractStateHelper(api.state, logger);
     const validArgs = parsedInput ?? ContractDeleteInputSchema.parse(args.args);
     const contractRef = validArgs.contract;
-    const isEntityId = EntityIdSchema.safeParse(contractRef).success;
     const network = api.network.getCurrentNetwork();
-    let stateKey: string;
-    let resolvedEntityId: string;
-
-    if (isEntityId) {
-      resolvedEntityId = contractRef;
-      stateKey = composeKey(network, contractRef);
-    } else {
-      const aliasRecord = api.alias.resolveOrThrow(
-        contractRef,
-        AliasType.Contract,
-        network,
-      );
-      if (!aliasRecord.entityId) {
-        throw new NotFoundError(
-          `Contract "${contractRef}" has no associated contract ID`,
-          { context: { alias: contractRef, network } },
-        );
-      }
-      resolvedEntityId = aliasRecord.entityId;
-      stateKey = composeKey(network, resolvedEntityId);
-    }
+    const { resolvedEntityId, stateKey } = this.resolveContractRef(
+      contractRef,
+      network,
+      api.alias,
+    );
 
     const storedContract = contractState.getContract(stateKey);
     if (storedContract) {
@@ -192,21 +189,6 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     }
 
     const contractInfo = await api.mirror.getContractInfo(resolvedEntityId);
-
-    if (!contractInfo) {
-      throw new NotFoundError(
-        `Could not load contract '${contractRef}' from mirror`,
-      );
-    }
-
-    if (contractInfo.deleted) {
-      throw new ValidationError(
-        'This contract is already marked deleted on the network',
-        {
-          context: { contractId: contractInfo.contract_id },
-        },
-      );
-    }
 
     const contractEvmAddress = contractInfo.evm_address;
     if (!contractEvmAddress) {
