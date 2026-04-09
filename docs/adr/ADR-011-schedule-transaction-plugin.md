@@ -2,7 +2,7 @@
 
 - Status: Proposed
 - Date: 2026-03-26
-- Related: `src/plugins/schedule/*`, `src/core/services/schedule-transaction/*`, `src/core/services/mirrornode/*`, `src/core/commands/command.ts`, `src/core/hooks/abstract-hook.ts`, `docs/adr/ADR-001-plugin-architecture.md`, `docs/adr/ADR-009-class-based-handler-and-hook-architecture.md`, `docs/adr/ADR-010-batch-transaction-plugin.md`
+- Related: `src/plugins/schedule/*`, `src/plugins/account/hooks/schedule-create/*`, `src/plugins/account/hooks/schedule-update/*`, `src/core/services/schedule-transaction/*`, `src/core/services/mirrornode/*`, `src/core/commands/command.ts`, `src/core/hooks/abstract-hook.ts`, `docs/adr/ADR-001-plugin-architecture.md`, `docs/adr/ADR-009-class-based-handler-and-hook-architecture.md`, `docs/adr/ADR-010-batch-transaction-plugin.md`
 
 ## Context
 
@@ -542,6 +542,8 @@ When `--name` is provided:
 - If a state record exists, verify updates `scheduled` and `executed` flags in local state.
 - If no state record exists but a name is given, verify **creates** a new state record from the Mirror Node response, resolving admin and payer keys.
 
+**Verify hooks (domain state):** The `schedule verify` command lists `registeredHooks` such as `account-create-schedule-state` and `account-update-schedule-state`. When an existing record was not yet marked executed and Mirror reports `executed_timestamp`, verify saves the updated record and invokes `AbstractHook.customHandlerHook` so account plugins can persist state: they call `api.mirror.getTransactionRecord(formatTransactionIdToDashFormat(innerTransactionId))` and use the Mirror row where `scheduled === true` (with `entity_id` / `result`) to validate the inner transaction.
+
 ```ts
 export class ScheduleVerifyCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
@@ -562,13 +564,22 @@ export class ScheduleVerifyCommand implements Command {
     // Query Mirror Node REST API
     const scheduleResponse = await api.mirror.getScheduled(resolvedScheduleId);
 
-    // Update or create local state record
-    if (scheduleRecord) {
-      stateHelper.saveScheduled(composeKey(network, scheduleRecord.name), {
+    // Update or create local state record; run registered verify hooks when execution first completes
+    if (scheduleRecord && !scheduleRecord.executed) {
+      const updatedScheduledRecord = {
         ...scheduleRecord,
         scheduled: true,
         executed: !!scheduleResponse.executed_timestamp,
-      });
+      };
+      stateHelper.saveScheduled(
+        composeKey(network, scheduleRecord.name),
+        updatedScheduledRecord,
+      );
+      if (updatedScheduledRecord.executed && updatedScheduledRecord.command) {
+        await this.customHandlerHook(args, {
+          customHandlerParams: { scheduledData: updatedScheduledRecord },
+        });
+      }
     } else if (scheduleName) {
       // Import schedule from Mirror Node into local state
       // Resolves payer and admin key references from the response
@@ -635,6 +646,8 @@ The `verify` command queries the Hedera Mirror Node REST API rather than the SDK
 **Zod schemas:** `ScheduleInfoSchema` and `ScheduleSignatureInfoSchema` in `src/core/services/mirrornode/schemas.ts` validate the Mirror Node response, following the same `parseWithSchema` pattern as `getTokenInfo`.
 
 **Types:** `ScheduleInfo` and `ScheduleSignatureInfo` in `src/core/services/mirrornode/types.ts`.
+
+**Transaction records:** Domain hooks that need the inner transaction after execution use `getTransactionRecord(transactionId, nonce?)` (`GET /api/v1/transactions/{transactionId}`). Pass the inner transaction id in the **dash** path form (see `formatTransactionIdToDashFormat` in core utils), not the SDK `@` form.
 
 ```ts
 export interface ScheduleInfo {
@@ -816,7 +829,7 @@ flowchart TD
   2. Include `'scheduled'` in their `registeredHooks` array. The `--scheduled` option is then injected automatically.
   3. Expose `keyRefIds` on their normalized params (`BaseNormalizedParams`) so the hook can append admin/payer key references.
 - The `ScheduleTransactionService` is wired into `CoreApi` as `api.schedule`, alongside existing services.
-- `HederaMirrornodeService` gains a `getScheduled` method querying `GET /api/v1/schedules/{scheduleId}`, with `ScheduleInfoSchema` / `ScheduleSignatureInfoSchema` Zod schemas for response validation.
+- `HederaMirrornodeService` gains a `getScheduled` method querying `GET /api/v1/schedules/{scheduleId}`, with `ScheduleInfoSchema` / `ScheduleSignatureInfoSchema` Zod schemas for response validation. Account schedule verify hooks additionally use `getTransactionRecord` for the inner transaction id after execution.
 - `TransactionResult` in `src/core/types/shared.types.ts` includes an optional `scheduleId` field, and `receipt-mapper.ts` populates it from the SDK receipt.
 - The `verify` command should be used to check the status of scheduled transactions with `waitForExpiry: true`, since execution is deferred and no automatic notification is provided.
 - Zod `.transform()` schemas (`KeySchema`, `ScheduleReferenceObjectSchema`) produce parsed objects — handlers must pass the parsed value directly to service methods rather than double-parsing.
@@ -831,7 +844,7 @@ flowchart TD
   - `executeTransaction`: verify `TransactionError` on failed submission.
   - `outputPreparation`: verify output includes optional `name` only when resolved from alias.
 - **Unit: ScheduleDeleteCommand phases.** Test the `execute()` override: state-only delete when `scheduled === false` or `executed === true`; on-chain delete path (via `super.execute()`) otherwise. Test `outputPreparation` removes local state entry after successful on-chain delete.
-- **Unit: ScheduleVerifyCommand.** Mock `api.mirror.getScheduled()` response and verify that the output includes correct `executedAt`, `deleted` (boolean), `waitForExpiry`, `scheduleMemo`, `expirationTime`, and `payerAccountId` values. Verify state is updated when `--name` is provided. Verify new state record is created when a name is given but no existing state record exists.
+- **Unit: ScheduleVerifyCommand.** Mock `api.mirror.getScheduled()` response and verify that the output includes correct `executedAt`, `deleted` (boolean), `waitForExpiry`, `scheduleMemo`, `expirationTime`, and `payerAccountId` values. Verify state is updated when `--name` is provided. Verify new state record is created when a name is given but no existing state record exists. When testing hook integration, mock `getTransactionRecord` with a `transactions` entry where `scheduled: true` for account schedule-state hooks.
 - **Unit: ScheduledHook.** Invoke `preSignTransactionHook` with mock args containing `--scheduled` flag. Assert that the hook builds, signs, and executes the `ScheduleCreateTransaction`, persists `scheduleId` to state, and returns `breakFlow: true` with `ScheduledOutputSchema`. Invoke without `--scheduled` flag and assert `breakFlow: false`.
 - **Unit: ScheduleHelper.** Test `resolveScheduleIdByEntityReference` for alias resolution (state lookup), entity ID resolution (Mirror Node query), and EVM address rejection. Test `resolveScheduleIdFromArgs` for error when both/neither args provided.
 - **Unit: ScheduleTransactionService.** Verify that `buildScheduleCreateTransaction` correctly sets `scheduledTransaction`, `waitForExpiry`, and optional fields (payer, admin key, memo, expiration). Verify `buildScheduleSignTransaction` and `buildScheduleDeleteTransaction` set the correct `scheduleId`.
