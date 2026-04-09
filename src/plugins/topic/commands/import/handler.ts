@@ -6,28 +6,15 @@ import type { ImportTopicNormalisedParams } from './types';
 
 import { ValidationError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { extractPublicKeysFromMirrorNodeKey } from '@/core/utils/extract-public-keys';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { composeKey } from '@/core/utils/key-composer';
-import { extractPublicKeysFromMirrorNodeKey } from '@/plugins/topic/utils/extract-public-keys';
+import { matchPublicKeysToKmsRefIds } from '@/core/utils/match-keys-to-kms';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { TopicImportInputSchema } from './input';
 
 export class TopicImportCommand implements Command {
-  private matchPublicKeysToKmsRefIds(
-    publicKeys: string[],
-    kms: { findByPublicKey: (pk: string) => { keyRefId: string } | undefined },
-  ): string[] {
-    const keyRefIds: string[] = [];
-    for (const publicKey of publicKeys) {
-      const record = kms.findByPublicKey(publicKey);
-      if (record) {
-        keyRefIds.push(record.keyRefId);
-      }
-    }
-    return keyRefIds;
-  }
-
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const { api, logger } = args;
 
@@ -78,13 +65,16 @@ export class TopicImportCommand implements Command {
       topicInfo.submit_key,
     );
 
-    const adminKeyRefIds = this.matchPublicKeysToKmsRefIds(
+    const findByPublicKey = (publicKey: string) =>
+      api.kms.findByPublicKey(publicKey);
+
+    const adminKeyRefIds = matchPublicKeysToKmsRefIds(
       adminKeysExtracted.publicKeys,
-      api.kms,
+      findByPublicKey,
     );
-    const submitKeyRefIds = this.matchPublicKeysToKmsRefIds(
+    const submitKeyRefIds = matchPublicKeysToKmsRefIds(
       submitKeysExtracted.publicKeys,
-      api.kms,
+      findByPublicKey,
     );
 
     const topicData: TopicData = {
