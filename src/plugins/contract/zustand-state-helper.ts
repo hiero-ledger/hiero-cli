@@ -5,8 +5,7 @@
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
-import { CONTRACT_NAMESPACE } from '@/plugins/contract/manifest';
-
+import { CONTRACT_NAMESPACE } from './constants';
 import { type ContractData } from './schema';
 
 export class ZustandContractStateHelper {

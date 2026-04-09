@@ -16,7 +16,7 @@ import {
   topicImport,
   topicList,
 } from '@/plugins/topic';
-import { TOPIC_NAMESPACE } from '@/plugins/topic/manifest';
+import { TOPIC_NAMESPACE } from '@/plugins/topic/constants';
 
 /*
 Tests in this suite are only executed when we do not use localnet as selected network due to the fact that
