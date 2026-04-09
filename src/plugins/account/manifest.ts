@@ -76,7 +76,7 @@ export const accountPluginManifest: PluginManifest = {
       summary: 'Create a new Hedera account',
       description:
         'Create a new Hedera account with specified balance and settings',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'balance',

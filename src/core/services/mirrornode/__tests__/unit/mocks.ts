@@ -149,6 +149,26 @@ export const createMockMirrorNodeTokenByIdJson = (
   ...overrides,
 });
 
+/**
+ * Raw JSON body for GET /api/v1/schedules/{id} (Mirror Node). Use with `fetch` mocks.
+ */
+export const createMockMirrorNodeScheduleByIdJson = (
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> => ({
+  schedule_id: '0.0.5678',
+  consensus_timestamp: '2024-01-01T12:00:00.000Z',
+  creator_account_id: '0.0.1234',
+  payer_account_id: '0.0.1234',
+  deleted: false,
+  executed_timestamp: null,
+  expiration_time: null,
+  memo: '',
+  wait_for_expiry: false,
+  admin_key: null,
+  signatures: [],
+  ...overrides,
+});
+
 export const createMockTopicInfo = (
   overrides: Partial<TopicInfo> = {},
 ): TopicInfo => ({

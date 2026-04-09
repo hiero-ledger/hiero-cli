@@ -33,6 +33,7 @@ import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeIdentityResolutionServiceMock as makeGlobalIdentityResolutionServiceMock,
   makeKeyResolverMock as makeGlobalKeyResolverMock,
+  makeScheduleTransactionServiceMock,
 } from '@/__tests__/mocks/mocks';
 import { InternalError, KeyAlgorithm } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
@@ -63,8 +64,11 @@ export const makeTokenServiceMock = (
   createMintTransaction: jest.fn(),
   createNftTransferTransaction: jest.fn(),
   createNftAllowanceApproveTransaction: jest.fn(),
+  createNftAllowanceDeleteTransaction: jest.fn(),
   createFungibleTokenAllowanceTransaction: jest.fn(),
   createDeleteTransaction: jest.fn(),
+  createAirdropFtTransaction: jest.fn(),
+  createAirdropNftTransaction: jest.fn(),
   ...overrides,
 });
 
@@ -445,6 +449,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       ...makeGlobalIdentityResolutionServiceMock(),
       ...(config?.identityResolution || {}),
     },
+    schedule: makeScheduleTransactionServiceMock(),
     keyResolver,
   };
 

@@ -268,6 +268,30 @@ export interface NftInfo {
   token_id: string;
 }
 
+/** Mirror Node `ScheduleSignature` — GET /api/v1/schedules/{scheduleId} */
+export interface ScheduleSignatureInfo {
+  consensus_timestamp: string;
+  public_key_prefix?: string;
+  signature?: string;
+  type?: string;
+}
+
+/** Mirror Node `Schedule` — GET /api/v1/schedules/{scheduleId} */
+export interface ScheduleInfo {
+  admin_key?: MirrorNodeKey | null;
+  consensus_timestamp: string;
+  creator_account_id: string;
+  deleted: boolean;
+  executed_timestamp?: string | null;
+  expiration_time?: string | null;
+  memo: string;
+  payer_account_id: string;
+  schedule_id: string;
+  signatures?: ScheduleSignatureInfo[];
+  transaction_body?: string;
+  wait_for_expiry: boolean;
+}
+
 export interface Filter {
   field: string;
   operation: 'gt' | 'lt' | 'gte' | 'lte' | 'eq' | 'ne';

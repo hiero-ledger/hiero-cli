@@ -137,9 +137,49 @@ export type NftAllowanceApproveParams =
   | NftAllowanceApproveSpecificParams
   | NftAllowanceApproveAllSerialsParams;
 
+export interface NftAllowanceDeleteSpecificParams {
+  tokenId: string;
+  ownerAccountId: string;
+  serialNumbers: number[];
+  allSerials?: false;
+}
+
+export interface NftAllowanceDeleteAllSerialsParams {
+  tokenId: string;
+  ownerAccountId: string;
+  spenderAccountId: string;
+  allSerials: true;
+}
+
+export type NftAllowanceDeleteParams =
+  | NftAllowanceDeleteSpecificParams
+  | NftAllowanceDeleteAllSerialsParams;
+
 export interface TokenAllowanceFtParams {
   tokenId: string;
   ownerAccountId: string;
   spenderAccountId: string;
   amount: bigint;
+}
+
+export interface TokenAirdropFtTransfer {
+  recipientAccountId: string;
+  amount: bigint;
+}
+
+export interface TokenAirdropFtParams {
+  tokenId: string;
+  senderAccountId: string;
+  transfers: TokenAirdropFtTransfer[];
+}
+
+export interface TokenAirdropNftTransfer {
+  recipientAccountId: string;
+  serialNumbers: number[];
+}
+
+export interface TokenAirdropNftParams {
+  tokenId: string;
+  senderAccountId: string;
+  transfers: TokenAirdropNftTransfer[];
 }

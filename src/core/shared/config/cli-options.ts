@@ -10,6 +10,7 @@ import credentialsPluginManifest from '@/plugins/credentials/manifest';
 import hbarPluginManifest from '@/plugins/hbar/manifest';
 import networkPluginManifest from '@/plugins/network/manifest';
 import pluginManagementManifest from '@/plugins/plugin-management/manifest';
+import schedulePluginManifest from '@/plugins/schedule/manifest';
 import tokenPluginManifest from '@/plugins/token/manifest';
 import topicPluginManifest from '@/plugins/topic/manifest';
 
@@ -40,6 +41,7 @@ export const RESERVED_SHORT_OPTIONS = new Set<string>([
 export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
   accountPluginManifest,
   batchPluginManifest,
+  schedulePluginManifest,
   tokenPluginManifest,
   networkPluginManifest,
   pluginManagementManifest,

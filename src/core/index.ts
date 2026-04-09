@@ -35,6 +35,7 @@ export type * from './services/mirrornode/hedera-mirrornode-service.interface';
 export type { NetworkService } from './services/network/network-service.interface';
 export type * from './services/output/output-service.interface';
 export type * from './services/plugin-management/plugin-management-service.interface';
+export type * from './services/schedule-transaction/schedule-transaction-service.interface';
 export type * from './services/state/state-service.interface';
 export type * from './services/token/token-service.interface';
 export type * from './services/topic/topic-transaction-service.interface';

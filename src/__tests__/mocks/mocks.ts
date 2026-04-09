@@ -30,6 +30,7 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { ScheduleTransactionService } from '@/core/services/schedule-transaction/schedule-transaction-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
@@ -347,6 +348,7 @@ export const createMirrorNodeMock =
     getTopicMessage: jest.fn(),
     getTopicMessages: jest.fn(),
     getTokenInfo: jest.fn(),
+    getScheduled: jest.fn(),
     getNftInfo: jest.fn(),
     getTopicInfo: jest.fn(),
     getTransactionRecord: jest.fn(),
@@ -497,6 +499,14 @@ const makeContractTransactionServiceMock = (): ContractTransactionService =>
     deleteContract: jest.fn(),
   }) as unknown as ContractTransactionService;
 
+export const makeScheduleTransactionServiceMock =
+  (): jest.Mocked<ScheduleTransactionService> =>
+    ({
+      buildScheduleCreateTransaction: jest.fn(),
+      buildScheduleSignTransaction: jest.fn(),
+      buildScheduleDeleteTransaction: jest.fn(),
+    }) as unknown as jest.Mocked<ScheduleTransactionService>;
+
 const makeContractVerifierServiceMock = (): ContractVerifierService =>
   ({
     verifyContract: jest.fn(),
@@ -536,6 +546,7 @@ export const makeArgs = (
   const contractQuery = api.contractQuery || makeContractQueryServiceMock();
   const identityResolution =
     api.identityResolution || makeIdentityResolutionServiceMock();
+  const schedule = api.schedule || makeScheduleTransactionServiceMock();
 
   const restApi = api;
 
@@ -574,6 +585,7 @@ export const makeArgs = (
       getTopicMessage: jest.fn(),
       getTopicMessages: jest.fn(),
       getTokenInfo: jest.fn(),
+      getScheduled: jest.fn(),
       getNftInfo: jest.fn(),
       getTopicInfo: jest.fn(),
       getTransactionRecord: jest.fn(),
@@ -597,6 +609,7 @@ export const makeArgs = (
     keyResolver: makeKeyResolverMock({ network, alias, kms }),
     contractQuery,
     identityResolution,
+    schedule,
     ...restApi,
   } as unknown as CoreApi;
 

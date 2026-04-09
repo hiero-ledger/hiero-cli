@@ -13,6 +13,16 @@ import {
 } from '@/plugins/token/commands/create-nft';
 
 import {
+  TOKEN_AIRDROP_FT_TEMPLATE,
+  tokenAirdropFt,
+  TokenAirdropFtOutputSchema,
+} from './commands/airdrop-ft';
+import {
+  TOKEN_AIRDROP_NFT_TEMPLATE,
+  tokenAirdropNft,
+  TokenAirdropNftOutputSchema,
+} from './commands/airdrop-nft';
+import {
   TOKEN_ALLOWANCE_FT_TEMPLATE,
   tokenAllowanceFt,
   TokenAllowanceFtOutputSchema,
@@ -47,6 +57,11 @@ import {
   tokenDelete,
   TokenDeleteOutputSchema,
 } from './commands/delete';
+import {
+  TOKEN_DELETE_ALLOWANCE_NFT_TEMPLATE,
+  tokenDeleteAllowanceNft,
+  TokenDeleteAllowanceNftOutputSchema,
+} from './commands/delete-allowance-nft';
 import {
   TOKEN_IMPORT_TEMPLATE,
   tokenImport,
@@ -131,7 +146,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'mint-ft',
       summary: 'Mint fungible tokens',
       description: 'Mint additional fungible tokens to increase supply.',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'token',
@@ -175,7 +190,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'mint-nft',
       summary: 'Mint NFT',
       description: 'Mint a new NFT to an existing NFT collection.',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'token',
@@ -218,7 +233,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'transfer-ft',
       summary: 'Transfer a fungible token',
       description: 'Transfer a fungible token from one account to another',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'token',
@@ -266,10 +281,63 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
+      name: 'airdrop-ft',
+      summary: 'Airdrop fungible tokens to multiple recipients',
+      description:
+        'Airdrop fungible tokens from one account to one or more recipients in a single transaction. If a recipient lacks auto-association slots, the transfer becomes a pending airdrop.',
+      registeredHooks: ['batchify'],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Fungible token: either a token alias or token-id',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: OptionType.REPEATABLE,
+          required: true,
+          description:
+            'Destination account(s) to airdrop to. Can be accountID or alias. Pass multiple times for multiple recipients.',
+        },
+        {
+          name: 'amount',
+          short: 'a',
+          type: OptionType.REPEATABLE,
+          required: true,
+          description:
+            'Amount(s) to airdrop. Index-mapped to --to. Default: display units (with decimals applied). Append "t" for raw base units.',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account to airdrop from. Can be {accountId}:{privateKey pair}, key reference or account alias. Defaults to operator.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenAirdropFt,
+      output: {
+        schema: TokenAirdropFtOutputSchema,
+        humanTemplate: TOKEN_AIRDROP_FT_TEMPLATE,
+      },
+    },
+    {
       name: 'transfer-nft',
       summary: 'Transfer a non-fungible token',
       description: 'Transfer one or more NFTs from one account to another',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'token',
@@ -317,10 +385,63 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
+      name: 'airdrop-nft',
+      summary: 'Airdrop NFTs to multiple recipients',
+      description:
+        'Airdrop specific NFT serial numbers from one account to one or more recipients in a single transaction. If a recipient lacks auto-association slots, the transfer becomes a pending airdrop.',
+      registeredHooks: ['batchify'],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'NFT token: either a token alias or token-id',
+        },
+        {
+          name: 'to',
+          short: 't',
+          type: OptionType.REPEATABLE,
+          required: true,
+          description:
+            'Destination account(s) to airdrop to. Can be accountID or alias. Pass multiple times for multiple recipients.',
+        },
+        {
+          name: 'serials',
+          short: 's',
+          type: OptionType.REPEATABLE,
+          required: true,
+          description:
+            'Serial numbers per recipient (comma-separated). Index-mapped to --to. Pass multiple times for multiple recipients.',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account to airdrop from. Can be {accountId}:{privateKey pair}, key reference or account alias. Defaults to operator.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenAirdropNft,
+      output: {
+        schema: TokenAirdropNftOutputSchema,
+        humanTemplate: TOKEN_AIRDROP_NFT_TEMPLATE,
+      },
+    },
+    {
       name: 'create-ft',
       summary: 'Create a new fungible token',
       description: 'Create a new fungible token with specified properties',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'token-name',
@@ -509,7 +630,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'create-nft',
       summary: 'Create a new non-fungible token',
       description: 'Create a new non-fungible token with specified properties',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'token-name',
@@ -674,7 +795,7 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'associate',
       summary: 'Associate a token with an account',
       description: 'Associate a token with an account to enable transfers',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'token',
@@ -711,7 +832,7 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Create a new fungible token from a file',
       description:
         'Create a new fungible token from a JSON file definition with advanced features',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'file',
@@ -741,7 +862,7 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Create a new NFT token from a file',
       description:
         'Create a new non-fungible token from a JSON file definition with advanced features',
-      registeredHooks: ['batchify'],
+      registeredHooks: ['batchify', 'scheduled'],
       options: [
         {
           name: 'file',
@@ -968,6 +1089,65 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenAllowanceNftOutputSchema,
         humanTemplate: TOKEN_ALLOWANCE_NFT_TEMPLATE,
+      },
+    },
+    {
+      name: 'delete-allowance-nft',
+      summary: 'Delete NFT allowance',
+      description:
+        'Delete NFT allowances. Use --serials to remove allowance for specific serial numbers (all spenders). Use --all-serials with --spender to revoke a blanket all-serials approval for a specific spender.',
+      registeredHooks: ['batchify'],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'NFT token: either a token alias or token-id',
+        },
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Owner account. Accepts any key format. Defaults to operator.',
+        },
+        {
+          name: 'serials',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Specific NFT serial numbers to delete allowance for (e.g. "1,2,3"). Removes allowance for ALL spenders. Mutually exclusive with --all-serials.',
+        },
+        {
+          name: 'all-serials',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description:
+            'Revoke the all-serials blanket approval for a specific spender. Requires --spender. Mutually exclusive with --serials.',
+        },
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Spender account (ID, EVM address, or alias). Required with --all-serials, not used with --serials.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenDeleteAllowanceNft,
+      output: {
+        schema: TokenDeleteAllowanceNftOutputSchema,
+        humanTemplate: TOKEN_DELETE_ALLOWANCE_NFT_TEMPLATE,
       },
     },
     {

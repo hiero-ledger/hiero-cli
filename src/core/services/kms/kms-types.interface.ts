@@ -125,16 +125,3 @@ export type Credential =
   | KeyReferenceCredential
   | AliasCredential
   | EvmAddressCredential;
-
-/**
- * Key resolution - explicit keypair or alias reference
- */
-export type KeyOrAccountAlias = KeypairCredential | AliasCredential;
-
-/**
- * Parsed "accountId=privateKey" format
- */
-export type AccountIdWithPrivateKey = {
-  accountId: string;
-  privateKey: string;
-};

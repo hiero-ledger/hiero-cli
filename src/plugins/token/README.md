@@ -45,6 +45,12 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── airdrop-ft/
+│   │   ├── handler.ts       # Fungible token airdrop handler (multi-recipient)
+│   │   ├── input.ts         # Input schema with REPEATABLE --to/--amount
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Command-specific type definitions
+│   │   └── index.ts         # Command exports
 │   ├── transfer-ft/
 │   │   ├── handler.ts       # Fungible token transfer handler
 │   │   ├── input.ts         # Input schema
@@ -54,6 +60,12 @@ src/plugins/token/
 │   │   ├── handler.ts       # NFT transfer handler
 │   │   ├── input.ts         # Input validation schema
 │   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts         # Command exports
+│   ├── airdrop-nft/
+│   │   ├── handler.ts       # NFT airdrop handler (multi-recipient)
+│   │   ├── input.ts         # Input schema with REPEATABLE --to/--serials
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Command-specific type definitions
 │   │   └── index.ts         # Command exports
 │   ├── associate/
 │   │   ├── handler.ts       # Token association handler
@@ -73,6 +85,12 @@ src/plugins/token/
 │   │   └── index.ts         # Command exports
 │   ├── allowance-nft/
 │   │   ├── handler.ts       # NFT allowance approval handler
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Command-specific type definitions
+│   │   └── index.ts         # Command exports
+│   ├── delete-allowance-nft/
+│   │   ├── handler.ts       # NFT allowance deletion handler
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   ├── types.ts         # Command-specific type definitions
@@ -483,6 +501,89 @@ When using `--all-serials`:
 }
 ```
 
+### Delete Token Allowance NFT
+
+Delete NFT allowances. Supports two modes:
+
+1. **Specific serials** (`--serials`): Uses `AccountAllowanceDeleteTransaction` to remove allowance for specific serial numbers from ALL spenders. No `--spender` needed.
+2. **All-serials blanket revoke** (`--all-serials`): Uses `AccountAllowanceApproveTransaction.deleteTokenNftAllowanceAllSerials` to revoke a blanket all-serials approval for a specific spender. Requires `--spender`.
+
+```bash
+# Delete allowance for specific serials (removes for ALL spenders)
+hcli token delete-allowance-nft \
+  --token mynft-alias \
+  --owner alice \
+  --serials 1,2,3
+
+# Revoke all-serials blanket approval for a specific spender
+hcli token delete-allowance-nft \
+  --token mynft-alias \
+  --owner alice \
+  --spender bob \
+  --all-serials
+
+# Owner defaults to operator
+hcli token delete-allowance-nft \
+  --token mynft-alias \
+  --serials 1,5,10
+
+# Using account-id:private-key pair for owner
+hcli token delete-allowance-nft \
+  --token 0.0.123456 \
+  --owner 0.0.111111:302e020100300506032b657004220420... \
+  --serials 1,2,3
+```
+
+**Parameters:**
+
+- `--token` / `-T`: NFT token identifier (alias or token ID) - **Required**
+  - Must be an NFT collection (type: `NON_FUNGIBLE_UNIQUE`)
+- `--owner` / `-o`: Owner account - **Optional** (defaults to operator)
+  - Accepts any key format
+  - Account ID only: `0.0.111111`
+  - Account with key: `0.0.111111:private-key`
+  - Account alias: `alice`
+- `--serials`: Specific NFT serial numbers to delete allowance for (comma-separated, e.g., `1,2,3`) - **Optional**
+  - Removes allowance for ALL spenders on these serials
+  - Mutually exclusive with `--all-serials`
+  - Cannot be used with `--spender`
+- `--all-serials`: Revoke all-serials blanket approval - **Optional**
+  - Mutually exclusive with `--serials`
+  - Requires `--spender`
+  - One of `--serials` or `--all-serials` must be specified
+- `--spender` / `-s`: Spender account (ID, EVM address, or alias) - **Conditional**
+  - Required with `--all-serials`, not used with `--serials`
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Output** (specific serials):
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "ownerAccountId": "0.0.111111",
+  "spenderAccountId": null,
+  "serials": [1, 2, 3],
+  "allSerials": false,
+  "network": "testnet"
+}
+```
+
+When using `--all-serials`:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "ownerAccountId": "0.0.111111",
+  "spenderAccountId": "0.0.222222",
+  "serials": null,
+  "allSerials": true,
+  "network": "testnet"
+}
+```
+
 ### Token Associate
 
 Associate a fungible or non-fungible token with an account to enable transfers. Use `token associate` for both FT and NFT tokens.
@@ -501,6 +602,55 @@ hcli token associate \
 # Add to batch
 hcli token associate --token mytoken-alias --account alice --batch my-batch
 ```
+
+### Token Airdrop (Fungible Token)
+
+Airdrop fungible tokens from one account to one or more recipients in a single transaction. If a recipient lacks auto-association slots or has "receiver signature required" set, the transfer becomes a **pending airdrop** (not a failure) that the recipient must claim separately.
+
+```bash
+# Airdrop to a single recipient
+hcli token airdrop-ft \
+  --token mytoken-alias \
+  --to alice \
+  --amount 100
+
+# Airdrop to multiple recipients (index-mapped: to[0]↔amount[0])
+hcli token airdrop-ft \
+  --token 0.0.123456 \
+  --to 0.0.100001 --amount 100 \
+  --to 0.0.100002 --amount 200 \
+  --to 0.0.100003 --amount 50
+
+# Using raw base units with "t" suffix
+hcli token airdrop-ft \
+  --token mytoken-alias \
+  --to alice --amount 1000t \
+  --to bob --amount 500t \
+  --from 0.0.111111:302e020100300506032b657004220420...
+
+# Add to a batch
+hcli token airdrop-ft \
+  --token mytoken-alias \
+  --to alice --amount 100 \
+  --batch my-airdrop-batch
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Fungible token identifier (alias or token ID) - **Required**
+- `--to` / `-t`: Recipient account (alias, account-id, or EVM address) — pass multiple times for multiple recipients - **Required**
+- `--amount` / `-a`: Amount to airdrop — index-mapped to `--to`. Default: display units (decimals applied). Append `t` for raw base units — pass multiple times to match `--to` - **Required**
+- `--from` / `-f`: Sender account (alias or account-id:private-key pair) - **Optional** (defaults to operator)
+- `--key-manager` / `-k`: Key manager type - **Optional** (defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Notes:**
+
+- The number of `--to` flags must equal the number of `--amount` flags (validated at input)
+- Maximum 9 recipients per transaction (Hedera limit: 10 balance adjustments including sender debit)
+- Batch support: pass `--batch <batch-name>` to queue the transaction for batch execution
+
+**Implementation:** [`src/plugins/token/commands/airdrop-ft/handler.ts`](./commands/airdrop-ft/handler.ts)
 
 ### Token Transfer (Fungible Token)
 
@@ -521,6 +671,56 @@ hcli token transfer-ft \
   --to 0.0.222222 \
   --amount 100t
 ```
+
+### Token Airdrop (Non-Fungible Token)
+
+Airdrop specific NFT serial numbers from one account to one or more recipients in a single transaction. If a recipient lacks auto-association slots, the transfer becomes a **pending airdrop** (not a failure) that the recipient must claim separately.
+
+```bash
+# Airdrop a single serial to one recipient
+hcli token airdrop-nft \
+  --token mynft-alias \
+  --to alice \
+  --serials 1
+
+# Airdrop multiple serials to one recipient
+hcli token airdrop-nft \
+  --token mynft-alias \
+  --to alice \
+  --serials 1,2,3
+
+# Airdrop to multiple recipients (index-mapped: to[0]↔serials[0])
+hcli token airdrop-nft \
+  --token 0.0.123456 \
+  --to 0.0.100001 --serials 1,2 \
+  --to 0.0.100002 --serials 3,4 \
+  --from 0.0.111111:302e020100300506032b657004220420...
+
+# Add to a batch
+hcli token airdrop-nft \
+  --token mynft-alias \
+  --to alice --serials 1 \
+  --to bob --serials 2 \
+  --batch my-airdrop-batch
+```
+
+**Parameters:**
+
+- `--token` / `-T`: NFT token identifier (alias or token ID) - **Required**
+- `--to` / `-t`: Recipient account(s) (ID, EVM address, or alias) — pass multiple times for multiple recipients - **Required**
+- `--serials` / `-s`: Serial numbers per recipient (comma-separated). Index-mapped to `--to` — pass multiple times to match `--to` - **Required**
+- `--from` / `-f`: Sender account (alias or account-id:private-key pair) - **Optional** (defaults to operator)
+- `--key-manager` / `-k`: Key manager type - **Optional** (defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Notes:**
+
+- The number of `--to` flags must equal the number of `--serials` flags (validated at input)
+- Serial numbers must be unique across all recipients (no duplicates allowed)
+- Maximum 20 NFT serial transfers per transaction (Hedera limit)
+- Batch support: pass `--batch <batch-name>` to queue the transaction for batch execution
+
+**Implementation:** [`src/plugins/token/commands/airdrop-nft/handler.ts`](./commands/airdrop-nft/handler.ts)
 
 ### Token Transfer NFT
 
@@ -838,7 +1038,7 @@ The following token commands support the `--batch` / `-B` flag via the batch plu
 - `create-ft-from-file` – `TokenCreateFtFromFileBatchStateHook` persists FT-from-file state
 - `create-nft-from-file` – `TokenCreateNftFromFileBatchStateHook` persists NFT-from-file state
 - `associate` – `TokenAssociateBatchStateHook` persists association results
-- `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft` – can be batched (no state hook; transactions execute atomically)
+- `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
 
 When you pass `--batch <batch-name>`:
 

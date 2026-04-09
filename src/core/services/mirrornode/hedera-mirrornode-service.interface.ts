@@ -11,6 +11,7 @@ import type {
   GetAccountsQueryParams,
   GetAccountsResponse,
   NftInfo,
+  ScheduleInfo,
   TokenAirdropsResponse,
   TokenBalancesResponse,
   TokenInfo,
@@ -63,6 +64,11 @@ export interface HederaMirrornodeService {
    * Get token information
    */
   getTokenInfo(tokenId: string): Promise<TokenInfo>;
+
+  /**
+   * Get schedule entity by id (Mirror Node GET /api/v1/schedules/{scheduleId})
+   */
+  getScheduled(scheduleId: string): Promise<ScheduleInfo>;
 
   /**
    * Get NFT information by token ID and serial number
