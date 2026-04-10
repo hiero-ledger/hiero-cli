@@ -57,7 +57,7 @@ export class ScheduledHook extends AbstractHook {
         : undefined,
       waitForExpiry: scheduledRecord.waitForExpiry,
     });
-    const keyRefIds = params.normalisedParams.keyRefIds;
+    const keyRefIds = [];
     if (scheduledRecord.adminKeyRefId) {
       keyRefIds.push(scheduledRecord.adminKeyRefId);
     }

@@ -4,6 +4,9 @@
  */
 
 export const ERROR_MESSAGES = {
+  credentialCannotSignNoPrivateKey: `No private key in the CLI is associated with the credential you passed.
+
+Provide a credential that resolves to an account ID and private key pair (for example 0.0.x:your-private-key). If the account already has a private key stored in this CLI, use that account ID or alias instead.`,
   noAccountAssociatedWithName:
     'No account is associated with the name provided.',
   accountMissingPrivatePublicKey:

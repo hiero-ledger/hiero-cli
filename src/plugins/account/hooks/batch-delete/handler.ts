@@ -72,5 +72,8 @@ export class AccountDeleteBatchStateHook extends AbstractHook {
       normalisedParams.accountToDelete,
       normalisedParams.network,
     );
+    accountHelper.removeKmsCredentialIfUnusedAfterAccountRemoved(
+      normalisedParams.accountToDelete,
+    );
   }
 }

@@ -1,5 +1,9 @@
 import type { CommandHandlerArgs, CoreApi } from '@/core';
-import type { CustomHandlerHookParams, HookResult } from '@/core/hooks/types';
+import type {
+  CustomHandlerHookParams,
+  HookResult,
+  PreOutputPreparationParams,
+} from '@/core/hooks/types';
 import type {
   ScheduledData,
   ScheduledDataVerifyResult,
@@ -17,12 +21,56 @@ import { buildEvmAddressFromAccountId } from '@/plugins/account/utils/account-ad
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 export class AccountCreateScheduleStateHook extends AbstractHook {
+  override async preOutputPreparationHook(
+    args: CommandHandlerArgs,
+    params: PreOutputPreparationParams<
+      unknown,
+      unknown,
+      unknown,
+      ScheduledDataVerifyResult
+    >,
+  ): Promise<HookResult> {
+    const { api } = args;
+    const scheduledData = params.executeTransactionResult.scheduledData;
+    if (!scheduledData) {
+      return Promise.resolve({
+        breakFlow: false,
+        result: {
+          message: 'missing schedule data',
+        },
+      });
+    }
+    if (scheduledData.command !== ACCOUNT_CREATE_COMMAND_NAME) {
+      return Promise.resolve({
+        breakFlow: false,
+        result: {
+          message: 'success',
+        },
+      });
+    }
+    await this.saveAccount(api, scheduledData);
+    return Promise.resolve({
+      breakFlow: false,
+      result: {
+        message: 'success',
+      },
+    });
+  }
+
   override async customHandlerHook(
     args: CommandHandlerArgs,
     params: CustomHandlerHookParams<ScheduledDataVerifyResult>,
   ): Promise<HookResult> {
     const { api } = args;
     const scheduledData = params.customHandlerParams.scheduledData;
+    if (!scheduledData) {
+      return Promise.resolve({
+        breakFlow: false,
+        result: {
+          message: 'missing schedule data',
+        },
+      });
+    }
     if (scheduledData.command !== ACCOUNT_CREATE_COMMAND_NAME) {
       return Promise.resolve({
         breakFlow: false,
@@ -67,7 +115,7 @@ export class AccountCreateScheduleStateHook extends AbstractHook {
     const scheduledMirrorTx = transactionRecord.transactions.find(
       (tx) => tx.scheduled === true,
     );
-    const accountId = scheduledMirrorTx?.entity_id ?? undefined;
+    const accountId = scheduledMirrorTx?.entity_id;
 
     if (!accountId) {
       throw new StateError(

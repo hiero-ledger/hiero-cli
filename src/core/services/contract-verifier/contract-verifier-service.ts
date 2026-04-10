@@ -8,16 +8,21 @@ import type {
 import fs from 'fs/promises';
 import path from 'path';
 
+import { CliError, NetworkError } from '@/core/errors';
 import {
+  CheckByAddressesResponseSchema,
   SmartContractVerifyApiErrorResponseSchema,
   SmartContractVerifyApiOkResponseSchema,
 } from '@/core/services/contract-verifier/schema';
+import {
+  HASHSCAN_VERIFICATION_STATUS_PERFECT,
+  HASHSCAN_VERIFY_ORIGIN,
+} from '@/core/shared/constants';
 import { parseWithSchema } from '@/core/shared/validation/parse-with-schema.zod';
 import { NetworkChainMap } from '@/core/types/shared.types';
 import { scanSolidityFiles } from '@/core/utils/solidity-file-importer';
 
 export class ContractVerifierServiceImpl implements ContractVerifierService {
-  private static readonly BASE_URL = 'https://server-verify.hashscan.io/verify';
   private networkService: NetworkService;
 
   constructor(networkService: NetworkService) {
@@ -49,7 +54,7 @@ export class ContractVerifierServiceImpl implements ContractVerifierService {
       files,
     };
     try {
-      const response = await fetch(ContractVerifierServiceImpl.BASE_URL, {
+      const response = await fetch(`${HASHSCAN_VERIFY_ORIGIN}/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -94,6 +99,49 @@ export class ContractVerifierServiceImpl implements ContractVerifierService {
         success: false,
         errorMessage: error instanceof Error ? error.message : String(error),
       };
+    }
+  }
+
+  async isVerifiedFullMatchOnRepository(
+    contractEvmAddress: string,
+  ): Promise<boolean> {
+    const network = this.networkService.getCurrentNetwork();
+    const chainId = NetworkChainMap[network];
+    const query = new URLSearchParams({
+      addresses: contractEvmAddress,
+      chainIds: String(chainId),
+    });
+    const url = `${HASHSCAN_VERIFY_ORIGIN}/check-by-addresses?${query.toString()}`;
+
+    try {
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: { Accept: 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new NetworkError(
+          `Hashscan contract verification API returned ${response.status} ${response.statusText}`,
+          { recoverable: true },
+        );
+      }
+
+      const checkByAddressResults = parseWithSchema(
+        CheckByAddressesResponseSchema,
+        await response.json(),
+        'Hashscan verify API GET /check-by-addresses',
+      );
+
+      const verificationCheck = checkByAddressResults[0];
+      return verificationCheck.status === HASHSCAN_VERIFICATION_STATUS_PERFECT;
+    } catch (error) {
+      if (error instanceof CliError) {
+        throw error;
+      }
+      throw new NetworkError(
+        'Failed to reach Hashscan contract verification API to check verification status.',
+        { cause: error, recoverable: true },
+      );
     }
   }
 }

@@ -9,6 +9,7 @@ import type { ContractImportOutput } from './output';
 
 import { NotFoundError, StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ensureEvmAddress0xPrefix } from '@/core/utils/evm-address';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
@@ -24,7 +25,6 @@ export class ImportContractCommand implements Command {
 
     const contractRef = validArgs.contract;
     const name = validArgs.name;
-    const verified = validArgs.verified;
 
     const network = api.network.getCurrentNetwork();
 
@@ -43,19 +43,23 @@ export class ImportContractCommand implements Command {
       );
     }
 
+    const normalizedContractEvmAddress =
+      ensureEvmAddress0xPrefix(contractEvmAddress);
+
     const contractKey = composeKey(network, contractId);
 
     if (contractState.hasContract(contractKey)) {
       throw new StateError(
-        `Contract with ID '${contractId}' is already saved in state`,
+        `Contract with ID '${contractId}' already exists in state`,
       );
     }
 
-    logger.info(
-      name
-        ? `Importing contract ${contractId} (name: ${name})`
-        : `Importing contract ${contractId}`,
-    );
+    const verified =
+      await api.contractVerifier.isVerifiedFullMatchOnRepository(
+        contractEvmAddress,
+      );
+
+    logger.info(`Importing contract ${contractId}`);
 
     if (name) {
       api.alias.register({
@@ -63,7 +67,7 @@ export class ImportContractCommand implements Command {
         type: AliasType.Contract,
         network,
         entityId: contractId,
-        evmAddress: contractEvmAddress,
+        evmAddress: normalizedContractEvmAddress,
         createdAt: new Date().toISOString(),
       });
     }
@@ -71,7 +75,7 @@ export class ImportContractCommand implements Command {
     const contractData: ContractData = {
       contractId,
       name,
-      contractEvmAddress,
+      contractEvmAddress: normalizedContractEvmAddress,
       adminPublicKey: contractInfo.admin_key?.key,
       network,
       memo: contractInfo.memo || undefined,
@@ -82,7 +86,7 @@ export class ImportContractCommand implements Command {
 
     const result: ContractImportOutput = {
       contractId,
-      contractEvmAddress,
+      contractEvmAddress: normalizedContractEvmAddress,
       name,
       network,
       memo: contractInfo.memo || undefined,

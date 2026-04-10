@@ -22,3 +22,14 @@ export const SmartContractVerifyApiErrorResponseSchema: z.ZodType<SmartContractV
   z.object({
     error: z.string(),
   });
+
+export const CheckByAddressesResponseItemSchema = z.object({
+  address: z.string(),
+  status: z.string(),
+  chainIds: z.array(z.string()).optional(),
+  warning: z.string().optional(),
+});
+
+export const CheckByAddressesResponseSchema = z
+  .array(CheckByAddressesResponseItemSchema)
+  .min(1);

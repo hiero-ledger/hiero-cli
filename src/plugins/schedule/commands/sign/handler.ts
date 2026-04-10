@@ -3,6 +3,7 @@
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { ScheduledTransactionData } from '@/plugins/schedule';
 import type { ScheduleSignOutput } from './output';
 import type {
   ScheduleSignBuildTransactionResult,
@@ -15,7 +16,8 @@ import { ValidationError } from '@/core';
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { ScheduleHelper } from '@/plugins/schedule';
+import { composeKey } from '@/core/utils/key-composer';
+import { ScheduleHelper, ZustandScheduleStateHelper } from '@/plugins/schedule';
 
 import { ScheduleSignInputSchema } from './input';
 
@@ -126,11 +128,59 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
       );
     }
 
+    const updatedScheduledRecord =
+      await this.syncScheduleExecutionStatusFromMirror(args, normalisedParams);
+
     return {
       transactionId: result.transactionId,
       success: result.success,
       status: result.receipt?.status?.status,
+      scheduledData: updatedScheduledRecord,
     };
+  }
+
+  /**
+   * After a successful sign tx, refresh schedule state from the mirror. If the
+   * schedule has executed (executed_timestamp set) and we have a local named
+   * entry, mark it executed — same idea as {@link ScheduleVerifyCommand}.
+   */
+  private async syncScheduleExecutionStatusFromMirror(
+    args: CommandHandlerArgs,
+    normalisedParams: ScheduleSignNormalisedParams,
+  ): Promise<ScheduledTransactionData | undefined> {
+    const { api } = args;
+    const scheduleResponse = await api.mirror.getScheduled(
+      normalisedParams.scheduleId,
+    );
+
+    if (!scheduleResponse) {
+      return undefined;
+    }
+
+    const scheduleName = normalisedParams.scheduleName;
+    if (!scheduleName) {
+      return undefined;
+    }
+
+    const stateHelper = new ZustandScheduleStateHelper(api.state, api.logger);
+    const scheduleRecord = stateHelper.getScheduled(
+      composeKey(normalisedParams.network, scheduleName),
+    );
+
+    if (!scheduleRecord || scheduleRecord.executed) {
+      return undefined;
+    }
+
+    const updatedScheduledRecord: ScheduledTransactionData = {
+      ...scheduleRecord,
+      scheduled: true,
+      executed: Boolean(scheduleResponse.executed_timestamp),
+    };
+    stateHelper.saveScheduled(
+      composeKey(normalisedParams.network, scheduleRecord.name),
+      updatedScheduledRecord,
+    );
+    return updatedScheduledRecord;
   }
 
   async outputPreparation(

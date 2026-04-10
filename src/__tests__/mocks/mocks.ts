@@ -509,6 +509,7 @@ export const makeScheduleTransactionServiceMock =
 const makeContractVerifierServiceMock = (): ContractVerifierService =>
   ({
     verifyContract: jest.fn(),
+    isVerifiedFullMatchOnRepository: jest.fn().mockResolvedValue(false),
   }) as unknown as ContractVerifierService;
 
 const makeContractCompilerServiceMock = (): ContractCompilerService =>

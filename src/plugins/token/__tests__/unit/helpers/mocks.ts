@@ -64,8 +64,11 @@ export const makeTokenServiceMock = (
   createMintTransaction: jest.fn(),
   createNftTransferTransaction: jest.fn(),
   createNftAllowanceApproveTransaction: jest.fn(),
+  createNftAllowanceDeleteTransaction: jest.fn(),
   createFungibleTokenAllowanceTransaction: jest.fn(),
   createDeleteTransaction: jest.fn(),
+  createAirdropFtTransaction: jest.fn(),
+  createAirdropNftTransaction: jest.fn(),
   ...overrides,
 });
 
@@ -436,6 +439,8 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     } as ContractCompilerService,
     contractVerifier: {
       verifyContract: jest.fn(),
+      isVerifiedFullMatchOnRepository: jest.fn().mockResolvedValue(false),
+      ...(config?.contractVerifier || {}),
     } as ContractVerifierService,
     contractQuery: {
       queryContractFunction: jest.fn(),
