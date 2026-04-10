@@ -21,6 +21,7 @@ module.exports = [
       'jest.*.config.js',
       'jest.integration.setup.js',
       'jest.integration.global.teardown.ts',
+      'jest.integration.global.setup.ts',
       'src/__tests__/mocks/plugin-mock/test',
     ],
   },

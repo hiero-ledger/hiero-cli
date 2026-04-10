@@ -28,8 +28,6 @@ import {
   BatchExecuteOutputSchema,
 } from './commands/execute';
 
-export const BATCH_NAMESPACE = 'batch-batches';
-
 export const batchPluginManifest: PluginManifest = {
   name: 'batch',
   version: '1.0.0',

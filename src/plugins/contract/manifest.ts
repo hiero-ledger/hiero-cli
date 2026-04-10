@@ -27,8 +27,6 @@ import {
   IMPORT_CONTRACT_TEMPLATE,
 } from './commands/import';
 
-export const CONTRACT_NAMESPACE = 'contract-contracts';
-
 export const contractPluginManifest: PluginManifest = {
   name: 'contract',
   version: '1.0.0',

@@ -6,7 +6,7 @@ import type { Logger, StateService } from '@/core';
 
 import { ValidationError } from '@/core/errors';
 
-import { TOPIC_NAMESPACE } from './manifest';
+import { TOPIC_NAMESPACE } from './constants';
 import { safeParseTopicData, type TopicData } from './schema';
 
 export class ZustandTopicStateHelper {
