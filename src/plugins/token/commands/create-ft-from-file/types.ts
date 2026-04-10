@@ -20,6 +20,7 @@ import type { TokenCustomFeeType } from '@/plugins/token/schema';
 
 export interface TokenCreateFtFromFileNormalizedParams extends BaseNormalizedParams {
   filename: string;
+  alias?: string;
   name: string;
   symbol: string;
   decimals: number;

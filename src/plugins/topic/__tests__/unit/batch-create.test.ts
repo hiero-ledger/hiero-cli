@@ -73,7 +73,7 @@ describe('topic plugin - batch-create hook', () => {
 
     const api = {
       receipt: { getReceipt: jest.fn() },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -106,7 +106,7 @@ describe('topic plugin - batch-create hook', () => {
 
     const api = {
       receipt: { getReceipt: jest.fn() },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -140,7 +140,7 @@ describe('topic plugin - batch-create hook', () => {
 
     const api = {
       receipt: { getReceipt: jest.fn() },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -172,7 +172,7 @@ describe('topic plugin - batch-create hook', () => {
 
     const api = {
       receipt: { getReceipt: getReceiptMock },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -206,7 +206,7 @@ describe('topic plugin - batch-create hook', () => {
 
     const api = {
       receipt: { getReceipt: getReceiptMock },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -256,7 +256,10 @@ describe('topic plugin - batch-create hook', () => {
 
     const api = {
       receipt: { getReceipt: getReceiptMock },
-      alias: { register: registerMock },
+      alias: {
+        register: registerMock,
+        exists: jest.fn().mockReturnValue(false),
+      },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -318,7 +321,7 @@ describe('topic plugin - batch-create hook', () => {
 
     const api = {
       receipt: { getReceipt: getReceiptMock },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -369,6 +372,49 @@ describe('topic plugin - batch-create hook', () => {
         name: 'topic-2-alias',
         memo: 'Topic 2',
       }),
+    );
+  });
+
+  test('warns and skips alias registration when alias already exists', async () => {
+    const logger = makeLogger();
+    const saveTopicMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
+
+    const getReceiptMock = jest.fn().mockResolvedValue({
+      topicId: '0.0.8888',
+      consensusTimestamp: '2024-01-15T12:00:00.000Z',
+    });
+
+    const api = {
+      receipt: { getReceipt: getReceiptMock },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(true) },
+      state: makeStateMock(),
+    } as unknown as Partial<CoreApi>;
+    const args = makeArgs(api, logger, {});
+
+    const params = createBatchExecuteParams({
+      name: 'batch',
+      keyRefId: 'kr',
+      executed: true,
+      success: true,
+      transactions: [
+        createTopicBatchDataItem({
+          transactionId: '0.0.8888@1234567890.000000001',
+          normalizedParams: {
+            keyManager: KeyManager.local,
+            network: SupportedNetwork.TESTNET,
+            alias: 'my-alias',
+            memo: 'Test topic',
+          },
+        }),
+      ],
+    });
+
+    await hook.preOutputPreparationHook(args, params);
+
+    expect(api.alias?.register).not.toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Alias "my-alias" already exists, skipping registration',
     );
   });
 });

@@ -90,16 +90,22 @@ export class AccountCreateBatchStateHook extends AbstractHook {
     );
 
     if (normalisedParams.alias) {
-      api.alias.register({
-        alias: normalisedParams.alias,
-        type: AliasType.Account,
-        network: normalisedParams.network,
-        entityId: innerTransactionResult.accountId,
-        evmAddress,
-        publicKey: normalisedParams.publicKey,
-        keyRefId: normalisedParams.keyRefId,
-        createdAt: innerTransactionResult.consensusTimestamp,
-      });
+      if (api.alias.exists(normalisedParams.alias, normalisedParams.network)) {
+        logger.warn(
+          `Alias "${normalisedParams.alias}" already exists, skipping registration`,
+        );
+      } else {
+        api.alias.register({
+          alias: normalisedParams.alias,
+          type: AliasType.Account,
+          network: normalisedParams.network,
+          entityId: innerTransactionResult.accountId,
+          evmAddress,
+          publicKey: normalisedParams.publicKey,
+          keyRefId: normalisedParams.keyRefId,
+          createdAt: innerTransactionResult.consensusTimestamp,
+        });
+      }
     }
 
     const accountData: AccountData = {

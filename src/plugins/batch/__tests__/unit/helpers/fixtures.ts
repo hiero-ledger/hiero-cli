@@ -43,6 +43,22 @@ export const mockBatchDataWithTransactions: BatchData = {
   ],
 };
 
+export const mockBatchDataWithAliasedTransaction: BatchData = {
+  name: BATCH_NAME,
+  keyRefId: BATCH_KEY_REF_ID,
+  executed: false,
+  success: false,
+  transactions: [
+    {
+      transactionBytes: 'abcdef123456789001',
+      order: 1,
+      command: 'account_create',
+      normalizedParams: { alias: 'my-account' },
+      keyRefIds: [],
+    },
+  ],
+};
+
 export const mockExecutedBatchData: BatchData = {
   name: BATCH_NAME,
   keyRefId: BATCH_KEY_REF_ID,
