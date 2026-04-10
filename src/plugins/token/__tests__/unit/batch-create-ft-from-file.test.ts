@@ -105,7 +105,7 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
 
     const api = {
       receipt: { getReceipt: jest.fn() },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -138,7 +138,7 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
 
     const api = {
       receipt: { getReceipt: jest.fn() },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -172,7 +172,7 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
 
     const api = {
       receipt: { getReceipt: jest.fn() },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -207,7 +207,7 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
 
     const api = {
       receipt: { getReceipt: getReceiptMock },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -242,7 +242,10 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
 
     const api = {
       receipt: { getReceipt: getReceiptMock },
-      alias: { register: registerMock },
+      alias: {
+        register: registerMock,
+        exists: jest.fn().mockReturnValue(false),
+      },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -315,7 +318,10 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
 
     const api = {
       receipt: { getReceipt: getReceiptMock },
-      alias: { register: registerMock },
+      alias: {
+        register: registerMock,
+        exists: jest.fn().mockReturnValue(false),
+      },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -375,5 +381,42 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
       expect.objectContaining({ name: 'Token2', tokenId: '0.0.1002' }),
     );
     expect(registerMock).toHaveBeenCalledTimes(2);
+  });
+
+  test('warns and skips alias registration when alias already exists', async () => {
+    const logger = makeLogger();
+    const saveTokenMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({ saveToken: saveTokenMock }));
+
+    const getReceiptMock = jest.fn().mockResolvedValue({
+      tokenId: '0.0.9999',
+      consensusTimestamp: '2024-01-01T00:00:00.000Z',
+    });
+
+    const api = {
+      receipt: { getReceipt: getReceiptMock },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(true) },
+      state: makeStateMock(),
+    } as unknown as Partial<CoreApi>;
+    const args = makeArgs(api, logger, {});
+
+    const params = createBatchExecuteParams({
+      name: 'batch',
+      keyRefId: 'kr',
+      executed: true,
+      success: true,
+      transactions: [
+        createFtFromFileBatchDataItem({
+          normalizedParams: createFlatNormalizedParams({ alias: 'my-alias' }),
+        }),
+      ],
+    });
+
+    await hook.preOutputPreparationHook(args, params);
+
+    expect(api.alias?.register).not.toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Alias "my-alias" already exists, skipping registration',
+    );
   });
 });

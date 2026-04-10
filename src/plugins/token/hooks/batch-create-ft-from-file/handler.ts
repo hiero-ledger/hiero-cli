@@ -110,14 +110,20 @@ export class TokenCreateFtFromFileBatchStateHook extends AbstractHook {
     logger.info('   Token data saved to state');
 
     if (normalisedParams.alias) {
-      api.alias.register({
-        alias: normalisedParams.alias,
-        type: AliasType.Token,
-        network: normalisedParams.network,
-        entityId: innerTransactionResult.tokenId,
-        createdAt: innerTransactionResult.consensusTimestamp,
-      });
-      logger.info(`   Name registered: ${normalisedParams.alias}`);
+      if (api.alias.exists(normalisedParams.alias, normalisedParams.network)) {
+        logger.warn(
+          `Alias "${normalisedParams.alias}" already exists, skipping registration`,
+        );
+      } else {
+        api.alias.register({
+          alias: normalisedParams.alias,
+          type: AliasType.Token,
+          network: normalisedParams.network,
+          entityId: innerTransactionResult.tokenId,
+          createdAt: innerTransactionResult.consensusTimestamp,
+        });
+        logger.info(`   Name registered: ${normalisedParams.alias}`);
+      }
     }
   }
 }

@@ -94,7 +94,7 @@ describe('account plugin - batch-create hook', () => {
 
     const api = {
       receipt: { getReceipt: jest.fn() },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -127,7 +127,7 @@ describe('account plugin - batch-create hook', () => {
 
     const api = {
       receipt: { getReceipt: jest.fn() },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -161,7 +161,7 @@ describe('account plugin - batch-create hook', () => {
 
     const api = {
       receipt: { getReceipt: jest.fn() },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -193,7 +193,7 @@ describe('account plugin - batch-create hook', () => {
 
     const api = {
       receipt: { getReceipt: getReceiptMock },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -227,7 +227,7 @@ describe('account plugin - batch-create hook', () => {
 
     const api = {
       receipt: { getReceipt: getReceiptMock },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -283,7 +283,10 @@ describe('account plugin - batch-create hook', () => {
 
     const api = {
       receipt: { getReceipt: getReceiptMock },
-      alias: { register: registerMock },
+      alias: {
+        register: registerMock,
+        exists: jest.fn().mockReturnValue(false),
+      },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -350,7 +353,7 @@ describe('account plugin - batch-create hook', () => {
 
     const api = {
       receipt: { getReceipt: getReceiptMock },
-      alias: { register: jest.fn() },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
     } as unknown as Partial<CoreApi>;
     const args = makeArgs(api, logger, {});
@@ -402,6 +405,52 @@ describe('account plugin - batch-create hook', () => {
       2,
       'testnet:0.0.1002',
       expect.objectContaining({ name: 'acc2', accountId: '0.0.1002' }),
+    );
+  });
+
+  test('warns and skips alias registration when alias already exists', async () => {
+    const logger = makeLogger();
+    const saveAccountMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
+
+    const getReceiptMock = jest.fn().mockResolvedValue({
+      accountId: '0.0.8888',
+      consensusTimestamp: '2024-01-15T12:00:00.000Z',
+    });
+
+    const api = {
+      receipt: { getReceipt: getReceiptMock },
+      alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(true) },
+      state: makeStateMock(),
+    } as unknown as Partial<CoreApi>;
+    const args = makeArgs(api, logger, {});
+
+    const params = createBatchExecuteParams({
+      name: 'batch',
+      keyRefId: 'kr',
+      executed: true,
+      success: true,
+      transactions: [
+        createAccountBatchDataItem({
+          transactionId: '0.0.8888@1234567890.000000001',
+          normalizedParams: {
+            maxAutoAssociations: 0,
+            name: 'test-account',
+            alias: 'my-alias',
+            publicKey: 'pk-test',
+            keyRefId: 'kr-test',
+            keyType: KeyAlgorithm.ECDSA,
+            network: SupportedNetwork.TESTNET,
+          },
+        }),
+      ],
+    });
+
+    await hook.preOutputPreparationHook(args, params);
+
+    expect(api.alias?.register).not.toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Alias "my-alias" already exists, skipping registration',
     );
   });
 });
