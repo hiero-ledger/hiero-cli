@@ -10,20 +10,16 @@ import type {
   TokenCreateNftFromFileSignTransactionResult,
 } from './types';
 
-import { PublicKey } from '@hashgraph/sdk';
-
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { composeKey } from '@/core/utils/key-composer';
+import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
 import { buildNftTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
 import { readAndValidateNftTokenFile } from '@/plugins/token/utils/token-file-helpers';
-import {
-  resolveOptionalKey,
-  toPublicKey,
-} from '@/plugins/token/utils/token-key-resolver';
+import { resolveOptionalKey } from '@/plugins/token/utils/token-key-resolver';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenCreateNftFromFileInputSchema } from './input';
@@ -65,51 +61,66 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       false,
       ['token:treasury'],
     );
-    const adminKey = await api.keyResolver.resolveSigningKey(
+
+    const adminResolved = await api.keyResolver.resolveSigningKey(
       tokenDefinition.adminKey,
       keyManager,
       false,
       ['token:admin', `token:${tokenDefinition.name}`],
     );
-    logger.info('🔑 Resolved admin key for signing');
-    const supplyKey = await api.keyResolver.getPublicKey(
+    const adminKeys = [adminResolved];
+    logger.info('Resolved admin key for signing');
+
+    const supplyResolved = await api.keyResolver.getPublicKey(
       tokenDefinition.supplyKey,
       keyManager,
       false,
       ['token:supply'],
     );
-    logger.info('🔑 Resolved supply key');
+    const supplyKeys = [supplyResolved];
+    logger.info('Resolved supply key');
 
-    const wipeKey = await resolveOptionalKey(
+    const wipeResolved = await resolveOptionalKey(
       tokenDefinition.wipeKey,
       keyManager,
       api.keyResolver,
       'token:wipe',
     );
-    const kycKey = await resolveOptionalKey(
+    const wipeKeys = wipeResolved ? [wipeResolved] : [];
+
+    const kycResolved = await resolveOptionalKey(
       tokenDefinition.kycKey,
       keyManager,
       api.keyResolver,
       'token:kyc',
     );
-    const freezeKey = await resolveOptionalKey(
+    const kycKeys = kycResolved ? [kycResolved] : [];
+
+    const freezeResolved = await resolveOptionalKey(
       tokenDefinition.freezeKey,
       keyManager,
       api.keyResolver,
       'token:freeze',
     );
-    const pauseKey = await resolveOptionalKey(
+    const freezeKeys = freezeResolved ? [freezeResolved] : [];
+
+    const pauseResolved = await resolveOptionalKey(
       tokenDefinition.pauseKey,
       keyManager,
       api.keyResolver,
       'token:pause',
     );
-    const feeScheduleKey = await resolveOptionalKey(
+    const pauseKeys = pauseResolved ? [pauseResolved] : [];
+
+    const feeScheduleResolved = await resolveOptionalKey(
       tokenDefinition.feeScheduleKey,
       keyManager,
       api.keyResolver,
       'token:feeSchedule',
     );
+    const feeScheduleKeys = feeScheduleResolved ? [feeScheduleResolved] : [];
+
+    const keyRefIds = [...adminKeys.map((k) => k.keyRefId), treasury.keyRefId];
 
     return {
       filename: validArgs.file,
@@ -122,14 +133,21 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       associations: tokenDefinition.associations,
       network,
       treasury,
-      adminKey,
-      supplyKey,
-      wipeKey,
-      kycKey,
-      freezeKey,
-      pauseKey,
-      feeScheduleKey,
-      keyRefIds: [adminKey.keyRefId, treasury.keyRefId],
+      adminKeys,
+      adminKeyThreshold: adminKeys.length,
+      supplyKeys,
+      supplyKeyThreshold: supplyKeys.length,
+      wipeKeys,
+      wipeKeyThreshold: wipeKeys.length,
+      kycKeys,
+      kycKeyThreshold: kycKeys.length,
+      freezeKeys,
+      freezeKeyThreshold: freezeKeys.length,
+      pauseKeys,
+      pauseKeyThreshold: pauseKeys.length,
+      feeScheduleKeys,
+      feeScheduleKeyThreshold: feeScheduleKeys.length,
+      keyRefIds,
     };
   }
 
@@ -147,15 +165,34 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
       supplyType: normalisedParams.supplyType,
       maxSupplyRaw: normalisedParams.maxSupply ?? 0n,
-      adminPublicKey: PublicKey.fromString(normalisedParams.adminKey.publicKey),
-      supplyPublicKey: PublicKey.fromString(
-        normalisedParams.supplyKey.publicKey,
+      adminKey: toHederaKey(
+        normalisedParams.adminKeys,
+        normalisedParams.adminKeyThreshold,
       ),
-      wipePublicKey: toPublicKey(normalisedParams.wipeKey),
-      kycPublicKey: toPublicKey(normalisedParams.kycKey),
-      freezePublicKey: toPublicKey(normalisedParams.freezeKey),
-      pausePublicKey: toPublicKey(normalisedParams.pauseKey),
-      feeSchedulePublicKey: toPublicKey(normalisedParams.feeScheduleKey),
+      supplyKey: toHederaKey(
+        normalisedParams.supplyKeys,
+        normalisedParams.supplyKeyThreshold,
+      ),
+      wipeKey: toHederaKey(
+        normalisedParams.wipeKeys,
+        normalisedParams.wipeKeyThreshold,
+      ),
+      kycKey: toHederaKey(
+        normalisedParams.kycKeys,
+        normalisedParams.kycKeyThreshold,
+      ),
+      freezeKey: toHederaKey(
+        normalisedParams.freezeKeys,
+        normalisedParams.freezeKeyThreshold,
+      ),
+      pauseKey: toHederaKey(
+        normalisedParams.pauseKeys,
+        normalisedParams.pauseKeyThreshold,
+      ),
+      feeScheduleKey: toHederaKey(
+        normalisedParams.feeScheduleKeys,
+        normalisedParams.feeScheduleKeyThreshold,
+      ),
       memo: normalisedParams.memo,
     });
     return { transaction };
@@ -168,7 +205,7 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
   ): Promise<TokenCreateNftFromFileSignTransactionResult> {
     const { api, logger } = args;
     const signingKeys = [
-      normalisedParams.adminKey.keyRefId,
+      ...normalisedParams.adminKeys.map((k) => k.keyRefId),
       normalisedParams.treasury.keyRefId,
     ];
     logger.info(
@@ -213,8 +250,9 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     const result = executeTransactionResult.transactionResult;
     const tokenData = buildNftTokenDataFromFile(result, normalisedParams);
 
+    const tokenId = result.tokenId ?? '';
     const successfulAssociations = await processTokenAssociations(
-      result.tokenId!,
+      tokenId,
       normalisedParams.associations,
       api,
       logger,
@@ -222,7 +260,7 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
     );
     tokenData.associations = successfulAssociations;
 
-    const key = composeKey(normalisedParams.network, result.tokenId!);
+    const key = composeKey(normalisedParams.network, tokenId);
     tokenState.saveToken(key, tokenData);
     logger.info('   Token data saved to state');
 
@@ -230,7 +268,7 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       alias: normalisedParams.name,
       type: AliasType.Token,
       network: normalisedParams.network,
-      entityId: result.tokenId!,
+      entityId: tokenId,
       createdAt: result.consensusTimestamp,
     });
     logger.info(`   Name registered: ${normalisedParams.name}`);
@@ -244,12 +282,12 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       }));
 
     const outputData: TokenCreateNftFromFileOutput = {
-      tokenId: result.tokenId!,
+      tokenId,
       name: normalisedParams.name,
       symbol: normalisedParams.symbol,
       treasuryId: normalisedParams.treasury.accountId,
-      adminPublicKey: normalisedParams.adminKey.publicKey,
-      supplyPublicKey: normalisedParams.supplyKey.publicKey,
+      adminPublicKey: normalisedParams.adminKeys[0]?.publicKey ?? '',
+      supplyPublicKey: normalisedParams.supplyKeys[0]?.publicKey ?? '',
       supplyType: normalisedParams.supplyType,
       transactionId: result.transactionId,
       network: normalisedParams.network,

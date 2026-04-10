@@ -10,6 +10,7 @@ import {
   EntityIdSchema,
   ExpirationTimeSchema,
   HtsDecimalsSchema,
+  KeyRefIdArraySchema,
   KeySchema,
   MemoSchema,
   NonNegativeNumberOrBigintSchema,
@@ -94,14 +95,22 @@ export const TokenDataSchema = z.object({
 
   treasuryId: EntityIdSchema,
 
-  adminPublicKey: z.string().optional(),
-  supplyPublicKey: z.string().optional(),
-  wipePublicKey: z.string().optional(),
-  kycPublicKey: z.string().optional(),
-  freezePublicKey: z.string().optional(),
-  pausePublicKey: z.string().optional(),
-  feeSchedulePublicKey: z.string().optional(),
-  metadataPublicKey: z.string().optional(),
+  adminKeyRefIds: KeyRefIdArraySchema,
+  adminKeyThreshold: z.number().int().min(0).default(0),
+  supplyKeyRefIds: KeyRefIdArraySchema,
+  supplyKeyThreshold: z.number().int().min(0).default(0),
+  wipeKeyRefIds: KeyRefIdArraySchema,
+  wipeKeyThreshold: z.number().int().min(0).default(0),
+  kycKeyRefIds: KeyRefIdArraySchema,
+  kycKeyThreshold: z.number().int().min(0).default(0),
+  freezeKeyRefIds: KeyRefIdArraySchema,
+  freezeKeyThreshold: z.number().int().min(0).default(0),
+  pauseKeyRefIds: KeyRefIdArraySchema,
+  pauseKeyThreshold: z.number().int().min(0).default(0),
+  feeScheduleKeyRefIds: KeyRefIdArraySchema,
+  feeScheduleKeyThreshold: z.number().int().min(0).default(0),
+  metadataKeyRefIds: KeyRefIdArraySchema,
+  metadataKeyThreshold: z.number().int().min(0).default(0),
 
   decimals: z
     .number()

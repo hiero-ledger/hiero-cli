@@ -8,24 +8,20 @@ import type {
   TokenCreateNftSignTransactionResult,
 } from '@/plugins/token/commands/create-nft/types';
 
-import { PublicKey } from '@hashgraph/sdk';
-
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
+import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { TokenCreateNftInputSchema } from '@/plugins/token/commands/create-nft/input';
 import {
   buildTokenData,
   determineFiniteMaxSupply,
 } from '@/plugins/token/utils/token-data-builders';
-import {
-  resolveOptionalKey,
-  toPublicKey,
-} from '@/plugins/token/utils/token-key-resolver';
+import { resolveOptionalKeys } from '@/plugins/token/utils/token-key-resolver';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 export const TOKEN_CREATE_NFT_COMMAND_NAME = 'token_create-nft';
@@ -61,54 +57,73 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       true,
       ['token:treasury'],
     );
-    const admin = await resolveOptionalKey(
-      validArgs.adminKey,
+
+    const adminCreds = validArgs.adminKey ? [validArgs.adminKey] : [];
+    const admin = await resolveOptionalKeys(
+      adminCreds,
       keyManager,
       api.keyResolver,
       'token:admin',
     );
-    const supply = await resolveOptionalKey(
-      validArgs.supplyKey,
+
+    const supplyCreds = validArgs.supplyKey ? [validArgs.supplyKey] : [];
+    const supply = await resolveOptionalKeys(
+      supplyCreds,
       keyManager,
       api.keyResolver,
       'token:supply',
     );
-    const freeze = await resolveOptionalKey(
-      validArgs.freezeKey,
+
+    const freezeCreds = validArgs.freezeKey ? [validArgs.freezeKey] : [];
+    const freeze = await resolveOptionalKeys(
+      freezeCreds,
       keyManager,
       api.keyResolver,
       'token:freeze',
     );
-    const wipe = await resolveOptionalKey(
-      validArgs.wipeKey,
+
+    const wipeCreds = validArgs.wipeKey ? [validArgs.wipeKey] : [];
+    const wipe = await resolveOptionalKeys(
+      wipeCreds,
       keyManager,
       api.keyResolver,
       'token:wipe',
     );
-    const pause = await resolveOptionalKey(
-      validArgs.pauseKey,
-      keyManager,
-      api.keyResolver,
-      'token:pause',
-    );
-    const kyc = await resolveOptionalKey(
-      validArgs.kycKey,
+
+    const kycCreds = validArgs.kycKey ? [validArgs.kycKey] : [];
+    const kyc = await resolveOptionalKeys(
+      kycCreds,
       keyManager,
       api.keyResolver,
       'token:kyc',
     );
-    const feeSchedule = await resolveOptionalKey(
-      validArgs.feeScheduleKey,
+
+    const pauseCreds = validArgs.pauseKey ? [validArgs.pauseKey] : [];
+    const pause = await resolveOptionalKeys(
+      pauseCreds,
+      keyManager,
+      api.keyResolver,
+      'token:pause',
+    );
+
+    const feeScheduleCreds = validArgs.feeScheduleKey
+      ? [validArgs.feeScheduleKey]
+      : [];
+    const feeSchedule = await resolveOptionalKeys(
+      feeScheduleCreds,
       keyManager,
       api.keyResolver,
       'token:feeSchedule',
     );
-    const metadata = await resolveOptionalKey(
-      validArgs.metadataKey,
+
+    const metadataCreds = validArgs.metadataKey ? [validArgs.metadataKey] : [];
+    const metadata = await resolveOptionalKeys(
+      metadataCreds,
       keyManager,
       api.keyResolver,
       'token:metadata',
     );
+
     const expirationTime = validArgs.expirationTime
       ? new Date(validArgs.expirationTime)
       : undefined;
@@ -126,13 +141,10 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
     logger.info(`Creating NFT: ${validArgs.tokenName} (${validArgs.symbol})`);
     logger.debug('=== NFT PARAMS DEBUG ===');
     logger.debug(`Treasury ID: ${treasury.keyRefId}`);
-    logger.debug(`Admin Key (keyRefId): ${admin?.keyRefId}`);
-    logger.debug(`Supply Key (keyRefId): ${supply?.keyRefId}`);
+    logger.debug(`Admin Keys count: ${admin.length}`);
+    logger.debug(`Supply Keys count: ${supply.length}`);
     logger.debug(`Use Custom Treasury: ${String(Boolean(treasury))}`);
     logger.debug('=========================');
-
-    const adminKeyRefIds = admin ? [admin.keyRefId] : [];
-    const supplyKeyRefIds = supply ? [supply.keyRefId] : [];
 
     return {
       name: validArgs.tokenName,
@@ -146,20 +158,32 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       network,
       keyManager,
       treasury,
-      admin,
-      supply,
-      freeze,
-      wipe,
-      pause,
-      kyc,
-      feeSchedule,
-      metadata,
+      adminKeys: admin,
+      adminKeyThreshold: admin.length,
+      supplyKeys: supply,
+      supplyKeyThreshold: supply.length,
+      freezeKeys: freeze,
+      freezeKeyThreshold: freeze.length,
+      wipeKeys: wipe,
+      wipeKeyThreshold: wipe.length,
+      pauseKeys: pause,
+      pauseKeyThreshold: pause.length,
+      kycKeys: kyc,
+      kycKeyThreshold: kyc.length,
+      feeScheduleKeys: feeSchedule,
+      feeScheduleKeyThreshold: feeSchedule.length,
+      metadataKeys: metadata,
+      metadataKeyThreshold: metadata.length,
       finalMaxSupply,
       freezeDefault: validArgs.freezeDefault,
       autoRenewPeriod: validArgs.autoRenewPeriod,
       autoRenewAccountId: validArgs.autoRenewAccountId,
       expirationTime,
-      keyRefIds: [treasury.keyRefId, ...adminKeyRefIds, ...supplyKeyRefIds],
+      keyRefIds: [
+        treasury.keyRefId,
+        ...admin.map((k) => k.keyRefId),
+        ...supply.map((k) => k.keyRefId),
+      ],
     };
   }
 
@@ -177,17 +201,42 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       tokenType: normalisedParams.tokenType,
       supplyType: normalisedParams.supplyType,
       maxSupplyRaw: normalisedParams.finalMaxSupply,
-      adminPublicKey: normalisedParams.admin
-        ? PublicKey.fromString(normalisedParams.admin.publicKey)
-        : undefined,
-      supplyPublicKey: toPublicKey(normalisedParams.supply),
-      freezePublicKey: toPublicKey(normalisedParams.freeze),
-      wipePublicKey: toPublicKey(normalisedParams.wipe),
-      pausePublicKey: toPublicKey(normalisedParams.pause),
-      kycPublicKey: toPublicKey(normalisedParams.kyc),
-      feeSchedulePublicKey: toPublicKey(normalisedParams.feeSchedule),
-      metadataPublicKey: toPublicKey(normalisedParams.metadata),
-      freezeDefault: normalisedParams.freezeDefault,
+      adminKey: toHederaKey(
+        normalisedParams.adminKeys,
+        normalisedParams.adminKeyThreshold,
+      ),
+      supplyKey: toHederaKey(
+        normalisedParams.supplyKeys,
+        normalisedParams.supplyKeyThreshold,
+      ),
+      freezeKey: toHederaKey(
+        normalisedParams.freezeKeys,
+        normalisedParams.freezeKeyThreshold,
+      ),
+      wipeKey: toHederaKey(
+        normalisedParams.wipeKeys,
+        normalisedParams.wipeKeyThreshold,
+      ),
+      pauseKey: toHederaKey(
+        normalisedParams.pauseKeys,
+        normalisedParams.pauseKeyThreshold,
+      ),
+      kycKey: toHederaKey(
+        normalisedParams.kycKeys,
+        normalisedParams.kycKeyThreshold,
+      ),
+      feeScheduleKey: toHederaKey(
+        normalisedParams.feeScheduleKeys,
+        normalisedParams.feeScheduleKeyThreshold,
+      ),
+      metadataKey: toHederaKey(
+        normalisedParams.metadataKeys,
+        normalisedParams.metadataKeyThreshold,
+      ),
+      freezeDefault:
+        normalisedParams.freezeKeys.length > 0
+          ? normalisedParams.freezeDefault
+          : undefined,
       autoRenewPeriod: normalisedParams.autoRenewPeriod,
       autoRenewAccountId: normalisedParams.autoRenewAccountId,
       expirationTime: normalisedParams.expirationTime,
@@ -204,12 +253,12 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
     const { api } = args;
     const txSigners = [normalisedParams.treasury.keyRefId];
 
-    if (normalisedParams.admin) {
-      txSigners.push(normalisedParams.admin.keyRefId);
+    for (const key of normalisedParams.adminKeys) {
+      txSigners.push(key.keyRefId);
     }
 
-    if (normalisedParams.supply) {
-      txSigners.push(normalisedParams.supply.keyRefId);
+    for (const key of normalisedParams.supplyKeys) {
+      txSigners.push(key.keyRefId);
     }
 
     const transaction = await api.txSign.sign(
@@ -249,6 +298,8 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
     const { api, logger } = args;
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
     const result = executeTransactionResult.transactionResult;
+    const tokenId = result.tokenId ?? '';
+
     const tokenData = buildTokenData(result, {
       name: normalisedParams.name,
       symbol: normalisedParams.symbol,
@@ -257,18 +308,28 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       initialSupply: normalisedParams.initialSupply,
       tokenType: normalisedParams.tokenType,
       supplyType: normalisedParams.supplyType,
-      adminPublicKey: normalisedParams.admin?.publicKey,
-      supplyPublicKey: normalisedParams.supply?.publicKey,
-      freezePublicKey: normalisedParams.freeze?.publicKey,
-      wipePublicKey: normalisedParams.wipe?.publicKey,
-      pausePublicKey: normalisedParams.pause?.publicKey,
-      kycPublicKey: normalisedParams.kyc?.publicKey,
-      feeSchedulePublicKey: normalisedParams.feeSchedule?.publicKey,
-      metadataPublicKey: normalisedParams.metadata?.publicKey,
+      adminKeyRefIds: normalisedParams.adminKeys.map((k) => k.keyRefId),
+      adminKeyThreshold: normalisedParams.adminKeyThreshold,
+      supplyKeyRefIds: normalisedParams.supplyKeys.map((k) => k.keyRefId),
+      supplyKeyThreshold: normalisedParams.supplyKeyThreshold,
+      freezeKeyRefIds: normalisedParams.freezeKeys.map((k) => k.keyRefId),
+      freezeKeyThreshold: normalisedParams.freezeKeyThreshold,
+      wipeKeyRefIds: normalisedParams.wipeKeys.map((k) => k.keyRefId),
+      wipeKeyThreshold: normalisedParams.wipeKeyThreshold,
+      pauseKeyRefIds: normalisedParams.pauseKeys.map((k) => k.keyRefId),
+      pauseKeyThreshold: normalisedParams.pauseKeyThreshold,
+      kycKeyRefIds: normalisedParams.kycKeys.map((k) => k.keyRefId),
+      kycKeyThreshold: normalisedParams.kycKeyThreshold,
+      feeScheduleKeyRefIds: normalisedParams.feeScheduleKeys.map(
+        (k) => k.keyRefId,
+      ),
+      feeScheduleKeyThreshold: normalisedParams.feeScheduleKeyThreshold,
+      metadataKeyRefIds: normalisedParams.metadataKeys.map((k) => k.keyRefId),
+      metadataKeyThreshold: normalisedParams.metadataKeyThreshold,
       network: normalisedParams.network,
     });
 
-    const key = composeKey(normalisedParams.network, result.tokenId!);
+    const key = composeKey(normalisedParams.network, tokenId);
     tokenState.saveToken(key, tokenData);
     logger.info('   Non-fungible token data saved to state');
 
@@ -277,27 +338,27 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
         alias: normalisedParams.alias,
         type: AliasType.Token,
         network: normalisedParams.network,
-        entityId: result.tokenId!,
+        entityId: tokenId,
         createdAt: result.consensusTimestamp,
       });
       logger.info(`   Name registered: ${normalisedParams.alias}`);
     }
 
     const outputData: TokenCreateNftOutput = {
-      tokenId: result.tokenId!,
+      tokenId,
       name: normalisedParams.name,
       symbol: normalisedParams.symbol,
       treasuryId: normalisedParams.treasury.accountId,
       supplyType: normalisedParams.supplyType,
       transactionId: result.transactionId,
-      adminPublicKey: normalisedParams.admin?.publicKey,
-      supplyPublicKey: normalisedParams.supply?.publicKey,
-      freezePublicKey: normalisedParams.freeze?.publicKey,
-      wipePublicKey: normalisedParams.wipe?.publicKey,
-      pausePublicKey: normalisedParams.pause?.publicKey,
-      kycPublicKey: normalisedParams.kyc?.publicKey,
-      feeSchedulePublicKey: normalisedParams.feeSchedule?.publicKey,
-      metadataPublicKey: normalisedParams.metadata?.publicKey,
+      adminPublicKey: normalisedParams.adminKeys[0]?.publicKey,
+      supplyPublicKey: normalisedParams.supplyKeys[0]?.publicKey,
+      freezePublicKey: normalisedParams.freezeKeys[0]?.publicKey,
+      wipePublicKey: normalisedParams.wipeKeys[0]?.publicKey,
+      pausePublicKey: normalisedParams.pauseKeys[0]?.publicKey,
+      kycPublicKey: normalisedParams.kycKeys[0]?.publicKey,
+      feeSchedulePublicKey: normalisedParams.feeScheduleKeys[0]?.publicKey,
+      metadataPublicKey: normalisedParams.metadataKeys[0]?.publicKey,
       alias: normalisedParams.alias,
       network: normalisedParams.network,
     };

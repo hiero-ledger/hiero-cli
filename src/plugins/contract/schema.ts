@@ -8,6 +8,7 @@ import {
   AliasNameSchema,
   EntityIdSchema,
   EvmAddressSchema,
+  KeyRefIdArraySchema,
 } from '@/core/schemas';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
@@ -18,9 +19,7 @@ export const ContractDataSchema = z.object({
   contractEvmAddress: EvmAddressSchema.describe(
     'Deployed contract EVM address',
   ),
-  adminKeyRefIds: z
-    .array(z.string().min(1, 'Key reference ID is required'))
-    .default([]),
+  adminKeyRefIds: KeyRefIdArraySchema,
   adminKeyThreshold: z.number().int().min(0).default(0),
 
   network: z.enum(SupportedNetwork, {

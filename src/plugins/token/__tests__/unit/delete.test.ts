@@ -36,7 +36,7 @@ const makeArgs = (
 ): CommandHandlerArgs => ({
   args: {
     token: '0.0.123456',
-    adminKey: 'ed25519:private:a'.padEnd(80, 'a'),
+    adminKey: ['ed25519:private:a'.padEnd(80, 'a')],
     keyManager: undefined,
     stateOnly: false,
     ...argsOverrides,
@@ -180,14 +180,21 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
     });
 
     test('throws ValidationError when admin key mismatches', async () => {
+      const onChainKey = 'a'.repeat(64);
+      const providedKey = 'b'.repeat(64);
       const { api } = makeDeleteSuccessMocks({
-        tokenInfo: { admin_key: { key: 'different-key' } },
-        adminKeyPublicKey: 'admin-public-key',
+        adminKeyPublicKey: providedKey,
+      });
+      (api.mirror.getTokenInfo as jest.Mock).mockResolvedValue({
+        admin_key: { _type: 'ED25519', key: onChainKey },
+        name: 'TestToken',
       });
       const args = makeArgs(api);
 
       await expect(tokenDelete(args)).rejects.toThrow(ValidationError);
-      await expect(tokenDelete(args)).rejects.toThrow('Admin key mismatch');
+      await expect(tokenDelete(args)).rejects.toThrow(
+        'matching credential(s) were provided',
+      );
     });
 
     test('throws TransactionError when transaction fails', async () => {
@@ -323,7 +330,7 @@ describe('tokenDelete - state-only (stateOnly=true)', () => {
   test('throws ValidationError when --state-only and --admin-key used together', async () => {
     const { api } = makeDeleteApiMocks({ entityId: '0.0.123456' });
     const args = makeStateOnlyArgs(api, {
-      adminKey: 'ed25519:private:a'.padEnd(80, 'a'),
+      adminKey: ['ed25519:private:a'.padEnd(80, 'a')],
     });
 
     await expect(tokenDelete(args)).rejects.toThrow(ValidationError);

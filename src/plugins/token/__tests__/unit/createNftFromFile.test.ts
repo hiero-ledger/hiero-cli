@@ -450,8 +450,8 @@ describe('tokenCreateNftFromFileHandler', () => {
         initialSupplyRaw: 0n,
         supplyType: infiniteSupplyNftFile.supplyType.toUpperCase(),
         maxSupplyRaw: 0n,
-        adminPublicKey: expect.any(Object),
-        supplyPublicKey: expect.any(Object),
+        adminKey: expect.any(Object),
+        supplyKey: expect.any(Object),
         memo: 'Test NFT with infinite supply',
         tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
       });
@@ -1009,9 +1009,9 @@ describe('tokenCreateNftFromFileHandler', () => {
         'Creating NFT token from file: test',
       );
       expect(logger.info).toHaveBeenCalledWith(
-        '🔑 Resolved admin key for signing',
+        'Resolved admin key for signing',
       );
-      expect(logger.info).toHaveBeenCalledWith('🔑 Resolved supply key');
+      expect(logger.info).toHaveBeenCalledWith('Resolved supply key');
     });
   });
 });

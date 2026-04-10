@@ -5,7 +5,24 @@ import type {
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
 
-import { PublicKey } from '@hashgraph/sdk';
+export async function resolveOptionalKeys(
+  credentials: Credential[],
+  keyManager: KeyManager,
+  keyResolver: KeyResolverService,
+  tag: string,
+): Promise<ResolvedPublicKey[]> {
+  const results: ResolvedPublicKey[] = [];
+  for (const credential of credentials) {
+    const resolved = await keyResolver.resolveSigningKey(
+      credential,
+      keyManager,
+      false,
+      [tag],
+    );
+    results.push(resolved);
+  }
+  return results;
+}
 
 export async function resolveOptionalKey(
   credential: Credential | undefined,
@@ -16,12 +33,5 @@ export async function resolveOptionalKey(
   if (!credential) {
     return undefined;
   }
-
   return keyResolver.getPublicKey(credential, keyManager, false, [tag]);
-}
-
-export function toPublicKey(
-  key: ResolvedPublicKey | undefined,
-): PublicKey | undefined {
-  return key ? PublicKey.fromString(key.publicKey) : undefined;
 }
