@@ -30,6 +30,7 @@ import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-hel
 import {
   ADMIN_KEY_REF,
   ADMIN_PUBLIC_KEY,
+  COMMAND_SIGNER_KEY_REF,
   DELETE_SUCCESS_TX_ID,
   ON_CHAIN_SCHEDULE_ID,
   PAYER_KEY_REF_ID,
@@ -203,14 +204,14 @@ describe('schedule plugin — scheduled hook', () => {
       txExecute,
     };
 
-    const keyRefIds = ['kr_command_signer'];
+    const innerKeyRefIds = [COMMAND_SIGNER_KEY_REF];
     const args = makeArgs(api, logger, { scheduled: SCHEDULE_NAME });
     const params: PreSignTransactionParams<
       ScheduledNormalizedParams,
       BaseBuildTransactionResult
     > = {
       normalisedParams: {
-        keyRefIds: [...keyRefIds],
+        keyRefIds: innerKeyRefIds,
       } as ScheduledNormalizedParams,
       buildTransactionResult: {
         transaction: innerTx,
@@ -232,7 +233,6 @@ describe('schedule plugin — scheduled hook', () => {
       waitForExpiry: true,
     });
     expect(txSign.sign).toHaveBeenCalledWith({ scheduleOuter: true }, [
-      'kr_command_signer',
       ADMIN_KEY_REF,
       PAYER_KEY_REF_ID,
     ]);

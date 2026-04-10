@@ -4,7 +4,7 @@ import type { AbstractHook } from '@/core/hooks/abstract-hook';
 import type { CustomHandlerHookParams, HookResult } from '@/core/hooks/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { ScheduledTransactionData } from '@/plugins/schedule';
-import type { ScheduleVerifyTransactionResult } from '@/plugins/schedule/commands/verify/types';
+import type { ScheduleVerifyResult } from '@/plugins/schedule/commands/verify/types';
 import type { ScheduleVerifyOutput } from './output';
 
 import { KeyAlgorithm, NotFoundError } from '@/core';
@@ -146,7 +146,7 @@ export class ScheduleVerifyCommand implements Command {
 
   async customHandlerHook(
     args: CommandHandlerArgs,
-    params: CustomHandlerHookParams<ScheduleVerifyTransactionResult>,
+    params: CustomHandlerHookParams<ScheduleVerifyResult>,
   ): Promise<HookResult> {
     return await this.executeHooks(
       async (h) =>

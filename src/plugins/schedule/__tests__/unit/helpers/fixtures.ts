@@ -16,6 +16,8 @@ export const DELETE_SUCCESS_TX_ID = '0.0.100000@1700000000.123456789';
 export const SIGN_SUCCESS_TX_ID = DELETE_SUCCESS_TX_ID;
 
 export const SIGNER_KEY_REF = 'kr_signertest123';
+/** Inner command signer key ref (scheduled-hook `normalisedParams.keyRefIds`). */
+export const COMMAND_SIGNER_KEY_REF = 'kr_command_signer';
 /** Inner tx id stored on schedule records (verify hooks). */
 export const INNER_TRANSACTION_ID = '0.0.100000@1700000000.987654321';
 /** Mirror Node `seconds.nanoseconds` timestamp string. */

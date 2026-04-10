@@ -1,5 +1,9 @@
 import type { CommandHandlerArgs, CoreApi } from '@/core';
-import type { CustomHandlerHookParams, HookResult } from '@/core/hooks/types';
+import type {
+  CustomHandlerHookParams,
+  HookResult,
+  PreOutputPreparationParams,
+} from '@/core/hooks/types';
 import type { AccountData } from '@/plugins/account/schema';
 
 import { formatTransactionIdToDashFormat, StateError } from '@/core';
@@ -10,18 +14,63 @@ import {
   type ScheduledData,
   type ScheduledDataVerifyResult,
 } from '@/core/types/shared.types';
+import { ACCOUNT_CREATE_COMMAND_NAME } from '@/plugins/account/commands/create';
 import { ACCOUNT_UPDATE_COMMAND_NAME } from '@/plugins/account/commands/update/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 import { AccountUpdateNormalisedParamsSchema } from './types';
 
 export class AccountUpdateScheduleStateHook extends AbstractHook {
+  override async preOutputPreparationHook(
+    args: CommandHandlerArgs,
+    params: PreOutputPreparationParams<
+      unknown,
+      unknown,
+      unknown,
+      ScheduledDataVerifyResult
+    >,
+  ): Promise<HookResult> {
+    const { api } = args;
+    const scheduledData = params.executeTransactionResult.scheduledData;
+    if (!scheduledData) {
+      return Promise.resolve({
+        breakFlow: false,
+        result: {
+          message: 'missing schedule data',
+        },
+      });
+    }
+    if (scheduledData.command !== ACCOUNT_CREATE_COMMAND_NAME) {
+      return Promise.resolve({
+        breakFlow: false,
+        result: {
+          message: 'success',
+        },
+      });
+    }
+    await this.saveUpdatedAccount(api, scheduledData);
+    return Promise.resolve({
+      breakFlow: false,
+      result: {
+        message: 'success',
+      },
+    });
+  }
+
   override async customHandlerHook(
     args: CommandHandlerArgs,
     params: CustomHandlerHookParams<ScheduledDataVerifyResult>,
   ): Promise<HookResult> {
     const { api } = args;
     const scheduledData = params.customHandlerParams.scheduledData;
+    if (!scheduledData) {
+      return Promise.resolve({
+        breakFlow: false,
+        result: {
+          message: 'missing schedule data',
+        },
+      });
+    }
     if (scheduledData.command !== ACCOUNT_UPDATE_COMMAND_NAME) {
       return Promise.resolve({
         breakFlow: false,
