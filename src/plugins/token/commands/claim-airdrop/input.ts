@@ -11,15 +11,13 @@ export const TokenClaimAirdropInputSchema = z.object({
     'Receiver account ID or alias to claim airdrops for',
   ),
   index: z
-    .array(z.union([z.string(), z.number()]))
-    .transform((arr) =>
-      arr.flatMap((v) =>
-        typeof v === 'string'
-          ? v.split(',').map((s) => parseInt(s.trim(), 10))
-          : [v],
-      ),
+    .preprocess(
+      (val) => {
+        const str = typeof val === 'string' ? val : '';
+        return str.split(',').map((s) => parseInt(s.trim(), 10));
+      },
+      z.array(z.number().int().min(1)).min(1),
     )
-    .pipe(z.array(z.number().int().min(1)).min(1))
     .describe('1-based index(es) from the pending-airdrops list'),
   from: KeySchema.optional(),
   keyManager: KeyManagerTypeSchema.optional(),

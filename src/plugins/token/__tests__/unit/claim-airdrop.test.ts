@@ -91,7 +91,7 @@ const makeArgs = (
 ): CommandHandlerArgs => ({
   args: {
     account: 'treasury-account',
-    index: [1],
+    index: '1',
     ...args,
   },
   api,
@@ -132,7 +132,7 @@ describe('tokenClaimAirdrop', () => {
     test('should claim a single FT airdrop by index', async () => {
       const { api } = makeSuccessApiMocks([makeFtAirdropItem()]);
 
-      const result = await tokenClaimAirdrop(makeArgs(api, { index: [1] }));
+      const result = await tokenClaimAirdrop(makeArgs(api, { index: '1' }));
 
       const output = assertOutput(result.result, TokenClaimAirdropOutputSchema);
       expect(output.receiverAccountId).toBe(TREASURY_ACCOUNT_ENTITY_ID);
@@ -148,7 +148,7 @@ describe('tokenClaimAirdrop', () => {
     test('should claim a single NFT airdrop by index', async () => {
       const { api } = makeSuccessApiMocks([makeNftAirdropItem()]);
 
-      const result = await tokenClaimAirdrop(makeArgs(api, { index: [1] }));
+      const result = await tokenClaimAirdrop(makeArgs(api, { index: '1' }));
 
       const output = assertOutput(result.result, TokenClaimAirdropOutputSchema);
       expect(output.claimed).toHaveLength(1);
@@ -164,7 +164,7 @@ describe('tokenClaimAirdrop', () => {
         makeNftAirdropItem(),
       ]);
 
-      const result = await tokenClaimAirdrop(makeArgs(api, { index: [1, 2] }));
+      const result = await tokenClaimAirdrop(makeArgs(api, { index: '1,2' }));
 
       const output = assertOutput(result.result, TokenClaimAirdropOutputSchema);
       expect(output.claimed).toHaveLength(2);
@@ -178,7 +178,7 @@ describe('tokenClaimAirdrop', () => {
         makeNftAirdropItem(),
       ]);
 
-      const result = await tokenClaimAirdrop(makeArgs(api, { index: [2] }));
+      const result = await tokenClaimAirdrop(makeArgs(api, { index: '2' }));
 
       const output = assertOutput(result.result, TokenClaimAirdropOutputSchema);
       expect(output.claimed).toHaveLength(1);
@@ -188,7 +188,7 @@ describe('tokenClaimAirdrop', () => {
     test('should build claim transaction with correct items', async () => {
       const { api } = makeSuccessApiMocks([makeFtAirdropItem()]);
 
-      await tokenClaimAirdrop(makeArgs(api, { index: [1] }));
+      await tokenClaimAirdrop(makeArgs(api, { index: '1' }));
 
       expect(api.token.createClaimAirdropTransaction).toHaveBeenCalledWith({
         items: [
@@ -225,7 +225,7 @@ describe('tokenClaimAirdrop', () => {
         },
       });
 
-      await tokenClaimAirdrop(makeArgs(api, { index: [1, 2] }));
+      await tokenClaimAirdrop(makeArgs(api, { index: '1,2' }));
 
       expect(getTokenInfo).toHaveBeenCalledTimes(1);
     });
@@ -244,7 +244,7 @@ describe('tokenClaimAirdrop', () => {
       });
 
       const result = await tokenClaimAirdrop(
-        makeArgs(api, { account: 'my-account', index: [1] }),
+        makeArgs(api, { account: 'my-account', index: '1' }),
       );
 
       const output = assertOutput(result.result, TokenClaimAirdropOutputSchema);
@@ -260,7 +260,7 @@ describe('tokenClaimAirdrop', () => {
       const { api } = makeSuccessApiMocks([makeFtAirdropItem()]);
 
       await expect(
-        tokenClaimAirdrop(makeArgs(api, { index: [5] })),
+        tokenClaimAirdrop(makeArgs(api, { index: '5' })),
       ).rejects.toThrow(ValidationError);
     });
 
@@ -269,9 +269,7 @@ describe('tokenClaimAirdrop', () => {
       const { api } = makeSuccessApiMocks(airdrops);
 
       await expect(
-        tokenClaimAirdrop(
-          makeArgs(api, { index: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] }),
-        ),
+        tokenClaimAirdrop(makeArgs(api, { index: '1,2,3,4,5,6,7,8,9,10,11' })),
       ).rejects.toThrow(ValidationError);
     });
 
@@ -282,7 +280,7 @@ describe('tokenClaimAirdrop', () => {
       );
 
       await expect(
-        tokenClaimAirdrop(makeArgs(api, { index: [1] })),
+        tokenClaimAirdrop(makeArgs(api, { index: '1' })),
       ).rejects.toThrow(TransactionError);
     });
 

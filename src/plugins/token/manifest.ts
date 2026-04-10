@@ -1042,10 +1042,10 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'index',
           short: 'i',
-          type: OptionType.REPEATABLE,
+          type: OptionType.STRING,
           required: true,
           description:
-            '1-based index from the pending-airdrops list. Pass multiple times to claim multiple airdrops.',
+            '1-based index(es) from the pending-airdrops list. Use comma-separated values to claim multiple: --index 1,2,3',
         },
         {
           name: 'from',
