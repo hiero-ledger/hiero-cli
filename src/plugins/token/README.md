@@ -908,6 +908,53 @@ hcli token cancel-airdrop \
 
 **Implementation:** [`src/plugins/token/commands/cancel-airdrop/handler.ts`](./commands/cancel-airdrop/handler.ts)
 
+### Token Reject Airdrop
+
+Reject one or more pending token airdrops (FT or NFT). Rejected tokens are returned to the treasury. Custom fees are waived. Use `pending-airdrops` first to list available airdrops and their indices.
+
+```bash
+# List pending airdrops
+hcli token pending-airdrops --account my-wallet
+
+# Reject first pending airdrop
+hcli token reject-airdrop \
+  --account my-wallet \
+  --index 1
+
+# Reject multiple airdrops (FT and/or NFT)
+hcli token reject-airdrop \
+  --account my-wallet \
+  --index 1,2,3
+
+# With explicit signing key
+hcli token reject-airdrop \
+  --account my-wallet \
+  --index 1 \
+  --from 0.0.5678:302e020100300506032b657004220420...
+
+# Batch mode
+hcli token reject-airdrop \
+  --account my-wallet \
+  --index 1 \
+  --batch my-batch
+```
+
+**Parameters:**
+
+- `--account` / `-a`: Receiver account ID or alias - **Required**
+- `--index` / `-i`: 1-based index(es) from `pending-airdrops` list. Comma-separated for multiple: `1,2,3` - **Required**
+- `--from` / `-f`: Signing account credential (alias or account-id:private-key pair) - **Optional** (defaults to operator)
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Notes:**
+
+- Maximum 10 airdrops per transaction (Hedera limit)
+- Supports both fungible tokens (FT) and NFTs in a single transaction
+- Batch support: pass `--batch <batch-name>` to queue the transaction for batch execution
+
+**Implementation:** [`src/plugins/token/commands/reject-airdrop/handler.ts`](./commands/reject-airdrop/handler.ts)
+
 ### Token Transfer NFT
 
 Transfer one or more NFTs from one account to another.

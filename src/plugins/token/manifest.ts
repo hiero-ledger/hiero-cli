@@ -108,6 +108,11 @@ import {
   TokenPendingAirdropsOutputSchema,
 } from './commands/pending-airdrops';
 import {
+  TOKEN_REJECT_AIRDROP_TEMPLATE,
+  tokenRejectAirdrop,
+  TokenRejectAirdropOutputSchema,
+} from './commands/reject-airdrop';
+import {
   TOKEN_TRANSFER_FT_TEMPLATE,
   tokenTransferFt,
   TokenTransferFtOutputSchema,
@@ -1413,6 +1418,53 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenClaimAirdropOutputSchema,
         humanTemplate: TOKEN_CLAIM_AIRDROP_TEMPLATE,
+      },
+    },
+    {
+      name: 'reject-airdrop',
+      summary: 'Reject pending token airdrops',
+      description:
+        'Reject one or more pending token airdrops (FT and NFT). ' +
+        'Rejected tokens are returned to the treasury. Custom fees are waived. ' +
+        'Use pending-airdrops to list available airdrops and their indices.',
+      registeredHooks: ['batchify'],
+      options: [
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Receiver account ID or alias',
+        },
+        {
+          name: 'index',
+          short: 'i',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            '1-based index(es) from the pending-airdrops list. Comma-separated for multiple: 1,2,3',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Signing account credential. Accepts any key format. Defaults to operator.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenRejectAirdrop,
+      output: {
+        schema: TokenRejectAirdropOutputSchema,
+        humanTemplate: TOKEN_REJECT_AIRDROP_TEMPLATE,
       },
     },
     {

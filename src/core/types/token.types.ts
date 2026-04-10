@@ -211,3 +211,13 @@ export interface TokenCancelAirdropParams {
   tokenId: string;
   serial?: number;
 }
+
+export interface RejectAirdropItem {
+  tokenId: string;
+  serialNumber?: number; // undefined for FT
+}
+
+export interface TokenRejectAirdropParams {
+  ownerAccountId: string;
+  items: RejectAirdropItem[];
+}
