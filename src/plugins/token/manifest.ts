@@ -83,6 +83,11 @@ import {
   TokenMintNftOutputSchema,
 } from './commands/mint-nft';
 import {
+  TOKEN_PENDING_AIRDROPS_TEMPLATE,
+  tokenPendingAirdrops,
+  TokenPendingAirdropsOutputSchema,
+} from './commands/pending-airdrops';
+import {
   TOKEN_TRANSFER_FT_TEMPLATE,
   tokenTransferFt,
   TokenTransferFtOutputSchema,
@@ -1113,6 +1118,34 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenViewOutputSchema,
         humanTemplate: TOKEN_VIEW_TEMPLATE,
+      },
+    },
+    {
+      name: 'pending-airdrops',
+      summary: 'List pending airdrops for an account',
+      description:
+        'List all pending token airdrops (FT and NFT) for a given account. Airdrops are pending when the receiver has no available auto-association slots.',
+      options: [
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Account ID to query (e.g. 0.0.1234)',
+        },
+        {
+          name: 'show-all',
+          short: 'A',
+          type: OptionType.BOOLEAN,
+          required: false,
+          default: false,
+          description: 'Fetch all pages of results instead of the first 25',
+        },
+      ],
+      handler: tokenPendingAirdrops,
+      output: {
+        schema: TokenPendingAirdropsOutputSchema,
+        humanTemplate: TOKEN_PENDING_AIRDROPS_TEMPLATE,
       },
     },
     {

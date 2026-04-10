@@ -2,9 +2,8 @@ const base = require('./jest.config');
 
 module.exports = {
   ...base,
-  // Match all unit test files
   testMatch: ['**/__tests__/unit/**/*.test.ts'],
   testPathIgnorePatterns: [...(base.testPathIgnorePatterns || [])],
-  // Optionally tighten timeout for unit tests
-  testTimeout: 360000,
+  maxWorkers: '75%',
+  forceExit: true,
 };

@@ -14,6 +14,7 @@ import { keyManagerNameSchema } from '@/core/services/kms/kms-types.interface';
 
 export const CreateNftFromFileNormalizedParamsSchema = z.object({
   filename: z.string(),
+  alias: z.string().optional(),
   name: TokenNameSchema,
   symbol: TokenSymbolSchema,
   supplyType: SupplyTypeSchema,

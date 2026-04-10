@@ -16,6 +16,7 @@ import type { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 
 export interface TokenCreateNftFromFileNormalizedParams extends BaseNormalizedParams {
   filename: string;
+  alias?: string;
   name: string;
   symbol: string;
   supplyType: SupplyType;

@@ -8,7 +8,7 @@ import type { MemoData } from './schema';
 
 import { ValidationError } from '@/core/errors';
 
-import { MEMO_NAMESPACE } from './manifest';
+import { MEMO_NAMESPACE } from './constants';
 import { safeParseMemoData } from './schema';
 
 export class ZustandMemoStateHelper {

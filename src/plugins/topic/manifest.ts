@@ -45,8 +45,6 @@ import { TopicCreateBatchStateHook } from './hooks/batch-create';
 import { TopicDeleteBatchStateHook } from './hooks/batch-delete';
 import { TopicUpdateBatchStateHook } from './hooks/batch-update';
 
-export const TOPIC_NAMESPACE = 'topic-topics';
-
 export const topicPluginManifest: PluginManifest = {
   name: 'topic',
   version: '1.0.0',

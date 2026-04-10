@@ -6,7 +6,7 @@ import type { Logger, StateService } from '@/core';
 
 import { ValidationError } from '@/core/errors';
 
-import { BATCH_NAMESPACE } from './manifest';
+import { BATCH_NAMESPACE } from './constants';
 import { type BatchData, safeParseBatchData } from './schema';
 
 export class ZustandBatchStateHelper {
