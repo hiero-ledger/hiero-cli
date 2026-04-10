@@ -211,12 +211,15 @@ export const createMockTokenAirdropsResponse = (
 ): TokenAirdropsResponse => ({
   airdrops: [
     {
-      account_id: '0.0.1234',
       amount: 1000,
+      receiver_id: '0.0.5678',
+      sender_id: '0.0.1234',
+      serial_number: null,
+      timestamp: { from: '1706745600.000000000', to: null },
       token_id: '0.0.2000',
-      timestamp: '2024-01-01T12:00:00.000Z',
     },
   ],
+  links: { next: null },
   ...overrides,
 });
 
