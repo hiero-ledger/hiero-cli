@@ -399,6 +399,38 @@ interface CommandOutputSpec {
 
 `type` is `"FUNGIBLE"` or `"NFT"`. For FT entries `amount` is present; for NFT entries `serialNumber` is present. `hasMore: true` indicates more results exist — use `--show-all` to fetch all pages. Token name and symbol are fetched from the mirror node.
 
+#### `token claim-airdrop`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "receiverAccountId": "0.0.1234",
+  "network": "testnet",
+  "claimed": [
+    {
+      "tokenId": "0.0.5678",
+      "tokenName": "FungibleToken",
+      "tokenSymbol": "FT",
+      "senderId": "0.0.9999",
+      "type": "FUNGIBLE",
+      "amount": 1000
+    },
+    {
+      "tokenId": "0.0.5679",
+      "tokenName": "MyNFT",
+      "tokenSymbol": "NFT",
+      "senderId": "0.0.9999",
+      "type": "NFT",
+      "serialNumber": 42
+    }
+  ]
+}
+```
+
+`claimed` contains the list of airdrops that were claimed in this transaction. Each entry mirrors the structure of `pending-airdrops` output. Maximum 10 items per transaction (Hedera SDK limit). FT and NFT airdrops can be mixed in a single transaction.
+
 #### `token transfer-ft`
 
 **Output**:
