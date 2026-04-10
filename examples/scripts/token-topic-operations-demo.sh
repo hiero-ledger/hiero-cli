@@ -81,7 +81,7 @@ for ((i=1; i<=ACCOUNTS_NUMBER; i++)); do
   if [[ "${HIERO_SCRIPT_CLI_MODE}" == "global" ]]; then
     run_hcli token create \
       -n "$token_name" \
-      -N "$hedera_token_name" \
+      -T "$hedera_token_name" \
       -s "TT" \
       -t "$account" \
       -i 300 \
@@ -89,7 +89,7 @@ for ((i=1; i<=ACCOUNTS_NUMBER; i++)); do
   else
     run_hcli token create-ft \
       -n "$token_name" \
-      -N "$hedera_token_name" \
+      -T "$hedera_token_name" \
       -s "TT" \
       -t "$account" \
       -i 300 \
