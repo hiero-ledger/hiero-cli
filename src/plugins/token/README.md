@@ -910,47 +910,52 @@ hcli token cancel-airdrop \
 
 ### Token Reject Airdrop
 
-Reject one or more pending token airdrops (FT or NFT). Rejected tokens are returned to the treasury. Custom fees are waived. Use `pending-airdrops` first to list available airdrops and their indices.
+Reject a token from account balance, returning it to the treasury. For NFT tokens, specify serial numbers with `--serial`. Custom fees are waived.
 
 ```bash
-# List pending airdrops
-hcli token pending-airdrops --account my-wallet
-
-# Reject first pending airdrop
+# Reject a fungible token
 hcli token reject-airdrop \
   --account my-wallet \
-  --index 1
+  --token 0.0.5867883
 
-# Reject multiple airdrops (FT and/or NFT)
+# Reject a single NFT serial
 hcli token reject-airdrop \
   --account my-wallet \
-  --index 1,2,3
+  --token 0.0.5867884 \
+  --serial 5
+
+# Reject multiple NFT serials
+hcli token reject-airdrop \
+  --account my-wallet \
+  --token 0.0.5867884 \
+  --serial 1,2,3
 
 # With explicit signing key
 hcli token reject-airdrop \
   --account my-wallet \
-  --index 1 \
+  --token 0.0.5867883 \
   --from 0.0.5678:302e020100300506032b657004220420...
 
 # Batch mode
 hcli token reject-airdrop \
   --account my-wallet \
-  --index 1 \
+  --token 0.0.5867883 \
   --batch my-batch
 ```
 
 **Parameters:**
 
-- `--account` / `-a`: Receiver account ID or alias - **Required**
-- `--index` / `-i`: 1-based index(es) from `pending-airdrops` list. Comma-separated for multiple: `1,2,3` - **Required**
+- `--account` / `-a`: Owner account ID or alias - **Required**
+- `--token` / `-t`: Token ID to reject (e.g. `0.0.5867883`) - **Required**
+- `--serial` / `-s`: NFT serial number(s). Required for NFT tokens. Comma-separated: `1,2,3` - **Optional**
 - `--from` / `-f`: Signing account credential (alias or account-id:private-key pair) - **Optional** (defaults to operator)
 - `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
   - `local` or `local_encrypted`
 
 **Notes:**
 
-- Maximum 10 airdrops per transaction (Hedera limit)
-- Supports both fungible tokens (FT) and NFTs in a single transaction
+- Maximum 10 NFT serials per transaction (Hedera limit)
+- `--serial` is required for NFT tokens and must not be provided for fungible tokens
 - Batch support: pass `--batch <batch-name>` to queue the transaction for batch execution
 
 **Implementation:** [`src/plugins/token/commands/reject-airdrop/handler.ts`](./commands/reject-airdrop/handler.ts)

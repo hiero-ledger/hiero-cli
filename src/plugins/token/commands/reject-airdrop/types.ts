@@ -5,8 +5,7 @@ import type {
   SupportedNetwork,
   TransactionResult,
 } from '@/core';
-
-export const MAX_REJECT_AIRDROPS = 10;
+import type { RejectAirdropItem } from '@/core/types/token.types';
 
 export type RejectAirdropType = 'FUNGIBLE' | 'NFT';
 
@@ -14,18 +13,16 @@ export interface RejectAirdropResolved {
   tokenId: string;
   tokenName: string;
   tokenSymbol: string;
-  senderId: string;
   type: RejectAirdropType;
-  amount?: number;
-  serialNumber?: number;
+  serialNumbers?: number[];
 }
 
 export interface TokenRejectAirdropNormalizedParams extends BaseNormalizedParams {
   network: SupportedNetwork;
   ownerAccountId: string;
   signerKeyRefId: string;
-  rejectItems: { tokenId: string; serialNumber?: number }[];
-  resolvedAirdrops: RejectAirdropResolved[];
+  rejectItems: RejectAirdropItem[];
+  resolvedAirdrop: RejectAirdropResolved;
 }
 
 export interface TokenRejectAirdropBuildTransactionResult extends BaseBuildTransactionResult {}

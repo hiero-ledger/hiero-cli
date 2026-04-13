@@ -457,28 +457,33 @@ interface CommandOutputSpec {
   "transactionId": "0.0.123@1700000000.123456789",
   "ownerAccountId": "0.0.1234",
   "network": "testnet",
-  "rejected": [
-    {
-      "tokenId": "0.0.5678",
-      "tokenName": "FungibleToken",
-      "tokenSymbol": "FT",
-      "senderId": "0.0.9999",
-      "type": "FUNGIBLE",
-      "amount": 1000
-    },
-    {
-      "tokenId": "0.0.5679",
-      "tokenName": "MyNFT",
-      "tokenSymbol": "NFT",
-      "senderId": "0.0.9999",
-      "type": "NFT",
-      "serialNumber": 42
-    }
-  ]
+  "rejected": {
+    "tokenId": "0.0.5678",
+    "tokenName": "FungibleToken",
+    "tokenSymbol": "FT",
+    "type": "FUNGIBLE"
+  }
 }
 ```
 
-`rejected` contains the airdrops that were rejected, selected by `--index` from the `pending-airdrops` list. `type` is `"FUNGIBLE"` or `"NFT"`. For FT entries `amount` is present; for NFT entries `serialNumber` is present. Maximum 10 items per transaction (Hedera limit). Token name and symbol are fetched from the mirror node.
+NFT example:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "ownerAccountId": "0.0.1234",
+  "network": "testnet",
+  "rejected": {
+    "tokenId": "0.0.5679",
+    "tokenName": "MyNFT",
+    "tokenSymbol": "NFT",
+    "type": "NFT",
+    "serialNumbers": [1, 2, 3]
+  }
+}
+```
+
+`rejected` is a single token object. `type` is `"FUNGIBLE"` or `"NFT"`. For NFT entries `serialNumbers` contains the rejected serial numbers. Token name and symbol are fetched from the mirror node. Maximum 10 NFT serials per transaction (Hedera limit).
 
 #### `token transfer-ft`
 

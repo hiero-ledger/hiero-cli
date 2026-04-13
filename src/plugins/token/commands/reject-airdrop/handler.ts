@@ -1,8 +1,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { Logger } from '@/core/services/logger/logger-service.interface';
-import type { TokenAirdropItem } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TokenRejectAirdropOutput } from './output';
 import type {
@@ -19,14 +17,15 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { EntityIdSchema } from '@/core/schemas/common-schemas';
+import { EntityIdSchema, KeySchema } from '@/core/schemas/common-schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 
 import { TokenRejectAirdropInputSchema } from './input';
-import { MAX_REJECT_AIRDROPS } from './types';
 
 export const TOKEN_REJECT_AIRDROP_COMMAND_NAME = 'token_reject-airdrop';
+
+const NFT_TOKEN_TYPE = 'NON_FUNGIBLE_UNIQUE';
 
 export class TokenRejectAirdropCommand extends BaseTransactionCommand<
   TokenRejectAirdropNormalizedParams,
@@ -42,13 +41,14 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<TokenRejectAirdropNormalizedParams> {
     const { api, logger } = args;
-    const validArgs = TokenRejectAirdropInputSchema.parse(args.args);
     const {
       account,
-      index: indices,
+      token: tokenId,
+      serial: serials,
       from,
       keyManager: keyManagerArg,
-    } = validArgs;
+    } = TokenRejectAirdropInputSchema.parse(args.args);
+
     const keyManager =
       keyManagerArg ||
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
@@ -56,59 +56,59 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
     const network = api.network.getCurrentNetwork();
     const ownerAccountId = this.resolveAccountId(account, api, network);
 
-    logger.info(`Fetching pending airdrops for ${ownerAccountId}...`);
-    const { airdrops } = await api.mirror.getPendingAirdrops(ownerAccountId);
+    logger.info(`Fetching token info for ${tokenId}...`);
+    const tokenInfo = await api.mirror.getTokenInfo(tokenId);
+    const isNft = tokenInfo.type === NFT_TOKEN_TYPE;
 
-    this.validateIndices(indices, airdrops.length);
+    if (isNft && !serials) {
+      throw new ValidationError('--serial is required for NFT tokens');
+    }
 
-    const selectedAirdrops = indices.map((i) => airdrops[i - 1]);
+    if (!isNft && serials) {
+      throw new ValidationError(
+        '--serial is not applicable for fungible tokens',
+      );
+    }
 
-    const uniqueTokenIds = [
-      ...new Set(selectedAirdrops.map((a) => a.token_id)),
-    ];
-    const tokenInfoMap = await this.fetchTokenInfoMap(
-      api,
-      logger,
-      uniqueTokenIds,
-    );
+    const rejectItems =
+      isNft && serials
+        ? serials.map((s) => ({ tokenId, serialNumber: s }))
+        : [{ tokenId, serialNumber: undefined }];
 
-    const rejectItems = selectedAirdrops.map((airdrop) => ({
-      tokenId: airdrop.token_id,
-      serialNumber:
-        airdrop.serial_number !== null ? airdrop.serial_number : undefined,
-    }));
+    const resolvedAirdrop: RejectAirdropResolved = {
+      tokenId,
+      tokenName: tokenInfo.name,
+      tokenSymbol: tokenInfo.symbol,
+      type: isNft ? 'NFT' : 'FUNGIBLE',
+      serialNumbers: serials,
+    };
 
-    const resolvedAirdrops = selectedAirdrops.map((airdrop) =>
-      this.buildResolved(airdrop, tokenInfoMap),
-    );
-
+    // When --from is not specified, sign with the owner account's key
+    const signingCredential = from ?? KeySchema.parse(account);
     const resolvedAccount = await api.keyResolver.resolveAccountCredentials(
-      from,
+      signingCredential,
       keyManager,
-      true,
+      false,
       ['token:account'],
     );
 
-    if (!resolvedAccount?.accountId || !resolvedAccount?.keyRefId) {
-      const fromDisplay = from?.rawValue ?? 'unknown';
+    if (!resolvedAccount?.keyRefId) {
+      const fromDisplay = signingCredential.rawValue;
       throw new ValidationError(
         `Failed to resolve signing account: ${fromDisplay}`,
       );
     }
 
-    const { accountId: resolvedOwnerAccountId, keyRefId: signerKeyRefId } =
-      resolvedAccount;
+    const { keyRefId: signerKeyRefId } = resolvedAccount;
 
-    logger.info(
-      `Rejecting ${rejectItems.length} airdrop(s) for ${resolvedOwnerAccountId}`,
-    );
+    logger.info(`Rejecting token ${tokenId} for ${ownerAccountId}`);
 
     return {
       network,
-      ownerAccountId: resolvedOwnerAccountId,
+      ownerAccountId,
       signerKeyRefId,
       rejectItems,
-      resolvedAirdrops,
+      resolvedAirdrop,
       keyRefIds: [signerKeyRefId],
     };
   }
@@ -157,7 +157,7 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
 
     if (!result.success) {
       throw new TransactionError(
-        `Reject airdrop transaction failed (owner: ${normalisedParams.ownerAccountId}, txId: ${result.transactionId})`,
+        `Reject token transaction failed (owner: ${normalisedParams.ownerAccountId}, txId: ${result.transactionId})`,
         false,
       );
     }
@@ -175,7 +175,7 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
     const output: TokenRejectAirdropOutput = {
       transactionId: executeTransactionResult.transactionResult.transactionId,
       ownerAccountId: normalisedParams.ownerAccountId,
-      rejected: normalisedParams.resolvedAirdrops,
+      rejected: normalisedParams.resolvedAirdrop,
       network: normalisedParams.network,
     };
 
@@ -192,7 +192,7 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
       AliasType.Account,
       network,
     );
-    if (resolved && resolved.entityId) {
+    if (resolved?.entityId) {
       return resolved.entityId;
     }
 
@@ -204,75 +204,6 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
     }
 
     return parsed.data;
-  }
-
-  private validateIndices(indices: number[], total: number): void {
-    const duplicates = indices.filter(
-      (index, i) => indices.indexOf(index) !== i,
-    );
-    if (duplicates.length > 0) {
-      throw new ValidationError(
-        `Duplicate index(es) found: ${[...new Set(duplicates)].join(', ')}.`,
-      );
-    }
-
-    if (indices.length > MAX_REJECT_AIRDROPS) {
-      throw new ValidationError(
-        `Too many airdrops selected: ${indices.length}. Maximum allowed is ${MAX_REJECT_AIRDROPS} per transaction.`,
-      );
-    }
-
-    for (const index of indices) {
-      if (index > total) {
-        throw new ValidationError(
-          `Index ${index} is out of range. There are only ${total} pending airdrop(s).`,
-        );
-      }
-    }
-  }
-
-  private async fetchTokenInfoMap(
-    api: CoreApi,
-    logger: Logger,
-    tokenIds: string[],
-  ): Promise<Map<string, { name: string; symbol: string }>> {
-    const entries = await Promise.all(
-      tokenIds.map(async (tokenId) => {
-        logger.info(`Fetching token info for ${tokenId}...`);
-        const info = await api.mirror.getTokenInfo(tokenId);
-        return [tokenId, { name: info.name, symbol: info.symbol }] as const;
-      }),
-    );
-    return new Map(entries);
-  }
-
-  private buildResolved(
-    item: TokenAirdropItem,
-    tokenInfoMap: Map<string, { name: string; symbol: string }>,
-  ): RejectAirdropResolved {
-    const tokenInfo = tokenInfoMap.get(item.token_id);
-    const tokenName = tokenInfo?.name ?? item.token_id;
-    const tokenSymbol = tokenInfo?.symbol ?? '';
-
-    if (item.serial_number !== null) {
-      return {
-        tokenId: item.token_id,
-        tokenName,
-        tokenSymbol,
-        senderId: item.sender_id,
-        type: 'NFT',
-        serialNumber: item.serial_number,
-      };
-    }
-
-    return {
-      tokenId: item.token_id,
-      tokenName,
-      tokenSymbol,
-      senderId: item.sender_id,
-      type: 'FUNGIBLE',
-      amount: item.amount ?? undefined,
-    };
   }
 }
 

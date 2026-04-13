@@ -6,20 +6,18 @@ import {
   TransactionIdSchema,
 } from '@/core/schemas/common-schemas';
 
-export const RejectedAirdropSchema = z.object({
+export const RejectedTokenSchema = z.object({
   tokenId: EntityIdSchema,
   tokenName: z.string(),
   tokenSymbol: z.string(),
-  senderId: EntityIdSchema,
   type: z.enum(['FUNGIBLE', 'NFT']),
-  amount: z.number().optional(),
-  serialNumber: z.number().optional(),
+  serialNumbers: z.array(z.number()).optional(),
 });
 
 export const TokenRejectAirdropOutputSchema = z.object({
   transactionId: TransactionIdSchema,
   ownerAccountId: EntityIdSchema,
-  rejected: z.array(RejectedAirdropSchema),
+  rejected: RejectedTokenSchema,
   network: NetworkSchema,
 });
 
@@ -28,15 +26,11 @@ export type TokenRejectAirdropOutput = z.infer<
 >;
 
 export const TOKEN_REJECT_AIRDROP_TEMPLATE = `
-✅ Airdrop(s) rejected successfully!
+✅ Token rejected successfully!
    Owner: {{hashscanLink ownerAccountId "account" network}}
-   Rejected ({{rejected.length}}):
-{{#each rejected}}
-{{#if (eq type "FUNGIBLE")}}
-   {{add1 @index}}. {{tokenName}} ({{tokenSymbol}}) [{{tokenId}}] — Amount: {{amount}}
-{{else}}
-   {{add1 @index}}. {{tokenName}} ({{tokenSymbol}}) [{{tokenId}}] — Serial: #{{serialNumber}}
+   Token: {{rejected.tokenName}} ({{rejected.tokenSymbol}}) [{{hashscanLink rejected.tokenId "token" network}}]
+{{#if (eq rejected.type "NFT")}}
+   Serials: {{#each rejected.serialNumbers}}#{{this}}{{#unless @last}}, {{/unless}}{{/each}}
 {{/if}}
-{{/each}}
    Transaction ID: {{hashscanLink transactionId "transaction" network}}
 `.trim();

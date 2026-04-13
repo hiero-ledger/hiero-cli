@@ -1422,11 +1422,11 @@ export const tokenPluginManifest: PluginManifest = {
     },
     {
       name: 'reject-airdrop',
-      summary: 'Reject pending token airdrops',
+      summary:
+        'Reject a token from account balance, returning it to the treasury',
       description:
-        'Reject one or more pending token airdrops (FT and NFT). ' +
-        'Rejected tokens are returned to the treasury. Custom fees are waived. ' +
-        'Use pending-airdrops to list available airdrops and their indices.',
+        'Reject a token from account balance, returning it to the treasury. ' +
+        'For NFT tokens, specify serial numbers with --serial.',
       registeredHooks: ['batchify'],
       options: [
         {
@@ -1434,15 +1434,22 @@ export const tokenPluginManifest: PluginManifest = {
           short: 'a',
           type: OptionType.STRING,
           required: true,
-          description: 'Receiver account ID or alias',
+          description: 'Owner account ID or alias',
         },
         {
-          name: 'index',
-          short: 'i',
+          name: 'token',
+          short: 't',
           type: OptionType.STRING,
           required: true,
+          description: 'Token ID to reject (e.g. 0.0.5867883)',
+        },
+        {
+          name: 'serial',
+          short: 's',
+          type: OptionType.STRING,
+          required: false,
           description:
-            '1-based index(es) from the pending-airdrops list. Comma-separated for multiple: 1,2,3',
+            'NFT serial number(s). Required for NFT tokens. Comma-separated: 1,2,3',
         },
         {
           name: 'from',
