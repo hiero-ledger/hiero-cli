@@ -59,13 +59,16 @@ describe('contract plugin - list command', () => {
         contractId: '0.0.1001',
         name: 'contract-alias-one',
         contractEvmAddress: '0x1111111111111111111111111111111111111111',
-        adminPublicKey: 'admin-key-1',
+        adminKeyRefIds: ['kr1'],
+        adminKeyThreshold: 1,
         network: NETWORK_TESTNET,
       },
       {
         contractId: '0.0.2002',
         name: 'ContractTwo',
         contractEvmAddress: '0x2222222222222222222222222222222222222222',
+        adminKeyRefIds: [],
+        adminKeyThreshold: 0,
         network: NETWORK_MAINNET,
       },
     ];
@@ -95,7 +98,7 @@ describe('contract plugin - list command', () => {
     expect(output.contracts[0].contractEvmAddress).toBe(
       '0x1111111111111111111111111111111111111111',
     );
-    expect(output.contracts[0].adminPublicKey).toBe('admin-key-1');
+    expect(output.contracts[0].adminKeyPresent).toBe(true);
     expect(output.contracts[0].network).toBe(NETWORK_TESTNET);
 
     expect(output.contracts[1].contractId).toBe('0.0.2002');
@@ -103,7 +106,7 @@ describe('contract plugin - list command', () => {
     expect(output.contracts[1].contractEvmAddress).toBe(
       '0x2222222222222222222222222222222222222222',
     );
-    expect(output.contracts[1].adminPublicKey).toBe(undefined);
+    expect(output.contracts[1].adminKeyPresent).toBe(false);
     expect(output.contracts[1].network).toBe(NETWORK_MAINNET);
   });
 

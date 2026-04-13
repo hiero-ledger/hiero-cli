@@ -3,12 +3,18 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { ContractData } from '@/plugins/contract/schema';
 
 import {
+  ED25519_DER_PUBLIC_KEY,
+  ED25519_HEX_PUBLIC_KEY,
   MOCK_ACCOUNT_ID,
   MOCK_CONTRACT_ID,
   MOCK_CONTRACT_ID_UNKNOWN,
   MOCK_EVM_ADDRESS,
   MOCK_TX_ID,
 } from '@/__tests__/mocks/fixtures';
+import {
+  createMockContractInfo,
+  createMockKmsRecord,
+} from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
@@ -32,11 +38,16 @@ const MockedHelper = ZustandContractStateHelper as jest.Mock;
 
 const expectedStateKey = composeKey(SupportedNetwork.TESTNET, MOCK_CONTRACT_ID);
 
+const MOCK_ADMIN_KEY_CLI = ['ed25519:private:' + 'a'.repeat(64)];
+const STORED_CONTRACT_ADMIN_REF = 'test-admin-key-ref';
+
 function makeContractData(overrides: Partial<ContractData> = {}): ContractData {
   return {
     contractId: MOCK_CONTRACT_ID,
     name: 'MyContract',
     contractEvmAddress: MOCK_EVM_ADDRESS,
+    adminKeyRefIds: [],
+    adminKeyThreshold: 0,
     network: SupportedNetwork.TESTNET,
     ...overrides,
   };
@@ -75,6 +86,12 @@ describe('contract plugin - delete command', () => {
         }),
       },
     }).api;
+
+    api.mirror.getContractInfo = jest.fn().mockResolvedValue(
+      createMockContractInfo({
+        admin_key: { _type: 'ED25519', key: ED25519_DER_PUBLIC_KEY },
+      }),
+    );
   });
 
   test('deletes contract successfully by contract ID', async () => {
@@ -105,13 +122,21 @@ describe('contract plugin - delete command', () => {
   });
 
   test('deletes contract on network successfully when stateOnly is false', async () => {
-    const adminKeyRefId = 'test-admin-key-ref';
     const contract = makeContractData({
       name: 'MyContract',
-      adminKeyRefId,
+      adminKeyRefIds: [STORED_CONTRACT_ADMIN_REF],
+      adminKeyThreshold: 1,
     });
     const alias = makeAliasServiceMock();
     alias.list.mockReturnValue([]);
+
+    api.kms.get = jest
+      .fn()
+      .mockImplementation((id: string) =>
+        id === STORED_CONTRACT_ADMIN_REF
+          ? createMockKmsRecord(id, ED25519_HEX_PUBLIC_KEY)
+          : undefined,
+      );
 
     const contractDeleteMock = jest.fn().mockReturnValue(undefined);
     MockedHelper.mockImplementation(() => ({
@@ -133,7 +158,7 @@ describe('contract plugin - delete command', () => {
       transferContractId: undefined,
     });
     expect(api.txSign.sign).toHaveBeenCalledWith(expect.anything(), [
-      adminKeyRefId,
+      STORED_CONTRACT_ADMIN_REF,
     ]);
     expect(api.txExecute.execute).toHaveBeenCalled();
 
@@ -227,10 +252,15 @@ describe('contract plugin - delete command', () => {
       .mockRejectedValue(
         new NotFoundError(`Contract ${MOCK_CONTRACT_ID_UNKNOWN} not found`),
       );
+    api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
+      keyRefId: STORED_CONTRACT_ADMIN_REF,
+      publicKey: ED25519_HEX_PUBLIC_KEY,
+    });
 
     const args = makeArgs(api, logger, {
       contract: MOCK_CONTRACT_ID_UNKNOWN,
       transferId: MOCK_ACCOUNT_ID,
+      adminKey: MOCK_ADMIN_KEY_CLI,
     });
 
     await expect(contractDelete(args)).rejects.toThrow(NotFoundError);
@@ -252,6 +282,7 @@ describe('contract plugin - delete command', () => {
     const args = makeArgs({ ...api, alias }, logger, {
       contract: 'missing-alias',
       transferId: MOCK_ACCOUNT_ID,
+      adminKey: MOCK_ADMIN_KEY_CLI,
     });
 
     await expect(contractDelete(args)).rejects.toThrow(NotFoundError);
@@ -277,13 +308,41 @@ describe('contract plugin - delete command', () => {
       .mockRejectedValue(
         new NotFoundError(`Contract ${MOCK_CONTRACT_ID} not found`),
       );
+    api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
+      keyRefId: STORED_CONTRACT_ADMIN_REF,
+      publicKey: ED25519_HEX_PUBLIC_KEY,
+    });
 
     const args = makeArgs({ ...api, alias }, logger, {
       contract: 'my-contract',
       transferId: MOCK_ACCOUNT_ID,
+      adminKey: MOCK_ADMIN_KEY_CLI,
     });
 
     await expect(contractDelete(args)).rejects.toThrow(NotFoundError);
+  });
+
+  test('throws when no admin keys in state and no --admin-key', async () => {
+    const contract = makeContractData({
+      name: 'NoAdminRefs',
+      adminKeyRefIds: [],
+    });
+    const alias = makeAliasServiceMock();
+    alias.list.mockReturnValue([]);
+    MockedHelper.mockImplementation(() => ({
+      getContract: jest.fn().mockReturnValue(contract),
+      deleteContract: jest.fn(),
+    }));
+
+    const args = makeArgs({ ...api, alias }, logger, {
+      contract: MOCK_CONTRACT_ID,
+      stateOnly: false,
+      transferId: MOCK_ACCOUNT_ID,
+    });
+
+    await expect(contractDelete(args)).rejects.toThrow(
+      'Pass --admin-key (-a) with contract admin credentials',
+    );
   });
 
   test('throws when contractDelete throws', async () => {

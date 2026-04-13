@@ -6,7 +6,7 @@ import type { Logger, StateService } from '@/core';
 
 import { ValidationError } from '@/core/errors';
 
-import { ACCOUNT_NAMESPACE } from './manifest';
+import { ACCOUNT_NAMESPACE } from './constants';
 import { type AccountData, safeParseAccountData } from './schema';
 
 export class ZustandAccountStateHelper {

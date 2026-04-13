@@ -19,6 +19,7 @@ import { TokenFileCustomFeeSchema } from '@/plugins/token/schema';
 
 export const CreateFtFromFileNormalizedParamsSchema = z.object({
   filename: z.string(),
+  alias: z.string().optional(),
   name: TokenNameSchema,
   symbol: TokenSymbolSchema,
   decimals: HtsDecimalsSchema,

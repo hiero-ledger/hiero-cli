@@ -1,7 +1,7 @@
 /**
- * Utilities for extracting public keys from mirror node topic keys.
+ * Utilities for extracting public keys from mirror node entity keys.
  *
- * Mirror node returns admin_key/submit_key in two formats: simple (ED25519, ECDSA) or
+ * Mirror node returns keys in two formats: simple (ED25519, ECDSA) or
  * ProtobufEncoded (KeyList/ThresholdKey). The SDK has no public API to parse these, so we
  * decode protobuf manually and use Key._fromProtobufKey to get SDK Key objects, then
  * extract raw public key strings for KMS lookup.
@@ -21,7 +21,6 @@ export interface ExtractedKeysResult {
 
 const MIRROR_NODE_PROTOBUF_TYPE = 'ProtobufEncoded';
 
-/** Returns raw hex string for PublicKey, null for KeyList/ContractId. */
 function keyToRawPublicKey(key: Key): string | null {
   if (key instanceof PublicKey) {
     return key.toStringRaw();
@@ -29,7 +28,6 @@ function keyToRawPublicKey(key: Key): string | null {
   return null;
 }
 
-/** Flattens KeyList (including nested) to raw public keys, preserves threshold when set. */
 function extractFromKeyList(keyList: KeyList): ExtractedKeysResult {
   const keys = keyList.toArray();
   const publicKeys: string[] = [];
@@ -46,7 +44,6 @@ function extractFromKeyList(keyList: KeyList): ExtractedKeysResult {
   return { publicKeys, threshold };
 }
 
-/** Handles single PublicKey or KeyList. SDK has no getAllPublicKeys(), so we recurse manually. */
 function extractFromKey(key: Key): ExtractedKeysResult {
   const raw = keyToRawPublicKey(key);
   if (raw) {
@@ -58,7 +55,6 @@ function extractFromKey(key: Key): ExtractedKeysResult {
   return { publicKeys: [], threshold: 0 };
 }
 
-/** Parses mirror node key (simple or ProtobufEncoded) into raw public keys for KMS matching. */
 export function extractPublicKeysFromMirrorNodeKey(
   mirrorKey: MirrorNodeKey | undefined | null,
 ): ExtractedKeysResult {
@@ -93,20 +89,21 @@ export function extractPublicKeysFromMirrorNodeKey(
 }
 
 /**
- * Derives how many distinct admin signatures are required on Hedera from mirror
- * key extraction (single key, threshold key list, or KeyList where all must sign).
+ * Derives how many distinct signatures are required on Hedera from mirror key extraction
+ * (single key, threshold key list, or KeyList where all must sign).
  */
-export function getEffectiveAdminKeyRequirement(
-  extracted: ExtractedKeysResult,
-): { adminPublicKeys: string[]; requiredSignatures: number } {
+export function getEffectiveKeyRequirement(extracted: ExtractedKeysResult): {
+  publicKeys: string[];
+  requiredSignatures: number;
+} {
   const { publicKeys, threshold } = extracted;
   if (publicKeys.length === 0) {
-    return { adminPublicKeys: [], requiredSignatures: 0 };
+    return { publicKeys: [], requiredSignatures: 0 };
   }
   if (publicKeys.length === 1) {
-    return { adminPublicKeys: publicKeys, requiredSignatures: 1 };
+    return { publicKeys, requiredSignatures: 1 };
   }
   const requiredSignatures =
     threshold > 0 ? Math.min(threshold, publicKeys.length) : publicKeys.length;
-  return { adminPublicKeys: publicKeys, requiredSignatures };
+  return { publicKeys, requiredSignatures };
 }

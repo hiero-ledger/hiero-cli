@@ -5,6 +5,8 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { ContractInfo } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { ContractData } from '@/plugins/contract/schema';
 import type { ContractDeleteInput } from './input';
@@ -24,7 +26,17 @@ import {
 } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { ensureEvmAddress0xPrefix } from '@/core/utils/evm-address';
+import {
+  extractPublicKeysFromMirrorNodeKey,
+  getEffectiveKeyRequirement,
+} from '@/core/utils/extract-public-keys';
 import { composeKey } from '@/core/utils/key-composer';
+import {
+  buildPublicKeySet,
+  resolveSigningKeyRefsFromExplicitCredentials,
+} from '@/core/utils/resolve-signing-key-refs';
 import { ContractHelper } from '@/plugins/contract/contract-helper';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
@@ -42,6 +54,17 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     super(CONTRACT_DELETE_COMMAND_NAME);
   }
 
+  private warnIgnoredContractDeleteAdminKeys(
+    logger: Logger,
+    ignoredKeyRefIds: string[],
+  ): void {
+    for (const keyRefId of ignoredKeyRefIds) {
+      logger.warn(
+        `Admin key ${keyRefId} does not match the contract admin key on the network (mirror node) and was ignored`,
+      );
+    }
+  }
+
   override async execute(args: CommandHandlerArgs): Promise<CommandResult> {
     const input = ContractDeleteInputSchema.parse(args.args);
     if (input.stateOnly) {
@@ -55,7 +78,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     parsedInput: ContractDeleteInput,
   ): Promise<CommandResult> {
     const { api } = args;
-    const resolved = await this.resolveContractFromState(args, parsedInput);
+    const resolved = this.resolveContractFromState(args, parsedInput);
     const contractHelper = new ContractHelper(api.state, api.logger, api.alias);
     const removedAliases = contractHelper.removeContractFromLocalState(
       resolved.contractToDelete,
@@ -75,39 +98,53 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     return { result: outputData };
   }
 
-  private async resolveContractFromState(
+  private resolveContractRef(
+    contractRef: string,
+    network: SupportedNetwork,
+    aliasService: AliasService,
+  ): { resolvedEntityId: string; stateKey: string } {
+    if (EntityIdSchema.safeParse(contractRef).success) {
+      return {
+        resolvedEntityId: contractRef,
+        stateKey: composeKey(network, contractRef),
+      };
+    }
+    const aliasRecord = aliasService.resolveOrThrow(
+      contractRef,
+      AliasType.Contract,
+      network,
+    );
+    if (!aliasRecord.entityId) {
+      throw new NotFoundError(
+        `Contract "${contractRef}" has no associated contract ID`,
+        { context: { alias: contractRef, network } },
+      );
+    }
+    return {
+      resolvedEntityId: aliasRecord.entityId,
+      stateKey: composeKey(network, aliasRecord.entityId),
+    };
+  }
+
+  private resolveContractFromState(
     args: CommandHandlerArgs,
     parsedInput?: ContractDeleteInput,
-  ): Promise<{
+  ): {
     contractToDelete: ContractData;
     network: SupportedNetwork;
     stateKey: string;
     contractRef: string;
-  }> {
+  } {
     const { api, logger } = args;
     const contractState = new ZustandContractStateHelper(api.state, logger);
     const validArgs = parsedInput ?? ContractDeleteInputSchema.parse(args.args);
     const contractRef = validArgs.contract;
-    const isEntityId = EntityIdSchema.safeParse(contractRef).success;
     const network = api.network.getCurrentNetwork();
-    let stateKey: string;
-
-    if (isEntityId) {
-      stateKey = composeKey(network, contractRef);
-    } else {
-      const aliasRecord = api.alias.resolveOrThrow(
-        contractRef,
-        AliasType.Contract,
-        network,
-      );
-      if (!aliasRecord.entityId) {
-        throw new NotFoundError(
-          `Contract "${contractRef}" has no associated contract ID`,
-          { context: { alias: contractRef, network } },
-        );
-      }
-      stateKey = composeKey(network, aliasRecord.entityId);
-    }
+    const { stateKey } = this.resolveContractRef(
+      contractRef,
+      network,
+      api.alias,
+    );
 
     const contractToDelete = contractState.getContract(stateKey);
     if (!contractToDelete) {
@@ -127,65 +164,31 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     network: SupportedNetwork;
     stateKey: string;
     contractRef: string;
-    chainHasAdminKey: boolean;
+    mirrorContractInfo: ContractInfo | null;
   }> {
     const { api, logger } = args;
     const contractState = new ZustandContractStateHelper(api.state, logger);
     const validArgs = parsedInput ?? ContractDeleteInputSchema.parse(args.args);
     const contractRef = validArgs.contract;
-    const isEntityId = EntityIdSchema.safeParse(contractRef).success;
     const network = api.network.getCurrentNetwork();
-    let stateKey: string;
-    let resolvedEntityId: string;
+    const { resolvedEntityId, stateKey } = this.resolveContractRef(
+      contractRef,
+      network,
+      api.alias,
+    );
 
-    if (isEntityId) {
-      resolvedEntityId = contractRef;
-      stateKey = composeKey(network, contractRef);
-    } else {
-      const aliasRecord = api.alias.resolveOrThrow(
-        contractRef,
-        AliasType.Contract,
-        network,
-      );
-      if (!aliasRecord.entityId) {
-        throw new NotFoundError(
-          `Contract "${contractRef}" has no associated contract ID`,
-          { context: { alias: contractRef, network } },
-        );
-      }
-      resolvedEntityId = aliasRecord.entityId;
-      stateKey = composeKey(network, resolvedEntityId);
-    }
-
-    const fromState = contractState.getContract(stateKey);
-    if (fromState) {
+    const storedContract = contractState.getContract(stateKey);
+    if (storedContract) {
       return {
-        contractToDelete: fromState,
+        contractToDelete: storedContract,
         network,
         stateKey,
         contractRef,
-        chainHasAdminKey: Boolean(
-          fromState.adminPublicKey || fromState.adminKeyRefId,
-        ),
+        mirrorContractInfo: null,
       };
     }
 
     const contractInfo = await api.mirror.getContractInfo(resolvedEntityId);
-
-    if (!contractInfo) {
-      throw new NotFoundError(
-        `Could not load contract '${contractRef}' from mirror`,
-      );
-    }
-
-    if (contractInfo.deleted) {
-      throw new ValidationError(
-        'This contract is already marked deleted on the network',
-        {
-          context: { contractId: contractInfo.contract_id },
-        },
-      );
-    }
 
     const contractEvmAddress = contractInfo.evm_address;
     if (!contractEvmAddress) {
@@ -196,10 +199,11 @@ export class DeleteContractCommand extends BaseTransactionCommand<
 
     const contractToDelete: ContractData = {
       contractId: contractInfo.contract_id,
-      contractEvmAddress,
+      contractEvmAddress: ensureEvmAddress0xPrefix(contractEvmAddress),
       network,
-      adminPublicKey: contractInfo.admin_key?.key,
-      adminKeyRefId: undefined,
+      adminKeyRefIds: [],
+      adminKeyThreshold: 0,
+      memo: contractInfo.memo || undefined,
     };
 
     logger.info(
@@ -211,7 +215,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       network,
       stateKey,
       contractRef,
-      chainHasAdminKey: contractInfo.admin_key != null,
+      mirrorContractInfo: contractInfo,
     };
   }
 
@@ -267,34 +271,88 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       args,
       validArgs,
     );
-    const { api } = args;
+    const { api, logger } = args;
     const keyManager =
       validArgs.keyManager ||
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
-    let adminSignerKeyRefId: string | undefined =
-      resolved.contractToDelete.adminKeyRefId;
+    const contractInfo =
+      resolved.mirrorContractInfo ??
+      (await api.mirror.getContractInfo(resolved.contractToDelete.contractId));
 
-    if (validArgs.adminKey !== undefined) {
-      const signing = await api.keyResolver.resolveSigningKey(
-        validArgs.adminKey,
-        keyManager,
-        false,
-        ['contract:admin'],
+    if (contractInfo.deleted) {
+      throw new ValidationError(
+        'This contract is already marked deleted on the network',
+        {
+          context: { contractId: contractInfo.contract_id },
+        },
       );
-      adminSignerKeyRefId = signing.keyRefId;
     }
 
-    if (!adminSignerKeyRefId) {
-      if (!resolved.chainHasAdminKey) {
+    const contractEvmAddress = contractInfo.evm_address;
+    if (!contractEvmAddress) {
+      throw new NotFoundError(
+        `Could not resolve EVM address for contract '${resolved.contractRef}' from mirror`,
+      );
+    }
+
+    const extracted = extractPublicKeysFromMirrorNodeKey(
+      contractInfo.admin_key,
+    );
+    const requirement = getEffectiveKeyRequirement(extracted);
+    if (requirement.publicKeys.length === 0) {
+      throw new ValidationError(
+        'This contract has no admin key on Hedera. On-network deletion is not possible. You can remove it from local CLI state only using --state-only flag.',
+      );
+    }
+
+    const allowedPublicKeysSet = buildPublicKeySet(requirement.publicKeys);
+
+    let signingKeyRefIds: string[];
+    let ignoredKeyRefIds: string[];
+
+    if (validArgs.adminKey.length > 0) {
+      const adminKeys = await Promise.all(
+        validArgs.adminKey.map((cred) =>
+          api.keyResolver.resolveSigningKey(cred, keyManager, false, [
+            'contract:admin',
+          ]),
+        ),
+      );
+      const resolved = resolveSigningKeyRefsFromExplicitCredentials(
+        adminKeys,
+        allowedPublicKeysSet,
+        requirement.requiredSignatures,
+      );
+      signingKeyRefIds = resolved.signingKeyRefIds;
+      ignoredKeyRefIds = resolved.ignoredKeyRefIds;
+    } else {
+      const storedRefs = resolved.contractToDelete.adminKeyRefIds;
+      if (storedRefs.length === 0) {
         throw new ValidationError(
-          'This contract has no admin key on Hedera. On-network deletion is not possible. You can remove it from local CLI state only using --state-only flag.',
+          'Pass --admin-key (-a) with contract admin credentials, or ensure this contract is in CLI state with admin key refs from create/import.',
         );
       }
-      throw new ValidationError(
-        'Pass --admin-key (-a) with the contract admin credentials so the delete can be signed on Hedera.',
+      const fromStore =
+        api.keyResolver.resolvedPublicKeysForStoredKeyRefs(storedRefs);
+      const resolvedFromStore = resolveSigningKeyRefsFromExplicitCredentials(
+        fromStore,
+        allowedPublicKeysSet,
+        requirement.requiredSignatures,
       );
+      signingKeyRefIds = resolvedFromStore.signingKeyRefIds;
+      ignoredKeyRefIds = resolvedFromStore.ignoredKeyRefIds;
     }
+
+    this.warnIgnoredContractDeleteAdminKeys(logger, ignoredKeyRefIds);
+
+    const contractToDelete: ContractData = {
+      ...resolved.contractToDelete,
+      contractEvmAddress: ensureEvmAddress0xPrefix(contractEvmAddress),
+      adminKeyRefIds: signingKeyRefIds,
+      adminKeyThreshold: requirement.requiredSignatures,
+      memo: contractInfo.memo || undefined,
+    };
 
     let transferAccountId: string | undefined;
     let transferContractId: string | undefined;
@@ -314,12 +372,12 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       );
     }
 
-    if (transferAccountId === resolved.contractToDelete.contractId) {
+    if (transferAccountId === contractToDelete.contractId) {
       throw new ValidationError(
         'Transfer account must be different from the contract being deleted',
       );
     }
-    if (transferContractId === resolved.contractToDelete.contractId) {
+    if (transferContractId === contractToDelete.contractId) {
       throw new ValidationError(
         'Transfer target contract must be different from the contract being deleted',
       );
@@ -329,10 +387,10 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       network: resolved.network,
       stateKey: resolved.stateKey,
       contractRef: resolved.contractRef,
-      contractToDelete: resolved.contractToDelete,
+      contractToDelete,
       transferAccountId,
       transferContractId,
-      adminSignerKeyRefId,
+      signingKeyRefIds,
     };
   }
 
@@ -356,7 +414,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     const { api } = args;
     const signedTransaction = await api.txSign.sign(
       buildTransactionResult.transaction,
-      [normalisedParams.adminSignerKeyRefId],
+      normalisedParams.signingKeyRefIds,
     );
     return { signedTransaction };
   }

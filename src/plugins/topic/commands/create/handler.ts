@@ -12,7 +12,7 @@ import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
-import { toHederaKey } from '@/plugins/topic/utils/keys-to-hedera-key';
+import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { TopicCreateInputSchema } from './input';

@@ -90,9 +90,9 @@ export interface TokenInfo {
   created_timestamp: string;
   deleted?: boolean | null;
   freeze_default?: boolean;
-  auto_renew_account?: string;
+  auto_renew_account?: string | null;
   auto_renew_period?: number;
-  expiry_timestamp?: number;
+  expiry_timestamp?: number | null;
   pause_status: string;
   memo: string;
 }
@@ -231,14 +231,17 @@ export interface ContractInfo {
 
 // Token Airdrops
 export interface TokenAirdropItem {
-  account_id: string;
-  amount: number;
+  amount: number | null;
+  receiver_id: string;
+  sender_id: string;
+  serial_number: number | null;
+  timestamp: { from: string; to: string | null };
   token_id: string;
-  timestamp: string;
 }
 
 export interface TokenAirdropsResponse {
   airdrops: TokenAirdropItem[];
+  links: { next: string | null };
 }
 
 // Exchange Rate

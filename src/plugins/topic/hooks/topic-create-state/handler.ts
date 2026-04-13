@@ -75,13 +75,19 @@ export class TopicCreateStateHook implements Hook<PostOutputPreparationHookParam
       innerTransactionResult.consensusTimestamp || new Date().toISOString();
 
     if (normalisedParams.alias) {
-      api.alias.register({
-        alias: normalisedParams.alias,
-        type: AliasType.Topic,
-        network: normalisedParams.network,
-        entityId: topicId,
-        createdAt,
-      });
+      if (api.alias.exists(normalisedParams.alias, normalisedParams.network)) {
+        logger.warn(
+          `Alias "${normalisedParams.alias}" already exists, skipping registration`,
+        );
+      } else {
+        api.alias.register({
+          alias: normalisedParams.alias,
+          type: AliasType.Topic,
+          network: normalisedParams.network,
+          entityId: topicId,
+          createdAt,
+        });
+      }
     }
 
     const topicData = {

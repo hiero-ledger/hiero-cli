@@ -983,6 +983,13 @@ export const KeyThresholdSchema = z
   .positive()
   .describe('M-of-N signing threshold');
 
+export const KeyThresholdOptionalSchema = KeyThresholdSchema.optional();
+
+export const OptionalDefaultEmptyKeyListSchema = z
+  .array(KeySchema)
+  .optional()
+  .default([]);
+
 export const MaxAutoAssociationsSchema = z
   .number()
   .int()

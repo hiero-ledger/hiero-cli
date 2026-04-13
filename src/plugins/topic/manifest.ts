@@ -45,8 +45,6 @@ import { TopicCreateStateHook } from './hooks/topic-create-state';
 import { TopicDeleteStateHook } from './hooks/topic-delete-state';
 import { TopicUpdateStateHook } from './hooks/topic-update-state';
 
-export const TOPIC_NAMESPACE = 'topic-topics';
-
 export const topicPluginManifest: PluginManifest = {
   name: 'topic',
   version: '1.0.0',

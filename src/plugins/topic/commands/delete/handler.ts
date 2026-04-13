@@ -19,16 +19,16 @@ import {
 import { EntityIdSchema } from '@/core/schemas';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { composeKey } from '@/core/utils/key-composer';
-import { TopicHelper } from '@/plugins/topic/topic-helper';
 import {
   extractPublicKeysFromMirrorNodeKey,
-  getEffectiveAdminKeyRequirement,
-} from '@/plugins/topic/utils/extract-public-keys';
+  getEffectiveKeyRequirement,
+} from '@/core/utils/extract-public-keys';
+import { composeKey } from '@/core/utils/key-composer';
 import {
-  buildAdminPublicKeySet,
+  buildPublicKeySet,
   resolveSigningKeyRefsFromExplicitCredentials,
-} from '@/plugins/topic/utils/topic-delete-admin-keys';
+} from '@/core/utils/resolve-signing-key-refs';
+import { TopicHelper } from '@/plugins/topic/topic-helper';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { TopicDeleteInputSchema } from './input';
@@ -183,16 +183,14 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     }
 
     const extracted = extractPublicKeysFromMirrorNodeKey(topicInfo.admin_key);
-    const requirement = getEffectiveAdminKeyRequirement(extracted);
-    if (requirement.adminPublicKeys.length === 0) {
+    const requirement = getEffectiveKeyRequirement(extracted);
+    if (requirement.publicKeys.length === 0) {
       throw new ValidationError(
         'Topic has no admin key on the network; it cannot be deleted with TopicDeleteTransaction.',
       );
     }
 
-    const adminPublicKeysSet = buildAdminPublicKeySet(
-      requirement.adminPublicKeys,
-    );
+    const allowedPublicKeysSet = buildPublicKeySet(requirement.publicKeys);
 
     const adminKeys = await Promise.all(
       validArgs.adminKey.map((cred) =>
@@ -203,7 +201,7 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     );
     const explicitFromKeys = resolveSigningKeyRefsFromExplicitCredentials(
       adminKeys,
-      adminPublicKeysSet,
+      allowedPublicKeysSet,
       requirement.requiredSignatures,
     );
     this.warnIgnoredTopicDeleteAdminKeys(

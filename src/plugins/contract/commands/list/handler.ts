@@ -28,7 +28,14 @@ export class ListContractsCommand implements Command {
     });
 
     const outputData: ContractListOutput = {
-      contracts: contracts,
+      contracts: contracts.map((c) => ({
+        contractId: c.contractId,
+        name: c.name,
+        contractEvmAddress: c.contractEvmAddress,
+        network: c.network,
+        verified: c.verified ?? false,
+        adminKeyPresent: c.adminKeyRefIds.length > 0,
+      })),
       totalCount: contracts.length,
     };
 

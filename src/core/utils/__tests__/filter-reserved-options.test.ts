@@ -13,7 +13,7 @@ describe('filterReservedOptions', () => {
         short: 'm',
       },
     ];
-    const result = filterReservedOptions(options);
+    const result = filterReservedOptions(options, []);
     expect(result.allowed).toHaveLength(1);
     expect(result.allowed[0].name).toBe('my-option');
     expect(result.filteredLong).toHaveLength(0);
@@ -26,7 +26,7 @@ describe('filterReservedOptions', () => {
       { name: 'format', type: OptionType.STRING, required: false },
       { name: 'valid', type: OptionType.STRING, required: false },
     ];
-    const result = filterReservedOptions(options);
+    const result = filterReservedOptions(options, []);
     expect(result.allowed).toHaveLength(1);
     expect(result.allowed[0].name).toBe('valid');
     expect(result.filteredLong).toContain('network');
@@ -39,7 +39,7 @@ describe('filterReservedOptions', () => {
       { name: 'my-h', short: 'h', type: OptionType.STRING, required: false },
       { name: 'valid', short: 'v', type: OptionType.STRING, required: false },
     ];
-    const result = filterReservedOptions(options);
+    const result = filterReservedOptions(options, []);
     expect(result.allowed).toHaveLength(1);
     expect(result.allowed[0].name).toBe('valid');
     expect(result.filteredShort).toContain('N');
@@ -52,7 +52,7 @@ describe('filterReservedOptions', () => {
       { name: 'format', short: 'f', type: OptionType.STRING, required: false },
       { name: 'custom', short: 'h', type: OptionType.STRING, required: false },
     ];
-    const result = filterReservedOptions(options);
+    const result = filterReservedOptions(options, []);
     expect(result.allowed).toHaveLength(0);
     expect(result.filteredLong).toContain('network');
     expect(result.filteredLong).toContain('format');
@@ -70,7 +70,7 @@ describe('filterReservedOptions', () => {
         required: false,
       }, // lowercase 'n' is not reserved, 'N' is
     ];
-    const result = filterReservedOptions(options);
+    const result = filterReservedOptions(options, []);
     expect(result.allowed).toHaveLength(1);
     expect(result.allowed[0].short).toBe('n');
     expect(result.filteredLong).toContain('NETWORK');
