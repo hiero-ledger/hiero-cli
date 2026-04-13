@@ -74,6 +74,7 @@ export const makeTokenServiceMock = (
   createAirdropNftTransaction: jest.fn(),
   createCancelAirdropTransaction: jest.fn(),
   createClaimAirdropTransaction: jest.fn(),
+  createBurnFtTransaction: jest.fn(),
   ...overrides,
 });
 
@@ -936,4 +937,65 @@ export const makeDeleteSuccessMocks = (overrides?: {
     );
 
   return { ...apiMocks, mockDeleteTransaction };
+};
+
+/**
+ * Create API mocks configured for successful burn-ft operations
+ */
+export const makeBurnFtSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    decimals?: string;
+    supply_key?: { key: string } | null;
+    total_supply?: string;
+    max_supply?: string;
+  };
+  signResult?: ReturnType<typeof makeTransactionResult>;
+  supplyKeyPublicKey?: string;
+}) => {
+  const mockBurnTransaction = { test: 'burn-transaction' };
+  const defaultSupplyKeyPublicKey =
+    overrides?.supplyKeyPublicKey ?? 'supply-public-key';
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createBurnFtTransaction: jest.fn().mockReturnValue(mockBurnTransaction),
+    },
+    txExecute: {
+      execute: jest
+        .fn()
+        .mockResolvedValue(
+          overrides?.signResult || makeTransactionResult({ success: true }),
+        ),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        decimals: overrides?.tokenInfo?.decimals ?? '2',
+        supply_key: overrides?.tokenInfo?.supply_key ?? {
+          key: defaultSupplyKeyPublicKey,
+        },
+        total_supply: overrides?.tokenInfo?.total_supply ?? '1000000',
+        max_supply: overrides?.tokenInfo?.max_supply ?? '0',
+      }),
+    },
+    alias: {
+      resolve: jest.fn().mockReturnValue(null),
+    },
+    kms: {
+      importPrivateKey: jest.fn().mockReturnValue({
+        keyRefId: 'supply-key-ref-id',
+        publicKey: defaultSupplyKeyPublicKey,
+      }),
+    },
+  });
+
+  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
+    accountId: '0.0.200000',
+    publicKey: defaultSupplyKeyPublicKey,
+    keyRefId: 'supply-key-ref-id',
+  });
+
+  return {
+    ...apiMocks,
+    mockBurnTransaction,
+  };
 };

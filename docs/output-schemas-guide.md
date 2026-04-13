@@ -504,6 +504,23 @@ interface CommandOutputSpec {
 
 All key fields (`adminPublicKey`, `supplyPublicKey`, `freezePublicKey`, `wipePublicKey`, `pausePublicKey`, `kycPublicKey`, `feeSchedulePublicKey`, `metadataPublicKey`) are optional and only appear when the corresponding key was provided.
 
+#### `token burn-ft`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "amount": "10000",
+  "newTotalSupply": "990000",
+  "network": "testnet"
+}
+```
+
+- `amount`: Amount burned in base units (smallest denomination)
+- `newTotalSupply`: New total supply after burning (calculated as previous supply minus burned amount)
+
 #### `token mint-ft`
 
 **Output**:

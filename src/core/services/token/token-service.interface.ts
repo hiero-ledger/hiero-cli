@@ -9,6 +9,7 @@ import type {
   TokenAssociateTransaction,
   TokenCancelAirdropTransaction,
   TokenClaimAirdropTransaction,
+  TokenBurnTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
   TokenMintTransaction,
@@ -24,6 +25,7 @@ import type {
   TokenAssociationParams,
   TokenCancelAirdropParams,
   TokenClaimAirdropParams,
+  TokenBurnFtParams,
   TokenCreateParams,
   TokenDeleteParams,
   TokenMintParams,
@@ -92,4 +94,6 @@ export interface TokenService {
   createCancelAirdropTransaction(
     params: TokenCancelAirdropParams,
   ): TokenCancelAirdropTransaction;
+
+  createBurnFtTransaction(params: TokenBurnFtParams): TokenBurnTransaction;
 }

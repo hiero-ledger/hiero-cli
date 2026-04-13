@@ -35,6 +35,11 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── burn-ft/
+│   │   ├── handler.ts       # Fungible token burn handler
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts         # Command exports
 │   ├── mint-ft/
 │   │   ├── handler.ts       # Fungible token minting handler
 │   │   ├── input.ts         # Input schema
@@ -302,6 +307,46 @@ hcli token create-nft \
 - Freeze default requires freeze key to be set
 
 **Batch support:** Pass `--batch <batch-name>` to add NFT collection creation to a batch instead of executing immediately. See the [Batch Support](#-batch-support) section.
+
+### Token Burn FT
+
+Burn fungible tokens from the token's Treasury account to decrease total supply. Requires the supply key.
+
+```bash
+# Using token alias
+hcli token burn-ft \
+  --token mytoken-alias \
+  --amount 1000 \
+  --supply-key 0.0.123456:302e020100300506032b657004220420...
+
+# Using token ID with base units (t suffix)
+hcli token burn-ft \
+  --token 0.0.123456 \
+  --amount 5000t \
+  --supply-key 0.0.123456:302e020100300506032b657004220420...
+
+# Using an account alias for supply key
+hcli token burn-ft \
+  --token 0.0.123456 \
+  --amount 500 \
+  --supply-key supply-account-alias
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+- `--amount` / `-a`: Amount to burn - **Required**
+  - Display units (default): `100` (will be multiplied by token decimals)
+  - Base units: `100t` (raw amount without decimals)
+- `--supply-key` / `-s`: Supply key for signing - **Required**
+  - Account alias: `supply-account-alias`
+  - Account with key: `0.0.123456:private-key`
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Note:** The burn amount cannot exceed the token's current total supply. Tokens can only be burned from the treasury account.
+
+**Batch support:** Pass `--batch <batch-name>` to add to a batch. See the [Batch Support](#-batch-support) section.
 
 ### Token Mint FT
 
@@ -1143,7 +1188,7 @@ The following token commands support the `--batch` / `-B` flag via the batch plu
 - `create-ft-from-file` – `TokenCreateFtFromFileBatchStateHook` persists FT-from-file state
 - `create-nft-from-file` – `TokenCreateNftFromFileBatchStateHook` persists NFT-from-file state
 - `associate` – `TokenAssociateBatchStateHook` persists association results
-- `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
+- `burn-ft`, `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
 
 When you pass `--batch <batch-name>`:
 

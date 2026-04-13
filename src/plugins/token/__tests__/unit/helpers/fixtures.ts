@@ -884,6 +884,28 @@ export const makeMintFtCommandArgs = (params: {
 };
 
 /**
+ * Factory function to create CommandHandlerArgs for token burn-ft tests
+ */
+export const makeBurnFtCommandArgs = (params: {
+  api: CoreApi;
+  logger: Logger;
+  args?: Record<string, string | number | boolean | undefined>;
+}) => {
+  return {
+    args: {
+      token: '0.0.123456',
+      amount: '100',
+      supplyKey: 'test-supply-key',
+      ...params.args,
+    },
+    api: params.api,
+    state: params.api.state,
+    config: params.api.config,
+    logger: params.logger,
+  };
+};
+
+/**
  * Expected mint transaction parameters for mint-ft tests
  */
 export const expectedMintFtTransactionParams = {

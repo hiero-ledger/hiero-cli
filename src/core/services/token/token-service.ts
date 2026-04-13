@@ -15,6 +15,7 @@ import type {
   TokenAssociationParams,
   TokenCancelAirdropParams,
   TokenClaimAirdropParams,
+  TokenBurnFtParams,
   TokenCreateParams,
   TokenDeleteParams,
   TokenMintParams,
@@ -36,6 +37,7 @@ import {
   TokenAssociateTransaction,
   TokenCancelAirdropTransaction,
   TokenClaimAirdropTransaction,
+  TokenBurnTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
   TokenId,
@@ -503,6 +505,16 @@ export class TokenServiceImpl implements TokenService {
     return new TokenCancelAirdropTransaction().addPendingAirdropId(
       pendingAirdropId,
     );
+  }
+
+  createBurnFtTransaction(params: TokenBurnFtParams): TokenBurnTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating FT burn transaction: ${params.amount.toString()} tokens for token ${params.tokenId}`,
+    );
+
+    return new TokenBurnTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAmount(params.amount);
   }
 
   /**
