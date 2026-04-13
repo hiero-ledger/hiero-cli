@@ -1,10 +1,6 @@
 import type { CoreApi, Logger } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
-import type {
-  BatchDataItem,
-  TransactionResult,
-} from '@/core/types/shared.types';
 import type { AccountData } from '@/plugins/account/schema';
 import type { BatchData } from '@/plugins/batch/schema';
 import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
@@ -12,6 +8,11 @@ import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 import { formatTransactionIdToDashFormat, StateError } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import {
+  type BatchDataItem,
+  OrchestratorSource,
+  type TransactionResult,
+} from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { ACCOUNT_CREATE_COMMAND_NAME } from '@/plugins/account/commands/create';
 import { AccountCreateNormalisedParamsSchema } from '@/plugins/account/hooks/account-create-state/types';
@@ -30,10 +31,10 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
     const { api, logger } = params.args;
 
     switch (parsed.data.source) {
-      case 'batch':
+      case OrchestratorSource.BATCH:
         await this.handleBatch(api, logger, parsed.data.batchData);
         break;
-      case 'schedule':
+      case OrchestratorSource.SCHEDULE:
         await this.handleSchedule(api, logger, parsed.data.scheduledData);
         break;
       default:

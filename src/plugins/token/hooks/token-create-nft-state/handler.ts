@@ -6,7 +6,7 @@ import type {
   TransactionResult,
 } from '@/core/types/shared.types';
 
-import { StateError } from '@/core';
+import { OrchestratorSource, StateError } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
@@ -21,7 +21,7 @@ export class TokenCreateNftStateHook implements Hook<PostOutputPreparationHookPa
     const parsed = OrchestratorResultSchema.safeParse(
       params.executeTransactionResult,
     );
-    if (!parsed.success || parsed.data.source !== 'batch') {
+    if (!parsed.success || parsed.data.source !== OrchestratorSource.BATCH) {
       return { breakFlow: false };
     }
     const batchData = parsed.data.batchData;

@@ -1,9 +1,12 @@
 import type { CoreApi, Logger } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
-import type { BatchDataItem } from '@/core/types/shared.types';
 
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
+import {
+  type BatchDataItem,
+  OrchestratorSource,
+} from '@/core/types/shared.types';
 import { AccountHelper } from '@/plugins/account/account-helper';
 import { ACCOUNT_DELETE_COMMAND_NAME } from '@/plugins/account/commands/delete/handler';
 import { AccountDeleteNormalisedParamsSchema } from '@/plugins/account/hooks/account-delete-state/types';
@@ -13,7 +16,7 @@ export class AccountDeleteStateHook implements Hook<PostOutputPreparationHookPar
     const parsed = OrchestratorResultSchema.safeParse(
       params.executeTransactionResult,
     );
-    if (!parsed.success || parsed.data.source !== 'batch') {
+    if (!parsed.success || parsed.data.source !== OrchestratorSource.BATCH) {
       return Promise.resolve({ breakFlow: false });
     }
 

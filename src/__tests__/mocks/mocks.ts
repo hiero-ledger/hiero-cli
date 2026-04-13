@@ -46,7 +46,10 @@ import {
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import {
+  OrchestratorSource,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 
 import {
   MOCK_CONTRACT_ID,
@@ -865,7 +868,7 @@ export const createBatchExecuteParams = (
   buildTransactionResult: {},
   signTransactionResult: {},
   executeTransactionResult: {
-    source: 'batch',
+    source: OrchestratorSource.BATCH,
     batchData,
   },
   outputResult: { result: {} },

@@ -15,6 +15,7 @@ import { Transaction } from '@hashgraph/sdk';
 import { ValidationError } from '@/core';
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError } from '@/core/errors';
+import { OrchestratorSource } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandBatchStateHelper } from '@/plugins/batch/zustand-state-helper';
 
@@ -36,7 +37,7 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
     executeTransactionResult: BatchExecuteTransactionResult,
   ): unknown {
     return {
-      source: 'batch' as const,
+      source: OrchestratorSource.BATCH,
       batchData: executeTransactionResult.updatedBatchData,
     };
   }

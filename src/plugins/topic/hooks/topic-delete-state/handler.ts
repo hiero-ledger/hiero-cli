@@ -3,6 +3,7 @@ import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { BatchDataItem } from '@/core/types/shared.types';
 
+import { OrchestratorSource } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { TOPIC_DELETE_COMMAND_NAME } from '@/plugins/topic/commands/delete/handler';
 import { TopicHelper } from '@/plugins/topic/topic-helper';
@@ -14,7 +15,7 @@ export class TopicDeleteStateHook implements Hook<PostOutputPreparationHookParam
     const parsed = OrchestratorResultSchema.safeParse(
       params.executeTransactionResult,
     );
-    if (!parsed.success || parsed.data.source !== 'batch') {
+    if (!parsed.success || parsed.data.source !== OrchestratorSource.BATCH) {
       return Promise.resolve({ breakFlow: false });
     }
     const batchData = parsed.data.batchData;

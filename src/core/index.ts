@@ -62,6 +62,7 @@ export {
   NetworkChainId,
   NetworkChainMap,
   OptionType,
+  OrchestratorSource,
   SupplyType,
   SupportedNetwork,
 } from './types/shared.types';

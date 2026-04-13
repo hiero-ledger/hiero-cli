@@ -16,6 +16,7 @@ import { ValidationError } from '@/core';
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { OrchestratorSource } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { ScheduleHelper } from '@/plugins/schedule/schedule-helper';
 import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
@@ -39,7 +40,7 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
   ): unknown {
     if (executeTransactionResult.scheduledData) {
       return {
-        source: 'schedule' as const,
+        source: OrchestratorSource.SCHEDULE,
         scheduledData: executeTransactionResult.scheduledData,
       };
     }

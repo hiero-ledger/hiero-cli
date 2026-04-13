@@ -1,14 +1,15 @@
 import type { CoreApi, Logger } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
-import type {
-  BatchDataItem,
-  TransactionResult,
-} from '@/core/types/shared.types';
 
 import { StateError } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import {
+  type BatchDataItem,
+  OrchestratorSource,
+  type TransactionResult,
+} from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOKEN_CREATE_FT_COMMAND_NAME } from '@/plugins/token/commands/create-ft';
 import { buildTokenData } from '@/plugins/token/utils/token-data-builders';
@@ -21,7 +22,7 @@ export class TokenCreateFtStateHook implements Hook<PostOutputPreparationHookPar
     const parsed = OrchestratorResultSchema.safeParse(
       params.executeTransactionResult,
     );
-    if (!parsed.success || parsed.data.source !== 'batch') {
+    if (!parsed.success || parsed.data.source !== OrchestratorSource.BATCH) {
       return { breakFlow: false };
     }
     const batchData = parsed.data.batchData;

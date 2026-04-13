@@ -13,6 +13,7 @@ import {
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
+import { OrchestratorSource } from '@/core/types/shared.types';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
@@ -145,7 +146,7 @@ export class ScheduleVerifyCommand implements Command {
           buildTransactionResult: undefined,
           signTransactionResult: undefined,
           executeTransactionResult: {
-            source: 'schedule' as const,
+            source: OrchestratorSource.SCHEDULE,
             scheduledData: updatedScheduledRecord,
           },
           outputResult: { result: outputData },

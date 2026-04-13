@@ -18,6 +18,14 @@ export enum SupportedNetwork {
   LOCALNET = 'localnet',
 }
 
+/**
+ * Discriminator for orchestrator hook payloads (batch execute vs schedule sign/verify).
+ */
+export enum OrchestratorSource {
+  BATCH = 'batch',
+  SCHEDULE = 'schedule',
+}
+
 export enum NetworkChainId {
   MAINNET = 295,
   TESTNET = 296,

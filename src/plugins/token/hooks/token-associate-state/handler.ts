@@ -3,6 +3,7 @@ import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { BatchDataItem } from '@/core/types/shared.types';
 
+import { OrchestratorSource } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { TOKEN_ASSOCIATE_COMMAND_NAME } from '@/plugins/token/commands/associate';
 import { saveAssociationToState } from '@/plugins/token/utils/token-associations';
@@ -15,7 +16,7 @@ export class TokenAssociateStateHook implements Hook<PostOutputPreparationHookPa
     const parsed = OrchestratorResultSchema.safeParse(
       params.executeTransactionResult,
     );
-    if (!parsed.success || parsed.data.source !== 'batch') {
+    if (!parsed.success || parsed.data.source !== OrchestratorSource.BATCH) {
       return Promise.resolve({ breakFlow: false });
     }
     const batchData = parsed.data.batchData;
