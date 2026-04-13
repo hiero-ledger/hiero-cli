@@ -11,3 +11,7 @@ export const AccountCreateNormalisedParamsSchema = z.object({
   keyType: z.enum(KeyAlgorithm),
   network: z.enum(SupportedNetwork),
 });
+
+export type AccountCreateNormalisedParams = z.infer<
+  typeof AccountCreateNormalisedParamsSchema
+>;

@@ -15,7 +15,10 @@ import {
 } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { ACCOUNT_CREATE_COMMAND_NAME } from '@/plugins/account/commands/create';
-import { AccountCreateNormalisedParamsSchema } from '@/plugins/account/hooks/account-create-state/types';
+import {
+  type AccountCreateNormalisedParams,
+  AccountCreateNormalisedParamsSchema,
+} from '@/plugins/account/hooks/account-create-state/types';
 import { buildEvmAddressFromAccountId } from '@/plugins/account/utils/account-address';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
@@ -76,16 +79,14 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
     logger: Logger,
     batchDataItem: BatchDataItem,
   ): Promise<void> {
-    const parseResult = AccountCreateNormalisedParamsSchema.safeParse(
+    const normalisedParams = this.parseAccountCreateParams(
+      logger,
       batchDataItem.normalizedParams,
     );
-    if (!parseResult.success) {
-      logger.warn(
-        `There was a problem with parsing data schema. The saving will not be done`,
-      );
+    if (!normalisedParams) {
       return;
     }
-    const normalisedParams = parseResult.data;
+
     const innerTransactionId = batchDataItem.transactionId;
     if (!innerTransactionId) {
       logger.warn(
@@ -94,54 +95,20 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
       return;
     }
 
-    const innerTransactionResult: TransactionResult =
-      await api.receipt.getReceipt({
-        transactionId: innerTransactionId,
-      });
+    const receipt: TransactionResult = await api.receipt.getReceipt({
+      transactionId: innerTransactionId,
+    });
 
-    if (!innerTransactionResult.accountId) {
+    if (!receipt.accountId) {
       throw new StateError(
         'Transaction completed but did not return an account ID, unable to derive addresses',
       );
     }
-    const evmAddress = buildEvmAddressFromAccountId(
-      innerTransactionResult.accountId,
-    );
 
-    if (normalisedParams.alias) {
-      if (api.alias.exists(normalisedParams.alias, normalisedParams.network)) {
-        logger.warn(
-          `Alias "${normalisedParams.alias}" already exists, skipping registration`,
-        );
-      } else {
-        api.alias.register({
-          alias: normalisedParams.alias,
-          type: AliasType.Account,
-          network: normalisedParams.network,
-          entityId: innerTransactionResult.accountId,
-          evmAddress,
-          publicKey: normalisedParams.publicKey,
-          keyRefId: normalisedParams.keyRefId,
-          createdAt: innerTransactionResult.consensusTimestamp,
-        });
-      }
-    }
-
-    const accountData: AccountData = {
-      name: normalisedParams.name,
-      accountId: innerTransactionResult.accountId,
-      type: normalisedParams.keyType,
-      publicKey: normalisedParams.publicKey,
-      evmAddress,
-      keyRefId: normalisedParams.keyRefId,
-      network: normalisedParams.network,
-    };
-    const accountKey = composeKey(
-      normalisedParams.network,
-      innerTransactionResult.accountId,
-    );
-    const accountState = new ZustandAccountStateHelper(api.state, logger);
-    accountState.saveAccount(accountKey, accountData);
+    this.persistAccountCreate(api, logger, normalisedParams, {
+      stateAccountId: receipt.accountId,
+      receipt,
+    });
   }
 
   private async saveFromScheduled(
@@ -149,19 +116,17 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
     logger: Logger,
     scheduledData: ScheduledTransactionData,
   ): Promise<void> {
-    const parseResult = AccountCreateNormalisedParamsSchema.safeParse(
+    const normalisedParams = this.parseAccountCreateParams(
+      logger,
       scheduledData.normalizedParams,
     );
-    if (!parseResult.success) {
-      api.logger.warn(
-        `There was a problem with parsing data schema. The saving will not be done`,
-      );
+    if (!normalisedParams) {
       return;
     }
-    const normalisedParams = parseResult.data;
+
     const innerTransactionId = scheduledData.transactionId;
     if (!innerTransactionId) {
-      api.logger.warn(`No transaction ID found for scheduled transaction`);
+      logger.warn(`No transaction ID found for scheduled transaction`);
       return;
     }
 
@@ -180,12 +145,27 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
       );
     }
 
-    const innerTransactionResult: TransactionResult =
-      await api.receipt.getReceipt({
-        transactionId: innerTransactionId,
-      });
+    const receipt: TransactionResult = await api.receipt.getReceipt({
+      transactionId: innerTransactionId,
+    });
 
-    const evmAddress = buildEvmAddressFromAccountId(accountId);
+    this.persistAccountCreate(api, logger, normalisedParams, {
+      stateAccountId: accountId,
+      receipt,
+    });
+  }
+
+  private persistAccountCreate(
+    api: CoreApi,
+    logger: Logger,
+    normalisedParams: AccountCreateNormalisedParams,
+    resolved: {
+      stateAccountId: string;
+      receipt: TransactionResult;
+    },
+  ): void {
+    const { stateAccountId, receipt } = resolved;
+    const evmAddress = buildEvmAddressFromAccountId(stateAccountId);
 
     if (normalisedParams.alias) {
       if (api.alias.exists(normalisedParams.alias, normalisedParams.network)) {
@@ -197,26 +177,41 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
           alias: normalisedParams.alias,
           type: AliasType.Account,
           network: normalisedParams.network,
-          entityId: innerTransactionResult.accountId,
+          entityId: receipt.accountId,
           evmAddress,
           publicKey: normalisedParams.publicKey,
           keyRefId: normalisedParams.keyRefId,
-          createdAt: innerTransactionResult.consensusTimestamp,
+          createdAt: receipt.consensusTimestamp,
         });
       }
     }
 
     const accountData: AccountData = {
       name: normalisedParams.name,
-      accountId,
+      accountId: stateAccountId,
       type: normalisedParams.keyType,
       publicKey: normalisedParams.publicKey,
       evmAddress,
       keyRefId: normalisedParams.keyRefId,
       network: normalisedParams.network,
     };
-    const accountKey = composeKey(normalisedParams.network, accountId);
+    const accountKey = composeKey(normalisedParams.network, stateAccountId);
     const accountState = new ZustandAccountStateHelper(api.state, logger);
     accountState.saveAccount(accountKey, accountData);
+  }
+
+  private parseAccountCreateParams(
+    logger: Logger,
+    normalizedParams: unknown,
+  ): AccountCreateNormalisedParams | undefined {
+    const parseResult =
+      AccountCreateNormalisedParamsSchema.safeParse(normalizedParams);
+    if (!parseResult.success) {
+      logger.warn(
+        `There was a problem with parsing data schema. The saving will not be done`,
+      );
+      return;
+    }
+    return parseResult.data;
   }
 }
