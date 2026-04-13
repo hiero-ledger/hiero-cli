@@ -518,7 +518,7 @@ describe('token plugin - batch-create-nft hook', () => {
       ],
     });
 
-    await hook.preOutputPreparationHook(args, params);
+    await hook.execute({ ...params, args });
 
     expect(api.alias?.register).not.toHaveBeenCalled();
     expect(logger.warn).toHaveBeenCalledWith(
