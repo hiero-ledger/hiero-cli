@@ -56,7 +56,7 @@ const createUpdateBatchDataItem = (
   ...overrides,
 });
 
-describe('topic plugin - TopicUpdateStateHook (batch)', () => {
+describe('topic plugin - topic-update-state hook', () => {
   let hook: TopicUpdateStateHook;
   let saveTopicMock: jest.Mock;
 

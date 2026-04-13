@@ -3,7 +3,7 @@
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { ScheduledTransactionData } from '@/plugins/schedule';
+import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 import type { ScheduleSignOutput } from './output';
 import type {
   ScheduleSignBuildTransactionResult,
@@ -17,7 +17,8 @@ import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { composeKey } from '@/core/utils/key-composer';
-import { ScheduleHelper, ZustandScheduleStateHelper } from '@/plugins/schedule';
+import { ScheduleHelper } from '@/plugins/schedule/schedule-helper';
+import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
 
 import { ScheduleSignInputSchema } from './input';
 

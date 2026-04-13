@@ -108,16 +108,22 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
     );
 
     if (normalisedParams.alias) {
-      api.alias.register({
-        alias: normalisedParams.alias,
-        type: AliasType.Account,
-        network: normalisedParams.network,
-        entityId: innerTransactionResult.accountId,
-        evmAddress,
-        publicKey: normalisedParams.publicKey,
-        keyRefId: normalisedParams.keyRefId,
-        createdAt: innerTransactionResult.consensusTimestamp,
-      });
+      if (api.alias.exists(normalisedParams.alias, normalisedParams.network)) {
+        logger.warn(
+          `Alias "${normalisedParams.alias}" already exists, skipping registration`,
+        );
+      } else {
+        api.alias.register({
+          alias: normalisedParams.alias,
+          type: AliasType.Account,
+          network: normalisedParams.network,
+          entityId: innerTransactionResult.accountId,
+          evmAddress,
+          publicKey: normalisedParams.publicKey,
+          keyRefId: normalisedParams.keyRefId,
+          createdAt: innerTransactionResult.consensusTimestamp,
+        });
+      }
     }
 
     const accountData: AccountData = {
@@ -163,7 +169,7 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
     );
 
     const scheduledMirrorTx = transactionRecord.transactions.find(
-      (tx) => tx.scheduled === true,
+      (tx) => tx.scheduled,
     );
     const accountId = scheduledMirrorTx?.entity_id;
 
@@ -181,16 +187,22 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
     const evmAddress = buildEvmAddressFromAccountId(accountId);
 
     if (normalisedParams.alias) {
-      api.alias.register({
-        alias: normalisedParams.alias,
-        type: AliasType.Account,
-        network: normalisedParams.network,
-        entityId: accountId,
-        evmAddress,
-        publicKey: normalisedParams.publicKey,
-        keyRefId: normalisedParams.keyRefId,
-        createdAt: innerTransactionResult.consensusTimestamp,
-      });
+      if (api.alias.exists(normalisedParams.alias, normalisedParams.network)) {
+        logger.warn(
+          `Alias "${normalisedParams.alias}" already exists, skipping registration`,
+        );
+      } else {
+        api.alias.register({
+          alias: normalisedParams.alias,
+          type: AliasType.Account,
+          network: normalisedParams.network,
+          entityId: innerTransactionResult.accountId,
+          evmAddress,
+          publicKey: normalisedParams.publicKey,
+          keyRefId: normalisedParams.keyRefId,
+          createdAt: innerTransactionResult.consensusTimestamp,
+        });
+      }
     }
 
     const accountData: AccountData = {

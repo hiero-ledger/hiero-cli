@@ -56,7 +56,7 @@ const createAccountBatchDataItem = (
   ...overrides,
 });
 
-describe('account plugin - batch-create hook', () => {
+describe('account plugin - account-create-state hook', () => {
   let hook: AccountCreateStateHook;
 
   beforeEach(() => {

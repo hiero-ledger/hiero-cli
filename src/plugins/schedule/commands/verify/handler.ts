@@ -1,7 +1,7 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { ScheduledTransactionData } from '@/plugins/schedule';
+import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 import type { ScheduleVerifyOutput } from './output';
 
 import { KeyAlgorithm, NotFoundError } from '@/core';
@@ -15,7 +15,7 @@ import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { composeKey } from '@/core/utils/key-composer';
-import { ZustandScheduleStateHelper } from '@/plugins/schedule';
+import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
 
 import { ScheduleVerifyInputSchema } from './input';
 

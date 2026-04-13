@@ -35,7 +35,7 @@ const createTopicBatchDataItem = (
   ...overrides,
 });
 
-describe('topic plugin - batch-create hook', () => {
+describe('topic plugin - topic-create-state hook', () => {
   let hook: TopicCreateStateHook;
 
   beforeEach(() => {

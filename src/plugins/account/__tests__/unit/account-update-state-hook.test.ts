@@ -52,7 +52,7 @@ const createUpdateBatchDataItem = (
   ...overrides,
 });
 
-describe('account plugin - batch-update hook', () => {
+describe('account plugin - account-update-state hook', () => {
   let hook: AccountUpdateStateHook;
 
   beforeEach(() => {

@@ -49,7 +49,7 @@ const createDeleteBatchDataItem = (
   ...overrides,
 });
 
-describe('topic plugin - TopicDeleteStateHook (batch)', () => {
+describe('topic plugin - TopicDeleteStateHook', () => {
   let hook: TopicDeleteStateHook;
   let removeTopicFromLocalStateMock: jest.Mock;
 
