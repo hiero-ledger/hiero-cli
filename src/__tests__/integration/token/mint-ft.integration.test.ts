@@ -72,7 +72,7 @@ describe('Mint FT Integration Tests', () => {
       treasury: 'account-mint-ft',
       initialSupply: '100',
       supplyType: SupplyType.INFINITE,
-      supplyKey: `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
+      supplyKey: [`${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`],
       name: 'test-token-mint',
     };
     const createTokenResult = await tokenCreateFt({
@@ -121,7 +121,7 @@ describe('Mint FT Integration Tests', () => {
     const mintFtArgs: Record<string, unknown> = {
       token: createTokenOutput.tokenId,
       amount: '50',
-      supplyKey: `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
+      supplyKey: [`${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`],
     };
     const mintFtResult = await tokenMintFt({
       args: mintFtArgs,
