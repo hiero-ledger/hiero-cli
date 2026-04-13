@@ -1,11 +1,9 @@
 import type { PluginManifest } from '@/core';
 
 import { OptionType } from '@/core/types/shared.types';
-import { AccountCreateBatchStateHook } from '@/plugins/account/hooks/batch-create';
-import { AccountDeleteBatchStateHook } from '@/plugins/account/hooks/batch-delete';
-import { AccountUpdateBatchStateHook } from '@/plugins/account/hooks/batch-update';
-import { AccountCreateScheduleStateHook } from '@/plugins/account/hooks/schedule-create';
-import { AccountUpdateScheduleStateHook } from '@/plugins/account/hooks/schedule-update';
+import { AccountCreateStateHook } from '@/plugins/account/hooks/account-create-state';
+import { AccountDeleteStateHook } from '@/plugins/account/hooks/account-delete-state';
+import { AccountUpdateStateHook } from '@/plugins/account/hooks/account-update-state';
 
 import {
   ACCOUNT_BALANCE_TEMPLATE,
@@ -57,28 +55,18 @@ export const accountPluginManifest: PluginManifest = {
   description: 'Plugin for managing Hedera accounts',
   hooks: [
     {
-      name: 'account-create-batch-state',
-      hook: new AccountCreateBatchStateHook(),
+      name: 'account-create-state',
+      hook: new AccountCreateStateHook(),
       options: [],
     },
     {
-      name: 'account-update-batch-state',
-      hook: new AccountUpdateBatchStateHook(),
+      name: 'account-update-state',
+      hook: new AccountUpdateStateHook(),
       options: [],
     },
     {
-      name: 'account-delete-batch-state',
-      hook: new AccountDeleteBatchStateHook(),
-      options: [],
-    },
-    {
-      name: 'account-create-schedule-state',
-      hook: new AccountCreateScheduleStateHook(),
-      options: [],
-    },
-    {
-      name: 'account-update-schedule-state',
-      hook: new AccountUpdateScheduleStateHook(),
+      name: 'account-delete-state',
+      hook: new AccountDeleteStateHook(),
       options: [],
     },
   ],
@@ -88,7 +76,11 @@ export const accountPluginManifest: PluginManifest = {
       summary: 'Create a new Hedera account',
       description:
         'Create a new Hedera account with specified balance and settings',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'balance',
@@ -149,7 +141,11 @@ export const accountPluginManifest: PluginManifest = {
       name: 'update',
       summary: 'Update an existing Hedera account',
       description: 'Update properties of an existing Hedera account on-chain',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'account',
@@ -343,7 +339,10 @@ export const accountPluginManifest: PluginManifest = {
       summary: 'Delete an account',
       description:
         'Delete an account on Hedera and remove it from local state if present. Network delete uses the same key options as other commands (account ID, id:key, key reference, etc.). Requires --transfer-id for the beneficiary. Use --state-only to remove only from local state without a network transaction.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'account',

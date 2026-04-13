@@ -32,6 +32,15 @@ export class BatchExecuteCommand extends BaseTransactionCommand<
     super(BATCH_EXECUTE_COMMAND_NAME);
   }
 
+  protected override mapExecuteResultForHooks(
+    executeTransactionResult: BatchExecuteTransactionResult,
+  ): unknown {
+    return {
+      source: 'batch' as const,
+      batchData: executeTransactionResult.updatedBatchData,
+    };
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<BatchNormalisedParams> {

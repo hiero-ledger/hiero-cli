@@ -3,7 +3,8 @@ import type {
   HederaMirrornodeService,
   KeyResolverService,
 } from '@/core';
-import type { AbstractHook } from '@/core/hooks/abstract-hook';
+import type { Hook } from '@/core/hooks/hook.interface';
+import type { HookPhase } from '@/core/plugins/plugin.types';
 import type { ScheduleInfo } from '@/core/services/mirrornode/types';
 
 import {
@@ -216,11 +217,13 @@ describe('schedule plugin — verify command', () => {
       }),
     );
 
-    const customHandlerHook = jest.fn().mockResolvedValue({
+    const execute = jest.fn().mockResolvedValue({
       breakFlow: true,
       result: { hookResult: true },
     });
-    const mockHook = { customHandlerHook } as unknown as AbstractHook;
+    const mockHook: Hook = { execute };
+    const phaseHooks = new Map<HookPhase, Hook[]>();
+    phaseHooks.set('postOutputPreparation', [mockHook]);
 
     const api: Partial<CoreApi> = {
       network: makeNetworkMock(SupportedNetwork.TESTNET),
@@ -231,11 +234,11 @@ describe('schedule plugin — verify command', () => {
     };
 
     const base = makeArgs(api, logger, { name: SCHEDULE_NAME });
-    const args = { ...base, hooks: [mockHook] };
+    const args = { ...base, hooks: phaseHooks };
 
     const result = await scheduleVerify(args);
 
-    expect(customHandlerHook).toHaveBeenCalled();
+    expect(execute).toHaveBeenCalled();
     expect(result.result).toEqual({ hookResult: true });
   });
 

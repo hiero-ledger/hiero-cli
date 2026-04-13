@@ -97,12 +97,12 @@ import {
   tokenView,
   TokenViewOutputSchema,
 } from './commands/view';
-import { TokenAssociateBatchStateHook } from './hooks/batch-associate';
-import { TokenCreateFtBatchStateHook } from './hooks/batch-create-ft';
-import { TokenCreateFtFromFileBatchStateHook } from './hooks/batch-create-ft-from-file';
-import { TokenCreateNftBatchStateHook } from './hooks/batch-create-nft';
-import { TokenCreateNftFromFileBatchStateHook } from './hooks/batch-create-nft-from-file';
-import { TokenDeleteBatchStateHook } from './hooks/batch-delete';
+import { TokenAssociateStateHook } from './hooks/token-associate-state';
+import { TokenCreateFtFromFileStateHook } from './hooks/token-create-ft-from-file-state';
+import { TokenCreateFtStateHook } from './hooks/token-create-ft-state';
+import { TokenCreateNftFromFileStateHook } from './hooks/token-create-nft-from-file-state';
+import { TokenCreateNftStateHook } from './hooks/token-create-nft-state';
+import { TokenDeleteStateHook } from './hooks/token-delete-state';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
@@ -111,33 +111,33 @@ export const tokenPluginManifest: PluginManifest = {
   description: 'Plugin for managing Hedera fungible and non-fungible tokens',
   hooks: [
     {
-      name: 'token-create-ft-batch-state',
-      hook: new TokenCreateFtBatchStateHook(),
+      name: 'token-create-ft-state',
+      hook: new TokenCreateFtStateHook(),
       options: [],
     },
     {
-      name: 'token-create-ft-from-file-batch-state',
-      hook: new TokenCreateFtFromFileBatchStateHook(),
+      name: 'token-create-ft-from-file-state',
+      hook: new TokenCreateFtFromFileStateHook(),
       options: [],
     },
     {
-      name: 'token-create-nft-batch-state',
-      hook: new TokenCreateNftBatchStateHook(),
+      name: 'token-create-nft-state',
+      hook: new TokenCreateNftStateHook(),
       options: [],
     },
     {
-      name: 'token-create-nft-from-file-batch-state',
-      hook: new TokenCreateNftFromFileBatchStateHook(),
+      name: 'token-create-nft-from-file-state',
+      hook: new TokenCreateNftFromFileStateHook(),
       options: [],
     },
     {
-      name: 'token-associate-batch-state',
-      hook: new TokenAssociateBatchStateHook(),
+      name: 'token-associate-state',
+      hook: new TokenAssociateStateHook(),
       options: [],
     },
     {
-      name: 'token-delete-batch-state',
-      hook: new TokenDeleteBatchStateHook(),
+      name: 'token-delete-state',
+      hook: new TokenDeleteStateHook(),
       options: [],
     },
   ],
@@ -146,7 +146,11 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'mint-ft',
       summary: 'Mint fungible tokens',
       description: 'Mint additional fungible tokens to increase supply.',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -190,7 +194,11 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'mint-nft',
       summary: 'Mint NFT',
       description: 'Mint a new NFT to an existing NFT collection.',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -233,7 +241,11 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'transfer-ft',
       summary: 'Transfer a fungible token',
       description: 'Transfer a fungible token from one account to another',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -285,7 +297,10 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Airdrop fungible tokens to multiple recipients',
       description:
         'Airdrop fungible tokens from one account to one or more recipients in a single transaction. If a recipient lacks auto-association slots, the transfer becomes a pending airdrop.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -337,7 +352,11 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'transfer-nft',
       summary: 'Transfer a non-fungible token',
       description: 'Transfer one or more NFTs from one account to another',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -389,7 +408,10 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Airdrop NFTs to multiple recipients',
       description:
         'Airdrop specific NFT serial numbers from one account to one or more recipients in a single transaction. If a recipient lacks auto-association slots, the transfer becomes a pending airdrop.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -441,7 +463,11 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'create-ft',
       summary: 'Create a new fungible token',
       description: 'Create a new fungible token with specified properties',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token-name',
@@ -630,7 +656,11 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'create-nft',
       summary: 'Create a new non-fungible token',
       description: 'Create a new non-fungible token with specified properties',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token-name',
@@ -795,7 +825,11 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'associate',
       summary: 'Associate a token with an account',
       description: 'Associate a token with an account to enable transfers',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -832,7 +866,11 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Create a new fungible token from a file',
       description:
         'Create a new fungible token from a JSON file definition with advanced features',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'file',
@@ -862,7 +900,11 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Create a new NFT token from a file',
       description:
         'Create a new non-fungible token from a JSON file definition with advanced features',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'file',
@@ -892,7 +934,10 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Approve fungible token allowance',
       description:
         'Approve (or revoke by setting amount to 0) a spender allowance for fungible tokens on behalf of the owner.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -992,7 +1037,10 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Delete a token from the Hedera network',
       description:
         'Delete a token from the Hedera network. Requires admin key. Also removes token from local state if present. Use --state-only to remove only from local state.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -1038,7 +1086,10 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Approve NFT allowance',
       description:
         'Approve a spender to transfer NFTs on behalf of the owner. Use --serials for specific serial numbers or --all-serials for the entire collection.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -1096,7 +1147,10 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Delete NFT allowance',
       description:
         'Delete NFT allowances. Use --serials to remove allowance for specific serial numbers (all spenders). Use --all-serials with --spender to revoke a blanket all-serials approval for a specific spender.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',

@@ -10,7 +10,7 @@ import {
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_ASSOCIATE_COMMAND_NAME } from '@/plugins/token/commands/associate';
-import { TokenAssociateBatchStateHook } from '@/plugins/token/hooks/batch-associate/handler';
+import { TokenAssociateStateHook } from '@/plugins/token/hooks/token-associate-state';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -25,6 +25,7 @@ const createAssociateBatchDataItem = (
   transactionBytes: 'abcdef1234567890',
   order: 1,
   command: TOKEN_ASSOCIATE_COMMAND_NAME,
+  keyRefIds: [],
   normalizedParams: {
     network: SupportedNetwork.TESTNET,
     tokenId: '0.0.123456',
@@ -41,11 +42,11 @@ const createAssociateBatchDataItem = (
 });
 
 describe('token plugin - batch-associate hook', () => {
-  let hook: TokenAssociateBatchStateHook;
+  let hook: TokenAssociateStateHook;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    hook = new TokenAssociateBatchStateHook();
+    hook = new TokenAssociateStateHook();
     MockedHelper.mockImplementation(() => ({
       getToken: jest.fn().mockReturnValue({ tokenId: '0.0.123456' }),
       addTokenAssociation: jest.fn(),
@@ -65,12 +66,9 @@ describe('token plugin - batch-associate hook', () => {
       transactions: [createAssociateBatchDataItem()],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({
-      message: 'Batch transaction status failure',
-    });
   });
 
   test('returns success when no token_associate transactions in batch', async () => {
@@ -99,10 +97,9 @@ describe('token plugin - batch-associate hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(addTokenAssociationMock).not.toHaveBeenCalled();
   });
 
@@ -131,10 +128,9 @@ describe('token plugin - batch-associate hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(addTokenAssociationMock).not.toHaveBeenCalled();
     expect(logger.warn).toHaveBeenCalledWith(
       'There was a problem with parsing data schema. The saving will not be done',
@@ -176,10 +172,9 @@ describe('token plugin - batch-associate hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(addTokenAssociationMock).not.toHaveBeenCalled();
     expect(logger.debug).toHaveBeenCalledWith(
       'Skipping already associated token 0.0.123456 for account 0.0.100000',
@@ -222,10 +217,9 @@ describe('token plugin - batch-associate hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(addTokenAssociationMock).toHaveBeenCalledWith(
       'testnet:0.0.9999',
       '0.0.8888',
@@ -258,10 +252,9 @@ describe('token plugin - batch-associate hook', () => {
       transactions: [createAssociateBatchDataItem()],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(addTokenAssociationMock).not.toHaveBeenCalled();
     expect(logger.info).not.toHaveBeenCalledWith(
       '   Association saved to token state',
@@ -319,10 +312,9 @@ describe('token plugin - batch-associate hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(addTokenAssociationMock).toHaveBeenCalledTimes(2);
     expect(addTokenAssociationMock).toHaveBeenNthCalledWith(
       1,

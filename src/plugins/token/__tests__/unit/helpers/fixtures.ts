@@ -2,6 +2,7 @@
  * Test Fixtures for Token Plugin Tests
  * Reusable test data and constants
  */
+import type { Hook, HookPhase } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { TransactionResult } from '@/core/types/shared.types';
@@ -951,6 +952,7 @@ export const makeCreateNftFromFileCommandArgs = (params: {
   api: Partial<CoreApi>;
   logger: Logger;
   args?: Record<string, string | number | boolean | undefined>;
+  hooks?: Map<HookPhase, Hook>;
 }) => {
   const api = params.api as unknown as CoreApi;
   return {
@@ -962,6 +964,7 @@ export const makeCreateNftFromFileCommandArgs = (params: {
     state: api.state,
     config: api.config,
     logger: params.logger,
+    hooks: params.hooks ?? new Map(),
   };
 };
 

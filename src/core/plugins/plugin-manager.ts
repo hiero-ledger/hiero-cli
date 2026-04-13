@@ -8,12 +8,14 @@ import type {
   CommandHandlerArgs,
   CommandSpec,
   HookOption,
+  HookPhase,
   HookSpec,
   PluginManifest,
   PluginStateEntry,
+  RegisteredHook,
 } from '@/core';
 import type { CoreApi } from '@/core/core-api';
-import type { AbstractHook } from '@/core/hooks/abstract-hook';
+import type { Hook } from '@/core/hooks/hook.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { FilteredOptionsResult } from '@/core/utils/filter-reserved-options';
@@ -263,10 +265,7 @@ export class PluginManager {
     skipConfirmation: boolean,
   ): void {
     const command = this.buildCommand(pluginCommand, commandSpec);
-    const registeredHooks = this.filterHooksForCommand(commandSpec);
-    const hookOptions: HookOption[] = registeredHooks.flatMap(
-      (spec) => spec.options ?? [],
-    );
+    const hookOptions = this.resolveHookOptions(commandSpec);
     // Add options
     if (commandSpec.options) {
       const filteredOptions = filterReservedOptions(
@@ -284,9 +283,59 @@ export class PluginManager {
         commandSpec,
         args,
         skipConfirmation,
-        registeredHooks.map((spec) => spec.hook),
+        this.buildPhaseHookMap(commandSpec),
       );
     });
+  }
+
+  private buildPhaseHookMap(commandSpec: CommandSpec): Map<HookPhase, Hook[]> {
+    const phaseHooks = new Map<HookPhase, Hook[]>();
+    const registeredHooks: RegisteredHook[] = commandSpec.registeredHooks ?? [];
+
+    for (const registration of registeredHooks) {
+      const hookSpec = this.hooks.find((h) => h.name === registration.hook);
+      if (!hookSpec) {
+        throw new ConfigurationError(
+          `Command "${commandSpec.name}" references hook "${registration.hook}" which does not exist`,
+        );
+      }
+
+      const existing = phaseHooks.get(registration.phase) ?? [];
+      existing.push(hookSpec.hook);
+      phaseHooks.set(registration.phase, existing);
+    }
+
+    return phaseHooks;
+  }
+
+  private resolveHookOptions(commandSpec: CommandSpec): HookOption[] {
+    const registeredHooks: RegisteredHook[] = commandSpec.registeredHooks ?? [];
+    const seenOptions = new Map<string, HookOption>();
+
+    for (const registration of registeredHooks) {
+      const hookSpec = this.hooks.find((h) => h.name === registration.hook);
+      if (!hookSpec?.options) {
+        continue;
+      }
+
+      for (const option of hookSpec.options) {
+        const existing = seenOptions.get(option.name);
+        if (existing) {
+          if (
+            existing.type !== option.type ||
+            existing.short !== option.short
+          ) {
+            throw new ConfigurationError(
+              `Hook option "${option.name}" has conflicting definitions`,
+            );
+          }
+          continue;
+        }
+        seenOptions.set(option.name, option);
+      }
+    }
+
+    return Array.from(seenOptions.values());
   }
 
   // Handle pre-execution confirmation if required by command spec.
@@ -338,7 +387,7 @@ export class PluginManager {
     commandSpec: CommandSpec,
     args: unknown[],
     skipConfirmation: boolean,
-    registeredHooks: AbstractHook[],
+    phaseHooks: Map<HookPhase, Hook[]>,
   ): Promise<void> {
     const command = args[args.length - 1] as Command;
     const options = command.opts();
@@ -357,7 +406,7 @@ export class PluginManager {
       state: this.coreApi.state,
       config: this.coreApi.config,
       logger: this.logger,
-      hooks: registeredHooks,
+      hooks: phaseHooks,
     };
 
     await this.handleConfirmation(commandSpec, handlerArgs, skipConfirmation);
@@ -472,10 +521,5 @@ export class PluginManager {
           addOption<string | undefined>();
       }
     }
-  }
-
-  private filterHooksForCommand(commandSpec: CommandSpec): HookSpec[] {
-    const registeredHooks: string[] = commandSpec.registeredHooks ?? [];
-    return this.hooks.filter((spec) => registeredHooks.includes(spec.name));
   }
 }

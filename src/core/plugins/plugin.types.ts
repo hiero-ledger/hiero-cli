@@ -5,12 +5,12 @@
 import type { z } from 'zod';
 import type { Command } from '@/core/commands/command.interface';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { AbstractHook } from '@/core/hooks/abstract-hook';
+import type { Hook } from '@/core/hooks/hook.interface';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { OptionType } from '@/core/types/shared.types';
-import type { CommandHandlerArgs } from './plugin.interface';
 
 /**
  * Plugin manifest structure
@@ -27,8 +27,21 @@ export interface PluginManifest {
 
 export interface HookSpec {
   name: string;
-  hook: AbstractHook;
+  hook: Hook;
   options?: HookOption[];
+}
+
+export type HookPhase =
+  | 'preParamsNormalization'
+  | 'preBuildTransaction'
+  | 'preSignTransaction'
+  | 'preExecuteTransaction'
+  | 'preOutputPreparation'
+  | 'postOutputPreparation';
+
+export interface RegisteredHook {
+  hook: string;
+  phase: HookPhase;
 }
 
 /**
@@ -64,7 +77,7 @@ export interface CommandSpec {
   handler: CommandHandler;
   output: CommandOutputSpec;
   excessArguments?: boolean;
-  registeredHooks?: string[];
+  registeredHooks?: RegisteredHook[];
   /** Handlebars template for pre-execution confirmation (human format only). Example: 'Delete account {{name}}?' */
   requireConfirmation?: string;
 }

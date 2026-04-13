@@ -1,6 +1,7 @@
 import type { Transaction } from '@hashgraph/sdk';
 import type { CoreApi, TransactionResult } from '@/core';
-import type { PreSignTransactionParams } from '@/core/hooks/types';
+import type { PreSignTransactionHookParams } from '@/core/hooks/types';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { BaseBuildTransactionResult } from '@/core/types/transaction.types';
 import type { ScheduledNormalizedParams } from '@/plugins/schedule/hooks/scheduled/types';
 
@@ -47,12 +48,15 @@ const MockedZustand = ZustandScheduleStateHelper as unknown as jest.Mock;
 const HOOK_COMMAND_NAME = 'account_create';
 
 function makePreSignParams(
+  args: CommandHandlerArgs,
   keyRefIds: string[],
-): PreSignTransactionParams<
+): PreSignTransactionHookParams<
   ScheduledNormalizedParams,
   BaseBuildTransactionResult
 > {
   return {
+    args,
+    commandName: HOOK_COMMAND_NAME,
     normalisedParams: {
       keyRefIds: [...keyRefIds],
     } as ScheduledNormalizedParams,
@@ -88,18 +92,11 @@ describe('schedule plugin — scheduled hook', () => {
     };
 
     const args = makeArgs(api, logger, {});
-    const params = makePreSignParams(['kr_base']);
+    const params = makePreSignParams(args, ['kr_base']);
 
-    const result = await hook.preSignTransactionHook(
-      args,
-      params,
-      HOOK_COMMAND_NAME,
-    );
+    const result = await hook.execute(params);
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toMatchObject({
-      message: 'No "scheduled" parameter found',
-    });
     expect(logger.debug).toHaveBeenCalledWith(
       expect.stringContaining('No parameter "scheduled" found'),
     );
@@ -116,11 +113,9 @@ describe('schedule plugin — scheduled hook', () => {
     };
 
     const args = makeArgs(api, logger, { scheduled: SCHEDULE_NAME });
-    const params = makePreSignParams(['kr_base']);
+    const params = makePreSignParams(args, ['kr_base']);
 
-    await expect(
-      hook.preSignTransactionHook(args, params, HOOK_COMMAND_NAME),
-    ).rejects.toThrow(
+    await expect(hook.execute(params)).rejects.toThrow(
       new NotFoundError(`Scheduled not found for name ${SCHEDULE_NAME}`),
     );
   });
@@ -142,11 +137,11 @@ describe('schedule plugin — scheduled hook', () => {
     };
 
     const args = makeArgs(api, logger, { scheduled: SCHEDULE_NAME });
-    const params = makePreSignParams(['kr_base']);
+    const params = makePreSignParams(args, ['kr_base']);
 
-    await expect(
-      hook.preSignTransactionHook(args, params, HOOK_COMMAND_NAME),
-    ).rejects.toThrow(new ValidationError('Transaction is already scheduled'));
+    await expect(hook.execute(params)).rejects.toThrow(
+      new ValidationError('Transaction is already scheduled'),
+    );
   });
 
   test('wraps inner tx in ScheduleCreate, signs, persists state, and returns hook output', async () => {
@@ -206,10 +201,12 @@ describe('schedule plugin — scheduled hook', () => {
 
     const innerKeyRefIds = [COMMAND_SIGNER_KEY_REF];
     const args = makeArgs(api, logger, { scheduled: SCHEDULE_NAME });
-    const params: PreSignTransactionParams<
+    const params: PreSignTransactionHookParams<
       ScheduledNormalizedParams,
       BaseBuildTransactionResult
     > = {
+      args,
+      commandName: HOOK_COMMAND_NAME,
       normalisedParams: {
         keyRefIds: innerKeyRefIds,
       } as ScheduledNormalizedParams,
@@ -218,11 +215,7 @@ describe('schedule plugin — scheduled hook', () => {
       },
     };
 
-    const result = await hook.preSignTransactionHook(
-      args,
-      params,
-      HOOK_COMMAND_NAME,
-    );
+    const result = await hook.execute(params);
 
     expect(buildScheduleCreateTransaction).toHaveBeenCalledWith({
       innerTransaction: innerTx,
@@ -250,6 +243,9 @@ describe('schedule plugin — scheduled hook', () => {
     );
 
     expect(result.breakFlow).toBe(true);
+    if (!result.breakFlow || !('result' in result)) {
+      throw new Error('expected scheduled hook success output');
+    }
     expect(result.schema).toBe(ScheduledOutputSchema);
     expect(result.humanTemplate).toBeDefined();
 
@@ -299,11 +295,9 @@ describe('schedule plugin — scheduled hook', () => {
     };
 
     const args = makeArgs(api, logger, { scheduled: SCHEDULE_NAME });
-    const params = makePreSignParams(['kr_base']);
+    const params = makePreSignParams(args, ['kr_base']);
 
-    await expect(
-      hook.preSignTransactionHook(args, params, HOOK_COMMAND_NAME),
-    ).rejects.toThrow(
+    await expect(hook.execute(params)).rejects.toThrow(
       new TransactionError(
         `Failed to create account (txId: ${DELETE_SUCCESS_TX_ID})`,
         false,
@@ -351,11 +345,9 @@ describe('schedule plugin — scheduled hook', () => {
     };
 
     const args = makeArgs(api, logger, { scheduled: SCHEDULE_NAME });
-    const params = makePreSignParams(['kr_base']);
+    const params = makePreSignParams(args, ['kr_base']);
 
-    await expect(
-      hook.preSignTransactionHook(args, params, HOOK_COMMAND_NAME),
-    ).rejects.toThrow(
+    await expect(hook.execute(params)).rejects.toThrow(
       new StateError(
         'Transaction completed but did not return an schedule ID, unable to derive addresses',
       ),

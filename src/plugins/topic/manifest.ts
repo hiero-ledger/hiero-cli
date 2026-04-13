@@ -41,9 +41,9 @@ import {
   topicUpdate,
   TopicUpdateOutputSchema,
 } from './commands/update';
-import { TopicCreateBatchStateHook } from './hooks/batch-create';
-import { TopicDeleteBatchStateHook } from './hooks/batch-delete';
-import { TopicUpdateBatchStateHook } from './hooks/batch-update';
+import { TopicCreateStateHook } from './hooks/topic-create-state';
+import { TopicDeleteStateHook } from './hooks/topic-delete-state';
+import { TopicUpdateStateHook } from './hooks/topic-update-state';
 
 export const TOPIC_NAMESPACE = 'topic-topics';
 
@@ -55,18 +55,18 @@ export const topicPluginManifest: PluginManifest = {
     'Plugin for managing Hedera Consensus Service topics and messages',
   hooks: [
     {
-      name: 'topic-create-batch-state',
-      hook: new TopicCreateBatchStateHook(),
+      name: 'topic-create-state',
+      hook: new TopicCreateStateHook(),
       options: [],
     },
     {
-      name: 'topic-delete-batch-state',
-      hook: new TopicDeleteBatchStateHook(),
+      name: 'topic-delete-state',
+      hook: new TopicDeleteStateHook(),
       options: [],
     },
     {
-      name: 'topic-update-batch-state',
-      hook: new TopicUpdateBatchStateHook(),
+      name: 'topic-update-state',
+      hook: new TopicUpdateStateHook(),
       options: [],
     },
   ],
@@ -76,7 +76,11 @@ export const topicPluginManifest: PluginManifest = {
       summary: 'Create a new Hedera topic',
       description:
         'Create a new Hedera Consensus Service topic with optional memo and keys',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'memo',
@@ -181,7 +185,11 @@ export const topicPluginManifest: PluginManifest = {
       name: 'submit-message',
       summary: 'Submit a message to a topic',
       description: 'Submit a message to a Hedera Consensus Service topic',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'topic',
@@ -223,7 +231,10 @@ export const topicPluginManifest: PluginManifest = {
     {
       name: 'update',
       summary: 'Update an existing Hedera topic',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       description:
         'Update a Hedera Consensus Service topic. Requires admin key for most updates. Pass "null" to clear memo, submit key, or auto-renew account.',
       options: [
@@ -315,7 +326,10 @@ export const topicPluginManifest: PluginManifest = {
       summary: 'Delete a topic',
       description:
         'Delete a Hedera topic on the network and remove it from local state, or remove from local state only',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'topic',

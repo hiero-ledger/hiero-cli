@@ -12,7 +12,7 @@ import { StateError } from '@/core/errors';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_FT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-ft-from-file';
-import { TokenCreateFtFromFileBatchStateHook } from '@/plugins/token/hooks/batch-create-ft-from-file/handler';
+import { TokenCreateFtFromFileStateHook } from '@/plugins/token/hooks/token-create-ft-from-file-state';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { mockAccountIds, validTokenFile } from './helpers/fixtures';
@@ -58,6 +58,7 @@ const createFtFromFileBatchDataItem = (
   overrides: Partial<BatchDataItem> = {},
 ): BatchDataItem => ({
   transactionBytes: '0xabcdef1234567890',
+  keyRefIds: [],
   order: 1,
   command: TOKEN_CREATE_FT_FROM_FILE_COMMAND_NAME,
   normalizedParams: createFlatNormalizedParams(),
@@ -66,11 +67,11 @@ const createFtFromFileBatchDataItem = (
 });
 
 describe('token plugin - batch-create-ft-from-file hook', () => {
-  let hook: TokenCreateFtFromFileBatchStateHook;
+  let hook: TokenCreateFtFromFileStateHook;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    hook = new TokenCreateFtFromFileBatchStateHook();
+    hook = new TokenCreateFtFromFileStateHook();
     MockedHelper.mockImplementation(() => ({
       saveToken: jest.fn(),
     }));
@@ -89,12 +90,9 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
       transactions: [createFtFromFileBatchDataItem()],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({
-      message: 'Batch transaction status failure',
-    });
   });
 
   test('returns success when no token_create-ft-from-file transactions in batch', async () => {
@@ -122,10 +120,9 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(saveTokenMock).not.toHaveBeenCalled();
     expect(api.receipt?.getReceipt).not.toHaveBeenCalled();
   });
@@ -154,10 +151,9 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(saveTokenMock).not.toHaveBeenCalled();
     expect(logger.warn).toHaveBeenCalledWith(
       'There was a problem with parsing data schema. The saving will not be done',
@@ -186,10 +182,9 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(saveTokenMock).not.toHaveBeenCalled();
     expect(logger.warn).toHaveBeenCalledWith(
       'No transaction ID found for batch transaction 1',
@@ -219,9 +214,7 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
       transactions: [createFtFromFileBatchDataItem()],
     });
 
-    await expect(hook.preOutputPreparationHook(args, params)).rejects.toThrow(
-      StateError,
-    );
+    await expect(hook.execute({ ...params, args })).rejects.toThrow(StateError);
 
     expect(getReceiptMock).toHaveBeenCalledWith({
       transactionId: '0.0.1234@1234567890.000000000',
@@ -268,10 +261,9 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(saveTokenMock).toHaveBeenCalledWith(
       'testnet:0.0.9999',
       expect.objectContaining({
@@ -355,10 +347,9 @@ describe('token plugin - batch-create-ft-from-file hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(saveTokenMock).toHaveBeenCalledTimes(2);
     expect(saveTokenMock).toHaveBeenNthCalledWith(
       1,

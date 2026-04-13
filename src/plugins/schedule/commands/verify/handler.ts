@@ -1,13 +1,15 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { AbstractHook } from '@/core/hooks/abstract-hook';
-import type { CustomHandlerHookParams, HookResult } from '@/core/hooks/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { ScheduledTransactionData } from '@/plugins/schedule';
-import type { ScheduleVerifyResult } from '@/plugins/schedule/commands/verify/types';
 import type { ScheduleVerifyOutput } from './output';
 
 import { KeyAlgorithm, NotFoundError } from '@/core';
+import {
+  executePhaseHooks,
+  processHookResult,
+  resolveCommandHooks,
+} from '@/core/hooks/hook-executor';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
@@ -56,16 +58,6 @@ export class ScheduleVerifyCommand implements Command {
         composeKey(network, scheduleRecord.name),
         updatedScheduledRecord,
       );
-      if (updatedScheduledRecord.executed && updatedScheduledRecord.command) {
-        const customHandlerHookResult = await this.customHandlerHook(args, {
-          customHandlerParams: {
-            scheduledData: updatedScheduledRecord,
-          },
-        });
-        if (customHandlerHookResult.breakFlow) {
-          return this.processHookResult(customHandlerHookResult);
-        }
-      }
     } else if (scheduleName) {
       let payer;
       if (scheduleResponse.payer_account_id) {
@@ -141,53 +133,30 @@ export class ScheduleVerifyCommand implements Command {
         : undefined,
       payerAccountId: scheduleResponse.payer_account_id,
     };
-    return { result: outputData };
-  }
 
-  async customHandlerHook(
-    args: CommandHandlerArgs,
-    params: CustomHandlerHookParams<ScheduleVerifyResult>,
-  ): Promise<HookResult> {
-    return await this.executeHooks(
-      async (h) =>
-        h.customHandlerHook(args, params, SCHEDULE_VERIFY_COMMAND_NAME),
-      args.hooks,
-    );
-  }
-
-  async executeHooks(
-    hookExecutor: (hook: AbstractHook) => Promise<HookResult>,
-    hooks?: AbstractHook[],
-  ): Promise<HookResult> {
-    if (!hooks) {
-      return {
-        breakFlow: false,
-        result: {
-          message: 'no hooks available',
+    if (updatedScheduledRecord?.executed && updatedScheduledRecord.command) {
+      const postOutputResult = await executePhaseHooks(
+        resolveCommandHooks(args),
+        'postOutputPreparation',
+        {
+          args,
+          commandName: SCHEDULE_VERIFY_COMMAND_NAME,
+          normalisedParams: {},
+          buildTransactionResult: undefined,
+          signTransactionResult: undefined,
+          executeTransactionResult: {
+            source: 'schedule' as const,
+            scheduledData: updatedScheduledRecord,
+          },
+          outputResult: { result: outputData },
         },
-      };
-    }
-
-    for (const hook of hooks) {
-      const hookResult = await hookExecutor(hook);
-      if (hookResult.breakFlow) {
-        return hookResult;
+      );
+      if (postOutputResult.breakFlow) {
+        return processHookResult(postOutputResult);
       }
     }
-    return {
-      breakFlow: false,
-      result: {
-        message: 'success',
-      },
-    };
-  }
 
-  async processHookResult(hookResult: HookResult): Promise<CommandResult> {
-    return Promise.resolve({
-      result: hookResult.result,
-      overrideSchema: hookResult.schema,
-      overrideHumanTemplate: hookResult.humanTemplate,
-    });
+    return { result: outputData };
   }
 }
 

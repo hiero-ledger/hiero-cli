@@ -40,5 +40,6 @@ export const makeScheduleArgs = (
     state: makeStateMock(),
     config: makeConfigMock(),
     args,
+    hooks: new Map(),
   };
 };

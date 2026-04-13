@@ -175,6 +175,7 @@ export interface BatchDataItem {
   transactionBytes: string;
   order: number;
   command: string;
+  keyRefIds: string[];
   normalizedParams: Record<string, unknown>;
   transactionId?: string;
 }

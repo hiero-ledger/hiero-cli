@@ -237,6 +237,7 @@ export const makeArgs = (
   state: makeStateMock(),
   config: makeConfigMock(),
   args,
+  hooks: new Map(),
 });
 
 export function mockIdentityResolution(

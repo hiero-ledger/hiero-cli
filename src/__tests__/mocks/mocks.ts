@@ -3,7 +3,7 @@
  * Shared mocks for core services and utilities used across all plugin tests
  */
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { PreOutputPreparationParams } from '@/core/hooks/types';
+import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type {
   AliasRecord,
@@ -34,11 +34,7 @@ import type { ScheduleTransactionService } from '@/core/services/schedule-transa
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
-import type {
-  BatchData,
-  BatchExecuteTransactionResult,
-  TransactionResult,
-} from '@/core/types/shared.types';
+import type { BatchData, TransactionResult } from '@/core/types/shared.types';
 import type { TopicData } from '@/plugins/topic/schema';
 
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
@@ -632,6 +628,7 @@ export const makeArgs = (
     } as unknown as StateService,
     config: makeConfigMock(),
     args,
+    hooks: new Map(),
   };
 };
 
@@ -839,20 +836,25 @@ export const createMockContractInfo = (
 
 export const createBatchExecuteParams = (
   batchData: BatchData,
-): PreOutputPreparationParams<
-  unknown,
-  unknown,
-  unknown,
-  BatchExecuteTransactionResult
-> =>
-  ({
-    normalisedParams: {},
-    buildTransactionResult: {},
-    signTransactionResult: {},
-    executeTransactionResult: { updatedBatchData: batchData },
-  }) as PreOutputPreparationParams<
-    unknown,
-    unknown,
-    unknown,
-    BatchExecuteTransactionResult
-  >;
+  handlerArgs?: CommandHandlerArgs,
+): PostOutputPreparationHookParams => ({
+  args:
+    handlerArgs ??
+    ({
+      args: {},
+      api: {} as CoreApi,
+      state: {} as StateService,
+      config: makeConfigMock(),
+      logger: makeLogger(),
+      hooks: new Map(),
+    } as CommandHandlerArgs),
+  commandName: 'batch_execute',
+  normalisedParams: {},
+  buildTransactionResult: {},
+  signTransactionResult: {},
+  executeTransactionResult: {
+    source: 'batch',
+    batchData,
+  },
+  outputResult: { result: {} },
+});

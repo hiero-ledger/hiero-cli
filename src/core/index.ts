@@ -101,6 +101,26 @@ export { zodToJsonSchema } from './utils/zod-to-json-schema';
 // ============================================================================
 // Plugin Types
 // ============================================================================
+export type { Hook, HookResult } from './hooks/hook.interface';
+export {
+  executePhaseHooks,
+  processHookResult,
+  resolveCommandHooks,
+} from './hooks/hook-executor';
+export type { OrchestratorResult } from './hooks/orchestrator-result';
+export {
+  BatchOrchestratorResult,
+  OrchestratorResultSchema,
+  ScheduleOrchestratorResult,
+} from './hooks/orchestrator-result';
+export type {
+  PostOutputPreparationHookParams,
+  PreBuildTransactionHookParams,
+  PreExecuteTransactionHookParams,
+  PreOutputPreparationHookParams,
+  PreParamsNormalizationHookParams,
+  PreSignTransactionHookParams,
+} from './hooks/types';
 export type {
   CommandHandler,
   CommandOption,
@@ -108,11 +128,13 @@ export type {
   CommandResult,
   CommandSpec,
   HookOption,
+  HookPhase,
   HookSpec,
   Option,
   PluginContext,
   PluginManifest,
   PluginStateSchema,
+  RegisteredHook,
 } from './plugins/plugin.types';
 
 // ============================================================================

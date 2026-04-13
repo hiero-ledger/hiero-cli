@@ -11,7 +11,7 @@ import { StateError } from '@/core/errors';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME } from '@/plugins/token/commands/create-nft-from-file';
-import { TokenCreateNftFromFileBatchStateHook } from '@/plugins/token/hooks/batch-create-nft-from-file/handler';
+import { TokenCreateNftFromFileStateHook } from '@/plugins/token/hooks/token-create-nft-from-file-state';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { mockAccountIds, validNftTokenFile } from './helpers/fixtures';
@@ -59,6 +59,7 @@ const createNftFromFileBatchDataItem = (
 ): BatchDataItem => ({
   transactionBytes: 'abcdef1234567890',
   order: 1,
+  keyRefIds: [],
   command: TOKEN_CREATE_NFT_FROM_FILE_COMMAND_NAME,
   normalizedParams: createFlatNormalizedParams(),
   transactionId: '0.0.1234@1234567890.000000000',
@@ -66,11 +67,11 @@ const createNftFromFileBatchDataItem = (
 });
 
 describe('token plugin - batch-create-nft-from-file hook', () => {
-  let hook: TokenCreateNftFromFileBatchStateHook;
+  let hook: TokenCreateNftFromFileStateHook;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    hook = new TokenCreateNftFromFileBatchStateHook();
+    hook = new TokenCreateNftFromFileStateHook();
     MockedHelper.mockImplementation(() => ({
       saveToken: jest.fn(),
     }));
@@ -89,12 +90,9 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
       transactions: [createNftFromFileBatchDataItem()],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({
-      message: 'Batch transaction status failure',
-    });
   });
 
   test('returns success when no token_create-nft-from-file transactions in batch', async () => {
@@ -122,10 +120,9 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(saveTokenMock).not.toHaveBeenCalled();
     expect(api.receipt?.getReceipt).not.toHaveBeenCalled();
   });
@@ -154,10 +151,9 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(saveTokenMock).not.toHaveBeenCalled();
     expect(logger.warn).toHaveBeenCalledWith(
       'There was a problem with parsing data schema. The saving will not be done',
@@ -186,10 +182,9 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(saveTokenMock).not.toHaveBeenCalled();
     expect(logger.warn).toHaveBeenCalledWith(
       'No transaction ID found for batch transaction 1',
@@ -219,9 +214,7 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
       transactions: [createNftFromFileBatchDataItem()],
     });
 
-    await expect(hook.preOutputPreparationHook(args, params)).rejects.toThrow(
-      StateError,
-    );
+    await expect(hook.execute({ ...params, args })).rejects.toThrow(StateError);
 
     expect(getReceiptMock).toHaveBeenCalledWith({
       transactionId: '0.0.1234@1234567890.000000000',
@@ -261,10 +254,9 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(saveTokenMock).toHaveBeenCalledWith(
       'testnet:0.0.9999',
       expect.objectContaining({
@@ -336,10 +328,9 @@ describe('token plugin - batch-create-nft-from-file hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(saveTokenMock).toHaveBeenCalledTimes(2);
     expect(saveTokenMock).toHaveBeenNthCalledWith(
       1,

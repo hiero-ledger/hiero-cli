@@ -33,6 +33,18 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
     super(SCHEDULE_SIGN_COMMAND_NAME);
   }
 
+  protected override mapExecuteResultForHooks(
+    executeTransactionResult: ScheduleSignExecuteTransactionResult,
+  ): unknown {
+    if (executeTransactionResult.scheduledData) {
+      return {
+        source: 'schedule' as const,
+        scheduledData: executeTransactionResult.scheduledData,
+      };
+    }
+    return executeTransactionResult;
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<ScheduleSignNormalisedParams> {

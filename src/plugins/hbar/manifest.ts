@@ -18,7 +18,11 @@ export const hbarPluginManifest: PluginManifest = {
       name: 'transfer',
       summary: 'Transfer tinybars between accounts',
       description: 'Transfer HBAR (tinybars) from one account to another',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'amount',
