@@ -67,7 +67,7 @@
   },
   "dependencies": {
     "@clack/prompts": "0.11.0",
-    "@hashgraph/sdk": "2.80.0",
+    "@hashgraph/sdk": "2.81.0",
     "@openzeppelin/contracts": "5.4.0",
     "ansi-escapes": "4.3.2",
     "bignumber.js": "10.0.2",
