@@ -116,7 +116,7 @@ describe('Transfer NFT Integration Tests', () => {
       const mintNftArgs: Record<string, unknown> = {
         token: createNftOutput.tokenId,
         metadata: 'Test NFT Transfer Metadata',
-        supplyKey: 'account-nft-transfer-source',
+        supplyKey: ['account-nft-transfer-source'],
       };
       const mintNftResult = await tokenMintNft({
         args: mintNftArgs,
@@ -284,7 +284,7 @@ describe('Transfer NFT Integration Tests', () => {
       const mintNftArgs: Record<string, unknown> = {
         token: createNftOutput.tokenId,
         metadata: 'Test NFT Not Owned Metadata',
-        supplyKey: 'account-nft-not-owned-test',
+        supplyKey: ['account-nft-not-owned-test'],
       };
       const mintNftResult = await tokenMintNft({
         args: mintNftArgs,
