@@ -1,9 +1,16 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
-import { MOCK_ACCOUNT_ID } from '@/__tests__/mocks/fixtures';
+import {
+  ED25519_HEX_PUBLIC_KEY,
+  MOCK_ACCOUNT_ID,
+} from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { TransactionError, ValidationError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import {
+  NotFoundError,
+  TransactionError,
+  ValidationError,
+} from '@/core/errors';
+import { EntityReferenceType } from '@/core/types/shared.types';
 import {
   tokenClaimAirdrop,
   TokenClaimAirdropOutputSchema,
@@ -109,6 +116,12 @@ const makeSuccessApiMocks = (
   });
 
   return makeApiMocks({
+    identityResolution: {
+      resolveAccount: jest.fn().mockResolvedValue({
+        accountId: TREASURY_ACCOUNT_ENTITY_ID,
+        accountPublicKey: ED25519_HEX_PUBLIC_KEY,
+      }),
+    },
     tokens: {
       createClaimAirdropTransaction: jest.fn().mockReturnValue(MOCK_CLAIM_TX),
     },
@@ -205,6 +218,12 @@ describe('tokenClaimAirdrop', () => {
     test('should deduplicate token info fetches for same token', async () => {
       const getTokenInfo = jest.fn().mockResolvedValue(makeFtTokenInfo());
       const { api } = makeApiMocks({
+        identityResolution: {
+          resolveAccount: jest.fn().mockResolvedValue({
+            accountId: TREASURY_ACCOUNT_ENTITY_ID,
+            accountPublicKey: ED25519_HEX_PUBLIC_KEY,
+          }),
+        },
         tokens: {
           createClaimAirdropTransaction: jest
             .fn()
@@ -232,8 +251,12 @@ describe('tokenClaimAirdrop', () => {
 
     test('should resolve account alias', async () => {
       const { api } = makeSuccessApiMocks([makeFtAirdropItem()]);
-      api.alias.resolve = jest.fn().mockImplementation((ref, type) => {
-        if (type === AliasType.Account && ref === 'my-account') {
+      api.identityResolution.resolveAccount = jest.fn().mockResolvedValue({
+        accountId: MOCK_ACCOUNT_ID,
+        accountPublicKey: ED25519_HEX_PUBLIC_KEY,
+      });
+      api.alias.resolve = jest.fn().mockImplementation((ref: string) => {
+        if (ref === 'my-account') {
           return {
             entityId: MOCK_ACCOUNT_ID,
             publicKey: '302a300506032b6570032100' + 'a'.repeat(64),
@@ -249,6 +272,11 @@ describe('tokenClaimAirdrop', () => {
 
       const output = assertOutput(result.result, TokenClaimAirdropOutputSchema);
       expect(output.receiverAccountId).toBe(MOCK_ACCOUNT_ID);
+      expect(api.identityResolution.resolveAccount).toHaveBeenCalledWith({
+        accountReference: 'my-account',
+        type: EntityReferenceType.ALIAS,
+        network: expect.any(String),
+      });
       expect(api.mirror.getPendingAirdrops).toHaveBeenCalledWith(
         MOCK_ACCOUNT_ID,
       );
@@ -284,16 +312,18 @@ describe('tokenClaimAirdrop', () => {
       ).rejects.toThrow(TransactionError);
     });
 
-    test('should throw NotFoundError for unknown alias', async () => {
+    test('should throw when account cannot be resolved', async () => {
       const { api } = makeApiMocks({
-        alias: {
-          resolve: jest.fn().mockReturnValue(null),
+        identityResolution: {
+          resolveAccount: jest
+            .fn()
+            .mockRejectedValue(new NotFoundError('Account not found')),
         },
       });
 
       await expect(
         tokenClaimAirdrop(makeArgs(api, { account: 'unknown-alias' })),
-      ).rejects.toThrow();
+      ).rejects.toThrow(NotFoundError);
     });
   });
 });

@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
 import {
-  EntityReferenceSchema,
+  AccountReferenceObjectSchema,
   KeyManagerTypeSchema,
   KeySchema,
 } from '@/core/schemas';
 
 export const TokenClaimAirdropInputSchema = z.object({
-  account: EntityReferenceSchema.describe(
+  account: AccountReferenceObjectSchema.describe(
     'Receiver account ID or alias to claim airdrops for',
   ),
   index: z

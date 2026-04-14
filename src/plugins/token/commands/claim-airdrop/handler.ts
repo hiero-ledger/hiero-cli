@@ -1,9 +1,8 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { TokenAirdropItem } from '@/core/services/mirrornode/types';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { ClaimAirdropItem } from '@/core/types/token.types';
 import type { TokenClaimAirdropOutput } from './output';
 import type {
@@ -15,13 +14,8 @@ import type {
 } from './types';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
-import {
-  NotFoundError,
-  TransactionError,
-  ValidationError,
-} from '@/core/errors';
-import { EntityIdSchema, KeySchema } from '@/core/schemas/common-schemas';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { TransactionError, ValidationError } from '@/core/errors';
+import { KeySchema } from '@/core/schemas/common-schemas';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 
 import { TokenClaimAirdropInputSchema } from './input';
@@ -46,11 +40,12 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
     const validArgs = TokenClaimAirdropInputSchema.parse(args.args);
 
     const network = api.network.getCurrentNetwork();
-    const receiverAccountId = this.resolveAccountId(
-      validArgs.account,
-      api,
-      network,
-    );
+    const { accountId: receiverAccountId } =
+      await api.identityResolution.resolveAccount({
+        accountReference: validArgs.account.value,
+        type: validArgs.account.type,
+        network,
+      });
 
     logger.info(`Fetching pending airdrops for ${receiverAccountId}...`);
     const response = await api.mirror.getPendingAirdrops(receiverAccountId);
@@ -64,14 +59,17 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
       ...new Set(selectedAirdrops.map((a) => a.token_id)),
     ];
     const tokenInfoMap = await this.fetchTokenInfoMap(
-      api,
+      api.mirror,
       logger,
       uniqueTokenIds,
     );
 
-    const claimItems: ClaimAirdropItem[] = selectedAirdrops.map((item) =>
-      this.buildClaimItem(item, receiverAccountId),
-    );
+    const claimItems: ClaimAirdropItem[] = selectedAirdrops.map((item) => ({
+      tokenId: item.token_id,
+      senderAccountId: item.sender_id,
+      receiverAccountId,
+      serialNumber: item.serial_number ?? undefined,
+    }));
 
     const resolvedAirdrops: ClaimAirdropResolved[] = selectedAirdrops.map(
       (item) => this.buildResolvedAirdrop(item, tokenInfoMap),
@@ -82,7 +80,7 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const signerCredential =
-      validArgs.from ?? KeySchema.parse(validArgs.account);
+      validArgs.from ?? KeySchema.parse(validArgs.account.value);
     const resolvedAccount = await api.keyResolver.resolveAccountCredentials(
       signerCredential,
       keyManager,
@@ -173,30 +171,6 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
     return { result: output };
   }
 
-  private resolveAccountId(
-    accountOrAlias: string,
-    api: CoreApi,
-    network: SupportedNetwork,
-  ): string {
-    const resolved = api.alias.resolve(
-      accountOrAlias,
-      AliasType.Account,
-      network,
-    );
-    if (resolved?.entityId) {
-      return resolved.entityId;
-    }
-
-    const parsed = EntityIdSchema.safeParse(accountOrAlias);
-    if (!parsed.success) {
-      throw new NotFoundError(
-        `Account not found with ID or alias: ${accountOrAlias}`,
-      );
-    }
-
-    return parsed.data;
-  }
-
   private validateIndices(indices: number[], totalAirdrops: number): void {
     if (indices.length > MAX_CLAIM_AIRDROPS) {
       throw new ValidationError(
@@ -211,18 +185,6 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
         );
       }
     }
-  }
-
-  private buildClaimItem(
-    item: TokenAirdropItem,
-    receiverAccountId: string,
-  ): ClaimAirdropItem {
-    return {
-      tokenId: item.token_id,
-      senderAccountId: item.sender_id,
-      receiverAccountId,
-      serialNumber: item.serial_number ?? undefined,
-    };
   }
 
   private buildResolvedAirdrop(
@@ -255,14 +217,14 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
   }
 
   private async fetchTokenInfoMap(
-    api: CoreApi,
+    mirror: HederaMirrornodeService,
     logger: Logger,
     tokenIds: string[],
   ): Promise<Map<string, { name: string; symbol: string }>> {
     const entries = await Promise.all(
       tokenIds.map(async (tokenId) => {
         logger.info(`Fetching token info for ${tokenId}...`);
-        const info = await api.mirror.getTokenInfo(tokenId);
+        const info = await mirror.getTokenInfo(tokenId);
         return [tokenId, { name: info.name, symbol: info.symbol }] as const;
       }),
     );
