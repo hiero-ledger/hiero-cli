@@ -3,7 +3,7 @@
 - **Status:** Draft
 - **Date:** 2026-04-02
 - **Owner:** Hiero CLI Team
-- **Related ADRs:** ADR-001 (Plugin Architecture), ADR-010 (Batch Transactions), ADR-011 (Schedule Transactions), ADR-012 (SaucerSwap DEX Plugin — proposed)
+- **Related ADRs:** ADR-001 (Plugin Architecture), ADR-010 (Batch Transactions), ADR-011 (Schedule Transactions), ADR-013 (SaucerSwap DEX Plugin — proposed)
 
 ---
 
@@ -13,7 +13,7 @@
 
 The Hiero CLI is a modular, plugin-based command-line interface for interacting with the Hedera network. It already supports account management, token operations, HBAR transfers, contract interaction, batch transactions, and scheduled transactions — all through a composable plugin architecture with structured JSON output.
 
-With the addition of the **SaucerSwap DEX plugin** (ADR-012), the CLI gains the final building block needed to support DeFi operations: token swaps, liquidity management, and pool discovery.
+With the addition of the **SaucerSwap DEX plugin** (ADR-013), the CLI gains the final building block needed to support DeFi operations: token swaps, liquidity management, and pool discovery.
 
 The **Agentic Hedge Fund** is a reference demo application that answers the question:
 
@@ -34,7 +34,7 @@ A hedge fund operating on-chain is a high-value, high-complexity scenario that e
 | ---------------------- | ---------------------------------------------------------------------------- |
 | Portfolio observation  | Mirror Node queries, `saucerswap list/view`, `token view`, `account balance` |
 | Trade execution        | `saucerswap swap`, `saucerswap buy`, `hbar transfer`, `token transfer-ft`    |
-| Liquidity provisioning | `saucerswap deposit`, `saucerswap withdraw`, `saucerswap create-pool`        |
+| Liquidity provisioning | `saucerswap deposit`, `saucerswap withdraw`                                  |
 | Atomic rebalancing     | `batch create` + multiple ops + `batch execute`                              |
 | Multi-sig governance   | `schedule create` + `schedule sign` + `--scheduled` hook                     |
 | Wallet management      | `account create`, `account balance`                                          |
@@ -125,10 +125,10 @@ No single plugin demo could showcase this breadth. A hedge fund scenario natural
 │                     BLOCKCHAIN LAYER                                │
 │                                                                     │
 │    Hedera Network (testnet / mainnet)                               │
-│    ┌────────────┐  ┌────────────────┐  ┌──────────────────────┐    │
-│    │ Consensus  │  │  Mirror Node   │  │ SaucerSwap Contracts │    │
-│    │  Nodes     │  │  REST API      │  │ (Router / Factory)   │    │
-│    └────────────┘  └────────────────┘  └──────────────────────┘    │
+│    ┌────────────┐  ┌────────────────┐  ┌──────────────────────┐     │
+│    │ Consensus  │  │  Mirror Node   │  │ SaucerSwap Contracts │     │
+│    │  Nodes     │  │  REST API      │  │ (Router / Factory)   │     │
+│    └────────────┘  └────────────────┘  └──────────────────────┘     │
 │                                         ┌──────────────────────┐    │
 │                                         │ SaucerSwap REST API  │    │
 │                                         │ (pool data / prices) │    │
@@ -230,6 +230,7 @@ hcli batch execute --name rebalance-42
 ```
 
 If any step fails, the entire rebalance reverts. No partial-fill risk.
+Need to remember that transactions in the batch must be independent of each other.
 
 ### 4.6 Multi-Sig Governance (Scheduled Transactions)
 
@@ -340,15 +341,7 @@ hcli schedule verify --name large-swap
        --amount-a 500 --amount-b 1000 --slippage 2.0 --batch rebalance-2026-04-02
    ```
 
-3. **Risk Agent** reviews the batch:
-
-   ```bash
-   hcli batch list --format json
-   ```
-
-   Verifies transaction count, operation types, and amounts.
-
-4. **Execution Agent** executes atomically:
+3. **Execution Agent** executes atomically:
 
    ```bash
    hcli batch execute --name rebalance-2026-04-02 --format json
@@ -356,7 +349,7 @@ hcli schedule verify --name large-swap
 
    All three operations succeed or none do.
 
-5. **Results** are logged: transaction ID, success status, post-execution balances queried via `account balance`.
+4. **Results** are logged: transaction ID, success status, post-execution balances queried via `account balance`.
 
 ### Flow 3: Governed Large Trade with Multi-Sig Approval
 
@@ -448,14 +441,14 @@ hcli schedule verify --name large-swap
 
 The Agentic Hedge Fund uses the following plugins from the Hiero CLI:
 
-| Plugin                 | Role in the Fund                                                        | Commands Used                                                       |
-| ---------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------- |
-| **account**            | Wallet management: create fund accounts, check balances, import wallets | `create`, `balance`, `list`, `import`, `view`                       |
-| **hbar**               | Native currency transfers between fund accounts                         | `transfer`                                                          |
-| **token**              | Token transfers, association, metadata queries                          | `transfer-ft`, `associate`, `view`, `list`                          |
-| **saucerswap** _(new)_ | DEX operations: swaps, liquidity, pool queries                          | `swap`, `buy`, `deposit`, `withdraw`, `create-pool`, `list`, `view` |
-| **batch**              | Atomic multi-operation rebalancing                                      | `create`, `execute`, `list`, `delete`                               |
-| **schedule**           | Multi-sig governance for large trades                                   | `create`, `sign`, `delete`, `verify`                                |
+| Plugin                 | Role in the Fund                                                        | Commands Used                                        |
+| ---------------------- | ----------------------------------------------------------------------- | ---------------------------------------------------- |
+| **account**            | Wallet management: create fund accounts, check balances, import wallets | `create`, `balance`, `list`, `import`, `view`        |
+| **hbar**               | Native currency transfers between fund accounts                         | `transfer`                                           |
+| **token**              | Token transfers, association, metadata queries                          | `transfer-ft`, `associate`, `view`, `list`           |
+| **saucerswap** _(new)_ | DEX operations: swaps, liquidity, pool queries                          | `swap`, `buy`, `deposit`, `withdraw`, `list`, `view` |
+| **batch**              | Atomic multi-operation rebalancing                                      | `create`, `execute`, `list`, `delete`                |
+| **schedule**           | Multi-sig governance for large trades                                   | `create`, `sign`, `delete`, `verify`                 |
 
 ### 6.2 Core API Services Leveraged
 
@@ -552,7 +545,7 @@ The Execution Agent parses the exit code and JSON error output to decide on retr
 ### In Scope (Demo v1)
 
 - [ ] **Agent scripts** (TypeScript or Python) implementing the four flows described above
-- [ ] **SaucerSwap plugin** implementation (ADR-012) with `swap`, `buy`, `list`, `view`, `deposit`, `withdraw`, `create-pool` commands
+- [ ] **SaucerSwap plugin** implementation (ADR-013) with `swap`, `buy`, `list`, `view`, `deposit`, `withdraw`, `create-pool` commands
 - [ ] **Example strategy**: simple mean-reversion or rebalancing strategy
 - [ ] **Testnet deployment**: all demo operations on Hedera testnet
 - [ ] **Audit logging**: agent logs every CLI invocation with input/output to a local file
@@ -569,22 +562,13 @@ The Execution Agent parses the exit code and JSON error output to decide on retr
 - Cross-chain operations
 - MEV protection beyond slippage settings
 
-### Future Extensions (v2+)
-
-- LLM-based strategy agent (e.g., Claude/GPT reasoning about portfolio allocation)
-- Web dashboard showing agent decisions, positions, and P&L
-- Multi-strategy fund with competing agents and capital allocation
-- Mainnet deployment with hardware key management
-- Integration with price oracles for strategy inputs
-- Notification hooks (Slack/email on trade execution or risk alerts)
-
 ---
 
 ## 8. Technical Requirements
 
 ### 8.1 SaucerSwap Plugin (Prerequisite)
 
-The SaucerSwap DEX plugin must be implemented per the proposed ADR-012 design:
+The SaucerSwap DEX plugin must be implemented per the proposed ADR-013 design:
 
 | Command               | Contract Function                        | Notes                        |
 | --------------------- | ---------------------------------------- | ---------------------------- |
