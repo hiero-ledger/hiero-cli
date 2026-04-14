@@ -58,67 +58,57 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       ['token:treasury'],
     );
 
-    const adminCreds = validArgs.adminKey ? [validArgs.adminKey] : [];
     const admin = await resolveOptionalKeys(
-      adminCreds,
+      validArgs.adminKey,
       keyManager,
       api.keyResolver,
       'token:admin',
     );
 
-    const supplyCreds = validArgs.supplyKey ? [validArgs.supplyKey] : [];
     const supply = await resolveOptionalKeys(
-      supplyCreds,
+      validArgs.supplyKey,
       keyManager,
       api.keyResolver,
       'token:supply',
     );
 
-    const freezeCreds = validArgs.freezeKey ? [validArgs.freezeKey] : [];
     const freeze = await resolveOptionalKeys(
-      freezeCreds,
+      validArgs.freezeKey,
       keyManager,
       api.keyResolver,
       'token:freeze',
     );
 
-    const wipeCreds = validArgs.wipeKey ? [validArgs.wipeKey] : [];
     const wipe = await resolveOptionalKeys(
-      wipeCreds,
+      validArgs.wipeKey,
       keyManager,
       api.keyResolver,
       'token:wipe',
     );
 
-    const kycCreds = validArgs.kycKey ? [validArgs.kycKey] : [];
     const kyc = await resolveOptionalKeys(
-      kycCreds,
+      validArgs.kycKey,
       keyManager,
       api.keyResolver,
       'token:kyc',
     );
 
-    const pauseCreds = validArgs.pauseKey ? [validArgs.pauseKey] : [];
     const pause = await resolveOptionalKeys(
-      pauseCreds,
+      validArgs.pauseKey,
       keyManager,
       api.keyResolver,
       'token:pause',
     );
 
-    const feeScheduleCreds = validArgs.feeScheduleKey
-      ? [validArgs.feeScheduleKey]
-      : [];
     const feeSchedule = await resolveOptionalKeys(
-      feeScheduleCreds,
+      validArgs.feeScheduleKey,
       keyManager,
       api.keyResolver,
       'token:feeSchedule',
     );
 
-    const metadataCreds = validArgs.metadataKey ? [validArgs.metadataKey] : [];
     const metadata = await resolveOptionalKeys(
-      metadataCreds,
+      validArgs.metadataKey,
       keyManager,
       api.keyResolver,
       'token:metadata',
@@ -159,21 +149,22 @@ export class TokenCreateNftCommand extends BaseTransactionCommand<
       keyManager,
       treasury,
       adminKeys: admin,
-      adminKeyThreshold: admin.length,
+      adminKeyThreshold: validArgs.adminKeyThreshold ?? admin.length,
       supplyKeys: supply,
-      supplyKeyThreshold: supply.length,
+      supplyKeyThreshold: validArgs.supplyKeyThreshold ?? supply.length,
       freezeKeys: freeze,
-      freezeKeyThreshold: freeze.length,
+      freezeKeyThreshold: validArgs.freezeKeyThreshold ?? freeze.length,
       wipeKeys: wipe,
-      wipeKeyThreshold: wipe.length,
+      wipeKeyThreshold: validArgs.wipeKeyThreshold ?? wipe.length,
       pauseKeys: pause,
-      pauseKeyThreshold: pause.length,
+      pauseKeyThreshold: validArgs.pauseKeyThreshold ?? pause.length,
       kycKeys: kyc,
-      kycKeyThreshold: kyc.length,
+      kycKeyThreshold: validArgs.kycKeyThreshold ?? kyc.length,
       feeScheduleKeys: feeSchedule,
-      feeScheduleKeyThreshold: feeSchedule.length,
+      feeScheduleKeyThreshold:
+        validArgs.feeScheduleKeyThreshold ?? feeSchedule.length,
       metadataKeys: metadata,
-      metadataKeyThreshold: metadata.length,
+      metadataKeyThreshold: validArgs.metadataKeyThreshold ?? metadata.length,
       finalMaxSupply,
       freezeDefault: validArgs.freezeDefault,
       autoRenewPeriod: validArgs.autoRenewPeriod,

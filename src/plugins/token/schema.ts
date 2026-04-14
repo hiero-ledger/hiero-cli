@@ -12,6 +12,7 @@ import {
   HtsDecimalsSchema,
   KeyRefIdArraySchema,
   KeySchema,
+  KeyThresholdOptionalSchema,
   MemoSchema,
   NonNegativeNumberOrBigintSchema,
   TokenNameSchema,
@@ -21,6 +22,7 @@ import {
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
 import { CustomFeeType, FixedFeeUnitType } from '@/core/types/token.types';
+import { applyKeyThresholdSuperRefine } from '@/core/utils/key-threshold-input-schema';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
@@ -257,6 +259,21 @@ function validateFileSupplyTypeAndMaxSupply<
   }
 }
 
+// Accepts either a single key string (backward compat) or an array of key strings.
+// Always normalizes to an array.
+const KeyOrListSchema = (minLength: number, label: string) =>
+  z.preprocess(
+    (val) => (typeof val === 'string' ? [val] : val),
+    z
+      .array(KeySchema)
+      .min(minLength, `At least ${minLength} ${label} key(s) required`),
+  );
+
+const OptionalKeyOrListSchema = z.preprocess((val) => {
+  if (val === undefined || val === null) return [];
+  return typeof val === 'string' ? [val] : val;
+}, z.array(KeySchema).default([]));
+
 export const NonFungibleTokenFileSchema = z
   .object({
     name: TokenNameSchema,
@@ -264,17 +281,98 @@ export const NonFungibleTokenFileSchema = z
     supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
     maxSupply: NonNegativeNumberOrBigintSchema.optional(),
     treasuryKey: KeySchema,
-    adminKey: KeySchema,
-    supplyKey: KeySchema,
-    wipeKey: KeySchema.optional(),
-    kycKey: KeySchema.optional(),
-    freezeKey: KeySchema.optional(),
-    pauseKey: KeySchema.optional(),
-    feeScheduleKey: KeySchema.optional(),
+    adminKey: KeyOrListSchema(1, 'admin'),
+    adminKeyThreshold: KeyThresholdOptionalSchema,
+    supplyKey: KeyOrListSchema(1, 'supply'),
+    supplyKeyThreshold: KeyThresholdOptionalSchema,
+    wipeKey: OptionalKeyOrListSchema,
+    wipeKeyThreshold: KeyThresholdOptionalSchema,
+    kycKey: OptionalKeyOrListSchema,
+    kycKeyThreshold: KeyThresholdOptionalSchema,
+    freezeKey: OptionalKeyOrListSchema,
+    freezeKeyThreshold: KeyThresholdOptionalSchema,
+    pauseKey: OptionalKeyOrListSchema,
+    pauseKeyThreshold: KeyThresholdOptionalSchema,
+    feeScheduleKey: OptionalKeyOrListSchema,
+    feeScheduleKeyThreshold: KeyThresholdOptionalSchema,
     associations: z.array(KeySchema).default([]),
     memo: MemoSchema.default(''),
   })
-  .superRefine(validateFileSupplyTypeAndMaxSupply);
+  .superRefine(validateFileSupplyTypeAndMaxSupply)
+  .superRefine((data, context) => {
+    applyKeyThresholdSuperRefine(data, context, [
+      {
+        thresholdField: 'adminKeyThreshold',
+        getKeyCount: (row) => row.adminKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'adminKeyThreshold can only be set when multiple admin keys are provided',
+          thresholdExceedsKeyCount:
+            'adminKeyThreshold must not exceed the number of admin keys provided',
+        },
+      },
+      {
+        thresholdField: 'supplyKeyThreshold',
+        getKeyCount: (row) => row.supplyKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'supplyKeyThreshold can only be set when multiple supply keys are provided',
+          thresholdExceedsKeyCount:
+            'supplyKeyThreshold must not exceed the number of supply keys provided',
+        },
+      },
+      {
+        thresholdField: 'wipeKeyThreshold',
+        getKeyCount: (row) => row.wipeKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'wipeKeyThreshold can only be set when multiple wipe keys are provided',
+          thresholdExceedsKeyCount:
+            'wipeKeyThreshold must not exceed the number of wipe keys provided',
+        },
+      },
+      {
+        thresholdField: 'kycKeyThreshold',
+        getKeyCount: (row) => row.kycKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'kycKeyThreshold can only be set when multiple KYC keys are provided',
+          thresholdExceedsKeyCount:
+            'kycKeyThreshold must not exceed the number of KYC keys provided',
+        },
+      },
+      {
+        thresholdField: 'freezeKeyThreshold',
+        getKeyCount: (row) => row.freezeKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'freezeKeyThreshold can only be set when multiple freeze keys are provided',
+          thresholdExceedsKeyCount:
+            'freezeKeyThreshold must not exceed the number of freeze keys provided',
+        },
+      },
+      {
+        thresholdField: 'pauseKeyThreshold',
+        getKeyCount: (row) => row.pauseKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'pauseKeyThreshold can only be set when multiple pause keys are provided',
+          thresholdExceedsKeyCount:
+            'pauseKeyThreshold must not exceed the number of pause keys provided',
+        },
+      },
+      {
+        thresholdField: 'feeScheduleKeyThreshold',
+        getKeyCount: (row) => row.feeScheduleKey.length,
+        messages: {
+          thresholdWithoutEnoughKeys:
+            'feeScheduleKeyThreshold can only be set when multiple fee schedule keys are provided',
+          thresholdExceedsKeyCount:
+            'feeScheduleKeyThreshold must not exceed the number of fee schedule keys provided',
+        },
+      },
+    ]);
+  });
 
 export type NonFungibleTokenFileDefinition = z.infer<
   typeof NonFungibleTokenFileSchema

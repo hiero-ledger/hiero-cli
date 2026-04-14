@@ -522,8 +522,8 @@ export const makeNftCreateCommandArgs = (params: {
       symbol: 'TEST',
       supplyType: SupplyType.INFINITE,
       treasury: 'treasury-account', // Use alias
-      adminKey: 'test-admin-key', // Use alias
-      supplyKey: 'test-supply-key', // Use alias
+      adminKey: ['test-admin-key'], // Use alias
+      supplyKey: ['test-supply-key'], // Use alias
       ...params.args,
     },
     api,

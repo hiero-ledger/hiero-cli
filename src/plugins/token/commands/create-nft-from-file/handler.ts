@@ -19,7 +19,7 @@ import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { processTokenAssociations } from '@/plugins/token/utils/token-associations';
 import { buildNftTokenDataFromFile } from '@/plugins/token/utils/token-data-builders';
 import { readAndValidateNftTokenFile } from '@/plugins/token/utils/token-file-helpers';
-import { resolveOptionalKey } from '@/plugins/token/utils/token-key-resolver';
+import { resolveOptionalKeys } from '@/plugins/token/utils/token-key-resolver';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenCreateNftFromFileInputSchema } from './input';
@@ -62,63 +62,56 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       ['token:treasury'],
     );
 
-    const adminResolved = await api.keyResolver.resolveSigningKey(
+    const adminKeys = await resolveOptionalKeys(
       tokenDefinition.adminKey,
       keyManager,
-      false,
-      ['token:admin', `token:${tokenDefinition.name}`],
+      api.keyResolver,
+      'token:admin',
     );
-    const adminKeys = [adminResolved];
-    logger.info('Resolved admin key for signing');
+    logger.info(`Resolved ${adminKeys.length} admin key(s) for signing`);
 
-    const supplyResolved = await api.keyResolver.getPublicKey(
+    const supplyKeys = await resolveOptionalKeys(
       tokenDefinition.supplyKey,
       keyManager,
-      false,
-      ['token:supply'],
+      api.keyResolver,
+      'token:supply',
     );
-    const supplyKeys = [supplyResolved];
-    logger.info('Resolved supply key');
+    logger.info(`Resolved ${supplyKeys.length} supply key(s)`);
 
-    const wipeResolved = await resolveOptionalKey(
+    const wipeKeys = await resolveOptionalKeys(
       tokenDefinition.wipeKey,
       keyManager,
       api.keyResolver,
       'token:wipe',
     );
-    const wipeKeys = wipeResolved ? [wipeResolved] : [];
 
-    const kycResolved = await resolveOptionalKey(
+    const kycKeys = await resolveOptionalKeys(
       tokenDefinition.kycKey,
       keyManager,
       api.keyResolver,
       'token:kyc',
     );
-    const kycKeys = kycResolved ? [kycResolved] : [];
 
-    const freezeResolved = await resolveOptionalKey(
+    const freezeKeys = await resolveOptionalKeys(
       tokenDefinition.freezeKey,
       keyManager,
       api.keyResolver,
       'token:freeze',
     );
-    const freezeKeys = freezeResolved ? [freezeResolved] : [];
 
-    const pauseResolved = await resolveOptionalKey(
+    const pauseKeys = await resolveOptionalKeys(
       tokenDefinition.pauseKey,
       keyManager,
       api.keyResolver,
       'token:pause',
     );
-    const pauseKeys = pauseResolved ? [pauseResolved] : [];
 
-    const feeScheduleResolved = await resolveOptionalKey(
+    const feeScheduleKeys = await resolveOptionalKeys(
       tokenDefinition.feeScheduleKey,
       keyManager,
       api.keyResolver,
       'token:feeSchedule',
     );
-    const feeScheduleKeys = feeScheduleResolved ? [feeScheduleResolved] : [];
 
     const keyRefIds = [...adminKeys.map((k) => k.keyRefId), treasury.keyRefId];
 
@@ -135,19 +128,22 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       network,
       treasury,
       adminKeys,
-      adminKeyThreshold: adminKeys.length,
+      adminKeyThreshold: tokenDefinition.adminKeyThreshold ?? adminKeys.length,
       supplyKeys,
-      supplyKeyThreshold: supplyKeys.length,
+      supplyKeyThreshold:
+        tokenDefinition.supplyKeyThreshold ?? supplyKeys.length,
       wipeKeys,
-      wipeKeyThreshold: wipeKeys.length,
+      wipeKeyThreshold: tokenDefinition.wipeKeyThreshold ?? wipeKeys.length,
       kycKeys,
-      kycKeyThreshold: kycKeys.length,
+      kycKeyThreshold: tokenDefinition.kycKeyThreshold ?? kycKeys.length,
       freezeKeys,
-      freezeKeyThreshold: freezeKeys.length,
+      freezeKeyThreshold:
+        tokenDefinition.freezeKeyThreshold ?? freezeKeys.length,
       pauseKeys,
-      pauseKeyThreshold: pauseKeys.length,
+      pauseKeyThreshold: tokenDefinition.pauseKeyThreshold ?? pauseKeys.length,
       feeScheduleKeys,
-      feeScheduleKeyThreshold: feeScheduleKeys.length,
+      feeScheduleKeyThreshold:
+        tokenDefinition.feeScheduleKeyThreshold ?? feeScheduleKeys.length,
       keyRefIds,
     };
   }

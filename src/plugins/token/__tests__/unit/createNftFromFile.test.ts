@@ -1009,9 +1009,9 @@ describe('tokenCreateNftFromFileHandler', () => {
         'Creating NFT token from file: test',
       );
       expect(logger.info).toHaveBeenCalledWith(
-        'Resolved admin key for signing',
+        'Resolved 1 admin key(s) for signing',
       );
-      expect(logger.info).toHaveBeenCalledWith('Resolved supply key');
+      expect(logger.info).toHaveBeenCalledWith('Resolved 1 supply key(s)');
     });
   });
 });
