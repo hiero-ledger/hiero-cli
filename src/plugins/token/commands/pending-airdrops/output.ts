@@ -30,14 +30,16 @@ Pending Airdrops for {{account}} ({{network}})
 
 {{#each airdrops}}
 {{#if (eq type "FUNGIBLE")}}
-  {{tokenName}} ({{tokenSymbol}}) [{{tokenId}}]
-    From: {{senderId}}   Amount: {{amount}}
+  {{add1 @index}}. {{tokenName}} ({{tokenSymbol}}) [{{tokenId}}]
+       From: {{senderId}}   Amount: {{amount}}
 {{else}}
-  {{tokenName}} ({{tokenSymbol}}) [{{tokenId}}]
-    From: {{senderId}}   Serial: #{{serialNumber}}
+  {{add1 @index}}. {{tokenName}} ({{tokenSymbol}}) [{{tokenId}}]
+       From: {{senderId}}   Serial: #{{serialNumber}}
 {{/if}}
 {{/each}}
 Total: {{total}} pending airdrop(s)
+──────────────────────────────────────────────────
+  To claim: hcli token claim-airdrop --account {{account}} --index <number(s)>
 {{else}}
   No pending airdrops found.
 {{/if}}

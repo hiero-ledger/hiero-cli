@@ -36,22 +36,27 @@ const createNftBatchDataItem = (
     tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
     network: SupportedNetwork.TESTNET,
     keyManager: KeyManager.local,
-    adminKeyProvided: true,
     treasury: {
       accountId: '0.0.123456',
       keyRefId: 'kr-treasury',
       publicKey: 'pk-treasury',
     },
-    admin: {
-      accountId: '0.0.100000',
-      keyRefId: 'kr-admin',
-      publicKey: 'pk-admin',
-    },
-    supply: {
-      accountId: '0.0.100000',
-      keyRefId: 'kr-supply',
-      publicKey: 'pk-supply',
-    },
+    adminKeys: [
+      {
+        accountId: '0.0.100000',
+        keyRefId: 'kr-admin',
+        publicKey: 'pk-admin',
+      },
+    ],
+    adminKeyThreshold: 0,
+    supplyKeys: [
+      {
+        accountId: '0.0.100000',
+        keyRefId: 'kr-supply',
+        publicKey: 'pk-supply',
+      },
+    ],
+    supplyKeyThreshold: 0,
   },
   transactionId: '0.0.1234@1234567890.000000000',
   ...overrides,
@@ -233,22 +238,27 @@ describe('token plugin - batch-create-nft hook', () => {
             tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
             network: SupportedNetwork.TESTNET,
             keyManager: KeyManager.local,
-            adminKeyProvided: true,
             treasury: {
               accountId: '0.0.123456',
               keyRefId: 'kr-treasury',
               publicKey: 'pk-treasury',
             },
-            admin: {
-              accountId: '0.0.100000',
-              keyRefId: 'kr-admin',
-              publicKey: 'pk-admin',
-            },
-            supply: {
-              accountId: '0.0.100000',
-              keyRefId: 'kr-supply',
-              publicKey: 'pk-supply',
-            },
+            adminKeys: [
+              {
+                accountId: '0.0.100000',
+                keyRefId: 'kr-admin',
+                publicKey: 'pk-admin',
+              },
+            ],
+            adminKeyThreshold: 0,
+            supplyKeys: [
+              {
+                accountId: '0.0.100000',
+                keyRefId: 'kr-supply',
+                publicKey: 'pk-supply',
+              },
+            ],
+            supplyKeyThreshold: 0,
           },
         }),
       ],
@@ -268,8 +278,10 @@ describe('token plugin - batch-create-nft hook', () => {
         initialSupply: 0n,
         tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
         supplyType: 'INFINITE',
-        adminPublicKey: 'pk-admin',
-        supplyPublicKey: 'pk-supply',
+        adminKeyRefIds: ['kr-admin'],
+        adminKeyThreshold: 0,
+        supplyKeyRefIds: ['kr-supply'],
+        supplyKeyThreshold: 0,
         network: SupportedNetwork.TESTNET,
       }),
     );
@@ -317,23 +329,28 @@ describe('token plugin - batch-create-nft hook', () => {
             tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
             network: SupportedNetwork.TESTNET,
             keyManager: KeyManager.local,
-            adminKeyProvided: true,
             alias: 'my-nft-alias',
             treasury: {
               accountId: '0.0.123456',
               keyRefId: 'kr-treasury',
               publicKey: 'pk-treasury',
             },
-            admin: {
-              accountId: '0.0.100000',
-              keyRefId: 'kr-admin',
-              publicKey: 'pk-admin',
-            },
-            supply: {
-              accountId: '0.0.100000',
-              keyRefId: 'kr-supply',
-              publicKey: 'pk-supply',
-            },
+            adminKeys: [
+              {
+                accountId: '0.0.100000',
+                keyRefId: 'kr-admin',
+                publicKey: 'pk-admin',
+              },
+            ],
+            adminKeyThreshold: 0,
+            supplyKeys: [
+              {
+                accountId: '0.0.100000',
+                keyRefId: 'kr-supply',
+                publicKey: 'pk-supply',
+              },
+            ],
+            supplyKeyThreshold: 0,
           },
         }),
       ],
@@ -402,22 +419,27 @@ describe('token plugin - batch-create-nft hook', () => {
             tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
             network: SupportedNetwork.TESTNET,
             keyManager: KeyManager.local,
-            adminKeyProvided: true,
             treasury: {
               accountId: '0.0.123456',
               keyRefId: 'kr-treasury',
               publicKey: 'pk-treasury',
             },
-            admin: {
-              accountId: '0.0.100000',
-              keyRefId: 'kr-admin',
-              publicKey: 'pk-admin',
-            },
-            supply: {
-              accountId: '0.0.100000',
-              keyRefId: 'kr-supply',
-              publicKey: 'pk-supply',
-            },
+            adminKeys: [
+              {
+                accountId: '0.0.100000',
+                keyRefId: 'kr-admin',
+                publicKey: 'pk-admin',
+              },
+            ],
+            adminKeyThreshold: 0,
+            supplyKeys: [
+              {
+                accountId: '0.0.100000',
+                keyRefId: 'kr-supply',
+                publicKey: 'pk-supply',
+              },
+            ],
+            supplyKeyThreshold: 0,
           },
         }),
         createNftBatchDataItem({
@@ -432,22 +454,27 @@ describe('token plugin - batch-create-nft hook', () => {
             tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
             network: SupportedNetwork.TESTNET,
             keyManager: KeyManager.local,
-            adminKeyProvided: false,
             treasury: {
               accountId: '0.0.123456',
               keyRefId: 'kr-treasury',
               publicKey: 'pk-treasury',
             },
-            admin: {
-              accountId: '0.0.100000',
-              keyRefId: 'kr-admin',
-              publicKey: 'pk-admin',
-            },
-            supply: {
-              accountId: '0.0.100000',
-              keyRefId: 'kr-supply',
-              publicKey: 'pk-supply',
-            },
+            adminKeys: [
+              {
+                accountId: '0.0.100000',
+                keyRefId: 'kr-admin',
+                publicKey: 'pk-admin',
+              },
+            ],
+            adminKeyThreshold: 0,
+            supplyKeys: [
+              {
+                accountId: '0.0.100000',
+                keyRefId: 'kr-supply',
+                publicKey: 'pk-supply',
+              },
+            ],
+            supplyKeyThreshold: 0,
           },
         }),
       ],

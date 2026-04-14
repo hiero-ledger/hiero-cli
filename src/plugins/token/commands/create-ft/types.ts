@@ -1,4 +1,3 @@
-import type { PublicKey } from '@hashgraph/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,
@@ -25,22 +24,22 @@ export interface TokenCreateFtNormalizedParams extends BaseNormalizedParams {
   network: SupportedNetwork;
   keyManager: KeyManager;
   treasury: ResolvedAccountCredential;
-  admin?: ResolvedPublicKey;
-  supply?: ResolvedPublicKey;
-  freeze?: ResolvedPublicKey;
-  wipe?: ResolvedPublicKey;
-  kyc?: ResolvedPublicKey;
-  pause?: ResolvedPublicKey;
-  feeSchedule?: ResolvedPublicKey;
-  metadata?: ResolvedPublicKey;
-  adminPublicKey?: PublicKey;
-  supplyPublicKey?: PublicKey;
-  wipePublicKey?: PublicKey;
-  kycPublicKey?: PublicKey;
-  freezePublicKey?: PublicKey;
-  pausePublicKey?: PublicKey;
-  feeSchedulePublicKey?: PublicKey;
-  metadataPublicKey?: PublicKey;
+  adminKeys: ResolvedPublicKey[];
+  adminKeyThreshold: number;
+  supplyKeys: ResolvedPublicKey[];
+  supplyKeyThreshold: number;
+  freezeKeys: ResolvedPublicKey[];
+  freezeKeyThreshold: number;
+  wipeKeys: ResolvedPublicKey[];
+  wipeKeyThreshold: number;
+  kycKeys: ResolvedPublicKey[];
+  kycKeyThreshold: number;
+  pauseKeys: ResolvedPublicKey[];
+  pauseKeyThreshold: number;
+  feeScheduleKeys: ResolvedPublicKey[];
+  feeScheduleKeyThreshold: number;
+  metadataKeys: ResolvedPublicKey[];
+  metadataKeyThreshold: number;
   freezeDefault: boolean;
   finalMaxSupply?: bigint;
   autoRenewPeriodSeconds?: number;

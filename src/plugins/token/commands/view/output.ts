@@ -7,9 +7,18 @@ import {
   EntityIdSchema,
   HederaAutoRenewPeriodSecondsOptionalSchema,
   NetworkSchema,
-  PublicKeyDefinitionSchema,
   SupplyTypeSchema,
 } from '@/core/schemas/common-schemas';
+
+/**
+ * Resolved key info: single key or multi-key with threshold
+ */
+export const KeyInfoSchema = z.object({
+  keys: z.array(z.string()),
+  threshold: z.number().optional(), // only present when keys.length > 1
+});
+
+export type KeyInfo = z.infer<typeof KeyInfoSchema>;
 
 /**
  * Token Info Schema
@@ -41,8 +50,8 @@ export const TokenViewOutputSchema = z.object({
   expirationTime: z.string().optional(),
 
   // === Token keys ===
-  adminKey: PublicKeyDefinitionSchema.nullable().optional(),
-  supplyKey: PublicKeyDefinitionSchema.nullable().optional(),
+  adminKey: KeyInfoSchema.nullable().optional(),
+  supplyKey: KeyInfoSchema.nullable().optional(),
 
   // === Specific NFT instance (when --serial provided) ===
   nftSerial: z
@@ -147,10 +156,22 @@ export const TOKEN_VIEW_TEMPLATE = `
    Expiration: {{expirationTime}}
 {{/if}}
 {{#if adminKey}}
-   Admin Key: {{adminKey}}
+{{#if adminKey.threshold}}
+   Admin Key ({{adminKey.threshold}}/{{length adminKey.keys}}):
+{{#each adminKey.keys}}     - {{this}}
+{{/each}}
+{{else}}
+   Admin Key: {{adminKey.keys.[0]}}
+{{/if~}}
 {{/if~}}
 {{#if supplyKey}}
-   Supply Key: {{supplyKey}}
+{{#if supplyKey.threshold}}
+   Supply Key ({{supplyKey.threshold}}/{{length supplyKey.keys}}):
+{{#each supplyKey.keys}}     - {{this}}
+{{/each}}
+{{else}}
+   Supply Key: {{supplyKey.keys.[0]}}
+{{/if~}}
 {{/if~}}
 {{#if memo}}
    Memo: {{memo}}

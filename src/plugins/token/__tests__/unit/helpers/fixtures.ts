@@ -283,7 +283,22 @@ export const validTokenDataForSchema = {
       accountId: '0.0.345678',
     },
   ],
-  adminPublicKey: 'admin-key',
+  adminKeyRefIds: ['kr_admin'],
+  adminKeyThreshold: 1,
+  supplyKeyRefIds: [],
+  supplyKeyThreshold: 0,
+  wipeKeyRefIds: [],
+  wipeKeyThreshold: 0,
+  kycKeyRefIds: [],
+  kycKeyThreshold: 0,
+  freezeKeyRefIds: [],
+  freezeKeyThreshold: 0,
+  pauseKeyRefIds: [],
+  pauseKeyThreshold: 0,
+  feeScheduleKeyRefIds: [],
+  feeScheduleKeyThreshold: 0,
+  metadataKeyRefIds: [],
+  metadataKeyThreshold: 0,
   network: SupportedNetwork.TESTNET,
   customFees: [
     {
@@ -340,8 +355,8 @@ export const validTokenCreateParams = {
   decimals: 2,
   initialSupply: '1000',
   supplyType: SupplyType.INFINITE,
-  treasury: 'treasury-account', // Use alias
-  adminKey: 'admin-account', // Use alias
+  treasury: 'treasury-account',
+  adminKey: ['admin-account'],
 };
 
 /**
@@ -375,7 +390,22 @@ export const mockStateTokenData = {
     supplyType: SupplyType.FINITE,
     maxSupply: 10000n,
     treasuryId: '0.0.789012',
-    adminPublicKey: 'admin-key',
+    adminKeyRefIds: ['kr_admin'],
+    adminKeyThreshold: 1,
+    supplyKeyRefIds: [],
+    supplyKeyThreshold: 0,
+    wipeKeyRefIds: [],
+    wipeKeyThreshold: 0,
+    kycKeyRefIds: [],
+    kycKeyThreshold: 0,
+    freezeKeyRefIds: [],
+    freezeKeyThreshold: 0,
+    pauseKeyRefIds: [],
+    pauseKeyThreshold: 0,
+    feeScheduleKeyRefIds: [],
+    feeScheduleKeyThreshold: 0,
+    metadataKeyRefIds: [],
+    metadataKeyThreshold: 0,
     network: SupportedNetwork.TESTNET,
     associations: [],
     customFees: [],
@@ -390,7 +420,22 @@ export const mockStateTokenData = {
     supplyType: SupplyType.FINITE,
     maxSupply: 10000n,
     treasuryId: '0.0.789012',
-    adminPublicKey: 'admin-key',
+    adminKeyRefIds: ['kr_admin'],
+    adminKeyThreshold: 1,
+    supplyKeyRefIds: [],
+    supplyKeyThreshold: 0,
+    wipeKeyRefIds: [],
+    wipeKeyThreshold: 0,
+    kycKeyRefIds: [],
+    kycKeyThreshold: 0,
+    freezeKeyRefIds: [],
+    freezeKeyThreshold: 0,
+    pauseKeyRefIds: [],
+    pauseKeyThreshold: 0,
+    feeScheduleKeyRefIds: [],
+    feeScheduleKeyThreshold: 0,
+    metadataKeyRefIds: [],
+    metadataKeyThreshold: 0,
     network: SupportedNetwork.TESTNET,
     associations: [{ name: 'TestAccount', accountId: '0.0.111111' }],
     customFees: [],
@@ -405,7 +450,22 @@ export const mockStateTokenData = {
     supplyType: SupplyType.INFINITE,
     maxSupply: 0n,
     treasuryId: '0.0.111111',
-    adminPublicKey: 'admin-key2',
+    adminKeyRefIds: ['kr_admin2'],
+    adminKeyThreshold: 1,
+    supplyKeyRefIds: [],
+    supplyKeyThreshold: 0,
+    wipeKeyRefIds: [],
+    wipeKeyThreshold: 0,
+    kycKeyRefIds: [],
+    kycKeyThreshold: 0,
+    freezeKeyRefIds: [],
+    freezeKeyThreshold: 0,
+    pauseKeyRefIds: [],
+    pauseKeyThreshold: 0,
+    feeScheduleKeyRefIds: [],
+    feeScheduleKeyThreshold: 0,
+    metadataKeyRefIds: [],
+    metadataKeyThreshold: 0,
     network: SupportedNetwork.TESTNET,
     associations: [],
     customFees: [],
@@ -438,7 +498,7 @@ export const makeTokenCreateCommandArgs = (params: {
       initialSupply: '1000',
       supplyType: SupplyType.INFINITE,
       treasury: 'treasury-account', // Use alias
-      adminKey: 'test-admin-key', // Use alias
+      adminKey: ['test-admin-key'], // Use alias
       ...params.args,
     },
     api,
@@ -463,8 +523,8 @@ export const makeNftCreateCommandArgs = (params: {
       symbol: 'TEST',
       supplyType: SupplyType.INFINITE,
       treasury: 'treasury-account', // Use alias
-      adminKey: 'test-admin-key', // Use alias
-      supplyKey: 'test-supply-key', // Use alias
+      adminKey: ['test-admin-key'], // Use alias
+      supplyKey: ['test-supply-key'], // Use alias
       ...params.args,
     },
     api,
@@ -486,14 +546,14 @@ export const expectedTokenTransactionParams = {
   supplyType: SupplyType.INFINITE,
   maxSupplyRaw: undefined,
   treasuryId: '0.0.123456',
-  adminPublicKey: expect.any(Object),
-  supplyPublicKey: undefined,
-  freezePublicKey: undefined,
-  wipePublicKey: undefined,
-  kycPublicKey: undefined,
-  pausePublicKey: undefined,
-  feeSchedulePublicKey: undefined,
-  metadataPublicKey: undefined,
+  adminKey: expect.any(Object),
+  supplyKey: undefined,
+  freezeKey: undefined,
+  wipeKey: undefined,
+  kycKey: undefined,
+  pauseKey: undefined,
+  feeScheduleKey: undefined,
+  metadataKey: undefined,
   freezeDefault: undefined,
   memo: undefined,
   autoRenewPeriodSeconds: undefined,
@@ -513,8 +573,8 @@ export const expectedNftTransactionParams = {
   tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
   maxSupplyRaw: undefined,
   treasuryId: '0.0.123456',
-  adminPublicKey: expect.any(Object),
-  supplyPublicKey: expect.any(Object),
+  adminKey: expect.any(Object),
+  supplyKey: expect.any(Object),
   memo: undefined,
 };
 
@@ -529,14 +589,14 @@ export const expectedTokenTransactionParamsFromFile = {
   supplyType: SupplyType.FINITE,
   maxSupplyRaw: 10000n,
   treasuryId: '0.0.123456',
-  adminPublicKey: expect.any(Object), // PublicKey object from keyResolver
-  supplyPublicKey: undefined,
-  freezePublicKey: undefined,
-  wipePublicKey: undefined,
-  kycPublicKey: undefined,
-  pausePublicKey: undefined,
-  feeSchedulePublicKey: undefined,
-  metadataPublicKey: undefined,
+  adminKey: expect.any(Object),
+  supplyKey: undefined,
+  freezeKey: undefined,
+  wipeKey: undefined,
+  kycKey: undefined,
+  pauseKey: undefined,
+  feeScheduleKey: undefined,
+  metadataKey: undefined,
   customFees: [
     {
       type: CustomFeeType.FIXED,
@@ -567,7 +627,8 @@ export const validTokenDataForValidation = {
   maxSupply: 10000,
   treasuryId: '0.0.789012',
   associations: [],
-  adminPublicKey: 'admin-key',
+  adminKeyRefIds: ['kr_admin'],
+  adminKeyThreshold: 1,
   network: SupportedNetwork.TESTNET,
   customFees: [],
   tokenType: HederaTokenType.FUNGIBLE_COMMON,
@@ -596,7 +657,8 @@ export const makeTokenData = (
     initialSupply: number;
     supplyType: SupplyType;
     maxSupply: number;
-    adminPublicKey?: string;
+    adminKeyRefIds: string[];
+    adminKeyThreshold: number;
     network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
     associations: Array<{ name: string; accountId: string }>;
     customFees: Array<unknown>;
@@ -611,7 +673,22 @@ export const makeTokenData = (
   initialSupply: 1000000,
   supplyType: SupplyType.INFINITE,
   maxSupply: 0,
-  adminPublicKey: 'test-admin-key',
+  adminKeyRefIds: ['kr_test_admin'],
+  adminKeyThreshold: 1,
+  supplyKeyRefIds: [],
+  supplyKeyThreshold: 0,
+  wipeKeyRefIds: [],
+  wipeKeyThreshold: 0,
+  kycKeyRefIds: [],
+  kycKeyThreshold: 0,
+  freezeKeyRefIds: [],
+  freezeKeyThreshold: 0,
+  pauseKeyRefIds: [],
+  pauseKeyThreshold: 0,
+  feeScheduleKeyRefIds: [],
+  feeScheduleKeyThreshold: 0,
+  metadataKeyRefIds: [],
+  metadataKeyThreshold: 0,
   network: SupportedNetwork.TESTNET,
   associations: [],
   customFees: [],
@@ -697,7 +774,8 @@ export const mockListTokens = {
       name: 'Token 3',
       symbol: 'TK3',
       network: 'testnet',
-      adminPublicKey: 'admin-key-123',
+      adminKeyRefIds: ['kr_admin_123'],
+      adminKeyThreshold: 1,
     }),
   ],
   multiNetwork: [
@@ -789,13 +867,13 @@ export const mockTokenStats = {
 export const makeMintFtCommandArgs = (params: {
   api: CoreApi;
   logger: Logger;
-  args?: Record<string, string | number | boolean | undefined>;
+  args?: Record<string, string | number | boolean | string[] | undefined>;
 }) => {
   return {
     args: {
       token: '0.0.123456',
       amount: '100',
-      supplyKey: 'test-supply-key',
+      supplyKey: ['test-supply-key'],
       ...params.args,
     },
     api: params.api,
@@ -819,13 +897,13 @@ export const expectedMintFtTransactionParams = {
 export const makeTokenMintNftCommandArgs = (params: {
   api: CoreApi;
   logger: Logger;
-  args?: Record<string, string | number | boolean | undefined>;
+  args?: Record<string, string | number | boolean | string[] | undefined>;
 }) => {
   return {
     args: {
       token: '0.0.123456',
       metadata: 'Test NFT metadata',
-      supplyKey: 'test-supply-key',
+      supplyKey: ['test-supply-key'],
       ...params.args,
     },
     api: params.api,
@@ -939,8 +1017,8 @@ export const expectedNftTransactionParamsFromFile = {
   initialSupplyRaw: 0n,
   supplyType: SupplyType.FINITE,
   maxSupplyRaw: 1000n,
-  adminPublicKey: expect.any(Object),
-  supplyPublicKey: expect.any(Object),
+  adminKey: expect.any(Object),
+  supplyKey: expect.any(Object),
   memo: 'Test NFT created from file',
   tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
 };

@@ -327,7 +327,8 @@ hcli token mint-ft \
 - `--amount` / `-a`: Amount to mint - **Required**
   - Display units (default): `100` (will be multiplied by token decimals)
   - Base units: `100t` (raw amount without decimals)
-- `--supply-key` / `-s`: Supply key for signing - **Required**
+- `--supply-key` / `-s`: Supply key credential(s) for signing - **Optional if** every required on-chain supply public key already has matching material in the key manager (otherwise pass explicit credential(s))
+  - **Repeatable:** pass `--supply-key` multiple times when the token’s on-chain supply key is a KeyList or threshold key and you need more than one distinct signer
   - Account alias: `supply-account-alias`
   - Account with key: `0.0.123456:private-key`
 - `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
@@ -366,7 +367,8 @@ hcli token mint-nft \
 - `--metadata` / `-m`: NFT metadata string - **Required**
   - Maximum size: 100 bytes
   - UTF-8 encoded string
-- `--supply-key` / `-s`: Supply key for signing - **Required**
+- `--supply-key` / `-s`: Supply key credential(s) for signing - **Optional if** every required on-chain supply public key already has matching material in the key manager (otherwise pass explicit credential(s))
+  - **Repeatable:** pass `--supply-key` multiple times when the token’s on-chain supply key is a KeyList or threshold key and you need more than one distinct signer
   - Account alias: `supply-account-alias`
   - Account with key: `0.0.123456:private-key`
 - `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
@@ -389,7 +391,7 @@ The command returns the minted NFT's serial number, which uniquely identifies th
 
 - The token must be an NFT collection (created with `create-nft` command)
 - The token must have a supply key configured
-- The provided supply key must match the token's supply key
+- When using `--supply-key`, provide enough credentials to satisfy the on-chain supply key policy (including M-of-N threshold keys)
 - Metadata cannot exceed 100 bytes (Hedera limit)
 - For tokens with finite supply, the command validates that minting won't exceed `maxSupply`
 - Minted NFT is assigned to the token's treasury account
@@ -722,6 +724,48 @@ hcli token airdrop-nft \
 
 **Implementation:** [`src/plugins/token/commands/airdrop-nft/handler.ts`](./commands/airdrop-nft/handler.ts)
 
+### Claim Airdrop
+
+Claim one or more pending airdrops (FT and/or NFT) for a receiver account. Up to 10 airdrops can be claimed in a single transaction.
+
+Use `pending-airdrops` first to list pending airdrops and their indices.
+
+```bash
+# List pending airdrops to see indices
+hcli token pending-airdrops --account myaccount
+# Output:
+#   1. MyToken (MTK) [0.0.123] — Amount: 1000
+#   2. CoolNFT (CNFT) [0.0.456] — Serial: #5
+
+# Claim a single airdrop by index
+hcli token claim-airdrop --account myaccount --index 1
+
+# Claim multiple airdrops (FT and NFT in one transaction)
+hcli token claim-airdrop --account myaccount --index 1 --index 2
+
+# Using explicit signing account
+hcli token claim-airdrop --account myaccount --index 1 --from my-key
+
+# Batch mode
+hcli token claim-airdrop --account myaccount --index 1 --batch my-batch
+```
+
+**Options:**
+
+- `--account` (required): Receiver account ID or alias
+- `--index` (required, repeatable): 1-based index from `pending-airdrops` output
+- `--from` (optional): Signing account. Defaults to operator
+- `--key-manager` (optional): Key manager type (`local` or `local_encrypted`)
+
+**Notes:**
+
+- Maximum 10 airdrops per transaction (Hedera SDK limit)
+- Both FT and NFT airdrops can be claimed in a single transaction
+- Indices are 1-based and correspond to the order shown by `pending-airdrops`
+- Batch support: pass `--batch <batch-name>` to queue the transaction for batch execution
+
+**Implementation:** [`src/plugins/token/commands/claim-airdrop/handler.ts`](./commands/claim-airdrop/handler.ts)
+
 ### Token Transfer NFT
 
 Transfer one or more NFTs from one account to another.
@@ -829,6 +873,9 @@ hcli token delete --token 0.0.123456
 # Provide admin key explicitly
 hcli token delete --token 0.0.123456 --admin-key <key-ref>
 
+# Threshold / KeyList admin key: pass multiple `--admin-key` values
+hcli token delete --token 0.0.123456 --admin-key alice --admin-key bob
+
 # Remove from local state only (no network transaction)
 hcli token delete --token mytoken-alias --state-only
 ```
@@ -836,7 +883,7 @@ hcli token delete --token mytoken-alias --state-only
 **Parameters:**
 
 - `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
-- `--admin-key`: Admin key reference for signing (auto-resolved from key manager if omitted) - **Optional**
+- `--admin-key`: Admin key credential(s) for signing - **Optional** (auto-resolved from the key manager from on-chain public keys when not passed). **Repeatable** for KeyList / threshold admin keys
 - `--key-manager`: Key manager type, defaults to config setting - **Optional**
 - `--state-only`: Remove token from local state only, without a network transaction - **Optional**
 

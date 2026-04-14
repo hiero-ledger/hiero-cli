@@ -38,6 +38,11 @@ import {
   TokenAssociateOutputSchema,
 } from './commands/associate';
 import {
+  TOKEN_CLAIM_AIRDROP_TEMPLATE,
+  tokenClaimAirdrop,
+  TokenClaimAirdropOutputSchema,
+} from './commands/claim-airdrop';
+import {
   TOKEN_CREATE_FT_TEMPLATE,
   tokenCreateFt,
   TokenCreateFtOutputSchema,
@@ -175,10 +180,10 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'supply-key',
           short: 's',
-          type: OptionType.STRING,
-          required: true,
+          type: OptionType.REPEATABLE,
+          required: false,
           description:
-            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+            'Supply key credential(s). Omit to auto-resolve signing keys from the key manager when on-chain supply public keys match stored credentials. Pass one or more times (same formats as token create-ft) when providing explicit credentials — including multiple values for KeyList / threshold supply keys on Hedera.',
         },
         {
           name: 'key-manager',
@@ -222,10 +227,10 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'supply-key',
           short: 's',
-          type: OptionType.STRING,
-          required: true,
+          type: OptionType.REPEATABLE,
+          required: false,
           description:
-            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+            'Supply key credential(s). Omit to auto-resolve signing keys from the key manager when on-chain supply public keys match stored credentials. Pass one or more times (same formats as token create-nft) when providing explicit credentials — including multiple values for KeyList / threshold supply keys on Hedera.',
         },
         {
           name: 'key-manager',
@@ -532,26 +537,50 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Optional admin key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Omit for a token without an admin key.',
         },
         {
+          name: 'admin-key-threshold',
+          short: 'A',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of admin keys required to sign (only when multiple --admin-key values are set).',
+        },
+        {
           name: 'supply-key',
           short: 's',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
+          name: 'supply-key-threshold',
+          short: 'L',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of supply keys required to sign (only when multiple --supply-key values are set).',
+        },
+        {
           name: 'freeze-key',
           short: 'f',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Optional freeze key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'freeze-key-threshold',
+          short: 'Z',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of freeze keys required to sign (only when multiple --freeze-key values are set).',
         },
         {
           name: 'freeze-default',
@@ -565,42 +594,82 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'wipe-key',
           short: 'w',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Optional wipe key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
+          name: 'wipe-key-threshold',
+          short: 'W',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of wipe keys required to sign (only when multiple --wipe-key values are set).',
+        },
+        {
           name: 'kyc-key',
           short: 'y',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Optional KYC key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
+          name: 'kyc-key-threshold',
+          short: 'H',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of KYC keys required to sign (only when multiple --kyc-key values are set).',
+        },
+        {
           name: 'pause-key',
           short: 'p',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Optional pause key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
+          name: 'pause-key-threshold',
+          short: 'U',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of pause keys required to sign (only when multiple --pause-key values are set).',
+        },
+        {
           name: 'fee-schedule-key',
           short: 'e',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Optional fee schedule key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
+          name: 'fee-schedule-key-threshold',
+          short: 'E',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of fee schedule keys required to sign (only when multiple --fee-schedule-key values are set).',
+        },
+        {
           name: 'metadata-key',
           short: 'D',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Optional metadata key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'metadata-key-threshold',
+          short: 'O',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of metadata keys required to sign (only when multiple --metadata-key values are set).',
         },
         {
           name: 'name',
@@ -708,62 +777,126 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Defaults to operator key.',
         },
         {
+          name: 'admin-key-threshold',
+          short: 'A',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of admin keys required to sign (only when multiple --admin-key values are set).',
+        },
+        {
           name: 'supply-key',
           short: 's',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
+          name: 'supply-key-threshold',
+          short: 'L',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of supply keys required to sign (only when multiple --supply-key values are set).',
+        },
+        {
           name: 'freeze-key',
           short: 'f',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Freeze key. Allows freezing token transfers for specific accounts.',
         },
         {
+          name: 'freeze-key-threshold',
+          short: 'Z',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of freeze keys required to sign (only when multiple --freeze-key values are set).',
+        },
+        {
           name: 'wipe-key',
           short: 'w',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Wipe key. Allows wiping token balance from specific accounts.',
         },
         {
+          name: 'wipe-key-threshold',
+          short: 'W',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of wipe keys required to sign (only when multiple --wipe-key values are set).',
+        },
+        {
           name: 'pause-key',
           short: 'p',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description: 'Pause key. Allows pausing all token transfers.',
         },
         {
+          name: 'pause-key-threshold',
+          short: 'U',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of pause keys required to sign (only when multiple --pause-key values are set).',
+        },
+        {
           name: 'kyc-key',
           short: 'y',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description: 'KYC key. Allows granting/revoking KYC status.',
         },
         {
+          name: 'kyc-key-threshold',
+          short: 'H',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of KYC keys required to sign (only when multiple --kyc-key values are set).',
+        },
+        {
           name: 'fee-schedule-key',
           short: 'e',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description: 'Fee schedule key. Allows modifying custom fees.',
         },
         {
+          name: 'fee-schedule-key-threshold',
+          short: 'E',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of fee schedule keys required to sign (only when multiple --fee-schedule-key values are set).',
+        },
+        {
           name: 'metadata-key',
           short: 'D',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description: 'Metadata key. Allows updating token metadata.',
+        },
+        {
+          name: 'metadata-key-threshold',
+          short: 'O',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of metadata keys required to sign (only when multiple --metadata-key values are set).',
         },
         {
           name: 'freeze-default',
@@ -1066,6 +1199,51 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
+      name: 'claim-airdrop',
+      summary: 'Claim pending airdrops',
+      description:
+        'Claim one or more pending token airdrops (FT and/or NFT) for a receiver account. Use pending-airdrops to list pending airdrops and their indices.',
+      registeredHooks: ['batchify'],
+      options: [
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Receiver account ID or alias',
+        },
+        {
+          name: 'index',
+          short: 'i',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            '1-based index(es) from the pending-airdrops list. Use comma-separated values to claim multiple: --index 1,2,3',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Signing account. Can be {accountId}:{privateKey} pair, key reference, or account alias. Defaults to operator.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenClaimAirdrop,
+      output: {
+        schema: TokenClaimAirdropOutputSchema,
+        humanTemplate: TOKEN_CLAIM_AIRDROP_TEMPLATE,
+      },
+    },
+    {
       name: 'delete',
       summary: 'Delete a token from the Hedera network',
       description:
@@ -1085,10 +1263,10 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Admin key of token. Required unless the admin key is stored in the key manager (auto-resolved by public key). Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+            'Admin key credential(s). Required unless admin keys are auto-resolved from the key manager from on-chain public keys. Pass multiple times for KeyList / threshold admin keys. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
           name: 'key-manager',

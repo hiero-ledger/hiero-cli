@@ -5,7 +5,6 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { ContractInfo } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { ContractData } from '@/plugins/contract/schema';
@@ -33,10 +32,6 @@ import {
   getEffectiveKeyRequirement,
 } from '@/core/utils/extract-public-keys';
 import { composeKey } from '@/core/utils/key-composer';
-import {
-  buildPublicKeySet,
-  resolveSigningKeyRefsFromExplicitCredentials,
-} from '@/core/utils/resolve-signing-key-refs';
 import { ContractHelper } from '@/plugins/contract/contract-helper';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
@@ -52,17 +47,6 @@ export class DeleteContractCommand extends BaseTransactionCommand<
 > {
   constructor() {
     super(CONTRACT_DELETE_COMMAND_NAME);
-  }
-
-  private warnIgnoredContractDeleteAdminKeys(
-    logger: Logger,
-    ignoredKeyRefIds: string[],
-  ): void {
-    for (const keyRefId of ignoredKeyRefIds) {
-      logger.warn(
-        `Admin key ${keyRefId} does not match the contract admin key on the network (mirror node) and was ignored`,
-      );
-    }
   }
 
   override async execute(args: CommandHandlerArgs): Promise<CommandResult> {
@@ -271,7 +255,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       args,
       validArgs,
     );
-    const { api, logger } = args;
+    const { api } = args;
     const keyManager =
       validArgs.keyManager ||
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
@@ -306,10 +290,7 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       );
     }
 
-    const allowedPublicKeysSet = buildPublicKeySet(requirement.publicKeys);
-
     let signingKeyRefIds: string[];
-    let ignoredKeyRefIds: string[];
 
     if (validArgs.adminKey.length > 0) {
       const adminKeys = await Promise.all(
@@ -319,32 +300,28 @@ export class DeleteContractCommand extends BaseTransactionCommand<
           ]),
         ),
       );
-      const resolved = resolveSigningKeyRefsFromExplicitCredentials(
-        adminKeys,
-        allowedPublicKeysSet,
-        requirement.requiredSignatures,
-      );
-      signingKeyRefIds = resolved.signingKeyRefIds;
-      ignoredKeyRefIds = resolved.ignoredKeyRefIds;
+      signingKeyRefIds = adminKeys.map((adminKey) => adminKey.keyRefId);
     } else {
-      const storedRefs = resolved.contractToDelete.adminKeyRefIds;
-      if (storedRefs.length === 0) {
+      const refIds: string[] = [];
+      const usedRefIds = new Set<string>();
+      for (const publicKey of requirement.publicKeys) {
+        const kmsRecord = api.kms.findByPublicKey(publicKey);
+        if (kmsRecord && !usedRefIds.has(kmsRecord.keyRefId)) {
+          usedRefIds.add(kmsRecord.keyRefId);
+          refIds.push(kmsRecord.keyRefId);
+          if (refIds.length >= requirement.requiredSignatures) {
+            break;
+          }
+        }
+      }
+      if (refIds.length < requirement.requiredSignatures) {
         throw new ValidationError(
-          'Pass --admin-key (-a) with contract admin credentials, or ensure this contract is in CLI state with admin key refs from create/import.',
+          'Not enough admin key(s) not found in key manager for this contract. Provide --admin-key.',
+          { context: { contractId: contractInfo.contract_id } },
         );
       }
-      const fromStore =
-        api.keyResolver.resolvedPublicKeysForStoredKeyRefs(storedRefs);
-      const resolvedFromStore = resolveSigningKeyRefsFromExplicitCredentials(
-        fromStore,
-        allowedPublicKeysSet,
-        requirement.requiredSignatures,
-      );
-      signingKeyRefIds = resolvedFromStore.signingKeyRefIds;
-      ignoredKeyRefIds = resolvedFromStore.ignoredKeyRefIds;
+      signingKeyRefIds = refIds;
     }
-
-    this.warnIgnoredContractDeleteAdminKeys(logger, ignoredKeyRefIds);
 
     const contractToDelete: ContractData = {
       ...resolved.contractToDelete,

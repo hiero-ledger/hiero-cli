@@ -41,11 +41,14 @@ const createFtBatchDataItem = (
       keyRefId: 'kr-treasury',
       publicKey: 'pk-treasury',
     },
-    admin: {
-      accountId: '0.0.100000',
-      keyRefId: 'kr-admin',
-      publicKey: 'pk-admin',
-    },
+    adminKeys: [
+      {
+        accountId: '0.0.100000',
+        keyRefId: 'kr-admin',
+        publicKey: 'pk-admin',
+      },
+    ],
+    adminKeyThreshold: 0,
     freezeDefault: false,
   },
   transactionId: '0.0.1234@1234567890.000000000',
@@ -233,11 +236,14 @@ describe('token plugin - batch-create-ft hook', () => {
               keyRefId: 'kr-treasury',
               publicKey: 'pk-treasury',
             },
-            admin: {
-              accountId: '0.0.100000',
-              keyRefId: 'kr-admin',
-              publicKey: 'pk-admin',
-            },
+            adminKeys: [
+              {
+                accountId: '0.0.100000',
+                keyRefId: 'kr-admin',
+                publicKey: 'pk-admin',
+              },
+            ],
+            adminKeyThreshold: 0,
           },
         }),
       ],
@@ -257,7 +263,8 @@ describe('token plugin - batch-create-ft hook', () => {
         initialSupply: 1000000n,
         tokenType: HederaTokenType.FUNGIBLE_COMMON,
         supplyType: 'FINITE',
-        adminPublicKey: 'pk-admin',
+        adminKeyRefIds: ['kr-admin'],
+        adminKeyThreshold: 0,
         network: SupportedNetwork.TESTNET,
       }),
     );
@@ -309,11 +316,14 @@ describe('token plugin - batch-create-ft hook', () => {
               keyRefId: 'kr-treasury',
               publicKey: 'pk-treasury',
             },
-            admin: {
-              accountId: '0.0.100000',
-              keyRefId: 'kr-admin',
-              publicKey: 'pk-admin',
-            },
+            adminKeys: [
+              {
+                accountId: '0.0.100000',
+                keyRefId: 'kr-admin',
+                publicKey: 'pk-admin',
+              },
+            ],
+            adminKeyThreshold: 0,
           },
         }),
       ],
@@ -387,11 +397,14 @@ describe('token plugin - batch-create-ft hook', () => {
               keyRefId: 'kr-treasury',
               publicKey: 'pk-treasury',
             },
-            admin: {
-              accountId: '0.0.100000',
-              keyRefId: 'kr-admin',
-              publicKey: 'pk-admin',
-            },
+            adminKeys: [
+              {
+                accountId: '0.0.100000',
+                keyRefId: 'kr-admin',
+                publicKey: 'pk-admin',
+              },
+            ],
+            adminKeyThreshold: 0,
           },
         }),
         createFtBatchDataItem({
@@ -411,11 +424,14 @@ describe('token plugin - batch-create-ft hook', () => {
               keyRefId: 'kr-treasury',
               publicKey: 'pk-treasury',
             },
-            admin: {
-              accountId: '0.0.100000',
-              keyRefId: 'kr-admin',
-              publicKey: 'pk-admin',
-            },
+            adminKeys: [
+              {
+                accountId: '0.0.100000',
+                keyRefId: 'kr-admin',
+                publicKey: 'pk-admin',
+              },
+            ],
+            adminKeyThreshold: 0,
           },
         }),
       ],

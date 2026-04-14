@@ -3,7 +3,7 @@
  * Type definitions for token-related operations
  */
 
-import type { PublicKey } from '@hashgraph/sdk';
+import type { Key } from '@hashgraph/sdk';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupplyType } from '@/core/types/shared.types';
 
@@ -63,15 +63,15 @@ export interface TokenCreateParams {
   tokenType: HederaTokenType;
   supplyType: SupplyType;
   maxSupplyRaw?: bigint; // Required for FINITE supply type
-  adminPublicKey?: PublicKey;
-  supplyPublicKey?: PublicKey;
-  wipePublicKey?: PublicKey;
-  kycPublicKey?: PublicKey;
-  freezePublicKey?: PublicKey;
+  adminKey?: Key;
+  supplyKey?: Key;
+  wipeKey?: Key;
+  kycKey?: Key;
+  freezeKey?: Key;
   freezeDefault?: boolean;
-  pausePublicKey?: PublicKey;
-  feeSchedulePublicKey?: PublicKey;
-  metadataPublicKey?: PublicKey;
+  pauseKey?: Key;
+  feeScheduleKey?: Key;
+  metadataKey?: Key;
   autoRenewPeriod?: number;
   autoRenewAccountId?: string;
   expirationTime?: Date;
@@ -182,4 +182,15 @@ export interface TokenAirdropNftParams {
   tokenId: string;
   senderAccountId: string;
   transfers: TokenAirdropNftTransfer[];
+}
+
+export interface ClaimAirdropItem {
+  tokenId: string;
+  senderAccountId: string;
+  receiverAccountId: string;
+  serialNumber?: number;
+}
+
+export interface TokenClaimAirdropParams {
+  items: ClaimAirdropItem[];
 }

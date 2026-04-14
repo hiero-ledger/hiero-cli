@@ -28,6 +28,8 @@ import type { TopicService } from '@/core/services/topic/topic-transaction-servi
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 
+import { PublicKey } from '@hashgraph/sdk';
+
 import { ED25519_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
@@ -38,6 +40,7 @@ import {
 import { InternalError, KeyAlgorithm } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 
 import { mockTransactionResults } from './fixtures';
 
@@ -69,6 +72,7 @@ export const makeTokenServiceMock = (
   createDeleteTransaction: jest.fn(),
   createAirdropFtTransaction: jest.fn(),
   createAirdropNftTransaction: jest.fn(),
+  createClaimAirdropTransaction: jest.fn(),
   ...overrides,
 });
 
@@ -720,7 +724,7 @@ export const makeDeleteApiMocks = (
 export const makeMintFtSuccessMocks = (overrides?: {
   tokenInfo?: {
     decimals?: string;
-    supply_key?: { key: string } | null;
+    supply_key?: { _type?: MirrorNodeKeyType; key: string } | null;
     total_supply?: string;
     max_supply?: string;
   };
@@ -729,7 +733,21 @@ export const makeMintFtSuccessMocks = (overrides?: {
 }) => {
   const mockMintTransaction = { test: 'mint-transaction' };
   const defaultSupplyKeyPublicKey =
-    overrides?.supplyKeyPublicKey ?? 'supply-public-key';
+    overrides?.supplyKeyPublicKey ?? ED25519_HEX_PUBLIC_KEY;
+
+  const supplyKeyFromMirror =
+    overrides?.tokenInfo?.supply_key === null
+      ? null
+      : overrides?.tokenInfo?.supply_key
+        ? {
+            _type:
+              overrides.tokenInfo.supply_key._type ?? MirrorNodeKeyType.ED25519,
+            key: overrides.tokenInfo.supply_key.key,
+          }
+        : {
+            _type: MirrorNodeKeyType.ED25519,
+            key: defaultSupplyKeyPublicKey,
+          };
 
   const apiMocks = makeApiMocks({
     tokens: {
@@ -745,9 +763,7 @@ export const makeMintFtSuccessMocks = (overrides?: {
     mirror: {
       getTokenInfo: jest.fn().mockResolvedValue({
         decimals: overrides?.tokenInfo?.decimals ?? '2',
-        supply_key: overrides?.tokenInfo?.supply_key ?? {
-          key: defaultSupplyKeyPublicKey,
-        },
+        supply_key: supplyKeyFromMirror,
         total_supply: overrides?.tokenInfo?.total_supply ?? '1000000',
         max_supply: overrides?.tokenInfo?.max_supply ?? '0',
       }),
@@ -778,7 +794,7 @@ export const makeMintFtSuccessMocks = (overrides?: {
 export const makeMintNftSuccessMocks = (overrides?: {
   tokenInfo?: {
     decimals?: string;
-    supply_key?: { key: string } | null;
+    supply_key?: { _type?: MirrorNodeKeyType; key: string } | null;
     total_supply?: string;
     max_supply?: string;
     type?: string;
@@ -790,7 +806,21 @@ export const makeMintNftSuccessMocks = (overrides?: {
 }) => {
   const mockMintTransaction = { test: 'mint-nft-transaction' };
   const defaultSupplyKeyPublicKey =
-    overrides?.supplyKeyPublicKey ?? 'supply-public-key';
+    overrides?.supplyKeyPublicKey ?? ED25519_HEX_PUBLIC_KEY;
+
+  const supplyKeyFromMirror =
+    overrides?.tokenInfo?.supply_key === null
+      ? null
+      : overrides?.tokenInfo?.supply_key
+        ? {
+            _type:
+              overrides.tokenInfo.supply_key._type ?? MirrorNodeKeyType.ED25519,
+            key: overrides.tokenInfo.supply_key.key,
+          }
+        : {
+            _type: MirrorNodeKeyType.ED25519,
+            key: defaultSupplyKeyPublicKey,
+          };
 
   const defaultSignResult = makeTransactionResult({ success: true });
   const signResult = overrides?.signResult || {
@@ -812,9 +842,7 @@ export const makeMintNftSuccessMocks = (overrides?: {
       getTokenInfo: jest.fn().mockResolvedValue({
         decimals: overrides?.tokenInfo?.decimals ?? '0',
         type: overrides?.tokenInfo?.type ?? 'NON_FUNGIBLE_UNIQUE',
-        supply_key: overrides?.tokenInfo?.supply_key ?? {
-          key: defaultSupplyKeyPublicKey,
-        },
+        supply_key: supplyKeyFromMirror,
         total_supply: overrides?.tokenInfo?.total_supply ?? '0',
         max_supply: overrides?.tokenInfo?.max_supply ?? '0',
       }),
@@ -850,8 +878,14 @@ export const makeDeleteSuccessMocks = (overrides?: {
   adminKeyPublicKey?: string;
 }) => {
   const mockDeleteTransaction = { test: 'delete-transaction' };
-  const defaultAdminKeyPublicKey =
-    overrides?.adminKeyPublicKey ?? 'admin-public-key';
+  const defaultMirrorAdminHex = ED25519_HEX_PUBLIC_KEY;
+  const defaultAdminKeyRaw = PublicKey.fromString(
+    defaultMirrorAdminHex,
+  ).toStringRaw();
+  const resolverPublicKeyRaw =
+    overrides?.adminKeyPublicKey !== undefined
+      ? PublicKey.fromString(overrides.adminKeyPublicKey).toStringRaw()
+      : defaultAdminKeyRaw;
 
   const apiMocks = makeApiMocks({
     tokens: {
@@ -867,7 +901,10 @@ export const makeDeleteSuccessMocks = (overrides?: {
         admin_key:
           overrides?.tokenInfo && 'admin_key' in overrides.tokenInfo
             ? overrides.tokenInfo.admin_key
-            : { key: defaultAdminKeyPublicKey },
+            : {
+                _type: 'ED25519',
+                key: overrides?.adminKeyPublicKey ?? defaultMirrorAdminHex,
+              },
         name: overrides?.tokenInfo?.name ?? 'TestToken',
       }),
     },
@@ -878,11 +915,24 @@ export const makeDeleteSuccessMocks = (overrides?: {
 
   apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
     accountId: '0.0.200000',
-    publicKey: defaultAdminKeyPublicKey,
+    publicKey: resolverPublicKeyRaw,
     keyRefId: 'admin-key-ref-id',
   });
 
-  apiMocks.kms.findByPublicKey = jest.fn().mockReturnValue(undefined);
+  apiMocks.kms.findByPublicKey = jest
+    .fn()
+    .mockImplementation((publicKey: string) =>
+      publicKey === defaultAdminKeyRaw
+        ? {
+            keyRefId: 'kms-key-ref-id',
+            publicKey: defaultAdminKeyRaw,
+            keyManager: KeyManager.local,
+            keyAlgorithm: KeyAlgorithm.ED25519,
+            createdAt: '',
+            updatedAt: '',
+          }
+        : undefined,
+    );
 
   return { ...apiMocks, mockDeleteTransaction };
 };
