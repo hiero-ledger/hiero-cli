@@ -2,9 +2,13 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
 
-import { MOCK_ACCOUNT_ID } from '@/__tests__/mocks/fixtures';
+import {
+  ED25519_HEX_PUBLIC_KEY,
+  MOCK_ACCOUNT_ID,
+} from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { DAY_IN_SECONDS } from '@/core/shared/constants';
 import {
   tokenView,
@@ -81,6 +85,54 @@ describe('tokenViewHandler', () => {
       expect(output.treasury).toBe(MOCK_ACCOUNT_ID);
       expect(output.autoRenewPeriodSeconds).toBe(30 * DAY_IN_SECONDS);
       expect(output.autoRenewAccountId).toBe(MOCK_ACCOUNT_ID);
+    });
+
+    test('should resolve single admin-key and supply-key from mirror node', async () => {
+      const mockTokenInfo = {
+        token_id: '0.0.123456',
+        name: 'TestToken',
+        symbol: 'TEST',
+        decimals: '2',
+        total_supply: '1000000',
+        max_supply: '0',
+        type: 'FUNGIBLE_COMMON',
+        supply_type: 'INFINITE',
+        treasury_account_id: MOCK_ACCOUNT_ID,
+        freeze_default: false,
+        admin_key: {
+          _type: MirrorNodeKeyType.ED25519,
+          key: ED25519_HEX_PUBLIC_KEY,
+        },
+        supply_key: {
+          _type: MirrorNodeKeyType.ED25519,
+          key: ED25519_HEX_PUBLIC_KEY,
+        },
+        created_timestamp: '1700000000.000000000',
+      };
+
+      const { api } = makeApiMocks({
+        mirror: {
+          getTokenInfo: jest.fn().mockResolvedValue(mockTokenInfo),
+        },
+        alias: {
+          resolve: jest.fn().mockReturnValue(null),
+        },
+      });
+
+      const logger = makeLogger();
+      const args: CommandHandlerArgs = {
+        args: { token: '0.0.123456' },
+        api,
+        state: api.state,
+        config: api.config,
+        logger,
+      };
+
+      const result = await tokenView(args);
+      const output = assertOutput(result.result, TokenViewOutputSchema);
+
+      expect(output.adminKey).toEqual({ keys: [ED25519_HEX_PUBLIC_KEY] });
+      expect(output.supplyKey).toEqual({ keys: [ED25519_HEX_PUBLIC_KEY] });
     });
 
     test('should view token using alias', async () => {

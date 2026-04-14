@@ -171,10 +171,10 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'supply-key',
           short: 's',
-          type: OptionType.STRING,
-          required: true,
+          type: OptionType.REPEATABLE,
+          required: false,
           description:
-            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+            'Supply key credential(s). Omit to auto-resolve signing keys from the key manager when on-chain supply public keys match stored credentials. Pass one or more times (same formats as token create-ft) when providing explicit credentials — including multiple values for KeyList / threshold supply keys on Hedera.',
         },
         {
           name: 'key-manager',
@@ -214,10 +214,10 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'supply-key',
           short: 's',
-          type: OptionType.STRING,
-          required: true,
+          type: OptionType.REPEATABLE,
+          required: false,
           description:
-            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+            'Supply key credential(s). Omit to auto-resolve signing keys from the key manager when on-chain supply public keys match stored credentials. Pass one or more times (same formats as token create-nft) when providing explicit credentials — including multiple values for KeyList / threshold supply keys on Hedera.',
         },
         {
           name: 'key-manager',
@@ -1168,7 +1168,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Admin key of token. Required unless the admin key is stored in the key manager (auto-resolved by public key). Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+            'Admin key credential(s). Required unless admin keys are auto-resolved from the key manager from on-chain public keys. Pass multiple times for KeyList / threshold admin keys. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
           name: 'key-manager',

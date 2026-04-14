@@ -47,7 +47,6 @@ export class TokenViewCommand implements Command {
       logger.info(`Fetching NFT serial #${serialNum}...`);
       nftInfo = await api.mirror.getNftInfo(tokenId, serialNum);
     }
-
     const output: TokenViewOutput = tokenBuildOutput(
       tokenInfo,
       nftInfo,
