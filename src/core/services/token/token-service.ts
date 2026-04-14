@@ -13,6 +13,7 @@ import type {
   TokenAirdropNftParams,
   TokenAllowanceFtParams,
   TokenAssociationParams,
+  TokenClaimAirdropParams,
   TokenCreateParams,
   TokenDeleteParams,
   TokenMintParams,
@@ -29,8 +30,10 @@ import {
   FeeAssessmentMethod,
   Hbar,
   NftId,
+  PendingAirdropId,
   TokenAirdropTransaction,
   TokenAssociateTransaction,
+  TokenClaimAirdropTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
   TokenId,
@@ -438,6 +441,39 @@ export class TokenServiceImpl implements TokenService {
         tx.addNftTransfer(new NftId(tid, serial), sender, recipient);
       }
     }
+    return tx;
+  }
+
+  createClaimAirdropTransaction(
+    params: TokenClaimAirdropParams,
+  ): TokenClaimAirdropTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating claim airdrop transaction for ${params.items.length} pending airdrop(s)`,
+    );
+
+    const tx = new TokenClaimAirdropTransaction();
+
+    for (const item of params.items) {
+      const tokenId = TokenId.fromString(item.tokenId);
+      const sender = AccountId.fromString(item.senderAccountId);
+      const receiver = AccountId.fromString(item.receiverAccountId);
+
+      const pendingId =
+        item.serialNumber !== undefined
+          ? new PendingAirdropId({
+              nftId: new NftId(tokenId, item.serialNumber),
+              senderId: sender,
+              receiverId: receiver,
+            })
+          : new PendingAirdropId({
+              tokenId,
+              senderId: sender,
+              receiverId: receiver,
+            });
+
+      tx.addPendingAirdropId(pendingId);
+    }
+
     return tx;
   }
 

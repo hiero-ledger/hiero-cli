@@ -38,6 +38,11 @@ import {
   TokenAssociateOutputSchema,
 } from './commands/associate';
 import {
+  TOKEN_CLAIM_AIRDROP_TEMPLATE,
+  tokenClaimAirdrop,
+  TokenClaimAirdropOutputSchema,
+} from './commands/claim-airdrop';
+import {
   TOKEN_CREATE_FT_TEMPLATE,
   tokenCreateFt,
   TokenCreateFtOutputSchema,
@@ -1018,6 +1023,51 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenPendingAirdropsOutputSchema,
         humanTemplate: TOKEN_PENDING_AIRDROPS_TEMPLATE,
+      },
+    },
+    {
+      name: 'claim-airdrop',
+      summary: 'Claim pending airdrops',
+      description:
+        'Claim one or more pending token airdrops (FT and/or NFT) for a receiver account. Use pending-airdrops to list pending airdrops and their indices.',
+      registeredHooks: ['batchify'],
+      options: [
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Receiver account ID or alias',
+        },
+        {
+          name: 'index',
+          short: 'i',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            '1-based index(es) from the pending-airdrops list. Use comma-separated values to claim multiple: --index 1,2,3',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Signing account. Can be {accountId}:{privateKey} pair, key reference, or account alias. Defaults to operator.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenClaimAirdrop,
+      output: {
+        schema: TokenClaimAirdropOutputSchema,
+        humanTemplate: TOKEN_CLAIM_AIRDROP_TEMPLATE,
       },
     },
     {

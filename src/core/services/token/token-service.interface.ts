@@ -7,6 +7,7 @@ import type {
   AccountAllowanceDeleteTransaction,
   TokenAirdropTransaction,
   TokenAssociateTransaction,
+  TokenClaimAirdropTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
   TokenMintTransaction,
@@ -20,6 +21,7 @@ import type {
   TokenAirdropNftParams,
   TokenAllowanceFtParams,
   TokenAssociationParams,
+  TokenClaimAirdropParams,
   TokenCreateParams,
   TokenDeleteParams,
   TokenMintParams,
@@ -80,4 +82,8 @@ export interface TokenService {
   createAirdropNftTransaction(
     params: TokenAirdropNftParams,
   ): TokenAirdropTransaction;
+
+  createClaimAirdropTransaction(
+    params: TokenClaimAirdropParams,
+  ): TokenClaimAirdropTransaction;
 }

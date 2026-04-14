@@ -183,3 +183,14 @@ export interface TokenAirdropNftParams {
   senderAccountId: string;
   transfers: TokenAirdropNftTransfer[];
 }
+
+export interface ClaimAirdropItem {
+  tokenId: string;
+  senderAccountId: string;
+  receiverAccountId: string;
+  serialNumber?: number;
+}
+
+export interface TokenClaimAirdropParams {
+  items: ClaimAirdropItem[];
+}

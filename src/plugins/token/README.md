@@ -722,6 +722,48 @@ hcli token airdrop-nft \
 
 **Implementation:** [`src/plugins/token/commands/airdrop-nft/handler.ts`](./commands/airdrop-nft/handler.ts)
 
+### Claim Airdrop
+
+Claim one or more pending airdrops (FT and/or NFT) for a receiver account. Up to 10 airdrops can be claimed in a single transaction.
+
+Use `pending-airdrops` first to list pending airdrops and their indices.
+
+```bash
+# List pending airdrops to see indices
+hcli token pending-airdrops --account myaccount
+# Output:
+#   1. MyToken (MTK) [0.0.123] — Amount: 1000
+#   2. CoolNFT (CNFT) [0.0.456] — Serial: #5
+
+# Claim a single airdrop by index
+hcli token claim-airdrop --account myaccount --index 1
+
+# Claim multiple airdrops (FT and NFT in one transaction)
+hcli token claim-airdrop --account myaccount --index 1 --index 2
+
+# Using explicit signing account
+hcli token claim-airdrop --account myaccount --index 1 --from my-key
+
+# Batch mode
+hcli token claim-airdrop --account myaccount --index 1 --batch my-batch
+```
+
+**Options:**
+
+- `--account` (required): Receiver account ID or alias
+- `--index` (required, repeatable): 1-based index from `pending-airdrops` output
+- `--from` (optional): Signing account. Defaults to operator
+- `--key-manager` (optional): Key manager type (`local` or `local_encrypted`)
+
+**Notes:**
+
+- Maximum 10 airdrops per transaction (Hedera SDK limit)
+- Both FT and NFT airdrops can be claimed in a single transaction
+- Indices are 1-based and correspond to the order shown by `pending-airdrops`
+- Batch support: pass `--batch <batch-name>` to queue the transaction for batch execution
+
+**Implementation:** [`src/plugins/token/commands/claim-airdrop/handler.ts`](./commands/claim-airdrop/handler.ts)
+
 ### Token Transfer NFT
 
 Transfer one or more NFTs from one account to another.

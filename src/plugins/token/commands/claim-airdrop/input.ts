@@ -1,0 +1,28 @@
+import { z } from 'zod';
+
+import {
+  AccountReferenceObjectSchema,
+  KeyManagerTypeSchema,
+  KeySchema,
+} from '@/core/schemas';
+
+export const TokenClaimAirdropInputSchema = z.object({
+  account: AccountReferenceObjectSchema.describe(
+    'Receiver account ID or alias to claim airdrops for',
+  ),
+  index: z
+    .preprocess(
+      (val) => {
+        const str = typeof val === 'string' ? val : '';
+        return str.split(',').map((s) => parseInt(s.trim(), 10));
+      },
+      z.array(z.number().int().min(1)).min(1),
+    )
+    .describe('1-based index(es) from the pending-airdrops list'),
+  from: KeySchema.optional(),
+  keyManager: KeyManagerTypeSchema.optional(),
+});
+
+export type TokenClaimAirdropInput = z.infer<
+  typeof TokenClaimAirdropInputSchema
+>;
