@@ -96,7 +96,7 @@ describe('Mint NFT Integration Tests', () => {
     const mintNftArgs: Record<string, unknown> = {
       token: createNftOutput.tokenId,
       metadata: 'Test NFT Metadata',
-      supplyKey: 'account-mint-nft',
+      supplyKey: ['account-mint-nft'],
     };
     const mintNftResult = await tokenMintNft({
       args: mintNftArgs,

@@ -1,11 +1,13 @@
 import '@/core/utils/json-serialize';
 
+import { ED25519_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
@@ -37,7 +39,7 @@ describe('tokenMintFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '100',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -64,7 +66,7 @@ describe('tokenMintFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '5000t',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -81,7 +83,7 @@ describe('tokenMintFtHandler', () => {
     });
 
     test('should mint tokens for FINITE supply token below max supply', async () => {
-      const supplyKeyPublicKey = 'supply-public-key';
+      const supplyKeyPublicKey = ED25519_HEX_PUBLIC_KEY;
       const { api } = makeMintFtSuccessMocks({
         tokenInfo: {
           decimals: '2',
@@ -99,7 +101,7 @@ describe('tokenMintFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '100',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -144,7 +146,7 @@ describe('tokenMintFtHandler', () => {
         args: {
           token: 'nonexistent-token',
           amount: '100',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -171,7 +173,7 @@ describe('tokenMintFtHandler', () => {
         kms: {
           importPrivateKey: jest.fn().mockReturnValue({
             keyRefId: 'supply-key-ref-id',
-            publicKey: 'supply-public-key',
+            publicKey: ED25519_HEX_PUBLIC_KEY,
           }),
         },
       });
@@ -183,7 +185,7 @@ describe('tokenMintFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '100',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -199,7 +201,10 @@ describe('tokenMintFtHandler', () => {
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({
             decimals: '0',
-            supply_key: { key: 'supply-key' },
+            supply_key: {
+              _type: MirrorNodeKeyType.ED25519,
+              key: ED25519_HEX_PUBLIC_KEY,
+            },
             total_supply: '0',
             max_supply: '0',
           }),
@@ -231,9 +236,15 @@ describe('tokenMintFtHandler', () => {
         kms: {
           importPrivateKey: jest.fn().mockReturnValue({
             keyRefId: 'supply-key-ref-id',
-            publicKey: 'supply-public-key',
+            publicKey: ED25519_HEX_PUBLIC_KEY,
           }),
         },
+      });
+
+      api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
+        accountId: '0.0.200000',
+        publicKey: ED25519_HEX_PUBLIC_KEY,
+        keyRefId: 'supply-key-ref-id',
       });
 
       const logger = makeLogger();
@@ -243,7 +254,7 @@ describe('tokenMintFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '100',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -251,7 +262,7 @@ describe('tokenMintFtHandler', () => {
     });
 
     test('should handle exceeding max supply for FINITE token', async () => {
-      const supplyKeyPublicKey = 'supply-public-key';
+      const supplyKeyPublicKey = ED25519_HEX_PUBLIC_KEY;
       const { api } = makeMintFtSuccessMocks({
         tokenInfo: {
           decimals: '2',
@@ -269,7 +280,7 @@ describe('tokenMintFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '15000',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -286,7 +297,7 @@ describe('tokenMintFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '0',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -305,7 +316,7 @@ describe('tokenMintFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '100',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 

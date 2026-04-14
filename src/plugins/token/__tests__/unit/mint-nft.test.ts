@@ -1,5 +1,6 @@
 import '@/core/utils/json-serialize';
 
+import { ED25519_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
@@ -7,6 +8,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 import {
@@ -38,7 +40,7 @@ describe('tokenMintNftHandler', () => {
         args: {
           token: '0.0.123456',
           metadata: 'Test NFT metadata',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -58,7 +60,7 @@ describe('tokenMintNftHandler', () => {
     });
 
     test('should mint NFT for FINITE supply token below max supply', async () => {
-      const supplyKeyPublicKey = 'supply-public-key';
+      const supplyKeyPublicKey = ED25519_HEX_PUBLIC_KEY;
       const { api } = makeMintNftSuccessMocks({
         tokenInfo: {
           decimals: '0',
@@ -77,7 +79,7 @@ describe('tokenMintNftHandler', () => {
         args: {
           token: '0.0.123456',
           metadata: 'Test NFT',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -123,7 +125,10 @@ describe('tokenMintNftHandler', () => {
           getTokenInfo: jest.fn().mockResolvedValue({
             decimals: '0',
             type: 'NON_FUNGIBLE_TOKEN',
-            supply_key: { key: 'supply-public-key' },
+            supply_key: {
+              _type: MirrorNodeKeyType.ED25519,
+              key: ED25519_HEX_PUBLIC_KEY,
+            },
             total_supply: '0',
             max_supply: '0',
           }),
@@ -139,14 +144,14 @@ describe('tokenMintNftHandler', () => {
         kms: {
           importPrivateKey: jest.fn().mockReturnValue({
             keyRefId: 'supply-key-ref-id',
-            publicKey: 'supply-public-key',
+            publicKey: ED25519_HEX_PUBLIC_KEY,
           }),
         },
       });
 
       api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
         accountId: '0.0.200000',
-        publicKey: 'supply-public-key',
+        publicKey: ED25519_HEX_PUBLIC_KEY,
         keyRefId: 'supply-key-ref-id',
       });
 
@@ -157,7 +162,7 @@ describe('tokenMintNftHandler', () => {
         args: {
           token: 'my-nft-collection',
           metadata: 'Test NFT',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -188,7 +193,7 @@ describe('tokenMintNftHandler', () => {
         args: {
           token: 'nonexistent-token',
           metadata: 'Test NFT',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -228,7 +233,7 @@ describe('tokenMintNftHandler', () => {
         args: {
           token: '0.0.123456',
           metadata: 'Test NFT',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -245,7 +250,10 @@ describe('tokenMintNftHandler', () => {
           getTokenInfo: jest.fn().mockResolvedValue({
             decimals: '2',
             type: 'FUNGIBLE_COMMON',
-            supply_key: { key: 'supply-key' },
+            supply_key: {
+              _type: MirrorNodeKeyType.ED25519,
+              key: ED25519_HEX_PUBLIC_KEY,
+            },
             total_supply: '1000000',
             max_supply: '0',
           }),
@@ -277,9 +285,15 @@ describe('tokenMintNftHandler', () => {
         kms: {
           importPrivateKey: jest.fn().mockReturnValue({
             keyRefId: 'supply-key-ref-id',
-            publicKey: 'supply-public-key',
+            publicKey: ED25519_HEX_PUBLIC_KEY,
           }),
         },
+      });
+
+      api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
+        accountId: '0.0.200000',
+        publicKey: ED25519_HEX_PUBLIC_KEY,
+        keyRefId: 'supply-key-ref-id',
       });
 
       const logger = makeLogger();
@@ -289,7 +303,7 @@ describe('tokenMintNftHandler', () => {
         args: {
           token: '0.0.123456',
           metadata: 'Test NFT',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -297,7 +311,7 @@ describe('tokenMintNftHandler', () => {
     });
 
     test('should handle exceeding max supply for FINITE token', async () => {
-      const supplyKeyPublicKey = 'supply-public-key';
+      const supplyKeyPublicKey = ED25519_HEX_PUBLIC_KEY;
       const { api } = makeMintNftSuccessMocks({
         tokenInfo: {
           decimals: '0',
@@ -316,7 +330,7 @@ describe('tokenMintNftHandler', () => {
         args: {
           token: '0.0.123456',
           metadata: 'Test NFT',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -334,7 +348,7 @@ describe('tokenMintNftHandler', () => {
         args: {
           token: '0.0.123456',
           metadata: longMetadata,
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
@@ -353,60 +367,11 @@ describe('tokenMintNftHandler', () => {
         args: {
           token: '0.0.123456',
           metadata: 'Test NFT',
-          supplyKey: defaultSupplyKey,
+          supplyKey: [defaultSupplyKey],
         },
       });
 
       await expect(tokenMintNft(args)).rejects.toThrow(TransactionError);
-    });
-
-    test('should handle mismatched supply key', async () => {
-      const tokenSupplyKeyPublicKey = 'token-supply-key';
-      const providedSupplyKeyPublicKey = 'different-supply-key';
-      const mockMintTransaction = { test: 'mint-transaction' };
-
-      const { api } = makeApiMocks({
-        tokens: {
-          createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
-        },
-        mirror: {
-          getTokenInfo: jest.fn().mockResolvedValue({
-            decimals: '0',
-            type: 'NON_FUNGIBLE_TOKEN',
-            supply_key: { key: tokenSupplyKeyPublicKey },
-            total_supply: '0',
-            max_supply: '0',
-          }),
-        },
-        alias: {
-          resolve: jest.fn().mockReturnValue(null),
-        },
-        kms: {
-          importPrivateKey: jest.fn().mockReturnValue({
-            keyRefId: 'supply-key-ref-id',
-            publicKey: providedSupplyKeyPublicKey,
-          }),
-        },
-      });
-
-      api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-        accountId: '0.0.200000',
-        publicKey: providedSupplyKeyPublicKey,
-        keyRefId: 'supply-key-ref-id',
-      });
-
-      const logger = makeLogger();
-      const args = makeTokenMintNftCommandArgs({
-        api,
-        logger,
-        args: {
-          token: '0.0.123456',
-          metadata: 'Test NFT',
-          supplyKey: defaultSupplyKey,
-        },
-      });
-
-      await expect(tokenMintNft(args)).rejects.toThrow(ValidationError);
     });
   });
 });

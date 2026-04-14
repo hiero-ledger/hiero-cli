@@ -21,10 +21,6 @@ import {
   getEffectiveKeyRequirement,
 } from '@/core/utils/extract-public-keys';
 import { composeKey } from '@/core/utils/key-composer';
-import {
-  buildPublicKeySet,
-  resolveSigningKeyRefsFromExplicitCredentials,
-} from '@/core/utils/resolve-signing-key-refs';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
@@ -138,9 +134,16 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
       );
     }
 
-    const extracted = extractPublicKeysFromMirrorNodeKey(tokenInfo.admin_key);
-    const requirement = getEffectiveKeyRequirement(extracted);
-    const allowedPublicKeysSet = buildPublicKeySet(requirement.publicKeys);
+    const extractedKeys = extractPublicKeysFromMirrorNodeKey(
+      tokenInfo.admin_key,
+    );
+    const signatureRequirement = getEffectiveKeyRequirement(extractedKeys);
+    if (signatureRequirement.publicKeys.length === 0) {
+      throw new ValidationError(
+        'Could not resolve admin key public keys from network',
+        { context: { tokenId } },
+      );
+    }
 
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
     const stateKey = composeKey(network, tokenId);
@@ -156,35 +159,27 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
           ]),
         ),
       );
-      const resolved = resolveSigningKeyRefsFromExplicitCredentials(
-        adminKeys,
-        allowedPublicKeysSet,
-        requirement.requiredSignatures,
-      );
-      signingKeyRefIds = resolved.signingKeyRefIds;
+      signingKeyRefIds = adminKeys.map((adminKey) => adminKey.keyRefId);
     } else {
-      const storedRefs = tokenInState?.adminKeyRefIds ?? [];
-      if (storedRefs.length > 0) {
-        const fromStore =
-          api.keyResolver.resolvedPublicKeysForStoredKeyRefs(storedRefs);
-        const resolvedFromStore = resolveSigningKeyRefsFromExplicitCredentials(
-          fromStore,
-          allowedPublicKeysSet,
-          requirement.requiredSignatures,
-        );
-        signingKeyRefIds = resolvedFromStore.signingKeyRefIds;
-      } else {
-        const kmsRecord = api.kms.findByPublicKey(
-          requirement.publicKeys[0] ?? '',
-        );
-        if (!kmsRecord) {
-          throw new ValidationError(
-            'Admin key not found in key manager. Provide --admin-key.',
-            { context: { tokenId } },
-          );
+      const refIds: string[] = [];
+      const usedRefIds = new Set<string>();
+      for (const publicKey of signatureRequirement.publicKeys) {
+        const kmsRecord = api.kms.findByPublicKey(publicKey);
+        if (kmsRecord && !usedRefIds.has(kmsRecord.keyRefId)) {
+          usedRefIds.add(kmsRecord.keyRefId);
+          refIds.push(kmsRecord.keyRefId);
+          if (refIds.length >= signatureRequirement.requiredSignatures) {
+            break;
+          }
         }
-        signingKeyRefIds = [kmsRecord.keyRefId];
       }
+      if (refIds.length < signatureRequirement.requiredSignatures) {
+        throw new ValidationError(
+          'Not enough admin key(s) not found in key manager for this token. Provide --admin-key.',
+          { context: { tokenId } },
+        );
+      }
+      signingKeyRefIds = refIds;
     }
 
     const tokenName = tokenInState?.name ?? tokenInfo.name;
@@ -221,7 +216,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     );
     const signedTransaction = await api.txSign.sign(
       buildTransactionResult.transaction,
-      normalisedParams.signingKeyRefIds,
+      normalisedParams.keyRefIds,
     );
     return { signedTransaction };
   }

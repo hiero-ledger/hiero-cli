@@ -866,13 +866,13 @@ export const mockTokenStats = {
 export const makeMintFtCommandArgs = (params: {
   api: CoreApi;
   logger: Logger;
-  args?: Record<string, string | number | boolean | undefined>;
+  args?: Record<string, string | number | boolean | string[] | undefined>;
 }) => {
   return {
     args: {
       token: '0.0.123456',
       amount: '100',
-      supplyKey: 'test-supply-key',
+      supplyKey: ['test-supply-key'],
       ...params.args,
     },
     api: params.api,
@@ -896,13 +896,13 @@ export const expectedMintFtTransactionParams = {
 export const makeTokenMintNftCommandArgs = (params: {
   api: CoreApi;
   logger: Logger;
-  args?: Record<string, string | number | boolean | undefined>;
+  args?: Record<string, string | number | boolean | string[] | undefined>;
 }) => {
   return {
     args: {
       token: '0.0.123456',
       metadata: 'Test NFT metadata',
-      supplyKey: 'test-supply-key',
+      supplyKey: ['test-supply-key'],
       ...params.args,
     },
     api: params.api,

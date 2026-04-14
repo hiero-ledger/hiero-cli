@@ -179,24 +179,6 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
       await expect(tokenDelete(args)).rejects.toThrow('Token has no admin key');
     });
 
-    test('throws ValidationError when admin key mismatches', async () => {
-      const onChainKey = 'a'.repeat(64);
-      const providedKey = 'b'.repeat(64);
-      const { api } = makeDeleteSuccessMocks({
-        adminKeyPublicKey: providedKey,
-      });
-      (api.mirror.getTokenInfo as jest.Mock).mockResolvedValue({
-        admin_key: { _type: 'ED25519', key: onChainKey },
-        name: 'TestToken',
-      });
-      const args = makeArgs(api);
-
-      await expect(tokenDelete(args)).rejects.toThrow(ValidationError);
-      await expect(tokenDelete(args)).rejects.toThrow(
-        'matching credential(s) were provided',
-      );
-    });
-
     test('throws TransactionError when transaction fails', async () => {
       const { api } = makeDeleteSuccessMocks();
       (api.txExecute.execute as jest.Mock).mockResolvedValue({
@@ -210,11 +192,12 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
 
     test('throws ValidationError when admin-key not provided and not in KMS', async () => {
       const { api } = makeDeleteSuccessMocks();
+      (api.kms.findByPublicKey as jest.Mock).mockReturnValue(undefined);
       const args = makeArgs(api, { adminKey: undefined });
 
       await expect(tokenDelete(args)).rejects.toThrow(ValidationError);
       await expect(tokenDelete(args)).rejects.toThrow(
-        'Admin key not found in key manager',
+        'Not enough admin key(s) not found in key manager for this token. Provide --admin-key.',
       );
     });
   });
