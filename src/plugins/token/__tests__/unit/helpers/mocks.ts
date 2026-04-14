@@ -72,6 +72,7 @@ export const makeTokenServiceMock = (
   createDeleteTransaction: jest.fn(),
   createAirdropFtTransaction: jest.fn(),
   createAirdropNftTransaction: jest.fn(),
+  createCancelAirdropTransaction: jest.fn(),
   createClaimAirdropTransaction: jest.fn(),
   ...overrides,
 });

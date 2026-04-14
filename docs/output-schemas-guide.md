@@ -431,6 +431,23 @@ interface CommandOutputSpec {
 
 `claimed` contains the list of airdrops that were claimed in this transaction. Each entry mirrors the structure of `pending-airdrops` output. Maximum 10 items per transaction (Hedera SDK limit). FT and NFT airdrops can be mixed in a single transaction.
 
+#### `token cancel-airdrop`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "sender": "0.0.12345",
+  "receiver": "0.0.54321",
+  "serial": null,
+  "network": "testnet"
+}
+```
+
+`serial` is `null` for fungible token airdrops and a positive integer for NFT airdrops. The sender is the account that originally initiated the airdrop; if `--from` is omitted, the operator account is used.
+
 #### `token transfer-ft`
 
 **Output**:
