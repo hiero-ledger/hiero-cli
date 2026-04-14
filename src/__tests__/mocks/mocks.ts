@@ -35,6 +35,7 @@ import type { StateService } from '@/core/services/state/state-service.interface
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 import type { BatchData, TransactionResult } from '@/core/types/shared.types';
+import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 import type { TopicData } from '@/plugins/topic/schema';
 
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
@@ -870,6 +871,31 @@ export const createBatchExecuteParams = (
   executeTransactionResult: {
     source: OrchestratorSource.BATCH,
     batchData,
+  },
+  outputResult: { result: {} },
+});
+
+export const createScheduleVerifyParams = (
+  scheduledData: ScheduledTransactionData,
+  handlerArgs?: CommandHandlerArgs,
+): PostOutputPreparationHookParams => ({
+  args:
+    handlerArgs ??
+    ({
+      args: {},
+      api: {} as CoreApi,
+      state: {} as StateService,
+      config: makeConfigMock(),
+      logger: makeLogger(),
+      hooks: new Map(),
+    } as CommandHandlerArgs),
+  commandName: 'schedule_verify',
+  normalisedParams: {},
+  buildTransactionResult: undefined,
+  signTransactionResult: undefined,
+  executeTransactionResult: {
+    source: OrchestratorSource.SCHEDULE,
+    scheduledData,
   },
   outputResult: { result: {} },
 });

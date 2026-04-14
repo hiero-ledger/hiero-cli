@@ -177,7 +177,7 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
           alias: normalisedParams.alias,
           type: AliasType.Account,
           network: normalisedParams.network,
-          entityId: receipt.accountId,
+          entityId: stateAccountId,
           evmAddress,
           publicKey: normalisedParams.publicKey,
           keyRefId: normalisedParams.keyRefId,

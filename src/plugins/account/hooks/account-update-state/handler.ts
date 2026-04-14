@@ -14,7 +14,10 @@ import {
   OrchestratorSource,
 } from '@/core/types/shared.types';
 import { ACCOUNT_UPDATE_COMMAND_NAME } from '@/plugins/account/commands/update/handler';
-import { AccountUpdateNormalisedParamsSchema } from '@/plugins/account/hooks/account-update-state/types';
+import {
+  type AccountUpdateNormalisedParams,
+  AccountUpdateNormalisedParamsSchema,
+} from '@/plugins/account/hooks/account-update-state/types';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookParams> {
@@ -33,7 +36,7 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
         this.handleBatch(api, logger, parsed.data.batchData);
         break;
       case OrchestratorSource.SCHEDULE:
-        await this.handleSchedule(api, parsed.data.scheduledData);
+        await this.handleSchedule(api, logger, parsed.data.scheduledData);
         break;
       default:
         break;
@@ -54,42 +57,85 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
       if (item.command !== ACCOUNT_UPDATE_COMMAND_NAME) {
         continue;
       }
-      this.updateAccountStateFromBatchItem(api, logger, item);
+      this.updateFromBatchItem(api, logger, item);
     }
   }
 
   private async handleSchedule(
     api: CoreApi,
+    logger: Logger,
     scheduledData: ScheduledTransactionData,
   ): Promise<void> {
     if (scheduledData.command !== ACCOUNT_UPDATE_COMMAND_NAME) {
       return;
     }
-    try {
-      await this.saveUpdatedAccount(api, scheduledData);
-    } catch (error) {
-      api.logger.error(
-        `Error updating account state after scheduled execution: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
+    await this.updateFromScheduled(api, logger, scheduledData);
   }
 
-  private updateAccountStateFromBatchItem(
+  private updateFromBatchItem(
     api: CoreApi,
     logger: Logger,
     batchDataItem: BatchDataItem,
   ): void {
-    const parseResult = AccountUpdateNormalisedParamsSchema.safeParse(
+    const normalisedParams = this.parseAccountUpdateParams(
+      logger,
       batchDataItem.normalizedParams,
     );
-
-    if (!parseResult.success) {
-      logger.warn(
-        `There was a problem with parsing data schema. The saving will not be done`,
-      );
+    if (!normalisedParams) {
       return;
     }
 
+    this.persistAccountUpdate(api, logger, normalisedParams);
+  }
+
+  private async updateFromScheduled(
+    api: CoreApi,
+    logger: Logger,
+    scheduledData: ScheduledTransactionData,
+  ): Promise<void> {
+    const normalisedParams = this.parseAccountUpdateParams(
+      logger,
+      scheduledData.normalizedParams ?? {},
+    );
+    if (!normalisedParams) {
+      return;
+    }
+
+    const innerTransactionId = scheduledData.transactionId;
+    if (!innerTransactionId) {
+      logger.warn(`No transaction ID found for scheduled transaction`);
+      return;
+    }
+
+    const transactionRecord = await api.mirror.getTransactionRecord(
+      formatTransactionIdToDashFormat(innerTransactionId),
+    );
+
+    const scheduledMirrorTx = transactionRecord.transactions.find(
+      (tx) => tx.scheduled,
+    );
+    const result = scheduledMirrorTx?.result;
+    if (result !== MirrorTransactionResult.SUCCESS) {
+      throw new StateError(
+        `Scheduled transaction result is not ${MirrorTransactionResult.SUCCESS}: ${result}`,
+      );
+    }
+
+    const entityId = scheduledMirrorTx?.entity_id;
+    if (entityId && entityId !== normalisedParams.accountId) {
+      throw new StateError(
+        `Account ID mismatch: expected ${normalisedParams.accountId}, got ${entityId}`,
+      );
+    }
+
+    this.persistAccountUpdate(api, logger, normalisedParams);
+  }
+
+  private persistAccountUpdate(
+    api: CoreApi,
+    logger: Logger,
+    normalisedParams: AccountUpdateNormalisedParams,
+  ): void {
     const {
       accountId,
       network,
@@ -97,7 +143,7 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
       newPublicKey,
       newKeyRefId,
       newKeyType,
-    } = parseResult.data;
+    } = normalisedParams;
 
     if (!newKeyRefId || !newPublicKey) {
       return;
@@ -108,7 +154,7 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
 
     if (!existingAccount) {
       logger.warn(
-        `Account '${accountId}' not found in state after batch execution, skipping state update`,
+        `Account '${accountId}' not found in state, skipping state update`,
       );
       return;
     }
@@ -136,85 +182,18 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
     }
   }
 
-  private async saveUpdatedAccount(
-    api: CoreApi,
-    scheduledData: ScheduledTransactionData,
-  ): Promise<void> {
-    const parseResult = AccountUpdateNormalisedParamsSchema.safeParse(
-      scheduledData.normalizedParams ?? {},
-    );
+  private parseAccountUpdateParams(
+    logger: Logger,
+    normalizedParams: unknown,
+  ): AccountUpdateNormalisedParams | undefined {
+    const parseResult =
+      AccountUpdateNormalisedParamsSchema.safeParse(normalizedParams);
     if (!parseResult.success) {
-      api.logger.warn(
-        `There was a problem with parsing account update data schema. The saving will not be done`,
+      logger.warn(
+        `There was a problem with parsing data schema. The saving will not be done`,
       );
       return;
     }
-    const normalisedParams = parseResult.data;
-    const innerTransactionId = scheduledData.transactionId;
-    if (!innerTransactionId) {
-      api.logger.warn(`No transaction ID found for scheduled transaction`);
-      return;
-    }
-
-    const transactionRecord = await api.mirror.getTransactionRecord(
-      formatTransactionIdToDashFormat(innerTransactionId),
-    );
-
-    const scheduledMirrorTx = transactionRecord.transactions.find(
-      (tx) => tx.scheduled === true,
-    );
-    const result = scheduledMirrorTx?.result;
-    if (result !== MirrorTransactionResult.SUCCESS) {
-      throw new StateError(
-        `Scheduled transaction result is not ${MirrorTransactionResult.SUCCESS}: ${result}`,
-      );
-    }
-
-    const entityId = scheduledMirrorTx?.entity_id;
-    if (entityId && entityId !== normalisedParams.accountId) {
-      throw new StateError(
-        `Account ID mismatch: expected ${normalisedParams.accountId}, got ${entityId}`,
-      );
-    }
-
-    if (
-      normalisedParams.newKeyRefId === undefined ||
-      normalisedParams.newPublicKey === undefined
-    ) {
-      return;
-    }
-
-    const accountState = new ZustandAccountStateHelper(api.state, api.logger);
-    const existingAccount = accountState.getAccount(
-      normalisedParams.accountStateKey,
-    );
-
-    if (!existingAccount) {
-      api.logger.warn(
-        `Account '${normalisedParams.accountId}' not found in state after scheduled execution, skipping state update`,
-      );
-      return;
-    }
-
-    const updatedAccount: AccountData = {
-      ...existingAccount,
-      keyRefId: normalisedParams.newKeyRefId,
-      publicKey: normalisedParams.newPublicKey,
-      type: normalisedParams.newKeyType ?? existingAccount.type,
-    };
-    accountState.saveAccount(normalisedParams.accountStateKey, updatedAccount);
-
-    const aliasesForAccount = api.alias
-      .list({ network: normalisedParams.network, type: AliasType.Account })
-      .filter((rec) => rec.entityId === normalisedParams.accountId);
-
-    for (const rec of aliasesForAccount) {
-      api.alias.remove(rec.alias, normalisedParams.network);
-      api.alias.register({
-        ...rec,
-        publicKey: normalisedParams.newPublicKey,
-        keyRefId: normalisedParams.newKeyRefId,
-      });
-    }
+    return parseResult.data;
   }
 }

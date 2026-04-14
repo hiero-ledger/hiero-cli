@@ -10,3 +10,7 @@ export const AccountUpdateNormalisedParamsSchema = z.object({
   newKeyRefId: z.string().optional(),
   newKeyType: z.enum(KeyAlgorithm).optional(),
 });
+
+export type AccountUpdateNormalisedParams = z.infer<
+  typeof AccountUpdateNormalisedParamsSchema
+>;

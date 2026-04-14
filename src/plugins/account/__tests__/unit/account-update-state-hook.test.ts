@@ -1,5 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { BatchDataItem } from '@/core/types/shared.types';
+import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 
 import {
   MOCK_ACCOUNT_ID,
@@ -7,11 +8,17 @@ import {
 } from '@/__tests__/mocks/fixtures';
 import {
   createBatchExecuteParams,
+  createScheduleVerifyParams,
   makeLogger,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
+import { StateError } from '@/core/errors';
+import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import {
+  MirrorTransactionResult,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import { makeArgs } from '@/plugins/account/__tests__/unit/helpers/mocks';
 import { ACCOUNT_UPDATE_COMMAND_NAME } from '@/plugins/account/commands/update/handler';
 import { AccountUpdateStateHook } from '@/plugins/account/hooks/account-update-state';
@@ -414,5 +421,251 @@ describe('account plugin - account-update-state hook', () => {
     await hook.execute({ ...params, args });
 
     expect(saveAccountMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('account plugin - account-update-state hook (schedule path)', () => {
+  let hook: AccountUpdateStateHook;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    hook = new AccountUpdateStateHook();
+    MockedHelper.mockImplementation(() => ({
+      getAccount: jest.fn().mockReturnValue(existingAccountData),
+      saveAccount: jest.fn(),
+    }));
+  });
+
+  const makeScheduledData = (
+    overrides: Partial<ScheduledTransactionData> = {},
+  ): ScheduledTransactionData => ({
+    name: 'my-schedule',
+    network: SupportedNetwork.TESTNET,
+    keyManager: KeyManager.local,
+    waitForExpiry: false,
+    scheduled: false,
+    executed: false,
+    command: ACCOUNT_UPDATE_COMMAND_NAME,
+    normalizedParams: {
+      accountId: MOCK_ACCOUNT_ID,
+      network: SupportedNetwork.TESTNET,
+      accountStateKey: `testnet:${MOCK_ACCOUNT_ID}`,
+      newPublicKey: 'new-pk-sched',
+      newKeyRefId: 'kr_new_sched',
+      newKeyType: KeyAlgorithm.ECDSA,
+    },
+    transactionId: '0.0.1234@1234567890.000000000',
+    ...overrides,
+  });
+
+  test('updates account state from scheduled execution', async () => {
+    const logger = makeLogger();
+    const saveAccountMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({
+      getAccount: jest.fn().mockReturnValue(existingAccountData),
+      saveAccount: saveAccountMock,
+    }));
+
+    const getTransactionRecordMock = jest.fn().mockResolvedValue({
+      transactions: [
+        {
+          scheduled: true,
+          entity_id: MOCK_ACCOUNT_ID,
+          result: MirrorTransactionResult.SUCCESS,
+        },
+      ],
+    });
+
+    const api = {
+      mirror: { getTransactionRecord: getTransactionRecordMock },
+      alias: {
+        list: jest.fn().mockReturnValue([]),
+        remove: jest.fn(),
+        register: jest.fn(),
+      },
+      state: makeStateMock(),
+    } as unknown as Partial<CoreApi>;
+    const args = makeArgs(api, logger, {});
+
+    const params = createScheduleVerifyParams(makeScheduledData());
+
+    const result = await hook.execute({ ...params, args });
+
+    expect(result.breakFlow).toBe(false);
+    expect(saveAccountMock).toHaveBeenCalledWith(
+      `testnet:${MOCK_ACCOUNT_ID}`,
+      expect.objectContaining({
+        keyRefId: 'kr_new_sched',
+        publicKey: 'new-pk-sched',
+      }),
+    );
+  });
+
+  test('skips when command does not match', async () => {
+    const logger = makeLogger();
+    const saveAccountMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({
+      getAccount: jest.fn(),
+      saveAccount: saveAccountMock,
+    }));
+
+    const api = {} as Partial<CoreApi>;
+    const args = makeArgs(api, logger, {});
+
+    const params = createScheduleVerifyParams(
+      makeScheduledData({ command: 'token_create' }),
+    );
+
+    const result = await hook.execute({ ...params, args });
+
+    expect(result.breakFlow).toBe(false);
+    expect(saveAccountMock).not.toHaveBeenCalled();
+  });
+
+  test('skips when normalizedParams are invalid and logs warn', async () => {
+    const logger = makeLogger();
+    const saveAccountMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({
+      getAccount: jest.fn(),
+      saveAccount: saveAccountMock,
+    }));
+
+    const api = {} as Partial<CoreApi>;
+    const args = makeArgs(api, logger, {});
+
+    const params = createScheduleVerifyParams(
+      makeScheduledData({ normalizedParams: { invalid: true } }),
+    );
+
+    const result = await hook.execute({ ...params, args });
+
+    expect(result.breakFlow).toBe(false);
+    expect(saveAccountMock).not.toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      'There was a problem with parsing data schema. The saving will not be done',
+    );
+  });
+
+  test('skips when transactionId is missing and logs warn', async () => {
+    const logger = makeLogger();
+    const saveAccountMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({
+      getAccount: jest.fn(),
+      saveAccount: saveAccountMock,
+    }));
+
+    const api = {} as Partial<CoreApi>;
+    const args = makeArgs(api, logger, {});
+
+    const params = createScheduleVerifyParams(
+      makeScheduledData({ transactionId: undefined }),
+    );
+
+    const result = await hook.execute({ ...params, args });
+
+    expect(result.breakFlow).toBe(false);
+    expect(saveAccountMock).not.toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      'No transaction ID found for scheduled transaction',
+    );
+  });
+
+  test('throws StateError when mirror tx result is not SUCCESS', async () => {
+    const logger = makeLogger();
+    const getTransactionRecordMock = jest.fn().mockResolvedValue({
+      transactions: [
+        { scheduled: true, entity_id: MOCK_ACCOUNT_ID, result: 'INVALID' },
+      ],
+    });
+
+    const api = {
+      mirror: { getTransactionRecord: getTransactionRecordMock },
+      state: makeStateMock(),
+    } as unknown as Partial<CoreApi>;
+    const args = makeArgs(api, logger, {});
+
+    const params = createScheduleVerifyParams(makeScheduledData());
+
+    await expect(hook.execute({ ...params, args })).rejects.toThrow(StateError);
+  });
+
+  test('throws StateError when entity_id mismatches accountId', async () => {
+    const logger = makeLogger();
+    const getTransactionRecordMock = jest.fn().mockResolvedValue({
+      transactions: [
+        {
+          scheduled: true,
+          entity_id: '0.0.9999',
+          result: MirrorTransactionResult.SUCCESS,
+        },
+      ],
+    });
+
+    const api = {
+      mirror: { getTransactionRecord: getTransactionRecordMock },
+      state: makeStateMock(),
+    } as unknown as Partial<CoreApi>;
+    const args = makeArgs(api, logger, {});
+
+    const params = createScheduleVerifyParams(makeScheduledData());
+
+    await expect(hook.execute({ ...params, args })).rejects.toThrow(
+      'Account ID mismatch',
+    );
+  });
+
+  test('re-registers aliases with new key from scheduled execution', async () => {
+    const logger = makeLogger();
+    const removeMock = jest.fn();
+    const registerMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({
+      getAccount: jest.fn().mockReturnValue(existingAccountData),
+      saveAccount: jest.fn(),
+    }));
+
+    const aliasRecord = {
+      alias: 'my-account',
+      type: 'account',
+      network: SupportedNetwork.TESTNET,
+      entityId: MOCK_ACCOUNT_ID,
+      publicKey: 'old-pk',
+      keyRefId: 'kr_old',
+      createdAt: '2024-01-01T00:00:00.000Z',
+    };
+
+    const getTransactionRecordMock = jest.fn().mockResolvedValue({
+      transactions: [
+        {
+          scheduled: true,
+          entity_id: MOCK_ACCOUNT_ID,
+          result: MirrorTransactionResult.SUCCESS,
+        },
+      ],
+    });
+
+    const api = {
+      mirror: { getTransactionRecord: getTransactionRecordMock },
+      alias: {
+        list: jest.fn().mockReturnValue([aliasRecord]),
+        remove: removeMock,
+        register: registerMock,
+      },
+      state: makeStateMock(),
+    } as unknown as Partial<CoreApi>;
+    const args = makeArgs(api, logger, {});
+
+    const params = createScheduleVerifyParams(makeScheduledData());
+
+    await hook.execute({ ...params, args });
+
+    expect(removeMock).toHaveBeenCalledWith(
+      'my-account',
+      SupportedNetwork.TESTNET,
+    );
+    expect(registerMock).toHaveBeenCalledWith({
+      ...aliasRecord,
+      publicKey: 'new-pk-sched',
+      keyRefId: 'kr_new_sched',
+    });
   });
 });

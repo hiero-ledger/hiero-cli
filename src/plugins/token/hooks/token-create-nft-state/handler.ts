@@ -25,6 +25,9 @@ export class TokenCreateNftStateHook implements Hook<PostOutputPreparationHookPa
       return { breakFlow: false };
     }
     const batchData = parsed.data.batchData;
+    if (!batchData.success) {
+      return { breakFlow: false };
+    }
     const { api, logger } = params.args;
     await Promise.all(
       [...batchData.transactions]

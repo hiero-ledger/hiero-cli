@@ -295,14 +295,14 @@ export class PluginManager {
     for (const registration of registeredHooks) {
       const hookSpec = this.hooks.find((h) => h.name === registration.hook);
       if (!hookSpec) {
-        throw new ConfigurationError(
+        this.logger.warn(
           `Command "${commandSpec.name}" references hook "${registration.hook}" which does not exist`,
         );
+      } else {
+        const existing = phaseHooks.get(registration.phase) ?? [];
+        existing.push(hookSpec.hook);
+        phaseHooks.set(registration.phase, existing);
       }
-
-      const existing = phaseHooks.get(registration.phase) ?? [];
-      existing.push(hookSpec.hook);
-      phaseHooks.set(registration.phase, existing);
     }
 
     return phaseHooks;
