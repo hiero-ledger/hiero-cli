@@ -69,8 +69,8 @@ describe('Create NFT Integration Tests', () => {
       treasury: 'account-create-nft',
       supplyType: SupplyType.FINITE,
       maxSupply: '100',
-      adminKey: 'account-create-nft',
-      supplyKey: 'account-create-nft',
+      adminKey: ['account-create-nft'],
+      supplyKey: ['account-create-nft'],
       name: 'test-nft',
     };
     const createNftResult = await tokenCreateNft({

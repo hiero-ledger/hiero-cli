@@ -72,8 +72,8 @@ describe('Mint NFT Integration Tests', () => {
       treasury: 'account-mint-nft',
       supplyType: SupplyType.FINITE,
       maxSupply: '100',
-      adminKey: 'account-mint-nft',
-      supplyKey: 'account-mint-nft',
+      adminKey: ['account-mint-nft'],
+      supplyKey: ['account-mint-nft'],
       name: 'test-nft-collection',
     };
     const createNftResult = await tokenCreateNft({
