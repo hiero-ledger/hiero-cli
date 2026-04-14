@@ -75,6 +75,7 @@ export const makeTokenServiceMock = (
   createCancelAirdropTransaction: jest.fn(),
   createClaimAirdropTransaction: jest.fn(),
   createBurnFtTransaction: jest.fn(),
+  createBurnNftTransaction: jest.fn(),
   ...overrides,
 });
 
@@ -942,6 +943,66 @@ export const makeDeleteSuccessMocks = (overrides?: {
 /**
  * Create API mocks configured for successful burn-ft operations
  */
+export const makeBurnNftSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    supply_key?: { key: string } | null;
+    total_supply?: string;
+    max_supply?: string;
+  };
+  signResult?: ReturnType<typeof makeTransactionResult>;
+  supplyKeyPublicKey?: string;
+}) => {
+  const mockBurnNftTransaction = { test: 'burn-nft-transaction' };
+  const defaultSupplyKeyPublicKey =
+    overrides?.supplyKeyPublicKey ?? 'supply-public-key';
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createBurnNftTransaction: jest
+        .fn()
+        .mockReturnValue(mockBurnNftTransaction),
+    },
+    txExecute: {
+      execute: jest
+        .fn()
+        .mockResolvedValue(
+          overrides?.signResult || makeTransactionResult({ success: true }),
+        ),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        decimals: '0',
+        type: 'NON_FUNGIBLE_UNIQUE',
+        supply_key: overrides?.tokenInfo?.supply_key ?? {
+          key: defaultSupplyKeyPublicKey,
+        },
+        total_supply: overrides?.tokenInfo?.total_supply ?? '10',
+        max_supply: overrides?.tokenInfo?.max_supply ?? '0',
+      }),
+    },
+    alias: {
+      resolve: jest.fn().mockReturnValue(null),
+    },
+    kms: {
+      importPrivateKey: jest.fn().mockReturnValue({
+        keyRefId: 'supply-key-ref-id',
+        publicKey: defaultSupplyKeyPublicKey,
+      }),
+    },
+  });
+
+  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
+    accountId: '0.0.200000',
+    publicKey: defaultSupplyKeyPublicKey,
+    keyRefId: 'supply-key-ref-id',
+  });
+
+  return {
+    ...apiMocks,
+    mockBurnNftTransaction,
+  };
+};
+
 export const makeBurnFtSuccessMocks = (overrides?: {
   tokenInfo?: {
     decimals?: string;

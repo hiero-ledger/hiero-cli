@@ -26,6 +26,7 @@ import type {
   TokenCancelAirdropParams,
   TokenClaimAirdropParams,
   TokenBurnFtParams,
+  TokenBurnNftParams,
   TokenCreateParams,
   TokenDeleteParams,
   TokenMintParams,
@@ -96,4 +97,6 @@ export interface TokenService {
   ): TokenCancelAirdropTransaction;
 
   createBurnFtTransaction(params: TokenBurnFtParams): TokenBurnTransaction;
+
+  createBurnNftTransaction(params: TokenBurnNftParams): TokenBurnTransaction;
 }

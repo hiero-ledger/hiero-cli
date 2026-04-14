@@ -117,6 +117,11 @@ export interface TokenBurnFtParams {
   amount: bigint;
 }
 
+export interface TokenBurnNftParams {
+  tokenId: string;
+  serialNumbers: number[];
+}
+
 /**
  * Parameters for approving NFT allowance for specific serial numbers
  */

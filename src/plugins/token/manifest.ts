@@ -53,6 +53,11 @@ import {
   TokenBurnFtOutputSchema,
 } from './commands/burn-ft';
 import {
+  TOKEN_BURN_NFT_TEMPLATE,
+  tokenBurnNft,
+  TokenBurnNftOutputSchema,
+} from './commands/burn-nft';
+import {
   TOKEN_CREATE_FT_TEMPLATE,
   tokenCreateFt,
   TokenCreateFtOutputSchema,
@@ -205,6 +210,51 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenBurnFtOutputSchema,
         humanTemplate: TOKEN_BURN_FT_TEMPLATE,
+      },
+    },
+    {
+      name: 'burn-nft',
+      summary: 'Burn NFT serials',
+      description:
+        'Burn NFT serial numbers to decrease supply. NFTs must be held by the treasury account.',
+      registeredHooks: ['batchify', 'scheduled'],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'serials',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Comma-separated serial numbers to burn (e.g., "1,2,3"). Max 10 serials.',
+        },
+        {
+          name: 'supply-key',
+          short: 'S',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenBurnNft,
+      output: {
+        schema: TokenBurnNftOutputSchema,
+        humanTemplate: TOKEN_BURN_NFT_TEMPLATE,
       },
     },
     {

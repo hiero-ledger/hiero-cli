@@ -521,6 +521,23 @@ All key fields (`adminPublicKey`, `supplyPublicKey`, `freezePublicKey`, `wipePub
 - `amount`: Amount burned in base units (smallest denomination)
 - `newTotalSupply`: New total supply after burning (calculated as previous supply minus burned amount)
 
+#### `token burn-nft`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "serialNumbers": [1, 2, 3],
+  "newTotalSupply": "7",
+  "network": "testnet"
+}
+```
+
+- `serialNumbers`: Array of burned serial numbers
+- `newTotalSupply`: New total supply after burning (calculated as previous supply minus number of burned serials)
+
 #### `token mint-ft`
 
 **Output**:
