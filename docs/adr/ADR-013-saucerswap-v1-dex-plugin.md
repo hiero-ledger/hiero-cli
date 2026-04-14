@@ -1,8 +1,10 @@
-### ADR-012: SaucerSwap DEX Plugin
+### ADR-013: SaucerSwap V1 DEX Plugin
 
 - Status: Proposed
 - Date: 2026-04-01
-- Related: `src/plugins/saucerswap/*`, `src/core/services/contract-transaction/*`, `src/core/services/contract-query/*`, `src/core/services/identity-resolution/*`, `docs/adr/ADR-001-plugin-architecture.md`, `docs/adr/ADR-008-smart-contract-plugin-implementation-strategy.md`, `docs/adr/ADR-009-class-based-handler-and-hook-architecture.md`
+- Related: `src/plugins/saucerswap-v1/*`, `src/core/services/contract-transaction/*`, `src/core/services/contract-query/*`, `src/core/services/identity-resolution/*`, `docs/adr/ADR-001-plugin-architecture.md`, `docs/adr/ADR-008-smart-contract-plugin-implementation-strategy.md`, `docs/adr/ADR-009-class-based-handler-and-hook-architecture.md`, `docs/adr/ADR-013-saucerswap-v2-dex-plugin.md`
+
+> **Scope:** This ADR covers **SaucerSwap V1** only — a Uniswap V2-style constant-product AMM with uniform liquidity and fungible LP tokens. For the concentrated-liquidity V2 protocol (Uniswap V3-style, NFT positions, fee tiers), see [ADR-013](ADR-014-saucerswap-v2-dex-plugin).
 
 ## Context
 
@@ -17,7 +19,7 @@ The SaucerSwap V1 protocol exposes its functionality through two on-chain contra
 | **WHBAR**                | `0.0.1456986`                                                                                              | Wrapped HBAR token used when HBAR is one side of a pair                |
 | **SaucerSwap REST API**  | `https://api.saucerswap.finance/pools/` (mainnet) / `https://test-api.saucerswap.finance/pools/` (testnet) | Read-only pool listing with metadata                                   |
 
-This ADR proposes a `saucerswap` plugin that wraps these contracts and API into seven CLI commands, reusing existing core services (`ContractTransactionService`, `ContractQueryService`, `IdentityResolutionService`, `TxSignService`, `TxExecuteService`) without requiring any core framework changes.
+This ADR proposes a `saucerswap-v1` plugin that wraps these contracts and API into seven CLI commands, reusing existing core services (`ContractTransactionService`, `ContractQueryService`, `IdentityResolutionService`, `TxSignService`, `TxExecuteService`) without requiring any core framework changes.
 
 Reference documentation: [SaucerSwap V1 Developer Docs](https://docs.saucerswap.finance/v/developer/saucerswap-v1/).
 
@@ -25,15 +27,15 @@ Reference documentation: [SaucerSwap V1 Developer Docs](https://docs.saucerswap.
 
 ### Part 1: Plugin Structure
 
-The plugin is located at `src/plugins/saucerswap/` and exposes seven commands. It does not define any hooks.
+The plugin is located at `src/plugins/saucerswap-v1/` and exposes seven commands.
 
 ```
-src/plugins/saucerswap/
+src/plugins/saucerswap-v1/
 ├── index.ts
 ├── manifest.ts
 ├── constants.ts
 ├── utils/
-│   ├── saucerswap-api.ts
+│   ├── saucerswap-v1-api.ts
 │   ├── hbar-detection.ts
 │   ├── slippage.ts
 │   └── deadline.ts
@@ -83,7 +85,7 @@ src/plugins/saucerswap/
 
 ### Part 2: Network-Specific Constants
 
-`src/plugins/saucerswap/constants.ts` stores contract IDs and API URLs per network:
+`src/plugins/saucerswap-v1/constants.ts` stores contract IDs and API URLs per network:
 
 ```ts
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -128,7 +130,7 @@ export const DEFAULT_SLIPPAGE_PERCENT = 0.5;
 A core design concern is that SaucerSwap uses different Solidity functions depending on whether one of the tokens is HBAR (represented as WHBAR on-chain). The plugin automatically detects this and routes to the correct function variant.
 
 ```ts
-// src/plugins/saucerswap/utils/hbar-detection.ts
+// src/plugins/saucerswap-v1/utils/hbar-detection.ts
 export function isHbar(tokenIdOrAlias: string): boolean {
   const normalized = tokenIdOrAlias.toUpperCase();
   return normalized === 'HBAR';
@@ -148,7 +150,7 @@ This detection affects which Solidity function is called:
 ### Part 4: Slippage and Deadline Utilities
 
 ```ts
-// src/plugins/saucerswap/utils/slippage.ts
+// src/plugins/saucerswap-v1/utils/slippage.ts
 export function computeMinOutput(
   amount: bigint,
   slippagePercent: number,
@@ -158,7 +160,7 @@ export function computeMinOutput(
   return (amount * (10000n - slippageBps)) / 10000n;
 }
 
-// src/plugins/saucerswap/utils/deadline.ts
+// src/plugins/saucerswap-v1/utils/deadline.ts
 export function computeDeadline(secondsFromNow: number): number {
   return Math.floor(Date.now() / 1000) + secondsFromNow;
 }
@@ -166,7 +168,7 @@ export function computeDeadline(secondsFromNow: number): number {
 
 ### Part 5: SaucerSwap REST API Client
 
-`src/plugins/saucerswap/utils/saucerswap-api.ts` provides a typed client for the public pool listing endpoint.
+`src/plugins/saucerswap-v1/utils/saucerswap-v1-api.ts` provides a typed client for the public pool listing endpoint.
 
 ```ts
 import { z } from 'zod';
@@ -316,8 +318,8 @@ export class SaucerSwapCreatePoolCommand extends BaseTransactionCommand<...> {
 CLI usage:
 
 ```
-hcli saucerswap create-pool --token-a HBAR --token-b 0.0.2000 --amount-a 100 --amount-b 50000 --slippage 1
-hcli saucerswap create-pool --token-a 0.0.2000 --token-b 0.0.3000 --amount-a 1000 --amount-b 2000
+hcli saucerswap-v1 create-pool --token-a HBAR --token-b 0.0.2000 --amount-a 100 --amount-b 50000 --slippage 1
+hcli saucerswap-v1 create-pool --token-a 0.0.2000 --token-b 0.0.3000 --amount-a 1000 --amount-b 2000
 ```
 
 #### 6.2 Deposit (Add Liquidity)
@@ -334,8 +336,8 @@ hcli saucerswap create-pool --token-a 0.0.2000 --token-b 0.0.3000 --amount-a 100
 CLI usage:
 
 ```
-hcli saucerswap deposit --token-a HBAR --token-b 0.0.2000 --amount-a 10 --amount-b 5000
-hcli saucerswap deposit --token-a 0.0.2000 --token-b 0.0.3000 --amount-a 100 --amount-b 200
+hcli saucerswap-v1 deposit --token-a HBAR --token-b 0.0.2000 --amount-a 10 --amount-b 5000
+hcli saucerswap-v1 deposit --token-a 0.0.2000 --token-b 0.0.3000 --amount-a 100 --amount-b 200
 ```
 
 **Pre-checks:**
@@ -370,8 +372,8 @@ hcli saucerswap deposit --token-a 0.0.2000 --token-b 0.0.3000 --amount-a 100 --a
 CLI usage:
 
 ```
-hcli saucerswap withdraw --token-a HBAR --token-b 0.0.2000 --liquidity 1000000
-hcli saucerswap withdraw --token-a 0.0.2000 --token-b 0.0.3000 --liquidity 500000
+hcli saucerswap-v1 withdraw --token-a HBAR --token-b 0.0.2000 --liquidity 1000000
+hcli saucerswap-v1 withdraw --token-a 0.0.2000 --token-b 0.0.3000 --liquidity 500000
 ```
 
 #### 6.4 Swap (Exact Input)
@@ -466,9 +468,9 @@ async buildTransaction(args, params): Promise<BuildTransactionResult> {
 CLI usage:
 
 ```
-hcli saucerswap swap --from HBAR --to 0.0.2000 --amount 10 --slippage 1
-hcli saucerswap swap --from 0.0.2000 --to 0.0.3000 --amount 500 --min-output 480
-hcli saucerswap swap --from 0.0.2000 --to HBAR --amount 1000
+hcli saucerswap-v1 swap --from HBAR --to 0.0.2000 --amount 10 --slippage 1
+hcli saucerswap-v1 swap --from 0.0.2000 --to 0.0.3000 --amount 500 --min-output 480
+hcli saucerswap-v1 swap --from 0.0.2000 --to HBAR --amount 1000
 ```
 
 #### 6.5 Buy (Exact Output)
@@ -498,8 +500,8 @@ hcli saucerswap swap --from 0.0.2000 --to HBAR --amount 1000
 CLI usage:
 
 ```
-hcli saucerswap buy --from HBAR --to 0.0.2000 --amount 5000 --max-input 15
-hcli saucerswap buy --from 0.0.2000 --to HBAR --amount 10 --max-input 6000
+hcli saucerswap-v1 buy --from HBAR --to 0.0.2000 --amount 5000 --max-input 15
+hcli saucerswap-v1 buy --from 0.0.2000 --to HBAR --amount 10 --max-input 6000
 ```
 
 #### 6.6 List Pools
@@ -579,9 +581,9 @@ pool(s) on
 CLI usage:
 
 ```
-hcli saucerswap list
-hcli saucerswap list --token 0.0.2000
-hcli saucerswap list --token SAUCE
+hcli saucerswap-v1 list
+hcli saucerswap-v1 list --token 0.0.2000
+hcli saucerswap-v1 list --token SAUCE
 ```
 
 #### 6.7 View Pool
@@ -606,8 +608,8 @@ hcli saucerswap list --token SAUCE
 CLI usage:
 
 ```
-hcli saucerswap view --token-a HBAR --token-b 0.0.2000
-hcli saucerswap view --token-a 0.0.2000 --token-b 0.0.3000
+hcli saucerswap-v1 view --token-a HBAR --token-b 0.0.2000
+hcli saucerswap-v1 view --token-a 0.0.2000 --token-b 0.0.3000
 ```
 
 ### Part 7: Command Classification
@@ -638,7 +640,7 @@ sequenceDiagram
     participant Network as Hedera Network
     participant Router as SaucerSwapV1RouterV3
 
-    User->>CLI: saucerswap swap --from HBAR --to 0.0.2000 --amount 10
+    User->>CLI: saucerswap-v1 swap --from HBAR --to 0.0.2000 --amount 10
     CLI->>SwapCmd: execute(args)
     SwapCmd->>SwapCmd: normalizeParams(args)
     SwapCmd->>IdRes: resolveContract(0.0.2000) → evmAddress
@@ -722,13 +724,14 @@ flowchart LR
 
 ## Consequences
 
-- A new plugin directory `src/plugins/saucerswap/` is created with the structure described above.
+- A new plugin directory `src/plugins/saucerswap-v1/` is created with the structure described above.
 - The plugin manifest is registered in `src/core/shared/config/cli-options.ts` `DEFAULT_PLUGIN_STATE` array.
 - No changes to existing core services or interfaces are needed.
 - Commands that produce transactions (`create-pool`, `deposit`, `withdraw`, `swap`, `buy`) are compatible with the batch and schedule hooks via `registeredHooks: ['batchify', 'scheduled']` in the manifest.
 - Users must ensure token associations and spender allowances are in place before using the plugin. Documentation should include common prerequisite commands.
 - The `constants.ts` file must be updated when testnet contract IDs are determined.
 - Multi-hop swap routing and custom-fee token variants (`*SupportingFeeOnTransferTokens`) can be added as future enhancements without changing the command structure.
+- SaucerSwap V2 (concentrated liquidity, Uniswap V3-style) is covered separately in [ADR-013](ADR-014-saucerswap-v2-dex-plugin). The two plugins coexist as `saucerswap-v1` and `saucerswap-v2`.
 
 ## Testing Strategy
 
