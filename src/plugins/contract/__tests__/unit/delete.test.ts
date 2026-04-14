@@ -2,6 +2,8 @@ import type { Logger } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { ContractData } from '@/plugins/contract/schema';
 
+import { PublicKey } from '@hashgraph/sdk';
+
 import {
   ED25519_DER_PUBLIC_KEY,
   ED25519_HEX_PUBLIC_KEY,
@@ -16,7 +18,7 @@ import {
   createMockKmsRecord,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { InternalError, NotFoundError } from '@/core';
+import { InternalError, NotFoundError, ValidationError } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
@@ -40,6 +42,10 @@ const expectedStateKey = composeKey(SupportedNetwork.TESTNET, MOCK_CONTRACT_ID);
 
 const MOCK_ADMIN_KEY_CLI = ['ed25519:private:' + 'a'.repeat(64)];
 const STORED_CONTRACT_ADMIN_REF = 'test-admin-key-ref';
+
+const MIRROR_CONTRACT_ADMIN_RAW = PublicKey.fromString(
+  ED25519_DER_PUBLIC_KEY,
+).toStringRaw();
 
 function makeContractData(overrides: Partial<ContractData> = {}): ContractData {
   return {
@@ -130,11 +136,14 @@ describe('contract plugin - delete command', () => {
     const alias = makeAliasServiceMock();
     alias.list.mockReturnValue([]);
 
-    api.kms.get = jest
+    api.kms.findByPublicKey = jest
       .fn()
-      .mockImplementation((id: string) =>
-        id === STORED_CONTRACT_ADMIN_REF
-          ? createMockKmsRecord(id, ED25519_HEX_PUBLIC_KEY)
+      .mockImplementation((publicKey: string) =>
+        publicKey === MIRROR_CONTRACT_ADMIN_RAW
+          ? createMockKmsRecord(
+              STORED_CONTRACT_ADMIN_REF,
+              ED25519_HEX_PUBLIC_KEY,
+            )
           : undefined,
       );
 
@@ -340,8 +349,9 @@ describe('contract plugin - delete command', () => {
       transferId: MOCK_ACCOUNT_ID,
     });
 
+    await expect(contractDelete(args)).rejects.toThrow(ValidationError);
     await expect(contractDelete(args)).rejects.toThrow(
-      'Pass --admin-key (-a) with contract admin credentials',
+      'Not enough admin key(s) not found in key manager for this contract. Provide --admin-key.',
     );
   });
 

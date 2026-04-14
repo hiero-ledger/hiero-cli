@@ -2,17 +2,13 @@ import { z } from 'zod';
 
 import {
   NetworkSchema,
+  ResolvedAccountCredentialSchema,
+  ResolvedPublicKeySchema,
   SupplyTypeSchema,
   TinybarSchema,
 } from '@/core/schemas/common-schemas';
 import { keyManagerNameSchema } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType } from '@/core/shared/constants';
-
-const ResolvedAccountCredentialSchema = z.object({
-  keyRefId: z.string(),
-  accountId: z.string(),
-  publicKey: z.string(),
-});
 
 export const CreateNftNormalizedParamsSchema = z.object({
   name: z.string(),
@@ -29,8 +25,21 @@ export const CreateNftNormalizedParamsSchema = z.object({
   network: NetworkSchema,
   keyManager: keyManagerNameSchema,
   treasury: ResolvedAccountCredentialSchema,
-  admin: ResolvedAccountCredentialSchema,
-  supply: ResolvedAccountCredentialSchema,
+  adminKeys: z.array(ResolvedPublicKeySchema).default([]),
+  adminKeyThreshold: z.number().default(0),
+  supplyKeys: z.array(ResolvedPublicKeySchema).default([]),
+  supplyKeyThreshold: z.number().default(0),
+  freezeKeys: z.array(ResolvedPublicKeySchema).default([]),
+  freezeKeyThreshold: z.number().default(0),
+  wipeKeys: z.array(ResolvedPublicKeySchema).default([]),
+  wipeKeyThreshold: z.number().default(0),
+  kycKeys: z.array(ResolvedPublicKeySchema).default([]),
+  kycKeyThreshold: z.number().default(0),
+  pauseKeys: z.array(ResolvedPublicKeySchema).default([]),
+  pauseKeyThreshold: z.number().default(0),
+  feeScheduleKeys: z.array(ResolvedPublicKeySchema).default([]),
+  feeScheduleKeyThreshold: z.number().default(0),
+  metadataKeys: z.array(ResolvedPublicKeySchema).default([]),
+  metadataKeyThreshold: z.number().default(0),
   finalMaxSupply: TinybarSchema.optional(),
-  adminKeyProvided: z.boolean(),
 });

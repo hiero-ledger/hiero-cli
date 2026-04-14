@@ -4,7 +4,11 @@
  */
 import { z } from 'zod';
 
-import { AliasNameSchema, EntityIdSchema } from '@/core/schemas/common-schemas';
+import {
+  AliasNameSchema,
+  EntityIdSchema,
+  KeyRefIdArraySchema,
+} from '@/core/schemas/common-schemas';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { zodToJsonSchema } from '@/core/utils/zod-to-json-schema';
 
@@ -16,12 +20,8 @@ export const TopicDataSchema = z.object({
   ).optional(),
   topicId: EntityIdSchema,
   memo: z.string().max(100, 'Memo must be 100 characters or less').optional(),
-  adminKeyRefIds: z
-    .array(z.string().min(1, 'Key reference ID is required'))
-    .default([]),
-  submitKeyRefIds: z
-    .array(z.string().min(1, 'Key reference ID is required'))
-    .default([]),
+  adminKeyRefIds: KeyRefIdArraySchema,
+  submitKeyRefIds: KeyRefIdArraySchema,
   adminKeyThreshold: z.number().int().min(0).default(0),
   submitKeyThreshold: z.number().int().min(0).default(0),
   autoRenewAccount: EntityIdSchema.optional(),

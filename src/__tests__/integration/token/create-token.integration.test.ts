@@ -71,7 +71,7 @@ describe('Create Token Integration Tests', () => {
       initialSupply: '10',
       supplyType: SupplyType.FINITE,
       maxSupply: '100',
-      adminKey: 'account-create-token',
+      adminKey: ['account-create-token'],
       name: 'test-token',
     };
     const createTokenResult = await tokenCreateFt({

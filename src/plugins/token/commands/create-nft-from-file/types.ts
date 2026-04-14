@@ -26,13 +26,20 @@ export interface TokenCreateNftFromFileNormalizedParams extends BaseNormalizedPa
   keyManager: KeyManager;
   network: SupportedNetwork;
   treasury: ResolvedAccountCredential;
-  adminKey: ResolvedPublicKey;
-  supplyKey: ResolvedPublicKey;
-  wipeKey?: ResolvedPublicKey;
-  kycKey?: ResolvedPublicKey;
-  freezeKey?: ResolvedPublicKey;
-  pauseKey?: ResolvedPublicKey;
-  feeScheduleKey?: ResolvedPublicKey;
+  adminKeys: ResolvedPublicKey[];
+  adminKeyThreshold: number;
+  supplyKeys: ResolvedPublicKey[];
+  supplyKeyThreshold: number;
+  wipeKeys: ResolvedPublicKey[];
+  wipeKeyThreshold: number;
+  kycKeys: ResolvedPublicKey[];
+  kycKeyThreshold: number;
+  freezeKeys: ResolvedPublicKey[];
+  freezeKeyThreshold: number;
+  pauseKeys: ResolvedPublicKey[];
+  pauseKeyThreshold: number;
+  feeScheduleKeys: ResolvedPublicKey[];
+  feeScheduleKeyThreshold: number;
 }
 
 export interface TokenCreateNftFromFileBuildTransactionResult extends BaseBuildTransactionResult {}

@@ -768,6 +768,9 @@ export const KeyRefIdSchema = z
   .min(1, 'Key reference ID cannot be empty')
   .describe('Key reference ID from KMS storage');
 
+/** Ordered list of KMS key reference IDs (e.g. per Hedera key role). */
+export const KeyRefIdArraySchema = z.array(KeyRefIdSchema).default([]);
+
 /**
  * Plugin Name
  * Name of a plugin (alphanumeric, hyphens, underscores)

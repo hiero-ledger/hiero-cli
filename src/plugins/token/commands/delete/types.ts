@@ -5,13 +5,12 @@ import type {
   SupportedNetwork,
   TransactionResult,
 } from '@/core';
-import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 
 export interface TokenDeleteNormalizedParams extends BaseNormalizedParams {
   network: SupportedNetwork;
   tokenId: string;
   tokenName: string;
-  adminKeyResolved: ResolvedPublicKey;
+  signingKeyRefIds: string[];
 }
 
 export interface TokenDeleteBuildTransactionResult extends BaseBuildTransactionResult {}

@@ -90,8 +90,8 @@ describe('Transfer NFT Integration Tests', () => {
         treasury: 'account-nft-transfer-source',
         supplyType: SupplyType.FINITE,
         maxSupply: '100',
-        adminKey: 'account-nft-transfer-source',
-        supplyKey: 'account-nft-transfer-source',
+        adminKey: ['account-nft-transfer-source'],
+        supplyKey: ['account-nft-transfer-source'],
         name: 'test-nft-transfer-collection',
       };
       const createNftResult = await tokenCreateNft({
@@ -116,7 +116,7 @@ describe('Transfer NFT Integration Tests', () => {
       const mintNftArgs: Record<string, unknown> = {
         token: createNftOutput.tokenId,
         metadata: 'Test NFT Transfer Metadata',
-        supplyKey: 'account-nft-transfer-source',
+        supplyKey: ['account-nft-transfer-source'],
       };
       const mintNftResult = await tokenMintNft({
         args: mintNftArgs,
@@ -266,8 +266,8 @@ describe('Transfer NFT Integration Tests', () => {
         treasury: 'account-nft-not-owned-test',
         supplyType: SupplyType.FINITE,
         maxSupply: '100',
-        adminKey: 'account-nft-not-owned-test',
-        supplyKey: 'account-nft-not-owned-test',
+        adminKey: ['account-nft-not-owned-test'],
+        supplyKey: ['account-nft-not-owned-test'],
         name: 'test-nft-not-owned',
       };
       const createNftResult = await tokenCreateNft({
@@ -284,7 +284,7 @@ describe('Transfer NFT Integration Tests', () => {
       const mintNftArgs: Record<string, unknown> = {
         token: createNftOutput.tokenId,
         metadata: 'Test NFT Not Owned Metadata',
-        supplyKey: 'account-nft-not-owned-test',
+        supplyKey: ['account-nft-not-owned-test'],
       };
       const mintNftResult = await tokenMintNft({
         args: mintNftArgs,

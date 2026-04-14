@@ -100,14 +100,14 @@ export class TokenServiceImpl implements TokenService {
       tokenType,
       supplyType,
       maxSupplyRaw,
-      adminPublicKey,
-      supplyPublicKey,
-      wipePublicKey,
-      kycPublicKey,
-      freezePublicKey,
-      pausePublicKey,
-      feeSchedulePublicKey,
-      metadataPublicKey,
+      adminKey,
+      supplyKey,
+      wipeKey,
+      kycKey,
+      freezeKey,
+      pauseKey,
+      feeScheduleKey,
+      metadataKey,
       freezeDefault,
       customFees,
       memo,
@@ -132,8 +132,8 @@ export class TokenServiceImpl implements TokenService {
       .setSupplyType(tokenSupplyType)
       .setTreasuryAccountId(AccountId.fromString(treasuryId));
 
-    if (adminPublicKey) {
-      tokenCreateTx.setAdminKey(adminPublicKey);
+    if (adminKey) {
+      tokenCreateTx.setAdminKey(adminKey);
     }
 
     // Set max supply for finite supply tokens
@@ -160,23 +160,23 @@ export class TokenServiceImpl implements TokenService {
     }
 
     // Set optional keys if provided
-    if (supplyPublicKey) {
-      tokenCreateTx.setSupplyKey(supplyPublicKey);
+    if (supplyKey) {
+      tokenCreateTx.setSupplyKey(supplyKey);
       this.logger.debug(`[TOKEN SERVICE] Set supply key`);
     }
 
-    if (wipePublicKey) {
-      tokenCreateTx.setWipeKey(wipePublicKey);
+    if (wipeKey) {
+      tokenCreateTx.setWipeKey(wipeKey);
       this.logger.debug(`[TOKEN SERVICE] Set wipe key`);
     }
 
-    if (kycPublicKey) {
-      tokenCreateTx.setKycKey(kycPublicKey);
+    if (kycKey) {
+      tokenCreateTx.setKycKey(kycKey);
       this.logger.debug(`[TOKEN SERVICE] Set KYC key`);
     }
 
-    if (freezePublicKey) {
-      tokenCreateTx.setFreezeKey(freezePublicKey);
+    if (freezeKey) {
+      tokenCreateTx.setFreezeKey(freezeKey);
       this.logger.debug(`[TOKEN SERVICE] Set freeze key`);
       tokenCreateTx.setFreezeDefault(freezeDefault ?? false);
       this.logger.debug(
@@ -184,18 +184,18 @@ export class TokenServiceImpl implements TokenService {
       );
     }
 
-    if (pausePublicKey) {
-      tokenCreateTx.setPauseKey(pausePublicKey);
+    if (pauseKey) {
+      tokenCreateTx.setPauseKey(pauseKey);
       this.logger.debug(`[TOKEN SERVICE] Set pause key`);
     }
 
-    if (feeSchedulePublicKey) {
-      tokenCreateTx.setFeeScheduleKey(feeSchedulePublicKey);
+    if (feeScheduleKey) {
+      tokenCreateTx.setFeeScheduleKey(feeScheduleKey);
       this.logger.debug(`[TOKEN SERVICE] Set fee schedule key`);
     }
 
-    if (metadataPublicKey) {
-      tokenCreateTx.setMetadataKey(metadataPublicKey);
+    if (metadataKey) {
+      tokenCreateTx.setMetadataKey(metadataKey);
       this.logger.debug(`[TOKEN SERVICE] Set metadata key`);
     }
 

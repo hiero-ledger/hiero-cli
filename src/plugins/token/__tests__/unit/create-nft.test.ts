@@ -134,7 +134,7 @@ describe('tokenCreateNftHandler', () => {
         },
       });
 
-      keyResolver.getPublicKey.mockResolvedValue({
+      keyResolver.resolveSigningKey.mockResolvedValue({
         keyRefId: 'supply-key-ref-id',
         publicKey: '302a300506032b6570032100' + '0'.repeat(64),
       });
@@ -144,7 +144,7 @@ describe('tokenCreateNftHandler', () => {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
-          supplyKey: 'test-supply-key',
+          supplyKey: ['test-supply-key'],
         },
         api,
         state: api.state,
@@ -165,8 +165,8 @@ describe('tokenCreateNftHandler', () => {
         maxSupplyRaw: undefined,
         treasuryId: '0.0.100000',
         tokenType: HederaTokenType.NON_FUNGIBLE_TOKEN,
-        adminPublicKey: undefined,
-        supplyPublicKey: expect.any(Object),
+        adminKey: undefined,
+        supplyKey: expect.any(Object),
         memo: undefined,
       });
       expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
@@ -216,12 +216,12 @@ describe('tokenCreateNftHandler', () => {
           symbol: 'TNFT',
           supplyType: SupplyType.INFINITE,
           treasury: 'treasury-account',
-          freezeKey: mockAccountKeyPairs.freeze,
-          wipeKey: mockAccountKeyPairs.wipe,
-          pauseKey: mockAccountKeyPairs.pause,
-          kycKey: mockAccountKeyPairs.kyc,
-          feeScheduleKey: mockAccountKeyPairs.feeSchedule,
-          metadataKey: mockAccountKeyPairs.supply,
+          freezeKey: [mockAccountKeyPairs.freeze],
+          wipeKey: [mockAccountKeyPairs.wipe],
+          pauseKey: [mockAccountKeyPairs.pause],
+          kycKey: [mockAccountKeyPairs.kyc],
+          feeScheduleKey: [mockAccountKeyPairs.feeSchedule],
+          metadataKey: [mockAccountKeyPairs.supply],
         },
         api,
         state: api.state,
@@ -233,12 +233,12 @@ describe('tokenCreateNftHandler', () => {
 
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalledWith(
         expect.objectContaining({
-          freezePublicKey: expect.any(Object),
-          wipePublicKey: expect.any(Object),
-          pausePublicKey: expect.any(Object),
-          kycPublicKey: expect.any(Object),
-          feeSchedulePublicKey: expect.any(Object),
-          metadataPublicKey: expect.any(Object),
+          freezeKey: expect.any(Object),
+          wipeKey: expect.any(Object),
+          pauseKey: expect.any(Object),
+          kycKey: expect.any(Object),
+          feeScheduleKey: expect.any(Object),
+          metadataKey: expect.any(Object),
         }),
       );
       assertOutput(result.result, TokenCreateNftOutputSchema);
@@ -352,7 +352,7 @@ describe('tokenCreateNftHandler', () => {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
-          supplyKey: 'test-supply-key',
+          supplyKey: ['test-supply-key'],
         },
         api,
         state: api.state,
@@ -423,8 +423,8 @@ describe('tokenCreateNftHandler', () => {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
-          adminKey: 'test-admin-key',
-          supplyKey: 'test-supply-key',
+          adminKey: ['test-admin-key'],
+          supplyKey: ['test-supply-key'],
         },
         api,
         state: api.state,

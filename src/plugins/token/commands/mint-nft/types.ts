@@ -5,13 +5,12 @@ import type {
   SupportedNetwork,
   TransactionResult,
 } from '@/core';
-import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 
 export interface TokenMintNftNormalizedParams extends BaseNormalizedParams {
   network: SupportedNetwork;
   tokenId: string;
   metadataBytes: Uint8Array;
-  supplyKeyResolved: ResolvedPublicKey;
+  signingKeyRefIds: string[];
 }
 
 export interface TokenMintNftBuildTransactionResult extends BaseBuildTransactionResult {}
