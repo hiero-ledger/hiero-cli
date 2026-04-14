@@ -1203,7 +1203,10 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Claim pending airdrops',
       description:
         'Claim one or more pending token airdrops (FT and/or NFT) for a receiver account. Use pending-airdrops to list pending airdrops and their indices.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'account',
