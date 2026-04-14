@@ -5,7 +5,7 @@ import type { AccountData } from '@/plugins/account/schema';
 import type { BatchData } from '@/plugins/batch/schema';
 import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 
-import { formatTransactionIdToDashFormat, StateError } from '@/core';
+import { formatTransactionIdToDashFormat } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import {
@@ -116,16 +116,18 @@ export class AccountUpdateStateHook implements Hook<PostOutputPreparationHookPar
     );
     const result = scheduledMirrorTx?.result;
     if (result !== MirrorTransactionResult.SUCCESS) {
-      throw new StateError(
-        `Scheduled transaction result is not ${MirrorTransactionResult.SUCCESS}: ${result}`,
+      logger.warn(
+        `Scheduled transaction result is not ${MirrorTransactionResult.SUCCESS}: ${String(result)}, skipping state update`,
       );
+      return;
     }
 
     const entityId = scheduledMirrorTx?.entity_id;
     if (entityId && entityId !== normalisedParams.accountId) {
-      throw new StateError(
-        `Account ID mismatch: expected ${normalisedParams.accountId}, got ${entityId}`,
+      logger.warn(
+        `Account ID mismatch: expected ${normalisedParams.accountId}, got ${entityId}, skipping state update`,
       );
+      return;
     }
 
     this.persistAccountUpdate(api, logger, normalisedParams);

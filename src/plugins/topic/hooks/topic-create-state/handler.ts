@@ -2,7 +2,6 @@ import type { CoreApi, Logger } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 
-import { StateError } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import {
@@ -66,9 +65,10 @@ export class TopicCreateStateHook implements Hook<PostOutputPreparationHookParam
       });
 
     if (!innerTransactionResult.topicId) {
-      throw new StateError(
-        'Transaction completed but did not return a topic ID, unable to save topic',
+      logger.warn(
+        'Transaction completed but did not return a topic ID, skipping state save',
       );
+      return;
     }
 
     const topicId = innerTransactionResult.topicId;

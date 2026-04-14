@@ -7,7 +7,6 @@ import {
   makeLogger,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { StateError } from '@/core/errors';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { HederaTokenType } from '@/core/shared/constants';
 import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
@@ -163,8 +162,11 @@ describe('token plugin - batch-create-nft hook', () => {
     );
   });
 
-  test('throws StateError when receipt has no tokenId', async () => {
+  test('skips save when receipt has no tokenId and logs warn', async () => {
     const logger = makeLogger();
+    const saveTokenMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({ saveToken: saveTokenMock }));
+
     const getReceiptMock = jest.fn().mockResolvedValue({
       consensusTimestamp: '2024-01-01T00:00:00.000Z',
       transactionId: '0.0.1234@1234567890.000000000',
@@ -186,8 +188,13 @@ describe('token plugin - batch-create-nft hook', () => {
       transactions: [createNftBatchDataItem()],
     });
 
-    await expect(hook.execute({ ...params, args })).rejects.toThrow(StateError);
+    const result = await hook.execute({ ...params, args });
 
+    expect(result.breakFlow).toBe(false);
+    expect(saveTokenMock).not.toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Transaction completed but did not return a token ID, skipping state save',
+    );
     expect(getReceiptMock).toHaveBeenCalledWith({
       transactionId: '0.0.1234@1234567890.000000000',
     });

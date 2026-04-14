@@ -8,7 +8,6 @@ import {
   makeLogger,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { StateError } from '@/core/errors';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
@@ -182,8 +181,11 @@ describe('account plugin - account-create-state hook', () => {
     );
   });
 
-  test('throws StateError when receipt has no accountId', async () => {
+  test('skips save when receipt has no accountId and logs warn', async () => {
     const logger = makeLogger();
+    const saveAccountMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
+
     const getReceiptMock = jest.fn().mockResolvedValue({
       consensusTimestamp: '2024-01-01T00:00:00.000Z',
       accountId: undefined,
@@ -204,8 +206,13 @@ describe('account plugin - account-create-state hook', () => {
       transactions: [createAccountBatchDataItem()],
     });
 
-    await expect(hook.execute({ ...params, args })).rejects.toThrow(StateError);
+    const result = await hook.execute({ ...params, args });
 
+    expect(result.breakFlow).toBe(false);
+    expect(saveAccountMock).not.toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Transaction completed but did not return an account ID, skipping state save',
+    );
     expect(getReceiptMock).toHaveBeenCalledWith({
       transactionId: '0.0.1234@1234567890.000000000',
     });
@@ -486,18 +493,18 @@ describe('account plugin - account-create-state hook (schedule path)', () => {
     const saveAccountMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
 
-    const getReceiptMock = jest.fn().mockResolvedValue({
-      accountId: '0.0.7777',
-      consensusTimestamp: '2024-06-01T00:00:00.000Z',
-    });
     const getTransactionRecordMock = jest.fn().mockResolvedValue({
       transactions: [
-        { scheduled: true, entity_id: '0.0.7777', result: 'SUCCESS' },
+        {
+          scheduled: true,
+          entity_id: '0.0.7777',
+          result: 'SUCCESS',
+          consensus_timestamp: '2024-06-01T00:00:00.000Z',
+        },
       ],
     });
 
     const api = {
-      receipt: { getReceipt: getReceiptMock },
       mirror: { getTransactionRecord: getTransactionRecordMock },
       alias: { register: jest.fn(), exists: jest.fn().mockReturnValue(false) },
       state: makeStateMock(),
@@ -580,8 +587,11 @@ describe('account plugin - account-create-state hook (schedule path)', () => {
     );
   });
 
-  test('throws StateError when mirror has no entity_id for scheduled tx', async () => {
+  test('skips when mirror has no entity_id for scheduled tx and logs warn', async () => {
     const logger = makeLogger();
+    const saveAccountMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
+
     const getTransactionRecordMock = jest.fn().mockResolvedValue({
       transactions: [{ scheduled: true, entity_id: undefined }],
     });
@@ -594,7 +604,13 @@ describe('account plugin - account-create-state hook (schedule path)', () => {
 
     const params = createScheduleVerifyParams(makeScheduledData());
 
-    await expect(hook.execute({ ...params, args })).rejects.toThrow(StateError);
+    const result = await hook.execute({ ...params, args });
+
+    expect(result.breakFlow).toBe(false);
+    expect(saveAccountMock).not.toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Could not resolve account ID from scheduled transaction record, skipping state save',
+    );
   });
 
   test('registers alias from scheduled execution', async () => {
@@ -603,16 +619,17 @@ describe('account plugin - account-create-state hook (schedule path)', () => {
     const registerMock = jest.fn();
     MockedHelper.mockImplementation(() => ({ saveAccount: saveAccountMock }));
 
-    const getReceiptMock = jest.fn().mockResolvedValue({
-      accountId: '0.0.7777',
-      consensusTimestamp: '2024-06-01T00:00:00.000Z',
-    });
     const getTransactionRecordMock = jest.fn().mockResolvedValue({
-      transactions: [{ scheduled: true, entity_id: '0.0.7777' }],
+      transactions: [
+        {
+          scheduled: true,
+          entity_id: '0.0.7777',
+          consensus_timestamp: '2024-06-01T00:00:00.000Z',
+        },
+      ],
     });
 
     const api = {
-      receipt: { getReceipt: getReceiptMock },
       mirror: { getTransactionRecord: getTransactionRecordMock },
       alias: {
         register: registerMock,
@@ -642,6 +659,7 @@ describe('account plugin - account-create-state hook (schedule path)', () => {
       expect.objectContaining({
         alias: 'sched-alias',
         entityId: '0.0.7777',
+        createdAt: '2024-06-01T00:00:00.000Z',
       }),
     );
   });

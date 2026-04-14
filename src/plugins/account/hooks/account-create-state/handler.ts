@@ -5,7 +5,7 @@ import type { AccountData } from '@/plugins/account/schema';
 import type { BatchData } from '@/plugins/batch/schema';
 import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 
-import { formatTransactionIdToDashFormat, StateError } from '@/core';
+import { formatTransactionIdToDashFormat } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import {
@@ -100,14 +100,15 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
     });
 
     if (!receipt.accountId) {
-      throw new StateError(
-        'Transaction completed but did not return an account ID, unable to derive addresses',
+      logger.warn(
+        'Transaction completed but did not return an account ID, skipping state save',
       );
+      return;
     }
 
     this.persistAccountCreate(api, logger, normalisedParams, {
       stateAccountId: receipt.accountId,
-      receipt,
+      consensusTimestamp: receipt.consensusTimestamp,
     });
   }
 
@@ -140,18 +141,15 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
     const accountId = scheduledMirrorTx?.entity_id;
 
     if (!accountId) {
-      throw new StateError(
-        'Could not resolve account ID from scheduled transaction record',
+      logger.warn(
+        'Could not resolve account ID from scheduled transaction record, skipping state save',
       );
+      return;
     }
-
-    const receipt: TransactionResult = await api.receipt.getReceipt({
-      transactionId: innerTransactionId,
-    });
 
     this.persistAccountCreate(api, logger, normalisedParams, {
       stateAccountId: accountId,
-      receipt,
+      consensusTimestamp: scheduledMirrorTx?.consensus_timestamp,
     });
   }
 
@@ -161,10 +159,10 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
     normalisedParams: AccountCreateNormalisedParams,
     resolved: {
       stateAccountId: string;
-      receipt: TransactionResult;
+      consensusTimestamp?: string;
     },
   ): void {
-    const { stateAccountId, receipt } = resolved;
+    const { stateAccountId, consensusTimestamp } = resolved;
     const evmAddress = buildEvmAddressFromAccountId(stateAccountId);
 
     if (normalisedParams.alias) {
@@ -181,7 +179,7 @@ export class AccountCreateStateHook implements Hook<PostOutputPreparationHookPar
           evmAddress,
           publicKey: normalisedParams.publicKey,
           keyRefId: normalisedParams.keyRefId,
-          createdAt: receipt.consensusTimestamp,
+          createdAt: consensusTimestamp ?? new Date().toISOString(),
         });
       }
     }

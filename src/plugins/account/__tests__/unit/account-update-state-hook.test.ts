@@ -12,7 +12,6 @@ import {
   makeLogger,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { StateError } from '@/core/errors';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
@@ -570,8 +569,14 @@ describe('account plugin - account-update-state hook (schedule path)', () => {
     );
   });
 
-  test('throws StateError when mirror tx result is not SUCCESS', async () => {
+  test('skips when mirror tx result is not SUCCESS and logs warn', async () => {
     const logger = makeLogger();
+    const saveAccountMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({
+      getAccount: jest.fn().mockReturnValue(existingAccountData),
+      saveAccount: saveAccountMock,
+    }));
+
     const getTransactionRecordMock = jest.fn().mockResolvedValue({
       transactions: [
         { scheduled: true, entity_id: MOCK_ACCOUNT_ID, result: 'INVALID' },
@@ -586,11 +591,23 @@ describe('account plugin - account-update-state hook (schedule path)', () => {
 
     const params = createScheduleVerifyParams(makeScheduledData());
 
-    await expect(hook.execute({ ...params, args })).rejects.toThrow(StateError);
+    const result = await hook.execute({ ...params, args });
+
+    expect(result.breakFlow).toBe(false);
+    expect(saveAccountMock).not.toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      `Scheduled transaction result is not ${MirrorTransactionResult.SUCCESS}: INVALID, skipping state update`,
+    );
   });
 
-  test('throws StateError when entity_id mismatches accountId', async () => {
+  test('skips when entity_id mismatches accountId and logs warn', async () => {
     const logger = makeLogger();
+    const saveAccountMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({
+      getAccount: jest.fn().mockReturnValue(existingAccountData),
+      saveAccount: saveAccountMock,
+    }));
+
     const getTransactionRecordMock = jest.fn().mockResolvedValue({
       transactions: [
         {
@@ -609,8 +626,12 @@ describe('account plugin - account-update-state hook (schedule path)', () => {
 
     const params = createScheduleVerifyParams(makeScheduledData());
 
-    await expect(hook.execute({ ...params, args })).rejects.toThrow(
-      'Account ID mismatch',
+    const result = await hook.execute({ ...params, args });
+
+    expect(result.breakFlow).toBe(false);
+    expect(saveAccountMock).not.toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      `Account ID mismatch: expected ${MOCK_ACCOUNT_ID}, got 0.0.9999, skipping state update`,
     );
   });
 

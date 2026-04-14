@@ -7,7 +7,6 @@ import {
   makeLogger,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { StateError } from '@/core/errors';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOPIC_CREATE_COMMAND_NAME } from '@/plugins/topic/commands/create';
@@ -158,8 +157,11 @@ describe('topic plugin - topic-create-state hook', () => {
     );
   });
 
-  test('throws StateError when receipt has no topicId', async () => {
+  test('skips save when receipt has no topicId and logs warn', async () => {
     const logger = makeLogger();
+    const saveTopicMock = jest.fn();
+    MockedHelper.mockImplementation(() => ({ saveTopic: saveTopicMock }));
+
     const getReceiptMock = jest.fn().mockResolvedValue({
       consensusTimestamp: '2024-01-01T00:00:00.000Z',
       topicId: undefined,
@@ -180,8 +182,13 @@ describe('topic plugin - topic-create-state hook', () => {
       transactions: [createTopicBatchDataItem()],
     });
 
-    await expect(hook.execute({ ...params, args })).rejects.toThrow(StateError);
+    const result = await hook.execute({ ...params, args });
 
+    expect(result.breakFlow).toBe(false);
+    expect(saveTopicMock).not.toHaveBeenCalled();
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Transaction completed but did not return a topic ID, skipping state save',
+    );
     expect(getReceiptMock).toHaveBeenCalledWith({
       transactionId: '0.0.1234@1234567890.000000000',
     });

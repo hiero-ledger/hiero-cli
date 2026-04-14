@@ -2,7 +2,6 @@ import type { CoreApi, Logger } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 
-import { StateError } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import {
@@ -67,10 +66,10 @@ export class TokenCreateFtStateHook implements Hook<PostOutputPreparationHookPar
       });
 
     if (!innerTransactionResult.tokenId) {
-      throw new StateError(
-        'Transaction completed but did not return a token ID',
-        { context: { transactionId: innerTransactionResult.transactionId } },
+      logger.warn(
+        'Transaction completed but did not return a token ID, skipping state save',
       );
+      return;
     }
 
     const tokenData = buildTokenData(innerTransactionResult, {

@@ -1,14 +1,14 @@
 import type { CoreApi, Logger } from '@/core';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
 import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
-import type {
-  BatchDataItem,
-  TransactionResult,
-} from '@/core/types/shared.types';
 
-import { OrchestratorSource, StateError } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
+import {
+  type BatchDataItem,
+  OrchestratorSource,
+  type TransactionResult,
+} from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOKEN_CREATE_NFT_COMMAND_NAME } from '@/plugins/token/commands/create-nft';
 import { buildTokenData } from '@/plugins/token/utils/token-data-builders';
@@ -66,10 +66,10 @@ export class TokenCreateNftStateHook implements Hook<PostOutputPreparationHookPa
       });
 
     if (!innerTransactionResult.tokenId) {
-      throw new StateError(
-        'Transaction completed but did not return a token ID',
-        { context: { transactionId: innerTransactionResult.transactionId } },
+      logger.warn(
+        'Transaction completed but did not return a token ID, skipping state save',
       );
+      return;
     }
 
     const tokenData = buildTokenData(innerTransactionResult, {
