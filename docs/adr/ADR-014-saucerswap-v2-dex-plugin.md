@@ -125,7 +125,6 @@ export interface SaucerSwapV2NetworkConfig {
   quoterContractId: string;
   lpNftTokenId: string;
   whbarTokenId: string;
-  whbarEvmAddress: string;
   apiBaseUrl: string;
 }
 
@@ -139,7 +138,6 @@ export const SAUCERSWAP_V2_CONFIG: Partial<
     quoterContractId: '0.0.3949424',
     lpNftTokenId: '0.0.4054027',
     whbarTokenId: '0.0.1456986',
-    whbarEvmAddress: '0x0000000000000000000000000000000000163b5a',
     apiBaseUrl: 'https://api.saucerswap.finance',
   },
   [SupportedNetwork.TESTNET]: {
@@ -149,7 +147,6 @@ export const SAUCERSWAP_V2_CONFIG: Partial<
     quoterContractId: '0.0.1390002',
     lpNftTokenId: '0.0.1310436',
     whbarTokenId: '0.0.15058',
-    whbarEvmAddress: 'TBD',
     apiBaseUrl: 'https://test-api.saucerswap.finance',
   },
 };
@@ -550,7 +547,7 @@ function mint(MintParams calldata params) external payable
   returns (uint256 tokenSN, uint128 liquidity, uint256 amount0, uint256 amount1);
 ```
 
-When one token is HBAR, the call is wrapped in `multicall([mint, refundETH])` with `payableAmount` set to the HBAR amount + mint fee.
+When one token is HBAR, the call is wrapped in `multicall([mint, refundETH])` with `payableAmount` set to the HBAR amount.
 
 **CLI options:**
 
@@ -574,10 +571,9 @@ When one token is HBAR, the call is wrapped in `multicall([mint, refundETH])` wi
 ```ts
 async normalizeParams(args: CommandHandlerArgs): Promise<MintPositionNormalizedParams> {
   // Resolve EVM addresses for both tokens
+  // Verify pool exists via Factory.getPool(token0, token1, fee) — revert if not found
   // If ticks not specified, query pool slot0 for current tick
   //   and compute tickLower/tickUpper from --range-percent + tickSpacing
-  // Fetch mint fee from Factory.mintFee() via ContractQueryService
-  // Convert to HBAR using Mirror Node exchange rate
   // Compute amount0Min/amount1Min from slippage
 }
 ```
@@ -843,17 +839,15 @@ sequenceDiagram
     User->>CLI: saucerswap-v2 mint-position --token-a HBAR --token-b SAUCE --fee-tier 3000 ...
     CLI->>MintCmd: execute(args)
     MintCmd->>MintCmd: normalizeParams
-    MintCmd->>Query: Factory.getPool(WHBAR, SAUCE, 3000) → pool address
+    MintCmd->>Query: Factory.getPool(WHBAR, SAUCE, 3000) → pool address (error if not found)
     MintCmd->>Query: Pool.slot0() → current tick, sqrtPriceX96
-    MintCmd->>Query: Factory.mintFee() → fee in tinycent
-    MintCmd->>Mirror: exchange rate → convert tinycent to HBAR
     MintCmd->>MintCmd: compute tickLower, tickUpper, amounts, mins
 
     MintCmd->>MintCmd: buildTransaction
     MintCmd->>AbiEnc: encodeContractCall('mint', [MintParams])
     MintCmd->>AbiEnc: encodeContractCall('refundETH', [])
     MintCmd->>AbiEnc: encodeMulticall([mintEncoded, refundETHEncoded])
-    Note over MintCmd: payableAmount = HBAR amount + mint fee
+    Note over MintCmd: payableAmount = HBAR amount
 
     MintCmd->>Network: submit ContractExecuteTransaction
     Network->>NFTMgr: multicall([mint(...), refundETH()])
@@ -897,7 +891,6 @@ flowchart LR
   subgraph readonly [Read-Only]
     API["SaucerSwap V2 REST API"]
     GP["Factory.getPool()"]
-    MF["Factory.mintFee()"]
   end
 
   SW --> EI
@@ -918,7 +911,6 @@ flowchart LR
   VP --> API
   VP --> GP
   LPOS --> API
-  MINT --> MF
 ```
 
 ## Relationship to ADR-013 (SaucerSwap V1)
@@ -959,7 +951,7 @@ Both plugins share the WHBAR token ID, `hbar-detection.ts`, `slippage.ts`, and `
 - **External API dependency.** The `list-pools`, `view-pool`, and `list-positions` commands depend on SaucerSwap's V2 REST API, which may have rate limits or schema changes.
 - **Gas estimation.** Recommended gas values are from SaucerSwap documentation and may vary. Users can override with `--gas`.
 - **Pre-check responsibility.** Token association (including LP NFT), spender allowances, and NFT allowances (for burn) must be handled by the user before invoking commands.
-- **No pool creation.** V2 pool creation is not exposed as a CLI command because V2 pools are typically created through the SaucerSwap interface with specific parameters. New pools can still be created by providing liquidity in a range via `mint-position` if the pool already exists (initialized).
+- **No pool creation.** V2 pool creation is not exposed as a CLI command. The `mint-position` command requires the pool to already exist — use `view-pool` to verify before minting.
 
 ## Consequences
 
@@ -980,7 +972,7 @@ Both plugins share the WHBAR token ID, `hbar-detection.ts`, `slippage.ts`, and `
 - **Unit: Tick math.** Test `nearestUsableTick` with various tick spacings. Test `tickRangeFromPercent` with 5% range on different tick spacings.
 - **Unit: SaucerSwapV2SwapCommand phases.** Mock ABI encoding and verify `buildTransaction` produces a `ContractExecuteTransaction` with correct `functionParameters`, `gas`, `contractId`, and `payableAmount` (for HBAR). Test HBAR→Token, Token→HBAR, Token→Token routing.
 - **Unit: SaucerSwapV2BuyCommand phases.** Same as swap, but verify reversed path and `exactOutput` encoding.
-- **Unit: SaucerSwapV2MintPositionCommand.** Verify `MintParams` struct encoding, multicall composition with `refundETH`, `payableAmount` includes mint fee + HBAR amount. Test auto-tick computation from `--range-percent`.
+- **Unit: SaucerSwapV2MintPositionCommand.** Verify `MintParams` struct encoding, multicall composition with `refundETH`, `payableAmount` equals HBAR amount. Verify pool-existence check via `Factory.getPool()` throws on missing pool. Test auto-tick computation from `--range-percent`.
 - **Unit: SaucerSwapV2IncreaseLiquidityCommand.** Verify `IncreaseLiquidityParams` encoding and multicall for HBAR pools.
 - **Unit: SaucerSwapV2DecreaseLiquidityCommand.** Verify multicall composition: `[decreaseLiquidity, collect]` without HBAR, `[decreaseLiquidity, collect, unwrapWHBAR]` with HBAR, `[decreaseLiquidity, collect, unwrapWHBAR, burn]` with burn flag.
 - **Unit: SaucerSwapV2CollectFeesCommand.** Verify `CollectParams` with `MAX_UINT128` for amount0Max/amount1Max. Verify multicall with `unwrapWHBAR` for HBAR pools.
