@@ -19,7 +19,7 @@ The SaucerSwap V1 protocol exposes its functionality through two on-chain contra
 | **WHBAR**                | `0.0.1456986`                                                                                              | Wrapped HBAR token used when HBAR is one side of a pair                |
 | **SaucerSwap REST API**  | `https://api.saucerswap.finance/pools/` (mainnet) / `https://test-api.saucerswap.finance/pools/` (testnet) | Read-only pool listing with metadata                                   |
 
-This ADR proposes a `saucerswap-v1` plugin that wraps these contracts and API into six CLI commands, reusing existing core services (`ContractTransactionService`, `ContractQueryService`, `IdentityResolutionService`, `TxSignService`, `TxExecuteService`) without requiring any core framework changes.
+This ADR proposes a `saucerswap-v1` plugin that wraps these contracts and API into six CLI commands, reusing existing core services (`ContractTransactionService`, `ContractQueryService`, `IdentityResolutionService`, `TxSignService`, `TxExecuteService`) and a small **`SaucerSwapApiService`** on `CoreApi` for REST pool data (see Part 5).
 
 Reference documentation: [SaucerSwap V1 Developer Docs](https://docs.saucerswap.finance/v/developer/saucerswap-v1/).
 
@@ -35,7 +35,6 @@ src/plugins/saucerswap-v1/
 ├── manifest.ts
 ├── constants.ts
 ├── utils/
-│   ├── saucerswap-v1-api.ts
 │   ├── hbar-detection.ts
 │   ├── slippage.ts
 │   └── deadline.ts
@@ -155,50 +154,58 @@ export function computeDeadline(secondsFromNow: number): number {
 }
 ```
 
-### Part 5: SaucerSwap REST API Client
+### Part 5: SaucerSwap REST API (core service + shared schemas)
 
-`src/plugins/saucerswap-v1/utils/saucerswap-v1-api.ts` provides a typed client for the public pool listing endpoint.
+**Decision:** Do **not** implement a separate `saucerswap-v1-api.ts` under the plugin. SaucerSwap HTTP access and response validation live in **`core`**, consistent with other external integrations (e.g. mirror node).
+
+1. **Zod schemas** — Add to `src/core/schemas/common-schemas.ts` (and re-export via `@/core/schemas`), e.g.:
+   - `SaucerSwapV1ApiTokenSchema`, `SaucerSwapV1ApiLpTokenSchema`, `SaucerSwapV1ApiLiquidityPoolSchema`
+   - `SaucerSwapV1ApiLiquidityPoolArraySchema` (or parse with `z.array(SaucerSwapV1ApiLiquidityPoolSchema)`)
+   - Exported types: `SaucerSwapV1ApiLiquidityPool`, etc.
+
+2. **Service interface** — `src/core/services/saucerswap-api/saucerswap-api-service.interface.ts` defines `SaucerSwapApiService` with at least:
+   - `fetchAllPools(apiBaseUrl: string): Promise<SaucerSwapV1ApiLiquidityPool[]>` — `GET {apiBaseUrl}/pools/`
+
+3. **Implementation** — `src/core/services/saucerswap-api/saucerswap-api-service.ts` (`SaucerSwapApiServiceImpl`): calls `fetch`, throws `NetworkError` on non-OK responses, validates JSON with `parseWithSchema` / the array schema from `common-schemas` (same pattern as `HederaMirrornodeService`).
+
+4. **Core API** — `CoreApi` exposes `saucerSwapApi: SaucerSwapApiService`; `CoreApiImplementation` constructs `SaucerSwapApiServiceImpl` in its constructor.
+
+5. **Plugins** — `saucerswap-v1` commands call `api.saucerSwapApi.fetchAllPools(config.apiBaseUrl)` (no duplicate fetch logic in the plugin).
+
+Illustrative shape:
 
 ```ts
-import { z } from 'zod';
+// src/core/services/saucerswap-api/saucerswap-api-service.interface.ts
+import type { SaucerSwapV1ApiLiquidityPool } from '@/core/schemas/common-schemas';
 
-const ApiTokenSchema = z.object({
-  decimals: z.number(),
-  id: z.string(),
-  name: z.string(),
-  symbol: z.string(),
-  priceUsd: z.number(),
-});
+export interface SaucerSwapApiService {
+  fetchAllPools(apiBaseUrl: string): Promise<SaucerSwapV1ApiLiquidityPool[]>;
+  // V2 methods (pools / positions) live on the same service — see ADR-014.
+}
+```
 
-const ApiLPTokenSchema = z.object({
-  decimals: z.number(),
-  id: z.string(),
-  name: z.string(),
-  symbol: z.string(),
-  priceUsd: z.string(),
-});
+```ts
+// src/core/services/saucerswap-api/saucerswap-api-service.ts (sketch)
+import { NetworkError } from '@/core/errors';
+import { SaucerSwapV1ApiLiquidityPoolArraySchema } from '@/core/schemas/common-schemas';
+import { parseWithSchema } from '@/core/shared/validation/parse-with-schema.zod';
 
-const ApiLiquidityPoolSchema = z.object({
-  id: z.number(),
-  contractId: z.string(),
-  lpToken: ApiLPTokenSchema,
-  lpTokenReserve: z.string(),
-  tokenA: ApiTokenSchema,
-  tokenReserveA: z.string(),
-  tokenB: ApiTokenSchema,
-  tokenReserveB: z.string(),
-});
-
-export type ApiLiquidityPool = z.infer<typeof ApiLiquidityPoolSchema>;
-
-export async function fetchAllPools(
-  apiBaseUrl: string,
-): Promise<ApiLiquidityPool[]> {
-  const response = await fetch(`${apiBaseUrl}/pools/`);
-  if (!response.ok)
-    throw new NetworkError(`SaucerSwap API error: ${response.status}`);
-  const data = await response.json();
-  return z.array(ApiLiquidityPoolSchema).parse(data);
+export class SaucerSwapApiServiceImpl implements SaucerSwapApiService {
+  async fetchAllPools(apiBaseUrl: string) {
+    const url = `${apiBaseUrl.replace(/\/+$/, '')}/pools/`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new NetworkError(`SaucerSwap API error: ${response.status}`, {
+        recoverable: true,
+      });
+    }
+    const data: unknown = await response.json();
+    return parseWithSchema(
+      SaucerSwapV1ApiLiquidityPoolArraySchema,
+      data,
+      'SaucerSwap V1 pools',
+    );
+  }
 }
 ```
 
@@ -443,7 +450,7 @@ export class SaucerSwapListCommand implements Command {
     const network = api.network.getCurrentNetwork();
     const config = getSaucerSwapConfig(network);
 
-    const pools = await fetchAllPools(config.apiBaseUrl);
+    const pools = await api.saucerSwapApi.fetchAllPools(config.apiBaseUrl);
 
     const filtered = validArgs.token
       ? pools.filter(
@@ -534,14 +541,14 @@ hcli saucerswap-v1 view --token-a 0.0.2000 --token-b 0.0.3000
 
 ### Part 7: Command Classification
 
-| Command       | Base Class               | On-Chain Effect                           | SaucerSwap Contract Function                     |
-| ------------- | ------------------------ | ----------------------------------------- | ------------------------------------------------ |
-| `deposit`     | `BaseTransactionCommand` | Adds liquidity to existing pool           | `addLiquidityETH` / `addLiquidity`               |
-| `withdraw`    | `BaseTransactionCommand` | Removes liquidity from existing pool      | `removeLiquidityETH` / `removeLiquidity`         |
-| `swap`        | `BaseTransactionCommand` | Swaps exact input for minimum output      | `swapExact*For*` variants                        |
-| `buy`         | `BaseTransactionCommand` | Swaps maximum input for exact output      | `swap*ForExact*` variants                        |
-| `list`        | `Command`                | None (REST API query)                     | N/A                                              |
-| `view`        | `Command`                | None (REST API + JSON RPC query)          | Factory `getPair` + Pair `getReserves`           |
+| Command    | Base Class               | On-Chain Effect                      | SaucerSwap Contract Function             |
+| ---------- | ------------------------ | ------------------------------------ | ---------------------------------------- |
+| `deposit`  | `BaseTransactionCommand` | Adds liquidity to existing pool      | `addLiquidityETH` / `addLiquidity`       |
+| `withdraw` | `BaseTransactionCommand` | Removes liquidity from existing pool | `removeLiquidityETH` / `removeLiquidity` |
+| `swap`     | `BaseTransactionCommand` | Swaps exact input for minimum output | `swapExact*For*` variants                |
+| `buy`      | `BaseTransactionCommand` | Swaps maximum input for exact output | `swap*ForExact*` variants                |
+| `list`     | `Command`                | None (REST API query)                | N/A                                      |
+| `view`     | `Command`                | None (REST API + JSON RPC query)     | Factory `getPair` + Pair `getReserves`   |
 
 ## Execution Flow
 
@@ -624,10 +631,10 @@ flowchart LR
 
 ### Pros
 
-- **No core changes required.** The plugin reuses existing `ContractTransactionService`, `ContractQueryService`, `IdentityResolutionService`, `TxSignService`, and `TxExecuteService`. No new core service interfaces are introduced.
+- **Minimal core surface.** The plugin reuses existing `ContractTransactionService`, `ContractQueryService`, `IdentityResolutionService`, `TxSignService`, and `TxExecuteService`. REST pool listing uses a dedicated **`SaucerSwapApiService`** on `CoreApi` (see Part 5) with Zod schemas in `common-schemas`, so HTTP and validation stay in core rather than duplicated per plugin.
 - **Domain-specific UX.** Users interact with high-level concepts (swap, deposit, withdraw) rather than raw Solidity function names and hex-encoded parameters. The plugin handles HBAR/WHBAR routing, slippage computation, deadline calculation, and path construction automatically.
 - **Follows established patterns.** Write commands extend `BaseTransactionCommand` (ADR-009), read-only commands implement `Command` directly. The file structure mirrors `contract-erc20` and other existing plugins.
-- **Testable.** Each command handler is independently unit-testable by mocking `api.contract`, `api.identityResolution`, and `api.contractQuery`, following the same test patterns as `contract-erc20`.
+- **Testable.** Each command handler is independently unit-testable by mocking `api.contract`, `api.identityResolution`, `api.contractQuery`, and `api.saucerSwapApi.fetchAllPools` where needed, following the same test patterns as `contract-erc20`.
 - **Typed API responses.** The SaucerSwap REST API responses are parsed with Zod schemas, catching API changes at parse time rather than at runtime.
 
 ### Cons
@@ -642,7 +649,7 @@ flowchart LR
 
 - A new plugin directory `src/plugins/saucerswap-v1/` is created with the structure described above.
 - The plugin manifest is registered in `src/core/shared/config/cli-options.ts` `DEFAULT_PLUGIN_STATE` array.
-- No changes to existing core services or interfaces are needed.
+- Core adds **`SaucerSwapApiService`**, **`SaucerSwapApiServiceImpl`**, Zod schemas in **`src/core/schemas/common-schemas.ts`**, and **`saucerSwapApi`** on `CoreApi` (see Part 5). Other existing services remain unchanged.
 - Commands that produce transactions (`deposit`, `withdraw`, `swap`, `buy`) are compatible with the batch and schedule hooks via `registeredHooks: ['batchify', 'scheduled']` in the manifest.
 - Users must ensure token associations and spender allowances are in place before using the plugin. Documentation should include common prerequisite commands.
 - The `constants.ts` file must be updated when testnet contract IDs are determined.
@@ -655,10 +662,10 @@ flowchart LR
 - **Unit: SaucerSwapBuyCommand phases.** Same as swap but verify "exact output" function variants (`swap*ForExact*`) are selected and `amountInMax` / `amountOut` are correctly placed in parameters.
 - **Unit: SaucerSwapDepositCommand.** Verify `addLiquidity` vs `addLiquidityETH` routing. Verify slippage computation produces correct `amountMin` values.
 - **Unit: SaucerSwapWithdrawCommand.** Verify `removeLiquidity` vs `removeLiquidityETH` routing. Verify LP amount and minimum output amounts are correctly passed.
-- **Unit: SaucerSwapListCommand.** Mock `fetchAllPools` and verify filtering by token ID and symbol. Verify empty result handling.
+- **Unit: SaucerSwapListCommand.** Mock `api.saucerSwapApi.fetchAllPools` and verify filtering by token ID and symbol. Verify empty result handling.
 - **Unit: SaucerSwapViewCommand.** Mock REST API response and contract queries (`getPair`, `getReserves`). Verify output includes reserves, price ratio, LP token info.
 - **Unit: HBAR detection.** Test `isHbar` with `HBAR`, `hbar`, WHBAR token ID, and regular token IDs.
 - **Unit: Slippage and deadline utilities.** Test `computeMinOutput` with various amounts and slippage percentages. Test `computeDeadline` produces correct Unix timestamp.
-- **Unit: SaucerSwap REST API client.** Mock `fetch` responses and verify Zod schema parsing. Verify error handling for non-200 responses.
+- **Unit: SaucerSwapApiService (core).** Mock `fetch` and verify Zod parsing via `common-schemas` and `NetworkError` on non-200 responses.
 - **Unit: Constants.** Verify config exists for mainnet. Verify `getSaucerSwapConfig` throws `ConfigurationError` for unsupported networks.
 - **Integration: Swap lifecycle.** With mocked network, verify full flow from CLI args through `normalizeParams` → `buildTransaction` → `signTransaction` → `executeTransaction` → `outputPreparation`.

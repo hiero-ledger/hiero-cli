@@ -52,7 +52,6 @@ src/plugins/saucerswap-v2/
 │   ├── path-encoder.ts
 │   ├── multicall.ts
 │   ├── tick-math.ts
-│   ├── saucerswap-v2-api.ts
 │   ├── hbar-detection.ts
 │   ├── slippage.ts
 │   └── deadline.ts
@@ -312,69 +311,31 @@ export function tickRangeFromPercent(
 }
 ```
 
-### Part 7: SaucerSwap V2 REST API Client
+### Part 7: SaucerSwap V2 REST API (same core service as ADR-013)
 
-`src/plugins/saucerswap-v2/utils/saucerswap-v2-api.ts` provides a typed client for the public V2 pool listing and position endpoints.
+**Decision:** Do **not** add `saucerswap-v2-api.ts` under the plugin. V2 pool and position HTTP calls use the same **`SaucerSwapApiService`** introduced in [ADR-013](ADR-013-saucerswap-v1-dex-plugin.md) Part 5.
+
+1. **Zod schemas** — Add V2 shapes to `src/core/schemas/common-schemas.ts`, e.g. `SaucerSwapV2ApiTokenSchema`, `SaucerSwapV2ApiPoolSchema`, `SaucerSwapV2ApiPositionSchema`, plus array helpers / inferred types (`SaucerSwapV2ApiPool`, `SaucerSwapV2ApiPosition`, …).
+
+2. **Extend `SaucerSwapApiService`** — The interface also declares:
+   - `fetchV2Pools(apiBaseUrl: string): Promise<SaucerSwapV2ApiPool[]>` — `GET {apiBaseUrl}/v2/pools/`
+   - `fetchV2Positions(apiBaseUrl: string, accountId: string): Promise<SaucerSwapV2ApiPosition[]>` — `GET {apiBaseUrl}/v2/nfts/{accountId}`
+
+3. **`SaucerSwapApiServiceImpl`** — Implements the above using `fetch`, `NetworkError` on failure, and `parseWithSchema` with the V2 schemas from `common-schemas`.
+
+4. **Plugins** — `saucerswap-v2` read-only commands call `api.saucerSwapApi.fetchV2Pools` / `fetchV2Positions` as appropriate.
+
+Illustrative additions:
 
 ```ts
-import { z } from 'zod';
-
-const V2TokenSchema = z.object({
-  decimals: z.number(),
-  id: z.string(),
-  name: z.string(),
-  symbol: z.string(),
-  priceUsd: z.number(),
-});
-
-const V2PoolSchema = z.object({
-  id: z.number(),
-  contractId: z.string(),
-  fee: z.number(),
-  tickSpacing: z.number(),
-  token0: V2TokenSchema,
-  token1: V2TokenSchema,
-  sqrtRatioX96: z.string(),
-  liquidity: z.string(),
-  tick: z.number(),
-});
-
-export type V2Pool = z.infer<typeof V2PoolSchema>;
-
-export async function fetchV2Pools(apiBaseUrl: string): Promise<V2Pool[]> {
-  const response = await fetch(`${apiBaseUrl}/v2/pools/`);
-  if (!response.ok)
-    throw new NetworkError(`SaucerSwap V2 API error: ${response.status}`);
-  const data = await response.json();
-  return z.array(V2PoolSchema).parse(data);
-}
-
-const V2PositionSchema = z.object({
-  tokenSN: z.number(),
-  poolId: z.number(),
-  tickLower: z.number(),
-  tickUpper: z.number(),
-  liquidity: z.string(),
-  token0: V2TokenSchema,
-  token1: V2TokenSchema,
-  fee: z.number(),
-  tokensOwed0: z.string(),
-  tokensOwed1: z.string(),
-});
-
-export type V2Position = z.infer<typeof V2PositionSchema>;
-
-export async function fetchV2Positions(
-  apiBaseUrl: string,
-  accountId: string,
-): Promise<V2Position[]> {
-  const response = await fetch(`${apiBaseUrl}/v2/nfts/${accountId}`);
-  if (!response.ok)
-    throw new NetworkError(
-      `SaucerSwap V2 positions API error: ${response.status}`,
-    );
-  const data = await response.json();
-  return z.array(V2PositionSchema).parse(data);
+// saucerswap-api-service.interface.ts (excerpt)
+export interface SaucerSwapApiService {
+  fetchAllPools(apiBaseUrl: string): Promise<SaucerSwapV1ApiLiquidityPool[]>;
+  fetchV2Pools(apiBaseUrl: string): Promise<SaucerSwapV2ApiPool[]>;
+  fetchV2Positions(
+    apiBaseUrl: string,
+    accountId: string,
+  ): Promise<SaucerSwapV2ApiPosition[]>;
 }
 ```
 
@@ -976,10 +937,10 @@ Both plugins share the WHBAR token ID, `hbar-detection.ts`, `slippage.ts`, and `
 - **Unit: SaucerSwapV2IncreaseLiquidityCommand.** Verify `IncreaseLiquidityParams` encoding and multicall for HBAR pools.
 - **Unit: SaucerSwapV2DecreaseLiquidityCommand.** Verify multicall composition: `[decreaseLiquidity, collect]` without HBAR, `[decreaseLiquidity, collect, unwrapWHBAR]` with HBAR, `[decreaseLiquidity, collect, unwrapWHBAR, burn]` with burn flag.
 - **Unit: SaucerSwapV2CollectFeesCommand.** Verify `CollectParams` with `MAX_UINT128` for amount0Max/amount1Max. Verify multicall with `unwrapWHBAR` for HBAR pools.
-- **Unit: SaucerSwapV2ListPoolsCommand.** Mock `fetchV2Pools` and verify filtering by token ID/symbol and fee tier. Verify empty result handling.
+- **Unit: SaucerSwapV2ListPoolsCommand.** Mock `api.saucerSwapApi.fetchV2Pools` and verify filtering by token ID/symbol and fee tier. Verify empty result handling.
 - **Unit: SaucerSwapV2ViewPoolCommand.** Mock REST API response and `Factory.getPool()` contract query. Verify output includes pool address, tick, liquidity, fee tier, token info.
-- **Unit: SaucerSwapV2ListPositionsCommand.** Mock `fetchV2Positions` and verify structured output includes NFT serial, tick range, liquidity, uncollected fees.
+- **Unit: SaucerSwapV2ListPositionsCommand.** Mock `api.saucerSwapApi.fetchV2Positions` and verify structured output includes NFT serial, tick range, liquidity, uncollected fees.
 - **Unit: HBAR detection and slippage.** Shared with V1 — test `isHbar`, `computeMinOutput`, `computeDeadline`.
 - **Unit: Constants.** Verify config exists for mainnet and testnet. Verify `getSaucerSwapV2Config` throws for unsupported networks.
-- **Unit: V2 REST API client.** Mock `fetch` and verify Zod schema parsing for pools and positions. Verify error handling for non-200 responses.
+- **Unit: SaucerSwapApiService (core).** Mock `fetch` and verify Zod parsing for V2 pools and positions (schemas in `common-schemas`) and `NetworkError` on non-200 responses.
 - **Integration: Swap lifecycle.** With mocked network, verify full flow from CLI args through `normalizeParams` → `buildTransaction` (ABI encoding + multicall) → `signTransaction` → `executeTransaction` → `outputPreparation`.
