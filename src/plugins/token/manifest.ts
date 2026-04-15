@@ -479,7 +479,11 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Cancel a pending token airdrop',
       description:
         'Cancel a pending token airdrop (FT or NFT) initiated by the sender account. The sender must sign this transaction.',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
