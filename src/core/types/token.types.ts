@@ -112,6 +112,11 @@ export interface TokenDeleteParams {
   tokenId: string;
 }
 
+export interface TokenFreezeParams {
+  tokenId: string;
+  accountId: string;
+}
+
 /**
  * Parameters for approving NFT allowance for specific serial numbers
  */

@@ -10,6 +10,7 @@ import type {
   TokenClaimAirdropTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
+  TokenFreezeTransaction,
   TokenMintTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
@@ -24,6 +25,7 @@ import type {
   TokenClaimAirdropParams,
   TokenCreateParams,
   TokenDeleteParams,
+  TokenFreezeParams,
   TokenMintParams,
   TokenTransferParams,
 } from '@/core/types/token.types';
@@ -74,6 +76,8 @@ export interface TokenService {
   ): AccountAllowanceApproveTransaction | AccountAllowanceDeleteTransaction;
 
   createDeleteTransaction(params: TokenDeleteParams): TokenDeleteTransaction;
+
+  createFreezeTransaction(params: TokenFreezeParams): TokenFreezeTransaction;
 
   createAirdropFtTransaction(
     params: TokenAirdropFtParams,

@@ -68,6 +68,11 @@ import {
   TokenDeleteAllowanceNftOutputSchema,
 } from './commands/delete-allowance-nft';
 import {
+  TOKEN_FREEZE_TEMPLATE,
+  tokenFreeze,
+  TokenFreezeOutputSchema,
+} from './commands/freeze';
+import {
   TOKEN_IMPORT_TEMPLATE,
   tokenImport,
   TokenImportOutputSchema,
@@ -1114,6 +1119,51 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenDeleteOutputSchema,
         humanTemplate: TOKEN_DELETE_TEMPLATE,
+      },
+    },
+    {
+      name: 'freeze',
+      summary: 'Freeze an account for a token',
+      description:
+        'Prevents the specified account from sending or receiving the token. Requires the token freeze key. Works for both fungible tokens (FT) and non-fungible tokens (NFT).',
+      registeredHooks: ['batchify', 'scheduled'],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Account to freeze: account-id (0.0.X), account alias, or EVM address (0x...)',
+        },
+        {
+          name: 'freeze-key',
+          short: 'f',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Freeze key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenFreeze,
+      output: {
+        schema: TokenFreezeOutputSchema,
+        humanTemplate: TOKEN_FREEZE_TEMPLATE,
       },
     },
     {
