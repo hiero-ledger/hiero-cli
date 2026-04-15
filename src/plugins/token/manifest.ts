@@ -1430,8 +1430,8 @@ export const tokenPluginManifest: PluginManifest = {
       registeredHooks: ['batchify'],
       options: [
         {
-          name: 'account',
-          short: 'a',
+          name: 'owner',
+          short: 'o',
           type: OptionType.STRING,
           required: true,
           description: 'Owner account ID or alias',
@@ -1457,7 +1457,7 @@ export const tokenPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Signing account credential. Accepts any key format. Defaults to operator.',
+            'Signing account credential. Accepts any key format. Defaults to owner account.',
         },
         {
           name: 'key-manager',

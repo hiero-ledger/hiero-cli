@@ -2,14 +2,14 @@ import { z } from 'zod';
 
 import { KeyManagerTypeSchema, KeySchema } from '@/core/schemas';
 import {
+  AccountReferenceObjectSchema,
   EntityIdSchema,
-  EntityReferenceSchema,
 } from '@/core/schemas/common-schemas';
 
 export const MAX_REJECT_SERIALS = 10;
 
 export const TokenRejectAirdropInputSchema = z.object({
-  account: EntityReferenceSchema.describe('Owner account ID or alias'),
+  owner: AccountReferenceObjectSchema.describe('Owner account ID or alias'),
   token: EntityIdSchema.describe('Token ID to reject (e.g. 0.0.5867883)'),
   serial: z
     .preprocess(
@@ -23,7 +23,9 @@ export const TokenRejectAirdropInputSchema = z.object({
     .describe(
       'NFT serial number(s). Required for NFT tokens. Comma-separated: 1,2,3',
     ),
-  from: KeySchema.optional().describe('Signing account. Defaults to operator.'),
+  from: KeySchema.optional().describe(
+    'Signing account. Defaults to owner account.',
+  ),
   keyManager: KeyManagerTypeSchema.optional(),
 });
 

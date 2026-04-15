@@ -60,7 +60,7 @@ const makeArgs = (
   args?: Record<string, unknown>,
 ): CommandHandlerArgs => ({
   args: {
-    account: DEFAULT_ACCOUNT_ALIAS,
+    owner: DEFAULT_ACCOUNT_ALIAS,
     token: TOKEN_ID,
     ...args,
   },
@@ -192,7 +192,7 @@ describe('tokenRejectAirdrop', () => {
       });
 
       const result = await tokenRejectAirdrop(
-        makeArgs(api, { account: 'my-account-alias' }),
+        makeArgs(api, { owner: 'my-account-alias' }),
       );
 
       const output = assertOutput(

@@ -212,6 +212,8 @@ export interface TokenCancelAirdropParams {
   serial?: number;
 }
 
+export type AirdropTokenType = 'FUNGIBLE' | 'NFT';
+
 export interface RejectAirdropItem {
   tokenId: string;
   serialNumber?: number; // undefined for FT

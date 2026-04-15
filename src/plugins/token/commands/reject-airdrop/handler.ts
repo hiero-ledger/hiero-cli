@@ -1,7 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TokenRejectAirdropOutput } from './output';
 import type {
   RejectAirdropResolved,
@@ -12,20 +10,14 @@ import type {
 } from './types';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
-import {
-  NotFoundError,
-  TransactionError,
-  ValidationError,
-} from '@/core/errors';
-import { EntityIdSchema, KeySchema } from '@/core/schemas/common-schemas';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { TransactionError, ValidationError } from '@/core/errors';
+import { KeySchema } from '@/core/schemas/common-schemas';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { MirrorTokenType } from '@/core/shared/constants';
 
 import { TokenRejectAirdropInputSchema } from './input';
 
 export const TOKEN_REJECT_AIRDROP_COMMAND_NAME = 'token_reject-airdrop';
-
-const NFT_TOKEN_TYPE = 'NON_FUNGIBLE_UNIQUE';
 
 export class TokenRejectAirdropCommand extends BaseTransactionCommand<
   TokenRejectAirdropNormalizedParams,
@@ -42,7 +34,7 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
   ): Promise<TokenRejectAirdropNormalizedParams> {
     const { api, logger } = args;
     const {
-      account,
+      owner,
       token: tokenId,
       serial: serials,
       from,
@@ -54,11 +46,16 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
-    const ownerAccountId = this.resolveAccountId(account, api, network);
+    const { accountId: ownerAccountId } =
+      await api.identityResolution.resolveAccount({
+        accountReference: owner.value,
+        type: owner.type,
+        network,
+      });
 
     logger.info(`Fetching token info for ${tokenId}...`);
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
-    const isNft = tokenInfo.type === NFT_TOKEN_TYPE;
+    const isNft = tokenInfo.type === MirrorTokenType.NON_FUNGIBLE_UNIQUE;
 
     if (isNft && !serials) {
       throw new ValidationError('--serial is required for NFT tokens');
@@ -83,8 +80,7 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
       serialNumbers: serials,
     };
 
-    // When --from is not specified, sign with the owner account's key
-    const signingCredential = from ?? KeySchema.parse(account);
+    const signingCredential = from ?? KeySchema.parse(owner.value);
     const resolvedAccount = await api.keyResolver.resolveAccountCredentials(
       signingCredential,
       keyManager,
@@ -180,30 +176,6 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
     };
 
     return { result: output };
-  }
-
-  private resolveAccountId(
-    accountOrAlias: string,
-    api: CoreApi,
-    network: SupportedNetwork,
-  ): string {
-    const resolved = api.alias.resolve(
-      accountOrAlias,
-      AliasType.Account,
-      network,
-    );
-    if (resolved?.entityId) {
-      return resolved.entityId;
-    }
-
-    const parsed = EntityIdSchema.safeParse(accountOrAlias);
-    if (!parsed.success) {
-      throw new NotFoundError(
-        `Account not found with ID or alias: ${accountOrAlias}`,
-      );
-    }
-
-    return parsed.data;
   }
 }
 

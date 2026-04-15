@@ -5,15 +5,16 @@ import type {
   SupportedNetwork,
   TransactionResult,
 } from '@/core';
-import type { RejectAirdropItem } from '@/core/types/token.types';
-
-export type RejectAirdropType = 'FUNGIBLE' | 'NFT';
+import type {
+  AirdropTokenType,
+  RejectAirdropItem,
+} from '@/core/types/token.types';
 
 export interface RejectAirdropResolved {
   tokenId: string;
   tokenName: string;
   tokenSymbol: string;
-  type: RejectAirdropType;
+  type: AirdropTokenType;
   serialNumbers?: number[];
 }
 
