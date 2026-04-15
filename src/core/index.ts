@@ -142,3 +142,9 @@ export type {
 // Plugin Interfaces
 // ============================================================================
 export type * from './plugins/plugin.interface';
+
+// ============================================================================
+// Commands
+// ============================================================================
+export { BaseTransactionCommand } from './commands/command';
+export type { Command } from './commands/command.interface';
