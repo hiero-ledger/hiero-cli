@@ -262,7 +262,7 @@ hcli saucerswap-v1 withdraw --token-a 0.0.2000 --token-b 0.0.3000 --liquidity 50
 
 `SaucerSwapSwapCommand` extends `BaseTransactionCommand`. Swaps an exact amount of input token for at least a minimum amount of output token.
 
-**Solidity functions (selected by HBAR detection):**
+**Solidity functions (selected by `SwapDirection`):**
 
 | Input | Output | Function                                                                                                |
 | ----- | ------ | ------------------------------------------------------------------------------------------------------- |
@@ -285,6 +285,22 @@ hcli saucerswap-v1 withdraw --token-a 0.0.2000 --token-b 0.0.3000 --liquidity 50
 
 **Path construction:** The `path` parameter is an ordered array of EVM addresses. For a direct swap: `[fromEvmAddress, toEvmAddress]`. When HBAR is involved, the WHBAR EVM address is used in the path.
 
+**Swap direction enum** (defined in `commands/swap/types.ts`):
+
+```ts
+export enum SwapDirection {
+  HBAR_FOR_TOKEN = 'HBAR_FOR_TOKEN',
+  TOKEN_FOR_HBAR = 'TOKEN_FOR_HBAR',
+  TOKEN_FOR_TOKEN = 'TOKEN_FOR_TOKEN',
+}
+
+export function resolveSwapDirection(from: string, to: string): SwapDirection {
+  if (isHbar(from)) return SwapDirection.HBAR_FOR_TOKEN;
+  if (isHbar(to)) return SwapDirection.TOKEN_FOR_HBAR;
+  return SwapDirection.TOKEN_FOR_TOKEN;
+}
+```
+
 **Handler flow (simplified):**
 
 ```ts
@@ -292,53 +308,75 @@ async buildTransaction(args, params): Promise<BuildTransactionResult> {
   const path = [params.fromEvmAddress, params.toEvmAddress];
   const deadline = computeDeadline(params.deadlineSeconds);
 
-  if (params.fromIsHbar) {
-    // swapExactETHForTokens — payable, HBAR sent as msg.value
-    const functionParameters = new ContractFunctionParameters()
-      .addUint256(params.amountOutMin)
-      .addAddressArray(path)
-      .addAddress(params.recipientEvm)
-      .addUint256(deadline);
-
-    const result = api.contract.contractExecuteTransaction({
-      contractId: params.config.routerContractId,
-      gas: params.gas,
-      functionName: 'swapExactETHForTokens',
-      functionParameters,
-      payableAmount: params.amountIn,
-    });
-    return { transaction: result.transaction };
-  } else if (params.toIsHbar) {
-    // swapExactTokensForETH
-    const functionParameters = new ContractFunctionParameters()
-      .addUint256(params.amountIn)
-      .addUint256(params.amountOutMin)
-      .addAddressArray(path)
-      .addAddress(params.recipientEvm)
-      .addUint256(deadline);
-
-    return api.contract.contractExecuteTransaction({
-      contractId: params.config.routerContractId,
-      gas: params.gas,
-      functionName: 'swapExactTokensForETH',
-      functionParameters,
-    });
-  } else {
-    // swapExactTokensForTokens
-    const functionParameters = new ContractFunctionParameters()
-      .addUint256(params.amountIn)
-      .addUint256(params.amountOutMin)
-      .addAddressArray(path)
-      .addAddress(params.recipientEvm)
-      .addUint256(deadline);
-
-    return api.contract.contractExecuteTransaction({
-      contractId: params.config.routerContractId,
-      gas: params.gas,
-      functionName: 'swapExactTokensForTokens',
-      functionParameters,
-    });
+  switch (params.swapDirection) {
+    case SwapDirection.HBAR_FOR_TOKEN:
+      return this.buildHbarForToken(params, path, deadline);
+    case SwapDirection.TOKEN_FOR_HBAR:
+      return this.buildTokenForHbar(params, path, deadline);
+    case SwapDirection.TOKEN_FOR_TOKEN:
+      return this.buildTokenForToken(params, path, deadline);
   }
+}
+
+private buildHbarForToken(
+  params: SwapNormalizedParams,
+  path: string[],
+  deadline: number,
+): BuildTransactionResult {
+  const functionParameters = new ContractFunctionParameters()
+    .addUint256(params.amountOutMin)
+    .addAddressArray(path)
+    .addAddress(params.recipientEvm)
+    .addUint256(deadline);
+
+  const result = api.contract.contractExecuteTransaction({
+    contractId: params.config.routerContractId,
+    gas: params.gas,
+    functionName: 'swapExactETHForTokens',
+    functionParameters,
+    payableAmount: params.amountIn,
+  });
+  return { transaction: result.transaction };
+}
+
+private buildTokenForHbar(
+  params: SwapNormalizedParams,
+  path: string[],
+  deadline: number,
+): BuildTransactionResult {
+  const functionParameters = new ContractFunctionParameters()
+    .addUint256(params.amountIn)
+    .addUint256(params.amountOutMin)
+    .addAddressArray(path)
+    .addAddress(params.recipientEvm)
+    .addUint256(deadline);
+
+  return api.contract.contractExecuteTransaction({
+    contractId: params.config.routerContractId,
+    gas: params.gas,
+    functionName: 'swapExactTokensForETH',
+    functionParameters,
+  });
+}
+
+private buildTokenForToken(
+  params: SwapNormalizedParams,
+  path: string[],
+  deadline: number,
+): BuildTransactionResult {
+  const functionParameters = new ContractFunctionParameters()
+    .addUint256(params.amountIn)
+    .addUint256(params.amountOutMin)
+    .addAddressArray(path)
+    .addAddress(params.recipientEvm)
+    .addUint256(deadline);
+
+  return api.contract.contractExecuteTransaction({
+    contractId: params.config.routerContractId,
+    gas: params.gas,
+    functionName: 'swapExactTokensForTokens',
+    functionParameters,
+  });
 }
 ```
 
@@ -525,7 +563,7 @@ sequenceDiagram
     CLI->>SwapCmd: execute(args)
     SwapCmd->>SwapCmd: normalizeParams(args)
     SwapCmd->>IdRes: resolveContract(0.0.2000) → evmAddress
-    SwapCmd->>SwapCmd: detect HBAR → use swapExactETHForTokens
+    SwapCmd->>SwapCmd: resolveSwapDirection(from, to) → SwapDirection
     SwapCmd->>SwapCmd: compute amountOutMin, deadline, path
 
     SwapCmd->>SwapCmd: buildTransaction(args, params)
