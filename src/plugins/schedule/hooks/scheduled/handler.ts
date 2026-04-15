@@ -1,10 +1,10 @@
-import type { BaseBuildTransactionResult, CommandHandlerArgs } from '@/core';
-import type { HookResult, PreSignTransactionParams } from '@/core/hooks/types';
+import type { BaseBuildTransactionResult } from '@/core';
+import type { Hook, HookResult } from '@/core/hooks/hook.interface';
+import type { PreSignTransactionHookParams } from '@/core/hooks/types';
 import type { ScheduledNormalizedParams } from '@/plugins/schedule/hooks/scheduled/types';
 
 import { StateError, TransactionError } from '@/core';
 import { NotFoundError, ValidationError } from '@/core/errors';
-import { AbstractHook } from '@/core/hooks/abstract-hook';
 import { composeKey } from '@/core/utils/key-composer';
 import { ScheduledInputSchema } from '@/plugins/schedule/hooks/scheduled/input';
 import {
@@ -13,15 +13,19 @@ import {
 } from '@/plugins/schedule/hooks/scheduled/output';
 import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
 
-export class ScheduledHook extends AbstractHook {
-  override async preSignTransactionHook(
-    args: CommandHandlerArgs,
-    params: PreSignTransactionParams<
+export class ScheduledHook implements Hook<
+  PreSignTransactionHookParams<
+    ScheduledNormalizedParams,
+    BaseBuildTransactionResult
+  >
+> {
+  async execute(
+    params: PreSignTransactionHookParams<
       ScheduledNormalizedParams,
       BaseBuildTransactionResult
     >,
-    _commandName: string,
   ): Promise<HookResult> {
+    const { args, commandName, buildTransactionResult } = params;
     const { api, logger } = args;
     const scheduledState = new ZustandScheduleStateHelper(api.state, logger);
     const validArgs = ScheduledInputSchema.parse(args.args);
@@ -31,12 +35,7 @@ export class ScheduledHook extends AbstractHook {
       logger.debug(
         'No parameter "scheduled" found. Transaction will not be scheduled.',
       );
-      return Promise.resolve({
-        breakFlow: false,
-        result: {
-          message: 'No "scheduled" parameter found',
-        },
-      });
+      return { breakFlow: false };
     }
     const key = composeKey(network, scheduledName);
     const scheduledRecord = scheduledState.getScheduled(key);
@@ -48,7 +47,7 @@ export class ScheduledHook extends AbstractHook {
     }
 
     const scheduleTx = api.schedule.buildScheduleCreateTransaction({
-      innerTransaction: params.buildTransactionResult.transaction,
+      innerTransaction: buildTransactionResult.transaction,
       payerAccountId: scheduledRecord.payerAccountId,
       adminKey: scheduledRecord.adminPublicKey,
       scheduleMemo: scheduledRecord.memo,
@@ -57,7 +56,7 @@ export class ScheduledHook extends AbstractHook {
         : undefined,
       waitForExpiry: scheduledRecord.waitForExpiry,
     });
-    const keyRefIds = params.normalisedParams.keyRefIds;
+    const keyRefIds = [];
     if (scheduledRecord.adminKeyRefId) {
       keyRefIds.push(scheduledRecord.adminKeyRefId);
     }
@@ -83,8 +82,10 @@ export class ScheduledHook extends AbstractHook {
     scheduledState.saveScheduled(key, {
       ...scheduledRecord,
       scheduledId: result.scheduleId,
+      transactionId: result.transactionId,
       normalizedParams: params.normalisedParams,
       scheduled: true,
+      command: commandName,
       executed: false,
     });
 
@@ -92,7 +93,7 @@ export class ScheduledHook extends AbstractHook {
       `Transaction scheduled for ${scheduledName}. Transaction ID '${result.transactionId.toString()}'`,
     );
 
-    return Promise.resolve({
+    return {
       breakFlow: true,
       result: {
         scheduledName,
@@ -102,6 +103,6 @@ export class ScheduledHook extends AbstractHook {
       },
       schema: ScheduledOutputSchema,
       humanTemplate: SCHEDULED_TEMPLATE,
-    });
+    };
   }
 }

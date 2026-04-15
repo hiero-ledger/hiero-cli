@@ -58,9 +58,11 @@ export type {
 export type { SolcCompiler } from './types/shared.types';
 export {
   EntityReferenceType,
+  MirrorTransactionResult,
   NetworkChainId,
   NetworkChainMap,
   OptionType,
+  OrchestratorSource,
   SupplyType,
   SupportedNetwork,
 } from './types/shared.types';
@@ -94,11 +96,33 @@ export * from './schemas';
 // ============================================================================
 // Utilities
 // ============================================================================
+export { formatTransactionIdToDashFormat } from './utils/transaction-id-format-transformer';
 export { zodToJsonSchema } from './utils/zod-to-json-schema';
 
 // ============================================================================
 // Plugin Types
 // ============================================================================
+export type { Hook, HookResult } from './hooks/hook.interface';
+export {
+  executePhaseHooks,
+  processHookResult,
+  resolveCommandHooks,
+} from './hooks/hook-executor';
+export type { OrchestratorResult } from './hooks/orchestrator-result';
+export {
+  BatchOrchestratorResult,
+  OrchestratorResultSchema,
+  ScheduleOrchestratorResult,
+} from './hooks/orchestrator-result';
+export type {
+  HookPhase,
+  PostOutputPreparationHookParams,
+  PreBuildTransactionHookParams,
+  PreExecuteTransactionHookParams,
+  PreOutputPreparationHookParams,
+  PreParamsNormalizationHookParams,
+  PreSignTransactionHookParams,
+} from './hooks/types';
 export type {
   CommandHandler,
   CommandOption,
@@ -111,9 +135,16 @@ export type {
   PluginContext,
   PluginManifest,
   PluginStateSchema,
+  RegisteredHook,
 } from './plugins/plugin.types';
 
 // ============================================================================
 // Plugin Interfaces
 // ============================================================================
 export type * from './plugins/plugin.interface';
+
+// ============================================================================
+// Commands
+// ============================================================================
+export { BaseTransactionCommand } from './commands/command';
+export type { Command } from './commands/command.interface';

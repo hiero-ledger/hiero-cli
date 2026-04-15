@@ -311,4 +311,4 @@ Validation is enforced via Zod at runtime and the generated JSON Schema is embed
 - Handlers are unit-tested in isolation with mocked Core API services.
 - Schema parsing is covered through `TopicDataSchema`.
 - Output structure compliance tests ensure every handler returns a valid `CommandResult`.
-- Topic creation in batch (batch-create hook) is covered by `batch-create.test.ts`.
+- Topic creation in batch (batch-create hook) is covered by `account-create-state-hook.test.ts`.

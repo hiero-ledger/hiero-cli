@@ -17,7 +17,7 @@ export const ScheduleVerifyOutputSchema = z.object({
 export type ScheduleVerifyOutput = z.infer<typeof ScheduleVerifyOutputSchema>;
 
 export const SCHEDULE_VERIFY_TEMPLATE = `
-✅ Schedule verified: {{#if scheduleId}}{{hashscanLink scheduleId "scheduled" network}}{{/if}}
+✅ Schedule verified: {{#if scheduleId}}{{hashscanLink scheduleId "schedule" network}}{{/if}}
 {{#if name}}
    Name: {{name}}
 {{/if}}

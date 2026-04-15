@@ -10,7 +10,8 @@ import {
   batchList,
   BatchListOutputSchema,
 } from '@/plugins/batch/commands/list';
-import { BatchifyHook } from '@/plugins/batch/hooks/batchify/handler';
+import { BatchifyAddTransactionHook } from '@/plugins/batch/hooks/batchify-add-transaction';
+import { BatchifySetBatchKeyHook } from '@/plugins/batch/hooks/batchify-set-batch-key';
 
 import {
   BATCH_CREATE_TEMPLATE,
@@ -36,8 +37,8 @@ export const batchPluginManifest: PluginManifest = {
     'Plugin for creating and executing batches of Hedera transactions',
   hooks: [
     {
-      name: 'batchify',
-      hook: new BatchifyHook(),
+      name: 'batchify-set-batch-key',
+      hook: new BatchifySetBatchKeyHook(),
       options: [
         {
           name: 'batch',
@@ -46,6 +47,10 @@ export const batchPluginManifest: PluginManifest = {
           description: 'Name of the batch',
         },
       ],
+    },
+    {
+      name: 'batchify-add-transaction',
+      hook: new BatchifyAddTransactionHook(),
     },
   ],
   commands: [
@@ -91,18 +96,54 @@ export const batchPluginManifest: PluginManifest = {
       description:
         'Execute a batch by name, signing and submitting its transactions',
       registeredHooks: [
-        'account-create-batch-state',
-        'account-update-batch-state',
-        'account-delete-batch-state',
-        'topic-create-batch-state',
-        'topic-delete-batch-state',
-        'topic-update-batch-state',
-        'token-create-ft-batch-state',
-        'token-create-ft-from-file-batch-state',
-        'token-create-nft-batch-state',
-        'token-create-nft-from-file-batch-state',
-        'token-associate-batch-state',
-        'token-delete-batch-state',
+        {
+          hook: 'account-create-state',
+          phase: 'postOutputPreparation',
+        },
+        {
+          hook: 'account-update-state',
+          phase: 'postOutputPreparation',
+        },
+        {
+          hook: 'account-delete-state',
+          phase: 'postOutputPreparation',
+        },
+        {
+          hook: 'topic-create-state',
+          phase: 'postOutputPreparation',
+        },
+        {
+          hook: 'topic-delete-state',
+          phase: 'postOutputPreparation',
+        },
+        {
+          hook: 'topic-update-state',
+          phase: 'postOutputPreparation',
+        },
+        {
+          hook: 'token-create-ft-state',
+          phase: 'postOutputPreparation',
+        },
+        {
+          hook: 'token-create-ft-from-file-state',
+          phase: 'postOutputPreparation',
+        },
+        {
+          hook: 'token-create-nft-state',
+          phase: 'postOutputPreparation',
+        },
+        {
+          hook: 'token-create-nft-from-file-state',
+          phase: 'postOutputPreparation',
+        },
+        {
+          hook: 'token-associate-state',
+          phase: 'postOutputPreparation',
+        },
+        {
+          hook: 'token-delete-state',
+          phase: 'postOutputPreparation',
+        },
       ],
       options: [
         {

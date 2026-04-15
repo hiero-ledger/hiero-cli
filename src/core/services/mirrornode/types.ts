@@ -188,13 +188,14 @@ export interface TransactionAssessedCustomFeeItem {
 export interface TransactionDetailItem {
   transaction_id: string;
   consensus_timestamp: string;
+  entity_id?: string | null;
   valid_start_timestamp: string;
   charged_tx_fee: number;
   memo_base64?: string | null;
   result: string;
   transaction_hash: string;
   name: string;
-  node: string;
+  node?: string | null;
   scheduled: boolean;
   transfers: TransactionTransferItem[];
   token_transfers?: TransactionTokenTransferItem[];
@@ -339,7 +340,7 @@ export interface AccountListItemBalance {
 export interface AccountListItemAPIResponse {
   account: string;
   alias?: string | null;
-  balance?: AccountListItemBalance;
+  balance?: AccountListItemBalance | null;
   created_timestamp: string;
   evm_address?: string;
   key?: AccountAPIKey | null;
@@ -364,7 +365,7 @@ export interface AccountListItemDto {
       tokenId: string;
       balance: number;
     }>;
-  };
+  } | null;
   createdTimestamp: string;
   evmAddress?: string;
   accountPublicKey?: string;

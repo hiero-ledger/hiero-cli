@@ -17,7 +17,7 @@ export const ScheduleDeleteOutputSchema = z.object({
 export type ScheduleDeleteOutput = z.infer<typeof ScheduleDeleteOutputSchema>;
 
 export const SCHEDULE_DELETE_TEMPLATE = `
-✅ Scheduled record deleted successfully: {{#if scheduleId}}{{hashscanLink scheduleId "scheduled" network}}{{/if}}
+✅ Scheduled record deleted successfully: {{#if scheduleId}}{{hashscanLink scheduleId "schedule" network}}{{/if}}
    Name: {{name}}
 {{#if transactionId}}
    Transaction ID: {{hashscanLink transactionId "transaction" network}}
