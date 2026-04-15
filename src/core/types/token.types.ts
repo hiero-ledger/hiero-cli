@@ -212,7 +212,10 @@ export interface TokenCancelAirdropParams {
   serial?: number;
 }
 
-export type AirdropTokenType = 'FUNGIBLE' | 'NFT';
+export enum AirdropTokenType {
+  FUNGIBLE = 'FUNGIBLE',
+  NFT = 'NFT',
+}
 
 export interface RejectAirdropItem {
   tokenId: string;

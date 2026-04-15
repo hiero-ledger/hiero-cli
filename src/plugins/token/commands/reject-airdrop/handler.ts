@@ -14,6 +14,7 @@ import { TransactionError, ValidationError } from '@/core/errors';
 import { KeySchema } from '@/core/schemas/common-schemas';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorTokenType } from '@/core/shared/constants';
+import { AirdropTokenType } from '@/core/types/token.types';
 
 import { TokenRejectAirdropInputSchema } from './input';
 
@@ -76,7 +77,7 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
       tokenId,
       tokenName: tokenInfo.name,
       tokenSymbol: tokenInfo.symbol,
-      type: isNft ? 'NFT' : 'FUNGIBLE',
+      type: isNft ? AirdropTokenType.NFT : AirdropTokenType.FUNGIBLE,
       serialNumbers: serials,
     };
 

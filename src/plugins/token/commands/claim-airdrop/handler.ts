@@ -17,6 +17,7 @@ import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError, ValidationError } from '@/core/errors';
 import { KeySchema } from '@/core/schemas/common-schemas';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { AirdropTokenType } from '@/core/types/token.types';
 
 import { TokenClaimAirdropInputSchema } from './input';
 import { MAX_CLAIM_AIRDROPS } from './types';
@@ -201,7 +202,7 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
         tokenName,
         tokenSymbol,
         senderId: item.sender_id,
-        type: 'NFT',
+        type: AirdropTokenType.NFT,
         serialNumber: item.serial_number,
       };
     }
@@ -211,7 +212,7 @@ export class TokenClaimAirdropCommand extends BaseTransactionCommand<
       tokenName,
       tokenSymbol,
       senderId: item.sender_id,
-      type: 'FUNGIBLE',
+      type: AirdropTokenType.FUNGIBLE,
       amount: item.amount ?? undefined,
     };
   }
