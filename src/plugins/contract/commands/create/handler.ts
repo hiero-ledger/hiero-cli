@@ -21,10 +21,7 @@ import { StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
-import {
-  EntityReferenceType,
-  SupportedNetwork,
-} from '@/core/types/shared.types';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
@@ -116,28 +113,20 @@ export class CreateContractCommand extends BaseTransactionCommand<
         ? processBalanceInput(validArgs.initialBalance, HBAR_DECIMALS)
         : undefined;
 
-    const autoRenewAccountId = validArgs.autoRenewAccountId
-      ? validArgs.autoRenewAccountId.type === EntityReferenceType.ENTITY_ID
-        ? validArgs.autoRenewAccountId.value
-        : (
-            await api.identityResolution.resolveAccount({
-              accountReference: validArgs.autoRenewAccountId.value,
-              type: validArgs.autoRenewAccountId.type,
-              network,
-            })
-          ).accountId
+    const autoRenewAccount = validArgs.autoRenewAccountId
+      ? await api.identityResolution.resolveAccount({
+          accountReference: validArgs.autoRenewAccountId.value,
+          type: validArgs.autoRenewAccountId.type,
+          network,
+        })
       : undefined;
 
-    const stakedAccountId = validArgs.stakedAccountId
-      ? validArgs.stakedAccountId.type === EntityReferenceType.ENTITY_ID
-        ? validArgs.stakedAccountId.value
-        : (
-            await api.identityResolution.resolveAccount({
-              accountReference: validArgs.stakedAccountId.value,
-              type: validArgs.stakedAccountId.type,
-              network,
-            })
-          ).accountId
+    const stakedAccount = validArgs.stakedAccountId
+      ? await api.identityResolution.resolveAccount({
+          accountReference: validArgs.stakedAccountId.value,
+          type: validArgs.stakedAccountId.type,
+          network,
+        })
       : undefined;
 
     return {
@@ -158,9 +147,9 @@ export class CreateContractCommand extends BaseTransactionCommand<
       network,
       initialBalanceRaw,
       autoRenewPeriod: validArgs.autoRenewPeriod,
-      autoRenewAccountId,
+      autoRenewAccountId: autoRenewAccount?.accountId,
       maxAutomaticTokenAssociations: validArgs.maxAutomaticTokenAssociations,
-      stakedAccountId,
+      stakedAccountId: stakedAccount?.accountId,
       stakedNodeId: validArgs.stakedNodeId,
       declineStakingReward: validArgs.declineStakingReward,
     };

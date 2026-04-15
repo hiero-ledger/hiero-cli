@@ -327,25 +327,6 @@ describe('contract plugin - create command', () => {
   });
 
   describe('staking options', () => {
-    test('passes stakedAccountId (entity ID) directly without resolving', async () => {
-      MockedHelper.mockImplementation(() => ({ saveContract: jest.fn() }));
-
-      const args = makeArgs(api, logger, {
-        name: 'my-contract',
-        default: 'erc20',
-        stakedAccountId: '0.0.300',
-      });
-
-      await contractCreate(args);
-
-      expect(api.identityResolution.resolveAccount).not.toHaveBeenCalledWith(
-        expect.objectContaining({ accountReference: '0.0.300' }),
-      );
-      expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
-        expect.objectContaining({ stakedAccountId: '0.0.300' }),
-      );
-    });
-
     test('resolves stakedAccountId alias to accountId', async () => {
       MockedHelper.mockImplementation(() => ({ saveContract: jest.fn() }));
 
@@ -443,25 +424,6 @@ describe('contract plugin - create command', () => {
 
       expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
         expect.objectContaining({ autoRenewPeriod: 7776000 }),
-      );
-    });
-
-    test('passes autoRenewAccountId (entity ID) directly without resolving', async () => {
-      MockedHelper.mockImplementation(() => ({ saveContract: jest.fn() }));
-
-      const args = makeArgs(api, logger, {
-        name: 'my-contract',
-        default: 'erc20',
-        autoRenewAccountId: '0.0.500',
-      });
-
-      await contractCreate(args);
-
-      expect(api.identityResolution.resolveAccount).not.toHaveBeenCalledWith(
-        expect.objectContaining({ accountReference: '0.0.500' }),
-      );
-      expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
-        expect.objectContaining({ autoRenewAccountId: '0.0.500' }),
       );
     });
 
