@@ -194,3 +194,10 @@ export interface ClaimAirdropItem {
 export interface TokenClaimAirdropParams {
   items: ClaimAirdropItem[];
 }
+
+export interface TokenCancelAirdropParams {
+  senderAccountId: string;
+  receiverAccountId: string;
+  tokenId: string;
+  serial?: number;
+}

@@ -38,6 +38,11 @@ import {
   TokenAssociateOutputSchema,
 } from './commands/associate';
 import {
+  TOKEN_CANCEL_AIRDROP_TEMPLATE,
+  tokenCancelAirdrop,
+  TokenCancelAirdropOutputSchema,
+} from './commands/cancel-airdrop';
+import {
   TOKEN_CLAIM_AIRDROP_TEMPLATE,
   tokenClaimAirdrop,
   TokenClaimAirdropOutputSchema,
@@ -467,6 +472,58 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenAirdropNftOutputSchema,
         humanTemplate: TOKEN_AIRDROP_NFT_TEMPLATE,
+      },
+    },
+    {
+      name: 'cancel-airdrop',
+      summary: 'Cancel a pending token airdrop',
+      description:
+        'Cancel a pending token airdrop (FT or NFT) initiated by the sender account. The sender must sign this transaction.',
+      registeredHooks: ['batchify', 'scheduled'],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token identifier (ID or alias)',
+        },
+        {
+          name: 'receiver',
+          short: 'r',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Receiver account (ID, EVM address, or alias)',
+        },
+        {
+          name: 'serial',
+          short: 's',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'NFT serial number. If provided, cancels an NFT airdrop.',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Sender key. Accepts any key format. Defaults to operator.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenCancelAirdrop,
+      output: {
+        schema: TokenCancelAirdropOutputSchema,
+        humanTemplate: TOKEN_CANCEL_AIRDROP_TEMPLATE,
       },
     },
     {
