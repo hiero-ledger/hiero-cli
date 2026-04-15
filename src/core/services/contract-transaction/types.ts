@@ -13,6 +13,13 @@ export interface ContractCreateFlowParams {
   constructorParameters: string[];
   adminKey?: Key;
   memo?: string;
+  initialBalanceRaw?: bigint;
+  autoRenewPeriod?: number;
+  autoRenewAccountId?: string;
+  maxAutomaticTokenAssociations?: number;
+  stakedAccountId?: string;
+  stakedNodeId?: number;
+  declineStakingReward?: boolean;
 }
 
 export interface ContractCreateFlowResult {
