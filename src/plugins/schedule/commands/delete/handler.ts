@@ -17,7 +17,8 @@ import { TransactionError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { composeKey } from '@/core/utils/key-composer';
-import { ScheduleHelper, ZustandScheduleStateHelper } from '@/plugins/schedule';
+import { ScheduleHelper } from '@/plugins/schedule/schedule-helper';
+import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
 
 import { ScheduleDeleteInputSchema } from './input';
 

@@ -237,7 +237,7 @@ export const NetworkSchema = z
  * Supported key types in Hedera
  */
 export const KeyTypeSchema = z
-  .enum([KeyAlgorithm.ECDSA, KeyAlgorithm.ED25519])
+  .enum(KeyAlgorithm)
   .describe('Cryptographic key type');
 
 /**
@@ -1095,3 +1095,67 @@ export const WaitForExpirySchema = z
   .describe(
     'If true, execute at expiration instead of when signatures are complete.',
   );
+
+export const BatchTransactionItemSchema = z.object({
+  transactionBytes: z.string().min(1).describe('Transaction raw bytes'),
+  order: z
+    .number()
+    .int()
+    .describe('Order of inner transaction in batch transaction'),
+  command: z.string().min(1).describe('Name of the command entry point'),
+  normalizedParams: z
+    .record(z.string(), z.unknown())
+    .default({})
+    .describe(
+      'Normalized params from the command that produced this transaction',
+    ),
+  keyRefIds: z.array(z.string()),
+  transactionId: TransactionIdSchema.optional().describe(
+    'Inner transaction ID',
+  ),
+});
+
+// Zod schema for runtime validation
+// Minimal schema - user will add proper fields later
+export const BatchDataSchema = z.object({
+  name: AliasNameSchema,
+  keyRefId: z.string().min(1, 'Key reference ID is required'),
+  executed: z.boolean().default(false).describe('Batch executed'),
+  success: z.boolean().default(false).describe('Batch execution success'),
+  transactions: z
+    .array(BatchTransactionItemSchema)
+    .default([])
+    .describe('Inner transactions for a batch'),
+});
+
+export const ScheduledTransactionDataSchema = z.object({
+  name: AliasNameSchema,
+  scheduledId: EntityIdSchema.optional(),
+  network: NetworkSchema,
+  keyManager: KeyManagerTypeSchema,
+  adminKeyRefId: KeyReferenceSchema.optional(),
+  adminPublicKey: PublicKeyDefinitionSchema.optional(),
+  payerAccountId: EntityIdSchema.optional(),
+  payerKeyRefId: KeyReferenceSchema.optional(),
+  memo: z.string().max(100).optional(),
+  expirationTime: z.string().optional(),
+  waitForExpiry: z.boolean().default(false),
+  scheduled: z.boolean().default(false),
+  executed: z.boolean().default(false),
+  command: z
+    .string()
+    .min(1)
+    .optional()
+    .describe('Name of the command entry point'),
+  normalizedParams: z
+    .record(z.string(), z.unknown())
+    .default({})
+    .optional()
+    .describe(
+      'Normalized params from the command that produced this transaction',
+    ),
+  transactionId: TransactionIdSchema.optional().describe(
+    'Inner transaction ID',
+  ),
+  createdAt: z.string().optional(),
+});

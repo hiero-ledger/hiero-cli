@@ -67,6 +67,14 @@ src/plugins/account/
 │       ├── handler.ts      # AccountDeleteBatchStateHook - removes account from state after batch execution
 │       ├── types.ts        # AccountDeleteNormalisedParamsSchema for batch item validation
 │       └── index.ts        # Hook exports
+│   ├── schedule-create/
+│       ├── handler.ts      # AccountCreateScheduleStateHook - persists new account after scheduled create executes (via `schedule verify`)
+│       ├── types.ts
+│       └── index.ts
+│   └── schedule-update/
+│       ├── handler.ts      # AccountUpdateScheduleStateHook - updates local account/alias keys after scheduled update executes (via `schedule verify`)
+│       ├── types.ts
+│       └── index.ts
 ├── utils/
 │   ├── account-address.ts  # EVM address derivation helpers
 │   ├── balance-helpers.ts  # Balance retrieval utilities
@@ -106,6 +114,8 @@ hcli account create --balance 1.0 --name alice --batch my-batch
 ```
 
 When the batch is executed via `hcli batch execute --name my-batch`, the `AccountCreateBatchStateHook` runs to persist each created account to state (including alias registration and EVM address derivation).
+
+**Schedule support:** `account create` registers the `scheduled` hook (same as batch). Use `hcli schedule create --name …` then run `hcli account create … --scheduled <name>` to submit an inner `AccountCreateTransaction` inside a `ScheduleCreateTransaction`. After the schedule **executes**, run `hcli schedule verify --name <name>` so `AccountCreateScheduleStateHook` can load the inner transaction from the Mirror Node and persist the new account to local state (see [Schedule Plugin README](../schedule/README.md)).
 
 ### Account Update
 
@@ -148,6 +158,8 @@ hcli account update --account myaccount --memo "new memo" --batch my-batch
 ```
 
 When the batch is executed via `hcli batch execute --name my-batch`, the `AccountUpdateBatchStateHook` updates the account's key data in local state (runs only when a key rotation was part of the update).
+
+**Schedule support:** `account update` also registers `scheduled`. For a deferred update (e.g. key rotation), use `--scheduled <schedule-name>` after `schedule create`. When the schedule has executed, `hcli schedule verify --name <name>` triggers `AccountUpdateScheduleStateHook`, which updates local account and alias key material when the stored `normalizedParams` include a new key rotation.
 
 ### Account Import
 
@@ -224,6 +236,15 @@ hcli batch execute --name my-batch
 ```
 
 The `--batch` option is automatically injected by the batchify hook—no need to declare it in the account plugin. See the [Batch Plugin README](../batch/README.md) for full batch documentation.
+
+## ⏱️ Scheduled transactions (`--scheduled` + `schedule verify`)
+
+`account create` and `account update` register the schedule plugin’s `scheduled` hook. The account plugin also registers two **verify hooks** that run only from `hcli schedule verify` when a local schedule record transitions to executed:
+
+- **`account-create-schedule-state`** — resolves the new account id from the Mirror Node transaction record (scheduled row `entity_id`) and saves the account to state.
+- **`account-update-schedule-state`** — reconciles key rotation and aliases after a scheduled update when applicable.
+
+Mirror calls use `getTransactionRecord` with the inner transaction id formatted for the Mirror REST path (`formatTransactionIdToDashFormat`). See the [Schedule Plugin README](../schedule/README.md) for the command list and lifecycle.
 
 ## 🔧 Core API Integration
 

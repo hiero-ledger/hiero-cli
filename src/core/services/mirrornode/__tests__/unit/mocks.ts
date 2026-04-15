@@ -16,6 +16,7 @@ import {
   type TopicMessagesAPIResponse,
   type TransactionDetailsResponse,
 } from '@/core/services/mirrornode/types';
+import { MirrorTransactionResult } from '@/core/types/shared.types';
 
 export const createMockAccountAPIResponse = (
   overrides: Partial<AccountAPIResponse> = {},
@@ -192,7 +193,7 @@ export const createMockTransactionDetailsResponse = (
       consensus_timestamp: '2024-01-01T12:00:00.000Z',
       valid_start_timestamp: '2024-01-01T12:00:00.000Z',
       charged_tx_fee: 100000,
-      result: 'SUCCESS',
+      result: MirrorTransactionResult.SUCCESS,
       transaction_hash: 'hash123',
       name: 'CRYPTOTRANSFER',
       node: '0.0.3',

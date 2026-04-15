@@ -55,4 +55,5 @@ export const makeCommandArgs = (params: {
   state: {} as unknown as StateService,
   config: params.api.config,
   logger: params.logger || makeLogger(),
+  hooks: new Map(),
 });

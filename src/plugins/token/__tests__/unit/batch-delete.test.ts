@@ -10,7 +10,7 @@ import {
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_DELETE_COMMAND_NAME } from '@/plugins/token/commands/delete';
-import { TokenDeleteBatchStateHook } from '@/plugins/token/hooks/batch-delete/handler';
+import { TokenDeleteStateHook } from '@/plugins/token/hooks/token-delete-state';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 jest.mock('../../zustand-state-helper', () => ({
@@ -25,6 +25,7 @@ const createDeleteBatchDataItem = (
   transactionBytes: 'abcdef1234567890',
   order: 1,
   command: TOKEN_DELETE_COMMAND_NAME,
+  keyRefIds: [],
   normalizedParams: {
     network: SupportedNetwork.TESTNET,
     tokenId: '0.0.123456',
@@ -35,11 +36,11 @@ const createDeleteBatchDataItem = (
 });
 
 describe('token plugin - batch-delete hook', () => {
-  let hook: TokenDeleteBatchStateHook;
+  let hook: TokenDeleteStateHook;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    hook = new TokenDeleteBatchStateHook();
+    hook = new TokenDeleteStateHook();
     MockedHelper.mockImplementation(() => ({
       getToken: jest
         .fn()
@@ -61,12 +62,9 @@ describe('token plugin - batch-delete hook', () => {
       transactions: [createDeleteBatchDataItem()],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({
-      message: 'Batch transaction status failure',
-    });
   });
 
   test('returns success when no token_delete transactions in batch', async () => {
@@ -91,10 +89,9 @@ describe('token plugin - batch-delete hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(removeTokenMock).not.toHaveBeenCalled();
   });
 
@@ -121,10 +118,9 @@ describe('token plugin - batch-delete hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(removeTokenMock).not.toHaveBeenCalled();
     expect(logger.warn).toHaveBeenCalledWith(
       'Problem parsing delete batch data. State cleanup skipped.',
@@ -165,10 +161,9 @@ describe('token plugin - batch-delete hook', () => {
       transactions: [createDeleteBatchDataItem()],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
-    expect(result.result).toEqual({ message: 'success' });
     expect(removeTokenMock).toHaveBeenCalledWith('testnet:0.0.123456');
     expect(removeAliasMock).toHaveBeenCalledWith(
       'my-token',
@@ -197,7 +192,7 @@ describe('token plugin - batch-delete hook', () => {
       transactions: [createDeleteBatchDataItem()],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
     expect(removeTokenMock).not.toHaveBeenCalled();
@@ -241,7 +236,7 @@ describe('token plugin - batch-delete hook', () => {
       ],
     });
 
-    const result = await hook.preOutputPreparationHook(args, params);
+    const result = await hook.execute({ ...params, args });
 
     expect(result.breakFlow).toBe(false);
     expect(removeTokenMock).toHaveBeenCalledTimes(2);
