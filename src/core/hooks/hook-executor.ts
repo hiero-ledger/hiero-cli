@@ -1,6 +1,7 @@
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
+import type { HookPhase } from '@/core/hooks/types';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { CommandResult, HookPhase } from '@/core/plugins/plugin.types';
+import type { CommandResult } from '@/core/plugins/plugin.types';
 
 /**
  * Resolve the phase hook map from handler args (optional for tests / callers without hooks).

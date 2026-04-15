@@ -1,6 +1,6 @@
 // Import plugin types
 import type { Hook } from '@/core/hooks/hook.interface';
-import type { HookPhase } from '@/core/plugins/plugin.types';
+import type { HookPhase } from '@/core/hooks/types';
 
 export type * from './plugin.types';
 

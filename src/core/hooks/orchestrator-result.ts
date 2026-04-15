@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
-import { OrchestratorSource } from '@/core/types/shared.types';
 import { BatchDataSchema, ScheduledTransactionDataSchema } from '@/core';
+import { OrchestratorSource } from '@/core/types/shared.types';
 
 export const BatchOrchestratorResult = z.object({
   source: z.literal(OrchestratorSource.BATCH),

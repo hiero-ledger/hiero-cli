@@ -3,6 +3,14 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 export type { HookResult } from '@/core/hooks/hook.interface';
 
+export type HookPhase =
+  | 'preParamsNormalization'
+  | 'preBuildTransaction'
+  | 'preSignTransaction'
+  | 'preExecuteTransaction'
+  | 'preOutputPreparation'
+  | 'postOutputPreparation';
+
 export interface PreParamsNormalizationHookParams {
   args: CommandHandlerArgs;
   commandName: string;

@@ -1,18 +1,9 @@
 /**
  * Schedule plugin state — persisted schedule entries and options for the scheduled hook
  */
-import { z } from 'zod';
+import type { z } from 'zod';
 
-import {
-  AliasNameSchema,
-  EntityIdSchema,
-  KeyManagerTypeSchema,
-  KeyReferenceSchema,
-  NetworkSchema,
-  PublicKeyDefinitionSchema,
-  ScheduledTransactionDataSchema,
-  TransactionIdSchema,
-} from '@/core/schemas/common-schemas';
+import { ScheduledTransactionDataSchema } from '@/core/schemas/common-schemas';
 
 /** Zustand namespace for persisted schedule entries */
 export const SCHEDULE_NAMESPACE = 'schedule-transactions';

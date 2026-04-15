@@ -1,6 +1,7 @@
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
+import type { HookPhase } from '@/core/hooks/types';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { CommandResult, HookPhase } from '@/core/plugins/plugin.types';
+import type { CommandResult } from '@/core/plugins/plugin.types';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 
@@ -83,25 +84,25 @@ describe('BaseTransactionCommand', () => {
       const args = makeArgs();
       const order: string[] = [];
 
-      cmd.normalizeParams.mockImplementation(async () => {
+      cmd.normalizeParams.mockImplementation(() => {
         order.push('normalize');
-        return defaultResults.params;
+        return Promise.resolve(defaultResults.params);
       });
-      cmd.buildTransaction.mockImplementation(async () => {
+      cmd.buildTransaction.mockImplementation(() => {
         order.push('build');
-        return defaultResults.built;
+        return Promise.resolve(defaultResults.built);
       });
-      cmd.signTransaction.mockImplementation(async () => {
+      cmd.signTransaction.mockImplementation(() => {
         order.push('sign');
-        return defaultResults.signed;
+        return Promise.resolve(defaultResults.signed);
       });
-      cmd.executeTransaction.mockImplementation(async () => {
+      cmd.executeTransaction.mockImplementation(() => {
         order.push('execute');
-        return defaultResults.executed;
+        return Promise.resolve(defaultResults.executed);
       });
-      cmd.outputPreparation.mockImplementation(async () => {
+      cmd.outputPreparation.mockImplementation(() => {
         order.push('output');
-        return defaultResults.output;
+        return Promise.resolve(defaultResults.output);
       });
 
       const result = await cmd.execute(args);
@@ -230,10 +231,7 @@ describe('BaseTransactionCommand', () => {
 
     it('still calls outputPreparation before postOutputPreparation runs', async () => {
       const hooks = new Map<HookPhase, Hook[]>([
-        [
-          'postOutputPreparation',
-          [makeHook({ breakFlow: true, result: {} })],
-        ],
+        ['postOutputPreparation', [makeHook({ breakFlow: true, result: {} })]],
       ]);
       await cmd.execute(makeArgs(hooks));
       expect(cmd.outputPreparation).toHaveBeenCalledTimes(1);
@@ -335,9 +333,7 @@ describe('BaseTransactionCommand', () => {
 
     it('uses overridden mapExecuteResultForHooks value for hook params', async () => {
       class MappingCommand extends TestCommand {
-        protected override mapExecuteResultForHooks(
-          result: Executed,
-        ): unknown {
+        protected override mapExecuteResultForHooks(result: Executed): unknown {
           return { mapped: result.receipt };
         }
       }

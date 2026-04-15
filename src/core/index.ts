@@ -115,6 +115,7 @@ export {
   ScheduleOrchestratorResult,
 } from './hooks/orchestrator-result';
 export type {
+  HookPhase,
   PostOutputPreparationHookParams,
   PreBuildTransactionHookParams,
   PreExecuteTransactionHookParams,
@@ -129,7 +130,6 @@ export type {
   CommandResult,
   CommandSpec,
   HookOption,
-  HookPhase,
   HookSpec,
   Option,
   PluginContext,

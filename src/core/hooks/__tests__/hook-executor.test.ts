@@ -1,6 +1,7 @@
+import type { z } from 'zod';
 import type { Hook, HookResult } from '@/core/hooks/hook.interface';
+import type { HookPhase } from '@/core/hooks/types';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
-import type { HookPhase } from '@/core/plugins/plugin.types';
 
 import {
   executePhaseHooks,
@@ -12,9 +13,7 @@ const makeHook = (result: HookResult): jest.Mocked<Hook> => ({
   execute: jest.fn().mockResolvedValue(result),
 });
 
-const makeArgs = (
-  hooks?: Map<HookPhase, Hook[]>,
-): CommandHandlerArgs =>
+const makeArgs = (hooks?: Map<HookPhase, Hook[]>): CommandHandlerArgs =>
   ({
     args: {},
     hooks,
@@ -121,9 +120,7 @@ describe('executePhaseHooks', () => {
   it('passes params to hook.execute', async () => {
     const hook = makeHook({ breakFlow: false });
     const params = { commandName: 'test-cmd', args: { foo: 'bar' } };
-    const map = new Map<HookPhase, Hook[]>([
-      ['preOutputPreparation', [hook]],
-    ]);
+    const map = new Map<HookPhase, Hook[]>([['preOutputPreparation', [hook]]]);
 
     await executePhaseHooks(map, 'preOutputPreparation', params);
 
@@ -133,7 +130,7 @@ describe('executePhaseHooks', () => {
 
 describe('processHookResult', () => {
   it('maps result, schema, and humanTemplate to CommandResult', () => {
-    const schema = {} as import('zod').ZodTypeAny;
+    const schema = {} as z.ZodTypeAny;
     const hookResult = {
       breakFlow: true as const,
       result: { data: 42 },

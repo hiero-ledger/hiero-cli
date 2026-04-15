@@ -4,7 +4,7 @@ import type {
   KeyResolverService,
 } from '@/core';
 import type { Hook } from '@/core/hooks/hook.interface';
-import type { HookPhase } from '@/core/plugins/plugin.types';
+import type { HookPhase } from '@/core/hooks/types';
 import type { ScheduleInfo } from '@/core/services/mirrornode/types';
 
 import {

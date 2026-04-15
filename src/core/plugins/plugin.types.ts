@@ -6,6 +6,7 @@ import type { z } from 'zod';
 import type { Command } from '@/core/commands/command.interface';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { Hook } from '@/core/hooks/hook.interface';
+import type { HookPhase } from '@/core/hooks/types';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
@@ -30,14 +31,6 @@ export interface HookSpec {
   hook: Hook;
   options?: HookOption[];
 }
-
-export type HookPhase =
-  | 'preParamsNormalization'
-  | 'preBuildTransaction'
-  | 'preSignTransaction'
-  | 'preExecuteTransaction'
-  | 'preOutputPreparation'
-  | 'postOutputPreparation';
 
 export interface RegisteredHook {
   hook: string;
