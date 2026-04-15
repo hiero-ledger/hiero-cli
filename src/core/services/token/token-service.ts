@@ -13,6 +13,7 @@ import type {
   TokenAirdropNftParams,
   TokenAllowanceFtParams,
   TokenAssociationParams,
+  TokenCancelAirdropParams,
   TokenClaimAirdropParams,
   TokenCreateParams,
   TokenDeleteParams,
@@ -33,6 +34,7 @@ import {
   PendingAirdropId,
   TokenAirdropTransaction,
   TokenAssociateTransaction,
+  TokenCancelAirdropTransaction,
   TokenClaimAirdropTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
@@ -475,6 +477,32 @@ export class TokenServiceImpl implements TokenService {
     }
 
     return tx;
+  }
+
+  createCancelAirdropTransaction(
+    params: TokenCancelAirdropParams,
+  ): TokenCancelAirdropTransaction {
+    const { senderAccountId, receiverAccountId, tokenId, serial } = params;
+
+    const pendingAirdropId = new PendingAirdropId()
+      .setSenderid(AccountId.fromString(senderAccountId))
+      .setReceiverId(AccountId.fromString(receiverAccountId));
+
+    if (serial !== undefined) {
+      pendingAirdropId.setNftId(new NftId(TokenId.fromString(tokenId), serial));
+      this.logger.debug(
+        `[TOKEN SERVICE] Creating cancel NFT airdrop transaction: ${tokenId}#${serial} from ${senderAccountId} to ${receiverAccountId}`,
+      );
+    } else {
+      pendingAirdropId.setTokenId(TokenId.fromString(tokenId));
+      this.logger.debug(
+        `[TOKEN SERVICE] Creating cancel FT airdrop transaction: ${tokenId} from ${senderAccountId} to ${receiverAccountId}`,
+      );
+    }
+
+    return new TokenCancelAirdropTransaction().addPendingAirdropId(
+      pendingAirdropId,
+    );
   }
 
   /**

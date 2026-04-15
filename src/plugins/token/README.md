@@ -67,6 +67,12 @@ src/plugins/token/
 │   │   ├── output.ts        # Output schema and template
 │   │   ├── types.ts         # Command-specific type definitions
 │   │   └── index.ts         # Command exports
+│   ├── cancel-airdrop/
+│   │   ├── handler.ts       # Cancel pending airdrop handler (FT and NFT)
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Command-specific type definitions
+│   │   └── index.ts         # Command exports
 │   ├── associate/
 │   │   ├── handler.ts       # Token association handler
 │   │   ├── input.ts         # Input schema
@@ -765,6 +771,58 @@ hcli token claim-airdrop --account myaccount --index 1 --batch my-batch
 - Batch support: pass `--batch <batch-name>` to queue the transaction for batch execution
 
 **Implementation:** [`src/plugins/token/commands/claim-airdrop/handler.ts`](./commands/claim-airdrop/handler.ts)
+
+### Cancel Token Airdrop
+
+Cancel a pending token airdrop (FT or NFT). The sender of the original airdrop must sign this transaction.
+
+```bash
+# Cancel a pending FT airdrop
+hcli token cancel-airdrop \
+  --token 0.0.123456 \
+  --receiver 0.0.200000
+
+# Cancel a pending NFT airdrop (requires --serial)
+hcli token cancel-airdrop \
+  --token 0.0.123456 \
+  --receiver 0.0.200000 \
+  --serial 42
+
+# Specify sender key explicitly (defaults to operator)
+hcli token cancel-airdrop \
+  --token mytoken-alias \
+  --receiver alice \
+  --from 0.0.111111:302e020100300506032b657004220420...
+
+# Add to a batch
+hcli token cancel-airdrop \
+  --token 0.0.123456 \
+  --receiver 0.0.200000 \
+  --batch my-batch
+
+# Schedule the transaction
+hcli token cancel-airdrop \
+  --token 0.0.123456 \
+  --receiver 0.0.200000 \
+  --schedule my-schedule
+```
+
+**Options:**
+
+| Option          | Short | Required | Description                                              |
+| --------------- | ----- | -------- | -------------------------------------------------------- |
+| `--token`       | `-T`  | Yes      | Token identifier (ID or alias)                           |
+| `--receiver`    | `-r`  | Yes      | Receiver account (ID, EVM address, or alias)             |
+| `--serial`      | `-s`  | No       | NFT serial number. If provided, cancels an NFT airdrop   |
+| `--from`        | `-f`  | No       | Sender key. Accepts any key format. Defaults to operator |
+| `--key-manager` | `-k`  | No       | Key manager type (defaults to config setting)            |
+
+**Notes:**
+
+- Omitting `--serial` cancels a fungible token airdrop; providing it cancels an NFT airdrop
+- Batch and schedule support: pass `--batch <name>` or `--schedule <name>`
+
+**Implementation:** [`src/plugins/token/commands/cancel-airdrop/handler.ts`](./commands/cancel-airdrop/handler.ts)
 
 ### Token Transfer NFT
 
