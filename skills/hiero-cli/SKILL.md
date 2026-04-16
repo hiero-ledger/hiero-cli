@@ -102,19 +102,6 @@ If any `hcli` command fails with a "command not found" or similar error, tell th
 
 Do not run the install automatically — wait for the user's confirmation.
 
-## Agentic hedge fund flows (optional)
-
-When the user wants a **single end-to-end fund action** on Hedera, read the matching flow skill under `skills/` — each is self-contained (prerequisites, SaucerSwap V1/V2 tables, risk guardrails, JSON parsing, and steps):
-
-| Intent                                          | Skill                                                                                     |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Observe pool price, check balance, execute swap | [hedge-fund-flow-observe-swap/SKILL.md](../hedge-fund-flow-observe-swap/SKILL.md)         |
-| Multi-step rebalance in one atomic batch        | [hedge-fund-flow-atomic-rebalance/SKILL.md](../hedge-fund-flow-atomic-rebalance/SKILL.md) |
-| Large trade with schedule + multi-sig           | [hedge-fund-flow-governed-trade/SKILL.md](../hedge-fund-flow-governed-trade/SKILL.md)     |
-| Discover pool, deposit, monitor, withdraw LP    | [hedge-fund-flow-yield-farming/SKILL.md](../hedge-fund-flow-yield-farming/SKILL.md)       |
-
-Shared error matrix: [hedge-fund/references/error-handling.md](../hedge-fund/references/error-handling.md).
-
 ## Operator not configured
 
 If a command fails with `CLI operator is not configured` or similar:
