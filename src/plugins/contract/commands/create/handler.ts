@@ -20,9 +20,11 @@ import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { HBAR_DECIMALS } from '@/core/shared/constants';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
+import { processBalanceInput } from '@/core/utils/process-balance-input';
 import {
   DEFAULT_CONSTRUCTOR_PARAMS,
   getDefaultContractFilePath,
@@ -106,6 +108,27 @@ export class CreateContractCommand extends BaseTransactionCommand<
       contractFileContent,
     );
 
+    const initialBalanceRaw =
+      validArgs.initialBalance !== undefined
+        ? processBalanceInput(validArgs.initialBalance, HBAR_DECIMALS)
+        : undefined;
+
+    const autoRenewAccount = validArgs.autoRenewAccountId
+      ? await api.identityResolution.resolveAccount({
+          accountReference: validArgs.autoRenewAccountId.value,
+          type: validArgs.autoRenewAccountId.type,
+          network,
+        })
+      : undefined;
+
+    const stakedAccount = validArgs.stakedAccountId
+      ? await api.identityResolution.resolveAccount({
+          accountReference: validArgs.stakedAccountId.value,
+          type: validArgs.stakedAccountId.type,
+          network,
+        })
+      : undefined;
+
     return {
       alias,
       defaultTemplate,
@@ -122,6 +145,13 @@ export class CreateContractCommand extends BaseTransactionCommand<
       adminKeys,
       adminKeyThreshold,
       network,
+      initialBalanceRaw,
+      autoRenewPeriod: validArgs.autoRenewPeriod,
+      autoRenewAccountId: autoRenewAccount?.accountId,
+      maxAutomaticTokenAssociations: validArgs.maxAutomaticTokenAssociations,
+      stakedAccountId: stakedAccount?.accountId,
+      stakedNodeId: validArgs.stakedNodeId,
+      declineStakingReward: validArgs.declineStakingReward,
     };
   }
 
@@ -151,6 +181,14 @@ export class CreateContractCommand extends BaseTransactionCommand<
       constructorParameters: normalisedParams.constructorParameters,
       adminKey,
       memo: normalisedParams.memo,
+      initialBalanceRaw: normalisedParams.initialBalanceRaw,
+      autoRenewPeriod: normalisedParams.autoRenewPeriod,
+      autoRenewAccountId: normalisedParams.autoRenewAccountId,
+      maxAutomaticTokenAssociations:
+        normalisedParams.maxAutomaticTokenAssociations,
+      stakedAccountId: normalisedParams.stakedAccountId,
+      stakedNodeId: normalisedParams.stakedNodeId,
+      declineStakingReward: normalisedParams.declineStakingReward,
     });
 
     return { compilationResult, contractCreateFlowTx };

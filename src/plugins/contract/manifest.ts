@@ -125,6 +125,61 @@ export const contractPluginManifest: PluginManifest = {
           description:
             'Key manager to use: local or local_encrypted (defaults to config setting)',
         },
+        {
+          name: 'initial-balance',
+          short: 'i',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Initial HBAR balance for the contract. Format: "100" (HBAR) or "100t" (tinybars)',
+        },
+        {
+          name: 'auto-renew-period',
+          short: 'r',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Auto-renew period: seconds as integer, or with suffix s/m/h/d (e.g. 500, 500s, 50m, 2h, 30d)',
+        },
+        {
+          name: 'auto-renew-account-id',
+          short: 'R',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account ID (0.0.xxx) that will pay for auto-renewal of the contract',
+        },
+        {
+          name: 'max-automatic-token-associations',
+          short: 't',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'Maximum number of automatic token associations (-1 for unlimited, 0 to disable)',
+        },
+        {
+          name: 'staked-account-id',
+          short: 's',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Account ID (0.0.xxx) to stake this contract to (mutually exclusive with --staked-node-id)',
+        },
+        {
+          name: 'staked-node-id',
+          short: 'o',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'Node ID to stake this contract to (mutually exclusive with --staked-account-id)',
+        },
+        {
+          name: 'decline-staking-reward',
+          short: 'D',
+          type: OptionType.BOOLEAN,
+          required: false,
+          description: 'Whether to decline staking rewards for this contract',
+        },
       ],
       handler: contractCreate,
       output: {

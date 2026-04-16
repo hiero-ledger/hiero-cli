@@ -1,5 +1,6 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 
+import { EntityReferenceType } from '@/core/types/shared.types';
 import { CONTRACT_NAME_REGEX } from '@/plugins/contract/utils/contract-file-helpers';
 import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 
@@ -35,6 +36,12 @@ export function setupContractFileMocks(): void {
   );
 }
 
+export const MOCK_RESOLVE_ACCOUNT_RESULT = {
+  accountId: '0.0.999',
+  accountPublicKey: 'mock-public-key',
+  evmAddress: '0xmockevmaddress',
+};
+
 export function makeContractCreateApiMocks(): { api: jest.Mocked<CoreApi> } {
   const { api } = makeApiMocks({
     txSign: {
@@ -58,6 +65,11 @@ export function makeContractCreateApiMocks(): { api: jest.Mocked<CoreApi> } {
   (
     api.contractVerifier as unknown as { verifyContract: jest.Mock }
   ).verifyContract = jest.fn().mockResolvedValue({ success: true });
+  (
+    api.identityResolution as unknown as { resolveAccount: jest.Mock }
+  ).resolveAccount = jest.fn().mockResolvedValue(MOCK_RESOLVE_ACCOUNT_RESULT);
 
   return { api };
 }
+
+export { EntityReferenceType };

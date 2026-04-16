@@ -22,6 +22,7 @@ import {
 } from './helpers/fixtures';
 import {
   makeContractCreateApiMocks,
+  MOCK_RESOLVE_ACCOUNT_RESULT,
   mockGetDefaultContractFilePath,
   mockGetRepositoryBasePath,
   mockReadContractFile,
@@ -321,6 +322,178 @@ describe('contract plugin - create command', () => {
 
       await expect(contractCreate(args)).rejects.toThrow(
         'Transaction completed but no contractId returned',
+      );
+    });
+  });
+
+  describe('staking options', () => {
+    test('resolves stakedAccountId alias to accountId', async () => {
+      MockedHelper.mockImplementation(() => ({ saveContract: jest.fn() }));
+
+      const args = makeArgs(api, logger, {
+        name: 'my-contract',
+        default: 'erc20',
+        stakedAccountId: 'my-staking-account',
+      });
+
+      await contractCreate(args);
+
+      expect(api.identityResolution.resolveAccount).toHaveBeenCalledWith(
+        expect.objectContaining({ accountReference: 'my-staking-account' }),
+      );
+      expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          stakedAccountId: MOCK_RESOLVE_ACCOUNT_RESULT.accountId,
+        }),
+      );
+    });
+
+    test('passes stakedNodeId to contractCreateFlowTransaction', async () => {
+      MockedHelper.mockImplementation(() => ({ saveContract: jest.fn() }));
+
+      const args = makeArgs(api, logger, {
+        name: 'my-contract',
+        default: 'erc20',
+        stakedNodeId: 3,
+      });
+
+      await contractCreate(args);
+
+      expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({ stakedNodeId: 3 }),
+      );
+    });
+
+    test('throws when both stakedAccountId and stakedNodeId are provided', async () => {
+      MockedHelper.mockImplementation(() => ({ saveContract: jest.fn() }));
+
+      const args = makeArgs(api, logger, {
+        name: 'my-contract',
+        default: 'erc20',
+        stakedAccountId: '0.0.300',
+        stakedNodeId: 3,
+      });
+
+      await expect(contractCreate(args)).rejects.toThrow();
+    });
+
+    test('passes declineStakingReward to contractCreateFlowTransaction', async () => {
+      MockedHelper.mockImplementation(() => ({ saveContract: jest.fn() }));
+
+      const args = makeArgs(api, logger, {
+        name: 'my-contract',
+        default: 'erc20',
+        declineStakingReward: true,
+      });
+
+      await contractCreate(args);
+
+      expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({ declineStakingReward: true }),
+      );
+    });
+  });
+
+  describe('token association and auto-renew options', () => {
+    test('passes maxAutomaticTokenAssociations to contractCreateFlowTransaction', async () => {
+      MockedHelper.mockImplementation(() => ({ saveContract: jest.fn() }));
+
+      const args = makeArgs(api, logger, {
+        name: 'my-contract',
+        default: 'erc20',
+        maxAutomaticTokenAssociations: 10,
+      });
+
+      await contractCreate(args);
+
+      expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({ maxAutomaticTokenAssociations: 10 }),
+      );
+    });
+
+    test('passes autoRenewPeriod to contractCreateFlowTransaction', async () => {
+      MockedHelper.mockImplementation(() => ({ saveContract: jest.fn() }));
+
+      const args = makeArgs(api, logger, {
+        name: 'my-contract',
+        default: 'erc20',
+        autoRenewPeriod: 7776000,
+      });
+
+      await contractCreate(args);
+
+      expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({ autoRenewPeriod: 7776000 }),
+      );
+    });
+
+    test('resolves autoRenewAccountId alias to accountId', async () => {
+      MockedHelper.mockImplementation(() => ({ saveContract: jest.fn() }));
+
+      const args = makeArgs(api, logger, {
+        name: 'my-contract',
+        default: 'erc20',
+        autoRenewAccountId: 'my-renew-account',
+      });
+
+      await contractCreate(args);
+
+      expect(api.identityResolution.resolveAccount).toHaveBeenCalledWith(
+        expect.objectContaining({ accountReference: 'my-renew-account' }),
+      );
+      expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          autoRenewAccountId: MOCK_RESOLVE_ACCOUNT_RESULT.accountId,
+        }),
+      );
+    });
+  });
+
+  describe('initialBalance option', () => {
+    test('converts initialBalance HBAR string to tinybars bigint', async () => {
+      MockedHelper.mockImplementation(() => ({ saveContract: jest.fn() }));
+
+      const args = makeArgs(api, logger, {
+        name: 'my-contract',
+        default: 'erc20',
+        initialBalance: '1',
+      });
+
+      await contractCreate(args);
+
+      expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({ initialBalanceRaw: BigInt(100_000_000) }),
+      );
+    });
+
+    test('converts initialBalance tinybar string (t suffix) to bigint', async () => {
+      MockedHelper.mockImplementation(() => ({ saveContract: jest.fn() }));
+
+      const args = makeArgs(api, logger, {
+        name: 'my-contract',
+        default: 'erc20',
+        initialBalance: '500t',
+      });
+
+      await contractCreate(args);
+
+      expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({ initialBalanceRaw: BigInt(500) }),
+      );
+    });
+
+    test('passes undefined initialBalanceRaw when initialBalance not provided', async () => {
+      MockedHelper.mockImplementation(() => ({ saveContract: jest.fn() }));
+
+      const args = makeArgs(api, logger, {
+        name: 'my-contract',
+        default: 'erc20',
+      });
+
+      await contractCreate(args);
+
+      expect(api.contract.contractCreateFlowTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({ initialBalanceRaw: undefined }),
       );
     });
   });

@@ -14,6 +14,7 @@ import {
   ContractDeleteTransaction,
   ContractExecuteTransaction,
   ContractId,
+  Hbar,
 } from '@hashgraph/sdk';
 import { ethers, getBytes } from 'ethers';
 
@@ -42,6 +43,33 @@ export class ContractTransactionServiceImpl implements ContractTransactionServic
         params.constructorParameters,
       );
       contractCreateTx.setConstructorParameters(getBytes(encodedConstructor));
+    }
+    if (params.initialBalanceRaw !== undefined) {
+      contractCreateTx.setInitialBalance(
+        Hbar.fromTinybars(params.initialBalanceRaw.toString()),
+      );
+    }
+    if (params.autoRenewPeriod !== undefined) {
+      contractCreateTx.setAutoRenewPeriod(params.autoRenewPeriod);
+    }
+    if (params.autoRenewAccountId) {
+      contractCreateTx.setAutoRenewAccountId(
+        AccountId.fromString(params.autoRenewAccountId),
+      );
+    }
+    if (params.maxAutomaticTokenAssociations !== undefined) {
+      contractCreateTx.setMaxAutomaticTokenAssociations(
+        params.maxAutomaticTokenAssociations,
+      );
+    }
+    if (params.stakedAccountId) {
+      contractCreateTx.setStakedAccountId(params.stakedAccountId);
+    }
+    if (params.stakedNodeId !== undefined) {
+      contractCreateTx.setStakedNodeId(params.stakedNodeId);
+    }
+    if (params.declineStakingReward !== undefined) {
+      contractCreateTx.setDeclineStakingReward(params.declineStakingReward);
     }
     return {
       transaction: contractCreateTx,

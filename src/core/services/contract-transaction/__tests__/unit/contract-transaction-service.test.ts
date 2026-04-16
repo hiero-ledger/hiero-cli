@@ -33,11 +33,20 @@ const mockInterfaceInstance = {
   encodeDeploy: mockEncodeDeploy,
 };
 
+const mockAccountIdFromString = jest.fn((id: string) => ({ id }));
+const mockHbarFromTinybars = jest.fn((val: string) => ({ tinybars: val }));
+
 jest.mock('@hashgraph/sdk', () => ({
   ContractCreateFlow: jest.fn(() => mockContractCreateFlow),
   ContractExecuteTransaction: jest.fn(() => mockContractExecuteTx),
   ContractId: {
     fromString: jest.fn((id: string) => ({ id })),
+  },
+  AccountId: {
+    fromString: (id: string) => mockAccountIdFromString(id),
+  },
+  Hbar: {
+    fromTinybars: (val: string) => mockHbarFromTinybars(val),
   },
   PrivateKey: {
     generateED25519: jest.fn(() => ({ toString: () => 'mock-key' })),
@@ -131,6 +140,124 @@ describe('ContractTransactionServiceImpl', () => {
       expect(
         mockContractCreateFlow.setConstructorParameters,
       ).toHaveBeenCalledWith(new Uint8Array([0x12, 0x34]));
+    });
+
+    it('should set initial balance when provided', () => {
+      const params = {
+        bytecode: '0x123456',
+        initialBalanceRaw: BigInt(100_000_000),
+      } as ContractCreateFlowParams;
+
+      contractService.contractCreateFlowTransaction(params);
+
+      expect(mockHbarFromTinybars).toHaveBeenCalledWith('100000000');
+      expect(mockContractCreateFlow.setInitialBalance).toHaveBeenCalledWith({
+        tinybars: '100000000',
+      });
+    });
+
+    it('should not set initial balance when not provided', () => {
+      const params = { bytecode: '0x123456' } as ContractCreateFlowParams;
+
+      contractService.contractCreateFlowTransaction(params);
+
+      expect(mockContractCreateFlow.setInitialBalance).not.toHaveBeenCalled();
+    });
+
+    it('should set auto-renew period when provided', () => {
+      const params = {
+        bytecode: '0x123456',
+        autoRenewPeriod: 7776000,
+      } as ContractCreateFlowParams;
+
+      contractService.contractCreateFlowTransaction(params);
+
+      expect(mockContractCreateFlow.setAutoRenewPeriod).toHaveBeenCalledWith(
+        7776000,
+      );
+    });
+
+    it('should set auto-renew account ID when provided', () => {
+      const params = {
+        bytecode: '0x123456',
+        autoRenewAccountId: '0.0.500',
+      } as ContractCreateFlowParams;
+
+      contractService.contractCreateFlowTransaction(params);
+
+      expect(mockAccountIdFromString).toHaveBeenCalledWith('0.0.500');
+      expect(mockContractCreateFlow.setAutoRenewAccountId).toHaveBeenCalledWith(
+        { id: '0.0.500' },
+      );
+    });
+
+    it('should set max automatic token associations when provided', () => {
+      const params = {
+        bytecode: '0x123456',
+        maxAutomaticTokenAssociations: 10,
+      } as ContractCreateFlowParams;
+
+      contractService.contractCreateFlowTransaction(params);
+
+      expect(
+        mockContractCreateFlow.setMaxAutomaticTokenAssociations,
+      ).toHaveBeenCalledWith(10);
+    });
+
+    it('should set staked account ID when provided', () => {
+      const params = {
+        bytecode: '0x123456',
+        stakedAccountId: '0.0.300',
+      } as ContractCreateFlowParams;
+
+      contractService.contractCreateFlowTransaction(params);
+
+      expect(mockContractCreateFlow.setStakedAccountId).toHaveBeenCalledWith(
+        '0.0.300',
+      );
+    });
+
+    it('should set staked node ID when provided', () => {
+      const params = {
+        bytecode: '0x123456',
+        stakedNodeId: 3,
+      } as ContractCreateFlowParams;
+
+      contractService.contractCreateFlowTransaction(params);
+
+      expect(mockContractCreateFlow.setStakedNodeId).toHaveBeenCalledWith(3);
+    });
+
+    it('should set decline staking reward when provided', () => {
+      const params = {
+        bytecode: '0x123456',
+        declineStakingReward: true,
+      } as ContractCreateFlowParams;
+
+      contractService.contractCreateFlowTransaction(params);
+
+      expect(
+        mockContractCreateFlow.setDeclineStakingReward,
+      ).toHaveBeenCalledWith(true);
+    });
+
+    it('should not set optional fields when not provided', () => {
+      const params = { bytecode: '0x123456' } as ContractCreateFlowParams;
+
+      contractService.contractCreateFlowTransaction(params);
+
+      expect(mockContractCreateFlow.setAutoRenewPeriod).not.toHaveBeenCalled();
+      expect(
+        mockContractCreateFlow.setAutoRenewAccountId,
+      ).not.toHaveBeenCalled();
+      expect(
+        mockContractCreateFlow.setMaxAutomaticTokenAssociations,
+      ).not.toHaveBeenCalled();
+      expect(mockContractCreateFlow.setStakedAccountId).not.toHaveBeenCalled();
+      expect(mockContractCreateFlow.setStakedNodeId).not.toHaveBeenCalled();
+      expect(
+        mockContractCreateFlow.setDeclineStakingReward,
+      ).not.toHaveBeenCalled();
     });
   });
 

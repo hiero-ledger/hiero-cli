@@ -107,6 +107,51 @@ Contract plugin will consist of two commands:
       description:
               'Key manager to use: local or local_encrypted (defaults to config setting)',
     },
+    {
+      name: 'initial-balance',
+      short: 'i',
+      type: 'string',
+      required: false,
+      description:
+              'Initial HBAR balance for the contract. Format: "100" (HBAR) or "100t" (tinybars)',
+    },
+    {
+      name: 'auto-renew-period',
+      short: 'r',
+      type: 'string',
+      required: false,
+      description: 'Auto-renew period: seconds as integer, or with suffix s/m/h/d (e.g. 500, 500s, 50m, 2h, 30d)',
+    },
+    {
+      name: 'auto-renew-account-id',
+      type: 'string',
+      required: false,
+      description: 'Account ID (0.0.xxx) that will pay for auto-renewal of the contract',
+    },
+    {
+      name: 'max-automatic-token-associations',
+      type: 'number',
+      required: false,
+      description: 'Maximum number of automatic token associations (-1 for unlimited, 0 to disable)',
+    },
+    {
+      name: 'staked-account-id',
+      type: 'string',
+      required: false,
+      description: 'Account ID (0.0.xxx) to stake this contract to (mutually exclusive with staked-node-id)',
+    },
+    {
+      name: 'staked-node-id',
+      type: 'number',
+      required: false,
+      description: 'Node ID to stake this contract to (mutually exclusive with staked-account-id)',
+    },
+    {
+      name: 'decline-staking-reward',
+      type: 'boolean',
+      required: false,
+      description: 'Whether to decline staking rewards for this contract',
+    },
   ],
           handler: contractCreate,
           output: {
@@ -126,6 +171,13 @@ The `create` command will take the following options:
 - option `constructor-parameter` - a new type of parameter `repeatable`. The `repeatable` parameter can be set many times and each assign results in putting new value to the list of this option. This `constructor-parameter` will be a list consisting of parameters that are needed for constructor of deployed smart contract. When using `default`, constructor parameters are optional and default values are applied if omitted.
 - option `memo` - it will be used to pass string field as contract memo
 - option `key-manager` - points to the key manager for using in the command execution
+- option `initial-balance` - sets an initial HBAR balance funded to the contract at deployment. Accepts HBAR (`"100"`) or tinybar (`"100t"`) format.
+- option `auto-renew-period` - sets the auto-renew interval. Accepts a plain integer (seconds) or a value with suffix: `s` (seconds), `m` (minutes), `h` (hours), `d` (days) — e.g. `500`, `50m`, `2h`, `30d`
+- option `auto-renew-account-id` - account ID whose balance is charged for contract auto-renewal
+- option `max-automatic-token-associations` - maximum number of token associations that can be created automatically. Use `-1` for unlimited, `0` to disable.
+- option `staked-account-id` - account ID to stake this contract to for staking rewards. Mutually exclusive with `staked-node-id`.
+- option `staked-node-id` - node ID to stake this contract to for staking rewards. Mutually exclusive with `staked-account-id`.
+- option `decline-staking-reward` - set to `true` to opt the contract out of staking rewards
 
 Examples of this command execution:
 
@@ -260,7 +312,14 @@ Purposes of service are:
 
 - creating a contract deployment transaction
 
-- configuring optional deployment parameters (bytecode, gas, admin key, memo)
+- configuring optional deployment parameters:
+  - `bytecode`, `gas`, `adminKey`, `memo` — core deployment settings
+  - `initialBalanceRaw` — initial HBAR balance (in tinybars) funded to the contract at deployment
+  - `autoRenewPeriod` — auto-renew interval in seconds
+  - `autoRenewAccountId` — account responsible for paying auto-renewal fees
+  - `maxAutomaticTokenAssociations` — cap on automatic token associations
+  - `stakedAccountId` / `stakedNodeId` — staking target (mutually exclusive)
+  - `declineStakingReward` — opt the contract out of staking rewards
 
 - encoding constructor arguments using the contract’s ABI
 

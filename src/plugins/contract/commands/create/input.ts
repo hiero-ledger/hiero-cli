@@ -1,12 +1,17 @@
 import { z } from 'zod';
 
 import {
+  AccountReferenceObjectSchema,
   AliasNameSchema,
+  AmountInputSchema,
+  AutoRenewPeriodSecondsSchema,
   FilePathSchema,
   GasInputSchema,
   KeyManagerTypeSchema,
   KeyThresholdOptionalSchema,
+  MaxAutoAssociationsSchema,
   MemoSchema,
+  NodeIdSchema,
   OptionalDefaultEmptyKeyListSchema,
   SolidityCompilerVersion,
 } from '@/core/schemas';
@@ -45,6 +50,26 @@ const contractCreateInputObjectSchema = z.object({
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type for storing private keys (defaults to config setting)',
   ),
+  initialBalance: AmountInputSchema.optional().describe(
+    'Initial HBAR balance for the contract. Format: "100" (HBAR) or "100t" (tinybars)',
+  ),
+  autoRenewPeriod: AutoRenewPeriodSecondsSchema.describe(
+    'Auto-renew period: integer seconds, or with suffix s/m/h/d (e.g. 500, 500s, 50m, 2h, 30d)',
+  ),
+  autoRenewAccountId: AccountReferenceObjectSchema.optional().describe(
+    'Account that will pay for auto-renewal: ID (0.0.xxx), alias, or EVM address',
+  ),
+  maxAutomaticTokenAssociations: MaxAutoAssociationsSchema.describe(
+    'Maximum number of automatic token associations (-1 for unlimited, 0 to disable)',
+  ),
+  stakedAccountId: AccountReferenceObjectSchema.optional().describe(
+    'Account to stake this contract to: ID (0.0.xxx), alias, or EVM address',
+  ),
+  stakedNodeId: NodeIdSchema.describe('Node ID to stake this contract to'),
+  declineStakingReward: z
+    .boolean()
+    .optional()
+    .describe('Whether to decline staking rewards'),
 });
 
 export const ContractCreateSchema = contractCreateInputObjectSchema
@@ -61,6 +86,14 @@ export const ContractCreateSchema = contractCreateInputObjectSchema
         },
       },
     ]);
+
+    if (data.stakedAccountId !== undefined && data.stakedNodeId !== undefined) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Cannot specify both --staked-account-id and --staked-node-id',
+        path: ['stakedNodeId'],
+      });
+    }
   })
   .refine((data) => (data.file ? !data.default : !!data.default), {
     message: 'Either --file or --default must be provided, but not both',
@@ -77,4 +110,11 @@ export const ContractCreateSchema = contractCreateInputObjectSchema
     solidityVersion: data.solidityVersion,
     constructorParameters: data.constructorParameter,
     keyManager: data.keyManager,
+    initialBalance: data.initialBalance,
+    autoRenewPeriod: data.autoRenewPeriod,
+    autoRenewAccountId: data.autoRenewAccountId,
+    maxAutomaticTokenAssociations: data.maxAutomaticTokenAssociations,
+    stakedAccountId: data.stakedAccountId,
+    stakedNodeId: data.stakedNodeId,
+    declineStakingReward: data.declineStakingReward,
   }));
