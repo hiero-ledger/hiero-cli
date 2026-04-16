@@ -13,7 +13,7 @@ All `hcli` errors extend `CliError` with a typed `error` field, human-readable `
 | `NetworkError`                       | yes         | Transient connectivity issue. Retry with exponential backoff: 2s, 4s, 8s, 16s. Max 4 attempts.                                                                                                     |
 | `NotFoundError`                      | yes         | Stale entity reference -- the token, account, schedule, or batch alias no longer exists. Refresh state: re-query via `hcli token view`, `hcli account balance`, etc. Re-resolve aliases and retry. |
 | `AuthorizationError`                 | no          | Key mismatch or insufficient signing authority. Alert the user immediately -- likely requires a different key alias or multi-sig approval via `schedule`.                                          |
-| `StateError`                         | no          | Corrupted local CLI state. Alert user. Alert user. Do not retry.                                                                                                                                   |
+| `StateError`                         | no          | Corrupted local CLI state. Alert user. Recovery: `hcli token import` / `hcli account import` to reimport entities, or reset plugin state.                                                          |
 | `InternalError`                      | no          | Unexpected CLI bug. Log full error output. Alert user. Do not retry.                                                                                                                               |
 
 ## Recovery decision flow

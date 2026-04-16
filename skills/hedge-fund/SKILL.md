@@ -32,25 +32,45 @@ Before running any fund operation, verify:
    - `fund-treasury` -- holds fund capital
    - Strategy-specific wallets as needed
 4. Tokens the fund trades are associated with fund accounts (`hcli token associate`)
-5. SaucerSwap plugin is enabled (`hcli plugin-management enable --name saucerswap` if disabled)
+5. SaucerSwap plugins are enabled (`hcli plugin-management enable --name saucerswap-v1` and/or `saucerswap-v2`)
 
 If any prerequisite is missing, guide the user through setup before proceeding.
 
 ## Fund operations quick reference
 
-| Intent               | Plugin(s)         | Command pattern                                                                                                     |
-| -------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Check balances       | account           | `hcli account balance --account <alias> --format json`                                                              |
-| View pool prices     | saucerswap        | `hcli saucerswap-v1 view --token-a <A> --token-b <B> --format json`                                                 |
-| List pools for token | saucerswap        | `hcli saucerswap-v1 list --token <id> --format json`                                                                |
-| Swap tokens          | saucerswap        | `hcli saucerswap-v1 swap --token-in <IN> --token-out <OUT> --amount-in <N> --slippage <S> --format json`            |
-| Buy exact output     | saucerswap        | `hcli saucerswap-v1 buy --token-in <IN> --token-out <OUT> --amount-out <N> --slippage <S> --format json`            |
-| Transfer HBAR        | hbar              | `hcli hbar transfer --amount <N> --to <alias> --format json`                                                        |
-| Transfer tokens      | token             | `hcli token transfer-ft --token <T> --to <alias> --amount <N> --format json`                                        |
-| Deposit liquidity    | saucerswap        | `hcli saucerswap-v1 deposit --token-a <A> --token-b <B> --amount-a <N> --amount-b <M> --slippage <S> --format json` |
-| Withdraw liquidity   | saucerswap        | `hcli saucerswap-v1 withdraw --token-a <A> --token-b <B> --liquidity <N> --slippage <S> --format json`              |
-| Atomic rebalance     | batch + others    | `batch create` then operations with `--batch` then `batch execute`                                                  |
-| Governed trade       | schedule + others | `schedule create` then operation with `--scheduled` then `schedule sign`                                            |
+Two SaucerSwap plugins exist: **`saucerswap-v1`** (constant-product AMM, fungible LP tokens) and **`saucerswap-v2`** (concentrated liquidity, NFT positions, fee tiers). Use V1 for simple swaps and uniform liquidity; use V2 when you need fee-tier selection, concentrated ranges, or position-level management. The table below shows the **V1** commands; V2 variants follow.
+
+### V1 commands (saucerswap-v1)
+
+| Intent             | Command pattern                                                                                      |
+| ------------------ | ---------------------------------------------------------------------------------------------------- |
+| Check balances     | `hcli account balance --account <alias> --format json`                                               |
+| View pool          | `hcli saucerswap-v1 view --token-a <A> --token-b <B> --format json`                                  |
+| List pools         | `hcli saucerswap-v1 list --token <id> --format json`                                                 |
+| Swap (exact input) | `hcli saucerswap-v1 swap --from <IN> --to <OUT> --amount <N> --slippage <S> --format json`           |
+| Buy (exact output) | `hcli saucerswap-v1 buy --from <IN> --to <OUT> --amount <N> --max-input <M> --format json`           |
+| Transfer HBAR      | `hcli hbar transfer --amount <N> --to <alias> --format json`                                         |
+| Transfer tokens    | `hcli token transfer-ft --token <T> --to <alias> --amount <N> --format json`                         |
+| Deposit liquidity  | `hcli saucerswap-v1 deposit --token-a <A> --token-b <B> --amount-a <N> --amount-b <M> --format json` |
+| Withdraw liquidity | `hcli saucerswap-v1 withdraw --token-a <A> --token-b <B> --liquidity <N> --format json`              |
+| Atomic rebalance   | `batch create` then operations with `--batch` then `batch execute`                                   |
+| Governed trade     | `schedule create` then operation with `--scheduled` then `schedule sign`                             |
+
+### V2 commands (saucerswap-v2)
+
+V2 commands require **`--fee-tier`** (500, 1500, 3000, or 10000) to select the pool.
+
+| Intent                 | Command pattern                                                                                                                                 |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Swap (exact input)     | `hcli saucerswap-v2 swap --from <IN> --to <OUT> --amount <N> --fee-tier <FEE> --slippage <S> --format json`                                     |
+| Buy (exact output)     | `hcli saucerswap-v2 buy --from <IN> --to <OUT> --amount <N> --max-input <M> --fee-tier <FEE> --format json`                                     |
+| View pool              | `hcli saucerswap-v2 view-pool --token-a <A> --token-b <B> --fee-tier <FEE> --format json`                                                       |
+| List pools             | `hcli saucerswap-v2 list-pools --token <id> --fee-tier <FEE> --format json`                                                                     |
+| Mint position (new LP) | `hcli saucerswap-v2 mint-position --token-a <A> --token-b <B> --fee-tier <FEE> --amount-a <N> --amount-b <M> --range-percent <P> --format json` |
+| Increase liquidity     | `hcli saucerswap-v2 increase-liquidity --position <serial> --amount-a <N> --amount-b <M> --format json`                                         |
+| Decrease liquidity     | `hcli saucerswap-v2 decrease-liquidity --position <serial> --liquidity <N\|all> --format json`                                                  |
+| Collect fees           | `hcli saucerswap-v2 collect-fees --position <serial> --format json`                                                                             |
+| List positions         | `hcli saucerswap-v2 list-positions --account <alias> --format json`                                                                             |
 
 ## Workflow patterns
 
@@ -79,10 +99,10 @@ hcli batch create --name rebalance-<id> --key fund-operator --format json
 # 2. Queue operations (none execute yet)
 hcli saucerswap-v1 withdraw --token-a USDC --token-b HBAR --liquidity 50 \
     --batch rebalance-<id>
-hcli saucerswap-v1 swap --token-in HBAR --token-out SAUCE --amount-in 200 \
+hcli saucerswap-v1 swap --from HBAR --to SAUCE --amount 200 \
     --slippage 1.0 --batch rebalance-<id>
 hcli saucerswap-v1 deposit --token-a SAUCE --token-b USDC --amount-a 200 \
-    --amount-b 500 --slippage 2.0 --batch rebalance-<id>
+    --amount-b 500 --batch rebalance-<id>
 
 # 3. Execute atomically -- all or nothing
 hcli batch execute --name rebalance-<id> --format json
@@ -107,8 +127,8 @@ hcli schedule create --name large-trade-<id> \
     --format json
 
 # 2. Attach the trade (deferred, not executed)
-hcli saucerswap-v1 swap --token-in HBAR --token-out USDC \
-    --amount-in 50000 --slippage 1.0 \
+hcli saucerswap-v1 swap --from HBAR --to USDC \
+    --amount 50000 --slippage 1.0 \
     --scheduled large-trade-<id>
 
 # 3. Notify key holders (out-of-band) then they sign:
@@ -130,7 +150,7 @@ Once enough signatures are collected, Hedera auto-executes the scheduled transac
 2. **Deposit** liquidity:
    ```
    hcli saucerswap-v1 deposit --token-a SAUCE --token-b USDC \
-       --amount-a 1000 --amount-b 500 --slippage 2.0 --format json
+       --amount-a 1000 --amount-b 500 --format json
    ```
 3. **Monitor** periodically -- compare impermanent loss vs. fee income:
    ```
@@ -140,7 +160,7 @@ Once enough signatures are collected, Hedera auto-executes the scheduled transac
 4. **Withdraw** when IL exceeds the acceptable threshold:
    ```
    hcli saucerswap-v1 withdraw --token-a SAUCE --token-b USDC \
-       --liquidity 100 --slippage 2.0 --format json
+       --liquidity 100 --format json
    ```
 
 ### Pre-trade validation
@@ -190,5 +210,5 @@ Parse the `error` field to determine recovery action. See [references/error-hand
 
 - **Canonical fund flows (step-by-step runbooks):** [references/flows.md](references/flows.md)
 - **Error recovery matrix:** [references/error-handling.md](references/error-handling.md)
-- **Full CLI command specs:** read `skills/hiero-cli/references/<plugin>.md` for any plugin before invoking its commands (account, hbar, token, batch, schedule, saucerswap-v1, etc.)
+- **Full CLI command specs:** read `skills/hiero-cli/references/<plugin>.md` for any plugin before invoking its commands (account, hbar, token, batch, schedule, saucerswap, etc.)
 - **PRD (full context):** `docs/PRD-agentic-hedge-fund.md`

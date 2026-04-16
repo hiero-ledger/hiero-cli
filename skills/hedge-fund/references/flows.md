@@ -42,8 +42,8 @@ Verify the treasury holds enough HBAR (or the input token) for the intended trad
 **3. Execute the swap**
 
 ```bash
-hcli saucerswap-v1 swap --token-in HBAR --token-out USDC \
-    --amount-in 5000 --slippage 0.5 --format json
+hcli saucerswap-v1 swap --from HBAR --to USDC \
+    --amount 5000 --slippage 0.5 --format json
 ```
 
 Expected output:
@@ -89,11 +89,11 @@ hcli batch create --name rebalance-2026-04-15 --key fund-operator --format json
 hcli token transfer-ft --token USDC --from fund-treasury --to fund-operator \
     --amount 1000 --batch rebalance-2026-04-15
 
-hcli saucerswap-v1 swap --token-in HBAR --token-out SAUCE \
-    --amount-in 2000 --slippage 1.0 --batch rebalance-2026-04-15
+hcli saucerswap-v1 swap --from HBAR --to SAUCE \
+    --amount 2000 --slippage 1.0 --batch rebalance-2026-04-15
 
 hcli saucerswap-v1 deposit --token-a SAUCE --token-b USDC \
-    --amount-a 500 --amount-b 1000 --slippage 2.0 --batch rebalance-2026-04-15
+    --amount-a 500 --amount-b 1000 --batch rebalance-2026-04-15
 ```
 
 Each command returns confirmation that the transaction was queued (not executed).
@@ -159,8 +159,8 @@ hcli schedule create --name large-trade-001 \
 **2. Attach the trade to the schedule**
 
 ```bash
-hcli saucerswap-v1 swap --token-in HBAR --token-out USDC \
-    --amount-in 50000 --slippage 1.0 \
+hcli saucerswap-v1 swap --from HBAR --to USDC \
+    --amount 50000 --slippage 1.0 \
     --scheduled large-trade-001
 ```
 
@@ -222,7 +222,7 @@ Returns all pools containing SAUCE with reserves and implied APY data. Select th
 
 ```bash
 hcli saucerswap-v1 deposit --token-a SAUCE --token-b USDC \
-    --amount-a 1000 --amount-b 500 --slippage 2.0 --format json
+    --amount-a 1000 --amount-b 500 --format json
 ```
 
 Expected output includes LP token amount received.
@@ -246,7 +246,7 @@ Track:
 
 ```bash
 hcli saucerswap-v1 withdraw --token-a SAUCE --token-b USDC \
-    --liquidity 100 --slippage 2.0 --format json
+    --liquidity 100 --format json
 ```
 
 ### On failure
