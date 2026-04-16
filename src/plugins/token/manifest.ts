@@ -1427,7 +1427,10 @@ export const tokenPluginManifest: PluginManifest = {
       description:
         'Reject a token from account balance, returning it to the treasury. ' +
         'For NFT tokens, specify serial numbers with --serial.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'owner',

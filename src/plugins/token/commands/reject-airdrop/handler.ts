@@ -13,7 +13,7 @@ import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError, ValidationError } from '@/core/errors';
 import { KeySchema } from '@/core/schemas/common-schemas';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { MirrorTokenType } from '@/core/shared/constants';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { AirdropTokenType } from '@/core/types/token.types';
 
 import { TokenRejectAirdropInputSchema } from './input';
@@ -56,7 +56,7 @@ export class TokenRejectAirdropCommand extends BaseTransactionCommand<
 
     logger.info(`Fetching token info for ${tokenId}...`);
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
-    const isNft = tokenInfo.type === MirrorTokenType.NON_FUNGIBLE_UNIQUE;
+    const isNft = tokenInfo.type === MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE;
 
     if (isNft && !serials) {
       throw new ValidationError('--serial is required for NFT tokens');
