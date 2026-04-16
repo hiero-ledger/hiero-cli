@@ -14,6 +14,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -68,7 +69,8 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
     const isNftByState =
       tokenData !== null &&
       tokenData.tokenType === HederaTokenType.NON_FUNGIBLE_TOKEN;
-    const isNftByMirror = tokenInfo.type === 'NON_FUNGIBLE_UNIQUE';
+    const isNftByMirror =
+      tokenInfo.type === MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE;
 
     if (!isNftByState && !isNftByMirror) {
       throw new ValidationError('Token is not an NFT', {

@@ -5,6 +5,7 @@ import type { TokenViewOutput } from './output';
 import type { ViewTokenNormalizedParams } from './types';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { tokenBuildOutput } from '@/plugins/token/utils/token-build-output';
 
@@ -31,7 +32,7 @@ export class TokenViewCommand implements Command {
 
     let nftInfo: NftInfo | null = null;
     if (validArgs.serial) {
-      if (tokenInfo.type !== 'NON_FUNGIBLE_UNIQUE') {
+      if (tokenInfo.type !== MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE) {
         throw new ValidationError('Token is not an NFT collection', {
           context: { tokenId, type: tokenInfo.type },
         });

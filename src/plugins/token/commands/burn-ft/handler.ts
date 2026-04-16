@@ -14,6 +14,8 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
@@ -48,7 +50,8 @@ export class TokenBurnFtCommand extends BaseTransactionCommand<
     const keyManagerArg = validArgs.keyManager;
 
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
 
@@ -71,7 +74,8 @@ export class TokenBurnFtCommand extends BaseTransactionCommand<
     const isNftByState =
       tokenData !== null &&
       tokenData.tokenType !== HederaTokenType.FUNGIBLE_COMMON;
-    const isNftByMirror = tokenInfo.type === 'NON_FUNGIBLE_UNIQUE';
+    const isNftByMirror =
+      tokenInfo.type === MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE;
 
     if (isNftByState || isNftByMirror) {
       throw new ValidationError('Token is not fungible', {

@@ -38,16 +38,6 @@ import {
   TokenAssociateOutputSchema,
 } from './commands/associate';
 import {
-  TOKEN_CANCEL_AIRDROP_TEMPLATE,
-  tokenCancelAirdrop,
-  TokenCancelAirdropOutputSchema,
-} from './commands/cancel-airdrop';
-import {
-  TOKEN_CLAIM_AIRDROP_TEMPLATE,
-  tokenClaimAirdrop,
-  TokenClaimAirdropOutputSchema,
-} from './commands/claim-airdrop';
-import {
   TOKEN_BURN_FT_TEMPLATE,
   tokenBurnFt,
   TokenBurnFtOutputSchema,
@@ -57,6 +47,16 @@ import {
   tokenBurnNft,
   TokenBurnNftOutputSchema,
 } from './commands/burn-nft';
+import {
+  TOKEN_CANCEL_AIRDROP_TEMPLATE,
+  tokenCancelAirdrop,
+  TokenCancelAirdropOutputSchema,
+} from './commands/cancel-airdrop';
+import {
+  TOKEN_CLAIM_AIRDROP_TEMPLATE,
+  tokenClaimAirdrop,
+  TokenClaimAirdropOutputSchema,
+} from './commands/claim-airdrop';
 import {
   TOKEN_CREATE_FT_TEMPLATE,
   tokenCreateFt,
@@ -172,7 +172,11 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Burn fungible tokens',
       description:
         'Burn fungible tokens from the Treasury account to decrease total supply.',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -217,7 +221,11 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Burn NFT serials',
       description:
         'Burn NFT serial numbers to decrease supply. NFTs must be held by the treasury account.',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
