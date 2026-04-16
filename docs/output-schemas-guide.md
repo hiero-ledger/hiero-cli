@@ -718,6 +718,28 @@ Lists all tokens from all networks stored in state.
 | `accountId`     | `string`           | Frozen account ID (0.0.X)         |
 | `network`       | `SupportedNetwork` | Network where freeze was executed |
 
+#### `token unfreeze`
+
+**Output:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "accountId": "0.0.12345",
+  "network": "testnet"
+}
+```
+
+**Schema:** `TokenUnfreezeOutputSchema` from `src/plugins/token/commands/unfreeze/output.ts`
+
+| Field           | Type               | Description                         |
+| --------------- | ------------------ | ----------------------------------- |
+| `transactionId` | `string`           | Hedera transaction ID               |
+| `tokenId`       | `string`           | Token ID (0.0.X)                    |
+| `accountId`     | `string`           | Unfrozen account ID (0.0.X)         |
+| `network`       | `SupportedNetwork` | Network where unfreeze was executed |
+
 #### `token allowance-nft`
 
 **Output** (specific serials):

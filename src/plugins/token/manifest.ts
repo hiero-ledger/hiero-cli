@@ -108,6 +108,11 @@ import {
   TokenTransferNftOutputSchema,
 } from './commands/transfer-nft';
 import {
+  TOKEN_UNFREEZE_TEMPLATE,
+  tokenUnfreeze,
+  TokenUnfreezeOutputSchema,
+} from './commands/unfreeze';
+import {
   TOKEN_VIEW_TEMPLATE,
   tokenView,
   TokenViewOutputSchema,
@@ -1164,6 +1169,51 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenFreezeOutputSchema,
         humanTemplate: TOKEN_FREEZE_TEMPLATE,
+      },
+    },
+    {
+      name: 'unfreeze',
+      summary: 'Unfreeze an account for a token',
+      description:
+        'Re-enables the specified account to send and receive the token. Requires the token freeze key. Works for both fungible tokens (FT) and non-fungible tokens (NFT).',
+      registeredHooks: ['batchify', 'scheduled'],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Account to unfreeze: account-id (0.0.X), account alias, or EVM address (0x...)',
+        },
+        {
+          name: 'freeze-key',
+          short: 'f',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Freeze key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenUnfreeze,
+      output: {
+        schema: TokenUnfreezeOutputSchema,
+        humanTemplate: TOKEN_UNFREEZE_TEMPLATE,
       },
     },
     {

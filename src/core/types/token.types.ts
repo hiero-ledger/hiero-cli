@@ -117,6 +117,11 @@ export interface TokenFreezeParams {
   accountId: string;
 }
 
+export interface TokenUnfreezeParams {
+  tokenId: string;
+  accountId: string;
+}
+
 /**
  * Parameters for approving NFT allowance for specific serial numbers
  */
