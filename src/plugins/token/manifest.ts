@@ -38,6 +38,16 @@ import {
   TokenAssociateOutputSchema,
 } from './commands/associate';
 import {
+  TOKEN_BURN_FT_TEMPLATE,
+  tokenBurnFt,
+  TokenBurnFtOutputSchema,
+} from './commands/burn-ft';
+import {
+  TOKEN_BURN_NFT_TEMPLATE,
+  tokenBurnNft,
+  TokenBurnNftOutputSchema,
+} from './commands/burn-nft';
+import {
   TOKEN_CANCEL_AIRDROP_TEMPLATE,
   tokenCancelAirdrop,
   TokenCancelAirdropOutputSchema,
@@ -157,6 +167,104 @@ export const tokenPluginManifest: PluginManifest = {
     },
   ],
   commands: [
+    {
+      name: 'burn-ft',
+      summary: 'Burn fungible tokens',
+      description:
+        'Burn fungible tokens from the Treasury account to decrease total supply.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'amount',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Amount to burn. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "100t")',
+        },
+        {
+          name: 'supply-key',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenBurnFt,
+      output: {
+        schema: TokenBurnFtOutputSchema,
+        humanTemplate: TOKEN_BURN_FT_TEMPLATE,
+      },
+    },
+    {
+      name: 'burn-nft',
+      summary: 'Burn NFT serials',
+      description:
+        'Burn NFT serial numbers to decrease supply. NFTs must be held by the treasury account.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'serials',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Comma-separated serial numbers to burn (e.g., "1,2,3"). Max 10 serials.',
+        },
+        {
+          name: 'supply-key',
+          short: 'S',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenBurnNft,
+      output: {
+        schema: TokenBurnNftOutputSchema,
+        humanTemplate: TOKEN_BURN_NFT_TEMPLATE,
+      },
+    },
     {
       name: 'mint-ft',
       summary: 'Mint fungible tokens',

@@ -13,6 +13,8 @@ import type {
   TokenAirdropNftParams,
   TokenAllowanceFtParams,
   TokenAssociationParams,
+  TokenBurnFtParams,
+  TokenBurnNftParams,
   TokenCancelAirdropParams,
   TokenClaimAirdropParams,
   TokenCreateParams,
@@ -34,6 +36,7 @@ import {
   PendingAirdropId,
   TokenAirdropTransaction,
   TokenAssociateTransaction,
+  TokenBurnTransaction,
   TokenCancelAirdropTransaction,
   TokenClaimAirdropTransaction,
   TokenCreateTransaction,
@@ -503,6 +506,26 @@ export class TokenServiceImpl implements TokenService {
     return new TokenCancelAirdropTransaction().addPendingAirdropId(
       pendingAirdropId,
     );
+  }
+
+  createBurnFtTransaction(params: TokenBurnFtParams): TokenBurnTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating FT burn transaction: ${params.amount.toString()} tokens for token ${params.tokenId}`,
+    );
+
+    return new TokenBurnTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAmount(params.amount);
+  }
+
+  createBurnNftTransaction(params: TokenBurnNftParams): TokenBurnTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating NFT burn transaction: ${params.serialNumbers.length} serials for token ${params.tokenId}`,
+    );
+
+    return new TokenBurnTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setSerials(params.serialNumbers);
   }
 
   /**

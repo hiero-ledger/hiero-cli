@@ -6,6 +6,7 @@ import type {
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { KeyInfo, TokenViewOutput } from '@/plugins/token/commands/view';
 
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { SupplyType } from '@/core/types/shared.types';
 import { extractPublicKeysFromMirrorNodeKey } from '@/core/utils/extract-public-keys';
 
@@ -107,7 +108,7 @@ export function tokenBuildOutput(
   };
 
   // Add decimals only for Fungible Tokens
-  if (tokenInfo.type === 'FUNGIBLE_COMMON') {
+  if (tokenInfo.type === MirrorNodeTokenType.FUNGIBLE_COMMON) {
     return {
       ...base,
       decimals: parseInt(tokenInfo.decimals, 10),

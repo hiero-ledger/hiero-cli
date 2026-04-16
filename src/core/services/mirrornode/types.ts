@@ -19,6 +19,11 @@ export enum MirrorNodeKeyType {
   ED25519 = 'ED25519',
 }
 
+export enum MirrorNodeTokenType {
+  FUNGIBLE_COMMON = 'FUNGIBLE_COMMON',
+  NON_FUNGIBLE_UNIQUE = 'NON_FUNGIBLE_UNIQUE',
+}
+
 export interface AccountAPIBalance {
   balance: number;
   timestamp: string;
@@ -77,7 +82,7 @@ export interface TokenInfo {
   decimals: string;
   total_supply: string;
   max_supply: string;
-  type: string;
+  type: MirrorNodeTokenType;
   treasury_account_id: string;
   admin_key?: MirrorNodeKey | null;
   kyc_key?: MirrorNodeKey | null;
