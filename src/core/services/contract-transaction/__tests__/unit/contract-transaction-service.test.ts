@@ -2,16 +2,20 @@
  * Unit tests for ContractTransactionServiceImpl
  * Tests contract creation flow transaction construction
  */
-import type { ContractFunctionParameters } from '@hashgraph/sdk';
+import type { ContractFunctionParameters, Key } from '@hashgraph/sdk';
 import type {
   ContractCreateFlowParams,
   ContractExecuteParams,
+  DeleteContractParams,
+  UpdateContractParams,
 } from '@/core/services/contract-transaction/types';
 
 import {
   ContractCreateFlow,
+  ContractDeleteTransaction,
   ContractExecuteTransaction,
   ContractId,
+  ContractUpdateTransaction,
   PrivateKey,
 } from '@hashgraph/sdk';
 import { ethers, getBytes } from 'ethers';
@@ -20,11 +24,15 @@ import { ContractTransactionServiceImpl } from '@/core/services/contract-transac
 
 import {
   createMockContractCreateFlow,
+  createMockContractDeleteTransaction,
   createMockContractExecuteTransaction,
+  createMockContractUpdateTransaction,
 } from './mocks';
 
 const mockContractCreateFlow = createMockContractCreateFlow();
 const mockContractExecuteTx = createMockContractExecuteTransaction();
+const mockContractDeleteTx = createMockContractDeleteTransaction();
+const mockContractUpdateTx = createMockContractUpdateTransaction();
 const mockAdminKey = PrivateKey.generateED25519(); // Use a real key for simplicity in tests, or mock if strictly needed. Real key is easier here.
 
 // Mock ethers
@@ -38,7 +46,9 @@ const mockHbarFromTinybars = jest.fn((val: string) => ({ tinybars: val }));
 
 jest.mock('@hashgraph/sdk', () => ({
   ContractCreateFlow: jest.fn(() => mockContractCreateFlow),
+  ContractDeleteTransaction: jest.fn(() => mockContractDeleteTx),
   ContractExecuteTransaction: jest.fn(() => mockContractExecuteTx),
+  ContractUpdateTransaction: jest.fn(() => mockContractUpdateTx),
   ContractId: {
     fromString: jest.fn((id: string) => ({ id })),
   },
@@ -306,6 +316,254 @@ describe('ContractTransactionServiceImpl', () => {
         undefined,
       );
       expect(result.transaction).toBe(mockContractExecuteTx);
+    });
+  });
+
+  describe('deleteContract', () => {
+    it('should create ContractDeleteTransaction with contractId', () => {
+      const params: DeleteContractParams = { contractId: '0.0.1234' };
+
+      const result = contractService.deleteContract(params);
+
+      expect(ContractDeleteTransaction).toHaveBeenCalledTimes(1);
+      expect(ContractId.fromString).toHaveBeenCalledWith('0.0.1234');
+      expect(mockContractDeleteTx.setContractId).toHaveBeenCalledWith({
+        id: '0.0.1234',
+      });
+      expect(result.transaction).toBe(mockContractDeleteTx);
+    });
+
+    it('should set transferAccountId when provided', () => {
+      const params: DeleteContractParams = {
+        contractId: '0.0.1234',
+        transferAccountId: '0.0.5678',
+      };
+
+      contractService.deleteContract(params);
+
+      expect(mockAccountIdFromString).toHaveBeenCalledWith('0.0.5678');
+      expect(mockContractDeleteTx.setTransferAccountId).toHaveBeenCalledWith({
+        id: '0.0.5678',
+      });
+    });
+
+    it('should set transferContractId when provided', () => {
+      const params: DeleteContractParams = {
+        contractId: '0.0.1234',
+        transferContractId: '0.0.9999',
+      };
+
+      contractService.deleteContract(params);
+
+      expect(ContractId.fromString).toHaveBeenCalledWith('0.0.9999');
+      expect(mockContractDeleteTx.setTransferContractId).toHaveBeenCalledWith({
+        id: '0.0.9999',
+      });
+    });
+
+    it('should not set transfer fields when not provided', () => {
+      const params: DeleteContractParams = { contractId: '0.0.1234' };
+
+      contractService.deleteContract(params);
+
+      expect(mockContractDeleteTx.setTransferAccountId).not.toHaveBeenCalled();
+      expect(mockContractDeleteTx.setTransferContractId).not.toHaveBeenCalled();
+    });
+
+    it('should throw ValidationError when ContractId.fromString throws', () => {
+      (ContractId.fromString as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('Invalid contract ID');
+      });
+
+      const params: DeleteContractParams = { contractId: 'invalid-id' };
+
+      expect(() => contractService.deleteContract(params)).toThrow(
+        'Invalid contract delete parameters',
+      );
+    });
+  });
+
+  describe('updateContract', () => {
+    it('should create ContractUpdateTransaction with contractId', () => {
+      const params: UpdateContractParams = { contractId: '0.0.1234' };
+
+      const result = contractService.updateContract(params);
+
+      expect(ContractUpdateTransaction).toHaveBeenCalledTimes(1);
+      expect(ContractId.fromString).toHaveBeenCalledWith('0.0.1234');
+      expect(mockContractUpdateTx.setContractId).toHaveBeenCalledWith({
+        id: '0.0.1234',
+      });
+      expect(result.transaction).toBe(mockContractUpdateTx);
+    });
+
+    it('should set adminKey when provided', () => {
+      const mockKey = {
+        _type: 'ED25519',
+      } as unknown as Key;
+      const params: UpdateContractParams = {
+        contractId: '0.0.1234',
+        adminKey: mockKey,
+      };
+
+      contractService.updateContract(params);
+
+      expect(mockContractUpdateTx.setAdminKey).toHaveBeenCalledWith(mockKey);
+    });
+
+    it('should set memo when provided', () => {
+      const params: UpdateContractParams = {
+        contractId: '0.0.1234',
+        memo: 'new memo',
+      };
+
+      contractService.updateContract(params);
+
+      expect(mockContractUpdateTx.setContractMemo).toHaveBeenCalledWith(
+        'new memo',
+      );
+      expect(mockContractUpdateTx.clearContractMemo).not.toHaveBeenCalled();
+    });
+
+    it('should call clearContractMemo when memo is null', () => {
+      const params: UpdateContractParams = {
+        contractId: '0.0.1234',
+        memo: null,
+      };
+
+      contractService.updateContract(params);
+
+      expect(mockContractUpdateTx.clearContractMemo).toHaveBeenCalledTimes(1);
+      expect(mockContractUpdateTx.setContractMemo).not.toHaveBeenCalled();
+    });
+
+    it('should set autoRenewPeriod when provided', () => {
+      const params: UpdateContractParams = {
+        contractId: '0.0.1234',
+        autoRenewPeriod: 7776000,
+      };
+
+      contractService.updateContract(params);
+
+      expect(mockContractUpdateTx.setAutoRenewPeriod).toHaveBeenCalledWith(
+        7776000,
+      );
+    });
+
+    it('should set autoRenewAccountId when provided', () => {
+      const params: UpdateContractParams = {
+        contractId: '0.0.1234',
+        autoRenewAccountId: '0.0.500',
+      };
+
+      contractService.updateContract(params);
+
+      expect(mockAccountIdFromString).toHaveBeenCalledWith('0.0.500');
+      expect(mockContractUpdateTx.setAutoRenewAccountId).toHaveBeenCalledWith({
+        id: '0.0.500',
+      });
+      expect(
+        mockContractUpdateTx.clearAutoRenewAccountId,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should call clearAutoRenewAccountId when autoRenewAccountId is null', () => {
+      const params: UpdateContractParams = {
+        contractId: '0.0.1234',
+        autoRenewAccountId: null,
+      };
+
+      contractService.updateContract(params);
+
+      expect(
+        mockContractUpdateTx.clearAutoRenewAccountId,
+      ).toHaveBeenCalledTimes(1);
+      expect(mockContractUpdateTx.setAutoRenewAccountId).not.toHaveBeenCalled();
+    });
+
+    it('should set maxAutomaticTokenAssociations when provided', () => {
+      const params: UpdateContractParams = {
+        contractId: '0.0.1234',
+        maxAutomaticTokenAssociations: 10,
+      };
+
+      contractService.updateContract(params);
+
+      expect(
+        mockContractUpdateTx.setMaxAutomaticTokenAssociations,
+      ).toHaveBeenCalledWith(10);
+    });
+
+    it('should set stakedAccountId when provided', () => {
+      const params: UpdateContractParams = {
+        contractId: '0.0.1234',
+        stakedAccountId: '0.0.300',
+      };
+
+      contractService.updateContract(params);
+
+      expect(mockContractUpdateTx.setStakedAccountId).toHaveBeenCalledWith(
+        '0.0.300',
+      );
+    });
+
+    it('should set stakedNodeId when provided', () => {
+      const params: UpdateContractParams = {
+        contractId: '0.0.1234',
+        stakedNodeId: 3,
+      };
+
+      contractService.updateContract(params);
+
+      expect(mockContractUpdateTx.setStakedNodeId).toHaveBeenCalledWith(3);
+    });
+
+    it('should set declineStakingReward when provided', () => {
+      const params: UpdateContractParams = {
+        contractId: '0.0.1234',
+        declineStakingReward: true,
+      };
+
+      contractService.updateContract(params);
+
+      expect(mockContractUpdateTx.setDeclineStakingReward).toHaveBeenCalledWith(
+        true,
+      );
+    });
+
+    it('should not set optional fields when not provided', () => {
+      const params: UpdateContractParams = { contractId: '0.0.1234' };
+
+      contractService.updateContract(params);
+
+      expect(mockContractUpdateTx.setAdminKey).not.toHaveBeenCalled();
+      expect(mockContractUpdateTx.setContractMemo).not.toHaveBeenCalled();
+      expect(mockContractUpdateTx.clearContractMemo).not.toHaveBeenCalled();
+      expect(mockContractUpdateTx.setAutoRenewPeriod).not.toHaveBeenCalled();
+      expect(mockContractUpdateTx.setAutoRenewAccountId).not.toHaveBeenCalled();
+      expect(
+        mockContractUpdateTx.clearAutoRenewAccountId,
+      ).not.toHaveBeenCalled();
+      expect(
+        mockContractUpdateTx.setMaxAutomaticTokenAssociations,
+      ).not.toHaveBeenCalled();
+      expect(mockContractUpdateTx.setStakedAccountId).not.toHaveBeenCalled();
+      expect(mockContractUpdateTx.setStakedNodeId).not.toHaveBeenCalled();
+      expect(
+        mockContractUpdateTx.setDeclineStakingReward,
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should throw ValidationError when ContractId.fromString throws', () => {
+      (ContractId.fromString as jest.Mock).mockImplementationOnce(() => {
+        throw new Error('Invalid contract ID');
+      });
+
+      const params: UpdateContractParams = { contractId: 'invalid-id' };
+
+      expect(() => contractService.updateContract(params)).toThrow(
+        'Invalid contract update parameters',
+      );
     });
   });
 });

@@ -5,7 +5,9 @@ import type {
   ContractDeleteResult,
   ContractExecuteParams,
   ContractExecuteResult,
+  ContractUpdateResult,
   DeleteContractParams,
+  UpdateContractParams,
 } from '@/core/services/contract-transaction/types';
 
 import {
@@ -14,6 +16,7 @@ import {
   ContractDeleteTransaction,
   ContractExecuteTransaction,
   ContractId,
+  ContractUpdateTransaction,
   Hbar,
 } from '@hashgraph/sdk';
 import { ethers, getBytes } from 'ethers';
@@ -111,6 +114,61 @@ export class ContractTransactionServiceImpl implements ContractTransactionServic
           transferAccountId: params.transferAccountId,
           transferContractId: params.transferContractId,
         },
+        cause: error,
+      });
+    }
+  }
+
+  updateContract(params: UpdateContractParams): ContractUpdateResult {
+    try {
+      const transaction = new ContractUpdateTransaction().setContractId(
+        ContractId.fromString(params.contractId),
+      );
+
+      if (params.adminKey !== undefined) {
+        transaction.setAdminKey(params.adminKey);
+      }
+
+      if (params.memo === null) {
+        transaction.clearContractMemo();
+      } else if (params.memo !== undefined) {
+        transaction.setContractMemo(params.memo);
+      }
+
+      if (params.autoRenewPeriod !== undefined) {
+        transaction.setAutoRenewPeriod(params.autoRenewPeriod);
+      }
+
+      if (params.autoRenewAccountId === null) {
+        transaction.clearAutoRenewAccountId();
+      } else if (params.autoRenewAccountId !== undefined) {
+        transaction.setAutoRenewAccountId(
+          AccountId.fromString(params.autoRenewAccountId),
+        );
+      }
+
+      if (params.maxAutomaticTokenAssociations !== undefined) {
+        transaction.setMaxAutomaticTokenAssociations(
+          params.maxAutomaticTokenAssociations,
+        );
+      }
+
+      if (params.stakedAccountId !== undefined) {
+        transaction.setStakedAccountId(params.stakedAccountId);
+      }
+
+      if (params.stakedNodeId !== undefined) {
+        transaction.setStakedNodeId(params.stakedNodeId);
+      }
+
+      if (params.declineStakingReward !== undefined) {
+        transaction.setDeclineStakingReward(params.declineStakingReward);
+      }
+
+      return { transaction };
+    } catch (error) {
+      throw new ValidationError('Invalid contract update parameters', {
+        context: { contractId: params.contractId },
         cause: error,
       });
     }

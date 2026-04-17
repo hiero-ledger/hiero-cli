@@ -23,3 +23,23 @@ export const createMockContractExecuteTransaction = () => ({
   setGas: jest.fn().mockReturnThis(),
   setFunction: jest.fn().mockReturnThis(),
 });
+
+export const createMockContractDeleteTransaction = () => ({
+  setContractId: jest.fn().mockReturnThis(),
+  setTransferAccountId: jest.fn().mockReturnThis(),
+  setTransferContractId: jest.fn().mockReturnThis(),
+});
+
+export const createMockContractUpdateTransaction = () => ({
+  setContractId: jest.fn().mockReturnThis(),
+  setAdminKey: jest.fn().mockReturnThis(),
+  setContractMemo: jest.fn().mockReturnThis(),
+  clearContractMemo: jest.fn().mockReturnThis(),
+  setAutoRenewPeriod: jest.fn().mockReturnThis(),
+  setAutoRenewAccountId: jest.fn().mockReturnThis(),
+  clearAutoRenewAccountId: jest.fn().mockReturnThis(),
+  setMaxAutomaticTokenAssociations: jest.fn().mockReturnThis(),
+  setStakedAccountId: jest.fn().mockReturnThis(),
+  setStakedNodeId: jest.fn().mockReturnThis(),
+  setDeclineStakingReward: jest.fn().mockReturnThis(),
+});
