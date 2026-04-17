@@ -448,6 +448,43 @@ interface CommandOutputSpec {
 
 `serial` is `null` for fungible token airdrops and a positive integer for NFT airdrops. The sender is the account that originally initiated the airdrop; if `--from` is omitted, the operator account is used.
 
+#### `token reject-airdrop`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "ownerAccountId": "0.0.1234",
+  "network": "testnet",
+  "rejected": {
+    "tokenId": "0.0.5678",
+    "tokenName": "FungibleToken",
+    "tokenSymbol": "FT",
+    "type": "FUNGIBLE"
+  }
+}
+```
+
+NFT example:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "ownerAccountId": "0.0.1234",
+  "network": "testnet",
+  "rejected": {
+    "tokenId": "0.0.5679",
+    "tokenName": "MyNFT",
+    "tokenSymbol": "NFT",
+    "type": "NFT",
+    "serialNumbers": [1, 2, 3]
+  }
+}
+```
+
+`rejected` is a single token object. `type` is `"FUNGIBLE"` or `"NFT"`. For NFT entries `serialNumbers` contains the rejected serial numbers. Token name and symbol are fetched from the mirror node. Maximum 10 NFT serials per transaction (Hedera limit).
+
 #### `token transfer-ft`
 
 **Output**:

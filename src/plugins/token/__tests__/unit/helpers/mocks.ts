@@ -27,13 +27,13 @@ import type { TokenService } from '@/core/services/token/token-service.interface
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import { PublicKey } from '@hashgraph/sdk';
 
 import { ED25519_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
-  makeIdentityResolutionServiceMock as makeGlobalIdentityResolutionServiceMock,
   makeKeyResolverMock as makeGlobalKeyResolverMock,
   makeScheduleTransactionServiceMock,
 } from '@/__tests__/mocks/mocks';
@@ -76,6 +76,7 @@ export const makeTokenServiceMock = (
   createClaimAirdropTransaction: jest.fn(),
   createBurnFtTransaction: jest.fn(),
   createBurnNftTransaction: jest.fn(),
+  createRejectAirdropTransaction: jest.fn(),
   ...overrides,
 });
 
@@ -453,7 +454,23 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       queryContractFunction: jest.fn(),
     } as ContractQueryService,
     identityResolution: {
-      ...makeGlobalIdentityResolutionServiceMock(),
+      resolveAccount: jest
+        .fn()
+        .mockImplementation(
+          ({ accountReference }: { accountReference: string }) => {
+            const resolved = alias.resolve(
+              accountReference,
+              AliasType.Account,
+              (config?.network || 'testnet') as SupportedNetwork,
+            );
+            return {
+              accountId: resolved?.entityId ?? accountReference,
+              accountPublicKey: '',
+            };
+          },
+        ),
+      resolveContract: jest.fn(),
+      resolveReferenceToEntityOrEvmAddress: jest.fn(),
       ...(config?.identityResolution || {}),
     },
     schedule: makeScheduleTransactionServiceMock(),

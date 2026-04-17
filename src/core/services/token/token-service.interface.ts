@@ -13,6 +13,7 @@ import type {
   TokenCreateTransaction,
   TokenDeleteTransaction,
   TokenMintTransaction,
+  TokenRejectTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
 import type {
@@ -30,6 +31,7 @@ import type {
   TokenCreateParams,
   TokenDeleteParams,
   TokenMintParams,
+  TokenRejectAirdropParams,
   TokenTransferParams,
 } from '@/core/types/token.types';
 
@@ -99,4 +101,8 @@ export interface TokenService {
   createBurnFtTransaction(params: TokenBurnFtParams): TokenBurnTransaction;
 
   createBurnNftTransaction(params: TokenBurnNftParams): TokenBurnTransaction;
+
+  createRejectAirdropTransaction(
+    params: TokenRejectAirdropParams,
+  ): TokenRejectTransaction;
 }

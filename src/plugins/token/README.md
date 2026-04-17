@@ -908,6 +908,58 @@ hcli token cancel-airdrop \
 
 **Implementation:** [`src/plugins/token/commands/cancel-airdrop/handler.ts`](./commands/cancel-airdrop/handler.ts)
 
+### Token Reject Airdrop
+
+Reject a token from account balance, returning it to the treasury. For NFT tokens, specify serial numbers with `--serial`. Custom fees are waived.
+
+```bash
+# Reject a fungible token
+hcli token reject-airdrop \
+  --owner my-wallet \
+  --token 0.0.5867883
+
+# Reject a single NFT serial
+hcli token reject-airdrop \
+  --owner my-wallet \
+  --token 0.0.5867884 \
+  --serial 5
+
+# Reject multiple NFT serials
+hcli token reject-airdrop \
+  --owner my-wallet \
+  --token 0.0.5867884 \
+  --serial 1,2,3
+
+# With explicit signing key
+hcli token reject-airdrop \
+  --owner my-wallet \
+  --token 0.0.5867883 \
+  --from 0.0.5678:302e020100300506032b657004220420...
+
+# Batch mode
+hcli token reject-airdrop \
+  --owner my-wallet \
+  --token 0.0.5867883 \
+  --batch my-batch
+```
+
+**Parameters:**
+
+- `--owner` / `-o`: Owner account ID or alias - **Required**
+- `--token` / `-t`: Token ID to reject (e.g. `0.0.5867883`) - **Required**
+- `--serial` / `-s`: NFT serial number(s). Required for NFT tokens. Comma-separated: `1,2,3` - **Optional**
+- `--from` / `-f`: Signing account credential (alias or account-id:private-key pair) - **Optional** (defaults to owner account)
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Notes:**
+
+- Maximum 10 NFT serials per transaction (Hedera limit)
+- `--serial` is required for NFT tokens and must not be provided for fungible tokens
+- Batch support: pass `--batch <batch-name>` to queue the transaction for batch execution
+
+**Implementation:** [`src/plugins/token/commands/reject-airdrop/handler.ts`](./commands/reject-airdrop/handler.ts)
+
 ### Token Transfer NFT
 
 Transfer one or more NFTs from one account to another.

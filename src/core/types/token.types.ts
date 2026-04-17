@@ -211,3 +211,18 @@ export interface TokenCancelAirdropParams {
   tokenId: string;
   serial?: number;
 }
+
+export enum AirdropTokenType {
+  FUNGIBLE = 'FUNGIBLE',
+  NFT = 'NFT',
+}
+
+export interface RejectAirdropItem {
+  tokenId: string;
+  serialNumber?: number; // undefined for FT
+}
+
+export interface TokenRejectAirdropParams {
+  ownerAccountId: string;
+  items: RejectAirdropItem[];
+}

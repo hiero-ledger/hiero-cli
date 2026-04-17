@@ -20,6 +20,7 @@ import type {
   TokenCreateParams,
   TokenDeleteParams,
   TokenMintParams,
+  TokenRejectAirdropParams,
   TokenTransferParams,
 } from '@/core/types/token.types';
 import type { TokenService } from './token-service.interface';
@@ -43,6 +44,7 @@ import {
   TokenDeleteTransaction,
   TokenId,
   TokenMintTransaction,
+  TokenRejectTransaction,
   TokenSupplyType,
   TransferTransaction,
 } from '@hashgraph/sdk';
@@ -446,6 +448,30 @@ export class TokenServiceImpl implements TokenService {
         tx.addNftTransfer(new NftId(tid, serial), sender, recipient);
       }
     }
+    return tx;
+  }
+
+  createRejectAirdropTransaction(
+    params: TokenRejectAirdropParams,
+  ): TokenRejectTransaction {
+    const { ownerAccountId, items } = params;
+    const owner = AccountId.fromString(ownerAccountId);
+
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating reject transaction: ${items.length} item(s) for owner ${ownerAccountId}`,
+    );
+
+    const tx = new TokenRejectTransaction().setOwnerId(owner);
+
+    for (const item of items) {
+      const tokenId = TokenId.fromString(item.tokenId);
+      if (item.serialNumber !== undefined) {
+        tx.addNftId(new NftId(tokenId, item.serialNumber));
+      } else {
+        tx.addTokenId(tokenId);
+      }
+    }
+
     return tx;
   }
 

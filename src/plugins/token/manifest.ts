@@ -108,6 +108,11 @@ import {
   TokenPendingAirdropsOutputSchema,
 } from './commands/pending-airdrops';
 import {
+  TOKEN_REJECT_AIRDROP_TEMPLATE,
+  tokenRejectAirdrop,
+  TokenRejectAirdropOutputSchema,
+} from './commands/reject-airdrop';
+import {
   TOKEN_TRANSFER_FT_TEMPLATE,
   tokenTransferFt,
   TokenTransferFtOutputSchema,
@@ -1413,6 +1418,63 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenClaimAirdropOutputSchema,
         humanTemplate: TOKEN_CLAIM_AIRDROP_TEMPLATE,
+      },
+    },
+    {
+      name: 'reject-airdrop',
+      summary:
+        'Reject a token from account balance, returning it to the treasury',
+      description:
+        'Reject a token from account balance, returning it to the treasury. ' +
+        'For NFT tokens, specify serial numbers with --serial.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Owner account ID or alias',
+        },
+        {
+          name: 'token',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token ID to reject (e.g. 0.0.5867883)',
+        },
+        {
+          name: 'serial',
+          short: 's',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'NFT serial number(s). Required for NFT tokens. Comma-separated: 1,2,3',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Signing account credential. Accepts any key format. Defaults to owner account.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenRejectAirdrop,
+      output: {
+        schema: TokenRejectAirdropOutputSchema,
+        humanTemplate: TOKEN_REJECT_AIRDROP_TEMPLATE,
       },
     },
     {
