@@ -3,8 +3,7 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import '@/core/utils/json-serialize';
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { SupplyType } from '@/core/types/shared.types';
+import { AliasType, SupplyType } from '@/core/types/shared.types';
 import {
   tokenAssociate,
   TokenAssociateOutputSchema,

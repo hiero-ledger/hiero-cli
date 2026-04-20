@@ -4,7 +4,7 @@ import type { PostOutputPreparationHookParams } from '@/core/hooks/types';
 import type { Credential } from '@/core/services/kms/kms-types.interface';
 
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import {
   type BatchDataItem,
   OrchestratorSource,

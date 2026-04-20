@@ -5,7 +5,7 @@ import type { AccountData } from '@/plugins/account/schema';
 import type { AccountImportOutput } from './output';
 
 import { StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { buildAccountEvmAddress } from '@/plugins/account/utils/account-address';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';

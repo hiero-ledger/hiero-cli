@@ -7,6 +7,14 @@ import type { CustomFee } from '@hashgraph/sdk';
 import type { CompileOptions } from 'solc';
 import type { KeyAlgorithm } from '@/core/shared/constants';
 
+export enum AliasType {
+  Account = 'account',
+  Token = 'token',
+  Key = 'key',
+  Topic = 'topic',
+  Contract = 'contract',
+}
+
 /**
  * Supported Hedera networks
  * Used across all services for network identification

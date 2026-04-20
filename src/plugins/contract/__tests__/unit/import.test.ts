@@ -17,7 +17,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupportedNetwork } from '@/core';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { ContractImportOutputSchema } from '@/plugins/contract/commands/import';
 import { contractImport } from '@/plugins/contract/commands/import/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';

@@ -23,9 +23,9 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 import type { KeyResolverService } from './key-resolver-service.interface';
 
 import { NotFoundError, StateError, ValidationError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ERROR_MESSAGES } from '@/core/services/key-resolver/error-messages';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
+import { AliasType } from '@/core/types/shared.types';
 
 export class KeyResolverServiceImpl implements KeyResolverService {
   private readonly mirror: HederaMirrornodeService;

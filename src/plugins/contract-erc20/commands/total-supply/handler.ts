@@ -9,7 +9,7 @@ import type { ContractErc20TotalSupplyNormalizedParams } from './types';
 import { Interface } from 'ethers';
 
 import { StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { ContractErc20CallTotalSupplyInputSchema } from '@/plugins/contract-erc20/commands/total-supply/input';
 import { ContractErc20CallTotalSupplyResultSchema } from '@/plugins/contract-erc20/commands/total-supply/result';
 import { ERC20_ABI } from '@/plugins/contract-erc20/shared/erc20-abi';

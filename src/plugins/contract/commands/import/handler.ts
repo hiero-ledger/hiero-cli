@@ -8,7 +8,7 @@ import type { ContractData } from '@/plugins/contract/schema';
 import type { ContractImportOutput } from './output';
 
 import { NotFoundError, StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { ensureEvmAddress0xPrefix } from '@/core/utils/evm-address';
 import { extractPublicKeysFromMirrorNodeKey } from '@/core/utils/extract-public-keys';
 import { composeKey } from '@/core/utils/key-composer';

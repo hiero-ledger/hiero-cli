@@ -41,9 +41,9 @@ import {
   makeScheduleTransactionServiceMock,
 } from '@/__tests__/mocks/mocks';
 import { InternalError, KeyAlgorithm } from '@/core';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
+import { AliasType } from '@/core/types/shared.types';
 
 import { mockTransactionResults } from './fixtures';
 

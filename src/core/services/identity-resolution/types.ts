@@ -1,5 +1,5 @@
-import type { AliasType } from '@/core/services/alias/alias-service.interface';
 import type {
+  AliasType,
   EntityReferenceType,
   SupportedNetwork,
 } from '@/core/types/shared.types';

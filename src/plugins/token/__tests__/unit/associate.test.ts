@@ -9,8 +9,8 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupportedNetwork } from '@/core';
 import { InternalError, TransactionError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { AliasType } from '@/core/types/shared.types';
 import {
   tokenAssociate,
   TokenAssociateOutputSchema,
