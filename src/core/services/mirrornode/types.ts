@@ -96,7 +96,7 @@ export interface TokenInfo {
   deleted?: boolean | null;
   freeze_default?: boolean;
   auto_renew_account?: string | null;
-  auto_renew_period?: number;
+  auto_renew_period?: number | null;
   expiry_timestamp?: number | null;
   pause_status: string;
   memo: string;
