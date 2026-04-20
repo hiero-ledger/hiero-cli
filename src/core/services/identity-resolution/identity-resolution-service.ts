@@ -10,8 +10,7 @@ import type {
 } from '@/core/services/identity-resolution/types';
 
 import { StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { EntityReferenceType } from '@/core/types/shared.types';
+import { AliasType, EntityReferenceType } from '@/core/types/shared.types';
 
 export class IdentityResolutionServiceImpl implements IdentityResolutionService {
   private readonly aliasService: AliasService;

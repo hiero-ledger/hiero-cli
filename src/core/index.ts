@@ -49,14 +49,15 @@ export type {
   Account,
   Credentials,
   Script,
+  SolcCompiler,
   Token,
   Topic,
   TransactionReceipt,
   TransactionResult,
   TransactionStatus,
 } from './types/shared.types';
-export type { SolcCompiler } from './types/shared.types';
 export {
+  AliasType,
   EntityReferenceType,
   MirrorTransactionResult,
   NetworkChainId,

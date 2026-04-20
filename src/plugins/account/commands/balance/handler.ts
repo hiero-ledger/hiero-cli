@@ -6,8 +6,8 @@ import BigNumber from 'bignumber.js';
 
 import { NotFoundError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
+import { AliasType } from '@/core/types/shared.types';
 import { normalizeBalance } from '@/core/utils/normalize-balance';
 import { fetchAccountTokenBalances } from '@/plugins/account/utils/balance-helpers';
 

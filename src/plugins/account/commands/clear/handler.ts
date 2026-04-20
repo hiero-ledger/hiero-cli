@@ -2,7 +2,7 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { AccountClearOutput } from './output';
 
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
 
 export class AccountClearCommand implements Command {

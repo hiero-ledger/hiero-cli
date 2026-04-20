@@ -9,8 +9,7 @@ import type { ContractErc20BalanceOfNormalizedParams } from './types';
 import { Interface } from 'ethers';
 
 import { NotFoundError, StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { EntityReferenceType } from '@/core/types/shared.types';
+import { AliasType, EntityReferenceType } from '@/core/types/shared.types';
 import { ContractErc20CallBalanceOfInputSchema } from '@/plugins/contract-erc20/commands/balance-of/input';
 import { ContractErc20CallBalanceOfResultSchema } from '@/plugins/contract-erc20/commands/balance-of/result';
 import { ERC20_ABI } from '@/plugins/contract-erc20/shared/erc20-abi';

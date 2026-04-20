@@ -2,9 +2,8 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TokenCreateNftOutput } from '@/plugins/token/commands/create-nft/output';
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
-import { SupplyType } from '@/core/types/shared.types';
+import { AliasType, SupplyType } from '@/core/types/shared.types';
 import {
   tokenCreateNft,
   TokenCreateNftOutputSchema,

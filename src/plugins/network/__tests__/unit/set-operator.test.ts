@@ -12,9 +12,8 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, ValidationError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import {
   networkSetOperator,
   NetworkSetOperatorOutputSchema,

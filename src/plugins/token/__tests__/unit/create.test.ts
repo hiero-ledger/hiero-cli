@@ -3,9 +3,8 @@ import type { TransactionResult } from '@/core/types/shared.types';
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, StateError, ValidationError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
-import { SupplyType } from '@/core/types/shared.types';
+import { AliasType, SupplyType } from '@/core/types/shared.types';
 import {
   tokenCreateFt,
   TokenCreateFtOutputSchema,

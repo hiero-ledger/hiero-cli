@@ -5,7 +5,7 @@ import type { ContractErc721CallTokenUriOutput } from '@/plugins/contract-erc721
 import { Interface } from 'ethers';
 
 import { StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { ContractErc721CallTokenUriInputSchema } from '@/plugins/contract-erc721/commands/token-uri/input';
 import { ContractErc721CallTokenUriResultSchema } from '@/plugins/contract-erc721/commands/token-uri/result';
 import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';

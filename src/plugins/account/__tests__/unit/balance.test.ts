@@ -12,7 +12,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError, StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { AccountBalanceOutputSchema } from '@/plugins/account/commands/balance';
 import { accountBalance } from '@/plugins/account/commands/balance/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';

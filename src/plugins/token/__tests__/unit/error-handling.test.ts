@@ -8,7 +8,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { tokenTransferFt } from '@/plugins/token';
 import { tokenAssociate } from '@/plugins/token/commands/associate';
 import { tokenCreateFt } from '@/plugins/token/commands/create-ft';

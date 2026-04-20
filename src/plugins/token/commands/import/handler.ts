@@ -6,9 +6,8 @@ import type { TokenImportOutput } from './output';
 import type { ImportTokenNormalizedParams } from './types';
 
 import { NotFoundError, ValidationError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { MirrorTokenTypeToHederaTokenType } from '@/core/shared/constants';
-import { SupplyType } from '@/core/types/shared.types';
+import { AliasType, SupplyType } from '@/core/types/shared.types';
 import {
   extractPublicKeysFromMirrorNodeKey,
   getEffectiveKeyRequirement,

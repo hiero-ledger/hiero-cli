@@ -7,10 +7,9 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
-import { SupplyType } from '@/core/types/shared.types';
+import { AliasType, SupplyType } from '@/core/types/shared.types';
 import {
   tokenMintNft,
   TokenMintNftOutputSchema,

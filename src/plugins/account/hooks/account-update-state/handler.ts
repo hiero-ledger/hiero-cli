@@ -7,7 +7,7 @@ import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 
 import { formatTransactionIdToDashFormat } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import {
   type BatchDataItem,
   MirrorTransactionResult,
