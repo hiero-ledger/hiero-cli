@@ -31,7 +31,10 @@ import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import { PublicKey } from '@hashgraph/sdk';
 
-import { ED25519_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
+import {
+  ED25519_HEX_PUBLIC_KEY,
+  MOCK_FREEZE_PUBLIC_KEY,
+} from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeKeyResolverMock as makeGlobalKeyResolverMock,
@@ -957,6 +960,52 @@ export const makeDeleteSuccessMocks = (overrides?: {
     );
 
   return { ...apiMocks, mockDeleteTransaction };
+};
+
+export const makeFreezeSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    freeze_key?: { key: string } | null;
+    name?: string;
+  };
+  freezeKeyPublicKey?: string;
+}) => {
+  const mockFreezeTransaction = { test: 'freeze-transaction' };
+  const defaultFreezeKeyPublicKey =
+    overrides?.freezeKeyPublicKey ?? MOCK_FREEZE_PUBLIC_KEY;
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createFreezeTransaction: jest.fn().mockReturnValue(mockFreezeTransaction),
+    },
+    txExecute: {
+      execute: jest
+        .fn()
+        .mockResolvedValue(makeTransactionResult({ success: true })),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        freeze_key:
+          overrides?.tokenInfo && 'freeze_key' in overrides.tokenInfo
+            ? overrides.tokenInfo.freeze_key
+            : { key: defaultFreezeKeyPublicKey },
+        name: overrides?.tokenInfo?.name ?? 'TestToken',
+      }),
+    },
+    identityResolution: {
+      resolveAccount: jest.fn().mockResolvedValue({
+        accountId: '0.0.5678',
+        accountPublicKey: 'account-public-key',
+      }),
+    },
+  });
+
+  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
+    accountId: '0.0.200000',
+    publicKey: defaultFreezeKeyPublicKey,
+    keyRefId: 'freeze-key-ref-id',
+  });
+
+  return { ...apiMocks, mockFreezeTransaction };
 };
 
 /**
