@@ -74,6 +74,7 @@ export const makeTokenServiceMock = (
   createFungibleTokenAllowanceTransaction: jest.fn(),
   createDeleteTransaction: jest.fn(),
   createFreezeTransaction: jest.fn(),
+  createUnfreezeTransaction: jest.fn(),
   createAirdropFtTransaction: jest.fn(),
   createAirdropNftTransaction: jest.fn(),
   createCancelAirdropTransaction: jest.fn(),
@@ -1005,6 +1006,54 @@ export const makeFreezeSuccessMocks = (overrides?: {
   });
 
   return { ...apiMocks, mockFreezeTransaction };
+};
+
+export const makeUnfreezeSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    freeze_key?: { key: string } | null;
+    name?: string;
+  };
+  freezeKeyPublicKey?: string;
+}) => {
+  const mockUnfreezeTransaction = { test: 'unfreeze-transaction' };
+  const defaultFreezeKeyPublicKey =
+    overrides?.freezeKeyPublicKey ?? MOCK_FREEZE_PUBLIC_KEY;
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createUnfreezeTransaction: jest
+        .fn()
+        .mockReturnValue(mockUnfreezeTransaction),
+    },
+    txExecute: {
+      execute: jest
+        .fn()
+        .mockResolvedValue(makeTransactionResult({ success: true })),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        freeze_key:
+          overrides?.tokenInfo && 'freeze_key' in overrides.tokenInfo
+            ? overrides.tokenInfo.freeze_key
+            : { key: defaultFreezeKeyPublicKey },
+        name: overrides?.tokenInfo?.name ?? 'TestToken',
+      }),
+    },
+    identityResolution: {
+      resolveAccount: jest.fn().mockResolvedValue({
+        accountId: '0.0.5678',
+        accountPublicKey: 'account-public-key',
+      }),
+    },
+  });
+
+  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
+    accountId: '0.0.200000',
+    publicKey: defaultFreezeKeyPublicKey,
+    keyRefId: 'freeze-key-ref-id',
+  });
+
+  return { ...apiMocks, mockUnfreezeTransaction };
 };
 
 /**
