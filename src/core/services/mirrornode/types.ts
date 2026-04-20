@@ -19,6 +19,11 @@ export enum MirrorNodeKeyType {
   ED25519 = 'ED25519',
 }
 
+export enum MirrorNodeTokenType {
+  FUNGIBLE_COMMON = 'FUNGIBLE_COMMON',
+  NON_FUNGIBLE_UNIQUE = 'NON_FUNGIBLE_UNIQUE',
+}
+
 export interface AccountAPIBalance {
   balance: number;
   timestamp: string;
@@ -77,7 +82,7 @@ export interface TokenInfo {
   decimals: string;
   total_supply: string;
   max_supply: string;
-  type: string;
+  type: MirrorNodeTokenType;
   treasury_account_id: string;
   admin_key?: MirrorNodeKey | null;
   kyc_key?: MirrorNodeKey | null;
@@ -188,13 +193,14 @@ export interface TransactionAssessedCustomFeeItem {
 export interface TransactionDetailItem {
   transaction_id: string;
   consensus_timestamp: string;
+  entity_id?: string | null;
   valid_start_timestamp: string;
   charged_tx_fee: number;
   memo_base64?: string | null;
   result: string;
   transaction_hash: string;
   name: string;
-  node: string;
+  node?: string | null;
   scheduled: boolean;
   transfers: TransactionTransferItem[];
   token_transfers?: TransactionTokenTransferItem[];
@@ -339,7 +345,7 @@ export interface AccountListItemBalance {
 export interface AccountListItemAPIResponse {
   account: string;
   alias?: string | null;
-  balance?: AccountListItemBalance;
+  balance?: AccountListItemBalance | null;
   created_timestamp: string;
   evm_address?: string;
   key?: AccountAPIKey | null;
@@ -364,7 +370,7 @@ export interface AccountListItemDto {
       tokenId: string;
       balance: number;
     }>;
-  };
+  } | null;
   createdTimestamp: string;
   evmAddress?: string;
   accountPublicKey?: string;

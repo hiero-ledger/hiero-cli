@@ -15,6 +15,10 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
+import {
+  extractPublicKeysFromMirrorNodeKey,
+  getEffectiveKeyRequirement,
+} from '@/core/utils/extract-public-keys';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { isRawUnits } from '@/plugins/token/utils/token-amount-helpers';
@@ -80,23 +84,49 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
       });
     }
 
-    const supplyKeyResolved = await api.keyResolver.resolveSigningKey(
-      validArgs.supplyKey,
-      keyManager,
-      false,
-      ['token:supply'],
+    const extractedKeys = extractPublicKeysFromMirrorNodeKey(
+      tokenInfo.supply_key,
     );
-
-    const tokenSupplyKeyPublicKey = tokenInfo.supply_key.key;
-    const providedSupplyKeyPublicKey = supplyKeyResolved.publicKey;
-
-    if (tokenSupplyKeyPublicKey !== providedSupplyKeyPublicKey) {
-      throw new ValidationError('Supply key mismatch', {
-        context: { tokenId },
-      });
+    const signatureRequirement = getEffectiveKeyRequirement(extractedKeys);
+    if (signatureRequirement.publicKeys.length === 0) {
+      throw new ValidationError(
+        'Could not resolve supply key public keys from network',
+        { context: { tokenId } },
+      );
     }
 
-    logger.info(`Using supply key: ${supplyKeyResolved.keyRefId}`);
+    let signingKeyRefIds: string[];
+
+    if (validArgs.supplyKey.length > 0) {
+      const supplyKeys = await Promise.all(
+        validArgs.supplyKey.map((cred) =>
+          api.keyResolver.resolveSigningKey(cred, keyManager, false, [
+            'token:supply',
+          ]),
+        ),
+      );
+      signingKeyRefIds = supplyKeys.map((supplyKey) => supplyKey.keyRefId);
+    } else {
+      const refIds: string[] = [];
+      const usedRefIds = new Set<string>();
+      for (const publicKey of signatureRequirement.publicKeys) {
+        const kmsRecord = api.kms.findByPublicKey(publicKey);
+        if (kmsRecord && !usedRefIds.has(kmsRecord.keyRefId)) {
+          usedRefIds.add(kmsRecord.keyRefId);
+          refIds.push(kmsRecord.keyRefId);
+          if (refIds.length >= signatureRequirement.requiredSignatures) {
+            break;
+          }
+        }
+      }
+      if (refIds.length < signatureRequirement.requiredSignatures) {
+        throw new ValidationError(
+          'Not enough supply key(s) not found in key manager for this token. Provide --supply-key.',
+          { context: { tokenId } },
+        );
+      }
+      signingKeyRefIds = refIds;
+    }
 
     const rawUnits = isRawUnits(userAmountInput);
     const tokenDecimals = rawUnits ? 0 : parseInt(tokenInfo.decimals);
@@ -124,8 +154,8 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
       network,
       tokenId,
       rawAmount,
-      supplyKeyResolved,
-      keyRefIds: [supplyKeyResolved.keyRefId],
+      signingKeyRefIds,
+      keyRefIds: signingKeyRefIds,
     };
   }
 
@@ -150,11 +180,12 @@ export class TokenMintFtCommand extends BaseTransactionCommand<
     buildTransactionResult: MintFtBuildTransactionResult,
   ): Promise<MintFtSignTransactionResult> {
     const { api, logger } = args;
-    const supplyKeyRefId = normalisedParams.supplyKeyResolved.keyRefId;
-    logger.debug(`Using key ${supplyKeyRefId} for signing transaction`);
+    logger.debug(
+      `Using ${normalisedParams.signingKeyRefIds.length} key(s) for signing transaction`,
+    );
     const transaction = await api.txSign.sign(
       buildTransactionResult.transaction,
-      [supplyKeyRefId],
+      normalisedParams.keyRefIds,
     );
     return {
       signedTransaction: transaction,

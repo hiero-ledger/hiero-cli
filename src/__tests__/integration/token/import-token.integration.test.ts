@@ -37,7 +37,7 @@ describe('Import Token Integration Tests', () => {
       initialSupply: '10',
       supplyType: SupplyType.INFINITE,
       name: `token-import-${Date.now()}`,
-      adminKey: `${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`,
+      adminKey: [`${process.env.OPERATOR_ID}:${process.env.OPERATOR_KEY}`],
     };
     const createTokenResult = await tokenCreateFt({
       args: createTokenArgs,

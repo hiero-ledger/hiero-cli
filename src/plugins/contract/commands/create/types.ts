@@ -23,6 +23,13 @@ export interface ContractCreateNormalisedParams {
   adminKeys: ResolvedPublicKey[];
   adminKeyThreshold: number;
   network: SupportedNetwork;
+  initialBalanceRaw?: bigint;
+  autoRenewPeriod?: number;
+  autoRenewAccountId?: string;
+  maxAutomaticTokenAssociations?: number;
+  stakedAccountId?: string;
+  stakedNodeId?: number;
+  declineStakingReward?: boolean;
 }
 
 export interface ContractCreateBuildTransactionResult {

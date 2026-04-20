@@ -19,7 +19,7 @@ export interface SmartContractVerifyApiOkResponse {
     address: string;
     chainId: string;
     status: string;
-    message: string;
+    message?: string;
     libraryMap: object;
   }[];
 }

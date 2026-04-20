@@ -13,11 +13,15 @@ import type {
   TokenAirdropNftParams,
   TokenAllowanceFtParams,
   TokenAssociationParams,
+  TokenBurnFtParams,
+  TokenBurnNftParams,
+  TokenCancelAirdropParams,
   TokenClaimAirdropParams,
   TokenCreateParams,
   TokenDeleteParams,
   TokenFreezeParams,
   TokenMintParams,
+  TokenRejectAirdropParams,
   TokenTransferParams,
 } from '@/core/types/token.types';
 import type { TokenService } from './token-service.interface';
@@ -34,12 +38,15 @@ import {
   PendingAirdropId,
   TokenAirdropTransaction,
   TokenAssociateTransaction,
+  TokenBurnTransaction,
+  TokenCancelAirdropTransaction,
   TokenClaimAirdropTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
   TokenFreezeTransaction,
   TokenId,
   TokenMintTransaction,
+  TokenRejectTransaction,
   TokenSupplyType,
   TransferTransaction,
 } from '@hashgraph/sdk';
@@ -102,14 +109,14 @@ export class TokenServiceImpl implements TokenService {
       tokenType,
       supplyType,
       maxSupplyRaw,
-      adminPublicKey,
-      supplyPublicKey,
-      wipePublicKey,
-      kycPublicKey,
-      freezePublicKey,
-      pausePublicKey,
-      feeSchedulePublicKey,
-      metadataPublicKey,
+      adminKey,
+      supplyKey,
+      wipeKey,
+      kycKey,
+      freezeKey,
+      pauseKey,
+      feeScheduleKey,
+      metadataKey,
       freezeDefault,
       customFees,
       memo,
@@ -134,8 +141,8 @@ export class TokenServiceImpl implements TokenService {
       .setSupplyType(tokenSupplyType)
       .setTreasuryAccountId(AccountId.fromString(treasuryId));
 
-    if (adminPublicKey) {
-      tokenCreateTx.setAdminKey(adminPublicKey);
+    if (adminKey) {
+      tokenCreateTx.setAdminKey(adminKey);
     }
 
     // Set max supply for finite supply tokens
@@ -162,23 +169,23 @@ export class TokenServiceImpl implements TokenService {
     }
 
     // Set optional keys if provided
-    if (supplyPublicKey) {
-      tokenCreateTx.setSupplyKey(supplyPublicKey);
+    if (supplyKey) {
+      tokenCreateTx.setSupplyKey(supplyKey);
       this.logger.debug(`[TOKEN SERVICE] Set supply key`);
     }
 
-    if (wipePublicKey) {
-      tokenCreateTx.setWipeKey(wipePublicKey);
+    if (wipeKey) {
+      tokenCreateTx.setWipeKey(wipeKey);
       this.logger.debug(`[TOKEN SERVICE] Set wipe key`);
     }
 
-    if (kycPublicKey) {
-      tokenCreateTx.setKycKey(kycPublicKey);
+    if (kycKey) {
+      tokenCreateTx.setKycKey(kycKey);
       this.logger.debug(`[TOKEN SERVICE] Set KYC key`);
     }
 
-    if (freezePublicKey) {
-      tokenCreateTx.setFreezeKey(freezePublicKey);
+    if (freezeKey) {
+      tokenCreateTx.setFreezeKey(freezeKey);
       this.logger.debug(`[TOKEN SERVICE] Set freeze key`);
       tokenCreateTx.setFreezeDefault(freezeDefault ?? false);
       this.logger.debug(
@@ -186,18 +193,18 @@ export class TokenServiceImpl implements TokenService {
       );
     }
 
-    if (pausePublicKey) {
-      tokenCreateTx.setPauseKey(pausePublicKey);
+    if (pauseKey) {
+      tokenCreateTx.setPauseKey(pauseKey);
       this.logger.debug(`[TOKEN SERVICE] Set pause key`);
     }
 
-    if (feeSchedulePublicKey) {
-      tokenCreateTx.setFeeScheduleKey(feeSchedulePublicKey);
+    if (feeScheduleKey) {
+      tokenCreateTx.setFeeScheduleKey(feeScheduleKey);
       this.logger.debug(`[TOKEN SERVICE] Set fee schedule key`);
     }
 
-    if (metadataPublicKey) {
-      tokenCreateTx.setMetadataKey(metadataPublicKey);
+    if (metadataKey) {
+      tokenCreateTx.setMetadataKey(metadataKey);
       this.logger.debug(`[TOKEN SERVICE] Set metadata key`);
     }
 
@@ -455,6 +462,30 @@ export class TokenServiceImpl implements TokenService {
     return tx;
   }
 
+  createRejectAirdropTransaction(
+    params: TokenRejectAirdropParams,
+  ): TokenRejectTransaction {
+    const { ownerAccountId, items } = params;
+    const owner = AccountId.fromString(ownerAccountId);
+
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating reject transaction: ${items.length} item(s) for owner ${ownerAccountId}`,
+    );
+
+    const tx = new TokenRejectTransaction().setOwnerId(owner);
+
+    for (const item of items) {
+      const tokenId = TokenId.fromString(item.tokenId);
+      if (item.serialNumber !== undefined) {
+        tx.addNftId(new NftId(tokenId, item.serialNumber));
+      } else {
+        tx.addTokenId(tokenId);
+      }
+    }
+
+    return tx;
+  }
+
   createClaimAirdropTransaction(
     params: TokenClaimAirdropParams,
   ): TokenClaimAirdropTransaction {
@@ -486,6 +517,52 @@ export class TokenServiceImpl implements TokenService {
     }
 
     return tx;
+  }
+
+  createCancelAirdropTransaction(
+    params: TokenCancelAirdropParams,
+  ): TokenCancelAirdropTransaction {
+    const { senderAccountId, receiverAccountId, tokenId, serial } = params;
+
+    const pendingAirdropId = new PendingAirdropId()
+      .setSenderid(AccountId.fromString(senderAccountId))
+      .setReceiverId(AccountId.fromString(receiverAccountId));
+
+    if (serial !== undefined) {
+      pendingAirdropId.setNftId(new NftId(TokenId.fromString(tokenId), serial));
+      this.logger.debug(
+        `[TOKEN SERVICE] Creating cancel NFT airdrop transaction: ${tokenId}#${serial} from ${senderAccountId} to ${receiverAccountId}`,
+      );
+    } else {
+      pendingAirdropId.setTokenId(TokenId.fromString(tokenId));
+      this.logger.debug(
+        `[TOKEN SERVICE] Creating cancel FT airdrop transaction: ${tokenId} from ${senderAccountId} to ${receiverAccountId}`,
+      );
+    }
+
+    return new TokenCancelAirdropTransaction().addPendingAirdropId(
+      pendingAirdropId,
+    );
+  }
+
+  createBurnFtTransaction(params: TokenBurnFtParams): TokenBurnTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating FT burn transaction: ${params.amount.toString()} tokens for token ${params.tokenId}`,
+    );
+
+    return new TokenBurnTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAmount(params.amount);
+  }
+
+  createBurnNftTransaction(params: TokenBurnNftParams): TokenBurnTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating NFT burn transaction: ${params.serialNumbers.length} serials for token ${params.tokenId}`,
+    );
+
+    return new TokenBurnTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setSerials(params.serialNumbers);
   }
 
   /**

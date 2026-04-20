@@ -5,13 +5,12 @@ import type {
   SupportedNetwork,
   TransactionResult,
 } from '@/core';
-import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 
 export interface MintFtNormalizedParams extends BaseNormalizedParams {
   network: SupportedNetwork;
   tokenId: string;
   rawAmount: bigint;
-  supplyKeyResolved: ResolvedPublicKey;
+  signingKeyRefIds: string[];
 }
 
 export interface MintFtBuildTransactionResult extends BaseBuildTransactionResult {}

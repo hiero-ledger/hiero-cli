@@ -3,7 +3,7 @@
  * Type definitions for token-related operations
  */
 
-import type { PublicKey } from '@hashgraph/sdk';
+import type { Key } from '@hashgraph/sdk';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupplyType } from '@/core/types/shared.types';
 
@@ -63,15 +63,15 @@ export interface TokenCreateParams {
   tokenType: HederaTokenType;
   supplyType: SupplyType;
   maxSupplyRaw?: bigint; // Required for FINITE supply type
-  adminPublicKey?: PublicKey;
-  supplyPublicKey?: PublicKey;
-  wipePublicKey?: PublicKey;
-  kycPublicKey?: PublicKey;
-  freezePublicKey?: PublicKey;
+  adminKey?: Key;
+  supplyKey?: Key;
+  wipeKey?: Key;
+  kycKey?: Key;
+  freezeKey?: Key;
   freezeDefault?: boolean;
-  pausePublicKey?: PublicKey;
-  feeSchedulePublicKey?: PublicKey;
-  metadataPublicKey?: PublicKey;
+  pauseKey?: Key;
+  feeScheduleKey?: Key;
+  metadataKey?: Key;
   autoRenewPeriod?: number;
   autoRenewAccountId?: string;
   expirationTime?: Date;
@@ -115,6 +115,16 @@ export interface TokenDeleteParams {
 export interface TokenFreezeParams {
   tokenId: string;
   accountId: string;
+}
+
+export interface TokenBurnFtParams {
+  tokenId: string;
+  amount: bigint;
+}
+
+export interface TokenBurnNftParams {
+  tokenId: string;
+  serialNumbers: number[];
 }
 
 /**
@@ -198,4 +208,26 @@ export interface ClaimAirdropItem {
 
 export interface TokenClaimAirdropParams {
   items: ClaimAirdropItem[];
+}
+
+export interface TokenCancelAirdropParams {
+  senderAccountId: string;
+  receiverAccountId: string;
+  tokenId: string;
+  serial?: number;
+}
+
+export enum AirdropTokenType {
+  FUNGIBLE = 'FUNGIBLE',
+  NFT = 'NFT',
+}
+
+export interface RejectAirdropItem {
+  tokenId: string;
+  serialNumber?: number; // undefined for FT
+}
+
+export interface TokenRejectAirdropParams {
+  ownerAccountId: string;
+  items: RejectAirdropItem[];
 }

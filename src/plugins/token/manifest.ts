@@ -38,6 +38,21 @@ import {
   TokenAssociateOutputSchema,
 } from './commands/associate';
 import {
+  TOKEN_BURN_FT_TEMPLATE,
+  tokenBurnFt,
+  TokenBurnFtOutputSchema,
+} from './commands/burn-ft';
+import {
+  TOKEN_BURN_NFT_TEMPLATE,
+  tokenBurnNft,
+  TokenBurnNftOutputSchema,
+} from './commands/burn-nft';
+import {
+  TOKEN_CANCEL_AIRDROP_TEMPLATE,
+  tokenCancelAirdrop,
+  TokenCancelAirdropOutputSchema,
+} from './commands/cancel-airdrop';
+import {
   TOKEN_CLAIM_AIRDROP_TEMPLATE,
   tokenClaimAirdrop,
   TokenClaimAirdropOutputSchema,
@@ -98,6 +113,11 @@ import {
   TokenPendingAirdropsOutputSchema,
 } from './commands/pending-airdrops';
 import {
+  TOKEN_REJECT_AIRDROP_TEMPLATE,
+  tokenRejectAirdrop,
+  TokenRejectAirdropOutputSchema,
+} from './commands/reject-airdrop';
+import {
   TOKEN_TRANSFER_FT_TEMPLATE,
   tokenTransferFt,
   TokenTransferFtOutputSchema,
@@ -112,12 +132,12 @@ import {
   tokenView,
   TokenViewOutputSchema,
 } from './commands/view';
-import { TokenAssociateBatchStateHook } from './hooks/batch-associate';
-import { TokenCreateFtBatchStateHook } from './hooks/batch-create-ft';
-import { TokenCreateFtFromFileBatchStateHook } from './hooks/batch-create-ft-from-file';
-import { TokenCreateNftBatchStateHook } from './hooks/batch-create-nft';
-import { TokenCreateNftFromFileBatchStateHook } from './hooks/batch-create-nft-from-file';
-import { TokenDeleteBatchStateHook } from './hooks/batch-delete';
+import { TokenAssociateStateHook } from './hooks/token-associate-state';
+import { TokenCreateFtFromFileStateHook } from './hooks/token-create-ft-from-file-state';
+import { TokenCreateFtStateHook } from './hooks/token-create-ft-state';
+import { TokenCreateNftFromFileStateHook } from './hooks/token-create-nft-from-file-state';
+import { TokenCreateNftStateHook } from './hooks/token-create-nft-state';
+import { TokenDeleteStateHook } from './hooks/token-delete-state';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
@@ -126,42 +146,144 @@ export const tokenPluginManifest: PluginManifest = {
   description: 'Plugin for managing Hedera fungible and non-fungible tokens',
   hooks: [
     {
-      name: 'token-create-ft-batch-state',
-      hook: new TokenCreateFtBatchStateHook(),
+      name: 'token-create-ft-state',
+      hook: new TokenCreateFtStateHook(),
       options: [],
     },
     {
-      name: 'token-create-ft-from-file-batch-state',
-      hook: new TokenCreateFtFromFileBatchStateHook(),
+      name: 'token-create-ft-from-file-state',
+      hook: new TokenCreateFtFromFileStateHook(),
       options: [],
     },
     {
-      name: 'token-create-nft-batch-state',
-      hook: new TokenCreateNftBatchStateHook(),
+      name: 'token-create-nft-state',
+      hook: new TokenCreateNftStateHook(),
       options: [],
     },
     {
-      name: 'token-create-nft-from-file-batch-state',
-      hook: new TokenCreateNftFromFileBatchStateHook(),
+      name: 'token-create-nft-from-file-state',
+      hook: new TokenCreateNftFromFileStateHook(),
       options: [],
     },
     {
-      name: 'token-associate-batch-state',
-      hook: new TokenAssociateBatchStateHook(),
+      name: 'token-associate-state',
+      hook: new TokenAssociateStateHook(),
       options: [],
     },
     {
-      name: 'token-delete-batch-state',
-      hook: new TokenDeleteBatchStateHook(),
+      name: 'token-delete-state',
+      hook: new TokenDeleteStateHook(),
       options: [],
     },
   ],
   commands: [
     {
+      name: 'burn-ft',
+      summary: 'Burn fungible tokens',
+      description:
+        'Burn fungible tokens from the Treasury account to decrease total supply.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'amount',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Amount to burn. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "100t")',
+        },
+        {
+          name: 'supply-key',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenBurnFt,
+      output: {
+        schema: TokenBurnFtOutputSchema,
+        humanTemplate: TOKEN_BURN_FT_TEMPLATE,
+      },
+    },
+    {
+      name: 'burn-nft',
+      summary: 'Burn NFT serials',
+      description:
+        'Burn NFT serial numbers to decrease supply. NFTs must be held by the treasury account.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'serials',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Comma-separated serial numbers to burn (e.g., "1,2,3"). Max 10 serials.',
+        },
+        {
+          name: 'supply-key',
+          short: 'S',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenBurnNft,
+      output: {
+        schema: TokenBurnNftOutputSchema,
+        humanTemplate: TOKEN_BURN_NFT_TEMPLATE,
+      },
+    },
+    {
       name: 'mint-ft',
       summary: 'Mint fungible tokens',
       description: 'Mint additional fungible tokens to increase supply.',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -181,10 +303,10 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'supply-key',
           short: 's',
-          type: OptionType.STRING,
-          required: true,
+          type: OptionType.REPEATABLE,
+          required: false,
           description:
-            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+            'Supply key credential(s). Omit to auto-resolve signing keys from the key manager when on-chain supply public keys match stored credentials. Pass one or more times (same formats as token create-ft) when providing explicit credentials — including multiple values for KeyList / threshold supply keys on Hedera.',
         },
         {
           name: 'key-manager',
@@ -205,7 +327,11 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'mint-nft',
       summary: 'Mint NFT',
       description: 'Mint a new NFT to an existing NFT collection.',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -224,10 +350,10 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'supply-key',
           short: 's',
-          type: OptionType.STRING,
-          required: true,
+          type: OptionType.REPEATABLE,
+          required: false,
           description:
-            'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+            'Supply key credential(s). Omit to auto-resolve signing keys from the key manager when on-chain supply public keys match stored credentials. Pass one or more times (same formats as token create-nft) when providing explicit credentials — including multiple values for KeyList / threshold supply keys on Hedera.',
         },
         {
           name: 'key-manager',
@@ -248,7 +374,11 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'transfer-ft',
       summary: 'Transfer a fungible token',
       description: 'Transfer a fungible token from one account to another',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -300,7 +430,10 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Airdrop fungible tokens to multiple recipients',
       description:
         'Airdrop fungible tokens from one account to one or more recipients in a single transaction. If a recipient lacks auto-association slots, the transfer becomes a pending airdrop.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -352,7 +485,11 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'transfer-nft',
       summary: 'Transfer a non-fungible token',
       description: 'Transfer one or more NFTs from one account to another',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -404,7 +541,10 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Airdrop NFTs to multiple recipients',
       description:
         'Airdrop specific NFT serial numbers from one account to one or more recipients in a single transaction. If a recipient lacks auto-association slots, the transfer becomes a pending airdrop.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -453,10 +593,70 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
+      name: 'cancel-airdrop',
+      summary: 'Cancel a pending token airdrop',
+      description:
+        'Cancel a pending token airdrop (FT or NFT) initiated by the sender account. The sender must sign this transaction.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token identifier (ID or alias)',
+        },
+        {
+          name: 'receiver',
+          short: 'r',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Receiver account (ID, EVM address, or alias)',
+        },
+        {
+          name: 'serial',
+          short: 's',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'NFT serial number. If provided, cancels an NFT airdrop.',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Sender key. Accepts any key format. Defaults to operator.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenCancelAirdrop,
+      output: {
+        schema: TokenCancelAirdropOutputSchema,
+        humanTemplate: TOKEN_CANCEL_AIRDROP_TEMPLATE,
+      },
+    },
+    {
       name: 'create-ft',
       summary: 'Create a new fungible token',
       description: 'Create a new fungible token with specified properties',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token-name',
@@ -516,26 +716,50 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Optional admin key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Omit for a token without an admin key.',
         },
         {
+          name: 'admin-key-threshold',
+          short: 'A',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of admin keys required to sign (only when multiple --admin-key values are set).',
+        },
+        {
           name: 'supply-key',
           short: 's',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
+          name: 'supply-key-threshold',
+          short: 'L',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of supply keys required to sign (only when multiple --supply-key values are set).',
+        },
+        {
           name: 'freeze-key',
           short: 'f',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Optional freeze key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'freeze-key-threshold',
+          short: 'Z',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of freeze keys required to sign (only when multiple --freeze-key values are set).',
         },
         {
           name: 'freeze-default',
@@ -549,42 +773,82 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'wipe-key',
           short: 'w',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Optional wipe key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
+          name: 'wipe-key-threshold',
+          short: 'W',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of wipe keys required to sign (only when multiple --wipe-key values are set).',
+        },
+        {
           name: 'kyc-key',
           short: 'y',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Optional KYC key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
+          name: 'kyc-key-threshold',
+          short: 'H',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of KYC keys required to sign (only when multiple --kyc-key values are set).',
+        },
+        {
           name: 'pause-key',
           short: 'p',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Optional pause key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
+          name: 'pause-key-threshold',
+          short: 'U',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of pause keys required to sign (only when multiple --pause-key values are set).',
+        },
+        {
           name: 'fee-schedule-key',
           short: 'e',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Optional fee schedule key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
+          name: 'fee-schedule-key-threshold',
+          short: 'E',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of fee schedule keys required to sign (only when multiple --fee-schedule-key values are set).',
+        },
+        {
           name: 'metadata-key',
           short: 'D',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Optional metadata key. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+        },
+        {
+          name: 'metadata-key-threshold',
+          short: 'O',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of metadata keys required to sign (only when multiple --metadata-key values are set).',
         },
         {
           name: 'name',
@@ -645,7 +909,11 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'create-nft',
       summary: 'Create a new non-fungible token',
       description: 'Create a new non-fungible token with specified properties',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token-name',
@@ -688,62 +956,126 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Admin key of token. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias. Defaults to operator key.',
         },
         {
+          name: 'admin-key-threshold',
+          short: 'A',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of admin keys required to sign (only when multiple --admin-key values are set).',
+        },
+        {
           name: 'supply-key',
           short: 's',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
+          name: 'supply-key-threshold',
+          short: 'L',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of supply keys required to sign (only when multiple --supply-key values are set).',
+        },
+        {
           name: 'freeze-key',
           short: 'f',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Freeze key. Allows freezing token transfers for specific accounts.',
         },
         {
+          name: 'freeze-key-threshold',
+          short: 'Z',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of freeze keys required to sign (only when multiple --freeze-key values are set).',
+        },
+        {
           name: 'wipe-key',
           short: 'w',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
             'Wipe key. Allows wiping token balance from specific accounts.',
         },
         {
+          name: 'wipe-key-threshold',
+          short: 'W',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of wipe keys required to sign (only when multiple --wipe-key values are set).',
+        },
+        {
           name: 'pause-key',
           short: 'p',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description: 'Pause key. Allows pausing all token transfers.',
         },
         {
+          name: 'pause-key-threshold',
+          short: 'U',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of pause keys required to sign (only when multiple --pause-key values are set).',
+        },
+        {
           name: 'kyc-key',
           short: 'y',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description: 'KYC key. Allows granting/revoking KYC status.',
         },
         {
+          name: 'kyc-key-threshold',
+          short: 'H',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of KYC keys required to sign (only when multiple --kyc-key values are set).',
+        },
+        {
           name: 'fee-schedule-key',
           short: 'e',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description: 'Fee schedule key. Allows modifying custom fees.',
         },
         {
+          name: 'fee-schedule-key-threshold',
+          short: 'E',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of fee schedule keys required to sign (only when multiple --fee-schedule-key values are set).',
+        },
+        {
           name: 'metadata-key',
           short: 'D',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description: 'Metadata key. Allows updating token metadata.',
+        },
+        {
+          name: 'metadata-key-threshold',
+          short: 'O',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of metadata keys required to sign (only when multiple --metadata-key values are set).',
         },
         {
           name: 'freeze-default',
@@ -810,7 +1142,11 @@ export const tokenPluginManifest: PluginManifest = {
       name: 'associate',
       summary: 'Associate a token with an account',
       description: 'Associate a token with an account to enable transfers',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -847,7 +1183,11 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Create a new fungible token from a file',
       description:
         'Create a new fungible token from a JSON file definition with advanced features',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'file',
@@ -877,7 +1217,11 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Create a new NFT token from a file',
       description:
         'Create a new non-fungible token from a JSON file definition with advanced features',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'file',
@@ -907,7 +1251,10 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Approve fungible token allowance',
       description:
         'Approve (or revoke by setting amount to 0) a spender allowance for fungible tokens on behalf of the owner.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -1035,7 +1382,10 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Claim pending airdrops',
       description:
         'Claim one or more pending token airdrops (FT and/or NFT) for a receiver account. Use pending-airdrops to list pending airdrops and their indices.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'account',
@@ -1076,11 +1426,71 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
+      name: 'reject-airdrop',
+      summary:
+        'Reject a token from account balance, returning it to the treasury',
+      description:
+        'Reject a token from account balance, returning it to the treasury. ' +
+        'For NFT tokens, specify serial numbers with --serial.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Owner account ID or alias',
+        },
+        {
+          name: 'token',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token ID to reject (e.g. 0.0.5867883)',
+        },
+        {
+          name: 'serial',
+          short: 's',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'NFT serial number(s). Required for NFT tokens. Comma-separated: 1,2,3',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Signing account credential. Accepts any key format. Defaults to owner account.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenRejectAirdrop,
+      output: {
+        schema: TokenRejectAirdropOutputSchema,
+        humanTemplate: TOKEN_REJECT_AIRDROP_TEMPLATE,
+      },
+    },
+    {
       name: 'delete',
       summary: 'Delete a token from the Hedera network',
       description:
         'Delete a token from the Hedera network. Requires admin key. Also removes token from local state if present. Use --state-only to remove only from local state.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -1092,10 +1502,10 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'admin-key',
           short: 'a',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Admin key of token. Required unless the admin key is stored in the key manager (auto-resolved by public key). Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
+            'Admin key credential(s). Required unless admin keys are auto-resolved from the key manager from on-chain public keys. Pass multiple times for KeyList / threshold admin keys. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
         {
           name: 'key-manager',
@@ -1126,7 +1536,11 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Freeze an account for a token',
       description:
         'Prevents the specified account from sending or receiving the token. Requires the token freeze key. Works for both fungible tokens (FT) and non-fungible tokens (NFT).',
-      registeredHooks: ['batchify', 'scheduled'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -1171,7 +1585,10 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Approve NFT allowance',
       description:
         'Approve a spender to transfer NFTs on behalf of the owner. Use --serials for specific serial numbers or --all-serials for the entire collection.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',
@@ -1229,7 +1646,10 @@ export const tokenPluginManifest: PluginManifest = {
       summary: 'Delete NFT allowance',
       description:
         'Delete NFT allowances. Use --serials to remove allowance for specific serial numbers (all spenders). Use --all-serials with --spender to revoke a blanket all-serials approval for a specific spender.',
-      registeredHooks: ['batchify'],
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
       options: [
         {
           name: 'token',

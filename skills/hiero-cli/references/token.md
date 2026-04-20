@@ -12,24 +12,26 @@ Commands marked **[batchify]** support the `--batch <name>` flag to queue into a
 
 Create a new fungible token with specified properties.
 
-| Option                 | Short | Type   | Required | Default        | Description                                                                                                                                |
-| ---------------------- | ----- | ------ | -------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--token-name`         | `-T`  | string | **yes**  | —              | Token name                                                                                                                                 |
-| `--symbol`             | `-Y`  | string | **yes**  | —              | Token symbol                                                                                                                               |
-| `--treasury`           | `-t`  | string | no       | operator       | Treasury account: `accountId:privateKey`, key reference, or alias                                                                          |
-| `--decimals`           | `-d`  | number | no       | `0`            | Number of decimal places                                                                                                                   |
-| `--initial-supply`     | `-i`  | string | no       | `1000000`      | Initial supply. Default: display units. Append `"t"` for raw units                                                                         |
-| `--supply-type`        | `-S`  | string | no       | `INFINITE`     | Supply type: `INFINITE` or `FINITE`                                                                                                        |
-| `--max-supply`         | `-m`  | string | no       | —              | Max supply (required when `supply-type=FINITE`). Append `"t"` for raw units                                                                |
-| `--admin-key`          | `-a`  | string | no       | operator key   | Admin key: `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias                                               |
-| `--supply-key`         | `-s`  | string | no       | —              | Supply key: `accountId:privateKey`, account ID, `{ed25519\|ecdsa}:public:{hex}`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
-| `--name`               | `-n`  | string | no       | —              | Local alias to register for this token                                                                                                     |
-| `--key-manager`        | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                  |
-| `--memo`               | `-M`  | string | no       | —              | Token memo (max 100 chars)                                                                                                                 |
-| `--auto-renew-period`  | `-R`  | string | no       | —              | Auto-renew interval: integer = seconds, or suffix `s` / `m` / `h` / `d`. Requires `--auto-renew-account`                                   |
-| `--auto-renew-account` | `-A`  | string | no       | —              | Account that pays auto-renewal (alias, `accountId:key`, key reference, etc.)                                                               |
-| `--expiration-time`    | `-x`  | string | no       | —              | Fixed expiration (ISO 8601). Ignored (with warning) if auto-renew period + account are set                                                 |
-| `--batch`              | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                                                  |
+| Option                   | Short | Type       | Required | Default        | Description                                                                                                          |
+| ------------------------ | ----- | ---------- | -------- | -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `--token-name`           | `-T`  | string     | **yes**  | —              | Token name                                                                                                           |
+| `--symbol`               | `-Y`  | string     | **yes**  | —              | Token symbol                                                                                                         |
+| `--treasury`             | `-t`  | string     | no       | operator       | Treasury account: `accountId:privateKey`, key reference, or alias                                                    |
+| `--decimals`             | `-d`  | number     | no       | `0`            | Number of decimal places                                                                                             |
+| `--initial-supply`       | `-i`  | string     | no       | `1000000`      | Initial supply. Default: display units. Append `"t"` for raw units                                                   |
+| `--supply-type`          | `-S`  | string     | no       | `INFINITE`     | Supply type: `INFINITE` or `FINITE`                                                                                  |
+| `--max-supply`           | `-m`  | string     | no       | —              | Max supply (required when `supply-type=FINITE`). Append `"t"` for raw units                                          |
+| `--admin-key`            | `-a`  | repeatable | no       | operator key   | Admin key(s). Pass multiple times for KeyList / threshold admin keys. Same credential formats as `hcli account` help |
+| `--admin-key-threshold`  | `-A`  | number     | no       | —              | M-of-N for threshold admin keys (use when multiple `--admin-key` entries participate in an M-of-N policy)            |
+| `--supply-key`           | `-s`  | repeatable | no       | —              | Supply key(s). Pass multiple times for KeyList / threshold supply keys. Same formats as CLI key options              |
+| `--supply-key-threshold` | `-L`  | number     | no       | —              | M-of-N for threshold supply keys (use when multiple `--supply-key` entries participate in an M-of-N policy)          |
+| `--name`                 | `-n`  | string     | no       | —              | Local alias to register for this token                                                                               |
+| `--key-manager`          | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                                                                            |
+| `--memo`                 | `-M`  | string     | no       | —              | Token memo (max 100 chars)                                                                                           |
+| `--auto-renew-period`    | `-R`  | string     | no       | —              | Auto-renew interval: integer = seconds, or suffix `s` / `m` / `h` / `d`. Requires `--auto-renew-account`             |
+| `--auto-renew-account`   | `-r`  | string     | no       | —              | Account that pays auto-renewal (alias, `accountId:key`, key reference, etc.)                                         |
+| `--expiration-time`      | `-x`  | string     | no       | —              | Fixed expiration (ISO 8601). Ignored (with warning) if auto-renew period + account are set                           |
+| `--batch`                | `-B`  | string     | no       | —              | Queue into a named batch instead of executing immediately                                                            |
 
 **Example:**
 
@@ -40,25 +42,29 @@ hcli token create-ft --token-name "MyToken" --symbol MTK --batch myBatch
 
 **Output:** `{ tokenId, name, symbol, treasuryId, decimals, initialSupply, supplyType, transactionId, alias?, network, autoRenewPeriodSeconds?, autoRenewAccountId?, expirationTime? }` — `expirationTime` is an ISO string when fixed expiration was used; lifecycle fields are omitted when not set.
 
+**Repeatable keys:** Besides `--admin-key` / `--supply-key`, role options such as `--freeze-key`, `--wipe-key`, `--kyc-key`, `--pause-key`, `--fee-schedule-key`, and `--metadata-key` are repeatable; each has a matching `-*-threshold` flag for M-of-N policies. Use `hcli token create-ft --help` for the full list.
+
 ---
 
 ### `hcli token create-nft` [batchify]
 
 Create a new non-fungible token collection.
 
-| Option          | Short | Type   | Required | Default        | Description                                                                                                                                |
-| --------------- | ----- | ------ | -------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--token-name`  | `-T`  | string | **yes**  | —              | Token name                                                                                                                                 |
-| `--symbol`      | `-Y`  | string | **yes**  | —              | Token symbol                                                                                                                               |
-| `--treasury`    | `-t`  | string | no       | operator       | Treasury account: `accountId:privateKey`, key reference, or alias                                                                          |
-| `--supply-type` | `-S`  | string | no       | `INFINITE`     | Supply type: `INFINITE` or `FINITE`                                                                                                        |
-| `--max-supply`  | `-m`  | string | no       | —              | Max supply. Append `"t"` for raw units                                                                                                     |
-| `--admin-key`   | `-a`  | string | no       | operator key   | Admin key: `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias                                               |
-| `--supply-key`  | `-s`  | string | no       | —              | Supply key: `accountId:privateKey`, account ID, `{ed25519\|ecdsa}:public:{hex}`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
-| `--name`        | `-n`  | string | no       | —              | Local alias to register                                                                                                                    |
-| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                  |
-| `--memo`        | `-M`  | string | no       | —              | Token memo (max 100 chars)                                                                                                                 |
-| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                                                  |
+| Option                   | Short | Type       | Required | Default        | Description                                                            |
+| ------------------------ | ----- | ---------- | -------- | -------------- | ---------------------------------------------------------------------- |
+| `--token-name`           | `-T`  | string     | **yes**  | —              | Token name                                                             |
+| `--symbol`               | `-Y`  | string     | **yes**  | —              | Token symbol                                                           |
+| `--treasury`             | `-t`  | string     | no       | operator       | Treasury account: `accountId:privateKey`, key reference, or alias      |
+| `--supply-type`          | `-S`  | string     | no       | `INFINITE`     | Supply type: `INFINITE` or `FINITE`                                    |
+| `--max-supply`           | `-m`  | string     | no       | —              | Max supply. Append `"t"` for raw units                                 |
+| `--admin-key`            | `-a`  | repeatable | no       | operator key   | Admin key(s). Pass multiple times for KeyList / threshold admin keys   |
+| `--admin-key-threshold`  | `-A`  | number     | no       | —              | M-of-N when multiple `--admin-key` values are set                      |
+| `--supply-key`           | `-s`  | repeatable | no       | —              | Supply key(s). Pass multiple times for KeyList / threshold supply keys |
+| `--supply-key-threshold` | `-L`  | number     | no       | —              | M-of-N when multiple `--supply-key` values are set                     |
+| `--name`                 | `-n`  | string     | no       | —              | Local alias to register                                                |
+| `--key-manager`          | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                              |
+| `--memo`                 | `-M`  | string     | no       | —              | Token memo (max 100 chars)                                             |
+| `--batch`                | `-B`  | string     | no       | —              | Queue into a named batch instead of executing immediately              |
 
 **Example:**
 
@@ -117,18 +123,19 @@ hcli token create-nft-from-file --file ./my-nft.json --batch myBatch
 
 Mint additional fungible tokens to increase supply.
 
-| Option          | Short | Type   | Required | Default        | Description                                                                                   |
-| --------------- | ----- | ------ | -------- | -------------- | --------------------------------------------------------------------------------------------- |
-| `--token`       | `-T`  | string | **yes**  | —              | Token alias or token ID                                                                       |
-| `--amount`      | `-a`  | string | **yes**  | —              | Amount to mint. Default: display units. Append `"t"` for raw units                            |
-| `--supply-key`  | `-s`  | string | **yes**  | —              | Supply key: `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
-| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                     |
-| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                     |
+| Option          | Short | Type       | Required | Default        | Description                                                                                                                                             |
+| --------------- | ----- | ---------- | -------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--token`       | `-T`  | string     | **yes**  | —              | Token alias or token ID                                                                                                                                 |
+| `--amount`      | `-a`  | string     | **yes**  | —              | Amount to mint. Default: display units. Append `"t"` for raw units                                                                                      |
+| `--supply-key`  | `-s`  | repeatable | no       | —              | Supply key(s). Omit if KMS can resolve all required on-chain supply public keys. Pass one or more times for explicit credentials or KeyList / threshold |
+| `--key-manager` | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                               |
+| `--batch`       | `-B`  | string     | no       | —              | Queue into a named batch instead of executing immediately                                                                                               |
 
 **Example:**
 
 ```
 hcli token mint-ft --token MTK --amount 50000 --supply-key 0.0.123:302e...
+hcli token mint-ft --token MTK --amount 50000 --supply-key alice --supply-key bob
 hcli token mint-ft --token MTK --amount 50000 --supply-key 0.0.123:302e... --batch myBatch
 ```
 
@@ -140,18 +147,19 @@ hcli token mint-ft --token MTK --amount 50000 --supply-key 0.0.123:302e... --bat
 
 Mint a new NFT into an existing NFT collection.
 
-| Option          | Short | Type   | Required | Default        | Description                                                                                   |
-| --------------- | ----- | ------ | -------- | -------------- | --------------------------------------------------------------------------------------------- |
-| `--token`       | `-T`  | string | **yes**  | —              | Token alias or token ID                                                                       |
-| `--metadata`    | `-m`  | string | **yes**  | —              | NFT metadata string (max 100 bytes)                                                           |
-| `--supply-key`  | `-s`  | string | **yes**  | —              | Supply key: `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
-| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                     |
-| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                     |
+| Option          | Short | Type       | Required | Default        | Description                                                                                                                                             |
+| --------------- | ----- | ---------- | -------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--token`       | `-T`  | string     | **yes**  | —              | Token alias or token ID                                                                                                                                 |
+| `--metadata`    | `-m`  | string     | **yes**  | —              | NFT metadata string (max 100 bytes)                                                                                                                     |
+| `--supply-key`  | `-s`  | repeatable | no       | —              | Supply key(s). Omit if KMS can resolve all required on-chain supply public keys. Pass one or more times for explicit credentials or KeyList / threshold |
+| `--key-manager` | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                               |
+| `--batch`       | `-B`  | string     | no       | —              | Queue into a named batch instead of executing immediately                                                                                               |
 
 **Example:**
 
 ```
 hcli token mint-nft --token mynft --metadata "ipfs://QmABC..." --supply-key 0.0.123:302e...
+hcli token mint-nft --token mynft --metadata "ipfs://QmABC..." --supply-key alice --supply-key bob
 hcli token mint-nft --token mynft --metadata "ipfs://QmABC..." --supply-key 0.0.123:302e... --batch myBatch
 ```
 
@@ -316,16 +324,21 @@ hcli token import --token 0.0.123456 --name importedToken
 
 ### `hcli token delete`
 
-Remove a token from local state (does NOT delete from the Hedera network).
+Delete a token on Hedera (unless `--state-only`) and remove it from local CLI state. Admin keys are resolved from the key manager when on-chain public keys match stored credentials; otherwise pass `--admin-key` one or more times (KeyList / threshold).
 
-| Option    | Short | Type   | Required | Default | Description                                  |
-| --------- | ----- | ------ | -------- | ------- | -------------------------------------------- |
-| `--token` | `-T`  | string | **yes**  | —       | Token alias or token ID to remove from state |
+| Option          | Short | Type       | Required | Default | Description                                                                                                 |
+| --------------- | ----- | ---------- | -------- | ------- | ----------------------------------------------------------------------------------------------------------- |
+| `--token`       | `-T`  | string     | **yes**  | —       | Token alias or token ID                                                                                     |
+| `--admin-key`   | `-a`  | repeatable | no       | —       | Admin credential(s) when not auto-resolved from KMS. Pass multiple times for KeyList / threshold admin keys |
+| `--key-manager` | `-k`  | string     | no       | config  | Key manager when resolving `--admin-key`                                                                    |
+| `--state-only`  | `-s`  | boolean    | no       | `false` | Only remove from local CLI state; no network delete (mutually exclusive with `--admin-key`)                 |
 
 **Example:**
 
 ```
 hcli token delete --token MTK
+hcli token delete --token 0.0.123456 --admin-key alice --admin-key bob
+hcli token delete --token MTK --state-only
 ```
 
-**Output:** `{ tokenId, deleted }`
+**Output:** `{ deletedToken, transactionId?, network, removedAliases?, stateOnly }` (see `TokenDeleteOutputSchema`)

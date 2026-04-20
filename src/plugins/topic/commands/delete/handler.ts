@@ -24,10 +24,6 @@ import {
   getEffectiveKeyRequirement,
 } from '@/core/utils/extract-public-keys';
 import { composeKey } from '@/core/utils/key-composer';
-import {
-  buildPublicKeySet,
-  resolveSigningKeyRefsFromExplicitCredentials,
-} from '@/core/utils/resolve-signing-key-refs';
 import { TopicHelper } from '@/plugins/topic/topic-helper';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
@@ -190,25 +186,38 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
       );
     }
 
-    const allowedPublicKeysSet = buildPublicKeySet(requirement.publicKeys);
+    let signingKeyRefIds: string[];
 
-    const adminKeys = await Promise.all(
-      validArgs.adminKey.map((cred) =>
-        api.keyResolver.resolveSigningKey(cred, keyManager, false, [
-          'topic:admin',
-        ]),
-      ),
-    );
-    const explicitFromKeys = resolveSigningKeyRefsFromExplicitCredentials(
-      adminKeys,
-      allowedPublicKeysSet,
-      requirement.requiredSignatures,
-    );
-    this.warnIgnoredTopicDeleteAdminKeys(
-      logger,
-      explicitFromKeys.ignoredKeyRefIds,
-    );
-    const signingKeyRefIds = explicitFromKeys.signingKeyRefIds;
+    if (validArgs.adminKey.length > 0) {
+      const adminKeys = await Promise.all(
+        validArgs.adminKey.map((cred) =>
+          api.keyResolver.resolveSigningKey(cred, keyManager, false, [
+            'contract:admin',
+          ]),
+        ),
+      );
+      signingKeyRefIds = adminKeys.map((adminKey) => adminKey.keyRefId);
+    } else {
+      const refIds: string[] = [];
+      const usedRefIds = new Set<string>();
+      for (const publicKey of requirement.publicKeys) {
+        const kmsRecord = api.kms.findByPublicKey(publicKey);
+        if (kmsRecord && !usedRefIds.has(kmsRecord.keyRefId)) {
+          usedRefIds.add(kmsRecord.keyRefId);
+          refIds.push(kmsRecord.keyRefId);
+          if (refIds.length >= requirement.requiredSignatures) {
+            break;
+          }
+        }
+      }
+      if (refIds.length < requirement.requiredSignatures) {
+        throw new ValidationError(
+          'Not enough admin key(s) not found in key manager for this topic. Provide --admin-key.',
+          { context: { topicId: topicInfo.topic_id } },
+        );
+      }
+      signingKeyRefIds = refIds;
+    }
 
     if (loaded) {
       const topicToDelete: TopicData = {

@@ -7,11 +7,14 @@ import type {
   AccountAllowanceDeleteTransaction,
   TokenAirdropTransaction,
   TokenAssociateTransaction,
+  TokenBurnTransaction,
+  TokenCancelAirdropTransaction,
   TokenClaimAirdropTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
   TokenFreezeTransaction,
   TokenMintTransaction,
+  TokenRejectTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
 import type {
@@ -22,11 +25,15 @@ import type {
   TokenAirdropNftParams,
   TokenAllowanceFtParams,
   TokenAssociationParams,
+  TokenBurnFtParams,
+  TokenBurnNftParams,
+  TokenCancelAirdropParams,
   TokenClaimAirdropParams,
   TokenCreateParams,
   TokenDeleteParams,
   TokenFreezeParams,
   TokenMintParams,
+  TokenRejectAirdropParams,
   TokenTransferParams,
 } from '@/core/types/token.types';
 
@@ -90,4 +97,16 @@ export interface TokenService {
   createClaimAirdropTransaction(
     params: TokenClaimAirdropParams,
   ): TokenClaimAirdropTransaction;
+
+  createCancelAirdropTransaction(
+    params: TokenCancelAirdropParams,
+  ): TokenCancelAirdropTransaction;
+
+  createBurnFtTransaction(params: TokenBurnFtParams): TokenBurnTransaction;
+
+  createBurnNftTransaction(params: TokenBurnNftParams): TokenBurnTransaction;
+
+  createRejectAirdropTransaction(
+    params: TokenRejectAirdropParams,
+  ): TokenRejectTransaction;
 }

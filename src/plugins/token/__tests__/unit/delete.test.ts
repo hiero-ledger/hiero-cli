@@ -36,7 +36,7 @@ const makeArgs = (
 ): CommandHandlerArgs => ({
   args: {
     token: '0.0.123456',
-    adminKey: 'ed25519:private:a'.padEnd(80, 'a'),
+    adminKey: ['ed25519:private:a'.padEnd(80, 'a')],
     keyManager: undefined,
     stateOnly: false,
     ...argsOverrides,
@@ -179,17 +179,6 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
       await expect(tokenDelete(args)).rejects.toThrow('Token has no admin key');
     });
 
-    test('throws ValidationError when admin key mismatches', async () => {
-      const { api } = makeDeleteSuccessMocks({
-        tokenInfo: { admin_key: { key: 'different-key' } },
-        adminKeyPublicKey: 'admin-public-key',
-      });
-      const args = makeArgs(api);
-
-      await expect(tokenDelete(args)).rejects.toThrow(ValidationError);
-      await expect(tokenDelete(args)).rejects.toThrow('Admin key mismatch');
-    });
-
     test('throws TransactionError when transaction fails', async () => {
       const { api } = makeDeleteSuccessMocks();
       (api.txExecute.execute as jest.Mock).mockResolvedValue({
@@ -203,11 +192,12 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
 
     test('throws ValidationError when admin-key not provided and not in KMS', async () => {
       const { api } = makeDeleteSuccessMocks();
+      (api.kms.findByPublicKey as jest.Mock).mockReturnValue(undefined);
       const args = makeArgs(api, { adminKey: undefined });
 
       await expect(tokenDelete(args)).rejects.toThrow(ValidationError);
       await expect(tokenDelete(args)).rejects.toThrow(
-        'Admin key not found in key manager',
+        'Not enough admin key(s) not found in key manager for this token. Provide --admin-key.',
       );
     });
   });
@@ -323,7 +313,7 @@ describe('tokenDelete - state-only (stateOnly=true)', () => {
   test('throws ValidationError when --state-only and --admin-key used together', async () => {
     const { api } = makeDeleteApiMocks({ entityId: '0.0.123456' });
     const args = makeStateOnlyArgs(api, {
-      adminKey: 'ed25519:private:a'.padEnd(80, 'a'),
+      adminKey: ['ed25519:private:a'.padEnd(80, 'a')],
     });
 
     await expect(tokenDelete(args)).rejects.toThrow(ValidationError);

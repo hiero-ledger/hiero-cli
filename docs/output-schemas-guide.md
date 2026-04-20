@@ -431,6 +431,60 @@ interface CommandOutputSpec {
 
 `claimed` contains the list of airdrops that were claimed in this transaction. Each entry mirrors the structure of `pending-airdrops` output. Maximum 10 items per transaction (Hedera SDK limit). FT and NFT airdrops can be mixed in a single transaction.
 
+#### `token cancel-airdrop`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "sender": "0.0.12345",
+  "receiver": "0.0.54321",
+  "serial": null,
+  "network": "testnet"
+}
+```
+
+`serial` is `null` for fungible token airdrops and a positive integer for NFT airdrops. The sender is the account that originally initiated the airdrop; if `--from` is omitted, the operator account is used.
+
+#### `token reject-airdrop`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "ownerAccountId": "0.0.1234",
+  "network": "testnet",
+  "rejected": {
+    "tokenId": "0.0.5678",
+    "tokenName": "FungibleToken",
+    "tokenSymbol": "FT",
+    "type": "FUNGIBLE"
+  }
+}
+```
+
+NFT example:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "ownerAccountId": "0.0.1234",
+  "network": "testnet",
+  "rejected": {
+    "tokenId": "0.0.5679",
+    "tokenName": "MyNFT",
+    "tokenSymbol": "NFT",
+    "type": "NFT",
+    "serialNumbers": [1, 2, 3]
+  }
+}
+```
+
+`rejected` is a single token object. `type` is `"FUNGIBLE"` or `"NFT"`. For NFT entries `serialNumbers` contains the rejected serial numbers. Token name and symbol are fetched from the mirror node. Maximum 10 NFT serials per transaction (Hedera limit).
+
 #### `token transfer-ft`
 
 **Output**:
@@ -486,6 +540,40 @@ interface CommandOutputSpec {
 ```
 
 All key fields (`adminPublicKey`, `supplyPublicKey`, `freezePublicKey`, `wipePublicKey`, `pausePublicKey`, `kycPublicKey`, `feeSchedulePublicKey`, `metadataPublicKey`) are optional and only appear when the corresponding key was provided.
+
+#### `token burn-ft`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "amount": "10000",
+  "newTotalSupply": "990000",
+  "network": "testnet"
+}
+```
+
+- `amount`: Amount burned in base units (smallest denomination)
+- `newTotalSupply`: New total supply after burning (calculated as previous supply minus burned amount)
+
+#### `token burn-nft`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "serialNumbers": [1, 2, 3],
+  "newTotalSupply": "7",
+  "network": "testnet"
+}
+```
+
+- `serialNumbers`: Array of burned serial numbers
+- `newTotalSupply`: New total supply after burning (calculated as previous supply minus number of burned serials)
 
 #### `token mint-ft`
 

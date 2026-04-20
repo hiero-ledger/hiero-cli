@@ -18,6 +18,14 @@ export enum SupportedNetwork {
   LOCALNET = 'localnet',
 }
 
+/**
+ * Discriminator for orchestrator hook payloads (batch execute vs schedule sign/verify).
+ */
+export enum OrchestratorSource {
+  BATCH = 'batch',
+  SCHEDULE = 'schedule',
+}
+
 export enum NetworkChainId {
   MAINNET = 295,
   TESTNET = 296,
@@ -138,6 +146,11 @@ export enum MirrorNodeRequestOrderParameter {
   DESC = 'desc',
 }
 
+export enum MirrorTransactionResult {
+  SUCCESS = 'SUCCESS',
+  FAILURE = 'FAILURE',
+}
+
 export interface TransactionStatus {
   status: 'pending' | 'success' | 'failed';
   transactionId: string;
@@ -170,6 +183,7 @@ export interface BatchDataItem {
   transactionBytes: string;
   order: number;
   command: string;
+  keyRefIds: string[];
   normalizedParams: Record<string, unknown>;
   transactionId?: string;
 }
@@ -184,4 +198,17 @@ export interface BatchData {
 
 export interface BatchExecuteTransactionResult {
   updatedBatchData: BatchData;
+}
+
+export interface ScheduledData {
+  name: string;
+  executed: boolean;
+  success: boolean;
+  command: string;
+  transactionId: string;
+  normalizedParams: Record<string, unknown>;
+}
+
+export interface ScheduledDataVerifyResult {
+  scheduledData: ScheduledData;
 }

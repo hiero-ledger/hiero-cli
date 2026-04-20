@@ -16,11 +16,11 @@ export interface AssociateNormalizedParams extends BaseNormalizedParams {
 }
 
 export interface AssociateBuildTransactionResult {
-  transaction?: Transaction;
+  transaction: Transaction;
 }
 
 export interface AssociateSignTransactionResult {
-  signedTransaction?: Transaction;
+  signedTransaction: Transaction;
 }
 
 export interface AssociateExecuteTransactionResult {

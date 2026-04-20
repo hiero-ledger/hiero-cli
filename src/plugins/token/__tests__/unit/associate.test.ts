@@ -87,6 +87,70 @@ describe('tokenAssociateHandler', () => {
       expect(output.transactionId).toBeUndefined();
     });
 
+    test('should skip transaction pipeline when token is already associated', async () => {
+      const tokenId = '0.0.123456';
+      const accountId = '0.0.789012';
+
+      const createTokenAssociationTransaction = jest.fn();
+      const txSignSign = jest.fn();
+      const txExecuteExecute = jest.fn();
+
+      mockZustandTokenStateHelper(MockedHelper);
+
+      const { api } = makeApiMocks({
+        alias: {
+          resolve: jest.fn().mockReturnValue({
+            entityId: tokenId,
+          }),
+        },
+        mirror: {
+          getAccountTokenBalances: jest.fn().mockResolvedValue({
+            tokens: [{ token_id: tokenId, balance: 0 }],
+          }),
+        },
+        kms: {
+          importPrivateKey: jest.fn().mockReturnValue({
+            keyRefId: 'imported-key-ref-id',
+            publicKey: 'imported-public-key',
+          }),
+        },
+        tokenTransactions: {
+          createTokenAssociationTransaction,
+        },
+        txSign: {
+          sign: txSignSign,
+        },
+        txExecute: {
+          execute: txExecuteExecute,
+        },
+      });
+
+      const logger = makeLogger();
+      const args: CommandHandlerArgs = {
+        args: {
+          token: tokenId,
+          account: `${accountId}:3333333333333333333333333333333333333333333333333333333333333333`,
+        },
+        api,
+        state: api.state,
+        config: api.config,
+        logger,
+      };
+
+      const result = await tokenAssociate(args);
+
+      const output = assertOutput(result.result, TokenAssociateOutputSchema);
+      expect(output.tokenId).toBe(tokenId);
+      expect(output.accountId).toBe(accountId);
+      expect(output.associated).toBe(true);
+      expect(output.alreadyAssociated).toBe(true);
+      expect(output.transactionId).toBeUndefined();
+
+      expect(createTokenAssociationTransaction).not.toHaveBeenCalled();
+      expect(txSignSign).not.toHaveBeenCalled();
+      expect(txExecuteExecute).not.toHaveBeenCalled();
+    });
+
     test('should associate token with account using account-id:account-key format', async () => {
       const mockAddAssociation = jest.fn();
       const mockAssociationTransaction = { test: 'association-transaction' };

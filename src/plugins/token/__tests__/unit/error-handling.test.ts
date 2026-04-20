@@ -84,7 +84,7 @@ describe('Token Plugin Error Handling', () => {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
-          adminKey: 'admin-key',
+          adminKey: ['admin-key'],
         },
         api,
         state: api.state,
@@ -241,7 +241,7 @@ describe('Token Plugin Error Handling', () => {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
-          adminKey: 'admin-key',
+          adminKey: ['admin-key'],
         },
         api,
         state: api.state,
@@ -442,7 +442,7 @@ describe('Token Plugin Error Handling', () => {
         args: {
           tokenName: 'ExistingToken', // Duplicate name
           symbol: 'TEST',
-          adminKey: 'admin-key',
+          adminKey: ['admin-key'],
         },
         api,
         state: api.state,
@@ -553,7 +553,7 @@ describe('Token Plugin Error Handling', () => {
           symbol: 'TEST',
           treasuryKey:
             '1111111111111111111111111111111111111111111111111111111111111111',
-          adminKey: 'admin-key',
+          adminKey: ['admin-key'],
         },
         api,
         state: api.state,
@@ -583,7 +583,7 @@ describe('Token Plugin Error Handling', () => {
         args: {
           tokenName: 'TestToken',
           symbol: 'TEST',
-          adminKey: 'admin-key',
+          adminKey: ['admin-key'],
         },
         api,
         state: api.state,
@@ -673,7 +673,7 @@ describe('Token Plugin Error Handling', () => {
           symbol: 'TEST',
           treasuryKey:
             '1111111111111111111111111111111111111111111111111111111111111111',
-          adminKey: 'admin-key',
+          adminKey: ['admin-key'],
         },
         api,
         state: api.state,
@@ -702,7 +702,7 @@ describe('Token Plugin Error Handling', () => {
           symbol: 'TEST',
           treasuryKey:
             '1111111111111111111111111111111111111111111111111111111111111111',
-          adminKey: 'admin-key',
+          adminKey: ['admin-key'],
         },
         api,
         state: api.state,

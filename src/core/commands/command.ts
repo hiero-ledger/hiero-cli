@@ -1,14 +1,20 @@
-import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
-import type { AbstractHook } from '@/core/hooks/abstract-hook';
 import type {
-  HookResult,
-  PostOutputPreparationParams,
-  PreBuildTransactionParams,
-  PreExecuteTransactionParams,
-  PreOutputPreparationParams,
-  PreSignTransactionParams,
+  PostOutputPreparationHookParams,
+  PreBuildTransactionHookParams,
+  PreExecuteTransactionHookParams,
+  PreOutputPreparationHookParams,
+  PreParamsNormalizationHookParams,
+  PreSignTransactionHookParams,
 } from '@/core/hooks/types';
+import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
+import type { CommandResult } from '@/core/plugins/plugin.types';
+
+import {
+  executePhaseHooks,
+  processHookResult,
+  resolveCommandHooks,
+} from '@/core/hooks/hook-executor';
 
 export abstract class BaseTransactionCommand<
   TNormalisedParams = unknown,
@@ -22,32 +28,61 @@ export abstract class BaseTransactionCommand<
     this.commandName = commandName;
   }
 
+  /**
+   * Map execute result for hook phases that receive `executeTransactionResult`
+   * (pre/post output preparation). Orchestrator commands wrap with a
+   * discriminated union for state hooks; default is identity.
+   */
+  protected mapExecuteResultForHooks(
+    executeTransactionResult: TExecuteTransactionResult,
+  ): unknown {
+    return executeTransactionResult;
+  }
+
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const preNormalizationHookResult =
-      await this.preParamsNormalizationHook(args);
-    if (preNormalizationHookResult.breakFlow) {
-      return this.processHookResult(preNormalizationHookResult);
+    const hooks = resolveCommandHooks(args);
+
+    const preNormResult = await executePhaseHooks(
+      hooks,
+      'preParamsNormalization',
+      {
+        args,
+        commandName: this.commandName,
+      } satisfies PreParamsNormalizationHookParams,
+    );
+    if (preNormResult.breakFlow) {
+      return processHookResult(preNormResult);
     }
     const normalisedParams = await this.normalizeParams(args);
 
-    const preBuildTransactionHookResult = await this.preBuildTransactionHook(
-      args,
-      { normalisedParams },
+    const preBuildResult = await executePhaseHooks(
+      hooks,
+      'preBuildTransaction',
+      {
+        args,
+        commandName: this.commandName,
+        normalisedParams,
+      } satisfies PreBuildTransactionHookParams<TNormalisedParams>,
     );
-    if (preBuildTransactionHookResult.breakFlow) {
-      return this.processHookResult(preBuildTransactionHookResult);
+    if (preBuildResult.breakFlow) {
+      return processHookResult(preBuildResult);
     }
     const buildTransactionResult = await this.buildTransaction(
       args,
       normalisedParams,
     );
 
-    const preSignTransactionHookResult = await this.preSignTransactionHook(
+    const preSignResult = await executePhaseHooks(hooks, 'preSignTransaction', {
       args,
-      { normalisedParams, buildTransactionResult },
-    );
-    if (preSignTransactionHookResult.breakFlow) {
-      return this.processHookResult(preSignTransactionHookResult);
+      commandName: this.commandName,
+      normalisedParams,
+      buildTransactionResult,
+    } satisfies PreSignTransactionHookParams<
+      TNormalisedParams,
+      TBuildTransactionResult
+    >);
+    if (preSignResult.breakFlow) {
+      return processHookResult(preSignResult);
     }
     const signTransactionResult = await this.signTransaction(
       args,
@@ -55,14 +90,23 @@ export abstract class BaseTransactionCommand<
       buildTransactionResult,
     );
 
-    const preExecuteTransactionHookResult =
-      await this.preExecuteTransactionHook(args, {
+    const preExecResult = await executePhaseHooks(
+      hooks,
+      'preExecuteTransaction',
+      {
+        args,
+        commandName: this.commandName,
         normalisedParams,
         buildTransactionResult,
         signTransactionResult,
-      });
-    if (preExecuteTransactionHookResult.breakFlow) {
-      return this.processHookResult(preExecuteTransactionHookResult);
+      } satisfies PreExecuteTransactionHookParams<
+        TNormalisedParams,
+        TBuildTransactionResult,
+        TSignTransactionResult
+      >,
+    );
+    if (preExecResult.breakFlow) {
+      return processHookResult(preExecResult);
     }
     const executeTransactionResult = await this.executeTransaction(
       args,
@@ -70,15 +114,30 @@ export abstract class BaseTransactionCommand<
       buildTransactionResult,
       signTransactionResult,
     );
-    const postExecuteTransactionHookResult =
-      await this.postExecuteTransactionHook(args, {
+
+    const executeForHooks = this.mapExecuteResultForHooks(
+      executeTransactionResult,
+    );
+
+    const preOutputResult = await executePhaseHooks(
+      hooks,
+      'preOutputPreparation',
+      {
+        args,
+        commandName: this.commandName,
         normalisedParams,
         buildTransactionResult,
         signTransactionResult,
-        executeTransactionResult,
-      });
-    if (postExecuteTransactionHookResult.breakFlow) {
-      return this.processHookResult(postExecuteTransactionHookResult);
+        executeTransactionResult: executeForHooks,
+      } satisfies PreOutputPreparationHookParams<
+        TNormalisedParams,
+        TBuildTransactionResult,
+        TSignTransactionResult,
+        unknown
+      >,
+    );
+    if (preOutputResult.breakFlow) {
+      return processHookResult(preOutputResult);
     }
     const result = await this.outputPreparation(
       args,
@@ -87,138 +146,29 @@ export abstract class BaseTransactionCommand<
       signTransactionResult,
       executeTransactionResult,
     );
-    const postOutputHookResult = await this.postOutputPreparationHook(args, {
-      normalisedParams,
-      buildTransactionResult,
-      signTransactionResult,
-      executeTransactionResult,
-      outputResult: result,
-    });
-    if (postOutputHookResult.breakFlow) {
-      return this.processHookResult(postOutputHookResult);
+
+    const postOutputResult = await executePhaseHooks(
+      hooks,
+      'postOutputPreparation',
+      {
+        args,
+        commandName: this.commandName,
+        normalisedParams,
+        buildTransactionResult,
+        signTransactionResult,
+        executeTransactionResult: executeForHooks,
+        outputResult: result,
+      } satisfies PostOutputPreparationHookParams<
+        TNormalisedParams,
+        TBuildTransactionResult,
+        TSignTransactionResult,
+        unknown
+      >,
+    );
+    if (postOutputResult.breakFlow) {
+      return processHookResult(postOutputResult);
     }
     return result;
-  }
-
-  // Hooks
-  async preParamsNormalizationHook(
-    args: CommandHandlerArgs,
-  ): Promise<HookResult> {
-    return await this.executeHooks(
-      async (h) =>
-        h.preParamsPreparationAndNormalizationHook(args, this.commandName),
-      args.hooks,
-    );
-  }
-
-  async preBuildTransactionHook(
-    args: CommandHandlerArgs,
-    params: PreBuildTransactionParams<TNormalisedParams>,
-  ): Promise<HookResult> {
-    return await this.executeHooks(
-      async (h) => h.preBuildTransactionHook(args, params, this.commandName),
-      args.hooks,
-    );
-  }
-
-  async preSignTransactionHook(
-    args: CommandHandlerArgs,
-    params: PreSignTransactionParams<
-      TNormalisedParams,
-      TBuildTransactionResult
-    >,
-  ): Promise<HookResult> {
-    return await this.executeHooks(
-      async (h) => h.preSignTransactionHook(args, params, this.commandName),
-      args.hooks,
-    );
-  }
-
-  async preExecuteTransactionHook(
-    args: CommandHandlerArgs,
-    params: PreExecuteTransactionParams<
-      TNormalisedParams,
-      TBuildTransactionResult,
-      TSignTransactionResult
-    >,
-  ): Promise<HookResult> {
-    return await this.executeHooks(
-      async (h) => h.preExecuteTransactionHook(args, params, this.commandName),
-      args.hooks,
-    );
-  }
-
-  async postExecuteTransactionHook(
-    args: CommandHandlerArgs,
-    params: PreOutputPreparationParams<
-      TNormalisedParams,
-      TBuildTransactionResult,
-      TSignTransactionResult,
-      TExecuteTransactionResult
-    >,
-  ): Promise<HookResult> {
-    return await this.executeHooks(
-      async (h) => h.preOutputPreparationHook(args, params, this.commandName),
-      args.hooks,
-    );
-  }
-
-  async postOutputPreparationHook(
-    args: CommandHandlerArgs,
-    params: PostOutputPreparationParams<
-      TNormalisedParams,
-      TBuildTransactionResult,
-      TSignTransactionResult,
-      TExecuteTransactionResult
-    >,
-  ): Promise<HookResult> {
-    return await this.executeHooks(
-      async (h) => h.postOutputPreparationHook(args, params, this.commandName),
-      args.hooks,
-    );
-  }
-
-  /**
-   * Generic hook execution method that executes hooks on all registered hooks.
-   * Hook-agnostic: just awaits the hook executor without caring about the result.
-   * @param hookExecutor - The hook function to execute on each hook.
-   * @param hooks - abstract hooks list registered.
-   */
-  protected async executeHooks(
-    hookExecutor: (hook: AbstractHook) => Promise<HookResult>,
-    hooks?: AbstractHook[],
-  ): Promise<HookResult> {
-    if (!hooks) {
-      return {
-        breakFlow: false,
-        result: {
-          message: 'no hooks available',
-        },
-      };
-    }
-
-    for (const hook of hooks) {
-      const hookResult = await hookExecutor(hook);
-      if (hookResult.breakFlow) {
-        return hookResult;
-      }
-    }
-    return {
-      breakFlow: false,
-      result: {
-        message: 'success',
-      },
-    };
-  }
-
-  protected async processHookResult(
-    hookResult: HookResult,
-  ): Promise<CommandResult> {
-    return Promise.resolve({
-      result: hookResult.result,
-      overrideSchema: hookResult.schema,
-      overrideHumanTemplate: hookResult.humanTemplate,
-    });
   }
 
   abstract normalizeParams(

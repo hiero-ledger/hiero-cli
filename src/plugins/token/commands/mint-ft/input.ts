@@ -4,7 +4,7 @@ import {
   AmountInputSchema,
   EntityReferenceSchema,
   KeyManagerTypeSchema,
-  KeySchema,
+  OptionalDefaultEmptyKeyListSchema,
 } from '@/core/schemas';
 
 /**
@@ -16,7 +16,9 @@ export const TokenMintFtInputSchema = z.object({
   amount: AmountInputSchema.describe(
     'Amount to mint (display units or base units with "t" suffix)',
   ),
-  supplyKey: KeySchema.describe('Supply key. Accepts any key format.'),
+  supplyKey: OptionalDefaultEmptyKeyListSchema.describe(
+    'Credential(s) that can sign as the token supply. Pass multiple times when the supply policy requires more than one signature (M-of-N). Same formats as other CLI key options.',
+  ),
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type (defaults to config setting)',
   ),

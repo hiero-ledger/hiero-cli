@@ -5,18 +5,19 @@ import type {
   SupportedNetwork,
   TransactionResult,
 } from '@/core';
-import type { ClaimAirdropItem } from '@/core/types/token.types';
+import type {
+  AirdropTokenType,
+  ClaimAirdropItem,
+} from '@/core/types/token.types';
 
 export const MAX_CLAIM_AIRDROPS = 10;
-
-export type ClaimAirdropType = 'FUNGIBLE' | 'NFT';
 
 export interface ClaimAirdropResolved {
   tokenId: string;
   tokenName: string;
   tokenSymbol: string;
   senderId: string;
-  type: ClaimAirdropType;
+  type: AirdropTokenType;
   amount?: number;
   serialNumber?: number;
 }

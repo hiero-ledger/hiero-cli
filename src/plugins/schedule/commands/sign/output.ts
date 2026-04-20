@@ -17,7 +17,7 @@ export const ScheduleSignOutputSchema = z.object({
 export type ScheduleSignOutput = z.infer<typeof ScheduleSignOutputSchema>;
 
 export const SCHEDULE_SIGN_TEMPLATE = `
-✅ Schedule signed successfully: {{#if scheduleId}}{{hashscanLink scheduleId "scheduled" network}}{{/if}}
+✅ Schedule signed successfully: {{#if scheduleId}}{{hashscanLink scheduleId "schedule" network}}{{/if}}
 {{#if name}}
    Name: {{name}}
 {{/if}}

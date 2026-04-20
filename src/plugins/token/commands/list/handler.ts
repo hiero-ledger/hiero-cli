@@ -46,15 +46,36 @@ export class TokenListCommand implements Command {
         maxSupply: Number(token.maxSupply),
         associationCount: token.associations?.length || 0,
         ...(validArgs.keys &&
-          token.adminPublicKey && {
+          token.adminKeyRefIds.length > 0 && {
             keys: {
-              adminKey: token.adminPublicKey,
-              supplyKey: null,
-              wipeKey: null,
-              kycKey: null,
-              freezeKey: null,
-              pauseKey: null,
-              feeScheduleKey: null,
+              adminKey:
+                token.adminKeyRefIds.length > 0
+                  ? token.adminKeyRefIds.join(', ')
+                  : null,
+              supplyKey:
+                token.supplyKeyRefIds.length > 0
+                  ? token.supplyKeyRefIds.join(', ')
+                  : null,
+              wipeKey:
+                token.wipeKeyRefIds.length > 0
+                  ? token.wipeKeyRefIds.join(', ')
+                  : null,
+              kycKey:
+                token.kycKeyRefIds.length > 0
+                  ? token.kycKeyRefIds.join(', ')
+                  : null,
+              freezeKey:
+                token.freezeKeyRefIds.length > 0
+                  ? token.freezeKeyRefIds.join(', ')
+                  : null,
+              pauseKey:
+                token.pauseKeyRefIds.length > 0
+                  ? token.pauseKeyRefIds.join(', ')
+                  : null,
+              feeScheduleKey:
+                token.feeScheduleKeyRefIds.length > 0
+                  ? token.feeScheduleKeyRefIds.join(', ')
+                  : null,
               treasuryKey: null,
             },
           }),
