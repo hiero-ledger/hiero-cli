@@ -112,6 +112,11 @@ export interface TokenDeleteParams {
   tokenId: string;
 }
 
+export interface TokenFreezeParams {
+  tokenId: string;
+  accountId: string;
+}
+
 export interface TokenBurnFtParams {
   tokenId: string;
   amount: bigint;

@@ -784,6 +784,28 @@ Lists all tokens from all networks stored in state.
 
 `transactionId` is absent for `--state-only`. `removedAliases` is omitted when no aliases exist.
 
+#### `token freeze`
+
+**Output:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "accountId": "0.0.12345",
+  "network": "testnet"
+}
+```
+
+**Schema:** `TokenFreezeOutputSchema` from `src/plugins/token/commands/freeze/output.ts`
+
+| Field           | Type               | Description                       |
+| --------------- | ------------------ | --------------------------------- |
+| `transactionId` | `string`           | Hedera transaction ID             |
+| `tokenId`       | `string`           | Token ID (0.0.X)                  |
+| `accountId`     | `string`           | Frozen account ID (0.0.X)         |
+| `network`       | `SupportedNetwork` | Network where freeze was executed |
+
 #### `token allowance-nft`
 
 **Output** (specific serials):

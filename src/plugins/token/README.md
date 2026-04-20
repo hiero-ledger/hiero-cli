@@ -1083,6 +1083,33 @@ hcli token delete --token mytoken-alias --state-only
 
 `--state-only` and `--admin-key` are mutually exclusive. Any aliases associated with the token on the current network will also be removed.
 
+### Token Freeze
+
+Freeze an account for a token. A frozen account cannot send or receive the token until unfrozen. Works for both fungible tokens (FT) and non-fungible tokens (NFT). Requires the token freeze key to sign. The token must have a freeze key set at creation time.
+
+```bash
+# Freeze account by token ID and account ID
+hcli token freeze --token 0.0.123456 --account 0.0.5678 --freeze-key <key-ref>
+
+# Freeze account using token alias
+hcli token freeze --token mytoken-alias --account 0.0.5678 --freeze-key <key-ref>
+
+# Freeze account using EVM address
+hcli token freeze --token 0.0.123456 --account 0xaabbcc... --freeze-key <key-ref>
+
+# Freeze account using account alias
+hcli token freeze --token 0.0.123456 --account alice --freeze-key <key-ref>
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
+- `--account` / `-a`: Account to freeze: account-id (0.0.X), account alias, or EVM address (0x...) - **Required**
+- `--freeze-key` / `-f`: Freeze key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Required**
+- `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
+
+If the token does not have a freeze key, the command fails with a clear error: `Token has no freeze key`. The operation is idempotent — freezing an already-frozen account succeeds without error.
+
 ### Token List
 
 List all tokens (FT and NFT) stored in state for all networks.

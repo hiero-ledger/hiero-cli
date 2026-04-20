@@ -19,6 +19,7 @@ import type {
   TokenClaimAirdropParams,
   TokenCreateParams,
   TokenDeleteParams,
+  TokenFreezeParams,
   TokenMintParams,
   TokenRejectAirdropParams,
   TokenTransferParams,
@@ -42,6 +43,7 @@ import {
   TokenClaimAirdropTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
+  TokenFreezeTransaction,
   TokenId,
   TokenMintTransaction,
   TokenRejectTransaction,
@@ -398,6 +400,15 @@ export class TokenServiceImpl implements TokenService {
     return new TokenDeleteTransaction().setTokenId(
       TokenId.fromString(params.tokenId),
     );
+  }
+
+  createFreezeTransaction(params: TokenFreezeParams): TokenFreezeTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating freeze transaction for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenFreezeTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId));
   }
 
   createAirdropFtTransaction(
