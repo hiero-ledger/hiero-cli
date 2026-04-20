@@ -1,4 +1,5 @@
-import type { CommandHandlerArgs, CommandResult, CoreApi } from '@/core';
+import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { TokenUnfreezeInput } from './input';
@@ -18,6 +19,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 
 import { TokenUnfreezeInputSchema } from './input';
@@ -55,7 +57,7 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
 
     const keyManager =
       validArgs.keyManager ||
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     const network = api.network.getCurrentNetwork();
 
@@ -86,7 +88,7 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
     );
 
     const freezeKeyResolved = await this.resolveFreezeKey(
-      api,
+      api.keyResolver,
       validArgs,
       keyManager,
       tokenInfo.freeze_key.key,
@@ -105,13 +107,13 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
   }
 
   private async resolveFreezeKey(
-    api: CoreApi,
+    keyResolver: KeyResolverService,
     validArgs: TokenUnfreezeInput,
     keyManager: KeyManager,
     tokenFreezePublicKey: string,
     tokenId: string,
   ): Promise<ResolvedPublicKey> {
-    const freezeKeyResolved = await api.keyResolver.resolveSigningKey(
+    const freezeKeyResolved = await keyResolver.resolveSigningKey(
       validArgs.freezeKey,
       keyManager,
       false,
