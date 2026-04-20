@@ -27,20 +27,20 @@ import type { TokenService } from '@/core/services/token/token-service.interface
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 
-import {
-  ED25519_HEX_PUBLIC_KEY,
-  MOCK_FREEZE_PUBLIC_KEY,
-} from '@/__tests__/mocks/fixtures';
+import { PublicKey } from '@hashgraph/sdk';
+
+import { ED25519_HEX_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
-  makeIdentityResolutionServiceMock as makeGlobalIdentityResolutionServiceMock,
   makeKeyResolverMock as makeGlobalKeyResolverMock,
   makeScheduleTransactionServiceMock,
 } from '@/__tests__/mocks/mocks';
 import { InternalError, KeyAlgorithm } from '@/core';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 
 import { mockTransactionResults } from './fixtures';
 
@@ -74,7 +74,11 @@ export const makeTokenServiceMock = (
   createUnfreezeTransaction: jest.fn(),
   createAirdropFtTransaction: jest.fn(),
   createAirdropNftTransaction: jest.fn(),
+  createCancelAirdropTransaction: jest.fn(),
   createClaimAirdropTransaction: jest.fn(),
+  createBurnFtTransaction: jest.fn(),
+  createBurnNftTransaction: jest.fn(),
+  createRejectAirdropTransaction: jest.fn(),
   ...overrides,
 });
 
@@ -452,7 +456,23 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       queryContractFunction: jest.fn(),
     } as ContractQueryService,
     identityResolution: {
-      ...makeGlobalIdentityResolutionServiceMock(),
+      resolveAccount: jest
+        .fn()
+        .mockImplementation(
+          ({ accountReference }: { accountReference: string }) => {
+            const resolved = alias.resolve(
+              accountReference,
+              AliasType.Account,
+              (config?.network || 'testnet') as SupportedNetwork,
+            );
+            return {
+              accountId: resolved?.entityId ?? accountReference,
+              accountPublicKey: '',
+            };
+          },
+        ),
+      resolveContract: jest.fn(),
+      resolveReferenceToEntityOrEvmAddress: jest.fn(),
       ...(config?.identityResolution || {}),
     },
     schedule: makeScheduleTransactionServiceMock(),
@@ -726,7 +746,7 @@ export const makeDeleteApiMocks = (
 export const makeMintFtSuccessMocks = (overrides?: {
   tokenInfo?: {
     decimals?: string;
-    supply_key?: { key: string } | null;
+    supply_key?: { _type?: MirrorNodeKeyType; key: string } | null;
     total_supply?: string;
     max_supply?: string;
   };
@@ -735,11 +755,290 @@ export const makeMintFtSuccessMocks = (overrides?: {
 }) => {
   const mockMintTransaction = { test: 'mint-transaction' };
   const defaultSupplyKeyPublicKey =
-    overrides?.supplyKeyPublicKey ?? 'supply-public-key';
+    overrides?.supplyKeyPublicKey ?? ED25519_HEX_PUBLIC_KEY;
+
+  const supplyKeyFromMirror =
+    overrides?.tokenInfo?.supply_key === null
+      ? null
+      : overrides?.tokenInfo?.supply_key
+        ? {
+            _type:
+              overrides.tokenInfo.supply_key._type ?? MirrorNodeKeyType.ED25519,
+            key: overrides.tokenInfo.supply_key.key,
+          }
+        : {
+            _type: MirrorNodeKeyType.ED25519,
+            key: defaultSupplyKeyPublicKey,
+          };
 
   const apiMocks = makeApiMocks({
     tokens: {
       createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
+    },
+    txExecute: {
+      execute: jest
+        .fn()
+        .mockResolvedValue(
+          overrides?.signResult || makeTransactionResult({ success: true }),
+        ),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        decimals: overrides?.tokenInfo?.decimals ?? '2',
+        supply_key: supplyKeyFromMirror,
+        total_supply: overrides?.tokenInfo?.total_supply ?? '1000000',
+        max_supply: overrides?.tokenInfo?.max_supply ?? '0',
+      }),
+    },
+    alias: {
+      resolve: jest.fn().mockReturnValue(null),
+    },
+    kms: {
+      importPrivateKey: jest.fn().mockReturnValue({
+        keyRefId: 'supply-key-ref-id',
+        publicKey: defaultSupplyKeyPublicKey,
+      }),
+    },
+  });
+
+  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
+    accountId: '0.0.200000',
+    publicKey: defaultSupplyKeyPublicKey,
+    keyRefId: 'supply-key-ref-id',
+  });
+
+  return {
+    ...apiMocks,
+    mockMintTransaction,
+  };
+};
+
+export const makeMintNftSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    decimals?: string;
+    supply_key?: { _type?: MirrorNodeKeyType; key: string } | null;
+    total_supply?: string;
+    max_supply?: string;
+    type?: string;
+  };
+  signResult?: ReturnType<typeof makeTransactionResult> & {
+    receipt?: { serials?: string[] };
+  };
+  supplyKeyPublicKey?: string;
+}) => {
+  const mockMintTransaction = { test: 'mint-nft-transaction' };
+  const defaultSupplyKeyPublicKey =
+    overrides?.supplyKeyPublicKey ?? ED25519_HEX_PUBLIC_KEY;
+
+  const supplyKeyFromMirror =
+    overrides?.tokenInfo?.supply_key === null
+      ? null
+      : overrides?.tokenInfo?.supply_key
+        ? {
+            _type:
+              overrides.tokenInfo.supply_key._type ?? MirrorNodeKeyType.ED25519,
+            key: overrides.tokenInfo.supply_key.key,
+          }
+        : {
+            _type: MirrorNodeKeyType.ED25519,
+            key: defaultSupplyKeyPublicKey,
+          };
+
+  const defaultSignResult = makeTransactionResult({ success: true });
+  const signResult = overrides?.signResult || {
+    ...defaultSignResult,
+    receipt: {
+      ...defaultSignResult.receipt,
+      serials: ['1'],
+    },
+  };
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
+    },
+    txExecute: {
+      execute: jest.fn().mockResolvedValue(signResult),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        decimals: overrides?.tokenInfo?.decimals ?? '0',
+        type: overrides?.tokenInfo?.type ?? 'NON_FUNGIBLE_UNIQUE',
+        supply_key: supplyKeyFromMirror,
+        total_supply: overrides?.tokenInfo?.total_supply ?? '0',
+        max_supply: overrides?.tokenInfo?.max_supply ?? '0',
+      }),
+    },
+    alias: {
+      resolve: jest.fn().mockReturnValue(null),
+    },
+    kms: {
+      importPrivateKey: jest.fn().mockReturnValue({
+        keyRefId: 'supply-key-ref-id',
+        publicKey: defaultSupplyKeyPublicKey,
+      }),
+    },
+  });
+
+  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
+    accountId: '0.0.200000',
+    publicKey: defaultSupplyKeyPublicKey,
+    keyRefId: 'supply-key-ref-id',
+  });
+
+  return {
+    ...apiMocks,
+    mockMintTransaction,
+  };
+};
+
+export const makeDeleteSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    admin_key?: { key: string } | null;
+    name?: string;
+  };
+  adminKeyPublicKey?: string;
+}) => {
+  const mockDeleteTransaction = { test: 'delete-transaction' };
+  const defaultMirrorAdminHex = ED25519_HEX_PUBLIC_KEY;
+  const defaultAdminKeyRaw = PublicKey.fromString(
+    defaultMirrorAdminHex,
+  ).toStringRaw();
+  const resolverPublicKeyRaw =
+    overrides?.adminKeyPublicKey !== undefined
+      ? PublicKey.fromString(overrides.adminKeyPublicKey).toStringRaw()
+      : defaultAdminKeyRaw;
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createDeleteTransaction: jest.fn().mockReturnValue(mockDeleteTransaction),
+    },
+    txExecute: {
+      execute: jest
+        .fn()
+        .mockResolvedValue(makeTransactionResult({ success: true })),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        admin_key:
+          overrides?.tokenInfo && 'admin_key' in overrides.tokenInfo
+            ? overrides.tokenInfo.admin_key
+            : {
+                _type: 'ED25519',
+                key: overrides?.adminKeyPublicKey ?? defaultMirrorAdminHex,
+              },
+        name: overrides?.tokenInfo?.name ?? 'TestToken',
+      }),
+    },
+    alias: makeAliasServiceMock({
+      list: jest.fn().mockReturnValue([]),
+    }),
+  });
+
+  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
+    accountId: '0.0.200000',
+    publicKey: resolverPublicKeyRaw,
+    keyRefId: 'admin-key-ref-id',
+  });
+
+  apiMocks.kms.findByPublicKey = jest
+    .fn()
+    .mockImplementation((publicKey: string) =>
+      publicKey === defaultAdminKeyRaw
+        ? {
+            keyRefId: 'kms-key-ref-id',
+            publicKey: defaultAdminKeyRaw,
+            keyManager: KeyManager.local,
+            keyAlgorithm: KeyAlgorithm.ED25519,
+            createdAt: '',
+            updatedAt: '',
+          }
+        : undefined,
+    );
+
+  return { ...apiMocks, mockDeleteTransaction };
+};
+
+/**
+ * Create API mocks configured for successful burn-ft operations
+ */
+export const makeBurnNftSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    supply_key?: { key: string } | null;
+    total_supply?: string;
+    max_supply?: string;
+  };
+  signResult?: ReturnType<typeof makeTransactionResult>;
+  supplyKeyPublicKey?: string;
+}) => {
+  const mockBurnNftTransaction = { test: 'burn-nft-transaction' };
+  const defaultSupplyKeyPublicKey =
+    overrides?.supplyKeyPublicKey ?? 'supply-public-key';
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createBurnNftTransaction: jest
+        .fn()
+        .mockReturnValue(mockBurnNftTransaction),
+    },
+    txExecute: {
+      execute: jest
+        .fn()
+        .mockResolvedValue(
+          overrides?.signResult || makeTransactionResult({ success: true }),
+        ),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        decimals: '0',
+        type: 'NON_FUNGIBLE_UNIQUE',
+        supply_key: overrides?.tokenInfo?.supply_key ?? {
+          key: defaultSupplyKeyPublicKey,
+        },
+        total_supply: overrides?.tokenInfo?.total_supply ?? '10',
+        max_supply: overrides?.tokenInfo?.max_supply ?? '0',
+      }),
+    },
+    alias: {
+      resolve: jest.fn().mockReturnValue(null),
+    },
+    kms: {
+      importPrivateKey: jest.fn().mockReturnValue({
+        keyRefId: 'supply-key-ref-id',
+        publicKey: defaultSupplyKeyPublicKey,
+      }),
+    },
+  });
+
+  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
+    accountId: '0.0.200000',
+    publicKey: defaultSupplyKeyPublicKey,
+    keyRefId: 'supply-key-ref-id',
+  });
+
+  return {
+    ...apiMocks,
+    mockBurnNftTransaction,
+  };
+};
+
+export const makeBurnFtSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    decimals?: string;
+    supply_key?: { key: string } | null;
+    total_supply?: string;
+    max_supply?: string;
+  };
+  signResult?: ReturnType<typeof makeTransactionResult>;
+  supplyKeyPublicKey?: string;
+}) => {
+  const mockBurnTransaction = { test: 'burn-transaction' };
+  const defaultSupplyKeyPublicKey =
+    overrides?.supplyKeyPublicKey ?? 'supply-public-key';
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createBurnFtTransaction: jest.fn().mockReturnValue(mockBurnTransaction),
     },
     txExecute: {
       execute: jest
@@ -777,212 +1076,6 @@ export const makeMintFtSuccessMocks = (overrides?: {
 
   return {
     ...apiMocks,
-    mockMintTransaction,
+    mockBurnTransaction,
   };
-};
-
-export const makeMintNftSuccessMocks = (overrides?: {
-  tokenInfo?: {
-    decimals?: string;
-    supply_key?: { key: string } | null;
-    total_supply?: string;
-    max_supply?: string;
-    type?: string;
-  };
-  signResult?: ReturnType<typeof makeTransactionResult> & {
-    receipt?: { serials?: string[] };
-  };
-  supplyKeyPublicKey?: string;
-}) => {
-  const mockMintTransaction = { test: 'mint-nft-transaction' };
-  const defaultSupplyKeyPublicKey =
-    overrides?.supplyKeyPublicKey ?? 'supply-public-key';
-
-  const defaultSignResult = makeTransactionResult({ success: true });
-  const signResult = overrides?.signResult || {
-    ...defaultSignResult,
-    receipt: {
-      ...defaultSignResult.receipt,
-      serials: ['1'],
-    },
-  };
-
-  const apiMocks = makeApiMocks({
-    tokens: {
-      createMintTransaction: jest.fn().mockReturnValue(mockMintTransaction),
-    },
-    txExecute: {
-      execute: jest.fn().mockResolvedValue(signResult),
-    },
-    mirror: {
-      getTokenInfo: jest.fn().mockResolvedValue({
-        decimals: overrides?.tokenInfo?.decimals ?? '0',
-        type: overrides?.tokenInfo?.type ?? 'NON_FUNGIBLE_UNIQUE',
-        supply_key: overrides?.tokenInfo?.supply_key ?? {
-          key: defaultSupplyKeyPublicKey,
-        },
-        total_supply: overrides?.tokenInfo?.total_supply ?? '0',
-        max_supply: overrides?.tokenInfo?.max_supply ?? '0',
-      }),
-    },
-    alias: {
-      resolve: jest.fn().mockReturnValue(null),
-    },
-    kms: {
-      importPrivateKey: jest.fn().mockReturnValue({
-        keyRefId: 'supply-key-ref-id',
-        publicKey: defaultSupplyKeyPublicKey,
-      }),
-    },
-  });
-
-  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-    accountId: '0.0.200000',
-    publicKey: defaultSupplyKeyPublicKey,
-    keyRefId: 'supply-key-ref-id',
-  });
-
-  return {
-    ...apiMocks,
-    mockMintTransaction,
-  };
-};
-
-export const makeDeleteSuccessMocks = (overrides?: {
-  tokenInfo?: {
-    admin_key?: { key: string } | null;
-    name?: string;
-  };
-  adminKeyPublicKey?: string;
-}) => {
-  const mockDeleteTransaction = { test: 'delete-transaction' };
-  const defaultAdminKeyPublicKey =
-    overrides?.adminKeyPublicKey ?? 'admin-public-key';
-
-  const apiMocks = makeApiMocks({
-    tokens: {
-      createDeleteTransaction: jest.fn().mockReturnValue(mockDeleteTransaction),
-    },
-    txExecute: {
-      execute: jest
-        .fn()
-        .mockResolvedValue(makeTransactionResult({ success: true })),
-    },
-    mirror: {
-      getTokenInfo: jest.fn().mockResolvedValue({
-        admin_key:
-          overrides?.tokenInfo && 'admin_key' in overrides.tokenInfo
-            ? overrides.tokenInfo.admin_key
-            : { key: defaultAdminKeyPublicKey },
-        name: overrides?.tokenInfo?.name ?? 'TestToken',
-      }),
-    },
-    alias: makeAliasServiceMock({
-      list: jest.fn().mockReturnValue([]),
-    }),
-  });
-
-  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-    accountId: '0.0.200000',
-    publicKey: defaultAdminKeyPublicKey,
-    keyRefId: 'admin-key-ref-id',
-  });
-
-  apiMocks.kms.findByPublicKey = jest.fn().mockReturnValue(undefined);
-
-  return { ...apiMocks, mockDeleteTransaction };
-};
-
-export const makeFreezeSuccessMocks = (overrides?: {
-  tokenInfo?: {
-    freeze_key?: { key: string } | null;
-    name?: string;
-  };
-  freezeKeyPublicKey?: string;
-}) => {
-  const mockFreezeTransaction = { test: 'freeze-transaction' };
-  const defaultFreezeKeyPublicKey =
-    overrides?.freezeKeyPublicKey ?? MOCK_FREEZE_PUBLIC_KEY;
-
-  const apiMocks = makeApiMocks({
-    tokens: {
-      createFreezeTransaction: jest.fn().mockReturnValue(mockFreezeTransaction),
-    },
-    txExecute: {
-      execute: jest
-        .fn()
-        .mockResolvedValue(makeTransactionResult({ success: true })),
-    },
-    mirror: {
-      getTokenInfo: jest.fn().mockResolvedValue({
-        freeze_key:
-          overrides?.tokenInfo && 'freeze_key' in overrides.tokenInfo
-            ? overrides.tokenInfo.freeze_key
-            : { key: defaultFreezeKeyPublicKey },
-        name: overrides?.tokenInfo?.name ?? 'TestToken',
-      }),
-    },
-    identityResolution: {
-      resolveAccount: jest.fn().mockResolvedValue({
-        accountId: '0.0.5678',
-        accountPublicKey: 'account-public-key',
-      }),
-    },
-  });
-
-  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-    accountId: '0.0.200000',
-    publicKey: defaultFreezeKeyPublicKey,
-    keyRefId: 'freeze-key-ref-id',
-  });
-
-  return { ...apiMocks, mockFreezeTransaction };
-};
-
-export const makeUnfreezeSuccessMocks = (overrides?: {
-  tokenInfo?: {
-    freeze_key?: { key: string } | null;
-    name?: string;
-  };
-  freezeKeyPublicKey?: string;
-}) => {
-  const mockUnfreezeTransaction = { test: 'unfreeze-transaction' };
-  const defaultFreezeKeyPublicKey =
-    overrides?.freezeKeyPublicKey ?? MOCK_FREEZE_PUBLIC_KEY;
-
-  const apiMocks = makeApiMocks({
-    tokens: {
-      createUnfreezeTransaction: jest
-        .fn()
-        .mockReturnValue(mockUnfreezeTransaction),
-    },
-    txExecute: {
-      execute: jest
-        .fn()
-        .mockResolvedValue(makeTransactionResult({ success: true })),
-    },
-    mirror: {
-      getTokenInfo: jest.fn().mockResolvedValue({
-        freeze_key:
-          overrides?.tokenInfo && 'freeze_key' in overrides.tokenInfo
-            ? overrides.tokenInfo.freeze_key
-            : { key: defaultFreezeKeyPublicKey },
-        name: overrides?.tokenInfo?.name ?? 'TestToken',
-      }),
-    },
-    identityResolution: {
-      resolveAccount: jest.fn().mockResolvedValue({
-        accountId: '0.0.5678',
-        accountPublicKey: 'account-public-key',
-      }),
-    },
-  });
-
-  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-    accountId: '0.0.200000',
-    publicKey: defaultFreezeKeyPublicKey,
-    keyRefId: 'freeze-key-ref-id',
-  });
-
-  return { ...apiMocks, mockUnfreezeTransaction };
 };

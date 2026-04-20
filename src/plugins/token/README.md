@@ -35,6 +35,12 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── burn-ft/
+│   ├── burn-nft/
+│   │   ├── handler.ts       # Fungible token burn handler
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts         # Command exports
 │   ├── mint-ft/
 │   │   ├── handler.ts       # Fungible token minting handler
 │   │   ├── input.ts         # Input schema
@@ -64,6 +70,12 @@ src/plugins/token/
 │   ├── airdrop-nft/
 │   │   ├── handler.ts       # NFT airdrop handler (multi-recipient)
 │   │   ├── input.ts         # Input schema with REPEATABLE --to/--serials
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Command-specific type definitions
+│   │   └── index.ts         # Command exports
+│   ├── cancel-airdrop/
+│   │   ├── handler.ts       # Cancel pending airdrop handler (FT and NFT)
+│   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   ├── types.ts         # Command-specific type definitions
 │   │   └── index.ts         # Command exports
@@ -297,6 +309,84 @@ hcli token create-nft \
 
 **Batch support:** Pass `--batch <batch-name>` to add NFT collection creation to a batch instead of executing immediately. See the [Batch Support](#-batch-support) section.
 
+### Token Burn FT
+
+Burn fungible tokens from the token's Treasury account to decrease total supply. Requires the supply key.
+
+```bash
+# Using token alias
+hcli token burn-ft \
+  --token mytoken-alias \
+  --amount 1000 \
+  --supply-key 0.0.123456:302e020100300506032b657004220420...
+
+# Using token ID with base units (t suffix)
+hcli token burn-ft \
+  --token 0.0.123456 \
+  --amount 5000t \
+  --supply-key 0.0.123456:302e020100300506032b657004220420...
+
+# Using an account alias for supply key
+hcli token burn-ft \
+  --token 0.0.123456 \
+  --amount 500 \
+  --supply-key supply-account-alias
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+- `--amount` / `-a`: Amount to burn - **Required**
+  - Display units (default): `100` (will be multiplied by token decimals)
+  - Base units: `100t` (raw amount without decimals)
+- `--supply-key` / `-s`: Supply key for signing - **Required**
+  - Account alias: `supply-account-alias`
+  - Account with key: `0.0.123456:private-key`
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Note:** The burn amount cannot exceed the token's current total supply. Tokens can only be burned from the treasury account.
+
+**Batch support:** Pass `--batch <batch-name>` to add to a batch. See the [Batch Support](#-batch-support) section.
+
+### Token Burn NFT
+
+Burn NFT serial numbers to decrease total supply. NFTs must be held by the treasury account.
+
+```bash
+# Burn a single serial
+hcli token burn-nft \
+  --token my-nft-collection \
+  --serials 1 \
+  --supply-key 0.0.123456:302e020100300506032b657004220420...
+
+# Burn multiple serials at once
+hcli token burn-nft \
+  --token 0.0.123456 \
+  --serials 1,2,3 \
+  --supply-key 0.0.123456:302e020100300506032b657004220420...
+
+# Using an account alias for supply key
+hcli token burn-nft \
+  --token 0.0.123456 \
+  --serials 5,10 \
+  --supply-key supply-account-alias
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+- `--serials` / `-s`: Comma-separated serial numbers to burn (max 10) - **Required**
+- `--supply-key` / `-S`: Supply key for signing - **Required**
+  - Account alias: `supply-account-alias`
+  - Account with key: `0.0.123456:private-key`
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Note:** NFTs must be held by the treasury account. Burning NFTs not in treasury will fail with an SDK error.
+
+**Batch support:** Pass `--batch <batch-name>` to add to a batch. See the [Batch Support](#-batch-support) section.
+
 ### Token Mint FT
 
 Mint additional fungible tokens to increase supply. Tokens are minted to the token's treasury account.
@@ -327,7 +417,8 @@ hcli token mint-ft \
 - `--amount` / `-a`: Amount to mint - **Required**
   - Display units (default): `100` (will be multiplied by token decimals)
   - Base units: `100t` (raw amount without decimals)
-- `--supply-key` / `-s`: Supply key for signing - **Required**
+- `--supply-key` / `-s`: Supply key credential(s) for signing - **Optional if** every required on-chain supply public key already has matching material in the key manager (otherwise pass explicit credential(s))
+  - **Repeatable:** pass `--supply-key` multiple times when the token’s on-chain supply key is a KeyList or threshold key and you need more than one distinct signer
   - Account alias: `supply-account-alias`
   - Account with key: `0.0.123456:private-key`
 - `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
@@ -366,7 +457,8 @@ hcli token mint-nft \
 - `--metadata` / `-m`: NFT metadata string - **Required**
   - Maximum size: 100 bytes
   - UTF-8 encoded string
-- `--supply-key` / `-s`: Supply key for signing - **Required**
+- `--supply-key` / `-s`: Supply key credential(s) for signing - **Optional if** every required on-chain supply public key already has matching material in the key manager (otherwise pass explicit credential(s))
+  - **Repeatable:** pass `--supply-key` multiple times when the token’s on-chain supply key is a KeyList or threshold key and you need more than one distinct signer
   - Account alias: `supply-account-alias`
   - Account with key: `0.0.123456:private-key`
 - `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
@@ -389,7 +481,7 @@ The command returns the minted NFT's serial number, which uniquely identifies th
 
 - The token must be an NFT collection (created with `create-nft` command)
 - The token must have a supply key configured
-- The provided supply key must match the token's supply key
+- When using `--supply-key`, provide enough credentials to satisfy the on-chain supply key policy (including M-of-N threshold keys)
 - Metadata cannot exceed 100 bytes (Hedera limit)
 - For tokens with finite supply, the command validates that minting won't exceed `maxSupply`
 - Minted NFT is assigned to the token's treasury account
@@ -764,6 +856,110 @@ hcli token claim-airdrop --account myaccount --index 1 --batch my-batch
 
 **Implementation:** [`src/plugins/token/commands/claim-airdrop/handler.ts`](./commands/claim-airdrop/handler.ts)
 
+### Cancel Token Airdrop
+
+Cancel a pending token airdrop (FT or NFT). The sender of the original airdrop must sign this transaction.
+
+```bash
+# Cancel a pending FT airdrop
+hcli token cancel-airdrop \
+  --token 0.0.123456 \
+  --receiver 0.0.200000
+
+# Cancel a pending NFT airdrop (requires --serial)
+hcli token cancel-airdrop \
+  --token 0.0.123456 \
+  --receiver 0.0.200000 \
+  --serial 42
+
+# Specify sender key explicitly (defaults to operator)
+hcli token cancel-airdrop \
+  --token mytoken-alias \
+  --receiver alice \
+  --from 0.0.111111:302e020100300506032b657004220420...
+
+# Add to a batch
+hcli token cancel-airdrop \
+  --token 0.0.123456 \
+  --receiver 0.0.200000 \
+  --batch my-batch
+
+# Schedule the transaction
+hcli token cancel-airdrop \
+  --token 0.0.123456 \
+  --receiver 0.0.200000 \
+  --schedule my-schedule
+```
+
+**Options:**
+
+| Option          | Short | Required | Description                                              |
+| --------------- | ----- | -------- | -------------------------------------------------------- |
+| `--token`       | `-T`  | Yes      | Token identifier (ID or alias)                           |
+| `--receiver`    | `-r`  | Yes      | Receiver account (ID, EVM address, or alias)             |
+| `--serial`      | `-s`  | No       | NFT serial number. If provided, cancels an NFT airdrop   |
+| `--from`        | `-f`  | No       | Sender key. Accepts any key format. Defaults to operator |
+| `--key-manager` | `-k`  | No       | Key manager type (defaults to config setting)            |
+
+**Notes:**
+
+- Omitting `--serial` cancels a fungible token airdrop; providing it cancels an NFT airdrop
+- Batch and schedule support: pass `--batch <name>` or `--schedule <name>`
+
+**Implementation:** [`src/plugins/token/commands/cancel-airdrop/handler.ts`](./commands/cancel-airdrop/handler.ts)
+
+### Token Reject Airdrop
+
+Reject a token from account balance, returning it to the treasury. For NFT tokens, specify serial numbers with `--serial`. Custom fees are waived.
+
+```bash
+# Reject a fungible token
+hcli token reject-airdrop \
+  --owner my-wallet \
+  --token 0.0.5867883
+
+# Reject a single NFT serial
+hcli token reject-airdrop \
+  --owner my-wallet \
+  --token 0.0.5867884 \
+  --serial 5
+
+# Reject multiple NFT serials
+hcli token reject-airdrop \
+  --owner my-wallet \
+  --token 0.0.5867884 \
+  --serial 1,2,3
+
+# With explicit signing key
+hcli token reject-airdrop \
+  --owner my-wallet \
+  --token 0.0.5867883 \
+  --from 0.0.5678:302e020100300506032b657004220420...
+
+# Batch mode
+hcli token reject-airdrop \
+  --owner my-wallet \
+  --token 0.0.5867883 \
+  --batch my-batch
+```
+
+**Parameters:**
+
+- `--owner` / `-o`: Owner account ID or alias - **Required**
+- `--token` / `-t`: Token ID to reject (e.g. `0.0.5867883`) - **Required**
+- `--serial` / `-s`: NFT serial number(s). Required for NFT tokens. Comma-separated: `1,2,3` - **Optional**
+- `--from` / `-f`: Signing account credential (alias or account-id:private-key pair) - **Optional** (defaults to owner account)
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Notes:**
+
+- Maximum 10 NFT serials per transaction (Hedera limit)
+- `--serial` is required for NFT tokens and must not be provided for fungible tokens
+- Batch support: pass `--batch <batch-name>` to queue the transaction for batch execution
+
+**Implementation:** [`src/plugins/token/commands/reject-airdrop/handler.ts`](./commands/reject-airdrop/handler.ts)
+
 ### Token Transfer NFT
 
 Transfer one or more NFTs from one account to another.
@@ -871,6 +1067,9 @@ hcli token delete --token 0.0.123456
 # Provide admin key explicitly
 hcli token delete --token 0.0.123456 --admin-key <key-ref>
 
+# Threshold / KeyList admin key: pass multiple `--admin-key` values
+hcli token delete --token 0.0.123456 --admin-key alice --admin-key bob
+
 # Remove from local state only (no network transaction)
 hcli token delete --token mytoken-alias --state-only
 ```
@@ -878,7 +1077,7 @@ hcli token delete --token mytoken-alias --state-only
 **Parameters:**
 
 - `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
-- `--admin-key`: Admin key reference for signing (auto-resolved from key manager if omitted) - **Optional**
+- `--admin-key`: Admin key credential(s) for signing - **Optional** (auto-resolved from the key manager from on-chain public keys when not passed). **Repeatable** for KeyList / threshold admin keys
 - `--key-manager`: Key manager type, defaults to config setting - **Optional**
 - `--state-only`: Remove token from local state only, without a network transaction - **Optional**
 
@@ -1134,7 +1333,7 @@ The following token commands support the `--batch` / `-B` flag via the batch plu
 - `create-ft-from-file` – `TokenCreateFtFromFileBatchStateHook` persists FT-from-file state
 - `create-nft-from-file` – `TokenCreateNftFromFileBatchStateHook` persists NFT-from-file state
 - `associate` – `TokenAssociateBatchStateHook` persists association results
-- `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
+- `burn-ft`, `burn-nft`, `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
 
 When you pass `--batch <batch-name>`:
 

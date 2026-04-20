@@ -51,16 +51,23 @@ Either `--file` or `--default` must be provided (mutually exclusive).
 
 **Optional options:**
 
-| Option                  | Short | Description                                                                                                                                         | Default                                                            |
-| ----------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
-| `base-path`             | `b`   | Base path for contract imports                                                                                                                      | Current directory (with `--file`), package root (with `--default`) |
-| `gas`                   | `g`   | Gas for contract creation                                                                                                                           | 2000000                                                            |
-| `admin-key`             | `a`   | Repeatable. Admin key credential(s) for the new contract (formats: alias, key ref, `ed25519`/`ecdsa` public/private strings, etc.—see CLI help).    | -                                                                  |
-| `admin-key-threshold`   | `A`   | M-of-N: how many of the provided `--admin-key` values must sign the contract create flow. Only valid when multiple `--admin-key` entries are given. | -                                                                  |
-| `memo`                  | `m`   | Contract memo (max 100 chars)                                                                                                                       | -                                                                  |
-| `solidity-version`      | `v`   | Solidity compiler version                                                                                                                           | -                                                                  |
-| `constructor-parameter` | `c`   | Repeatable constructor arguments. With `--default`, optional (defaults apply)                                                                       | -                                                                  |
-| `key-manager`           | `k`   | Key manager: local or local_encrypted                                                                                                               | Config setting                                                     |
+| Option                             | Short | Description                                                                                                                                         | Default                                                            |
+| ---------------------------------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| `base-path`                        | `b`   | Base path for contract imports                                                                                                                      | Current directory (with `--file`), package root (with `--default`) |
+| `gas`                              | `g`   | Gas for contract creation                                                                                                                           | 2000000                                                            |
+| `admin-key`                        | `a`   | Repeatable. Admin key credential(s) for the new contract (formats: alias, key ref, `ed25519`/`ecdsa` public/private strings, etc.—see CLI help).    | -                                                                  |
+| `admin-key-threshold`              | `A`   | M-of-N: how many of the provided `--admin-key` values must sign the contract create flow. Only valid when multiple `--admin-key` entries are given. | -                                                                  |
+| `memo`                             | `m`   | Contract memo (max 100 chars)                                                                                                                       | -                                                                  |
+| `solidity-version`                 | `v`   | Solidity compiler version                                                                                                                           | -                                                                  |
+| `constructor-parameter`            | `c`   | Repeatable constructor arguments. With `--default`, optional (defaults apply)                                                                       | -                                                                  |
+| `key-manager`                      | `k`   | Key manager: local or local_encrypted                                                                                                               | Config setting                                                     |
+| `initial-balance`                  | `i`   | Initial HBAR balance funded to the contract at deployment. Format: `"100"` (HBAR) or `"100t"` (tinybars)                                            | -                                                                  |
+| `auto-renew-period`                | `r`   | Auto-renew period. Plain integer = seconds; or suffix: `s`, `m`, `h`, `d` (e.g. `500`, `50m`, `2h`, `30d`)                                          | -                                                                  |
+| `auto-renew-account-id`            | `R`   | Account ID (`0.0.xxx`) whose balance pays for contract auto-renewal                                                                                 | -                                                                  |
+| `max-automatic-token-associations` | `t`   | Maximum number of automatic token associations. `-1` for unlimited, `0` to disable                                                                  | -                                                                  |
+| `staked-account-id`                | `s`   | Account ID (`0.0.xxx`) to stake this contract to. Mutually exclusive with `--staked-node-id`                                                        | -                                                                  |
+| `staked-node-id`                   | `o`   | Node ID to stake this contract to. Mutually exclusive with `--staked-account-id`                                                                    | -                                                                  |
+| `decline-staking-reward`           | `D`   | Set to `true` to opt out of staking rewards                                                                                                         | -                                                                  |
 
 On Hedera, the contract admin key can be modeled as a **KeyList** or **ThresholdKey**. Pass **`--admin-key`** multiple times for multiple admin identities, and **`--admin-key-threshold`** when you need an **M-of-N** signing policy on the contract create flow.
 
@@ -102,6 +109,28 @@ hcli contract create \
   --file ./MyContract.sol \
   --admin-key alice --admin-key bob --admin-key carol \
   --admin-key-threshold 2
+```
+
+**Example with initial balance and staking:**
+
+```bash
+hcli contract create \
+  --name staking-contract \
+  --file ./MyContract.sol \
+  --initial-balance 10 \
+  --staked-node-id 3 \
+  --decline-staking-reward false
+```
+
+**Example with auto-renew and token associations:**
+
+```bash
+hcli contract create \
+  --name auto-renew-contract \
+  --file ./MyContract.sol \
+  --auto-renew-period 30d \
+  --auto-renew-account-id 0.0.500 \
+  --max-automatic-token-associations 10
 ```
 
 ### Contract Import

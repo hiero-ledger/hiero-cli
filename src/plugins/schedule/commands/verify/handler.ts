@@ -1,17 +1,26 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { Command } from '@/core/commands/command.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 import type { ScheduleVerifyOutput } from './output';
 
 import { KeyAlgorithm, NotFoundError } from '@/core';
+import {
+  executePhaseHooks,
+  processHookResult,
+  resolveCommandHooks,
+} from '@/core/hooks/hook-executor';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
+import { OrchestratorSource } from '@/core/types/shared.types';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { composeKey } from '@/core/utils/key-composer';
-import { ZustandScheduleStateHelper } from '@/plugins/schedule';
+import { ZustandScheduleStateHelper } from '@/plugins/schedule/zustand-state-helper';
 
 import { ScheduleVerifyInputSchema } from './input';
+
+export const SCHEDULE_VERIFY_COMMAND_NAME = 'schedule_verify';
 
 export class ScheduleVerifyCommand implements Command {
   async execute(args: CommandHandlerArgs): Promise<CommandResult> {
@@ -39,12 +48,17 @@ export class ScheduleVerifyCommand implements Command {
       );
     }
     const scheduleResponse = await api.mirror.getScheduled(resolvedScheduleId);
-    if (scheduleRecord) {
-      stateHelper.saveScheduled(composeKey(network, scheduleRecord.name), {
+    let updatedScheduledRecord: ScheduledTransactionData | undefined;
+    if (scheduleRecord && !scheduleRecord.executed) {
+      updatedScheduledRecord = {
         ...scheduleRecord,
         scheduled: true,
         executed: !!scheduleResponse.executed_timestamp,
-      });
+      };
+      stateHelper.saveScheduled(
+        composeKey(network, scheduleRecord.name),
+        updatedScheduledRecord,
+      );
     } else if (scheduleName) {
       let payer;
       if (scheduleResponse.payer_account_id) {
@@ -80,7 +94,7 @@ export class ScheduleVerifyCommand implements Command {
           ['schedule:admin'],
         );
       }
-      stateHelper.saveScheduled(composeKey(network, scheduleName), {
+      updatedScheduledRecord = {
         name: scheduleName,
         network,
         keyManager,
@@ -98,7 +112,11 @@ export class ScheduleVerifyCommand implements Command {
         createdAt: scheduleResponse.consensus_timestamp
           ? hederaTimestampToIso(scheduleResponse.consensus_timestamp)
           : new Date().toISOString(),
-      });
+      };
+      stateHelper.saveScheduled(
+        composeKey(network, scheduleName),
+        updatedScheduledRecord,
+      );
     }
 
     const outputData: ScheduleVerifyOutput = {
@@ -116,6 +134,29 @@ export class ScheduleVerifyCommand implements Command {
         : undefined,
       payerAccountId: scheduleResponse.payer_account_id,
     };
+
+    if (updatedScheduledRecord?.executed && updatedScheduledRecord.command) {
+      const postOutputResult = await executePhaseHooks(
+        resolveCommandHooks(args),
+        'postOutputPreparation',
+        {
+          args,
+          commandName: SCHEDULE_VERIFY_COMMAND_NAME,
+          normalisedParams: {},
+          buildTransactionResult: undefined,
+          signTransactionResult: undefined,
+          executeTransactionResult: {
+            source: OrchestratorSource.SCHEDULE,
+            scheduledData: updatedScheduledRecord,
+          },
+          outputResult: { result: outputData },
+        },
+      );
+      if (postOutputResult.breakFlow) {
+        return processHookResult(postOutputResult);
+      }
+    }
+
     return { result: outputData };
   }
 }

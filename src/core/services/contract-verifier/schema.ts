@@ -9,7 +9,7 @@ const verifyResultItemSchema = z.object({
   address: z.string(),
   chainId: z.string(),
   status: z.string(),
-  message: z.string(),
+  message: z.string().optional(),
   libraryMap: z.record(z.string(), z.unknown()),
 });
 

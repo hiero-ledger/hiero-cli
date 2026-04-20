@@ -9,6 +9,25 @@ import { ValidationError } from '@/core/errors';
 import { HederaTokenType as HederaTokenTypeValues } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
 
+export interface TokenKeyRefIdsWithThreshold {
+  adminKeyRefIds?: string[];
+  adminKeyThreshold?: number;
+  supplyKeyRefIds?: string[];
+  supplyKeyThreshold?: number;
+  wipeKeyRefIds?: string[];
+  wipeKeyThreshold?: number;
+  kycKeyRefIds?: string[];
+  kycKeyThreshold?: number;
+  freezeKeyRefIds?: string[];
+  freezeKeyThreshold?: number;
+  pauseKeyRefIds?: string[];
+  pauseKeyThreshold?: number;
+  feeScheduleKeyRefIds?: string[];
+  feeScheduleKeyThreshold?: number;
+  metadataKeyRefIds?: string[];
+  metadataKeyThreshold?: number;
+}
+
 export function buildTokenData(
   result: TransactionResult,
   params: {
@@ -19,19 +38,11 @@ export function buildTokenData(
     initialSupply: bigint;
     tokenType: HederaTokenType;
     supplyType: string;
-    adminPublicKey?: string;
-    supplyPublicKey?: string;
-    freezePublicKey?: string;
-    wipePublicKey?: string;
-    pausePublicKey?: string;
-    kycPublicKey?: string;
-    feeSchedulePublicKey?: string;
-    metadataPublicKey?: string;
     network: SupportedNetwork;
-  },
+  } & TokenKeyRefIdsWithThreshold,
 ): TokenData {
   return {
-    tokenId: result.tokenId!,
+    tokenId: result.tokenId ?? '',
     name: params.name,
     symbol: params.symbol,
     treasuryId: params.treasuryId,
@@ -43,28 +54,30 @@ export function buildTokenData(
       (params.supplyType.toUpperCase() as SupplyType) === SupplyType.FINITE
         ? params.initialSupply
         : 0n,
-    adminPublicKey: params.adminPublicKey,
-    supplyPublicKey: params.supplyPublicKey,
-    freezePublicKey: params.freezePublicKey,
-    wipePublicKey: params.wipePublicKey,
-    pausePublicKey: params.pausePublicKey,
-    kycPublicKey: params.kycPublicKey,
-    feeSchedulePublicKey: params.feeSchedulePublicKey,
-    metadataPublicKey: params.metadataPublicKey,
+    adminKeyRefIds: params.adminKeyRefIds ?? [],
+    adminKeyThreshold: params.adminKeyThreshold ?? 0,
+    supplyKeyRefIds: params.supplyKeyRefIds ?? [],
+    supplyKeyThreshold: params.supplyKeyThreshold ?? 0,
+    wipeKeyRefIds: params.wipeKeyRefIds ?? [],
+    wipeKeyThreshold: params.wipeKeyThreshold ?? 0,
+    kycKeyRefIds: params.kycKeyRefIds ?? [],
+    kycKeyThreshold: params.kycKeyThreshold ?? 0,
+    freezeKeyRefIds: params.freezeKeyRefIds ?? [],
+    freezeKeyThreshold: params.freezeKeyThreshold ?? 0,
+    pauseKeyRefIds: params.pauseKeyRefIds ?? [],
+    pauseKeyThreshold: params.pauseKeyThreshold ?? 0,
+    feeScheduleKeyRefIds: params.feeScheduleKeyRefIds ?? [],
+    feeScheduleKeyThreshold: params.feeScheduleKeyThreshold ?? 0,
+    metadataKeyRefIds: params.metadataKeyRefIds ?? [],
+    metadataKeyThreshold: params.metadataKeyThreshold ?? 0,
     network: params.network,
     associations: [],
     customFees: [],
   };
 }
 
-export interface TokenKeyOptions {
-  supplyPublicKey?: string;
-  wipePublicKey?: string;
-  kycPublicKey?: string;
-  freezePublicKey?: string;
-  pausePublicKey?: string;
-  feeSchedulePublicKey?: string;
-  metadataPublicKey?: string;
+function extractKeyRefIds(keys: { keyRefId: string }[]): string[] {
+  return keys.map((k) => k.keyRefId);
 }
 
 export function buildTokenDataFromFile(
@@ -72,18 +85,26 @@ export function buildTokenDataFromFile(
   normalisedParams: TokenCreateFtFromFileNormalizedParams,
 ): TokenData {
   return {
-    tokenId: result.tokenId!,
+    tokenId: result.tokenId ?? '',
     name: normalisedParams.name,
     symbol: normalisedParams.symbol,
     treasuryId: normalisedParams.treasury.accountId,
-    adminPublicKey: normalisedParams.adminKey?.publicKey,
-    supplyPublicKey: normalisedParams.supplyKey?.publicKey,
-    wipePublicKey: normalisedParams.wipeKey?.publicKey,
-    kycPublicKey: normalisedParams.kycKey?.publicKey,
-    freezePublicKey: normalisedParams.freezeKey?.publicKey,
-    pausePublicKey: normalisedParams.pauseKey?.publicKey,
-    feeSchedulePublicKey: normalisedParams.feeScheduleKey?.publicKey,
-    metadataPublicKey: normalisedParams.metadataKey?.publicKey,
+    adminKeyRefIds: extractKeyRefIds(normalisedParams.adminKeys),
+    adminKeyThreshold: normalisedParams.adminKeyThreshold,
+    supplyKeyRefIds: extractKeyRefIds(normalisedParams.supplyKeys),
+    supplyKeyThreshold: normalisedParams.supplyKeyThreshold,
+    wipeKeyRefIds: extractKeyRefIds(normalisedParams.wipeKeys),
+    wipeKeyThreshold: normalisedParams.wipeKeyThreshold,
+    kycKeyRefIds: extractKeyRefIds(normalisedParams.kycKeys),
+    kycKeyThreshold: normalisedParams.kycKeyThreshold,
+    freezeKeyRefIds: extractKeyRefIds(normalisedParams.freezeKeys),
+    freezeKeyThreshold: normalisedParams.freezeKeyThreshold,
+    pauseKeyRefIds: extractKeyRefIds(normalisedParams.pauseKeys),
+    pauseKeyThreshold: normalisedParams.pauseKeyThreshold,
+    feeScheduleKeyRefIds: extractKeyRefIds(normalisedParams.feeScheduleKeys),
+    feeScheduleKeyThreshold: normalisedParams.feeScheduleKeyThreshold,
+    metadataKeyRefIds: extractKeyRefIds(normalisedParams.metadataKeys),
+    metadataKeyThreshold: normalisedParams.metadataKeyThreshold,
     decimals: normalisedParams.decimals,
     initialSupply: normalisedParams.initialSupply,
     tokenType: normalisedParams.tokenType,
@@ -101,17 +122,26 @@ export function buildNftTokenDataFromFile(
   normalisedParams: TokenCreateNftFromFileNormalizedParams,
 ): TokenData {
   return {
-    tokenId: result.tokenId!,
+    tokenId: result.tokenId ?? '',
     name: normalisedParams.name,
     symbol: normalisedParams.symbol,
     treasuryId: normalisedParams.treasury.accountId,
-    adminPublicKey: normalisedParams.adminKey.publicKey,
-    supplyPublicKey: normalisedParams.supplyKey.publicKey,
-    wipePublicKey: normalisedParams.wipeKey?.publicKey,
-    kycPublicKey: normalisedParams.kycKey?.publicKey,
-    freezePublicKey: normalisedParams.freezeKey?.publicKey,
-    pausePublicKey: normalisedParams.pauseKey?.publicKey,
-    feeSchedulePublicKey: normalisedParams.feeScheduleKey?.publicKey,
+    adminKeyRefIds: extractKeyRefIds(normalisedParams.adminKeys),
+    adminKeyThreshold: normalisedParams.adminKeyThreshold,
+    supplyKeyRefIds: extractKeyRefIds(normalisedParams.supplyKeys),
+    supplyKeyThreshold: normalisedParams.supplyKeyThreshold,
+    wipeKeyRefIds: extractKeyRefIds(normalisedParams.wipeKeys),
+    wipeKeyThreshold: normalisedParams.wipeKeyThreshold,
+    kycKeyRefIds: extractKeyRefIds(normalisedParams.kycKeys),
+    kycKeyThreshold: normalisedParams.kycKeyThreshold,
+    freezeKeyRefIds: extractKeyRefIds(normalisedParams.freezeKeys),
+    freezeKeyThreshold: normalisedParams.freezeKeyThreshold,
+    pauseKeyRefIds: extractKeyRefIds(normalisedParams.pauseKeys),
+    pauseKeyThreshold: normalisedParams.pauseKeyThreshold,
+    feeScheduleKeyRefIds: extractKeyRefIds(normalisedParams.feeScheduleKeys),
+    feeScheduleKeyThreshold: normalisedParams.feeScheduleKeyThreshold,
+    metadataKeyRefIds: [],
+    metadataKeyThreshold: 0,
     decimals: 0,
     initialSupply: 0n,
     tokenType: HederaTokenTypeValues.NON_FUNGIBLE_TOKEN,

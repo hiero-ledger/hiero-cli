@@ -119,6 +119,16 @@ export const schedulePluginManifest: PluginManifest = {
       name: 'sign',
       summary: 'Add a signature to a scheduled transaction',
       description: 'Signs scheduled transaction with the given key',
+      registeredHooks: [
+        {
+          hook: 'account-create-state',
+          phase: 'postOutputPreparation',
+        },
+        {
+          hook: 'account-update-state',
+          phase: 'postOutputPreparation',
+        },
+      ],
       options: [
         {
           name: 'schedule',
@@ -191,6 +201,16 @@ export const schedulePluginManifest: PluginManifest = {
       summary: 'Verify schedule execution state',
       description:
         'Verify if scheduled transaction was executed and/or import scheduled transaction information to the local state',
+      registeredHooks: [
+        {
+          hook: 'account-create-state',
+          phase: 'postOutputPreparation',
+        },
+        {
+          hook: 'account-update-state',
+          phase: 'postOutputPreparation',
+        },
+      ],
       options: [
         {
           name: 'name',

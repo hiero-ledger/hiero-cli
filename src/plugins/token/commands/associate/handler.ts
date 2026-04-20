@@ -42,6 +42,41 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
     super(TOKEN_ASSOCIATE_COMMAND_NAME);
   }
 
+  override async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+    const normalisedParams = await this.normalizeParams(args);
+
+    if (normalisedParams.alreadyAssociated) {
+      return this.executeAlreadyAssociated(args, normalisedParams);
+    }
+
+    return super.execute(args);
+  }
+
+  private async executeAlreadyAssociated(
+    args: CommandHandlerArgs,
+    normalisedParams: AssociateNormalizedParams,
+  ): Promise<CommandResult> {
+    const { api, logger } = args;
+    const tokenState = new ZustandTokenStateHelper(api.state, logger);
+    saveAssociationToState(
+      tokenState,
+      normalisedParams.tokenId,
+      normalisedParams.account.accountId,
+      normalisedParams.network,
+      logger,
+    );
+
+    const outputData: TokenAssociateOutput = {
+      accountId: normalisedParams.account.accountId,
+      tokenId: normalisedParams.tokenId,
+      associated: true,
+      alreadyAssociated: true,
+      network: normalisedParams.network,
+    };
+
+    return { result: outputData };
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<AssociateNormalizedParams> {
@@ -101,9 +136,6 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
     normalisedParams: AssociateNormalizedParams,
   ): Promise<AssociateBuildTransactionResult> {
-    if (normalisedParams.alreadyAssociated) {
-      return {};
-    }
     const { api } = args;
     const transaction = api.token.createTokenAssociationTransaction({
       tokenId: normalisedParams.tokenId,
@@ -117,18 +149,15 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
     normalisedParams: AssociateNormalizedParams,
     buildTransactionResult: AssociateBuildTransactionResult,
   ): Promise<AssociateSignTransactionResult> {
-    if (!buildTransactionResult.transaction) {
-      return {};
-    }
     const { api, logger } = args;
     logger.debug(
       `Using key ${normalisedParams.account.keyRefId} for signing transaction`,
     );
-    const transaction = await api.txSign.sign(
+    const signedTransaction = await api.txSign.sign(
       buildTransactionResult.transaction,
       [normalisedParams.account.keyRefId],
     );
-    return { signedTransaction: transaction };
+    return { signedTransaction };
   }
 
   async executeTransaction(
@@ -137,13 +166,6 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
     _buildTransactionResult: AssociateBuildTransactionResult,
     signTransactionResult: AssociateSignTransactionResult,
   ): Promise<AssociateExecuteTransactionResult> {
-    if (
-      normalisedParams.alreadyAssociated ||
-      !signTransactionResult.signedTransaction
-    ) {
-      return { alreadyAssociated: true };
-    }
-
     const { api } = args;
     try {
       const transactionResult = await api.txExecute.execute(

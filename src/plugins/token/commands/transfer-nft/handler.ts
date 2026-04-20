@@ -14,6 +14,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import {
   resolveDestinationAccountParameter,
   resolveTokenParameter,
@@ -52,7 +53,7 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
 
     const tokenId = resolvedToken.tokenId;
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
-    if (tokenInfo.type !== 'NON_FUNGIBLE_UNIQUE') {
+    if (tokenInfo.type !== MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE) {
       throw new ValidationError('Token is not an NFT', {
         context: { tokenId, type: tokenInfo.type },
       });

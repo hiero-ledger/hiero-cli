@@ -4,11 +4,11 @@
  */
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
+import type { TokenData } from './schema';
 
 import { NotFoundError } from '@/core/errors';
 
 import { TOKEN_NAMESPACE } from './constants';
-import { type TokenData } from './schema';
 
 export class ZustandTokenStateHelper {
   private state: StateService;
@@ -147,23 +147,11 @@ export class ZustandTokenStateHelper {
         });
 
         const updatedTokenData: TokenData = {
-          tokenId: tokenData.tokenId,
-          name: tokenData.name,
-          symbol: tokenData.symbol,
-          treasuryId: tokenData.treasuryId,
-          decimals: tokenData.decimals,
-          initialSupply: tokenData.initialSupply,
-          tokenType: tokenData.tokenType,
-          supplyType: tokenData.supplyType,
-          maxSupply: tokenData.maxSupply,
-          network: tokenData.network,
+          ...tokenData,
           associations: newAssociations,
           customFees: Array.isArray(tokenData.customFees)
             ? [...tokenData.customFees]
             : [],
-          memo: tokenData.memo,
-          adminPublicKey: tokenData.adminPublicKey,
-          supplyPublicKey: tokenData.supplyPublicKey,
         };
 
         this.saveToken(key, updatedTokenData);
@@ -273,7 +261,7 @@ export class ZustandTokenStateHelper {
         }
 
         // Count tokens with admin key
-        if (token.adminPublicKey) {
+        if (token.adminKeyRefIds.length > 0) {
           stats.withKeys++;
         }
       }

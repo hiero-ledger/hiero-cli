@@ -13,6 +13,7 @@ import {
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { createMockTokenInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TokenImportOutputSchema } from '@/plugins/token/commands/import';
 import { tokenImport } from '@/plugins/token/commands/import/handler';
@@ -42,7 +43,7 @@ describe('token plugin - import command (ADR-007)', () => {
       token_id: '0.0.123456',
       name: 'Test Token',
       symbol: 'TEST',
-      type: 'FUNGIBLE_COMMON',
+      type: MirrorNodeTokenType.FUNGIBLE_COMMON,
       decimals: '6',
       total_supply: '1000000',
       max_supply: '1000000',
@@ -119,7 +120,7 @@ describe('token plugin - import command (ADR-007)', () => {
       token_id: '0.0.999999',
       name: 'Existing Token',
       symbol: 'EXT',
-      type: 'FUNGIBLE_COMMON',
+      type: MirrorNodeTokenType.FUNGIBLE_COMMON,
     });
 
     const mirrorMock = makeMirrorMock() as Partial<HederaMirrornodeService> & {
@@ -174,7 +175,7 @@ describe('token plugin - import command (ADR-007)', () => {
       token_id: '0.0.555555',
       name: 'NFT Collection',
       symbol: 'NFT',
-      type: 'NON_FUNGIBLE_UNIQUE',
+      type: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
       decimals: '0',
       total_supply: '0',
       max_supply: '100',

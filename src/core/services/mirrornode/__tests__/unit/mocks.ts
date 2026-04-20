@@ -7,6 +7,7 @@ import {
   type ExchangeRateResponse,
   type GetAccountsAPIResponse,
   MirrorNodeKeyType,
+  MirrorNodeTokenType,
   type NftInfo,
   type TokenAirdropsResponse,
   type TokenBalancesResponse,
@@ -16,6 +17,7 @@ import {
   type TopicMessagesAPIResponse,
   type TransactionDetailsResponse,
 } from '@/core/services/mirrornode/types';
+import { MirrorTransactionResult } from '@/core/types/shared.types';
 
 export const createMockAccountAPIResponse = (
   overrides: Partial<AccountAPIResponse> = {},
@@ -111,7 +113,7 @@ export const createMockTokenInfo = (
   decimals: '6',
   total_supply: '1000000000',
   max_supply: '1000000000',
-  type: 'NON_FUNGIBLE_UNIQUE',
+  type: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
   treasury_account_id: '0.0.1234',
   created_timestamp: '2024-01-01T12:00:00.000Z',
   deleted: false,
@@ -136,7 +138,7 @@ export const createMockMirrorNodeTokenByIdJson = (
   decimals: '6',
   total_supply: '1000000000',
   max_supply: '1000000000',
-  type: 'NON_FUNGIBLE_UNIQUE',
+  type: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
   treasury_account_id: '0.0.1234',
   created_timestamp: '2024-01-01T12:00:00.000Z',
   deleted: false,
@@ -192,7 +194,7 @@ export const createMockTransactionDetailsResponse = (
       consensus_timestamp: '2024-01-01T12:00:00.000Z',
       valid_start_timestamp: '2024-01-01T12:00:00.000Z',
       charged_tx_fee: 100000,
-      result: 'SUCCESS',
+      result: MirrorTransactionResult.SUCCESS,
       transaction_hash: 'hash123',
       name: 'CRYPTOTRANSFER',
       node: '0.0.3',

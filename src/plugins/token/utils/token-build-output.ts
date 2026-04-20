@@ -1,8 +1,14 @@
-import type { NftInfo, TokenInfo } from '@/core/services/mirrornode/types';
+import type {
+  MirrorNodeKey,
+  NftInfo,
+  TokenInfo,
+} from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { TokenViewOutput } from '@/plugins/token/commands/view';
+import type { KeyInfo, TokenViewOutput } from '@/plugins/token/commands/view';
 
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { SupplyType } from '@/core/types/shared.types';
+import { extractPublicKeysFromMirrorNodeKey } from '@/core/utils/extract-public-keys';
 
 /**
  * Decode base64 metadata to UTF-8 string
@@ -51,6 +57,24 @@ function expiryTimestampToIso(expiry?: number | null): string | undefined {
 }
 
 /**
+ * Extract and resolve a MirrorNode key into KeyInfo for display.
+ * Returns null when no key is present.
+ * Returns { keys, threshold } where threshold is only set for multi-key (KeyList/ThresholdKey).
+ */
+function buildKeyInfo(
+  mirrorKey: MirrorNodeKey | undefined | null,
+): KeyInfo | null {
+  const { publicKeys, threshold } =
+    extractPublicKeysFromMirrorNodeKey(mirrorKey);
+  if (publicKeys.length === 0) return null;
+  if (publicKeys.length === 1) return { keys: publicKeys };
+  return {
+    keys: publicKeys,
+    threshold: threshold > 0 ? threshold : publicKeys.length,
+  };
+}
+
+/**
  * Build output object based on token type and mode
  */
 export function tokenBuildOutput(
@@ -75,8 +99,8 @@ export function tokenBuildOutput(
     treasury: tokenInfo.treasury_account_id || undefined,
     memo: tokenInfo.memo || undefined,
     createdTimestamp: formatHederaTimestamp(tokenInfo.created_timestamp),
-    adminKey: tokenInfo.admin_key?.key || null,
-    supplyKey: tokenInfo.supply_key?.key || null,
+    adminKey: buildKeyInfo(tokenInfo.admin_key),
+    supplyKey: buildKeyInfo(tokenInfo.supply_key),
     freezeDefault: tokenInfo.freeze_default ?? false,
     autoRenewPeriodSeconds: tokenInfo.auto_renew_period,
     autoRenewAccountId: tokenInfo.auto_renew_account || undefined,
@@ -84,7 +108,7 @@ export function tokenBuildOutput(
   };
 
   // Add decimals only for Fungible Tokens
-  if (tokenInfo.type === 'FUNGIBLE_COMMON') {
+  if (tokenInfo.type === MirrorNodeTokenType.FUNGIBLE_COMMON) {
     return {
       ...base,
       decimals: parseInt(tokenInfo.decimals, 10),

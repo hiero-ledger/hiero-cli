@@ -256,7 +256,7 @@ describe('TokenServiceImpl', () => {
       initialSupplyRaw: INITIAL_SUPPLY,
       tokenType: TOKEN_TYPE,
       supplyType: SupplyType.INFINITE,
-      adminPublicKey: mockPublicKeyInstance as unknown as PublicKey,
+      adminKey: mockPublicKeyInstance as unknown as PublicKey,
     };
 
     it('should create token with all required parameters', () => {
@@ -353,7 +353,7 @@ describe('TokenServiceImpl', () => {
     });
 
     it('should not set admin key when omitted', () => {
-      const { adminPublicKey: _admin, ...paramsWithoutAdmin } = baseParams;
+      const { adminKey: _admin, ...paramsWithoutAdmin } = baseParams;
 
       tokenService.createTokenTransaction(paramsWithoutAdmin);
 
@@ -363,7 +363,7 @@ describe('TokenServiceImpl', () => {
     it('should set metadata key when provided', () => {
       const params = {
         ...baseParams,
-        metadataPublicKey: mockPublicKeyInstance as unknown as PublicKey,
+        metadataKey: mockPublicKeyInstance as unknown as PublicKey,
       };
 
       tokenService.createTokenTransaction(params);
@@ -376,7 +376,7 @@ describe('TokenServiceImpl', () => {
     it('should set freeze default when freeze key is set', () => {
       const paramsWithFreeze = {
         ...baseParams,
-        freezePublicKey: mockPublicKeyInstance as unknown as PublicKey,
+        freezeKey: mockPublicKeyInstance as unknown as PublicKey,
         freezeDefault: true,
       };
 
@@ -393,7 +393,7 @@ describe('TokenServiceImpl', () => {
     it('should set freeze default false when freeze key is set without freezeDefault', () => {
       const paramsWithFreeze = {
         ...baseParams,
-        freezePublicKey: mockPublicKeyInstance as unknown as PublicKey,
+        freezeKey: mockPublicKeyInstance as unknown as PublicKey,
       };
 
       tokenService.createTokenTransaction(paramsWithFreeze);
