@@ -102,7 +102,7 @@ export function tokenBuildOutput(
     adminKey: buildKeyInfo(tokenInfo.admin_key),
     supplyKey: buildKeyInfo(tokenInfo.supply_key),
     freezeDefault: tokenInfo.freeze_default ?? false,
-    autoRenewPeriodSeconds: tokenInfo.auto_renew_period,
+    autoRenewPeriodSeconds: tokenInfo.auto_renew_period || undefined,
     autoRenewAccountId: tokenInfo.auto_renew_account || undefined,
     expirationTime: expiryTimestampToIso(tokenInfo.expiry_timestamp),
   };
