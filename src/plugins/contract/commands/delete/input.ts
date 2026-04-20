@@ -30,7 +30,7 @@ export const ContractDeleteInputSchema = z
       .optional()
       .default([])
       .describe(
-        'Contract admin credential(s) so the network delete can be signed (required when deleting on Hedera). Pass multiple times if multiple credentials are needed. Each value may be: account ID with private key in {accountId}:{private_key} format; account public key in {ed25519|ecdsa}:public:{public-key} format; account private key in {ed25519|ecdsa}:private:{private-key} format; account ID; account name/alias; or account key reference.',
+        'Optional contract admin credential(s) for signing the network delete. When omitted, the CLI derives the admin key from the mirror node and uses KMS keys that match those public keys (including M-of-N). When provided, these credentials are used as-is; if a credential is invalid, the command fails. Pass multiple times if multiple credentials are needed. Each value may be: account ID with private key in {accountId}:{private_key} format; account public key in {ed25519|ecdsa}:public:{public-key} format; account private key in {ed25519|ecdsa}:private:{private-key} format; account ID; account name/alias; or account key reference.',
       ),
     keyManager: KeyManagerTypeSchema.optional(),
   })
