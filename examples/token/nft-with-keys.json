@@ -1,5 +1,6 @@
 {
   "name": "nft-keys-example",
+  "tokenName": "NFT Keys Example",
   "symbol": "NKE",
   "supplyType": "infinite",
   "treasuryKey": "<alias or accountId:privateKey>",

@@ -1,5 +1,6 @@
 {
   "name": "token-fixed-fee-hbar",
+  "tokenName": "Token Fixed Fee HBAR",
   "symbol": "FFHBAR",
   "decimals": 8,
   "supplyType": "finite",

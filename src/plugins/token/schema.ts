@@ -15,6 +15,7 @@ import {
   KeyThresholdOptionalSchema,
   MemoSchema,
   NonNegativeNumberOrBigintSchema,
+  TokenAliasNameSchema,
   TokenNameSchema,
   TokenSymbolSchema,
   TokenTypeSchema,
@@ -191,7 +192,8 @@ export function safeParseTokenData(data: unknown) {
 
 export const FungibleTokenFileSchema = z
   .object({
-    name: TokenNameSchema,
+    name: TokenAliasNameSchema.describe('CLI alias for the token'),
+    tokenName: TokenNameSchema.describe('On-chain token name'),
     symbol: TokenSymbolSchema,
     decimals: HtsDecimalsSchema,
     supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
@@ -276,7 +278,8 @@ const OptionalKeyOrListSchema = z.preprocess((val) => {
 
 export const NonFungibleTokenFileSchema = z
   .object({
-    name: TokenNameSchema,
+    name: TokenAliasNameSchema.describe('CLI alias for the token'),
+    tokenName: TokenNameSchema.describe('On-chain token name'),
     symbol: TokenSymbolSchema,
     supplyType: z.union([z.literal('finite'), z.literal('infinite')]),
     maxSupply: NonNegativeNumberOrBigintSchema.optional(),
