@@ -15,9 +15,9 @@ import {
 import { makeArgs, makeLogger } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, SupportedNetwork } from '@/core';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { AliasType } from '@/core/types/shared.types';
 import { AccountCreateOutputSchema } from '@/plugins/account/commands/create';
 import { accountCreate } from '@/plugins/account/commands/create/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';

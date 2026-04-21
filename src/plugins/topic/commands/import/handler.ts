@@ -5,7 +5,7 @@ import type { TopicImportOutput } from './output';
 import type { ImportTopicNormalisedParams } from './types';
 
 import { ValidationError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { extractPublicKeysFromMirrorNodeKey } from '@/core/utils/extract-public-keys';
 import { hederaTimestampToIso } from '@/core/utils/hedera-timestamp';
 import { composeKey } from '@/core/utils/key-composer';

@@ -2,14 +2,16 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { TokenFreezeInput } from './input';
-import type { TokenFreezeOutput } from './output';
+import type { TokenUnfreezeInput } from './input';
+import type { TokenUnfreezeOutput } from './output';
 import type {
-  FreezeBuildTransactionResult,
-  FreezeExecuteTransactionResult,
-  FreezeNormalizedParams,
-  FreezeSignTransactionResult,
+  UnfreezeBuildTransactionResult,
+  UnfreezeExecuteTransactionResult,
+  UnfreezeNormalizedParams,
+  UnfreezeSignTransactionResult,
 } from './types';
+
+import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import {
@@ -19,28 +21,39 @@ import {
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { isNoFreezeKeyError } from '@/plugins/token/utils/transaction-error-receipt-status';
 
-import { TokenFreezeInputSchema } from './input';
+import { TokenUnfreezeInputSchema } from './input';
 
-export const TOKEN_FREEZE_COMMAND_NAME = 'token_freeze';
+export const TOKEN_UNFREEZE_COMMAND_NAME = 'token_unfreeze';
 
-export class TokenFreezeCommand extends BaseTransactionCommand<
-  FreezeNormalizedParams,
-  FreezeBuildTransactionResult,
-  FreezeSignTransactionResult,
-  FreezeExecuteTransactionResult
+function isNoFreezeKeyError(error: unknown): boolean {
+  if (!(error instanceof TransactionError)) {
+    return false;
+  }
+
+  const cause = error.cause;
+  return (
+    cause instanceof ReceiptStatusError &&
+    cause.status === HederaStatus.TokenHasNoFreezeKey
+  );
+}
+
+export class TokenUnfreezeCommand extends BaseTransactionCommand<
+  UnfreezeNormalizedParams,
+  UnfreezeBuildTransactionResult,
+  UnfreezeSignTransactionResult,
+  UnfreezeExecuteTransactionResult
 > {
   constructor() {
-    super(TOKEN_FREEZE_COMMAND_NAME);
+    super(TOKEN_UNFREEZE_COMMAND_NAME);
   }
 
   async normalizeParams(
     args: CommandHandlerArgs,
-  ): Promise<FreezeNormalizedParams> {
+  ): Promise<UnfreezeNormalizedParams> {
     const { api, logger } = args;
 
-    const validArgs = TokenFreezeInputSchema.parse(args.args);
+    const validArgs = TokenUnfreezeInputSchema.parse(args.args);
 
     const keyManager =
       validArgs.keyManager ||
@@ -71,7 +84,7 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
     });
 
     logger.info(
-      `Freezing account ${accountId} for token ${tokenId} on ${network}`,
+      `Unfreezing account ${accountId} for token ${tokenId} on ${network}`,
     );
 
     const freezeKeyResolved = await this.resolveFreezeKey(
@@ -95,7 +108,7 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
 
   private async resolveFreezeKey(
     keyResolver: KeyResolverService,
-    validArgs: TokenFreezeInput,
+    validArgs: TokenUnfreezeInput,
     keyManager: KeyManager,
     tokenFreezePublicKey: string,
     tokenId: string,
@@ -104,7 +117,7 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
       validArgs.freezeKey,
       keyManager,
       false,
-      ['token:freeze'],
+      ['token:unfreeze'],
     );
 
     if (tokenFreezePublicKey !== freezeKeyResolved.publicKey) {
@@ -118,11 +131,11 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
 
   async buildTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: FreezeNormalizedParams,
-  ): Promise<FreezeBuildTransactionResult> {
+    normalisedParams: UnfreezeNormalizedParams,
+  ): Promise<UnfreezeBuildTransactionResult> {
     const { api, logger } = args;
-    logger.debug('Building token freeze transaction');
-    const transaction = api.token.createFreezeTransaction({
+    logger.debug('Building token unfreeze transaction');
+    const transaction = api.token.createUnfreezeTransaction({
       tokenId: normalisedParams.tokenId,
       accountId: normalisedParams.accountId,
     });
@@ -131,9 +144,9 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
 
   async signTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: FreezeNormalizedParams,
-    buildTransactionResult: FreezeBuildTransactionResult,
-  ): Promise<FreezeSignTransactionResult> {
+    normalisedParams: UnfreezeNormalizedParams,
+    buildTransactionResult: UnfreezeBuildTransactionResult,
+  ): Promise<UnfreezeSignTransactionResult> {
     const { api, logger } = args;
     const freezeKeyRefId = normalisedParams.freezeKeyResolved.keyRefId;
     logger.debug(`Using key ${freezeKeyRefId} for signing transaction`);
@@ -146,10 +159,10 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
 
   async executeTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: FreezeNormalizedParams,
-    _buildTransactionResult: FreezeBuildTransactionResult,
-    signTransactionResult: FreezeSignTransactionResult,
-  ): Promise<FreezeExecuteTransactionResult> {
+    normalisedParams: UnfreezeNormalizedParams,
+    _buildTransactionResult: UnfreezeBuildTransactionResult,
+    signTransactionResult: UnfreezeSignTransactionResult,
+  ): Promise<UnfreezeExecuteTransactionResult> {
     const { api } = args;
     try {
       const result = await api.txExecute.execute(
@@ -158,7 +171,7 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
 
       if (!result.success) {
         throw new TransactionError(
-          `Token freeze failed (tokenId: ${normalisedParams.tokenId}, txId: ${result.transactionId})`,
+          `Token unfreeze failed (tokenId: ${normalisedParams.tokenId}, txId: ${result.transactionId})`,
           false,
         );
       }
@@ -176,12 +189,12 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
 
   async outputPreparation(
     _args: CommandHandlerArgs,
-    normalisedParams: FreezeNormalizedParams,
-    _buildTransactionResult: FreezeBuildTransactionResult,
-    _signTransactionResult: FreezeSignTransactionResult,
-    executeTransactionResult: FreezeExecuteTransactionResult,
+    normalisedParams: UnfreezeNormalizedParams,
+    _buildTransactionResult: UnfreezeBuildTransactionResult,
+    _signTransactionResult: UnfreezeSignTransactionResult,
+    executeTransactionResult: UnfreezeExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const outputData: TokenFreezeOutput = {
+    const outputData: TokenUnfreezeOutput = {
       transactionId: executeTransactionResult.transactionResult.transactionId,
       tokenId: normalisedParams.tokenId,
       accountId: normalisedParams.accountId,
@@ -191,8 +204,8 @@ export class TokenFreezeCommand extends BaseTransactionCommand<
   }
 }
 
-export async function tokenFreeze(
+export async function tokenUnfreeze(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenFreezeCommand().execute(args);
+  return new TokenUnfreezeCommand().execute(args);
 }

@@ -8,7 +8,7 @@ import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import BigNumber from 'bignumber.js';
 
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { normalizeBalance } from '@/core/utils/normalize-balance';
 
 /**

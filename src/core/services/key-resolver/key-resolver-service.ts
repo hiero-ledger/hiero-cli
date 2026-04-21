@@ -26,9 +26,9 @@ import type {
 } from './key-resolver-service.interface';
 
 import { NotFoundError, StateError, ValidationError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ERROR_MESSAGES } from '@/core/services/key-resolver/error-messages';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
+import { AliasType } from '@/core/types/shared.types';
 import {
   extractPublicKeysFromMirrorNodeKey,
   getEffectiveKeyRequirement,

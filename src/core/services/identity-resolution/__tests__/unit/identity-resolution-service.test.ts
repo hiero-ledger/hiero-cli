@@ -5,9 +5,9 @@ import type {
 } from '@/core/services/identity-resolution/types';
 
 import { StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { IdentityResolutionServiceImpl } from '@/core/services/identity-resolution/identity-resolution-service';
 import {
+  AliasType,
   EntityReferenceType,
   SupportedNetwork,
 } from '@/core/types/shared.types';

@@ -9,8 +9,8 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
+import { AliasType } from '@/core/types/shared.types';
 import {
   tokenDelete,
   TokenDeleteOutputSchema,

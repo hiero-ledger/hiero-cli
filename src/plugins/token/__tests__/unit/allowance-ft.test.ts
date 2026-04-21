@@ -5,8 +5,8 @@ import '@/core/utils/json-serialize';
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
+import { AliasType } from '@/core/types/shared.types';
 import {
   tokenAllowanceFt,
   TokenAllowanceFtOutputSchema,

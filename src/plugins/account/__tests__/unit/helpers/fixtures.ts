@@ -5,9 +5,8 @@
 import type { AliasRecord } from '@/core/services/alias/alias-service.interface';
 import type { AccountData } from '@/plugins/account/schema';
 
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 
 /**
  * Mock Account IDs

@@ -17,8 +17,8 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import {
   extractPublicKeysFromMirrorNodeKey,
   getEffectiveKeyRequirement,

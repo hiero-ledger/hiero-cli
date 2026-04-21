@@ -5,7 +5,7 @@ import type { ContractErc721CallOwnerOfOutput } from '@/plugins/contract-erc721/
 import { Interface } from 'ethers';
 
 import { StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { ContractErc721CallOwnerOfInputSchema } from '@/plugins/contract-erc721/commands/owner-of/input';
 import { ContractErc721CallOwnerOfResultSchema } from '@/plugins/contract-erc721/commands/owner-of/result';
 import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';

@@ -5,8 +5,7 @@ import type { ContractErc721CallBalanceOfOutput } from '@/plugins/contract-erc72
 import { Interface } from 'ethers';
 
 import { NotFoundError, StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { EntityReferenceType } from '@/core/types/shared.types';
+import { AliasType, EntityReferenceType } from '@/core/types/shared.types';
 import { ContractErc721CallBalanceOfInputSchema } from '@/plugins/contract-erc721/commands/balance-of/input';
 import { ContractErc721CallBalanceOfResultSchema } from '@/plugins/contract-erc721/commands/balance-of/result';
 import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';

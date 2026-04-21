@@ -30,9 +30,8 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, TransactionError, ValidationError } from '@/core';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TopicDeleteOutputSchema } from '@/plugins/topic/commands/delete';
 import { topicDelete } from '@/plugins/topic/commands/delete/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';

@@ -12,7 +12,7 @@ import type {
 
 import { NotFoundError } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas/common-schemas';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 
 import { TokenPendingAirdropsInputSchema } from './input';
 

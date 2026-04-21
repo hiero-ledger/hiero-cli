@@ -23,6 +23,7 @@ import type {
   TokenMintParams,
   TokenRejectAirdropParams,
   TokenTransferParams,
+  TokenUnfreezeParams,
 } from '@/core/types/token.types';
 import type { TokenService } from './token-service.interface';
 
@@ -48,6 +49,7 @@ import {
   TokenMintTransaction,
   TokenRejectTransaction,
   TokenSupplyType,
+  TokenUnfreezeTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
 
@@ -407,6 +409,17 @@ export class TokenServiceImpl implements TokenService {
       `[TOKEN SERVICE] Creating freeze transaction for account ${params.accountId} on token ${params.tokenId}`,
     );
     return new TokenFreezeTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId));
+  }
+
+  createUnfreezeTransaction(
+    params: TokenUnfreezeParams,
+  ): TokenUnfreezeTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating unfreeze transaction for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenUnfreezeTransaction()
       .setTokenId(TokenId.fromString(params.tokenId))
       .setAccountId(AccountId.fromString(params.accountId));
   }

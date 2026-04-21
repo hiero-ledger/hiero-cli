@@ -1110,6 +1110,33 @@ hcli token freeze --token 0.0.123456 --account alice --freeze-key <key-ref>
 
 If the token does not have a freeze key, the command fails with a clear error: `Token has no freeze key`. The operation is idempotent — freezing an already-frozen account succeeds without error.
 
+### Token Unfreeze
+
+Re-enables the specified account to send and receive the token. Works for both fungible tokens (FT) and non-fungible tokens (NFT). Requires the token freeze key to sign. The token must have a freeze key set at creation time.
+
+```bash
+# Unfreeze account by token ID and account ID
+hcli token unfreeze --token 0.0.123456 --account 0.0.5678 --freeze-key <key-ref>
+
+# Unfreeze account using token alias
+hcli token unfreeze --token mytoken-alias --account 0.0.5678 --freeze-key <key-ref>
+
+# Unfreeze account using EVM address
+hcli token unfreeze --token 0.0.123456 --account 0xaabbcc... --freeze-key <key-ref>
+
+# Unfreeze account using account alias
+hcli token unfreeze --token 0.0.123456 --account alice --freeze-key <key-ref>
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
+- `--account` / `-a`: Account to unfreeze: account-id (0.0.X), account alias, or EVM address (0x...) - **Required**
+- `--freeze-key` / `-f`: Freeze key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Required**
+- `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
+
+If the token does not have a freeze key, the command fails with a clear error: `Token has no freeze key`. The operation is idempotent — unfreezing an already-unfrozen account succeeds without error.
+
 ### Token List
 
 List all tokens (FT and NFT) stored in state for all networks.

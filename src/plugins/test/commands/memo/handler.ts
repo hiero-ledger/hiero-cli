@@ -2,7 +2,7 @@ import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { TestMemoOutput } from './output';
 
 import { NotFoundError, StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { TestMemoInputSchema } from '@/plugins/test/commands/memo/input';
 import { ZustandMemoStateHelper } from '@/plugins/test/zustand-state-helper';
 

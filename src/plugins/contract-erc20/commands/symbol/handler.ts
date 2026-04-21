@@ -9,7 +9,7 @@ import type { ContractErc20SymbolNormalizedParams } from './types';
 import { Interface } from 'ethers';
 
 import { StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { ContractErc20CallSymbolInputSchema } from '@/plugins/contract-erc20/commands/symbol/input';
 import { ContractErc20CallSymbolResultSchema } from '@/plugins/contract-erc20/commands/symbol/result';
 import { ERC20_ABI } from '@/plugins/contract-erc20/shared/erc20-abi';

@@ -5,7 +5,7 @@ import type { ContractErc721CallSymbolOutput } from '@/plugins/contract-erc721/c
 import { Interface } from 'ethers';
 
 import { StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { ContractErc721CallSymbolInputSchema } from '@/plugins/contract-erc721/commands/symbol/input';
 import { ContractErc721CallSymbolResultSchema } from '@/plugins/contract-erc721/commands/symbol/result';
 import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';

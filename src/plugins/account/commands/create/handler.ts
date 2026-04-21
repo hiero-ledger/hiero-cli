@@ -11,8 +11,8 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError, TransactionError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HBAR_DECIMALS, KeyAlgorithm } from '@/core/shared/constants';
+import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 import { buildEvmAddressFromAccountId } from '@/plugins/account/utils/account-address';

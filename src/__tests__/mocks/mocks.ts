@@ -40,7 +40,6 @@ import type { TopicData } from '@/plugins/topic/schema';
 
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import { StateError, ValidationError } from '@/core';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyResolverServiceImpl } from '@/core/services/key-resolver/key-resolver-service';
 import {
   CredentialType,
@@ -48,6 +47,7 @@ import {
 } from '@/core/services/kms/kms-types.interface';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
+  AliasType,
   OrchestratorSource,
   SupportedNetwork,
 } from '@/core/types/shared.types';
