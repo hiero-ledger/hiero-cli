@@ -5,6 +5,7 @@ import type {
   ContractFunctionParameters,
   Key,
 } from '@hashgraph/sdk';
+import type { TinybarsInput } from '@/core/types/shared.types';
 
 export interface ContractCreateFlowParams {
   bytecode: string;
@@ -31,6 +32,7 @@ export interface ContractExecuteParams {
   gas: number;
   functionName: string;
   functionParameters?: ContractFunctionParameters;
+  payableAmount?: TinybarsInput;
 }
 
 export interface ContractExecuteResult {

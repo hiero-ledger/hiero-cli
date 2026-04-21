@@ -220,3 +220,6 @@ export interface ScheduledData {
 export interface ScheduledDataVerifyResult {
   scheduledData: ScheduledData;
 }
+
+/** Non-negative tinybars as decimal string, safe integer, or bigint (for large values). */
+export type TinybarsInput = string | number | bigint;
