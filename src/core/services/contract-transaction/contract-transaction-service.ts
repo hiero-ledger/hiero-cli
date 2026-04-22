@@ -81,8 +81,17 @@ export class ContractTransactionServiceImpl implements ContractTransactionServic
   ): ContractExecuteResult {
     const contractExecuteTx = new ContractExecuteTransaction()
       .setContractId(ContractId.fromString(params.contractId))
-      .setGas(params.gas)
-      .setFunction(params.functionName, params.functionParameters);
+      .setGas(params.gas);
+
+    if (params.functionParametersEncoded) {
+      contractExecuteTx.setFunctionParameters(params.functionParametersEncoded);
+    } else {
+      contractExecuteTx.setFunction(
+        params.functionName,
+        params.functionParameters,
+      );
+    }
+
     if (params.payableAmountTinybars) {
       contractExecuteTx.setPayableAmount(
         Hbar.fromTinybars(params.payableAmountTinybars),
