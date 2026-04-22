@@ -19,7 +19,6 @@ import {
 import { ethers, getBytes } from 'ethers';
 
 import { ValidationError } from '@/core/errors';
-import { normalizeTinybarsInput } from '@/core/utils/tinybars';
 
 export class ContractTransactionServiceImpl implements ContractTransactionService {
   contractCreateFlowTransaction(
@@ -84,9 +83,9 @@ export class ContractTransactionServiceImpl implements ContractTransactionServic
       .setContractId(ContractId.fromString(params.contractId))
       .setGas(params.gas)
       .setFunction(params.functionName, params.functionParameters);
-    if (params.payableAmount) {
+    if (params.payableAmountTinybars) {
       contractExecuteTx.setPayableAmount(
-        Hbar.fromTinybars(normalizeTinybarsInput(params.payableAmount)),
+        Hbar.fromTinybars(params.payableAmountTinybars),
       );
     }
     return {
