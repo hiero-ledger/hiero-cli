@@ -330,7 +330,7 @@ describe('contract plugin - delete command', () => {
     await expect(contractDelete(args)).rejects.toThrow(NotFoundError);
   });
 
-  test('throws when no admin keys in state and no --admin-key', async () => {
+  test('throws when KMS has no keys matching mirror admin and no --admin-key', async () => {
     const contract = makeContractData({
       name: 'NoAdminRefs',
       adminKeyRefIds: [],

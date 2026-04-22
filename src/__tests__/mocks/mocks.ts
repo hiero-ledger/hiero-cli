@@ -742,6 +742,26 @@ export const makeKeyResolverMock = (
 
   const kms = options.kms ?? makeKmsMock();
 
+  const resolveSigningKey = jest
+    .fn()
+    .mockImplementation((credential, keyManager, fallback, labels) => {
+      if (!credential && fallback && options.network)
+        return Promise.resolve(operatorFallback());
+      const resolved = resolveCore(credential, keyManager, labels || []);
+      if (!resolved.keyRefId || !resolved.publicKey) {
+        throw new StateError(
+          'Mock: resolved key missing keyRefId or publicKey',
+        );
+      }
+      if (options.kms && !options.kms.hasPrivateKey(resolved.keyRefId)) {
+        throw new StateError('Mock: no private key available');
+      }
+      return Promise.resolve({
+        keyRefId: resolved.keyRefId,
+        publicKey: resolved.publicKey,
+      });
+    });
+
   return {
     resolveAccountCredentials: jest
       .fn()
@@ -805,25 +825,19 @@ export const makeKeyResolverMock = (
         return Promise.resolve(resolved as Destination);
       }),
 
-    resolveSigningKey: jest
+    resolveSigningKey,
+
+    resolveSigningKeyRefIdsFromMirrorRoleKey: jest
       .fn()
-      .mockImplementation((credential, keyManager, fallback, labels) => {
-        if (!credential && fallback && options.network)
-          return Promise.resolve(operatorFallback());
-        const resolved = resolveCore(credential, keyManager, labels || []);
-        if (!resolved.keyRefId || !resolved.publicKey) {
-          throw new StateError(
-            'Mock: resolved key missing keyRefId or publicKey',
-          );
-        }
-        if (options.kms && !options.kms.hasPrivateKey(resolved.keyRefId)) {
-          throw new StateError('Mock: no private key available');
-        }
-        return Promise.resolve({
-          keyRefId: resolved.keyRefId,
-          publicKey: resolved.publicKey,
-        });
-      }),
+      .mockImplementation((params) =>
+        KeyResolverServiceImpl.prototype.resolveSigningKeyRefIdsFromMirrorRoleKey.call(
+          Object.assign(Object.create(KeyResolverServiceImpl.prototype), {
+            resolveSigningKey,
+            kms,
+          }) as KeyResolverServiceImpl,
+          params,
+        ),
+      ),
 
     resolvedPublicKeysForStoredKeyRefs: jest
       .fn()

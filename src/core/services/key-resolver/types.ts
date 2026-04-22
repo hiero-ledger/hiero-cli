@@ -1,3 +1,9 @@
+import type {
+  Credential,
+  KeyManager,
+} from '@/core/services/kms/kms-types.interface';
+import type { MirrorNodeKey } from '@/core/services/mirrornode/types';
+
 export type ResolvedKey = {
   publicKey?: string;
   accountId?: string;
@@ -19,3 +25,18 @@ export type ResolvedAccountCredential = {
 export type Destination =
   | { accountId: string; evmAddress?: string }
   | { accountId?: string; evmAddress: string };
+
+export interface ResolveSigningKeyRefIdsFromMirrorRoleKeyInput {
+  mirrorRoleKey: MirrorNodeKey | null | undefined;
+  explicitCredentials: Credential[];
+  keyManager: KeyManager;
+  resolveSigningKeyLabels: string[];
+  emptyMirrorRoleKeyMessage: string;
+  insufficientKmsMatchesMessage: string;
+  validationErrorOptions?: { context?: Record<string, unknown> };
+}
+
+export type ResolveSigningKeyRefIdsFromMirrorRoleKeyResult = {
+  keyRefIds: string[];
+  requiredSignatures: number;
+};

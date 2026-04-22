@@ -2,6 +2,8 @@ import type {
   Destination,
   ResolvedAccountCredential,
   ResolvedPublicKey,
+  ResolveSigningKeyRefIdsFromMirrorRoleKeyInput,
+  ResolveSigningKeyRefIdsFromMirrorRoleKeyResult,
 } from '@/core/services/key-resolver/types';
 import type {
   Credential,
@@ -40,8 +42,11 @@ export interface KeyResolverService {
     labels?: string[],
   ): Promise<ResolvedPublicKey>;
 
-  /**
-   * Maps stored KMS key reference IDs (e.g. from CLI entity state) to public keys for signing flows.
-   */
+  // Stored KMS key ref IDs → public keys for signing.
   resolvedPublicKeysForStoredKeyRefs(keyRefIds: string[]): ResolvedPublicKey[];
+
+  // Mirror role key (+ optional CLI creds) → KMS key ref IDs and required signature count.
+  resolveSigningKeyRefIdsFromMirrorRoleKey(
+    params: ResolveSigningKeyRefIdsFromMirrorRoleKeyInput,
+  ): Promise<ResolveSigningKeyRefIdsFromMirrorRoleKeyResult>;
 }

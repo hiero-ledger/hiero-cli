@@ -163,9 +163,9 @@ hcli contract list
 
 When deleting on Hedera (default), pass **`--transfer-id` (`-t`)** or **`--transfer-contract-id` (`-r`)** so remaining HBAR has a destination.
 
-**Admin signing:** The CLI compares your credentials to the contract’s admin key from the mirror (**including KeyList / ThresholdKey**). If the contract is in local state with `adminKeyRefIds` and the same keys exist in KMS, you can delete on the network **without** `--admin-key`. Otherwise pass **`--admin-key`** one or more times (same credential formats as create) so the delete can be signed—including for **M-of-N** admin policies, where you must supply enough distinct credentials to satisfy the threshold. If local state or KMS does not have the needed material, use `--admin-key` explicitly.
+**Admin signing:** For a network delete, the CLI always loads the contract’s **admin key from the mirror node** (**KeyList / ThresholdKey** supported) to know the required signing policy. If you omit **`--admin-key`**, it matches those public keys against **KMS** and signs when enough matching keys exist (**M-of-N** included). If you pass **`--admin-key`**, those credentials are resolved and used for signing; invalid credentials fail the command. If the mirror response has no admin key, or KMS does not contain enough matching keys, pass **`--admin-key`** explicitly with the needed credentials.
 
-If the contract is **not** in local state, the CLI loads contract info from the mirror node. Contracts **without** a deletable admin key configuration on Hedera may only be removed from local state with **`--state-only`**.
+Local CLI state is **not** used to decide which keys sign the delete; it is only updated after a successful delete. If the contract is **not** in local state, the CLI still uses mirror + KMS as above. Contracts **without** a deletable admin key configuration on Hedera may only be removed from local state with **`--state-only`**.
 
 ```bash
 hcli contract delete --contract myAlias --transfer-id 0.0.5678
@@ -192,7 +192,7 @@ The plugin uses the Core API services:
 - `api.alias` - Name registration and resolution
 - `api.mirror` - Contract info when deleting on network without a local state entry
 - `api.config` - Configuration (key manager default)
-- `api.keyResolver` - Resolving admin credentials for create/delete (including mapping stored `adminKeyRefIds` from state to public keys for mirror checks)
+- `api.keyResolver` - Resolving explicit admin credentials for create/delete; for network delete, `resolveSigningKeyRefIdsFromMirrorRoleKey` derives signing key refs from the mirror admin key plus KMS (not from stored state)
 - `api.logger` - Logging
 
 ## 📤 Output Formatting

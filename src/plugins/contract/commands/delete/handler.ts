@@ -27,10 +27,6 @@ import { EntityIdSchema } from '@/core/schemas';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType } from '@/core/types/shared.types';
 import { ensureEvmAddress0xPrefix } from '@/core/utils/evm-address';
-import {
-  extractPublicKeysFromMirrorNodeKey,
-  getEffectiveKeyRequirement,
-} from '@/core/utils/extract-public-keys';
 import { composeKey } from '@/core/utils/key-composer';
 import { ContractHelper } from '@/plugins/contract/contract-helper';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
@@ -280,54 +276,26 @@ export class DeleteContractCommand extends BaseTransactionCommand<
       );
     }
 
-    const extracted = extractPublicKeysFromMirrorNodeKey(
-      contractInfo.admin_key,
-    );
-    const requirement = getEffectiveKeyRequirement(extracted);
-    if (requirement.publicKeys.length === 0) {
-      throw new ValidationError(
-        'This contract has no admin key on Hedera. On-network deletion is not possible. You can remove it from local CLI state only using --state-only flag.',
-      );
-    }
-
-    let signingKeyRefIds: string[];
-
-    if (validArgs.adminKey.length > 0) {
-      const adminKeys = await Promise.all(
-        validArgs.adminKey.map((cred) =>
-          api.keyResolver.resolveSigningKey(cred, keyManager, false, [
-            'contract:admin',
-          ]),
-        ),
-      );
-      signingKeyRefIds = adminKeys.map((adminKey) => adminKey.keyRefId);
-    } else {
-      const refIds: string[] = [];
-      const usedRefIds = new Set<string>();
-      for (const publicKey of requirement.publicKeys) {
-        const kmsRecord = api.kms.findByPublicKey(publicKey);
-        if (kmsRecord && !usedRefIds.has(kmsRecord.keyRefId)) {
-          usedRefIds.add(kmsRecord.keyRefId);
-          refIds.push(kmsRecord.keyRefId);
-          if (refIds.length >= requirement.requiredSignatures) {
-            break;
-          }
-        }
-      }
-      if (refIds.length < requirement.requiredSignatures) {
-        throw new ValidationError(
+    const { keyRefIds: signingKeyRefIds, requiredSignatures } =
+      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
+        mirrorRoleKey: contractInfo.admin_key,
+        explicitCredentials: validArgs.adminKey,
+        keyManager,
+        resolveSigningKeyLabels: ['contract:admin'],
+        emptyMirrorRoleKeyMessage:
+          'This contract has no admin key on Hedera. On-network deletion is not possible. You can remove it from local CLI state only using --state-only flag.',
+        insufficientKmsMatchesMessage:
           'Not enough admin key(s) not found in key manager for this contract. Provide --admin-key.',
-          { context: { contractId: contractInfo.contract_id } },
-        );
-      }
-      signingKeyRefIds = refIds;
-    }
+        validationErrorOptions: {
+          context: { contractId: contractInfo.contract_id },
+        },
+      });
 
     const contractToDelete: ContractData = {
       ...resolved.contractToDelete,
       contractEvmAddress: ensureEvmAddress0xPrefix(contractEvmAddress),
       adminKeyRefIds: signingKeyRefIds,
-      adminKeyThreshold: requirement.requiredSignatures,
+      adminKeyThreshold: requiredSignatures,
       memo: contractInfo.memo || undefined,
     };
 

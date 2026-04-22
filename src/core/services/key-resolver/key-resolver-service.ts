@@ -5,6 +5,8 @@ import type {
   ResolvedAccountCredential,
   ResolvedKey,
   ResolvedPublicKey,
+  ResolveSigningKeyRefIdsFromMirrorRoleKeyInput,
+  ResolveSigningKeyRefIdsFromMirrorRoleKeyResult,
 } from '@/core/services/key-resolver/types';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type {
@@ -26,6 +28,10 @@ import { NotFoundError, StateError, ValidationError } from '@/core/errors';
 import { ERROR_MESSAGES } from '@/core/services/key-resolver/error-messages';
 import { CredentialType } from '@/core/services/kms/kms-types.interface';
 import { AliasType } from '@/core/types/shared.types';
+import {
+  extractPublicKeysFromMirrorNodeKey,
+  getEffectiveKeyRequirement,
+} from '@/core/utils/extract-public-keys';
 
 export class KeyResolverServiceImpl implements KeyResolverService {
   private readonly mirror: HederaMirrornodeService;
@@ -495,6 +501,57 @@ export class KeyResolverServiceImpl implements KeyResolverService {
       accountId: account.entityId,
       publicKey: account.publicKey,
       keyRefId: account.keyRefId,
+    };
+  }
+
+  public async resolveSigningKeyRefIdsFromMirrorRoleKey(
+    params: ResolveSigningKeyRefIdsFromMirrorRoleKeyInput,
+  ): Promise<ResolveSigningKeyRefIdsFromMirrorRoleKeyResult> {
+    const extracted = extractPublicKeysFromMirrorNodeKey(params.mirrorRoleKey);
+    const requirement = getEffectiveKeyRequirement(extracted);
+    if (requirement.publicKeys.length === 0) {
+      throw new ValidationError(params.emptyMirrorRoleKeyMessage, {
+        context: params.validationErrorOptions?.context,
+      });
+    }
+
+    if (params.explicitCredentials.length > 0) {
+      const resolved = await Promise.all(
+        params.explicitCredentials.map((cred) =>
+          this.resolveSigningKey(
+            cred,
+            params.keyManager,
+            false,
+            params.resolveSigningKeyLabels,
+          ),
+        ),
+      );
+      return {
+        keyRefIds: resolved.map((k) => k.keyRefId),
+        requiredSignatures: requirement.requiredSignatures,
+      };
+    }
+
+    const refIds: string[] = [];
+    const usedRefIds = new Set<string>();
+    for (const publicKey of requirement.publicKeys) {
+      const kmsRecord = this.kms.findByPublicKey(publicKey);
+      if (kmsRecord && !usedRefIds.has(kmsRecord.keyRefId)) {
+        usedRefIds.add(kmsRecord.keyRefId);
+        refIds.push(kmsRecord.keyRefId);
+        if (refIds.length >= requirement.requiredSignatures) {
+          break;
+        }
+      }
+    }
+    if (refIds.length < requirement.requiredSignatures) {
+      throw new ValidationError(params.insufficientKmsMatchesMessage, {
+        context: params.validationErrorOptions?.context,
+      });
+    }
+    return {
+      keyRefIds: refIds,
+      requiredSignatures: requirement.requiredSignatures,
     };
   }
 }
