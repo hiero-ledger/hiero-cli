@@ -5,6 +5,8 @@ import type {
   ResolvedAccountCredential,
   ResolvedKey,
   ResolvedPublicKey,
+  ResolveSigningKeyRefIdsFromMirrorRoleKeyInput,
+  ResolveSigningKeyRefIdsFromMirrorRoleKeyResult,
 } from '@/core/services/key-resolver/types';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type {
@@ -20,10 +22,7 @@ import type {
 } from '@/core/services/kms/kms-types.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
-import type {
-  KeyResolverService,
-  ResolveSigningKeyRefIdsFromMirrorRoleKeyInput,
-} from './key-resolver-service.interface';
+import type { KeyResolverService } from './key-resolver-service.interface';
 
 import { NotFoundError, StateError, ValidationError } from '@/core/errors';
 import { ERROR_MESSAGES } from '@/core/services/key-resolver/error-messages';
@@ -507,7 +506,7 @@ export class KeyResolverServiceImpl implements KeyResolverService {
 
   public async resolveSigningKeyRefIdsFromMirrorRoleKey(
     params: ResolveSigningKeyRefIdsFromMirrorRoleKeyInput,
-  ): Promise<{ keyRefIds: string[]; requiredSignatures: number }> {
+  ): Promise<ResolveSigningKeyRefIdsFromMirrorRoleKeyResult> {
     const extracted = extractPublicKeysFromMirrorNodeKey(params.mirrorRoleKey);
     const requirement = getEffectiveKeyRequirement(extracted);
     if (requirement.publicKeys.length === 0) {

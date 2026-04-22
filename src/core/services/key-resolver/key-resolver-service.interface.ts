@@ -2,23 +2,13 @@ import type {
   Destination,
   ResolvedAccountCredential,
   ResolvedPublicKey,
+  ResolveSigningKeyRefIdsFromMirrorRoleKeyInput,
+  ResolveSigningKeyRefIdsFromMirrorRoleKeyResult,
 } from '@/core/services/key-resolver/types';
 import type {
   Credential,
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
-import type { MirrorNodeKey } from '@/core/services/mirrornode/types';
-
-// Mirror role key, optional explicit signing creds, key manager, labels, validation messages.
-export interface ResolveSigningKeyRefIdsFromMirrorRoleKeyInput {
-  mirrorRoleKey: MirrorNodeKey | null | undefined;
-  explicitCredentials: Credential[];
-  keyManager: KeyManager;
-  resolveSigningKeyLabels: string[];
-  emptyMirrorRoleKeyMessage: string;
-  insufficientKmsMatchesMessage: string;
-  validationErrorOptions?: { context?: Record<string, unknown> };
-}
 
 export interface KeyResolverService {
   // Sender side: requires accountId + publicKey + private key in KMS.
@@ -58,5 +48,5 @@ export interface KeyResolverService {
   // Mirror role key (+ optional CLI creds) → KMS key ref IDs and required signature count.
   resolveSigningKeyRefIdsFromMirrorRoleKey(
     params: ResolveSigningKeyRefIdsFromMirrorRoleKeyInput,
-  ): Promise<{ keyRefIds: string[]; requiredSignatures: number }>;
+  ): Promise<ResolveSigningKeyRefIdsFromMirrorRoleKeyResult>;
 }
