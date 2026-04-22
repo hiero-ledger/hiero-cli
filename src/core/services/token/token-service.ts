@@ -19,6 +19,7 @@ import type {
   TokenClaimAirdropParams,
   TokenCreateParams,
   TokenDeleteParams,
+  TokenDissociationParams,
   TokenFreezeParams,
   TokenMintParams,
   TokenRejectAirdropParams,
@@ -44,6 +45,7 @@ import {
   TokenClaimAirdropTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
+  TokenDissociateTransaction,
   TokenFreezeTransaction,
   TokenId,
   TokenMintTransaction,
@@ -258,6 +260,29 @@ export class TokenServiceImpl implements TokenService {
     );
 
     return associateTx;
+  }
+
+  /**
+   * Create a token dissociation transaction (without execution)
+   */
+  createTokenDissociationTransaction(
+    params: TokenDissociationParams,
+  ): TokenDissociateTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating dissociation transaction: token ${params.tokenId} from account ${params.accountId}`,
+    );
+
+    const { tokenId, accountId } = params;
+
+    const dissociateTx = new TokenDissociateTransaction()
+      .setAccountId(AccountId.fromString(accountId))
+      .setTokenIds([TokenId.fromString(tokenId)]);
+
+    this.logger.debug(
+      `[TOKEN SERVICE] Created dissociation transaction for token ${tokenId}`,
+    );
+
+    return dissociateTx;
   }
 
   /**

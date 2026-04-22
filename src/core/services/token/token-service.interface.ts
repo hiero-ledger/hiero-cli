@@ -12,6 +12,7 @@ import type {
   TokenClaimAirdropTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
+  TokenDissociateTransaction,
   TokenFreezeTransaction,
   TokenMintTransaction,
   TokenRejectTransaction,
@@ -32,6 +33,7 @@ import type {
   TokenClaimAirdropParams,
   TokenCreateParams,
   TokenDeleteParams,
+  TokenDissociationParams,
   TokenFreezeParams,
   TokenMintParams,
   TokenRejectAirdropParams,
@@ -56,6 +58,13 @@ export interface TokenService {
   createTokenAssociationTransaction(
     params: TokenAssociationParams,
   ): TokenAssociateTransaction;
+
+  /**
+   * Create a token dissociation transaction (without execution)
+   */
+  createTokenDissociationTransaction(
+    params: TokenDissociationParams,
+  ): TokenDissociateTransaction;
 
   /**
    * Create a token mint transaction (without execution)
