@@ -19,7 +19,7 @@ import { TxExecuteServiceImpl } from '@/core/services/tx-execute/tx-execute-serv
 
 jest.mock('@hashgraph/sdk', () => {
   const actual = jest.requireActual('@hashgraph/sdk');
-  const MockStatusSuccess = { _code: 22 };
+  const MockStatusSuccess = { _code: 22, toString: () => 'SUCCESS' };
 
   return {
     ...actual,
@@ -29,7 +29,7 @@ jest.mock('@hashgraph/sdk', () => {
   };
 });
 
-const NonSuccessStatus = { _code: 1 };
+const NonSuccessStatus = { _code: 1, toString: () => 'INVALID' };
 
 const MOCK_TX_ID = '0.0.1234@1234567890.000';
 const MOCK_CONSENSUS_TS = '2024-01-01T00:00:00.000Z';
