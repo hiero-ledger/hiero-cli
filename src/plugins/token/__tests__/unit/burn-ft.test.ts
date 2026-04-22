@@ -22,9 +22,6 @@ import {
   makeTransactionResult,
 } from './helpers/mocks';
 
-const defaultSupplyKey =
-  '0.0.200000:3333333333333333333333333333333333333333333333333333333333333333';
-
 describe('tokenBurnFtHandler', () => {
   describe('success scenarios', () => {
     test('should burn tokens with token ID and display units', async () => {
@@ -37,7 +34,6 @@ describe('tokenBurnFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '100',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -68,7 +64,6 @@ describe('tokenBurnFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '5000t',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -103,7 +98,6 @@ describe('tokenBurnFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '100',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -137,7 +131,6 @@ describe('tokenBurnFtHandler', () => {
         args: {
           token: 'nonexistent-token',
           amount: '100',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -166,7 +159,6 @@ describe('tokenBurnFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '100',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -196,7 +188,6 @@ describe('tokenBurnFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '1t',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -244,7 +235,6 @@ describe('tokenBurnFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '1t',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -270,7 +260,6 @@ describe('tokenBurnFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '100',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -288,7 +277,6 @@ describe('tokenBurnFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '0',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -307,7 +295,6 @@ describe('tokenBurnFtHandler', () => {
         args: {
           token: '0.0.123456',
           amount: '100',
-          supplyKey: defaultSupplyKey,
         },
       });
 

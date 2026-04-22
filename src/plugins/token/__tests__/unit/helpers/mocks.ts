@@ -29,8 +29,6 @@ import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-ser
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
-import { PublicKey } from '@hashgraph/sdk';
-
 import {
   ED25519_HEX_PUBLIC_KEY,
   MOCK_FREEZE_PUBLIC_KEY,
@@ -804,11 +802,12 @@ export const makeMintFtSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-    accountId: '0.0.200000',
-    publicKey: defaultSupplyKeyPublicKey,
-    keyRefId: 'supply-key-ref-id',
-  });
+  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
+    .fn()
+    .mockResolvedValue({
+      keyRefIds: ['supply-key-ref-id'],
+      requiredSignatures: 1,
+    });
 
   return {
     ...apiMocks,
@@ -883,11 +882,12 @@ export const makeMintNftSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-    accountId: '0.0.200000',
-    publicKey: defaultSupplyKeyPublicKey,
-    keyRefId: 'supply-key-ref-id',
-  });
+  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
+    .fn()
+    .mockResolvedValue({
+      keyRefIds: ['supply-key-ref-id'],
+      requiredSignatures: 1,
+    });
 
   return {
     ...apiMocks,
@@ -904,13 +904,6 @@ export const makeDeleteSuccessMocks = (overrides?: {
 }) => {
   const mockDeleteTransaction = { test: 'delete-transaction' };
   const defaultMirrorAdminHex = ED25519_HEX_PUBLIC_KEY;
-  const defaultAdminKeyRaw = PublicKey.fromString(
-    defaultMirrorAdminHex,
-  ).toStringRaw();
-  const resolverPublicKeyRaw =
-    overrides?.adminKeyPublicKey !== undefined
-      ? PublicKey.fromString(overrides.adminKeyPublicKey).toStringRaw()
-      : defaultAdminKeyRaw;
 
   const apiMocks = makeApiMocks({
     tokens: {
@@ -938,26 +931,12 @@ export const makeDeleteSuccessMocks = (overrides?: {
     }),
   });
 
-  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-    accountId: '0.0.200000',
-    publicKey: resolverPublicKeyRaw,
-    keyRefId: 'admin-key-ref-id',
-  });
-
-  apiMocks.kms.findByPublicKey = jest
+  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
     .fn()
-    .mockImplementation((publicKey: string) =>
-      publicKey === defaultAdminKeyRaw
-        ? {
-            keyRefId: 'kms-key-ref-id',
-            publicKey: defaultAdminKeyRaw,
-            keyManager: KeyManager.local,
-            keyAlgorithm: KeyAlgorithm.ED25519,
-            createdAt: '',
-            updatedAt: '',
-          }
-        : undefined,
-    );
+    .mockResolvedValue({
+      keyRefIds: ['admin-key-ref-id'],
+      requiredSignatures: 1,
+    });
 
   return { ...apiMocks, mockDeleteTransaction };
 };
@@ -999,11 +978,12 @@ export const makeFreezeSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-    accountId: '0.0.200000',
-    publicKey: defaultFreezeKeyPublicKey,
-    keyRefId: 'freeze-key-ref-id',
-  });
+  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
+    .fn()
+    .mockResolvedValue({
+      keyRefIds: ['freeze-key-ref-id'],
+      requiredSignatures: 1,
+    });
 
   return { ...apiMocks, mockFreezeTransaction };
 };
@@ -1047,11 +1027,12 @@ export const makeUnfreezeSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-    accountId: '0.0.200000',
-    publicKey: defaultFreezeKeyPublicKey,
-    keyRefId: 'freeze-key-ref-id',
-  });
+  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
+    .fn()
+    .mockResolvedValue({
+      keyRefIds: ['freeze-key-ref-id'],
+      requiredSignatures: 1,
+    });
 
   return { ...apiMocks, mockUnfreezeTransaction };
 };
@@ -1107,11 +1088,12 @@ export const makeBurnNftSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-    accountId: '0.0.200000',
-    publicKey: defaultSupplyKeyPublicKey,
-    keyRefId: 'supply-key-ref-id',
-  });
+  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
+    .fn()
+    .mockResolvedValue({
+      keyRefIds: ['supply-key-ref-id'],
+      requiredSignatures: 1,
+    });
 
   return {
     ...apiMocks,
@@ -1165,11 +1147,12 @@ export const makeBurnFtSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-    accountId: '0.0.200000',
-    publicKey: defaultSupplyKeyPublicKey,
-    keyRefId: 'supply-key-ref-id',
-  });
+  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
+    .fn()
+    .mockResolvedValue({
+      keyRefIds: ['supply-key-ref-id'],
+      requiredSignatures: 1,
+    });
 
   return {
     ...apiMocks,

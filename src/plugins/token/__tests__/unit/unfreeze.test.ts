@@ -2,7 +2,6 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
 
-import { MOCK_FREEZE_PUBLIC_KEY } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
   NotFoundError,
@@ -25,7 +24,7 @@ const makeArgs = (
   args: {
     token: '0.0.123456',
     account: '0.0.5678',
-    freezeKey: FREEZE_KEY_ARG,
+    freezeKey: [FREEZE_KEY_ARG],
     keyManager: undefined,
     ...argsOverrides,
   },
@@ -103,23 +102,15 @@ describe('tokenUnfreeze', () => {
       const { api } = makeUnfreezeSuccessMocks({
         tokenInfo: { freeze_key: null },
       });
+      (
+        api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey as jest.Mock
+      ).mockRejectedValue(new ValidationError('Token has no freeze key'));
       const args = makeArgs(api);
 
       await expect(tokenUnfreeze(args)).rejects.toThrow(ValidationError);
       await expect(tokenUnfreeze(args)).rejects.toThrow(
         'Token has no freeze key',
       );
-    });
-
-    test('throws ValidationError when freeze key mismatches token freeze key', async () => {
-      const { api } = makeUnfreezeSuccessMocks({
-        tokenInfo: { freeze_key: { key: 'different-freeze-key' } },
-        freezeKeyPublicKey: MOCK_FREEZE_PUBLIC_KEY,
-      });
-      const args = makeArgs(api);
-
-      await expect(tokenUnfreeze(args)).rejects.toThrow(ValidationError);
-      await expect(tokenUnfreeze(args)).rejects.toThrow('Freeze key mismatch');
     });
 
     test('throws NotFoundError when account does not exist', async () => {
