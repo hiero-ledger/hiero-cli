@@ -8,6 +8,11 @@ import {
   HbarAllowanceOutputSchema,
 } from './commands/allowance';
 import {
+  HBAR_ALLOWANCE_REVOKE_TEMPLATE,
+  hbarAllowanceRevoke,
+  HbarAllowanceRevokeOutputSchema,
+} from './commands/allowance-revoke';
+import {
   HBAR_TRANSFER_TEMPLATE,
   hbarTransfer,
   HbarTransferOutputSchema,
@@ -120,6 +125,46 @@ export const hbarPluginManifest: PluginManifest = {
       output: {
         schema: HbarAllowanceOutputSchema,
         humanTemplate: HBAR_ALLOWANCE_TEMPLATE,
+      },
+    },
+    {
+      name: 'allowance-revoke',
+      summary: 'Revoke HBAR allowance for a spender account',
+      description:
+        'Revoke a previously approved HBAR allowance by setting it to zero',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'spender',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Spender account. Accepts alias, accountId, or evmAddress.',
+        },
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Owner account. Defaults to operator.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Key manager type (defaults to config setting).',
+        },
+      ],
+      handler: hbarAllowanceRevoke,
+      output: {
+        schema: HbarAllowanceRevokeOutputSchema,
+        humanTemplate: HBAR_ALLOWANCE_REVOKE_TEMPLATE,
       },
     },
   ],
