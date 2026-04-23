@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { saveAssociationToState } from '@/plugins/token/utils/token-associations';
 import { isTokenAlreadyAssociatedError } from '@/plugins/token/utils/transaction-error-receipt-status';
@@ -71,7 +72,7 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
     const validArgs = TokenAssociateInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
     const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
 
