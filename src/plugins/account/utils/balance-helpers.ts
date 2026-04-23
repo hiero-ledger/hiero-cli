@@ -1,19 +1,13 @@
-/**
- * Balance Helper Functions
- * Utility functions for account balance operations
- */
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { TokenBalanceInfo } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 
 import BigNumber from 'bignumber.js';
 
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { AliasType } from '@/core/types/shared.types';
 import { normalizeBalance } from '@/core/utils/normalize-balance';
 
-/**
- * Token balance with metadata
- */
 export interface TokenBalanceWithMetadata {
   tokenId: string;
   name?: string;
@@ -24,16 +18,21 @@ export interface TokenBalanceWithMetadata {
   decimals?: number;
 }
 
-/**
- * Fetches and maps token balances for an account with token metadata
- * @param api - The Core API instance
- * @param accountId - The account ID to fetch token balances for
- * @param tokenId - Optional specific token ID to filter by
- * @param raw - Whether to return raw units (base units) or display units
- * @param network - Network the tokens are on
- * @returns An array of token balances with metadata or undefined if no tokens found
- * @throws Error if token balances could not be fetched
- */
+export interface NftCollectionBalance {
+  tokenId: string;
+  name?: string;
+  symbol?: string;
+  alias?: string;
+  serialNumbers: number[];
+  count: number;
+}
+
+export interface NftBalancesResult {
+  collections: NftCollectionBalance[];
+  totalCount: number;
+  truncated: boolean;
+}
+
 export async function fetchAccountTokenBalances(
   api: CoreApi,
   accountId: string,
@@ -50,7 +49,7 @@ export async function fetchAccountTokenBalances(
     return undefined;
   }
 
-  return Promise.all(
+  const results = await Promise.all(
     tokenBalances.tokens.map(async (token: TokenBalanceInfo) => {
       const balanceRaw = BigInt(token.balance.toString());
       const alias = api.alias.resolve(
@@ -62,14 +61,19 @@ export async function fetchAccountTokenBalances(
       let name: string | undefined;
       let symbol: string | undefined;
       let decimals: number | undefined;
+      let isNft = false;
+
       try {
         const tokenInfo = await api.mirror.getTokenInfo(token.token_id);
         name = tokenInfo.name;
         symbol = tokenInfo.symbol;
         decimals = parseInt(tokenInfo.decimals, 10);
+        isNft = tokenInfo.type === MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE;
       } catch {
         decimals = token.decimals;
       }
+
+      if (isNft) return null;
 
       let balanceDisplay: string | undefined;
       if (!raw && decimals !== undefined) {
@@ -90,4 +94,60 @@ export async function fetchAccountTokenBalances(
       };
     }),
   );
+
+  const filtered = results.filter(
+    (t) => t !== null,
+  ) as TokenBalanceWithMetadata[];
+  return filtered.length > 0 ? filtered : undefined;
+}
+
+export async function fetchAccountNftBalances(
+  api: CoreApi,
+  accountId: string,
+  tokenId: string | undefined,
+  network: SupportedNetwork,
+): Promise<NftBalancesResult | undefined> {
+  const response = await api.mirror.getAccountNfts(accountId, 100);
+
+  const nfts = tokenId
+    ? response.nfts.filter((nft) => nft.token_id === tokenId)
+    : response.nfts;
+
+  if (nfts.length === 0) return undefined;
+
+  const serialsByToken = new Map<string, number[]>();
+  for (const nft of nfts) {
+    const existing = serialsByToken.get(nft.token_id) ?? [];
+    serialsByToken.set(nft.token_id, [...existing, nft.serial_number]);
+  }
+
+  const totalCount = nfts.length;
+  const truncated = !!response.links?.next;
+
+  const uniqueTokenIds = Array.from(serialsByToken.keys());
+  const tokenInfoResults = await Promise.all(
+    uniqueTokenIds.map(async (tid) => {
+      const alias = api.alias.resolve(tid, AliasType.Token, network)?.alias;
+      try {
+        const info = await api.mirror.getTokenInfo(tid);
+        return { tokenId: tid, name: info.name, symbol: info.symbol, alias };
+      } catch {
+        return { tokenId: tid, alias };
+      }
+    }),
+  );
+
+  const collections: NftCollectionBalance[] = tokenInfoResults.map((info) => {
+    const serialNumbers = serialsByToken.get(info.tokenId) ?? [];
+    return {
+      tokenId: info.tokenId,
+      name: info.name,
+      symbol: info.symbol,
+      alias: info.alias,
+      serialNumbers,
+      count: serialNumbers.length,
+    };
+  });
+
+  return { collections, totalCount, truncated };
 }

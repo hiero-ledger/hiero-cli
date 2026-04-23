@@ -25,7 +25,10 @@ import type {
 } from '@/core/services/kms/kms-types.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { ContractInfo } from '@/core/services/mirrornode/types';
+import type {
+  AccountNftInfo,
+  ContractInfo,
+} from '@/core/services/mirrornode/types';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { OutputHandlerOptions } from '@/core/services/output/types';
@@ -45,6 +48,7 @@ import {
   CredentialType,
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
   AliasType,
@@ -344,6 +348,7 @@ export const createMirrorNodeMock =
     getAccountOrThrow: jest.fn(),
     getAccount: jest.fn(),
     getAccountTokenBalances: jest.fn(),
+    getAccountNfts: jest.fn(),
     getAccounts: jest.fn(),
     getTopicMessage: jest.fn(),
     getTopicMessages: jest.fn(),
@@ -394,10 +399,20 @@ export const makeMirrorMock = (
     getAccountImpl?: jest.Mock;
     tokenInfo?: Record<
       string,
-      { name: string; symbol: string; decimals: string }
+      {
+        name: string;
+        symbol: string;
+        decimals: string;
+        type?: MirrorNodeTokenType;
+      }
     >;
+    nfts?: AccountNftInfo[];
   } = {},
 ): Partial<HederaMirrornodeService> => ({
+  getAccountNfts: jest.fn().mockResolvedValue({
+    nfts: options.nfts ?? [],
+    links: { next: null },
+  }),
   getAccountTokenBalances: options.tokenError
     ? jest.fn().mockRejectedValue(options.tokenError)
     : jest.fn().mockResolvedValue({ tokens: options.tokenBalances ?? [] }),
@@ -432,6 +447,7 @@ export const makeMirrorMock = (
     if (options.tokenInfo && options.tokenInfo[tokenId]) {
       return Promise.resolve({
         token_id: tokenId,
+        type: MirrorNodeTokenType.FUNGIBLE_COMMON,
         ...options.tokenInfo[tokenId],
         total_supply: '1000000',
         max_supply: '1000000',
@@ -448,6 +464,7 @@ export const makeMirrorMock = (
       name: `Token ${tokenId}`,
       symbol: 'TKN',
       decimals: '8',
+      type: MirrorNodeTokenType.FUNGIBLE_COMMON,
       total_supply: '1000000',
       max_supply: '1000000',
       treasury_account_id: '0.0.1234',
@@ -581,6 +598,7 @@ export const makeArgs = (
       getAccountOrThrow: jest.fn(),
       getAccount: jest.fn(),
       getAccountTokenBalances: jest.fn(),
+      getAccountNfts: jest.fn(),
       getAccounts: jest.fn(),
       getTopicMessage: jest.fn(),
       getTopicMessages: jest.fn(),
