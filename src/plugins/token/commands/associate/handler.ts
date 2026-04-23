@@ -8,29 +8,16 @@ import type {
   AssociateSignTransactionResult,
 } from './types';
 
-import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
-
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { saveAssociationToState } from '@/plugins/token/utils/token-associations';
+import { isTokenAlreadyAssociatedError } from '@/plugins/token/utils/transaction-error-receipt-status';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenAssociateInputSchema } from './input';
 
 export const TOKEN_ASSOCIATE_COMMAND_NAME = 'token_associate';
-
-function isTokenAlreadyAssociatedError(error: unknown): boolean {
-  if (!(error instanceof TransactionError)) {
-    return false;
-  }
-
-  const cause = error.cause;
-  return (
-    cause instanceof ReceiptStatusError &&
-    cause.status === HederaStatus.TokenAlreadyAssociatedToAccount
-  );
-}
 
 export class TokenAssociateCommand extends BaseTransactionCommand<
   AssociateNormalizedParams,

@@ -2,14 +2,31 @@ import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
 
 import { TransactionError } from '@/core/errors';
 
-export function isNoFreezeKeyError(error: unknown): boolean {
-  if (!(error instanceof TransactionError)) {
-    return false;
-  }
-
-  const cause = error.cause;
+function isTransactionErrorWithStatus(
+  error: unknown,
+  status: HederaStatus,
+): boolean {
   return (
-    cause instanceof ReceiptStatusError &&
-    cause.status === HederaStatus.TokenHasNoFreezeKey
+    error instanceof TransactionError &&
+    error.cause instanceof ReceiptStatusError &&
+    error.cause.status === status
+  );
+}
+
+export function isNoFreezeKeyError(error: unknown): boolean {
+  return isTransactionErrorWithStatus(error, HederaStatus.TokenHasNoFreezeKey);
+}
+
+export function isTokenNotAssociatedError(error: unknown): boolean {
+  return isTransactionErrorWithStatus(
+    error,
+    HederaStatus.TokenNotAssociatedToAccount,
+  );
+}
+
+export function isTokenAlreadyAssociatedError(error: unknown): boolean {
+  return isTransactionErrorWithStatus(
+    error,
+    HederaStatus.TokenAlreadyAssociatedToAccount,
   );
 }

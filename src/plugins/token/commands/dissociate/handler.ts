@@ -8,29 +8,16 @@ import type {
   DissociateSignTransactionResult,
 } from './types';
 
-import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
-
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { removeAssociationFromState } from '@/plugins/token/utils/token-associations';
+import { isTokenNotAssociatedError } from '@/plugins/token/utils/transaction-error-receipt-status';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenDissociateInputSchema } from './input';
 
 export const TOKEN_DISSOCIATE_COMMAND_NAME = 'token_dissociate';
-
-function isTokenNotAssociatedError(error: unknown): boolean {
-  if (!(error instanceof TransactionError)) {
-    return false;
-  }
-
-  const cause = error.cause;
-  return (
-    cause instanceof ReceiptStatusError &&
-    cause.status === HederaStatus.TokenNotAssociatedToAccount
-  );
-}
 
 export class TokenDissociateCommand extends BaseTransactionCommand<
   DissociateNormalizedParams,
