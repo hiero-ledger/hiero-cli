@@ -26,22 +26,20 @@ export interface ContractCreateFlowResult {
   transaction: ContractCreateFlow;
 }
 
-export type ContractExecuteParams = {
+export interface ContractExecuteBaseParams {
   contractId: string;
   gas: number;
   payableAmountTinybars?: string;
-} & (
-  | {
-      functionName: string;
-      functionParameters?: ContractFunctionParameters;
-      functionParametersEncoded?: never;
-    }
-  | {
-      functionParametersEncoded: Uint8Array;
-      functionName?: never;
-      functionParameters?: never;
-    }
-);
+}
+
+export type ContractExecuteParams = ContractExecuteBaseParams & {
+  functionName: string;
+  functionParameters?: ContractFunctionParameters;
+};
+
+export type ContractExecuteEncodedParams = ContractExecuteBaseParams & {
+  functionParametersEncoded: Uint8Array;
+};
 
 export interface ContractExecuteResult {
   transaction: ContractExecuteTransaction;

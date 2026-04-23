@@ -3,6 +3,8 @@ import type {
   ContractCreateFlowParams,
   ContractCreateFlowResult,
   ContractDeleteResult,
+  ContractExecuteBaseParams,
+  ContractExecuteEncodedParams,
   ContractExecuteParams,
   ContractExecuteResult,
   DeleteContractParams,
@@ -76,27 +78,38 @@ export class ContractTransactionServiceImpl implements ContractTransactionServic
     };
   }
 
-  contractExecuteTransaction(
-    params: ContractExecuteParams,
-  ): ContractExecuteResult {
-    const contractExecuteTx = new ContractExecuteTransaction()
+  private createBaseContractExecuteTx(
+    params: ContractExecuteBaseParams,
+  ): ContractExecuteTransaction {
+    const tx = new ContractExecuteTransaction()
       .setContractId(ContractId.fromString(params.contractId))
       .setGas(params.gas);
 
-    if (params.functionParametersEncoded) {
-      contractExecuteTx.setFunctionParameters(params.functionParametersEncoded);
-    } else {
-      contractExecuteTx.setFunction(
-        params.functionName,
-        params.functionParameters,
-      );
+    if (params.payableAmountTinybars) {
+      tx.setPayableAmount(Hbar.fromTinybars(params.payableAmountTinybars));
     }
 
-    if (params.payableAmountTinybars) {
-      contractExecuteTx.setPayableAmount(
-        Hbar.fromTinybars(params.payableAmountTinybars),
-      );
-    }
+    return tx;
+  }
+
+  contractExecuteTransaction(
+    params: ContractExecuteParams,
+  ): ContractExecuteResult {
+    const contractExecuteTx = this.createBaseContractExecuteTx(params);
+    contractExecuteTx.setFunction(
+      params.functionName,
+      params.functionParameters,
+    );
+    return {
+      transaction: contractExecuteTx,
+    };
+  }
+
+  contractExecuteWithEncodedParams(
+    params: ContractExecuteEncodedParams,
+  ): ContractExecuteResult {
+    const contractExecuteTx = this.createBaseContractExecuteTx(params);
+    contractExecuteTx.setFunctionParameters(params.functionParametersEncoded);
     return {
       transaction: contractExecuteTx,
     };
