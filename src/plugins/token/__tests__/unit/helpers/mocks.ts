@@ -32,6 +32,7 @@ import type { SupportedNetwork } from '@/core/types/shared.types';
 import {
   ED25519_HEX_PUBLIC_KEY,
   MOCK_FREEZE_PUBLIC_KEY,
+  MOCK_PAUSE_PUBLIC_KEY,
 } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
@@ -73,6 +74,8 @@ export const makeTokenServiceMock = (
   createDeleteTransaction: jest.fn(),
   createFreezeTransaction: jest.fn(),
   createUnfreezeTransaction: jest.fn(),
+  createPauseTransaction: jest.fn(),
+  createUnpauseTransaction: jest.fn(),
   createAirdropFtTransaction: jest.fn(),
   createAirdropNftTransaction: jest.fn(),
   createCancelAirdropTransaction: jest.fn(),
@@ -1035,6 +1038,90 @@ export const makeUnfreezeSuccessMocks = (overrides?: {
     });
 
   return { ...apiMocks, mockUnfreezeTransaction };
+};
+
+export const makePauseSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    pause_key?: { key: string } | null;
+    name?: string;
+  };
+  pauseKeyPublicKey?: string;
+}) => {
+  const mockPauseTransaction = { test: 'pause-transaction' };
+  const defaultPauseKeyPublicKey =
+    overrides?.pauseKeyPublicKey ?? MOCK_PAUSE_PUBLIC_KEY;
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createPauseTransaction: jest.fn().mockReturnValue(mockPauseTransaction),
+    },
+    txExecute: {
+      execute: jest
+        .fn()
+        .mockResolvedValue(makeTransactionResult({ success: true })),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        pause_key:
+          overrides?.tokenInfo && 'pause_key' in overrides.tokenInfo
+            ? overrides.tokenInfo.pause_key
+            : { key: defaultPauseKeyPublicKey },
+        name: overrides?.tokenInfo?.name ?? 'TestToken',
+      }),
+    },
+  });
+
+  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
+    .fn()
+    .mockResolvedValue({
+      keyRefIds: ['pause-key-ref-id'],
+      requiredSignatures: 1,
+    });
+
+  return { ...apiMocks, mockPauseTransaction };
+};
+
+export const makeUnpauseSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    pause_key?: { key: string } | null;
+    name?: string;
+  };
+  pauseKeyPublicKey?: string;
+}) => {
+  const mockUnpauseTransaction = { test: 'unpause-transaction' };
+  const defaultPauseKeyPublicKey =
+    overrides?.pauseKeyPublicKey ?? MOCK_PAUSE_PUBLIC_KEY;
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createUnpauseTransaction: jest
+        .fn()
+        .mockReturnValue(mockUnpauseTransaction),
+    },
+    txExecute: {
+      execute: jest
+        .fn()
+        .mockResolvedValue(makeTransactionResult({ success: true })),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        pause_key:
+          overrides?.tokenInfo && 'pause_key' in overrides.tokenInfo
+            ? overrides.tokenInfo.pause_key
+            : { key: defaultPauseKeyPublicKey },
+        name: overrides?.tokenInfo?.name ?? 'TestToken',
+      }),
+    },
+  });
+
+  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
+    .fn()
+    .mockResolvedValue({
+      keyRefIds: ['pause-key-ref-id'],
+      requiredSignatures: 1,
+    });
+
+  return { ...apiMocks, mockUnpauseTransaction };
 };
 
 /**

@@ -47,9 +47,11 @@ import {
   TokenFreezeTransaction,
   TokenId,
   TokenMintTransaction,
+  TokenPauseTransaction,
   TokenRejectTransaction,
   TokenSupplyType,
   TokenUnfreezeTransaction,
+  TokenUnpauseTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
 
@@ -422,6 +424,26 @@ export class TokenServiceImpl implements TokenService {
     return new TokenUnfreezeTransaction()
       .setTokenId(TokenId.fromString(params.tokenId))
       .setAccountId(AccountId.fromString(params.accountId));
+  }
+
+  createPauseTransaction(params: { tokenId: string }): TokenPauseTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating pause transaction for token ${params.tokenId}`,
+    );
+    return new TokenPauseTransaction().setTokenId(
+      TokenId.fromString(params.tokenId),
+    );
+  }
+
+  createUnpauseTransaction(params: {
+    tokenId: string;
+  }): TokenUnpauseTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating unpause transaction for token ${params.tokenId}`,
+    );
+    return new TokenUnpauseTransaction().setTokenId(
+      TokenId.fromString(params.tokenId),
+    );
   }
 
   createAirdropFtTransaction(
