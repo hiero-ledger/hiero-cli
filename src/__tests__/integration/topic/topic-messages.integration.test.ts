@@ -67,6 +67,8 @@ describe('Topic Messages Integration Tests', () => {
     expect(topic?.createdAt).toBe(createTopicOutput.createdAt);
     expect(topic?.topicId).toBe(createTopicOutput.topicId);
 
+    await delay(5000);
+
     for (let i = 0; i < 10; i++) {
       const topicMessageSubmitArgs: Record<string, unknown> = {
         topic: createTopicOutput.topicId,
