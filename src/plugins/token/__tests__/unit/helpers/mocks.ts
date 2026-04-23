@@ -424,6 +424,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     } as jest.Mocked<Logger>,
     hbar: {
       transferTinybar: jest.fn(),
+      createHbarAllowanceTransaction: jest.fn(),
     } as jest.Mocked<HbarService>,
     output: {
       handleOutput: jest.fn<never, [OutputHandlerOptions]>(),

@@ -3,12 +3,20 @@
  */
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type {
+  HbarAllowanceParams,
+  HbarAllowanceResult,
   HbarService,
   TransferTinybarParams,
   TransferTinybarResult,
 } from './hbar-service.interface';
 
-import { AccountId, Hbar, HbarUnit, TransferTransaction } from '@hashgraph/sdk';
+import {
+  AccountAllowanceApproveTransaction,
+  AccountId,
+  Hbar,
+  HbarUnit,
+  TransferTransaction,
+} from '@hashgraph/sdk';
 
 import { ValidationError } from '@/core/errors';
 
@@ -53,6 +61,39 @@ export class HbarServiceImpl implements HbarService {
     } catch (error) {
       throw new ValidationError('Invalid transfer parameters', {
         context: { from, to, amount: amount.toString() },
+        cause: error,
+      });
+    }
+  }
+
+  createHbarAllowanceTransaction(
+    params: HbarAllowanceParams,
+  ): HbarAllowanceResult {
+    const { ownerAccountId, spenderAccountId, amountTinybar } = params;
+
+    this.logger.debug(
+      `[HBAR SERVICE] Building allowance: owner=${ownerAccountId} spender=${spenderAccountId} amount=${amountTinybar}`,
+    );
+
+    try {
+      const tx = new AccountAllowanceApproveTransaction().approveHbarAllowance(
+        AccountId.fromString(ownerAccountId),
+        AccountId.fromString(spenderAccountId),
+        new Hbar(amountTinybar.toString(), HbarUnit.Tinybar),
+      );
+
+      this.logger.debug(
+        `[HBAR SERVICE] Created allowance transaction: owner=${ownerAccountId} spender=${spenderAccountId}`,
+      );
+
+      return { transaction: tx };
+    } catch (error) {
+      throw new ValidationError('Invalid allowance parameters', {
+        context: {
+          ownerAccountId,
+          spenderAccountId,
+          amountTinybar: amountTinybar.toString(),
+        },
         cause: error,
       });
     }
