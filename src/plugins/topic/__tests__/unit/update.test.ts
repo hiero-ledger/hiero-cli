@@ -31,6 +31,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { TopicUpdateOutputSchema } from '@/plugins/topic/commands/update';
 import { topicUpdate } from '@/plugins/topic/commands/update/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -47,7 +48,10 @@ function mirrorWithAdminKey(topicId: string): HederaMirrornodeService {
     getTopicInfo: jest.fn().mockResolvedValue(
       createMockTopicInfo({
         topic_id: topicId,
-        admin_key: { _type: 'ED25519', key: ED25519_DER_PUBLIC_KEY },
+        admin_key: {
+          _type: MirrorNodeKeyType.ED25519,
+          key: ED25519_DER_PUBLIC_KEY,
+        },
         deleted: false,
       }),
     ),

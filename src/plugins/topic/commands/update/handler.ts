@@ -19,6 +19,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { NULL_TOKEN } from '@/core/shared/constants';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
@@ -92,7 +93,8 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
 
     const keyManagerArg = validArgs.keyManager;
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     let newAdminKeys: ResolvedPublicKey[] | undefined;
     if (validArgs.adminKey.length > 0) {

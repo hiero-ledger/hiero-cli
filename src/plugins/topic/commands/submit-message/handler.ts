@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType } from '@/core/types/shared.types';
 
 import { TopicSubmitMessageInputSchema } from './input';
@@ -38,7 +39,8 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     const keyManagerArg = validArgs.keyManager;
     const currentNetwork = api.network.getCurrentNetwork();
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     let topicId = topicIdOrAlias;
     const topicAliasResult = api.alias.resolve(

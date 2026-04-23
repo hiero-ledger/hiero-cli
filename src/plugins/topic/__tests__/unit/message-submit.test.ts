@@ -27,6 +27,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { TopicSubmitMessageOutputSchema } from '@/plugins/topic/commands/submit-message';
 import { topicSubmitMessage } from '@/plugins/topic/commands/submit-message/handler';
 
@@ -47,7 +48,10 @@ function mirrorWithSubmitKey(topicId: string): HederaMirrornodeService {
     getTopicInfo: jest.fn().mockResolvedValue(
       createMockTopicInfo({
         topic_id: topicId,
-        submit_key: { _type: 'ED25519', key: ED25519_DER_PUBLIC_KEY },
+        submit_key: {
+          _type: MirrorNodeKeyType.ED25519,
+          key: ED25519_DER_PUBLIC_KEY,
+        },
         deleted: false,
       }),
     ),
