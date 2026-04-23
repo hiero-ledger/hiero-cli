@@ -84,12 +84,35 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
       );
     }
 
-    const signer = await api.keyResolver.resolveSigningKey(
-      validArgs.key,
-      keyManager,
-      false,
-      ['schedule:signer'],
-    );
+    let signerKeyRefIds: string[];
+    if (validArgs.key) {
+      const signer = await api.keyResolver.resolveSigningKey(
+        validArgs.key,
+        keyManager,
+        false,
+        ['schedule:signer'],
+      );
+      signerKeyRefIds = [signer.keyRefId];
+    } else {
+      const mirrorScheduleInfo = await api.mirror.getScheduled(
+        schedule.scheduleId,
+      );
+      const { keyRefIds } =
+        await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
+          mirrorRoleKey: mirrorScheduleInfo.admin_key,
+          explicitCredentials: [],
+          keyManager,
+          resolveSigningKeyLabels: ['schedule:signer'],
+          emptyMirrorRoleKeyMessage:
+            'Schedule has no admin key on the network. Provide --key to specify the signing key.',
+          insufficientKmsMatchesMessage:
+            'No matching signer key found in key manager for this schedule. Provide --key.',
+          validationErrorOptions: {
+            context: { scheduleId: schedule.scheduleId },
+          },
+        });
+      signerKeyRefIds = keyRefIds;
+    }
 
     return {
       scheduleName: schedule.name,
@@ -98,8 +121,7 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
       executed: schedule.executed,
       network: currentNetwork,
       keyManager,
-      signer,
-      keyRefIds: [signer.keyRefId],
+      keyRefIds: signerKeyRefIds,
     };
   }
 
