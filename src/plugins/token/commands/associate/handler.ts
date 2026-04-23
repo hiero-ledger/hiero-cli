@@ -9,12 +9,13 @@ import type {
 } from './types';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
-import { NotFoundError, TransactionError } from '@/core/errors';
+import {
+  NotFoundError,
+  TransactionError,
+  ValidationError,
+} from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { saveAssociationToState } from '@/plugins/token/utils/token-associations';
-import { isTokenAlreadyAssociatedError } from '@/plugins/token/utils/transaction-error-receipt-status';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenAssociateInputSchema } from './input';
 
@@ -28,41 +29,6 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
 > {
   constructor() {
     super(TOKEN_ASSOCIATE_COMMAND_NAME);
-  }
-
-  override async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const normalisedParams = await this.normalizeParams(args);
-
-    if (normalisedParams.alreadyAssociated) {
-      return this.executeAlreadyAssociated(args, normalisedParams);
-    }
-
-    return super.execute(args);
-  }
-
-  private async executeAlreadyAssociated(
-    args: CommandHandlerArgs,
-    normalisedParams: AssociateNormalizedParams,
-  ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
-    saveAssociationToState(
-      tokenState,
-      normalisedParams.tokenId,
-      normalisedParams.account.accountId,
-      normalisedParams.network,
-      logger,
-    );
-
-    const outputData: TokenAssociateOutput = {
-      accountId: normalisedParams.account.accountId,
-      tokenId: normalisedParams.tokenId,
-      associated: true,
-      alreadyAssociated: true,
-      network: normalisedParams.network,
-    };
-
-    return { result: outputData };
   }
 
   async normalizeParams(
@@ -105,7 +71,7 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
     );
 
     if (alreadyAssociated) {
-      logger.info(
+      throw new ValidationError(
         `Token ${tokenId} is already associated with account ${account.accountId}`,
       );
     }
@@ -115,7 +81,6 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
       tokenId,
       account,
       keyManager,
-      alreadyAssociated,
       keyRefIds: [account.keyRefId],
     };
   }
@@ -155,29 +120,22 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
     signTransactionResult: AssociateSignTransactionResult,
   ): Promise<AssociateExecuteTransactionResult> {
     const { api } = args;
-    try {
-      const transactionResult = await api.txExecute.execute(
-        signTransactionResult.signedTransaction,
-      );
-      if (!transactionResult.success) {
-        throw new TransactionError(
-          `Token association failed (tokenId: ${normalisedParams.tokenId}, accountId: ${normalisedParams.account.accountId}, txId: ${transactionResult.transactionId})`,
-          false,
-          {
-            context: {
-              tokenId: normalisedParams.tokenId,
-              accountId: normalisedParams.account.accountId,
-            },
+    const transactionResult = await api.txExecute.execute(
+      signTransactionResult.signedTransaction,
+    );
+    if (!transactionResult.success) {
+      throw new TransactionError(
+        `Token association failed (tokenId: ${normalisedParams.tokenId}, accountId: ${normalisedParams.account.accountId}, txId: ${transactionResult.transactionId})`,
+        false,
+        {
+          context: {
+            tokenId: normalisedParams.tokenId,
+            accountId: normalisedParams.account.accountId,
           },
-        );
-      }
-      return { transactionResult, alreadyAssociated: false };
-    } catch (error) {
-      if (isTokenAlreadyAssociatedError(error)) {
-        return { alreadyAssociated: true };
-      }
-      throw error;
+        },
+      );
     }
+    return { transactionResult };
   }
 
   async outputPreparation(
@@ -187,23 +145,10 @@ export class TokenAssociateCommand extends BaseTransactionCommand<
     _signTransactionResult: AssociateSignTransactionResult,
     executeTransactionResult: AssociateExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
-    saveAssociationToState(
-      tokenState,
-      normalisedParams.tokenId,
-      normalisedParams.account.accountId,
-      normalisedParams.network,
-      logger,
-    );
-
     const outputData: TokenAssociateOutput = {
       accountId: normalisedParams.account.accountId,
       tokenId: normalisedParams.tokenId,
-      associated: true,
-      alreadyAssociated:
-        executeTransactionResult.alreadyAssociated || undefined,
-      transactionId: executeTransactionResult.transactionResult?.transactionId,
+      transactionId: executeTransactionResult.transactionResult.transactionId,
       network: normalisedParams.network,
     };
 

@@ -16,17 +16,3 @@ function isTransactionErrorWithStatus(
 export function isNoFreezeKeyError(error: unknown): boolean {
   return isTransactionErrorWithStatus(error, HederaStatus.TokenHasNoFreezeKey);
 }
-
-export function isTokenNotAssociatedError(error: unknown): boolean {
-  return isTransactionErrorWithStatus(
-    error,
-    HederaStatus.TokenNotAssociatedToAccount,
-  );
-}
-
-export function isTokenAlreadyAssociatedError(error: unknown): boolean {
-  return isTransactionErrorWithStatus(
-    error,
-    HederaStatus.TokenAlreadyAssociatedToAccount,
-  );
-}

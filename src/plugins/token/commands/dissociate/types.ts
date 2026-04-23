@@ -12,7 +12,6 @@ export interface DissociateNormalizedParams extends BaseNormalizedParams {
   tokenId: string;
   account: ResolvedAccountCredential;
   keyManager: KeyManager;
-  alreadyDissociated: boolean;
 }
 
 export interface DissociateBuildTransactionResult {
@@ -24,6 +23,5 @@ export interface DissociateSignTransactionResult {
 }
 
 export interface DissociateExecuteTransactionResult {
-  transactionResult?: TransactionResult;
-  alreadyDissociated: boolean;
+  transactionResult: TransactionResult;
 }

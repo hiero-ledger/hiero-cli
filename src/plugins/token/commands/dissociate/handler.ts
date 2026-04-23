@@ -8,12 +8,12 @@ import type {
   DissociateSignTransactionResult,
 } from './types';
 
+import { ValidationError } from '@/core';
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { removeAssociationFromState } from '@/plugins/token/utils/token-associations';
-import { isTokenNotAssociatedError } from '@/plugins/token/utils/transaction-error-receipt-status';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenDissociateInputSchema } from './input';
@@ -28,41 +28,6 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
 > {
   constructor() {
     super(TOKEN_DISSOCIATE_COMMAND_NAME);
-  }
-
-  override async execute(args: CommandHandlerArgs): Promise<CommandResult> {
-    const normalisedParams = await this.normalizeParams(args);
-
-    if (normalisedParams.alreadyDissociated) {
-      return this.executeAlreadyDissociated(args, normalisedParams);
-    }
-
-    return super.execute(args);
-  }
-
-  private async executeAlreadyDissociated(
-    args: CommandHandlerArgs,
-    normalisedParams: DissociateNormalizedParams,
-  ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
-    removeAssociationFromState(
-      tokenState,
-      normalisedParams.tokenId,
-      normalisedParams.account.accountId,
-      normalisedParams.network,
-      logger,
-    );
-
-    const outputData: TokenDissociateOutput = {
-      accountId: normalisedParams.account.accountId,
-      tokenId: normalisedParams.tokenId,
-      dissociated: true,
-      alreadyDissociated: true,
-      network: normalisedParams.network,
-    };
-
-    return { result: outputData };
   }
 
   async normalizeParams(
@@ -103,11 +68,10 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
     const isAssociated = tokenBalances.tokens.some(
       (token) => token.token_id === tokenId,
     );
-    const alreadyDissociated = !isAssociated;
 
-    if (alreadyDissociated) {
-      logger.info(
-        `Token ${tokenId} is not associated with account ${account.accountId} on mirror (already dissociated)`,
+    if (!isAssociated) {
+      throw new ValidationError(
+        `Token ${tokenId} is already not associated to the account ${account.accountId}`,
       );
     }
 
@@ -116,7 +80,6 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
       tokenId,
       account,
       keyManager,
-      alreadyDissociated,
       keyRefIds: [account.keyRefId],
     };
   }
@@ -156,29 +119,22 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
     signTransactionResult: DissociateSignTransactionResult,
   ): Promise<DissociateExecuteTransactionResult> {
     const { api } = args;
-    try {
-      const transactionResult = await api.txExecute.execute(
-        signTransactionResult.signedTransaction,
-      );
-      if (!transactionResult.success) {
-        throw new TransactionError(
-          `Token dissociation failed (tokenId: ${normalisedParams.tokenId}, accountId: ${normalisedParams.account.accountId}, txId: ${transactionResult.transactionId})`,
-          false,
-          {
-            context: {
-              tokenId: normalisedParams.tokenId,
-              accountId: normalisedParams.account.accountId,
-            },
+    const transactionResult = await api.txExecute.execute(
+      signTransactionResult.signedTransaction,
+    );
+    if (!transactionResult.success) {
+      throw new TransactionError(
+        `Token dissociation failed (tokenId: ${normalisedParams.tokenId}, accountId: ${normalisedParams.account.accountId}, txId: ${transactionResult.transactionId})`,
+        false,
+        {
+          context: {
+            tokenId: normalisedParams.tokenId,
+            accountId: normalisedParams.account.accountId,
           },
-        );
-      }
-      return { transactionResult, alreadyDissociated: false };
-    } catch (error) {
-      if (isTokenNotAssociatedError(error)) {
-        return { alreadyDissociated: true };
-      }
-      throw error;
+        },
+      );
     }
+    return { transactionResult };
   }
 
   async outputPreparation(
@@ -201,10 +157,7 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
     const outputData: TokenDissociateOutput = {
       accountId: normalisedParams.account.accountId,
       tokenId: normalisedParams.tokenId,
-      dissociated: true,
-      alreadyDissociated:
-        executeTransactionResult.alreadyDissociated || undefined,
-      transactionId: executeTransactionResult.transactionResult?.transactionId,
+      transactionId: executeTransactionResult.transactionResult.transactionId,
       network: normalisedParams.network,
     };
 
