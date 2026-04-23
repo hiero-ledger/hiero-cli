@@ -1,21 +1,26 @@
 import type { CoreApi, TransactionResult } from '@/core';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { TopicData } from '@/plugins/topic/schema';
 
 import {
   ED25519_DER_PRIVATE_KEY,
   ED25519_DER_PRIVATE_KEY_ADMIN_2,
   ED25519_DER_PRIVATE_KEY_SUBMIT_1,
+  ED25519_DER_PUBLIC_KEY,
+  ED25519_HEX_PUBLIC_KEY,
   MOCK_TOPIC_ADMIN_KEY_REF_ID,
   MOCK_TOPIC_ADMIN_KEY_REF_ID_2,
   MOCK_TOPIC_SUBMIT_KEY_REF_ID,
 } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
+  createMockKmsRecord,
   makeAliasMock,
   makeArgs,
   makeKmsMock,
   makeLogger,
+  makeMirrorMock,
   makeNetworkMock,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
@@ -25,6 +30,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
 import { TopicUpdateOutputSchema } from '@/plugins/topic/commands/update';
 import { topicUpdate } from '@/plugins/topic/commands/update/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -34,6 +40,30 @@ jest.mock('../../zustand-state-helper', () => ({
 }));
 
 const MockedHelper = ZustandTopicStateHelper as jest.Mock;
+
+function mirrorWithAdminKey(topicId: string): HederaMirrornodeService {
+  return {
+    ...makeMirrorMock(),
+    getTopicInfo: jest.fn().mockResolvedValue(
+      createMockTopicInfo({
+        topic_id: topicId,
+        admin_key: { _type: 'ED25519', key: ED25519_DER_PUBLIC_KEY },
+        deleted: false,
+      }),
+    ),
+  } as unknown as HederaMirrornodeService;
+}
+
+function mirrorWithNoAdminKey(topicId: string): HederaMirrornodeService {
+  return {
+    ...makeMirrorMock(),
+    getTopicInfo: jest
+      .fn()
+      .mockResolvedValue(
+        createMockTopicInfo({ topic_id: topicId, deleted: false }),
+      ),
+  } as unknown as HederaMirrornodeService;
+}
 
 const EXISTING_TOPIC: TopicData = {
   name: 'my-topic',
@@ -51,10 +81,12 @@ const makeApiMocks = ({
   updateTopicImpl,
   executeImpl,
   network = 'testnet',
+  noAdminKey = false,
 }: {
   updateTopicImpl?: jest.Mock;
   executeImpl?: jest.Mock;
   network?: 'testnet' | 'mainnet' | 'previewnet';
+  noAdminKey?: boolean;
 }) => {
   const topicTransactions = {
     createTopic: jest.fn(),
@@ -98,9 +130,31 @@ const makeApiMocks = ({
     keyRefId: `kr_${key.slice(-5)}`,
     publicKey: key,
   }));
+  kms.findByPublicKey.mockImplementation((publicKey: string) => {
+    if (publicKey === ED25519_HEX_PUBLIC_KEY) {
+      return createMockKmsRecord(
+        MOCK_TOPIC_ADMIN_KEY_REF_ID,
+        ED25519_HEX_PUBLIC_KEY,
+      );
+    }
+    return undefined;
+  });
   const alias = makeAliasMock();
+  const mirror = noAdminKey
+    ? mirrorWithNoAdminKey('0.0.9999')
+    : mirrorWithAdminKey('0.0.9999');
 
-  return { topicTransactions, txSign, txExecute, networkMock, kms, alias };
+  const baseApi: Partial<CoreApi> = {
+    topic: topicTransactions,
+    txSign,
+    txExecute,
+    network: networkMock,
+    kms,
+    alias: alias as AliasService,
+    mirror,
+  };
+
+  return { topicTransactions, txSign, baseApi };
 };
 
 const makeUpdateArgs = (
@@ -124,18 +178,8 @@ describe('topic plugin - update command', () => {
       saveTopic: saveTopicMock,
     }));
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { topicTransactions, baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, { memo: 'Updated memo' });
     const result = await topicUpdate(args);
@@ -164,18 +208,8 @@ describe('topic plugin - update command', () => {
 
     const newAdminKey = `0.0.222:${ED25519_DER_PRIVATE_KEY_ADMIN_2}`;
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { txSign, baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, { adminKey: [newAdminKey] });
     await topicUpdate(args);
@@ -195,18 +229,8 @@ describe('topic plugin - update command', () => {
 
     const newSubmitKey = `0.0.333:${ED25519_DER_PRIVATE_KEY_SUBMIT_1}`;
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { txSign, baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, { submitKey: [newSubmitKey] });
     await topicUpdate(args);
@@ -227,18 +251,8 @@ describe('topic plugin - update command', () => {
 
     const newSubmitKey = `0.0.333:${ED25519_DER_PRIVATE_KEY_SUBMIT_1}`;
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, {
       memo: 'New memo',
@@ -258,18 +272,8 @@ describe('topic plugin - update command', () => {
       saveTopic: jest.fn(),
     }));
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, { memo: 'New memo' });
     await expect(topicUpdate(args)).rejects.toThrow(NotFoundError);
@@ -287,18 +291,8 @@ describe('topic plugin - update command', () => {
       saveTopic: jest.fn(),
     }));
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { baseApi } = makeApiMocks({ noAdminKey: true });
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, { memo: 'New memo' });
     await expect(topicUpdate(args)).rejects.toThrow(ValidationError);
@@ -317,18 +311,8 @@ describe('topic plugin - update command', () => {
       saveTopic: saveTopicMock,
     }));
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { txSign, baseApi } = makeApiMocks({ noAdminKey: true });
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, {
       expirationTime: '2025-12-31T23:59:59.000Z',
@@ -350,25 +334,15 @@ describe('topic plugin - update command', () => {
       saveTopic: jest.fn(),
     }));
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({
-        executeImpl: jest.fn().mockResolvedValue({
-          transactionId: 'tx-fail',
-          success: false,
-          consensusTimestamp: '2024-01-02T00:00:00.000Z',
-          receipt: { status: { status: 'failure' } },
-        } as unknown as TransactionResult),
-      });
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { baseApi } = makeApiMocks({
+      executeImpl: jest.fn().mockResolvedValue({
+        transactionId: 'tx-fail',
+        success: false,
+        consensusTimestamp: '2024-01-02T00:00:00.000Z',
+        receipt: { status: { status: 'failure' } },
+      } as unknown as TransactionResult),
+    });
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, { memo: 'Fail memo' });
     await expect(topicUpdate(args)).rejects.toThrow(TransactionError);
@@ -383,18 +357,8 @@ describe('topic plugin - update command', () => {
       saveTopic: saveTopicMock,
     }));
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, { memo: 'Changed' });
     await topicUpdate(args);
@@ -415,18 +379,8 @@ describe('topic plugin - update command', () => {
 
     const sameAdminKey = `0.0.123456:${ED25519_DER_PRIVATE_KEY}`;
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { txSign, baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, { adminKey: [sameAdminKey] });
     await topicUpdate(args);
@@ -445,18 +399,8 @@ describe('topic plugin - update command', () => {
       saveTopic: saveTopicMock,
     }));
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { topicTransactions, baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, { memo: 'null' });
     const result = await topicUpdate(args);
@@ -478,18 +422,8 @@ describe('topic plugin - update command', () => {
       loadTopic: jest.fn().mockReturnValue({ ...EXISTING_TOPIC }),
     }));
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, { submitKey: ['null'] });
     await expect(topicUpdate(args)).rejects.toThrow();
@@ -507,18 +441,8 @@ describe('topic plugin - update command', () => {
       saveTopic: saveTopicMock,
     }));
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { topicTransactions, baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, { autoRenewAccount: 'null' });
     const result = await topicUpdate(args);
@@ -547,18 +471,8 @@ describe('topic plugin - update command', () => {
       saveTopic: saveTopicMock,
     }));
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { topicTransactions, baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, { submitKey: 'null' });
     const result = await topicUpdate(args);
@@ -584,18 +498,8 @@ describe('topic plugin - update command', () => {
       saveTopic: saveTopicMock,
     }));
 
-    const { topicTransactions, txSign, txExecute, networkMock, kms, alias } =
-      makeApiMocks({});
-
-    const api: Partial<CoreApi> = {
-      topic: topicTransactions,
-      txSign,
-      txExecute,
-      network: networkMock,
-      kms,
-      alias: alias as AliasService,
-      logger,
-    };
+    const { baseApi } = makeApiMocks({});
+    const api: Partial<CoreApi> = { ...baseApi, logger };
 
     const args = makeUpdateArgs(api, logger, { autoRenewPeriod: 7_776_000 });
     const result = await topicUpdate(args);

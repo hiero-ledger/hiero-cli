@@ -9,14 +9,8 @@ import type {
 } from './types';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
-import {
-  NotFoundError,
-  TransactionError,
-  ValidationError,
-} from '@/core/errors';
+import { TransactionError } from '@/core/errors';
 import { AliasType } from '@/core/types/shared.types';
-import { composeKey } from '@/core/utils/key-composer';
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { TopicSubmitMessageInputSchema } from './input';
 
@@ -36,7 +30,6 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     args: CommandHandlerArgs,
   ): Promise<SubmitMessageNormalisedParams> {
     const { api, logger } = args;
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
     const validArgs = TopicSubmitMessageInputSchema.parse(args.args);
 
     const topicIdOrAlias = validArgs.topic;
@@ -58,47 +51,38 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     }
     logger.info(`Submitting message to topic: ${topicId}`);
 
-    const key = composeKey(currentNetwork, topicId);
-    const topicData = topicState.loadTopic(key);
-    if (!topicData) {
-      throw new NotFoundError(`Topic not found with ID or alias: ${topicId}`);
-    }
+    const topicInfo = await api.mirror.getTopicInfo(topicId);
 
-    const signerKeyRefIds: string[] = [];
-    const allowedSubmitKeyRefIds = topicData.submitKeyRefIds;
-    const submitKeyThreshold = topicData.submitKeyThreshold;
-
-    for (const signerArg of signerArgs) {
-      const resolvedSigner = await api.keyResolver.resolveSigningKey(
-        signerArg,
-        keyManager,
-        false,
-        ['topic:signer'],
-      );
-      if (
-        allowedSubmitKeyRefIds.length > 0 &&
-        !allowedSubmitKeyRefIds.includes(resolvedSigner.keyRefId)
-      ) {
-        logger.warn(
-          `Signer ${resolvedSigner.keyRefId} is not in the topic's submit keys and was ignored`,
-        );
-        continue;
-      }
-      signerKeyRefIds.push(resolvedSigner.keyRefId);
-    }
-
-    if (signerKeyRefIds.length < submitKeyThreshold) {
-      throw new ValidationError(
-        `Topic requires ${submitKeyThreshold} signature(s) for submit key (threshold ${submitKeyThreshold}-of-${allowedSubmitKeyRefIds.length}). Provided ${signerKeyRefIds.length} signer(s).`,
-      );
-    }
-
-    if (allowedSubmitKeyRefIds.length > 0) {
-      logger.info(
-        `Using ${signerKeyRefIds.length} signer(s) (authorized submit key)`,
-      );
+    let signerKeyRefIds: string[];
+    if (topicInfo.submit_key) {
+      const { keyRefIds } =
+        await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
+          mirrorRoleKey: topicInfo.submit_key,
+          explicitCredentials: signerArgs,
+          keyManager,
+          resolveSigningKeyLabels: ['topic:submit'],
+          emptyMirrorRoleKeyMessage: 'Topic has no submit key on the network',
+          insufficientKmsMatchesMessage:
+            'Not enough submit key(s) found in key manager for this topic. Provide --signer.',
+          validationErrorOptions: { context: { topicId } },
+        });
+      signerKeyRefIds = keyRefIds;
+      logger.info(`Using ${signerKeyRefIds.length} signer(s) for submit key`);
     } else {
-      logger.info(`Using provided signer for public topic`);
+      if (signerArgs.length > 0) {
+        const resolved = await Promise.all(
+          signerArgs.map((s) =>
+            api.keyResolver.resolveSigningKey(s, keyManager, false, [
+              'topic:submit',
+            ]),
+          ),
+        );
+        signerKeyRefIds = resolved.map((s) => s.keyRefId);
+        logger.info(`Using provided signer for public topic`);
+      } else {
+        signerKeyRefIds = [];
+        logger.info(`Submitting to public topic (no submit key required)`);
+      }
     }
 
     return {
@@ -107,7 +91,6 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
       signerKeyRefIds,
       keyManager,
       currentNetwork,
-      topicData,
       keyRefIds: signerKeyRefIds,
     };
   }

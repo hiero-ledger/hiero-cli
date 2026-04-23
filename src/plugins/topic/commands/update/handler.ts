@@ -51,13 +51,15 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
 
     const stateKey = composeKey(network, topicId);
     const topicState = new ZustandTopicStateHelper(api.state, logger);
-    const existingTopicData = topicState.loadTopic(stateKey);
-
-    if (!existingTopicData) {
+    const storedTopicData = topicState.loadTopic(stateKey);
+    if (!storedTopicData) {
       throw new NotFoundError(
         `Topic "${validArgs.topic}" not found in local state for network ${network}`,
       );
     }
+
+    const topicInfo = await api.mirror.getTopicInfo(topicId);
+    const existingTopicData = storedTopicData;
 
     const memo = validArgs.memo === NULL_TOKEN ? null : validArgs.memo;
     const autoRenewAccountId =
@@ -72,7 +74,7 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       ? []
       : (submitKeyInput as Credential[]);
 
-    const hasAdminKey = existingTopicData.adminKeyRefIds.length > 0;
+    const hasAdminKey = !!topicInfo.admin_key;
     const hasOnlyExpirationTime =
       validArgs.expirationTime !== undefined &&
       memo === undefined &&
@@ -116,15 +118,22 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       );
     }
 
-    const adminThreshold =
-      existingTopicData.adminKeyThreshold ||
-      existingTopicData.adminKeyRefIds.length;
-    const currentAdminKeyRefIds = existingTopicData.adminKeyRefIds.slice(
-      0,
-      adminThreshold,
-    );
-
     const isExpirationOnlyUpdate = !hasAdminKey && hasOnlyExpirationTime;
+
+    let currentAdminKeyRefIds: string[] = [];
+    if (hasAdminKey && !isExpirationOnlyUpdate) {
+      const { keyRefIds } =
+        await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
+          mirrorRoleKey: topicInfo.admin_key,
+          explicitCredentials: [],
+          keyManager,
+          emptyMirrorRoleKeyMessage: 'Topic has no admin key on the network',
+          insufficientKmsMatchesMessage:
+            'Not enough admin key(s) found in key manager for this topic.',
+          validationErrorOptions: { context: { topicId } },
+        });
+      currentAdminKeyRefIds = keyRefIds;
+    }
 
     logger.info(`Updating topic ${topicId} on ${network}`);
 
