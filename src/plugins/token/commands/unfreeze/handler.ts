@@ -1,8 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
-import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { TokenUnfreezeInput } from './input';
 import type { TokenUnfreezeOutput } from './output';
 import type {
   UnfreezeBuildTransactionResult,
@@ -71,12 +68,6 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
-    if (!tokenInfo.freeze_key) {
-      throw new ValidationError('Token has no freeze key', {
-        context: { tokenId },
-      });
-    }
-
     const { accountId } = await api.identityResolution.resolveAccount({
       accountReference: validArgs.account.value,
       type: validArgs.account.type,
@@ -87,46 +78,24 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
       `Unfreezing account ${accountId} for token ${tokenId} on ${network}`,
     );
 
-    const freezeKeyResolved = await this.resolveFreezeKey(
-      api.keyResolver,
-      validArgs,
-      keyManager,
-      tokenInfo.freeze_key.key,
-      tokenId,
-    );
-
-    logger.debug(`Using freeze key: ${freezeKeyResolved.keyRefId}`);
+    const { keyRefIds } =
+      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
+        mirrorRoleKey: tokenInfo.freeze_key,
+        explicitCredentials: validArgs.freezeKey,
+        keyManager,
+        resolveSigningKeyLabels: ['token:freeze'],
+        emptyMirrorRoleKeyMessage: 'Token has no freeze key',
+        insufficientKmsMatchesMessage:
+          'Not enough freeze key(s) found in key manager for this token. Provide --freeze-key.',
+        validationErrorOptions: { context: { tokenId } },
+      });
 
     return {
       network,
       tokenId,
       accountId,
-      freezeKeyResolved,
-      keyRefIds: [freezeKeyResolved.keyRefId],
+      keyRefIds,
     };
-  }
-
-  private async resolveFreezeKey(
-    keyResolver: KeyResolverService,
-    validArgs: TokenUnfreezeInput,
-    keyManager: KeyManager,
-    tokenFreezePublicKey: string,
-    tokenId: string,
-  ): Promise<ResolvedPublicKey> {
-    const freezeKeyResolved = await keyResolver.resolveSigningKey(
-      validArgs.freezeKey,
-      keyManager,
-      false,
-      ['token:unfreeze'],
-    );
-
-    if (tokenFreezePublicKey !== freezeKeyResolved.publicKey) {
-      throw new ValidationError('Freeze key mismatch', {
-        context: { tokenId },
-      });
-    }
-
-    return freezeKeyResolved;
   }
 
   async buildTransaction(
@@ -148,11 +117,12 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
     buildTransactionResult: UnfreezeBuildTransactionResult,
   ): Promise<UnfreezeSignTransactionResult> {
     const { api, logger } = args;
-    const freezeKeyRefId = normalisedParams.freezeKeyResolved.keyRefId;
-    logger.debug(`Using key ${freezeKeyRefId} for signing transaction`);
+    logger.debug(
+      `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
+    );
     const signedTransaction = await api.txSign.sign(
       buildTransactionResult.transaction,
-      [freezeKeyRefId],
+      normalisedParams.keyRefIds,
     );
     return { signedTransaction };
   }

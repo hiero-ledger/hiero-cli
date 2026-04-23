@@ -339,7 +339,7 @@ hcli token burn-ft \
 - `--amount` / `-a`: Amount to burn - **Required**
   - Display units (default): `100` (will be multiplied by token decimals)
   - Base units: `100t` (raw amount without decimals)
-- `--supply-key` / `-s`: Supply key for signing - **Required**
+- `--supply-key` / `-s`: Supply key for signing - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
   - Account alias: `supply-account-alias`
   - Account with key: `0.0.123456:private-key`
 - `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
@@ -377,7 +377,7 @@ hcli token burn-nft \
 
 - `--token` / `-T`: Token identifier (alias or token ID) - **Required**
 - `--serials` / `-s`: Comma-separated serial numbers to burn (max 10) - **Required**
-- `--supply-key` / `-S`: Supply key for signing - **Required**
+- `--supply-key` / `-S`: Supply key for signing - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
   - Account alias: `supply-account-alias`
   - Account with key: `0.0.123456:private-key`
 - `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
@@ -1105,7 +1105,7 @@ hcli token freeze --token 0.0.123456 --account alice --freeze-key <key-ref>
 
 - `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
 - `--account` / `-a`: Account to freeze: account-id (0.0.X), account alias, or EVM address (0x...) - **Required**
-- `--freeze-key` / `-f`: Freeze key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Required**
+- `--freeze-key` / `-f`: Freeze key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
 - `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
 
 If the token does not have a freeze key, the command fails with a clear error: `Token has no freeze key`. The operation is idempotent — freezing an already-frozen account succeeds without error.
@@ -1132,7 +1132,7 @@ hcli token unfreeze --token 0.0.123456 --account alice --freeze-key <key-ref>
 
 - `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
 - `--account` / `-a`: Account to unfreeze: account-id (0.0.X), account alias, or EVM address (0x...) - **Required**
-- `--freeze-key` / `-f`: Freeze key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Required**
+- `--freeze-key` / `-f`: Freeze key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
 - `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
 
 If the token does not have a freeze key, the command fails with a clear error: `Token has no freeze key`. The operation is idempotent — unfreezing an already-unfrozen account succeeds without error.
