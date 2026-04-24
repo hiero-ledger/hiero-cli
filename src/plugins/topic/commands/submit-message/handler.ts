@@ -40,36 +40,24 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
   ): Promise<string[]> {
     const { api, logger } = args;
 
-    if (topicInfo.submit_key) {
-      const { keyRefIds } =
-        await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-          mirrorRoleKey: topicInfo.submit_key,
-          explicitCredentials: signerArgs,
-          keyManager,
-          resolveSigningKeyLabels: ['topic:submit'],
-          emptyMirrorRoleKeyMessage: 'Topic has no submit key on the network',
-          insufficientKmsMatchesMessage:
-            'Not enough submit key(s) found in key manager for this topic. Provide --signer.',
-          validationErrorOptions: { context: { topicId } },
-        });
-      logger.info(`Using ${keyRefIds.length} signer(s) for submit key`);
-      return keyRefIds;
+    if (!topicInfo.submit_key) {
+      logger.info(`Submitting to public topic (no submit key required)`);
+      return [];
     }
 
-    if (signerArgs.length > 0) {
-      const resolved = await Promise.all(
-        signerArgs.map((s) =>
-          api.keyResolver.resolveSigningKey(s, keyManager, false, [
-            'topic:submit',
-          ]),
-        ),
-      );
-      logger.info(`Using provided signer for public topic`);
-      return resolved.map((s) => s.keyRefId);
-    }
-
-    logger.info(`Submitting to public topic (no submit key required)`);
-    return [];
+    const { keyRefIds } =
+      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
+        mirrorRoleKey: topicInfo.submit_key,
+        explicitCredentials: signerArgs,
+        keyManager,
+        resolveSigningKeyLabels: ['topic:submit'],
+        emptyMirrorRoleKeyMessage: 'Topic has no submit key on the network',
+        insufficientKmsMatchesMessage:
+          'Not enough submit key(s) found in key manager for this topic. Provide --signer.',
+        validationErrorOptions: { context: { topicId } },
+      });
+    logger.info(`Using ${keyRefIds.length} signer(s) for submit key`);
+    return keyRefIds;
   }
 
   async normalizeParams(
