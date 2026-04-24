@@ -132,6 +132,12 @@ export interface TokenBurnNftParams {
   serialNumbers: number[];
 }
 
+export interface TokenUpdateNftMetadataParams {
+  tokenId: string;
+  serialNumbers: number[];
+  metadata: Uint8Array;
+}
+
 /**
  * Parameters for approving NFT allowance for specific serial numbers
  */

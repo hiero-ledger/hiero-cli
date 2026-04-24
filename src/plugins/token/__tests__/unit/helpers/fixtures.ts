@@ -961,6 +961,29 @@ export const makeTokenMintNftCommandArgs = (params: {
 };
 
 /**
+ * Factory function to create CommandHandlerArgs for update-metadata-nft tests
+ */
+export const makeUpdateNftMetadataCommandArgs = (params: {
+  api: CoreApi;
+  logger: Logger;
+  args?: Record<string, string | number | boolean | string[] | undefined>;
+}) => {
+  return {
+    args: {
+      token: '0.0.123456',
+      serials: '1,2',
+      metadata: 'Updated NFT metadata',
+      metadataKey: [],
+      ...params.args,
+    },
+    api: params.api,
+    state: params.api.state,
+    config: params.api.config,
+    logger: params.logger,
+  };
+};
+
+/**
  * Valid NFT Token File Data (for create-nft-from-file tests)
  */
 export const validNftTokenFile = {

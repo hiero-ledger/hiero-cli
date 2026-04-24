@@ -82,6 +82,7 @@ export const makeTokenServiceMock = (
   createClaimAirdropTransaction: jest.fn(),
   createBurnFtTransaction: jest.fn(),
   createBurnNftTransaction: jest.fn(),
+  createUpdateNftMetadataTransaction: jest.fn(),
   createRejectAirdropTransaction: jest.fn(),
   ...overrides,
 });
@@ -1248,5 +1249,60 @@ export const makeBurnFtSuccessMocks = (overrides?: {
   return {
     ...apiMocks,
     mockBurnTransaction,
+  };
+};
+
+export const makeUpdateNftMetadataSuccessMocks = (overrides?: {
+  tokenInfo?: {
+    metadata_key?: { key: string } | null;
+    type?: string;
+  };
+  signResult?: ReturnType<typeof makeTransactionResult>;
+  metadataKeyPublicKey?: string;
+}) => {
+  const mockUpdateNftMetadataTransaction = {
+    test: 'update-nft-metadata-transaction',
+  };
+  const defaultMetadataKeyPublicKey =
+    overrides?.metadataKeyPublicKey ?? ED25519_HEX_PUBLIC_KEY;
+
+  const apiMocks = makeApiMocks({
+    tokens: {
+      createUpdateNftMetadataTransaction: jest
+        .fn()
+        .mockReturnValue(mockUpdateNftMetadataTransaction),
+    },
+    txExecute: {
+      execute: jest
+        .fn()
+        .mockResolvedValue(
+          overrides?.signResult || makeTransactionResult({ success: true }),
+        ),
+    },
+    mirror: {
+      getTokenInfo: jest.fn().mockResolvedValue({
+        decimals: '0',
+        type: overrides?.tokenInfo?.type ?? 'NON_FUNGIBLE_UNIQUE',
+        metadata_key:
+          overrides?.tokenInfo && 'metadata_key' in overrides.tokenInfo
+            ? overrides.tokenInfo.metadata_key
+            : { key: defaultMetadataKeyPublicKey },
+      }),
+    },
+    alias: {
+      resolve: jest.fn().mockReturnValue(null),
+    },
+  });
+
+  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
+    .fn()
+    .mockResolvedValue({
+      keyRefIds: ['metadata-key-ref-id'],
+      requiredSignatures: 1,
+    });
+
+  return {
+    ...apiMocks,
+    mockUpdateNftMetadataTransaction,
   };
 };
