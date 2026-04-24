@@ -1129,6 +1129,34 @@ When a command that supports batching is invoked with `--batch <batch-name>`, th
 }
 ```
 
+#### `hbar allowance`
+
+**Output**:
+
+```json
+{
+  "ownerAccountId": "0.0.12345",
+  "spenderAccountId": "0.0.54321",
+  "amountTinybar": "10000000",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "network": "testnet"
+}
+```
+
+#### `hbar allowance-revoke`
+
+**Output**:
+
+```json
+{
+  "ownerAccountId": "0.0.12345",
+  "spenderAccountId": "0.0.54321",
+  "amountTinybar": "0",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "network": "testnet"
+}
+```
+
 ### Network Plugin
 
 #### `network list`

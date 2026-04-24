@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 
@@ -43,7 +44,7 @@ export class HbarAllowanceCommand extends BaseTransactionCommand<
     const validArgs = HbarAllowanceInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
     const amountTinybar = processBalanceInput(validArgs.amount, HBAR_DECIMALS);
 
@@ -74,7 +75,6 @@ export class HbarAllowanceCommand extends BaseTransactionCommand<
       amountTinybar,
       ownerAccountId: resolvedOwner.accountId,
       spenderAccountId: resolvedSpender.accountId,
-      signerKeyRefId: resolvedOwner.keyRefId,
       keyRefIds: [resolvedOwner.keyRefId],
     };
   }
@@ -101,7 +101,7 @@ export class HbarAllowanceCommand extends BaseTransactionCommand<
   ): Promise<AllowanceSignTransactionResult> {
     const signedTransaction = await args.api.txSign.sign(
       buildResult.transaction,
-      [normalizedParams.signerKeyRefId],
+      normalizedParams.keyRefIds,
     );
     return { signedTransaction } as AllowanceSignTransactionResult;
   }

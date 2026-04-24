@@ -14,7 +14,6 @@ export interface AllowanceNormalizedParams extends BaseNormalizedParams {
   spenderAccountId: string;
   amountTinybar: bigint;
   network: SupportedNetwork;
-  signerKeyRefId: string;
 }
 
 export interface AllowanceBuildTransactionResult extends BaseBuildTransactionResult {

@@ -13,7 +13,6 @@ export interface AllowanceRevokeNormalizedParams extends BaseNormalizedParams {
   ownerAccountId: string;
   spenderAccountId: string;
   network: SupportedNetwork;
-  signerKeyRefId: string;
 }
 
 export interface AllowanceRevokeBuildTransactionResult extends BaseBuildTransactionResult {

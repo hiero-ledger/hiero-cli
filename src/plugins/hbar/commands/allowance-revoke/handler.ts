@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 
 import { HbarAllowanceRevokeInputSchema } from './input';
 
@@ -41,7 +42,7 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
     const validArgs = HbarAllowanceRevokeInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ??
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
 
     const resolvedOwner = await api.keyResolver.resolveAccountCredentials(
@@ -70,7 +71,6 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
       network,
       ownerAccountId: resolvedOwner.accountId,
       spenderAccountId: resolvedSpender.accountId,
-      signerKeyRefId: resolvedOwner.keyRefId,
       keyRefIds: [resolvedOwner.keyRefId],
     };
   }
@@ -97,7 +97,7 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
   ): Promise<AllowanceRevokeSignTransactionResult> {
     const signedTransaction = await args.api.txSign.sign(
       buildResult.transaction,
-      [normalizedParams.signerKeyRefId],
+      normalizedParams.keyRefIds,
     );
     return { signedTransaction } as AllowanceRevokeSignTransactionResult;
   }

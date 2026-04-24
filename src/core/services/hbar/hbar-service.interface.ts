@@ -1,11 +1,9 @@
-/**
- * HBAR Service Interface
- * Encapsulates HBAR-related operations
- */
 import type {
-  AccountAllowanceApproveTransaction,
-  TransferTransaction,
-} from '@hashgraph/sdk';
+  HbarAllowanceParams,
+  HbarAllowanceResult,
+  TransferTinybarParams,
+  TransferTinybarResult,
+} from './types';
 
 export interface HbarService {
   transferTinybar(
@@ -16,23 +14,9 @@ export interface HbarService {
   ): HbarAllowanceResult;
 }
 
-export interface TransferTinybarParams {
-  amount: bigint;
-  from: string;
-  to: string;
-  memo?: string;
-}
-
-export interface TransferTinybarResult {
-  transaction: TransferTransaction;
-}
-
-export interface HbarAllowanceParams {
-  ownerAccountId: string;
-  spenderAccountId: string;
-  amountTinybar: bigint;
-}
-
-export interface HbarAllowanceResult {
-  transaction: AccountAllowanceApproveTransaction;
-}
+export type {
+  HbarAllowanceParams,
+  HbarAllowanceResult,
+  TransferTinybarParams,
+  TransferTinybarResult,
+};
