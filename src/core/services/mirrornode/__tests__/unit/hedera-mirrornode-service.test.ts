@@ -22,6 +22,7 @@ import {
 import {
   createMockAccountAPIResponse,
   createMockAccountListItemAPIResponse,
+  createMockAccountNftsResponse,
   createMockExchangeRateResponse,
   createMockGetAccountsAPIResponse,
   createMockMirrorNodeScheduleByIdJson,
@@ -963,6 +964,91 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
 
       expect(global.fetch).toHaveBeenCalledWith(
         `${MAINNET_API_URL}/tokens/${TEST_TOKEN_ID}/nfts/${TEST_SERIAL_NUMBER}`,
+      );
+    });
+  });
+
+  describe('getAccountNfts', () => {
+    it('should fetch account NFTs with default limit', async () => {
+      const { service } = setupService();
+      const mockResponse = createMockAccountNftsResponse();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccountNfts(TEST_ACCOUNT_ID);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}/nfts?limit=100`,
+      );
+      expect(result.nfts).toHaveLength(1);
+      expect(result.nfts[0].token_id).toBe(TEST_TOKEN_ID);
+      expect(result.nfts[0].serial_number).toBe(TEST_SERIAL_NUMBER);
+    });
+
+    it('should fetch account NFTs with custom limit', async () => {
+      const { service } = setupService();
+      const mockResponse = createMockAccountNftsResponse();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      await service.getAccountNfts(TEST_ACCOUNT_ID, 50);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        `${TESTNET_API_URL}/accounts/${TEST_ACCOUNT_ID}/nfts?limit=50`,
+      );
+    });
+
+    it('should handle empty nfts array', async () => {
+      const { service } = setupService();
+      const mockResponse = createMockAccountNftsResponse({ nfts: [] });
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccountNfts(TEST_ACCOUNT_ID);
+
+      expect(result.nfts).toHaveLength(0);
+    });
+
+    it('should include truncation info when links.next is present', async () => {
+      const { service } = setupService();
+      const mockResponse = createMockAccountNftsResponse({
+        links: { next: '/api/v1/accounts/0.0.1234/nfts?limit=100&cursor=xyz' },
+      });
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccountNfts(TEST_ACCOUNT_ID);
+
+      expect(result.links?.next).toBeTruthy();
+    });
+
+    it('should throw NotFoundError on HTTP 404', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      await expect(service.getAccountNfts(TEST_ACCOUNT_ID)).rejects.toThrow(
+        NotFoundError,
+      );
+    });
+
+    it('should throw NetworkError on network failure', async () => {
+      const { service } = setupService();
+      (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
+
+      await expect(service.getAccountNfts(TEST_ACCOUNT_ID)).rejects.toThrow(
+        NetworkError,
       );
     });
   });

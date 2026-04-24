@@ -5,13 +5,11 @@ import type {
   SupportedNetwork,
   TransactionResult,
 } from '@/core';
-import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 
 export interface UnfreezeNormalizedParams extends BaseNormalizedParams {
   network: SupportedNetwork;
   tokenId: string;
   accountId: string;
-  freezeKeyResolved: ResolvedPublicKey;
 }
 
 export interface UnfreezeBuildTransactionResult extends BaseBuildTransactionResult {}

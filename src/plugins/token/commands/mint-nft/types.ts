@@ -10,7 +10,6 @@ export interface TokenMintNftNormalizedParams extends BaseNormalizedParams {
   network: SupportedNetwork;
   tokenId: string;
   metadataBytes: Uint8Array;
-  signingKeyRefIds: string[];
 }
 
 export interface TokenMintNftBuildTransactionResult extends BaseBuildTransactionResult {}

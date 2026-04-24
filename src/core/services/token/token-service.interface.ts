@@ -15,8 +15,10 @@ import type {
   TokenDissociateTransaction,
   TokenFreezeTransaction,
   TokenMintTransaction,
+  TokenPauseTransaction,
   TokenRejectTransaction,
   TokenUnfreezeTransaction,
+  TokenUnpauseTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
 import type {
@@ -100,6 +102,12 @@ export interface TokenService {
   createUnfreezeTransaction(
     params: TokenUnfreezeParams,
   ): TokenUnfreezeTransaction;
+
+  createPauseTransaction(params: { tokenId: string }): TokenPauseTransaction;
+
+  createUnpauseTransaction(params: {
+    tokenId: string;
+  }): TokenUnpauseTransaction;
 
   createAirdropFtTransaction(
     params: TokenAirdropFtParams,

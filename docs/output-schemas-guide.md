@@ -204,15 +204,35 @@ interface CommandOutputSpec {
 {
   "accountId": "0.0.12345",
   "hbarBalance": "10000000",
+  "hbarBalanceDisplay": "0.1 HBAR",
+  "network": "testnet",
   "tokenBalances": [
     {
       "tokenId": "0.0.67890",
+      "name": "My Token",
+      "symbol": "MTK",
       "balance": "1000",
+      "balanceDisplay": "10.00",
       "decimals": 2
     }
-  ]
+  ],
+  "nftBalances": {
+    "collections": [
+      {
+        "tokenId": "0.0.99999",
+        "name": "My NFT",
+        "symbol": "MNFT",
+        "serialNumbers": [1, 2, 5],
+        "count": 3
+      }
+    ],
+    "totalCount": 3,
+    "truncated": false
+  }
 }
 ```
+
+`hbarOnly: true` omits `tokenBalances` and `nftBalances`. `tokenOnly: true` omits `hbarBalance`. `raw: true` returns raw tinybar / base-unit values without `hbarBalanceDisplay` / `balanceDisplay`. `truncated: true` means there are more than 100 NFTs — only the first 100 are shown.
 
 #### `account list`
 
@@ -828,6 +848,46 @@ Lists all tokens from all networks stored in state.
 | `accountId`     | `string`           | Unfrozen account ID (0.0.X)         |
 | `network`       | `SupportedNetwork` | Network where unfreeze was executed |
 
+#### `token pause`
+
+**Output:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "network": "testnet"
+}
+```
+
+**Schema:** `TokenPauseOutputSchema` from `src/plugins/token/commands/pause/output.ts`
+
+| Field           | Type               | Description                      |
+| --------------- | ------------------ | -------------------------------- |
+| `transactionId` | `string`           | Hedera transaction ID            |
+| `tokenId`       | `string`           | Token ID (0.0.X)                 |
+| `network`       | `SupportedNetwork` | Network where pause was executed |
+
+#### `token unpause`
+
+**Output:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "network": "testnet"
+}
+```
+
+**Schema:** `TokenUnpauseOutputSchema` from `src/plugins/token/commands/unpause/output.ts`
+
+| Field           | Type               | Description                        |
+| --------------- | ------------------ | ---------------------------------- |
+| `transactionId` | `string`           | Hedera transaction ID              |
+| `tokenId`       | `string`           | Token ID (0.0.X)                   |
+| `network`       | `SupportedNetwork` | Network where unpause was executed |
+
 #### `token allowance-nft`
 
 **Output** (specific serials):
@@ -1126,6 +1186,34 @@ When a command that supports batching is invoked with `--batch <batch-name>`, th
   "to": "0.0.54321",
   "amount": "10000000",
   "memo": "Payment for services"
+}
+```
+
+#### `hbar allowance`
+
+**Output**:
+
+```json
+{
+  "ownerAccountId": "0.0.12345",
+  "spenderAccountId": "0.0.54321",
+  "amountTinybar": "10000000",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "network": "testnet"
+}
+```
+
+#### `hbar allowance-revoke`
+
+**Output**:
+
+```json
+{
+  "ownerAccountId": "0.0.12345",
+  "spenderAccountId": "0.0.54321",
+  "amountTinybar": "0",
+  "transactionId": "0.0.123@1700000000.123456789",
+  "network": "testnet"
 }
 ```
 

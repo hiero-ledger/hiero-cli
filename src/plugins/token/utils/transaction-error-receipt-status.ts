@@ -16,3 +16,7 @@ function isTransactionErrorWithStatus(
 export function isNoFreezeKeyError(error: unknown): boolean {
   return isTransactionErrorWithStatus(error, HederaStatus.TokenHasNoFreezeKey);
 }
+
+export function isNoPauseKeyError(error: unknown): boolean {
+  return isTransactionErrorWithStatus(error, HederaStatus.TokenHasNoPauseKey);
+}

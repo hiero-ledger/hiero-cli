@@ -113,6 +113,11 @@ import {
   TokenMintNftOutputSchema,
 } from './commands/mint-nft';
 import {
+  TOKEN_PAUSE_TEMPLATE,
+  tokenPause,
+  TokenPauseOutputSchema,
+} from './commands/pause';
+import {
   TOKEN_PENDING_AIRDROPS_TEMPLATE,
   tokenPendingAirdrops,
   TokenPendingAirdropsOutputSchema,
@@ -137,6 +142,11 @@ import {
   tokenUnfreeze,
   TokenUnfreezeOutputSchema,
 } from './commands/unfreeze';
+import {
+  TOKEN_UNPAUSE_TEMPLATE,
+  tokenUnpause,
+  TokenUnpauseOutputSchema,
+} from './commands/unpause';
 import {
   TOKEN_VIEW_TEMPLATE,
   tokenView,
@@ -1684,6 +1694,88 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenUnfreezeOutputSchema,
         humanTemplate: TOKEN_UNFREEZE_TEMPLATE,
+      },
+    },
+    {
+      name: 'pause',
+      summary: 'Pause all operations for a token',
+      description:
+        'Prevents the token from being involved in any kind of transaction across all accounts. Requires the token pause key. If a token has no pause key, the operation will fail.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'pause-key',
+          short: 'p',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'Pause key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenPause,
+      output: {
+        schema: TokenPauseOutputSchema,
+        humanTemplate: TOKEN_PAUSE_TEMPLATE,
+      },
+    },
+    {
+      name: 'unpause',
+      summary: 'Unpause all operations for a token',
+      description:
+        'Re-enables the token to be involved in transactions across all accounts. Requires the token pause key.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'pause-key',
+          short: 'p',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'Pause key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenUnpause,
+      output: {
+        schema: TokenUnpauseOutputSchema,
+        humanTemplate: TOKEN_UNPAUSE_TEMPLATE,
       },
     },
     {

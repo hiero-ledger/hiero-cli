@@ -179,7 +179,7 @@ describe('HbarServiceImpl', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(ValidationError);
         if (error instanceof ValidationError) {
-          expect(error.message).toBe('Invalid transfer parameters');
+          expect(error.message).toBe('Invalid account ID format');
         }
       }
     });
@@ -206,7 +206,7 @@ describe('HbarServiceImpl', () => {
       }
     });
 
-    it('should throw ValidationError with context when transfer fails', async () => {
+    it('should propagate ValidationError from SDK when transfer params are invalid', async () => {
       expect.assertions(2);
 
       (AccountId.fromString as jest.Mock).mockImplementationOnce(() => {
@@ -224,11 +224,7 @@ describe('HbarServiceImpl', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(ValidationError);
         if (error instanceof ValidationError) {
-          expect(error.context).toEqual({
-            from: 'bad-format',
-            to: ACCOUNT_ID_TO_1,
-            amount: '100000000',
-          });
+          expect(error.message).toBe('Invalid format');
         }
       }
     });

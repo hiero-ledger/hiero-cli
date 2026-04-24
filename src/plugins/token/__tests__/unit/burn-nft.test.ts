@@ -22,9 +22,6 @@ import {
   makeTransactionResult,
 } from './helpers/mocks';
 
-const defaultSupplyKey =
-  '0.0.200000:3333333333333333333333333333333333333333333333333333333333333333';
-
 describe('tokenBurnNftHandler', () => {
   describe('success scenarios', () => {
     test('should burn single NFT serial', async () => {
@@ -37,7 +34,6 @@ describe('tokenBurnNftHandler', () => {
         args: {
           token: '0.0.123456',
           serials: '1',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -67,7 +63,6 @@ describe('tokenBurnNftHandler', () => {
         args: {
           token: '0.0.123456',
           serials: '1,2,3',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -101,7 +96,6 @@ describe('tokenBurnNftHandler', () => {
         args: {
           token: '0.0.123456',
           serials: '5,10',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -134,7 +128,6 @@ describe('tokenBurnNftHandler', () => {
         args: {
           token: 'nonexistent-token',
           serials: '1',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -164,7 +157,6 @@ describe('tokenBurnNftHandler', () => {
         args: {
           token: '0.0.123456',
           serials: '1',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -212,7 +204,6 @@ describe('tokenBurnNftHandler', () => {
         args: {
           token: '0.0.123456',
           serials: '1',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -242,33 +233,6 @@ describe('tokenBurnNftHandler', () => {
         args: {
           token: '0.0.123456',
           serials: '1',
-          supplyKey: defaultSupplyKey,
-        },
-      });
-
-      await expect(tokenBurnNft(args)).rejects.toThrow(ValidationError);
-    });
-
-    test('should handle supply key mismatch', async () => {
-      const { api } = makeBurnNftSuccessMocks({
-        supplyKeyPublicKey: 'token-supply-key',
-      });
-
-      // Resolve returns a different key than token's supply key
-      api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-        accountId: '0.0.200000',
-        publicKey: 'wrong-public-key',
-        keyRefId: 'wrong-key-ref-id',
-      });
-
-      const logger = makeLogger();
-      const args = makeBurnNftCommandArgs({
-        api,
-        logger,
-        args: {
-          token: '0.0.123456',
-          serials: '1',
-          supplyKey: defaultSupplyKey,
         },
       });
 
@@ -287,7 +251,6 @@ describe('tokenBurnNftHandler', () => {
         args: {
           token: '0.0.123456',
           serials: '1',
-          supplyKey: defaultSupplyKey,
         },
       });
 

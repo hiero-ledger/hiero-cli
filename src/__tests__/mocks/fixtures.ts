@@ -61,3 +61,4 @@ export const MOCK_EVM_ADDRESS_ALT_2 = '0x' + 'c'.repeat(40);
 export const MOCK_TX_ID = '0.0.1234@1234567890.123456789';
 
 export const MOCK_FREEZE_PUBLIC_KEY = 'freeze-public-key';
+export const MOCK_PAUSE_PUBLIC_KEY = 'pause-public-key';

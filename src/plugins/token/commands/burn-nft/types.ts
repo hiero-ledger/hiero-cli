@@ -5,14 +5,12 @@ import type {
   SupportedNetwork,
   TransactionResult,
 } from '@/core';
-import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 
 export interface BurnNftNormalizedParams extends BaseNormalizedParams {
   network: SupportedNetwork;
   tokenId: string;
   serialNumbers: number[];
   currentTotalSupply: bigint;
-  supplyKeyResolved: ResolvedPublicKey;
 }
 
 export interface BurnNftBuildTransactionResult extends BaseBuildTransactionResult {}
