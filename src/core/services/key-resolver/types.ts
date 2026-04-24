@@ -30,7 +30,7 @@ export interface ResolveSigningKeyRefIdsFromMirrorRoleKeyInput {
   mirrorRoleKey: MirrorNodeKey | null | undefined;
   explicitCredentials: Credential[];
   keyManager: KeyManager;
-  resolveSigningKeyLabels: string[];
+  resolveSigningKeyLabels?: string[];
   emptyMirrorRoleKeyMessage: string;
   insufficientKmsMatchesMessage: string;
   validationErrorOptions?: { context?: Record<string, unknown> };

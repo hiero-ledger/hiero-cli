@@ -1,5 +1,9 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type {
+  Credential,
+  KeyManager,
+} from '@/core/services/kms/kms-types.interface';
+import type { TopicInfo } from '@/core/services/mirrornode/types';
 import type { TopicSubmitMessageOutput } from './output';
 import type {
   SubmitMessageBuildTransactionResult,
@@ -9,14 +13,9 @@ import type {
 } from './types';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
-import {
-  NotFoundError,
-  TransactionError,
-  ValidationError,
-} from '@/core/errors';
+import { TransactionError } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { AliasType } from '@/core/types/shared.types';
-import { composeKey } from '@/core/utils/key-composer';
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
 import { TopicSubmitMessageInputSchema } from './input';
 
@@ -32,11 +31,39 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     super(TOPIC_SUBMIT_MESSAGE_COMMAND_NAME);
   }
 
+  private async resolveSubmitSigners(
+    args: CommandHandlerArgs,
+    topicInfo: TopicInfo,
+    signerArgs: Credential[],
+    keyManager: KeyManager,
+    topicId: string,
+  ): Promise<string[]> {
+    const { api, logger } = args;
+
+    if (!topicInfo.submit_key) {
+      logger.info(`Submitting to public topic (no submit key required)`);
+      return [];
+    }
+
+    const { keyRefIds } =
+      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
+        mirrorRoleKey: topicInfo.submit_key,
+        explicitCredentials: signerArgs,
+        keyManager,
+        resolveSigningKeyLabels: ['topic:submit'],
+        emptyMirrorRoleKeyMessage: 'Topic has no submit key on the network',
+        insufficientKmsMatchesMessage:
+          'Not enough submit key(s) found in key manager for this topic. Provide --signer.',
+        validationErrorOptions: { context: { topicId } },
+      });
+    logger.info(`Using ${keyRefIds.length} signer(s) for submit key`);
+    return keyRefIds;
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<SubmitMessageNormalisedParams> {
     const { api, logger } = args;
-    const topicState = new ZustandTopicStateHelper(api.state, logger);
     const validArgs = TopicSubmitMessageInputSchema.parse(args.args);
 
     const topicIdOrAlias = validArgs.topic;
@@ -45,7 +72,8 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     const keyManagerArg = validArgs.keyManager;
     const currentNetwork = api.network.getCurrentNetwork();
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     let topicId = topicIdOrAlias;
     const topicAliasResult = api.alias.resolve(
@@ -58,48 +86,14 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     }
     logger.info(`Submitting message to topic: ${topicId}`);
 
-    const key = composeKey(currentNetwork, topicId);
-    const topicData = topicState.loadTopic(key);
-    if (!topicData) {
-      throw new NotFoundError(`Topic not found with ID or alias: ${topicId}`);
-    }
-
-    const signerKeyRefIds: string[] = [];
-    const allowedSubmitKeyRefIds = topicData.submitKeyRefIds;
-    const submitKeyThreshold = topicData.submitKeyThreshold;
-
-    for (const signerArg of signerArgs) {
-      const resolvedSigner = await api.keyResolver.resolveSigningKey(
-        signerArg,
-        keyManager,
-        false,
-        ['topic:signer'],
-      );
-      if (
-        allowedSubmitKeyRefIds.length > 0 &&
-        !allowedSubmitKeyRefIds.includes(resolvedSigner.keyRefId)
-      ) {
-        logger.warn(
-          `Signer ${resolvedSigner.keyRefId} is not in the topic's submit keys and was ignored`,
-        );
-        continue;
-      }
-      signerKeyRefIds.push(resolvedSigner.keyRefId);
-    }
-
-    if (signerKeyRefIds.length < submitKeyThreshold) {
-      throw new ValidationError(
-        `Topic requires ${submitKeyThreshold} signature(s) for submit key (threshold ${submitKeyThreshold}-of-${allowedSubmitKeyRefIds.length}). Provided ${signerKeyRefIds.length} signer(s).`,
-      );
-    }
-
-    if (allowedSubmitKeyRefIds.length > 0) {
-      logger.info(
-        `Using ${signerKeyRefIds.length} signer(s) (authorized submit key)`,
-      );
-    } else {
-      logger.info(`Using provided signer for public topic`);
-    }
+    const topicInfo = await api.mirror.getTopicInfo(topicId);
+    const signerKeyRefIds = await this.resolveSubmitSigners(
+      args,
+      topicInfo,
+      signerArgs,
+      keyManager,
+      topicId,
+    );
 
     return {
       topicId,
@@ -107,7 +101,6 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
       signerKeyRefIds,
       keyManager,
       currentNetwork,
-      topicData,
       keyRefIds: signerKeyRefIds,
     };
   }

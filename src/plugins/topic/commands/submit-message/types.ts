@@ -6,7 +6,6 @@ import type {
 } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
-import type { TopicData } from '@/plugins/topic/schema';
 
 export interface SubmitMessageNormalisedParams extends BaseNormalizedParams {
   topicId: string;
@@ -14,7 +13,6 @@ export interface SubmitMessageNormalisedParams extends BaseNormalizedParams {
   signerKeyRefIds: string[];
   keyManager: KeyManager;
   currentNetwork: SupportedNetwork;
-  topicData: TopicData;
 }
 
 export interface SubmitMessageBuildTransactionResult extends BaseBuildTransactionResult {}
