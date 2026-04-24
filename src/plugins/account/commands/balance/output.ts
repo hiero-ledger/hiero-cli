@@ -48,15 +48,47 @@ export const AccountBalanceOutputSchema = z.object({
 
 export type AccountBalanceOutput = z.infer<typeof AccountBalanceOutputSchema>;
 
-export const ACCOUNT_BALANCE_TEMPLATE =
-  `{{#unless tokenOnly}}💰 Account Balance: {{#if raw}}{{hbarBalance}} tinybars{{else}}{{hbarBalanceDisplay}} HBAR{{/if}}
-{{/unless}}{{#unless hbarOnly}}{{#if tokenBalances}}
-🪙 {{#if tokenOnly}}Token Balance{{else}}Token Balances{{/if}}:
-{{#each tokenBalances}}   {{hashscanLink tokenId "token" ../network}}{{#if alias}} ({{alias}}){{/if}}: {{#if ../raw}}{{balance}}{{else}}{{#if balanceDisplay}}{{balanceDisplay}}{{else}}{{balance}}{{/if}}{{/if}}{{#if symbol}} {{symbol}}{{/if}}{{#if name}} ({{name}}){{/if}}
-{{/each}}{{else}}{{#unless tokenOnly}}
-   No token balances found{{/unless}}{{#if tokenOnly}}
-   Token not found or no balance{{/if}}{{/if}}{{#if nftBalances}}
-🖼  NFT Balances ({{nftBalances.totalCount}} NFT{{#if (gt nftBalances.totalCount 1)}}s{{/if}} in {{length nftBalances.collections}} collection{{#if (gt (length nftBalances.collections) 1)}}s{{/if}}):
-{{#if nftBalances.truncated}}   (Showing first 100 NFTs)
-{{/if}}{{#each nftBalances.collections}}   {{hashscanLink tokenId "token" ../network}}{{#if alias}} ({{alias}}){{/if}}{{#if name}} — {{name}}{{/if}}: {{#each serialNumbers}}#{{this}}{{#unless @last}}, {{/unless}}{{/each}}
-{{/each}}{{/if}}{{/unless}}`.trim();
+const HBAR_SECTION =
+  `{{#unless tokenOnly}}` +
+  `💰 Account Balance: {{#if raw}}{{hbarBalance}} tinybars{{else}}{{hbarBalanceDisplay}} HBAR{{/if}}\n` +
+  `{{/unless}}`;
+
+const FT_TOKEN_ROW =
+  `{{hashscanLink tokenId "token" ../network}}` +
+  `{{#if alias}} ({{alias}}){{/if}}: ` +
+  `{{#if ../raw}}{{balance}}{{else}}{{#if balanceDisplay}}{{balanceDisplay}}{{else}}{{balance}}{{/if}}{{/if}}` +
+  `{{#if symbol}} {{symbol}}{{/if}}` +
+  `{{#if name}} ({{name}}){{/if}}`;
+
+const FT_SECTION =
+  `{{#if tokenBalances}}\n` +
+  `🪙 {{#if tokenOnly}}Token Balance{{else}}Token Balances{{/if}}:\n` +
+  `{{#each tokenBalances}}   ${FT_TOKEN_ROW}\n{{/each}}` +
+  `{{else}}` +
+  `{{#unless tokenOnly}}\n   No token balances found{{/unless}}` +
+  `{{#if tokenOnly}}\n   Token not found or no balance{{/if}}` +
+  `{{/if}}`;
+
+const NFT_COLLECTION_ROW =
+  `{{hashscanLink tokenId "token" ../network}}` +
+  `{{#if alias}} ({{alias}}){{/if}}` +
+  `{{#if name}} — {{name}}{{/if}}: ` +
+  `{{#each serialNumbers}}#{{this}}{{#unless @last}}, {{/unless}}{{/each}}`;
+
+const NFT_SECTION =
+  `{{#if nftBalances}}\n` +
+  `🖼  NFT Balances (` +
+  `{{nftBalances.totalCount}} NFT{{#if (gt nftBalances.totalCount 1)}}s{{/if}} in ` +
+  `{{length nftBalances.collections}} collection{{#if (gt (length nftBalances.collections) 1)}}s{{/if}}` +
+  `):\n` +
+  `{{#if nftBalances.truncated}}   (Showing first 100 NFTs)\n{{/if}}` +
+  `{{#each nftBalances.collections}}   ${NFT_COLLECTION_ROW}\n{{/each}}` +
+  `{{/if}}`;
+
+export const ACCOUNT_BALANCE_TEMPLATE = (
+  HBAR_SECTION +
+  `{{#unless hbarOnly}}` +
+  FT_SECTION +
+  NFT_SECTION +
+  `{{/unless}}`
+).trim();

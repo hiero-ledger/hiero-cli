@@ -50,54 +50,51 @@ export async function fetchAccountTokenBalances(
   }
 
   const results = await Promise.all(
-    tokenBalances.tokens.map(async (token: TokenBalanceInfo) => {
-      const balanceRaw = BigInt(token.balance.toString());
-      const alias = api.alias.resolve(
-        token.token_id,
-        AliasType.Token,
-        network,
-      )?.alias;
+    tokenBalances.tokens.map(
+      async (
+        token: TokenBalanceInfo,
+      ): Promise<TokenBalanceWithMetadata | null> => {
+        const balanceRaw = BigInt(token.balance.toString());
+        const alias = api.alias.resolve(
+          token.token_id,
+          AliasType.Token,
+          network,
+        )?.alias;
 
-      let name: string | undefined;
-      let symbol: string | undefined;
-      let decimals: number | undefined;
-      let isNft = false;
+        const info = await api.mirror
+          .getTokenInfo(token.token_id)
+          .catch(() => null);
 
-      try {
-        const tokenInfo = await api.mirror.getTokenInfo(token.token_id);
-        name = tokenInfo.name;
-        symbol = tokenInfo.symbol;
-        decimals = parseInt(tokenInfo.decimals, 10);
-        isNft = tokenInfo.type === MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE;
-      } catch {
-        decimals = token.decimals;
-      }
+        if (info?.type === MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE) return null;
 
-      if (isNft) return null;
+        const name = info?.name;
+        const symbol = info?.symbol;
+        const decimals = info ? parseInt(info.decimals, 10) : token.decimals;
 
-      let balanceDisplay: string | undefined;
-      if (!raw && decimals !== undefined) {
-        balanceDisplay = normalizeBalance(
-          new BigNumber(balanceRaw.toString()),
+        let balanceDisplay: string | undefined;
+        if (!raw && decimals !== undefined) {
+          balanceDisplay = normalizeBalance(
+            new BigNumber(balanceRaw.toString()),
+            decimals,
+          );
+        }
+
+        return {
+          tokenId: token.token_id,
+          name,
+          symbol,
+          alias,
+          balance: balanceRaw,
+          balanceDisplay,
           decimals,
-        );
-      }
-
-      return {
-        tokenId: token.token_id,
-        name,
-        symbol,
-        alias,
-        balance: balanceRaw,
-        balanceDisplay,
-        decimals,
-      };
-    }),
+        };
+      },
+    ),
   );
 
   const filtered = results.filter(
-    (t) => t !== null,
-  ) as TokenBalanceWithMetadata[];
+    (t): t is TokenBalanceWithMetadata => t !== null,
+  );
   return filtered.length > 0 ? filtered : undefined;
 }
 
@@ -117,8 +114,8 @@ export async function fetchAccountNftBalances(
 
   const serialsByToken = new Map<string, number[]>();
   for (const nft of nfts) {
-    const existing = serialsByToken.get(nft.token_id) ?? [];
-    serialsByToken.set(nft.token_id, [...existing, nft.serial_number]);
+    const serials = serialsByToken.get(nft.token_id) ?? [];
+    serialsByToken.set(nft.token_id, [...serials, nft.serial_number]);
   }
 
   const totalCount = nfts.length;
