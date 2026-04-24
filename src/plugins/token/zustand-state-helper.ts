@@ -172,6 +172,53 @@ export class ZustandTokenStateHelper {
   }
 
   /**
+   * Remove an association from a token by account id
+   */
+  removeTokenAssociation(key: string, accountId: string): void {
+    try {
+      const tokenData = this.getToken(key);
+      if (!tokenData) {
+        this.logger.debug(
+          `[TOKEN STATE] Token ${key} not found; skip remove association`,
+        );
+        return;
+      }
+
+      const associations = Array.isArray(tokenData.associations)
+        ? [...tokenData.associations]
+        : [];
+      const filtered = associations.filter(
+        (assoc) => assoc.accountId !== accountId,
+      );
+
+      if (filtered.length === associations.length) {
+        this.logger.debug(
+          `[TOKEN STATE] No association ${accountId} on token ${key}`,
+        );
+        return;
+      }
+
+      const updatedTokenData: TokenData = {
+        ...tokenData,
+        associations: filtered,
+        customFees: Array.isArray(tokenData.customFees)
+          ? [...tokenData.customFees]
+          : [],
+      };
+
+      this.saveToken(key, updatedTokenData);
+      this.logger.debug(
+        `[TOKEN STATE] Removed association ${accountId} from token ${key}`,
+      );
+    } catch (error) {
+      this.logger.error(
+        `[TOKEN STATE] Failed to remove association from token ${key}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      throw error;
+    }
+  }
+
+  /**
    * List all tokens with validation
    */
   listTokens(): TokenData[] {

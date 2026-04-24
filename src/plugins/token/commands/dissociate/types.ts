@@ -7,21 +7,21 @@ import type {
 import type { ResolvedAccountCredential } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 
-export interface AssociateNormalizedParams extends BaseNormalizedParams {
+export interface DissociateNormalizedParams extends BaseNormalizedParams {
   network: SupportedNetwork;
   tokenId: string;
   account: ResolvedAccountCredential;
   keyManager: KeyManager;
 }
 
-export interface AssociateBuildTransactionResult {
+export interface DissociateBuildTransactionResult {
   transaction: Transaction;
 }
 
-export interface AssociateSignTransactionResult {
+export interface DissociateSignTransactionResult {
   signedTransaction: Transaction;
 }
 
-export interface AssociateExecuteTransactionResult {
+export interface DissociateExecuteTransactionResult {
   transactionResult: TransactionResult;
 }

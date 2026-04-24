@@ -65,6 +65,7 @@ export const makeTokenServiceMock = (
 ): jest.Mocked<TokenService> => ({
   createTokenTransaction: jest.fn(),
   createTokenAssociationTransaction: jest.fn(),
+  createTokenDissociationTransaction: jest.fn(),
   createTransferTransaction: jest.fn(),
   createMintTransaction: jest.fn(),
   createNftTransferTransaction: jest.fn(),
@@ -587,6 +588,7 @@ export const mockZustandTokenStateHelper = (
     getAllTokens: jest.Mock;
     removeToken: jest.Mock;
     addTokenAssociation: jest.Mock;
+    removeTokenAssociation: jest.Mock;
   }>,
 ) => {
   ZustandTokenStateHelperClass.mockClear();
@@ -598,6 +600,7 @@ export const mockZustandTokenStateHelper = (
     getAllTokens: jest.fn(),
     removeToken: jest.fn(),
     addTokenAssociation: jest.fn(),
+    removeTokenAssociation: jest.fn(),
     ...overrides,
   }));
   return ZustandTokenStateHelperClass;

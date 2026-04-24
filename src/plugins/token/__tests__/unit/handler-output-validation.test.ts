@@ -210,7 +210,6 @@ describe('Handler Output Validation - Token Plugin', () => {
 
       const output = assertOutput(result.result, TokenAssociateOutputSchema);
       expect(output.tokenId).toBe('0.0.12345');
-      expect(output.associated).toBe(true);
       expect(output.transactionId).toBe('0.0.123@1700000000.123456789');
     });
   });

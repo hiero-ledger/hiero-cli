@@ -119,6 +119,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     token: {
       createTokenTransaction: jest.fn(),
       createTokenAssociationTransaction: jest.fn(),
+      createTokenDissociationTransaction: jest.fn(),
       createTransferTransaction: jest.fn(),
       createMintTransaction: jest.fn(),
       createNftTransferTransaction: jest.fn(),
