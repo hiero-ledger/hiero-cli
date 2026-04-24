@@ -71,7 +71,7 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
 
     if (!isAssociated) {
       throw new ValidationError(
-        `Token ${tokenId} is already not associated to the account ${account.accountId}`,
+        `Token ${tokenId} is already not associated with account ${account.accountId}`,
       );
     }
 

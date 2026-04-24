@@ -84,6 +84,12 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── dissociate/
+│   │   ├── handler.ts       # Token dissociation handler
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Command-specific type definitions
+│   │   └── index.ts         # Command exports
 │   ├── allowance-ft/
 │   │   ├── handler.ts       # Fungible token allowance handler
 │   │   ├── input.ts         # Input schema
@@ -134,10 +140,13 @@ src/plugins/token/
 │   │   ├── handler.ts       # TokenCreateNftFromFileBatchStateHook - persists NFT-from-file state after batch execution
 │   │   ├── types.ts         # CreateNftFromFileNormalisedParamsSchema for batch item validation
 │   │   └── index.ts         # Hook exports
-│   └── batch-associate/
-│       ├── handler.ts       # TokenAssociateBatchStateHook - persists association results after batch execution
-│       ├── types.ts         # AssociateNormalisedParamsSchema for batch item validation
-│       └── index.ts         # Hook exports
+│   ├── batch-associate/
+│   │   ├── handler.ts       # TokenAssociateBatchStateHook - persists association results after batch execution
+│   │   ├── types.ts         # AssociateNormalisedParamsSchema for batch item validation
+│   │   └── index.ts         # Hook exports
+│   └── token-dissociate-state/
+│       ├── handler.ts       # TokenDissociateStateHook - removes association from state after batch execution
+│       └── types.ts         # DissociateNormalizedParamsSchema for batch item validation
 ├── utils/
 │   ├── token-build-output.ts  # NFT output builder utilities
 │   ├── token-amount-helpers.ts  # Token amount processing helpers
@@ -694,6 +703,50 @@ hcli token associate \
 # Add to batch
 hcli token associate --token mytoken-alias --account alice --batch my-batch
 ```
+
+### Token Dissociate
+
+Remove a token association from an account. The account must have a zero balance of the token before dissociating. Works for both fungible tokens (FT) and non-fungible tokens (NFT).
+
+```bash
+# Using account alias
+hcli token dissociate \
+  --token mytoken-alias \
+  --account alice
+
+# Using account-id:account-key pair
+hcli token dissociate \
+  --token 0.0.123456 \
+  --account 0.0.789012:302e020100300506032b657004220420...
+
+# Add to batch
+hcli token dissociate --token mytoken-alias --account alice --batch my-batch
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+- `--account` / `-a`: Account to dissociate from the token. Accepts any key format: account alias, `accountId:privateKey`, or key reference - **Required**
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Output:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "accountId": "0.0.789012",
+  "tokenId": "0.0.123456",
+  "network": "testnet"
+}
+```
+
+**Notes:**
+
+- The account must hold a zero balance of the token before dissociation (Hedera requirement)
+- The command validates that the token is currently associated with the account before attempting dissociation
+- After successful dissociation, the association is removed from local state
+- Batch support: pass `--batch <batch-name>` to queue the transaction for batch execution
 
 ### Token Airdrop (Fungible Token)
 
@@ -1333,6 +1386,7 @@ The following token commands support the `--batch` / `-B` flag via the batch plu
 - `create-ft-from-file` – `TokenCreateFtFromFileBatchStateHook` persists FT-from-file state
 - `create-nft-from-file` – `TokenCreateNftFromFileBatchStateHook` persists NFT-from-file state
 - `associate` – `TokenAssociateBatchStateHook` persists association results
+- `dissociate` – `TokenDissociateStateHook` removes association from state after batch execution
 - `burn-ft`, `burn-nft`, `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
 
 When you pass `--batch <batch-name>`:
