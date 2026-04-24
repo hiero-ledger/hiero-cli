@@ -3,6 +3,7 @@ import type { HederaMirrornodeService } from './hedera-mirrornode-service.interf
 import type {
   AccountListItemAPIResponse,
   AccountListItemDto,
+  AccountNftsResponse,
   AccountResponse,
   ContractCallRequest,
   ContractCallResponse,
@@ -37,6 +38,7 @@ import { handleMirrorNodeErrorResponse } from '@/core/utils/handle-mirror-node-e
 
 import {
   AccountAPIResponseSchema,
+  AccountNftsResponseSchema,
   ContractCallResponseSchema,
   ContractInfoSchema,
   ExchangeRateResponseSchema,
@@ -433,6 +435,37 @@ export class HederaMirrornodeServiceDefaultImpl implements HederaMirrornodeServi
         `Failed to fetch NFT info for ${tokenId} serial ${serialNumber}`,
         { cause: error, recoverable: true },
       );
+    }
+  }
+
+  async getAccountNfts(
+    accountId: string,
+    limit = 100,
+  ): Promise<AccountNftsResponse> {
+    const url = `${this.getApiBaseUrl()}/accounts/${accountId}/nfts?limit=${limit}`;
+    try {
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        await handleMirrorNodeErrorResponse(
+          response,
+          `Failed to fetch NFTs for account ${accountId}`,
+          true,
+          `Account ${accountId} not found`,
+        );
+      }
+
+      return parseWithSchema(
+        AccountNftsResponseSchema,
+        await response.json(),
+        `Mirror Node GET /accounts/${accountId}/nfts`,
+      );
+    } catch (error) {
+      if (error instanceof CliError) throw error;
+      throw new NetworkError(`Failed to fetch NFTs for ${accountId}`, {
+        cause: error,
+        recoverable: true,
+      });
     }
   }
 

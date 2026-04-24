@@ -1,5 +1,9 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type {
+  Credential,
+  KeyManager,
+} from '@/core/services/kms/kms-types.interface';
+import type { TopicInfo } from '@/core/services/mirrornode/types';
 import type { TopicSubmitMessageOutput } from './output';
 import type {
   SubmitMessageBuildTransactionResult,
@@ -25,6 +29,35 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
 > {
   constructor() {
     super(TOPIC_SUBMIT_MESSAGE_COMMAND_NAME);
+  }
+
+  private async resolveSubmitSigners(
+    args: CommandHandlerArgs,
+    topicInfo: TopicInfo,
+    signerArgs: Credential[],
+    keyManager: KeyManager,
+    topicId: string,
+  ): Promise<string[]> {
+    const { api, logger } = args;
+
+    if (!topicInfo.submit_key) {
+      logger.info(`Submitting to public topic (no submit key required)`);
+      return [];
+    }
+
+    const { keyRefIds } =
+      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
+        mirrorRoleKey: topicInfo.submit_key,
+        explicitCredentials: signerArgs,
+        keyManager,
+        resolveSigningKeyLabels: ['topic:submit'],
+        emptyMirrorRoleKeyMessage: 'Topic has no submit key on the network',
+        insufficientKmsMatchesMessage:
+          'Not enough submit key(s) found in key manager for this topic. Provide --signer.',
+        validationErrorOptions: { context: { topicId } },
+      });
+    logger.info(`Using ${keyRefIds.length} signer(s) for submit key`);
+    return keyRefIds;
   }
 
   async normalizeParams(
@@ -54,38 +87,13 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
     logger.info(`Submitting message to topic: ${topicId}`);
 
     const topicInfo = await api.mirror.getTopicInfo(topicId);
-
-    let signerKeyRefIds: string[];
-    if (topicInfo.submit_key) {
-      const { keyRefIds } =
-        await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-          mirrorRoleKey: topicInfo.submit_key,
-          explicitCredentials: signerArgs,
-          keyManager,
-          resolveSigningKeyLabels: ['topic:submit'],
-          emptyMirrorRoleKeyMessage: 'Topic has no submit key on the network',
-          insufficientKmsMatchesMessage:
-            'Not enough submit key(s) found in key manager for this topic. Provide --signer.',
-          validationErrorOptions: { context: { topicId } },
-        });
-      signerKeyRefIds = keyRefIds;
-      logger.info(`Using ${signerKeyRefIds.length} signer(s) for submit key`);
-    } else {
-      if (signerArgs.length > 0) {
-        const resolved = await Promise.all(
-          signerArgs.map((s) =>
-            api.keyResolver.resolveSigningKey(s, keyManager, false, [
-              'topic:submit',
-            ]),
-          ),
-        );
-        signerKeyRefIds = resolved.map((s) => s.keyRefId);
-        logger.info(`Using provided signer for public topic`);
-      } else {
-        signerKeyRefIds = [];
-        logger.info(`Submitting to public topic (no submit key required)`);
-      }
-    }
+    const signerKeyRefIds = await this.resolveSubmitSigners(
+      args,
+      topicInfo,
+      signerArgs,
+      keyManager,
+      topicId,
+    );
 
     return {
       topicId,

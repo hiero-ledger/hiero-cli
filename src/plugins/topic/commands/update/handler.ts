@@ -60,7 +60,6 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
     }
 
     const topicInfo = await api.mirror.getTopicInfo(topicId);
-    const existingTopicData = storedTopicData;
 
     const memo = validArgs.memo === NULL_TOKEN ? null : validArgs.memo;
     const autoRenewAccountId =
@@ -144,7 +143,7 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       stateKey,
       network,
       keyManager,
-      existingTopicData,
+      existingTopicData: storedTopicData,
       memo,
       newAdminKeys,
       newSubmitKeys,

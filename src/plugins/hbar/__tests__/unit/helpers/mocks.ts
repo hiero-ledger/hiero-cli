@@ -28,6 +28,7 @@ export const makeHbarServiceMock = (
   transferTinybar: jest
     .fn()
     .mockResolvedValue(mockTransferTransactionResults.empty),
+  createHbarAllowanceTransaction: jest.fn(),
   ...overrides,
 });
 
@@ -42,6 +43,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     transferTinybar:
       config?.transferImpl ||
       jest.fn().mockResolvedValue(mockTransferTransactionResults.empty),
+    createHbarAllowanceTransaction: jest.fn(),
   };
 
   const txSign = makeTxSignMock();

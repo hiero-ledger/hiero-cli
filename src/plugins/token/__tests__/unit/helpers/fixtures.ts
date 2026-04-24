@@ -892,13 +892,13 @@ export const makeMintFtCommandArgs = (params: {
 export const makeBurnFtCommandArgs = (params: {
   api: CoreApi;
   logger: Logger;
-  args?: Record<string, string | number | boolean | undefined>;
+  args?: Record<string, string | number | boolean | string[] | undefined>;
 }) => {
   return {
     args: {
       token: '0.0.123456',
       amount: '100',
-      supplyKey: 'test-supply-key',
+      supplyKey: [],
       ...params.args,
     },
     api: params.api,
@@ -914,13 +914,13 @@ export const makeBurnFtCommandArgs = (params: {
 export const makeBurnNftCommandArgs = (params: {
   api: CoreApi;
   logger: Logger;
-  args?: Record<string, string | number | boolean | undefined>;
+  args?: Record<string, string | number | boolean | string[] | undefined>;
 }) => {
   return {
     args: {
       token: '0.0.123456',
       serials: '1,2,3',
-      supplyKey: 'test-supply-key',
+      supplyKey: [],
       ...params.args,
     },
     api: params.api,

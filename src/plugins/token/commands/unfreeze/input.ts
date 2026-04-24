@@ -4,7 +4,7 @@ import {
   AccountReferenceObjectSchema,
   EntityReferenceSchema,
   KeyManagerTypeSchema,
-  KeySchema,
+  OptionalDefaultEmptyKeyListSchema,
 } from '@/core/schemas/common-schemas';
 
 export const TokenUnfreezeInputSchema = z.object({
@@ -12,7 +12,9 @@ export const TokenUnfreezeInputSchema = z.object({
   account: AccountReferenceObjectSchema.describe(
     'Account to unfreeze (ID, alias, or EVM address)',
   ),
-  freezeKey: KeySchema.describe('Token freeze key'),
+  freezeKey: OptionalDefaultEmptyKeyListSchema.describe(
+    "Token freeze key credential(s). If omitted, resolved from key manager by matching the token's on-chain key.",
+  ),
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type (defaults to config setting)',
   ),
