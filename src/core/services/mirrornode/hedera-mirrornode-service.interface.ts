@@ -3,6 +3,7 @@
  * Provides access to all Hedera Mirror Node API endpoints
  */
 import type {
+  AccountNftsResponse,
   AccountResponse,
   ContractCallRequest,
   ContractCallResponse,
@@ -74,6 +75,14 @@ export interface HederaMirrornodeService {
    * Get NFT information by token ID and serial number
    */
   getNftInfo(tokenId: string, serialNumber: number): Promise<NftInfo>;
+
+  /**
+   * Get all NFTs owned by an account (first page, up to limit)
+   */
+  getAccountNfts(
+    accountId: string,
+    limit?: number,
+  ): Promise<AccountNftsResponse>;
 
   /**
    * Get topic information

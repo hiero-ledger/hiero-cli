@@ -204,15 +204,35 @@ interface CommandOutputSpec {
 {
   "accountId": "0.0.12345",
   "hbarBalance": "10000000",
+  "hbarBalanceDisplay": "0.1 HBAR",
+  "network": "testnet",
   "tokenBalances": [
     {
       "tokenId": "0.0.67890",
+      "name": "My Token",
+      "symbol": "MTK",
       "balance": "1000",
+      "balanceDisplay": "10.00",
       "decimals": 2
     }
-  ]
+  ],
+  "nftBalances": {
+    "collections": [
+      {
+        "tokenId": "0.0.99999",
+        "name": "My NFT",
+        "symbol": "MNFT",
+        "serialNumbers": [1, 2, 5],
+        "count": 3
+      }
+    ],
+    "totalCount": 3,
+    "truncated": false
+  }
 }
 ```
+
+`hbarOnly: true` omits `tokenBalances` and `nftBalances`. `tokenOnly: true` omits `hbarBalance`. `raw: true` returns raw tinybar / base-unit values without `hbarBalanceDisplay` / `balanceDisplay`. `truncated: true` means there are more than 100 NFTs — only the first 100 are shown.
 
 #### `account list`
 
