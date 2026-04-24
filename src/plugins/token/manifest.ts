@@ -978,7 +978,7 @@ export const tokenPluginManifest: PluginManifest = {
           name: 'supply-key',
           short: 's',
           type: OptionType.REPEATABLE,
-          required: false,
+          required: true,
           description:
             'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
