@@ -13,3 +13,15 @@ export function isNoFreezeKeyError(error: unknown): boolean {
     cause.status === HederaStatus.TokenHasNoFreezeKey
   );
 }
+
+export function isNoPauseKeyError(error: unknown): boolean {
+  if (!(error instanceof TransactionError)) {
+    return false;
+  }
+
+  const cause = error.cause;
+  return (
+    cause instanceof ReceiptStatusError &&
+    cause.status === HederaStatus.TokenHasNoPauseKey
+  );
+}

@@ -1137,6 +1137,46 @@ hcli token unfreeze --token 0.0.123456 --account alice --freeze-key <key-ref>
 
 If the token does not have a freeze key, the command fails with a clear error: `Token has no freeze key`. The operation is idempotent — unfreezing an already-unfrozen account succeeds without error.
 
+### Token Pause
+
+Prevents the token from being involved in any kind of transaction across all accounts. Requires the token pause key to sign. The token must have a pause key set at creation time.
+
+```bash
+# Pause token by token ID
+hcli token pause --token 0.0.123456 --pause-key <key-ref>
+
+# Pause token using token alias
+hcli token pause --token mytoken-alias --pause-key <key-ref>
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
+- `--pause-key` / `-p`: Pause key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
+- `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
+
+If the token does not have a pause key, the command fails with a clear error: `Token has no pause key`.
+
+### Token Unpause
+
+Re-enables the token to be involved in transactions across all accounts. Requires the token pause key to sign.
+
+```bash
+# Unpause token by token ID
+hcli token unpause --token 0.0.123456 --pause-key <key-ref>
+
+# Unpause token using token alias
+hcli token unpause --token mytoken-alias --pause-key <key-ref>
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
+- `--pause-key` / `-p`: Pause key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
+- `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
+
+If the token does not have a pause key, the command fails with a clear error: `Token has no pause key`.
+
 ### Token List
 
 List all tokens (FT and NFT) stored in state for all networks.
