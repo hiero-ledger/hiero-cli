@@ -8,12 +8,19 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   tokenPause,
   TokenPauseOutputSchema,
 } from '@/plugins/token/commands/pause';
 
-import { makeLogger, makePauseSuccessMocks } from './helpers/mocks';
+import { mockAccountIds, mockTransactionResults } from './helpers/fixtures';
+import {
+  makeLogger,
+  makePauseSuccessMocks,
+  MOCK_ALIAS_TOKEN_ENTITY_ID,
+  MOCK_PAUSE_KEY_REF_ID,
+} from './helpers/mocks';
 
 const PAUSE_KEY_ARG = `ed25519:private:${'a'.repeat(64)}`;
 
@@ -22,7 +29,7 @@ const makeArgs = (
   argsOverrides?: Record<string, unknown>,
 ): CommandHandlerArgs => ({
   args: {
-    token: '0.0.123456',
+    token: mockAccountIds.treasury,
     pauseKey: [PAUSE_KEY_ARG],
     keyManager: undefined,
     ...argsOverrides,
@@ -42,9 +49,11 @@ describe('tokenPause', () => {
       const result = await tokenPause(args);
 
       const output = assertOutput(result.result, TokenPauseOutputSchema);
-      expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
-      expect(output.tokenId).toBe('0.0.123456');
-      expect(output.network).toBe('testnet');
+      expect(output.transactionId).toBe(
+        mockTransactionResults.success.transactionId,
+      );
+      expect(output.tokenId).toBe(mockAccountIds.treasury);
+      expect(output.network).toBe(SupportedNetwork.TESTNET);
     });
 
     test('pauses token resolved from alias', async () => {
@@ -54,7 +63,7 @@ describe('tokenPause', () => {
       const result = await tokenPause(args);
 
       const output = assertOutput(result.result, TokenPauseOutputSchema);
-      expect(output.tokenId).toBe('0.0.12345');
+      expect(output.tokenId).toBe(MOCK_ALIAS_TOKEN_ENTITY_ID);
     });
 
     test('calls createPauseTransaction with correct tokenId', async () => {
@@ -64,10 +73,10 @@ describe('tokenPause', () => {
       await tokenPause(args);
 
       expect(api.token.createPauseTransaction).toHaveBeenCalledWith({
-        tokenId: '0.0.123456',
+        tokenId: mockAccountIds.treasury,
       });
       expect(api.txSign.sign).toHaveBeenCalledWith(mockPauseTransaction, [
-        'pause-key-ref-id',
+        MOCK_PAUSE_KEY_REF_ID,
       ]);
     });
   });
@@ -97,7 +106,7 @@ describe('tokenPause', () => {
       const { api } = makePauseSuccessMocks();
       (api.txExecute.execute as jest.Mock).mockResolvedValue({
         success: false,
-        transactionId: '0.0.123@1234567890.000000000',
+        transactionId: mockTransactionResults.failure.transactionId,
       });
       const args = makeArgs(api);
 

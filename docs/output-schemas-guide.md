@@ -828,6 +828,46 @@ Lists all tokens from all networks stored in state.
 | `accountId`     | `string`           | Unfrozen account ID (0.0.X)         |
 | `network`       | `SupportedNetwork` | Network where unfreeze was executed |
 
+#### `token pause`
+
+**Output:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "network": "testnet"
+}
+```
+
+**Schema:** `TokenPauseOutputSchema` from `src/plugins/token/commands/pause/output.ts`
+
+| Field           | Type               | Description                      |
+| --------------- | ------------------ | -------------------------------- |
+| `transactionId` | `string`           | Hedera transaction ID            |
+| `tokenId`       | `string`           | Token ID (0.0.X)                 |
+| `network`       | `SupportedNetwork` | Network where pause was executed |
+
+#### `token unpause`
+
+**Output:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "network": "testnet"
+}
+```
+
+**Schema:** `TokenUnpauseOutputSchema` from `src/plugins/token/commands/unpause/output.ts`
+
+| Field           | Type               | Description                        |
+| --------------- | ------------------ | ---------------------------------- |
+| `transactionId` | `string`           | Hedera transaction ID              |
+| `tokenId`       | `string`           | Token ID (0.0.X)                   |
+| `network`       | `SupportedNetwork` | Network where unpause was executed |
+
 #### `token allowance-nft`
 
 **Output** (specific serials):

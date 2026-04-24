@@ -1040,6 +1040,9 @@ export const makeUnfreezeSuccessMocks = (overrides?: {
   return { ...apiMocks, mockUnfreezeTransaction };
 };
 
+export const MOCK_ALIAS_TOKEN_ENTITY_ID = '0.0.12345';
+export const MOCK_PAUSE_KEY_REF_ID = 'pause-key-ref-id';
+
 export const makePauseSuccessMocks = (overrides?: {
   tokenInfo?: {
     pause_key?: { key: string } | null;
@@ -1074,7 +1077,7 @@ export const makePauseSuccessMocks = (overrides?: {
   apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
     .fn()
     .mockResolvedValue({
-      keyRefIds: ['pause-key-ref-id'],
+      keyRefIds: [MOCK_PAUSE_KEY_REF_ID],
       requiredSignatures: 1,
     });
 
@@ -1117,7 +1120,7 @@ export const makeUnpauseSuccessMocks = (overrides?: {
   apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
     .fn()
     .mockResolvedValue({
-      keyRefIds: ['pause-key-ref-id'],
+      keyRefIds: [MOCK_PAUSE_KEY_REF_ID],
       requiredSignatures: 1,
     });
 
