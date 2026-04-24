@@ -465,6 +465,7 @@ export const makeMirrorMock = (
  */
 const makeHbarMock = (): jest.Mocked<HbarService> => ({
   transferTinybar: jest.fn(),
+  createHbarAllowanceTransaction: jest.fn(),
 });
 
 /**
