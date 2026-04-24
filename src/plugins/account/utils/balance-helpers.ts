@@ -5,6 +5,7 @@ import type { SupportedNetwork } from '@/core/types/shared.types';
 import BigNumber from 'bignumber.js';
 
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
+import { NFT_BALANCE_PAGE_SIZE } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
 import { normalizeBalance } from '@/core/utils/normalize-balance';
 
@@ -104,7 +105,10 @@ export async function fetchAccountNftBalances(
   tokenId: string | undefined,
   network: SupportedNetwork,
 ): Promise<NftBalancesResult | undefined> {
-  const response = await api.mirror.getAccountNfts(accountId, 100);
+  const response = await api.mirror.getAccountNfts(
+    accountId,
+    NFT_BALANCE_PAGE_SIZE,
+  );
 
   const nfts = tokenId
     ? response.nfts.filter((nft) => nft.token_id === tokenId)

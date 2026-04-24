@@ -6,6 +6,7 @@ import {
   NetworkSchema,
   TinybarSchema,
 } from '@/core/schemas';
+import { NFT_BALANCE_PAGE_SIZE } from '@/core/shared/constants';
 
 export const AccountBalanceOutputSchema = z.object({
   accountId: EntityIdSchema,
@@ -81,7 +82,7 @@ const NFT_SECTION =
   `{{nftBalances.totalCount}} NFT{{#if (gt nftBalances.totalCount 1)}}s{{/if}} in ` +
   `{{length nftBalances.collections}} collection{{#if (gt (length nftBalances.collections) 1)}}s{{/if}}` +
   `):\n` +
-  `{{#if nftBalances.truncated}}   (Showing first 100 NFTs)\n{{/if}}` +
+  `{{#if nftBalances.truncated}}   (Showing first ${NFT_BALANCE_PAGE_SIZE} NFTs)\n{{/if}}` +
   `{{#each nftBalances.collections}}   ${NFT_COLLECTION_ROW}\n{{/each}}` +
   `{{/if}}`;
 
