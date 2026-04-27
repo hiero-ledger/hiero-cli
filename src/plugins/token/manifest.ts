@@ -93,6 +93,11 @@ import {
   TokenFreezeOutputSchema,
 } from './commands/freeze';
 import {
+  TOKEN_GRANT_KYC_TEMPLATE,
+  tokenGrantKyc,
+  TokenGrantKycOutputSchema,
+} from './commands/grant-kyc';
+import {
   TOKEN_IMPORT_TEMPLATE,
   tokenImport,
   TokenImportOutputSchema,
@@ -127,6 +132,11 @@ import {
   tokenRejectAirdrop,
   TokenRejectAirdropOutputSchema,
 } from './commands/reject-airdrop';
+import {
+  TOKEN_REVOKE_KYC_TEMPLATE,
+  tokenRevokeKyc,
+  TokenRevokeKycOutputSchema,
+} from './commands/revoke-kyc';
 import {
   TOKEN_TRANSFER_FT_TEMPLATE,
   tokenTransferFt,
@@ -1699,6 +1709,104 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenUnfreezeOutputSchema,
         humanTemplate: TOKEN_UNFREEZE_TEMPLATE,
+      },
+    },
+    {
+      name: 'grant-kyc',
+      summary: 'Grant KYC for an account on a token',
+      description:
+        'Grants KYC flag to the specified account for the token. Requires the token KYC key. Works for both fungible tokens (FT) and non-fungible tokens (NFT).',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Account to grant KYC: account-id (0.0.X), account alias, or EVM address (0x...)',
+        },
+        {
+          name: 'kyc-key',
+          short: 'y',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'KYC key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenGrantKyc,
+      output: {
+        schema: TokenGrantKycOutputSchema,
+        humanTemplate: TOKEN_GRANT_KYC_TEMPLATE,
+      },
+    },
+    {
+      name: 'revoke-kyc',
+      summary: 'Revoke KYC for an account on a token',
+      description:
+        'Revokes KYC flag from the specified account for the token. Requires the token KYC key. Works for both fungible tokens (FT) and non-fungible tokens (NFT).',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Account to revoke KYC: account-id (0.0.X), account alias, or EVM address (0x...)',
+        },
+        {
+          name: 'kyc-key',
+          short: 'y',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'KYC key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenRevokeKyc,
+      output: {
+        schema: TokenRevokeKycOutputSchema,
+        humanTemplate: TOKEN_REVOKE_KYC_TEMPLATE,
       },
     },
     {

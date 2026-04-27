@@ -14,9 +14,11 @@ import type {
   TokenDeleteTransaction,
   TokenDissociateTransaction,
   TokenFreezeTransaction,
+  TokenGrantKycTransaction,
   TokenMintTransaction,
   TokenPauseTransaction,
   TokenRejectTransaction,
+  TokenRevokeKycTransaction,
   TokenUnfreezeTransaction,
   TokenUnpauseTransaction,
   TokenUpdateNftsTransaction,
@@ -38,8 +40,10 @@ import type {
   TokenDeleteParams,
   TokenDissociationParams,
   TokenFreezeParams,
+  TokenGrantKycParams,
   TokenMintParams,
   TokenRejectAirdropParams,
+  TokenRevokeKycParams,
   TokenTransferParams,
   TokenUnfreezeParams,
   TokenUpdateNftMetadataParams,
@@ -104,6 +108,14 @@ export interface TokenService {
   createUnfreezeTransaction(
     params: TokenUnfreezeParams,
   ): TokenUnfreezeTransaction;
+
+  createGrantKycTransaction(
+    params: TokenGrantKycParams,
+  ): TokenGrantKycTransaction;
+
+  createRevokeKycTransaction(
+    params: TokenRevokeKycParams,
+  ): TokenRevokeKycTransaction;
 
   createPauseTransaction(params: { tokenId: string }): TokenPauseTransaction;
 

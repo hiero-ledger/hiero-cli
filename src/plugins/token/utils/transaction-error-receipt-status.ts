@@ -20,3 +20,15 @@ export function isNoFreezeKeyError(error: unknown): boolean {
 export function isNoPauseKeyError(error: unknown): boolean {
   return isTransactionErrorWithStatus(error, HederaStatus.TokenHasNoPauseKey);
 }
+
+export function isNoKycKeyError(error: unknown): boolean {
+  if (!(error instanceof TransactionError)) {
+    return false;
+  }
+
+  const cause = error.cause;
+  return (
+    cause instanceof ReceiptStatusError &&
+    cause.status === HederaStatus.TokenHasNoKycKey
+  );
+}

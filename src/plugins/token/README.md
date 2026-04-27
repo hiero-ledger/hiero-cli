@@ -1285,6 +1285,54 @@ hcli token unpause --token mytoken-alias --pause-key <key-ref>
 
 If the token does not have a pause key, the command fails with a clear error: `Token has no pause key`.
 
+### Token Grant KYC
+
+Grants KYC flag to the specified account for the token. Requires the token KYC key to sign. Works for both fungible tokens (FT) and non-fungible tokens (NFT). The token must have a KYC key set at creation time.
+
+```bash
+# Grant KYC by token ID and account ID
+hcli token grant-kyc --token 0.0.123456 --account 0.0.5678
+
+# Grant KYC using token alias and account alias
+hcli token grant-kyc --token mytoken-alias --account alice
+
+# Grant KYC with explicit KYC key
+hcli token grant-kyc --token 0.0.123456 --account 0.0.5678 --kyc-key <key-ref>
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
+- `--account` / `-a`: Account to grant KYC: account-id (0.0.X), account alias, or EVM address (0x...) - **Required**
+- `--kyc-key` / `-y`: KYC key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
+- `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
+
+If the token does not have a KYC key, the command fails with a clear error: `Token has no KYC key`.
+
+### Token Revoke KYC
+
+Revokes KYC flag from the specified account for the token. Requires the token KYC key to sign. Works for both fungible tokens (FT) and non-fungible tokens (NFT).
+
+```bash
+# Revoke KYC by token ID and account ID
+hcli token revoke-kyc --token 0.0.123456 --account 0.0.5678
+
+# Revoke KYC using token alias and account alias
+hcli token revoke-kyc --token mytoken-alias --account alice
+
+# Revoke KYC with explicit KYC key
+hcli token revoke-kyc --token 0.0.123456 --account 0.0.5678 --kyc-key <key-ref>
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
+- `--account` / `-a`: Account to revoke KYC: account-id (0.0.X), account alias, or EVM address (0x...) - **Required**
+- `--kyc-key` / `-y`: KYC key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
+- `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
+
+If the token does not have a KYC key, the command fails with a clear error: `Token has no KYC key`.
+
 ### Token List
 
 List all tokens (FT and NFT) stored in state for all networks.
