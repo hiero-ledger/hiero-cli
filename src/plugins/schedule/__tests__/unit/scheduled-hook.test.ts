@@ -299,7 +299,7 @@ describe('schedule plugin — scheduled hook', () => {
 
     await expect(hook.execute(params)).rejects.toThrow(
       new TransactionError(
-        `Failed to create account (txId: ${DELETE_SUCCESS_TX_ID})`,
+        `Failed to create scheduled transaction (txId: ${DELETE_SUCCESS_TX_ID})`,
         false,
       ),
     );
