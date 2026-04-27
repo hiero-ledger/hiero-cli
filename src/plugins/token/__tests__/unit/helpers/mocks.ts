@@ -74,6 +74,8 @@ export const makeTokenServiceMock = (
   createDeleteTransaction: jest.fn(),
   createFreezeTransaction: jest.fn(),
   createUnfreezeTransaction: jest.fn(),
+  createGrantKycTransaction: jest.fn(),
+  createRevokeKycTransaction: jest.fn(),
   createPauseTransaction: jest.fn(),
   createUnpauseTransaction: jest.fn(),
   createAirdropFtTransaction: jest.fn(),
