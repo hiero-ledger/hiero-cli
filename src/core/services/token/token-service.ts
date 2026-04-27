@@ -20,8 +20,10 @@ import type {
   TokenCreateParams,
   TokenDeleteParams,
   TokenFreezeParams,
+  TokenGrantKycParams,
   TokenMintParams,
   TokenRejectAirdropParams,
+  TokenRevokeKycParams,
   TokenTransferParams,
   TokenUnfreezeParams,
 } from '@/core/types/token.types';
@@ -45,10 +47,12 @@ import {
   TokenCreateTransaction,
   TokenDeleteTransaction,
   TokenFreezeTransaction,
+  TokenGrantKycTransaction,
   TokenId,
   TokenMintTransaction,
   TokenPauseTransaction,
   TokenRejectTransaction,
+  TokenRevokeKycTransaction,
   TokenSupplyType,
   TokenUnfreezeTransaction,
   TokenUnpauseTransaction,
@@ -422,6 +426,28 @@ export class TokenServiceImpl implements TokenService {
       `[TOKEN SERVICE] Creating unfreeze transaction for account ${params.accountId} on token ${params.tokenId}`,
     );
     return new TokenUnfreezeTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId));
+  }
+
+  createGrantKycTransaction(
+    params: TokenGrantKycParams,
+  ): TokenGrantKycTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating grant KYC transaction for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenGrantKycTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId));
+  }
+
+  createRevokeKycTransaction(
+    params: TokenRevokeKycParams,
+  ): TokenRevokeKycTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating revoke KYC transaction for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenRevokeKycTransaction()
       .setTokenId(TokenId.fromString(params.tokenId))
       .setAccountId(AccountId.fromString(params.accountId));
   }

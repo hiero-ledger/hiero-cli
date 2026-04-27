@@ -25,3 +25,15 @@ export function isNoPauseKeyError(error: unknown): boolean {
     cause.status === HederaStatus.TokenHasNoPauseKey
   );
 }
+
+export function isNoKycKeyError(error: unknown): boolean {
+  if (!(error instanceof TransactionError)) {
+    return false;
+  }
+
+  const cause = error.cause;
+  return (
+    cause instanceof ReceiptStatusError &&
+    cause.status === HederaStatus.TokenHasNoKycKey
+  );
+}

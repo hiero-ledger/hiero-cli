@@ -122,6 +122,16 @@ export interface TokenUnfreezeParams {
   accountId: string;
 }
 
+export interface TokenGrantKycParams {
+  tokenId: string;
+  accountId: string;
+}
+
+export interface TokenRevokeKycParams {
+  tokenId: string;
+  accountId: string;
+}
+
 export interface TokenBurnFtParams {
   tokenId: string;
   amount: bigint;

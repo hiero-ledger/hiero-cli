@@ -1,11 +1,11 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { TokenUnfreezeOutput } from './output';
+import type { TokenRevokeKycOutput } from './output';
 import type {
-  UnfreezeBuildTransactionResult,
-  UnfreezeExecuteTransactionResult,
-  UnfreezeNormalizedParams,
-  UnfreezeSignTransactionResult,
+  RevokeKycBuildTransactionResult,
+  RevokeKycExecuteTransactionResult,
+  RevokeKycNormalizedParams,
+  RevokeKycSignTransactionResult,
 } from './types';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
@@ -16,28 +16,28 @@ import {
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { isNoFreezeKeyError } from '@/plugins/token/utils/transaction-error-receipt-status';
+import { isNoKycKeyError } from '@/plugins/token/utils/transaction-error-receipt-status';
 
-import { TokenUnfreezeInputSchema } from './input';
+import { TokenRevokeKycInputSchema } from './input';
 
-export const TOKEN_UNFREEZE_COMMAND_NAME = 'token_unfreeze';
+export const TOKEN_REVOKE_KYC_COMMAND_NAME = 'token_revoke_kyc';
 
-export class TokenUnfreezeCommand extends BaseTransactionCommand<
-  UnfreezeNormalizedParams,
-  UnfreezeBuildTransactionResult,
-  UnfreezeSignTransactionResult,
-  UnfreezeExecuteTransactionResult
+export class TokenRevokeKycCommand extends BaseTransactionCommand<
+  RevokeKycNormalizedParams,
+  RevokeKycBuildTransactionResult,
+  RevokeKycSignTransactionResult,
+  RevokeKycExecuteTransactionResult
 > {
   constructor() {
-    super(TOKEN_UNFREEZE_COMMAND_NAME);
+    super(TOKEN_REVOKE_KYC_COMMAND_NAME);
   }
 
   async normalizeParams(
     args: CommandHandlerArgs,
-  ): Promise<UnfreezeNormalizedParams> {
+  ): Promise<RevokeKycNormalizedParams> {
     const { api, logger } = args;
 
-    const validArgs = TokenUnfreezeInputSchema.parse(args.args);
+    const validArgs = TokenRevokeKycInputSchema.parse(args.args);
 
     const keyManager =
       validArgs.keyManager ||
@@ -62,18 +62,18 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
     });
 
     logger.info(
-      `Unfreezing account ${accountId} for token ${tokenId} on ${network}`,
+      `Revoking KYC for account ${accountId} on token ${tokenId} on ${network}`,
     );
 
     const { keyRefIds } =
       await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.freeze_key,
-        explicitCredentials: validArgs.freezeKey,
+        mirrorRoleKey: tokenInfo.kyc_key,
+        explicitCredentials: validArgs.kycKey,
         keyManager,
-        resolveSigningKeyLabels: ['token:freeze'],
-        emptyMirrorRoleKeyMessage: 'Token has no freeze key',
+        resolveSigningKeyLabels: ['token:kyc'],
+        emptyMirrorRoleKeyMessage: 'Token has no KYC key',
         insufficientKmsMatchesMessage:
-          'Not enough freeze key(s) found in key manager for this token. Provide --freeze-key.',
+          'Not enough KYC key(s) found in key manager for this token. Provide --kyc-key.',
         validationErrorOptions: { context: { tokenId } },
       });
 
@@ -87,11 +87,11 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
 
   async buildTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: UnfreezeNormalizedParams,
-  ): Promise<UnfreezeBuildTransactionResult> {
+    normalisedParams: RevokeKycNormalizedParams,
+  ): Promise<RevokeKycBuildTransactionResult> {
     const { api, logger } = args;
-    logger.debug('Building token unfreeze transaction');
-    const transaction = api.token.createUnfreezeTransaction({
+    logger.debug('Building token revoke KYC transaction');
+    const transaction = api.token.createRevokeKycTransaction({
       tokenId: normalisedParams.tokenId,
       accountId: normalisedParams.accountId,
     });
@@ -100,9 +100,9 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
 
   async signTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: UnfreezeNormalizedParams,
-    buildTransactionResult: UnfreezeBuildTransactionResult,
-  ): Promise<UnfreezeSignTransactionResult> {
+    normalisedParams: RevokeKycNormalizedParams,
+    buildTransactionResult: RevokeKycBuildTransactionResult,
+  ): Promise<RevokeKycSignTransactionResult> {
     const { api, logger } = args;
     logger.debug(
       `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
@@ -116,10 +116,10 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
 
   async executeTransaction(
     args: CommandHandlerArgs,
-    normalisedParams: UnfreezeNormalizedParams,
-    _buildTransactionResult: UnfreezeBuildTransactionResult,
-    signTransactionResult: UnfreezeSignTransactionResult,
-  ): Promise<UnfreezeExecuteTransactionResult> {
+    normalisedParams: RevokeKycNormalizedParams,
+    _buildTransactionResult: RevokeKycBuildTransactionResult,
+    signTransactionResult: RevokeKycSignTransactionResult,
+  ): Promise<RevokeKycExecuteTransactionResult> {
     const { api } = args;
     try {
       const result = await api.txExecute.execute(
@@ -128,15 +128,15 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
 
       if (!result.success) {
         throw new TransactionError(
-          `Token unfreeze failed (tokenId: ${normalisedParams.tokenId}, txId: ${result.transactionId})`,
+          `Token revoke KYC failed (tokenId: ${normalisedParams.tokenId}, txId: ${result.transactionId})`,
           false,
         );
       }
 
       return { transactionResult: result };
     } catch (error) {
-      if (isNoFreezeKeyError(error)) {
-        throw new ValidationError('Token has no freeze key', {
+      if (isNoKycKeyError(error)) {
+        throw new ValidationError('Token has no KYC key', {
           context: { tokenId: normalisedParams.tokenId },
         });
       }
@@ -146,12 +146,12 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
 
   async outputPreparation(
     _args: CommandHandlerArgs,
-    normalisedParams: UnfreezeNormalizedParams,
-    _buildTransactionResult: UnfreezeBuildTransactionResult,
-    _signTransactionResult: UnfreezeSignTransactionResult,
-    executeTransactionResult: UnfreezeExecuteTransactionResult,
+    normalisedParams: RevokeKycNormalizedParams,
+    _buildTransactionResult: RevokeKycBuildTransactionResult,
+    _signTransactionResult: RevokeKycSignTransactionResult,
+    executeTransactionResult: RevokeKycExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const outputData: TokenUnfreezeOutput = {
+    const outputData: TokenRevokeKycOutput = {
       transactionId: executeTransactionResult.transactionResult.transactionId,
       tokenId: normalisedParams.tokenId,
       accountId: normalisedParams.accountId,
@@ -161,8 +161,8 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
   }
 }
 
-export async function tokenUnfreeze(
+export async function tokenRevokeKyc(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  return new TokenUnfreezeCommand().execute(args);
+  return new TokenRevokeKycCommand().execute(args);
 }

@@ -13,9 +13,11 @@ import type {
   TokenCreateTransaction,
   TokenDeleteTransaction,
   TokenFreezeTransaction,
+  TokenGrantKycTransaction,
   TokenMintTransaction,
   TokenPauseTransaction,
   TokenRejectTransaction,
+  TokenRevokeKycTransaction,
   TokenUnfreezeTransaction,
   TokenUnpauseTransaction,
   TransferTransaction,
@@ -35,8 +37,10 @@ import type {
   TokenCreateParams,
   TokenDeleteParams,
   TokenFreezeParams,
+  TokenGrantKycParams,
   TokenMintParams,
   TokenRejectAirdropParams,
+  TokenRevokeKycParams,
   TokenTransferParams,
   TokenUnfreezeParams,
 } from '@/core/types/token.types';
@@ -93,6 +97,14 @@ export interface TokenService {
   createUnfreezeTransaction(
     params: TokenUnfreezeParams,
   ): TokenUnfreezeTransaction;
+
+  createGrantKycTransaction(
+    params: TokenGrantKycParams,
+  ): TokenGrantKycTransaction;
+
+  createRevokeKycTransaction(
+    params: TokenRevokeKycParams,
+  ): TokenRevokeKycTransaction;
 
   createPauseTransaction(params: { tokenId: string }): TokenPauseTransaction;
 

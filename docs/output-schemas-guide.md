@@ -888,6 +888,28 @@ Lists all tokens from all networks stored in state.
 | `tokenId`       | `string`           | Token ID (0.0.X)                   |
 | `network`       | `SupportedNetwork` | Network where unpause was executed |
 
+#### `token grant-kyc`
+
+**Schema:** `TokenGrantKycOutputSchema` from `src/plugins/token/commands/grant-kyc/output.ts`
+
+| Field           | Type               | Description                          |
+| --------------- | ------------------ | ------------------------------------ |
+| `transactionId` | `string`           | Hedera transaction ID                |
+| `tokenId`       | `string`           | Token ID (0.0.X)                     |
+| `accountId`     | `string`           | Account ID that was granted KYC      |
+| `network`       | `SupportedNetwork` | Network where grant KYC was executed |
+
+#### `token revoke-kyc`
+
+**Schema:** `TokenRevokeKycOutputSchema` from `src/plugins/token/commands/revoke-kyc/output.ts`
+
+| Field           | Type               | Description                           |
+| --------------- | ------------------ | ------------------------------------- |
+| `transactionId` | `string`           | Hedera transaction ID                 |
+| `tokenId`       | `string`           | Token ID (0.0.X)                      |
+| `accountId`     | `string`           | Account ID that had KYC revoked       |
+| `network`       | `SupportedNetwork` | Network where revoke KYC was executed |
+
 #### `token allowance-nft`
 
 **Output** (specific serials):
