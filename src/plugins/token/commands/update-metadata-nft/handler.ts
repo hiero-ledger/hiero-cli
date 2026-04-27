@@ -14,6 +14,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { HederaTokenType } from '@/core/shared/constants';
 import { MAX_NFT_METADATA_BYTES } from '@/plugins/token/constants';
@@ -43,7 +44,7 @@ export class TokenUpdateNftMetadataCommand extends BaseTransactionCommand<
     const validArgs = TokenUpdateNftMetadataInputSchema.parse(args.args);
     const keyManager =
       validArgs.keyManager ||
-      api.config.getOption<KeyManager>('default_key_manager');
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
     const network = api.network.getCurrentNetwork();
     const resolvedToken = resolveTokenParameter(validArgs.token, api, network);
 
