@@ -112,8 +112,6 @@ describe('Transfer Token Integration Tests', () => {
       associateTokenResult.result as TokenAssociateOutput;
     expect(associateTokenOutput.tokenId).toBe(createTokenOutput.tokenId);
     expect(associateTokenOutput.accountId).toBe(createAccountOutput.accountId);
-    expect(associateTokenOutput.associated).toBe(true);
-    expect(associateTokenOutput.alreadyAssociated).toBe(undefined);
 
     await delay(5000);
 

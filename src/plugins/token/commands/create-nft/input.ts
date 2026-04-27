@@ -8,6 +8,7 @@ import {
   KeyThresholdOptionalSchema,
   MemoSchema,
   OptionalDefaultEmptyKeyListSchema,
+  RequiredKeyListSchema,
   SupplyTypeSchema,
   TokenAliasNameSchema,
   TokenNameSchema,
@@ -36,8 +37,8 @@ export const TokenCreateNftInputSchema = z
     adminKeyThreshold: KeyThresholdOptionalSchema.describe(
       'How many admin keys must sign (M-of-N). Only when multiple admin keys are provided.',
     ),
-    supplyKey: OptionalDefaultEmptyKeyListSchema.describe(
-      'Supply key(s). Pass multiple times for shared mint/burn control or M-of-N. Accepts any key format.',
+    supplyKey: RequiredKeyListSchema.describe(
+      'Supply key(s). Required. Pass multiple times for shared mint/burn control or M-of-N. Accepts any key format.',
     ),
     supplyKeyThreshold: KeyThresholdOptionalSchema.describe(
       'How many supply keys must sign (M-of-N). Only when multiple supply keys are provided.',

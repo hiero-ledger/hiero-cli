@@ -89,6 +89,14 @@ export interface TokenAssociationParams {
 }
 
 /**
+ * Parameters for token dissociation transactions
+ */
+export interface TokenDissociationParams {
+  tokenId: string;
+  accountId: string;
+}
+
+/**
  * Parameters for token mint transactions (FT or NFT)
  * Either amount (for FT) or metadata (for NFT) must be provided
  */

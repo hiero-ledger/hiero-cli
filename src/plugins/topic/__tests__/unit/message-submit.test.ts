@@ -1,9 +1,13 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { TransactionResult } from '@/core/types/shared.types';
 
-import { MOCK_TOPIC_SUBMIT_KEY_REF_ID } from '@/__tests__/mocks/fixtures';
+import {
+  ED25519_DER_PUBLIC_KEY,
+  MOCK_TOPIC_SUBMIT_KEY_REF_ID,
+} from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeAliasMock,
@@ -12,8 +16,8 @@ import {
   makeKeyResolverMock,
   makeKmsMock,
   makeLogger,
+  makeMirrorMock,
   makeNetworkMock,
-  makeTopicData,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import {
@@ -22,16 +26,46 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { TopicSubmitMessageOutputSchema } from '@/plugins/topic/commands/submit-message';
 import { topicSubmitMessage } from '@/plugins/topic/commands/submit-message/handler';
-import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
 
-jest.mock('../../zustand-state-helper', () => ({
-  ZustandTopicStateHelper: jest.fn(),
-}));
+function mirrorWithNoSubmitKey(topicId: string): HederaMirrornodeService {
+  return {
+    ...makeMirrorMock(),
+    getTopicInfo: jest
+      .fn()
+      .mockResolvedValue(
+        createMockTopicInfo({ topic_id: topicId, deleted: false }),
+      ),
+  } as unknown as HederaMirrornodeService;
+}
 
-const MockedHelper = ZustandTopicStateHelper as jest.Mock;
+function mirrorWithSubmitKey(topicId: string): HederaMirrornodeService {
+  return {
+    ...makeMirrorMock(),
+    getTopicInfo: jest.fn().mockResolvedValue(
+      createMockTopicInfo({
+        topic_id: topicId,
+        submit_key: {
+          _type: MirrorNodeKeyType.ED25519,
+          key: ED25519_DER_PUBLIC_KEY,
+        },
+        deleted: false,
+      }),
+    ),
+  } as unknown as HederaMirrornodeService;
+}
+
+function mirrorThrowingNotFound(): HederaMirrornodeService {
+  return {
+    ...makeMirrorMock(),
+    getTopicInfo: jest
+      .fn()
+      .mockRejectedValue(new NotFoundError('Topic not found')),
+  } as unknown as HederaMirrornodeService;
+}
 
 const makeApiMocks = ({
   topicSubmitMessageImpl,
@@ -74,12 +108,6 @@ describe('topic plugin - message-submit command', () => {
 
   test('submits message successfully without submit key', async () => {
     const logger = makeLogger();
-    const topicData = makeTopicData({
-      topicId: '0.0.1234',
-      memo: 'Test topic',
-    });
-    const loadTopicMock = jest.fn().mockReturnValue(topicData);
-    MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
 
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({
@@ -102,6 +130,7 @@ describe('topic plugin - message-submit command', () => {
       network: networkMock,
       alias: alias as AliasService,
       logger,
+      mirror: mirrorWithNoSubmitKey('0.0.1234'),
     };
 
     const args = makeArgs(api, logger, {
@@ -117,9 +146,6 @@ describe('topic plugin - message-submit command', () => {
     expect(output.sequenceNumber).toBe(5);
     expect(output.transactionId).toBe('0.0.1234@1234567890.000000000');
 
-    expect(loadTopicMock).toHaveBeenCalledWith(
-      `${SupportedNetwork.TESTNET}:0.0.1234`,
-    );
     expect(topicTransactions.submitMessage).toHaveBeenCalledWith({
       topicId: '0.0.1234',
       message: 'Hello, World!',
@@ -128,13 +154,6 @@ describe('topic plugin - message-submit command', () => {
 
   test('submits message successfully with signer option', async () => {
     const logger = makeLogger();
-    const topicData = makeTopicData({
-      topicId: '0.0.5678',
-      memo: 'Test topic with key',
-      submitKeyRefIds: [MOCK_TOPIC_SUBMIT_KEY_REF_ID],
-    });
-    const loadTopicMock = jest.fn().mockReturnValue(topicData);
-    MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
 
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({
@@ -152,10 +171,9 @@ describe('topic plugin - message-submit command', () => {
     const kms = makeKmsMock();
     const keyResolverMock = {
       ...makeKeyResolverMock({ network: networkMock, alias, kms }),
-      resolveSigningKey: jest.fn().mockResolvedValue({
-        publicKey: '02abc123',
-        accountId: '0.0.999',
-        keyRefId: MOCK_TOPIC_SUBMIT_KEY_REF_ID,
+      resolveSigningKeyRefIdsFromMirrorRoleKey: jest.fn().mockResolvedValue({
+        keyRefIds: [MOCK_TOPIC_SUBMIT_KEY_REF_ID],
+        requiredSignatures: 1,
       }),
     };
 
@@ -166,6 +184,7 @@ describe('topic plugin - message-submit command', () => {
       network: networkMock,
       alias: alias as AliasService,
       logger,
+      mirror: mirrorWithSubmitKey('0.0.5678'),
       keyResolver: keyResolverMock as KeyResolverService,
       config: makeConfigMock(),
     };
@@ -184,10 +203,8 @@ describe('topic plugin - message-submit command', () => {
     expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
   });
 
-  test('throws NotFoundError when topic not found', async () => {
+  test('throws NotFoundError when topic not found on mirror', async () => {
     const logger = makeLogger();
-    const loadTopicMock = jest.fn().mockReturnValue(null);
-    MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
 
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({});
@@ -199,6 +216,7 @@ describe('topic plugin - message-submit command', () => {
       network: networkMock,
       alias: alias as AliasService,
       logger,
+      mirror: mirrorThrowingNotFound(),
     };
 
     const args = makeArgs(api, logger, {
@@ -209,35 +227,11 @@ describe('topic plugin - message-submit command', () => {
     await expect(topicSubmitMessage(args)).rejects.toThrow(NotFoundError);
   });
 
-  test('throws ValidationError when valid signers do not meet threshold after filtering unauthorized', async () => {
+  test('throws ValidationError when no matching KMS keys for topic submit key and no signer provided', async () => {
     const logger = makeLogger();
-    const topicData = makeTopicData({
-      topicId: '0.0.1234',
-      submitKeyRefIds: ['kr_a', 'kr_b'],
-      submitKeyThreshold: 2,
-    });
-    const loadTopicMock = jest.fn().mockReturnValue(topicData);
-    MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
 
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({});
-
-    const kms = makeKmsMock();
-    const keyResolverMock = {
-      ...makeKeyResolverMock({ network: networkMock, alias, kms }),
-      resolveSigningKey: jest
-        .fn()
-        .mockResolvedValueOnce({
-          publicKey: '02abc123',
-          accountId: '0.0.999',
-          keyRefId: 'kr_a',
-        })
-        .mockResolvedValueOnce({
-          publicKey: '02wrong',
-          accountId: '0.0.888',
-          keyRefId: 'kr_unauthorized',
-        }),
-    };
 
     const api: Partial<CoreApi> = {
       topic: topicTransactions,
@@ -246,14 +240,12 @@ describe('topic plugin - message-submit command', () => {
       network: networkMock,
       alias: alias as AliasService,
       logger,
-      keyResolver: keyResolverMock as KeyResolverService,
-      config: makeConfigMock(),
+      mirror: mirrorWithSubmitKey('0.0.1234'),
     };
 
     const args = makeArgs(api, logger, {
       topic: '0.0.1234',
       message: 'Test message',
-      signer: ['valid-signer', 'unauthorized-signer'],
     });
 
     await expect(topicSubmitMessage(args)).rejects.toThrow(ValidationError);
@@ -261,11 +253,6 @@ describe('topic plugin - message-submit command', () => {
 
   test('throws TransactionError when execute returns failure', async () => {
     const logger = makeLogger();
-    const topicData = makeTopicData({
-      topicId: '0.0.1234',
-    });
-    const loadTopicMock = jest.fn().mockReturnValue(topicData);
-    MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
 
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({
@@ -286,6 +273,7 @@ describe('topic plugin - message-submit command', () => {
       network: networkMock,
       alias: alias as AliasService,
       logger,
+      mirror: mirrorWithNoSubmitKey('0.0.1234'),
     };
 
     const args = makeArgs(api, logger, {
@@ -298,11 +286,6 @@ describe('topic plugin - message-submit command', () => {
 
   test('throws when topicSubmitMessage throws', async () => {
     const logger = makeLogger();
-    const topicData = makeTopicData({
-      topicId: '0.0.1234',
-    });
-    const loadTopicMock = jest.fn().mockReturnValue(topicData);
-    MockedHelper.mockImplementation(() => ({ loadTopic: loadTopicMock }));
 
     const { topicTransactions, txSign, txExecute, networkMock, alias } =
       makeApiMocks({
@@ -318,6 +301,7 @@ describe('topic plugin - message-submit command', () => {
       network: networkMock,
       alias: alias as AliasService,
       logger,
+      mirror: mirrorWithNoSubmitKey('0.0.1234'),
     };
 
     const args = makeArgs(api, logger, {

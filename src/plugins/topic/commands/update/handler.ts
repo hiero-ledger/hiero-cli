@@ -19,6 +19,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { NULL_TOKEN } from '@/core/shared/constants';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
@@ -51,13 +52,14 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
 
     const stateKey = composeKey(network, topicId);
     const topicState = new ZustandTopicStateHelper(api.state, logger);
-    const existingTopicData = topicState.loadTopic(stateKey);
-
-    if (!existingTopicData) {
+    const storedTopicData = topicState.loadTopic(stateKey);
+    if (!storedTopicData) {
       throw new NotFoundError(
         `Topic "${validArgs.topic}" not found in local state for network ${network}`,
       );
     }
+
+    const topicInfo = await api.mirror.getTopicInfo(topicId);
 
     const memo = validArgs.memo === NULL_TOKEN ? null : validArgs.memo;
     const autoRenewAccountId =
@@ -72,7 +74,7 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       ? []
       : (submitKeyInput as Credential[]);
 
-    const hasAdminKey = existingTopicData.adminKeyRefIds.length > 0;
+    const hasAdminKey = !!topicInfo.admin_key;
     const hasOnlyExpirationTime =
       validArgs.expirationTime !== undefined &&
       memo === undefined &&
@@ -90,7 +92,8 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
 
     const keyManagerArg = validArgs.keyManager;
     const keyManager =
-      keyManagerArg || api.config.getOption<KeyManager>('default_key_manager');
+      keyManagerArg ||
+      api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
     let newAdminKeys: ResolvedPublicKey[] | undefined;
     if (validArgs.adminKey.length > 0) {
@@ -116,15 +119,22 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       );
     }
 
-    const adminThreshold =
-      existingTopicData.adminKeyThreshold ||
-      existingTopicData.adminKeyRefIds.length;
-    const currentAdminKeyRefIds = existingTopicData.adminKeyRefIds.slice(
-      0,
-      adminThreshold,
-    );
-
     const isExpirationOnlyUpdate = !hasAdminKey && hasOnlyExpirationTime;
+
+    let currentAdminKeyRefIds: string[] = [];
+    if (hasAdminKey && !isExpirationOnlyUpdate) {
+      const { keyRefIds } =
+        await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
+          mirrorRoleKey: topicInfo.admin_key,
+          explicitCredentials: [],
+          keyManager,
+          emptyMirrorRoleKeyMessage: 'Topic has no admin key on the network',
+          insufficientKmsMatchesMessage:
+            'Not enough admin key(s) found in key manager for this topic.',
+          validationErrorOptions: { context: { topicId } },
+        });
+      currentAdminKeyRefIds = keyRefIds;
+    }
 
     logger.info(`Updating topic ${topicId} on ${network}`);
 
@@ -133,7 +143,7 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
       stateKey,
       network,
       keyManager,
-      existingTopicData,
+      existingTopicData: storedTopicData,
       memo,
       newAdminKeys,
       newSubmitKeys,

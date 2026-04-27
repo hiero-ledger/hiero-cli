@@ -37,6 +37,11 @@ export const createMockTokenAssociateTransaction = () => ({
   setTokenIds: jest.fn().mockReturnThis(),
 });
 
+export const createMockTokenDissociateTransaction = () => ({
+  setAccountId: jest.fn().mockReturnThis(),
+  setTokenIds: jest.fn().mockReturnThis(),
+});
+
 export const createMockTokenDeleteTransaction = () => ({
   setTokenId: jest.fn().mockReturnThis(),
 });

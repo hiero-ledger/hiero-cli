@@ -83,6 +83,11 @@ import {
   TokenDeleteAllowanceNftOutputSchema,
 } from './commands/delete-allowance-nft';
 import {
+  TOKEN_DISSOCIATE_TEMPLATE,
+  tokenDissociate,
+  TokenDissociateOutputSchema,
+} from './commands/dissociate';
+import {
   TOKEN_FREEZE_TEMPLATE,
   tokenFreeze,
   TokenFreezeOutputSchema,
@@ -158,6 +163,7 @@ import { TokenCreateFtStateHook } from './hooks/token-create-ft-state';
 import { TokenCreateNftFromFileStateHook } from './hooks/token-create-nft-from-file-state';
 import { TokenCreateNftStateHook } from './hooks/token-create-nft-state';
 import { TokenDeleteStateHook } from './hooks/token-delete-state';
+import { TokenDissociateStateHook } from './hooks/token-dissociate-state/handler';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
@@ -188,6 +194,11 @@ export const tokenPluginManifest: PluginManifest = {
     {
       name: 'token-associate-state',
       hook: new TokenAssociateStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-dissociate-state',
+      hook: new TokenDissociateStateHook(),
       options: [],
     },
     {
@@ -993,7 +1004,7 @@ export const tokenPluginManifest: PluginManifest = {
           name: 'supply-key',
           short: 's',
           type: OptionType.REPEATABLE,
-          required: false,
+          required: true,
           description:
             'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
@@ -1196,6 +1207,47 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenAssociateOutputSchema,
         humanTemplate: TOKEN_ASSOCIATE_TEMPLATE,
+      },
+    },
+    {
+      name: 'dissociate',
+      summary: 'Dissociate a token from an account',
+      description:
+        'Remove a token association from an account. Requires a zero balance of that token. See Hedera token dissociation rules.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Account to dissociate from the token. Can be {accountId}:{privateKey pair}, key reference or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenDissociate,
+      output: {
+        schema: TokenDissociateOutputSchema,
+        humanTemplate: TOKEN_DISSOCIATE_TEMPLATE,
       },
     },
     {

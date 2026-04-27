@@ -8,8 +8,6 @@ import type {
   UnfreezeSignTransactionResult,
 } from './types';
 
-import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
-
 import { BaseTransactionCommand } from '@/core/commands/command';
 import {
   NotFoundError,
@@ -18,22 +16,11 @@ import {
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
+import { isNoFreezeKeyError } from '@/plugins/token/utils/transaction-error-receipt-status';
 
 import { TokenUnfreezeInputSchema } from './input';
 
 export const TOKEN_UNFREEZE_COMMAND_NAME = 'token_unfreeze';
-
-function isNoFreezeKeyError(error: unknown): boolean {
-  if (!(error instanceof TransactionError)) {
-    return false;
-  }
-
-  const cause = error.cause;
-  return (
-    cause instanceof ReceiptStatusError &&
-    cause.status === HederaStatus.TokenHasNoFreezeKey
-  );
-}
 
 export class TokenUnfreezeCommand extends BaseTransactionCommand<
   UnfreezeNormalizedParams,
