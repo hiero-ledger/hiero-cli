@@ -51,6 +51,11 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── update-metadata-nft/
+│   │   ├── handler.ts       # NFT metadata update handler (metadata key)
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts         # Command exports
 │   ├── airdrop-ft/
 │   │   ├── handler.ts       # Fungible token airdrop handler (multi-recipient)
 │   │   ├── input.ts         # Input schema with REPEATABLE --to/--amount
@@ -519,6 +524,56 @@ hcli token mint-nft \
 # 3. View minted NFT
 hcli token view --token my-collection --serial 1
 ```
+
+### Token Update Metadata NFT
+
+Update on-chain metadata for one or more NFTs in a collection by serial number. The token must have a **metadata key** set at creation time; that key must sign the transaction (see [Hedera: Update NFT metadata](https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/update-nft-metadata)).
+
+```bash
+# Single serial
+hcli token update-metadata-nft \
+  --token my-nft-collection \
+  --serials 1 \
+  --metadata "ipfs://QmNew..."
+
+# Multiple serials (comma-separated, max 10 per transaction)
+hcli token update-metadata-nft \
+  --token 0.0.123456 \
+  --serials 1,2,3 \
+  --metadata "updated-uri"
+
+# Explicit metadata key (optional if KMS resolves the on-chain metadata key)
+hcli token update-metadata-nft \
+  --token my-nft-collection \
+  --serials 1 \
+  --metadata "new metadata" \
+  --metadata-key 0.0.123456:302e020100300506032b657004220420...
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+  - Must be an NFT collection
+- `--serials` / `-s`: Comma-separated serial numbers to update (max 10) - **Required**
+- `--metadata` / `-m`: New metadata string - **Required** (max 100 bytes UTF-8)
+- `--metadata-key` / `-M`: Metadata key credential(s) - **Optional** (if omitted, resolved from the key manager to match the token’s on-chain metadata key). **Repeatable** for KeyList / threshold keys
+- `--key-manager` / `-k`: Key manager type - **Optional** (defaults to config setting)
+
+**Output:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "serialNumbers": [1, 2, 3],
+  "network": "testnet"
+}
+```
+
+**Notes:**
+
+- If the token has no metadata key, the command fails with a clear validation error.
+- **Batch support:** Pass `--batch <batch-name>` to add the update to a batch (same pattern as `mint-nft`).
 
 ### Token Allowance NFT
 
@@ -1426,6 +1481,7 @@ The following token commands support the `--batch` / `-B` flag via the batch plu
 - `create-ft-from-file` – `TokenCreateFtFromFileBatchStateHook` persists FT-from-file state
 - `create-nft-from-file` – `TokenCreateNftFromFileBatchStateHook` persists NFT-from-file state
 - `associate` – `TokenAssociateBatchStateHook` persists association results
+- `burn-ft`, `burn-nft`, `mint-ft`, `mint-nft`, `update-metadata-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
 - `dissociate` – `TokenDissociateStateHook` removes association from state after batch execution
 - `burn-ft`, `burn-nft`, `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
 

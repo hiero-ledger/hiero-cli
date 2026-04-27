@@ -148,6 +148,11 @@ import {
   TokenUnpauseOutputSchema,
 } from './commands/unpause';
 import {
+  TOKEN_UPDATE_NFT_METADATA_TEMPLATE,
+  tokenUpdateNftMetadata,
+  TokenUpdateNftMetadataOutputSchema,
+} from './commands/update-metadata-nft';
+import {
   TOKEN_VIEW_TEMPLATE,
   tokenView,
   TokenViewOutputSchema,
@@ -1776,6 +1781,61 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenUnpauseOutputSchema,
         humanTemplate: TOKEN_UNPAUSE_TEMPLATE,
+      },
+    },
+    {
+      name: 'update-metadata-nft',
+      summary: 'Update NFT metadata',
+      description:
+        'Update the metadata of one or more NFTs by serial number. Requires the token metadata key.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'serials',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Comma-separated serial numbers to update (max 10)',
+        },
+        {
+          name: 'metadata',
+          short: 'm',
+          type: OptionType.STRING,
+          required: true,
+          description: 'New NFT metadata (string, max 100 bytes)',
+        },
+        {
+          name: 'metadata-key',
+          short: 'M',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            "Metadata key credential(s). If omitted, resolved from key manager by matching the token's on-chain metadata key.",
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenUpdateNftMetadata,
+      output: {
+        schema: TokenUpdateNftMetadataOutputSchema,
+        humanTemplate: TOKEN_UPDATE_NFT_METADATA_TEMPLATE,
       },
     },
     {

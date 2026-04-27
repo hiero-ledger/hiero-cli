@@ -25,6 +25,7 @@ import type {
   TokenRejectAirdropParams,
   TokenTransferParams,
   TokenUnfreezeParams,
+  TokenUpdateNftMetadataParams,
 } from '@/core/types/token.types';
 import type { TokenService } from './token-service.interface';
 
@@ -36,6 +37,7 @@ import {
   CustomFractionalFee,
   FeeAssessmentMethod,
   Hbar,
+  Long,
   NftId,
   PendingAirdropId,
   TokenAirdropTransaction,
@@ -54,6 +56,7 @@ import {
   TokenSupplyType,
   TokenUnfreezeTransaction,
   TokenUnpauseTransaction,
+  TokenUpdateNftsTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
 
@@ -623,6 +626,19 @@ export class TokenServiceImpl implements TokenService {
     return new TokenBurnTransaction()
       .setTokenId(TokenId.fromString(params.tokenId))
       .setSerials(params.serialNumbers);
+  }
+
+  createUpdateNftMetadataTransaction(
+    params: TokenUpdateNftMetadataParams,
+  ): TokenUpdateNftsTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating NFT metadata update transaction: ${params.serialNumbers.length} serials for token ${params.tokenId}`,
+    );
+
+    return new TokenUpdateNftsTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setSerialNumbers(params.serialNumbers.map((s) => Long.fromNumber(s)))
+      .setMetadata(params.metadata);
   }
 
   /**
