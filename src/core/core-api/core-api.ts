@@ -28,6 +28,7 @@ import type { ScheduleTransactionService } from '@/core/services/schedule-transa
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
+import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 
@@ -53,6 +54,7 @@ import { ScheduleTransactionServiceImpl } from '@/core/services/schedule-transac
 import { ZustandGenericStateServiceImpl } from '@/core/services/state/state-service';
 import { TokenServiceImpl } from '@/core/services/token/token-service';
 import { TopicServiceImpl } from '@/core/services/topic/topic-transaction-service';
+import { TransferServiceImpl } from '@/core/services/transfer/transfer-service';
 import { TxExecuteServiceImpl } from '@/core/services/tx-execute/tx-execute-service';
 import { TxSignServiceImpl } from '@/core/services/tx-sign/tx-sign-service';
 
@@ -81,6 +83,7 @@ export class CoreApiImplementation implements CoreApi {
   public batch: BatchTransactionService;
   public schedule: ScheduleTransactionService;
   public receipt: ReceiptService;
+  public transfer: TransferService;
 
   constructor(storageDir?: string) {
     this.logger = new LoggerService();
@@ -141,6 +144,7 @@ export class CoreApiImplementation implements CoreApi {
     this.batch = new BatchTransactionServiceImpl(this.logger);
     this.schedule = new ScheduleTransactionServiceImpl(this.logger);
     this.receipt = new ReceiptServiceImpl(this.logger, this.network);
+    this.transfer = new TransferServiceImpl(this.logger);
   }
 }
 

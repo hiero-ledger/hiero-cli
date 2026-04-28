@@ -24,6 +24,7 @@ import type { ScheduleTransactionService } from '@/core/services/schedule-transa
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
+import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 
@@ -118,4 +119,5 @@ export interface CoreApi {
    */
   schedule: ScheduleTransactionService;
   receipt: ReceiptService;
+  transfer: TransferService;
 }

@@ -181,6 +181,11 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     identityResolution,
     schedule: makeScheduleTransactionServiceMock(),
     keyResolver,
+    transfer: {
+      createHbarTransferTransaction: jest.fn(),
+      createFtTransferTransaction: jest.fn(),
+      createAtomicSwapTransaction: jest.fn(),
+    },
   };
 
   return {

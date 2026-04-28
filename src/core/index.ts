@@ -39,6 +39,9 @@ export type * from './services/schedule-transaction/schedule-transaction-service
 export type * from './services/state/state-service.interface';
 export type * from './services/token/token-service.interface';
 export type * from './services/topic/topic-transaction-service.interface';
+export type { TransferService } from './services/transfer/transfer-service.interface';
+export type { SwapTransferParams } from './services/transfer/types';
+export { SwapTransferType } from './services/transfer/types';
 export type * from './services/tx-execute/tx-execute-service.interface';
 export type * from './services/tx-sign/tx-sign-service.interface';
 

@@ -11,6 +11,7 @@ import hbarPluginManifest from '@/plugins/hbar/manifest';
 import networkPluginManifest from '@/plugins/network/manifest';
 import pluginManagementManifest from '@/plugins/plugin-management/manifest';
 import schedulePluginManifest from '@/plugins/schedule/manifest';
+import { swapPluginManifest } from '@/plugins/swap/manifest';
 import tokenPluginManifest from '@/plugins/token/manifest';
 import topicPluginManifest from '@/plugins/topic/manifest';
 
@@ -52,4 +53,5 @@ export const DEFAULT_PLUGIN_STATE: PluginManifest[] = [
   configPluginManifest,
   contractErc20PluginManifest,
   contractErc721PluginManifest,
+  swapPluginManifest,
 ];
