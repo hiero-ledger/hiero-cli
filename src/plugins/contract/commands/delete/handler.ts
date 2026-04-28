@@ -277,11 +277,11 @@ export class DeleteContractCommand extends BaseTransactionCommand<
     }
 
     const { keyRefIds: signingKeyRefIds, requiredSignatures } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
+      await api.keyResolver.resolveSigningKeys({
         mirrorRoleKey: contractInfo.admin_key,
         explicitCredentials: validArgs.adminKey,
         keyManager,
-        resolveSigningKeyLabels: ['contract:admin'],
+        signingKeyLabels: ['contract:admin'],
         emptyMirrorRoleKeyMessage:
           'This contract has no admin key on Hedera. On-network deletion is not possible. You can remove it from local CLI state only using --state-only flag.',
         insufficientKmsMatchesMessage:

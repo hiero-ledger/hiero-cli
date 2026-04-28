@@ -16,6 +16,7 @@ import type {
   TokenMintTransaction,
   TokenRejectTransaction,
   TokenUnfreezeTransaction,
+  TokenUpdateTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
 import type {
@@ -37,6 +38,7 @@ import type {
   TokenRejectAirdropParams,
   TokenTransferParams,
   TokenUnfreezeParams,
+  TokenUpdateParams,
 } from '@/core/types/token.types';
 
 export interface TokenService {
@@ -115,4 +117,8 @@ export interface TokenService {
   createRejectAirdropTransaction(
     params: TokenRejectAirdropParams,
   ): TokenRejectTransaction;
+
+  createUpdateTokenTransaction(
+    params: TokenUpdateParams,
+  ): TokenUpdateTransaction;
 }

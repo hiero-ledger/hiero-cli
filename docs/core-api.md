@@ -106,6 +106,10 @@ interface TokenService {
   createMintTransaction(params: TokenMintParams): TokenMintTransaction;
 
   createNftTransferTransaction(params: NftTransferParams): TransferTransaction;
+
+  createUpdateTokenTransaction(
+    params: TokenUpdateParams,
+  ): TokenUpdateTransaction;
 }
 
 interface TokenCreateParams {
@@ -151,6 +155,26 @@ interface NftTransferParams {
   fromAccountId: string;
   toAccountId: string;
   serialNumbers: number[]; // Max 10 serials per transaction (Hedera limit)
+}
+
+interface TokenUpdateParams {
+  tokenId: string;
+  name?: string;
+  symbol?: string;
+  treasuryId?: string;
+  adminKey?: Key | null;   // null clears the key
+  kycKey?: Key | null;
+  freezeKey?: Key | null;
+  wipeKey?: Key | null;
+  supplyKey?: Key | null;
+  feeScheduleKey?: Key | null;
+  pauseKey?: Key | null;
+  metadataKey?: Key | null;
+  memo?: string | null;    // null clears the memo
+  autoRenewAccountId?: string;
+  autoRenewPeriodSeconds?: number;
+  expirationTime?: Date;
+  metadata?: Uint8Array;
 }
 ```
 
@@ -640,6 +664,98 @@ const signature = await signer.sign(messageBytes);
 
 // Create Hedera client (automatically uses network-specific operator, keys managed internally)
 const client = api.kms.createClient('testnet');
+```
+
+### Key Resolver Service
+
+Resolves credentials into signing key references, public keys, and account identifiers. Handlers use this service to turn user-supplied credentials (private key strings, aliases, account IDs, etc.) into the `keyRefId` values that `TxSignService` needs for signing.
+
+```typescript
+interface KeyResolverService {
+  // Resolves a credential to an account credential (accountId + keyRefId + publicKey).
+  // Requires a private key in the KMS. Falls back to the network operator when
+  // credential is undefined and fallback=true.
+  resolveAccountCredentials(
+    credential: Credential | undefined,
+    keyManager: KeyManager,
+    fallback?: boolean,
+    labels?: string[],
+  ): Promise<ResolvedAccountCredential>;
+
+  // Resolves a credential to a public key reference only (no account association needed).
+  getPublicKey(
+    credential: Credential | undefined,
+    keyManager: KeyManager,
+    fallback?: boolean,
+    labels?: string[],
+  ): Promise<ResolvedPublicKey>;
+
+  // Resolves a credential to a signing key (keyRefId + publicKey).
+  // Requires a private key in the KMS.
+  resolveSigningKey(
+    credential: Credential | undefined,
+    keyManager: KeyManager,
+    fallback?: boolean,
+    labels?: string[],
+  ): Promise<ResolvedPublicKey>;
+
+  // Looks up stored KMS key refs and returns their public keys.
+  resolvedPublicKeysForStoredKeyRefs(keyRefIds: string[]): ResolvedPublicKey[];
+
+  // Resolves signing keys from a mirror-node role key (e.g. admin_key) combined with
+  // optional explicit CLI credentials. Returns the keyRefIds to pass to txSign.sign().
+  resolveSigningKeys(params: SigningKeyParams): Promise<SigningKeysResult>;
+
+  // Resolves signing keys when the caller supplies explicit credentials.
+  resolveExplicitSigningKeys(
+    params: ExplicitSigningKeysParams,
+  ): Promise<SigningKeysResult>;
+
+  // Resolves signing keys by matching mirror-node public keys against the KMS.
+  resolveMirrorNodeSigningKeys(
+    params: MirrorNodeSigningKeysParams,
+  ): SigningKeysResult;
+}
+
+interface SigningKeyParams {
+  mirrorRoleKey: MirrorNodeKey | null | undefined; // e.g. tokenInfo.admin_key
+  explicitCredentials: Credential[];               // from --admin-keys, etc.
+  keyManager: KeyManager;
+  signingKeyLabels: string[];                      // e.g. ['token:admin']
+  emptyMirrorRoleKeyMessage: string;               // thrown when role key is absent
+  insufficientKmsMatchesMessage: string;           // thrown when KMS has no match
+  validationErrorOptions?: { context?: Record<string, unknown> };
+}
+
+interface SigningKeysResult {
+  keyRefIds: string[];
+  requiredSignatures: number;
+}
+
+type ResolvedPublicKey = { keyRefId: string; publicKey: string };
+
+type ResolvedAccountCredential = {
+  keyRefId: string;
+  accountId: string;
+  publicKey: string;
+};
+```
+
+**Usage Example (token admin key resolution):**
+
+```typescript
+const result = await api.keyResolver.resolveSigningKeys({
+  mirrorRoleKey: tokenInfo.admin_key,
+  explicitCredentials: validArgs.adminKeys,
+  keyManager,
+  signingKeyLabels: ['token:admin'],
+  emptyMirrorRoleKeyMessage: 'This token has no admin key on Hedera.',
+  insufficientKmsMatchesMessage:
+    'Admin key not found in key manager. Provide --admin-keys.',
+  validationErrorOptions: { context: { tokenId } },
+});
+
+const signed = await api.txSign.sign(transaction, result.keyRefIds);
 ```
 
 ## Command Handler Context

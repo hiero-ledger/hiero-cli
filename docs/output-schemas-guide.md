@@ -828,6 +828,34 @@ Lists all tokens from all networks stored in state.
 | `accountId`     | `string`           | Unfrozen account ID (0.0.X)         |
 | `network`       | `SupportedNetwork` | Network where unfreeze was executed |
 
+#### `token update`
+
+**Output:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "network": "testnet",
+  "updatedFields": ["name", "kycKey (cleared)", "memo"]
+}
+```
+
+**Schema:** `TokenUpdateOutputSchema` from `src/plugins/token/commands/update/output.ts`
+
+| Field           | Type               | Description                                         |
+| --------------- | ------------------ | --------------------------------------------------- |
+| `transactionId` | `string`           | Hedera transaction ID                               |
+| `tokenId`       | `string`           | Token ID (0.0.X)                                    |
+| `network`       | `SupportedNetwork` | Network where the update was executed               |
+| `updatedFields` | `string[]`         | Names of fields that were changed in this operation |
+
+`updatedFields` lists every field touched by the update. Role keys that were cleared carry a `(cleared)` suffix (e.g. `kycKey (cleared)`). Fields not included in the request are absent from `updatedFields`.
+
+The command handles both fungible and non-fungible tokens. Expiration time can be updated without an admin key when it is the only change.
+
+**Batch support:** Registers the `batchify` hooks. When `--batch <name>` is used the output follows the batchify schema instead. The `token-update-state` hook persists updated token data to local state after a successful batch execution.
+
 #### `token allowance-nft`
 
 **Output** (specific serials):
@@ -1259,7 +1287,7 @@ hcli account list --output accounts.json --format json
 hcli account create --name my-account --script
 ```
 
-**Batch support:** Commands that register the `batchify` hook (e.g., `account create`, `token create-ft`, `topic create`, `topic update`, `topic delete`) accept `--batch <batch-name>` to defer execution. When used, the output follows the batchify schema (`batchName`, `transactionOrder`) instead of the command's normal output.
+**Batch support:** Commands that register the `batchify` hook (e.g., `account create`, `token create-ft`, `token update`, `topic create`, `topic update`, `topic delete`) accept `--batch <batch-name>` to defer execution. When used, the output follows the batchify schema (`batchName`, `transactionOrder`) instead of the command's normal output.
 
 ## Adding New Output Schemas
 
