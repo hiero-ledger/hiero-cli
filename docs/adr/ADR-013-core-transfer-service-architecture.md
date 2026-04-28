@@ -209,15 +209,33 @@ The following handlers are the only callers of the methods being moved. Updates 
 | `plugins/token/commands/delete-allowance-nft/handler.ts` | `api.token.createNftAllowanceDeleteTransaction(...)`                  | `api.allowance.buildNftAllowanceDelete(...)`                                                                                                                                |
 | `plugins/swap/commands/*/handler.ts`                     | _(new)_                                                               | `api.transfer.buildMultiAssetTransfer(...)`                                                                                                                                 |
 
-The following mock files must be updated as part of this migration:
+The following mock and test files must be updated as part of this migration:
 
-| Mock file                                                 | Change required                                                                                                      |
+**Mock helpers (CoreApi / service mocks):**
+
+| File                                                      | Change required                                                                                                      |
 | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
 | `plugins/hbar/__tests__/unit/helpers/mocks.ts`            | Replace `transferTinybar` / `createHbarAllowanceTransaction` with mocks for `TransferService` and `AllowanceService` |
 | `src/__tests__/mocks/mocks.ts`                            | Remove `hbar: makeHbarMock()` from the CoreApi mock; add `transfer` and `allowance` mock entries                     |
 | `plugins/token/__tests__/unit/helpers/mocks.ts`           | Remove the 5 migrated methods from the `TokenService` mock                                                           |
 | `plugins/contract-erc20/__tests__/unit/helpers/mocks.ts`  | Remove the 5 migrated methods from the `TokenService` mock                                                           |
 | `plugins/contract-erc721/__tests__/unit/helpers/mocks.ts` | Remove the 5 migrated methods from the `TokenService` mock                                                           |
+
+**Service unit tests:**
+
+| File                                                       | Change required                                                                                                      |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `core/services/token/__tests__/unit/token-service.test.ts` | Remove test cases for the 5 migrated methods; migrate them to `TransferServiceImpl` and `AllowanceServiceImpl` tests |
+
+**Plugin handler unit tests:**
+
+| File                                                        | Change required                                                                                                    |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `plugins/hbar/__tests__/unit/transfer.test.ts`              | Update to use `api.transfer.buildTransferTransaction` instead of `api.hbar.transferTinybar`                        |
+| `plugins/token/__tests__/unit/transfer.test.ts`             | Update to use `api.transfer.buildTransferTransaction` instead of `api.token.createTransferTransaction`             |
+| `plugins/token/__tests__/unit/allowance-ft.test.ts`         | Update to use `api.allowance.buildAllowanceApprove` instead of `api.token.createFungibleTokenAllowanceTransaction` |
+| `plugins/token/__tests__/unit/allowance-nft.test.ts`        | Update to use `api.allowance.buildAllowanceApprove` instead of `api.token.createNftAllowanceApproveTransaction`    |
+| `plugins/token/__tests__/unit/delete-allowance-nft.test.ts` | Update to use `api.allowance.buildNftAllowanceDelete` instead of `api.token.createNftAllowanceDeleteTransaction`   |
 
 ## Migration Strategy
 
