@@ -1,9 +1,11 @@
 import type {
   Destination,
+  ExplicitSigningKeysParams,
+  MirrorNodeSigningKeysParams,
   ResolvedAccountCredential,
   ResolvedPublicKey,
-  ResolveSigningKeyRefIdsFromMirrorRoleKeyInput,
-  ResolveSigningKeyRefIdsFromMirrorRoleKeyResult,
+  SigningKeyParams,
+  SigningKeysResult,
 } from '@/core/services/key-resolver/types';
 import type {
   Credential,
@@ -45,8 +47,16 @@ export interface KeyResolverService {
   // Stored KMS key ref IDs → public keys for signing.
   resolvedPublicKeysForStoredKeyRefs(keyRefIds: string[]): ResolvedPublicKey[];
 
-  // Mirror role key (+ optional CLI creds) → KMS key ref IDs and required signature count.
-  resolveSigningKeyRefIdsFromMirrorRoleKey(
-    params: ResolveSigningKeyRefIdsFromMirrorRoleKeyInput,
-  ): Promise<ResolveSigningKeyRefIdsFromMirrorRoleKeyResult>;
+  // Resolve signing keys with explicit credentials or mirror node keys.
+  resolveSigningKeys(params: SigningKeyParams): Promise<SigningKeysResult>;
+
+  // Resolve signing keys with explicit credentials.
+  resolveExplicitSigningKeys(
+    params: ExplicitSigningKeysParams,
+  ): Promise<SigningKeysResult>;
+
+  // Resolve signing keys with mirror node keys.
+  resolveMirrorNodeSigningKeys(
+    params: MirrorNodeSigningKeysParams,
+  ): SigningKeysResult;
 }

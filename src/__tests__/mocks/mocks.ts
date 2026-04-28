@@ -827,17 +827,35 @@ export const makeKeyResolverMock = (
 
     resolveSigningKey,
 
-    resolveSigningKeyRefIdsFromMirrorRoleKey: jest
-      .fn()
-      .mockImplementation((params) =>
-        KeyResolverServiceImpl.prototype.resolveSigningKeyRefIdsFromMirrorRoleKey.call(
-          Object.assign(Object.create(KeyResolverServiceImpl.prototype), {
-            resolveSigningKey,
-            kms,
-          }) as KeyResolverServiceImpl,
-          params,
-        ),
+    resolveSigningKeys: jest.fn().mockImplementation((params) =>
+      KeyResolverServiceImpl.prototype.resolveSigningKeys.call(
+        Object.assign(Object.create(KeyResolverServiceImpl.prototype), {
+          resolveSigningKey,
+          kms,
+        }) as KeyResolverServiceImpl,
+        params,
       ),
+    ),
+
+    resolveExplicitSigningKeys: jest.fn().mockImplementation((params) =>
+      KeyResolverServiceImpl.prototype.resolveSigningKeys.call(
+        Object.assign(Object.create(KeyResolverServiceImpl.prototype), {
+          resolveSigningKey,
+          kms,
+        }) as KeyResolverServiceImpl,
+        params,
+      ),
+    ),
+
+    resolveMirrorNodeSigningKeys: jest.fn().mockImplementation((params) =>
+      KeyResolverServiceImpl.prototype.resolveSigningKeys.call(
+        Object.assign(Object.create(KeyResolverServiceImpl.prototype), {
+          resolveSigningKey,
+          kms,
+        }) as KeyResolverServiceImpl,
+        params,
+      ),
+    ),
 
     resolvedPublicKeysForStoredKeyRefs: jest
       .fn()
