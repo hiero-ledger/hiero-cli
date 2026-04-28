@@ -158,15 +158,15 @@ import {
   TokenUnpauseOutputSchema,
 } from './commands/unpause';
 import {
-  TOKEN_UPDATE_NFT_METADATA_TEMPLATE,
-  tokenUpdateNftMetadata,
-  TokenUpdateNftMetadataOutputSchema,
-} from './commands/update-metadata-nft';
-import {
   TOKEN_UPDATE_TEMPLATE,
   tokenUpdate,
   TokenUpdateOutputSchema,
 } from './commands/update';
+import {
+  TOKEN_UPDATE_NFT_METADATA_TEMPLATE,
+  tokenUpdateNftMetadata,
+  TokenUpdateNftMetadataOutputSchema,
+} from './commands/update-metadata-nft';
 import {
   TOKEN_VIEW_TEMPLATE,
   tokenView,

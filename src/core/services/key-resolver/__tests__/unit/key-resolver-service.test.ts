@@ -1,16 +1,16 @@
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
-import type { KmsService } from '@/core/services/kms/kms-service.interface';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { NotFoundError, StateError, ValidationError } from '@/core/errors';
 import { KeyResolverServiceImpl } from '@/core/services/key-resolver/key-resolver-service';
-import { KeyAlgorithm } from '@/core/shared/constants';
 import {
   CredentialType,
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
+import { KeyAlgorithm } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -414,7 +414,7 @@ describe('resolveDestination', () => {
   });
 
   test('resolves EVM_ADDRESS with mirror match to destination with accountId and evmAddress', async () => {
-    const { service, mirror } = makeService({
+    const { service } = makeService({
       mirror: {
         getAccountOrThrow: jest.fn().mockResolvedValue({
           ...makeAccountResponse(),
@@ -631,7 +631,7 @@ describe('resolveMirrorNodeSigningKeys', () => {
   });
 
   test('stops collecting once threshold is met', () => {
-    const { service, kms } = makeService({
+    const { service } = makeService({
       kms: {
         findByPublicKey: jest
           .fn()

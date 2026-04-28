@@ -7,8 +7,8 @@ import {
   makeLogger,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { KeyManager } from '@/core/services/kms/kms-types.interface';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_UPDATE_COMMAND_NAME } from '@/plugins/token/commands/update/handler';
 import { TokenUpdateStateHook } from '@/plugins/token/hooks/token-update-state';

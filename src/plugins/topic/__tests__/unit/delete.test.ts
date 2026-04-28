@@ -1,5 +1,6 @@
 import type { CoreApi, TransactionResult } from '@/core';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
+import type { SigningKeysResult } from '@/core/services/key-resolver/types';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 
 import {
@@ -32,7 +33,6 @@ import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TopicDeleteOutputSchema } from '@/plugins/topic/commands/delete';
 import { topicDelete } from '@/plugins/topic/commands/delete/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
-import { SigningKeysResult } from '@/core/services/key-resolver/types';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandTopicStateHelper: jest.fn(),
