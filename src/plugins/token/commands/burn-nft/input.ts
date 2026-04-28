@@ -3,8 +3,8 @@ import { z } from 'zod';
 import {
   EntityReferenceSchema,
   KeyManagerTypeSchema,
-  KeySchema,
   NftSerialNumbersSchema,
+  OptionalDefaultEmptyKeyListSchema,
 } from '@/core/schemas';
 
 export const TokenBurnNftInputSchema = z.object({
@@ -12,7 +12,9 @@ export const TokenBurnNftInputSchema = z.object({
   serials: NftSerialNumbersSchema.describe(
     'Comma-separated serial numbers to burn (max 10)',
   ),
-  supplyKey: KeySchema.describe('Supply key. Accepts any key format.'),
+  supplyKey: OptionalDefaultEmptyKeyListSchema.describe(
+    "Supply key credential(s). If omitted, resolved from key manager by matching the token's on-chain key.",
+  ),
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type (defaults to config setting)',
   ),

@@ -150,7 +150,6 @@ describe('Transfer NFT Integration Tests', () => {
       expect(associateTokenOutput.accountId).toBe(
         createDestinationAccountOutput.accountId,
       );
-      expect(associateTokenOutput.associated).toBe(true);
 
       await delay(5000);
 

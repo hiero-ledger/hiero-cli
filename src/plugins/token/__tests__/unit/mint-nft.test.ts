@@ -148,10 +148,9 @@ describe('tokenMintNftHandler', () => {
         },
       });
 
-      api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-        accountId: '0.0.200000',
-        publicKey: ED25519_HEX_PUBLIC_KEY,
-        keyRefId: 'supply-key-ref-id',
+      api.keyResolver.resolveSigningKeys = jest.fn().mockResolvedValue({
+        keyRefIds: ['supply-key-ref-id'],
+        requiredSignatures: 1,
       });
 
       const logger = makeLogger();
@@ -287,12 +286,6 @@ describe('tokenMintNftHandler', () => {
             publicKey: ED25519_HEX_PUBLIC_KEY,
           }),
         },
-      });
-
-      api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-        accountId: '0.0.200000',
-        publicKey: ED25519_HEX_PUBLIC_KEY,
-        keyRefId: 'supply-key-ref-id',
       });
 
       const logger = makeLogger();

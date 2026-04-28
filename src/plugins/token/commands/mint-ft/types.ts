@@ -10,7 +10,6 @@ export interface MintFtNormalizedParams extends BaseNormalizedParams {
   network: SupportedNetwork;
   tokenId: string;
   rawAmount: bigint;
-  signingKeyRefIds: string[];
 }
 
 export interface MintFtBuildTransactionResult extends BaseBuildTransactionResult {}

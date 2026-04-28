@@ -119,6 +119,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     token: {
       createTokenTransaction: jest.fn(),
       createTokenAssociationTransaction: jest.fn(),
+      createTokenDissociationTransaction: jest.fn(),
       createTransferTransaction: jest.fn(),
       createMintTransaction: jest.fn(),
       createNftTransferTransaction: jest.fn(),
@@ -141,6 +142,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     logger: makeLogger(),
     hbar: {
       transferTinybar: jest.fn(),
+      createHbarAllowanceTransaction: jest.fn(),
     } as jest.Mocked<HbarService>,
     output: {
       handleOutput: jest.fn<never, [OutputHandlerOptions]>(),

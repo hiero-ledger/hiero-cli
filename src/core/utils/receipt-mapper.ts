@@ -49,8 +49,7 @@ export function mapReceiptToTransactionResult(
   if (receipt.scheduleId) {
     scheduleId = receipt.scheduleId.toString();
   }
-
-  const success = receipt.status === Status.Success;
+  const success = receipt.status.toString() === Status.Success.toString();
 
   return {
     transactionId,

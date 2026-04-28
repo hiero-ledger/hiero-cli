@@ -79,6 +79,51 @@ hcli hbar transfer -a 5000000 -f 0.0.123456 -t 0.0.789012
 hcli hbar transfer -a 100000 -t myaccount
 ```
 
+### HBAR Allowance
+
+Approve a spending allowance for another account (spender) to use HBAR on behalf of the owner.
+
+```bash
+# Approve allowance using account names
+hcli hbar allowance \
+  --amount 10 \
+  --spender bob
+
+# Approve allowance with explicit owner
+hcli hbar allowance \
+  --amount 100t \
+  --spender 0.0.54321 \
+  --owner alice
+```
+
+**Options:**
+
+- `-a, --amount <string>` - Allowance amount in HBAR or tinybar (add "t" suffix). Must be greater than zero (required)
+- `-s, --spender <string>` - Spender account: alias, accountId, or evmAddress (required)
+- `-o, --owner <string>` - Owner account (optional, defaults to operator)
+- `--key-manager <string>` - Key manager type (optional, defaults to config setting)
+
+### HBAR Allowance Revoke
+
+Revoke a previously approved HBAR spending allowance for a spender.
+
+```bash
+# Revoke allowance using account names
+hcli hbar allowance-revoke \
+  --spender bob
+
+# Revoke allowance with explicit owner
+hcli hbar allowance-revoke \
+  --spender 0.0.54321 \
+  --owner alice
+```
+
+**Options:**
+
+- `-s, --spender <string>` - Spender account: alias, accountId, or evmAddress (required)
+- `-o, --owner <string>` - Owner account (optional, defaults to operator)
+- `--key-manager <string>` - Key manager type (optional, defaults to config setting)
+
 ## 🔧 Core API Integration
 
 The plugin uses the Core API services:

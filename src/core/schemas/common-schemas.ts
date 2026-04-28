@@ -993,6 +993,8 @@ export const OptionalDefaultEmptyKeyListSchema = z
   .optional()
   .default([]);
 
+export const RequiredKeyListSchema = z.array(KeySchema).min(1);
+
 export const MaxAutoAssociationsSchema = z
   .number()
   .int()

@@ -4,6 +4,8 @@
 import {
   type AccountAPIResponse,
   type AccountListItemAPIResponse,
+  type AccountNftInfo,
+  type AccountNftsResponse,
   type ExchangeRateResponse,
   type GetAccountsAPIResponse,
   MirrorNodeKeyType,
@@ -254,5 +256,24 @@ export const createMockNftInfo = (
   serial_number: 1,
   spender: null,
   token_id: '0.0.2000',
+  ...overrides,
+});
+
+export const createMockAccountNftInfo = (
+  overrides: Partial<AccountNftInfo> = {},
+): AccountNftInfo => ({
+  token_id: '0.0.2000',
+  serial_number: 1,
+  account_id: '0.0.1234',
+  deleted: false,
+  metadata: 'VGhpcyBpcyBhIHRlc3QgTkZU',
+  ...overrides,
+});
+
+export const createMockAccountNftsResponse = (
+  overrides: Partial<AccountNftsResponse> = {},
+): AccountNftsResponse => ({
+  nfts: [createMockAccountNftInfo()],
+  links: { next: null },
   ...overrides,
 });

@@ -4,7 +4,6 @@ import type {
   BaseNormalizedParams,
   BaseSignTransactionResult,
 } from '@/core';
-import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
@@ -16,7 +15,6 @@ export interface ScheduleSignNormalisedParams extends BaseNormalizedParams {
   executed: boolean;
   network: SupportedNetwork;
   keyManager: KeyManager;
-  signer: ResolvedPublicKey;
 }
 
 export interface ScheduleSignBuildTransactionResult extends BaseBuildTransactionResult {

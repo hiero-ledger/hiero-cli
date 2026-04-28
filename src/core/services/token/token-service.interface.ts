@@ -12,10 +12,16 @@ import type {
   TokenClaimAirdropTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
+  TokenDissociateTransaction,
   TokenFreezeTransaction,
+  TokenGrantKycTransaction,
   TokenMintTransaction,
+  TokenPauseTransaction,
   TokenRejectTransaction,
+  TokenRevokeKycTransaction,
   TokenUnfreezeTransaction,
+  TokenUnpauseTransaction,
+  TokenUpdateNftsTransaction,
   TokenUpdateTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
@@ -33,11 +39,15 @@ import type {
   TokenClaimAirdropParams,
   TokenCreateParams,
   TokenDeleteParams,
+  TokenDissociationParams,
   TokenFreezeParams,
+  TokenGrantKycParams,
   TokenMintParams,
   TokenRejectAirdropParams,
+  TokenRevokeKycParams,
   TokenTransferParams,
   TokenUnfreezeParams,
+  TokenUpdateNftMetadataParams,
   TokenUpdateParams,
 } from '@/core/types/token.types';
 
@@ -58,6 +68,13 @@ export interface TokenService {
   createTokenAssociationTransaction(
     params: TokenAssociationParams,
   ): TokenAssociateTransaction;
+
+  /**
+   * Create a token dissociation transaction (without execution)
+   */
+  createTokenDissociationTransaction(
+    params: TokenDissociationParams,
+  ): TokenDissociateTransaction;
 
   /**
    * Create a token mint transaction (without execution)
@@ -94,6 +111,20 @@ export interface TokenService {
     params: TokenUnfreezeParams,
   ): TokenUnfreezeTransaction;
 
+  createGrantKycTransaction(
+    params: TokenGrantKycParams,
+  ): TokenGrantKycTransaction;
+
+  createRevokeKycTransaction(
+    params: TokenRevokeKycParams,
+  ): TokenRevokeKycTransaction;
+
+  createPauseTransaction(params: { tokenId: string }): TokenPauseTransaction;
+
+  createUnpauseTransaction(params: {
+    tokenId: string;
+  }): TokenUnpauseTransaction;
+
   createAirdropFtTransaction(
     params: TokenAirdropFtParams,
   ): TokenAirdropTransaction;
@@ -113,6 +144,10 @@ export interface TokenService {
   createBurnFtTransaction(params: TokenBurnFtParams): TokenBurnTransaction;
 
   createBurnNftTransaction(params: TokenBurnNftParams): TokenBurnTransaction;
+
+  createUpdateNftMetadataTransaction(
+    params: TokenUpdateNftMetadataParams,
+  ): TokenUpdateNftsTransaction;
 
   createRejectAirdropTransaction(
     params: TokenRejectAirdropParams,

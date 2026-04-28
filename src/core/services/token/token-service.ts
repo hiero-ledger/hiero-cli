@@ -19,11 +19,15 @@ import type {
   TokenClaimAirdropParams,
   TokenCreateParams,
   TokenDeleteParams,
+  TokenDissociationParams,
   TokenFreezeParams,
+  TokenGrantKycParams,
   TokenMintParams,
   TokenRejectAirdropParams,
+  TokenRevokeKycParams,
   TokenTransferParams,
   TokenUnfreezeParams,
+  TokenUpdateNftMetadataParams,
   TokenUpdateParams,
 } from '@/core/types/token.types';
 import type { TokenService } from './token-service.interface';
@@ -36,6 +40,7 @@ import {
   CustomFractionalFee,
   FeeAssessmentMethod,
   Hbar,
+  Long,
   KeyList,
   NftId,
   PendingAirdropId,
@@ -46,12 +51,18 @@ import {
   TokenClaimAirdropTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
+  TokenDissociateTransaction,
   TokenFreezeTransaction,
+  TokenGrantKycTransaction,
   TokenId,
   TokenMintTransaction,
+  TokenPauseTransaction,
   TokenRejectTransaction,
+  TokenRevokeKycTransaction,
   TokenSupplyType,
   TokenUnfreezeTransaction,
+  TokenUnpauseTransaction,
+  TokenUpdateNftsTransaction,
   TokenUpdateTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
@@ -264,6 +275,29 @@ export class TokenServiceImpl implements TokenService {
   }
 
   /**
+   * Create a token dissociation transaction (without execution)
+   */
+  createTokenDissociationTransaction(
+    params: TokenDissociationParams,
+  ): TokenDissociateTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating dissociation transaction: token ${params.tokenId} from account ${params.accountId}`,
+    );
+
+    const { tokenId, accountId } = params;
+
+    const dissociateTx = new TokenDissociateTransaction()
+      .setAccountId(AccountId.fromString(accountId))
+      .setTokenIds([TokenId.fromString(tokenId)]);
+
+    this.logger.debug(
+      `[TOKEN SERVICE] Created dissociation transaction for token ${tokenId}`,
+    );
+
+    return dissociateTx;
+  }
+
+  /**
    * Create a token mint transaction (without execution)
    * Supports both fungible tokens (with amount) and NFTs (with metadata)
    */
@@ -427,6 +461,48 @@ export class TokenServiceImpl implements TokenService {
       .setAccountId(AccountId.fromString(params.accountId));
   }
 
+  createGrantKycTransaction(
+    params: TokenGrantKycParams,
+  ): TokenGrantKycTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating grant KYC transaction for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenGrantKycTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId));
+  }
+
+  createRevokeKycTransaction(
+    params: TokenRevokeKycParams,
+  ): TokenRevokeKycTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating revoke KYC transaction for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenRevokeKycTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId));
+  }
+
+  createPauseTransaction(params: { tokenId: string }): TokenPauseTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating pause transaction for token ${params.tokenId}`,
+    );
+    return new TokenPauseTransaction().setTokenId(
+      TokenId.fromString(params.tokenId),
+    );
+  }
+
+  createUnpauseTransaction(params: {
+    tokenId: string;
+  }): TokenUnpauseTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating unpause transaction for token ${params.tokenId}`,
+    );
+    return new TokenUnpauseTransaction().setTokenId(
+      TokenId.fromString(params.tokenId),
+    );
+  }
+
   createAirdropFtTransaction(
     params: TokenAirdropFtParams,
   ): TokenAirdropTransaction {
@@ -579,6 +655,19 @@ export class TokenServiceImpl implements TokenService {
     return new TokenBurnTransaction()
       .setTokenId(TokenId.fromString(params.tokenId))
       .setSerials(params.serialNumbers);
+  }
+
+  createUpdateNftMetadataTransaction(
+    params: TokenUpdateNftMetadataParams,
+  ): TokenUpdateNftsTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating NFT metadata update transaction: ${params.serialNumbers.length} serials for token ${params.tokenId}`,
+    );
+
+    return new TokenUpdateNftsTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setSerialNumbers(params.serialNumbers.map((s) => Long.fromNumber(s)))
+      .setMetadata(params.metadata);
   }
 
   createUpdateTokenTransaction(

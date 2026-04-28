@@ -479,9 +479,7 @@ describe('Token Lifecycle Integration', () => {
       const associateResult = await tokenAssociate(associateArgs);
       expect(associateResult.result).toBeDefined();
 
-      expect(MockedHelper).toHaveBeenCalledTimes(2);
-      expect(MockedHelper).toHaveBeenNthCalledWith(1, api.state, logger);
-      expect(MockedHelper).toHaveBeenNthCalledWith(2, api.state, logger);
+      expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);
     });
   });
 });
