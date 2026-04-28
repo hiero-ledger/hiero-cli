@@ -32,3 +32,21 @@ export function isNoKycKeyError(error: unknown): boolean {
     cause.status === HederaStatus.TokenHasNoKycKey
   );
 }
+
+export function isNoWipeKeyError(error: unknown): boolean {
+  return isTransactionErrorWithStatus(error, HederaStatus.TokenHasNoWipeKey);
+}
+
+export function isCannotWipeTreasuryError(error: unknown): boolean {
+  return isTransactionErrorWithStatus(
+    error,
+    HederaStatus.CannotWipeTokenTreasuryAccount,
+  );
+}
+
+export function isAccountDoesNotOwnWipedNftError(error: unknown): boolean {
+  return isTransactionErrorWithStatus(
+    error,
+    HederaStatus.AccountDoesNotOwnWipedNft,
+  );
+}
