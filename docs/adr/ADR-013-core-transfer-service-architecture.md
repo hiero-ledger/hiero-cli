@@ -42,12 +42,10 @@ This ADR introduces two new focused services — `TransferService` and `Allowanc
 
 **`AllowanceService`** (`CoreApi.allowance`) — owns all operations that authorise a third party to move value:
 
-| Method                     | Source                                                 | Returns                                                                   | Description              |
-| -------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------- | ------------------------ |
-| `buildHbarAllowance`       | `HbarService.createHbarAllowanceTransaction`           | `AccountAllowanceApproveTransaction`                                      | HBAR spending allowance  |
-| `buildFtAllowance`         | `TokenService.createFungibleTokenAllowanceTransaction` | `AccountAllowanceApproveTransaction`                                      | FT spending allowance    |
-| `buildNftAllowanceApprove` | `TokenService.createNftAllowanceApproveTransaction`    | `AccountAllowanceApproveTransaction`                                      | NFT transfer allowance   |
-| `buildNftAllowanceDelete`  | `TokenService.createNftAllowanceDeleteTransaction`     | `AccountAllowanceApproveTransaction \| AccountAllowanceDeleteTransaction` | NFT allowance revocation |
+| Method                    | Source                                                                                                                                       | Returns                                                                   | Description                                                                                                                  |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `buildAllowanceApprove`   | `HbarService.createHbarAllowanceTransaction`, `TokenService.createFungibleTokenAllowanceTransaction`, `createNftAllowanceApproveTransaction` | `AccountAllowanceApproveTransaction`                                      | Approve an allowance for any asset type (HBAR, FT, or NFT); asset type is determined by the `type` discriminant on the entry |
+| `buildNftAllowanceDelete` | `TokenService.createNftAllowanceDeleteTransaction`                                                                                           | `AccountAllowanceApproveTransaction \| AccountAllowanceDeleteTransaction` | NFT allowance revocation                                                                                                     |
 
 **`TokenService`** (`CoreApi.token`) — the following 5 methods are removed and migrated to the services above; all remaining token-lifecycle methods are unchanged:
 
@@ -88,22 +86,11 @@ import type {
   AccountAllowanceApproveTransaction,
   AccountAllowanceDeleteTransaction,
 } from '@hashgraph/sdk';
-import type {
-  FtAllowanceParams,
-  HbarAllowanceParams,
-  NftAllowanceApproveParams,
-  NftAllowanceDeleteParams,
-} from './types';
+import type { AllowanceApproveEntry, NftAllowanceDeleteParams } from './types';
 
 export interface AllowanceService {
-  buildHbarAllowance(
-    params: HbarAllowanceParams,
-  ): AccountAllowanceApproveTransaction;
-  buildFtAllowance(
-    params: FtAllowanceParams,
-  ): AccountAllowanceApproveTransaction;
-  buildNftAllowanceApprove(
-    params: NftAllowanceApproveParams,
+  buildAllowanceApprove(
+    entry: AllowanceApproveEntry,
   ): AccountAllowanceApproveTransaction;
   buildNftAllowanceDelete(
     params: NftAllowanceDeleteParams,
@@ -148,26 +135,34 @@ export type MultiAssetTransferEntry =
 ```ts
 // src/core/services/allowance/types.ts
 
-export interface HbarAllowanceParams {
+export type HbarAllowanceEntry = {
+  type: 'hbar';
   ownerAccountId: string;
   spenderAccountId: string;
   amountTinybar: bigint;
-}
+};
 
-export interface FtAllowanceParams {
+export type FtAllowanceEntry = {
+  type: 'ft';
   ownerAccountId: string;
   spenderAccountId: string;
   tokenId: string;
   amount: bigint;
-}
+};
 
-export interface NftAllowanceApproveParams {
+export type NftAllowanceEntry = {
+  type: 'nft';
   ownerAccountId: string;
   spenderAccountId: string;
   tokenId: string;
   serialNumbers?: bigint[];
   approveForAll?: boolean;
-}
+};
+
+export type AllowanceApproveEntry =
+  | HbarAllowanceEntry
+  | FtAllowanceEntry
+  | NftAllowanceEntry;
 
 export interface NftAllowanceDeleteParams {
   ownerAccountId: string;
@@ -178,6 +173,8 @@ export interface NftAllowanceDeleteParams {
 ```
 
 `buildTransferTransaction(entry, memo?)` is a convenience wrapper that calls `buildMultiAssetTransfer([entry], memo)`. `buildMultiAssetTransfer` iterates over the entries, dispatches on the `type` discriminant, and applies `addHbarTransfer`, `addTokenTransfer`, or `addNftTransfer` to a single shared `TransferTransaction` instance, then sets `memo` if provided. An empty `entries` array is a programmer error; the implementation must throw before constructing a transaction so that a vacuous `TransferTransaction` is never submitted to the network.
+
+`buildAllowanceApprove` follows the same pattern: it dispatches on the `type` discriminant and calls `approveHbarAllowance`, `approveTokenAllowance`, or `approveNftAllowance` on a single `AccountAllowanceApproveTransaction` instance.
 
 ### Part 5: CoreApi Changes
 
@@ -200,17 +197,17 @@ The removal of `hbar: HbarService` is covered by Phase 3. `CoreApi.token` is unc
 
 The following handlers are the only callers of the methods being moved. Updates are mechanical renames with no business logic changes:
 
-| Handler                                                  | Old call                                                              | New call                                                                                                                                                   |
-| -------------------------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `plugins/hbar/commands/transfer/handler.ts`              | `api.hbar.transferTinybar(...)`                                       | `api.transfer.buildTransferTransaction({ type: 'hbar', ... }, memo)`                                                                                       |
-| `plugins/hbar/commands/allowance/handler.ts`             | `api.hbar.createHbarAllowanceTransaction(...)`                        | `api.allowance.buildHbarAllowance(...)`                                                                                                                    |
-| `plugins/hbar/commands/allowance-revoke/handler.ts`      | `api.hbar.createHbarAllowanceTransaction({ ..., amountTinybar: 0n })` | `api.allowance.buildHbarAllowance({ ..., amountTinybar: 0n })` — revoke reuses the same method with a zero amount; no separate revoke method is introduced |
-| `plugins/token/commands/transfer-ft/handler.ts`          | `api.token.createTransferTransaction(...)`                            | `api.transfer.buildTransferTransaction({ type: 'ft', ... })`                                                                                               |
-| `plugins/token/commands/transfer-nft/handler.ts`         | `api.token.createNftTransferTransaction(...)`                         | `api.transfer.buildTransferTransaction({ type: 'nft', ... })`                                                                                              |
-| `plugins/token/commands/allowance-ft/handler.ts`         | `api.token.createFungibleTokenAllowanceTransaction(...)`              | `api.allowance.buildFtAllowance(...)`                                                                                                                      |
-| `plugins/token/commands/allowance-nft/handler.ts`        | `api.token.createNftAllowanceApproveTransaction(...)`                 | `api.allowance.buildNftAllowanceApprove(...)`                                                                                                              |
-| `plugins/token/commands/delete-allowance-nft/handler.ts` | `api.token.createNftAllowanceDeleteTransaction(...)`                  | `api.allowance.buildNftAllowanceDelete(...)`                                                                                                               |
-| `plugins/swap/commands/*/handler.ts`                     | _(new)_                                                               | `api.transfer.buildMultiAssetTransfer(...)`                                                                                                                |
+| Handler                                                  | Old call                                                              | New call                                                                                                                                                                    |
+| -------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `plugins/hbar/commands/transfer/handler.ts`              | `api.hbar.transferTinybar(...)`                                       | `api.transfer.buildTransferTransaction({ type: 'hbar', ... }, memo)`                                                                                                        |
+| `plugins/hbar/commands/allowance/handler.ts`             | `api.hbar.createHbarAllowanceTransaction(...)`                        | `api.allowance.buildAllowanceApprove({ type: 'hbar', ... })`                                                                                                                |
+| `plugins/hbar/commands/allowance-revoke/handler.ts`      | `api.hbar.createHbarAllowanceTransaction({ ..., amountTinybar: 0n })` | `api.allowance.buildAllowanceApprove({ type: 'hbar', ..., amountTinybar: 0n })` — revoke reuses the same method with a zero amount; no separate revoke method is introduced |
+| `plugins/token/commands/transfer-ft/handler.ts`          | `api.token.createTransferTransaction(...)`                            | `api.transfer.buildTransferTransaction({ type: 'ft', ... })`                                                                                                                |
+| `plugins/token/commands/transfer-nft/handler.ts`         | `api.token.createNftTransferTransaction(...)`                         | `api.transfer.buildTransferTransaction({ type: 'nft', ... })`                                                                                                               |
+| `plugins/token/commands/allowance-ft/handler.ts`         | `api.token.createFungibleTokenAllowanceTransaction(...)`              | `api.allowance.buildAllowanceApprove({ type: 'ft', ... })`                                                                                                                  |
+| `plugins/token/commands/allowance-nft/handler.ts`        | `api.token.createNftAllowanceApproveTransaction(...)`                 | `api.allowance.buildAllowanceApprove({ type: 'nft', ... })`                                                                                                                 |
+| `plugins/token/commands/delete-allowance-nft/handler.ts` | `api.token.createNftAllowanceDeleteTransaction(...)`                  | `api.allowance.buildNftAllowanceDelete(...)`                                                                                                                                |
+| `plugins/swap/commands/*/handler.ts`                     | _(new)_                                                               | `api.transfer.buildMultiAssetTransfer(...)`                                                                                                                                 |
 
 The following mock files must be updated as part of this migration:
 
@@ -241,7 +238,7 @@ The following mock files must be updated as part of this migration:
 
 1. Update the 8 existing plugin handlers listed above (all rows except the swap row, which is new code) to call `api.transfer.*` or `api.allowance.*`
 2. Remove the 5 methods from `TokenService` interface and `TokenServiceImpl`
-3. Update all 5 mock files listed in Part 7
+3. Update all 5 mock files listed in Part 6
 
 ### Phase 3: Remove HbarService
 
@@ -259,7 +256,7 @@ The following mock files must be updated as part of this migration:
 - **HbarService eliminated.** A 2-method wrapper with no independent reason to exist is removed.
 - **TokenService becomes coherent.** After migration every method on `TokenService` is a token-lifecycle operation.
 - **Consistent naming.** All methods in both new services follow the `build*` convention used elsewhere in the service layer.
-- **Minimal interface surface.** `TransferService` exposes two methods: `buildTransferTransaction` for single-asset and `buildMultiAssetTransfer` for composite. The former delegates to the latter; all `TransferTransaction` construction shares one code path.
+- **Minimal interface surface.** `TransferService` exposes two methods (`buildTransferTransaction`, `buildMultiAssetTransfer`); `AllowanceService` exposes two methods (`buildAllowanceApprove`, `buildNftAllowanceDelete`). Both services use a `type` discriminant to dispatch across asset types within a single method, keeping call sites simple and interfaces narrow.
 - **Return types are predictable per service.** `TransferService` always returns `TransferTransaction`. `AllowanceService` returns `AccountAllowanceApproveTransaction` for most methods; `buildNftAllowanceDelete` is the exception (see Cons). Mocking is straightforward in both cases.
 
 ### Cons
