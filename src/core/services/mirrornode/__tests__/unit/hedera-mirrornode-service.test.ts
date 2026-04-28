@@ -545,6 +545,24 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
       );
     });
 
+    it('should handle account with null balance (balance=false query)', async () => {
+      const { service } = setupService();
+      const mockAccount = createMockAccountListItemAPIResponse({
+        balance: null,
+      });
+      const mockResponse = createMockGetAccountsAPIResponse([mockAccount]);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccounts({ balance: false });
+
+      expect(result.accounts).toHaveLength(1);
+      expect(result.accounts[0].accountId).toBe(mockAccount.account);
+      expect(result.accounts[0].balance).toBeUndefined();
+    });
+
     it('should return empty list on HTTP 404', async () => {
       const { service } = setupService();
       (global.fetch as jest.Mock).mockResolvedValue({
