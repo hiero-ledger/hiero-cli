@@ -167,6 +167,16 @@ import {
   tokenView,
   TokenViewOutputSchema,
 } from './commands/view';
+import {
+  TOKEN_WIPE_FT_TEMPLATE,
+  tokenWipeFt,
+  TokenWipeFtOutputSchema,
+} from './commands/wipe-ft';
+import {
+  TOKEN_WIPE_NFT_TEMPLATE,
+  tokenWipeNft,
+  TokenWipeNftOutputSchema,
+} from './commands/wipe-nft';
 import { TokenAssociateStateHook } from './hooks/token-associate-state';
 import { TokenCreateFtFromFileStateHook } from './hooks/token-create-ft-from-file-state';
 import { TokenCreateFtStateHook } from './hooks/token-create-ft-state';
@@ -1944,6 +1954,119 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenUpdateNftMetadataOutputSchema,
         humanTemplate: TOKEN_UPDATE_NFT_METADATA_TEMPLATE,
+      },
+    },
+    {
+      name: 'wipe-ft',
+      summary: 'Wipe fungible tokens from an account',
+      description:
+        'Wipes the specified amount of fungible tokens from an account. Burns the tokens and decreases total supply. Cannot be used on the treasury account. Requires the token wipe key.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Account to wipe from: account-id (0.0.X), account alias, or EVM address (0x...)',
+        },
+        {
+          name: 'amount',
+          short: 'A',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Amount to wipe. Default: display units (with decimals applied). Append "t" for raw base units (e.g., "100t")',
+        },
+        {
+          name: 'wipe-key',
+          short: 'w',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'Wipe key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenWipeFt,
+      output: {
+        schema: TokenWipeFtOutputSchema,
+        humanTemplate: TOKEN_WIPE_FT_TEMPLATE,
+      },
+    },
+    {
+      name: 'wipe-nft',
+      summary: 'Wipe NFT serials from an account',
+      description:
+        'Wipes the specified NFT serial numbers from an account. Burns the tokens and decreases total supply. Cannot be used on the treasury account. Requires the token wipe key.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'NFT token: either a token alias or token-id',
+        },
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Account to wipe from: account-id (0.0.X), account alias, or EVM address (0x...)',
+        },
+        {
+          name: 'serials',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Comma-separated serial numbers to wipe (max 10)',
+        },
+        {
+          name: 'wipe-key',
+          short: 'w',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'Wipe key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenWipeNft,
+      output: {
+        schema: TokenWipeNftOutputSchema,
+        humanTemplate: TOKEN_WIPE_NFT_TEMPLATE,
       },
     },
     {

@@ -22,6 +22,7 @@ import type {
   TokenUnfreezeTransaction,
   TokenUnpauseTransaction,
   TokenUpdateNftsTransaction,
+  TokenWipeTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
 import type {
@@ -47,6 +48,8 @@ import type {
   TokenTransferParams,
   TokenUnfreezeParams,
   TokenUpdateNftMetadataParams,
+  TokenWipeFtParams,
+  TokenWipeNftParams,
 } from '@/core/types/token.types';
 
 export interface TokenService {
@@ -146,6 +149,10 @@ export interface TokenService {
   createUpdateNftMetadataTransaction(
     params: TokenUpdateNftMetadataParams,
   ): TokenUpdateNftsTransaction;
+
+  createWipeFtTransaction(params: TokenWipeFtParams): TokenWipeTransaction;
+
+  createWipeNftTransaction(params: TokenWipeNftParams): TokenWipeTransaction;
 
   createRejectAirdropTransaction(
     params: TokenRejectAirdropParams,

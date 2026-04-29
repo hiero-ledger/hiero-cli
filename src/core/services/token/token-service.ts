@@ -28,6 +28,8 @@ import type {
   TokenTransferParams,
   TokenUnfreezeParams,
   TokenUpdateNftMetadataParams,
+  TokenWipeFtParams,
+  TokenWipeNftParams,
 } from '@/core/types/token.types';
 import type { TokenService } from './token-service.interface';
 
@@ -61,6 +63,7 @@ import {
   TokenUnfreezeTransaction,
   TokenUnpauseTransaction,
   TokenUpdateNftsTransaction,
+  TokenWipeTransaction,
   TransferTransaction,
 } from '@hashgraph/sdk';
 
@@ -651,6 +654,26 @@ export class TokenServiceImpl implements TokenService {
 
     return new TokenBurnTransaction()
       .setTokenId(TokenId.fromString(params.tokenId))
+      .setSerials(params.serialNumbers);
+  }
+
+  createWipeFtTransaction(params: TokenWipeFtParams): TokenWipeTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating FT wipe transaction: ${params.amount.toString()} tokens for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenWipeTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId))
+      .setAmount(params.amount);
+  }
+
+  createWipeNftTransaction(params: TokenWipeNftParams): TokenWipeTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating NFT wipe transaction: ${params.serialNumbers.length} serials for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenWipeTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId))
       .setSerials(params.serialNumbers);
   }
 
