@@ -247,7 +247,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'supply-key',
           short: 's',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: true,
           description:
             'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
@@ -296,7 +296,7 @@ export const tokenPluginManifest: PluginManifest = {
         {
           name: 'supply-key',
           short: 'S',
-          type: OptionType.STRING,
+          type: OptionType.REPEATABLE,
           required: true,
           description:
             'Supply key. Can be {accountId}:{privateKey} pair, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
