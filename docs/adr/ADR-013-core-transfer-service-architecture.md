@@ -2,7 +2,7 @@
 
 - Status: Proposed
 - Date: 2026-04-28
-- Related: `src/core/services/hbar/`, `src/core/services/token/token-service.interface.ts`, `src/core/core-api/core-api.interface.ts`, `src/plugins/hbar/`, `src/plugins/token/commands/transfer-*`, `src/plugins/swap/`, `docs/adr/ADR-001-plugin-architecture.md`
+- Related: `src/core/services/hbar/`, `src/core/services/token/token-service.interface.ts`, `src/core/core-api/core-api.interface.ts`, `src/plugins/hbar/`, `src/plugins/token/commands/transfer-*`, `docs/adr/ADR-001-plugin-architecture.md`
 
 ## Context
 
@@ -236,11 +236,18 @@ export class NftAllowanceEntry implements AllowanceEntry {
   ) {}
 
   apply(tx: AccountAllowanceApproveTransaction): void {
-    if (this.approveForAll || !this.serialNumbers?.length) {
-      tx.approveTokenNftAllowanceAllSerials(...);
+    const tokenId = TokenId.fromString(this.tokenId);
+    const owner = AccountId.fromString(this.ownerAccountId);
+    const spender = AccountId.fromString(this.spenderAccountId);
+    if (this.approveForAll === true) {
+      tx.approveTokenNftAllowanceAllSerials(tokenId, owner, spender);
     } else {
-      for (const serial of this.serialNumbers) {
-        tx.approveTokenNftAllowance(new NftId(..., Long.fromString(serial.toString())), ...);
+      for (const serial of this.serialNumbers!) {
+        tx.approveTokenNftAllowance(
+          new NftId(tokenId, Long.fromString(serial.toString())),
+          owner,
+          spender,
+        );
       }
     }
   }
@@ -249,12 +256,23 @@ export class NftAllowanceEntry implements AllowanceEntry {
 
 ```ts
 // src/core/services/allowance/types.ts
-export interface NftAllowanceDeleteParams {
+export interface NftAllowanceDeleteSpecificParams {
+  tokenId: string;
+  ownerAccountId: string;
+  serialNumbers: bigint[];
+  allSerials?: false;
+}
+
+export interface NftAllowanceDeleteAllSerialsParams {
+  tokenId: string;
   ownerAccountId: string;
   spenderAccountId: string;
-  tokenId: string;
-  serialNumbers?: bigint[];
+  allSerials: true;
 }
+
+export type NftAllowanceDeleteParams =
+  | NftAllowanceDeleteSpecificParams
+  | NftAllowanceDeleteAllSerialsParams;
 ```
 
 `buildTransferTransaction` iterates over the entries and calls `entry.apply(tx)` on a single shared `TransferTransaction` instance, then sets `memo` if provided. Each entry class (`HbarTransferEntry`, `FtTransferEntry`, `NftTransferEntry`) encapsulates the SDK call for its asset type; the service contains no switch or type dispatch. An empty `entries` array is a programmer error; the implementation must throw before constructing a transaction so that a vacuous `TransferTransaction` is never submitted to the network.
@@ -308,9 +326,9 @@ The following mock and test files must be updated as part of this migration:
 
 **Service unit tests:**
 
-| File                                                       | Change required                                                                                                      |
-| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `core/services/token/__tests__/unit/token-service.test.ts` | Remove test cases for the 5 migrated methods; migrate them to `TransferServiceImpl` and `AllowanceServiceImpl` tests |
+| File                                                           | Change required                                                                                                      |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `src/core/services/token/__tests__/unit/token-service.test.ts` | Remove test cases for the 5 migrated methods; migrate them to `TransferServiceImpl` and `AllowanceServiceImpl` tests |
 
 **Plugin handler unit tests:**
 
@@ -368,14 +386,14 @@ The following mock and test files must be updated as part of this migration:
 - **HbarService eliminated.** A 2-method wrapper with no independent reason to exist is removed.
 - **TokenService becomes coherent.** After migration every method on `TokenService` is a token-lifecycle operation.
 - **Consistent naming.** All methods in both new services follow the `build*` convention used elsewhere in the service layer.
-- **Minimal interface surface.** `TransferService` exposes a single method (`buildTransferTransaction`) that accepts an array of entries; `AllowanceService` exposes two methods (`buildAllowanceApprove`, `buildNftAllowanceDelete`). `AllowanceService` uses polymorphism — each entry class carries its own SDK call — keeping the service body free of type dispatch.
+- **Minimal interface surface.** `TransferService` exposes a single method (`buildTransferTransaction`) that accepts an array of entries; `AllowanceService` exposes two methods (`buildAllowanceApprove`, `buildNftAllowanceDelete`). Both services use polymorphism — each entry class carries its own SDK call — keeping both service bodies free of type dispatch.
 - **Return types are predictable per service.** `TransferService` always returns `TransferTransaction`. `AllowanceService` returns `AccountAllowanceApproveTransaction` for most methods; `buildNftAllowanceDelete` is the exception (see Cons). Mocking is straightforward in both cases.
 
 ### Cons
 
 - **Two new services instead of one.** `CoreApi` gains two properties (`transfer`, `allowance`) rather than one. This is a minor cost given the improved clarity.
-- **`buildNftAllowanceDelete` returns a union type.** The method returns either `AccountAllowanceApproveTransaction` or `AccountAllowanceDeleteTransaction` depending on whether serial numbers are specified. This is an SDK constraint inherited from `TokenService`, not a new problem, but it means `AllowanceService` return types are not fully uniform.
-- **Migration touches 8 existing plugin handlers and 5 mock files.** The changes are mechanical but broad. Risk is low given that business logic is unchanged.
+- **`buildNftAllowanceDelete` returns a union type.** The method returns `AccountAllowanceApproveTransaction` when `allSerials: true` (SDK uses `deleteTokenNftAllowanceAllSerials` on an approve transaction) and `AccountAllowanceDeleteTransaction` for specific serials. This is an SDK constraint inherited from `TokenService`, not a new problem, but it means `AllowanceService` return types are not fully uniform.
+- **Migration touches 8 existing plugin handlers, 5 mock files, and 6 test files.** The changes are mechanical but broad. Risk is low given that business logic is unchanged.
 
 ## Consequences
 
