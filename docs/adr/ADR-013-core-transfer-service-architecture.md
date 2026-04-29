@@ -35,16 +35,16 @@ This ADR introduces two new focused services — `TransferService` and `Allowanc
 
 **`TransferService`** (`CoreApi.transfer`) — owns all operations that move value between accounts:
 
-| Method                     | Source                                                                                                  | Returns               | Description                                                                                                                                                                                        |
-| -------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `buildTransferTransaction` | `HbarService.transferTinybar`, `TokenService.createTransferTransaction`, `createNftTransferTransaction` | `TransferTransaction` | Transfer of one or more assets (HBAR, FT, NFT) in a single `TransferTransaction`; asset type per entry is determined by the `type` discriminant; pass a single-element array for a simple transfer |
+| Method                     | Source                                                                                                  | Returns               | Description                                                                                                                                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `buildTransferTransaction` | `HbarService.transferTinybar`, `TokenService.createTransferTransaction`, `createNftTransferTransaction` | `TransferTransaction` | Transfer of one or more assets (HBAR, FT, NFT) in a single `TransferTransaction`; each entry is a class instance that carries its own SDK call; pass a single-element array for a simple transfer |
 
 **`AllowanceService`** (`CoreApi.allowance`) — owns all operations that authorise a third party to move value:
 
-| Method                    | Source                                                                                                                                       | Returns                                                                   | Description                                                                                                                  |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `buildAllowanceApprove`   | `HbarService.createHbarAllowanceTransaction`, `TokenService.createFungibleTokenAllowanceTransaction`, `createNftAllowanceApproveTransaction` | `AccountAllowanceApproveTransaction`                                      | Approve an allowance for any asset type (HBAR, FT, or NFT); asset type is determined by the `type` discriminant on the entry |
-| `buildNftAllowanceDelete` | `TokenService.createNftAllowanceDeleteTransaction`                                                                                           | `AccountAllowanceApproveTransaction \| AccountAllowanceDeleteTransaction` | NFT allowance revocation                                                                                                     |
+| Method                    | Source                                                                                                                                       | Returns                                                                   | Description                                                                                                              |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| `buildAllowanceApprove`   | `HbarService.createHbarAllowanceTransaction`, `TokenService.createFungibleTokenAllowanceTransaction`, `createNftAllowanceApproveTransaction` | `AccountAllowanceApproveTransaction`                                      | Approve an allowance for any asset type (HBAR, FT, or NFT); each entry is a class instance that carries its own SDK call |
+| `buildNftAllowanceDelete` | `TokenService.createNftAllowanceDeleteTransaction`                                                                                           | `AccountAllowanceApproveTransaction \| AccountAllowanceDeleteTransaction` | NFT allowance revocation                                                                                                 |
 
 **`TokenService`** (`CoreApi.token`) — the following 5 methods are removed and migrated to the services above; all remaining token-lifecycle methods are unchanged:
 
@@ -63,11 +63,11 @@ This ADR introduces two new focused services — `TransferService` and `Allowanc
 ```ts
 // src/core/services/transfer/transfer-service.interface.ts
 import type { TransferTransaction } from '@hashgraph/sdk';
-import type { MultiAssetTransferEntry } from './types';
+import type { TransferEntry } from './transfer-entries/transfer-entry.interface';
 
 export interface TransferService {
   buildTransferTransaction(
-    entries: MultiAssetTransferEntry[],
+    entries: TransferEntry[],
     memo?: string,
   ): TransferTransaction;
 }
@@ -81,11 +81,12 @@ import type {
   AccountAllowanceApproveTransaction,
   AccountAllowanceDeleteTransaction,
 } from '@hashgraph/sdk';
-import type { AllowanceApproveEntry, NftAllowanceDeleteParams } from './types';
+import type { AllowanceEntry } from './allowance-entries/allowance-entry.interface';
+import type { NftAllowanceDeleteParams } from './types';
 
 export interface AllowanceService {
   buildAllowanceApprove(
-    entry: AllowanceApproveEntry,
+    entries: AllowanceEntry[],
   ): AccountAllowanceApproveTransaction;
   buildNftAllowanceDelete(
     params: NftAllowanceDeleteParams,
@@ -96,69 +97,158 @@ export interface AllowanceService {
 ### Part 4: Transfer and Allowance Types
 
 ```ts
-// src/core/services/transfer/types.ts
+// src/core/services/transfer/transfer-entries/transfer-entry.interface.ts
+import type { TransferTransaction } from '@hashgraph/sdk';
 
-export type HbarTransferEntry = {
-  type: 'hbar';
-  from: string;
-  to: string;
-  amountTinybar: bigint;
-};
+export interface TransferEntry {
+  apply(tx: TransferTransaction): void;
+}
+```
 
-export type FtTransferEntry = {
-  type: 'ft';
-  from: string;
-  to: string;
-  tokenId: string;
-  amount: bigint;
-};
+```ts
+// src/core/services/transfer/transfer-entries/hbar-transfer-entry.ts
+export class HbarTransferEntry implements TransferEntry {
+  constructor(
+    public readonly from: string,
+    public readonly to: string,
+    public readonly amountTinybar: bigint,
+  ) {}
 
-export type NftTransferEntry = {
-  type: 'nft';
-  from: string;
-  to: string;
-  tokenId: string;
-  serialNumber: bigint;
-};
+  apply(tx: TransferTransaction): void {
+    tx.addHbarTransfer(
+      AccountId.fromString(this.from),
+      new Hbar((-this.amountTinybar).toString(), HbarUnit.Tinybar),
+    );
+    tx.addHbarTransfer(
+      AccountId.fromString(this.to),
+      new Hbar(this.amountTinybar.toString(), HbarUnit.Tinybar),
+    );
+  }
+}
+```
 
-export type MultiAssetTransferEntry =
-  | HbarTransferEntry
-  | FtTransferEntry
-  | NftTransferEntry;
+```ts
+// src/core/services/transfer/transfer-entries/ft-transfer-entry.ts
+export class FtTransferEntry implements TransferEntry {
+  constructor(
+    public readonly from: string,
+    public readonly to: string,
+    public readonly tokenId: string,
+    public readonly amount: bigint,
+  ) {}
+
+  apply(tx: TransferTransaction): void {
+    tx.addTokenTransfer(
+      TokenId.fromString(this.tokenId),
+      AccountId.fromString(this.from),
+      -Long.fromString(this.amount.toString()),
+    );
+    tx.addTokenTransfer(
+      TokenId.fromString(this.tokenId),
+      AccountId.fromString(this.to),
+      Long.fromString(this.amount.toString()),
+    );
+  }
+}
+```
+
+```ts
+// src/core/services/transfer/transfer-entries/nft-transfer-entry.ts
+export class NftTransferEntry implements TransferEntry {
+  constructor(
+    public readonly from: string,
+    public readonly to: string,
+    public readonly tokenId: string,
+    public readonly serialNumber: bigint,
+  ) {}
+
+  apply(tx: TransferTransaction): void {
+    tx.addNftTransfer(
+      new NftId(
+        TokenId.fromString(this.tokenId),
+        Long.fromString(this.serialNumber.toString()),
+      ),
+      AccountId.fromString(this.from),
+      AccountId.fromString(this.to),
+    );
+  }
+}
+```
+
+```ts
+// src/core/services/allowance/allowance-entries/allowance-entry.interface.ts
+import type { AccountAllowanceApproveTransaction } from '@hashgraph/sdk';
+
+export interface AllowanceEntry {
+  apply(tx: AccountAllowanceApproveTransaction): void;
+}
+```
+
+```ts
+// src/core/services/allowance/allowance-entries/hbar-allowance-entry.ts
+export class HbarAllowanceEntry implements AllowanceEntry {
+  constructor(
+    public readonly ownerAccountId: string,
+    public readonly spenderAccountId: string,
+    public readonly amountTinybar: bigint,
+  ) {}
+
+  apply(tx: AccountAllowanceApproveTransaction): void {
+    tx.approveHbarAllowance(
+      AccountId.fromString(this.ownerAccountId),
+      AccountId.fromString(this.spenderAccountId),
+      new Hbar(this.amountTinybar.toString(), HbarUnit.Tinybar),
+    );
+  }
+}
+```
+
+```ts
+// src/core/services/allowance/allowance-entries/ft-allowance-entry.ts
+export class FtAllowanceEntry implements AllowanceEntry {
+  constructor(
+    public readonly ownerAccountId: string,
+    public readonly spenderAccountId: string,
+    public readonly tokenId: string,
+    public readonly amount: bigint,
+  ) {}
+
+  apply(tx: AccountAllowanceApproveTransaction): void {
+    tx.approveTokenAllowance(
+      TokenId.fromString(this.tokenId),
+      AccountId.fromString(this.ownerAccountId),
+      AccountId.fromString(this.spenderAccountId),
+      Long.fromString(this.amount.toString()),
+    );
+  }
+}
+```
+
+```ts
+// src/core/services/allowance/allowance-entries/nft-allowance-entry.ts
+export class NftAllowanceEntry implements AllowanceEntry {
+  constructor(
+    public readonly ownerAccountId: string,
+    public readonly spenderAccountId: string,
+    public readonly tokenId: string,
+    public readonly serialNumbers?: bigint[],
+    public readonly approveForAll?: boolean,
+  ) {}
+
+  apply(tx: AccountAllowanceApproveTransaction): void {
+    if (this.approveForAll || !this.serialNumbers?.length) {
+      tx.approveTokenNftAllowanceAllSerials(...);
+    } else {
+      for (const serial of this.serialNumbers) {
+        tx.approveTokenNftAllowance(new NftId(..., Long.fromString(serial.toString())), ...);
+      }
+    }
+  }
+}
 ```
 
 ```ts
 // src/core/services/allowance/types.ts
-
-export type HbarAllowanceEntry = {
-  type: 'hbar';
-  ownerAccountId: string;
-  spenderAccountId: string;
-  amountTinybar: bigint;
-};
-
-export type FtAllowanceEntry = {
-  type: 'ft';
-  ownerAccountId: string;
-  spenderAccountId: string;
-  tokenId: string;
-  amount: bigint;
-};
-
-export type NftAllowanceEntry = {
-  type: 'nft';
-  ownerAccountId: string;
-  spenderAccountId: string;
-  tokenId: string;
-  serialNumbers?: bigint[];
-  approveForAll?: boolean;
-};
-
-export type AllowanceApproveEntry =
-  | HbarAllowanceEntry
-  | FtAllowanceEntry
-  | NftAllowanceEntry;
-
 export interface NftAllowanceDeleteParams {
   ownerAccountId: string;
   spenderAccountId: string;
@@ -167,9 +257,9 @@ export interface NftAllowanceDeleteParams {
 }
 ```
 
-`buildTransferTransaction` iterates over the entries, dispatches on the `type` discriminant, and applies `addHbarTransfer`, `addTokenTransfer`, or `addNftTransfer` to a single shared `TransferTransaction` instance, then sets `memo` if provided. An empty `entries` array is a programmer error; the implementation must throw before constructing a transaction so that a vacuous `TransferTransaction` is never submitted to the network.
+`buildTransferTransaction` iterates over the entries and calls `entry.apply(tx)` on a single shared `TransferTransaction` instance, then sets `memo` if provided. Each entry class (`HbarTransferEntry`, `FtTransferEntry`, `NftTransferEntry`) encapsulates the SDK call for its asset type; the service contains no switch or type dispatch. An empty `entries` array is a programmer error; the implementation must throw before constructing a transaction so that a vacuous `TransferTransaction` is never submitted to the network.
 
-`buildAllowanceApprove` follows the same pattern: it dispatches on the `type` discriminant and calls `approveHbarAllowance`, `approveTokenAllowance`, or `approveNftAllowance` on a single `AccountAllowanceApproveTransaction` instance.
+`buildAllowanceApprove` iterates over the entries and calls `entry.apply(tx)` on a single shared `AccountAllowanceApproveTransaction` instance. Each entry class (`HbarAllowanceEntry`, `FtAllowanceEntry`, `NftAllowanceEntry`) encapsulates the SDK call for its asset type; the service contains no switch or type dispatch.
 
 ### Part 5: CoreApi Changes
 
@@ -192,17 +282,17 @@ The removal of `hbar: HbarService` is covered by Phase 3. `CoreApi.token` is unc
 
 The following handlers are the only callers of the methods being moved. Updates are mechanical renames with no business logic changes:
 
-| Handler                                                  | Old call                                                              | New call                                                                                                                                                                    |
-| -------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `plugins/hbar/commands/transfer/handler.ts`              | `api.hbar.transferTinybar(...)`                                       | `api.transfer.buildTransferTransaction([{ type: 'hbar', ... }], memo)`                                                                                                      |
-| `plugins/hbar/commands/allowance/handler.ts`             | `api.hbar.createHbarAllowanceTransaction(...)`                        | `api.allowance.buildAllowanceApprove({ type: 'hbar', ... })`                                                                                                                |
-| `plugins/hbar/commands/allowance-revoke/handler.ts`      | `api.hbar.createHbarAllowanceTransaction({ ..., amountTinybar: 0n })` | `api.allowance.buildAllowanceApprove({ type: 'hbar', ..., amountTinybar: 0n })` — revoke reuses the same method with a zero amount; no separate revoke method is introduced |
-| `plugins/token/commands/transfer-ft/handler.ts`          | `api.token.createTransferTransaction(...)`                            | `api.transfer.buildTransferTransaction([{ type: 'ft', ... }])`                                                                                                              |
-| `plugins/token/commands/transfer-nft/handler.ts`         | `api.token.createNftTransferTransaction(...)`                         | `api.transfer.buildTransferTransaction([{ type: 'nft', ... }])`                                                                                                             |
-| `plugins/token/commands/allowance-ft/handler.ts`         | `api.token.createFungibleTokenAllowanceTransaction(...)`              | `api.allowance.buildAllowanceApprove({ type: 'ft', ... })`                                                                                                                  |
-| `plugins/token/commands/allowance-nft/handler.ts`        | `api.token.createNftAllowanceApproveTransaction(...)`                 | `api.allowance.buildAllowanceApprove({ type: 'nft', ... })`                                                                                                                 |
-| `plugins/token/commands/delete-allowance-nft/handler.ts` | `api.token.createNftAllowanceDeleteTransaction(...)`                  | `api.allowance.buildNftAllowanceDelete(...)`                                                                                                                                |
-| `plugins/swap/commands/*/handler.ts`                     | _(new)_                                                               | `api.transfer.buildTransferTransaction([...entries])`                                                                                                                       |
+| Handler                                                  | Old call                                                              | New call                                                                                                                                                            |
+| -------------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `plugins/hbar/commands/transfer/handler.ts`              | `api.hbar.transferTinybar(...)`                                       | `api.transfer.buildTransferTransaction([new HbarTransferEntry(...)], memo)`                                                                                         |
+| `plugins/hbar/commands/allowance/handler.ts`             | `api.hbar.createHbarAllowanceTransaction(...)`                        | `api.allowance.buildAllowanceApprove([new HbarAllowanceEntry(...)])`                                                                                                |
+| `plugins/hbar/commands/allowance-revoke/handler.ts`      | `api.hbar.createHbarAllowanceTransaction({ ..., amountTinybar: 0n })` | `api.allowance.buildAllowanceApprove([new HbarAllowanceEntry(..., 0n)])` — revoke reuses the same class with a zero amount; no separate revoke method is introduced |
+| `plugins/token/commands/transfer-ft/handler.ts`          | `api.token.createTransferTransaction(...)`                            | `api.transfer.buildTransferTransaction([new FtTransferEntry(...)])`                                                                                                 |
+| `plugins/token/commands/transfer-nft/handler.ts`         | `api.token.createNftTransferTransaction(...)`                         | `api.transfer.buildTransferTransaction([new NftTransferEntry(...)])`                                                                                                |
+| `plugins/token/commands/allowance-ft/handler.ts`         | `api.token.createFungibleTokenAllowanceTransaction(...)`              | `api.allowance.buildAllowanceApprove([new FtAllowanceEntry(...)])`                                                                                                  |
+| `plugins/token/commands/allowance-nft/handler.ts`        | `api.token.createNftAllowanceApproveTransaction(...)`                 | `api.allowance.buildAllowanceApprove([new NftAllowanceEntry(...)])`                                                                                                 |
+| `plugins/token/commands/delete-allowance-nft/handler.ts` | `api.token.createNftAllowanceDeleteTransaction(...)`                  | `api.allowance.buildNftAllowanceDelete(...)`                                                                                                                        |
+| `plugins/swap/commands/*/handler.ts`                     | _(new)_                                                               | `api.transfer.buildTransferTransaction([...entries])`                                                                                                               |
 
 The following mock and test files must be updated as part of this migration:
 
@@ -236,16 +326,25 @@ The following mock and test files must be updated as part of this migration:
 
 ### Phase 1: Add TransferService and AllowanceService
 
-1. Create `src/core/services/transfer/types.ts`
-2. Create `src/core/services/transfer/transfer-service.interface.ts`
-3. Create `src/core/services/transfer/transfer-service.ts` (`TransferServiceImpl`)
-4. Create `src/core/services/transfer/index.ts`
-5. Create `src/core/services/allowance/types.ts`
-6. Create `src/core/services/allowance/allowance-service.interface.ts`
-7. Create `src/core/services/allowance/allowance-service.ts` (`AllowanceServiceImpl`)
-8. Create `src/core/services/allowance/index.ts`
-9. Add `transfer: TransferService` and `allowance: AllowanceService` to `CoreApi` and instantiate both in `CoreAPI`
-10. Add both services to `src/core/index.ts` exports
+1. Create `src/core/services/transfer/transfer-entries/transfer-entry.interface.ts`
+2. Create `src/core/services/transfer/transfer-entries/hbar-transfer-entry.ts`
+3. Create `src/core/services/transfer/transfer-entries/ft-transfer-entry.ts`
+4. Create `src/core/services/transfer/transfer-entries/nft-transfer-entry.ts`
+5. Create `src/core/services/transfer/transfer-entries/index.ts`
+6. Create `src/core/services/transfer/transfer-service.interface.ts`
+7. Create `src/core/services/transfer/transfer-service.ts` (`TransferServiceImpl`)
+8. Create `src/core/services/transfer/index.ts`
+9. Create `src/core/services/allowance/allowance-entries/allowance-entry.interface.ts`
+10. Create `src/core/services/allowance/allowance-entries/hbar-allowance-entry.ts`
+11. Create `src/core/services/allowance/allowance-entries/ft-allowance-entry.ts`
+12. Create `src/core/services/allowance/allowance-entries/nft-allowance-entry.ts`
+13. Create `src/core/services/allowance/allowance-entries/index.ts`
+14. Create `src/core/services/allowance/types.ts`
+15. Create `src/core/services/allowance/allowance-service.interface.ts`
+16. Create `src/core/services/allowance/allowance-service.ts` (`AllowanceServiceImpl`)
+17. Create `src/core/services/allowance/index.ts`
+18. Add `transfer: TransferService` and `allowance: AllowanceService` to `CoreApi` and instantiate both in `CoreAPI`
+19. Add both services to `src/core/index.ts` exports
 
 ### Phase 2: Migrate callers
 
@@ -269,7 +368,7 @@ The following mock and test files must be updated as part of this migration:
 - **HbarService eliminated.** A 2-method wrapper with no independent reason to exist is removed.
 - **TokenService becomes coherent.** After migration every method on `TokenService` is a token-lifecycle operation.
 - **Consistent naming.** All methods in both new services follow the `build*` convention used elsewhere in the service layer.
-- **Minimal interface surface.** `TransferService` exposes a single method (`buildTransferTransaction`) that accepts an array of entries covering all asset types; `AllowanceService` exposes two methods (`buildAllowanceApprove`, `buildNftAllowanceDelete`). Both services use a `type` discriminant to dispatch across asset types, keeping call sites simple and interfaces narrow.
+- **Minimal interface surface.** `TransferService` exposes a single method (`buildTransferTransaction`) that accepts an array of entries; `AllowanceService` exposes two methods (`buildAllowanceApprove`, `buildNftAllowanceDelete`). `AllowanceService` uses polymorphism — each entry class carries its own SDK call — keeping the service body free of type dispatch.
 - **Return types are predictable per service.** `TransferService` always returns `TransferTransaction`. `AllowanceService` returns `AccountAllowanceApproveTransaction` for most methods; `buildNftAllowanceDelete` is the exception (see Cons). Mocking is straightforward in both cases.
 
 ### Cons
