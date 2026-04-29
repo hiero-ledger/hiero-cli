@@ -13,7 +13,8 @@ interface CoreApi {
   account: AccountService;
   token: TokenService;
   topic: TopicService;
-  txExecution: TxExecutionService;
+  txSign: TxSignService;
+  txExecute: TxExecuteService;
   state: StateService;
   mirror: HederaMirrornodeService;
   network: NetworkService;
@@ -24,6 +25,15 @@ interface CoreApi {
   hbar: HbarService;
   output: OutputService;
   receipt: ReceiptService;
+  pluginManagement: PluginManagementService;
+  keyResolver: KeyResolverService;
+  identityResolution: IdentityResolutionService;
+  contract: ContractTransactionService;
+  contractCompiler: ContractCompilerService;
+  contractVerifier: ContractVerifierService;
+  contractQuery: ContractQueryService;
+  batch: BatchTransactionService;
+  schedule: ScheduleTransactionService;
 }
 ```
 
@@ -171,9 +181,8 @@ const nftTransferTx = api.token.createNftTransferTransaction({
   serialNumbers: [1, 2, 3],
 });
 
-const result = await api.txExecution.signAndExecuteWith(nftTransferTx, [
-  keyRefId,
-]);
+const signed = await api.txSign.sign(nftTransferTx, [keyRefId]);
+const result = await api.txExecute.execute(signed);
 ```
 
 ### Topic Service
@@ -228,20 +237,39 @@ const signed = await api.txSign.sign(transaction, ['admin-key-ref']);
 await api.txExecute.execute(signed);
 ```
 
-### TxExecutionService
+### TxSignService
 
-Manages transaction signing and execution.
+Signs Hedera transactions using key references stored in the KMS. Signing is decoupled from execution so that the same signed transaction can be inspected or used in batch flows before being submitted.
 
 ```typescript
-interface TxExecutionService {
-  signAndExecute(transaction: HederaTransaction): Promise<TransactionResult>;
+interface TxSignService {
+  sign(transaction: Transaction, keyRefIds: string[]): Promise<Transaction>;
+  signContractCreateFlow(
+    transaction: ContractCreateFlow,
+    keyRefIds: string[],
+  ): ContractCreateFlow;
+}
+```
 
-  signAndExecuteWith(
-    tx: HederaTransaction,
-    signer: SignerRef,
+**Usage Example:**
+
+```typescript
+const signed = await api.txSign.sign(transaction, [
+  'admin-key-ref',
+  'treasury-key-ref',
+]);
+```
+
+### TxExecuteService
+
+Executes a signed transaction on the Hedera network and returns a `TransactionResult`.
+
+```typescript
+interface TxExecuteService {
+  execute(transaction: Transaction): Promise<TransactionResult>;
+  executeContractCreateFlow(
+    transaction: ContractCreateFlow,
   ): Promise<TransactionResult>;
-
-  freezeTx(transaction: HederaTransaction): HederaTransaction;
 }
 
 interface TransactionResult {
@@ -251,29 +279,19 @@ interface TransactionResult {
   accountId?: string;
   tokenId?: string;
   topicId?: string;
-  topicSequenceNumber?: number;
-  consensusTimestamp: string;
-}
-
-interface TransactionReceipt {
-  status: TransactionStatus;
-  accountId?: string;
-  tokenId?: string;
-  topicId?: string;
+  contractId?: string;
   topicSequenceNumber?: number;
   serials?: string[];
+  consensusTimestamp: string;
 }
-
-type SignerRef = {
-  keyRefId?: string;
-  publicKey?: string;
-};
 ```
 
 **Usage Example:**
 
 ```typescript
-const result = await api.txExecution.signAndExecute(transaction);
+const signed = await api.txSign.sign(transaction, [keyRefId]);
+const result = await api.txExecute.execute(signed);
+console.log(`Transaction ID: ${result.transactionId}`);
 ```
 
 ### Receipt Service
@@ -640,6 +658,300 @@ const signature = await signer.sign(messageBytes);
 
 // Create Hedera client (automatically uses network-specific operator, keys managed internally)
 const client = api.kms.createClient('testnet');
+```
+
+### Alias Service
+
+Stores and resolves human-readable aliases for Hedera entities (accounts, tokens, topics, contracts) per-network.
+
+```typescript
+interface AliasService {
+  register(record: AliasRecord): void;
+  resolve(
+    ref: string,
+    expectation: AliasType | undefined,
+    network: SupportedNetwork,
+  ): AliasRecord | null;
+  resolveOrThrow(
+    alias: string,
+    type: AliasType,
+    network: SupportedNetwork,
+  ): AliasRecord;
+  resolveByEvmAddress(
+    evmAddress: string,
+    network: SupportedNetwork,
+  ): AliasRecord | null;
+  list(filter?: {
+    network?: SupportedNetwork;
+    type?: AliasType;
+  }): AliasRecord[];
+  remove(alias: string, network: SupportedNetwork): void;
+  clear(type: AliasType): void;
+  exists(alias: string, network: SupportedNetwork): boolean;
+  availableOrThrow(alias: string | undefined, network: SupportedNetwork): void;
+}
+
+interface AliasRecord {
+  alias: string;
+  type: AliasType;
+  network: SupportedNetwork;
+  entityId?: string;
+  evmAddress?: string;
+  publicKey?: string;
+  keyRefId?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+```
+
+**Usage Example:**
+
+```typescript
+api.alias.register({
+  alias: 'my-account',
+  type: 'account',
+  network: 'testnet',
+  entityId: '0.0.123456',
+  createdAt: new Date().toISOString(),
+});
+
+const record = api.alias.resolveOrThrow('my-account', 'account', 'testnet');
+console.log(record.entityId); // '0.0.123456'
+```
+
+### HBAR Service
+
+Builds HBAR transfer and allowance transactions.
+
+```typescript
+interface HbarService {
+  transferTinybar(
+    params: TransferTinybarParams,
+  ): Promise<TransferTinybarResult>;
+  createHbarAllowanceTransaction(
+    params: HbarAllowanceParams,
+  ): HbarAllowanceResult;
+}
+```
+
+**Usage Example:**
+
+```typescript
+const result = await api.hbar.transferTinybar({
+  fromAccountId: '0.0.111111',
+  toAccountId: '0.0.222222',
+  amount: 100_000_000n, // 1 HBAR in tinybars
+});
+```
+
+### Output Service
+
+Controls command output formatting and rendering. Plugins use this to emit results in the correct format (human-readable template or JSON).
+
+```typescript
+interface OutputService {
+  handleOutput(options: OutputHandlerOptions): void;
+  getFormat(): OutputFormat;
+  setFormat(format: OutputFormat): void;
+  emptyLine(): void;
+}
+```
+
+### Plugin Management Service
+
+Manages plugin registration state — add, remove, enable, and disable plugins. Also tracks which default plugins have been auto-initialized so that re-installs don't re-add user-removed defaults.
+
+```typescript
+interface PluginManagementService {
+  listPlugins(): PluginStateEntry[];
+  getPlugin(name: string): PluginStateEntry | undefined;
+  addPlugin(entry: PluginStateEntry): PluginManagementCreateResult;
+  removePlugin(name: string): PluginManagementRemoveResult;
+  enablePlugin(name: string): PluginManagementEnableResult;
+  disablePlugin(name: string): PluginManagementDisableResult;
+  resetPlugins(): void;
+  savePluginState(entry: PluginStateEntry): void;
+  getInitializedDefaults(): string[];
+  setInitializedDefaults(names: string[]): void;
+  addToInitializedDefaults(name: string): void;
+}
+```
+
+### Key Resolver Service
+
+Resolves CLI credential references into KMS-backed keys ready for transaction signing. Abstracts the distinction between sender, receiver, and role-only key contexts.
+
+```typescript
+interface KeyResolverService {
+  // Sender: requires accountId + private key in KMS
+  resolveAccountCredentials(
+    credential: Credential | undefined,
+    keyManager: KeyManager,
+    fallback?: boolean,
+    labels?: string[],
+  ): Promise<ResolvedAccountCredential>;
+
+  // Receiver: requires accountId or evmAddress, no private key needed
+  resolveDestination(
+    credential: Credential,
+    keyManager: KeyManager,
+    labels?: string[],
+  ): Promise<Destination>;
+
+  // Read-only: public key + keyRefId, no account association
+  getPublicKey(
+    credential: Credential | undefined,
+    keyManager: KeyManager,
+    fallback?: boolean,
+    labels?: string[],
+  ): Promise<ResolvedPublicKey>;
+
+  // Role key (adminKey, supplyKey, etc.): private key in KMS, no account
+  resolveSigningKey(
+    credential: Credential | undefined,
+    keyManager: KeyManager,
+    fallback?: boolean,
+    labels?: string[],
+  ): Promise<ResolvedPublicKey>;
+
+  resolvedPublicKeysForStoredKeyRefs(keyRefIds: string[]): ResolvedPublicKey[];
+
+  resolveSigningKeyRefIdsFromMirrorRoleKey(
+    params: ResolveSigningKeyRefIdsFromMirrorRoleKeyInput,
+  ): Promise<ResolveSigningKeyRefIdsFromMirrorRoleKeyResult>;
+}
+```
+
+### Identity Resolution Service
+
+Resolves string references (account IDs, aliases, EVM addresses) to canonical Hedera entity identifiers. Used internally by many commands to accept flexible input formats.
+
+```typescript
+interface IdentityResolutionService {
+  resolveAccount(
+    params: AccountResolutionParams,
+  ): Promise<AccountResolutionResult>;
+  resolveContract(
+    params: ContractResolutionParams,
+  ): Promise<ContractResolutionResult>;
+  resolveReferenceToEntityOrEvmAddress(
+    params: ReferenceResolutionParams,
+  ): ReferenceResolutionResult;
+}
+```
+
+### Contract Transaction Service
+
+Builds Hedera smart contract transactions without executing them. Execution is done via `txSign` / `txExecute`.
+
+```typescript
+interface ContractTransactionService {
+  contractCreateFlowTransaction(
+    params: ContractCreateFlowParams,
+  ): ContractCreateFlowResult;
+  contractExecuteTransaction(
+    params: ContractExecuteParams,
+  ): ContractExecuteResult;
+  contractExecuteWithEncodedParams(
+    params: ContractExecuteEncodedParams,
+  ): ContractExecuteResult;
+  deleteContract(params: DeleteContractParams): ContractDeleteResult;
+}
+```
+
+### Contract Compiler Service
+
+Compiles Solidity source files to bytecode and ABI using the `solc` compiler.
+
+```typescript
+interface ContractCompilerService {
+  compileContract(params: CompilationParams): Promise<CompilationResult>;
+}
+```
+
+**Usage Example:**
+
+```typescript
+const { bytecode, abi } = await api.contractCompiler.compileContract({
+  sourceFile: './MyContract.sol',
+  contractName: 'MyContract',
+});
+```
+
+### Contract Verifier Service
+
+Submits deployed contracts for source-code verification against the Hashscan verification repository.
+
+```typescript
+interface ContractVerifierService {
+  verifyContract(
+    params: ContractVerificationParams,
+  ): Promise<ContractVerificationResult>;
+  isVerifiedFullMatchOnRepository(contractEvmAddress: string): Promise<boolean>;
+}
+```
+
+### Contract Query Service
+
+Executes read-only (`ContractCallQuery`) calls against deployed smart contracts without submitting a transaction.
+
+```typescript
+interface ContractQueryService {
+  queryContractFunction(
+    params: QueryContractFunctionParams,
+  ): Promise<QueryContractFunctionResult>;
+}
+```
+
+### Batch Transaction Service
+
+Builds a Hedera `BatchTransaction` that groups multiple inner transactions into a single atomic submission.
+
+```typescript
+interface BatchTransactionService {
+  createBatchTransaction(
+    params: CreateBatchTransactionParams,
+  ): CreateBatchTransactionResult;
+}
+```
+
+**Usage Example:**
+
+```typescript
+const { batchTransaction, innerTransactionIds } =
+  api.batch.createBatchTransaction({ innerTransactions: [tx1, tx2, tx3] });
+const signed = await api.txSign.sign(batchTransaction, [operatorKeyRef]);
+await api.txExecute.execute(signed);
+```
+
+### Schedule Transaction Service
+
+Builds scheduled transaction wrappers — `ScheduleCreate`, `ScheduleSign`, and `ScheduleDelete` — for deferred multi-signature workflows.
+
+```typescript
+interface ScheduleTransactionService {
+  buildScheduleCreateTransaction(
+    params: ScheduleCreateParams,
+  ): ScheduleCreateTransaction;
+  buildScheduleSignTransaction(
+    params: ScheduleSignTransactionParams,
+  ): ScheduleSignTransaction;
+  buildScheduleDeleteTransaction(
+    params: ScheduleDeleteTransactionParams,
+  ): ScheduleDeleteTransaction;
+}
+```
+
+**Usage Example:**
+
+```typescript
+const scheduleCreate = api.schedule.buildScheduleCreateTransaction({
+  scheduledTransaction: transferTx,
+  memo: 'pending approval',
+  payerAccountId: '0.0.123456',
+});
+const signed = await api.txSign.sign(scheduleCreate, [keyRefId]);
+const result = await api.txExecute.execute(signed);
 ```
 
 ## Command Handler Context

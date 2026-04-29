@@ -19,14 +19,23 @@ The Hiero CLI is built on a plugin-based architecture designed to be extensible,
 │  ├── Account Transaction Service                            │
 │  ├── Token Service                                          │
 │  ├── Topic Service                                          │
-│  ├── TxExecutionService                                     │
+│  ├── TxSignService                                          │
+│  ├── TxExecuteService                                       │
 │  ├── Receipt Service                                        │
+│  ├── Batch Transaction Service                              │
+│  ├── Schedule Transaction Service                           │
+│  ├── Contract Transaction Service                           │
+│  ├── Contract Compiler Service                              │
+│  ├── Contract Verifier Service                              │
+│  ├── Contract Query Service                                 │
 │  ├── State Service (Zustand)                                │
 │  ├── Mirror Node Service                                    │
 │  ├── Network Service                                        │
 │  ├── Config Service                                         │
 │  ├── Logger Service                                         │
 │  ├── KMS Service                                            │
+│  ├── Key Resolver Service                                   │
+│  ├── Identity Resolution Service                            │
 │  ├── Alias Service                                          │
 │  ├── HBAR Service                                           │
 │  └── Output Service                                         │
@@ -40,6 +49,8 @@ The Hiero CLI is built on a plugin-based architecture designed to be extensible,
 │  ├── Credentials Plugin                                     │
 │  ├── Config Plugin                                          │
 │  ├── Plugin Management Plugin                               │
+│  ├── Batch Plugin                                           │
+│  ├── Schedule Plugin                                        │
 │  ├── Contract Plugin                                        │
 │  ├── Contract ERC-20 Plugin                                 │
 │  ├── Contract ERC-721 Plugin                                │
@@ -117,26 +128,48 @@ interface AccountService {
 }
 ```
 
-### 2. TxExecutionService
+### 2. TxSignService
 
-**Purpose**: Manages transaction signing and execution.
+**Purpose**: Signs transactions using key references stored in the KMS.
 
 **Key Features**:
 
-- Transaction signing with operator credentials
-- Transaction broadcasting to Hedera network
-- Credential management integration
+- Signs standard Hedera transactions with one or more KMS key references
+- Signs `ContractCreateFlow` transactions (special SDK type)
 
 **Interface**:
 
 ```typescript
-interface TxExecutionService {
-  signAndExecute(transaction: Transaction): Promise<TransactionReceipt>;
-  // ... other methods
+interface TxSignService {
+  sign(transaction: Transaction, keyRefIds: string[]): Promise<Transaction>;
+  signContractCreateFlow(
+    transaction: ContractCreateFlow,
+    keyRefIds: string[],
+  ): ContractCreateFlow;
 }
 ```
 
-### 3. State Service
+### 3. TxExecuteService
+
+**Purpose**: Executes signed transactions on the Hedera network.
+
+**Key Features**:
+
+- Broadcasts standard transactions and returns a `TransactionResult`
+- Executes `ContractCreateFlow` transactions
+
+**Interface**:
+
+```typescript
+interface TxExecuteService {
+  execute(transaction: Transaction): Promise<TransactionResult>;
+  executeContractCreateFlow(
+    transaction: ContractCreateFlow,
+  ): Promise<TransactionResult>;
+}
+```
+
+### 4. State Service
 
 **Purpose**: Provides namespaced, versioned state management.
 
@@ -158,7 +191,7 @@ interface StateService {
 }
 ```
 
-### 4. Mirror Node Service
+### 5. Mirror Node Service
 
 **Purpose**: Provides comprehensive access to Hedera Mirror Node API.
 
@@ -188,7 +221,7 @@ interface HederaMirrornodeService {
 }
 ```
 
-### 5. Network Service
+### 6. Network Service
 
 **Purpose**: Manages network configuration and selection.
 
@@ -198,7 +231,7 @@ interface HederaMirrornodeService {
 - Configuration management
 - Health monitoring
 
-### 6. Config Service
+### 7. Config Service
 
 **Purpose**: Manages configuration options for the CLI with type-safe accessors.
 
@@ -243,7 +276,7 @@ Configuration options include:
 - Returns default values if options are not explicitly set
 - Throws descriptive errors for invalid option names or values
 
-### 7. Plugin Management Service
+### 8. Plugin Management Service
 
 **Purpose**: Manages plugin registration state (add, remove, enable, disable) and tracks which default plugins have been initialized.
 
@@ -260,7 +293,7 @@ Configuration options include:
 - `initialized-defaults` key: metadata listing default plugin names ever initialized; ensures new defaults are added on CLI updates while user-removed defaults are not re-added
 - Custom plugins are never tracked in `initialized-defaults`; they are fully removed when the user runs `remove`
 
-### 8. Logger Service
+### 9. Logger Service
 
 **Purpose**: Provides structured logging capabilities.
 
@@ -270,7 +303,7 @@ Configuration options include:
 - Structured output
 - Plugin-specific logging
 
-### 9. Receipt Service
+### 10. Receipt Service
 
 **Purpose**: Fetches transaction receipts by transaction ID using Hedera's `TransactionGetReceiptQuery`.
 
@@ -288,7 +321,7 @@ interface ReceiptService {
 }
 ```
 
-### 10. KMS Service (Key Management Service)
+### 11. KMS Service (Key Management Service)
 
 **Purpose**: Manages operator credentials and cryptographic keys securely.
 
@@ -299,6 +332,192 @@ interface ReceiptService {
 - Secure key generation and import
 - Private key isolation (keys never exposed outside KMS)
 - Transaction signing with key references
+
+### 12. Key Resolver Service
+
+**Purpose**: Resolves CLI credential references to signing-ready keys from the KMS.
+
+**Key Features**:
+
+- Resolves sender credentials (account + private key) for signing transactions
+- Resolves destination accounts (receiver side, no private key required)
+- Resolves role keys (admin, supply, etc.) without account association
+- Resolves public keys for read-only operations
+- Maps mirror-node role keys to KMS key reference IDs
+
+**Interface**:
+
+```typescript
+interface KeyResolverService {
+  resolveAccountCredentials(
+    credential,
+    keyManager,
+    fallback?,
+    labels?,
+  ): Promise<ResolvedAccountCredential>;
+  resolveDestination(credential, keyManager, labels?): Promise<Destination>;
+  getPublicKey(
+    credential,
+    keyManager,
+    fallback?,
+    labels?,
+  ): Promise<ResolvedPublicKey>;
+  resolveSigningKey(
+    credential,
+    keyManager,
+    fallback?,
+    labels?,
+  ): Promise<ResolvedPublicKey>;
+  resolvedPublicKeysForStoredKeyRefs(keyRefIds: string[]): ResolvedPublicKey[];
+  resolveSigningKeyRefIdsFromMirrorRoleKey(
+    params,
+  ): Promise<ResolveSigningKeyRefIdsFromMirrorRoleKeyResult>;
+}
+```
+
+### 13. Identity Resolution Service
+
+**Purpose**: Resolves string references (aliases, account IDs, EVM addresses) to canonical Hedera entities.
+
+**Key Features**:
+
+- Resolves accounts from account ID, alias, or EVM address
+- Resolves contracts from contract ID or EVM address
+- Resolves generic references to entity IDs or EVM addresses
+
+**Interface**:
+
+```typescript
+interface IdentityResolutionService {
+  resolveAccount(
+    params: AccountResolutionParams,
+  ): Promise<AccountResolutionResult>;
+  resolveContract(
+    params: ContractResolutionParams,
+  ): Promise<ContractResolutionResult>;
+  resolveReferenceToEntityOrEvmAddress(
+    params: ReferenceResolutionParams,
+  ): ReferenceResolutionResult;
+}
+```
+
+### 14. Batch Transaction Service
+
+**Purpose**: Builds Hedera batch transactions that group multiple inner transactions into a single atomic submission.
+
+**Key Features**:
+
+- Constructs `BatchTransaction` with multiple inner transactions
+- Returns receipt IDs for each inner transaction for downstream resolution
+
+**Interface**:
+
+```typescript
+interface BatchTransactionService {
+  createBatchTransaction(
+    params: CreateBatchTransactionParams,
+  ): CreateBatchTransactionResult;
+}
+```
+
+### 15. Schedule Transaction Service
+
+**Purpose**: Builds scheduled transaction wrappers (`ScheduleCreate`, `ScheduleSign`, `ScheduleDelete`).
+
+**Key Features**:
+
+- Wraps any transaction in a `ScheduleCreateTransaction` for deferred execution
+- Builds `ScheduleSignTransaction` to add a signature to a pending schedule
+- Builds `ScheduleDeleteTransaction` to cancel a pending schedule
+
+**Interface**:
+
+```typescript
+interface ScheduleTransactionService {
+  buildScheduleCreateTransaction(
+    params: ScheduleCreateParams,
+  ): ScheduleCreateTransaction;
+  buildScheduleSignTransaction(
+    params: ScheduleSignTransactionParams,
+  ): ScheduleSignTransaction;
+  buildScheduleDeleteTransaction(
+    params: ScheduleDeleteTransactionParams,
+  ): ScheduleDeleteTransaction;
+}
+```
+
+### 16. Contract Transaction Service
+
+**Purpose**: Builds Hedera smart contract transactions (create, execute, delete) without executing them.
+
+**Key Features**:
+
+- Builds `ContractCreateFlow` transactions from compiled bytecode
+- Builds `ContractExecuteTransaction` for function calls (plain and ABI-encoded)
+- Builds `ContractDeleteTransaction`
+
+**Interface**:
+
+```typescript
+interface ContractTransactionService {
+  contractCreateFlowTransaction(
+    params: ContractCreateFlowParams,
+  ): ContractCreateFlowResult;
+  contractExecuteTransaction(
+    params: ContractExecuteParams,
+  ): ContractExecuteResult;
+  contractExecuteWithEncodedParams(
+    params: ContractExecuteEncodedParams,
+  ): ContractExecuteResult;
+  deleteContract(params: DeleteContractParams): ContractDeleteResult;
+}
+```
+
+### 17. Contract Compiler Service
+
+**Purpose**: Compiles Solidity source files to bytecode and ABI using the `solc` compiler.
+
+**Interface**:
+
+```typescript
+interface ContractCompilerService {
+  compileContract(params: CompilationParams): Promise<CompilationResult>;
+}
+```
+
+### 18. Contract Verifier Service
+
+**Purpose**: Verifies deployed smart contracts against the Hashscan source-code verification API.
+
+**Key Features**:
+
+- Submits contract source for verification
+- Checks whether a contract already has a full-match on the repository
+
+**Interface**:
+
+```typescript
+interface ContractVerifierService {
+  verifyContract(
+    params: ContractVerificationParams,
+  ): Promise<ContractVerificationResult>;
+  isVerifiedFullMatchOnRepository(contractEvmAddress: string): Promise<boolean>;
+}
+```
+
+### 19. Contract Query Service
+
+**Purpose**: Executes read-only (`ContractCallQuery`) calls against deployed smart contracts.
+
+**Interface**:
+
+```typescript
+interface ContractQueryService {
+  queryContractFunction(
+    params: QueryContractFunctionParams,
+  ): Promise<QueryContractFunctionResult>;
+}
+```
 
 ## 🔄 Data Flow
 
@@ -353,10 +572,23 @@ Core API
 │   ├── State Service
 │   ├── Network Service
 │   └── Config Service
-├── TxExecutionService
-│   ├── KMS Service
+├── Key Resolver Service
+│   └── KMS Service
+├── Identity Resolution Service
+│   └── Mirror Node Service
+├── TxSignService
+│   └── KMS Service
+├── TxExecuteService
 │   └── Network Service
 ├── Receipt Service
+│   └── Network Service
+├── Batch Transaction Service
+├── Schedule Transaction Service
+├── Contract Transaction Service
+├── Contract Compiler Service
+├── Contract Verifier Service
+│   └── Mirror Node Service
+├── Contract Query Service
 │   └── Network Service
 ├── Account Transaction Service
 ├── Token Service
