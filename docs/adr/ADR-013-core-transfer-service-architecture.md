@@ -310,7 +310,6 @@ The following handlers are the only callers of the methods being moved. Updates 
 | `plugins/token/commands/allowance-ft/handler.ts`         | `api.token.createFungibleTokenAllowanceTransaction(...)`              | `api.allowance.buildAllowanceApprove([new FtAllowanceEntry(...)])`                                                                                                  |
 | `plugins/token/commands/allowance-nft/handler.ts`        | `api.token.createNftAllowanceApproveTransaction(...)`                 | `api.allowance.buildAllowanceApprove([new NftAllowanceEntry(...)])`                                                                                                 |
 | `plugins/token/commands/delete-allowance-nft/handler.ts` | `api.token.createNftAllowanceDeleteTransaction(...)`                  | `api.allowance.buildNftAllowanceDelete(...)`                                                                                                                        |
-| `plugins/swap/commands/*/handler.ts`                     | _(new)_                                                               | `api.transfer.buildTransferTransaction([...entries])`                                                                                                               |
 
 The following mock and test files must be updated as part of this migration:
 
@@ -366,7 +365,7 @@ The following mock and test files must be updated as part of this migration:
 
 ### Phase 2: Migrate callers
 
-1. Update the 8 existing plugin handlers listed above (all rows except the swap row, which is new code) to call `api.transfer.*` or `api.allowance.*`
+1. Update the 8 existing plugin handlers listed above to call `api.transfer.*` or `api.allowance.*`
 2. Remove the 5 methods from `TokenService` interface and `TokenServiceImpl`
 3. Update all 5 mock files listed in Part 6
 
@@ -381,7 +380,7 @@ The following mock and test files must be updated as part of this migration:
 
 ### Pros
 
-- **Atomic swap unblocked.** The swap plugin has a single entry point (`api.transfer.buildTransferTransaction`) to build a `TransferTransaction` with any combination of HBAR, FT, and NFT entries.
+- **Atomic swap unblocked.** A future atomic swap plugin will have a single entry point (`api.transfer.buildTransferTransaction`) to build a `TransferTransaction` with any combination of HBAR, FT, and NFT entries.
 - **Allowances are independent from transfers.** An allowance granted for a smart contract has nothing to do with any `TransferTransaction` the CLI builds. The split reflects this.
 - **HbarService eliminated.** A 2-method wrapper with no independent reason to exist is removed.
 - **TokenService becomes coherent.** After migration every method on `TokenService` is a token-lifecycle operation.
