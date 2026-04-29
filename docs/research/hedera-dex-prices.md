@@ -351,7 +351,7 @@ export class GeckoTerminalServiceImpl implements GeckoTerminalService {
 | ------------------------------------------ | ----------------------------------- | -------------------------------------- |
 | **API key required**                       | No                                  | No                                     |
 | **Rate limit**                             | ~300 req/min                        | 30 req/min                             |
-| **Hedera support**                         | Yes (`chainId: hedera`)             | Yes (`network: hedera`)                |
+| **Hedera support**                         | Yes (`chainId: hedera`)             | Yes (`network: hedera-hashgraph`)      |
 | **SaucerSwap V1 + V2**                     | Yes (`saucerswap`, `saucerswap-v2`) | Yes                                    |
 | **Multi-chain coverage**                   | ~100 chains                         | ~100 chains                            |
 | **Schema style**                           | Flat                                | JSON:API nested                        |
