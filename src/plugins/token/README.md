@@ -1285,6 +1285,82 @@ hcli token unpause --token mytoken-alias --pause-key <key-ref>
 
 If the token does not have a pause key, the command fails with a clear error: `Token has no pause key`.
 
+### Token Wipe FT
+
+Wipe fungible tokens from a specified account to decrease total supply. Requires the wipe key. Unlike burn, wipe can remove tokens from any account (not just treasury).
+
+```bash
+# Wipe by token alias and account alias
+hcli token wipe-ft \
+  --token mytoken-alias \
+  --account alice \
+  --amount 1000
+
+# Wipe by token ID and account ID with base units (t suffix)
+hcli token wipe-ft \
+  --token 0.0.123456 \
+  --account 0.0.5678 \
+  --amount 5000t
+
+# Wipe with explicit wipe key
+hcli token wipe-ft \
+  --token 0.0.123456 \
+  --account 0.0.5678 \
+  --amount 500 \
+  --wipe-key 0.0.123456:302e020100300506032b657004220420...
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+- `--account` / `-a`: Account to wipe from: account-id (0.0.X), account alias, or EVM address (0x...) - **Required**
+- `--amount`: Amount to wipe - **Required**
+  - Display units (default): `100` (multiplied by token decimals)
+  - Base units: `100t` (raw amount without decimals)
+- `--wipe-key` / `-w`: Wipe key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
+- `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
+
+**Note:** Cannot wipe from treasury account. Token must have a wipe key set at creation time.
+
+**Batch support:** Pass `--batch <batch-name>` to add to a batch. See the [Batch Support](#-batch-support) section.
+
+### Token Wipe NFT
+
+Wipe NFT serial numbers from a specified account to decrease total supply. Requires the wipe key. Unlike burn, wipe can remove NFTs from any account (not just treasury).
+
+```bash
+# Wipe a single serial from an account
+hcli token wipe-nft \
+  --token my-nft-collection \
+  --account alice \
+  --serials 1
+
+# Wipe multiple serials at once
+hcli token wipe-nft \
+  --token 0.0.123456 \
+  --account 0.0.5678 \
+  --serials 1,2,3
+
+# Wipe with explicit wipe key
+hcli token wipe-nft \
+  --token 0.0.123456 \
+  --account 0.0.5678 \
+  --serials 5,10 \
+  --wipe-key 0.0.123456:302e020100300506032b657004220420...
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+- `--account` / `-a`: Account to wipe from: account-id (0.0.X), account alias, or EVM address (0x...) - **Required**
+- `--serials` / `-s`: Comma-separated serial numbers to wipe (max 10) - **Required**
+- `--wipe-key` / `-w`: Wipe key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
+- `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
+
+**Note:** Cannot wipe NFTs from treasury account. Account must own all specified serial numbers. Token must have a wipe key set at creation time.
+
+**Batch support:** Pass `--batch <batch-name>` to add to a batch. See the [Batch Support](#-batch-support) section.
+
 ### Token Grant KYC
 
 Grants KYC flag to the specified account for the token. Requires the token KYC key to sign. Works for both fungible tokens (FT) and non-fungible tokens (NFT). The token must have a KYC key set at creation time.
