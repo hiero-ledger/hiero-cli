@@ -6,7 +6,7 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 
 import '@/core/utils/json-serialize';
 
-import { AccountId, Hbar, PublicKey } from '@hashgraph/sdk';
+import { AccountId, Hbar, PublicKey } from '@hiero-ledger/sdk';
 
 import {
   ECDSA_HEX_PUBLIC_KEY,
@@ -34,7 +34,7 @@ const mockAccountIdInstance = {
 };
 const mockHbarInstance = { toString: jest.fn().mockReturnValue('100 ℏ') };
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   AccountCreateTransaction: jest.fn(() => mockTransaction),
   AccountUpdateTransaction: jest.fn(() => mockUpdateTransaction),
   AccountInfoQuery: jest.fn(() => mockInfoQuery),
@@ -144,7 +144,7 @@ describe('AccountServiceImpl', () => {
     });
 
     it('should handle zero balance by using 0 as fallback', () => {
-      const { Hbar: HbarMock } = jest.requireMock('@hashgraph/sdk');
+      const { Hbar: HbarMock } = jest.requireMock('@hiero-ledger/sdk');
       HbarMock.fromTinybars.mockReturnValueOnce(null);
 
       const params = {
@@ -158,7 +158,8 @@ describe('AccountServiceImpl', () => {
     });
 
     it('should throw ValidationError when PublicKey.fromString fails', () => {
-      const { PublicKey: PublicKeyMock } = jest.requireMock('@hashgraph/sdk');
+      const { PublicKey: PublicKeyMock } =
+        jest.requireMock('@hiero-ledger/sdk');
       const sdkError = new Error('Invalid public key format');
       PublicKeyMock.fromString.mockImplementation(() => {
         throw sdkError;
@@ -179,7 +180,7 @@ describe('AccountServiceImpl', () => {
     });
 
     it('should throw ValidationError when Hbar.fromTinybars fails', () => {
-      const { Hbar: HbarMock } = jest.requireMock('@hashgraph/sdk');
+      const { Hbar: HbarMock } = jest.requireMock('@hiero-ledger/sdk');
       const sdkError = new Error('Invalid balance value');
       HbarMock.fromTinybars.mockImplementation(() => {
         throw sdkError;
@@ -393,7 +394,7 @@ describe('AccountServiceImpl', () => {
 
     it('should throw ValidationError when AccountUpdateTransaction throws', () => {
       const { AccountUpdateTransaction: MockTx } =
-        jest.requireMock('@hashgraph/sdk');
+        jest.requireMock('@hiero-ledger/sdk');
       MockTx.mockImplementationOnce(() => {
         throw new Error('SDK error');
       });
@@ -443,7 +444,8 @@ describe('AccountServiceImpl', () => {
     });
 
     it('should throw ValidationError when AccountId.fromString fails', () => {
-      const { AccountId: AccountIdMock } = jest.requireMock('@hashgraph/sdk');
+      const { AccountId: AccountIdMock } =
+        jest.requireMock('@hiero-ledger/sdk');
       const sdkError = new Error('Invalid account ID format');
       AccountIdMock.fromString.mockImplementation(() => {
         throw sdkError;

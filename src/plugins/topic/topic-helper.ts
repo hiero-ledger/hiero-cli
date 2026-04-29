@@ -7,7 +7,7 @@ import type { AliasService } from '@/core/services/alias/alias-service.interface
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TopicData } from '@/plugins/topic/schema';
 
-import { AccountId } from '@hashgraph/sdk';
+import { AccountId } from '@hiero-ledger/sdk';
 
 import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';

@@ -39,8 +39,8 @@ import {
 // Mock fetch globally
 global.fetch = jest.fn();
 
-// Mock @hashgraph/sdk
-jest.mock('@hashgraph/sdk');
+// Mock @hiero-ledger/sdk
+jest.mock('@hiero-ledger/sdk');
 
 // Test constants
 const TEST_ACCOUNT_ID = '0.0.1234';

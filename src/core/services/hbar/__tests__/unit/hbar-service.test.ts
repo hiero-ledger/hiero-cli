@@ -18,7 +18,7 @@ const mockTransferTransaction = {
   setTransactionMemo: jest.fn().mockReturnThis(),
 };
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   TransferTransaction: jest.fn(() => mockTransferTransaction),
   AccountId: {
     fromString: jest.fn(),
@@ -33,7 +33,7 @@ jest.mock('@hashgraph/sdk', () => ({
   },
 }));
 
-import { AccountId, Hbar, HbarUnit } from '@hashgraph/sdk';
+import { AccountId, Hbar, HbarUnit } from '@hiero-ledger/sdk';
 
 describe('HbarServiceImpl', () => {
   let hbarService: HbarServiceImpl;

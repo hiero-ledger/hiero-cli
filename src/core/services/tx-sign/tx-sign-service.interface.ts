@@ -1,7 +1,7 @@
 import type {
   ContractCreateFlow,
   Transaction as HederaTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 export interface TxSignService {
   sign(

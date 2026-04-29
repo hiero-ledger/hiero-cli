@@ -2,7 +2,7 @@ import type {
   Client,
   ContractCreateFlow,
   Transaction as HederaTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import type { KeyAlgorithm } from '@/core/shared/constants';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { KeyManager, KmsCredentialRecord } from './kms-types.interface';

@@ -1,7 +1,7 @@
 import type {
   AccountUpdateTransaction,
   Transaction as HederaTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import type { KeyAlgorithm } from '@/core/shared/constants';
 import type {
   SupportedNetwork,

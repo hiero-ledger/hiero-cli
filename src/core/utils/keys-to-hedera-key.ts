@@ -1,7 +1,7 @@
-import type { Key } from '@hashgraph/sdk';
+import type { Key } from '@hiero-ledger/sdk';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 
-import { KeyList, PublicKey } from '@hashgraph/sdk';
+import { KeyList, PublicKey } from '@hiero-ledger/sdk';
 
 export function toHederaKey(
   keys: ResolvedPublicKey[],

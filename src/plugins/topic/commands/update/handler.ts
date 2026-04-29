@@ -1,4 +1,4 @@
-import type { Key } from '@hashgraph/sdk';
+import type { Key } from '@hiero-ledger/sdk';
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type {

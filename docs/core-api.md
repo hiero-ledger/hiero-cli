@@ -216,7 +216,7 @@ interface MessageSubmitResult {
 }
 ```
 
-`Key`, `TopicCreateTransaction`, `TopicDeleteTransaction`, and `TopicMessageSubmitTransaction` are Hedera SDK types (`@hashgraph/sdk`).
+`Key`, `TopicCreateTransaction`, `TopicDeleteTransaction`, and `TopicMessageSubmitTransaction` are Hedera SDK types (`@hiero-ledger/sdk`).
 
 **Usage Example:**
 

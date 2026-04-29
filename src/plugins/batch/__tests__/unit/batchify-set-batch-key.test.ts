@@ -1,7 +1,7 @@
-import type { Transaction } from '@hashgraph/sdk';
+import type { Transaction } from '@hiero-ledger/sdk';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 
-import { PublicKey } from '@hashgraph/sdk';
+import { PublicKey } from '@hiero-ledger/sdk';
 
 import { makeLogger } from '@/__tests__/mocks/mocks';
 import { NotFoundError, ValidationError } from '@/core/errors';

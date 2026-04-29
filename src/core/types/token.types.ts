@@ -3,7 +3,7 @@
  * Type definitions for token-related operations
  */
 
-import type { Key } from '@hashgraph/sdk';
+import type { Key } from '@hiero-ledger/sdk';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupplyType } from '@/core/types/shared.types';
 

@@ -20,7 +20,7 @@ import {
 } from '@/plugins/contract-erc721/commands/owner-of';
 import { ContractErc721CallOwnerOfInputSchema } from '@/plugins/contract-erc721/commands/owner-of/input';
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   ContractId: {
     fromString: jest.fn(() => ({
       toEvmAddress: jest.fn(() => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),

@@ -1,4 +1,4 @@
-import type { BatchTransaction, Transaction } from '@hashgraph/sdk';
+import type { BatchTransaction, Transaction } from '@hiero-ledger/sdk';
 
 export interface CreateBatchTransactionResult {
   transaction: BatchTransaction;

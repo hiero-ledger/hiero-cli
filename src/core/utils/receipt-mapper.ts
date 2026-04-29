@@ -1,7 +1,7 @@
-import type { TransactionReceipt } from '@hashgraph/sdk';
+import type { TransactionReceipt } from '@hiero-ledger/sdk';
 import type { TransactionResult } from '@/core';
 
-import { Status } from '@hashgraph/sdk';
+import { Status } from '@hiero-ledger/sdk';
 
 function toEntityIdString(
   entity: { toString(): string } | null | undefined,

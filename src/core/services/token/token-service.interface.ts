@@ -23,7 +23,7 @@ import type {
   TokenUnpauseTransaction,
   TokenUpdateNftsTransaction,
   TransferTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import type {
   NftAllowanceApproveParams,
   NftAllowanceDeleteParams,

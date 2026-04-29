@@ -4,7 +4,7 @@ import type {
   ContractExecuteTransaction,
   ContractFunctionParameters,
   Key,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 export interface ContractCreateFlowParams {
   bytecode: string;

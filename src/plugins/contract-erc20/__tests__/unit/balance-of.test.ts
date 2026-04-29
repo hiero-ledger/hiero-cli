@@ -14,7 +14,7 @@ import { ContractErc20CallBalanceOfInputSchema } from '@/plugins/contract-erc20/
 const mockSolidityAddress = '1234567890123456789012345678901234567890';
 const accountAddress = '0x1234567890123456789012345678901234567890';
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   ContractId: {
     fromString: jest.fn(() => ({
       toEvmAddress: jest.fn(() => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),

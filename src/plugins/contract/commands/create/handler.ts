@@ -13,7 +13,7 @@ import type {
   ContractCreateSignTransactionResult,
 } from './types';
 
-import { ContractId } from '@hashgraph/sdk';
+import { ContractId } from '@hiero-ledger/sdk';
 import path from 'path';
 
 import { BaseTransactionCommand } from '@/core/commands/command';

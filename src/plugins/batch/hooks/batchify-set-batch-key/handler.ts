@@ -3,7 +3,7 @@ import type { PreSignTransactionHookParams } from '@/core/hooks/types';
 import type { BaseBuildTransactionResult } from '@/core/types/transaction.types';
 import type { BatchifyHookBaseParams } from '@/plugins/batch/hooks/shared/types';
 
-import { PublicKey } from '@hashgraph/sdk';
+import { PublicKey } from '@hiero-ledger/sdk';
 
 import { NotFoundError, ValidationError } from '@/core';
 import { composeKey } from '@/core/utils/key-composer';

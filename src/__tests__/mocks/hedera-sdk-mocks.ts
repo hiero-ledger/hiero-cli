@@ -1,4 +1,4 @@
-import { Transaction } from '@hashgraph/sdk';
+import { Transaction } from '@hiero-ledger/sdk';
 
 export const createMockTransaction = (overrides = {}) => {
   const mock = {

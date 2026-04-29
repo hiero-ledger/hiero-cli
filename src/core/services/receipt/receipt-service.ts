@@ -1,11 +1,11 @@
-import type { TransactionReceipt } from '@hashgraph/sdk';
+import type { TransactionReceipt } from '@hiero-ledger/sdk';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { TransactionResult } from '@/core/types/shared.types';
 import type { ReceiptService } from './receipt-service.interface';
 import type { TransactionReceiptParams } from './types';
 
-import { TransactionId, TransactionReceiptQuery } from '@hashgraph/sdk';
+import { TransactionId, TransactionReceiptQuery } from '@hiero-ledger/sdk';
 
 import { createClient } from '@/core/utils/client-init';
 import { mapReceiptToTransactionResult } from '@/core/utils/receipt-mapper';

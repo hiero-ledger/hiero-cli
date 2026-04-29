@@ -16,7 +16,7 @@ import { ContractErc20CallTransferFromInputSchema } from '@/plugins/contract-erc
 const mockAddAddress = jest.fn().mockReturnThis();
 const mockAddUint256 = jest.fn().mockReturnThis();
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   ContractFunctionParameters: jest.fn(() => ({
     addAddress: mockAddAddress,
     addUint256: mockAddUint256,

@@ -1,7 +1,7 @@
 import type {
   AccountCreateTransaction,
   Transaction as HederaTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,
