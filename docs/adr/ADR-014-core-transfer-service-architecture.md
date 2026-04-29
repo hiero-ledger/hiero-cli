@@ -1,4 +1,4 @@
-### ADR-013: Core TransferService and AllowanceService Architecture
+### ADR-014: Core TransferService and AllowanceService Architecture
 
 - Status: Proposed
 - Date: 2026-04-28
