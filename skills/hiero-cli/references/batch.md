@@ -103,10 +103,20 @@ hcli batch execute --name mintBatch
 
 Batchify-compatible commands (check each plugin reference for `[batchify]` marker):
 
-- `account create`
-- `hbar transfer`
+- `account create`, `account update`, `account delete`
+- `hbar transfer`, `hbar allowance`, `hbar allowance-revoke`
 - `token create-ft`, `token create-nft`, `token create-ft-from-file`, `token create-nft-from-file`
 - `token mint-ft`, `token mint-nft`
+- `token burn-ft`, `token burn-nft`
+- `token wipe-ft`, `token wipe-nft`
 - `token transfer-ft`, `token transfer-nft`
-- `token associate`
-- `topic create`, `topic submit-message`
+- `token associate`, `token dissociate`
+- `token freeze`, `token unfreeze`
+- `token pause`, `token unpause`
+- `token grant-kyc`, `token revoke-kyc`
+- `token allowance-ft`, `token allowance-nft`, `token delete-allowance-nft`
+- `token airdrop-ft`, `token airdrop-nft`
+- `token cancel-airdrop`, `token claim-airdrop`, `token reject-airdrop`
+- `token update-metadata-nft`
+- `token delete`
+- `topic create`, `topic update`, `topic submit-message`, `topic delete`

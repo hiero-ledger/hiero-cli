@@ -110,6 +110,37 @@ hcli topic find-message --topic myTopic --sequence-gte 5 --sequence-lte 10
 
 ---
 
+### `hcli topic update` [batchify]
+
+Update an existing Hedera Consensus Service topic's properties on-chain.
+
+| Option                   | Short | Type       | Required | Default        | Description                                                                        |
+| ------------------------ | ----- | ---------- | -------- | -------------- | ---------------------------------------------------------------------------------- |
+| `--topic`                | `-t`  | string     | **yes**  | —              | Topic ID or alias to update                                                        |
+| `--memo`                 | `-m`  | string     | no       | —              | New topic memo. Set to `"null"` to clear                                           |
+| `--admin-key`            | `-a`  | repeatable | no       | —              | New admin key(s). Cannot be cleared, only replaced. Same formats as `topic create` |
+| `--admin-key-threshold`  | `-A`  | number     | no       | —              | M-of-N for threshold admin keys                                                    |
+| `--submit-key`           | `-s`  | repeatable | no       | —              | New submit key(s). Set to `"null"` to clear                                        |
+| `--submit-key-threshold` | `-S`  | number     | no       | —              | M-of-N for threshold submit keys                                                   |
+| `--key-manager`          | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                                          |
+| `--auto-renew-account`   | `-r`  | string     | no       | —              | Auto-renew account ID or alias. Set to `"null"` to clear                           |
+| `--auto-renew-period`    | `-p`  | number     | no       | —              | Auto-renew period in seconds (min 2592000/30d, max 8000000/~92d)                   |
+| `--expiration-time`      | `-e`  | string     | no       | —              | Fixed expiration (ISO 8601)                                                        |
+| `--batch`                | `-B`  | string     | no       | —              | Queue into a named batch instead of executing immediately                          |
+
+**Example:**
+
+```
+hcli topic update --topic myTopic --memo "updated memo"
+hcli topic update --topic 0.0.123456 --auto-renew-period 7776000
+hcli topic update --topic privateTopic --submit-key alice --submit-key-threshold 1
+hcli topic update --topic myTopic --memo "updated" --batch myBatch
+```
+
+**Output:** `{ topicId, name?, network, transactionId, updatedFields[], memo?, adminKeyPresent, submitKeyPresent, adminKeyThreshold, submitKeyThreshold, adminKeyCount?, submitKeyCount?, autoRenewAccount?, autoRenewPeriod?, expirationTime? }`
+
+---
+
 ### `hcli topic delete` [batchify]
 
 Delete a Hedera topic on the network and remove it from local state, or remove from local state only.

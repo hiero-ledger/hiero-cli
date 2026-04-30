@@ -46,13 +46,15 @@ Keys and signers accept multiple formats:
 
 State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namespace:
 
-| Plugin    | File                            |
-| --------- | ------------------------------- |
-| `account` | `account-accounts-storage.json` |
-| `token`   | `token-tokens-storage.json`     |
-| `topic`   | `topic-topics-storage.json`     |
-| `batch`   | `batch-batches-storage.json`    |
-| `swap`    | `swap-storage.json`             |
+| Plugin     | File                                 |
+|------------|--------------------------------------|
+| `account`  | `account-accounts-storage.json`      |
+| `token`    | `token-tokens-storage.json`          |
+| `topic`    | `topic-topics-storage.json`          |
+| `batch`    | `batch-batches-storage.json`         |
+| `swap`     | `swap-storage.json`                  |
+| `contract` | `contract-contracts-storage.json`    |
+| `schedule` | `schedule-transactions-storage.json` |
 
 ## Amount notation
 
@@ -61,21 +63,22 @@ State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namesp
 
 ## Plugin catalog
 
-| Plugin              | Description                | Tasks covered                                                                                                                                                                                                 |
-| ------------------- | -------------------------- |---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `account`           | Manage Hedera accounts     | create, import, balance, list, view, delete                                                                                                                                                                   |
-| `hbar`              | Transfer HBAR              | transfer HBAR between accounts                                                                                                                                                                                |
-| `token`             | Manage FT & NFT tokens     | create, mint, transfer, associate, list, view, import, delete                                                                                                                                                 |
-| `topic`             | Hedera Consensus Service   | create topics, submit/find messages, import, list                                                                                                                                                             |
-| `contract`          | Smart contract lifecycle   | compile + deploy Solidity, update, import, list, delete                                                                                                                                                       |
-| `contract-erc20`    | ERC-20 contract calls      | name, symbol, decimals, balanceOf, transfer, transferFrom, approve, allowance, totalSupply. **Requires `contract` plugin** (contract must be deployed first)                                                  |
-| `contract-erc721`   | ERC-721 contract calls     | balanceOf, ownerOf, approve, setApprovalForAll, safeTransferFrom, transferFrom, mint, name, symbol, tokenURI, getApproved, isApprovedForAll. **Requires `contract` plugin** (contract must be deployed first) |
-| `network`           | Network configuration      | list networks, switch network, set/get operator                                                                                                                                                               |
-| `config`            | CLI configuration          | list, get, set config options                                                                                                                                                                                 |
-| `credentials`       | Key/credentials management | list, remove stored credentials                                                                                                                                                                               |
-| `batch`             | Batch transactions         | create batch, add transactions, execute, list, delete                                                                                                                                                         |
-| `swap`              | Multi-party asset exchange | create swap, add HBAR/FT/NFT transfers, view, list, execute, delete                                                                                                                                           |
-| `plugin-management` | Plugin lifecycle           | add, remove, enable, disable, list, reset, info                                                                                                                                                               |
+| Plugin              | Description                | Tasks covered                                                                                                                                                                                                                                                                           |
+|---------------------|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `account`           | Manage Hedera accounts     | create, import, balance, list, view, update, delete, clear                                                                                                                                                                                                                              |
+| `hbar`              | Transfer HBAR              | transfer HBAR, approve/revoke HBAR allowance                                                                                                                                                                                                                                            |
+| `token`             | Manage FT & NFT tokens     | create-ft/nft, create-from-file, mint, burn, wipe, transfer, airdrop, associate, dissociate, freeze/unfreeze, pause/unpause, grant/revoke KYC, allowance (FT/NFT), delete-allowance-nft, update-metadata-nft, pending-airdrops, cancel/claim/reject-airdrop, list, view, import, delete |
+| `topic`             | Hedera Consensus Service   | create, update, submit/find messages, import, list, delete                                                                                                                                                                                                                              |
+| `schedule`          | Scheduled transactions     | create schedule record, sign pending schedule, delete schedule, verify execution state. Use `--scheduled <name>` (`-X`) flag on any transaction command to wrap it as a scheduled transaction                                                                                           |
+| `contract`          | Smart contract lifecycle   | compile + deploy Solidity, import, list, delete                                                                                                                                                                                                                                         |
+| `contract-erc20`    | ERC-20 contract calls      | name, symbol, decimals, balanceOf, transfer, transferFrom, approve, allowance, totalSupply. **Requires `contract` plugin** (contract must be deployed first)                                                                                                                            |
+| `contract-erc721`   | ERC-721 contract calls     | balanceOf, ownerOf, approve, setApprovalForAll, safeTransferFrom, transferFrom, mint, name, symbol, tokenURI, getApproved, isApprovedForAll. **Requires `contract` plugin** (contract must be deployed first)                                                                           |
+| `network`           | Network configuration      | list networks, switch network, set/get operator                                                                                                                                                                                                                                         |
+| `config`            | CLI configuration          | list, get, set config options                                                                                                                                                                                                                                                           |
+| `credentials`       | Key/credentials management | list, remove stored credentials                                                                                                                                                                                                                                                         |
+| `batch`             | Batch transactions         | create batch, add transactions, execute, list, delete                                                                                                                                                                                                                                   |
+| `swap`              | Multi-party asset exchange | create swap, add HBAR/FT/NFT transfers, view, list, execute, delete                                                                                                                                                                                                                     |
+| `plugin-management` | Plugin lifecycle           | add, remove, enable, disable, list, reset, info                                                                                                                                                                                                                                         |
 
 ## Agent instruction
 
@@ -86,6 +89,10 @@ Example: to use `hcli token create-ft`, first read `references/token.md`.
 **When working with batch commands, read both `references/batch.md` AND the reference for the plugin being batched.**
 
 Example: to batch `hcli token mint-ft`, read both `references/batch.md` and `references/token.md`.
+
+**When working with scheduled transactions, read `references/schedule.md` AND the reference for the command being scheduled.**
+
+Example: to schedule `hcli token burn-ft`, read both `references/schedule.md` and `references/token.md`.
 
 ## hcli not found / not installed
 
