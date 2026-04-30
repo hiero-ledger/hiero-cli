@@ -1,7 +1,7 @@
-import type { AccountAllowanceApproveTransaction } from '@hashgraph/sdk';
+import type { AccountAllowanceApproveTransaction } from '@hiero-ledger/sdk';
 import type { AllowanceEntry } from './allowance-entry.interface';
 
-import { AccountId, Hbar, HbarUnit } from '@hashgraph/sdk';
+import { AccountId, Hbar, HbarUnit } from '@hiero-ledger/sdk';
 
 export class HbarAllowanceEntry implements AllowanceEntry {
   constructor(

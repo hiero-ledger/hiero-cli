@@ -94,12 +94,10 @@ describe('tokenUpdateNftMetadataHandler', () => {
 
       await tokenUpdateNftMetadata(args);
 
-      expect(
-        keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey,
-      ).toHaveBeenCalledWith(
+      expect(keyResolver.resolveSigningKeys).toHaveBeenCalledWith(
         expect.objectContaining({
           explicitCredentials: [],
-          resolveSigningKeyLabels: ['token:metadata'],
+          signingKeyLabels: ['token:metadata'],
         }),
       );
     });
@@ -115,9 +113,7 @@ describe('tokenUpdateNftMetadataHandler', () => {
 
       await tokenUpdateNftMetadata(args);
 
-      expect(
-        keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey,
-      ).toHaveBeenCalledWith(
+      expect(keyResolver.resolveSigningKeys).toHaveBeenCalledWith(
         expect.objectContaining({
           explicitCredentials: expect.arrayContaining([
             expect.objectContaining({ rawValue: 'my-account-alias' }),
@@ -146,7 +142,7 @@ describe('tokenUpdateNftMetadataHandler', () => {
       const { api } = makeUpdateNftMetadataSuccessMocks({
         tokenInfo: { metadata_key: null },
       });
-      api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
+      api.keyResolver.resolveSigningKeys = jest
         .fn()
         .mockRejectedValue(new ValidationError('Token has no metadata key'));
       const logger = makeLogger();

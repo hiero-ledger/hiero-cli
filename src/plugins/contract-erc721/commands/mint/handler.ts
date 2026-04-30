@@ -7,7 +7,7 @@ import type {
   MintSignTransactionResult,
 } from './types';
 
-import { ContractFunctionParameters } from '@hashgraph/sdk';
+import { ContractFunctionParameters } from '@hiero-ledger/sdk';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';

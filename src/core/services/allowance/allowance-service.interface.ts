@@ -1,7 +1,7 @@
 import type {
   AccountAllowanceApproveTransaction,
   AccountAllowanceDeleteTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import type { AllowanceEntry } from './allowance-entries/allowance-entry.interface';
 import type { NftAllowanceDeleteParams } from './types';
 

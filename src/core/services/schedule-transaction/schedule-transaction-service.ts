@@ -13,7 +13,7 @@ import {
   ScheduleDeleteTransaction,
   ScheduleSignTransaction,
   Timestamp,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 export class ScheduleTransactionServiceImpl implements ScheduleTransactionService {
   private logger: Logger;

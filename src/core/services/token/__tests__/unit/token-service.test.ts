@@ -2,10 +2,10 @@
  * Unit tests for TokenServiceImpl
  * Tests token transfer, creation, and association transaction building
  */
-import type { PublicKey } from '@hashgraph/sdk';
+import type { PublicKey } from '@hiero-ledger/sdk';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 
-import { AccountId, Hbar, TokenId, TokenType } from '@hashgraph/sdk';
+import { AccountId, Hbar, TokenId, TokenType } from '@hiero-ledger/sdk';
 
 import {
   ECDSA_HEX_PUBLIC_KEY,
@@ -63,7 +63,7 @@ const mockPrivateKeyInstance = {
 };
 const mockHbarInstance = { toString: jest.fn().mockReturnValue('1 ℏ') };
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   TokenCreateTransaction: jest.fn(() => mockTokenCreateTransaction),
   TokenAssociateTransaction: jest.fn(() => mockTokenAssociateTransaction),
   TokenDissociateTransaction: jest.fn(() => mockTokenDissociateTransaction),

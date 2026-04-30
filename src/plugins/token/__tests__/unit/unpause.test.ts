@@ -93,9 +93,9 @@ describe('tokenUnpause', () => {
       const { api } = makeUnpauseSuccessMocks({
         tokenInfo: { pause_key: null },
       });
-      (
-        api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey as jest.Mock
-      ).mockRejectedValue(new ValidationError('Token has no pause key'));
+      (api.keyResolver.resolveSigningKeys as jest.Mock).mockRejectedValue(
+        new ValidationError('Token has no pause key'),
+      );
       const args = makeArgs(api);
 
       await expect(tokenUnpause(args)).rejects.toThrow(ValidationError);

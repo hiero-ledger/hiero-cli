@@ -159,11 +159,11 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
     }
 
     const { keyRefIds: signingKeyRefIds, requiredSignatures } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
+      await api.keyResolver.resolveSigningKeys({
         mirrorRoleKey: topicInfo.admin_key,
         explicitCredentials: validArgs.adminKey,
         keyManager,
-        resolveSigningKeyLabels: ['topic:admin'],
+        signingKeyLabels: ['topic:admin'],
         emptyMirrorRoleKeyMessage:
           'Topic has no admin key on the network; it cannot be deleted with TopicDeleteTransaction.',
         insufficientKmsMatchesMessage:

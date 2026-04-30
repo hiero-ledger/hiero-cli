@@ -79,17 +79,16 @@ export class TokenUpdateNftMetadataCommand extends BaseTransactionCommand<
       });
     }
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.metadata_key,
-        explicitCredentials: validArgs.metadataKey,
-        keyManager,
-        resolveSigningKeyLabels: ['token:metadata'],
-        emptyMirrorRoleKeyMessage: 'Token has no metadata key',
-        insufficientKmsMatchesMessage:
-          'Not enough metadata key(s) found in key manager for this token. Provide --metadata-key.',
-        validationErrorOptions: { context: { tokenId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.metadata_key,
+      explicitCredentials: validArgs.metadataKey,
+      keyManager,
+      signingKeyLabels: ['token:metadata'],
+      emptyMirrorRoleKeyMessage: 'Token has no metadata key',
+      insufficientKmsMatchesMessage:
+        'Not enough metadata key(s) found in key manager for this token. Provide --metadata-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     return {
       network,

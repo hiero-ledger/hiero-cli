@@ -1,7 +1,7 @@
 import type { TransferEntry } from './transfer-entries/transfer-entry.interface';
 import type { TransferService } from './transfer-service.interface';
 
-import { TransferTransaction } from '@hashgraph/sdk';
+import { TransferTransaction } from '@hiero-ledger/sdk';
 
 import { ValidationError } from '@/core/errors';
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';

@@ -2,9 +2,9 @@ import type {
   Client,
   ContractCreateFlow,
   Transaction as HederaTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
-import { TransactionId } from '@hashgraph/sdk';
+import { TransactionId } from '@hiero-ledger/sdk';
 
 import {
   createMockClient,
@@ -19,8 +19,8 @@ import {
 import { StateError } from '@/core/errors';
 import { TxSignServiceImpl } from '@/core/services/tx-sign/tx-sign-service';
 
-jest.mock('@hashgraph/sdk', () => {
-  const actual = jest.requireActual('@hashgraph/sdk');
+jest.mock('@hiero-ledger/sdk', () => {
+  const actual = jest.requireActual('@hiero-ledger/sdk');
   return {
     ...actual,
     TransactionId: {

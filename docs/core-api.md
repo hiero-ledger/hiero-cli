@@ -227,7 +227,7 @@ interface MessageSubmitResult {
 }
 ```
 
-`Key`, `TopicCreateTransaction`, `TopicDeleteTransaction`, and `TopicMessageSubmitTransaction` are Hedera SDK types (`@hashgraph/sdk`).
+`Key`, `TopicCreateTransaction`, `TopicDeleteTransaction`, and `TopicMessageSubmitTransaction` are Hedera SDK types (`@hiero-ledger/sdk`).
 
 **Usage Example:**
 
@@ -770,7 +770,7 @@ class NftAllowanceEntry {
 
 **Usage Example:**
 
-```typescript
+````typescript
 import { FtAllowanceEntry, NftAllowanceEntry } from '@/core/services/allowance';
 
 // Approve FT allowance
@@ -847,3 +847,4 @@ Core API services are designed to work with structured command outputs defined v
 ```
 
 ```
+````

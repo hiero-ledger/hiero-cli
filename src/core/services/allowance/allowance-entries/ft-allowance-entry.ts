@@ -1,7 +1,7 @@
-import type { AccountAllowanceApproveTransaction } from '@hashgraph/sdk';
+import type { AccountAllowanceApproveTransaction } from '@hiero-ledger/sdk';
 import type { AllowanceEntry } from './allowance-entry.interface';
 
-import { AccountId, Long, TokenId } from '@hashgraph/sdk';
+import { AccountId, Long, TokenId } from '@hiero-ledger/sdk';
 
 export class FtAllowanceEntry implements AllowanceEntry {
   constructor(

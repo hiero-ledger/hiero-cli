@@ -23,7 +23,7 @@ import {
 } from '@/plugins/contract-erc721/commands/balance-of';
 import { ContractErc721CallBalanceOfInputSchema } from '@/plugins/contract-erc721/commands/balance-of/input';
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   ContractId: {
     fromString: jest.fn(() => ({
       toEvmAddress: jest.fn(() => MOCK_EVM_ADDRESS_RAW),

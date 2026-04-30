@@ -1,7 +1,7 @@
 import type {
   AccountAllowanceApproveTransaction,
   AccountAllowanceDeleteTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import type { AllowanceEntry } from '@/core/services/allowance/allowance-entries/allowance-entry.interface';
 
 import {
@@ -23,7 +23,7 @@ const mockDeleteTxInstance = {
   deleteAllTokenNftAllowances: mockDeleteAllTokenNftAllowances,
 } as unknown as AccountAllowanceDeleteTransaction;
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   AccountAllowanceApproveTransaction: jest
     .fn()
     .mockImplementation(() => mockApproveTxInstance),

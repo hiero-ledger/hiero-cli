@@ -1,7 +1,7 @@
-import type { TransferTransaction } from '@hashgraph/sdk';
+import type { TransferTransaction } from '@hiero-ledger/sdk';
 import type { TransferEntry } from './transfer-entry.interface';
 
-import { AccountId, Hbar, HbarUnit } from '@hashgraph/sdk';
+import { AccountId, Hbar, HbarUnit } from '@hiero-ledger/sdk';
 
 export class HbarTransferEntry implements TransferEntry {
   constructor(

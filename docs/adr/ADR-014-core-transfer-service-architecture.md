@@ -62,7 +62,7 @@ This ADR introduces two new focused services — `TransferService` and `Allowanc
 
 ```ts
 // src/core/services/transfer/transfer-service.interface.ts
-import type { TransferTransaction } from '@hashgraph/sdk';
+import type { TransferTransaction } from '@hiero-ledger/sdk';
 import type { TransferEntry } from './transfer-entries/transfer-entry.interface';
 
 export interface TransferService {
@@ -80,7 +80,7 @@ export interface TransferService {
 import type {
   AccountAllowanceApproveTransaction,
   AccountAllowanceDeleteTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import type { AllowanceEntry } from './allowance-entries/allowance-entry.interface';
 import type { NftAllowanceDeleteParams } from './types';
 
@@ -98,7 +98,7 @@ export interface AllowanceService {
 
 ```ts
 // src/core/services/transfer/transfer-entries/transfer-entry.interface.ts
-import type { TransferTransaction } from '@hashgraph/sdk';
+import type { TransferTransaction } from '@hiero-ledger/sdk';
 
 export interface TransferEntry {
   apply(tx: TransferTransaction): void;
@@ -177,7 +177,7 @@ export class NftTransferEntry implements TransferEntry {
 
 ```ts
 // src/core/services/allowance/allowance-entries/allowance-entry.interface.ts
-import type { AccountAllowanceApproveTransaction } from '@hashgraph/sdk';
+import type { AccountAllowanceApproveTransaction } from '@hiero-ledger/sdk';
 
 export interface AllowanceEntry {
   apply(tx: AccountAllowanceApproveTransaction): void;

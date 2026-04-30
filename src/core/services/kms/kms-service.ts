@@ -2,7 +2,7 @@ import type {
   Client,
   ContractCreateFlow,
   Transaction as HederaTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
@@ -13,7 +13,7 @@ import type { KmsService } from './kms-service.interface';
 import type { KmsCredentialRecord } from './kms-types.interface';
 import type { Signer } from './signers/signer.interface';
 
-import { AccountId, PrivateKey, PublicKey } from '@hashgraph/sdk';
+import { AccountId, PrivateKey, PublicKey } from '@hiero-ledger/sdk';
 import { randomBytes } from 'crypto';
 
 import {

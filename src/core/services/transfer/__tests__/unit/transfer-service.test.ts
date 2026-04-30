@@ -1,4 +1,4 @@
-import type { TransferTransaction } from '@hashgraph/sdk';
+import type { TransferTransaction } from '@hiero-ledger/sdk';
 import type { TransferEntry } from '@/core/services/transfer/transfer-entries/transfer-entry.interface';
 
 import { TransferServiceImpl } from '@/core/services/transfer/transfer-service';
@@ -10,7 +10,7 @@ const makeMockTx = () =>
 
 const mockTxInstance = makeMockTx();
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   TransferTransaction: jest.fn(() => mockTxInstance),
   TokenType: {
     NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',

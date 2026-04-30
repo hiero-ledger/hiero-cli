@@ -1,7 +1,7 @@
-import type { TransferTransaction } from '@hashgraph/sdk';
+import type { TransferTransaction } from '@hiero-ledger/sdk';
 import type { TransferEntry } from './transfer-entry.interface';
 
-import { AccountId, Long, TokenId } from '@hashgraph/sdk';
+import { AccountId, Long, TokenId } from '@hiero-ledger/sdk';
 
 export class FtTransferEntry implements TransferEntry {
   constructor(

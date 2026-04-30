@@ -148,12 +148,10 @@ describe('tokenMintNftHandler', () => {
         },
       });
 
-      api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
-        .fn()
-        .mockResolvedValue({
-          keyRefIds: ['supply-key-ref-id'],
-          requiredSignatures: 1,
-        });
+      api.keyResolver.resolveSigningKeys = jest.fn().mockResolvedValue({
+        keyRefIds: ['supply-key-ref-id'],
+        requiredSignatures: 1,
+      });
 
       const logger = makeLogger();
       const args = makeTokenMintNftCommandArgs({

@@ -9,7 +9,7 @@ import {
   Long,
   NftId,
   TokenId,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 import { ValidationError } from '@/core/errors';
 import { HEDERA_MAX_ALLOWANCE_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';

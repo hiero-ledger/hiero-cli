@@ -192,7 +192,7 @@ The plugin uses the Core API services:
 - `api.alias` - Name registration and resolution
 - `api.mirror` - Contract info when deleting on network without a local state entry
 - `api.config` - Configuration (key manager default)
-- `api.keyResolver` - Resolving explicit admin credentials for create/delete; for network delete, `resolveSigningKeyRefIdsFromMirrorRoleKey` derives signing key refs from the mirror admin key plus KMS (not from stored state)
+- `api.keyResolver` - Resolving explicit admin credentials for create/delete; for network delete, `resolveSigningKeys` derives signing key refs from the mirror admin key plus KMS (not from stored state)
 - `api.logger` - Logging
 
 ## 📤 Output Formatting

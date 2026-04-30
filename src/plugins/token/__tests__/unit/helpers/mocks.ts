@@ -86,6 +86,7 @@ export const makeTokenServiceMock = (
   createWipeFtTransaction: jest.fn(),
   createWipeNftTransaction: jest.fn(),
   createRejectAirdropTransaction: jest.fn(),
+  createUpdateTokenTransaction: jest.fn(),
   ...overrides,
 });
 
@@ -820,12 +821,10 @@ export const makeMintFtSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
-    .fn()
-    .mockResolvedValue({
-      keyRefIds: ['supply-key-ref-id'],
-      requiredSignatures: 1,
-    });
+  apiMocks.keyResolver.resolveSigningKeys = jest.fn().mockResolvedValue({
+    keyRefIds: ['supply-key-ref-id'],
+    requiredSignatures: 1,
+  });
 
   return {
     ...apiMocks,
@@ -900,12 +899,10 @@ export const makeMintNftSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
-    .fn()
-    .mockResolvedValue({
-      keyRefIds: ['supply-key-ref-id'],
-      requiredSignatures: 1,
-    });
+  apiMocks.keyResolver.resolveSigningKeys = jest.fn().mockResolvedValue({
+    keyRefIds: ['supply-key-ref-id'],
+    requiredSignatures: 1,
+  });
 
   return {
     ...apiMocks,
@@ -949,12 +946,10 @@ export const makeDeleteSuccessMocks = (overrides?: {
     }),
   });
 
-  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
-    .fn()
-    .mockResolvedValue({
-      keyRefIds: ['admin-key-ref-id'],
-      requiredSignatures: 1,
-    });
+  apiMocks.keyResolver.resolveSigningKeys = jest.fn().mockResolvedValue({
+    keyRefIds: ['admin-key-ref-id'],
+    requiredSignatures: 1,
+  });
 
   return { ...apiMocks, mockDeleteTransaction };
 };
@@ -996,12 +991,10 @@ export const makeFreezeSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
-    .fn()
-    .mockResolvedValue({
-      keyRefIds: ['freeze-key-ref-id'],
-      requiredSignatures: 1,
-    });
+  apiMocks.keyResolver.resolveSigningKeys = jest.fn().mockResolvedValue({
+    keyRefIds: ['freeze-key-ref-id'],
+    requiredSignatures: 1,
+  });
 
   return { ...apiMocks, mockFreezeTransaction };
 };
@@ -1045,12 +1038,10 @@ export const makeUnfreezeSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
-    .fn()
-    .mockResolvedValue({
-      keyRefIds: ['freeze-key-ref-id'],
-      requiredSignatures: 1,
-    });
+  apiMocks.keyResolver.resolveSigningKeys = jest.fn().mockResolvedValue({
+    keyRefIds: ['freeze-key-ref-id'],
+    requiredSignatures: 1,
+  });
 
   return { ...apiMocks, mockUnfreezeTransaction };
 };
@@ -1090,12 +1081,10 @@ export const makePauseSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
-    .fn()
-    .mockResolvedValue({
-      keyRefIds: [MOCK_PAUSE_KEY_REF_ID],
-      requiredSignatures: 1,
-    });
+  apiMocks.keyResolver.resolveSigningKeys = jest.fn().mockResolvedValue({
+    keyRefIds: [MOCK_PAUSE_KEY_REF_ID],
+    requiredSignatures: 1,
+  });
 
   return { ...apiMocks, mockPauseTransaction };
 };
@@ -1133,12 +1122,10 @@ export const makeUnpauseSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
-    .fn()
-    .mockResolvedValue({
-      keyRefIds: [MOCK_PAUSE_KEY_REF_ID],
-      requiredSignatures: 1,
-    });
+  apiMocks.keyResolver.resolveSigningKeys = jest.fn().mockResolvedValue({
+    keyRefIds: [MOCK_PAUSE_KEY_REF_ID],
+    requiredSignatures: 1,
+  });
 
   return { ...apiMocks, mockUnpauseTransaction };
 };
@@ -1194,12 +1181,10 @@ export const makeBurnNftSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
-    .fn()
-    .mockResolvedValue({
-      keyRefIds: ['supply-key-ref-id'],
-      requiredSignatures: 1,
-    });
+  apiMocks.keyResolver.resolveSigningKeys = jest.fn().mockResolvedValue({
+    keyRefIds: ['supply-key-ref-id'],
+    requiredSignatures: 1,
+  });
 
   return {
     ...apiMocks,
@@ -1253,12 +1238,10 @@ export const makeBurnFtSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
-    .fn()
-    .mockResolvedValue({
-      keyRefIds: ['supply-key-ref-id'],
-      requiredSignatures: 1,
-    });
+  apiMocks.keyResolver.resolveSigningKeys = jest.fn().mockResolvedValue({
+    keyRefIds: ['supply-key-ref-id'],
+    requiredSignatures: 1,
+  });
 
   return {
     ...apiMocks,
@@ -1308,12 +1291,10 @@ export const makeUpdateNftMetadataSuccessMocks = (overrides?: {
     },
   });
 
-  apiMocks.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey = jest
-    .fn()
-    .mockResolvedValue({
-      keyRefIds: ['metadata-key-ref-id'],
-      requiredSignatures: 1,
-    });
+  apiMocks.keyResolver.resolveSigningKeys = jest.fn().mockResolvedValue({
+    keyRefIds: ['metadata-key-ref-id'],
+    requiredSignatures: 1,
+  });
 
   return {
     ...apiMocks,

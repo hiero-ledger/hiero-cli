@@ -3,7 +3,7 @@
  * Type definitions for token-related operations
  */
 
-import type { Key } from '@hashgraph/sdk';
+import type { Key } from '@hiero-ledger/sdk';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupplyType } from '@/core/types/shared.types';
 
@@ -271,4 +271,24 @@ export interface RejectAirdropItem {
 export interface TokenRejectAirdropParams {
   ownerAccountId: string;
   items: RejectAirdropItem[];
+}
+
+export interface TokenUpdateParams {
+  tokenId: string;
+  name?: string;
+  symbol?: string;
+  treasuryId?: string;
+  adminKey?: Key | null;
+  kycKey?: Key | null;
+  freezeKey?: Key | null;
+  wipeKey?: Key | null;
+  supplyKey?: Key | null;
+  feeScheduleKey?: Key | null;
+  pauseKey?: Key | null;
+  metadataKey?: Key | null;
+  memo?: string | null;
+  autoRenewAccountId?: string;
+  autoRenewPeriodSeconds?: number;
+  expirationTime?: Date;
+  metadata?: Uint8Array;
 }
