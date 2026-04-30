@@ -111,8 +111,8 @@ describe('Handler Output Validation - Token Plugin', () => {
       });
 
       const { api } = makeApiMocks({
-        tokenTransactions: {
-          createTransferTransaction: jest.fn().mockReturnValue({}),
+        transfer: {
+          buildTransferTransaction: jest.fn().mockReturnValue({}),
         },
         txExecute: {
           execute: jest.fn().mockResolvedValue(mockSignResult),

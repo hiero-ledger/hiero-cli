@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
+import { FtAllowanceEntry } from '@/core/services/allowance';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import {
   resolveDestinationAccountParameter,
@@ -107,12 +108,14 @@ export class TokenAllowanceFtCommand extends BaseTransactionCommand<
     normalisedParams: TokenAllowanceFtNormalizedParams,
   ): Promise<TokenAllowanceFtBuildTransactionResult> {
     const { api } = args;
-    const transaction = api.token.createFungibleTokenAllowanceTransaction({
-      tokenId: normalisedParams.tokenId,
-      ownerAccountId: normalisedParams.ownerAccountId,
-      spenderAccountId: normalisedParams.spenderAccountId,
-      amount: normalisedParams.rawAmount,
-    });
+    const transaction = api.allowance.buildAllowanceApprove([
+      new FtAllowanceEntry(
+        normalisedParams.ownerAccountId,
+        normalisedParams.spenderAccountId,
+        normalisedParams.tokenId,
+        normalisedParams.rawAmount,
+      ),
+    ]);
     return { transaction };
   }
 

@@ -5,6 +5,7 @@ import type { StateService } from '@/core/services/state/state-service.interface
 import '@/core/utils/json-serialize';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
+import { FtTransferEntry } from '@/core/services/transfer';
 import { HederaTokenType } from '@/core/shared/constants';
 import { AliasType, SupplyType } from '@/core/types/shared.types';
 import { tokenAssociate } from '@/plugins/token/commands/associate';
@@ -53,7 +54,7 @@ describe('Token Lifecycle Integration', () => {
       const mockAssociationTransaction = { type: 'association' };
       const mockTransferTransaction = { type: 'transfer' };
 
-      const { api, tokenTransactions: tokenTransactions } = makeApiMocks({
+      const { api, tokenTransactions, transfer } = makeApiMocks({
         tokenTransactions: {
           createTokenTransaction: jest
             .fn()
@@ -61,7 +62,9 @@ describe('Token Lifecycle Integration', () => {
           createTokenAssociationTransaction: jest
             .fn()
             .mockReturnValue(mockAssociationTransaction),
-          createTransferTransaction: jest
+        },
+        transfer: {
+          buildTransferTransaction: jest
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
@@ -187,18 +190,20 @@ describe('Token Lifecycle Integration', () => {
         accountId: userAccountId,
       });
 
-      expect(tokenTransactions.createTransferTransaction).toHaveBeenCalledWith({
-        tokenId: token,
-        fromAccountId: _treasuryAccountId,
-        toAccountId: userAccountId,
-        amount: 10000n,
-      });
+      expect(transfer.buildTransferTransaction).toHaveBeenCalledWith([
+        new FtTransferEntry(
+          mockAccountIds.treasury,
+          mockAccountIds.association,
+          token,
+          10000n,
+        ),
+      ]);
 
       expect(tokenTransactions.createTokenTransaction).toHaveBeenCalled();
       expect(
         tokenTransactions.createTokenAssociationTransaction,
       ).toHaveBeenCalled();
-      expect(tokenTransactions.createTransferTransaction).toHaveBeenCalled();
+      expect(transfer.buildTransferTransaction).toHaveBeenCalled();
     });
 
     test('should handle partial failure in lifecycle', async () => {

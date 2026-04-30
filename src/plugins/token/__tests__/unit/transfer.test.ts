@@ -3,9 +3,11 @@ import type { NetworkService } from '@/core/services/network/network-service.int
 
 import '@/core/utils/json-serialize';
 
+import { ECDSA_HEX_PRIVATE_KEY } from '@/__tests__/mocks/fixtures';
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError, SupportedNetwork } from '@/core';
+import { FtTransferEntry } from '@/core/services/transfer';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
 import {
@@ -13,8 +15,10 @@ import {
   TokenTransferFtOutputSchema,
 } from '@/plugins/token/commands/transfer-ft';
 
-import { mockTransactionResults } from './helpers/fixtures';
+import { mockAccountIds, mockTransactionResults } from './helpers/fixtures';
 import { makeApiMocks, makeLogger } from './helpers/mocks';
+
+const FROM_ACCOUNT = `${mockAccountIds.sender}:${ECDSA_HEX_PRIVATE_KEY}`;
 
 describe('transferTokenHandler', () => {
   describe('success scenarios', () => {
@@ -22,13 +26,12 @@ describe('transferTokenHandler', () => {
       const mockTransferTransaction = { test: 'transfer-transaction' };
       const mockSignResult = {
         ...mockTransactionResults.success,
-        transactionId: '0.0.123@1234567890.123456789',
         consensusTimestamp: '1234567890.123456789',
       };
 
-      const { api, tokens, txExecute, kms } = makeApiMocks({
-        tokens: {
-          createTransferTransaction: jest
+      const { api, transfer, txExecute, kms } = makeApiMocks({
+        transfer: {
+          buildTransferTransaction: jest
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
@@ -52,9 +55,9 @@ describe('transferTokenHandler', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.123456',
-          to: '0.0.789012',
-          from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
+          token: mockAccountIds.treasury,
+          to: mockAccountIds.association,
+          from: FROM_ACCOUNT,
           amount: '100',
         },
         api,
@@ -66,22 +69,24 @@ describe('transferTokenHandler', () => {
       const result = await tokenTransferFt(args);
 
       const output = assertOutput(result.result, TokenTransferFtOutputSchema);
-      expect(output.tokenId).toBe('0.0.123456');
-      expect(output.from).toBe('0.0.345678');
-      expect(output.to).toBe('0.0.789012');
+      expect(output.tokenId).toBe(mockAccountIds.treasury);
+      expect(output.from).toBe(mockAccountIds.sender);
+      expect(output.to).toBe(mockAccountIds.association);
       expect(output.amount).toBe(100000000n);
-      expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
+      expect(output.transactionId).toBe(mockSignResult.transactionId);
 
-      expect(tokens.createTransferTransaction).toHaveBeenCalledWith({
-        tokenId: '0.0.123456',
-        fromAccountId: '0.0.345678',
-        toAccountId: '0.0.789012',
-        amount: 100000000n,
-      });
+      expect(transfer.buildTransferTransaction).toHaveBeenCalledWith([
+        new FtTransferEntry(
+          mockAccountIds.sender,
+          mockAccountIds.association,
+          mockAccountIds.treasury,
+          100000000n,
+        ),
+      ]);
       expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
-        '2222222222222222222222222222222222222222222222222222222222222222',
+        ECDSA_HEX_PRIVATE_KEY,
         'local',
         ['token:account'],
       );
@@ -91,13 +96,12 @@ describe('transferTokenHandler', () => {
       const mockTransferTransaction = { test: 'transfer-transaction' };
       const mockSignResult = {
         ...mockTransactionResults.success,
-        transactionId: '0.0.123@1234567890.123456789',
         consensusTimestamp: '1234567890.123456789',
       };
 
-      const { api, tokens, txExecute, alias } = makeApiMocks({
-        tokens: {
-          createTransferTransaction: jest
+      const { api, transfer, txExecute, alias } = makeApiMocks({
+        transfer: {
+          buildTransferTransaction: jest
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
@@ -106,7 +110,7 @@ describe('transferTokenHandler', () => {
         },
         alias: {
           resolve: jest.fn().mockReturnValue({
-            entityId: '0.0.345678',
+            entityId: mockAccountIds.sender,
             keyRefId: 'alias-key-ref-id',
             publicKey: '302a300506032b6570032100' + '0'.repeat(64),
           }),
@@ -125,8 +129,8 @@ describe('transferTokenHandler', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.123456',
-          to: '0.0.789012',
+          token: mockAccountIds.treasury,
+          to: mockAccountIds.association,
           from: 'alice',
           amount: '100',
         },
@@ -139,23 +143,25 @@ describe('transferTokenHandler', () => {
       const result = await tokenTransferFt(args);
 
       const output = assertOutput(result.result, TokenTransferFtOutputSchema);
-      expect(output.tokenId).toBe('0.0.123456');
-      expect(output.from).toBe('0.0.345678');
-      expect(output.to).toBe('0.0.789012');
+      expect(output.tokenId).toBe(mockAccountIds.treasury);
+      expect(output.from).toBe(mockAccountIds.sender);
+      expect(output.to).toBe(mockAccountIds.association);
       expect(output.amount).toBe(100000000n);
-      expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
+      expect(output.transactionId).toBe(mockSignResult.transactionId);
 
       expect(alias.resolve).toHaveBeenCalledWith(
         'alice',
         AliasType.Account,
         'testnet',
       );
-      expect(tokens.createTransferTransaction).toHaveBeenCalledWith({
-        tokenId: '0.0.123456',
-        fromAccountId: '0.0.345678',
-        toAccountId: '0.0.789012',
-        amount: 100000000n,
-      });
+      expect(transfer.buildTransferTransaction).toHaveBeenCalledWith([
+        new FtTransferEntry(
+          mockAccountIds.sender,
+          mockAccountIds.association,
+          mockAccountIds.treasury,
+          100000000n,
+        ),
+      ]);
       expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
     });
 
@@ -163,13 +169,12 @@ describe('transferTokenHandler', () => {
       const mockTransferTransaction = { test: 'transfer-transaction' };
       const mockSignResult = {
         ...mockTransactionResults.success,
-        transactionId: '0.0.123@1234567890.123456789',
         consensusTimestamp: '1234567890.123456789',
       };
 
-      const { api, tokens, alias } = makeApiMocks({
-        tokens: {
-          createTransferTransaction: jest
+      const { api, transfer, alias } = makeApiMocks({
+        transfer: {
+          buildTransferTransaction: jest
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
@@ -180,7 +185,7 @@ describe('transferTokenHandler', () => {
           resolve: jest.fn().mockImplementation((alias) => {
             if (alias === 'bob') {
               return {
-                entityId: '0.0.789012',
+                entityId: mockAccountIds.association,
                 keyRefId: 'bob-key-ref-id',
               };
             }
@@ -201,9 +206,9 @@ describe('transferTokenHandler', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.123456',
+          token: mockAccountIds.treasury,
           to: 'bob',
-          from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
+          from: FROM_ACCOUNT,
           amount: '100',
         },
         api,
@@ -215,20 +220,22 @@ describe('transferTokenHandler', () => {
       const result = await tokenTransferFt(args);
 
       const output = assertOutput(result.result, TokenTransferFtOutputSchema);
-      expect(output.tokenId).toBe('0.0.123456');
-      expect(output.to).toBe('0.0.789012');
+      expect(output.tokenId).toBe(mockAccountIds.treasury);
+      expect(output.to).toBe(mockAccountIds.association);
 
       expect(alias.resolve).toHaveBeenCalledWith(
         'bob',
         AliasType.Account,
         SupportedNetwork.TESTNET,
       );
-      expect(tokens.createTransferTransaction).toHaveBeenCalledWith({
-        tokenId: '0.0.123456',
-        fromAccountId: '0.0.345678',
-        toAccountId: '0.0.789012',
-        amount: 100000000n,
-      });
+      expect(transfer.buildTransferTransaction).toHaveBeenCalledWith([
+        new FtTransferEntry(
+          mockAccountIds.sender,
+          mockAccountIds.association,
+          mockAccountIds.treasury,
+          100000000n,
+        ),
+      ]);
     });
 
     test('should reject zero amount transfer', async () => {
@@ -241,9 +248,9 @@ describe('transferTokenHandler', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.123456',
-          to: '0.0.789012',
-          from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
+          token: mockAccountIds.treasury,
+          to: mockAccountIds.association,
+          from: FROM_ACCOUNT,
           amount: '0',
         },
         api,
@@ -263,13 +270,12 @@ describe('transferTokenHandler', () => {
       const mockTransferTransaction = { test: 'transfer-transaction' };
       const mockSignResult = {
         ...mockTransactionResults.success,
-        transactionId: '0.0.123@1234567890.123456789',
         consensusTimestamp: '1234567890.123456789',
       };
 
       const { api } = makeApiMocks({
-        tokenTransactions: {
-          createTransferTransaction: jest
+        transfer: {
+          buildTransferTransaction: jest
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
@@ -304,8 +310,8 @@ describe('transferTokenHandler', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.123456',
-          to: '0.0.789012',
+          token: mockAccountIds.treasury,
+          to: mockAccountIds.association,
           amount: '100',
         },
         api,
@@ -317,8 +323,8 @@ describe('transferTokenHandler', () => {
       const result = await tokenTransferFt(args);
 
       const output = assertOutput(result.result, TokenTransferFtOutputSchema);
-      expect(output.tokenId).toBe('0.0.123456');
-      expect(output.to).toBe('0.0.789012');
+      expect(output.tokenId).toBe(mockAccountIds.treasury);
+      expect(output.to).toBe(mockAccountIds.association);
     });
   });
 
@@ -331,8 +337,8 @@ describe('transferTokenHandler', () => {
       };
 
       const { api } = makeApiMocks({
-        tokenTransactions: {
-          createTransferTransaction: jest
+        transfer: {
+          buildTransferTransaction: jest
             .fn()
             .mockResolvedValue(mockTransferTransaction),
         },
@@ -350,9 +356,9 @@ describe('transferTokenHandler', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.123456',
-          to: '0.0.789012',
-          from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
+          token: mockAccountIds.treasury,
+          to: mockAccountIds.association,
+          from: FROM_ACCOUNT,
           amount: '100',
         },
         api,
@@ -364,10 +370,10 @@ describe('transferTokenHandler', () => {
       await expect(tokenTransferFt(args)).rejects.toThrow();
     });
 
-    test('should handle token transaction service error', async () => {
+    test('should handle token transfer service error', async () => {
       const { api } = makeApiMocks({
-        tokens: {
-          createTransferTransaction: jest.fn().mockImplementation(() => {
+        transfer: {
+          buildTransferTransaction: jest.fn().mockImplementation(() => {
             throw new NetworkError('Network error');
           }),
         },
@@ -382,9 +388,9 @@ describe('transferTokenHandler', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.123456',
-          to: '0.0.789012',
-          from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
+          token: mockAccountIds.treasury,
+          to: mockAccountIds.association,
+          from: FROM_ACCOUNT,
           amount: '100',
         },
         api,
@@ -400,8 +406,8 @@ describe('transferTokenHandler', () => {
       const mockTransferTransaction = { test: 'transfer-transaction' };
 
       const { api } = makeApiMocks({
-        tokens: {
-          createTransferTransaction: jest
+        transfer: {
+          buildTransferTransaction: jest
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
@@ -422,9 +428,9 @@ describe('transferTokenHandler', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.123456',
-          to: '0.0.789012',
-          from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
+          token: mockAccountIds.treasury,
+          to: mockAccountIds.association,
+          from: FROM_ACCOUNT,
           amount: '100',
         },
         api,
@@ -440,13 +446,12 @@ describe('transferTokenHandler', () => {
       const mockTransferTransaction = { test: 'transfer-transaction' };
       const mockSignResult = {
         ...mockTransactionResults.success,
-        transactionId: '0.0.123@1234567890.123456789',
         consensusTimestamp: '1234567890.123456789',
       };
 
-      const { api, tokenTransactions: _tokenTransactions } = makeApiMocks({
-        tokenTransactions: {
-          createTransferTransaction: jest
+      const { api, transfer } = makeApiMocks({
+        transfer: {
+          buildTransferTransaction: jest
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
@@ -467,9 +472,9 @@ describe('transferTokenHandler', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.123456',
-          to: '0.0.789012',
-          from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
+          token: mockAccountIds.treasury,
+          to: mockAccountIds.association,
+          from: FROM_ACCOUNT,
           amount: '999999999',
         },
         api,
@@ -481,17 +486,17 @@ describe('transferTokenHandler', () => {
       const result = await tokenTransferFt(args);
 
       const output = assertOutput(result.result, TokenTransferFtOutputSchema);
-      expect(output.tokenId).toBe('0.0.123456');
-      expect(output.to).toBe('0.0.789012');
+      expect(output.tokenId).toBe(mockAccountIds.treasury);
+      expect(output.to).toBe(mockAccountIds.association);
 
-      expect(_tokenTransactions.createTransferTransaction).toHaveBeenCalledWith(
-        {
-          tokenId: '0.0.123456',
-          fromAccountId: '0.0.345678',
-          toAccountId: '0.0.789012',
-          amount: 999999999000000n,
-        },
-      );
+      expect(transfer.buildTransferTransaction).toHaveBeenCalledWith([
+        new FtTransferEntry(
+          mockAccountIds.sender,
+          mockAccountIds.association,
+          mockAccountIds.treasury,
+          999999999000000n,
+        ),
+      ]);
     });
   });
 
@@ -500,13 +505,12 @@ describe('transferTokenHandler', () => {
       const mockTransferTransaction = { test: 'transfer-transaction' };
       const mockSignResult = {
         ...mockTransactionResults.success,
-        transactionId: '0.0.123@1234567890.123456789',
         consensusTimestamp: '1234567890.123456789',
       };
 
       const { api } = makeApiMocks({
-        tokenTransactions: {
-          createTransferTransaction: jest
+        transfer: {
+          buildTransferTransaction: jest
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
@@ -527,9 +531,9 @@ describe('transferTokenHandler', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.123456',
-          to: '0.0.789012',
-          from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
+          token: mockAccountIds.treasury,
+          to: mockAccountIds.association,
+          from: FROM_ACCOUNT,
           amount: '100',
         },
         api,
@@ -541,8 +545,8 @@ describe('transferTokenHandler', () => {
       const result = await tokenTransferFt(args);
 
       const output = assertOutput(result.result, TokenTransferFtOutputSchema);
-      expect(output.tokenId).toBe('0.0.123456');
-      expect(output.to).toBe('0.0.789012');
+      expect(output.tokenId).toBe(mockAccountIds.treasury);
+      expect(output.to).toBe(mockAccountIds.association);
     });
   });
 
@@ -551,13 +555,12 @@ describe('transferTokenHandler', () => {
       const mockTransferTransaction = { test: 'transfer-transaction' };
       const mockSignResult = {
         ...mockTransactionResults.success,
-        transactionId: '0.0.123@1234567890.123456789',
         consensusTimestamp: '1234567890.123456789',
       };
 
-      const { api, tokenTransactions: _tokenTransactions } = makeApiMocks({
-        tokenTransactions: {
-          createTransferTransaction: jest
+      const { api, transfer } = makeApiMocks({
+        transfer: {
+          buildTransferTransaction: jest
             .fn()
             .mockReturnValue(mockTransferTransaction),
         },
@@ -578,9 +581,9 @@ describe('transferTokenHandler', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.123456',
-          to: '0.0.345678',
-          from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
+          token: mockAccountIds.treasury,
+          to: mockAccountIds.sender,
+          from: FROM_ACCOUNT,
           amount: '100',
         },
         api,
@@ -592,17 +595,17 @@ describe('transferTokenHandler', () => {
       const result = await tokenTransferFt(args);
 
       const output = assertOutput(result.result, TokenTransferFtOutputSchema);
-      expect(output.tokenId).toBe('0.0.123456');
-      expect(output.to).toBe('0.0.345678');
+      expect(output.tokenId).toBe(mockAccountIds.treasury);
+      expect(output.to).toBe(mockAccountIds.sender);
 
-      expect(_tokenTransactions.createTransferTransaction).toHaveBeenCalledWith(
-        {
-          tokenId: '0.0.123456',
-          fromAccountId: '0.0.345678',
-          toAccountId: '0.0.345678',
-          amount: 100000000n,
-        },
-      );
+      expect(transfer.buildTransferTransaction).toHaveBeenCalledWith([
+        new FtTransferEntry(
+          mockAccountIds.sender,
+          mockAccountIds.sender,
+          mockAccountIds.treasury,
+          100000000n,
+        ),
+      ]);
     });
 
     test('should handle decimal amounts', async () => {
@@ -610,9 +613,9 @@ describe('transferTokenHandler', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.123456',
-          to: '0.0.789012',
-          from: '0.0.345678:2222222222222222222222222222222222222222222222222222222222222222',
+          token: mockAccountIds.treasury,
+          to: mockAccountIds.association,
+          from: FROM_ACCOUNT,
           amount: '100.5',
         },
         api,

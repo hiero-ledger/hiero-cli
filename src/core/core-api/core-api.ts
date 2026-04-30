@@ -5,13 +5,13 @@
 import type { CoreApi } from '@/core';
 import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { AllowanceService } from '@/core/services/allowance/allowance-service.interface';
 import type { BatchTransactionService } from '@/core/services/batch/batch-transaction-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
-import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
@@ -28,18 +28,19 @@ import type { ScheduleTransactionService } from '@/core/services/schedule-transa
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
+import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 
 import { AccountServiceImpl } from '@/core/services/account/account-transaction-service';
 import { AliasServiceImpl } from '@/core/services/alias/alias-service';
+import { AllowanceServiceImpl } from '@/core/services/allowance/allowance-service';
 import { BatchTransactionServiceImpl } from '@/core/services/batch/batch-transaction-service';
 import { ConfigServiceImpl } from '@/core/services/config/config-service';
 import { ContractCompilerServiceImpl } from '@/core/services/contract-compiler/contract-compiler-service';
 import { ContractQueryServiceImpl } from '@/core/services/contract-query/contract-query-service';
 import { ContractTransactionServiceImpl } from '@/core/services/contract-transaction/contract-transaction-service';
 import { ContractVerifierServiceImpl } from '@/core/services/contract-verifier/contract-verifier-service';
-import { HbarServiceImpl } from '@/core/services/hbar/hbar-service';
 import { IdentityResolutionServiceImpl } from '@/core/services/identity-resolution/identity-resolution-service';
 import { KeyResolverServiceImpl } from '@/core/services/key-resolver/key-resolver-service';
 import { KmsServiceImpl } from '@/core/services/kms/kms-service';
@@ -53,6 +54,7 @@ import { ScheduleTransactionServiceImpl } from '@/core/services/schedule-transac
 import { ZustandGenericStateServiceImpl } from '@/core/services/state/state-service';
 import { TokenServiceImpl } from '@/core/services/token/token-service';
 import { TopicServiceImpl } from '@/core/services/topic/topic-transaction-service';
+import { TransferServiceImpl } from '@/core/services/transfer/transfer-service';
 import { TxExecuteServiceImpl } from '@/core/services/tx-execute/tx-execute-service';
 import { TxSignServiceImpl } from '@/core/services/tx-sign/tx-sign-service';
 
@@ -69,7 +71,8 @@ export class CoreApiImplementation implements CoreApi {
   public logger: Logger;
   public alias: AliasService;
   public kms: KmsService;
-  public hbar: HbarService;
+  public transfer: TransferService;
+  public allowance: AllowanceService;
   public output: OutputService;
   public pluginManagement: PluginManagementService;
   public keyResolver: KeyResolverService;
@@ -129,7 +132,8 @@ export class CoreApiImplementation implements CoreApi {
       this.logger,
     );
 
-    this.hbar = new HbarServiceImpl(this.logger);
+    this.transfer = new TransferServiceImpl();
+    this.allowance = new AllowanceServiceImpl();
     this.output = new OutputServiceImpl();
 
     this.pluginManagement = new PluginManagementServiceImpl(this.state);

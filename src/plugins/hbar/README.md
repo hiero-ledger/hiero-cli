@@ -18,14 +18,29 @@ This plugin follows the plugin architecture principles:
 ```
 src/plugins/hbar/
 ├── manifest.ts              # Plugin manifest with command definitions
-├── schema.ts                # Transfer input schema with Zod validation
+├── schema.ts                # State / shared schemas where applicable
 ├── commands/
-│   └── transfer/
-│       ├── handler.ts      # HBAR transfer handler
-│       ├── output.ts       # Output schema and template
-│       └── index.ts        # Command exports
+│   ├── transfer/
+│   │   ├── handler.ts       # Uses Core `TransferService` (e.g. HbarTransferEntry)
+│   │   ├── input.ts
+│   │   ├── output.ts
+│   │   ├── types.ts
+│   │   └── index.ts
+│   ├── allowance/
+│   │   ├── handler.ts       # Uses Core `AllowanceService`
+│   │   ├── input.ts
+│   │   ├── output.ts
+│   │   ├── types.ts
+│   │   └── index.ts
+│   └── allowance-revoke/
+│       ├── handler.ts
+│       ├── input.ts
+│       ├── output.ts
+│       ├── types.ts
+│       └── index.ts
 ├── __tests__/unit/
-│   └── transfer.test.ts    # Unit tests
+│   ├── transfer.test.ts
+│   └── helpers/
 └── index.ts                # Plugin exports
 ```
 
@@ -128,13 +143,15 @@ hcli hbar allowance-revoke \
 
 The plugin uses the Core API services:
 
-- `api.hbar` - HBAR transfer operations
-- `api.txExecution` - Transaction signing and execution
-- `api.kms` - Secure key management
-- `api.alias` - Name resolution
-- `api.state` - Account lookup in state
-- `api.network` - Network information
-- `api.logger` - Logging
+- `api.transfer` — builds `TransferTransaction` (HBAR via `HbarTransferEntry` and shared entry types)
+- `api.allowance` — builds allowance transactions (HBAR via `HbarAllowanceEntry`)
+- `api.txSign` — transaction signing
+- `api.txExecute` — transaction execution on the network
+- `api.kms` — secure key management
+- `api.alias` — name resolution
+- `api.state` — account lookup in state
+- `api.network` — network information
+- `api.logger` — logging
 
 ## 🔐 Signing Flow
 

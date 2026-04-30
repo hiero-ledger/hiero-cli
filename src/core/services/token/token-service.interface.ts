@@ -3,8 +3,6 @@
  * All token services must implement this interface
  */
 import type {
-  AccountAllowanceApproveTransaction,
-  AccountAllowanceDeleteTransaction,
   TokenAirdropTransaction,
   TokenAssociateTransaction,
   TokenBurnTransaction,
@@ -24,15 +22,10 @@ import type {
   TokenUpdateNftsTransaction,
   TokenUpdateTransaction,
   TokenWipeTransaction,
-  TransferTransaction,
 } from '@hiero-ledger/sdk';
 import type {
-  NftAllowanceApproveParams,
-  NftAllowanceDeleteParams,
-  NftTransferParams,
   TokenAirdropFtParams,
   TokenAirdropNftParams,
-  TokenAllowanceFtParams,
   TokenAssociationParams,
   TokenBurnFtParams,
   TokenBurnNftParams,
@@ -46,7 +39,6 @@ import type {
   TokenMintParams,
   TokenRejectAirdropParams,
   TokenRevokeKycParams,
-  TokenTransferParams,
   TokenUnfreezeParams,
   TokenUpdateNftMetadataParams,
   TokenUpdateParams,
@@ -55,11 +47,6 @@ import type {
 } from '@/core/types/token.types';
 
 export interface TokenService {
-  /**
-   * Create a token transfer transaction (without execution)
-   */
-  createTransferTransaction(params: TokenTransferParams): TransferTransaction;
-
   /**
    * Create a token creation transaction (without execution)
    */
@@ -84,27 +71,6 @@ export interface TokenService {
    * Supports both fungible tokens (with amount) and NFTs (with metadata)
    */
   createMintTransaction(params: TokenMintParams): TokenMintTransaction;
-
-  /**
-   * Create an NFT transfer transaction (without execution)
-   */
-  createNftTransferTransaction(params: NftTransferParams): TransferTransaction;
-
-  /**
-   * Create an NFT allowance approve transaction (without execution)
-   * Supports approving specific serial numbers or all serials in a collection
-   */
-  createNftAllowanceApproveTransaction(
-    params: NftAllowanceApproveParams,
-  ): AccountAllowanceApproveTransaction;
-
-  createFungibleTokenAllowanceTransaction(
-    params: TokenAllowanceFtParams,
-  ): AccountAllowanceApproveTransaction;
-
-  createNftAllowanceDeleteTransaction(
-    params: NftAllowanceDeleteParams,
-  ): AccountAllowanceApproveTransaction | AccountAllowanceDeleteTransaction;
 
   createDeleteTransaction(params: TokenDeleteParams): TokenDeleteTransaction;
 

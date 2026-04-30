@@ -5,13 +5,13 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AccountService } from '@/core/services/account/account-transaction-service.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { AllowanceService } from '@/core/services/allowance/allowance-service.interface';
 import type { BatchTransactionService } from '@/core/services/batch/batch-transaction-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
-import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
@@ -25,6 +25,7 @@ import type { ReceiptService } from '@/core/services/receipt/receipt-service.int
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
+import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 import type { SupportedNetwork } from '@/core/types/shared.types';
@@ -32,6 +33,7 @@ import type { SupportedNetwork } from '@/core/types/shared.types';
 import {
   ED25519_HEX_PUBLIC_KEY,
   MOCK_FREEZE_PUBLIC_KEY,
+  MOCK_OPERATOR_ACCOUNT_ID,
   MOCK_PAUSE_PUBLIC_KEY,
 } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
@@ -66,12 +68,7 @@ export const makeTokenServiceMock = (
   createTokenTransaction: jest.fn(),
   createTokenAssociationTransaction: jest.fn(),
   createTokenDissociationTransaction: jest.fn(),
-  createTransferTransaction: jest.fn(),
   createMintTransaction: jest.fn(),
-  createNftTransferTransaction: jest.fn(),
-  createNftAllowanceApproveTransaction: jest.fn(),
-  createNftAllowanceDeleteTransaction: jest.fn(),
-  createFungibleTokenAllowanceTransaction: jest.fn(),
   createDeleteTransaction: jest.fn(),
   createFreezeTransaction: jest.fn(),
   createUnfreezeTransaction: jest.fn(),
@@ -238,12 +235,12 @@ export const makeAliasServiceMock = (
     if (type === AliasType.Account) {
       const accountAliases: Record<string, AliasAccountData> = {
         'admin-key': {
-          entityId: '0.0.100000',
+          entityId: MOCK_OPERATOR_ACCOUNT_ID,
           publicKey: '302a300506032b6570032100' + '0'.repeat(64),
           keyRefId: 'admin-key-ref-id',
         },
         'test-admin-key': {
-          entityId: '0.0.100000',
+          entityId: MOCK_OPERATOR_ACCOUNT_ID,
           publicKey: '302a300506032b6570032100' + '0'.repeat(64),
           keyRefId: 'admin-key-ref-id',
         },
@@ -253,7 +250,7 @@ export const makeAliasServiceMock = (
           keyRefId: 'treasury-key-ref-id',
         },
         'admin-account': {
-          entityId: '0.0.100000',
+          entityId: MOCK_OPERATOR_ACCOUNT_ID,
           publicKey: '302a300506032b6570032100' + '2'.repeat(64),
           keyRefId: 'admin-key-ref-id',
         },
@@ -287,8 +284,8 @@ export const makeAliasServiceMock = (
     }
     if (type === AliasType.Token) {
       const tokenAliases: Record<string, { entityId: string }> = {
-        'my-token': { entityId: '0.0.12345' },
-        'my-nft-collection': { entityId: '0.0.54321' },
+        'my-token': { entityId: MOCK_ALIAS_TOKEN_ENTITY_ID },
+        'my-nft-collection': { entityId: MOCK_NFT_COLLECTION_ENTITY_ID },
         'test-fungible': { entityId: '0.0.99999' },
       };
       return tokenAliases[alias] || null;
@@ -360,6 +357,8 @@ interface ApiMocksConfig {
   contractVerifier?: Partial<jest.Mocked<ContractVerifierService>>;
   contractQuery?: Partial<jest.Mocked<ContractQueryService>>;
   identityResolution?: Partial<jest.Mocked<IdentityResolutionService>>;
+  transfer?: Partial<jest.Mocked<TransferService>>;
+  allowance?: Partial<jest.Mocked<AllowanceService>>;
 }
 
 /**
@@ -379,11 +378,11 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
   const networkMock = {
     getCurrentNetwork: jest.fn().mockReturnValue(config?.network || 'testnet'),
     getOperator: jest.fn().mockReturnValue({
-      accountId: '0.0.100000',
+      accountId: MOCK_OPERATOR_ACCOUNT_ID,
       keyRefId: 'operator-key-ref-id',
     }),
     getCurrentOperatorOrThrow: jest.fn().mockReturnValue({
-      accountId: '0.0.100000',
+      accountId: MOCK_OPERATOR_ACCOUNT_ID,
       keyRefId: 'operator-key-ref-id',
     }),
   };
@@ -430,10 +429,15 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       warn: jest.fn(),
       setLevel: jest.fn(),
     } as jest.Mocked<Logger>,
-    hbar: {
-      transferTinybar: jest.fn(),
-      createHbarAllowanceTransaction: jest.fn(),
-    } as jest.Mocked<HbarService>,
+    transfer: {
+      buildTransferTransaction: jest.fn(),
+      ...config?.transfer,
+    } as jest.Mocked<TransferService>,
+    allowance: {
+      buildAllowanceApprove: jest.fn(),
+      buildNftAllowanceDelete: jest.fn(),
+      ...config?.allowance,
+    } as jest.Mocked<AllowanceService>,
     output: {
       handleOutput: jest.fn<never, [OutputHandlerOptions]>(),
       getFormat: jest.fn().mockReturnValue('human'),
@@ -502,6 +506,8 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     state,
     account,
     keyResolver,
+    transfer: api.transfer as jest.Mocked<TransferService>,
+    allowance: api.allowance as jest.Mocked<AllowanceService>,
     createTransferImpl: config?.createTransferImpl,
   };
 };
@@ -1041,6 +1047,7 @@ export const makeUnfreezeSuccessMocks = (overrides?: {
 };
 
 export const MOCK_ALIAS_TOKEN_ENTITY_ID = '0.0.12345';
+export const MOCK_NFT_COLLECTION_ENTITY_ID = '0.0.54321';
 export const MOCK_PAUSE_KEY_REF_ID = 'pause-key-ref-id';
 
 export const makePauseSuccessMocks = (overrides?: {
