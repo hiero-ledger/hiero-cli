@@ -1,6 +1,3 @@
-/**
- * Associate Token Command Output Schema and Template
- */
 import { z } from 'zod';
 
 import {
@@ -9,36 +6,18 @@ import {
   TransactionIdSchema,
 } from '@/core/schemas/common-schemas';
 
-/**
- * Associate Token Command Output Schema
- */
 export const TokenAssociateOutputSchema = z.object({
-  transactionId: TransactionIdSchema.optional(),
+  transactionId: TransactionIdSchema,
   accountId: EntityIdSchema,
   tokenId: EntityIdSchema,
-  associated: z.boolean().describe('Whether the association was successful'),
-  alreadyAssociated: z
-    .boolean()
-    .optional()
-    .describe('Indicates that the association already existed on chain'),
   network: NetworkSchema,
 });
 
 export type TokenAssociateOutput = z.infer<typeof TokenAssociateOutputSchema>;
 
-/**
- * Human-readable template for associate token output
- */
 export const TOKEN_ASSOCIATE_TEMPLATE = `
-{{#if alreadyAssociated}}
-✅ Token already associated!
-{{else}}
 ✅ Token association successful!
-{{/if}}
    Token ID: {{hashscanLink tokenId "token" network}}
    Account ID: {{hashscanLink accountId "account" network}}
-   Associated: {{associated}}
-{{#if transactionId}}
    Transaction ID: {{hashscanLink transactionId "transaction" network}}
-{{/if}}
 `.trim();

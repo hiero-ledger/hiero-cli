@@ -78,29 +78,16 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
       });
     }
 
-    if (!tokenInfo.supply_key) {
-      throw new ValidationError('Token has no supply key', {
-        context: { tokenId },
-      });
-    }
-
-    const supplyKeyResolved = await api.keyResolver.resolveSigningKey(
-      validArgs.supplyKey,
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.supply_key,
+      explicitCredentials: validArgs.supplyKey,
       keyManager,
-      false,
-      ['token:supply'],
-    );
-
-    const tokenSupplyKeyPublicKey = tokenInfo.supply_key.key;
-    const providedSupplyKeyPublicKey = supplyKeyResolved.publicKey;
-
-    if (tokenSupplyKeyPublicKey !== providedSupplyKeyPublicKey) {
-      throw new ValidationError('Supply key mismatch', {
-        context: { tokenId },
-      });
-    }
-
-    logger.info(`Using supply key: ${supplyKeyResolved.keyRefId}`);
+      signingKeyLabels: ['token:supply'],
+      emptyMirrorRoleKeyMessage: 'Token has no supply key',
+      insufficientKmsMatchesMessage:
+        'Not enough supply key(s) found in key manager for this token. Provide --supply-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     const serialNumbers = validArgs.serials;
     const currentTotalSupply = BigInt(tokenInfo.total_supply || '0');
@@ -114,8 +101,7 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
       tokenId,
       serialNumbers,
       currentTotalSupply,
-      supplyKeyResolved,
-      keyRefIds: [supplyKeyResolved.keyRefId],
+      keyRefIds,
     };
   }
 
@@ -138,11 +124,12 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
     buildTransactionResult: BurnNftBuildTransactionResult,
   ): Promise<BurnNftSignTransactionResult> {
     const { api, logger } = args;
-    const supplyKeyRefId = normalisedParams.supplyKeyResolved.keyRefId;
-    logger.debug(`Using key ${supplyKeyRefId} for signing transaction`);
+    logger.debug(
+      `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
+    );
     const transaction = await api.txSign.sign(
       buildTransactionResult.transaction,
-      [supplyKeyRefId],
+      normalisedParams.keyRefIds,
     );
     return { signedTransaction: transaction };
   }

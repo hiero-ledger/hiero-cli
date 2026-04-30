@@ -51,6 +51,11 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── update-metadata-nft/
+│   │   ├── handler.ts       # NFT metadata update handler (metadata key)
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts         # Command exports
 │   ├── airdrop-ft/
 │   │   ├── handler.ts       # Fungible token airdrop handler (multi-recipient)
 │   │   ├── input.ts         # Input schema with REPEATABLE --to/--amount
@@ -83,6 +88,12 @@ src/plugins/token/
 │   │   ├── handler.ts       # Token association handler
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
+│   │   └── index.ts         # Command exports
+│   ├── dissociate/
+│   │   ├── handler.ts       # Token dissociation handler
+│   │   ├── input.ts         # Input schema
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # Command-specific type definitions
 │   │   └── index.ts         # Command exports
 │   ├── allowance-ft/
 │   │   ├── handler.ts       # Fungible token allowance handler
@@ -144,10 +155,13 @@ src/plugins/token/
 │   │   ├── handler.ts       # TokenAssociateBatchStateHook - persists association results after batch execution
 │   │   ├── types.ts         # AssociateNormalisedParamsSchema for batch item validation
 │   │   └── index.ts         # Hook exports
-│   └── token-update-state/
-│       ├── handler.ts       # TokenUpdateStateHook - persists updated token data after batch execution
-│       ├── types.ts         # TokenUpdateNormalisedParamsSchema for batch item validation
-│       └── index.ts         # Hook exports
+│   ├── token-update-state/
+│   │   ├── handler.ts       # TokenUpdateStateHook - persists updated token data after batch execution
+│   │   ├── types.ts         # TokenUpdateNormalisedParamsSchema for batch item validation
+│   │   └── index.ts         # Hook exports
+│   └── token-dissociate-state/
+│       ├── handler.ts       # TokenDissociateStateHook - removes association from state after batch execution
+│       └── types.ts         # DissociateNormalizedParamsSchema for batch item validation
 ├── utils/
 │   ├── token-build-output.ts  # NFT output builder utilities
 │   ├── token-amount-helpers.ts  # Token amount processing helpers
@@ -349,7 +363,7 @@ hcli token burn-ft \
 - `--amount` / `-a`: Amount to burn - **Required**
   - Display units (default): `100` (will be multiplied by token decimals)
   - Base units: `100t` (raw amount without decimals)
-- `--supply-key` / `-s`: Supply key for signing - **Required**
+- `--supply-key` / `-s`: Supply key for signing - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
   - Account alias: `supply-account-alias`
   - Account with key: `0.0.123456:private-key`
 - `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
@@ -387,7 +401,7 @@ hcli token burn-nft \
 
 - `--token` / `-T`: Token identifier (alias or token ID) - **Required**
 - `--serials` / `-s`: Comma-separated serial numbers to burn (max 10) - **Required**
-- `--supply-key` / `-S`: Supply key for signing - **Required**
+- `--supply-key` / `-S`: Supply key for signing - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
   - Account alias: `supply-account-alias`
   - Account with key: `0.0.123456:private-key`
 - `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
@@ -520,6 +534,56 @@ hcli token mint-nft \
 # 3. View minted NFT
 hcli token view --token my-collection --serial 1
 ```
+
+### Token Update Metadata NFT
+
+Update on-chain metadata for one or more NFTs in a collection by serial number. The token must have a **metadata key** set at creation time; that key must sign the transaction (see [Hedera: Update NFT metadata](https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/update-nft-metadata)).
+
+```bash
+# Single serial
+hcli token update-metadata-nft \
+  --token my-nft-collection \
+  --serials 1 \
+  --metadata "ipfs://QmNew..."
+
+# Multiple serials (comma-separated, max 10 per transaction)
+hcli token update-metadata-nft \
+  --token 0.0.123456 \
+  --serials 1,2,3 \
+  --metadata "updated-uri"
+
+# Explicit metadata key (optional if KMS resolves the on-chain metadata key)
+hcli token update-metadata-nft \
+  --token my-nft-collection \
+  --serials 1 \
+  --metadata "new metadata" \
+  --metadata-key 0.0.123456:302e020100300506032b657004220420...
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+  - Must be an NFT collection
+- `--serials` / `-s`: Comma-separated serial numbers to update (max 10) - **Required**
+- `--metadata` / `-m`: New metadata string - **Required** (max 100 bytes UTF-8)
+- `--metadata-key` / `-M`: Metadata key credential(s) - **Optional** (if omitted, resolved from the key manager to match the token’s on-chain metadata key). **Repeatable** for KeyList / threshold keys
+- `--key-manager` / `-k`: Key manager type - **Optional** (defaults to config setting)
+
+**Output:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.123456",
+  "serialNumbers": [1, 2, 3],
+  "network": "testnet"
+}
+```
+
+**Notes:**
+
+- If the token has no metadata key, the command fails with a clear validation error.
+- **Batch support:** Pass `--batch <batch-name>` to add the update to a batch (same pattern as `mint-nft`).
 
 ### Token Allowance NFT
 
@@ -704,6 +768,50 @@ hcli token associate \
 # Add to batch
 hcli token associate --token mytoken-alias --account alice --batch my-batch
 ```
+
+### Token Dissociate
+
+Remove a token association from an account. The account must have a zero balance of the token before dissociating. Works for both fungible tokens (FT) and non-fungible tokens (NFT).
+
+```bash
+# Using account alias
+hcli token dissociate \
+  --token mytoken-alias \
+  --account alice
+
+# Using account-id:account-key pair
+hcli token dissociate \
+  --token 0.0.123456 \
+  --account 0.0.789012:302e020100300506032b657004220420...
+
+# Add to batch
+hcli token dissociate --token mytoken-alias --account alice --batch my-batch
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier (alias or token ID) - **Required**
+- `--account` / `-a`: Account to dissociate from the token. Accepts any key format: account alias, `accountId:privateKey`, or key reference - **Required**
+- `--key-manager` / `-k`: Key manager type (optional, defaults to config setting)
+  - `local` or `local_encrypted`
+
+**Output:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "accountId": "0.0.789012",
+  "tokenId": "0.0.123456",
+  "network": "testnet"
+}
+```
+
+**Notes:**
+
+- The account must hold a zero balance of the token before dissociation (Hedera requirement)
+- The command validates that the token is currently associated with the account before attempting dissociation
+- After successful dissociation, the association is removed from local state
+- Batch support: pass `--batch <batch-name>` to queue the transaction for batch execution
 
 ### Token Airdrop (Fungible Token)
 
@@ -1115,7 +1223,7 @@ hcli token freeze --token 0.0.123456 --account alice --freeze-key <key-ref>
 
 - `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
 - `--account` / `-a`: Account to freeze: account-id (0.0.X), account alias, or EVM address (0x...) - **Required**
-- `--freeze-key` / `-f`: Freeze key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Required**
+- `--freeze-key` / `-f`: Freeze key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
 - `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
 
 If the token does not have a freeze key, the command fails with a clear error: `Token has no freeze key`. The operation is idempotent — freezing an already-frozen account succeeds without error.
@@ -1142,10 +1250,98 @@ hcli token unfreeze --token 0.0.123456 --account alice --freeze-key <key-ref>
 
 - `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
 - `--account` / `-a`: Account to unfreeze: account-id (0.0.X), account alias, or EVM address (0x...) - **Required**
-- `--freeze-key` / `-f`: Freeze key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Required**
+- `--freeze-key` / `-f`: Freeze key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
 - `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
 
 If the token does not have a freeze key, the command fails with a clear error: `Token has no freeze key`. The operation is idempotent — unfreezing an already-unfrozen account succeeds without error.
+
+### Token Pause
+
+Prevents the token from being involved in any kind of transaction across all accounts. Requires the token pause key to sign. The token must have a pause key set at creation time.
+
+```bash
+# Pause token by token ID
+hcli token pause --token 0.0.123456 --pause-key <key-ref>
+
+# Pause token using token alias
+hcli token pause --token mytoken-alias --pause-key <key-ref>
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
+- `--pause-key` / `-p`: Pause key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
+- `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
+
+If the token does not have a pause key, the command fails with a clear error: `Token has no pause key`.
+
+### Token Unpause
+
+Re-enables the token to be involved in transactions across all accounts. Requires the token pause key to sign.
+
+```bash
+# Unpause token by token ID
+hcli token unpause --token 0.0.123456 --pause-key <key-ref>
+
+# Unpause token using token alias
+hcli token unpause --token mytoken-alias --pause-key <key-ref>
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
+- `--pause-key` / `-p`: Pause key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
+- `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
+
+If the token does not have a pause key, the command fails with a clear error: `Token has no pause key`.
+
+### Token Grant KYC
+
+Grants KYC flag to the specified account for the token. Requires the token KYC key to sign. Works for both fungible tokens (FT) and non-fungible tokens (NFT). The token must have a KYC key set at creation time.
+
+```bash
+# Grant KYC by token ID and account ID
+hcli token grant-kyc --token 0.0.123456 --account 0.0.5678
+
+# Grant KYC using token alias and account alias
+hcli token grant-kyc --token mytoken-alias --account alice
+
+# Grant KYC with explicit KYC key
+hcli token grant-kyc --token 0.0.123456 --account 0.0.5678 --kyc-key <key-ref>
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
+- `--account` / `-a`: Account to grant KYC: account-id (0.0.X), account alias, or EVM address (0x...) - **Required**
+- `--kyc-key` / `-y`: KYC key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
+- `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
+
+If the token does not have a KYC key, the command fails with a clear error: `Token has no KYC key`.
+
+### Token Revoke KYC
+
+Revokes KYC flag from the specified account for the token. Requires the token KYC key to sign. Works for both fungible tokens (FT) and non-fungible tokens (NFT).
+
+```bash
+# Revoke KYC by token ID and account ID
+hcli token revoke-kyc --token 0.0.123456 --account 0.0.5678
+
+# Revoke KYC using token alias and account alias
+hcli token revoke-kyc --token mytoken-alias --account alice
+
+# Revoke KYC with explicit KYC key
+hcli token revoke-kyc --token 0.0.123456 --account 0.0.5678 --kyc-key <key-ref>
+```
+
+**Parameters:**
+
+- `--token` / `-T`: Token identifier: either a token alias or token-id - **Required**
+- `--account` / `-a`: Account to revoke KYC: account-id (0.0.X), account alias, or EVM address (0x...) - **Required**
+- `--kyc-key` / `-y`: KYC key of the token. Accepts any key format: key reference, `{ed25519|ecdsa}:private:{key}`, or `{accountId}:{privateKey}` pair - **Optional** (if omitted, resolved from key manager by matching the token's on-chain key)
+- `--key-manager` / `-k`: Key manager type, defaults to config setting - **Optional**
+
+If the token does not have a KYC key, the command fails with a clear error: `Token has no KYC key`.
 
 ### Token Update
 
@@ -1188,27 +1384,27 @@ hcli token update --token mytoken-alias --token-name "Batched Rename" --batch my
 
 **Key options:**
 
-| Option | Short | Description |
-|---|---|---|
-| `--token` | `-T` | Token ID or alias — **Required** |
-| `--token-name` | `-b` | New token name |
-| `--symbol` | `-Y` | New token symbol |
-| `--treasury` | `-t` | New treasury account ID or alias |
-| `--admin-keys` | `-a` | Current admin key credential(s) for signing (auto-resolved if omitted) |
-| `--new-admin-keys` | `-n` | New admin key(s); pass `null` to clear |
-| `--kyc-key` | `-y` | New KYC key(s); pass `null` to permanently remove |
-| `--freeze-key` | `-f` | New freeze key(s); pass `null` to permanently remove |
-| `--wipe-key` | `-w` | New wipe key(s); pass `null` to permanently remove |
-| `--supply-key` | `-s` | New supply key(s); pass `null` to permanently remove |
-| `--fee-schedule-key` | `-e` | New fee schedule key(s); pass `null` to permanently remove |
-| `--pause-key` | `-p` | New pause key(s); pass `null` to permanently remove |
-| `--metadata-key` | `-D` | New metadata key(s); pass `null` to permanently remove |
-| `--memo` | `-M` | New memo; pass `null` to clear |
-| `--auto-renew-account` | `-r` | New auto-renew account |
-| `--auto-renew-period` | `-R` | New auto-renew period (seconds or with suffix: `30d`, `90d`) |
-| `--expiration-time` | `-x` | New expiration as ISO 8601 string |
-| `--metadata` | `-d` | Token metadata (UTF-8, max 100 bytes) |
-| `--key-manager` | `-k` | Key manager type (`local` or `local_encrypted`) |
+| Option                 | Short | Description                                                            |
+| ---------------------- | ----- | ---------------------------------------------------------------------- |
+| `--token`              | `-T`  | Token ID or alias — **Required**                                       |
+| `--token-name`         | `-b`  | New token name                                                         |
+| `--symbol`             | `-Y`  | New token symbol                                                       |
+| `--treasury`           | `-t`  | New treasury account ID or alias                                       |
+| `--admin-keys`         | `-a`  | Current admin key credential(s) for signing (auto-resolved if omitted) |
+| `--new-admin-keys`     | `-n`  | New admin key(s); pass `null` to clear                                 |
+| `--kyc-key`            | `-y`  | New KYC key(s); pass `null` to permanently remove                      |
+| `--freeze-key`         | `-f`  | New freeze key(s); pass `null` to permanently remove                   |
+| `--wipe-key`           | `-w`  | New wipe key(s); pass `null` to permanently remove                     |
+| `--supply-key`         | `-s`  | New supply key(s); pass `null` to permanently remove                   |
+| `--fee-schedule-key`   | `-e`  | New fee schedule key(s); pass `null` to permanently remove             |
+| `--pause-key`          | `-p`  | New pause key(s); pass `null` to permanently remove                    |
+| `--metadata-key`       | `-D`  | New metadata key(s); pass `null` to permanently remove                 |
+| `--memo`               | `-M`  | New memo; pass `null` to clear                                         |
+| `--auto-renew-account` | `-r`  | New auto-renew account                                                 |
+| `--auto-renew-period`  | `-R`  | New auto-renew period (seconds or with suffix: `30d`, `90d`)           |
+| `--expiration-time`    | `-x`  | New expiration as ISO 8601 string                                      |
+| `--metadata`           | `-d`  | Token metadata (UTF-8, max 100 bytes)                                  |
+| `--key-manager`        | `-k`  | Key manager type (`local` or `local_encrypted`)                        |
 
 **Output:**
 
@@ -1421,6 +1617,8 @@ The following token commands support the `--batch` / `-B` flag via the batch plu
 - `create-ft-from-file` – `TokenCreateFtFromFileBatchStateHook` persists FT-from-file state
 - `create-nft-from-file` – `TokenCreateNftFromFileBatchStateHook` persists NFT-from-file state
 - `associate` – `TokenAssociateBatchStateHook` persists association results
+- `burn-ft`, `burn-nft`, `mint-ft`, `mint-nft`, `update-metadata-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
+- `dissociate` – `TokenDissociateStateHook` removes association from state after batch execution
 - `update` – `TokenUpdateStateHook` persists updated token data (name, symbol, treasury, role keys, memo) after batch execution
 - `burn-ft`, `burn-nft`, `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
 

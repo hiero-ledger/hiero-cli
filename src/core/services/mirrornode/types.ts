@@ -264,6 +264,19 @@ export interface ExchangeRateResponse {
   timestamp: string;
 }
 
+export interface AccountNftInfo {
+  token_id: string;
+  serial_number: number;
+  account_id: string | null;
+  deleted: boolean;
+  metadata?: string;
+}
+
+export interface AccountNftsResponse {
+  nfts: AccountNftInfo[];
+  links?: { next?: string | null };
+}
+
 // NFT Info
 export interface NftInfo {
   account_id: string | null;

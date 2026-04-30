@@ -2,6 +2,7 @@ import type {
   ContractCreateFlowParams,
   ContractCreateFlowResult,
   ContractDeleteResult,
+  ContractExecuteEncodedParams,
   ContractExecuteParams,
   ContractExecuteResult,
   DeleteContractParams,
@@ -19,6 +20,12 @@ export interface ContractTransactionService {
    */
   contractExecuteTransaction(
     params: ContractExecuteParams,
+  ): ContractExecuteResult;
+  /**
+   * Create a contract call transaction with encoded params in Uint8Array
+   */
+  contractExecuteWithEncodedParams(
+    params: ContractExecuteEncodedParams,
   ): ContractExecuteResult;
   /**
    * Build a ContractDeleteTransaction (sign with contract admin key + operator)

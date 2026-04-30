@@ -89,6 +89,14 @@ export interface TokenAssociationParams {
 }
 
 /**
+ * Parameters for token dissociation transactions
+ */
+export interface TokenDissociationParams {
+  tokenId: string;
+  accountId: string;
+}
+
+/**
  * Parameters for token mint transactions (FT or NFT)
  * Either amount (for FT) or metadata (for NFT) must be provided
  */
@@ -122,6 +130,16 @@ export interface TokenUnfreezeParams {
   accountId: string;
 }
 
+export interface TokenGrantKycParams {
+  tokenId: string;
+  accountId: string;
+}
+
+export interface TokenRevokeKycParams {
+  tokenId: string;
+  accountId: string;
+}
+
 export interface TokenBurnFtParams {
   tokenId: string;
   amount: bigint;
@@ -130,6 +148,12 @@ export interface TokenBurnFtParams {
 export interface TokenBurnNftParams {
   tokenId: string;
   serialNumbers: number[];
+}
+
+export interface TokenUpdateNftMetadataParams {
+  tokenId: string;
+  serialNumbers: number[];
+  metadata: Uint8Array;
 }
 
 /**

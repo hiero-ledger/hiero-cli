@@ -15,16 +15,11 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { HederaTokenType } from '@/core/shared/constants';
-import {
-  extractPublicKeysFromMirrorNodeKey,
-  getEffectiveKeyRequirement,
-} from '@/core/utils/extract-public-keys';
+import { MAX_NFT_METADATA_BYTES } from '@/plugins/token/constants';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenMintNftInputSchema } from './input';
-
-const MAX_METADATA_BYTES = 100;
 
 export const TOKEN_MINT_NFT_COMMAND_NAME = 'token_mint-nft';
 
@@ -60,7 +55,7 @@ export class TokenMintNftCommand extends BaseTransactionCommand<
     logger.info(`Minting NFT for token: ${tokenId}`);
 
     const metadataBytes = new TextEncoder().encode(validArgs.metadata);
-    if (metadataBytes.length > MAX_METADATA_BYTES) {
+    if (metadataBytes.length > MAX_NFT_METADATA_BYTES) {
       throw new ValidationError('Metadata exceeds 100 bytes', {
         context: { tokenId, size: metadataBytes.length },
       });
@@ -77,55 +72,16 @@ export class TokenMintNftCommand extends BaseTransactionCommand<
         context: { tokenId },
       });
     }
-    if (!tokenInfo.supply_key) {
-      throw new ValidationError('Token has no supply key', {
-        context: { tokenId },
-      });
-    }
-
-    const extractedKeys = extractPublicKeysFromMirrorNodeKey(
-      tokenInfo.supply_key,
-    );
-    const signatureRequirement = getEffectiveKeyRequirement(extractedKeys);
-    if (signatureRequirement.publicKeys.length === 0) {
-      throw new ValidationError(
-        'Could not resolve supply key public keys from network',
-        { context: { tokenId } },
-      );
-    }
-
-    let signingKeyRefIds: string[];
-
-    if (validArgs.supplyKey.length > 0) {
-      const supplyKeys = await Promise.all(
-        validArgs.supplyKey.map((cred) =>
-          api.keyResolver.resolveSigningKey(cred, keyManager, false, [
-            'token:supply',
-          ]),
-        ),
-      );
-      signingKeyRefIds = supplyKeys.map((supplyKey) => supplyKey.keyRefId);
-    } else {
-      const refIds: string[] = [];
-      const usedRefIds = new Set<string>();
-      for (const publicKey of signatureRequirement.publicKeys) {
-        const kmsRecord = api.kms.findByPublicKey(publicKey);
-        if (kmsRecord && !usedRefIds.has(kmsRecord.keyRefId)) {
-          usedRefIds.add(kmsRecord.keyRefId);
-          refIds.push(kmsRecord.keyRefId);
-          if (refIds.length >= signatureRequirement.requiredSignatures) {
-            break;
-          }
-        }
-      }
-      if (refIds.length < signatureRequirement.requiredSignatures) {
-        throw new ValidationError(
-          'Not enough supply key(s) not found in key manager for this token. Provide --supply-key.',
-          { context: { tokenId } },
-        );
-      }
-      signingKeyRefIds = refIds;
-    }
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.supply_key,
+      explicitCredentials: validArgs.supplyKey,
+      keyManager,
+      signingKeyLabels: ['token:supply'],
+      emptyMirrorRoleKeyMessage: 'Token has no supply key',
+      insufficientKmsMatchesMessage:
+        'Not enough supply key(s) found in key manager for this token. Provide --supply-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     const maxSupply = BigInt(tokenInfo.max_supply || '0');
     const totalSupply = BigInt(tokenInfo.total_supply || '0');
@@ -145,8 +101,7 @@ export class TokenMintNftCommand extends BaseTransactionCommand<
       network,
       tokenId,
       metadataBytes,
-      signingKeyRefIds,
-      keyRefIds: signingKeyRefIds,
+      keyRefIds,
     };
   }
 
@@ -169,7 +124,7 @@ export class TokenMintNftCommand extends BaseTransactionCommand<
   ): Promise<TokenMintNftSignTransactionResult> {
     const { api, logger } = args;
     logger.debug(
-      `Using ${normalisedParams.signingKeyRefIds.length} key(s) for signing transaction`,
+      `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const transaction = await api.txSign.sign(
       buildTransactionResult.transaction,

@@ -162,7 +162,7 @@ interface TokenUpdateParams {
   name?: string;
   symbol?: string;
   treasuryId?: string;
-  adminKey?: Key | null;   // null clears the key
+  adminKey?: Key | null; // null clears the key
   kycKey?: Key | null;
   freezeKey?: Key | null;
   wipeKey?: Key | null;
@@ -170,7 +170,7 @@ interface TokenUpdateParams {
   feeScheduleKey?: Key | null;
   pauseKey?: Key | null;
   metadataKey?: Key | null;
-  memo?: string | null;    // null clears the memo
+  memo?: string | null; // null clears the memo
   autoRenewAccountId?: string;
   autoRenewPeriodSeconds?: number;
   expirationTime?: Date;
@@ -719,11 +719,11 @@ interface KeyResolverService {
 
 interface SigningKeyParams {
   mirrorRoleKey: MirrorNodeKey | null | undefined; // e.g. tokenInfo.admin_key
-  explicitCredentials: Credential[];               // from --admin-keys, etc.
+  explicitCredentials: Credential[]; // from --admin-keys, etc.
   keyManager: KeyManager;
-  signingKeyLabels: string[];                      // e.g. ['token:admin']
-  emptyMirrorRoleKeyMessage: string;               // thrown when role key is absent
-  insufficientKmsMatchesMessage: string;           // thrown when KMS has no match
+  signingKeyLabels: string[]; // e.g. ['token:admin']
+  emptyMirrorRoleKeyMessage: string; // thrown when role key is absent
+  insufficientKmsMatchesMessage: string; // thrown when KMS has no match
   validationErrorOptions?: { context?: Record<string, unknown> };
 }
 

@@ -1,6 +1,3 @@
-/**
- * Account Balance Command Output Schema and Template
- */
 import { z } from 'zod';
 
 import {
@@ -9,10 +6,8 @@ import {
   NetworkSchema,
   TinybarSchema,
 } from '@/core/schemas';
+import { NFT_BALANCE_PAGE_SIZE } from '@/core/shared/constants';
 
-/**
- * Account Balance Command Output Schema
- */
 export const AccountBalanceOutputSchema = z.object({
   accountId: EntityIdSchema,
   hbarBalance: TinybarSchema.optional(),
@@ -34,34 +29,67 @@ export const AccountBalanceOutputSchema = z.object({
       }),
     )
     .optional(),
+  nftBalances: z
+    .object({
+      collections: z.array(
+        z.object({
+          tokenId: EntityIdSchema,
+          name: z.string().optional(),
+          symbol: z.string().optional(),
+          alias: z.string().optional(),
+          serialNumbers: z.array(z.number()),
+          count: z.number(),
+        }),
+      ),
+      totalCount: z.number(),
+      truncated: z.boolean(),
+    })
+    .optional(),
 });
 
 export type AccountBalanceOutput = z.infer<typeof AccountBalanceOutputSchema>;
 
-/**
- * Human-readable template for account balance output
- */
-export const ACCOUNT_BALANCE_TEMPLATE = `
-{{#unless tokenOnly}}
-💰 Account Balance: {{#if raw}}{{hbarBalance}} tinybars{{else}}{{hbarBalanceDisplay}} HBAR{{/if}}
-{{/unless}}
-{{#unless hbarOnly}}
-{{#if tokenBalances}}
-{{#if tokenOnly}}
-🪙  Token Balance:
-{{else}}
-🪙  Token Balances:
-{{/if}}
-{{#each tokenBalances}}
-   {{hashscanLink tokenId "token" ../network}}{{#if alias}} ({{alias}}){{/if}}: {{#if ../raw}}{{balance}}{{else}}{{#if balanceDisplay}}{{balanceDisplay}}{{else}}{{balance}}{{/if}}{{/if}}{{#if symbol}} {{symbol}}{{/if}}{{#if name}} ({{name}}){{/if}}
-{{/each}}
-{{else}}
-{{#unless tokenOnly}}
-   No token balances found
-{{/unless}}
-{{#if tokenOnly}}
-   Token not found or no balance
-{{/if}}
-{{/if}}
-{{/unless}}
-`.trim();
+const HBAR_SECTION =
+  `{{#unless tokenOnly}}` +
+  `💰 Account Balance: {{#if raw}}{{hbarBalance}} tinybars{{else}}{{hbarBalanceDisplay}} HBAR{{/if}}\n` +
+  `{{/unless}}`;
+
+const FT_TOKEN_ROW =
+  `{{hashscanLink tokenId "token" ../network}}` +
+  `{{#if alias}} ({{alias}}){{/if}}: ` +
+  `{{#if ../raw}}{{balance}}{{else}}{{#if balanceDisplay}}{{balanceDisplay}}{{else}}{{balance}}{{/if}}{{/if}}` +
+  `{{#if symbol}} {{symbol}}{{/if}}` +
+  `{{#if name}} ({{name}}){{/if}}`;
+
+const FT_SECTION =
+  `{{#if tokenBalances}}\n` +
+  `🪙 {{#if tokenOnly}}Token Balance{{else}}Token Balances{{/if}}:\n` +
+  `{{#each tokenBalances}}   ${FT_TOKEN_ROW}\n{{/each}}` +
+  `{{else}}` +
+  `{{#unless tokenOnly}}\n   No token balances found{{/unless}}` +
+  `{{#if tokenOnly}}\n   Token not found or no balance{{/if}}` +
+  `{{/if}}`;
+
+const NFT_COLLECTION_ROW =
+  `{{hashscanLink tokenId "token" ../network}}` +
+  `{{#if alias}} ({{alias}}){{/if}}` +
+  `{{#if name}} — {{name}}{{/if}}: ` +
+  `{{#each serialNumbers}}#{{this}}{{#unless @last}}, {{/unless}}{{/each}}`;
+
+const NFT_SECTION =
+  `{{#if nftBalances}}\n` +
+  `🖼  NFT Balances (` +
+  `{{nftBalances.totalCount}} NFT{{#if (gt nftBalances.totalCount 1)}}s{{/if}} in ` +
+  `{{length nftBalances.collections}} collection{{#if (gt (length nftBalances.collections) 1)}}s{{/if}}` +
+  `):\n` +
+  `{{#if nftBalances.truncated}}   (Showing first ${NFT_BALANCE_PAGE_SIZE} NFTs)\n{{/if}}` +
+  `{{#each nftBalances.collections}}   ${NFT_COLLECTION_ROW}\n{{/each}}` +
+  `{{/if}}`;
+
+export const ACCOUNT_BALANCE_TEMPLATE = (
+  HBAR_SECTION +
+  `{{#unless hbarOnly}}` +
+  FT_SECTION +
+  NFT_SECTION +
+  `{{/unless}}`
+).trim();

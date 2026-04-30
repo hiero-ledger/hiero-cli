@@ -12,7 +12,6 @@ export interface AssociateNormalizedParams extends BaseNormalizedParams {
   tokenId: string;
   account: ResolvedAccountCredential;
   keyManager: KeyManager;
-  alreadyAssociated: boolean;
 }
 
 export interface AssociateBuildTransactionResult {
@@ -24,6 +23,5 @@ export interface AssociateSignTransactionResult {
 }
 
 export interface AssociateExecuteTransactionResult {
-  transactionResult?: TransactionResult;
-  alreadyAssociated: boolean;
+  transactionResult: TransactionResult;
 }

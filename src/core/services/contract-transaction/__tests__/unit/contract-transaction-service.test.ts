@@ -5,6 +5,7 @@
 import type { ContractFunctionParameters } from '@hashgraph/sdk';
 import type {
   ContractCreateFlowParams,
+  ContractExecuteEncodedParams,
   ContractExecuteParams,
 } from '@/core/services/contract-transaction/types';
 
@@ -300,12 +301,92 @@ describe('ContractTransactionServiceImpl', () => {
         id: '0.0.1234',
       });
       expect(mockContractExecuteTx.setGas).toHaveBeenCalledWith(100000);
-      // when no parameters present, the service calls setFunction twice (once with name+params guard failing, once with name only)
       expect(mockContractExecuteTx.setFunction).toHaveBeenCalledWith(
         'pause',
         undefined,
       );
       expect(result.transaction).toBe(mockContractExecuteTx);
+    });
+
+    it('should set payable amount when payableAmountTinybars is provided', () => {
+      const params: ContractExecuteParams = {
+        contractId: '0.0.1234',
+        gas: 100000,
+        functionName: 'deposit',
+        payableAmountTinybars: '500000000',
+      };
+
+      contractService.contractExecuteTransaction(params);
+
+      expect(mockHbarFromTinybars).toHaveBeenCalledWith('500000000');
+      expect(mockContractExecuteTx.setPayableAmount).toHaveBeenCalledWith({
+        tinybars: '500000000',
+      });
+    });
+
+    it('should not set payable amount when payableAmountTinybars is not provided', () => {
+      const params: ContractExecuteParams = {
+        contractId: '0.0.1234',
+        gas: 100000,
+        functionName: 'transfer',
+      };
+
+      contractService.contractExecuteTransaction(params);
+
+      expect(mockContractExecuteTx.setPayableAmount).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('contractExecuteWithEncodedParams', () => {
+    it('should create contract execute transaction with encoded function parameters', () => {
+      const encodedParams = new Uint8Array([0xab, 0xcd, 0xef]);
+      const params: ContractExecuteEncodedParams = {
+        contractId: '0.0.5678',
+        gas: 150000,
+        functionParametersEncoded: encodedParams,
+      };
+
+      const result = contractService.contractExecuteWithEncodedParams(params);
+
+      expect(ContractExecuteTransaction).toHaveBeenCalledTimes(1);
+      expect(ContractId.fromString).toHaveBeenCalledWith('0.0.5678');
+      expect(mockContractExecuteTx.setContractId).toHaveBeenCalledWith({
+        id: '0.0.5678',
+      });
+      expect(mockContractExecuteTx.setGas).toHaveBeenCalledWith(150000);
+      expect(mockContractExecuteTx.setFunctionParameters).toHaveBeenCalledWith(
+        encodedParams,
+      );
+      expect(mockContractExecuteTx.setFunction).not.toHaveBeenCalled();
+      expect(result.transaction).toBe(mockContractExecuteTx);
+    });
+
+    it('should set payable amount when payableAmountTinybars is provided', () => {
+      const params: ContractExecuteEncodedParams = {
+        contractId: '0.0.5678',
+        gas: 150000,
+        functionParametersEncoded: new Uint8Array([0x01]),
+        payableAmountTinybars: '1000000000',
+      };
+
+      contractService.contractExecuteWithEncodedParams(params);
+
+      expect(mockHbarFromTinybars).toHaveBeenCalledWith('1000000000');
+      expect(mockContractExecuteTx.setPayableAmount).toHaveBeenCalledWith({
+        tinybars: '1000000000',
+      });
+    });
+
+    it('should not set payable amount when payableAmountTinybars is not provided', () => {
+      const params: ContractExecuteEncodedParams = {
+        contractId: '0.0.5678',
+        gas: 150000,
+        functionParametersEncoded: new Uint8Array([0x01]),
+      };
+
+      contractService.contractExecuteWithEncodedParams(params);
+
+      expect(mockContractExecuteTx.setPayableAmount).not.toHaveBeenCalled();
     });
   });
 });
