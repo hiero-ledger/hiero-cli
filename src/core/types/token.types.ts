@@ -156,6 +156,18 @@ export interface TokenUpdateNftMetadataParams {
   metadata: Uint8Array;
 }
 
+export interface TokenWipeFtParams {
+  tokenId: string;
+  accountId: string;
+  amount: bigint;
+}
+
+export interface TokenWipeNftParams {
+  tokenId: string;
+  accountId: string;
+  serialNumbers: number[];
+}
+
 /**
  * Parameters for approving NFT allowance for specific serial numbers
  */

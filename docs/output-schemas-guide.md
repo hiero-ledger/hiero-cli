@@ -1000,6 +1000,42 @@ The command handles both fungible and non-fungible tokens. Expiration time can b
 
 `spenderAccountId` is `null` when deleting specific serials (allowance removed for all spenders). When using `--all-serials`, `spenderAccountId` identifies the spender whose blanket approval is revoked.
 
+#### `token wipe-ft`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "accountId": "0.0.12345",
+  "amount": "5000",
+  "newTotalSupply": "95000",
+  "network": "testnet"
+}
+```
+
+- `amount`: Amount wiped in base units
+- `newTotalSupply`: New total supply after wipe (calculated as previous supply minus wiped amount)
+
+#### `token wipe-nft`
+
+**Output**:
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "accountId": "0.0.12345",
+  "serialNumbers": [1, 2, 3],
+  "newTotalSupply": "7",
+  "network": "testnet"
+}
+```
+
+- `serialNumbers`: Array of wiped serial numbers
+- `newTotalSupply`: New total supply after wipe (calculated as previous supply minus number of wiped serials)
+
 ### Topic Plugin
 
 #### `topic create`

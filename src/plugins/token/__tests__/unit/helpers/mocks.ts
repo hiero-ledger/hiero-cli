@@ -86,6 +86,8 @@ export const makeTokenServiceMock = (
   createBurnFtTransaction: jest.fn(),
   createBurnNftTransaction: jest.fn(),
   createUpdateNftMetadataTransaction: jest.fn(),
+  createWipeFtTransaction: jest.fn(),
+  createWipeNftTransaction: jest.fn(),
   createRejectAirdropTransaction: jest.fn(),
   createUpdateTokenTransaction: jest.fn(),
   ...overrides,
