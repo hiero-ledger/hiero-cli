@@ -26,17 +26,29 @@ export type Destination =
   | { accountId: string; evmAddress?: string }
   | { accountId?: string; evmAddress: string };
 
-export interface ResolveSigningKeyRefIdsFromMirrorRoleKeyInput {
+export interface SigningKeyParams {
   mirrorRoleKey: MirrorNodeKey | null | undefined;
   explicitCredentials: Credential[];
   keyManager: KeyManager;
-  resolveSigningKeyLabels?: string[];
+  signingKeyLabels: string[];
   emptyMirrorRoleKeyMessage: string;
   insufficientKmsMatchesMessage: string;
   validationErrorOptions?: { context?: Record<string, unknown> };
 }
 
-export type ResolveSigningKeyRefIdsFromMirrorRoleKeyResult = {
+export interface ExplicitSigningKeysParams {
+  explicitCredentials: Credential[];
+  keyManager: KeyManager;
+  signingKeyLabels: string[];
+  threshold: number;
+}
+
+export interface MirrorNodeSigningKeysParams {
+  publicKeys: string[];
+  requiredSignatures: number;
+}
+
+export type SigningKeysResult = {
   keyRefIds: string[];
   requiredSignatures: number;
 };

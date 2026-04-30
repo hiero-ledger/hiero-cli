@@ -28,6 +28,7 @@ import type {
   TokenTransferParams,
   TokenUnfreezeParams,
   TokenUpdateNftMetadataParams,
+  TokenUpdateParams,
   TokenWipeFtParams,
   TokenWipeNftParams,
 } from '@/core/types/token.types';
@@ -41,6 +42,7 @@ import {
   CustomFractionalFee,
   FeeAssessmentMethod,
   Hbar,
+  KeyList,
   Long,
   NftId,
   PendingAirdropId,
@@ -63,6 +65,7 @@ import {
   TokenUnfreezeTransaction,
   TokenUnpauseTransaction,
   TokenUpdateNftsTransaction,
+  TokenUpdateTransaction,
   TokenWipeTransaction,
   TransferTransaction,
 } from '@hiero-ledger/sdk';
@@ -688,6 +691,61 @@ export class TokenServiceImpl implements TokenService {
       .setTokenId(TokenId.fromString(params.tokenId))
       .setSerialNumbers(params.serialNumbers.map((s) => Long.fromNumber(s)))
       .setMetadata(params.metadata);
+  }
+
+  createUpdateTokenTransaction(
+    params: TokenUpdateParams,
+  ): TokenUpdateTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating update transaction for token ${params.tokenId}`,
+    );
+
+    const tx = new TokenUpdateTransaction().setTokenId(
+      TokenId.fromString(params.tokenId),
+    );
+
+    if (params.name) tx.setTokenName(params.name);
+    if (params.symbol) tx.setTokenSymbol(params.symbol);
+    if (params.treasuryId)
+      tx.setTreasuryAccountId(AccountId.fromString(params.treasuryId));
+
+    if (params.adminKey === null) tx.setAdminKey(new KeyList());
+    else if (params.adminKey !== undefined) tx.setAdminKey(params.adminKey);
+
+    if (params.kycKey === null) tx.setKycKey(new KeyList());
+    else if (params.kycKey !== undefined) tx.setKycKey(params.kycKey);
+
+    if (params.freezeKey === null) tx.setFreezeKey(new KeyList());
+    else if (params.freezeKey !== undefined) tx.setFreezeKey(params.freezeKey);
+
+    if (params.wipeKey === null) tx.setWipeKey(new KeyList());
+    else if (params.wipeKey !== undefined) tx.setWipeKey(params.wipeKey);
+
+    if (params.supplyKey === null) tx.setSupplyKey(new KeyList());
+    else if (params.supplyKey !== undefined) tx.setSupplyKey(params.supplyKey);
+
+    if (params.feeScheduleKey === null) tx.setFeeScheduleKey(new KeyList());
+    else if (params.feeScheduleKey !== undefined)
+      tx.setFeeScheduleKey(params.feeScheduleKey);
+
+    if (params.pauseKey === null) tx.setPauseKey(new KeyList());
+    else if (params.pauseKey !== undefined) tx.setPauseKey(params.pauseKey);
+
+    if (params.metadataKey === null) tx.setMetadataKey(new KeyList());
+    else if (params.metadataKey !== undefined)
+      tx.setMetadataKey(params.metadataKey);
+
+    if (params.memo === null) tx.setTokenMemo('');
+    else if (params.memo !== undefined) tx.setTokenMemo(params.memo);
+
+    if (params.autoRenewAccountId)
+      tx.setAutoRenewAccountId(AccountId.fromString(params.autoRenewAccountId));
+    if (params.autoRenewPeriodSeconds)
+      tx.setAutoRenewPeriod(params.autoRenewPeriodSeconds);
+    if (params.expirationTime) tx.setExpirationTime(params.expirationTime);
+    if (params.metadata) tx.setMetadata(params.metadata);
+
+    return tx;
   }
 
   /**

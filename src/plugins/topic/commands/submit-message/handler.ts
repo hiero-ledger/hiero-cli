@@ -45,17 +45,16 @@ export class TopicSubmitMessageCommand extends BaseTransactionCommand<
       return [];
     }
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: topicInfo.submit_key,
-        explicitCredentials: signerArgs,
-        keyManager,
-        resolveSigningKeyLabels: ['topic:submit'],
-        emptyMirrorRoleKeyMessage: 'Topic has no submit key on the network',
-        insufficientKmsMatchesMessage:
-          'Not enough submit key(s) found in key manager for this topic. Provide --signer.',
-        validationErrorOptions: { context: { topicId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: topicInfo.submit_key,
+      explicitCredentials: signerArgs,
+      keyManager,
+      signingKeyLabels: ['topic:submit'],
+      emptyMirrorRoleKeyMessage: 'Topic has no submit key on the network',
+      insufficientKmsMatchesMessage:
+        'Not enough submit key(s) found in key manager for this topic. Provide --signer.',
+      validationErrorOptions: { context: { topicId } },
+    });
     logger.info(`Using ${keyRefIds.length} signer(s) for submit key`);
     return keyRefIds;
   }

@@ -82,17 +82,16 @@ export class TokenWipeNftCommand extends BaseTransactionCommand<
       network,
     });
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.wipe_key,
-        explicitCredentials: validArgs.wipeKey,
-        keyManager,
-        resolveSigningKeyLabels: ['token:wipe'],
-        emptyMirrorRoleKeyMessage: 'Token has no wipe key',
-        insufficientKmsMatchesMessage:
-          'Not enough wipe key(s) found in key manager for this token. Provide --wipe-key.',
-        validationErrorOptions: { context: { tokenId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.wipe_key,
+      explicitCredentials: validArgs.wipeKey,
+      keyManager,
+      signingKeyLabels: ['token:wipe'],
+      emptyMirrorRoleKeyMessage: 'Token has no wipe key',
+      insufficientKmsMatchesMessage:
+        'Not enough wipe key(s) found in key manager for this token. Provide --wipe-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     const serialNumbers = validArgs.serials;
     const currentTotalSupply = BigInt(tokenInfo.total_supply || '0');

@@ -65,17 +65,16 @@ export class TokenUnfreezeCommand extends BaseTransactionCommand<
       `Unfreezing account ${accountId} for token ${tokenId} on ${network}`,
     );
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.freeze_key,
-        explicitCredentials: validArgs.freezeKey,
-        keyManager,
-        resolveSigningKeyLabels: ['token:freeze'],
-        emptyMirrorRoleKeyMessage: 'Token has no freeze key',
-        insufficientKmsMatchesMessage:
-          'Not enough freeze key(s) found in key manager for this token. Provide --freeze-key.',
-        validationErrorOptions: { context: { tokenId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.freeze_key,
+      explicitCredentials: validArgs.freezeKey,
+      keyManager,
+      signingKeyLabels: ['token:freeze'],
+      emptyMirrorRoleKeyMessage: 'Token has no freeze key',
+      insufficientKmsMatchesMessage:
+        'Not enough freeze key(s) found in key manager for this token. Provide --freeze-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     return {
       network,

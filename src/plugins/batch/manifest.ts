@@ -148,6 +148,10 @@ export const batchPluginManifest: PluginManifest = {
           hook: 'token-delete-state',
           phase: 'postOutputPreparation',
         },
+        {
+          hook: 'token-update-state',
+          phase: 'postOutputPreparation',
+        },
       ],
       options: [
         {

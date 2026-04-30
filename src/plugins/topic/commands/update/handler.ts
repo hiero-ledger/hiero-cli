@@ -123,16 +123,16 @@ export class TopicUpdateCommand extends BaseTransactionCommand<
 
     let currentAdminKeyRefIds: string[] = [];
     if (hasAdminKey && !isExpirationOnlyUpdate) {
-      const { keyRefIds } =
-        await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-          mirrorRoleKey: topicInfo.admin_key,
-          explicitCredentials: [],
-          keyManager,
-          emptyMirrorRoleKeyMessage: 'Topic has no admin key on the network',
-          insufficientKmsMatchesMessage:
-            'Not enough admin key(s) found in key manager for this topic.',
-          validationErrorOptions: { context: { topicId } },
-        });
+      const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+        mirrorRoleKey: topicInfo.admin_key,
+        explicitCredentials: [],
+        keyManager,
+        signingKeyLabels: ['topic:admin'],
+        emptyMirrorRoleKeyMessage: 'Topic has no admin key on the network',
+        insufficientKmsMatchesMessage:
+          'Not enough admin key(s) found in key manager for this topic.',
+        validationErrorOptions: { context: { topicId } },
+      });
       currentAdminKeyRefIds = keyRefIds;
     }
 

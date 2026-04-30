@@ -65,17 +65,16 @@ export class TokenGrantKycCommand extends BaseTransactionCommand<
       `Granting KYC for account ${accountId} on token ${tokenId} on ${network}`,
     );
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.kyc_key,
-        explicitCredentials: validArgs.kycKey,
-        keyManager,
-        resolveSigningKeyLabels: ['token:kyc'],
-        emptyMirrorRoleKeyMessage: 'Token has no KYC key',
-        insufficientKmsMatchesMessage:
-          'Not enough KYC key(s) found in key manager for this token. Provide --kyc-key.',
-        validationErrorOptions: { context: { tokenId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.kyc_key,
+      explicitCredentials: validArgs.kycKey,
+      keyManager,
+      signingKeyLabels: ['token:kyc'],
+      emptyMirrorRoleKeyMessage: 'Token has no KYC key',
+      insufficientKmsMatchesMessage:
+        'Not enough KYC key(s) found in key manager for this token. Provide --kyc-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     return {
       network,

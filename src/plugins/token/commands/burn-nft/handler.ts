@@ -78,17 +78,16 @@ export class TokenBurnNftCommand extends BaseTransactionCommand<
       });
     }
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.supply_key,
-        explicitCredentials: validArgs.supplyKey,
-        keyManager,
-        resolveSigningKeyLabels: ['token:supply'],
-        emptyMirrorRoleKeyMessage: 'Token has no supply key',
-        insufficientKmsMatchesMessage:
-          'Not enough supply key(s) found in key manager for this token. Provide --supply-key.',
-        validationErrorOptions: { context: { tokenId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.supply_key,
+      explicitCredentials: validArgs.supplyKey,
+      keyManager,
+      signingKeyLabels: ['token:supply'],
+      emptyMirrorRoleKeyMessage: 'Token has no supply key',
+      insufficientKmsMatchesMessage:
+        'Not enough supply key(s) found in key manager for this token. Provide --supply-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     const serialNumbers = validArgs.serials;
     const currentTotalSupply = BigInt(tokenInfo.total_supply || '0');

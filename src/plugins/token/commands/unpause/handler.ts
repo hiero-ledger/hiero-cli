@@ -57,17 +57,16 @@ export class TokenUnpauseCommand extends BaseTransactionCommand<
 
     logger.info(`Unpausing token ${tokenId} on ${network}`);
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.pause_key,
-        explicitCredentials: validArgs.pauseKey,
-        keyManager,
-        resolveSigningKeyLabels: ['token:pause'],
-        emptyMirrorRoleKeyMessage: 'Token has no pause key',
-        insufficientKmsMatchesMessage:
-          'Not enough pause key(s) found in key manager for this token. Provide --pause-key.',
-        validationErrorOptions: { context: { tokenId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.pause_key,
+      explicitCredentials: validArgs.pauseKey,
+      keyManager,
+      signingKeyLabels: ['token:pause'],
+      emptyMirrorRoleKeyMessage: 'Token has no pause key',
+      insufficientKmsMatchesMessage:
+        'Not enough pause key(s) found in key manager for this token. Provide --pause-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     return {
       network,

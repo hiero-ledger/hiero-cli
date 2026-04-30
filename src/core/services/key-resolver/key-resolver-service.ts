@@ -2,11 +2,13 @@ import type { Logger } from '@/core';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type {
   Destination,
+  ExplicitSigningKeysParams,
+  MirrorNodeSigningKeysParams,
   ResolvedAccountCredential,
   ResolvedKey,
   ResolvedPublicKey,
-  ResolveSigningKeyRefIdsFromMirrorRoleKeyInput,
-  ResolveSigningKeyRefIdsFromMirrorRoleKeyResult,
+  SigningKeyParams,
+  SigningKeysResult,
 } from '@/core/services/key-resolver/types';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type {
@@ -504,9 +506,9 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     };
   }
 
-  public async resolveSigningKeyRefIdsFromMirrorRoleKey(
-    params: ResolveSigningKeyRefIdsFromMirrorRoleKeyInput,
-  ): Promise<ResolveSigningKeyRefIdsFromMirrorRoleKeyResult> {
+  public async resolveSigningKeys(
+    params: SigningKeyParams,
+  ): Promise<SigningKeysResult> {
     const extracted = extractPublicKeysFromMirrorNodeKey(params.mirrorRoleKey);
     const requirement = getEffectiveKeyRequirement(extracted);
     if (requirement.publicKeys.length === 0) {
@@ -516,42 +518,70 @@ export class KeyResolverServiceImpl implements KeyResolverService {
     }
 
     if (params.explicitCredentials.length > 0) {
-      const resolved = await Promise.all(
-        params.explicitCredentials.map((cred) =>
-          this.resolveSigningKey(
-            cred,
-            params.keyManager,
-            false,
-            params.resolveSigningKeyLabels,
-          ),
-        ),
-      );
-      return {
-        keyRefIds: resolved.map((k) => k.keyRefId),
-        requiredSignatures: requirement.requiredSignatures,
-      };
+      return await this.resolveExplicitSigningKeys({
+        explicitCredentials: params.explicitCredentials,
+        keyManager: params.keyManager,
+        signingKeyLabels: params.signingKeyLabels,
+        threshold: requirement.requiredSignatures,
+      });
     }
+    try {
+      return this.resolveMirrorNodeSigningKeys({
+        publicKeys: requirement.publicKeys,
+        requiredSignatures: requirement.requiredSignatures,
+      });
+    } catch (error) {
+      if (error instanceof ValidationError) {
+        throw new ValidationError(params.insufficientKmsMatchesMessage, {
+          context: params.validationErrorOptions?.context,
+        });
+      }
+      throw error;
+    }
+  }
 
+  public async resolveExplicitSigningKeys(
+    params: ExplicitSigningKeysParams,
+  ): Promise<SigningKeysResult> {
+    const resolved = await Promise.all(
+      params.explicitCredentials.map((cred) =>
+        this.resolveSigningKey(
+          cred,
+          params.keyManager,
+          false,
+          params.signingKeyLabels,
+        ),
+      ),
+    );
+    return {
+      keyRefIds: resolved.map((k) => k.keyRefId),
+      requiredSignatures: params.threshold,
+    };
+  }
+
+  public resolveMirrorNodeSigningKeys(
+    params: MirrorNodeSigningKeysParams,
+  ): SigningKeysResult {
     const refIds: string[] = [];
     const usedRefIds = new Set<string>();
-    for (const publicKey of requirement.publicKeys) {
+    for (const publicKey of params.publicKeys) {
       const kmsRecord = this.kms.findByPublicKey(publicKey);
       if (kmsRecord && !usedRefIds.has(kmsRecord.keyRefId)) {
         usedRefIds.add(kmsRecord.keyRefId);
         refIds.push(kmsRecord.keyRefId);
-        if (refIds.length >= requirement.requiredSignatures) {
+        if (refIds.length >= params.requiredSignatures) {
           break;
         }
       }
     }
-    if (refIds.length < requirement.requiredSignatures) {
-      throw new ValidationError(params.insufficientKmsMatchesMessage, {
-        context: params.validationErrorOptions?.context,
-      });
+    if (refIds.length < params.requiredSignatures) {
+      throw new ValidationError(
+        `Not enough keys held in state to meet the threshold requirement`,
+      );
     }
     return {
       keyRefIds: refIds,
-      requiredSignatures: requirement.requiredSignatures,
+      requiredSignatures: params.requiredSignatures,
     };
   }
 }

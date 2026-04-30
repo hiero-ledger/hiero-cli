@@ -22,6 +22,7 @@ import type {
   TokenUnfreezeTransaction,
   TokenUnpauseTransaction,
   TokenUpdateNftsTransaction,
+  TokenUpdateTransaction,
   TokenWipeTransaction,
   TransferTransaction,
 } from '@hiero-ledger/sdk';
@@ -48,6 +49,7 @@ import type {
   TokenTransferParams,
   TokenUnfreezeParams,
   TokenUpdateNftMetadataParams,
+  TokenUpdateParams,
   TokenWipeFtParams,
   TokenWipeNftParams,
 } from '@/core/types/token.types';
@@ -157,4 +159,8 @@ export interface TokenService {
   createRejectAirdropTransaction(
     params: TokenRejectAirdropParams,
   ): TokenRejectTransaction;
+
+  createUpdateTokenTransaction(
+    params: TokenUpdateParams,
+  ): TokenUpdateTransaction;
 }

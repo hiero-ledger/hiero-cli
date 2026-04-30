@@ -127,18 +127,17 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
     const stateKey = composeKey(network, tokenId);
     const tokenInState = tokenState.getToken(stateKey);
 
-    const { keyRefIds } =
-      await api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey({
-        mirrorRoleKey: tokenInfo.admin_key,
-        explicitCredentials: validArgs.adminKey,
-        keyManager,
-        resolveSigningKeyLabels: ['token:admin'],
-        emptyMirrorRoleKeyMessage:
-          'Token has no admin key (immutable token cannot be deleted)',
-        insufficientKmsMatchesMessage:
-          'Not enough admin key(s) found in key manager for this token. Provide --admin-key.',
-        validationErrorOptions: { context: { tokenId } },
-      });
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.admin_key,
+      explicitCredentials: validArgs.adminKey,
+      keyManager,
+      signingKeyLabels: ['token:admin'],
+      emptyMirrorRoleKeyMessage:
+        'Token has no admin key (immutable token cannot be deleted)',
+      insufficientKmsMatchesMessage:
+        'Not enough admin key(s) found in key manager for this token. Provide --admin-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     const tokenName = tokenInState?.name ?? tokenInfo.name;
 
