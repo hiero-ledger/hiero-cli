@@ -21,12 +21,17 @@ export * from './core-api';
 // ============================================================================
 export type * from './services/account/account-transaction-service.interface';
 export type * from './services/alias/alias-service.interface';
+export {
+  FtAllowanceEntry,
+  HbarAllowanceEntry,
+  NftAllowanceEntry,
+} from './services/allowance/allowance-entries';
+export type * from './services/allowance/allowance-service.interface';
 export type { ConfigService } from './services/config/config-service.interface';
 export type * from './services/contract-compiler/contract-compiler-service.interface';
 export type * from './services/contract-query/contract-query-service.interface';
 export type * from './services/contract-transaction/contract-transaction-service.interface';
 export type * from './services/contract-verifier/contract-verifier-service.interface';
-export type * from './services/hbar/hbar-service.interface';
 export type * from './services/identity-resolution/identity-resolution-service.interface';
 export type * from './services/key-resolver/key-resolver-service.interface';
 export type * from './services/kms/kms-service.interface';
@@ -39,6 +44,12 @@ export type * from './services/schedule-transaction/schedule-transaction-service
 export type * from './services/state/state-service.interface';
 export type * from './services/token/token-service.interface';
 export type * from './services/topic/topic-transaction-service.interface';
+export {
+  FtTransferEntry,
+  HbarTransferEntry,
+  NftTransferEntry,
+} from './services/transfer/transfer-entries';
+export type * from './services/transfer/transfer-service.interface';
 export type * from './services/tx-execute/tx-execute-service.interface';
 export type * from './services/tx-sign/tx-sign-service.interface';
 

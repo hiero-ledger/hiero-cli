@@ -6,12 +6,8 @@ import type { CustomFee } from '@hashgraph/sdk';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type {
   CustomFee as CustomFeeParams,
-  NftAllowanceApproveParams,
-  NftAllowanceDeleteParams,
-  NftTransferParams,
   TokenAirdropFtParams,
   TokenAirdropNftParams,
-  TokenAllowanceFtParams,
   TokenAssociationParams,
   TokenBurnFtParams,
   TokenBurnNftParams,
@@ -25,7 +21,6 @@ import type {
   TokenMintParams,
   TokenRejectAirdropParams,
   TokenRevokeKycParams,
-  TokenTransferParams,
   TokenUnfreezeParams,
   TokenUpdateNftMetadataParams,
   TokenWipeFtParams,
@@ -34,8 +29,6 @@ import type {
 import type { TokenService } from './token-service.interface';
 
 import {
-  AccountAllowanceApproveTransaction,
-  AccountAllowanceDeleteTransaction,
   AccountId,
   CustomFixedFee,
   CustomFractionalFee,
@@ -64,7 +57,6 @@ import {
   TokenUnpauseTransaction,
   TokenUpdateNftsTransaction,
   TokenWipeTransaction,
-  TransferTransaction,
 } from '@hashgraph/sdk';
 
 import { TokenTypeMap } from '@/core/shared/constants';
@@ -76,36 +68,6 @@ export class TokenServiceImpl implements TokenService {
 
   constructor(logger: Logger) {
     this.logger = logger;
-  }
-
-  /**
-   * Create a token transfer transaction (without execution)
-   */
-  createTransferTransaction(params: TokenTransferParams): TransferTransaction {
-    this.logger.debug(
-      `[TOKEN SERVICE] Creating transfer transaction: ${params.amount} tokens from ${params.fromAccountId} to ${params.toAccountId}`,
-    );
-
-    const { tokenId, fromAccountId, toAccountId, amount } = params;
-
-    // Create transfer transaction
-    const transferTx = new TransferTransaction()
-      .addTokenTransfer(
-        TokenId.fromString(tokenId),
-        AccountId.fromString(fromAccountId),
-        Number(-amount), // Negative for sender
-      )
-      .addTokenTransfer(
-        TokenId.fromString(tokenId),
-        AccountId.fromString(toAccountId),
-        Number(amount), // Positive for receiver
-      );
-
-    this.logger.debug(
-      `[TOKEN SERVICE] Created transfer transaction for token ${tokenId}`,
-    );
-
-    return transferTx;
   }
 
   /**
@@ -331,105 +293,6 @@ export class TokenServiceImpl implements TokenService {
     }
 
     return mintTx;
-  }
-
-  /**
-   * Create an NFT transfer transaction (without execution)
-   */
-  createNftTransferTransaction(params: NftTransferParams): TransferTransaction {
-    this.logger.debug(
-      `[TOKEN SERVICE] Creating NFT transfer transaction: ${params.serialNumbers.length} NFTs of token ${params.tokenId} from ${params.fromAccountId} to ${params.toAccountId}`,
-    );
-
-    const { tokenId, fromAccountId, toAccountId, serialNumbers } = params;
-
-    const transferTx = new TransferTransaction();
-
-    for (const serial of serialNumbers) {
-      const nftId = new NftId(TokenId.fromString(tokenId), serial);
-      transferTx.addNftTransfer(
-        nftId,
-        AccountId.fromString(fromAccountId),
-        AccountId.fromString(toAccountId),
-      );
-    }
-
-    this.logger.debug(
-      `[TOKEN SERVICE] Created NFT transfer transaction for ${serialNumbers.length} NFTs`,
-    );
-
-    return transferTx;
-  }
-
-  createFungibleTokenAllowanceTransaction(
-    params: TokenAllowanceFtParams,
-  ): AccountAllowanceApproveTransaction {
-    const { tokenId, ownerAccountId, spenderAccountId, amount } = params;
-    this.logger.debug(
-      `[TOKEN SERVICE] Creating FT allowance: ${amount.toString()} tokens of ${tokenId} from ${ownerAccountId} to spender ${spenderAccountId}`,
-    );
-    return new AccountAllowanceApproveTransaction().approveTokenAllowance(
-      TokenId.fromString(tokenId),
-      AccountId.fromString(ownerAccountId),
-      AccountId.fromString(spenderAccountId),
-      amount,
-    );
-  }
-
-  createNftAllowanceApproveTransaction(
-    params: NftAllowanceApproveParams,
-  ): AccountAllowanceApproveTransaction {
-    this.logger.debug(
-      `[TOKEN SERVICE] Creating NFT allowance approve transaction: token ${params.tokenId}, owner ${params.ownerAccountId}, spender ${params.spenderAccountId}`,
-    );
-
-    const tx = new AccountAllowanceApproveTransaction();
-    const tokenId = TokenId.fromString(params.tokenId);
-    const owner = AccountId.fromString(params.ownerAccountId);
-    const spender = AccountId.fromString(params.spenderAccountId);
-
-    if (params.allSerials) {
-      tx.approveTokenNftAllowanceAllSerials(tokenId, owner, spender);
-      this.logger.debug(
-        `[TOKEN SERVICE] Approved all serials for token ${params.tokenId}`,
-      );
-    } else {
-      for (const serial of params.serialNumbers) {
-        tx.approveTokenNftAllowance(new NftId(tokenId, serial), owner, spender);
-      }
-      this.logger.debug(
-        `[TOKEN SERVICE] Approved ${params.serialNumbers.length} serial(s) for token ${params.tokenId}`,
-      );
-    }
-
-    return tx;
-  }
-
-  createNftAllowanceDeleteTransaction(
-    params: NftAllowanceDeleteParams,
-  ): AccountAllowanceApproveTransaction | AccountAllowanceDeleteTransaction {
-    const tokenId = TokenId.fromString(params.tokenId);
-    const owner = AccountId.fromString(params.ownerAccountId);
-
-    if (params.allSerials) {
-      this.logger.debug(
-        `[TOKEN SERVICE] Revoking all-serials NFT allowance: token ${params.tokenId}, owner ${params.ownerAccountId}, spender ${params.spenderAccountId}`,
-      );
-      return new AccountAllowanceApproveTransaction().deleteTokenNftAllowanceAllSerials(
-        tokenId,
-        owner,
-        AccountId.fromString(params.spenderAccountId),
-      );
-    }
-
-    this.logger.debug(
-      `[TOKEN SERVICE] Deleting NFT allowance for ${params.serialNumbers.length} serial(s) of token ${params.tokenId}`,
-    );
-    const tx = new AccountAllowanceDeleteTransaction();
-    for (const serial of params.serialNumbers) {
-      tx.deleteAllTokenNftAllowances(new NftId(tokenId, serial), owner);
-    }
-    return tx;
   }
 
   createDeleteTransaction(params: TokenDeleteParams): TokenDeleteTransaction {

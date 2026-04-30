@@ -22,6 +22,7 @@ export const mockAccountIds = {
   treasury: '0.0.123456',
   operator: '0.0.100000',
   association: '0.0.789012',
+  sender: '0.0.345678',
   collector: '0.0.999999',
   receiver: '0.0.555555',
 };

@@ -14,6 +14,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { NftAllowanceEntry } from '@/core/services/allowance';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import {
   resolveDestinationAccountParameter,
@@ -105,21 +106,17 @@ export class TokenAllowanceNftCommand extends BaseTransactionCommand<
     normalisedParams: AllowanceNftNormalizedParams,
   ): Promise<AllowanceNftBuildTransactionResult> {
     const { api } = args;
-    const transaction = api.token.createNftAllowanceApproveTransaction(
-      normalisedParams.allSerials
-        ? {
-            tokenId: normalisedParams.tokenId,
-            ownerAccountId: normalisedParams.ownerAccountId,
-            spenderAccountId: normalisedParams.spenderAccountId,
-            allSerials: true,
-          }
-        : {
-            tokenId: normalisedParams.tokenId,
-            ownerAccountId: normalisedParams.ownerAccountId,
-            spenderAccountId: normalisedParams.spenderAccountId,
-            serialNumbers: normalisedParams.serials!,
-          },
-    );
+    const transaction = api.allowance.buildAllowanceApprove([
+      new NftAllowanceEntry(
+        normalisedParams.ownerAccountId,
+        normalisedParams.spenderAccountId,
+        normalisedParams.tokenId,
+        normalisedParams.allSerials
+          ? undefined
+          : (normalisedParams.serials ?? undefined),
+        normalisedParams.allSerials ? true : undefined,
+      ),
+    ]);
     return { transaction };
   }
 
@@ -170,7 +167,9 @@ export class TokenAllowanceNftCommand extends BaseTransactionCommand<
       tokenId: normalisedParams.tokenId,
       ownerAccountId: normalisedParams.ownerAccountId,
       spenderAccountId: normalisedParams.spenderAccountId,
-      serials: normalisedParams.allSerials ? null : normalisedParams.serials,
+      serials: normalisedParams.allSerials
+        ? null
+        : (normalisedParams.serials ?? null),
       allSerials: normalisedParams.allSerials,
       network: normalisedParams.network,
     };
