@@ -2,10 +2,10 @@
  * Unit tests for TokenServiceImpl
  * Tests token transfer, creation, and association transaction building
  */
-import type { PublicKey } from '@hashgraph/sdk';
+import type { PublicKey } from '@hiero-ledger/sdk';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 
-import { AccountId, Hbar, TokenId, TokenType } from '@hashgraph/sdk';
+import { AccountId, Hbar, TokenId, TokenType } from '@hiero-ledger/sdk';
 
 import {
   ECDSA_HEX_PUBLIC_KEY,
@@ -27,6 +27,7 @@ import {
   createMockTokenAssociateTransaction,
   createMockTokenCreateTransaction,
   createMockTokenDeleteTransaction,
+  createMockTokenDissociateTransaction,
   createMockTransferTransaction,
 } from './mocks';
 
@@ -50,6 +51,7 @@ const TRANSFER_AMOUNT = 100n;
 const mockTransferTransaction = createMockTransferTransaction();
 const mockTokenCreateTransaction = createMockTokenCreateTransaction();
 const mockTokenAssociateTransaction = createMockTokenAssociateTransaction();
+const mockTokenDissociateTransaction = createMockTokenDissociateTransaction();
 const mockTokenDeleteTransaction = createMockTokenDeleteTransaction();
 const mockCustomFixedFee = createMockCustomFixedFee();
 const mockCustomFractionalFee = createMockCustomFractionalFee();
@@ -66,10 +68,11 @@ const mockPrivateKeyInstance = {
 };
 const mockHbarInstance = { toString: jest.fn().mockReturnValue('1 ℏ') };
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   TransferTransaction: jest.fn(() => mockTransferTransaction),
   TokenCreateTransaction: jest.fn(() => mockTokenCreateTransaction),
   TokenAssociateTransaction: jest.fn(() => mockTokenAssociateTransaction),
+  TokenDissociateTransaction: jest.fn(() => mockTokenDissociateTransaction),
   TokenDeleteTransaction: jest.fn(() => mockTokenDeleteTransaction),
   CustomFixedFee: jest.fn(() => mockCustomFixedFee),
   CustomFractionalFee: jest.fn(() => mockCustomFractionalFee),
@@ -742,6 +745,43 @@ describe('TokenServiceImpl', () => {
 
       expect(TokenId.fromString).toHaveBeenCalledWith('0.0.9999');
       expect(AccountId.fromString).toHaveBeenCalledWith('0.0.8888');
+    });
+  });
+
+  describe('createTokenDissociationTransaction', () => {
+    it('should create dissociation transaction with correct parameters', () => {
+      const params = {
+        tokenId: TOKEN_ID,
+        accountId: ACCOUNT_ID_FROM,
+      };
+
+      const result = tokenService.createTokenDissociationTransaction(params);
+
+      expect(TokenId.fromString).toHaveBeenCalledWith(TOKEN_ID);
+      expect(AccountId.fromString).toHaveBeenCalledWith(ACCOUNT_ID_FROM);
+      expect(mockTokenDissociateTransaction.setAccountId).toHaveBeenCalledWith(
+        mockAccountIdInstance,
+      );
+      expect(mockTokenDissociateTransaction.setTokenIds).toHaveBeenCalledWith([
+        mockTokenIdInstance,
+      ]);
+      expect(result).toBe(mockTokenDissociateTransaction);
+    });
+
+    it('should log debug messages during dissociation creation', () => {
+      const params = {
+        tokenId: TOKEN_ID,
+        accountId: ACCOUNT_ID_FROM,
+      };
+
+      tokenService.createTokenDissociationTransaction(params);
+
+      expect(logger.debug).toHaveBeenCalledWith(
+        `[TOKEN SERVICE] Creating dissociation transaction: token ${TOKEN_ID} from account ${ACCOUNT_ID_FROM}`,
+      );
+      expect(logger.debug).toHaveBeenCalledWith(
+        `[TOKEN SERVICE] Created dissociation transaction for token ${TOKEN_ID}`,
+      );
     });
   });
 

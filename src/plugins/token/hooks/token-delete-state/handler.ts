@@ -5,7 +5,7 @@ import type { BatchDataItem } from '@/core/types/shared.types';
 
 import { OrchestratorSource } from '@/core';
 import { OrchestratorResultSchema } from '@/core/hooks/orchestrator-result';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { TOKEN_DELETE_COMMAND_NAME } from '@/plugins/token/commands/delete';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';

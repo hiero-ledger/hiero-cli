@@ -1,4 +1,7 @@
-import type { ContractExecuteTransaction, Transaction } from '@hashgraph/sdk';
+import type {
+  ContractExecuteTransaction,
+  Transaction,
+} from '@hiero-ledger/sdk';
 import type { SupportedNetwork, TransactionResult } from '@/core';
 
 export interface ContractErc20ApproveNormalizedParams {

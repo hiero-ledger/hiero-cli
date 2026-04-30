@@ -2,9 +2,8 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { TokenCreateNftOutput } from '@/plugins/token/commands/create-nft/output';
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
-import { SupplyType } from '@/core/types/shared.types';
+import { AliasType, SupplyType } from '@/core/types/shared.types';
 import {
   tokenCreateNft,
   TokenCreateNftOutputSchema,
@@ -216,6 +215,7 @@ describe('tokenCreateNftHandler', () => {
           symbol: 'TNFT',
           supplyType: SupplyType.INFINITE,
           treasury: 'treasury-account',
+          supplyKey: [mockAccountKeyPairs.supply],
           freezeKey: [mockAccountKeyPairs.freeze],
           wipeKey: [mockAccountKeyPairs.wipe],
           pauseKey: [mockAccountKeyPairs.pause],
@@ -291,6 +291,7 @@ describe('tokenCreateNftHandler', () => {
           symbol: 'TNFT',
           supplyType: SupplyType.INFINITE,
           treasury: 'treasury-account',
+          supplyKey: [mockAccountKeyPairs.supply],
           autoRenewPeriod: 7776000,
           autoRenewAccountId: '0.0.100000',
           expirationTime: '2027-01-01T00:00:00Z',
@@ -315,6 +316,24 @@ describe('tokenCreateNftHandler', () => {
   });
 
   describe('validation scenarios', () => {
+    test('should reject when no supply key provided', async () => {
+      const { api } = makeApiMocks();
+      const logger = makeLogger();
+      const args: CommandHandlerArgs = {
+        args: {
+          tokenName: 'TestNFT',
+          symbol: 'TNFT',
+          supplyType: SupplyType.INFINITE,
+        },
+        api,
+        state: api.state,
+        config: api.config,
+        logger,
+      };
+
+      await expect(tokenCreateNft(args)).rejects.toThrow();
+    });
+
     test('should reject freezeDefault without freezeKey', async () => {
       const { api } = makeApiMocks();
       const logger = makeLogger();
@@ -323,6 +342,7 @@ describe('tokenCreateNftHandler', () => {
           tokenName: 'TestNFT',
           symbol: 'TNFT',
           supplyType: SupplyType.INFINITE,
+          supplyKey: [mockAccountKeyPairs.supply],
           freezeDefault: true,
         },
         api,

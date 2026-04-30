@@ -275,7 +275,7 @@ export const contractPluginManifest: PluginManifest = {
           type: OptionType.REPEATABLE,
           required: false,
           description:
-            'Contract admin credential(s) so the network delete can be signed (required when deleting on Hedera). Pass multiple times if multiple credentials are needed. Each value may be: account ID with private key in {accountId}:{private_key} format; account public key in {ed25519|ecdsa}:public:{public-key} format; account private key in {ed25519|ecdsa}:private:{private-key} format; account ID; account name/alias; or account key reference.',
+            'Optional admin credential(s) for signing the network delete. If omitted, the CLI uses the contract admin key from the mirror node and matches KMS keys to those public keys (including M-of-N). If provided, those credentials are used; invalid values fail the command. Pass multiple times when multiple credentials are needed. Each value may be: account ID with private key in {accountId}:{private_key} format; account public key in {ed25519|ecdsa}:public:{public-key} format; account private key in {ed25519|ecdsa}:private:{private-key} format; account ID; account name/alias; or account key reference.',
         },
         {
           name: 'key-manager',

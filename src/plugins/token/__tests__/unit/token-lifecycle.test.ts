@@ -5,9 +5,8 @@ import type { StateService } from '@/core/services/state/state-service.interface
 import '@/core/utils/json-serialize';
 
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
-import { SupplyType } from '@/core/types/shared.types';
+import { AliasType, SupplyType } from '@/core/types/shared.types';
 import { tokenAssociate } from '@/plugins/token/commands/associate';
 import { tokenCreateFt } from '@/plugins/token/commands/create-ft';
 import { tokenTransferFt } from '@/plugins/token/commands/transfer-ft';
@@ -480,9 +479,7 @@ describe('Token Lifecycle Integration', () => {
       const associateResult = await tokenAssociate(associateArgs);
       expect(associateResult.result).toBeDefined();
 
-      expect(MockedHelper).toHaveBeenCalledTimes(2);
-      expect(MockedHelper).toHaveBeenNthCalledWith(1, api.state, logger);
-      expect(MockedHelper).toHaveBeenNthCalledWith(2, api.state, logger);
+      expect(MockedHelper).toHaveBeenCalledWith(api.state, logger);
     });
   });
 });

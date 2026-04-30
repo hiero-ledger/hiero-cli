@@ -1,4 +1,4 @@
-import type { Transaction } from '@hashgraph/sdk';
+import type { Transaction } from '@hiero-ledger/sdk';
 import type { CoreApi, TransactionResult } from '@/core';
 import type { PreSignTransactionHookParams } from '@/core/hooks/types';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
@@ -299,7 +299,7 @@ describe('schedule plugin — scheduled hook', () => {
 
     await expect(hook.execute(params)).rejects.toThrow(
       new TransactionError(
-        `Failed to create account (txId: ${DELETE_SUCCESS_TX_ID})`,
+        `Failed to create scheduled transaction (txId: ${DELETE_SUCCESS_TX_ID})`,
         false,
       ),
     );

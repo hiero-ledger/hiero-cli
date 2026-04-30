@@ -15,11 +15,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
-import {
-  extractPublicKeysFromMirrorNodeKey,
-  getEffectiveKeyRequirement,
-} from '@/core/utils/extract-public-keys';
+import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
@@ -127,60 +123,21 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
 
     const tokenInfo = await api.mirror.getTokenInfo(tokenId);
 
-    if (!tokenInfo.admin_key) {
-      throw new ValidationError(
-        'Token has no admin key (immutable token cannot be deleted)',
-        { context: { tokenId } },
-      );
-    }
-
-    const extractedKeys = extractPublicKeysFromMirrorNodeKey(
-      tokenInfo.admin_key,
-    );
-    const signatureRequirement = getEffectiveKeyRequirement(extractedKeys);
-    if (signatureRequirement.publicKeys.length === 0) {
-      throw new ValidationError(
-        'Could not resolve admin key public keys from network',
-        { context: { tokenId } },
-      );
-    }
-
     const tokenState = new ZustandTokenStateHelper(api.state, logger);
     const stateKey = composeKey(network, tokenId);
     const tokenInState = tokenState.getToken(stateKey);
 
-    let signingKeyRefIds: string[];
-
-    if (validArgs.adminKey.length > 0) {
-      const adminKeys = await Promise.all(
-        validArgs.adminKey.map((cred) =>
-          api.keyResolver.resolveSigningKey(cred, keyManager, false, [
-            'token:admin',
-          ]),
-        ),
-      );
-      signingKeyRefIds = adminKeys.map((adminKey) => adminKey.keyRefId);
-    } else {
-      const refIds: string[] = [];
-      const usedRefIds = new Set<string>();
-      for (const publicKey of signatureRequirement.publicKeys) {
-        const kmsRecord = api.kms.findByPublicKey(publicKey);
-        if (kmsRecord && !usedRefIds.has(kmsRecord.keyRefId)) {
-          usedRefIds.add(kmsRecord.keyRefId);
-          refIds.push(kmsRecord.keyRefId);
-          if (refIds.length >= signatureRequirement.requiredSignatures) {
-            break;
-          }
-        }
-      }
-      if (refIds.length < signatureRequirement.requiredSignatures) {
-        throw new ValidationError(
-          'Not enough admin key(s) not found in key manager for this token. Provide --admin-key.',
-          { context: { tokenId } },
-        );
-      }
-      signingKeyRefIds = refIds;
-    }
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: tokenInfo.admin_key,
+      explicitCredentials: validArgs.adminKey,
+      keyManager,
+      signingKeyLabels: ['token:admin'],
+      emptyMirrorRoleKeyMessage:
+        'Token has no admin key (immutable token cannot be deleted)',
+      insufficientKmsMatchesMessage:
+        'Not enough admin key(s) found in key manager for this token. Provide --admin-key.',
+      validationErrorOptions: { context: { tokenId } },
+    });
 
     const tokenName = tokenInState?.name ?? tokenInfo.name;
 
@@ -188,8 +145,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
       network,
       tokenId,
       tokenName,
-      signingKeyRefIds,
-      keyRefIds: signingKeyRefIds,
+      keyRefIds,
     };
   }
 
@@ -212,7 +168,7 @@ export class TokenDeleteCommand extends BaseTransactionCommand<
   ): Promise<TokenDeleteSignTransactionResult> {
     const { api, logger } = args;
     logger.debug(
-      `Using ${normalisedParams.signingKeyRefIds.length} key(s) for signing transaction`,
+      `Using ${normalisedParams.keyRefIds.length} key(s) for signing transaction`,
     );
     const signedTransaction = await api.txSign.sign(
       buildTransactionResult.transaction,

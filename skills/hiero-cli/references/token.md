@@ -167,6 +167,31 @@ hcli token mint-nft --token mynft --metadata "ipfs://QmABC..." --supply-key 0.0.
 
 ---
 
+### `hcli token update-metadata-nft` [batchify]
+
+Update metadata for existing NFT serial(s). Requires the token metadata key to sign ([Hedera docs](https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/update-nft-metadata)).
+
+| Option           | Short | Type       | Required | Default        | Description                                                                                                                         |
+| ---------------- | ----- | ---------- | -------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `--token`        | `-T`  | string     | **yes**  | —              | NFT collection: token alias or token ID                                                                                             |
+| `--serials`      | `-s`  | string     | **yes**  | —              | Comma-separated serial numbers (max 10)                                                                                             |
+| `--metadata`     | `-m`  | string     | **yes**  | —              | New metadata (max 100 bytes)                                                                                                        |
+| `--metadata-key` | `-M`  | repeatable | no       | —              | Metadata key(s). Omit if KMS can resolve all required on-chain metadata public keys. Pass one or more times for KeyList / threshold |
+| `--key-manager`  | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                                                                                           |
+| `--batch`        | `-B`  | string     | no       | —              | Queue into a named batch instead of executing immediately                                                                           |
+
+**Example:**
+
+```
+hcli token update-metadata-nft --token mynft --serials 1 --metadata "ipfs://QmNew..."
+hcli token update-metadata-nft --token 0.0.456 --serials 1,2 --metadata "v2" --metadata-key alice --metadata-key bob
+hcli token update-metadata-nft --token mynft --serials 1 --metadata "ipfs://..." --batch myBatch
+```
+
+**Output:** `{ transactionId, tokenId, serialNumbers[], network }`
+
+---
+
 ### `hcli token transfer-ft` [batchify]
 
 Transfer a fungible token from one account to another.

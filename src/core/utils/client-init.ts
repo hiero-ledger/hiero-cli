@@ -1,6 +1,6 @@
 import type { LocalnetConfig } from '@/core/services/network/network-service.interface';
 
-import { AccountId, Client } from '@hashgraph/sdk';
+import { AccountId, Client } from '@hiero-ledger/sdk';
 
 import { ConfigurationError, SupportedNetwork } from '@/core';
 

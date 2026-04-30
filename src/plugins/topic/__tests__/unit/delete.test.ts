@@ -1,10 +1,10 @@
 import type { CoreApi, TransactionResult } from '@/core';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
+import type { SigningKeysResult } from '@/core/services/key-resolver/types';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
 
 import {
   ED25519_DER_PUBLIC_KEY,
-  ED25519_HEX_PUBLIC_KEY,
   MOCK_HEDERA_ENTITY_ID_1,
   MOCK_HEDERA_ENTITY_ID_2,
   MOCK_HEDERA_ENTITY_ID_3,
@@ -17,10 +17,8 @@ import {
 } from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
-  createMockKmsRecord,
   makeAliasMock,
   makeArgs,
-  makeKmsMock,
   makeLogger,
   makeMirrorMock,
   makeNetworkMock,
@@ -30,9 +28,8 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, TransactionError, ValidationError } from '@/core';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { createMockTopicInfo } from '@/core/services/mirrornode/__tests__/unit/mocks';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TopicDeleteOutputSchema } from '@/plugins/topic/commands/delete';
 import { topicDelete } from '@/plugins/topic/commands/delete/handler';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -68,20 +65,6 @@ function mirrorWithTopicNoAdminKey(topicId: string): HederaMirrornodeService {
       }),
     ),
   } as unknown as HederaMirrornodeService;
-}
-
-function kmsWithKrAdmin() {
-  const kms = makeKmsMock();
-  kms.get = jest.fn().mockImplementation((refId: string) => {
-    if (refId === MOCK_TOPIC_ADMIN_KEY_REF_ID) {
-      return createMockKmsRecord(
-        MOCK_TOPIC_ADMIN_KEY_REF_ID,
-        ED25519_HEX_PUBLIC_KEY,
-      );
-    }
-    return undefined;
-  });
-  return kms;
 }
 
 describe('topic plugin - delete command (ADR-007)', () => {
@@ -376,11 +359,11 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias.list = jest.fn().mockReturnValue([]);
       const network = makeNetworkMock(SupportedNetwork.TESTNET);
 
-      const keyResolver: Pick<KeyResolverService, 'resolveSigningKey'> = {
-        resolveSigningKey: jest.fn().mockResolvedValue({
-          keyRefId: MOCK_TOPIC_ADMIN_KEY_REF_ID,
-          publicKey: ED25519_HEX_PUBLIC_KEY,
-        }),
+      const keyResolver: Pick<KeyResolverService, 'resolveSigningKeys'> = {
+        resolveSigningKeys: jest.fn().mockResolvedValue({
+          keyRefIds: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
+          requiredSignatures: 1,
+        } satisfies SigningKeysResult),
       };
 
       const api: Partial<CoreApi> = {
@@ -389,7 +372,6 @@ describe('topic plugin - delete command (ADR-007)', () => {
         alias,
         network,
         mirror: mirrorWithTopic(MOCK_HEDERA_ENTITY_ID_1),
-        kms: kmsWithKrAdmin(),
         topic: {
           deleteTopic: deleteTopicTxMock,
           createTopic: jest.fn(),
@@ -398,7 +380,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
         },
         txSign,
         txExecute,
-        keyResolver: keyResolver as KeyResolverService,
+        keyResolver: keyResolver as unknown as KeyResolverService,
       };
 
       const args = makeArgs(api, logger, {
@@ -486,11 +468,11 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias.list = jest.fn().mockReturnValue([]);
       const network = makeNetworkMock(SupportedNetwork.TESTNET);
 
-      const keyResolver: Pick<KeyResolverService, 'resolveSigningKey'> = {
-        resolveSigningKey: jest.fn().mockResolvedValue({
-          keyRefId: MOCK_TOPIC_ADMIN_KEY_REF_ID,
-          publicKey: ED25519_HEX_PUBLIC_KEY,
-        }),
+      const keyResolver: Pick<KeyResolverService, 'resolveSigningKeys'> = {
+        resolveSigningKeys: jest.fn().mockResolvedValue({
+          keyRefIds: [MOCK_TOPIC_ADMIN_KEY_REF_ID],
+          requiredSignatures: 1,
+        } satisfies SigningKeysResult),
       };
 
       const api: Partial<CoreApi> = {
@@ -499,7 +481,6 @@ describe('topic plugin - delete command (ADR-007)', () => {
         alias,
         network,
         mirror: mirrorWithTopic(MOCK_HEDERA_ENTITY_ID_1),
-        kms: kmsWithKrAdmin(),
         topic: {
           deleteTopic: deleteTopicTxMock,
           createTopic: jest.fn(),
@@ -508,7 +489,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
         },
         txSign,
         txExecute,
-        keyResolver: keyResolver as KeyResolverService,
+        keyResolver: keyResolver as unknown as KeyResolverService,
       };
 
       const args = makeArgs(api, logger, {
@@ -546,11 +527,11 @@ describe('topic plugin - delete command (ADR-007)', () => {
       alias.list = jest.fn().mockReturnValue([]);
       const network = makeNetworkMock(SupportedNetwork.TESTNET);
 
-      const keyResolver: Pick<KeyResolverService, 'resolveSigningKey'> = {
-        resolveSigningKey: jest.fn().mockResolvedValue({
-          keyRefId: MOCK_TOPIC_CLI_ADMIN_KEY_REF_ID,
-          publicKey: ED25519_HEX_PUBLIC_KEY,
-        }),
+      const keyResolver: Pick<KeyResolverService, 'resolveSigningKeys'> = {
+        resolveSigningKeys: jest.fn().mockResolvedValue({
+          keyRefIds: [MOCK_TOPIC_CLI_ADMIN_KEY_REF_ID],
+          requiredSignatures: 1,
+        } satisfies SigningKeysResult),
       };
 
       const api: Partial<CoreApi> = {
@@ -567,7 +548,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
         },
         txSign,
         txExecute,
-        keyResolver: keyResolver as KeyResolverService,
+        keyResolver: keyResolver as unknown as KeyResolverService,
       };
 
       const args = makeArgs(api, logger, {
@@ -580,7 +561,7 @@ describe('topic plugin - delete command (ADR-007)', () => {
       expect(deleteTopicTxMock).toHaveBeenCalledWith({
         topicId: MOCK_HEDERA_ENTITY_ID_1,
       });
-      expect(keyResolver.resolveSigningKey).toHaveBeenCalled();
+      expect(keyResolver.resolveSigningKeys).toHaveBeenCalled();
       expect(deleteTopicStateMock).toHaveBeenCalledWith(
         `${SupportedNetwork.TESTNET}:${MOCK_HEDERA_ENTITY_ID_1}`,
       );

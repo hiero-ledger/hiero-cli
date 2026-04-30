@@ -3,8 +3,7 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import '@/core/utils/json-serialize';
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { SupplyType } from '@/core/types/shared.types';
+import { AliasType, SupplyType } from '@/core/types/shared.types';
 import {
   tokenAssociate,
   TokenAssociateOutputSchema,
@@ -211,7 +210,6 @@ describe('Handler Output Validation - Token Plugin', () => {
 
       const output = assertOutput(result.result, TokenAssociateOutputSchema);
       expect(output.tokenId).toBe('0.0.12345');
-      expect(output.associated).toBe(true);
       expect(output.transactionId).toBe('0.0.123@1700000000.123456789');
     });
   });

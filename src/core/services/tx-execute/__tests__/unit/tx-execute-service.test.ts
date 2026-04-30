@@ -1,6 +1,6 @@
-import type { Client, ContractCreateFlow } from '@hashgraph/sdk';
+import type { Client, ContractCreateFlow } from '@hiero-ledger/sdk';
 
-import { Status } from '@hashgraph/sdk';
+import { Status } from '@hiero-ledger/sdk';
 
 import {
   createMockClient,
@@ -17,9 +17,9 @@ import {
 import { TransactionError } from '@/core/errors';
 import { TxExecuteServiceImpl } from '@/core/services/tx-execute/tx-execute-service';
 
-jest.mock('@hashgraph/sdk', () => {
-  const actual = jest.requireActual('@hashgraph/sdk');
-  const MockStatusSuccess = { _code: 22 };
+jest.mock('@hiero-ledger/sdk', () => {
+  const actual = jest.requireActual('@hiero-ledger/sdk');
+  const MockStatusSuccess = { _code: 22, toString: () => 'SUCCESS' };
 
   return {
     ...actual,
@@ -29,7 +29,7 @@ jest.mock('@hashgraph/sdk', () => {
   };
 });
 
-const NonSuccessStatus = { _code: 1 };
+const NonSuccessStatus = { _code: 1, toString: () => 'INVALID' };
 
 const MOCK_TX_ID = '0.0.1234@1234567890.000';
 const MOCK_CONSENSUS_TS = '2024-01-01T00:00:00.000Z';

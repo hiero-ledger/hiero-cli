@@ -1,6 +1,5 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
-import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { TopicData } from '@/plugins/topic/schema';
 import type { TopicDeleteOutput } from './output';
 import type {
@@ -17,12 +16,8 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { EntityIdSchema } from '@/core/schemas';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import {
-  extractPublicKeysFromMirrorNodeKey,
-  getEffectiveKeyRequirement,
-} from '@/core/utils/extract-public-keys';
+import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { TopicHelper } from '@/plugins/topic/topic-helper';
 import { ZustandTopicStateHelper } from '@/plugins/topic/zustand-state-helper';
@@ -39,17 +34,6 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
 > {
   constructor() {
     super(TOPIC_DELETE_COMMAND_NAME);
-  }
-
-  private warnIgnoredTopicDeleteAdminKeys(
-    logger: Logger,
-    ignoredKeyRefIds: string[],
-  ): void {
-    for (const keyRefId of ignoredKeyRefIds) {
-      logger.warn(
-        `Admin key ${keyRefId} does not match the topic admin key on the network (mirror node) and was ignored`,
-      );
-    }
   }
 
   override async execute(args: CommandHandlerArgs): Promise<CommandResult> {
@@ -162,10 +146,6 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
       validArgs.keyManager ||
       api.config.getOption<KeyManager>(ConfigOptionKey.default_key_manager);
 
-    if (validArgs.adminKey.length === 0) {
-      throw new ValidationError('No --admin-key was provided.');
-    }
-
     const topicEntityId = this.resolveTopicEntityId(args, topicRef, isEntityId);
     const key = composeKey(network, topicEntityId);
 
@@ -178,52 +158,24 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
       );
     }
 
-    const extracted = extractPublicKeysFromMirrorNodeKey(topicInfo.admin_key);
-    const requirement = getEffectiveKeyRequirement(extracted);
-    if (requirement.publicKeys.length === 0) {
-      throw new ValidationError(
-        'Topic has no admin key on the network; it cannot be deleted with TopicDeleteTransaction.',
-      );
-    }
-
-    let signingKeyRefIds: string[];
-
-    if (validArgs.adminKey.length > 0) {
-      const adminKeys = await Promise.all(
-        validArgs.adminKey.map((cred) =>
-          api.keyResolver.resolveSigningKey(cred, keyManager, false, [
-            'contract:admin',
-          ]),
-        ),
-      );
-      signingKeyRefIds = adminKeys.map((adminKey) => adminKey.keyRefId);
-    } else {
-      const refIds: string[] = [];
-      const usedRefIds = new Set<string>();
-      for (const publicKey of requirement.publicKeys) {
-        const kmsRecord = api.kms.findByPublicKey(publicKey);
-        if (kmsRecord && !usedRefIds.has(kmsRecord.keyRefId)) {
-          usedRefIds.add(kmsRecord.keyRefId);
-          refIds.push(kmsRecord.keyRefId);
-          if (refIds.length >= requirement.requiredSignatures) {
-            break;
-          }
-        }
-      }
-      if (refIds.length < requirement.requiredSignatures) {
-        throw new ValidationError(
-          'Not enough admin key(s) not found in key manager for this topic. Provide --admin-key.',
-          { context: { topicId: topicInfo.topic_id } },
-        );
-      }
-      signingKeyRefIds = refIds;
-    }
+    const { keyRefIds: signingKeyRefIds, requiredSignatures } =
+      await api.keyResolver.resolveSigningKeys({
+        mirrorRoleKey: topicInfo.admin_key,
+        explicitCredentials: validArgs.adminKey,
+        keyManager,
+        signingKeyLabels: ['topic:admin'],
+        emptyMirrorRoleKeyMessage:
+          'Topic has no admin key on the network; it cannot be deleted with TopicDeleteTransaction.',
+        insufficientKmsMatchesMessage:
+          'Not enough admin key(s) found in key manager for this topic. Provide --admin-key.',
+        validationErrorOptions: { context: { topicId: topicInfo.topic_id } },
+      });
 
     if (loaded) {
       const topicToDelete: TopicData = {
         ...loaded,
         adminKeyRefIds: signingKeyRefIds,
-        adminKeyThreshold: requirement.requiredSignatures,
+        adminKeyThreshold: requiredSignatures,
       };
 
       return {
@@ -242,7 +194,7 @@ export class TopicDeleteCommand extends BaseTransactionCommand<
       topicId: entityId,
       network,
       adminKeyRefIds: signingKeyRefIds,
-      adminKeyThreshold: requirement.requiredSignatures,
+      adminKeyThreshold: requiredSignatures,
       submitKeyRefIds: [],
       submitKeyThreshold: 0,
       createdAt: new Date().toISOString(),

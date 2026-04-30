@@ -6,7 +6,7 @@ import { OutputServiceImpl } from '@/core/services/output/output-service';
 import { OutputFormatterFactory } from '@/core/services/output/strategies';
 import { DEFAULT_OUTPUT_FORMAT } from '@/core/shared/types/output-format';
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   TokenType: {
     NonFungibleUnique: 'NonFungibleUnique',
     FungibleCommon: 'FungibleCommon',

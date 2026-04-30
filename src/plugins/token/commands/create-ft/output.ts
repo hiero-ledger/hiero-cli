@@ -19,7 +19,7 @@ export const TokenCreateFtOutputSchema = z.object({
   name: z.string().describe('Fungible token name'),
   symbol: z.string().describe('Fungible token symbol'),
   treasuryId: EntityIdSchema,
-  decimals: z.int().min(0).max(8).describe('Number of decimal places'),
+  decimals: z.int().min(0).describe('Number of decimal places'),
   initialSupply: z.string().describe('Initial supply in base units'),
   supplyType: SupplyTypeSchema,
   transactionId: TransactionIdSchema,

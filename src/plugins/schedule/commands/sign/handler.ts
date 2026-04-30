@@ -2,7 +2,10 @@
  * Schedule sign — ScheduleSignTransaction
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type {
+  Credential,
+  KeyManager,
+} from '@/core/services/kms/kms-types.interface';
 import type { ScheduledTransactionData } from '@/plugins/schedule/schema';
 import type { ScheduleSignOutput } from './output';
 import type {
@@ -47,6 +50,39 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
     return executeTransactionResult;
   }
 
+  private async resolveSignerKeyRefIds(
+    args: CommandHandlerArgs,
+    scheduleId: string,
+    explicitKey: Credential | undefined,
+    keyManager: KeyManager,
+  ): Promise<string[]> {
+    const { api } = args;
+
+    if (explicitKey) {
+      const signer = await api.keyResolver.resolveSigningKey(
+        explicitKey,
+        keyManager,
+        false,
+        ['schedule:signer'],
+      );
+      return [signer.keyRefId];
+    }
+
+    const mirrorScheduleInfo = await api.mirror.getScheduled(scheduleId);
+    const { keyRefIds } = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: mirrorScheduleInfo.admin_key,
+      explicitCredentials: [],
+      keyManager,
+      signingKeyLabels: ['schedule:signer'],
+      emptyMirrorRoleKeyMessage:
+        'Schedule has no admin key on the network. Provide --key to specify the signing key.',
+      insufficientKmsMatchesMessage:
+        'No matching signer key found in key manager for this schedule. Provide --key.',
+      validationErrorOptions: { context: { scheduleId } },
+    });
+    return keyRefIds;
+  }
+
   async normalizeParams(
     args: CommandHandlerArgs,
   ): Promise<ScheduleSignNormalisedParams> {
@@ -84,11 +120,11 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
       );
     }
 
-    const signer = await api.keyResolver.resolveSigningKey(
+    const signerKeyRefIds = await this.resolveSignerKeyRefIds(
+      args,
+      schedule.scheduleId,
       validArgs.key,
       keyManager,
-      false,
-      ['schedule:signer'],
     );
 
     return {
@@ -98,8 +134,7 @@ export class ScheduleSignCommand extends BaseTransactionCommand<
       executed: schedule.executed,
       network: currentNetwork,
       keyManager,
-      signer,
-      keyRefIds: [signer.keyRefId],
+      keyRefIds: signerKeyRefIds,
     };
   }
 

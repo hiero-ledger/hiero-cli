@@ -28,7 +28,7 @@ const mockAddAddress = jest.fn().mockReturnThis();
 const mockAddUint256 = jest.fn().mockReturnThis();
 const mockAddBytes = jest.fn().mockReturnThis();
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   ContractFunctionParameters: jest.fn(() => ({
     addAddress: mockAddAddress,
     addUint256: mockAddUint256,

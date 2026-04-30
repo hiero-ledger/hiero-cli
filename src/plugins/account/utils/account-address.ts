@@ -1,4 +1,4 @@
-import { AccountId, PublicKey } from '@hashgraph/sdk';
+import { AccountId, PublicKey } from '@hiero-ledger/sdk';
 
 import { ValidationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';

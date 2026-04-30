@@ -1,7 +1,7 @@
 import type {
   ContractCreateFlow,
   Transaction as HederaTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import type { TransactionResult } from '@/core/types/shared.types';
 
 export interface TxExecuteService {

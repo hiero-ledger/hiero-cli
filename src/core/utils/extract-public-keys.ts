@@ -9,8 +9,8 @@
 
 import type { MirrorNodeKey } from '@/core/services/mirrornode/types';
 
-import { Key, KeyList, PublicKey } from '@hashgraph/sdk';
 import * as proto from '@hiero-ledger/proto';
+import { Key, KeyList, PublicKey } from '@hiero-ledger/sdk';
 
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 

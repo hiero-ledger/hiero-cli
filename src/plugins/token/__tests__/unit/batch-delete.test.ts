@@ -7,8 +7,7 @@ import {
   makeLogger,
   makeStateMock,
 } from '@/__tests__/mocks/mocks';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { TOKEN_DELETE_COMMAND_NAME } from '@/plugins/token/commands/delete';
 import { TokenDeleteStateHook } from '@/plugins/token/hooks/token-delete-state';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';

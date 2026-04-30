@@ -5,7 +5,7 @@ import type { ContractErc721CallGetApprovedOutput } from '@/plugins/contract-erc
 import { Interface } from 'ethers';
 
 import { StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { ContractErc721CallGetApprovedInputSchema } from '@/plugins/contract-erc721/commands/get-approved/input';
 import { ContractErc721CallGetApprovedResultSchema } from '@/plugins/contract-erc721/commands/get-approved/result';
 import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';

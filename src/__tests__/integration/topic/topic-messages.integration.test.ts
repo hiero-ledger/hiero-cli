@@ -1,5 +1,4 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { TopicCreateOutput } from '@/plugins/topic/commands/create';
 import type { TopicFindMessageOutput } from '@/plugins/topic/commands/find-message';
 import type { TopicListOutput } from '@/plugins/topic/commands/list';
@@ -11,6 +10,7 @@ import { STATE_STORAGE_FILE_PATH } from '@/__tests__/test-constants';
 import { delay } from '@/__tests__/utils/common-utils';
 import { setDefaultOperatorForNetwork } from '@/__tests__/utils/network-and-operator-setup';
 import { createCoreApi } from '@/core';
+import { SupportedNetwork } from '@/core/types/shared.types';
 import {
   topicCreate,
   topicFindMessage,
@@ -18,7 +18,14 @@ import {
   topicSubmitMessage,
 } from '@/plugins/topic';
 
-describe('Topic Messages Integration Tests', () => {
+/*
+Tests in this suite are only executed when we do not use localnet as selected network due to the fact that
+there is a problem with acquiring topic information on Hedera local node when using hiero-local-node or solo to deploy it.
+This behavior prevents us from fully testing the topic commands like submit-message and find-message here.
+*/
+const describeSuite =
+  process.env.NETWORK === SupportedNetwork.LOCALNET ? describe.skip : describe;
+describeSuite('Topic Messages Integration Tests', () => {
   let coreApi: CoreApi;
   let network: SupportedNetwork;
 
@@ -66,6 +73,8 @@ describe('Topic Messages Integration Tests', () => {
     expect(topic?.submitKeyPresent).toBe(false);
     expect(topic?.createdAt).toBe(createTopicOutput.createdAt);
     expect(topic?.topicId).toBe(createTopicOutput.topicId);
+
+    await delay(5000);
 
     for (let i = 0; i < 10; i++) {
       const topicMessageSubmitArgs: Record<string, unknown> = {

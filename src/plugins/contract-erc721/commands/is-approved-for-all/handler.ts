@@ -5,8 +5,7 @@ import type { ContractErc721CallIsApprovedForAllOutput } from '@/plugins/contrac
 import { Interface } from 'ethers';
 
 import { NotFoundError, StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { EntityReferenceType } from '@/core/types/shared.types';
+import { AliasType, EntityReferenceType } from '@/core/types/shared.types';
 import { ContractErc721CallIsApprovedForAllInputSchema } from '@/plugins/contract-erc721/commands/is-approved-for-all/input';
 import { ContractErc721CallIsApprovedForAllResultSchema } from '@/plugins/contract-erc721/commands/is-approved-for-all/result';
 import { ERC721_ABI } from '@/plugins/contract-erc721/shared/erc721-abi';

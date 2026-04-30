@@ -2,7 +2,7 @@
  * Implementation of Token Service
  * Handles token-related transaction creation and execution
  */
-import type { CustomFee } from '@hashgraph/sdk';
+import type { CustomFee } from '@hiero-ledger/sdk';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type {
   CustomFee as CustomFeeParams,
@@ -19,8 +19,18 @@ import type {
   TokenClaimAirdropParams,
   TokenCreateParams,
   TokenDeleteParams,
+  TokenDissociationParams,
+  TokenFreezeParams,
+  TokenGrantKycParams,
   TokenMintParams,
+  TokenRejectAirdropParams,
+  TokenRevokeKycParams,
   TokenTransferParams,
+  TokenUnfreezeParams,
+  TokenUpdateNftMetadataParams,
+  TokenUpdateParams,
+  TokenWipeFtParams,
+  TokenWipeNftParams,
 } from '@/core/types/token.types';
 import type { TokenService } from './token-service.interface';
 
@@ -32,6 +42,8 @@ import {
   CustomFractionalFee,
   FeeAssessmentMethod,
   Hbar,
+  KeyList,
+  Long,
   NftId,
   PendingAirdropId,
   TokenAirdropTransaction,
@@ -41,11 +53,22 @@ import {
   TokenClaimAirdropTransaction,
   TokenCreateTransaction,
   TokenDeleteTransaction,
+  TokenDissociateTransaction,
+  TokenFreezeTransaction,
+  TokenGrantKycTransaction,
   TokenId,
   TokenMintTransaction,
+  TokenPauseTransaction,
+  TokenRejectTransaction,
+  TokenRevokeKycTransaction,
   TokenSupplyType,
+  TokenUnfreezeTransaction,
+  TokenUnpauseTransaction,
+  TokenUpdateNftsTransaction,
+  TokenUpdateTransaction,
+  TokenWipeTransaction,
   TransferTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 import { TokenTypeMap } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
@@ -255,6 +278,29 @@ export class TokenServiceImpl implements TokenService {
   }
 
   /**
+   * Create a token dissociation transaction (without execution)
+   */
+  createTokenDissociationTransaction(
+    params: TokenDissociationParams,
+  ): TokenDissociateTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating dissociation transaction: token ${params.tokenId} from account ${params.accountId}`,
+    );
+
+    const { tokenId, accountId } = params;
+
+    const dissociateTx = new TokenDissociateTransaction()
+      .setAccountId(AccountId.fromString(accountId))
+      .setTokenIds([TokenId.fromString(tokenId)]);
+
+    this.logger.debug(
+      `[TOKEN SERVICE] Created dissociation transaction for token ${tokenId}`,
+    );
+
+    return dissociateTx;
+  }
+
+  /**
    * Create a token mint transaction (without execution)
    * Supports both fungible tokens (with amount) and NFTs (with metadata)
    */
@@ -398,6 +444,68 @@ export class TokenServiceImpl implements TokenService {
     );
   }
 
+  createFreezeTransaction(params: TokenFreezeParams): TokenFreezeTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating freeze transaction for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenFreezeTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId));
+  }
+
+  createUnfreezeTransaction(
+    params: TokenUnfreezeParams,
+  ): TokenUnfreezeTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating unfreeze transaction for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenUnfreezeTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId));
+  }
+
+  createGrantKycTransaction(
+    params: TokenGrantKycParams,
+  ): TokenGrantKycTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating grant KYC transaction for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenGrantKycTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId));
+  }
+
+  createRevokeKycTransaction(
+    params: TokenRevokeKycParams,
+  ): TokenRevokeKycTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating revoke KYC transaction for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenRevokeKycTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId));
+  }
+
+  createPauseTransaction(params: { tokenId: string }): TokenPauseTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating pause transaction for token ${params.tokenId}`,
+    );
+    return new TokenPauseTransaction().setTokenId(
+      TokenId.fromString(params.tokenId),
+    );
+  }
+
+  createUnpauseTransaction(params: {
+    tokenId: string;
+  }): TokenUnpauseTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating unpause transaction for token ${params.tokenId}`,
+    );
+    return new TokenUnpauseTransaction().setTokenId(
+      TokenId.fromString(params.tokenId),
+    );
+  }
+
   createAirdropFtTransaction(
     params: TokenAirdropFtParams,
   ): TokenAirdropTransaction {
@@ -446,6 +554,30 @@ export class TokenServiceImpl implements TokenService {
         tx.addNftTransfer(new NftId(tid, serial), sender, recipient);
       }
     }
+    return tx;
+  }
+
+  createRejectAirdropTransaction(
+    params: TokenRejectAirdropParams,
+  ): TokenRejectTransaction {
+    const { ownerAccountId, items } = params;
+    const owner = AccountId.fromString(ownerAccountId);
+
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating reject transaction: ${items.length} item(s) for owner ${ownerAccountId}`,
+    );
+
+    const tx = new TokenRejectTransaction().setOwnerId(owner);
+
+    for (const item of items) {
+      const tokenId = TokenId.fromString(item.tokenId);
+      if (item.serialNumber !== undefined) {
+        tx.addNftId(new NftId(tokenId, item.serialNumber));
+      } else {
+        tx.addTokenId(tokenId);
+      }
+    }
+
     return tx;
   }
 
@@ -526,6 +658,94 @@ export class TokenServiceImpl implements TokenService {
     return new TokenBurnTransaction()
       .setTokenId(TokenId.fromString(params.tokenId))
       .setSerials(params.serialNumbers);
+  }
+
+  createWipeFtTransaction(params: TokenWipeFtParams): TokenWipeTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating FT wipe transaction: ${params.amount.toString()} tokens for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenWipeTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId))
+      .setAmount(params.amount);
+  }
+
+  createWipeNftTransaction(params: TokenWipeNftParams): TokenWipeTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating NFT wipe transaction: ${params.serialNumbers.length} serials for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenWipeTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId))
+      .setSerials(params.serialNumbers);
+  }
+
+  createUpdateNftMetadataTransaction(
+    params: TokenUpdateNftMetadataParams,
+  ): TokenUpdateNftsTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating NFT metadata update transaction: ${params.serialNumbers.length} serials for token ${params.tokenId}`,
+    );
+
+    return new TokenUpdateNftsTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setSerialNumbers(params.serialNumbers.map((s) => Long.fromNumber(s)))
+      .setMetadata(params.metadata);
+  }
+
+  createUpdateTokenTransaction(
+    params: TokenUpdateParams,
+  ): TokenUpdateTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating update transaction for token ${params.tokenId}`,
+    );
+
+    const tx = new TokenUpdateTransaction().setTokenId(
+      TokenId.fromString(params.tokenId),
+    );
+
+    if (params.name) tx.setTokenName(params.name);
+    if (params.symbol) tx.setTokenSymbol(params.symbol);
+    if (params.treasuryId)
+      tx.setTreasuryAccountId(AccountId.fromString(params.treasuryId));
+
+    if (params.adminKey === null) tx.setAdminKey(new KeyList());
+    else if (params.adminKey !== undefined) tx.setAdminKey(params.adminKey);
+
+    if (params.kycKey === null) tx.setKycKey(new KeyList());
+    else if (params.kycKey !== undefined) tx.setKycKey(params.kycKey);
+
+    if (params.freezeKey === null) tx.setFreezeKey(new KeyList());
+    else if (params.freezeKey !== undefined) tx.setFreezeKey(params.freezeKey);
+
+    if (params.wipeKey === null) tx.setWipeKey(new KeyList());
+    else if (params.wipeKey !== undefined) tx.setWipeKey(params.wipeKey);
+
+    if (params.supplyKey === null) tx.setSupplyKey(new KeyList());
+    else if (params.supplyKey !== undefined) tx.setSupplyKey(params.supplyKey);
+
+    if (params.feeScheduleKey === null) tx.setFeeScheduleKey(new KeyList());
+    else if (params.feeScheduleKey !== undefined)
+      tx.setFeeScheduleKey(params.feeScheduleKey);
+
+    if (params.pauseKey === null) tx.setPauseKey(new KeyList());
+    else if (params.pauseKey !== undefined) tx.setPauseKey(params.pauseKey);
+
+    if (params.metadataKey === null) tx.setMetadataKey(new KeyList());
+    else if (params.metadataKey !== undefined)
+      tx.setMetadataKey(params.metadataKey);
+
+    if (params.memo === null) tx.setTokenMemo('');
+    else if (params.memo !== undefined) tx.setTokenMemo(params.memo);
+
+    if (params.autoRenewAccountId)
+      tx.setAutoRenewAccountId(AccountId.fromString(params.autoRenewAccountId));
+    if (params.autoRenewPeriodSeconds)
+      tx.setAutoRenewPeriod(params.autoRenewPeriodSeconds);
+    if (params.expirationTime) tx.setExpirationTime(params.expirationTime);
+    if (params.metadata) tx.setMetadata(params.metadata);
+
+    return tx;
   }
 
   /**

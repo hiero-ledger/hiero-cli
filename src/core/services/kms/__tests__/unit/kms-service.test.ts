@@ -5,13 +5,13 @@
 import type {
   ContractCreateFlow,
   Transaction as HederaTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { Signer } from '@/core/services/kms/signers/signer.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
-import { AccountId, Client, PrivateKey, PublicKey } from '@hashgraph/sdk';
+import { AccountId, Client, PrivateKey, PublicKey } from '@hiero-ledger/sdk';
 
 import { makeLogger, makeStateMock } from '@/__tests__/mocks/mocks';
 import { ConfigurationError, NotFoundError } from '@/core/errors';
@@ -73,7 +73,7 @@ const buildClient = () => ({
   setMirrorNetwork: jest.fn(),
 });
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   PrivateKey: {
     fromStringECDSA: jest.fn(() => ({
       publicKey: { toStringRaw: jest.fn().mockReturnValue('ecdsa-public-key') },

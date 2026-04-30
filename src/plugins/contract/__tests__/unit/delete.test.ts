@@ -2,7 +2,7 @@ import type { Logger } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { ContractData } from '@/plugins/contract/schema';
 
-import { PublicKey } from '@hashgraph/sdk';
+import { PublicKey } from '@hiero-ledger/sdk';
 
 import {
   ED25519_DER_PUBLIC_KEY,
@@ -19,8 +19,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError, ValidationError } from '@/core';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import {
   makeAliasServiceMock,
@@ -331,7 +330,7 @@ describe('contract plugin - delete command', () => {
     await expect(contractDelete(args)).rejects.toThrow(NotFoundError);
   });
 
-  test('throws when no admin keys in state and no --admin-key', async () => {
+  test('throws when KMS has no keys matching mirror admin and no --admin-key', async () => {
     const contract = makeContractData({
       name: 'NoAdminRefs',
       adminKeyRefIds: [],

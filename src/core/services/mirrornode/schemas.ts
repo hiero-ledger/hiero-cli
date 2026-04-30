@@ -7,6 +7,8 @@ import {
   type AccountListItemAPIResponse,
   type AccountListItemBalance,
   type AccountListItemTokenBalance,
+  type AccountNftInfo,
+  type AccountNftsResponse,
   type ContractCallResponse,
   type ContractInfo,
   type ExchangeRateResponse,
@@ -61,7 +63,7 @@ export const TokenInfoSchema: z.ZodType<TokenInfo> = z.object({
   deleted: z.boolean().nullable().optional(),
   freeze_default: z.boolean().optional(),
   auto_renew_account: z.string().nullable().optional(),
-  auto_renew_period: z.number().optional(),
+  auto_renew_period: z.number().nullable().optional(),
   expiry_timestamp: z.number().nullable().optional(),
   pause_status: z.string(),
   memo: z.string(),
@@ -195,6 +197,20 @@ export const TokenAirdropsResponseSchema: z.ZodType<TokenAirdropsResponse> =
   });
 
 const nullableStringKey = z.union([z.string(), z.null()]).optional();
+
+export const AccountNftInfoSchema: z.ZodType<AccountNftInfo> = z.object({
+  token_id: z.string(),
+  serial_number: z.number(),
+  account_id: z.union([z.string(), z.null()]),
+  deleted: z.boolean(),
+  metadata: z.string().optional(),
+});
+
+export const AccountNftsResponseSchema: z.ZodType<AccountNftsResponse> =
+  z.object({
+    nfts: z.array(AccountNftInfoSchema),
+    links: z.object({ next: z.string().nullable().optional() }).optional(),
+  });
 
 export const NftInfoSchema: z.ZodType<NftInfo> = z.object({
   account_id: z.union([z.string(), z.null()]),

@@ -83,6 +83,21 @@ import {
   TokenDeleteAllowanceNftOutputSchema,
 } from './commands/delete-allowance-nft';
 import {
+  TOKEN_DISSOCIATE_TEMPLATE,
+  tokenDissociate,
+  TokenDissociateOutputSchema,
+} from './commands/dissociate';
+import {
+  TOKEN_FREEZE_TEMPLATE,
+  tokenFreeze,
+  TokenFreezeOutputSchema,
+} from './commands/freeze';
+import {
+  TOKEN_GRANT_KYC_TEMPLATE,
+  tokenGrantKyc,
+  TokenGrantKycOutputSchema,
+} from './commands/grant-kyc';
+import {
   TOKEN_IMPORT_TEMPLATE,
   tokenImport,
   TokenImportOutputSchema,
@@ -103,10 +118,25 @@ import {
   TokenMintNftOutputSchema,
 } from './commands/mint-nft';
 import {
+  TOKEN_PAUSE_TEMPLATE,
+  tokenPause,
+  TokenPauseOutputSchema,
+} from './commands/pause';
+import {
   TOKEN_PENDING_AIRDROPS_TEMPLATE,
   tokenPendingAirdrops,
   TokenPendingAirdropsOutputSchema,
 } from './commands/pending-airdrops';
+import {
+  TOKEN_REJECT_AIRDROP_TEMPLATE,
+  tokenRejectAirdrop,
+  TokenRejectAirdropOutputSchema,
+} from './commands/reject-airdrop';
+import {
+  TOKEN_REVOKE_KYC_TEMPLATE,
+  tokenRevokeKyc,
+  TokenRevokeKycOutputSchema,
+} from './commands/revoke-kyc';
 import {
   TOKEN_TRANSFER_FT_TEMPLATE,
   tokenTransferFt,
@@ -118,6 +148,26 @@ import {
   TokenTransferNftOutputSchema,
 } from './commands/transfer-nft';
 import {
+  TOKEN_UNFREEZE_TEMPLATE,
+  tokenUnfreeze,
+  TokenUnfreezeOutputSchema,
+} from './commands/unfreeze';
+import {
+  TOKEN_UNPAUSE_TEMPLATE,
+  tokenUnpause,
+  TokenUnpauseOutputSchema,
+} from './commands/unpause';
+import {
+  TOKEN_UPDATE_TEMPLATE,
+  tokenUpdate,
+  TokenUpdateOutputSchema,
+} from './commands/update';
+import {
+  TOKEN_UPDATE_NFT_METADATA_TEMPLATE,
+  tokenUpdateNftMetadata,
+  TokenUpdateNftMetadataOutputSchema,
+} from './commands/update-metadata-nft';
+import {
   TOKEN_VIEW_TEMPLATE,
   tokenView,
   TokenViewOutputSchema,
@@ -128,6 +178,8 @@ import { TokenCreateFtStateHook } from './hooks/token-create-ft-state';
 import { TokenCreateNftFromFileStateHook } from './hooks/token-create-nft-from-file-state';
 import { TokenCreateNftStateHook } from './hooks/token-create-nft-state';
 import { TokenDeleteStateHook } from './hooks/token-delete-state';
+import { TokenDissociateStateHook } from './hooks/token-dissociate-state/handler';
+import { TokenUpdateStateHook } from './hooks/token-update-state';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
@@ -161,8 +213,18 @@ export const tokenPluginManifest: PluginManifest = {
       options: [],
     },
     {
+      name: 'token-dissociate-state',
+      hook: new TokenDissociateStateHook(),
+      options: [],
+    },
+    {
       name: 'token-delete-state',
       hook: new TokenDeleteStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-update-state',
+      hook: new TokenUpdateStateHook(),
       options: [],
     },
   ],
@@ -963,7 +1025,7 @@ export const tokenPluginManifest: PluginManifest = {
           name: 'supply-key',
           short: 's',
           type: OptionType.REPEATABLE,
-          required: false,
+          required: true,
           description:
             'Supply key of token. Can be {accountId}:{privateKey} pair, account ID, account public key in {ed25519|ecdsa}:public:{public-key} format, account private key in {ed25519|ecdsa}:private:{private-key} format, key reference or account alias.',
         },
@@ -1166,6 +1228,47 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenAssociateOutputSchema,
         humanTemplate: TOKEN_ASSOCIATE_TEMPLATE,
+      },
+    },
+    {
+      name: 'dissociate',
+      summary: 'Dissociate a token from an account',
+      description:
+        'Remove a token association from an account. Requires a zero balance of that token. See Hedera token dissociation rules.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Account to dissociate from the token. Can be {accountId}:{privateKey pair}, key reference or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenDissociate,
+      output: {
+        schema: TokenDissociateOutputSchema,
+        humanTemplate: TOKEN_DISSOCIATE_TEMPLATE,
       },
     },
     {
@@ -1416,6 +1519,63 @@ export const tokenPluginManifest: PluginManifest = {
       },
     },
     {
+      name: 'reject-airdrop',
+      summary:
+        'Reject a token from account balance, returning it to the treasury',
+      description:
+        'Reject a token from account balance, returning it to the treasury. ' +
+        'For NFT tokens, specify serial numbers with --serial.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'owner',
+          short: 'o',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Owner account ID or alias',
+        },
+        {
+          name: 'token',
+          short: 't',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token ID to reject (e.g. 0.0.5867883)',
+        },
+        {
+          name: 'serial',
+          short: 's',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'NFT serial number(s). Required for NFT tokens. Comma-separated: 1,2,3',
+        },
+        {
+          name: 'from',
+          short: 'f',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Signing account credential. Accepts any key format. Defaults to owner account.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenRejectAirdrop,
+      output: {
+        schema: TokenRejectAirdropOutputSchema,
+        humanTemplate: TOKEN_REJECT_AIRDROP_TEMPLATE,
+      },
+    },
+    {
       name: 'delete',
       summary: 'Delete a token from the Hedera network',
       description:
@@ -1462,6 +1622,339 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenDeleteOutputSchema,
         humanTemplate: TOKEN_DELETE_TEMPLATE,
+      },
+    },
+    {
+      name: 'freeze',
+      summary: 'Freeze an account for a token',
+      description:
+        'Prevents the specified account from sending or receiving the token. Requires the token freeze key. Works for both fungible tokens (FT) and non-fungible tokens (NFT).',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Account to freeze: account-id (0.0.X), account alias, or EVM address (0x...)',
+        },
+        {
+          name: 'freeze-key',
+          short: 'f',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Freeze key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenFreeze,
+      output: {
+        schema: TokenFreezeOutputSchema,
+        humanTemplate: TOKEN_FREEZE_TEMPLATE,
+      },
+    },
+    {
+      name: 'unfreeze',
+      summary: 'Unfreeze an account for a token',
+      description:
+        'Re-enables the specified account to send and receive the token. Requires the token freeze key. Works for both fungible tokens (FT) and non-fungible tokens (NFT).',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Account to unfreeze: account-id (0.0.X), account alias, or EVM address (0x...)',
+        },
+        {
+          name: 'freeze-key',
+          short: 'f',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Freeze key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenUnfreeze,
+      output: {
+        schema: TokenUnfreezeOutputSchema,
+        humanTemplate: TOKEN_UNFREEZE_TEMPLATE,
+      },
+    },
+    {
+      name: 'grant-kyc',
+      summary: 'Grant KYC for an account on a token',
+      description:
+        'Grants KYC flag to the specified account for the token. Requires the token KYC key. Works for both fungible tokens (FT) and non-fungible tokens (NFT).',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Account to grant KYC: account-id (0.0.X), account alias, or EVM address (0x...)',
+        },
+        {
+          name: 'kyc-key',
+          short: 'y',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'KYC key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenGrantKyc,
+      output: {
+        schema: TokenGrantKycOutputSchema,
+        humanTemplate: TOKEN_GRANT_KYC_TEMPLATE,
+      },
+    },
+    {
+      name: 'revoke-kyc',
+      summary: 'Revoke KYC for an account on a token',
+      description:
+        'Revokes KYC flag from the specified account for the token. Requires the token KYC key. Works for both fungible tokens (FT) and non-fungible tokens (NFT).',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'account',
+          short: 'a',
+          type: OptionType.STRING,
+          required: true,
+          description:
+            'Account to revoke KYC: account-id (0.0.X), account alias, or EVM address (0x...)',
+        },
+        {
+          name: 'kyc-key',
+          short: 'y',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'KYC key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenRevokeKyc,
+      output: {
+        schema: TokenRevokeKycOutputSchema,
+        humanTemplate: TOKEN_REVOKE_KYC_TEMPLATE,
+      },
+    },
+    {
+      name: 'pause',
+      summary: 'Pause all operations for a token',
+      description:
+        'Prevents the token from being involved in any kind of transaction across all accounts. Requires the token pause key. If a token has no pause key, the operation will fail.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'pause-key',
+          short: 'p',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'Pause key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenPause,
+      output: {
+        schema: TokenPauseOutputSchema,
+        humanTemplate: TOKEN_PAUSE_TEMPLATE,
+      },
+    },
+    {
+      name: 'unpause',
+      summary: 'Unpause all operations for a token',
+      description:
+        'Re-enables the token to be involved in transactions across all accounts. Requires the token pause key.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'pause-key',
+          short: 'p',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'Pause key of the token. Can be {accountId}:{privateKey} pair, key in {ed25519|ecdsa}:private:{private-key} format, key reference, or account alias.',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenUnpause,
+      output: {
+        schema: TokenUnpauseOutputSchema,
+        humanTemplate: TOKEN_UNPAUSE_TEMPLATE,
+      },
+    },
+    {
+      name: 'update-metadata-nft',
+      summary: 'Update NFT metadata',
+      description:
+        'Update the metadata of one or more NFTs by serial number. Requires the token metadata key.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'scheduled', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token: either a token alias or token-id',
+        },
+        {
+          name: 'serials',
+          short: 's',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Comma-separated serial numbers to update (max 10)',
+        },
+        {
+          name: 'metadata',
+          short: 'm',
+          type: OptionType.STRING,
+          required: true,
+          description: 'New NFT metadata (string, max 100 bytes)',
+        },
+        {
+          name: 'metadata-key',
+          short: 'M',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            "Metadata key credential(s). If omitted, resolved from key manager by matching the token's on-chain metadata key.",
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenUpdateNftMetadata,
+      output: {
+        schema: TokenUpdateNftMetadataOutputSchema,
+        humanTemplate: TOKEN_UPDATE_NFT_METADATA_TEMPLATE,
       },
     },
     {
@@ -1612,6 +2105,241 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenImportOutputSchema,
         humanTemplate: TOKEN_IMPORT_TEMPLATE,
+      },
+    },
+    {
+      name: 'update',
+      summary: 'Update a token',
+      description:
+        'Update properties of an existing token. Verifies the token exists on the mirror node.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token ID or alias to update',
+        },
+        {
+          name: 'token-name',
+          short: 'b',
+          type: OptionType.STRING,
+          required: false,
+          description: 'New token name',
+        },
+        {
+          name: 'symbol',
+          short: 'Y',
+          type: OptionType.STRING,
+          required: false,
+          description: 'New token symbol',
+        },
+        {
+          name: 'treasury',
+          short: 't',
+          type: OptionType.STRING,
+          required: false,
+          description: 'New treasury account ID or alias',
+        },
+        {
+          name: 'admin-keys',
+          short: 'a',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'Current admin key credential(s) for signing. Omit to auto-resolve from key manager.',
+        },
+        {
+          name: 'admin-key-threshold',
+          short: 'A',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'How many current admin keys to use for signing (M-of-N). Only when multiple --admin-keys are set.',
+        },
+        {
+          name: 'new-admin-keys',
+          short: 'n',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New admin key(s) to replace the current admin key. Accepts any key format. Pass "null" to clear.',
+        },
+        {
+          name: 'new-admin-key-threshold',
+          short: 'K',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of new admin keys required to sign (only when multiple --new-admin-keys are set).',
+        },
+        {
+          name: 'current-treasury-key',
+          short: 'c',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Signing key for the new treasury account. Omit to auto-resolve from key manager.',
+        },
+        {
+          name: 'kyc-key',
+          short: 'y',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New KYC key(s). Pass "null" to permanently remove the KYC key.',
+        },
+        {
+          name: 'kyc-key-threshold',
+          short: 'H',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'M-of-N: number of KYC keys required to sign.',
+        },
+        {
+          name: 'freeze-key',
+          short: 'f',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New freeze key(s). Pass "null" to permanently remove the freeze key.',
+        },
+        {
+          name: 'freeze-key-threshold',
+          short: 'Z',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'M-of-N: number of freeze keys required to sign.',
+        },
+        {
+          name: 'wipe-key',
+          short: 'w',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New wipe key(s). Pass "null" to permanently remove the wipe key.',
+        },
+        {
+          name: 'wipe-key-threshold',
+          short: 'W',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'M-of-N: number of wipe keys required to sign.',
+        },
+        {
+          name: 'supply-key',
+          short: 's',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New supply key(s). Pass "null" to permanently remove the supply key.',
+        },
+        {
+          name: 'supply-key-threshold',
+          short: 'L',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'M-of-N: number of supply keys required to sign.',
+        },
+        {
+          name: 'fee-schedule-key',
+          short: 'e',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New fee schedule key(s). Pass "null" to permanently remove the fee schedule key.',
+        },
+        {
+          name: 'fee-schedule-key-threshold',
+          short: 'E',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'M-of-N: number of fee schedule keys required to sign.',
+        },
+        {
+          name: 'pause-key',
+          short: 'p',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New pause key(s). Pass "null" to permanently remove the pause key.',
+        },
+        {
+          name: 'pause-key-threshold',
+          short: 'U',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'M-of-N: number of pause keys required to sign.',
+        },
+        {
+          name: 'metadata-key',
+          short: 'D',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New metadata key(s). Pass "null" to permanently remove the metadata key.',
+        },
+        {
+          name: 'metadata-key-threshold',
+          short: 'O',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'M-of-N: number of metadata keys required to sign.',
+        },
+        {
+          name: 'memo',
+          short: 'M',
+          type: OptionType.STRING,
+          required: false,
+          description: 'New memo for the token. Pass "null" to clear.',
+        },
+        {
+          name: 'auto-renew-account',
+          short: 'r',
+          type: OptionType.STRING,
+          required: false,
+          description: 'New auto-renew account ID or alias.',
+        },
+        {
+          name: 'auto-renew-period',
+          short: 'R',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'New auto-renew period: seconds as integer (30–92 days), or with suffix s/m/h/d.',
+        },
+        {
+          name: 'expiration-time',
+          short: 'x',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'New expiration time as ISO 8601 string. Can be set without admin key when it is the only change.',
+        },
+        {
+          name: 'metadata',
+          short: 'd',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Token metadata (UTF-8 string, max 100 bytes).',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenUpdate,
+      output: {
+        schema: TokenUpdateOutputSchema,
+        humanTemplate: TOKEN_UPDATE_TEMPLATE,
       },
     },
   ],

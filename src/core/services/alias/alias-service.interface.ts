@@ -1,12 +1,4 @@
-import type { SupportedNetwork } from '@/core/types/shared.types';
-
-export enum AliasType {
-  Account = 'account',
-  Token = 'token',
-  Key = 'key',
-  Topic = 'topic',
-  Contract = 'contract',
-}
+import type { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 
 export interface AliasRecord {
   alias: string;

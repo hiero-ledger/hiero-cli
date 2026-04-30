@@ -3,14 +3,12 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import '@/core/utils/json-serialize';
 
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { KeyAlgorithm } from '@/core';
 import {
   NotFoundError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
-import { KeyManager } from '@/core/services/kms/kms-types.interface';
+import { AliasType } from '@/core/types/shared.types';
 import {
   tokenDelete,
   TokenDeleteOutputSchema,
@@ -143,21 +141,16 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
 
     test('auto-resolves admin key from KMS when not provided', async () => {
       const { api } = makeDeleteSuccessMocks();
-      (api.kms.findByPublicKey as jest.Mock).mockReturnValue({
-        keyRefId: 'kms-key-ref-id',
-        publicKey: 'admin-public-key',
-        keyManager: KeyManager.local,
-        keyAlgorithm: KeyAlgorithm.ED25519,
-        createdAt: '',
-        updatedAt: '',
-      });
-      const args = makeArgs(api, { adminKey: undefined });
+      const args = makeArgs(api, { adminKey: [] });
 
       const result = await tokenDelete(args);
 
       const output = assertOutput(result.result, TokenDeleteOutputSchema);
       expect(output.transactionId).toBeDefined();
       expect(output.deletedToken.tokenId).toBe('0.0.123456');
+      expect(api.keyResolver.resolveSigningKeys).toHaveBeenCalledWith(
+        expect.objectContaining({ explicitCredentials: [] }),
+      );
     });
   });
 
@@ -173,6 +166,11 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
       const { api } = makeDeleteSuccessMocks({
         tokenInfo: { admin_key: null },
       });
+      (api.keyResolver.resolveSigningKeys as jest.Mock).mockRejectedValue(
+        new ValidationError(
+          'Token has no admin key (immutable token cannot be deleted)',
+        ),
+      );
       const args = makeArgs(api);
 
       await expect(tokenDelete(args)).rejects.toThrow(ValidationError);
@@ -192,12 +190,16 @@ describe('tokenDelete - network delete (stateOnly=false)', () => {
 
     test('throws ValidationError when admin-key not provided and not in KMS', async () => {
       const { api } = makeDeleteSuccessMocks();
-      (api.kms.findByPublicKey as jest.Mock).mockReturnValue(undefined);
-      const args = makeArgs(api, { adminKey: undefined });
+      (api.keyResolver.resolveSigningKeys as jest.Mock).mockRejectedValue(
+        new ValidationError(
+          'Not enough admin key(s) found in key manager for this token. Provide --admin-key.',
+        ),
+      );
+      const args = makeArgs(api, { adminKey: [] });
 
       await expect(tokenDelete(args)).rejects.toThrow(ValidationError);
       await expect(tokenDelete(args)).rejects.toThrow(
-        'Not enough admin key(s) not found in key manager for this token. Provide --admin-key.',
+        'Not enough admin key(s) found in key manager for this token. Provide --admin-key.',
       );
     });
   });

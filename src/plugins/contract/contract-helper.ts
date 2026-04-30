@@ -2,7 +2,7 @@ import type { AliasService, Logger, StateService } from '@/core';
 import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { ContractData } from '@/plugins/contract/schema';
 
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 

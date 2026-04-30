@@ -3,7 +3,7 @@ import type { Command } from '@/core/commands/command.interface';
 import type { TokenListOutput } from './output';
 import type { ListTokensNormalizedParams } from './types';
 
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenListInputSchema } from './input';

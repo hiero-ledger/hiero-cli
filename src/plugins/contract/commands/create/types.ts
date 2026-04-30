@@ -1,4 +1,4 @@
-import type { ContractCreateFlow } from '@hashgraph/sdk';
+import type { ContractCreateFlow } from '@hiero-ledger/sdk';
 import type { CompilationResult } from '@/core/services/contract-compiler/types';
 import type { ContractCreateFlowResult } from '@/core/services/contract-transaction/types';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';

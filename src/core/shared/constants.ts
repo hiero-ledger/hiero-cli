@@ -1,7 +1,8 @@
-import { TokenType } from '@hashgraph/sdk';
+import { TokenType } from '@hiero-ledger/sdk';
 
 export const HBAR_DECIMALS = 8;
 export const TOKEN_BALANCE_LIMIT = 9_223_372_036_854_775_807n; // Based on TokenCreateTransactionBody from hashgraph protobufs docs max limit for token initial supply is 2^63 - 1
+export const NFT_BALANCE_PAGE_SIZE = 100;
 
 export const HASHSCAN_BASE_URL = 'https://hashscan.io/';
 

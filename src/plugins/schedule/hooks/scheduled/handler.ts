@@ -68,7 +68,7 @@ export class ScheduledHook implements Hook<
 
     if (!result.success) {
       throw new TransactionError(
-        `Failed to create account (txId: ${result.transactionId})`,
+        `Failed to create scheduled transaction (txId: ${result.transactionId})`,
         false,
       );
     }

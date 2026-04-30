@@ -18,7 +18,7 @@ const mockTransferTransaction = {
   setTransactionMemo: jest.fn().mockReturnThis(),
 };
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   TransferTransaction: jest.fn(() => mockTransferTransaction),
   AccountId: {
     fromString: jest.fn(),
@@ -33,7 +33,7 @@ jest.mock('@hashgraph/sdk', () => ({
   },
 }));
 
-import { AccountId, Hbar, HbarUnit } from '@hashgraph/sdk';
+import { AccountId, Hbar, HbarUnit } from '@hiero-ledger/sdk';
 
 describe('HbarServiceImpl', () => {
   let hbarService: HbarServiceImpl;
@@ -179,7 +179,7 @@ describe('HbarServiceImpl', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(ValidationError);
         if (error instanceof ValidationError) {
-          expect(error.message).toBe('Invalid transfer parameters');
+          expect(error.message).toBe('Invalid account ID format');
         }
       }
     });
@@ -206,7 +206,7 @@ describe('HbarServiceImpl', () => {
       }
     });
 
-    it('should throw ValidationError with context when transfer fails', async () => {
+    it('should propagate ValidationError from SDK when transfer params are invalid', async () => {
       expect.assertions(2);
 
       (AccountId.fromString as jest.Mock).mockImplementationOnce(() => {
@@ -224,11 +224,7 @@ describe('HbarServiceImpl', () => {
       } catch (error) {
         expect(error).toBeInstanceOf(ValidationError);
         if (error instanceof ValidationError) {
-          expect(error.context).toEqual({
-            from: 'bad-format',
-            to: ACCOUNT_ID_TO_1,
-            amount: '100000000',
-          });
+          expect(error.message).toBe('Invalid format');
         }
       }
     });

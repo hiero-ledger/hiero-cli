@@ -26,6 +26,21 @@ export function saveAssociationToState(
   }
 }
 
+export function removeAssociationFromState(
+  tokenState: ZustandTokenStateHelper,
+  tokenId: string,
+  accountId: string,
+  network: SupportedNetwork,
+  logger: Logger,
+): void {
+  const tokenKey = composeKey(network, tokenId);
+  const tokenData = tokenState.getToken(tokenKey);
+  if (tokenData) {
+    tokenState.removeTokenAssociation(tokenKey, accountId);
+    logger.info(`   Association removed from token state`);
+  }
+}
+
 export async function processTokenAssociations(
   tokenId: string,
   associations: Credential[],

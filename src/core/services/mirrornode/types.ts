@@ -96,7 +96,7 @@ export interface TokenInfo {
   deleted?: boolean | null;
   freeze_default?: boolean;
   auto_renew_account?: string | null;
-  auto_renew_period?: number;
+  auto_renew_period?: number | null;
   expiry_timestamp?: number | null;
   pause_status: string;
   memo: string;
@@ -262,6 +262,19 @@ export interface ExchangeRateResponse {
     hbar_equivalent: number;
   };
   timestamp: string;
+}
+
+export interface AccountNftInfo {
+  token_id: string;
+  serial_number: number;
+  account_id: string | null;
+  deleted: boolean;
+  metadata?: string;
+}
+
+export interface AccountNftsResponse {
+  nfts: AccountNftInfo[];
+  links?: { next?: string | null };
 }
 
 // NFT Info

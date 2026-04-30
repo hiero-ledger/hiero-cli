@@ -13,15 +13,14 @@ import type {
   ContractCreateSignTransactionResult,
 } from './types';
 
-import { ContractId } from '@hashgraph/sdk';
+import { ContractId } from '@hiero-ledger/sdk';
 import path from 'path';
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
-import { SupportedNetwork } from '@/core/types/shared.types';
+import { AliasType, SupportedNetwork } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { processBalanceInput } from '@/core/utils/process-balance-input';

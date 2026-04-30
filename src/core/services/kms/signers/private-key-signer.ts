@@ -1,7 +1,7 @@
 import type { KmsCredentialSecret } from '@/core/services/kms/kms-types.interface';
 import type { Signer } from './signer.interface';
 
-import { PrivateKey } from '@hashgraph/sdk';
+import { PrivateKey } from '@hiero-ledger/sdk';
 
 import { ConfigurationError } from '@/core/errors';
 import { KeyAlgorithm } from '@/core/shared/constants';

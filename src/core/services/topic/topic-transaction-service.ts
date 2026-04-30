@@ -21,7 +21,7 @@ import {
   TopicId,
   TopicMessageSubmitTransaction,
   TopicUpdateTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 import { ValidationError } from '@/core/errors';
 

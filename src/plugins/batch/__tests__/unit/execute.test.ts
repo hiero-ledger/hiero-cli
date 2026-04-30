@@ -22,8 +22,8 @@ jest.mock('../../zustand-state-helper', () => ({
   ZustandBatchStateHelper: jest.fn(),
 }));
 
-jest.mock('@hashgraph/sdk', () => {
-  const actual = jest.requireActual('@hashgraph/sdk');
+jest.mock('@hiero-ledger/sdk', () => {
+  const actual = jest.requireActual('@hiero-ledger/sdk');
   return {
     ...actual,
     Transaction: {

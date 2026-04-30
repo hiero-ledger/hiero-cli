@@ -7,9 +7,12 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { TransactionResult } from '@/core/types/shared.types';
 
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { HederaTokenType } from '@/core/shared/constants';
-import { SupplyType, SupportedNetwork } from '@/core/types/shared.types';
+import {
+  AliasType,
+  SupplyType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
 import { CustomFeeType, FixedFeeUnitType } from '@/core/types/token.types';
 
 /**
@@ -889,13 +892,13 @@ export const makeMintFtCommandArgs = (params: {
 export const makeBurnFtCommandArgs = (params: {
   api: CoreApi;
   logger: Logger;
-  args?: Record<string, string | number | boolean | undefined>;
+  args?: Record<string, string | number | boolean | string[] | undefined>;
 }) => {
   return {
     args: {
       token: '0.0.123456',
       amount: '100',
-      supplyKey: 'test-supply-key',
+      supplyKey: [],
       ...params.args,
     },
     api: params.api,
@@ -911,13 +914,13 @@ export const makeBurnFtCommandArgs = (params: {
 export const makeBurnNftCommandArgs = (params: {
   api: CoreApi;
   logger: Logger;
-  args?: Record<string, string | number | boolean | undefined>;
+  args?: Record<string, string | number | boolean | string[] | undefined>;
 }) => {
   return {
     args: {
       token: '0.0.123456',
       serials: '1,2,3',
-      supplyKey: 'test-supply-key',
+      supplyKey: [],
       ...params.args,
     },
     api: params.api,
@@ -948,6 +951,29 @@ export const makeTokenMintNftCommandArgs = (params: {
       token: '0.0.123456',
       metadata: 'Test NFT metadata',
       supplyKey: ['test-supply-key'],
+      ...params.args,
+    },
+    api: params.api,
+    state: params.api.state,
+    config: params.api.config,
+    logger: params.logger,
+  };
+};
+
+/**
+ * Factory function to create CommandHandlerArgs for update-metadata-nft tests
+ */
+export const makeUpdateNftMetadataCommandArgs = (params: {
+  api: CoreApi;
+  logger: Logger;
+  args?: Record<string, string | number | boolean | string[] | undefined>;
+}) => {
+  return {
+    args: {
+      token: '0.0.123456',
+      serials: '1,2',
+      metadata: 'Updated NFT metadata',
+      metadataKey: [],
       ...params.args,
     },
     api: params.api,

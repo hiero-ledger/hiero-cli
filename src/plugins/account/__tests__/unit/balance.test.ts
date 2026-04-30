@@ -1,6 +1,7 @@
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
+import type { AccountNftInfo } from '@/core/services/mirrornode/types';
 
 import '@/core/utils/json-serialize';
 
@@ -12,7 +13,8 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { InternalError, NotFoundError, StateError } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
+import { AliasType } from '@/core/types/shared.types';
 import { AccountBalanceOutputSchema } from '@/plugins/account/commands/balance';
 import { accountBalance } from '@/plugins/account/commands/balance/handler';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';
@@ -399,6 +401,241 @@ describe('account plugin - balance command (ADR-003)', () => {
       balance: 100000000n,
       balanceDisplay: '1',
     });
+  });
+
+  test('returns NFT balances grouped by collection', async () => {
+    const logger = makeLogger();
+    const nfts: AccountNftInfo[] = [
+      {
+        token_id: '0.0.9000',
+        serial_number: 1,
+        account_id: '0.0.1234',
+        deleted: false,
+      },
+      {
+        token_id: '0.0.9000',
+        serial_number: 2,
+        account_id: '0.0.1234',
+        deleted: false,
+      },
+      {
+        token_id: '0.0.9001',
+        serial_number: 5,
+        account_id: '0.0.1234',
+        deleted: false,
+      },
+    ];
+
+    const mirrorMock = makeMirrorMock({ hbarBalance: 1000n, nfts });
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      logger,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'acc-nft',
+          type: AliasType.Account,
+          network: 'testnet',
+          entityId: '0.0.1234',
+        }),
+      } as unknown as AliasService,
+    };
+    const args = makeArgs(api, logger, { account: 'acc-nft' });
+
+    const result = await accountBalance(args);
+    const output = assertOutput(result.result, AccountBalanceOutputSchema);
+
+    expect(output.nftBalances).toBeDefined();
+    expect(output.nftBalances!.totalCount).toBe(3);
+    expect(output.nftBalances!.truncated).toBe(false);
+    expect(output.nftBalances!.collections).toHaveLength(2);
+
+    const col9000 = output.nftBalances!.collections.find(
+      (c) => c.tokenId === '0.0.9000',
+    );
+    expect(col9000).toBeDefined();
+    expect(col9000!.serialNumbers).toEqual(expect.arrayContaining([1, 2]));
+    expect(col9000!.count).toBe(2);
+
+    const col9001 = output.nftBalances!.collections.find(
+      (c) => c.tokenId === '0.0.9001',
+    );
+    expect(col9001).toBeDefined();
+    expect(col9001!.serialNumbers).toEqual([5]);
+    expect(col9001!.count).toBe(1);
+  });
+
+  test('filters NFTs from fungible token balances', async () => {
+    const logger = makeLogger();
+    const mirrorMock = makeMirrorMock({
+      hbarBalance: 1000n,
+      tokenBalances: [
+        { token_id: '0.0.3003', balance: 100 },
+        { token_id: '0.0.9000', balance: 2 },
+      ],
+      tokenInfo: {
+        '0.0.3003': { name: 'Fungible', symbol: 'FNG', decimals: '6' },
+        '0.0.9000': {
+          name: 'NFT Collection',
+          symbol: 'NFT',
+          decimals: '0',
+          type: MirrorNodeTokenType.NON_FUNGIBLE_UNIQUE,
+        },
+      },
+    });
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      logger,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'acc-mixed',
+          type: AliasType.Account,
+          network: 'testnet',
+          entityId: '0.0.5005',
+        }),
+      } as unknown as AliasService,
+    };
+    const args = makeArgs(api, logger, { account: 'acc-mixed' });
+
+    const result = await accountBalance(args);
+    const output = assertOutput(result.result, AccountBalanceOutputSchema);
+
+    expect(output.tokenBalances).toHaveLength(1);
+    expect(output.tokenBalances![0].tokenId).toBe('0.0.3003');
+  });
+
+  test('filters NFTs to specific collection when --token flag is set to NFT collection', async () => {
+    const logger = makeLogger();
+    const nfts: AccountNftInfo[] = [
+      {
+        token_id: '0.0.9000',
+        serial_number: 1,
+        account_id: '0.0.1234',
+        deleted: false,
+      },
+      {
+        token_id: '0.0.9001',
+        serial_number: 5,
+        account_id: '0.0.1234',
+        deleted: false,
+      },
+    ];
+
+    const mirrorMock = makeMirrorMock({ hbarBalance: 1000n, nfts });
+    mirrorMock.getAccountNfts = jest.fn().mockResolvedValue({
+      nfts,
+      links: { next: null },
+    });
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      logger,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'acc-nft',
+          type: AliasType.Account,
+          network: 'testnet',
+          entityId: '0.0.1234',
+        }),
+      } as unknown as AliasService,
+    };
+    const args = makeArgs(api, logger, {
+      account: 'acc-nft',
+      token: '0.0.9000',
+    });
+
+    const result = await accountBalance(args);
+    const output = assertOutput(result.result, AccountBalanceOutputSchema);
+
+    expect(output.nftBalances).toBeDefined();
+    expect(output.nftBalances!.collections).toHaveLength(1);
+    expect(output.nftBalances!.collections[0].tokenId).toBe('0.0.9000');
+  });
+
+  test('returns undefined nftBalances when account has no NFTs', async () => {
+    const logger = makeLogger();
+    const mirrorMock = makeMirrorMock({ hbarBalance: 100n, nfts: [] });
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      logger,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'acc-empty',
+          type: AliasType.Account,
+          network: 'testnet',
+          entityId: '0.0.1001',
+        }),
+      } as unknown as AliasService,
+    };
+    const args = makeArgs(api, logger, { account: 'acc-empty' });
+
+    const result = await accountBalance(args);
+    const output = assertOutput(result.result, AccountBalanceOutputSchema);
+
+    expect(output.nftBalances).toBeUndefined();
+  });
+
+  test('nftBalances is undefined when --hbarOnly flag is set', async () => {
+    const logger = makeLogger();
+    const mirrorMock = makeMirrorMock({ hbarBalance: 500n });
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      logger,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'acc-hbar',
+          type: AliasType.Account,
+          network: 'testnet',
+          entityId: '0.0.1001',
+        }),
+      } as unknown as AliasService,
+    };
+    const args = makeArgs(api, logger, { account: 'acc-hbar', hbarOnly: true });
+
+    const result = await accountBalance(args);
+    const output = assertOutput(result.result, AccountBalanceOutputSchema);
+
+    expect(output.nftBalances).toBeUndefined();
+    expect(mirrorMock.getAccountNfts).not.toHaveBeenCalled();
+  });
+
+  test('marks truncated as true when mirror node has more NFTs', async () => {
+    const logger = makeLogger();
+    const nfts: AccountNftInfo[] = [
+      {
+        token_id: '0.0.9000',
+        serial_number: 1,
+        account_id: '0.0.1234',
+        deleted: false,
+      },
+    ];
+    const mirrorMock = makeMirrorMock({ hbarBalance: 100n });
+    mirrorMock.getAccountNfts = jest.fn().mockResolvedValue({
+      nfts,
+      links: { next: '/api/v1/accounts/0.0.1234/nfts?limit=100&cursor=next' },
+    });
+
+    const api: Partial<CoreApi> = {
+      mirror: mirrorMock as HederaMirrornodeService,
+      logger,
+      alias: {
+        resolve: jest.fn().mockReturnValue({
+          alias: 'acc-many',
+          type: AliasType.Account,
+          network: 'testnet',
+          entityId: '0.0.1234',
+        }),
+      } as unknown as AliasService,
+    };
+    const args = makeArgs(api, logger, { account: 'acc-many' });
+
+    const result = await accountBalance(args);
+    const output = assertOutput(result.result, AccountBalanceOutputSchema);
+
+    expect(output.nftBalances!.truncated).toBe(true);
   });
 
   test('returns raw units when raw flag is set', async () => {

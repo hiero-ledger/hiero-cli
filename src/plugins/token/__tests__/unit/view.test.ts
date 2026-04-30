@@ -7,9 +7,9 @@ import {
   MOCK_ACCOUNT_ID,
 } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { DAY_IN_SECONDS } from '@/core/shared/constants';
+import { AliasType } from '@/core/types/shared.types';
 import {
   tokenView,
   TokenViewOutputSchema,

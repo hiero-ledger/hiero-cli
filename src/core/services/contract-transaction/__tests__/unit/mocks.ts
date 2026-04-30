@@ -22,6 +22,8 @@ export const createMockContractExecuteTransaction = () => ({
   setContractId: jest.fn().mockReturnThis(),
   setGas: jest.fn().mockReturnThis(),
   setFunction: jest.fn().mockReturnThis(),
+  setFunctionParameters: jest.fn().mockReturnThis(),
+  setPayableAmount: jest.fn().mockReturnThis(),
 });
 
 export const createMockContractDeleteTransaction = () => ({

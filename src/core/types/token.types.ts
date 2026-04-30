@@ -3,7 +3,7 @@
  * Type definitions for token-related operations
  */
 
-import type { Key } from '@hashgraph/sdk';
+import type { Key } from '@hiero-ledger/sdk';
 import type { HederaTokenType } from '@/core/shared/constants';
 import type { SupplyType } from '@/core/types/shared.types';
 
@@ -89,6 +89,14 @@ export interface TokenAssociationParams {
 }
 
 /**
+ * Parameters for token dissociation transactions
+ */
+export interface TokenDissociationParams {
+  tokenId: string;
+  accountId: string;
+}
+
+/**
  * Parameters for token mint transactions (FT or NFT)
  * Either amount (for FT) or metadata (for NFT) must be provided
  */
@@ -112,6 +120,26 @@ export interface TokenDeleteParams {
   tokenId: string;
 }
 
+export interface TokenFreezeParams {
+  tokenId: string;
+  accountId: string;
+}
+
+export interface TokenUnfreezeParams {
+  tokenId: string;
+  accountId: string;
+}
+
+export interface TokenGrantKycParams {
+  tokenId: string;
+  accountId: string;
+}
+
+export interface TokenRevokeKycParams {
+  tokenId: string;
+  accountId: string;
+}
+
 export interface TokenBurnFtParams {
   tokenId: string;
   amount: bigint;
@@ -119,6 +147,24 @@ export interface TokenBurnFtParams {
 
 export interface TokenBurnNftParams {
   tokenId: string;
+  serialNumbers: number[];
+}
+
+export interface TokenUpdateNftMetadataParams {
+  tokenId: string;
+  serialNumbers: number[];
+  metadata: Uint8Array;
+}
+
+export interface TokenWipeFtParams {
+  tokenId: string;
+  accountId: string;
+  amount: bigint;
+}
+
+export interface TokenWipeNftParams {
+  tokenId: string;
+  accountId: string;
   serialNumbers: number[];
 }
 
@@ -210,4 +256,39 @@ export interface TokenCancelAirdropParams {
   receiverAccountId: string;
   tokenId: string;
   serial?: number;
+}
+
+export enum AirdropTokenType {
+  FUNGIBLE = 'FUNGIBLE',
+  NFT = 'NFT',
+}
+
+export interface RejectAirdropItem {
+  tokenId: string;
+  serialNumber?: number; // undefined for FT
+}
+
+export interface TokenRejectAirdropParams {
+  ownerAccountId: string;
+  items: RejectAirdropItem[];
+}
+
+export interface TokenUpdateParams {
+  tokenId: string;
+  name?: string;
+  symbol?: string;
+  treasuryId?: string;
+  adminKey?: Key | null;
+  kycKey?: Key | null;
+  freezeKey?: Key | null;
+  wipeKey?: Key | null;
+  supplyKey?: Key | null;
+  feeScheduleKey?: Key | null;
+  pauseKey?: Key | null;
+  metadataKey?: Key | null;
+  memo?: string | null;
+  autoRenewAccountId?: string;
+  autoRenewPeriodSeconds?: number;
+  expirationTime?: Date;
+  metadata?: Uint8Array;
 }

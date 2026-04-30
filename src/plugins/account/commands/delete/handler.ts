@@ -21,8 +21,8 @@ import {
   EntityIdSchema,
   KeySchema,
 } from '@/core/schemas';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { AliasType } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import { AccountHelper } from '@/plugins/account/account-helper';
 import { ZustandAccountStateHelper } from '@/plugins/account/zustand-state-helper';

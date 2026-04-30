@@ -25,7 +25,10 @@ import type {
 } from '@/core/services/kms/kms-types.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
-import type { ContractInfo } from '@/core/services/mirrornode/types';
+import type {
+  AccountNftInfo,
+  ContractInfo,
+} from '@/core/services/mirrornode/types';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { OutputService } from '@/core/services/output/output-service.interface';
 import type { OutputHandlerOptions } from '@/core/services/output/types';
@@ -40,14 +43,15 @@ import type { TopicData } from '@/plugins/topic/schema';
 
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import { StateError, ValidationError } from '@/core';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { KeyResolverServiceImpl } from '@/core/services/key-resolver/key-resolver-service';
 import {
   CredentialType,
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
+import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import {
+  AliasType,
   OrchestratorSource,
   SupportedNetwork,
 } from '@/core/types/shared.types';
@@ -344,6 +348,7 @@ export const createMirrorNodeMock =
     getAccountOrThrow: jest.fn(),
     getAccount: jest.fn(),
     getAccountTokenBalances: jest.fn(),
+    getAccountNfts: jest.fn(),
     getAccounts: jest.fn(),
     getTopicMessage: jest.fn(),
     getTopicMessages: jest.fn(),
@@ -394,10 +399,20 @@ export const makeMirrorMock = (
     getAccountImpl?: jest.Mock;
     tokenInfo?: Record<
       string,
-      { name: string; symbol: string; decimals: string }
+      {
+        name: string;
+        symbol: string;
+        decimals: string;
+        type?: MirrorNodeTokenType;
+      }
     >;
+    nfts?: AccountNftInfo[];
   } = {},
 ): Partial<HederaMirrornodeService> => ({
+  getAccountNfts: jest.fn().mockResolvedValue({
+    nfts: options.nfts ?? [],
+    links: { next: null },
+  }),
   getAccountTokenBalances: options.tokenError
     ? jest.fn().mockRejectedValue(options.tokenError)
     : jest.fn().mockResolvedValue({ tokens: options.tokenBalances ?? [] }),
@@ -432,6 +447,7 @@ export const makeMirrorMock = (
     if (options.tokenInfo && options.tokenInfo[tokenId]) {
       return Promise.resolve({
         token_id: tokenId,
+        type: MirrorNodeTokenType.FUNGIBLE_COMMON,
         ...options.tokenInfo[tokenId],
         total_supply: '1000000',
         max_supply: '1000000',
@@ -448,6 +464,7 @@ export const makeMirrorMock = (
       name: `Token ${tokenId}`,
       symbol: 'TKN',
       decimals: '8',
+      type: MirrorNodeTokenType.FUNGIBLE_COMMON,
       total_supply: '1000000',
       max_supply: '1000000',
       treasury_account_id: '0.0.1234',
@@ -465,6 +482,7 @@ export const makeMirrorMock = (
  */
 const makeHbarMock = (): jest.Mocked<HbarService> => ({
   transferTinybar: jest.fn(),
+  createHbarAllowanceTransaction: jest.fn(),
 });
 
 /**
@@ -581,6 +599,7 @@ export const makeArgs = (
       getAccountOrThrow: jest.fn(),
       getAccount: jest.fn(),
       getAccountTokenBalances: jest.fn(),
+      getAccountNfts: jest.fn(),
       getAccounts: jest.fn(),
       getTopicMessage: jest.fn(),
       getTopicMessages: jest.fn(),
@@ -742,6 +761,26 @@ export const makeKeyResolverMock = (
 
   const kms = options.kms ?? makeKmsMock();
 
+  const resolveSigningKey = jest
+    .fn()
+    .mockImplementation((credential, keyManager, fallback, labels) => {
+      if (!credential && fallback && options.network)
+        return Promise.resolve(operatorFallback());
+      const resolved = resolveCore(credential, keyManager, labels || []);
+      if (!resolved.keyRefId || !resolved.publicKey) {
+        throw new StateError(
+          'Mock: resolved key missing keyRefId or publicKey',
+        );
+      }
+      if (options.kms && !options.kms.hasPrivateKey(resolved.keyRefId)) {
+        throw new StateError('Mock: no private key available');
+      }
+      return Promise.resolve({
+        keyRefId: resolved.keyRefId,
+        publicKey: resolved.publicKey,
+      });
+    });
+
   return {
     resolveAccountCredentials: jest
       .fn()
@@ -805,25 +844,37 @@ export const makeKeyResolverMock = (
         return Promise.resolve(resolved as Destination);
       }),
 
-    resolveSigningKey: jest
-      .fn()
-      .mockImplementation((credential, keyManager, fallback, labels) => {
-        if (!credential && fallback && options.network)
-          return Promise.resolve(operatorFallback());
-        const resolved = resolveCore(credential, keyManager, labels || []);
-        if (!resolved.keyRefId || !resolved.publicKey) {
-          throw new StateError(
-            'Mock: resolved key missing keyRefId or publicKey',
-          );
-        }
-        if (options.kms && !options.kms.hasPrivateKey(resolved.keyRefId)) {
-          throw new StateError('Mock: no private key available');
-        }
-        return Promise.resolve({
-          keyRefId: resolved.keyRefId,
-          publicKey: resolved.publicKey,
-        });
-      }),
+    resolveSigningKey,
+
+    resolveSigningKeys: jest.fn().mockImplementation((params) =>
+      KeyResolverServiceImpl.prototype.resolveSigningKeys.call(
+        Object.assign(Object.create(KeyResolverServiceImpl.prototype), {
+          resolveSigningKey,
+          kms,
+        }) as KeyResolverServiceImpl,
+        params,
+      ),
+    ),
+
+    resolveExplicitSigningKeys: jest.fn().mockImplementation((params) =>
+      KeyResolverServiceImpl.prototype.resolveExplicitSigningKeys.call(
+        Object.assign(Object.create(KeyResolverServiceImpl.prototype), {
+          resolveSigningKey,
+          kms,
+        }) as KeyResolverServiceImpl,
+        params,
+      ),
+    ),
+
+    resolveMirrorNodeSigningKeys: jest.fn().mockImplementation((params) =>
+      KeyResolverServiceImpl.prototype.resolveMirrorNodeSigningKeys.call(
+        Object.assign(Object.create(KeyResolverServiceImpl.prototype), {
+          resolveSigningKey,
+          kms,
+        }) as KeyResolverServiceImpl,
+        params,
+      ),
+    ),
 
     resolvedPublicKeysForStoredKeyRefs: jest
       .fn()

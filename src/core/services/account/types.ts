@@ -2,7 +2,7 @@ import type {
   AccountCreateTransaction,
   AccountDeleteTransaction,
   AccountUpdateTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 export interface UpdateAccountParams {
   accountId: string;

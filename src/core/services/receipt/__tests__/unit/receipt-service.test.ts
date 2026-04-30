@@ -1,4 +1,4 @@
-import { Status } from '@hashgraph/sdk';
+import { Status } from '@hiero-ledger/sdk';
 
 import {
   createMockClient,
@@ -24,8 +24,8 @@ jest.mock('@/core/utils/client-init', () => ({
   createClient: (...args: unknown[]) => mockCreateClient(...args),
 }));
 
-jest.mock('@hashgraph/sdk', () => {
-  const actual = jest.requireActual('@hashgraph/sdk');
+jest.mock('@hiero-ledger/sdk', () => {
+  const actual = jest.requireActual('@hiero-ledger/sdk');
   return {
     ...actual,
     TransactionId: {

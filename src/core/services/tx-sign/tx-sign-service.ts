@@ -1,13 +1,13 @@
 import type {
   ContractCreateFlow,
   Transaction as HederaTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { TxSignService } from './tx-sign-service.interface';
 
-import { AccountId, TransactionId } from '@hashgraph/sdk';
+import { AccountId, TransactionId } from '@hiero-ledger/sdk';
 
 import { StateError } from '@/core/errors';
 
