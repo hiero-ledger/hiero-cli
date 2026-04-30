@@ -4,7 +4,7 @@ Transfer HBAR between Hedera accounts.
 
 ---
 
-### `hcli hbar transfer` [batchify]
+### `hcli hbar transfer` [batchify] [scheduled]
 
 Transfer HBAR from one account to another.
 
@@ -16,6 +16,7 @@ Transfer HBAR from one account to another.
 | `--memo`        | `-m`  | string | no       | —              | Transaction memo                                                                                                              |
 | `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                     |
 | `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                                     |
+| `--scheduled`   | `-X`  | string | no       | —              | Wrap as a scheduled transaction. Value is the local schedule record name (see `references/schedule.md`)                       |
 
 **Example:**
 
@@ -23,13 +24,14 @@ Transfer HBAR from one account to another.
 hcli hbar transfer --amount 5 --to 0.0.67890
 hcli hbar transfer --amount 1000t --to alice --from 0.0.12345:302e... --memo "payment"
 hcli hbar transfer --amount 5 --to alice --batch myBatch
+hcli hbar transfer --amount 5 --to alice --scheduled mySchedule
 ```
 
 **Output:** `{ transactionId, from, to, amount, memo? }`
 
 ---
 
-### `hcli hbar allowance` [batchify]
+### `hcli hbar allowance` [batchify] [scheduled]
 
 Approve a spender allowance for HBAR on behalf of the owner.
 
@@ -40,6 +42,7 @@ Approve a spender allowance for HBAR on behalf of the owner.
 | `--owner`       | `-o`  | string | no       | operator       | Owner account. Defaults to network operator                                           |
 | `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                             |
 | `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                             |
+| `--scheduled`   | `-X`  | string | no       | —              | Wrap as a scheduled transaction. Value is the local schedule record name              |
 
 **Example:**
 
@@ -52,16 +55,17 @@ hcli hbar allowance --amount 1000t --spender 0.0.67890 --owner alice
 
 ---
 
-### `hcli hbar allowance-revoke` [batchify]
+### `hcli hbar allowance-revoke` [batchify] [scheduled]
 
 Revoke an existing HBAR spender allowance (sets allowance to zero).
 
-| Option          | Short | Type   | Required | Default        | Description                                               |
-| --------------- | ----- | ------ | -------- | -------------- | --------------------------------------------------------- |
-| `--spender`     | `-s`  | string | **yes**  | —              | Spender account: alias, account ID, or EVM address        |
-| `--owner`       | `-o`  | string | no       | operator       | Owner account. Defaults to network operator               |
-| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                 |
-| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately |
+| Option          | Short | Type   | Required | Default        | Description                                                              |
+| --------------- | ----- | ------ | -------- | -------------- | ------------------------------------------------------------------------ |
+| `--spender`     | `-s`  | string | **yes**  | —              | Spender account: alias, account ID, or EVM address                       |
+| `--owner`       | `-o`  | string | no       | operator       | Owner account. Defaults to network operator                              |
+| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                |
+| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                |
+| `--scheduled`   | `-X`  | string | no       | —              | Wrap as a scheduled transaction. Value is the local schedule record name |
 
 **Example:**
 

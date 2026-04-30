@@ -1,10 +1,10 @@
 # account plugin
 
-Manage Hedera accounts: create, import, view balances, list, and delete.
+Manage Hedera accounts: create, import, view balances, list, view, update, delete, and clear.
 
 ---
 
-### `hcli account create` [batchify]
+### `hcli account create` [batchify] [scheduled]
 
 Create a new Hedera account with specified balance and settings.
 
@@ -17,12 +17,14 @@ Create a new Hedera account with specified balance and settings.
 | `--key-type`          | `-t`  | string | no       | `ecdsa`        | Key type: `ecdsa` or `ed25519`. Mutually exclusive with `--key`                                           |
 | `--key`               | `-K`  | string | no       | —              | Existing key (private/public key, key reference `kr_xxx`, or alias). Mutually exclusive with `--key-type` |
 | `--batch`             | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                 |
+| `--scheduled`         | `-X`  | string | no       | —              | Wrap as a scheduled transaction. Value is the local schedule record name                                  |
 
 **Example:**
 
 ```
 hcli account create --balance 10 --name myAccount --key-type ecdsa
 hcli account create --balance 10 --batch myBatch
+hcli account create --balance 10 --scheduled mySchedule
 ```
 
 **Output:** `{ accountId, publicKey, privateKey, keyRef, name, balance }`
@@ -152,31 +154,33 @@ hcli account clear --confirm
 
 ---
 
-### `hcli account update` [batchify]
+### `hcli account update` [batchify] [scheduled]
 
 Update an existing Hedera account's properties on-chain.
 
-| Option                          | Short | Type    | Required | Default        | Description                                                                                        |
-| ------------------------------- | ----- | ------- | -------- | -------------- | -------------------------------------------------------------------------------------------------- |
-| `--account`                     | `-a`  | string  | **yes**  | —              | Account ID or alias to update                                                                      |
-| `--key`                         | `-K`  | string  | no       | —              | New key for the account (private/public key, key reference, or alias). Requires private key in KMS |
-| `--key-manager`                 | `-k`  | string  | no       | config default | Key manager: `local` or `local_encrypted`                                                          |
-| `--memo`                        | `-m`  | string  | no       | —              | Account memo (max 100 chars). Set to `"null"` to clear                                             |
-| `--max-auto-associations`       |       | number  | no       | —              | Max automatic token associations (`-1` = unlimited, `0` = disable)                                 |
-| `--staked-account-id`           |       | string  | no       | —              | Account ID to stake to. Set to `"null"` to clear                                                   |
-| `--staked-node-id`              |       | number  | no       | —              | Node ID to stake to. Set to `"null"` to clear                                                      |
-| `--decline-staking-reward`      |       | boolean | no       | —              | Decline staking rewards                                                                            |
-| `--auto-renew-period`           |       | number  | no       | —              | Auto-renew period in seconds                                                                       |
-| `--receiver-signature-required` |       | boolean | no       | —              | Require receiver signature for incoming transfers                                                  |
-| `--batch`                       | `-B`  | string  | no       | —              | Queue into a named batch instead of executing immediately                                          |
+| Option                          | Short | Type   | Required | Default        | Description                                                                                        |
+| ------------------------------- | ----- | ------ | -------- | -------------- | -------------------------------------------------------------------------------------------------- |
+| `--account`                     | `-a`  | string | **yes**  | —              | Account ID or alias to update                                                                      |
+| `--key`                         | `-K`  | string | no       | —              | New key for the account (private/public key, key reference, or alias). Requires private key in KMS |
+| `--key-manager`                 | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                          |
+| `--memo`                        | `-m`  | string | no       | —              | Account memo (max 100 chars). Set to `"null"` to clear                                             |
+| `--max-auto-associations`       |       | number | no       | —              | Max automatic token associations (`-1` = unlimited, `0` = disable)                                 |
+| `--staked-account-id`           |       | string | no       | —              | Account ID to stake to. Set to `"null"` to clear                                                   |
+| `--staked-node-id`              |       | number | no       | —              | Node ID to stake to. Set to `"null"` to clear                                                      |
+| `--decline-staking-reward`      |       | flag   | no       | —              | Decline staking rewards (presence-only flag, no value)                                             |
+| `--auto-renew-period`           |       | number | no       | —              | Auto-renew period in seconds                                                                       |
+| `--receiver-signature-required` |       | flag   | no       | —              | Require receiver signature for incoming transfers (presence-only flag, no value)                   |
+| `--batch`                       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                          |
+| `--scheduled`                   | `-X`  | string | no       | —              | Wrap as a scheduled transaction. Value is the local schedule record name                           |
 
 **Example:**
 
 ```
 hcli account update --account alice --memo "updated memo"
 hcli account update --account 0.0.123 --max-auto-associations 10
-hcli account update --account alice --staked-node-id 3 --decline-staking-reward false
+hcli account update --account alice --staked-node-id 3 --decline-staking-reward
 hcli account update --account alice --memo "updated" --batch myBatch
+hcli account update --account alice --memo "updated" --scheduled mySchedule
 ```
 
 **Output:** `{ accountId, network, transactionId, updatedFields[] }`

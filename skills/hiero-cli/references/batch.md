@@ -15,11 +15,11 @@ Create and execute batches of Hedera transactions atomically. Commands that supp
 
 Create a new named batch with a signing key.
 
-| Option          | Short | Type   | Required | Default        | Description                                                                                                     |
-| --------------- | ----- | ------ | -------- | -------------- | --------------------------------------------------------------------------------------------------------------- |
-| `--name`        | `-n`  | string | **yes**  | —              | Name/alias for the batch                                                                                        |
-| `--key`         | `-k`  | string | **yes**  | —              | Signing key: `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference `kr_xxx`, or account alias |
-| `--key-manager` | `-m`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                       |
+| Option          | Short | Type   | Required | Default        | Description                                                                                                                                        |
+| --------------- | ----- | ------ | -------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--name`        | `-n`  | string | **yes**  | —              | Name/alias for the batch                                                                                                                           |
+| `--key`         | `-k`  | string | no       | operator       | Signing key: `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference `kr_xxx`, or account alias. Defaults to operator when omitted |
+| `--key-manager` | `-m`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                          |
 
 **Example:**
 
@@ -88,7 +88,7 @@ hcli batch delete --name mintBatch --order 2
 
 ## Adding transactions to a batch
 
-Use the `--batch <name>` flag on any batchify-compatible command:
+Use the `--batch <name>` (short `-B`) flag on any batchify-compatible command:
 
 ```
 # Queue a token mint (does NOT execute immediately)

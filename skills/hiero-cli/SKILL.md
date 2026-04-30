@@ -20,9 +20,9 @@ hcli <plugin> <command> [options]
 
 | Flag        | Short | Default  | Description                              |
 | ----------- | ----- | -------- | ---------------------------------------- |
-| `--format`  |       | `text`   | Output format: `json` or `text`          |
-| `--network` |       | active   | Override active network for this command |
-| `--payer`   |       | operator | Override payer account for this command  |
+| `--format`  |       | `human`  | Output format: `human` or `json`         |
+| `--network` | `-N`  | active   | Override active network for this command |
+| `--payer`   | `-P`  | operator | Override payer account for this command  |
 | `--confirm` |       | `false`  | Skip all confirmation prompts            |
 
 ## Prerequisites
@@ -46,15 +46,19 @@ Keys and signers accept multiple formats:
 
 State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namespace:
 
-| Plugin     | File                                 |
-|------------|--------------------------------------|
-| `account`  | `account-accounts-storage.json`      |
-| `token`    | `token-tokens-storage.json`          |
-| `topic`    | `topic-topics-storage.json`          |
-| `batch`    | `batch-batches-storage.json`         |
-| `swap`     | `swap-storage.json`                  |
-| `contract` | `contract-contracts-storage.json`    |
-| `schedule` | `schedule-transactions-storage.json` |
+| Plugin              | File                                                                 |
+|---------------------|----------------------------------------------------------------------|
+| `account`           | `account-accounts-storage.json`                                      |
+| `token`             | `token-tokens-storage.json`                                          |
+| `topic`             | `topic-topics-storage.json`                                          |
+| `batch`             | `batch-batches-storage.json`                                         |
+| `swap`              | `swap-storage.json`                                                  |
+| `contract`          | `contract-contracts-storage.json`                                    |
+| `schedule`          | `schedule-transactions-storage.json`                                 |
+| `network`           | `network-config-storage.json`                                        |
+| `config`            | `config-storage.json`                                                |
+| `plugin-management` | `plugin-management-storage.json`                                     |
+| `credentials` (KMS) | `kms-credentials-storage.json`, `kms-secrets-encrypted-storage.json` |
 
 ## Amount notation
 

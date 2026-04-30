@@ -4,18 +4,21 @@ Manage Hedera Consensus Service (HCS) topics: create, import, list, submit messa
 
 ---
 
-### `hcli topic create` [batchify]
+### `hcli topic create` [batchify] [scheduled]
 
 Create a new Hedera Consensus Service topic.
 
-| Option          | Short | Type   | Required | Default        | Description                                                                                                                                                                  |
-| --------------- | ----- | ------ | -------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--memo`        | `-m`  | string | no       | —              | Topic memo                                                                                                                                                                   |
-| `--admin-key`   | `-a`  | string | no       | —              | Admin key: `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias                                                                                 |
-| `--submit-key`  | `-s`  | string | no       | —              | Submit key (restricts who can post). Formats: `accountId:privateKey`, account ID, `{ed25519\|ecdsa}:public:{hex}`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
-| `--name`        | `-n`  | string | no       | —              | Local alias for this topic                                                                                                                                                   |
-| `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                                                    |
-| `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                                                                                    |
+| Option                   | Short | Type       | Required | Default        | Description                                                                                                                                                                                                                |
+| ------------------------ | ----- | ---------- | -------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--memo`                 | `-m`  | string     | no       | —              | Topic memo                                                                                                                                                                                                                 |
+| `--admin-key`            | `-a`  | repeatable | no       | —              | Admin key(s). Pass multiple times for KeyList/threshold. Formats: `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias                                                                        |
+| `--admin-key-threshold`  | `-A`  | number     | no       | —              | M-of-N: number of admin keys required to sign (only when multiple `--admin-key` values are set)                                                                                                                            |
+| `--submit-key`           | `-s`  | repeatable | no       | —              | Submit key(s) (restricts who can post). Pass multiple times for KeyList/threshold. Formats: `accountId:privateKey`, account ID, `{ed25519\|ecdsa}:public:{hex}`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
+| `--submit-key-threshold` | `-S`  | number     | no       | —              | M-of-N: number of submit keys required to sign (only when multiple `--submit-key` values are set)                                                                                                                          |
+| `--name`                 | `-n`  | string     | no       | —              | Local alias for this topic                                                                                                                                                                                                 |
+| `--key-manager`          | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                                                                                                  |
+| `--batch`                | `-B`  | string     | no       | —              | Queue into a named batch instead of executing immediately                                                                                                                                                                  |
+| `--scheduled`            | `-X`  | string     | no       | —              | Wrap as a scheduled transaction. Value is the local schedule record name                                                                                                                                                   |
 
 **Example:**
 
@@ -62,7 +65,7 @@ hcli topic list
 
 ---
 
-### `hcli topic submit-message` [batchify]
+### `hcli topic submit-message` [batchify] [scheduled]
 
 Submit a message to a Hedera Consensus Service topic.
 
@@ -73,6 +76,7 @@ Submit a message to a Hedera Consensus Service topic.
 | `--signer`      | `-s`  | string | no       | —              | Key to sign with (required if topic has submit-key). For threshold topics (e.g. 2-of-3), pass `--signer` multiple times for each required signer. Formats: `accountId:privateKey`, `{ed25519\|ecdsa}:private:{hex}`, key reference, or alias |
 | `--key-manager` | `-k`  | string | no       | config default | Key manager: `local` or `local_encrypted`                                                                                                                                                                                                    |
 | `--batch`       | `-B`  | string | no       | —              | Queue into a named batch instead of executing immediately                                                                                                                                                                                    |
+| `--scheduled`   | `-X`  | string | no       | —              | Wrap as a scheduled transaction. Value is the local schedule record name                                                                                                                                                                     |
 
 **Example:**
 
