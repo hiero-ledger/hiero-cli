@@ -9,6 +9,7 @@ import {
   MOCK_HEDERA_ENTITY_ID_2,
   MOCK_HEDERA_ENTITY_ID_3,
 } from '@/__tests__/mocks/fixtures';
+import { ValidationError } from '@/core/errors';
 import { AllowanceServiceImpl } from '@/core/services/allowance/allowance-service';
 
 const mockApproveDeleteAllSerials = jest.fn().mockReturnThis();
@@ -38,6 +39,10 @@ jest.mock('@hashgraph/sdk', () => ({
   NftId: jest.fn().mockReturnValue({}),
   Long: {
     fromString: jest.fn().mockReturnValue({}),
+  },
+  TokenType: {
+    NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
+    FungibleCommon: 'FUNGIBLE_COMMON',
   },
 }));
 
@@ -78,11 +83,8 @@ describe('AllowanceServiceImpl', () => {
       expect(callOrder).toEqual([1, 2]);
     });
 
-    it('applies no entries when empty array passed', () => {
-      const entry = makeEntry();
-      service.buildAllowanceApprove([]);
-
-      expect(entry.apply).not.toHaveBeenCalled();
+    it('throws ValidationError when empty array passed', () => {
+      expect(() => service.buildAllowanceApprove([])).toThrow(ValidationError);
     });
 
     it('returns the approve transaction', () => {
@@ -126,15 +128,14 @@ describe('AllowanceServiceImpl', () => {
       expect(mockDeleteAllTokenNftAllowances).toHaveBeenCalledTimes(2);
     });
 
-    it('returns AccountAllowanceDeleteTransaction for empty serials array', () => {
-      const result = service.buildNftAllowanceDelete({
-        tokenId: MOCK_HEDERA_ENTITY_ID_1,
-        ownerAccountId: MOCK_HEDERA_ENTITY_ID_2,
-        serialNumbers: [],
-      });
-
-      expect(result).toBe(mockDeleteTxInstance);
-      expect(mockDeleteAllTokenNftAllowances).not.toHaveBeenCalled();
+    it('throws ValidationError when empty serials array passed', () => {
+      expect(() =>
+        service.buildNftAllowanceDelete({
+          tokenId: MOCK_HEDERA_ENTITY_ID_1,
+          ownerAccountId: MOCK_HEDERA_ENTITY_ID_2,
+          serialNumbers: [],
+        }),
+      ).toThrow(ValidationError);
     });
   });
 });

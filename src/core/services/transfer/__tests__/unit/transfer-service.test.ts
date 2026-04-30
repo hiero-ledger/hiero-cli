@@ -12,6 +12,10 @@ const mockTxInstance = makeMockTx();
 
 jest.mock('@hashgraph/sdk', () => ({
   TransferTransaction: jest.fn(() => mockTxInstance),
+  TokenType: {
+    NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
+    FungibleCommon: 'FUNGIBLE_COMMON',
+  },
 }));
 
 function makeEntry(): jest.Mocked<TransferEntry> {
