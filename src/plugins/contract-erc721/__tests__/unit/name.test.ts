@@ -17,7 +17,7 @@ import { ContractErc721CallNameInputSchema } from '@/plugins/contract-erc721/com
 
 const mockName = 'My-NFT-Collection';
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   ContractId: {
     fromString: jest.fn(() => ({
       toEvmAddress: jest.fn(() => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),

@@ -4,14 +4,14 @@ import type {
   Transaction as HederaTransaction,
   TransactionReceipt,
   TransactionResponse,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import type { KmsService } from '@/core/services/kms/kms-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { NetworkService } from '@/core/services/network/network-service.interface';
 import type { TransactionResult } from '@/core/types/shared.types';
 import type { TxExecuteService } from './tx-execute-service.interface';
 
-import { PrecheckStatusError, ReceiptStatusError } from '@hashgraph/sdk';
+import { PrecheckStatusError, ReceiptStatusError } from '@hiero-ledger/sdk';
 
 import { TransactionError, TransactionPrecheckError } from '@/core/errors';
 import { getCauseMessage } from '@/core/utils/get-cause-message';

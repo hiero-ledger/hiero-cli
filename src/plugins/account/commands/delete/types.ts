@@ -1,7 +1,7 @@
 import type {
   AccountDeleteTransaction,
   Transaction as HederaTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import type {
   SupportedNetwork,
   TransactionResult,

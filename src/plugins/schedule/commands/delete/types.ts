@@ -1,4 +1,4 @@
-import type { ScheduleDeleteTransaction } from '@hashgraph/sdk';
+import type { ScheduleDeleteTransaction } from '@hiero-ledger/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,

@@ -17,7 +17,7 @@ import {
   ContractExecuteTransaction,
   ContractId,
   Hbar,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import { ethers, getBytes } from 'ethers';
 
 import { ValidationError } from '@/core/errors';

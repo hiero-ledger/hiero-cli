@@ -13,7 +13,7 @@ import {
   Hbar,
   HbarUnit,
   TransferTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 export class HbarServiceImpl implements HbarService {
   private logger: Logger;

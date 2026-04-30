@@ -31,7 +31,7 @@ jest.mock('path', () => ({
   join: jest.fn((...args: string[]) => args.join('/')),
 }));
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   TokenType: {
     NonFungibleUnique: 'NON_FUNGIBLE_UNIQUE',
     FungibleCommon: 'FUNGIBLE_COMMON',

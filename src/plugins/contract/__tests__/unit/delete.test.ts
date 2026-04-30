@@ -2,7 +2,7 @@ import type { Logger } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { ContractData } from '@/plugins/contract/schema';
 
-import { PublicKey } from '@hashgraph/sdk';
+import { PublicKey } from '@hiero-ledger/sdk';
 
 import {
   ED25519_DER_PUBLIC_KEY,

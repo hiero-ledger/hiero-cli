@@ -1,4 +1,4 @@
-import { TokenType } from '@hashgraph/sdk';
+import { TokenType } from '@hiero-ledger/sdk';
 
 export const HBAR_DECIMALS = 8;
 export const TOKEN_BALANCE_LIMIT = 9_223_372_036_854_775_807n; // Based on TokenCreateTransactionBody from hashgraph protobufs docs max limit for token initial supply is 2^63 - 1

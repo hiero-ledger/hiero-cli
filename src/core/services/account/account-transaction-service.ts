@@ -21,7 +21,7 @@ import {
   AccountUpdateTransaction,
   Hbar,
   PublicKey,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 import { ValidationError } from '@/core/errors';
 

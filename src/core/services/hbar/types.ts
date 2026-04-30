@@ -1,7 +1,7 @@
 import type {
   AccountAllowanceApproveTransaction,
   TransferTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 export interface TransferTinybarParams {
   amount: bigint;

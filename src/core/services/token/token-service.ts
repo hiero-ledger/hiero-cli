@@ -2,7 +2,7 @@
  * Implementation of Token Service
  * Handles token-related transaction creation and execution
  */
-import type { CustomFee } from '@hashgraph/sdk';
+import type { CustomFee } from '@hiero-ledger/sdk';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type {
   CustomFee as CustomFeeParams,
@@ -65,7 +65,7 @@ import {
   TokenUpdateNftsTransaction,
   TokenWipeTransaction,
   TransferTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 import { TokenTypeMap } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';

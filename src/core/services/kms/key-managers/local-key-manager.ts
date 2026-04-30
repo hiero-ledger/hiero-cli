@@ -3,7 +3,7 @@ import type { Signer } from '@/core/services/kms/signers/signer.interface';
 import type { SecretStorage } from '@/core/services/kms/storage/secret-storage.interface';
 import type { KeyManager } from './key-manager.interface';
 
-import { PrivateKey } from '@hashgraph/sdk';
+import { PrivateKey } from '@hiero-ledger/sdk';
 
 import { NotFoundError } from '@/core/errors';
 import { PrivateKeySigner } from '@/core/services/kms/signers/private-key-signer';

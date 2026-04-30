@@ -2,7 +2,7 @@
  * Unit tests for ContractTransactionServiceImpl
  * Tests contract creation flow transaction construction
  */
-import type { ContractFunctionParameters } from '@hashgraph/sdk';
+import type { ContractFunctionParameters } from '@hiero-ledger/sdk';
 import type {
   ContractCreateFlowParams,
   ContractExecuteEncodedParams,
@@ -14,7 +14,7 @@ import {
   ContractExecuteTransaction,
   ContractId,
   PrivateKey,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import { ethers, getBytes } from 'ethers';
 
 import { ContractTransactionServiceImpl } from '@/core/services/contract-transaction/contract-transaction-service';
@@ -37,7 +37,7 @@ const mockInterfaceInstance = {
 const mockAccountIdFromString = jest.fn((id: string) => ({ id }));
 const mockHbarFromTinybars = jest.fn((val: string) => ({ tinybars: val }));
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   ContractCreateFlow: jest.fn(() => mockContractCreateFlow),
   ContractExecuteTransaction: jest.fn(() => mockContractExecuteTx),
   ContractId: {

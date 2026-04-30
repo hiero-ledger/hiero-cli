@@ -1,4 +1,4 @@
-import type { TransferTransaction } from '@hashgraph/sdk';
+import type { TransferTransaction } from '@hiero-ledger/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,

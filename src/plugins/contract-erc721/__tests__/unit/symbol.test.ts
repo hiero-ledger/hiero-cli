@@ -17,7 +17,7 @@ import { ContractErc721CallSymbolInputSchema } from '@/plugins/contract-erc721/c
 
 const mockSymbol = 'MYNFT';
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   ContractId: {
     fromString: jest.fn(() => ({
       toEvmAddress: jest.fn(() => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),

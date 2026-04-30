@@ -1,4 +1,4 @@
-import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
+import { ReceiptStatusError, Status as HederaStatus } from '@hiero-ledger/sdk';
 
 import { TransactionError } from '@/core/errors';
 
