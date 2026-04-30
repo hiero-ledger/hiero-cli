@@ -28,7 +28,8 @@ The Hiero CLI is built on a plugin-based architecture designed to be extensible,
 │  ├── Logger Service                                         │
 │  ├── KMS Service                                            │
 │  ├── Alias Service                                          │
-│  ├── HBAR Service                                           │
+│  ├── Transfer Service                                       │
+│  ├── Allowance Service                                      │
 │  └── Output Service                                         │
 ├─────────────────────────────────────────────────────────────┤
 │  Plugin Layer                                               │
@@ -365,7 +366,8 @@ Core API
 │   └── Network Service
 ├── Alias Service
 │   └── State Service
-├── HBAR Service
+├── Transfer Service
+├── Allowance Service
 ├── Output Service
 └── Logger Service
 ```

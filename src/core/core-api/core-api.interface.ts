@@ -35,7 +35,7 @@ export interface CoreApi {
   account: AccountService;
 
   /**
-   * Token operations (creation, transfer, association with execution)
+   * Token lifecycle (create, mint, associate, etc.)
    */
   token: TokenService;
 
