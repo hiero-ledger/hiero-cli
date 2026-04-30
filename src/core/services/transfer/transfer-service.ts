@@ -13,12 +13,12 @@ export class TransferServiceImpl implements TransferService {
   ): TransferTransaction {
     if (entries.length === 0) {
       throw new ValidationError(
-        'buildTransferTransaction requires at least one entry',
+        'TransferTransaction requires at least one transfer entry',
       );
     }
     if (entries.length > HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION) {
       throw new ValidationError(
-        `buildTransferTransaction supports at most ${HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION} entries per transaction`,
+        `TransferTransaction supports at most ${HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION} entries per transaction`,
       );
     }
     const tx = new TransferTransaction();

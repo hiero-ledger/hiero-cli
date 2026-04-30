@@ -33,7 +33,7 @@ describe('TransferServiceImpl', () => {
   describe('buildTransferTransaction', () => {
     it('throws when entries array is empty', () => {
       expect(() => service.buildTransferTransaction([])).toThrow(
-        'buildTransferTransaction requires at least one entry',
+        'TransferTransaction requires at least one transfer entry',
       );
     });
 

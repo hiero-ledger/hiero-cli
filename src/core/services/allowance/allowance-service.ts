@@ -20,12 +20,12 @@ export class AllowanceServiceImpl implements AllowanceService {
   ): AccountAllowanceApproveTransaction {
     if (entries.length === 0) {
       throw new ValidationError(
-        'buildAllowanceApprove requires at least one entry',
+        'AccountAllowanceApproveTransaction requires at least one allowance entry',
       );
     }
     if (entries.length > HEDERA_MAX_ALLOWANCE_ENTRIES_PER_TRANSACTION) {
       throw new ValidationError(
-        `buildAllowanceApprove supports at most ${HEDERA_MAX_ALLOWANCE_ENTRIES_PER_TRANSACTION} entries per transaction`,
+        `AccountAllowanceApproveTransaction supports at most ${HEDERA_MAX_ALLOWANCE_ENTRIES_PER_TRANSACTION} entries per transaction`,
       );
     }
     const tx = new AccountAllowanceApproveTransaction();
@@ -51,14 +51,14 @@ export class AllowanceServiceImpl implements AllowanceService {
 
     if (params.serialNumbers.length === 0) {
       throw new ValidationError(
-        'buildNftAllowanceDelete requires at least one serial number',
+        'AccountAllowanceDeleteTransaction requires at least one NFT serial number',
       );
     }
     if (
       params.serialNumbers.length > HEDERA_MAX_ALLOWANCE_ENTRIES_PER_TRANSACTION
     ) {
       throw new ValidationError(
-        `buildNftAllowanceDelete supports at most ${HEDERA_MAX_ALLOWANCE_ENTRIES_PER_TRANSACTION} serial numbers per transaction`,
+        `AccountAllowanceDeleteTransaction supports at most ${HEDERA_MAX_ALLOWANCE_ENTRIES_PER_TRANSACTION} serial numbers per transaction`,
       );
     }
     const tx = new AccountAllowanceDeleteTransaction();
