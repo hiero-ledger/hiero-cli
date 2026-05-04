@@ -19,7 +19,7 @@ Be respectful and constructive in all interactions. We do not tolerate harassmen
 
 When reporting a bug, include:
 
-- Hiero CLI version (`hiero-cli --version`)
+- Hiero CLI version (`hcli --version`)
 - Node.js version (`node --version`)
 - OS and shell
 - Exact command run and full error output
@@ -41,6 +41,8 @@ npm run build
 ```
 
 Copy `.env.test.sample` to `.env.test` and fill in your Hedera testnet credentials if you plan to run integration tests.
+
+For a full local development environment, see [Manual Setup (For Developers)](./README.md#manual-setup-for-developers) in the root README.
 
 ## Project Structure
 
@@ -70,7 +72,6 @@ When modifying a plugin:
 ## Forbidden Patterns
 
 - **No `any`** — use `unknown`, `never`, or a precise type; cast with `as` only as a last resort
-- **No mutation** — return new objects instead of modifying existing ones
 - **No hardcoded credentials or network addresses** — use constants or config
 - **No silent error swallowing** — always propagate or surface errors explicitly
 
@@ -146,13 +147,21 @@ npm run test:unit
 
 Jest is configured via `jest.unit.config.js`. Each plugin keeps its tests under `src/plugins/{name}/__tests__/unit/`. Coverage reports are written to `coverage/unit/`.
 
-Integration tests require a Hedera testnet account configured in `.env.test`:
+Integration tests require a Hedera account configured in `.env.test`:
 
 ```sh
 npm run test:integration
 ```
 
-See `.env.test.sample` for the required variables (`OPERATOR_ID`, `OPERATOR_KEY`, `NETWORK`).
+`.env.test` must define the following variables:
+
+| Variable       | Description                              | Example    |
+| -------------- | ---------------------------------------- | ---------- |
+| `OPERATOR_ID`  | Account ID of the operator               | `0.0.1234` |
+| `OPERATOR_KEY` | DER-encoded private key of the operator  | `302e...`  |
+| `NETWORK`      | Target network (`testnet` or `localnet`) | `testnet`  |
+
+Copy `.env.test.sample` as a starting point. For `localnet`, spin up a local Hedera node and point the CLI at it — see [Manual Setup (For Developers)](./README.md#manual-setup-for-developers) for details.
 
 ## Code Style & Tooling
 
