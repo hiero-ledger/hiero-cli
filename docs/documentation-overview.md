@@ -65,6 +65,7 @@ hiero-cli/
 │   │   ├── network/            # Network selection and operator management
 │   │   ├── plugin-management/  # Plugin management plugin
 │   │   ├── token/              # Fungible and non-fungible token management plugin
+│   │   ├── swap/               # Multi-party HBAR/token swap plugin
 │   │   ├── topic/              # Topic (HCS) management plugin
 │   │   └── test/               # Test plugin (development/testing)
 │   └── hiero-cli.ts           # Main CLI entry point

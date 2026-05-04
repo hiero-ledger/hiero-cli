@@ -304,6 +304,7 @@ The Hiero CLI is built on a plugin architecture. The following default plugins a
 - **[Contract Plugin](src/plugins/contract/README.md)** - Compile, deploy, and verify Solidity smart contracts on Hedera
 - **[Contract ERC-20 Plugin](src/plugins/contract-erc20/README.md)** - Call ERC-20 token contract functions (name, balance, transfer, etc.)
 - **[Contract ERC-721 Plugin](src/plugins/contract-erc721/README.md)** - Call ERC-721 (NFT) contract functions (transfer, approve, etc.)
+- **[Swap Plugin](src/plugins/swap/README.md)** - Build and execute multi-party HBAR/token swaps in a single transaction
 
 Each plugin has its own README with detailed documentation about available commands, usage examples, and architecture details. Click on the plugin name above to learn more.
 
