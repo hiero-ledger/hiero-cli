@@ -283,12 +283,6 @@ export const validTokenDataForSchema = {
   supplyType: SupplyType.FINITE,
   maxSupply: 10000n,
   treasuryId: '0.0.789012',
-  associations: [
-    {
-      name: 'TestAccount',
-      accountId: '0.0.345678',
-    },
-  ],
   adminKeyRefIds: ['kr_admin'],
   adminKeyThreshold: 1,
   supplyKeyRefIds: [],
@@ -413,37 +407,6 @@ export const mockStateTokenData = {
     metadataKeyRefIds: [],
     metadataKeyThreshold: 0,
     network: SupportedNetwork.TESTNET,
-    associations: [],
-    customFees: [],
-    tokenType: HederaTokenType.FUNGIBLE_COMMON,
-  },
-  withAssociations: {
-    tokenId: '0.0.123456',
-    name: 'TestToken',
-    symbol: 'TEST',
-    decimals: 2,
-    initialSupply: 1000n,
-    supplyType: SupplyType.FINITE,
-    maxSupply: 10000n,
-    treasuryId: '0.0.789012',
-    adminKeyRefIds: ['kr_admin'],
-    adminKeyThreshold: 1,
-    supplyKeyRefIds: [],
-    supplyKeyThreshold: 0,
-    wipeKeyRefIds: [],
-    wipeKeyThreshold: 0,
-    kycKeyRefIds: [],
-    kycKeyThreshold: 0,
-    freezeKeyRefIds: [],
-    freezeKeyThreshold: 0,
-    pauseKeyRefIds: [],
-    pauseKeyThreshold: 0,
-    feeScheduleKeyRefIds: [],
-    feeScheduleKeyThreshold: 0,
-    metadataKeyRefIds: [],
-    metadataKeyThreshold: 0,
-    network: SupportedNetwork.TESTNET,
-    associations: [{ name: 'TestAccount', accountId: '0.0.111111' }],
     customFees: [],
     tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
@@ -473,7 +436,6 @@ export const mockStateTokenData = {
     metadataKeyRefIds: [],
     metadataKeyThreshold: 0,
     network: SupportedNetwork.TESTNET,
-    associations: [],
     customFees: [],
     tokenType: HederaTokenType.FUNGIBLE_COMMON,
   },
@@ -632,7 +594,6 @@ export const validTokenDataForValidation = {
   supplyType: SupplyType.FINITE,
   maxSupply: 10000,
   treasuryId: '0.0.789012',
-  associations: [],
   adminKeyRefIds: ['kr_admin'],
   adminKeyThreshold: 1,
   network: SupportedNetwork.TESTNET,
@@ -666,7 +627,6 @@ export const makeTokenData = (
     adminKeyRefIds: string[];
     adminKeyThreshold: number;
     network: 'mainnet' | 'testnet' | 'previewnet' | 'localnet';
-    associations: Array<{ name: string; accountId: string }>;
     customFees: Array<unknown>;
     tokenType: HederaTokenType;
   }> = {},
@@ -696,41 +656,9 @@ export const makeTokenData = (
   metadataKeyRefIds: [],
   metadataKeyThreshold: 0,
   network: SupportedNetwork.TESTNET,
-  associations: [],
   customFees: [],
   tokenType: HederaTokenType.FUNGIBLE_COMMON,
   ...overrides,
-});
-
-export const tokenAssociatedWithAccountFixture = makeTokenData({
-  tokenId: '0.0.123456',
-  name: 'TestToken',
-  symbol: 'TEST',
-  associations: [
-    {
-      name: '0.0.789012',
-      accountId: '0.0.789012',
-    },
-  ],
-});
-
-export const tokenAssociatedWithAliasFixture = makeTokenData({
-  tokenId: '0.0.123456',
-  name: 'TestToken',
-  symbol: 'TEST',
-  associations: [
-    {
-      name: 'my-account-alias',
-      accountId: '0.0.789012',
-    },
-  ],
-});
-
-export const tokenWithoutAssociationsFixture = makeTokenData({
-  tokenId: '0.0.123456',
-  name: 'TestToken',
-  symbol: 'TEST',
-  associations: [],
 });
 
 /**
@@ -805,7 +733,6 @@ export const mockListTokens = {
       symbol: 'TK1',
       network: 'testnet',
       supplyType: SupplyType.INFINITE,
-      associations: [{ name: 'Account 1', accountId: '0.0.9999' }],
     }),
     makeTokenData({
       tokenId: '0.0.2222',

@@ -13,8 +13,6 @@ import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { resolveTokenParameter } from '@/plugins/token/resolver-helper';
-import { removeAssociationFromState } from '@/plugins/token/utils/token-associations';
-import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenDissociateInputSchema } from './input';
 
@@ -138,22 +136,12 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
   }
 
   async outputPreparation(
-    args: CommandHandlerArgs,
+    _args: CommandHandlerArgs,
     normalisedParams: DissociateNormalizedParams,
     _buildTransactionResult: DissociateBuildTransactionResult,
     _signTransactionResult: DissociateSignTransactionResult,
     executeTransactionResult: DissociateExecuteTransactionResult,
   ): Promise<CommandResult> {
-    const { api, logger } = args;
-    const tokenState = new ZustandTokenStateHelper(api.state, logger);
-    removeAssociationFromState(
-      tokenState,
-      normalisedParams.tokenId,
-      normalisedParams.account.accountId,
-      normalisedParams.network,
-      logger,
-    );
-
     const outputData: TokenDissociateOutput = {
       accountId: normalisedParams.account.accountId,
       tokenId: normalisedParams.tokenId,
@@ -164,6 +152,8 @@ export class TokenDissociateCommand extends BaseTransactionCommand<
     return { result: outputData };
   }
 }
+
+
 
 export async function tokenDissociate(
   args: CommandHandlerArgs,

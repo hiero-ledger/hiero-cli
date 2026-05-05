@@ -172,13 +172,11 @@ import {
   tokenView,
   TokenViewOutputSchema,
 } from './commands/view';
-import { TokenAssociateStateHook } from './hooks/token-associate-state';
 import { TokenCreateFtFromFileStateHook } from './hooks/token-create-ft-from-file-state';
 import { TokenCreateFtStateHook } from './hooks/token-create-ft-state';
 import { TokenCreateNftFromFileStateHook } from './hooks/token-create-nft-from-file-state';
 import { TokenCreateNftStateHook } from './hooks/token-create-nft-state';
 import { TokenDeleteStateHook } from './hooks/token-delete-state';
-import { TokenDissociateStateHook } from './hooks/token-dissociate-state/handler';
 import { TokenUpdateStateHook } from './hooks/token-update-state';
 
 export const tokenPluginManifest: PluginManifest = {
@@ -205,16 +203,6 @@ export const tokenPluginManifest: PluginManifest = {
     {
       name: 'token-create-nft-from-file-state',
       hook: new TokenCreateNftFromFileStateHook(),
-      options: [],
-    },
-    {
-      name: 'token-associate-state',
-      hook: new TokenAssociateStateHook(),
-      options: [],
-    },
-    {
-      name: 'token-dissociate-state',
-      hook: new TokenDissociateStateHook(),
       options: [],
     },
     {
