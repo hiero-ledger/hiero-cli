@@ -1,5 +1,6 @@
 {
   "name": "token-fixed-fee-token",
+  "tokenName": "Token Fixed Fee Token",
   "symbol": "FFTOK",
   "decimals": 8,
   "supplyType": "finite",

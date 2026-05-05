@@ -3,8 +3,9 @@
  * Provides reusable mocks for services, APIs, and common test utilities
  */
 import type { CoreApi } from '@/core/core-api/core-api.interface';
-import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
+import type { AllowanceService } from '@/core/services/allowance/allowance-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
+import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 
 import {
   makeAliasMock,
@@ -20,15 +21,25 @@ import {
 import { mockTransferTransactionResults } from './fixtures';
 
 /**
- * Create a mocked HbarService
+ * Create a mocked TransferService
  */
-export const makeHbarServiceMock = (
-  overrides?: Partial<jest.Mocked<HbarService>>,
-): jest.Mocked<HbarService> => ({
-  transferTinybar: jest
+export const makeTransferServiceMock = (
+  overrides?: Partial<jest.Mocked<TransferService>>,
+): jest.Mocked<TransferService> => ({
+  buildTransferTransaction: jest
     .fn()
-    .mockResolvedValue(mockTransferTransactionResults.empty),
-  createHbarAllowanceTransaction: jest.fn(),
+    .mockReturnValue(mockTransferTransactionResults.empty.transaction),
+  ...overrides,
+});
+
+/**
+ * Create a mocked AllowanceService
+ */
+export const makeAllowanceServiceMock = (
+  overrides?: Partial<jest.Mocked<AllowanceService>>,
+): jest.Mocked<AllowanceService> => ({
+  buildAllowanceApprove: jest.fn(),
+  buildNftAllowanceDelete: jest.fn(),
   ...overrides,
 });
 
@@ -39,11 +50,17 @@ interface ApiMocksConfig {
 }
 
 export const makeApiMocks = (config?: ApiMocksConfig) => {
-  const hbar: jest.Mocked<HbarService> = {
-    transferTinybar:
+  const transfer: jest.Mocked<TransferService> = {
+    buildTransferTransaction:
       config?.transferImpl ||
-      jest.fn().mockResolvedValue(mockTransferTransactionResults.empty),
-    createHbarAllowanceTransaction: jest.fn(),
+      jest
+        .fn()
+        .mockReturnValue(mockTransferTransactionResults.empty.transaction),
+  };
+
+  const allowance: jest.Mocked<AllowanceService> = {
+    buildAllowanceApprove: jest.fn(),
+    buildNftAllowanceDelete: jest.fn(),
   };
 
   const txSign = makeTxSignMock();
@@ -54,7 +71,7 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
   const kms = makeKmsMock();
   const alias = makeAliasMock();
 
-  return { hbar, txSign, txExecute, networkMock, kms, alias };
+  return { transfer, allowance, txSign, txExecute, networkMock, kms, alias };
 };
 
 /**
@@ -77,15 +94,17 @@ interface SetupTransferTestOptions {
  */
 export const setupTransferTest = (options: SetupTransferTestOptions = {}) => {
   const logger = makeLogger();
-  const { hbar, txSign, txExecute, networkMock, kms, alias } = makeApiMocks({
-    transferImpl: options.transferImpl,
-    signAndExecuteImpl: options.signAndExecuteImpl,
-  });
+  const { transfer, allowance, txSign, txExecute, networkMock, kms, alias } =
+    makeApiMocks({
+      transferImpl: options.transferImpl,
+      signAndExecuteImpl: options.signAndExecuteImpl,
+    });
 
   const stateMock = makeStateMock();
 
   const api: Partial<CoreApi> = {
-    hbar,
+    transfer,
+    allowance,
     txSign,
     txExecute,
     network: networkMock,
@@ -106,5 +125,15 @@ export const setupTransferTest = (options: SetupTransferTestOptions = {}) => {
     );
   }
 
-  return { api, logger, hbar, txSign, txExecute, kms, alias, stateMock };
+  return {
+    api,
+    logger,
+    transfer,
+    allowance,
+    txSign,
+    txExecute,
+    kms,
+    alias,
+    stateMock,
+  };
 };

@@ -3,7 +3,7 @@
  * Common data structures used across the Hiero CLI
  */
 
-import type { CustomFee } from '@hashgraph/sdk';
+import type { CustomFee } from '@hiero-ledger/sdk';
 import type { CompileOptions } from 'solc';
 import type { KeyAlgorithm } from '@/core/shared/constants';
 

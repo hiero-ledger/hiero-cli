@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError, ValidationError } from '@/core/errors';
+import { HbarTransferEntry } from '@/core/services/transfer';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 
@@ -89,14 +90,18 @@ export class HbarTransferCommand extends BaseTransactionCommand<
       `[HBAR] Transferring ${normalisedParams.amount.toString()} tinybars from ${normalisedParams.fromAccount.accountId} to ${normalisedParams.destination}`,
     );
 
-    const transferResult = await api.hbar.transferTinybar({
-      amount: normalisedParams.amount,
-      from: normalisedParams.fromAccount.accountId,
-      to: normalisedParams.destination,
-      memo: normalisedParams.memo,
-    });
+    const transaction = api.transfer.buildTransferTransaction(
+      [
+        new HbarTransferEntry(
+          normalisedParams.fromAccount.accountId,
+          normalisedParams.destination,
+          normalisedParams.amount,
+        ),
+      ],
+      normalisedParams.memo,
+    );
 
-    return { transaction: transferResult.transaction };
+    return { transaction };
   }
 
   async signTransaction(

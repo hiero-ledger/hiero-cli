@@ -10,7 +10,7 @@ import type {
 } from '@/plugins/batch/commands/execute/types';
 import type { BatchExecuteOutput } from './output';
 
-import { Transaction } from '@hashgraph/sdk';
+import { Transaction } from '@hiero-ledger/sdk';
 
 import { ValidationError } from '@/core';
 import { BaseTransactionCommand } from '@/core/commands/command';

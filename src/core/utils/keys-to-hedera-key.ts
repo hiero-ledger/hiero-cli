@@ -1,7 +1,15 @@
-import type { Key } from '@hashgraph/sdk';
+import type { Key } from '@hiero-ledger/sdk';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 
-import { KeyList, PublicKey } from '@hashgraph/sdk';
+import { KeyList, PublicKey } from '@hiero-ledger/sdk';
+
+export function toNullableHederaKey(
+  keys: ResolvedPublicKey[] | null,
+  threshold: number | undefined,
+): Key | null | undefined {
+  if (keys === null) return null;
+  return toHederaKey(keys, threshold ?? keys.length);
+}
 
 export function toHederaKey(
   keys: ResolvedPublicKey[],

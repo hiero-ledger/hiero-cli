@@ -1,4 +1,4 @@
-import type { ScheduleSignTransaction } from '@hashgraph/sdk';
+import type { ScheduleSignTransaction } from '@hiero-ledger/sdk';
 import type {
   BaseBuildTransactionResult,
   BaseNormalizedParams,

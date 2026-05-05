@@ -17,7 +17,7 @@ import { ContractErc721CallTokenUriInputSchema } from '@/plugins/contract-erc721
 
 const mockTokenUri = 'https://example.com/metadata/1';
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   ContractId: {
     fromString: jest.fn(() => ({
       toEvmAddress: jest.fn(() => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),

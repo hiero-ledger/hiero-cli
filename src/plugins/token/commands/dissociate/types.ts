@@ -1,4 +1,4 @@
-import type { Transaction } from '@hashgraph/sdk';
+import type { Transaction } from '@hiero-ledger/sdk';
 import type {
   BaseNormalizedParams,
   SupportedNetwork,

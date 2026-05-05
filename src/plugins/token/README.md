@@ -106,6 +106,12 @@ src/plugins/token/
 │   │   ├── input.ts         # Input schema
 │   │   ├── output.ts        # Output schema and template
 │   │   └── index.ts         # Command exports
+│   ├── update/
+│   │   ├── handler.ts       # Unified token update handler (FT and NFT)
+│   │   ├── input.ts         # Input schema with nullable role-key fields
+│   │   ├── output.ts        # Output schema and template
+│   │   ├── types.ts         # TokenUpdateNormalizedParams and result types
+│   │   └── index.ts         # Command exports
 │   ├── allowance-nft/
 │   │   ├── handler.ts       # NFT allowance approval handler
 │   │   ├── input.ts         # Input schema
@@ -149,13 +155,17 @@ src/plugins/token/
 │   │   ├── handler.ts       # TokenAssociateBatchStateHook - persists association results after batch execution
 │   │   ├── types.ts         # AssociateNormalisedParamsSchema for batch item validation
 │   │   └── index.ts         # Hook exports
+│   ├── token-update-state/
+│   │   ├── handler.ts       # TokenUpdateStateHook - persists updated token data after batch execution
+│   │   ├── types.ts         # TokenUpdateNormalisedParamsSchema for batch item validation
+│   │   └── index.ts         # Hook exports
 │   └── token-dissociate-state/
 │       ├── handler.ts       # TokenDissociateStateHook - removes association from state after batch execution
 │       └── types.ts         # DissociateNormalizedParamsSchema for batch item validation
 ├── utils/
 │   ├── token-build-output.ts  # NFT output builder utilities
 │   ├── token-amount-helpers.ts  # Token amount processing helpers
-│   ├── token-data-builders.ts   # Token data builders for create-from-file
+│   ├── token-data-builders.ts   # Token data builders for create-from-file and update commands
 │   ├── token-associations.ts   # Token association processing
 │   └── [other utility files...]
 ├── zustand-state-helper.ts  # State management helper
@@ -1333,6 +1343,84 @@ hcli token revoke-kyc --token 0.0.123456 --account 0.0.5678 --kyc-key <key-ref>
 
 If the token does not have a KYC key, the command fails with a clear error: `Token has no KYC key`.
 
+### Token Update
+
+Update properties of an existing token. Works for both fungible (FT) and non-fungible (NFT) tokens. The token must exist on the mirror node and must have an admin key for most changes (expiration time is the only field that can be updated without one, when it is the only change).
+
+Role keys (`--kyc-key`, `--freeze-key`, etc.) accept new key credentials **or** the literal string `"null"` to permanently remove the key from the token.
+
+```bash
+# Rename a token
+hcli token update --token mytoken-alias --token-name "New Name"
+
+# Update the token symbol
+hcli token update --token 0.0.123456 --symbol NEWSYM
+
+# Change treasury account
+hcli token update --token mytoken-alias --treasury new-treasury-alias
+
+# Replace the KYC key
+hcli token update --token mytoken-alias --kyc-key alice
+
+# Permanently remove the KYC key
+hcli token update --token mytoken-alias --kyc-key null
+
+# Clear the memo
+hcli token update --token mytoken-alias --memo null
+
+# Update expiration time (no admin key required when this is the only change)
+hcli token update --token mytoken-alias --expiration-time 2030-06-01T00:00:00.000Z
+
+# Update multiple fields at once
+hcli token update --token mytoken-alias \
+  --token-name "Renamed Token" \
+  --memo "Updated memo" \
+  --kyc-key null \
+  --freeze-key alice
+
+# Add to a batch
+hcli token update --token mytoken-alias --token-name "Batched Rename" --batch my-batch
+```
+
+**Key options:**
+
+| Option                 | Short | Description                                                            |
+| ---------------------- | ----- | ---------------------------------------------------------------------- |
+| `--token`              | `-T`  | Token ID or alias — **Required**                                       |
+| `--token-name`         | `-b`  | New token name                                                         |
+| `--symbol`             | `-Y`  | New token symbol                                                       |
+| `--treasury`           | `-t`  | New treasury account ID or alias                                       |
+| `--admin-keys`         | `-a`  | Current admin key credential(s) for signing (auto-resolved if omitted) |
+| `--new-admin-keys`     | `-n`  | New admin key(s); pass `null` to clear                                 |
+| `--kyc-key`            | `-y`  | New KYC key(s); pass `null` to permanently remove                      |
+| `--freeze-key`         | `-f`  | New freeze key(s); pass `null` to permanently remove                   |
+| `--wipe-key`           | `-w`  | New wipe key(s); pass `null` to permanently remove                     |
+| `--supply-key`         | `-s`  | New supply key(s); pass `null` to permanently remove                   |
+| `--fee-schedule-key`   | `-e`  | New fee schedule key(s); pass `null` to permanently remove             |
+| `--pause-key`          | `-p`  | New pause key(s); pass `null` to permanently remove                    |
+| `--metadata-key`       | `-D`  | New metadata key(s); pass `null` to permanently remove                 |
+| `--memo`               | `-M`  | New memo; pass `null` to clear                                         |
+| `--auto-renew-account` | `-r`  | New auto-renew account                                                 |
+| `--auto-renew-period`  | `-R`  | New auto-renew period (seconds or with suffix: `30d`, `90d`)           |
+| `--expiration-time`    | `-x`  | New expiration as ISO 8601 string                                      |
+| `--metadata`           | `-d`  | Token metadata (UTF-8, max 100 bytes)                                  |
+| `--key-manager`        | `-k`  | Key manager type (`local` or `local_encrypted`)                        |
+
+**Output:**
+
+```json
+{
+  "transactionId": "0.0.123@1700000000.123456789",
+  "tokenId": "0.0.67890",
+  "network": "testnet",
+  "updatedFields": ["name", "kycKey (cleared)", "memo"]
+}
+```
+
+`updatedFields` lists every field that was changed. Cleared role keys carry a `(cleared)` suffix.
+
+**Batch support:** Pass `--batch <batch-name>` to defer execution. After a successful batch run the `token-update-state` hook persists the updated token data to local state automatically.
+
 ### Token List
 
 List all tokens (FT and NFT) stored in state for all networks.
@@ -1531,6 +1619,7 @@ The following token commands support the `--batch` / `-B` flag via the batch plu
 - `associate` – `TokenAssociateBatchStateHook` persists association results
 - `burn-ft`, `burn-nft`, `mint-ft`, `mint-nft`, `update-metadata-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
 - `dissociate` – `TokenDissociateStateHook` removes association from state after batch execution
+- `update` – `TokenUpdateStateHook` persists updated token data (name, symbol, treasury, role keys, memo) after batch execution
 - `burn-ft`, `burn-nft`, `mint-ft`, `mint-nft`, `transfer-ft`, `transfer-nft`, `allowance-nft`, `allowance-ft`, `delete-allowance-nft` – can be batched (no state hook; transactions execute atomically)
 
 When you pass `--batch <batch-name>`:
@@ -1660,8 +1749,8 @@ describe('Token Plugin Output Structure', () => {
 ### Test Structure
 
 - **Output Compliance**: `adr007-compliance.test.ts` - Tests all handlers return proper `CommandResult`
-- **Unit Tests**: Individual command handler tests with mocks and fixtures
-- **Batch Tests**: `batch-create-ft.test.ts`, `batch-create-nft.test.ts`, `batch-create-ft-from-file.test.ts`, `batch-create-nft-from-file.test.ts` - Tests batch-state hooks
+- **Unit Tests**: Individual command handler tests with mocks and fixtures — including `update.test.ts` for the unified update command
+- **Batch Tests**: `batch-create-ft.test.ts`, `batch-create-nft.test.ts`, `batch-create-ft-from-file.test.ts`, `batch-create-nft-from-file.test.ts`, `token-update-state-hook.test.ts` - Tests batch-state hooks
 - **Integration Tests**: End-to-end token lifecycle tests
 - **Schema Tests**: Validation of input/output schemas
 

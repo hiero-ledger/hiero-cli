@@ -4,7 +4,7 @@ import type {
   TopicDeleteTransaction,
   TopicMessageSubmitTransaction,
   TopicUpdateTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 
 export interface TopicCreateResult {
   transaction: TopicCreateTransaction;

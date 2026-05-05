@@ -1,4 +1,4 @@
-import type { Transaction } from '@hashgraph/sdk';
+import type { Transaction } from '@hiero-ledger/sdk';
 import type { CoreApi, TransactionResult } from '@/core';
 import type { PreSignTransactionHookParams } from '@/core/hooks/types';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';

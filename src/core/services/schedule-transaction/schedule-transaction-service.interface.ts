@@ -2,7 +2,7 @@ import type {
   ScheduleCreateTransaction,
   ScheduleDeleteTransaction,
   ScheduleSignTransaction,
-} from '@hashgraph/sdk';
+} from '@hiero-ledger/sdk';
 import type {
   ScheduleCreateParams,
   ScheduleDeleteTransactionParams,

@@ -2,7 +2,7 @@
  * Account Validation Helpers
  * Utility functions for validating account operations
  */
-import { Hbar } from '@hashgraph/sdk';
+import { Hbar } from '@hiero-ledger/sdk';
 
 import { TransactionError } from '@/core/errors';
 

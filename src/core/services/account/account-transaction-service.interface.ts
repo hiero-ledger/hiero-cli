@@ -1,4 +1,4 @@
-import type { AccountInfoQuery } from '@hashgraph/sdk';
+import type { AccountInfoQuery } from '@hiero-ledger/sdk';
 export type * from './types';
 import type {
   AccountCreateResult,

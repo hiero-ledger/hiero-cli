@@ -1,4 +1,4 @@
-import { ReceiptStatusError, Status as HederaStatus } from '@hashgraph/sdk';
+import { ReceiptStatusError, Status as HederaStatus } from '@hiero-ledger/sdk';
 
 import { TransactionError } from '@/core/errors';
 
@@ -30,5 +30,23 @@ export function isNoKycKeyError(error: unknown): boolean {
   return (
     cause instanceof ReceiptStatusError &&
     cause.status === HederaStatus.TokenHasNoKycKey
+  );
+}
+
+export function isNoWipeKeyError(error: unknown): boolean {
+  return isTransactionErrorWithStatus(error, HederaStatus.TokenHasNoWipeKey);
+}
+
+export function isCannotWipeTreasuryError(error: unknown): boolean {
+  return isTransactionErrorWithStatus(
+    error,
+    HederaStatus.CannotWipeTokenTreasuryAccount,
+  );
+}
+
+export function isAccountDoesNotOwnWipedNftError(error: unknown): boolean {
+  return isTransactionErrorWithStatus(
+    error,
+    HederaStatus.AccountDoesNotOwnWipedNft,
   );
 }

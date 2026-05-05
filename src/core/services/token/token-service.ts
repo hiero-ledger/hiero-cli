@@ -2,16 +2,12 @@
  * Implementation of Token Service
  * Handles token-related transaction creation and execution
  */
-import type { CustomFee } from '@hashgraph/sdk';
+import type { CustomFee } from '@hiero-ledger/sdk';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type {
   CustomFee as CustomFeeParams,
-  NftAllowanceApproveParams,
-  NftAllowanceDeleteParams,
-  NftTransferParams,
   TokenAirdropFtParams,
   TokenAirdropNftParams,
-  TokenAllowanceFtParams,
   TokenAssociationParams,
   TokenBurnFtParams,
   TokenBurnNftParams,
@@ -25,20 +21,21 @@ import type {
   TokenMintParams,
   TokenRejectAirdropParams,
   TokenRevokeKycParams,
-  TokenTransferParams,
   TokenUnfreezeParams,
   TokenUpdateNftMetadataParams,
+  TokenUpdateParams,
+  TokenWipeFtParams,
+  TokenWipeNftParams,
 } from '@/core/types/token.types';
 import type { TokenService } from './token-service.interface';
 
 import {
-  AccountAllowanceApproveTransaction,
-  AccountAllowanceDeleteTransaction,
   AccountId,
   CustomFixedFee,
   CustomFractionalFee,
   FeeAssessmentMethod,
   Hbar,
+  KeyList,
   Long,
   NftId,
   PendingAirdropId,
@@ -61,8 +58,9 @@ import {
   TokenUnfreezeTransaction,
   TokenUnpauseTransaction,
   TokenUpdateNftsTransaction,
-  TransferTransaction,
-} from '@hashgraph/sdk';
+  TokenUpdateTransaction,
+  TokenWipeTransaction,
+} from '@hiero-ledger/sdk';
 
 import { TokenTypeMap } from '@/core/shared/constants';
 import { SupplyType } from '@/core/types/shared.types';
@@ -73,36 +71,6 @@ export class TokenServiceImpl implements TokenService {
 
   constructor(logger: Logger) {
     this.logger = logger;
-  }
-
-  /**
-   * Create a token transfer transaction (without execution)
-   */
-  createTransferTransaction(params: TokenTransferParams): TransferTransaction {
-    this.logger.debug(
-      `[TOKEN SERVICE] Creating transfer transaction: ${params.amount} tokens from ${params.fromAccountId} to ${params.toAccountId}`,
-    );
-
-    const { tokenId, fromAccountId, toAccountId, amount } = params;
-
-    // Create transfer transaction
-    const transferTx = new TransferTransaction()
-      .addTokenTransfer(
-        TokenId.fromString(tokenId),
-        AccountId.fromString(fromAccountId),
-        Number(-amount), // Negative for sender
-      )
-      .addTokenTransfer(
-        TokenId.fromString(tokenId),
-        AccountId.fromString(toAccountId),
-        Number(amount), // Positive for receiver
-      );
-
-    this.logger.debug(
-      `[TOKEN SERVICE] Created transfer transaction for token ${tokenId}`,
-    );
-
-    return transferTx;
   }
 
   /**
@@ -330,105 +298,6 @@ export class TokenServiceImpl implements TokenService {
     return mintTx;
   }
 
-  /**
-   * Create an NFT transfer transaction (without execution)
-   */
-  createNftTransferTransaction(params: NftTransferParams): TransferTransaction {
-    this.logger.debug(
-      `[TOKEN SERVICE] Creating NFT transfer transaction: ${params.serialNumbers.length} NFTs of token ${params.tokenId} from ${params.fromAccountId} to ${params.toAccountId}`,
-    );
-
-    const { tokenId, fromAccountId, toAccountId, serialNumbers } = params;
-
-    const transferTx = new TransferTransaction();
-
-    for (const serial of serialNumbers) {
-      const nftId = new NftId(TokenId.fromString(tokenId), serial);
-      transferTx.addNftTransfer(
-        nftId,
-        AccountId.fromString(fromAccountId),
-        AccountId.fromString(toAccountId),
-      );
-    }
-
-    this.logger.debug(
-      `[TOKEN SERVICE] Created NFT transfer transaction for ${serialNumbers.length} NFTs`,
-    );
-
-    return transferTx;
-  }
-
-  createFungibleTokenAllowanceTransaction(
-    params: TokenAllowanceFtParams,
-  ): AccountAllowanceApproveTransaction {
-    const { tokenId, ownerAccountId, spenderAccountId, amount } = params;
-    this.logger.debug(
-      `[TOKEN SERVICE] Creating FT allowance: ${amount.toString()} tokens of ${tokenId} from ${ownerAccountId} to spender ${spenderAccountId}`,
-    );
-    return new AccountAllowanceApproveTransaction().approveTokenAllowance(
-      TokenId.fromString(tokenId),
-      AccountId.fromString(ownerAccountId),
-      AccountId.fromString(spenderAccountId),
-      amount,
-    );
-  }
-
-  createNftAllowanceApproveTransaction(
-    params: NftAllowanceApproveParams,
-  ): AccountAllowanceApproveTransaction {
-    this.logger.debug(
-      `[TOKEN SERVICE] Creating NFT allowance approve transaction: token ${params.tokenId}, owner ${params.ownerAccountId}, spender ${params.spenderAccountId}`,
-    );
-
-    const tx = new AccountAllowanceApproveTransaction();
-    const tokenId = TokenId.fromString(params.tokenId);
-    const owner = AccountId.fromString(params.ownerAccountId);
-    const spender = AccountId.fromString(params.spenderAccountId);
-
-    if (params.allSerials) {
-      tx.approveTokenNftAllowanceAllSerials(tokenId, owner, spender);
-      this.logger.debug(
-        `[TOKEN SERVICE] Approved all serials for token ${params.tokenId}`,
-      );
-    } else {
-      for (const serial of params.serialNumbers) {
-        tx.approveTokenNftAllowance(new NftId(tokenId, serial), owner, spender);
-      }
-      this.logger.debug(
-        `[TOKEN SERVICE] Approved ${params.serialNumbers.length} serial(s) for token ${params.tokenId}`,
-      );
-    }
-
-    return tx;
-  }
-
-  createNftAllowanceDeleteTransaction(
-    params: NftAllowanceDeleteParams,
-  ): AccountAllowanceApproveTransaction | AccountAllowanceDeleteTransaction {
-    const tokenId = TokenId.fromString(params.tokenId);
-    const owner = AccountId.fromString(params.ownerAccountId);
-
-    if (params.allSerials) {
-      this.logger.debug(
-        `[TOKEN SERVICE] Revoking all-serials NFT allowance: token ${params.tokenId}, owner ${params.ownerAccountId}, spender ${params.spenderAccountId}`,
-      );
-      return new AccountAllowanceApproveTransaction().deleteTokenNftAllowanceAllSerials(
-        tokenId,
-        owner,
-        AccountId.fromString(params.spenderAccountId),
-      );
-    }
-
-    this.logger.debug(
-      `[TOKEN SERVICE] Deleting NFT allowance for ${params.serialNumbers.length} serial(s) of token ${params.tokenId}`,
-    );
-    const tx = new AccountAllowanceDeleteTransaction();
-    for (const serial of params.serialNumbers) {
-      tx.deleteAllTokenNftAllowances(new NftId(tokenId, serial), owner);
-    }
-    return tx;
-  }
-
   createDeleteTransaction(params: TokenDeleteParams): TokenDeleteTransaction {
     this.logger.debug(
       `[TOKEN SERVICE] Creating delete transaction for token ${params.tokenId}`,
@@ -654,6 +523,26 @@ export class TokenServiceImpl implements TokenService {
       .setSerials(params.serialNumbers);
   }
 
+  createWipeFtTransaction(params: TokenWipeFtParams): TokenWipeTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating FT wipe transaction: ${params.amount.toString()} tokens for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenWipeTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId))
+      .setAmount(params.amount);
+  }
+
+  createWipeNftTransaction(params: TokenWipeNftParams): TokenWipeTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating NFT wipe transaction: ${params.serialNumbers.length} serials for account ${params.accountId} on token ${params.tokenId}`,
+    );
+    return new TokenWipeTransaction()
+      .setTokenId(TokenId.fromString(params.tokenId))
+      .setAccountId(AccountId.fromString(params.accountId))
+      .setSerials(params.serialNumbers);
+  }
+
   createUpdateNftMetadataTransaction(
     params: TokenUpdateNftMetadataParams,
   ): TokenUpdateNftsTransaction {
@@ -665,6 +554,61 @@ export class TokenServiceImpl implements TokenService {
       .setTokenId(TokenId.fromString(params.tokenId))
       .setSerialNumbers(params.serialNumbers.map((s) => Long.fromNumber(s)))
       .setMetadata(params.metadata);
+  }
+
+  createUpdateTokenTransaction(
+    params: TokenUpdateParams,
+  ): TokenUpdateTransaction {
+    this.logger.debug(
+      `[TOKEN SERVICE] Creating update transaction for token ${params.tokenId}`,
+    );
+
+    const tx = new TokenUpdateTransaction().setTokenId(
+      TokenId.fromString(params.tokenId),
+    );
+
+    if (params.name) tx.setTokenName(params.name);
+    if (params.symbol) tx.setTokenSymbol(params.symbol);
+    if (params.treasuryId)
+      tx.setTreasuryAccountId(AccountId.fromString(params.treasuryId));
+
+    if (params.adminKey === null) tx.setAdminKey(new KeyList());
+    else if (params.adminKey !== undefined) tx.setAdminKey(params.adminKey);
+
+    if (params.kycKey === null) tx.setKycKey(new KeyList());
+    else if (params.kycKey !== undefined) tx.setKycKey(params.kycKey);
+
+    if (params.freezeKey === null) tx.setFreezeKey(new KeyList());
+    else if (params.freezeKey !== undefined) tx.setFreezeKey(params.freezeKey);
+
+    if (params.wipeKey === null) tx.setWipeKey(new KeyList());
+    else if (params.wipeKey !== undefined) tx.setWipeKey(params.wipeKey);
+
+    if (params.supplyKey === null) tx.setSupplyKey(new KeyList());
+    else if (params.supplyKey !== undefined) tx.setSupplyKey(params.supplyKey);
+
+    if (params.feeScheduleKey === null) tx.setFeeScheduleKey(new KeyList());
+    else if (params.feeScheduleKey !== undefined)
+      tx.setFeeScheduleKey(params.feeScheduleKey);
+
+    if (params.pauseKey === null) tx.setPauseKey(new KeyList());
+    else if (params.pauseKey !== undefined) tx.setPauseKey(params.pauseKey);
+
+    if (params.metadataKey === null) tx.setMetadataKey(new KeyList());
+    else if (params.metadataKey !== undefined)
+      tx.setMetadataKey(params.metadataKey);
+
+    if (params.memo === null) tx.setTokenMemo('');
+    else if (params.memo !== undefined) tx.setTokenMemo(params.memo);
+
+    if (params.autoRenewAccountId)
+      tx.setAutoRenewAccountId(AccountId.fromString(params.autoRenewAccountId));
+    if (params.autoRenewPeriodSeconds)
+      tx.setAutoRenewPeriod(params.autoRenewPeriodSeconds);
+    if (params.expirationTime) tx.setExpirationTime(params.expirationTime);
+    if (params.metadata) tx.setMetadata(params.metadata);
+
+    return tx;
   }
 
   /**

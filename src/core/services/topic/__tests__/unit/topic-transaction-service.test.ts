@@ -15,7 +15,7 @@ import {
 const mockTopicCreateTx = createMockTopicCreateTransaction();
 const mockPublicKey = createMockPublicKey();
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   TopicCreateTransaction: jest.fn(() => mockTopicCreateTx),
   TopicMessageSubmitTransaction: jest.fn((params) =>
     createMockTopicMessageSubmitTransaction(params),
@@ -32,7 +32,7 @@ describe('TopicServiceImpl', () => {
 
   describe('createTopic', () => {
     it('should create topic without optional parameters', () => {
-      const { TopicCreateTransaction } = jest.requireMock('@hashgraph/sdk');
+      const { TopicCreateTransaction } = jest.requireMock('@hiero-ledger/sdk');
       const params = createCreateTopicParams();
 
       const result = topicService.createTopic(params);
@@ -138,7 +138,7 @@ describe('TopicServiceImpl', () => {
   describe('submitMessage', () => {
     it('should create message submit transaction with valid topicId and message', () => {
       const { TopicMessageSubmitTransaction } =
-        jest.requireMock('@hashgraph/sdk');
+        jest.requireMock('@hiero-ledger/sdk');
       const params = createSubmitMessageParams();
 
       const result = topicService.submitMessage(params);
@@ -154,7 +154,7 @@ describe('TopicServiceImpl', () => {
 
     it('should handle empty message string', () => {
       const { TopicMessageSubmitTransaction } =
-        jest.requireMock('@hashgraph/sdk');
+        jest.requireMock('@hiero-ledger/sdk');
       const params = createSubmitMessageParams({ message: '' });
 
       const result = topicService.submitMessage(params);

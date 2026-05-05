@@ -102,9 +102,9 @@ describe('tokenUnfreeze', () => {
       const { api } = makeUnfreezeSuccessMocks({
         tokenInfo: { freeze_key: null },
       });
-      (
-        api.keyResolver.resolveSigningKeyRefIdsFromMirrorRoleKey as jest.Mock
-      ).mockRejectedValue(new ValidationError('Token has no freeze key'));
+      (api.keyResolver.resolveSigningKeys as jest.Mock).mockRejectedValue(
+        new ValidationError('Token has no freeze key'),
+      );
       const args = makeArgs(api);
 
       await expect(tokenUnfreeze(args)).rejects.toThrow(ValidationError);

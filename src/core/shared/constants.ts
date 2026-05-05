@@ -1,4 +1,4 @@
-import { TokenType } from '@hashgraph/sdk';
+import { TokenType } from '@hiero-ledger/sdk';
 
 export const HBAR_DECIMALS = 8;
 export const TOKEN_BALANCE_LIMIT = 9_223_372_036_854_775_807n; // Based on TokenCreateTransactionBody from hashgraph protobufs docs max limit for token initial supply is 2^63 - 1
@@ -53,3 +53,9 @@ export const HEDERA_AUTO_RENEW_PERIOD_MIN = 30 * DAY_IN_SECONDS; // 30 days
 export const HEDERA_AUTO_RENEW_PERIOD_MAX = 92 * DAY_IN_SECONDS; // 92 days (per network rules)
 export const HEDERA_EXPIRATION_TIME_MAX = 92 * DAY_IN_SECONDS * 1000; // 92 days (per network rules)
 export const HEDERA_SCHEDULE_EXPIRATION_MAX = 62 * DAY_IN_SECONDS * 1000; // 92 days (per network rules)
+
+// HIP-336: max 20 allowance operations (HBAR + FT + NFT combined) per AccountAllowanceApproveTransaction
+export const HEDERA_MAX_ALLOWANCE_ENTRIES_PER_TRANSACTION = 20;
+
+// Hedera SDK limit: max 10 token transfers per TransferTransaction
+export const HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION = 10;

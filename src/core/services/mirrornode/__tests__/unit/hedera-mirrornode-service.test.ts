@@ -39,8 +39,8 @@ import {
 // Mock fetch globally
 global.fetch = jest.fn();
 
-// Mock @hashgraph/sdk
-jest.mock('@hashgraph/sdk');
+// Mock @hiero-ledger/sdk
+jest.mock('@hiero-ledger/sdk');
 
 // Test constants
 const TEST_ACCOUNT_ID = '0.0.1234';
@@ -543,6 +543,24 @@ describe('HederaMirrornodeServiceDefaultImpl', () => {
         2,
         `${TESTNET_BASE_URL}${nextPath}`,
       );
+    });
+
+    it('should handle account with null balance (balance=false query)', async () => {
+      const { service } = setupService();
+      const mockAccount = createMockAccountListItemAPIResponse({
+        balance: null,
+      });
+      const mockResponse = createMockGetAccountsAPIResponse([mockAccount]);
+      (global.fetch as jest.Mock).mockResolvedValue({
+        ok: true,
+        json: jest.fn().mockResolvedValue(mockResponse),
+      });
+
+      const result = await service.getAccounts({ balance: false });
+
+      expect(result.accounts).toHaveLength(1);
+      expect(result.accounts[0].accountId).toBe(mockAccount.account);
+      expect(result.accounts[0].balance).toBeUndefined();
     });
 
     it('should return empty list on HTTP 404', async () => {

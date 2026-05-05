@@ -2,10 +2,10 @@
  * Unit tests for TokenServiceImpl
  * Tests token transfer, creation, and association transaction building
  */
-import type { PublicKey } from '@hashgraph/sdk';
+import type { PublicKey } from '@hiero-ledger/sdk';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 
-import { AccountId, Hbar, TokenId, TokenType } from '@hashgraph/sdk';
+import { AccountId, Hbar, TokenId, TokenType } from '@hiero-ledger/sdk';
 
 import {
   ECDSA_HEX_PUBLIC_KEY,
@@ -28,12 +28,10 @@ import {
   createMockTokenCreateTransaction,
   createMockTokenDeleteTransaction,
   createMockTokenDissociateTransaction,
-  createMockTransferTransaction,
 } from './mocks';
 
 // Reusable test constants
 const ACCOUNT_ID_FROM = '0.0.1111';
-const ACCOUNT_ID_TO = '0.0.2222';
 const TREASURY_ACCOUNT_ID = '0.0.3333';
 const FEE_COLLECTOR_ID = '0.0.4444';
 
@@ -45,10 +43,7 @@ const INITIAL_SUPPLY = 1000n;
 const MAX_SUPPLY = 10000n;
 const TOKEN_TYPE = HederaTokenType.FUNGIBLE_COMMON;
 
-const TRANSFER_AMOUNT = 100n;
-
 // Mock instances
-const mockTransferTransaction = createMockTransferTransaction();
 const mockTokenCreateTransaction = createMockTokenCreateTransaction();
 const mockTokenAssociateTransaction = createMockTokenAssociateTransaction();
 const mockTokenDissociateTransaction = createMockTokenDissociateTransaction();
@@ -68,8 +63,7 @@ const mockPrivateKeyInstance = {
 };
 const mockHbarInstance = { toString: jest.fn().mockReturnValue('1 ℏ') };
 
-jest.mock('@hashgraph/sdk', () => ({
-  TransferTransaction: jest.fn(() => mockTransferTransaction),
+jest.mock('@hiero-ledger/sdk', () => ({
   TokenCreateTransaction: jest.fn(() => mockTokenCreateTransaction),
   TokenAssociateTransaction: jest.fn(() => mockTokenAssociateTransaction),
   TokenDissociateTransaction: jest.fn(() => mockTokenDissociateTransaction),
@@ -114,140 +108,6 @@ describe('TokenServiceImpl', () => {
     jest.clearAllMocks();
     logger = makeLogger();
     tokenService = new TokenServiceImpl(logger);
-  });
-
-  describe('createTransferTransaction', () => {
-    it('should create transfer transaction with correct parameters', () => {
-      const params = {
-        tokenId: TOKEN_ID,
-        fromAccountId: ACCOUNT_ID_FROM,
-        toAccountId: ACCOUNT_ID_TO,
-        amount: TRANSFER_AMOUNT,
-      };
-
-      const result = tokenService.createTransferTransaction(params);
-
-      expect(TokenId.fromString).toHaveBeenCalledWith(TOKEN_ID);
-      expect(AccountId.fromString).toHaveBeenCalledWith(ACCOUNT_ID_FROM);
-      expect(AccountId.fromString).toHaveBeenCalledWith(ACCOUNT_ID_TO);
-      expect(mockTransferTransaction.addTokenTransfer).toHaveBeenCalledWith(
-        mockTokenIdInstance,
-        mockAccountIdInstance,
-        -Number(TRANSFER_AMOUNT),
-      );
-      expect(mockTransferTransaction.addTokenTransfer).toHaveBeenCalledWith(
-        mockTokenIdInstance,
-        mockAccountIdInstance,
-        Number(TRANSFER_AMOUNT),
-      );
-      expect(result).toBe(mockTransferTransaction);
-    });
-
-    it('should log debug messages during transfer creation', () => {
-      const params = {
-        tokenId: TOKEN_ID,
-        fromAccountId: ACCOUNT_ID_FROM,
-        toAccountId: ACCOUNT_ID_TO,
-        amount: TRANSFER_AMOUNT,
-      };
-
-      tokenService.createTransferTransaction(params);
-
-      expect(logger.debug).toHaveBeenCalledWith(
-        `[TOKEN SERVICE] Creating transfer transaction: ${TRANSFER_AMOUNT} tokens from ${ACCOUNT_ID_FROM} to ${ACCOUNT_ID_TO}`,
-      );
-      expect(logger.debug).toHaveBeenCalledWith(
-        `[TOKEN SERVICE] Created transfer transaction for token ${TOKEN_ID}`,
-      );
-    });
-
-    it('should handle small transfer amounts', () => {
-      const params = {
-        tokenId: TOKEN_ID,
-        fromAccountId: ACCOUNT_ID_FROM,
-        toAccountId: ACCOUNT_ID_TO,
-        amount: 1n,
-      };
-
-      tokenService.createTransferTransaction(params);
-
-      expect(mockTransferTransaction.addTokenTransfer).toHaveBeenCalledWith(
-        mockTokenIdInstance,
-        mockAccountIdInstance,
-        -1,
-      );
-      expect(mockTransferTransaction.addTokenTransfer).toHaveBeenCalledWith(
-        mockTokenIdInstance,
-        mockAccountIdInstance,
-        1,
-      );
-    });
-
-    it('should handle large transfer amounts', () => {
-      const largeAmount = 1_000_000_000n;
-      const params = {
-        tokenId: TOKEN_ID,
-        fromAccountId: ACCOUNT_ID_FROM,
-        toAccountId: ACCOUNT_ID_TO,
-        amount: largeAmount,
-      };
-
-      tokenService.createTransferTransaction(params);
-
-      expect(mockTransferTransaction.addTokenTransfer).toHaveBeenCalledWith(
-        mockTokenIdInstance,
-        mockAccountIdInstance,
-        -Number(largeAmount),
-      );
-      expect(mockTransferTransaction.addTokenTransfer).toHaveBeenCalledWith(
-        mockTokenIdInstance,
-        mockAccountIdInstance,
-        Number(largeAmount),
-      );
-    });
-
-    it('should handle different account IDs', () => {
-      const params = {
-        tokenId: TOKEN_ID,
-        fromAccountId: '0.0.9999',
-        toAccountId: '0.0.8888',
-        amount: TRANSFER_AMOUNT,
-      };
-
-      tokenService.createTransferTransaction(params);
-
-      expect(AccountId.fromString).toHaveBeenCalledWith('0.0.9999');
-      expect(AccountId.fromString).toHaveBeenCalledWith('0.0.8888');
-    });
-
-    it('should handle different token IDs', () => {
-      const differentTokenId = '0.0.7777';
-      const params = {
-        tokenId: differentTokenId,
-        fromAccountId: ACCOUNT_ID_FROM,
-        toAccountId: ACCOUNT_ID_TO,
-        amount: TRANSFER_AMOUNT,
-      };
-
-      tokenService.createTransferTransaction(params);
-
-      expect(TokenId.fromString).toHaveBeenCalledWith(differentTokenId);
-    });
-
-    it('should add negative amount for sender and positive for receiver', () => {
-      const params = {
-        tokenId: TOKEN_ID,
-        fromAccountId: ACCOUNT_ID_FROM,
-        toAccountId: ACCOUNT_ID_TO,
-        amount: 500n,
-      };
-
-      tokenService.createTransferTransaction(params);
-
-      const calls = mockTransferTransaction.addTokenTransfer.mock.calls;
-      expect(calls[0][2]).toBe(-500); // Sender receives negative
-      expect(calls[1][2]).toBe(500); // Receiver receives positive
-    });
   });
 
   describe('createTokenTransaction', () => {

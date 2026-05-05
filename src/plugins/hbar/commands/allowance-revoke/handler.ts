@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
+import { HbarAllowanceEntry } from '@/core/services/allowance';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 
 import { HbarAllowanceRevokeInputSchema } from './input';
@@ -81,13 +82,15 @@ export class HbarAllowanceRevokeCommand extends BaseTransactionCommand<
   ): Promise<AllowanceRevokeBuildTransactionResult> {
     const { api } = args;
 
-    const result = api.hbar.createHbarAllowanceTransaction({
-      ownerAccountId: normalizedParams.ownerAccountId,
-      spenderAccountId: normalizedParams.spenderAccountId,
-      amountTinybar: 0n,
-    });
+    const transaction = api.allowance.buildAllowanceApprove([
+      new HbarAllowanceEntry(
+        normalizedParams.ownerAccountId,
+        normalizedParams.spenderAccountId,
+        0n,
+      ),
+    ]);
 
-    return { transaction: result.transaction };
+    return { transaction };
   }
 
   async signTransaction(

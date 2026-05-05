@@ -26,7 +26,7 @@ Goals:
 
 1. `token` plugin - commands summary:
    - `token create-ft` - renamed `token create` command for better clarity and user experience
-   - `token create-nft` - new command for NFT creation, should prepare valid call with `@hashgraph/sdk` to create new NFT token
+   - `token create-nft` - new command for NFT creation, should prepare valid call with `@hiero-ledger/sdk` to create new NFT token
    - `token mint-ft` - new command for minting fungible tokens
    - `token mint-nft` - new command for minting non-fungible tokens
    - `token transfer-ft` - renamed `token transfer` command for better clarity and user experience
@@ -51,7 +51,7 @@ If additional data would be required to store inside the token state we will add
 
 **Positive:**
 
-1. Consistency - as the `@hashgraph/sdk` uses same methods for handling fungible and non-fungible token operations we would also use same command for performing these operations.
+1. Consistency - as the `@hiero-ledger/sdk` uses same methods for handling fungible and non-fungible token operations we would also use same command for performing these operations.
    That will result in more consistent approach from the user's perspective.
 2. Simplicity - as we are using expanding `token` plugin we will not introduce another namespace for NFT data only. We will be using same storage and expand the model with `tokenType`.
    If we needed to expand the data model and make changes for a specific token, we would discriminate using the newly added `tokenType` field.

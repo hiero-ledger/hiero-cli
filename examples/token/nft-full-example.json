@@ -1,5 +1,6 @@
 {
   "name": "nft-full-example",
+  "tokenName": "NFT Full Example",
   "symbol": "NFE",
   "supplyType": "finite",
   "maxSupply": 10000,

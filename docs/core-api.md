@@ -22,7 +22,8 @@ interface CoreApi {
   logger: Logger;
   alias: AliasService;
   kms: KmsService;
-  hbar: HbarService;
+  transfer: TransferService;
+  allowance: AllowanceService;
   output: OutputService;
   receipt: ReceiptService;
   pluginManagement: PluginManagementService;
@@ -101,21 +102,55 @@ const result = api.account.createAccount({
 
 ### Token Service
 
-Handles Hedera token operations including creation, minting, association, and transfers (FT and NFT).
+Handles Hedera token lifecycle operations: creation, association/dissociation, minting, burning, freezing, KYC, airdrops, wipes, and more. FT/NFT transfers are handled separately by [TransferService](#transfer-service).
 
 ```typescript
 interface TokenService {
   createTokenTransaction(params: TokenCreateParams): TokenCreateTransaction;
-
   createTokenAssociationTransaction(
     params: TokenAssociationParams,
   ): TokenAssociateTransaction;
-
-  createTransferTransaction(params: TokenTransferParams): TransferTransaction;
-
+  createTokenDissociationTransaction(
+    params: TokenDissociationParams,
+  ): TokenDissociateTransaction;
   createMintTransaction(params: TokenMintParams): TokenMintTransaction;
-
-  createNftTransferTransaction(params: NftTransferParams): TransferTransaction;
+  createDeleteTransaction(params: TokenDeleteParams): TokenDeleteTransaction;
+  createFreezeTransaction(params: TokenFreezeParams): TokenFreezeTransaction;
+  createUnfreezeTransaction(
+    params: TokenUnfreezeParams,
+  ): TokenUnfreezeTransaction;
+  createGrantKycTransaction(
+    params: TokenGrantKycParams,
+  ): TokenGrantKycTransaction;
+  createRevokeKycTransaction(
+    params: TokenRevokeKycParams,
+  ): TokenRevokeKycTransaction;
+  createPauseTransaction(params: { tokenId: string }): TokenPauseTransaction;
+  createUnpauseTransaction(params: {
+    tokenId: string;
+  }): TokenUnpauseTransaction;
+  createAirdropFtTransaction(
+    params: TokenAirdropFtParams,
+  ): TokenAirdropTransaction;
+  createAirdropNftTransaction(
+    params: TokenAirdropNftParams,
+  ): TokenAirdropTransaction;
+  createClaimAirdropTransaction(
+    params: TokenClaimAirdropParams,
+  ): TokenClaimAirdropTransaction;
+  createCancelAirdropTransaction(
+    params: TokenCancelAirdropParams,
+  ): TokenCancelAirdropTransaction;
+  createBurnFtTransaction(params: TokenBurnFtParams): TokenBurnTransaction;
+  createBurnNftTransaction(params: TokenBurnNftParams): TokenBurnTransaction;
+  createUpdateNftMetadataTransaction(
+    params: TokenUpdateNftMetadataParams,
+  ): TokenUpdateNftsTransaction;
+  createWipeFtTransaction(params: TokenWipeFtParams): TokenWipeTransaction;
+  createWipeNftTransaction(params: TokenWipeNftParams): TokenWipeTransaction;
+  createRejectAirdropTransaction(
+    params: TokenRejectAirdropParams,
+  ): TokenRejectTransaction;
 }
 
 interface TokenCreateParams {
@@ -143,42 +178,19 @@ interface TokenAssociationParams {
   accountId: string;
 }
 
-interface TokenTransferParams {
-  tokenId: string;
-  fromAccountId: string;
-  toAccountId: string;
-  amount: bigint;
-}
-
 interface TokenMintParams {
   tokenId: string;
   amount?: bigint;
   metadata?: Uint8Array;
 }
-
-interface NftTransferParams {
-  tokenId: string;
-  fromAccountId: string;
-  toAccountId: string;
-  serialNumbers: number[]; // Max 10 serials per transaction (Hedera limit)
-}
 ```
 
-**Usage Examples:**
+**Usage Example:**
 
 ```typescript
-const ftTransferTx = api.token.createTransferTransaction({
+const mintTx = api.token.createMintTransaction({
   tokenId: '0.0.123456',
-  fromAccountId: '0.0.111111',
-  toAccountId: '0.0.222222',
-  amount: 100n,
-});
-
-const nftTransferTx = api.token.createNftTransferTransaction({
-  tokenId: '0.0.123456',
-  fromAccountId: '0.0.111111',
-  toAccountId: '0.0.222222',
-  serialNumbers: [1, 2, 3],
+  amount: 1000n,
 });
 
 const signed = await api.txSign.sign(nftTransferTx, [keyRefId]);
@@ -225,7 +237,7 @@ interface MessageSubmitResult {
 }
 ```
 
-`Key`, `TopicCreateTransaction`, `TopicDeleteTransaction`, and `TopicMessageSubmitTransaction` are Hedera SDK types (`@hashgraph/sdk`).
+`Key`, `TopicCreateTransaction`, `TopicDeleteTransaction`, and `TopicMessageSubmitTransaction` are Hedera SDK types (`@hiero-ledger/sdk`).
 
 **Usage Example:**
 
@@ -262,7 +274,7 @@ const signed = await api.txSign.sign(transaction, [
 
 ### TxExecuteService
 
-Executes a signed transaction on the Hedera network and returns a `TransactionResult`.
+Executes already-signed (or operator-signed) transactions on the Hedera network. Signing is handled separately by `TxSignService`.
 
 ```typescript
 interface TxExecuteService {
@@ -719,29 +731,175 @@ const record = api.alias.resolveOrThrow('my-account', 'account', 'testnet');
 console.log(record.entityId); // '0.0.123456'
 ```
 
-### HBAR Service
+### Transfer Service
 
-Builds HBAR transfer and allowance transactions.
+Builds `TransferTransaction` objects containing one or more transfer legs (HBAR, fungible token, or NFT). Multiple entries are batched into a single atomic transaction.
 
 ```typescript
-interface HbarService {
-  transferTinybar(
-    params: TransferTinybarParams,
-  ): Promise<TransferTinybarResult>;
-  createHbarAllowanceTransaction(
-    params: HbarAllowanceParams,
-  ): HbarAllowanceResult;
+interface TransferService {
+  buildTransferTransaction(
+    entries: TransferEntry[],
+    memo?: string,
+  ): TransferTransaction;
+}
+```
+
+**Transfer entry types:**
+
+```typescript
+// HBAR transfer (amounts in tinybars)
+class HbarTransferEntry {
+  constructor(from: string, to: string, amountTinybar: bigint) {}
+}
+
+// Fungible token transfer
+class FtTransferEntry {
+  constructor(from: string, to: string, tokenId: string, amount: bigint) {}
+}
+
+// NFT transfer (one serial per entry)
+class NftTransferEntry {
+  constructor(
+    from: string,
+    to: string,
+    tokenId: string,
+    serialNumber: number,
+  ) {}
 }
 ```
 
 **Usage Example:**
 
 ```typescript
-const result = await api.hbar.transferTinybar({
-  fromAccountId: '0.0.111111',
-  toAccountId: '0.0.222222',
-  amount: 100_000_000n, // 1 HBAR in tinybars
+import {
+  HbarTransferEntry,
+  FtTransferEntry,
+  NftTransferEntry,
+} from '@/core/services/transfer';
+
+// Single HBAR transfer
+const tx = api.transfer.buildTransferTransaction(
+  [new HbarTransferEntry('0.0.111111', '0.0.222222', 100_000_000n)],
+  'optional memo',
+);
+
+// Fungible token transfer
+const ftTx = api.transfer.buildTransferTransaction([
+  new FtTransferEntry('0.0.111111', '0.0.222222', '0.0.123456', 500n),
+]);
+
+// NFT transfer
+const nftTx = api.transfer.buildTransferTransaction([
+  new NftTransferEntry('0.0.111111', '0.0.222222', '0.0.123456', 1),
+  new NftTransferEntry('0.0.111111', '0.0.222222', '0.0.123456', 2),
+]);
+
+const signed = await api.txSign.sign(tx, [keyRefId]);
+await api.txExecute.execute(signed);
+```
+
+### Allowance Service
+
+Builds allowance approval and revocation transactions for HBAR, fungible tokens, and NFTs.
+
+```typescript
+interface AllowanceService {
+  buildAllowanceApprove(
+    entries: AllowanceEntry[],
+  ): AccountAllowanceApproveTransaction;
+
+  buildNftAllowanceDelete(
+    params: NftAllowanceDeleteParams,
+  ): AccountAllowanceApproveTransaction | AccountAllowanceDeleteTransaction;
+}
+
+// Delete specific serials (revoking approval for listed serials)
+interface NftAllowanceDeleteSpecificParams {
+  tokenId: string;
+  ownerAccountId: string;
+  serialNumbers: number[];
+  allSerials?: false;
+}
+
+// Revoke all-serials approval for a spender
+interface NftAllowanceDeleteAllSerialsParams {
+  tokenId: string;
+  ownerAccountId: string;
+  spenderAccountId: string;
+  allSerials: true;
+}
+```
+
+**Allowance entry types:**
+
+```typescript
+// HBAR allowance (amount in tinybars)
+class HbarAllowanceEntry {
+  constructor(
+    ownerAccountId: string,
+    spenderAccountId: string,
+    amountTinybar: bigint,
+  ) {}
+}
+
+// Fungible token allowance (set amount to 0n to revoke)
+class FtAllowanceEntry {
+  constructor(
+    ownerAccountId: string,
+    spenderAccountId: string,
+    tokenId: string,
+    amount: bigint,
+  ) {}
+}
+
+// NFT allowance — specific serials or all-serials
+class NftAllowanceEntry {
+  constructor(
+    ownerAccountId: string,
+    spenderAccountId: string,
+    tokenId: string,
+    serialNumbers?: number[], // provide for specific serials
+    approveForAll?: boolean, // set true to approve all serials
+  ) {}
+}
+```
+
+**Usage Example:**
+
+```typescript
+import { FtAllowanceEntry, NftAllowanceEntry } from '@/core/services/allowance';
+
+// Approve FT allowance
+const approveTx = api.allowance.buildAllowanceApprove([
+  new FtAllowanceEntry('0.0.111111', '0.0.222222', '0.0.123456', 1000n),
+]);
+
+// Approve NFT allowance for specific serials
+const nftApproveTx = api.allowance.buildAllowanceApprove([
+  new NftAllowanceEntry('0.0.111111', '0.0.222222', '0.0.123456', [1, 2, 3]),
+]);
+
+// Approve NFT allowance for all serials
+const allSerialsApprove = api.allowance.buildAllowanceApprove([
+  new NftAllowanceEntry(
+    '0.0.111111',
+    '0.0.222222',
+    '0.0.123456',
+    undefined,
+    true,
+  ),
+]);
+
+// Delete NFT allowance for all serials
+const deleteTx = api.allowance.buildNftAllowanceDelete({
+  tokenId: '0.0.123456',
+  ownerAccountId: '0.0.111111',
+  spenderAccountId: '0.0.222222',
+  allSerials: true,
 });
+
+const signed = await api.txSign.sign(approveTx, [keyRefId]);
+await api.txExecute.execute(signed);
 ```
 
 ### Output Service

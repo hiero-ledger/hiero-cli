@@ -11,7 +11,7 @@ import { ContractErc20CallTotalSupplyOutputSchema } from '@/plugins/contract-erc
 import { contractErc20TotalSupply } from '@/plugins/contract-erc20/commands/total-supply/handler';
 import { ContractErc20CallTotalSupplyInputSchema } from '@/plugins/contract-erc20/commands/total-supply/input';
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   ContractId: {
     fromString: jest.fn(() => ({
       toEvmAddress: jest.fn(() => 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'),

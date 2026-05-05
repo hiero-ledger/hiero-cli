@@ -5,7 +5,7 @@ import type {
 } from '@/core/services/batch/types';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 
-import { BatchTransaction } from '@hashgraph/sdk';
+import { BatchTransaction } from '@hiero-ledger/sdk';
 
 export class BatchTransactionServiceImpl implements BatchTransactionService {
   private logger: Logger;

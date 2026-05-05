@@ -28,7 +28,7 @@ import { ContractErc721CallSetApprovalForAllInputSchema } from '@/plugins/contra
 const mockAddAddress = jest.fn().mockReturnThis();
 const mockAddBool = jest.fn().mockReturnThis();
 
-jest.mock('@hashgraph/sdk', () => ({
+jest.mock('@hiero-ledger/sdk', () => ({
   ContractFunctionParameters: jest.fn(() => ({
     addAddress: mockAddAddress,
     addBool: mockAddBool,

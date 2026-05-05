@@ -9,12 +9,12 @@ import type {
   AliasRecord,
   AliasService,
 } from '@/core/services/alias/alias-service.interface';
+import type { AllowanceService } from '@/core/services/allowance/allowance-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
-import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { KeyResolverService } from '@/core/services/key-resolver/key-resolver-service.interface';
 import type { Destination } from '@/core/services/key-resolver/types';
@@ -35,6 +35,7 @@ import type { OutputHandlerOptions } from '@/core/services/output/types';
 import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
 import type { ScheduleTransactionService } from '@/core/services/schedule-transaction/schedule-transaction-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
+import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 import type { BatchData, TransactionResult } from '@/core/types/shared.types';
@@ -478,11 +479,18 @@ export const makeMirrorMock = (
 });
 
 /**
- * Create a mocked HbarService
+ * Create a mocked TransferService
  */
-const makeHbarMock = (): jest.Mocked<HbarService> => ({
-  transferTinybar: jest.fn(),
-  createHbarAllowanceTransaction: jest.fn(),
+const makeTransferMock = (): jest.Mocked<TransferService> => ({
+  buildTransferTransaction: jest.fn(),
+});
+
+/**
+ * Create a mocked AllowanceService
+ */
+const makeAllowanceMock = (): jest.Mocked<AllowanceService> => ({
+  buildAllowanceApprove: jest.fn(),
+  buildNftAllowanceDelete: jest.fn(),
 });
 
 /**
@@ -619,7 +627,8 @@ export const makeArgs = (
     logger,
     alias,
     kms,
-    hbar: makeHbarMock(),
+    transfer: makeTransferMock(),
+    allowance: makeAllowanceMock(),
     output: makeOutputMock(),
     pluginManagement: makePluginManagementServiceMock(),
     contract,
@@ -846,17 +855,35 @@ export const makeKeyResolverMock = (
 
     resolveSigningKey,
 
-    resolveSigningKeyRefIdsFromMirrorRoleKey: jest
-      .fn()
-      .mockImplementation((params) =>
-        KeyResolverServiceImpl.prototype.resolveSigningKeyRefIdsFromMirrorRoleKey.call(
-          Object.assign(Object.create(KeyResolverServiceImpl.prototype), {
-            resolveSigningKey,
-            kms,
-          }) as KeyResolverServiceImpl,
-          params,
-        ),
+    resolveSigningKeys: jest.fn().mockImplementation((params) =>
+      KeyResolverServiceImpl.prototype.resolveSigningKeys.call(
+        Object.assign(Object.create(KeyResolverServiceImpl.prototype), {
+          resolveSigningKey,
+          kms,
+        }) as KeyResolverServiceImpl,
+        params,
       ),
+    ),
+
+    resolveExplicitSigningKeys: jest.fn().mockImplementation((params) =>
+      KeyResolverServiceImpl.prototype.resolveExplicitSigningKeys.call(
+        Object.assign(Object.create(KeyResolverServiceImpl.prototype), {
+          resolveSigningKey,
+          kms,
+        }) as KeyResolverServiceImpl,
+        params,
+      ),
+    ),
+
+    resolveMirrorNodeSigningKeys: jest.fn().mockImplementation((params) =>
+      KeyResolverServiceImpl.prototype.resolveMirrorNodeSigningKeys.call(
+        Object.assign(Object.create(KeyResolverServiceImpl.prototype), {
+          resolveSigningKey,
+          kms,
+        }) as KeyResolverServiceImpl,
+        params,
+      ),
+    ),
 
     resolvedPublicKeysForStoredKeyRefs: jest
       .fn()

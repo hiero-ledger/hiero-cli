@@ -158,6 +158,11 @@ import {
   TokenUnpauseOutputSchema,
 } from './commands/unpause';
 import {
+  TOKEN_UPDATE_TEMPLATE,
+  tokenUpdate,
+  TokenUpdateOutputSchema,
+} from './commands/update';
+import {
   TOKEN_UPDATE_NFT_METADATA_TEMPLATE,
   tokenUpdateNftMetadata,
   TokenUpdateNftMetadataOutputSchema,
@@ -174,6 +179,7 @@ import { TokenCreateNftFromFileStateHook } from './hooks/token-create-nft-from-f
 import { TokenCreateNftStateHook } from './hooks/token-create-nft-state';
 import { TokenDeleteStateHook } from './hooks/token-delete-state';
 import { TokenDissociateStateHook } from './hooks/token-dissociate-state/handler';
+import { TokenUpdateStateHook } from './hooks/token-update-state';
 
 export const tokenPluginManifest: PluginManifest = {
   name: 'token',
@@ -214,6 +220,11 @@ export const tokenPluginManifest: PluginManifest = {
     {
       name: 'token-delete-state',
       hook: new TokenDeleteStateHook(),
+      options: [],
+    },
+    {
+      name: 'token-update-state',
+      hook: new TokenUpdateStateHook(),
       options: [],
     },
   ],
@@ -2094,6 +2105,241 @@ export const tokenPluginManifest: PluginManifest = {
       output: {
         schema: TokenImportOutputSchema,
         humanTemplate: TOKEN_IMPORT_TEMPLATE,
+      },
+    },
+    {
+      name: 'update',
+      summary: 'Update a token',
+      description:
+        'Update properties of an existing token. Verifies the token exists on the mirror node.',
+      registeredHooks: [
+        { hook: 'batchify-set-batch-key', phase: 'preSignTransaction' },
+        { hook: 'batchify-add-transaction', phase: 'preExecuteTransaction' },
+      ],
+      options: [
+        {
+          name: 'token',
+          short: 'T',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Token ID or alias to update',
+        },
+        {
+          name: 'token-name',
+          short: 'b',
+          type: OptionType.STRING,
+          required: false,
+          description: 'New token name',
+        },
+        {
+          name: 'symbol',
+          short: 'Y',
+          type: OptionType.STRING,
+          required: false,
+          description: 'New token symbol',
+        },
+        {
+          name: 'treasury',
+          short: 't',
+          type: OptionType.STRING,
+          required: false,
+          description: 'New treasury account ID or alias',
+        },
+        {
+          name: 'admin-keys',
+          short: 'a',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'Current admin key credential(s) for signing. Omit to auto-resolve from key manager.',
+        },
+        {
+          name: 'admin-key-threshold',
+          short: 'A',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'How many current admin keys to use for signing (M-of-N). Only when multiple --admin-keys are set.',
+        },
+        {
+          name: 'new-admin-keys',
+          short: 'n',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New admin key(s) to replace the current admin key. Accepts any key format. Pass "null" to clear.',
+        },
+        {
+          name: 'new-admin-key-threshold',
+          short: 'K',
+          type: OptionType.NUMBER,
+          required: false,
+          description:
+            'M-of-N: number of new admin keys required to sign (only when multiple --new-admin-keys are set).',
+        },
+        {
+          name: 'current-treasury-key',
+          short: 'c',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Signing key for the new treasury account. Omit to auto-resolve from key manager.',
+        },
+        {
+          name: 'kyc-key',
+          short: 'y',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New KYC key(s). Pass "null" to permanently remove the KYC key.',
+        },
+        {
+          name: 'kyc-key-threshold',
+          short: 'H',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'M-of-N: number of KYC keys required to sign.',
+        },
+        {
+          name: 'freeze-key',
+          short: 'f',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New freeze key(s). Pass "null" to permanently remove the freeze key.',
+        },
+        {
+          name: 'freeze-key-threshold',
+          short: 'Z',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'M-of-N: number of freeze keys required to sign.',
+        },
+        {
+          name: 'wipe-key',
+          short: 'w',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New wipe key(s). Pass "null" to permanently remove the wipe key.',
+        },
+        {
+          name: 'wipe-key-threshold',
+          short: 'W',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'M-of-N: number of wipe keys required to sign.',
+        },
+        {
+          name: 'supply-key',
+          short: 's',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New supply key(s). Pass "null" to permanently remove the supply key.',
+        },
+        {
+          name: 'supply-key-threshold',
+          short: 'L',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'M-of-N: number of supply keys required to sign.',
+        },
+        {
+          name: 'fee-schedule-key',
+          short: 'e',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New fee schedule key(s). Pass "null" to permanently remove the fee schedule key.',
+        },
+        {
+          name: 'fee-schedule-key-threshold',
+          short: 'E',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'M-of-N: number of fee schedule keys required to sign.',
+        },
+        {
+          name: 'pause-key',
+          short: 'p',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New pause key(s). Pass "null" to permanently remove the pause key.',
+        },
+        {
+          name: 'pause-key-threshold',
+          short: 'U',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'M-of-N: number of pause keys required to sign.',
+        },
+        {
+          name: 'metadata-key',
+          short: 'D',
+          type: OptionType.REPEATABLE,
+          required: false,
+          description:
+            'New metadata key(s). Pass "null" to permanently remove the metadata key.',
+        },
+        {
+          name: 'metadata-key-threshold',
+          short: 'O',
+          type: OptionType.NUMBER,
+          required: false,
+          description: 'M-of-N: number of metadata keys required to sign.',
+        },
+        {
+          name: 'memo',
+          short: 'M',
+          type: OptionType.STRING,
+          required: false,
+          description: 'New memo for the token. Pass "null" to clear.',
+        },
+        {
+          name: 'auto-renew-account',
+          short: 'r',
+          type: OptionType.STRING,
+          required: false,
+          description: 'New auto-renew account ID or alias.',
+        },
+        {
+          name: 'auto-renew-period',
+          short: 'R',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'New auto-renew period: seconds as integer (30–92 days), or with suffix s/m/h/d.',
+        },
+        {
+          name: 'expiration-time',
+          short: 'x',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'New expiration time as ISO 8601 string. Can be set without admin key when it is the only change.',
+        },
+        {
+          name: 'metadata',
+          short: 'd',
+          type: OptionType.STRING,
+          required: false,
+          description: 'Token metadata (UTF-8 string, max 100 bytes).',
+        },
+        {
+          name: 'key-manager',
+          short: 'k',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Key manager to use: local or local_encrypted (defaults to config setting)',
+        },
+      ],
+      handler: tokenUpdate,
+      output: {
+        schema: TokenUpdateOutputSchema,
+        humanTemplate: TOKEN_UPDATE_TEMPLATE,
       },
     },
   ],
