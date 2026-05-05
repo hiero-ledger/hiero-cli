@@ -23,6 +23,7 @@ src/plugins/contract/
 │   ├── create/
 │   ├── import/
 │   ├── list/
+│   ├── update/
 │   └── delete/
 ├── utils/
 │   └── contract-file-helpers.ts
@@ -133,6 +134,78 @@ hcli contract create \
   --max-automatic-token-associations 10
 ```
 
+### Contract Update
+
+Updates smart contract properties on the Hedera network. At least one updatable field must be provided. The CLI always loads the contract's **admin key from the mirror node** to determine signing requirements, then matches public keys against KMS. If you omit `--admin-key`, matching KMS keys are used automatically. If you pass `--admin-key`, those credentials are resolved and used for signing.
+
+After a successful update the CLI writes the new field values back to local state. When the admin key changes, all registered aliases for that contract have their `keyRefId` updated to point at the new admin key.
+
+**Required options:**
+
+| Option     | Short | Description                                    |
+| ---------- | ----- | ---------------------------------------------- |
+| `contract` | `c`   | Contract ID (`0.0.xxx`), alias, or EVM address |
+
+**Optional options (at least one required):**
+
+| Option                             | Short | Description                                                                                                          |
+| ---------------------------------- | ----- | -------------------------------------------------------------------------------------------------------------------- |
+| `admin-key`                        | `K`   | Repeatable. Current admin credential(s) used to sign the update. Omit to use KMS auto-discovery.                     |
+| `new-admin-key`                    | `a`   | Repeatable. Replacement admin key(s). The new key's private key must also exist in KMS so it can co-sign the update. |
+| `new-admin-key-threshold`          | `A`   | M-of-N: number of new admin keys required to sign. Only valid when multiple `--new-admin-key` values are given.      |
+| `memo`                             | `m`   | Contract memo (max 100 chars). Pass `"null"` or `""` to clear.                                                       |
+| `auto-renew-period`                | `r`   | Auto-renew period. Plain integer = seconds; or suffix: `s`, `m`, `h`, `d` (e.g. `500`, `50m`, `2h`, `30d`).          |
+| `auto-renew-account-id`            | `R`   | Account ID (`0.0.xxx`) whose balance pays for auto-renewal. Pass `"null"` to clear.                                  |
+| `max-automatic-token-associations` | `t`   | Maximum number of automatic token associations. `-1` for unlimited, `0` to disable.                                  |
+| `staked-account-id`                | `s`   | Account ID (`0.0.xxx`) to stake this contract to. Mutually exclusive with `--staked-node-id`.                        |
+| `staked-node-id`                   | `o`   | Node ID to stake this contract to. Mutually exclusive with `--staked-account-id`.                                    |
+| `decline-staking-reward`           | `D`   | Whether to decline staking rewards for this contract.                                                                |
+| `expiration-time`                  | `e`   | Expiration time as ISO datetime string (e.g. `2025-12-31T00:00:00Z`).                                                |
+| `key-manager`                      | `k`   | Key manager to use: `local` or `local_encrypted` (defaults to config setting).                                       |
+
+**Example — update memo:**
+
+```bash
+hcli contract update --contract my-contract --memo "new description"
+```
+
+**Example — clear memo:**
+
+```bash
+hcli contract update --contract 0.0.123456 --memo ""
+```
+
+**Example — replace admin key:**
+
+```bash
+hcli contract update --contract my-contract \
+  --new-admin-key ed25519:public:<hex-public-key>
+```
+
+**Example — replace admin key with M-of-N policy (2-of-3):**
+
+```bash
+hcli contract update --contract my-contract \
+  --new-admin-key alice --new-admin-key bob --new-admin-key carol \
+  --new-admin-key-threshold 2
+```
+
+**Example — update staking and auto-renew settings:**
+
+```bash
+hcli contract update --contract my-contract \
+  --staked-node-id 3 \
+  --auto-renew-period 90d \
+  --auto-renew-account-id 0.0.500
+```
+
+**Example — set expiration time:**
+
+```bash
+hcli contract update --contract my-contract \
+  --expiration-time 2026-12-31T00:00:00Z
+```
+
 ### Contract Import
 
 Imports an existing contract from Hedera (by contract ID or EVM address) into local state. Fetches contract info from the mirror node, reads the on-chain **admin key** (including **KeyList** and **ThresholdKey**), derives the set of admin public keys and the effective **M-of-N** threshold, matches public keys to local KMS entries where possible, and stores `adminKeyRefIds` and `adminKeyThreshold` in CLI state for later commands (e.g. network delete).
@@ -183,16 +256,16 @@ hcli contract delete --contract 0.0.123456 --transfer-id 0.0.5678 \
 
 The plugin uses the Core API services:
 
-- `api.contract` - Contract deployment and `ContractDeleteTransaction` construction
+- `api.contract` - Contract deployment, `ContractUpdateTransaction`, and `ContractDeleteTransaction` construction
 - `api.contractCompiler` - Solidity compilation
 - `api.contractVerifier` - HashScan verification
 - `api.txSign` / `api.txExecute` - Signing and execution (including contract create flow)
 - `api.state` - Namespaced state management
 - `api.network` - Network information
 - `api.alias` - Name registration and resolution
-- `api.mirror` - Contract info when deleting on network without a local state entry
+- `api.mirror` - Contract info when updating or deleting on network without a local state entry
 - `api.config` - Configuration (key manager default)
-- `api.keyResolver` - Resolving explicit admin credentials for create/delete; for network delete, `resolveSigningKeys` derives signing key refs from the mirror admin key plus KMS (not from stored state)
+- `api.keyResolver` - Resolving explicit admin credentials for create/update/delete; `resolveSigningKeys` derives signing key refs from the mirror admin key plus KMS (not from stored state)
 - `api.logger` - Logging
 
 ## 📤 Output Formatting
@@ -210,6 +283,7 @@ interface CommandResult {
 - **Create**: `contractId`, `contractName`, `contractEvmAddress`, `name`, `network`, `transactionId`, `adminKeyPresent`, `adminKeyThreshold`, `adminKeyCount`, `verified`
 - **Import**: `contractId`, `contractEvmAddress`, `name`, `network`, `memo`, `verified`
 - **List**: `contracts` (array with `contractId`, `name`, `contractEvmAddress`, `adminKeyPresent`, `network`, `verified`), `totalCount`
+- **Update**: `contractId`, `network`, `transactionId`, `updatedFields` (array of field names that were changed)
 - **Delete**: `deletedContract`, `network`, optional `removedAliases`, `transactionId`, `stateOnly`
 
 Human-readable output uses Handlebars templates with HashScan links for contract and transaction IDs.

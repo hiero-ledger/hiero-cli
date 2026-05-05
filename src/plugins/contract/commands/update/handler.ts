@@ -3,6 +3,7 @@
  * Updates smart contract properties on Hedera network
  */
 import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { AliasService } from '@/core/services/alias/alias-service.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { ContractInfo } from '@/core/services/mirrornode/types';
 import type { SupportedNetwork } from '@/core/types/shared.types';
@@ -24,13 +25,13 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { NULL_TOKEN } from '@/core/shared/constants';
 import { ensureEvmAddress0xPrefix } from '@/core/utils/evm-address';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
 import { ContractUpdateInputSchema } from './input';
-import { NULL_TOKEN } from '@/core/shared/constants';
 
 export const CONTRACT_UPDATE_COMMAND_NAME = 'contract_update';
 
@@ -83,7 +84,11 @@ export class UpdateContractCommand extends BaseTransactionCommand<
     }
 
     if (!storedContract) {
-      storedContract = this.buildContractFromMirror(contractInfo, contractId, network);
+      storedContract = this.buildContractFromMirror(
+        contractInfo,
+        contractId,
+        network,
+      );
       logger.info(
         `Contract not in local state; using mirror info for ${storedContract.contractId}`,
       );
@@ -226,44 +231,17 @@ export class UpdateContractCommand extends BaseTransactionCommand<
     );
 
     if (existingContract) {
-      const updatedAdminKeyRefIds = normalisedParams.newAdminKeys
-        ? normalisedParams.newAdminKeys.map((k) => k.keyRefId)
-        : existingContract.adminKeyRefIds;
-      const updatedAdminKeyThreshold = normalisedParams.newAdminKeys
-        ? (normalisedParams.newAdminKeyThreshold ??
-          normalisedParams.newAdminKeys.length)
-        : existingContract.adminKeyThreshold;
-      const updatedContract: ContractData = {
-        ...existingContract,
-        memo:
-          normalisedParams.memo !== undefined
-            ? (normalisedParams.memo ?? undefined)
-            : existingContract.memo,
-        adminKeyRefIds: updatedAdminKeyRefIds,
-        adminKeyThreshold: updatedAdminKeyThreshold,
-      };
-      contractState.saveContract(normalisedParams.stateKey, updatedContract);
+      contractState.saveContract(
+        normalisedParams.stateKey,
+        this.applyContractUpdates(existingContract, normalisedParams),
+      );
     }
 
     if (
       normalisedParams.newAdminKeys &&
       normalisedParams.newAdminKeys.length > 0
     ) {
-      const oldAdminKeyRefIds =
-        normalisedParams.contractToUpdate.adminKeyRefIds;
-      const newAdminKeyRefId = normalisedParams.newAdminKeys[0].keyRefId;
-      const contractAliases = api.alias
-        .list()
-        .filter(
-          (a) =>
-            a.entityId === normalisedParams.contractId &&
-            a.keyRefId !== undefined &&
-            oldAdminKeyRefIds.includes(a.keyRefId),
-        );
-      for (const contractAlias of contractAliases) {
-        api.alias.remove(contractAlias.alias, contractAlias.network);
-        api.alias.register({ ...contractAlias, keyRefId: newAdminKeyRefId });
-      }
+      this.updateContractAliases(api.alias, normalisedParams);
     }
 
     const outputData: ContractUpdateOutput = {
@@ -274,6 +252,45 @@ export class UpdateContractCommand extends BaseTransactionCommand<
     };
 
     return { result: outputData };
+  }
+
+  private updateContractAliases(
+    aliasService: AliasService,
+    params: ContractUpdateNormalisedParams,
+  ): void {
+    const oldAdminKeyRefIds = params.contractToUpdate.adminKeyRefIds;
+    const newAdminKeyRefId = params.newAdminKeys[0].keyRefId;
+    aliasService
+      .list()
+      .filter(
+        (a) =>
+          a.entityId === params.contractId &&
+          a.keyRefId !== undefined &&
+          oldAdminKeyRefIds.includes(a.keyRefId),
+      )
+      .forEach((contractAlias) => {
+        aliasService.remove(contractAlias.alias, contractAlias.network);
+        aliasService.register({ ...contractAlias, keyRefId: newAdminKeyRefId });
+      });
+  }
+
+  private applyContractUpdates(
+    existing: ContractData,
+    params: ContractUpdateNormalisedParams,
+  ): ContractData {
+    const adminKeyRefIds = params.newAdminKeys
+      ? params.newAdminKeys.map((k) => k.keyRefId)
+      : existing.adminKeyRefIds;
+    const adminKeyThreshold = params.newAdminKeys
+      ? (params.newAdminKeyThreshold ?? params.newAdminKeys.length)
+      : existing.adminKeyThreshold;
+    return {
+      ...existing,
+      memo:
+        params.memo !== undefined ? (params.memo ?? undefined) : existing.memo,
+      adminKeyRefIds,
+      adminKeyThreshold,
+    };
   }
 
   private buildContractFromMirror(

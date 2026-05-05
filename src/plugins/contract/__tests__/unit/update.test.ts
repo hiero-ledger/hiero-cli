@@ -35,10 +35,10 @@ import {
   NEW_ADMIN_KEY_REF,
   STORED_CONTRACT_ADMIN_REF,
 } from '@/plugins/contract/__tests__/unit/helpers/fixtures';
+import { makeApiMocks } from '@/plugins/contract/__tests__/unit/helpers/mocks';
 import { contractUpdate } from '@/plugins/contract/commands/update/handler';
 import { ContractUpdateOutputSchema } from '@/plugins/contract/commands/update/output';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
-import { makeApiMocks } from '@/plugins/contract/__tests__/unit/helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandContractStateHelper: jest.fn(),

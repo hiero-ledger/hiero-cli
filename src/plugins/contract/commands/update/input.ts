@@ -10,8 +10,9 @@ import {
   KeyThresholdOptionalSchema,
   MaxAutoAssociationsSchema,
   MemoSchema,
-  NodeIdSchema, NullLiteralSchema,
-  OptionalDefaultEmptyKeyListSchema
+  NodeIdSchema,
+  NullLiteralSchema,
+  OptionalDefaultEmptyKeyListSchema,
 } from '@/core/schemas';
 import { NULL_TOKEN } from '@/core/shared/constants';
 

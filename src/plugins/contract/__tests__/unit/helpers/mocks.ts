@@ -3,11 +3,11 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import { EntityReferenceType } from '@/core/types/shared.types';
 import { CONTRACT_NAME_REGEX } from '@/plugins/contract/utils/contract-file-helpers';
 import {
-  makeApiMocks,
   type ApiMocksConfig,
+  makeApiMocks,
 } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 
-export { makeApiMocks, type ApiMocksConfig };
+export { type ApiMocksConfig, makeApiMocks };
 
 import {
   MOCK_COMPILATION_RESULT,
