@@ -1,5 +1,6 @@
 {
   "name": "token-fractional-sender",
+  "tokenName": "Token Fractional Fee Sender",
   "symbol": "FFSEND",
   "decimals": 8,
   "supplyType": "finite",

@@ -119,7 +119,7 @@ export class TokenCreateNftFromFileCommand extends BaseTransactionCommand<
       filename: validArgs.file,
       keyManager,
       alias: tokenDefinition.name,
-      name: tokenDefinition.name,
+      name: tokenDefinition.tokenName,
       symbol: tokenDefinition.symbol,
       supplyType: tokenDefinition.supplyType.toUpperCase() as SupplyType,
       maxSupply: tokenDefinition.maxSupply,

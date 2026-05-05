@@ -39,6 +39,7 @@ describe('Token Custom Fees Integration Tests', () => {
 
     const tokenFile = {
       name: `FixedHbarFeeToken-${Date.now()}`,
+      tokenName: `FixedHbarFeeToken-${Date.now()}`,
       symbol: 'FHBAR',
       decimals: 8,
       supplyType: 'infinite',
@@ -70,7 +71,7 @@ describe('Token Custom Fees Integration Tests', () => {
 
     const output = result.result as TokenCreateFtFromFileOutput;
     expect(output.tokenId).toBeDefined();
-    expect(output.name).toBe(tokenFile.name);
+    expect(output.name).toBe(tokenFile.tokenName);
     expect(output.network).toBe(network);
 
     await delay(5000);
@@ -84,6 +85,7 @@ describe('Token Custom Fees Integration Tests', () => {
 
     const tokenFile = {
       name: `FractionalFeeToken-${Date.now()}`,
+      tokenName: `FractionalFeeToken-${Date.now()}`,
       symbol: 'FFRAC',
       decimals: 8,
       supplyType: 'infinite',
@@ -118,7 +120,7 @@ describe('Token Custom Fees Integration Tests', () => {
 
     const output = result.result as TokenCreateFtFromFileOutput;
     expect(output.tokenId).toBeDefined();
-    expect(output.name).toBe(tokenFile.name);
+    expect(output.name).toBe(tokenFile.tokenName);
     expect(output.network).toBe(network);
 
     await delay(5000);
@@ -132,6 +134,7 @@ describe('Token Custom Fees Integration Tests', () => {
 
     const tokenFile = {
       name: `FixedTokenFeeToken-${Date.now()}`,
+      tokenName: `FixedTokenFeeToken-${Date.now()}`,
       symbol: 'FTOK',
       decimals: 8,
       supplyType: 'infinite',
@@ -163,7 +166,7 @@ describe('Token Custom Fees Integration Tests', () => {
 
     const output = result.result as TokenCreateFtFromFileOutput;
     expect(output.tokenId).toBeDefined();
-    expect(output.name).toBe(tokenFile.name);
+    expect(output.name).toBe(tokenFile.tokenName);
     expect(output.network).toBe(network);
 
     await delay(5000);
