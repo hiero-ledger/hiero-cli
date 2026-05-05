@@ -69,6 +69,7 @@ export class SwapAddNftCommand implements Command {
       token: {
         input: validArgs.token,
         tokenId,
+        decimals: 0,
       },
       serials,
     });

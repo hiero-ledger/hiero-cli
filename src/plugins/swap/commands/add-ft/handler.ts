@@ -42,17 +42,18 @@ export class SwapAddFtCommand implements Command {
         aliasType: AliasType.Token,
       });
 
-    const fromResolved = await api.keyResolver.resolveAccountCredentials(
-      validArgs.from,
-      keyManager,
-      true,
-      ['token:account'],
-    );
+    const [tokenInfo, fromResolved, toResolved] = await Promise.all([
+      api.mirror.getTokenInfo(tokenId),
+      api.keyResolver.resolveAccountCredentials(
+        validArgs.from,
+        keyManager,
+        true,
+        ['token:account'],
+      ),
+      api.keyResolver.resolveDestination(validArgs.to, keyManager),
+    ]);
 
-    const toResolved = await api.keyResolver.resolveDestination(
-      validArgs.to,
-      keyManager,
-    );
+    const decimals = parseInt(tokenInfo.decimals) || 0;
     const toDestination = toResolved.accountId ?? toResolved.evmAddress ?? '';
 
     const updated = helper.addTransfer(name, {
@@ -69,6 +70,7 @@ export class SwapAddFtCommand implements Command {
       token: {
         input: validArgs.token,
         tokenId,
+        decimals,
       },
       amount,
     });

@@ -21,7 +21,6 @@ import {
   NftTransferEntry,
 } from '@/core/services/transfer';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
-import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { SwapTransferType } from '@/plugins/swap/schema';
@@ -64,25 +63,8 @@ export class SwapExecuteCommand extends BaseTransactionCommand<
 
     const network = api.network.getCurrentNetwork();
 
-    const ftTokenIds = new Set(
-      swap.transfers
-        .filter(
-          (t): t is FtSwapTransfer =>
-            t.type === SwapTransferType.FT && !isRawUnits(t.amount),
-        )
-        .map((t) => t.token.tokenId),
-    );
-
-    const decimalsMap = new Map<string, number>();
-    await Promise.all(
-      Array.from(ftTokenIds).map(async (tokenId) => {
-        const info = await api.mirror.getTokenInfo(tokenId);
-        decimalsMap.set(tokenId, parseInt(info.decimals) || 0);
-      }),
-    );
-
     const entries = swap.transfers.flatMap((transfer) =>
-      buildEntries(transfer, decimalsMap),
+      buildEntries(transfer),
     );
 
     const keyRefIds = [...new Set(swap.transfers.map((t) => t.from.keyRefId))];
@@ -169,13 +151,12 @@ export async function swapExecute(
 
 function buildEntries(
   transfer: SwapTransfer,
-  decimalsMap: Map<string, number>,
 ): (HbarTransferEntry | FtTransferEntry | NftTransferEntry)[] {
   if (transfer.type === SwapTransferType.HBAR) {
     return [buildHbarEntry(transfer)];
   }
   if (transfer.type === SwapTransferType.FT) {
-    return [buildFtEntry(transfer, decimalsMap)];
+    return [buildFtEntry(transfer)];
   }
   return buildNftEntries(transfer);
 }
@@ -188,16 +169,12 @@ function buildHbarEntry(t: HbarSwapTransfer): HbarTransferEntry {
   );
 }
 
-function buildFtEntry(
-  t: FtSwapTransfer,
-  decimalsMap: Map<string, number>,
-): FtTransferEntry {
-  const decimals = decimalsMap.get(t.token.tokenId) ?? 0;
+function buildFtEntry(t: FtSwapTransfer): FtTransferEntry {
   return new FtTransferEntry(
     t.from.accountId,
     t.to.accountId,
     t.token.tokenId,
-    processTokenBalanceInput(t.amount, decimals),
+    processTokenBalanceInput(t.amount, t.token.decimals),
   );
 }
 
