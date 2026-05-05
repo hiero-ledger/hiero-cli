@@ -44,6 +44,7 @@ hiero-cli/
 │   │   │   ├── plugin-management/   # Plugin loading and management
 │   │   │   ├── process-exit/    # Process exit handling
 │   │   │   ├── receipt/         # Transaction receipt retrieval
+│   │   │   ├── schedule-transaction/ # ScheduleCreate/Sign/Delete builders
 │   │   │   ├── state/           # Zustand state storage
 │   │   │   ├── token/           # Token transaction creation
 │   │   │   ├── topic/           # Topic transaction creation
@@ -64,6 +65,7 @@ hiero-cli/
 │   │   ├── hbar/               # HBAR transfer plugin
 │   │   ├── network/            # Network selection and operator management
 │   │   ├── plugin-management/  # Plugin management plugin
+│   │   ├── schedule/           # Scheduled transaction plugin (create, sign, delete, verify)
 │   │   ├── token/              # Fungible and non-fungible token management plugin
 │   │   ├── topic/              # Topic (HCS) management plugin
 │   │   └── test/               # Test plugin (development/testing)
