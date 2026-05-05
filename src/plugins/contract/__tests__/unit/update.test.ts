@@ -16,12 +16,12 @@ import {
   createMockKmsRecord,
 } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
+import { AliasType } from '@/core';
 import {
   NotFoundError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import {
@@ -128,9 +128,8 @@ describe('contract plugin - update command', () => {
     const alias = makeAliasServiceMock();
     alias.list.mockReturnValue([]);
 
-    api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
-      keyRefId: STORED_CONTRACT_ADMIN_REF,
-      publicKey: ED25519_HEX_PUBLIC_KEY,
+    api.keyResolver.resolveSigningKeys = jest.fn().mockResolvedValue({
+      keyRefIds: [STORED_CONTRACT_ADMIN_REF],
     });
 
     const args = makeArgs({ ...api, alias }, logger, {
@@ -141,7 +140,7 @@ describe('contract plugin - update command', () => {
 
     const result = await contractUpdate(args);
 
-    expect(api.keyResolver.resolveSigningKey).toHaveBeenCalled();
+    expect(api.keyResolver.resolveSigningKeys).toHaveBeenCalled();
     expect(api.txSign.sign).toHaveBeenCalledWith(expect.anything(), [
       STORED_CONTRACT_ADMIN_REF,
     ]);
@@ -159,11 +158,10 @@ describe('contract plugin - update command', () => {
     const alias = makeAliasServiceMock();
     alias.list.mockReturnValue([]);
 
-    api.keyResolver.getPublicKey = jest.fn().mockResolvedValue({
+    api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
       keyRefId: NEW_ADMIN_KEY_REF,
       publicKey: ED25519_DER_PUBLIC_KEY,
     });
-    api.kms.hasPrivateKey = jest.fn().mockReturnValue(true);
 
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
@@ -172,7 +170,7 @@ describe('contract plugin - update command', () => {
 
     const result = await contractUpdate(args);
 
-    expect(api.keyResolver.getPublicKey).toHaveBeenCalled();
+    expect(api.keyResolver.resolveSigningKey).toHaveBeenCalled();
     expect(api.txSign.sign).toHaveBeenCalledWith(expect.anything(), [
       STORED_CONTRACT_ADMIN_REF,
       NEW_ADMIN_KEY_REF,
@@ -335,11 +333,10 @@ describe('contract plugin - update command', () => {
     };
     alias.list.mockReturnValue([existingAlias]);
 
-    api.keyResolver.getPublicKey = jest.fn().mockResolvedValue({
+    api.keyResolver.resolveSigningKey = jest.fn().mockResolvedValue({
       keyRefId: NEW_ADMIN_KEY_REF,
       publicKey: ED25519_DER_PUBLIC_KEY,
     });
-    api.kms.hasPrivateKey = jest.fn().mockReturnValue(true);
 
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
@@ -439,11 +436,14 @@ describe('contract plugin - update command', () => {
     }));
     const alias = makeAliasServiceMock();
 
-    api.keyResolver.getPublicKey = jest.fn().mockResolvedValue({
-      keyRefId: NEW_ADMIN_KEY_REF,
-      publicKey: ED25519_DER_PUBLIC_KEY,
+    api.keyResolver.resolveSigningKeys = jest.fn().mockResolvedValue({
+      keyRefIds: [STORED_CONTRACT_ADMIN_REF],
     });
-    api.kms.hasPrivateKey = jest.fn().mockReturnValue(false);
+    api.keyResolver.resolveSigningKey = jest
+      .fn()
+      .mockRejectedValue(
+        new ValidationError('New admin key has no private key in KMS'),
+      );
 
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,

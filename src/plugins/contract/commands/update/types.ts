@@ -1,4 +1,4 @@
-import type { ContractUpdateTransaction, Transaction } from '@hashgraph/sdk';
+import type { ContractUpdateTransaction, Transaction } from '@hiero-ledger/sdk';
 import type { BaseNormalizedParams, KeyAlgorithm } from '@/core';
 import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type {

@@ -2,11 +2,11 @@
  * Update Contract Command Handler
  * Updates smart contract properties on Hedera network
  */
-import type { Key } from '@hashgraph/sdk';
+import type { Key } from '@hiero-ledger/sdk';
 import type { CommandHandlerArgs, CommandResult } from '@/core';
-import type { ResolvedPublicKey } from '@/core/services/key-resolver/types';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { ContractData } from '@/plugins/contract/schema';
+import type { ContractUpdateInput } from './input';
 import type { ContractUpdateOutput } from './output';
 import type {
   ContractUpdateBuildTransactionResult,
@@ -15,19 +15,15 @@ import type {
   ContractUpdateSignTransactionResult,
 } from './types';
 
+import { AliasType } from '@/core';
 import { BaseTransactionCommand } from '@/core/commands/command';
 import {
   NotFoundError,
   TransactionError,
   ValidationError,
 } from '@/core/errors';
-import { AliasType } from '@/core/services/alias/alias-service.interface';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { ensureEvmAddress0xPrefix } from '@/core/utils/evm-address';
-import {
-  extractPublicKeysFromMirrorNodeKey,
-  getEffectiveKeyRequirement,
-} from '@/core/utils/extract-public-keys';
 import { composeKey } from '@/core/utils/key-composer';
 import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
@@ -100,86 +96,38 @@ export class UpdateContractCommand extends BaseTransactionCommand<
       );
     }
 
-    const extracted = extractPublicKeysFromMirrorNodeKey(
-      contractInfo.admin_key,
-    );
-    const requirement = getEffectiveKeyRequirement(extracted);
+    const signingKeyRefIds = new Set<string>();
 
-    if (requirement.publicKeys.length === 0) {
-      throw new ValidationError(
-        'This contract has no admin key on Hedera. On-network update is not possible.',
-      );
-    }
-
-    let signingKeyRefIds: string[];
-
-    if (validArgs.adminKey.length > 0) {
-      const adminKeys = await Promise.all(
-        validArgs.adminKey.map((cred) =>
-          api.keyResolver.resolveSigningKey(cred, keyManager, false, [
-            'contract:admin',
-          ]),
-        ),
-      );
-      signingKeyRefIds = adminKeys.map((k) => k.keyRefId);
-    } else {
-      const refIds: string[] = [];
-      const usedRefIds = new Set<string>();
-      for (const publicKey of requirement.publicKeys) {
-        const kmsRecord = api.kms.findByPublicKey(publicKey);
-        if (kmsRecord && !usedRefIds.has(kmsRecord.keyRefId)) {
-          usedRefIds.add(kmsRecord.keyRefId);
-          refIds.push(kmsRecord.keyRefId);
-          if (refIds.length >= requirement.requiredSignatures) {
-            break;
-          }
-        }
-      }
-      if (refIds.length < requirement.requiredSignatures) {
-        throw new ValidationError(
-          'Not enough admin key(s) found in key manager for this contract. Provide --admin-key.',
-          { context: { contractId: contractInfo.contract_id } },
+    const adminKeyResult = await api.keyResolver.resolveSigningKeys({
+      mirrorRoleKey: contractInfo.admin_key,
+      explicitCredentials: validArgs.adminKey,
+      keyManager,
+      signingKeyLabels: ['contract:admin'],
+      emptyMirrorRoleKeyMessage: 'This contract has no admin key on Hedera.',
+      insufficientKmsMatchesMessage:
+        'Not enough admin key(s) found in key manager for this contract. Provide --admin-key.',
+      validationErrorOptions: {
+        context: { contractId: contractInfo.contract_id },
+      },
+    });
+    const adminKeyRefIds = adminKeyResult.keyRefIds;
+    adminKeyRefIds.forEach((adminKey) => {
+      signingKeyRefIds.add(adminKey);
+    });
+    const newAdminKeys = await Promise.all(
+      validArgs.newAdminKey.map(async (adminKey) => {
+        const resolvedAdminKey = await api.keyResolver.resolveSigningKey(
+          adminKey,
+          keyManager,
+          false,
+          ['contract:admin'],
         );
-      }
-      signingKeyRefIds = refIds;
-    }
-    let newAdminKeys: ResolvedPublicKey[] | undefined;
-    if (validArgs.newAdminKey.length > 0) {
-      newAdminKeys = await Promise.all(
-        validArgs.newAdminKey.map((cred) =>
-          api.keyResolver.getPublicKey(cred, keyManager, false, [
-            'contract:admin',
-          ]),
-        ),
-      );
-      for (const newAdminKey of newAdminKeys) {
-        if (!api.kms.hasPrivateKey(newAdminKey.keyRefId)) {
-          throw new ValidationError('New admin key has no private key in KMS', {
-            context: { keyRefId: newAdminKey.keyRefId },
-          });
-        }
-      }
-      newAdminKeys
-        .filter((adminKey) => !signingKeyRefIds.includes(adminKey.keyRefId))
-        .forEach((adminKey) => signingKeyRefIds.push(adminKey.keyRefId));
-    }
+        signingKeyRefIds.add(resolvedAdminKey.keyRefId);
+        return resolvedAdminKey;
+      }),
+    );
 
-    // Build updated fields list
-    const updatedFields: string[] = [];
-    if (validArgs.newAdminKey.length > 0) updatedFields.push('adminKey');
-    if (validArgs.memo !== undefined) updatedFields.push('memo');
-    if (validArgs.autoRenewPeriod !== undefined)
-      updatedFields.push('autoRenewPeriod');
-    if (validArgs.autoRenewAccountId !== undefined)
-      updatedFields.push('autoRenewAccountId');
-    if (validArgs.maxAutomaticTokenAssociations !== undefined)
-      updatedFields.push('maxAutomaticTokenAssociations');
-    if (validArgs.stakedAccountId !== undefined)
-      updatedFields.push('stakedAccountId');
-    if (validArgs.stakedNodeId !== undefined)
-      updatedFields.push('stakedNodeId');
-    if (validArgs.declineStakingReward !== undefined)
-      updatedFields.push('declineStakingReward');
+    const updatedFields = this.buildUpdatedFields(validArgs);
 
     return {
       network,
@@ -188,7 +136,7 @@ export class UpdateContractCommand extends BaseTransactionCommand<
       contractToUpdate: storedContract,
       newAdminKeys,
       newAdminKeyThreshold: validArgs.newAdminKeyThreshold,
-      signingKeyRefIds: signingKeyRefIds,
+      signingKeyRefIds: [...signingKeyRefIds],
       memo: validArgs.memo,
       autoRenewPeriod: validArgs.autoRenewPeriod,
       autoRenewAccountId: validArgs.autoRenewAccountId,
@@ -196,7 +144,7 @@ export class UpdateContractCommand extends BaseTransactionCommand<
       stakedAccountId: validArgs.stakedAccountId,
       stakedNodeId: validArgs.stakedNodeId,
       declineStakingReward: validArgs.declineStakingReward,
-      keyRefIds: signingKeyRefIds,
+      keyRefIds: [...signingKeyRefIds],
       updatedFields,
     };
   }
@@ -214,7 +162,7 @@ export class UpdateContractCommand extends BaseTransactionCommand<
           normalisedParams.newAdminKeys.length,
       );
     }
-    return api.contract.updateContract({
+    const updateResult = api.contract.updateContract({
       contractId: normalisedParams.contractId,
       adminKey: adminKey,
       memo: normalisedParams.memo,
@@ -226,6 +174,9 @@ export class UpdateContractCommand extends BaseTransactionCommand<
       stakedNodeId: normalisedParams.stakedNodeId,
       declineStakingReward: normalisedParams.declineStakingReward,
     });
+    return {
+      transaction: updateResult.transaction,
+    };
   }
 
   async signTransaction(
@@ -329,6 +280,36 @@ export class UpdateContractCommand extends BaseTransactionCommand<
     };
 
     return { result: outputData };
+  }
+
+  private buildUpdatedFields(
+    args: Pick<
+      ContractUpdateInput,
+      | 'newAdminKey'
+      | 'memo'
+      | 'autoRenewPeriod'
+      | 'autoRenewAccountId'
+      | 'maxAutomaticTokenAssociations'
+      | 'stakedAccountId'
+      | 'stakedNodeId'
+      | 'declineStakingReward'
+    >,
+  ): string[] {
+    const updatedFields: string[] = [];
+    if (args.newAdminKey.length > 0) updatedFields.push('adminKey');
+    if (args.memo !== undefined) updatedFields.push('memo');
+    if (args.autoRenewPeriod !== undefined)
+      updatedFields.push('autoRenewPeriod');
+    if (args.autoRenewAccountId !== undefined)
+      updatedFields.push('autoRenewAccountId');
+    if (args.maxAutomaticTokenAssociations !== undefined)
+      updatedFields.push('maxAutomaticTokenAssociations');
+    if (args.stakedAccountId !== undefined)
+      updatedFields.push('stakedAccountId');
+    if (args.stakedNodeId !== undefined) updatedFields.push('stakedNodeId');
+    if (args.declineStakingReward !== undefined)
+      updatedFields.push('declineStakingReward');
+    return updatedFields;
   }
 }
 
