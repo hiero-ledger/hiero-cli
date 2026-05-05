@@ -44,12 +44,8 @@ export class SwapStateHelper {
     }));
   }
 
-  assertDoesNotExist(name: string): void {
-    if (this.getSwap(name)) {
-      throw new ValidationError(
-        `Swap "${name}" already exists. Delete it first with: hcli swap delete -n ${name}`,
-      );
-    }
+  exists(name: string): boolean {
+    return this.getSwap(name) !== undefined;
   }
 
   assertCanAdd(name: string, count: number): void {
@@ -72,12 +68,4 @@ export class SwapStateHelper {
     this.saveSwap(name, updated);
     return updated;
   }
-}
-
-export function formatAccount(input: string, accountId: string): string {
-  return input !== accountId ? `${input} (${accountId})` : accountId;
-}
-
-export function formatToken(input: string, tokenId: string): string {
-  return input !== tokenId ? `${input} (${tokenId})` : tokenId;
 }

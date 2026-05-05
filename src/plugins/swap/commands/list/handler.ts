@@ -1,29 +1,36 @@
 import type { CommandHandlerArgs, CommandResult } from '@/core';
+import type { Command } from '@/core/commands/command.interface';
 import type { SwapEntry, SwapTransfer } from '@/plugins/swap/schema';
 import type { SwapListOutput } from './output';
 
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
 import { SwapTransferType } from '@/plugins/swap/schema';
+import { SwapStateHelper } from '@/plugins/swap/state-helper';
 import {
   formatAccount,
   formatToken,
-  SwapStateHelper,
-} from '@/plugins/swap/state-helper';
+} from '@/plugins/swap/utils/format-helpers';
+
+export class SwapListCommand implements Command {
+  async execute(args: CommandHandlerArgs): Promise<CommandResult> {
+    const { api } = args;
+
+    const helper = new SwapStateHelper(api.state);
+    const swaps = helper.listSwaps();
+
+    const output: SwapListOutput = {
+      totalCount: swaps.length,
+      swaps: swaps.map(({ name, entry }) => toDisplay(name, entry)),
+    };
+
+    return { result: output };
+  }
+}
 
 export async function swapList(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
-  const { api } = args;
-
-  const helper = new SwapStateHelper(api.state);
-  const swaps = helper.listSwaps();
-
-  const output: SwapListOutput = {
-    totalCount: swaps.length,
-    swaps: swaps.map(({ name, entry }) => toDisplay(name, entry)),
-  };
-
-  return { result: output };
+  return new SwapListCommand().execute(args);
 }
 
 function toDisplay(name: string, entry: SwapEntry) {
