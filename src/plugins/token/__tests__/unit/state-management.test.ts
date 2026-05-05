@@ -6,7 +6,6 @@
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 
-import { SupplyType } from '@/core/types/shared.types';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { mockMultipleTokens, mockStateTokenData } from './helpers/fixtures';
@@ -203,77 +202,4 @@ describe('Token State Management', () => {
     });
   });
 
-  describe('addTokenAssociation', () => {
-    beforeEach(() => {
-      // Reset all mocks before each test
-      jest.clearAllMocks();
-      // Mock getToken to return the token data by default
-      jest
-        .spyOn(stateHelper, 'getToken')
-        .mockReturnValue(mockStateTokenData.basic);
-      jest.spyOn(stateHelper, 'saveToken').mockImplementation(() => {});
-    });
-
-    test('should add association successfully', () => {
-      stateHelper.addTokenAssociation(
-        '0.0.123456',
-        '0.0.111111',
-        'TestAccount',
-      );
-
-      expect(stateHelper.getToken).toHaveBeenCalledWith('0.0.123456');
-      expect(stateHelper.saveToken).toHaveBeenCalledWith(
-        '0.0.123456',
-        expect.objectContaining({
-          tokenId: '0.0.123456',
-          name: 'TestToken',
-          symbol: 'TEST',
-          decimals: 2,
-          initialSupply: 1000n,
-          supplyType: SupplyType.FINITE,
-          maxSupply: 10000n,
-          treasuryId: '0.0.789012',
-          adminKeyRefIds: ['kr_admin'],
-          adminKeyThreshold: 1,
-          network: 'testnet',
-          associations: [{ name: 'TestAccount', accountId: '0.0.111111' }],
-        }),
-      );
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        '[TOKEN STATE] Added association 0.0.111111 to token 0.0.123456',
-      );
-    });
-
-    test('should not add duplicate association', () => {
-      jest
-        .spyOn(stateHelper, 'getToken')
-        .mockReturnValue(mockStateTokenData.withAssociations);
-
-      stateHelper.addTokenAssociation(
-        '0.0.123456',
-        '0.0.111111',
-        'TestAccount',
-      );
-
-      expect(stateHelper.saveToken).not.toHaveBeenCalled();
-      expect(mockLogger.debug).toHaveBeenCalledWith(
-        '[TOKEN STATE] Association 0.0.111111 already exists for token 0.0.123456',
-      );
-    });
-
-    test('should handle token not found error', () => {
-      jest.spyOn(stateHelper, 'getToken').mockReturnValue(null);
-
-      expect(() =>
-        stateHelper.addTokenAssociation(
-          '0.0.123456',
-          '0.0.111111',
-          'TestAccount',
-        ),
-      ).toThrow('Token 0.0.123456 not found');
-      expect(mockLogger.error).toHaveBeenCalledWith(
-        '[TOKEN STATE] Failed to add association to token 0.0.123456: Token 0.0.123456 not found',
-      );
-    });
-  });
 });

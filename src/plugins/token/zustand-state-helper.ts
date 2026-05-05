@@ -6,8 +6,6 @@ import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { StateService } from '@/core/services/state/state-service.interface';
 import type { TokenData } from './schema';
 
-import { NotFoundError } from '@/core/errors';
-
 import { TOKEN_NAMESPACE } from './constants';
 
 export class ZustandTokenStateHelper {
@@ -110,115 +108,6 @@ export class ZustandTokenStateHelper {
   }
 
   /**
-   * Add an association to a token
-   */
-  addTokenAssociation(
-    key: string,
-    accountId: string,
-    accountName: string,
-  ): void {
-    try {
-      const tokenData = this.getToken(key);
-      if (!tokenData) {
-        throw new NotFoundError(`Token ${key} not found`, {
-          context: { key },
-        });
-      }
-
-      // Check if association already exists
-      // Create a copy of the associations array to avoid immutability issues
-      const associations = Array.isArray(tokenData.associations)
-        ? [...tokenData.associations]
-        : [];
-      const existingAssociation = associations.find(
-        (assoc) => assoc.accountId === accountId,
-      );
-
-      if (!existingAssociation) {
-        // Create a completely new token object to avoid immutability issues
-        // Create new associations array from scratch to avoid frozen array issues
-        const newAssociations = [];
-        for (const assoc of associations) {
-          newAssociations.push({ ...assoc });
-        }
-        newAssociations.push({
-          name: accountName,
-          accountId: accountId,
-        });
-
-        const updatedTokenData: TokenData = {
-          ...tokenData,
-          associations: newAssociations,
-          customFees: Array.isArray(tokenData.customFees)
-            ? [...tokenData.customFees]
-            : [],
-        };
-
-        this.saveToken(key, updatedTokenData);
-        this.logger.debug(
-          `[TOKEN STATE] Added association ${accountId} to token ${key}`,
-        );
-      } else {
-        this.logger.debug(
-          `[TOKEN STATE] Association ${accountId} already exists for token ${key}`,
-        );
-      }
-    } catch (error) {
-      this.logger.error(
-        `[TOKEN STATE] Failed to add association to token ${key}: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      throw error;
-    }
-  }
-
-  /**
-   * Remove an association from a token by account id
-   */
-  removeTokenAssociation(key: string, accountId: string): void {
-    try {
-      const tokenData = this.getToken(key);
-      if (!tokenData) {
-        this.logger.debug(
-          `[TOKEN STATE] Token ${key} not found; skip remove association`,
-        );
-        return;
-      }
-
-      const associations = Array.isArray(tokenData.associations)
-        ? [...tokenData.associations]
-        : [];
-      const filtered = associations.filter(
-        (assoc) => assoc.accountId !== accountId,
-      );
-
-      if (filtered.length === associations.length) {
-        this.logger.debug(
-          `[TOKEN STATE] No association ${accountId} on token ${key}`,
-        );
-        return;
-      }
-
-      const updatedTokenData: TokenData = {
-        ...tokenData,
-        associations: filtered,
-        customFees: Array.isArray(tokenData.customFees)
-          ? [...tokenData.customFees]
-          : [],
-      };
-
-      this.saveToken(key, updatedTokenData);
-      this.logger.debug(
-        `[TOKEN STATE] Removed association ${accountId} from token ${key}`,
-      );
-    } catch (error) {
-      this.logger.error(
-        `[TOKEN STATE] Failed to remove association from token ${key}: ${error instanceof Error ? error.message : String(error)}`,
-      );
-      throw error;
-    }
-  }
-
-  /**
    * List all tokens with validation
    */
   listTokens(): TokenData[] {
@@ -299,13 +188,6 @@ export class ZustandTokenStateHelper {
         // Count by supply type
         stats.bySupplyType[token.supplyType] =
           (stats.bySupplyType[token.supplyType] || 0) + 1;
-
-        // Count associations
-        const associationCount = token.associations?.length || 0;
-        if (associationCount > 0) {
-          stats.withAssociations++;
-          stats.totalAssociations += associationCount;
-        }
 
         // Count tokens with admin key
         if (token.adminKeyRefIds.length > 0) {
