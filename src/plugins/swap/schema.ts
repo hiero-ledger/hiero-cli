@@ -20,6 +20,7 @@ export const SwapToAccountSchema = z.object({
 export const SwapTokenSchema = z.object({
   input: z.string(),
   tokenId: z.string(),
+  decimals: z.number().int().min(0),
 });
 
 export const HbarSwapTransferSchema = z.object({

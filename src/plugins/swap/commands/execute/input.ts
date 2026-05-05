@@ -1,7 +1,9 @@
 import { z } from 'zod';
 
+import { AliasNameSchema } from '@/core/schemas';
+
 export const SwapExecuteInputSchema = z.object({
-  name: z.string().min(1).describe('Name of the swap to execute'),
+  name: AliasNameSchema.describe('Name of the swap to execute'),
 });
 
 export type SwapExecuteInput = z.infer<typeof SwapExecuteInputSchema>;

@@ -11,12 +11,12 @@ import type {
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
 import { FtAllowanceEntry } from '@/core/services/allowance';
+import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import {
   resolveDestinationAccountParameter,
   resolveTokenParameter,
 } from '@/plugins/token/resolver-helper';
-import { isRawUnits } from '@/plugins/token/utils/token-amount-helpers';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenAllowanceFtInputSchema } from './input';

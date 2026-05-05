@@ -12,12 +12,12 @@ import type {
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { TransactionError, ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
+import { isRawUnits } from '@/core/utils/amount-helpers';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import {
   resolveDestinationAccountParameter,
   resolveTokenParameter,
 } from '@/plugins/token/resolver-helper';
-import { isRawUnits } from '@/plugins/token/utils/token-amount-helpers';
 import { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
 
 import { TokenAirdropFtInputSchema } from './input';

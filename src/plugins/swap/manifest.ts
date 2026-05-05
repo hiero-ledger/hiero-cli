@@ -37,6 +37,11 @@ import {
   swapList,
   SwapListOutputSchema,
 } from './commands/list';
+import {
+  SWAP_VIEW_TEMPLATE,
+  swapView,
+  SwapViewOutputSchema,
+} from './commands/view';
 
 export const swapPluginManifest: PluginManifest = {
   name: 'swap',
@@ -255,12 +260,31 @@ export const swapPluginManifest: PluginManifest = {
     {
       name: 'list',
       summary: 'List all saved swaps',
-      description: 'Display all saved swaps and their transfers',
+      description: 'Display a summary of all saved swaps',
       options: [],
       handler: swapList,
       output: {
         schema: SwapListOutputSchema,
         humanTemplate: SWAP_LIST_TEMPLATE,
+      },
+    },
+    {
+      name: 'view',
+      summary: 'View a saved swap',
+      description: 'Display the full details and transfers of a saved swap',
+      options: [
+        {
+          name: 'name',
+          short: 'n',
+          type: OptionType.STRING,
+          required: true,
+          description: 'Name of the swap to view',
+        },
+      ],
+      handler: swapView,
+      output: {
+        schema: SwapViewOutputSchema,
+        humanTemplate: SWAP_VIEW_TEMPLATE,
       },
     },
     {
