@@ -2,15 +2,16 @@
  * Update Contract Command Handler
  * Updates smart contract properties on Hedera network
  */
-import type { Key } from '@hiero-ledger/sdk';
 import type { CommandHandlerArgs, CommandResult } from '@/core';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
+import type { ContractInfo } from '@/core/services/mirrornode/types';
+import type { SupportedNetwork } from '@/core/types/shared.types';
 import type { ContractData } from '@/plugins/contract/schema';
-import type { ContractUpdateInput } from './input';
 import type { ContractUpdateOutput } from './output';
 import type {
   ContractUpdateBuildTransactionResult,
   ContractUpdateExecuteTransactionResult,
+  ContractUpdateFields,
   ContractUpdateNormalisedParams,
   ContractUpdateSignTransactionResult,
 } from './types';
@@ -29,6 +30,7 @@ import { toHederaKey } from '@/core/utils/keys-to-hedera-key';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
 
 import { ContractUpdateInputSchema } from './input';
+import { NULL_TOKEN } from '@/core/shared/constants';
 
 export const CONTRACT_UPDATE_COMMAND_NAME = 'contract_update';
 
@@ -50,6 +52,10 @@ export class UpdateContractCommand extends BaseTransactionCommand<
     const validArgs = ContractUpdateInputSchema.parse(args.args);
     const network = api.network.getCurrentNetwork();
     const contractRef = validArgs.contract;
+    const autoRenewAccountId =
+      validArgs.autoRenewAccountId === NULL_TOKEN
+        ? null
+        : validArgs.autoRenewAccountId;
     const { entityIdOrEvmAddress } =
       api.identityResolution.resolveReferenceToEntityOrEvmAddress({
         entityReference: contractRef.value,
@@ -77,20 +83,7 @@ export class UpdateContractCommand extends BaseTransactionCommand<
     }
 
     if (!storedContract) {
-      const contractEvmAddress = contractInfo.evm_address;
-      if (!contractEvmAddress) {
-        throw new NotFoundError(
-          `Could not resolve EVM address for contract '${contractId}' from mirror`,
-        );
-      }
-      storedContract = {
-        contractId,
-        contractEvmAddress: ensureEvmAddress0xPrefix(contractEvmAddress),
-        network,
-        adminKeyRefIds: [],
-        adminKeyThreshold: 0,
-        memo: contractInfo.memo || undefined,
-      };
+      storedContract = this.buildContractFromMirror(contractInfo, contractId, network);
       logger.info(
         `Contract not in local state; using mirror info for ${storedContract.contractId}`,
       );
@@ -139,11 +132,12 @@ export class UpdateContractCommand extends BaseTransactionCommand<
       signingKeyRefIds: [...signingKeyRefIds],
       memo: validArgs.memo,
       autoRenewPeriod: validArgs.autoRenewPeriod,
-      autoRenewAccountId: validArgs.autoRenewAccountId,
+      autoRenewAccountId: autoRenewAccountId,
       maxAutomaticTokenAssociations: validArgs.maxAutomaticTokenAssociations,
       stakedAccountId: validArgs.stakedAccountId,
       stakedNodeId: validArgs.stakedNodeId,
       declineStakingReward: validArgs.declineStakingReward,
+      expirationTime: validArgs.expirationTime,
       keyRefIds: [...signingKeyRefIds],
       updatedFields,
     };
@@ -154,14 +148,11 @@ export class UpdateContractCommand extends BaseTransactionCommand<
     normalisedParams: ContractUpdateNormalisedParams,
   ): Promise<ContractUpdateBuildTransactionResult> {
     const { api } = args;
-    let adminKey: Key | undefined;
-    if (normalisedParams.newAdminKeys !== undefined) {
-      adminKey = toHederaKey(
-        normalisedParams.newAdminKeys,
-        normalisedParams.newAdminKeyThreshold ??
-          normalisedParams.newAdminKeys.length,
-      );
-    }
+    const adminKey = toHederaKey(
+      normalisedParams.newAdminKeys,
+      normalisedParams.newAdminKeyThreshold ??
+        normalisedParams.newAdminKeys.length,
+    );
     const updateResult = api.contract.updateContract({
       contractId: normalisedParams.contractId,
       adminKey: adminKey,
@@ -173,6 +164,9 @@ export class UpdateContractCommand extends BaseTransactionCommand<
       stakedAccountId: normalisedParams.stakedAccountId,
       stakedNodeId: normalisedParams.stakedNodeId,
       declineStakingReward: normalisedParams.declineStakingReward,
+      expirationTime: normalisedParams.expirationTime
+        ? new Date(normalisedParams.expirationTime)
+        : undefined,
     });
     return {
       transaction: updateResult.transaction,
@@ -282,19 +276,28 @@ export class UpdateContractCommand extends BaseTransactionCommand<
     return { result: outputData };
   }
 
-  private buildUpdatedFields(
-    args: Pick<
-      ContractUpdateInput,
-      | 'newAdminKey'
-      | 'memo'
-      | 'autoRenewPeriod'
-      | 'autoRenewAccountId'
-      | 'maxAutomaticTokenAssociations'
-      | 'stakedAccountId'
-      | 'stakedNodeId'
-      | 'declineStakingReward'
-    >,
-  ): string[] {
+  private buildContractFromMirror(
+    contractInfo: ContractInfo,
+    contractId: string,
+    network: SupportedNetwork,
+  ): ContractData {
+    const contractEvmAddress = contractInfo.evm_address;
+    if (!contractEvmAddress) {
+      throw new NotFoundError(
+        `Could not resolve EVM address for contract '${contractId}' from mirror`,
+      );
+    }
+    return {
+      contractId,
+      contractEvmAddress: ensureEvmAddress0xPrefix(contractEvmAddress),
+      network,
+      adminKeyRefIds: [],
+      adminKeyThreshold: 0,
+      memo: contractInfo.memo || undefined,
+    };
+  }
+
+  private buildUpdatedFields(args: ContractUpdateFields): string[] {
     const updatedFields: string[] = [];
     if (args.newAdminKey.length > 0) updatedFields.push('adminKey');
     if (args.memo !== undefined) updatedFields.push('memo');
@@ -309,6 +312,7 @@ export class UpdateContractCommand extends BaseTransactionCommand<
     if (args.stakedNodeId !== undefined) updatedFields.push('stakedNodeId');
     if (args.declineStakingReward !== undefined)
       updatedFields.push('declineStakingReward');
+    if (args.expirationTime !== undefined) updatedFields.push('expirationTime');
     return updatedFields;
   }
 }

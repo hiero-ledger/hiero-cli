@@ -1,15 +1,17 @@
 import { z } from 'zod';
 
 import {
+  AccountReferenceSchema,
   AutoRenewPeriodSecondsSchema,
   ContractReferenceObjectSchema,
   EntityIdSchema,
+  IsoTimestampSchema,
   KeyManagerTypeSchema,
   KeyThresholdOptionalSchema,
   MaxAutoAssociationsSchema,
   MemoSchema,
-  NodeIdSchema,
-  OptionalDefaultEmptyKeyListSchema,
+  NodeIdSchema, NullLiteralSchema,
+  OptionalDefaultEmptyKeyListSchema
 } from '@/core/schemas';
 import { NULL_TOKEN } from '@/core/shared/constants';
 
@@ -22,6 +24,7 @@ const UPDATE_FIELDS = [
   'stakedAccountId',
   'stakedNodeId',
   'declineStakingReward',
+  'expirationTime',
 ] as const;
 
 export const ContractUpdateInputSchema = z
@@ -52,11 +55,8 @@ export const ContractUpdateInputSchema = z
     autoRenewPeriod: AutoRenewPeriodSecondsSchema.describe(
       'Auto-renew period: integer seconds, or with suffix s/m/h/d (e.g. 500, 500s, 50m, 2h, 30d)',
     ),
-    autoRenewAccountId: z
-      .preprocess(
-        (v) => (v === NULL_TOKEN ? null : v),
-        EntityIdSchema.nullable().optional(),
-      )
+    autoRenewAccountId: AccountReferenceSchema.or(NullLiteralSchema)
+      .optional()
       .describe(
         'Account ID (0.0.xxx) that will pay for auto-renewal. Pass "null" to clear.',
       ),
@@ -71,6 +71,9 @@ export const ContractUpdateInputSchema = z
       .boolean()
       .optional()
       .describe('Decline staking reward'),
+    expirationTime: IsoTimestampSchema.optional().describe(
+      'Expiration time as ISO datetime string',
+    ),
   })
   .superRefine((data, ctx) => {
     if (data.stakedAccountId !== undefined && data.stakedNodeId !== undefined) {
@@ -89,7 +92,7 @@ export const ContractUpdateInputSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message:
-          'At least one field to update must be provided (new-admin-key, memo, auto-renew-period, auto-renew-account-id, max-automatic-token-associations, staked-account-id, staked-node-id, decline-staking-reward)',
+          'At least one field to update must be provided (new-admin-key, memo, auto-renew-period, auto-renew-account-id, max-automatic-token-associations, staked-account-id, staked-node-id, decline-staking-reward, expiration-time)',
         path: [],
       });
     }

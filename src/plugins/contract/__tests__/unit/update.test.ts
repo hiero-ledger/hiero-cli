@@ -38,7 +38,7 @@ import {
 import { contractUpdate } from '@/plugins/contract/commands/update/handler';
 import { ContractUpdateOutputSchema } from '@/plugins/contract/commands/update/output';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
-import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
+import { makeApiMocks } from '@/plugins/contract/__tests__/unit/helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandContractStateHelper: jest.fn(),

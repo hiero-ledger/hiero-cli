@@ -329,7 +329,7 @@ export const contractPluginManifest: PluginManifest = {
           type: OptionType.NUMBER,
           required: false,
           description:
-            'M-of-N: number of admin keys required to sign the contract create flow (only when multiple --admin-key values are set).',
+            'M-of-N: number of admin keys required to sign the update transaction (only when multiple --admin-key values are set).',
         },
         {
           name: 'memo',
@@ -369,7 +369,7 @@ export const contractPluginManifest: PluginManifest = {
           type: OptionType.STRING,
           required: false,
           description:
-            'Account ID (0.0.xxx) to stake this contract to. Pass "null" to clear. Mutually exclusive with --staked-node-id.',
+            'Account ID (0.0.xxx) to stake this contract to. Mutually exclusive with --staked-node-id.',
         },
         {
           name: 'staked-node-id',
@@ -377,7 +377,7 @@ export const contractPluginManifest: PluginManifest = {
           type: OptionType.NUMBER,
           required: false,
           description:
-            'Node ID to stake this contract to. Pass "null" to clear. Mutually exclusive with --staked-account-id.',
+            'Node ID to stake this contract to. Mutually exclusive with --staked-account-id.',
         },
         {
           name: 'decline-staking-reward',
@@ -385,6 +385,14 @@ export const contractPluginManifest: PluginManifest = {
           type: OptionType.BOOLEAN,
           required: false,
           description: 'Whether to decline staking rewards for this contract',
+        },
+        {
+          name: 'expiration-time',
+          short: 'e',
+          type: OptionType.STRING,
+          required: false,
+          description:
+            'Expiration time as ISO datetime string (e.g. 2025-12-31T00:00:00Z)',
         },
         {
           name: 'key-manager',

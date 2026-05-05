@@ -66,6 +66,7 @@ export interface UpdateContractParams {
   stakedAccountId?: string;
   stakedNodeId?: number;
   declineStakingReward?: boolean;
+  expirationTime?: Date;
 }
 
 export interface ContractUpdateResult {

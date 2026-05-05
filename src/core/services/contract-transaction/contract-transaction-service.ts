@@ -192,6 +192,10 @@ export class ContractTransactionServiceImpl implements ContractTransactionServic
         transaction.setDeclineStakingReward(params.declineStakingReward);
       }
 
+      if (params.expirationTime !== undefined) {
+        transaction.setExpirationTime(params.expirationTime);
+      }
+
       return { transaction };
     } catch (error) {
       throw new ValidationError('Invalid contract update parameters', {

@@ -6,6 +6,20 @@ import type {
   TransactionResult,
 } from '@/core/types/shared.types';
 import type { ContractData } from '@/plugins/contract/schema';
+import type { ContractUpdateInput } from './input';
+
+export type ContractUpdateFields = Pick<
+  ContractUpdateInput,
+  | 'newAdminKey'
+  | 'memo'
+  | 'autoRenewPeriod'
+  | 'autoRenewAccountId'
+  | 'maxAutomaticTokenAssociations'
+  | 'stakedAccountId'
+  | 'stakedNodeId'
+  | 'declineStakingReward'
+  | 'expirationTime'
+>;
 
 export interface ContractUpdateNormalisedParams extends BaseNormalizedParams {
   network: SupportedNetwork;
@@ -13,7 +27,7 @@ export interface ContractUpdateNormalisedParams extends BaseNormalizedParams {
   contractId: string;
   contractToUpdate: ContractData;
   signingKeyRefIds: string[];
-  newAdminKeys: ResolvedPublicKey[] | undefined;
+  newAdminKeys: ResolvedPublicKey[];
   newAdminKeyThreshold?: number;
   newKeyType?: KeyAlgorithm;
   memo?: string | null;
@@ -23,6 +37,7 @@ export interface ContractUpdateNormalisedParams extends BaseNormalizedParams {
   stakedAccountId?: string;
   stakedNodeId?: number;
   declineStakingReward?: boolean;
+  expirationTime?: string;
   updatedFields: string[];
 }
 
