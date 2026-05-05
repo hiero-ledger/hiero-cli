@@ -1,5 +1,6 @@
 {
   "name": "token-full-example",
+  "tokenName": "Token Full Example",
   "symbol": "TFE",
   "decimals": 8,
   "supplyType": "finite",
@@ -16,7 +17,10 @@
   "memo": "Full example token with all fields",
   "autoRenewPeriod": "90d",
   "autoRenewAccount": "<alias or accountId:privateKey>",
-  "associations": ["<alias or accountId:privateKey>", "..."],
+  "associations": [
+    "<alias or accountId:privateKey>",
+    "..."
+  ],
   "customFees": [
     {
       "type": "fixed",

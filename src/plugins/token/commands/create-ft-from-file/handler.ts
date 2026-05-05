@@ -110,7 +110,7 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       filename: validArgs.file,
       keyManager,
       alias: tokenDefinition.name,
-      name: tokenDefinition.name,
+      name: tokenDefinition.tokenName,
       symbol: tokenDefinition.symbol,
       decimals: tokenDefinition.decimals,
       initialSupply: tokenDefinition.initialSupply,
