@@ -12,15 +12,11 @@ import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/const
 import { swapAddNft } from '@/plugins/swap/commands/add-nft/handler';
 import { SwapAddNftOutputSchema } from '@/plugins/swap/commands/add-nft/output';
 import { SwapTransferType } from '@/plugins/swap/schema';
+import { SwapStateHelper } from '@/plugins/swap/state-helper';
 import {
   formatAccount,
   formatToken,
-  SwapStateHelper,
-} from '@/plugins/swap/state-helper';
-import {
-  resolveDestinationAccountParameter,
-  resolveTokenParameter,
-} from '@/plugins/token/resolver-helper';
+} from '@/plugins/swap/utils/format-helpers';
 
 import {
   FROM_ACCOUNT_INPUT,
@@ -30,10 +26,18 @@ import {
   SWAP_NAME,
   TOKEN_INPUT,
 } from './helpers/fixtures';
-import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
+import {
+  makeArgs,
+  makeIdentityResolutionServiceMock,
+  makeLogger,
+  makeSwapApiMocks,
+} from './helpers/mocks';
 
 jest.mock('../../state-helper', () => ({
   SwapStateHelper: jest.fn(),
+}));
+
+jest.mock('../../utils/format-helpers', () => ({
   formatAccount: jest.fn((input: string, accountId: string) =>
     input !== accountId ? `${input} (${accountId})` : accountId,
   ),
@@ -42,25 +46,24 @@ jest.mock('../../state-helper', () => ({
   ),
 }));
 
-jest.mock('@/plugins/token/resolver-helper', () => ({
-  resolveDestinationAccountParameter: jest.fn(),
-  resolveTokenParameter: jest.fn(),
-}));
-
 const MockedHelper = SwapStateHelper as jest.Mock;
 const mockedFormatAccount = formatAccount as jest.Mock;
 const mockedFormatToken = formatToken as jest.Mock;
-const mockedResolveDestination =
-  resolveDestinationAccountParameter as jest.Mock;
-const mockedResolveToken = resolveTokenParameter as jest.Mock;
 
 describe('swap plugin - add-nft command', () => {
+  let resolveAccountCredentialsMock: jest.Mock;
+  let resolveDestinationMock: jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedResolveDestination.mockReturnValue({
+    resolveAccountCredentialsMock = jest.fn().mockResolvedValue({
+      accountId: MOCK_ACCOUNT_ID,
+      keyRefId: FROM_KEY_REF_ID,
+      publicKey: 'test-public-key',
+    });
+    resolveDestinationMock = jest.fn().mockResolvedValue({
       accountId: MOCK_ACCOUNT_ID_ALT,
     });
-    mockedResolveToken.mockReturnValue({ tokenId: MOCK_HEDERA_ENTITY_ID_1 });
     mockedFormatAccount.mockImplementation(
       (input: string, accountId: string) =>
         input !== accountId ? `${input} (${accountId})` : accountId,
@@ -81,18 +84,13 @@ describe('swap plugin - add-nft command', () => {
       addTransfer: addTransferMock,
     }));
 
-    const resolveAccountCredentialsMock = jest.fn().mockResolvedValue({
-      accountId: MOCK_ACCOUNT_ID,
-      keyRefId: FROM_KEY_REF_ID,
-      publicKey: 'test-public-key',
-    });
-
     const { networkMock, configMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = {
       network: networkMock,
       config: configMock,
       keyResolver: {
         resolveAccountCredentials: resolveAccountCredentialsMock,
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {
@@ -147,11 +145,8 @@ describe('swap plugin - add-nft command', () => {
       network: networkMock,
       config: configMock,
       keyResolver: {
-        resolveAccountCredentials: jest.fn().mockResolvedValue({
-          accountId: MOCK_ACCOUNT_ID,
-          keyRefId: FROM_KEY_REF_ID,
-          publicKey: 'test-public-key',
-        }),
+        resolveAccountCredentials: resolveAccountCredentialsMock,
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {
@@ -170,34 +165,47 @@ describe('swap plugin - add-nft command', () => {
     );
   });
 
-  test('throws NotFoundError when token cannot be resolved', async () => {
+  test('resolves token identifier via identity resolution before storing', async () => {
     const logger = makeLogger();
-    mockedResolveToken.mockReturnValue(null);
     MockedHelper.mockImplementation(() => ({
       assertCanAdd: jest.fn(),
-      addTransfer: jest.fn(),
+      addTransfer: jest
+        .fn()
+        .mockReturnValue({ ...mockEmptySwap, transfers: [{}] }),
     }));
+
+    const identityResolutionMock = makeIdentityResolutionServiceMock();
+    identityResolutionMock.resolveReferenceToEntityOrEvmAddress.mockReturnValue(
+      {
+        entityIdOrEvmAddress: MOCK_HEDERA_ENTITY_ID_1,
+      },
+    );
 
     const { networkMock, configMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = {
       network: networkMock,
       config: configMock,
+      identityResolution: identityResolutionMock,
       keyResolver: {
-        resolveAccountCredentials: jest.fn().mockResolvedValue({
-          accountId: MOCK_ACCOUNT_ID,
-          keyRefId: FROM_KEY_REF_ID,
-          publicKey: 'test-public-key',
-        }),
+        resolveAccountCredentials: resolveAccountCredentialsMock,
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {
       name: SWAP_NAME,
+      from: FROM_ACCOUNT_INPUT,
       to: MOCK_ACCOUNT_ID_ALT,
-      token: 'unknown-token',
-      serials: '1',
+      token: TOKEN_INPUT,
+      serials: NFT_SERIALS.join(','),
     });
 
-    await expect(swapAddNft(args)).rejects.toThrow(NotFoundError);
+    await swapAddNft(args);
+
+    expect(
+      identityResolutionMock.resolveReferenceToEntityOrEvmAddress,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({ entityReference: TOKEN_INPUT }),
+    );
   });
 
   test('throws ValidationError when not enough transfer slots remain for all serials', async () => {
@@ -217,6 +225,7 @@ describe('swap plugin - add-nft command', () => {
       config: configMock,
       keyResolver: {
         resolveAccountCredentials: jest.fn(),
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {
@@ -244,6 +253,7 @@ describe('swap plugin - add-nft command', () => {
       config: configMock,
       keyResolver: {
         resolveAccountCredentials: jest.fn(),
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {

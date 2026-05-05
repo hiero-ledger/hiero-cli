@@ -11,8 +11,8 @@ import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/const
 import { swapAddHbar } from '@/plugins/swap/commands/add-hbar/handler';
 import { SwapAddHbarOutputSchema } from '@/plugins/swap/commands/add-hbar/output';
 import { SwapTransferType } from '@/plugins/swap/schema';
-import { formatAccount, SwapStateHelper } from '@/plugins/swap/state-helper';
-import { resolveDestinationAccountParameter } from '@/plugins/token/resolver-helper';
+import { SwapStateHelper } from '@/plugins/swap/state-helper';
+import { formatAccount } from '@/plugins/swap/utils/format-helpers';
 
 import {
   FROM_ACCOUNT_INPUT,
@@ -25,25 +25,29 @@ import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
 
 jest.mock('../../state-helper', () => ({
   SwapStateHelper: jest.fn(),
+}));
+
+jest.mock('../../utils/format-helpers', () => ({
   formatAccount: jest.fn((input: string, accountId: string) =>
     input !== accountId ? `${input} (${accountId})` : accountId,
   ),
 }));
 
-jest.mock('@/plugins/token/resolver-helper', () => ({
-  resolveDestinationAccountParameter: jest.fn(),
-  resolveTokenParameter: jest.fn(),
-}));
-
 const MockedHelper = SwapStateHelper as jest.Mock;
 const mockedFormatAccount = formatAccount as jest.Mock;
-const mockedResolveDestination =
-  resolveDestinationAccountParameter as jest.Mock;
 
 describe('swap plugin - add-hbar command', () => {
+  let resolveAccountCredentialsMock: jest.Mock;
+  let resolveDestinationMock: jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedResolveDestination.mockReturnValue({
+    resolveAccountCredentialsMock = jest.fn().mockResolvedValue({
+      accountId: MOCK_ACCOUNT_ID,
+      keyRefId: FROM_KEY_REF_ID,
+      publicKey: 'test-public-key',
+    });
+    resolveDestinationMock = jest.fn().mockResolvedValue({
       accountId: MOCK_ACCOUNT_ID_ALT,
     });
     mockedFormatAccount.mockImplementation(
@@ -62,18 +66,13 @@ describe('swap plugin - add-hbar command', () => {
       addTransfer: addTransferMock,
     }));
 
-    const resolveAccountCredentialsMock = jest.fn().mockResolvedValue({
-      accountId: MOCK_ACCOUNT_ID,
-      keyRefId: FROM_KEY_REF_ID,
-      publicKey: 'test-public-key',
-    });
-
     const { networkMock, configMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = {
       network: networkMock,
       config: configMock,
       keyResolver: {
         resolveAccountCredentials: resolveAccountCredentialsMock,
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {
@@ -118,7 +117,7 @@ describe('swap plugin - add-hbar command', () => {
       addTransfer: addTransferMock,
     }));
 
-    const resolveAccountCredentialsMock = jest.fn().mockResolvedValue({
+    resolveAccountCredentialsMock = jest.fn().mockResolvedValue({
       accountId: '0.0.100000',
       keyRefId: 'operator-key-ref-id',
       publicKey: 'test-public-key',
@@ -130,6 +129,7 @@ describe('swap plugin - add-hbar command', () => {
       config: configMock,
       keyResolver: {
         resolveAccountCredentials: resolveAccountCredentialsMock,
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {
@@ -166,12 +166,6 @@ describe('swap plugin - add-hbar command', () => {
         .mockReturnValue({ ...mockEmptySwap, transfers: [{}] }),
     }));
 
-    const resolveAccountCredentialsMock = jest.fn().mockResolvedValue({
-      accountId: MOCK_ACCOUNT_ID,
-      keyRefId: FROM_KEY_REF_ID,
-      publicKey: 'test-public-key',
-    });
-
     const { networkMock, configMock } = makeSwapApiMocks();
     configMock.getOption = jest.fn().mockReturnValue('local_encrypted');
 
@@ -180,6 +174,7 @@ describe('swap plugin - add-hbar command', () => {
       config: configMock,
       keyResolver: {
         resolveAccountCredentials: resolveAccountCredentialsMock,
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {
@@ -212,11 +207,8 @@ describe('swap plugin - add-hbar command', () => {
       network: networkMock,
       config: configMock,
       keyResolver: {
-        resolveAccountCredentials: jest.fn().mockResolvedValue({
-          accountId: MOCK_ACCOUNT_ID,
-          keyRefId: FROM_KEY_REF_ID,
-          publicKey: 'test-public-key',
-        }),
+        resolveAccountCredentials: resolveAccountCredentialsMock,
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {
@@ -242,11 +234,8 @@ describe('swap plugin - add-hbar command', () => {
       network: networkMock,
       config: configMock,
       keyResolver: {
-        resolveAccountCredentials: jest.fn().mockResolvedValue({
-          accountId: MOCK_ACCOUNT_ID,
-          keyRefId: FROM_KEY_REF_ID,
-          publicKey: 'test-public-key',
-        }),
+        resolveAccountCredentials: resolveAccountCredentialsMock,
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {

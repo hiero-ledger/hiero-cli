@@ -7,20 +7,16 @@ import {
   MOCK_HEDERA_ENTITY_ID_1,
 } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
-import { NotFoundError, ValidationError } from '@/core/errors';
+import { ValidationError } from '@/core/errors';
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
 import { swapAddFt } from '@/plugins/swap/commands/add-ft/handler';
 import { SwapAddFtOutputSchema } from '@/plugins/swap/commands/add-ft/output';
 import { SwapTransferType } from '@/plugins/swap/schema';
+import { SwapStateHelper } from '@/plugins/swap/state-helper';
 import {
   formatAccount,
   formatToken,
-  SwapStateHelper,
-} from '@/plugins/swap/state-helper';
-import {
-  resolveDestinationAccountParameter,
-  resolveTokenParameter,
-} from '@/plugins/token/resolver-helper';
+} from '@/plugins/swap/utils/format-helpers';
 
 import {
   FROM_ACCOUNT_INPUT,
@@ -30,10 +26,18 @@ import {
   SWAP_NAME,
   TOKEN_INPUT,
 } from './helpers/fixtures';
-import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
+import {
+  makeArgs,
+  makeIdentityResolutionServiceMock,
+  makeLogger,
+  makeSwapApiMocks,
+} from './helpers/mocks';
 
 jest.mock('../../state-helper', () => ({
   SwapStateHelper: jest.fn(),
+}));
+
+jest.mock('../../utils/format-helpers', () => ({
   formatAccount: jest.fn((input: string, accountId: string) =>
     input !== accountId ? `${input} (${accountId})` : accountId,
   ),
@@ -42,25 +46,24 @@ jest.mock('../../state-helper', () => ({
   ),
 }));
 
-jest.mock('@/plugins/token/resolver-helper', () => ({
-  resolveDestinationAccountParameter: jest.fn(),
-  resolveTokenParameter: jest.fn(),
-}));
-
 const MockedHelper = SwapStateHelper as jest.Mock;
 const mockedFormatAccount = formatAccount as jest.Mock;
 const mockedFormatToken = formatToken as jest.Mock;
-const mockedResolveDestination =
-  resolveDestinationAccountParameter as jest.Mock;
-const mockedResolveToken = resolveTokenParameter as jest.Mock;
 
 describe('swap plugin - add-ft command', () => {
+  let resolveAccountCredentialsMock: jest.Mock;
+  let resolveDestinationMock: jest.Mock;
+
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedResolveDestination.mockReturnValue({
+    resolveAccountCredentialsMock = jest.fn().mockResolvedValue({
+      accountId: MOCK_ACCOUNT_ID,
+      keyRefId: FROM_KEY_REF_ID,
+      publicKey: 'test-public-key',
+    });
+    resolveDestinationMock = jest.fn().mockResolvedValue({
       accountId: MOCK_ACCOUNT_ID_ALT,
     });
-    mockedResolveToken.mockReturnValue({ tokenId: MOCK_HEDERA_ENTITY_ID_1 });
     mockedFormatAccount.mockImplementation(
       (input: string, accountId: string) =>
         input !== accountId ? `${input} (${accountId})` : accountId,
@@ -80,18 +83,13 @@ describe('swap plugin - add-ft command', () => {
       addTransfer: addTransferMock,
     }));
 
-    const resolveAccountCredentialsMock = jest.fn().mockResolvedValue({
-      accountId: MOCK_ACCOUNT_ID,
-      keyRefId: FROM_KEY_REF_ID,
-      publicKey: 'test-public-key',
-    });
-
     const { networkMock, configMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = {
       network: networkMock,
       config: configMock,
       keyResolver: {
         resolveAccountCredentials: resolveAccountCredentialsMock,
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {
@@ -131,7 +129,7 @@ describe('swap plugin - add-ft command', () => {
     );
   });
 
-  test('resolves token identifier before storing', async () => {
+  test('resolves token identifier via identity resolution before storing', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({
       assertCanAdd: jest.fn(),
@@ -140,18 +138,21 @@ describe('swap plugin - add-ft command', () => {
         .mockReturnValue({ ...mockEmptySwap, transfers: [{}] }),
     }));
 
-    const resolveAccountCredentialsMock = jest.fn().mockResolvedValue({
-      accountId: MOCK_ACCOUNT_ID,
-      keyRefId: FROM_KEY_REF_ID,
-      publicKey: 'test-public-key',
-    });
+    const identityResolutionMock = makeIdentityResolutionServiceMock();
+    identityResolutionMock.resolveReferenceToEntityOrEvmAddress.mockReturnValue(
+      {
+        entityIdOrEvmAddress: MOCK_HEDERA_ENTITY_ID_1,
+      },
+    );
 
     const { networkMock, configMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = {
       network: networkMock,
       config: configMock,
+      identityResolution: identityResolutionMock,
       keyResolver: {
         resolveAccountCredentials: resolveAccountCredentialsMock,
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {
@@ -164,42 +165,54 @@ describe('swap plugin - add-ft command', () => {
 
     await swapAddFt(args);
 
-    expect(mockedResolveToken).toHaveBeenCalledWith(
-      TOKEN_INPUT,
-      expect.anything(),
-      expect.any(String),
+    expect(
+      identityResolutionMock.resolveReferenceToEntityOrEvmAddress,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({ entityReference: TOKEN_INPUT }),
     );
   });
 
-  test('throws NotFoundError when token cannot be resolved', async () => {
+  test('fetches and stores token decimals when adding transfer', async () => {
     const logger = makeLogger();
-    mockedResolveToken.mockReturnValue(null);
+    const addTransferMock = jest
+      .fn()
+      .mockReturnValue({ ...mockEmptySwap, transfers: [{}] });
     MockedHelper.mockImplementation(() => ({
       assertCanAdd: jest.fn(),
-      addTransfer: jest.fn(),
+      addTransfer: addTransferMock,
     }));
 
-    const { networkMock, configMock } = makeSwapApiMocks();
+    const getTokenInfoMock = jest.fn().mockResolvedValue({ decimals: '6' });
+
+    const { networkMock, configMock, mirrorMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = {
       network: networkMock,
       config: configMock,
+      mirror: {
+        ...mirrorMock,
+        getTokenInfo: getTokenInfoMock,
+      } as unknown as CoreApi['mirror'],
       keyResolver: {
-        resolveAccountCredentials: jest.fn().mockResolvedValue({
-          accountId: MOCK_ACCOUNT_ID,
-          keyRefId: FROM_KEY_REF_ID,
-          publicKey: 'test-public-key',
-        }),
+        resolveAccountCredentials: resolveAccountCredentialsMock,
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {
       name: SWAP_NAME,
       from: FROM_ACCOUNT_INPUT,
       to: MOCK_ACCOUNT_ID_ALT,
-      token: 'unknown-token',
+      token: TOKEN_INPUT,
       amount: FT_AMOUNT_RAW,
     });
 
-    await expect(swapAddFt(args)).rejects.toThrow(NotFoundError);
+    await swapAddFt(args);
+
+    expect(addTransferMock).toHaveBeenCalledWith(
+      SWAP_NAME,
+      expect.objectContaining({
+        token: expect.objectContaining({ decimals: 6 }),
+      }),
+    );
   });
 
   test('throws ValidationError when swap transfer limit is reached', async () => {
@@ -217,6 +230,7 @@ describe('swap plugin - add-ft command', () => {
       config: configMock,
       keyResolver: {
         resolveAccountCredentials: jest.fn(),
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {
@@ -238,12 +252,6 @@ describe('swap plugin - add-ft command', () => {
         .mockReturnValue({ ...mockEmptySwap, transfers: [{}] }),
     }));
 
-    const resolveAccountCredentialsMock = jest.fn().mockResolvedValue({
-      accountId: MOCK_ACCOUNT_ID,
-      keyRefId: FROM_KEY_REF_ID,
-      publicKey: 'test-public-key',
-    });
-
     const { networkMock, configMock } = makeSwapApiMocks();
     configMock.getOption = jest.fn().mockReturnValue('local_encrypted');
 
@@ -252,6 +260,7 @@ describe('swap plugin - add-ft command', () => {
       config: configMock,
       keyResolver: {
         resolveAccountCredentials: resolveAccountCredentialsMock,
+        resolveDestination: resolveDestinationMock,
       } as unknown as KeyResolverService,
     };
     const args = makeArgs(api, logger, {

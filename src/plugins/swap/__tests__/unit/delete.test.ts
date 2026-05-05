@@ -6,7 +6,7 @@ import { swapDelete } from '@/plugins/swap/commands/delete/handler';
 import { SwapDeleteOutputSchema } from '@/plugins/swap/commands/delete/output';
 import { SwapStateHelper } from '@/plugins/swap/state-helper';
 
-import { mockSwapWithHbar, SWAP_NAME } from './helpers/fixtures';
+import { SWAP_NAME } from './helpers/fixtures';
 import { makeArgs, makeLogger, makeSwapApiMocks } from './helpers/mocks';
 
 jest.mock('../../state-helper', () => ({
@@ -24,7 +24,7 @@ describe('swap plugin - delete command', () => {
     const logger = makeLogger();
     const deleteSwapMock = jest.fn();
     MockedHelper.mockImplementation(() => ({
-      getSwapOrThrow: jest.fn().mockReturnValue(mockSwapWithHbar),
+      exists: jest.fn().mockReturnValue(true),
       deleteSwap: deleteSwapMock,
     }));
 
@@ -42,9 +42,9 @@ describe('swap plugin - delete command', () => {
 
   test('verifies the swap exists before deleting', async () => {
     const logger = makeLogger();
-    const getSwapOrThrowMock = jest.fn().mockReturnValue(mockSwapWithHbar);
+    const existsMock = jest.fn().mockReturnValue(true);
     MockedHelper.mockImplementation(() => ({
-      getSwapOrThrow: getSwapOrThrowMock,
+      exists: existsMock,
       deleteSwap: jest.fn(),
     }));
 
@@ -54,17 +54,13 @@ describe('swap plugin - delete command', () => {
 
     await swapDelete(args);
 
-    expect(getSwapOrThrowMock).toHaveBeenCalledWith(SWAP_NAME);
+    expect(existsMock).toHaveBeenCalledWith(SWAP_NAME);
   });
 
   test('throws NotFoundError when swap does not exist', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({
-      getSwapOrThrow: jest.fn().mockImplementation(() => {
-        throw new NotFoundError(
-          `Swap "${SWAP_NAME}" not found. Create it first with: hcli swap create -n ${SWAP_NAME}`,
-        );
-      }),
+      exists: jest.fn().mockReturnValue(false),
       deleteSwap: jest.fn(),
     }));
 
@@ -79,9 +75,7 @@ describe('swap plugin - delete command', () => {
     const logger = makeLogger();
     const deleteSwapMock = jest.fn();
     MockedHelper.mockImplementation(() => ({
-      getSwapOrThrow: jest.fn().mockImplementation(() => {
-        throw new NotFoundError(`Swap "${SWAP_NAME}" not found.`);
-      }),
+      exists: jest.fn().mockReturnValue(false),
       deleteSwap: deleteSwapMock,
     }));
 

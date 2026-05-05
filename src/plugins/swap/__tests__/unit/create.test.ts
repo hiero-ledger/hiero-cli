@@ -25,7 +25,7 @@ describe('swap plugin - create command', () => {
     const logger = makeLogger();
     const saveSwapMock = jest.fn();
     MockedHelper.mockImplementation(() => ({
-      assertDoesNotExist: jest.fn(),
+      exists: jest.fn().mockReturnValue(false),
       saveSwap: saveSwapMock,
     }));
 
@@ -53,7 +53,7 @@ describe('swap plugin - create command', () => {
     const logger = makeLogger();
     const saveSwapMock = jest.fn();
     MockedHelper.mockImplementation(() => ({
-      assertDoesNotExist: jest.fn(),
+      exists: jest.fn().mockReturnValue(false),
       saveSwap: saveSwapMock,
     }));
 
@@ -76,9 +76,7 @@ describe('swap plugin - create command', () => {
   test('throws ValidationError when a swap with the same name already exists', async () => {
     const logger = makeLogger();
     MockedHelper.mockImplementation(() => ({
-      assertDoesNotExist: jest.fn().mockImplementation(() => {
-        throw new ValidationError(`Swap "${SWAP_NAME}" already exists.`);
-      }),
+      exists: jest.fn().mockReturnValue(true),
       saveSwap: jest.fn(),
     }));
 
@@ -93,9 +91,7 @@ describe('swap plugin - create command', () => {
     const logger = makeLogger();
     const saveSwapMock = jest.fn();
     MockedHelper.mockImplementation(() => ({
-      assertDoesNotExist: jest.fn().mockImplementation(() => {
-        throw new ValidationError(`Swap "${SWAP_NAME}" already exists.`);
-      }),
+      exists: jest.fn().mockReturnValue(true),
       saveSwap: saveSwapMock,
     }));
 

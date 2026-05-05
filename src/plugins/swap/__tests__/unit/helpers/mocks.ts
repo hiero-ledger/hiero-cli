@@ -2,10 +2,15 @@ import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 
-import { MOCK_TX_ID } from '@/__tests__/mocks/fixtures';
+import {
+  MOCK_ACCOUNT_ID_ALT,
+  MOCK_HEDERA_ENTITY_ID_1,
+  MOCK_TX_ID,
+} from '@/__tests__/mocks/fixtures';
 import { createMockTransaction } from '@/__tests__/mocks/hedera-sdk-mocks';
 import {
   makeConfigMock,
+  makeIdentityResolutionServiceMock,
   makeLogger as makeGlobalLogger,
   makeMirrorMock,
   makeNetworkMock,
@@ -15,7 +20,7 @@ import {
 } from '@/__tests__/mocks/mocks';
 import { SupportedNetwork } from '@/core/types/shared.types';
 
-export { makeGlobalLogger as makeLogger };
+export { makeIdentityResolutionServiceMock, makeGlobalLogger as makeLogger };
 
 export const makeArgs = (
   api: Partial<CoreApi>,
@@ -23,6 +28,13 @@ export const makeArgs = (
   args: Record<string, unknown>,
 ): CommandHandlerArgs => {
   const network = api.network || makeNetworkMock(SupportedNetwork.TESTNET);
+
+  const identityResolutionDefault = makeIdentityResolutionServiceMock();
+  identityResolutionDefault.resolveReferenceToEntityOrEvmAddress.mockReturnValue(
+    {
+      entityIdOrEvmAddress: MOCK_HEDERA_ENTITY_ID_1,
+    },
+  );
 
   const apiObject = {
     state: makeStateMock(),
@@ -37,7 +49,10 @@ export const makeArgs = (
         receipt: { status: { status: 'SUCCESS' } },
       }),
     }),
-    mirror: makeMirrorMock(),
+    mirror: {
+      ...makeMirrorMock(),
+      getTokenInfo: jest.fn().mockResolvedValue({ decimals: '0' }),
+    },
     transfer: {
       buildTransferTransaction: jest
         .fn()
@@ -45,7 +60,11 @@ export const makeArgs = (
     },
     keyResolver: {
       resolveAccountCredentials: jest.fn(),
+      resolveDestination: jest
+        .fn()
+        .mockResolvedValue({ accountId: MOCK_ACCOUNT_ID_ALT }),
     },
+    identityResolution: identityResolutionDefault,
     ...api,
   } as unknown as CoreApi;
 
@@ -74,4 +93,5 @@ export const makeSwapApiMocks = (
     }),
   }),
   mirrorMock: makeMirrorMock(),
+  identityResolutionMock: makeIdentityResolutionServiceMock(),
 });
