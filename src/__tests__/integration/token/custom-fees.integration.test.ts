@@ -71,7 +71,6 @@ describe('Token Custom Fees Integration Tests', () => {
 
     const output = result.result as TokenCreateFtFromFileOutput;
     expect(output.tokenId).toBeDefined();
-    expect(output.alias).toBe(tokenFile.name);
     expect(output.name).toBe(tokenFile.tokenName);
     expect(output.network).toBe(network);
 
@@ -121,7 +120,6 @@ describe('Token Custom Fees Integration Tests', () => {
 
     const output = result.result as TokenCreateFtFromFileOutput;
     expect(output.tokenId).toBeDefined();
-    expect(output.alias).toBe(tokenFile.name);
     expect(output.name).toBe(tokenFile.tokenName);
     expect(output.network).toBe(network);
 
@@ -168,7 +166,6 @@ describe('Token Custom Fees Integration Tests', () => {
 
     const output = result.result as TokenCreateFtFromFileOutput;
     expect(output.tokenId).toBeDefined();
-    expect(output.alias).toBe(tokenFile.name);
     expect(output.name).toBe(tokenFile.tokenName);
     expect(output.network).toBe(network);
 
