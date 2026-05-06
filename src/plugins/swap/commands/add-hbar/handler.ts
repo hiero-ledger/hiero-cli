@@ -4,10 +4,13 @@ import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SwapAddHbarOutput } from './output';
 
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
-import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
+import {
+  HBAR_DECIMALS,
+  HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION,
+} from '@/core/shared/constants';
+import { processBalanceInput } from '@/core/utils/process-balance-input';
 import { SwapTransferType } from '@/plugins/swap/schema';
 import { SwapStateHelper } from '@/plugins/swap/state-helper';
-import { formatAccount } from '@/plugins/swap/utils/format-helpers';
 
 import { SwapAddHbarInputSchema } from './input';
 
@@ -16,7 +19,8 @@ export class SwapAddHbarCommand implements Command {
     const { api } = args;
 
     const validArgs = SwapAddHbarInputSchema.parse(args.args);
-    const { name, amount } = validArgs;
+    const { name } = validArgs;
+    const rawAmount = processBalanceInput(validArgs.amount, HBAR_DECIMALS);
 
     const keyManager =
       validArgs.keyManager ??
@@ -41,25 +45,18 @@ export class SwapAddHbarCommand implements Command {
     const updated = helper.addTransfer(name, {
       type: SwapTransferType.HBAR,
       from: {
-        input: validArgs.from?.rawValue ?? fromResolved.accountId,
         accountId: fromResolved.accountId,
         keyRefId: fromResolved.keyRefId,
       },
-      to: {
-        input: validArgs.to.rawValue,
-        accountId: toDestination,
-      },
-      amount,
+      to: toDestination,
+      amount: rawAmount.toString(),
     });
 
     const output: SwapAddHbarOutput = {
       swapName: name,
-      from: formatAccount(
-        validArgs.from?.rawValue ?? fromResolved.accountId,
-        fromResolved.accountId,
-      ),
-      to: formatAccount(validArgs.to.rawValue, toDestination),
-      amount,
+      from: fromResolved.accountId,
+      to: toDestination,
+      amount: validArgs.amount,
       transferCount: updated.transfers.length,
       maxTransfers: HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION,
     };

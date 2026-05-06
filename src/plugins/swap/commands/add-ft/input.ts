@@ -3,9 +3,9 @@ import { z } from 'zod';
 import {
   AliasNameSchema,
   AmountInputSchema,
-  EntityReferenceSchema,
   KeyManagerTypeSchema,
   KeySchema,
+  TokenReferenceObjectSchema,
 } from '@/core/schemas';
 
 export const SwapAddFtInputSchema = z.object({
@@ -14,7 +14,7 @@ export const SwapAddFtInputSchema = z.object({
     'Source account. Accepts accountId:privateKey, alias, or accountId. Defaults to operator.',
   ),
   to: KeySchema.describe('Destination account. Accepts any key format.'),
-  token: EntityReferenceSchema.describe('Token identifier (ID or alias)'),
+  token: TokenReferenceObjectSchema,
   amount: AmountInputSchema.refine((val) => val !== '0' && val !== '0t', {
     message: 'Transfer amount must be greater than zero',
   }).describe(

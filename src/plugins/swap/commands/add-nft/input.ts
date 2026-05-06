@@ -2,10 +2,10 @@ import { z } from 'zod';
 
 import {
   AliasNameSchema,
-  EntityReferenceSchema,
   KeyManagerTypeSchema,
   KeySchema,
   NftSerialNumbersSchema,
+  TokenReferenceObjectSchema,
 } from '@/core/schemas';
 
 export const SwapAddNftInputSchema = z.object({
@@ -14,7 +14,7 @@ export const SwapAddNftInputSchema = z.object({
     'Source account. Accepts accountId:privateKey, alias, or accountId. Defaults to operator.',
   ),
   to: KeySchema.describe('Destination account. Accepts any key format.'),
-  token: EntityReferenceSchema.describe('NFT token identifier (ID or alias)'),
+  token: TokenReferenceObjectSchema,
   serials: NftSerialNumbersSchema,
   keyManager: KeyManagerTypeSchema.optional().describe(
     'Key manager type (defaults to config setting)',

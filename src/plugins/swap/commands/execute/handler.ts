@@ -20,15 +20,8 @@ import {
   HbarTransferEntry,
   NftTransferEntry,
 } from '@/core/services/transfer';
-import { HBAR_DECIMALS } from '@/core/shared/constants';
-import { processBalanceInput } from '@/core/utils/process-balance-input';
-import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import { SwapTransferType } from '@/plugins/swap/schema';
 import { SwapStateHelper } from '@/plugins/swap/state-helper';
-import {
-  formatAccount,
-  formatToken,
-} from '@/plugins/swap/utils/format-helpers';
 
 import { SwapExecuteInputSchema } from './input';
 
@@ -64,7 +57,7 @@ export class SwapExecuteCommand extends BaseTransactionCommand<
     const network = api.network.getCurrentNetwork();
 
     const entries = swap.transfers.flatMap((transfer) =>
-      buildEntries(transfer),
+      this.buildEntries(transfer),
     );
 
     const keyRefIds = [...new Set(swap.transfers.map((t) => t.from.keyRefId))];
@@ -129,7 +122,7 @@ export class SwapExecuteCommand extends BaseTransactionCommand<
     executeTransactionResult: SwapExecuteExecuteTransactionResult,
   ): Promise<CommandResult> {
     const transfers: SwapTransferSummary[] =
-      normalisedParams.swap.transfers.map((t) => buildSummary(t));
+      normalisedParams.swap.transfers.map((t) => this.buildSummary(t));
 
     const output: SwapExecuteOutput = {
       transactionId: executeTransactionResult.transactionId ?? '',
@@ -141,76 +134,63 @@ export class SwapExecuteCommand extends BaseTransactionCommand<
 
     return { result: output };
   }
+  private buildEntries(
+    transfer: SwapTransfer,
+  ): (HbarTransferEntry | FtTransferEntry | NftTransferEntry)[] {
+    if (transfer.type === SwapTransferType.HBAR) {
+      return [this.buildHbarEntry(transfer)];
+    }
+    if (transfer.type === SwapTransferType.FT) {
+      return [this.buildFtEntry(transfer)];
+    }
+    return this.buildNftEntries(transfer);
+  }
+
+  private buildHbarEntry(t: HbarSwapTransfer): HbarTransferEntry {
+    return new HbarTransferEntry(t.from.accountId, t.to, BigInt(t.amount));
+  }
+
+  private buildFtEntry(t: FtSwapTransfer): FtTransferEntry {
+    return new FtTransferEntry(
+      t.from.accountId,
+      t.to,
+      t.token,
+      BigInt(t.amount),
+    );
+  }
+
+  private buildNftEntries(t: NftSwapTransfer): NftTransferEntry[] {
+    return t.serials.map(
+      (serial) => new NftTransferEntry(t.from.accountId, t.to, t.token, serial),
+    );
+  }
+
+  private buildSummary(transfer: SwapTransfer): SwapTransferSummary {
+    const from = transfer.from.accountId;
+    const to = transfer.to;
+
+    if (transfer.type === SwapTransferType.HBAR) {
+      return { type: SwapTransferType.HBAR, from, to, detail: transfer.amount };
+    }
+    if (transfer.type === SwapTransferType.FT) {
+      return {
+        type: SwapTransferType.FT,
+        from,
+        to,
+        detail: `token: ${transfer.token}  ${transfer.amount}`,
+      };
+    }
+    return {
+      type: SwapTransferType.NFT,
+      from,
+      to,
+      detail: `token: ${transfer.token}  serials: ${transfer.serials.join(', ')}`,
+    };
+  }
 }
 
 export async function swapExecute(
   args: CommandHandlerArgs,
 ): Promise<CommandResult> {
   return new SwapExecuteCommand().execute(args);
-}
-
-function buildEntries(
-  transfer: SwapTransfer,
-): (HbarTransferEntry | FtTransferEntry | NftTransferEntry)[] {
-  if (transfer.type === SwapTransferType.HBAR) {
-    return [buildHbarEntry(transfer)];
-  }
-  if (transfer.type === SwapTransferType.FT) {
-    return [buildFtEntry(transfer)];
-  }
-  return buildNftEntries(transfer);
-}
-
-function buildHbarEntry(t: HbarSwapTransfer): HbarTransferEntry {
-  return new HbarTransferEntry(
-    t.from.accountId,
-    t.to.accountId,
-    processBalanceInput(t.amount, HBAR_DECIMALS),
-  );
-}
-
-function buildFtEntry(t: FtSwapTransfer): FtTransferEntry {
-  return new FtTransferEntry(
-    t.from.accountId,
-    t.to.accountId,
-    t.token.tokenId,
-    processTokenBalanceInput(t.amount, t.token.decimals),
-  );
-}
-
-function buildNftEntries(t: NftSwapTransfer): NftTransferEntry[] {
-  return t.serials.map(
-    (serial) =>
-      new NftTransferEntry(
-        t.from.accountId,
-        t.to.accountId,
-        t.token.tokenId,
-        serial,
-      ),
-  );
-}
-
-function buildSummary(transfer: SwapTransfer): SwapTransferSummary {
-  const from = formatAccount(transfer.from.input, transfer.from.accountId);
-  const to = formatAccount(transfer.to.input, transfer.to.accountId);
-
-  if (transfer.type === SwapTransferType.HBAR) {
-    return { type: SwapTransferType.HBAR, from, to, detail: transfer.amount };
-  }
-  if (transfer.type === SwapTransferType.FT) {
-    const token = formatToken(transfer.token.input, transfer.token.tokenId);
-    return {
-      type: SwapTransferType.FT,
-      from,
-      to,
-      detail: `token: ${token}  ${transfer.amount}`,
-    };
-  }
-  const token = formatToken(transfer.token.input, transfer.token.tokenId);
-  return {
-    type: SwapTransferType.NFT,
-    from,
-    to,
-    detail: `token: ${token}  serials: ${transfer.serials.join(', ')}`,
-  };
 }
