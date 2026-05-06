@@ -175,9 +175,6 @@ Swaps are stored per-network in `~/.hiero-cli/state/swap-storage.json`. Each swa
 - `api.txSign` — signs with all unique `from` account keys in one call
 - `api.txExecute` — submits the transaction
 - `api.keyResolver` — resolves account credentials at `add` time
-  <<<<<<< HEAD
-- # `api.mirror` — fetches FT decimals at `execute` time
 - `api.mirror` — fetches FT decimals at `add-ft` time to convert display amount to base units
-  > > > > > > > origin/main
 - `api.state` — persists swap state between commands
 - `api.network` — network information
