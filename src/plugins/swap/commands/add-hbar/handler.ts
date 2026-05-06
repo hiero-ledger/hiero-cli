@@ -3,6 +3,7 @@ import type { Command } from '@/core/commands/command.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SwapAddHbarOutput } from './output';
 
+import { ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import {
   HBAR_DECIMALS,
@@ -40,7 +41,12 @@ export class SwapAddHbarCommand implements Command {
       validArgs.to,
       keyManager,
     );
-    const toDestination = toResolved.accountId ?? toResolved.evmAddress ?? '';
+    if (!toResolved.accountId) {
+      throw new ValidationError(
+        'Destination must be an account ID or an alias that resolves to an account ID',
+      );
+    }
+    const toDestination = toResolved.accountId;
 
     const updated = helper.addTransfer(name, {
       type: SwapTransferType.HBAR,

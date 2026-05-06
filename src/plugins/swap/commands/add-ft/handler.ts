@@ -3,6 +3,7 @@ import type { Command } from '@/core/commands/command.interface';
 import type { KeyManager } from '@/core/services/kms/kms-types.interface';
 import type { SwapAddFtOutput } from './output';
 
+import { ValidationError } from '@/core/errors';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
@@ -49,7 +50,13 @@ export class SwapAddFtCommand implements Command {
 
     const decimals = parseInt(tokenInfo.decimals) || 0;
     const rawAmount = processTokenBalanceInput(validArgs.amount, decimals);
-    const toDestination = toResolved.accountId ?? toResolved.evmAddress ?? '';
+
+    if (!toResolved.accountId) {
+      throw new ValidationError(
+        'Destination must be an account ID or an alias that resolves to an account ID',
+      );
+    }
+    const toDestination = toResolved.accountId;
 
     const updated = helper.addTransfer(name, {
       type: SwapTransferType.FT,
