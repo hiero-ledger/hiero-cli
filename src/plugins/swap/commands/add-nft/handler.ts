@@ -48,7 +48,9 @@ export class SwapAddNftCommand implements Command {
       keyManager,
     );
     if (!toResolved.accountId) {
-      throw new ValidationError('Destination must be an account ID');
+      throw new ValidationError(
+        'The parameter "to" could not be resolved to an account ID',
+      );
     }
     const toDestination = toResolved.accountId;
 

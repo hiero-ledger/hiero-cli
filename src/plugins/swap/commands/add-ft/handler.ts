@@ -52,7 +52,9 @@ export class SwapAddFtCommand implements Command {
     const rawAmount = processTokenBalanceInput(validArgs.amount, decimals);
 
     if (!toResolved.accountId) {
-      throw new ValidationError('Destination must be an account ID');
+      throw new ValidationError(
+        'The parameter "to" could not be resolved to an account ID',
+      );
     }
     const toDestination = toResolved.accountId;
 
