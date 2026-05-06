@@ -42,9 +42,7 @@ export class SwapAddHbarCommand implements Command {
       keyManager,
     );
     if (!toResolved.accountId) {
-      throw new ValidationError(
-        'Destination must be an account ID or an alias that resolves to an account ID',
-      );
+      throw new ValidationError('Destination must be an account ID');
     }
     const toDestination = toResolved.accountId;
 
