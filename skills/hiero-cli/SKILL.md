@@ -52,6 +52,7 @@ State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namesp
 | `token`   | `token-tokens-storage.json`     |
 | `topic`   | `topic-topics-storage.json`     |
 | `batch`   | `batch-batches-storage.json`    |
+| `swap`    | `swap-storage.json`             |
 
 ## Amount notation
 
@@ -73,6 +74,7 @@ State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namesp
 | `config`            | CLI configuration          | list, get, set config options                                                                                                                                                                                 |
 | `credentials`       | Key/credentials management | list, remove stored credentials                                                                                                                                                                               |
 | `batch`             | Batch transactions         | create batch, add transactions, execute, list, delete                                                                                                                                                         |
+| `swap`              | Multi-party asset exchange | create swap, add HBAR/FT/NFT transfers, view, list, execute, delete                                                                                                                                           |
 | `plugin-management` | Plugin lifecycle           | add, remove, enable, disable, list, reset, info                                                                                                                                                               |
 
 ## Agent instruction
