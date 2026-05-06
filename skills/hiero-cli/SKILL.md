@@ -73,7 +73,7 @@ State is persisted in `~/.hiero-cli/state/` as JSON files, one per plugin namesp
 | `hbar`              | Transfer HBAR              | transfer HBAR, approve/revoke HBAR allowance                                                                                                                                                                                                                                            |
 | `token`             | Manage FT & NFT tokens     | create-ft/nft, create-from-file, mint, burn, wipe, transfer, airdrop, associate, dissociate, freeze/unfreeze, pause/unpause, grant/revoke KYC, allowance (FT/NFT), delete-allowance-nft, update-metadata-nft, pending-airdrops, cancel/claim/reject-airdrop, list, view, import, delete |
 | `topic`             | Hedera Consensus Service   | create, update, submit/find messages, import, list, delete                                                                                                                                                                                                                              |
-| `schedule`          | Scheduled transactions     | create schedule record, sign pending schedule, delete schedule, verify execution state. Use `--scheduled <name>` (`-X`) flag on any transaction command to wrap it as a scheduled transaction                                                                                           |
+| `schedule`          | Scheduled transactions     | create schedule record, sign pending schedule, delete schedule, verify execution state. Use `--scheduled <name>` (`-X`) only on commands marked `[scheduled]` in the plugin reference                                                                                                   |
 | `contract`          | Smart contract lifecycle   | compile + deploy Solidity, import, list, delete                                                                                                                                                                                                                                         |
 | `contract-erc20`    | ERC-20 contract calls      | name, symbol, decimals, balanceOf, transfer, transferFrom, approve, allowance, totalSupply. **Requires `contract` plugin** (contract must be deployed first)                                                                                                                            |
 | `contract-erc721`   | ERC-721 contract calls     | balanceOf, ownerOf, approve, setApprovalForAll, safeTransferFrom, transferFrom, mint, name, symbol, tokenURI, getApproved, isApprovedForAll. **Requires `contract` plugin** (contract must be deployed first)                                                                           |
@@ -95,6 +95,8 @@ Example: to use `hcli token create-ft`, first read `references/token.md`.
 Example: to batch `hcli token mint-ft`, read both `references/batch.md` and `references/token.md`.
 
 **When working with scheduled transactions, read `references/schedule.md` AND the reference for the command being scheduled.**
+
+Only commands marked **[scheduled]** in their reference support `--scheduled <name>` / `-X`.
 
 Example: to schedule `hcli token burn-ft`, read both `references/schedule.md` and `references/token.md`.
 

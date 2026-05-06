@@ -5,7 +5,7 @@ Manage Hedera scheduled transactions: create schedule records, sign, delete, and
 ## How scheduled transactions work
 
 1. `schedule create` — register a named schedule in local state (no on-chain transaction yet)
-2. Run any transaction-compatible command with `--scheduled <name>` (short: `-X`) — this wraps the command as a `ScheduleCreateTransaction` on Hedera and stores the on-chain schedule ID
+2. Run a command marked `[scheduled]` in its plugin reference with `--scheduled <name>` (short: `-X`) — this wraps the command as a `ScheduleCreateTransaction` on Hedera and stores the on-chain schedule ID
 3. `schedule sign` — add additional signatures to a pending scheduled transaction
 4. `schedule verify` — check whether the scheduled transaction has been executed on-chain
 5. `schedule delete` — delete the schedule from the network (requires admin key) and remove from local state
@@ -18,7 +18,7 @@ Schedules are persisted in `~/.hiero-cli/state/schedule-transactions-storage.jso
 
 ### `hcli schedule create`
 
-Register a named schedule record in local state with signing parameters. This does not submit anything on-chain — the schedule is created on-chain when you pass `--scheduled <name>` to a transaction command.
+Register a named schedule record in local state with signing parameters. This does not submit anything on-chain — the schedule is created on-chain when you pass `--scheduled <name>` to a command marked `[scheduled]` in its plugin reference.
 
 | Option              | Short | Type    | Required | Default        | Description                                                                          |
 | ------------------- | ----- | ------- | -------- | -------------- | ------------------------------------------------------------------------------------ |
@@ -43,7 +43,7 @@ hcli schedule create --name mySchedule --admin-key alice --memo "scheduled mint"
 
 ### `--scheduled` / `-X` hook
 
-Pass `--scheduled <name>` (or `-X <name>`) to any transaction-compatible command to wrap it as a `ScheduleCreateTransaction` on Hedera instead of executing immediately.
+Pass `--scheduled <name>` (or `-X <name>`) to a command marked `[scheduled]` in its plugin reference to wrap it as a `ScheduleCreateTransaction` on Hedera instead of executing immediately.
 
 ```
 # Instead of executing immediately, create a scheduled transaction on-chain

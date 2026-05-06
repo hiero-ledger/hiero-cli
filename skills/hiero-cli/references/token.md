@@ -1,10 +1,12 @@
 # token plugin
 
-Manage Hedera fungible tokens (FT) and non-fungible tokens (NFT): create, mint, transfer, associate, list, view, import, delete.
+Manage Hedera fungible tokens (FT) and non-fungible tokens (NFT): create/import/list/view/delete, mint/burn/wipe/transfer/airdrop, associate/dissociate, freeze/unfreeze, pause/unpause, KYC, allowances, and NFT metadata.
 
-## Batch-compatible commands
+## Hook-compatible commands
 
 Commands marked **[batchify]** support the `--batch <name>` flag to queue into a batch instead of executing immediately.
+
+Commands marked **[scheduled]** support the `--scheduled <name>` / `-X <name>` flag to wrap the transaction in a schedule.
 
 ---
 
@@ -84,7 +86,7 @@ hcli token create-nft --token-name "MyNFT" --symbol MNFT --supply-key 0.0.123:30
 hcli token create-nft --token-name "MyNFT" --symbol MNFT --supply-key 0.0.123:302e... --batch myBatch
 ```
 
-**Output:** `{ tokenId, name, symbol, transactionId }`
+**Output:** `{ tokenId, name, symbol, treasuryId, supplyType, transactionId, adminAccountId?, adminPublicKey?, supplyAccountId?, supplyPublicKey?, freezePublicKey?, wipePublicKey?, pausePublicKey?, kycPublicKey?, feeSchedulePublicKey?, metadataPublicKey?, alias?, network }`
 
 ---
 
@@ -108,6 +110,26 @@ hcli token create-ft-from-file --file ./my-token.json --batch myBatch
 
 Optional JSON fields in the definition file: `autoRenewPeriod` (seconds or suffixed duration), `autoRenewAccount` (same formats as treasury/keys), `expirationTime` (ISO 8601). If `autoRenewPeriod` is set, `autoRenewAccount` is required; if both auto-renew fields are set, `expirationTime` is ignored (warning logged).
 
+Minimal JSON:
+
+```json
+{
+  "name": "my-token",
+  "symbol": "MTK",
+  "decimals": 8,
+  "supplyType": "finite",
+  "initialSupply": "1000000",
+  "maxSupply": "10000000",
+  "treasuryKey": "alice",
+  "adminKey": "alice",
+  "supplyKey": "alice",
+  "memo": "Optional token memo",
+  "associations": ["bob"]
+}
+```
+
+Common key fields: `treasuryKey`, `adminKey`, `supplyKey`, `wipeKey`, `kycKey`, `freezeKey`, `pauseKey`, `feeScheduleKey`, `metadataKey`. Key values accept the same formats as CLI key options: alias, `accountId:privateKey`, `{ed25519|ecdsa}:private:{hex}`, `{ed25519|ecdsa}:public:{hex}`, or `kr_xxx`.
+
 **Output:** Same shape as CLI `create-ft`, plus `associations[]`, including optional `autoRenewPeriodSeconds`, `autoRenewAccountId`, `expirationTime`.
 
 ---
@@ -129,6 +151,27 @@ Create a non-fungible token from a JSON definition file (supports advanced featu
 hcli token create-nft-from-file --file ./my-nft.json
 hcli token create-nft-from-file --file ./my-nft.json --batch myBatch
 ```
+
+Minimal JSON:
+
+```json
+{
+  "name": "my-nft",
+  "symbol": "MNFT",
+  "supplyType": "finite",
+  "maxSupply": 1000,
+  "treasuryKey": "alice",
+  "adminKey": "alice",
+  "supplyKey": "alice",
+  "metadataKey": "alice",
+  "memo": "Optional NFT collection memo",
+  "associations": ["bob"]
+}
+```
+
+NFT files do not use `decimals` or `initialSupply`. Common key fields are the same as `create-ft-from-file`.
+
+**Output:** Same shape as CLI `create-nft`, plus `associations[]`.
 
 ---
 
@@ -182,7 +225,7 @@ hcli token mint-nft --token mynft --metadata "ipfs://QmABC..." --supply-key 0.0.
 
 ---
 
-### `hcli token update-metadata-nft` [batchify]
+### `hcli token update-metadata-nft` [batchify] [scheduled]
 
 Update metadata for existing NFT serial(s). Requires the token metadata key to sign ([Hedera docs](https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/update-nft-metadata)).
 
@@ -194,6 +237,7 @@ Update metadata for existing NFT serial(s). Requires the token metadata key to s
 | `--metadata-key` | `-M`  | repeatable | no       | —              | Metadata key(s). Omit if KMS can resolve all required on-chain metadata public keys. Pass one or more times for KeyList / threshold |
 | `--key-manager`  | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                                                                                           |
 | `--batch`        | `-B`  | string     | no       | —              | Queue into a named batch instead of executing immediately                                                                           |
+| `--scheduled`    | `-X`  | string     | no       | —              | Wrap as a scheduled transaction. Value is the local schedule record name                                                            |
 
 **Example:**
 
@@ -201,6 +245,7 @@ Update metadata for existing NFT serial(s). Requires the token metadata key to s
 hcli token update-metadata-nft --token mynft --serials 1 --metadata "ipfs://QmNew..."
 hcli token update-metadata-nft --token 0.0.456 --serials 1,2 --metadata "v2" --metadata-key alice --metadata-key bob
 hcli token update-metadata-nft --token mynft --serials 1 --metadata "ipfs://..." --batch myBatch
+hcli token update-metadata-nft --token mynft --serials 1 --metadata "ipfs://..." --scheduled mySchedule
 ```
 
 **Output:** `{ transactionId, tokenId, serialNumbers[], network }`
@@ -585,7 +630,7 @@ hcli token unpause --token MTK --batch myBatch
 
 ---
 
-### `hcli token grant-kyc` [batchify]
+### `hcli token grant-kyc` [batchify] [scheduled]
 
 Grant KYC status to an account for a token. KYC key required.
 
@@ -596,19 +641,21 @@ Grant KYC status to an account for a token. KYC key required.
 | `--kyc-key`     | `-y`  | repeatable | no       | —              | KYC key(s). Omit if KMS can resolve all required on-chain KYC public keys. Repeatable for KeyList / threshold |
 | `--key-manager` | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                                                                     |
 | `--batch`       | `-B`  | string     | no       | —              | Queue into a named batch instead of executing immediately                                                     |
+| `--scheduled`   | `-X`  | string     | no       | —              | Wrap as a scheduled transaction. Value is the local schedule record name                                      |
 
 **Example:**
 
 ```
 hcli token grant-kyc --token MTK --account alice
 hcli token grant-kyc --token MTK --account alice --batch myBatch
+hcli token grant-kyc --token MTK --account alice --scheduled mySchedule
 ```
 
 **Output:** `{ transactionId, tokenId, accountId, network }`
 
 ---
 
-### `hcli token revoke-kyc` [batchify]
+### `hcli token revoke-kyc` [batchify] [scheduled]
 
 Revoke KYC status from an account for a token. KYC key required.
 
@@ -619,12 +666,14 @@ Revoke KYC status from an account for a token. KYC key required.
 | `--kyc-key`     | `-y`  | repeatable | no       | —              | KYC key(s). Omit if KMS can resolve all required on-chain KYC public keys. Repeatable for KeyList / threshold |
 | `--key-manager` | `-k`  | string     | no       | config default | Key manager: `local` or `local_encrypted`                                                                     |
 | `--batch`       | `-B`  | string     | no       | —              | Queue into a named batch instead of executing immediately                                                     |
+| `--scheduled`   | `-X`  | string     | no       | —              | Wrap as a scheduled transaction. Value is the local schedule record name                                      |
 
 **Example:**
 
 ```
 hcli token revoke-kyc --token MTK --account alice
 hcli token revoke-kyc --token MTK --account alice --batch myBatch
+hcli token revoke-kyc --token MTK --account alice --scheduled mySchedule
 ```
 
 **Output:** `{ transactionId, tokenId, accountId, network }`
