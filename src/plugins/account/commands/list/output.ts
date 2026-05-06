@@ -16,7 +16,7 @@ import {
 export const AccountListOutputSchema = z.object({
   accounts: z.array(
     z.object({
-      name: z.string().describe('Account name').optional(),
+      name: z.string().describe('Local name (alias)').optional(),
       accountId: EntityIdSchema,
       type: KeyTypeSchema,
       network: NetworkSchema,
@@ -39,7 +39,7 @@ export const ACCOUNT_LIST_TEMPLATE = `
 📝 Found {{totalCount}} account(s):
 
 {{#each accounts}}
-{{add1 @index}}. Name: {{name}}
+{{add1 @index}}. Name (Alias): {{#if name}}{{name}}{{else}}-{{/if}}
    Account ID: {{hashscanLink accountId "account" network}}
    Type: {{type}}
    Network: {{network}}

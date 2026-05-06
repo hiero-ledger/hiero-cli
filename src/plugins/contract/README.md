@@ -224,7 +224,7 @@ hcli contract import --contract 0.0.123456 --name myContract
 
 ### Contract List
 
-Lists all deployed contracts stored in the state across all networks.
+Lists all deployed contracts stored in the state across all networks. Human output labels the stored local contract name as `Name (Alias)`.
 
 ```bash
 hcli contract list
@@ -282,7 +282,7 @@ interface CommandResult {
 
 - **Create**: `contractId`, `contractName`, `contractEvmAddress`, `name`, `network`, `transactionId`, `adminKeyPresent`, `adminKeyThreshold`, `adminKeyCount`, `verified`
 - **Import**: `contractId`, `contractEvmAddress`, `name`, `network`, `memo`, `verified`
-- **List**: `contracts` (array with `contractId`, `name`, `contractEvmAddress`, `adminKeyPresent`, `network`, `verified`), `totalCount`
+- **List**: `contracts` (array with `contractId`, `name` as local name/alias, `contractEvmAddress`, `adminKeyPresent`, `network`, `verified`), `totalCount`
 - **Update**: `contractId`, `network`, `transactionId`, `updatedFields` (array of field names that were changed)
 - **Delete**: `deletedContract`, `network`, optional `removedAliases`, `transactionId`, `stateOnly`
 
