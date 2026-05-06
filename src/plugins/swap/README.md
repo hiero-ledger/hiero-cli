@@ -152,6 +152,7 @@ hcli swap add-hbar -n exchange --from alice --to bob --amount 100
 hcli swap add-ft   -n exchange --from bob --to alice --token my-token --amount 50
 
 # 3. Review before executing
+hcli swap list
 hcli swap view -n exchange
 
 # 4. Execute (signs with all required keys in one transaction)
