@@ -22,6 +22,7 @@ import {
   TransactionError,
   ValidationError,
 } from '@/core/errors';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 import { SupportedNetwork } from '@/core/types/shared.types';
 import { composeKey } from '@/core/utils/key-composer';
 import {
@@ -30,8 +31,15 @@ import {
   makeLogger,
 } from '@/plugins/account/__tests__/unit/helpers/mocks';
 import {
+  ERROR_NEW_ADMIN_KEY_NO_PRIVATE_KEY,
   makeContractData,
+  MEMO_NEW,
+  MEMO_OLD,
+  MEMO_TEST,
+  MEMO_UPDATED,
   MIRROR_CONTRACT_ADMIN_RAW,
+  MOCK_CONTRACT_ALIAS,
+  NEW_ADMIN_KEY_ED25519,
   NEW_ADMIN_KEY_REF,
   STORED_CONTRACT_ADMIN_REF,
 } from '@/plugins/contract/__tests__/unit/helpers/fixtures';
@@ -69,7 +77,10 @@ describe('contract plugin - update command', () => {
 
     api.mirror.getContractInfo = jest.fn().mockResolvedValue(
       createMockContractInfo({
-        admin_key: { _type: 'ED25519', key: ED25519_DER_PUBLIC_KEY },
+        admin_key: {
+          _type: MirrorNodeKeyType.ED25519,
+          key: ED25519_DER_PUBLIC_KEY,
+        },
       }),
     );
 
@@ -86,7 +97,7 @@ describe('contract plugin - update command', () => {
   });
 
   test('updates contract memo successfully using KMS-discovered signing key', async () => {
-    const contract = makeContractData({ memo: 'old memo' });
+    const contract = makeContractData({ memo: MEMO_OLD });
     const saveContractMock = jest.fn();
     MockedHelper.mockImplementation(() => ({
       getContract: jest.fn().mockReturnValue(contract),
@@ -97,7 +108,7 @@ describe('contract plugin - update command', () => {
 
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
-      memo: 'new memo',
+      memo: MEMO_NEW,
     });
 
     const result = await contractUpdate(args);
@@ -105,7 +116,7 @@ describe('contract plugin - update command', () => {
     expect(api.contract.updateContract).toHaveBeenCalledWith(
       expect.objectContaining({
         contractId: MOCK_CONTRACT_ID,
-        memo: 'new memo',
+        memo: MEMO_NEW,
       }),
     );
     expect(api.txSign.sign).toHaveBeenCalledWith(expect.anything(), [
@@ -135,7 +146,7 @@ describe('contract plugin - update command', () => {
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
       adminKey: ['ed25519:private:' + 'a'.repeat(64)],
-      memo: 'updated memo',
+      memo: MEMO_UPDATED,
     });
 
     const result = await contractUpdate(args);
@@ -165,7 +176,7 @@ describe('contract plugin - update command', () => {
 
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
-      newAdminKey: ['ed25519:public:' + ED25519_HEX_PUBLIC_KEY],
+      newAdminKey: [NEW_ADMIN_KEY_ED25519],
     });
 
     const result = await contractUpdate(args);
@@ -198,7 +209,7 @@ describe('contract plugin - update command', () => {
 
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
-      memo: 'new memo',
+      memo: MEMO_NEW,
       autoRenewPeriod: 7776000,
       maxAutomaticTokenAssociations: 5,
     });
@@ -208,7 +219,7 @@ describe('contract plugin - update command', () => {
     expect(api.contract.updateContract).toHaveBeenCalledWith(
       expect.objectContaining({
         contractId: MOCK_CONTRACT_ID,
-        memo: 'new memo',
+        memo: MEMO_NEW,
         autoRenewPeriod: 7776000,
         maxAutomaticTokenAssociations: 5,
       }),
@@ -273,7 +284,7 @@ describe('contract plugin - update command', () => {
     alias.list.mockReturnValue([]);
 
     const args = makeArgs({ ...api, alias }, logger, {
-      contract: 'my-contract',
+      contract: MOCK_CONTRACT_ALIAS,
       memo: 'updated via alias',
     });
 
@@ -282,14 +293,14 @@ describe('contract plugin - update command', () => {
     expect(
       api.identityResolution.resolveReferenceToEntityOrEvmAddress,
     ).toHaveBeenCalledWith(
-      expect.objectContaining({ entityReference: 'my-contract' }),
+      expect.objectContaining({ entityReference: MOCK_CONTRACT_ALIAS }),
     );
     const output = assertOutput(result.result, ContractUpdateOutputSchema);
     expect(output.contractId).toBe(MOCK_CONTRACT_ID);
   });
 
   test('saves updated contract state after successful update', async () => {
-    const contract = makeContractData({ memo: 'old memo' });
+    const contract = makeContractData({ memo: MEMO_OLD });
     const saveContractMock = jest.fn();
     MockedHelper.mockImplementation(() => ({
       getContract: jest.fn().mockReturnValue(contract),
@@ -300,7 +311,7 @@ describe('contract plugin - update command', () => {
 
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
-      memo: 'updated memo',
+      memo: MEMO_UPDATED,
     });
 
     await contractUpdate(args);
@@ -309,7 +320,7 @@ describe('contract plugin - update command', () => {
       expectedStateKey,
       expect.objectContaining({
         contractId: MOCK_CONTRACT_ID,
-        memo: 'updated memo',
+        memo: MEMO_UPDATED,
       }),
     );
   });
@@ -324,7 +335,7 @@ describe('contract plugin - update command', () => {
 
     const alias = makeAliasServiceMock();
     const existingAlias = {
-      alias: 'my-contract',
+      alias: MOCK_CONTRACT_ALIAS,
       type: AliasType.Contract,
       network: SupportedNetwork.TESTNET,
       entityId: MOCK_CONTRACT_ID,
@@ -340,13 +351,13 @@ describe('contract plugin - update command', () => {
 
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
-      newAdminKey: ['ed25519:public:' + ED25519_HEX_PUBLIC_KEY],
+      newAdminKey: [NEW_ADMIN_KEY_ED25519],
     });
 
     await contractUpdate(args);
 
     expect(alias.remove).toHaveBeenCalledWith(
-      'my-contract',
+      MOCK_CONTRACT_ALIAS,
       SupportedNetwork.TESTNET,
     );
     expect(alias.register).toHaveBeenCalledWith({
@@ -378,7 +389,7 @@ describe('contract plugin - update command', () => {
 
     const args = makeArgs(api, logger, {
       contract: MOCK_CONTRACT_ID,
-      memo: 'test',
+      memo: MEMO_TEST,
     });
 
     await expect(contractUpdate(args)).rejects.toThrow(ValidationError);
@@ -399,7 +410,7 @@ describe('contract plugin - update command', () => {
 
     const args = makeArgs(api, logger, {
       contract: MOCK_CONTRACT_ID,
-      memo: 'test',
+      memo: MEMO_TEST,
     });
 
     await expect(contractUpdate(args)).rejects.toThrow(ValidationError);
@@ -419,7 +430,7 @@ describe('contract plugin - update command', () => {
     const alias = makeAliasServiceMock();
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
-      memo: 'test',
+      memo: MEMO_TEST,
     });
 
     await expect(contractUpdate(args)).rejects.toThrow(ValidationError);
@@ -442,17 +453,17 @@ describe('contract plugin - update command', () => {
     api.keyResolver.resolveSigningKey = jest
       .fn()
       .mockRejectedValue(
-        new ValidationError('New admin key has no private key in KMS'),
+        new ValidationError(ERROR_NEW_ADMIN_KEY_NO_PRIVATE_KEY),
       );
 
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
-      newAdminKey: ['ed25519:public:' + ED25519_HEX_PUBLIC_KEY],
+      newAdminKey: [NEW_ADMIN_KEY_ED25519],
     });
 
     await expect(contractUpdate(args)).rejects.toThrow(ValidationError);
     await expect(contractUpdate(args)).rejects.toThrow(
-      'New admin key has no private key in KMS',
+      ERROR_NEW_ADMIN_KEY_NO_PRIVATE_KEY,
     );
   });
 
@@ -472,7 +483,7 @@ describe('contract plugin - update command', () => {
 
     const args = makeArgs({ ...api, alias }, logger, {
       contract: MOCK_CONTRACT_ID,
-      memo: 'test',
+      memo: MEMO_TEST,
     });
 
     await expect(contractUpdate(args)).rejects.toThrow(TransactionError);
@@ -492,7 +503,7 @@ describe('contract plugin - update command', () => {
 
     const args = makeArgs(api, logger, {
       contract: MOCK_CONTRACT_ID,
-      memo: 'test',
+      memo: MEMO_TEST,
     });
 
     await expect(contractUpdate(args)).rejects.toThrow(NotFoundError);
@@ -515,7 +526,7 @@ describe('contract plugin - update command', () => {
     const alias = makeAliasServiceMock();
     const args = makeArgs({ ...api, alias }, logger, {
       contract: 'missing-alias',
-      memo: 'test',
+      memo: MEMO_TEST,
     });
 
     await expect(contractUpdate(args)).rejects.toThrow(NotFoundError);

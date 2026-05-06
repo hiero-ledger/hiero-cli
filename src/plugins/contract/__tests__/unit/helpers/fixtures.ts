@@ -4,6 +4,7 @@ import { PublicKey } from '@hiero-ledger/sdk';
 
 import {
   ED25519_DER_PUBLIC_KEY,
+  ED25519_HEX_PUBLIC_KEY,
   MOCK_CONTRACT_ID,
   MOCK_EVM_ADDRESS,
   MOCK_TX_ID,
@@ -44,6 +45,16 @@ contract ERC721 {
 // contract update command fixtures
 export const STORED_CONTRACT_ADMIN_REF = 'test-admin-key-ref';
 export const NEW_ADMIN_KEY_REF = 'new-admin-key-ref';
+export const MOCK_CONTRACT_ALIAS = 'my-contract';
+export const NEW_ADMIN_KEY_ED25519 = `ed25519:public:${ED25519_HEX_PUBLIC_KEY}`;
+
+export const MEMO_OLD = 'old memo';
+export const MEMO_NEW = 'new memo';
+export const MEMO_UPDATED = 'updated memo';
+export const MEMO_TEST = 'test';
+
+export const ERROR_NEW_ADMIN_KEY_NO_PRIVATE_KEY =
+  'New admin key has no private key in KMS';
 
 export const MIRROR_CONTRACT_ADMIN_RAW = PublicKey.fromString(
   ED25519_DER_PUBLIC_KEY,

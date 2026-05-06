@@ -22,7 +22,14 @@ import {
 import { ethers, getBytes } from 'ethers';
 
 import { ContractTransactionServiceImpl } from '@/core/services/contract-transaction/contract-transaction-service';
+import { MirrorNodeKeyType } from '@/core/services/mirrornode/types';
 
+import {
+  bytecodes,
+  contractIds,
+  errorMessages,
+  functionNames,
+} from './helpers/fixtures';
 import {
   createMockContractCreateFlow,
   createMockContractDeleteTransaction,
@@ -82,21 +89,21 @@ describe('ContractTransactionServiceImpl', () => {
   describe('contractCreateFlowTransaction', () => {
     it('should create contract create flow with bytecode', () => {
       const params = {
-        bytecode: '0x123456',
+        bytecode: bytecodes.simple,
       } as ContractCreateFlowParams;
 
       const result = contractService.contractCreateFlowTransaction(params);
 
       expect(ContractCreateFlow).toHaveBeenCalledTimes(1);
       expect(mockContractCreateFlow.setBytecode).toHaveBeenCalledWith(
-        '0x123456',
+        bytecodes.simple,
       );
       expect(result.transaction).toBe(mockContractCreateFlow);
     });
 
     it('should set admin key when provided', () => {
       const params = {
-        bytecode: '0x123456',
+        bytecode: bytecodes.simple,
         adminKey: mockAdminKey,
         constructorParameters: [],
         abiDefinition: '[{}]',
@@ -112,7 +119,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set gas when provided', () => {
       const params = {
-        bytecode: '0x123456',
+        bytecode: bytecodes.simple,
         gas: 100000,
       } as ContractCreateFlowParams;
 
@@ -123,7 +130,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set memo when provided', () => {
       const params = {
-        bytecode: '0x123456',
+        bytecode: bytecodes.simple,
         memo: 'test memo',
       } as ContractCreateFlowParams;
 
@@ -136,7 +143,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set constructor parameters when abi and params provided', () => {
       const params = {
-        bytecode: '0x123456',
+        bytecode: bytecodes.simple,
         abiDefinition: '[{}]',
         constructorParameters: ['arg1'],
       } as ContractCreateFlowParams;
@@ -155,7 +162,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set initial balance when provided', () => {
       const params = {
-        bytecode: '0x123456',
+        bytecode: bytecodes.simple,
         initialBalanceRaw: BigInt(100_000_000),
       } as ContractCreateFlowParams;
 
@@ -168,7 +175,7 @@ describe('ContractTransactionServiceImpl', () => {
     });
 
     it('should not set initial balance when not provided', () => {
-      const params = { bytecode: '0x123456' } as ContractCreateFlowParams;
+      const params = { bytecode: bytecodes.simple } as ContractCreateFlowParams;
 
       contractService.contractCreateFlowTransaction(params);
 
@@ -177,7 +184,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set auto-renew period when provided', () => {
       const params = {
-        bytecode: '0x123456',
+        bytecode: bytecodes.simple,
         autoRenewPeriod: 7776000,
       } as ContractCreateFlowParams;
 
@@ -190,21 +197,23 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set auto-renew account ID when provided', () => {
       const params = {
-        bytecode: '0x123456',
-        autoRenewAccountId: '0.0.500',
+        bytecode: bytecodes.simple,
+        autoRenewAccountId: contractIds.autoRenewAccount,
       } as ContractCreateFlowParams;
 
       contractService.contractCreateFlowTransaction(params);
 
-      expect(mockAccountIdFromString).toHaveBeenCalledWith('0.0.500');
+      expect(mockAccountIdFromString).toHaveBeenCalledWith(
+        contractIds.autoRenewAccount,
+      );
       expect(mockContractCreateFlow.setAutoRenewAccountId).toHaveBeenCalledWith(
-        { id: '0.0.500' },
+        { id: contractIds.autoRenewAccount },
       );
     });
 
     it('should set max automatic token associations when provided', () => {
       const params = {
-        bytecode: '0x123456',
+        bytecode: bytecodes.simple,
         maxAutomaticTokenAssociations: 10,
       } as ContractCreateFlowParams;
 
@@ -217,20 +226,20 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set staked account ID when provided', () => {
       const params = {
-        bytecode: '0x123456',
-        stakedAccountId: '0.0.300',
+        bytecode: bytecodes.simple,
+        stakedAccountId: contractIds.stakedAccount,
       } as ContractCreateFlowParams;
 
       contractService.contractCreateFlowTransaction(params);
 
       expect(mockContractCreateFlow.setStakedAccountId).toHaveBeenCalledWith(
-        '0.0.300',
+        contractIds.stakedAccount,
       );
     });
 
     it('should set staked node ID when provided', () => {
       const params = {
-        bytecode: '0x123456',
+        bytecode: bytecodes.simple,
         stakedNodeId: 3,
       } as ContractCreateFlowParams;
 
@@ -241,7 +250,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set decline staking reward when provided', () => {
       const params = {
-        bytecode: '0x123456',
+        bytecode: bytecodes.simple,
         declineStakingReward: true,
       } as ContractCreateFlowParams;
 
@@ -253,7 +262,7 @@ describe('ContractTransactionServiceImpl', () => {
     });
 
     it('should not set optional fields when not provided', () => {
-      const params = { bytecode: '0x123456' } as ContractCreateFlowParams;
+      const params = { bytecode: bytecodes.simple } as ContractCreateFlowParams;
 
       contractService.contractCreateFlowTransaction(params);
 
@@ -275,9 +284,9 @@ describe('ContractTransactionServiceImpl', () => {
   describe('contractExecuteTransaction', () => {
     it('should create contract execute transaction with contractId, gas and function with parameters', () => {
       const params: ContractExecuteParams = {
-        contractId: '0.0.1234',
+        contractId: contractIds.primary,
         gas: 250000,
-        functionName: 'transfer',
+        functionName: functionNames.transfer,
         // using a double cast here to avoid depending on actual ContractFunctionParameters implementation
         functionParameters: {} as unknown as ContractFunctionParameters,
       };
@@ -285,13 +294,13 @@ describe('ContractTransactionServiceImpl', () => {
       const result = contractService.contractExecuteTransaction(params);
 
       expect(ContractExecuteTransaction).toHaveBeenCalledTimes(1);
-      expect(ContractId.fromString).toHaveBeenCalledWith('0.0.1234');
+      expect(ContractId.fromString).toHaveBeenCalledWith(contractIds.primary);
       expect(mockContractExecuteTx.setContractId).toHaveBeenCalledWith({
-        id: '0.0.1234',
+        id: contractIds.primary,
       });
       expect(mockContractExecuteTx.setGas).toHaveBeenCalledWith(250000);
       expect(mockContractExecuteTx.setFunction).toHaveBeenCalledWith(
-        'transfer',
+        functionNames.transfer,
         params.functionParameters,
       );
       expect(result.transaction).toBe(mockContractExecuteTx);
@@ -299,20 +308,20 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should create contract execute transaction with only function name when parameters are not provided', () => {
       const params: ContractExecuteParams = {
-        contractId: '0.0.1234',
+        contractId: contractIds.primary,
         gas: 100000,
-        functionName: 'pause',
+        functionName: functionNames.pause,
       };
 
       const result = contractService.contractExecuteTransaction(params);
 
       expect(ContractExecuteTransaction).toHaveBeenCalledTimes(1);
       expect(mockContractExecuteTx.setContractId).toHaveBeenCalledWith({
-        id: '0.0.1234',
+        id: contractIds.primary,
       });
       expect(mockContractExecuteTx.setGas).toHaveBeenCalledWith(100000);
       expect(mockContractExecuteTx.setFunction).toHaveBeenCalledWith(
-        'pause',
+        functionNames.pause,
         undefined,
       );
       expect(result.transaction).toBe(mockContractExecuteTx);
@@ -320,7 +329,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set payable amount when payableAmountTinybars is provided', () => {
       const params: ContractExecuteParams = {
-        contractId: '0.0.1234',
+        contractId: contractIds.primary,
         gas: 100000,
         functionName: 'deposit',
         payableAmountTinybars: '500000000',
@@ -336,9 +345,9 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should not set payable amount when payableAmountTinybars is not provided', () => {
       const params: ContractExecuteParams = {
-        contractId: '0.0.1234',
+        contractId: contractIds.primary,
         gas: 100000,
-        functionName: 'transfer',
+        functionName: functionNames.transfer,
       };
 
       contractService.contractExecuteTransaction(params);
@@ -351,7 +360,7 @@ describe('ContractTransactionServiceImpl', () => {
     it('should create contract execute transaction with encoded function parameters', () => {
       const encodedParams = new Uint8Array([0xab, 0xcd, 0xef]);
       const params: ContractExecuteEncodedParams = {
-        contractId: '0.0.5678',
+        contractId: contractIds.secondary,
         gas: 150000,
         functionParametersEncoded: encodedParams,
       };
@@ -359,9 +368,9 @@ describe('ContractTransactionServiceImpl', () => {
       const result = contractService.contractExecuteWithEncodedParams(params);
 
       expect(ContractExecuteTransaction).toHaveBeenCalledTimes(1);
-      expect(ContractId.fromString).toHaveBeenCalledWith('0.0.5678');
+      expect(ContractId.fromString).toHaveBeenCalledWith(contractIds.secondary);
       expect(mockContractExecuteTx.setContractId).toHaveBeenCalledWith({
-        id: '0.0.5678',
+        id: contractIds.secondary,
       });
       expect(mockContractExecuteTx.setGas).toHaveBeenCalledWith(150000);
       expect(mockContractExecuteTx.setFunctionParameters).toHaveBeenCalledWith(
@@ -373,7 +382,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set payable amount when payableAmountTinybars is provided', () => {
       const params: ContractExecuteEncodedParams = {
-        contractId: '0.0.5678',
+        contractId: contractIds.secondary,
         gas: 150000,
         functionParametersEncoded: new Uint8Array([0x01]),
         payableAmountTinybars: '1000000000',
@@ -389,7 +398,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should not set payable amount when payableAmountTinybars is not provided', () => {
       const params: ContractExecuteEncodedParams = {
-        contractId: '0.0.5678',
+        contractId: contractIds.secondary,
         gas: 150000,
         functionParametersEncoded: new Uint8Array([0x01]),
       };
@@ -402,48 +411,52 @@ describe('ContractTransactionServiceImpl', () => {
 
   describe('deleteContract', () => {
     it('should create ContractDeleteTransaction with contractId', () => {
-      const params: DeleteContractParams = { contractId: '0.0.1234' };
+      const params: DeleteContractParams = { contractId: contractIds.primary };
 
       const result = contractService.deleteContract(params);
 
       expect(ContractDeleteTransaction).toHaveBeenCalledTimes(1);
-      expect(ContractId.fromString).toHaveBeenCalledWith('0.0.1234');
+      expect(ContractId.fromString).toHaveBeenCalledWith(contractIds.primary);
       expect(mockContractDeleteTx.setContractId).toHaveBeenCalledWith({
-        id: '0.0.1234',
+        id: contractIds.primary,
       });
       expect(result.transaction).toBe(mockContractDeleteTx);
     });
 
     it('should set transferAccountId when provided', () => {
       const params: DeleteContractParams = {
-        contractId: '0.0.1234',
-        transferAccountId: '0.0.5678',
+        contractId: contractIds.primary,
+        transferAccountId: contractIds.secondary,
       };
 
       contractService.deleteContract(params);
 
-      expect(mockAccountIdFromString).toHaveBeenCalledWith('0.0.5678');
+      expect(mockAccountIdFromString).toHaveBeenCalledWith(
+        contractIds.secondary,
+      );
       expect(mockContractDeleteTx.setTransferAccountId).toHaveBeenCalledWith({
-        id: '0.0.5678',
+        id: contractIds.secondary,
       });
     });
 
     it('should set transferContractId when provided', () => {
       const params: DeleteContractParams = {
-        contractId: '0.0.1234',
-        transferContractId: '0.0.9999',
+        contractId: contractIds.primary,
+        transferContractId: contractIds.transferTarget,
       };
 
       contractService.deleteContract(params);
 
-      expect(ContractId.fromString).toHaveBeenCalledWith('0.0.9999');
+      expect(ContractId.fromString).toHaveBeenCalledWith(
+        contractIds.transferTarget,
+      );
       expect(mockContractDeleteTx.setTransferContractId).toHaveBeenCalledWith({
-        id: '0.0.9999',
+        id: contractIds.transferTarget,
       });
     });
 
     it('should not set transfer fields when not provided', () => {
-      const params: DeleteContractParams = { contractId: '0.0.1234' };
+      const params: DeleteContractParams = { contractId: contractIds.primary };
 
       contractService.deleteContract(params);
 
@@ -453,10 +466,10 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should throw ValidationError when ContractId.fromString throws', () => {
       (ContractId.fromString as jest.Mock).mockImplementationOnce(() => {
-        throw new Error('Invalid contract ID');
+        throw new Error(errorMessages.invalidContractId);
       });
 
-      const params: DeleteContractParams = { contractId: 'invalid-id' };
+      const params: DeleteContractParams = { contractId: contractIds.invalid };
 
       expect(() => contractService.deleteContract(params)).toThrow(
         'Invalid contract delete parameters',
@@ -466,24 +479,24 @@ describe('ContractTransactionServiceImpl', () => {
 
   describe('updateContract', () => {
     it('should create ContractUpdateTransaction with contractId', () => {
-      const params: UpdateContractParams = { contractId: '0.0.1234' };
+      const params: UpdateContractParams = { contractId: contractIds.primary };
 
       const result = contractService.updateContract(params);
 
       expect(ContractUpdateTransaction).toHaveBeenCalledTimes(1);
-      expect(ContractId.fromString).toHaveBeenCalledWith('0.0.1234');
+      expect(ContractId.fromString).toHaveBeenCalledWith(contractIds.primary);
       expect(mockContractUpdateTx.setContractId).toHaveBeenCalledWith({
-        id: '0.0.1234',
+        id: contractIds.primary,
       });
       expect(result.transaction).toBe(mockContractUpdateTx);
     });
 
     it('should set adminKey when provided', () => {
       const mockKey = {
-        _type: 'ED25519',
+        _type: MirrorNodeKeyType.ED25519,
       } as unknown as Key;
       const params: UpdateContractParams = {
-        contractId: '0.0.1234',
+        contractId: contractIds.primary,
         adminKey: mockKey,
       };
 
@@ -494,7 +507,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set memo when provided', () => {
       const params: UpdateContractParams = {
-        contractId: '0.0.1234',
+        contractId: contractIds.primary,
         memo: 'new memo',
       };
 
@@ -508,7 +521,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should call clearContractMemo when memo is null', () => {
       const params: UpdateContractParams = {
-        contractId: '0.0.1234',
+        contractId: contractIds.primary,
         memo: null,
       };
 
@@ -520,7 +533,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set autoRenewPeriod when provided', () => {
       const params: UpdateContractParams = {
-        contractId: '0.0.1234',
+        contractId: contractIds.primary,
         autoRenewPeriod: 7776000,
       };
 
@@ -533,15 +546,17 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set autoRenewAccountId when provided', () => {
       const params: UpdateContractParams = {
-        contractId: '0.0.1234',
-        autoRenewAccountId: '0.0.500',
+        contractId: contractIds.primary,
+        autoRenewAccountId: contractIds.autoRenewAccount,
       };
 
       contractService.updateContract(params);
 
-      expect(mockAccountIdFromString).toHaveBeenCalledWith('0.0.500');
+      expect(mockAccountIdFromString).toHaveBeenCalledWith(
+        contractIds.autoRenewAccount,
+      );
       expect(mockContractUpdateTx.setAutoRenewAccountId).toHaveBeenCalledWith({
-        id: '0.0.500',
+        id: contractIds.autoRenewAccount,
       });
       expect(
         mockContractUpdateTx.clearAutoRenewAccountId,
@@ -550,7 +565,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should call clearAutoRenewAccountId when autoRenewAccountId is null', () => {
       const params: UpdateContractParams = {
-        contractId: '0.0.1234',
+        contractId: contractIds.primary,
         autoRenewAccountId: null,
       };
 
@@ -564,7 +579,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set maxAutomaticTokenAssociations when provided', () => {
       const params: UpdateContractParams = {
-        contractId: '0.0.1234',
+        contractId: contractIds.primary,
         maxAutomaticTokenAssociations: 10,
       };
 
@@ -577,20 +592,20 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set stakedAccountId when provided', () => {
       const params: UpdateContractParams = {
-        contractId: '0.0.1234',
-        stakedAccountId: '0.0.300',
+        contractId: contractIds.primary,
+        stakedAccountId: contractIds.stakedAccount,
       };
 
       contractService.updateContract(params);
 
       expect(mockContractUpdateTx.setStakedAccountId).toHaveBeenCalledWith(
-        '0.0.300',
+        contractIds.stakedAccount,
       );
     });
 
     it('should set stakedNodeId when provided', () => {
       const params: UpdateContractParams = {
-        contractId: '0.0.1234',
+        contractId: contractIds.primary,
         stakedNodeId: 3,
       };
 
@@ -601,7 +616,7 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should set declineStakingReward when provided', () => {
       const params: UpdateContractParams = {
-        contractId: '0.0.1234',
+        contractId: contractIds.primary,
         declineStakingReward: true,
       };
 
@@ -613,7 +628,7 @@ describe('ContractTransactionServiceImpl', () => {
     });
 
     it('should not set optional fields when not provided', () => {
-      const params: UpdateContractParams = { contractId: '0.0.1234' };
+      const params: UpdateContractParams = { contractId: contractIds.primary };
 
       contractService.updateContract(params);
 
@@ -637,10 +652,10 @@ describe('ContractTransactionServiceImpl', () => {
 
     it('should throw ValidationError when ContractId.fromString throws', () => {
       (ContractId.fromString as jest.Mock).mockImplementationOnce(() => {
-        throw new Error('Invalid contract ID');
+        throw new Error(errorMessages.invalidContractId);
       });
 
-      const params: UpdateContractParams = { contractId: 'invalid-id' };
+      const params: UpdateContractParams = { contractId: contractIds.invalid };
 
       expect(() => contractService.updateContract(params)).toThrow(
         'Invalid contract update parameters',

@@ -1,13 +1,45 @@
+import type { AccountService } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
+import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { BatchTransactionService } from '@/core/services/batch/batch-transaction-service.interface';
+import type { ConfigService } from '@/core/services/config/config-service.interface';
+import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
+import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
+import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
+import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
+import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
+import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
+import type { Logger } from '@/core/services/logger/logger-service.interface';
+import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
+import type { OutputService } from '@/core/services/output/output-service.interface';
+import type { OutputHandlerOptions } from '@/core/services/output/types';
+import type { PluginManagementService } from '@/core/services/plugin-management/plugin-management-service.interface';
+import type { ReceiptService } from '@/core/services/receipt/receipt-service.interface';
+import type { TokenService } from '@/core/services/token/token-service.interface';
+import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
+import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
+import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 
-import { EntityReferenceType } from '@/core/types/shared.types';
-import { CONTRACT_NAME_REGEX } from '@/plugins/contract/utils/contract-file-helpers';
+import { MOCK_CONTRACT_ID } from '@/__tests__/mocks/fixtures';
 import {
-  type ApiMocksConfig,
-  makeApiMocks,
-} from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
-
-export { type ApiMocksConfig, makeApiMocks };
+  createMirrorNodeMock,
+  makeAliasMock,
+  makeConfigMock,
+  makeContractQueryServiceMock,
+  makeIdentityResolutionServiceMock,
+  makeKeyResolverMock,
+  makeKmsMock,
+  makeNetworkMock,
+  makeScheduleTransactionServiceMock,
+  makeStateMock,
+  makeTxExecuteMock,
+  makeTxSignMock,
+} from '@/__tests__/mocks/mocks';
+import {
+  EntityReferenceType,
+  SupportedNetwork,
+} from '@/core/types/shared.types';
+import { CONTRACT_NAME_REGEX } from '@/plugins/contract/utils/contract-file-helpers';
 
 import {
   MOCK_COMPILATION_RESULT,
@@ -47,6 +79,138 @@ export const MOCK_RESOLVE_ACCOUNT_RESULT = {
   evmAddress: '0xmockevmaddress',
 };
 
+export interface ApiMocksConfig {
+  identityResolution?: Partial<jest.Mocked<IdentityResolutionService>>;
+  contractQuery?: Partial<jest.Mocked<ContractQueryService>>;
+  contract?: Partial<jest.Mocked<ContractTransactionService>>;
+  txSign?: Partial<jest.Mocked<TxSignService>>;
+  txExecute?: Partial<jest.Mocked<TxExecuteService>>;
+  network?: SupportedNetwork;
+  alias?: Partial<jest.Mocked<AliasService>>;
+}
+
+export const makeApiMocks = (config?: ApiMocksConfig) => {
+  const network = makeNetworkMock(config?.network ?? SupportedNetwork.TESTNET);
+  const alias = {
+    ...makeAliasMock(),
+    ...config?.alias,
+  };
+  const kms = makeKmsMock();
+  const mirror = createMirrorNodeMock();
+  const keyResolver = makeKeyResolverMock({ network, alias, kms });
+
+  const defaultIdentityResolution = {
+    ...makeIdentityResolutionServiceMock(),
+    resolveReferenceToEntityOrEvmAddress: jest
+      .fn()
+      .mockReturnValue({ entityIdOrEvmAddress: MOCK_CONTRACT_ID }),
+  };
+  const identityResolution = {
+    ...defaultIdentityResolution,
+    ...config?.identityResolution,
+  } as jest.Mocked<IdentityResolutionService>;
+
+  const defaultContractQuery = {
+    ...makeContractQueryServiceMock(),
+    queryContractFunction: jest.fn().mockResolvedValue({
+      contractId: MOCK_CONTRACT_ID,
+      queryResult: [18],
+    }),
+  };
+  const contractQuery = {
+    ...defaultContractQuery,
+    ...config?.contractQuery,
+  } as jest.Mocked<ContractQueryService>;
+
+  const defaultContract = {
+    contractCreateFlowTransaction: jest.fn(),
+  };
+  const contract = {
+    ...defaultContract,
+    ...config?.contract,
+  } as ContractTransactionService;
+
+  const txSign = { ...makeTxSignMock(), ...config?.txSign } as TxSignService;
+  const txExecute = {
+    ...makeTxExecuteMock(),
+    ...config?.txExecute,
+  } as TxExecuteService;
+
+  const api: jest.Mocked<CoreApi> = {
+    account: {
+      createAccount: jest.fn(),
+      getAccountInfo: jest.fn(),
+      getAccountBalance: jest.fn(),
+    } as unknown as AccountService,
+    token: {
+      createTokenTransaction: jest.fn(),
+      createTokenAssociationTransaction: jest.fn(),
+      createTokenDissociationTransaction: jest.fn(),
+      createTransferTransaction: jest.fn(),
+      createMintTransaction: jest.fn(),
+      createNftTransferTransaction: jest.fn(),
+    } as unknown as TokenService,
+    batch: {
+      createBatchTransaction: jest.fn(),
+    } as unknown as BatchTransactionService,
+    receipt: {
+      getReceipt: jest.fn(),
+    } as unknown as ReceiptService,
+    topic: {} as unknown as TopicService,
+    txSign,
+    txExecute,
+    kms,
+    alias,
+    state: makeStateMock(),
+    mirror: mirror as unknown as HederaMirrornodeService,
+    network,
+    config: makeConfigMock() as unknown as ConfigService,
+    logger: makeLogger(),
+    hbar: {
+      transferTinybar: jest.fn(),
+      createHbarAllowanceTransaction: jest.fn(),
+    } as jest.Mocked<HbarService>,
+    output: {
+      handleOutput: jest.fn<never, [OutputHandlerOptions]>(),
+      getFormat: jest.fn().mockReturnValue('human'),
+      setFormat: jest.fn(),
+      emptyLine: jest.fn(),
+    } as jest.Mocked<OutputService>,
+    pluginManagement: {
+      listPlugins: jest.fn().mockReturnValue([]),
+      getPlugin: jest.fn(),
+      addPlugin: jest.fn(),
+      removePlugin: jest.fn(),
+      enablePlugin: jest.fn(),
+      disablePlugin: jest.fn(),
+      resetPlugins: jest.fn(),
+      savePluginState: jest.fn(),
+      getInitializedDefaults: jest.fn().mockReturnValue([]),
+      setInitializedDefaults: jest.fn(),
+      addToInitializedDefaults: jest.fn(),
+    } as PluginManagementService,
+    contract,
+    contractCompiler: {
+      compileContract: jest.fn(),
+    } as unknown as ContractCompilerService,
+    contractVerifier: {
+      verifyContract: jest.fn(),
+      isVerifiedFullMatchOnRepository: jest.fn().mockResolvedValue(false),
+    } as unknown as ContractVerifierService,
+    contractQuery,
+    identityResolution,
+    schedule: makeScheduleTransactionServiceMock(),
+    keyResolver,
+  };
+
+  return {
+    api,
+    identityResolution,
+    contractQuery,
+    contract,
+  };
+};
+
 export function makeContractCreateApiMocks(): { api: jest.Mocked<CoreApi> } {
   const { api } = makeApiMocks({
     txSign: {
@@ -76,5 +240,13 @@ export function makeContractCreateApiMocks(): { api: jest.Mocked<CoreApi> } {
 
   return { api };
 }
+
+export const makeLogger = (): jest.Mocked<Logger> => ({
+  info: jest.fn(),
+  error: jest.fn(),
+  debug: jest.fn(),
+  warn: jest.fn(),
+  setLevel: jest.fn(),
+});
 
 export { EntityReferenceType };
