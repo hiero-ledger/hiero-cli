@@ -1,8 +1,4 @@
-import type {
-  HederaMirrornodeService,
-  TxExecuteService,
-  TxSignService,
-} from '@/core';
+import type { TxExecuteService, TxSignService } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 
 import { MOCK_TX_ID } from '@/__tests__/mocks/fixtures';
@@ -18,10 +14,6 @@ import { swapExecute } from '@/plugins/swap/commands/execute/handler';
 import { SwapExecuteOutputSchema } from '@/plugins/swap/commands/execute/output';
 import { SwapTransferType } from '@/plugins/swap/schema';
 import { SwapStateHelper } from '@/plugins/swap/state-helper';
-import {
-  formatAccount,
-  formatToken,
-} from '@/plugins/swap/utils/format-helpers';
 
 import {
   FROM_KEY_REF_ID,
@@ -37,29 +29,11 @@ jest.mock('../../state-helper', () => ({
   SwapStateHelper: jest.fn(),
 }));
 
-jest.mock('../../utils/format-helpers', () => ({
-  formatAccount: jest.fn((input: string, accountId: string) =>
-    input !== accountId ? `${input} (${accountId})` : accountId,
-  ),
-  formatToken: jest.fn((input: string, tokenId: string) =>
-    input !== tokenId ? `${input} (${tokenId})` : tokenId,
-  ),
-}));
-
 const MockedHelper = SwapStateHelper as jest.Mock;
-const mockedFormatAccount = formatAccount as jest.Mock;
-const mockedFormatToken = formatToken as jest.Mock;
 
 describe('swap plugin - execute command', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    mockedFormatAccount.mockImplementation(
-      (input: string, accountId: string) =>
-        input !== accountId ? `${input} (${accountId})` : accountId,
-    );
-    mockedFormatToken.mockImplementation((input: string, tokenId: string) =>
-      input !== tokenId ? `${input} (${tokenId})` : tokenId,
-    );
   });
 
   test('executes HBAR swap successfully and deletes it from state', async () => {
@@ -83,7 +57,6 @@ describe('swap plugin - execute command', () => {
       network: networkMock,
       txSign: txSignMock,
       txExecute: txExecuteMock,
-      mirror: { getTokenInfo: jest.fn() } as unknown as HederaMirrornodeService,
       transfer: {
         buildTransferTransaction: jest.fn().mockReturnValue(mockTx),
       },
@@ -118,7 +91,6 @@ describe('swap plugin - execute command', () => {
       network: networkMock,
       txSign: { sign: signMock } as unknown as TxSignService,
       txExecute: txExecuteMock,
-      mirror: { getTokenInfo: jest.fn() } as unknown as HederaMirrornodeService,
       transfer: {
         buildTransferTransaction: jest.fn().mockReturnValue(mockTx),
       },
@@ -148,7 +120,6 @@ describe('swap plugin - execute command', () => {
       network: networkMock,
       txSign: { sign: signMock } as unknown as TxSignService,
       txExecute: txExecuteMock,
-      mirror: { getTokenInfo: jest.fn() } as unknown as HederaMirrornodeService,
       transfer: {
         buildTransferTransaction: jest.fn().mockReturnValue(mockTx),
       },
@@ -178,7 +149,6 @@ describe('swap plugin - execute command', () => {
       network: networkMock,
       txSign: txSignMock,
       txExecute: txExecuteMock,
-      mirror: { getTokenInfo: jest.fn() } as unknown as HederaMirrornodeService,
       transfer: { buildTransferTransaction: buildTransferMock },
     };
     const args = makeArgs(api, logger, { name: SWAP_NAME });
@@ -242,7 +212,6 @@ describe('swap plugin - execute command', () => {
       network: networkMock,
       txSign: txSignMock,
       txExecute: failingExecuteMock,
-      mirror: { getTokenInfo: jest.fn() } as unknown as HederaMirrornodeService,
       transfer: {
         buildTransferTransaction: jest.fn().mockReturnValue(mockTx),
       },

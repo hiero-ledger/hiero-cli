@@ -13,15 +13,12 @@ import { swapAddFt } from '@/plugins/swap/commands/add-ft/handler';
 import { SwapAddFtOutputSchema } from '@/plugins/swap/commands/add-ft/output';
 import { SwapTransferType } from '@/plugins/swap/schema';
 import { SwapStateHelper } from '@/plugins/swap/state-helper';
-import {
-  formatAccount,
-  formatToken,
-} from '@/plugins/swap/utils/format-helpers';
 
 import {
   FROM_ACCOUNT_INPUT,
   FROM_KEY_REF_ID,
-  FT_AMOUNT_RAW,
+  FT_AMOUNT_INPUT,
+  FT_AMOUNT_STORED,
   mockEmptySwap,
   SWAP_NAME,
   TOKEN_INPUT,
@@ -37,18 +34,7 @@ jest.mock('../../state-helper', () => ({
   SwapStateHelper: jest.fn(),
 }));
 
-jest.mock('../../utils/format-helpers', () => ({
-  formatAccount: jest.fn((input: string, accountId: string) =>
-    input !== accountId ? `${input} (${accountId})` : accountId,
-  ),
-  formatToken: jest.fn((input: string, tokenId: string) =>
-    input !== tokenId ? `${input} (${tokenId})` : tokenId,
-  ),
-}));
-
 const MockedHelper = SwapStateHelper as jest.Mock;
-const mockedFormatAccount = formatAccount as jest.Mock;
-const mockedFormatToken = formatToken as jest.Mock;
 
 describe('swap plugin - add-ft command', () => {
   let resolveAccountCredentialsMock: jest.Mock;
@@ -64,13 +50,6 @@ describe('swap plugin - add-ft command', () => {
     resolveDestinationMock = jest.fn().mockResolvedValue({
       accountId: MOCK_ACCOUNT_ID_ALT,
     });
-    mockedFormatAccount.mockImplementation(
-      (input: string, accountId: string) =>
-        input !== accountId ? `${input} (${accountId})` : accountId,
-    );
-    mockedFormatToken.mockImplementation((input: string, tokenId: string) =>
-      input !== tokenId ? `${input} (${tokenId})` : tokenId,
-    );
   });
 
   test('adds fungible token transfer with all required fields', async () => {
@@ -97,7 +76,7 @@ describe('swap plugin - add-ft command', () => {
       from: FROM_ACCOUNT_INPUT,
       to: MOCK_ACCOUNT_ID_ALT,
       token: TOKEN_INPUT,
-      amount: FT_AMOUNT_RAW,
+      amount: FT_AMOUNT_INPUT,
     });
 
     const result = await swapAddFt(args);
@@ -106,23 +85,16 @@ describe('swap plugin - add-ft command', () => {
       SWAP_NAME,
       expect.objectContaining({
         type: SwapTransferType.FT,
-        from: expect.objectContaining({
-          input: FROM_ACCOUNT_INPUT,
-          accountId: MOCK_ACCOUNT_ID,
-          keyRefId: FROM_KEY_REF_ID,
-        }),
-        to: expect.objectContaining({ accountId: MOCK_ACCOUNT_ID_ALT }),
-        token: expect.objectContaining({
-          input: TOKEN_INPUT,
-          tokenId: MOCK_HEDERA_ENTITY_ID_1,
-        }),
-        amount: FT_AMOUNT_RAW,
+        from: { accountId: MOCK_ACCOUNT_ID, keyRefId: FROM_KEY_REF_ID },
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: MOCK_HEDERA_ENTITY_ID_1,
+        amount: FT_AMOUNT_STORED,
       }),
     );
 
     const output = assertOutput(result.result, SwapAddFtOutputSchema);
     expect(output.swapName).toBe(SWAP_NAME);
-    expect(output.amount).toBe(FT_AMOUNT_RAW);
+    expect(output.amount).toBe(FT_AMOUNT_INPUT);
     expect(output.transferCount).toBe(1);
     expect(output.maxTransfers).toBe(
       HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION,
@@ -160,7 +132,7 @@ describe('swap plugin - add-ft command', () => {
       from: FROM_ACCOUNT_INPUT,
       to: MOCK_ACCOUNT_ID_ALT,
       token: TOKEN_INPUT,
-      amount: FT_AMOUNT_RAW,
+      amount: FT_AMOUNT_INPUT,
     });
 
     await swapAddFt(args);
@@ -172,7 +144,7 @@ describe('swap plugin - add-ft command', () => {
     );
   });
 
-  test('fetches and stores token decimals when adding transfer', async () => {
+  test('fetches token info from mirror node and converts amount using decimals', async () => {
     const logger = makeLogger();
     const addTransferMock = jest
       .fn()
@@ -182,7 +154,7 @@ describe('swap plugin - add-ft command', () => {
       addTransfer: addTransferMock,
     }));
 
-    const getTokenInfoMock = jest.fn().mockResolvedValue({ decimals: '6' });
+    const getTokenInfoMock = jest.fn().mockResolvedValue({ decimals: '2' });
 
     const { networkMock, configMock, mirrorMock } = makeSwapApiMocks();
     const api: Partial<CoreApi> = {
@@ -202,16 +174,15 @@ describe('swap plugin - add-ft command', () => {
       from: FROM_ACCOUNT_INPUT,
       to: MOCK_ACCOUNT_ID_ALT,
       token: TOKEN_INPUT,
-      amount: FT_AMOUNT_RAW,
+      amount: '5',
     });
 
     await swapAddFt(args);
 
+    expect(getTokenInfoMock).toHaveBeenCalledWith(MOCK_HEDERA_ENTITY_ID_1);
     expect(addTransferMock).toHaveBeenCalledWith(
       SWAP_NAME,
-      expect.objectContaining({
-        token: expect.objectContaining({ decimals: 6 }),
-      }),
+      expect.objectContaining({ amount: '500' }),
     );
   });
 
@@ -237,7 +208,7 @@ describe('swap plugin - add-ft command', () => {
       name: SWAP_NAME,
       to: MOCK_ACCOUNT_ID_ALT,
       token: TOKEN_INPUT,
-      amount: FT_AMOUNT_RAW,
+      amount: FT_AMOUNT_INPUT,
     });
 
     await expect(swapAddFt(args)).rejects.toThrow(ValidationError);
@@ -268,7 +239,7 @@ describe('swap plugin - add-ft command', () => {
       from: FROM_ACCOUNT_INPUT,
       to: MOCK_ACCOUNT_ID_ALT,
       token: TOKEN_INPUT,
-      amount: FT_AMOUNT_RAW,
+      amount: FT_AMOUNT_INPUT,
     });
 
     await swapAddFt(args);

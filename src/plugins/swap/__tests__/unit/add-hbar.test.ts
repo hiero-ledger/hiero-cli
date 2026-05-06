@@ -12,12 +12,12 @@ import { swapAddHbar } from '@/plugins/swap/commands/add-hbar/handler';
 import { SwapAddHbarOutputSchema } from '@/plugins/swap/commands/add-hbar/output';
 import { SwapTransferType } from '@/plugins/swap/schema';
 import { SwapStateHelper } from '@/plugins/swap/state-helper';
-import { formatAccount } from '@/plugins/swap/utils/format-helpers';
 
 import {
   FROM_ACCOUNT_INPUT,
   FROM_KEY_REF_ID,
-  HBAR_AMOUNT,
+  HBAR_AMOUNT_INPUT,
+  HBAR_AMOUNT_STORED,
   mockEmptySwap,
   SWAP_NAME,
 } from './helpers/fixtures';
@@ -27,14 +27,7 @@ jest.mock('../../state-helper', () => ({
   SwapStateHelper: jest.fn(),
 }));
 
-jest.mock('../../utils/format-helpers', () => ({
-  formatAccount: jest.fn((input: string, accountId: string) =>
-    input !== accountId ? `${input} (${accountId})` : accountId,
-  ),
-}));
-
 const MockedHelper = SwapStateHelper as jest.Mock;
-const mockedFormatAccount = formatAccount as jest.Mock;
 
 describe('swap plugin - add-hbar command', () => {
   let resolveAccountCredentialsMock: jest.Mock;
@@ -50,10 +43,6 @@ describe('swap plugin - add-hbar command', () => {
     resolveDestinationMock = jest.fn().mockResolvedValue({
       accountId: MOCK_ACCOUNT_ID_ALT,
     });
-    mockedFormatAccount.mockImplementation(
-      (input: string, accountId: string) =>
-        input !== accountId ? `${input} (${accountId})` : accountId,
-    );
   });
 
   test('adds HBAR transfer with explicit from account (alias)', async () => {
@@ -79,7 +68,7 @@ describe('swap plugin - add-hbar command', () => {
       name: SWAP_NAME,
       from: FROM_ACCOUNT_INPUT,
       to: MOCK_ACCOUNT_ID_ALT,
-      amount: HBAR_AMOUNT,
+      amount: HBAR_AMOUNT_INPUT,
     });
 
     const result = await swapAddHbar(args);
@@ -88,19 +77,15 @@ describe('swap plugin - add-hbar command', () => {
       SWAP_NAME,
       expect.objectContaining({
         type: SwapTransferType.HBAR,
-        from: expect.objectContaining({
-          input: FROM_ACCOUNT_INPUT,
-          accountId: MOCK_ACCOUNT_ID,
-          keyRefId: FROM_KEY_REF_ID,
-        }),
-        to: expect.objectContaining({ accountId: MOCK_ACCOUNT_ID_ALT }),
-        amount: HBAR_AMOUNT,
+        from: { accountId: MOCK_ACCOUNT_ID, keyRefId: FROM_KEY_REF_ID },
+        to: MOCK_ACCOUNT_ID_ALT,
+        amount: HBAR_AMOUNT_STORED,
       }),
     );
 
     const output = assertOutput(result.result, SwapAddHbarOutputSchema);
     expect(output.swapName).toBe(SWAP_NAME);
-    expect(output.amount).toBe(HBAR_AMOUNT);
+    expect(output.amount).toBe(HBAR_AMOUNT_INPUT);
     expect(output.transferCount).toBe(1);
     expect(output.maxTransfers).toBe(
       HEDERA_MAX_TRANSFER_ENTRIES_PER_TRANSACTION,
@@ -135,7 +120,7 @@ describe('swap plugin - add-hbar command', () => {
     const args = makeArgs(api, logger, {
       name: SWAP_NAME,
       to: MOCK_ACCOUNT_ID_ALT,
-      amount: HBAR_AMOUNT,
+      amount: HBAR_AMOUNT_INPUT,
     });
 
     await swapAddHbar(args);
@@ -181,7 +166,7 @@ describe('swap plugin - add-hbar command', () => {
       name: SWAP_NAME,
       from: FROM_ACCOUNT_INPUT,
       to: MOCK_ACCOUNT_ID_ALT,
-      amount: HBAR_AMOUNT,
+      amount: HBAR_AMOUNT_INPUT,
     });
 
     await swapAddHbar(args);
@@ -214,7 +199,7 @@ describe('swap plugin - add-hbar command', () => {
     const args = makeArgs(api, logger, {
       name: SWAP_NAME,
       to: MOCK_ACCOUNT_ID_ALT,
-      amount: HBAR_AMOUNT,
+      amount: HBAR_AMOUNT_INPUT,
     });
 
     await expect(swapAddHbar(args)).rejects.toThrow(ValidationError);
@@ -241,7 +226,7 @@ describe('swap plugin - add-hbar command', () => {
     const args = makeArgs(api, logger, {
       name: SWAP_NAME,
       to: MOCK_ACCOUNT_ID_ALT,
-      amount: HBAR_AMOUNT,
+      amount: HBAR_AMOUNT_INPUT,
     });
 
     await expect(swapAddHbar(args)).rejects.toThrow(NotFoundError);

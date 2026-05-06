@@ -13,10 +13,6 @@ import { swapAddNft } from '@/plugins/swap/commands/add-nft/handler';
 import { SwapAddNftOutputSchema } from '@/plugins/swap/commands/add-nft/output';
 import { SwapTransferType } from '@/plugins/swap/schema';
 import { SwapStateHelper } from '@/plugins/swap/state-helper';
-import {
-  formatAccount,
-  formatToken,
-} from '@/plugins/swap/utils/format-helpers';
 
 import {
   FROM_ACCOUNT_INPUT,
@@ -37,18 +33,7 @@ jest.mock('../../state-helper', () => ({
   SwapStateHelper: jest.fn(),
 }));
 
-jest.mock('../../utils/format-helpers', () => ({
-  formatAccount: jest.fn((input: string, accountId: string) =>
-    input !== accountId ? `${input} (${accountId})` : accountId,
-  ),
-  formatToken: jest.fn((input: string, tokenId: string) =>
-    input !== tokenId ? `${input} (${tokenId})` : tokenId,
-  ),
-}));
-
 const MockedHelper = SwapStateHelper as jest.Mock;
-const mockedFormatAccount = formatAccount as jest.Mock;
-const mockedFormatToken = formatToken as jest.Mock;
 
 describe('swap plugin - add-nft command', () => {
   let resolveAccountCredentialsMock: jest.Mock;
@@ -64,13 +49,6 @@ describe('swap plugin - add-nft command', () => {
     resolveDestinationMock = jest.fn().mockResolvedValue({
       accountId: MOCK_ACCOUNT_ID_ALT,
     });
-    mockedFormatAccount.mockImplementation(
-      (input: string, accountId: string) =>
-        input !== accountId ? `${input} (${accountId})` : accountId,
-    );
-    mockedFormatToken.mockImplementation((input: string, tokenId: string) =>
-      input !== tokenId ? `${input} (${tokenId})` : tokenId,
-    );
   });
 
   test('adds NFT transfer with serial numbers', async () => {
@@ -107,16 +85,9 @@ describe('swap plugin - add-nft command', () => {
       SWAP_NAME,
       expect.objectContaining({
         type: SwapTransferType.NFT,
-        from: expect.objectContaining({
-          input: FROM_ACCOUNT_INPUT,
-          accountId: MOCK_ACCOUNT_ID,
-          keyRefId: FROM_KEY_REF_ID,
-        }),
-        to: expect.objectContaining({ accountId: MOCK_ACCOUNT_ID_ALT }),
-        token: expect.objectContaining({
-          input: TOKEN_INPUT,
-          tokenId: MOCK_HEDERA_ENTITY_ID_1,
-        }),
+        from: { accountId: MOCK_ACCOUNT_ID, keyRefId: FROM_KEY_REF_ID },
+        to: MOCK_ACCOUNT_ID_ALT,
+        token: MOCK_HEDERA_ENTITY_ID_1,
         serials: NFT_SERIALS,
       }),
     );
