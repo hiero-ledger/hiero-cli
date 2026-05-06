@@ -184,8 +184,6 @@ hcli token mint-nft --token mynft --metadata "ipfs://QmABC..." --supply-key 0.0.
 
 ### `hcli token update-metadata-nft` [batchify]
 
-> ⚠️ **Currently not exposed via CLI runtime.** The command is registered in the plugin manifest and command directory, but it does not appear in `hcli token --help`. Calling `hcli token update-metadata-nft ...` returns "unknown command". Treat the section below as the SDK-level contract; it is not callable until the registration regression is fixed.
-
 Update metadata for existing NFT serial(s). Requires the token metadata key to sign ([Hedera docs](https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/update-nft-metadata)).
 
 | Option           | Short | Type       | Required | Default        | Description                                                                                                                         |
@@ -589,8 +587,6 @@ hcli token unpause --token MTK --batch myBatch
 
 ### `hcli token grant-kyc` [batchify]
 
-> ⚠️ **Currently not exposed via CLI runtime.** Registered in the plugin manifest and present under `src/plugins/token/commands/grant-kyc/`, but not listed in `hcli token --help`. Calling it returns "unknown command". The contract below describes the SDK-level behavior; it is not callable until the registration regression is fixed.
-
 Grant KYC status to an account for a token. KYC key required.
 
 | Option          | Short | Type       | Required | Default        | Description                                                                                                   |
@@ -613,8 +609,6 @@ hcli token grant-kyc --token MTK --account alice --batch myBatch
 ---
 
 ### `hcli token revoke-kyc` [batchify]
-
-> ⚠️ **Currently not exposed via CLI runtime.** Same situation as `grant-kyc` — registered in the manifest, not listed in `hcli token --help`, returns "unknown command" when called.
 
 Revoke KYC status from an account for a token. KYC key required.
 
