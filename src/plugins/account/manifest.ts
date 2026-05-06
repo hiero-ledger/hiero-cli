@@ -223,14 +223,15 @@ export const accountPluginManifest: PluginManifest = {
     {
       name: 'balance',
       summary: 'Get account balance',
-      description: 'Retrieve the balance for an account ID or name',
+      description: 'Retrieve the balance for an account ID or local name/alias',
       options: [
         {
           name: 'account',
           short: 'a',
           type: OptionType.STRING,
           required: true,
-          description: 'Account ID or alias of the account present in state',
+          description:
+            'Account ID or local name/alias of the account present in state',
         },
         {
           name: 'hbar-only',
@@ -245,7 +246,7 @@ export const accountPluginManifest: PluginManifest = {
           short: 't',
           type: OptionType.STRING,
           required: false,
-          description: 'Token ID or token name',
+          description: 'Token ID or local token name/alias',
         },
         {
           name: 'raw',

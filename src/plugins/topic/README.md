@@ -130,7 +130,7 @@ hcli topic import --topic 0.0.123456 --name importedTopic
 
 ### Topic List
 
-List topics stored in the CLI state (filtered by network if needed) with quick stats about memos and attached keys.
+List topics stored in the CLI state (filtered by network if needed) with quick stats about memos and attached keys. Human output labels the stored local topic name as `Name (Alias)`.
 
 ```bash
 hcli topic list

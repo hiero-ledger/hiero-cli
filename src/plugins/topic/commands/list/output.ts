@@ -16,7 +16,7 @@ import {
 export const TopicListOutputSchema = z.object({
   topics: z.array(
     z.object({
-      name: z.string().describe('Topic name').optional(),
+      name: z.string().describe('Local name (alias)').optional(),
       topicId: EntityIdSchema,
       network: NetworkSchema,
       memo: z.string().describe('Topic memo').nullable(),
@@ -51,7 +51,7 @@ export const TOPIC_LIST_TEMPLATE = `
 📝 Found {{totalCount}} topic(s):
 
 {{#each topics}}
-{{add1 @index}}. {{name}}
+{{add1 @index}}. Name (Alias): {{#if name}}{{name}}{{else}}-{{/if}}
    Topic ID: {{hashscanLink topicId "topic" network}}
    Network: {{network}}
 {{#if memo}}

@@ -22,7 +22,7 @@ export const AccountBalanceOutputSchema = z.object({
         tokenId: EntityIdSchema,
         name: z.string().optional(),
         symbol: z.string().optional(),
-        alias: z.string().optional(),
+        alias: z.string().describe('Local name (alias)').optional(),
         balance: HtsBaseUnitSchema,
         balanceDisplay: z.string().optional(),
         decimals: z.number().optional(),
@@ -36,7 +36,7 @@ export const AccountBalanceOutputSchema = z.object({
           tokenId: EntityIdSchema,
           name: z.string().optional(),
           symbol: z.string().optional(),
-          alias: z.string().optional(),
+          alias: z.string().describe('Local name (alias)').optional(),
           serialNumbers: z.array(z.number()),
           count: z.number(),
         }),
@@ -56,10 +56,11 @@ const HBAR_SECTION =
 
 const FT_TOKEN_ROW =
   `{{hashscanLink tokenId "token" ../network}}` +
-  `{{#if alias}} ({{alias}}){{/if}}: ` +
+  ` | Name (Alias): {{#if alias}}{{alias}}{{else}}-{{/if}}` +
+  ` | Balance: ` +
   `{{#if ../raw}}{{balance}}{{else}}{{#if balanceDisplay}}{{balanceDisplay}}{{else}}{{balance}}{{/if}}{{/if}}` +
   `{{#if symbol}} {{symbol}}{{/if}}` +
-  `{{#if name}} ({{name}}){{/if}}`;
+  ` | Token Name: {{#if name}}{{name}}{{else}}-{{/if}}`;
 
 const FT_SECTION =
   `{{#if tokenBalances}}\n` +
@@ -72,8 +73,9 @@ const FT_SECTION =
 
 const NFT_COLLECTION_ROW =
   `{{hashscanLink tokenId "token" ../network}}` +
-  `{{#if alias}} ({{alias}}){{/if}}` +
-  `{{#if name}} — {{name}}{{/if}}: ` +
+  ` | Name (Alias): {{#if alias}}{{alias}}{{else}}-{{/if}}` +
+  ` | Token Name: {{#if name}}{{name}}{{else}}-{{/if}}` +
+  ` | Serials: ` +
   `{{#each serialNumbers}}#{{this}}{{#unless @last}}, {{/unless}}{{/each}}`;
 
 const NFT_SECTION =
