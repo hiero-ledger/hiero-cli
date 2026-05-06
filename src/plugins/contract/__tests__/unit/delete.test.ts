@@ -26,10 +26,10 @@ import {
   makeArgs,
   makeLogger,
 } from '@/plugins/account/__tests__/unit/helpers/mocks';
+import { makeApiMocks } from '@/plugins/contract/__tests__/unit/helpers/mocks';
 import { DeleteContractOutputSchema } from '@/plugins/contract/commands/delete';
 import { contractDelete } from '@/plugins/contract/commands/delete/handler';
 import { ZustandContractStateHelper } from '@/plugins/contract/zustand-state-helper';
-import { makeApiMocks } from '@/plugins/contract-erc721/__tests__/unit/helpers/mocks';
 
 jest.mock('../../zustand-state-helper', () => ({
   ZustandContractStateHelper: jest.fn(),

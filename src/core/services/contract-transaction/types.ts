@@ -3,6 +3,7 @@ import type {
   ContractDeleteTransaction,
   ContractExecuteTransaction,
   ContractFunctionParameters,
+  ContractUpdateTransaction,
   Key,
 } from '@hiero-ledger/sdk';
 
@@ -53,4 +54,21 @@ export interface DeleteContractParams {
 
 export interface ContractDeleteResult {
   transaction: ContractDeleteTransaction;
+}
+
+export interface UpdateContractParams {
+  contractId: string;
+  adminKey?: Key;
+  memo?: string | null;
+  autoRenewPeriod?: number;
+  autoRenewAccountId?: string | null;
+  maxAutomaticTokenAssociations?: number;
+  stakedAccountId?: string;
+  stakedNodeId?: number;
+  declineStakingReward?: boolean;
+  expirationTime?: Date;
+}
+
+export interface ContractUpdateResult {
+  transaction: ContractUpdateTransaction;
 }
