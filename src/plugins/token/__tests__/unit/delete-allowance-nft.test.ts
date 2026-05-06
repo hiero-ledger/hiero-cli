@@ -1,9 +1,11 @@
 import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import {
+  ED25519_DER_PRIVATE_KEY,
   MOCK_ACCOUNT_ID,
   MOCK_ACCOUNT_ID_ALT,
   MOCK_HEDERA_ENTITY_ID_1,
+  MOCK_OPERATOR_ACCOUNT_ID,
 } from '@/__tests__/mocks/fixtures';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { SupportedNetwork } from '@/core';
@@ -22,13 +24,10 @@ import {
   makeApiMocks,
   makeLogger,
   makeTransactionResult,
+  MOCK_NFT_COLLECTION_ENTITY_ID,
 } from './helpers/mocks';
 
-const OWNER_ACCOUNT_ID = MOCK_ACCOUNT_ID;
-const SPENDER_ACCOUNT_ID = MOCK_ACCOUNT_ID_ALT;
-const TOKEN_ID = MOCK_HEDERA_ENTITY_ID_1;
-const OWNER_PRIVATE_KEY =
-  '302e020100300506032b65700422042011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111';
+const OWNER_ACCOUNT = `${MOCK_ACCOUNT_ID}:${ED25519_DER_PRIVATE_KEY}`;
 
 function makeNftMirrorMock(type = 'NON_FUNGIBLE_UNIQUE') {
   return {
@@ -38,11 +37,9 @@ function makeNftMirrorMock(type = 'NON_FUNGIBLE_UNIQUE') {
 
 function makeDeleteAllowanceSuccessMocks(overrides?: { spenderId?: string }) {
   const mockDeleteTx = { test: 'delete-allowance-transaction' };
-  const { api, tokens, txExecute, kms } = makeApiMocks({
-    tokens: {
-      createNftAllowanceDeleteTransaction: jest
-        .fn()
-        .mockReturnValue(mockDeleteTx),
+  const { api, allowance, txExecute, kms } = makeApiMocks({
+    allowance: {
+      buildNftAllowanceDelete: jest.fn().mockReturnValue(mockDeleteTx),
     },
     txExecute: {
       execute: jest.fn().mockResolvedValue(makeTransactionResult()),
@@ -59,14 +56,14 @@ function makeDeleteAllowanceSuccessMocks(overrides?: { spenderId?: string }) {
         if (type === AliasType.Account) {
           if (alias === 'alice') {
             return {
-              entityId: OWNER_ACCOUNT_ID,
+              entityId: MOCK_ACCOUNT_ID,
               publicKey: 'alice-pub-key',
               keyRefId: 'alice-key-ref-id',
             };
           }
           if (alias === 'bob') {
             return {
-              entityId: overrides?.spenderId ?? SPENDER_ACCOUNT_ID,
+              entityId: overrides?.spenderId ?? MOCK_ACCOUNT_ID_ALT,
               publicKey: 'bob-pub-key',
               keyRefId: 'bob-key-ref-id',
             };
@@ -74,7 +71,7 @@ function makeDeleteAllowanceSuccessMocks(overrides?: { spenderId?: string }) {
         }
         if (type === AliasType.Token) {
           if (alias === 'my-nft-collection') {
-            return { entityId: '0.0.54321' };
+            return { entityId: MOCK_NFT_COLLECTION_ENTITY_ID };
           }
         }
         return null;
@@ -82,19 +79,19 @@ function makeDeleteAllowanceSuccessMocks(overrides?: { spenderId?: string }) {
     },
   });
 
-  return { api, tokens, txExecute, kms, mockDeleteTx };
+  return { api, allowance, txExecute, kms, mockDeleteTx };
 }
 
 describe('tokenDeleteAllowanceNft', () => {
   describe('success scenarios', () => {
     test('delete specific serials with account-id:key format', async () => {
-      const { api, tokens } = makeDeleteAllowanceSuccessMocks();
+      const { api, allowance } = makeDeleteAllowanceSuccessMocks();
       const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
-          token: TOKEN_ID,
-          owner: `${OWNER_ACCOUNT_ID}:${OWNER_PRIVATE_KEY}`,
+          token: MOCK_HEDERA_ENTITY_ID_1,
+          owner: OWNER_ACCOUNT,
           serials: '1,2,3',
         },
         api,
@@ -109,30 +106,32 @@ describe('tokenDeleteAllowanceNft', () => {
         result.result,
         TokenDeleteAllowanceNftOutputSchema,
       );
-      expect(output.tokenId).toBe(TOKEN_ID);
-      expect(output.ownerAccountId).toBe(OWNER_ACCOUNT_ID);
+      expect(output.tokenId).toBe(MOCK_HEDERA_ENTITY_ID_1);
+      expect(output.ownerAccountId).toBe(MOCK_ACCOUNT_ID);
       expect(output.spenderAccountId).toBeNull();
       expect(output.serials).toEqual([1, 2, 3]);
       expect(output.allSerials).toBe(false);
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
       expect(output.network).toBe(SupportedNetwork.TESTNET);
 
-      expect(tokens.createNftAllowanceDeleteTransaction).toHaveBeenCalledWith({
-        tokenId: TOKEN_ID,
-        ownerAccountId: OWNER_ACCOUNT_ID,
-        serialNumbers: [1, 2, 3],
-      });
+      expect(allowance.buildNftAllowanceDelete).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tokenId: MOCK_HEDERA_ENTITY_ID_1,
+          ownerAccountId: MOCK_ACCOUNT_ID,
+          serialNumbers: [1, 2, 3],
+        }),
+      );
     });
 
     test('delete all-serials blanket approval with spender', async () => {
-      const { api, tokens } = makeDeleteAllowanceSuccessMocks();
+      const { api, allowance } = makeDeleteAllowanceSuccessMocks();
       const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
-          token: TOKEN_ID,
-          owner: `${OWNER_ACCOUNT_ID}:${OWNER_PRIVATE_KEY}`,
-          spender: SPENDER_ACCOUNT_ID,
+          token: MOCK_HEDERA_ENTITY_ID_1,
+          owner: OWNER_ACCOUNT,
+          spender: MOCK_ACCOUNT_ID_ALT,
           allSerials: true,
         },
         api,
@@ -147,28 +146,30 @@ describe('tokenDeleteAllowanceNft', () => {
         result.result,
         TokenDeleteAllowanceNftOutputSchema,
       );
-      expect(output.tokenId).toBe(TOKEN_ID);
-      expect(output.ownerAccountId).toBe(OWNER_ACCOUNT_ID);
-      expect(output.spenderAccountId).toBe(SPENDER_ACCOUNT_ID);
+      expect(output.tokenId).toBe(MOCK_HEDERA_ENTITY_ID_1);
+      expect(output.ownerAccountId).toBe(MOCK_ACCOUNT_ID);
+      expect(output.spenderAccountId).toBe(MOCK_ACCOUNT_ID_ALT);
       expect(output.serials).toBeNull();
       expect(output.allSerials).toBe(true);
 
-      expect(tokens.createNftAllowanceDeleteTransaction).toHaveBeenCalledWith({
-        tokenId: TOKEN_ID,
-        ownerAccountId: OWNER_ACCOUNT_ID,
-        spenderAccountId: SPENDER_ACCOUNT_ID,
-        allSerials: true,
-      });
+      expect(allowance.buildNftAllowanceDelete).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tokenId: MOCK_HEDERA_ENTITY_ID_1,
+          ownerAccountId: MOCK_ACCOUNT_ID,
+          spenderAccountId: MOCK_ACCOUNT_ID_ALT,
+          allSerials: true,
+        }),
+      );
     });
 
     test('owner defaults to operator when not provided', async () => {
-      const operatorId = '0.0.100000';
-      const { api, tokens } = makeDeleteAllowanceSuccessMocks();
+      const operatorId = MOCK_OPERATOR_ACCOUNT_ID;
+      const { api, allowance } = makeDeleteAllowanceSuccessMocks();
       const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
-          token: TOKEN_ID,
+          token: MOCK_HEDERA_ENTITY_ID_1,
           serials: '5',
         },
         api,
@@ -185,20 +186,20 @@ describe('tokenDeleteAllowanceNft', () => {
       );
       expect(output.ownerAccountId).toBe(operatorId);
 
-      expect(tokens.createNftAllowanceDeleteTransaction).toHaveBeenCalledWith(
+      expect(allowance.buildNftAllowanceDelete).toHaveBeenCalledWith(
         expect.objectContaining({ ownerAccountId: operatorId }),
       );
     });
 
     test('resolve token and spender by alias', async () => {
-      const { api, tokens } = makeDeleteAllowanceSuccessMocks();
+      const { api, allowance } = makeDeleteAllowanceSuccessMocks();
       const logger = makeLogger();
 
       const args: CommandHandlerArgs = {
         args: {
           token: 'my-nft-collection',
           spender: 'bob',
-          owner: `${OWNER_ACCOUNT_ID}:${OWNER_PRIVATE_KEY}`,
+          owner: OWNER_ACCOUNT,
           allSerials: true,
         },
         api,
@@ -213,11 +214,11 @@ describe('tokenDeleteAllowanceNft', () => {
         result.result,
         TokenDeleteAllowanceNftOutputSchema,
       );
-      expect(output.tokenId).toBe('0.0.54321');
-      expect(output.spenderAccountId).toBe(SPENDER_ACCOUNT_ID);
+      expect(output.tokenId).toBe(MOCK_NFT_COLLECTION_ENTITY_ID);
+      expect(output.spenderAccountId).toBe(MOCK_ACCOUNT_ID_ALT);
 
-      expect(tokens.createNftAllowanceDeleteTransaction).toHaveBeenCalledWith(
-        expect.objectContaining({ tokenId: '0.0.54321' }),
+      expect(allowance.buildNftAllowanceDelete).toHaveBeenCalledWith(
+        expect.objectContaining({ tokenId: MOCK_NFT_COLLECTION_ENTITY_ID }),
       );
     });
   });
@@ -232,7 +233,7 @@ describe('tokenDeleteAllowanceNft', () => {
 
       const args: CommandHandlerArgs = {
         args: {
-          token: TOKEN_ID,
+          token: MOCK_HEDERA_ENTITY_ID_1,
           serials: '1',
         },
         api,
@@ -253,9 +254,9 @@ describe('tokenDeleteAllowanceNft', () => {
 
       const args: CommandHandlerArgs = {
         args: {
-          token: TOKEN_ID,
+          token: MOCK_HEDERA_ENTITY_ID_1,
           spender: 'unknown-alias',
-          owner: `${OWNER_ACCOUNT_ID}:${OWNER_PRIVATE_KEY}`,
+          owner: OWNER_ACCOUNT,
           allSerials: true,
         },
         api,
@@ -278,8 +279,8 @@ describe('tokenDeleteAllowanceNft', () => {
 
       const args: CommandHandlerArgs = {
         args: {
-          token: TOKEN_ID,
-          owner: `${OWNER_ACCOUNT_ID}:${OWNER_PRIVATE_KEY}`,
+          token: MOCK_HEDERA_ENTITY_ID_1,
+          owner: OWNER_ACCOUNT,
           serials: '1',
         },
         api,
@@ -299,7 +300,7 @@ describe('tokenDeleteAllowanceNft', () => {
 
       const args: CommandHandlerArgs = {
         args: {
-          token: TOKEN_ID,
+          token: MOCK_HEDERA_ENTITY_ID_1,
         },
         api,
         state: api.state,
@@ -318,10 +319,10 @@ describe('tokenDeleteAllowanceNft', () => {
 
       const args: CommandHandlerArgs = {
         args: {
-          token: TOKEN_ID,
+          token: MOCK_HEDERA_ENTITY_ID_1,
           serials: '1,2',
           allSerials: true,
-          spender: SPENDER_ACCOUNT_ID,
+          spender: MOCK_ACCOUNT_ID_ALT,
         },
         api,
         state: api.state,
@@ -340,7 +341,7 @@ describe('tokenDeleteAllowanceNft', () => {
 
       const args: CommandHandlerArgs = {
         args: {
-          token: TOKEN_ID,
+          token: MOCK_HEDERA_ENTITY_ID_1,
           allSerials: true,
         },
         api,
@@ -360,9 +361,9 @@ describe('tokenDeleteAllowanceNft', () => {
 
       const args: CommandHandlerArgs = {
         args: {
-          token: TOKEN_ID,
+          token: MOCK_HEDERA_ENTITY_ID_1,
           serials: '1,2',
-          spender: SPENDER_ACCOUNT_ID,
+          spender: MOCK_ACCOUNT_ID_ALT,
         },
         api,
         state: api.state,

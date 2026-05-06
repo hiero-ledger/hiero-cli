@@ -15,6 +15,7 @@ import {
   ValidationError,
 } from '@/core/errors';
 import { MirrorNodeTokenType } from '@/core/services/mirrornode/types';
+import { NftTransferEntry } from '@/core/services/transfer';
 import {
   resolveDestinationAccountParameter,
   resolveTokenParameter,
@@ -119,12 +120,17 @@ export class TokenTransferNftCommand extends BaseTransactionCommand<
     normalisedParams: TransferNftNormalizedParams,
   ): Promise<TransferNftBuildTransactionResult> {
     const { api } = args;
-    const transaction = api.token.createNftTransferTransaction({
-      tokenId: normalisedParams.tokenId,
-      fromAccountId: normalisedParams.fromAccountId,
-      toAccountId: normalisedParams.toAccountId,
-      serialNumbers: normalisedParams.serials,
-    });
+    const transaction = api.transfer.buildTransferTransaction(
+      normalisedParams.serials.map(
+        (serial) =>
+          new NftTransferEntry(
+            normalisedParams.fromAccountId,
+            normalisedParams.toAccountId,
+            normalisedParams.tokenId,
+            serial,
+          ),
+      ),
+    );
     return { transaction };
   }
 

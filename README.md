@@ -197,7 +197,7 @@ Override the default operator as the payer for all transactions in a command. Th
 hcli hbar transfer --amount 1 --to 0.0.789012 --payer myaccount
 
 # Create token with a specific account as payer
-hcli token create-ft --tokenName "MyToken" --symbol "MT" --payer 0.0.123456:302e...
+hcli token create-ft --token-name "MyToken" --symbol "MT" --payer 0.0.123456:302e...
 
 # Use payer flag with network flag together
 hcli hbar transfer --amount 1 --to 0.0.789012 --network testnet --payer myaccount
@@ -304,6 +304,8 @@ The Hiero CLI is built on a plugin architecture. The following default plugins a
 - **[Contract Plugin](src/plugins/contract/README.md)** - Compile, deploy, and verify Solidity smart contracts on Hedera
 - **[Contract ERC-20 Plugin](src/plugins/contract-erc20/README.md)** - Call ERC-20 token contract functions (name, balance, transfer, etc.)
 - **[Contract ERC-721 Plugin](src/plugins/contract-erc721/README.md)** - Call ERC-721 (NFT) contract functions (transfer, approve, etc.)
+- **[Batch Plugin](src/plugins/batch/README.md)** - Group multiple transactions into a single atomic batch transaction
+- **[Schedule Plugin](src/plugins/schedule/README.md)** - Create, sign, delete, and manage Hedera scheduled transactions
 
 Each plugin has its own README with detailed documentation about available commands, usage examples, and architecture details. Click on the plugin name above to learn more.
 

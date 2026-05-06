@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
+import { FtTransferEntry } from '@/core/services/transfer';
 import { processTokenBalanceInput } from '@/core/utils/process-token-balance-input';
 import {
   resolveDestinationAccountParameter,
@@ -125,12 +126,14 @@ export class TokenTransferFtCommand extends BaseTransactionCommand<
   ): Promise<TokenTransferFtBuildTransactionResult> {
     const { api, logger } = args;
     logger.debug('Building transfer transaction body');
-    const transaction = api.token.createTransferTransaction({
-      tokenId: normalisedParams.tokenId,
-      fromAccountId: normalisedParams.fromAccountId,
-      toAccountId: normalisedParams.toAccountId,
-      amount: normalisedParams.rawAmount,
-    });
+    const transaction = api.transfer.buildTransferTransaction([
+      new FtTransferEntry(
+        normalisedParams.fromAccountId,
+        normalisedParams.toAccountId,
+        normalisedParams.tokenId,
+        normalisedParams.rawAmount,
+      ),
+    ]);
     return {
       transaction,
     };

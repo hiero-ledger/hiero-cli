@@ -131,8 +131,8 @@ describe('Token Plugin Error Handling', () => {
     test('should handle network errors during transfer', async () => {
       // Arrange
       const { api } = makeApiMocks({
-        tokenTransactions: {
-          createTransferTransaction: jest.fn().mockImplementation(() => {
+        transfer: {
+          buildTransferTransaction: jest.fn().mockImplementation(() => {
             throw new NetworkError('Network unreachable');
           }),
         },
@@ -313,10 +313,10 @@ describe('Token Plugin Error Handling', () => {
       };
 
       const { api } = makeApiMocks({
-        tokenTransactions: {
-          createTransferTransaction: jest
+        transfer: {
+          buildTransferTransaction: jest
             .fn()
-            .mockResolvedValue(mockTransferTransaction),
+            .mockReturnValue(mockTransferTransaction),
         },
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({ decimals: 6 }),
@@ -606,10 +606,10 @@ describe('Token Plugin Error Handling', () => {
       };
 
       const { api } = makeApiMocks({
-        tokenTransactions: {
-          createTransferTransaction: jest
+        transfer: {
+          buildTransferTransaction: jest
             .fn()
-            .mockResolvedValue(mockTransferTransaction),
+            .mockReturnValue(mockTransferTransaction),
         },
         mirror: {
           getTokenInfo: jest.fn().mockResolvedValue({ decimals: 6 }),

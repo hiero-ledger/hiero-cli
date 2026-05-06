@@ -10,6 +10,7 @@ import type {
 
 import { BaseTransactionCommand } from '@/core/commands/command';
 import { NotFoundError, TransactionError } from '@/core/errors';
+import { HbarAllowanceEntry } from '@/core/services/allowance';
 import { ConfigOptionKey } from '@/core/services/config/config-service.interface';
 import { HBAR_DECIMALS } from '@/core/shared/constants';
 import { processBalanceInput } from '@/core/utils/process-balance-input';
@@ -85,13 +86,15 @@ export class HbarAllowanceCommand extends BaseTransactionCommand<
   ): Promise<AllowanceBuildTransactionResult> {
     const { api } = args;
 
-    const result = api.hbar.createHbarAllowanceTransaction({
-      ownerAccountId: normalizedParams.ownerAccountId,
-      spenderAccountId: normalizedParams.spenderAccountId,
-      amountTinybar: normalizedParams.amountTinybar,
-    });
+    const transaction = api.allowance.buildAllowanceApprove([
+      new HbarAllowanceEntry(
+        normalizedParams.ownerAccountId,
+        normalizedParams.spenderAccountId,
+        normalizedParams.amountTinybar,
+      ),
+    ]);
 
-    return { transaction: result.transaction };
+    return { transaction };
   }
 
   async signTransaction(

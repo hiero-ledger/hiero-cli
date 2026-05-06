@@ -116,7 +116,7 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
           false,
         );
       }
-      const transaction = api.token.createNftAllowanceDeleteTransaction({
+      const transaction = api.allowance.buildNftAllowanceDelete({
         tokenId: normalisedParams.tokenId,
         ownerAccountId: normalisedParams.ownerAccountId,
         spenderAccountId: normalisedParams.spenderAccountId,
@@ -132,7 +132,7 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
       );
     }
 
-    const transaction = api.token.createNftAllowanceDeleteTransaction({
+    const transaction = api.allowance.buildNftAllowanceDelete({
       tokenId: normalisedParams.tokenId,
       ownerAccountId: normalisedParams.ownerAccountId,
       serialNumbers: normalisedParams.serials,
@@ -190,7 +190,9 @@ export class TokenDeleteAllowanceNftCommand extends BaseTransactionCommand<
       tokenId: normalisedParams.tokenId,
       ownerAccountId: normalisedParams.ownerAccountId,
       spenderAccountId: normalisedParams.spenderAccountId,
-      serials: normalisedParams.allSerials ? null : normalisedParams.serials,
+      serials: normalisedParams.allSerials
+        ? null
+        : (normalisedParams.serials ?? null),
       allSerials: normalisedParams.allSerials,
       network: normalisedParams.network,
     };

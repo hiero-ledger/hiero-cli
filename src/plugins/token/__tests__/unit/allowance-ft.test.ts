@@ -2,9 +2,16 @@ import type { CommandHandlerArgs } from '@/core/plugins/plugin.interface';
 
 import '@/core/utils/json-serialize';
 
+import {
+  ECDSA_HEX_PRIVATE_KEY,
+  MOCK_ACCOUNT_ID,
+  MOCK_ACCOUNT_ID_ALT,
+  MOCK_HEDERA_ENTITY_ID_1,
+} from '@/__tests__/mocks/fixtures';
 import { makeConfigMock, makeStateMock } from '@/__tests__/mocks/mocks';
 import { assertOutput } from '@/__tests__/utils/assert-output';
 import { NetworkError } from '@/core';
+import { FtAllowanceEntry } from '@/core/services/allowance';
 import { KeyAlgorithm } from '@/core/shared/constants';
 import { AliasType } from '@/core/types/shared.types';
 import {
@@ -15,9 +22,10 @@ import {
 import { mockTransactionResults } from './helpers/fixtures';
 import { makeApiMocks, makeLogger } from './helpers/mocks';
 
-const OWNER_PRIVATE_KEY =
-  '2222222222222222222222222222222222222222222222222222222222222222';
-const OWNER_ACCOUNT = `0.0.345678:${OWNER_PRIVATE_KEY}`;
+const TOKEN_ID = MOCK_HEDERA_ENTITY_ID_1;
+const OWNER_ACCOUNT_ID = MOCK_ACCOUNT_ID;
+const SPENDER_ACCOUNT_ID = MOCK_ACCOUNT_ID_ALT;
+const OWNER_ACCOUNT = `${OWNER_ACCOUNT_ID}:${ECDSA_HEX_PRIVATE_KEY}`;
 
 describe('tokenAllowanceFt', () => {
   describe('success scenarios', () => {
@@ -29,11 +37,9 @@ describe('tokenAllowanceFt', () => {
         consensusTimestamp: '1234567890.123456789',
       };
 
-      const { api, tokens, txExecute, kms } = makeApiMocks({
-        tokens: {
-          createFungibleTokenAllowanceTransaction: jest
-            .fn()
-            .mockReturnValue(mockAllowanceTx),
+      const { api, allowance, txExecute, kms } = makeApiMocks({
+        allowance: {
+          buildAllowanceApprove: jest.fn().mockReturnValue(mockAllowanceTx),
         },
         txExecute: {
           execute: jest.fn().mockResolvedValue(mockResult),
@@ -55,9 +61,9 @@ describe('tokenAllowanceFt', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.999999',
+          token: TOKEN_ID,
           owner: OWNER_ACCOUNT,
-          spender: '0.0.111111',
+          spender: SPENDER_ACCOUNT_ID,
           amount: '100',
         },
         api,
@@ -69,24 +75,24 @@ describe('tokenAllowanceFt', () => {
       const result = await tokenAllowanceFt(args);
 
       const output = assertOutput(result.result, TokenAllowanceFtOutputSchema);
-      expect(output.tokenId).toBe('0.0.999999');
-      expect(output.ownerAccountId).toBe('0.0.345678');
-      expect(output.spenderAccountId).toBe('0.0.111111');
+      expect(output.tokenId).toBe(TOKEN_ID);
+      expect(output.ownerAccountId).toBe(OWNER_ACCOUNT_ID);
+      expect(output.spenderAccountId).toBe(SPENDER_ACCOUNT_ID);
       expect(output.amount).toBe(100000000n);
       expect(output.transactionId).toBe('0.0.123@1234567890.123456789');
 
-      expect(
-        tokens.createFungibleTokenAllowanceTransaction,
-      ).toHaveBeenCalledWith({
-        tokenId: '0.0.999999',
-        ownerAccountId: '0.0.345678',
-        spenderAccountId: '0.0.111111',
-        amount: 100000000n,
-      });
+      expect(allowance.buildAllowanceApprove).toHaveBeenCalledWith([
+        new FtAllowanceEntry(
+          OWNER_ACCOUNT_ID,
+          SPENDER_ACCOUNT_ID,
+          TOKEN_ID,
+          100000000n,
+        ),
+      ]);
       expect(txExecute.execute).toHaveBeenCalledWith(expect.anything());
       expect(kms.importPrivateKey).toHaveBeenCalledWith(
         KeyAlgorithm.ECDSA,
-        OWNER_PRIVATE_KEY,
+        ECDSA_HEX_PRIVATE_KEY,
         'local',
         ['token:owner'],
       );
@@ -100,11 +106,9 @@ describe('tokenAllowanceFt', () => {
         consensusTimestamp: '1234567890.123456789',
       };
 
-      const { api, tokens } = makeApiMocks({
-        tokens: {
-          createFungibleTokenAllowanceTransaction: jest
-            .fn()
-            .mockReturnValue(mockAllowanceTx),
+      const { api, allowance } = makeApiMocks({
+        allowance: {
+          buildAllowanceApprove: jest.fn().mockReturnValue(mockAllowanceTx),
         },
         txExecute: {
           execute: jest.fn().mockResolvedValue(mockResult),
@@ -121,9 +125,9 @@ describe('tokenAllowanceFt', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.999999',
+          token: TOKEN_ID,
           owner: OWNER_ACCOUNT,
-          spender: '0.0.111111',
+          spender: SPENDER_ACCOUNT_ID,
           amount: '500t',
         },
         api,
@@ -136,9 +140,14 @@ describe('tokenAllowanceFt', () => {
 
       const output = assertOutput(result.result, TokenAllowanceFtOutputSchema);
       expect(output.amount).toBe(500n);
-      expect(
-        tokens.createFungibleTokenAllowanceTransaction,
-      ).toHaveBeenCalledWith(expect.objectContaining({ amount: 500n }));
+      expect(allowance.buildAllowanceApprove).toHaveBeenCalledWith([
+        new FtAllowanceEntry(
+          OWNER_ACCOUNT_ID,
+          SPENDER_ACCOUNT_ID,
+          TOKEN_ID,
+          500n,
+        ),
+      ]);
     });
 
     test('should revoke allowance when amount is 0', async () => {
@@ -149,11 +158,9 @@ describe('tokenAllowanceFt', () => {
         consensusTimestamp: '1234567890.123456789',
       };
 
-      const { api, tokens } = makeApiMocks({
-        tokens: {
-          createFungibleTokenAllowanceTransaction: jest
-            .fn()
-            .mockReturnValue(mockAllowanceTx),
+      const { api, allowance } = makeApiMocks({
+        allowance: {
+          buildAllowanceApprove: jest.fn().mockReturnValue(mockAllowanceTx),
         },
         txExecute: {
           execute: jest.fn().mockResolvedValue(mockResult),
@@ -170,9 +177,9 @@ describe('tokenAllowanceFt', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.999999',
+          token: TOKEN_ID,
           owner: OWNER_ACCOUNT,
-          spender: '0.0.111111',
+          spender: SPENDER_ACCOUNT_ID,
           amount: '0',
         },
         api,
@@ -185,9 +192,14 @@ describe('tokenAllowanceFt', () => {
 
       const output = assertOutput(result.result, TokenAllowanceFtOutputSchema);
       expect(output.amount).toBe(0n);
-      expect(
-        tokens.createFungibleTokenAllowanceTransaction,
-      ).toHaveBeenCalledWith(expect.objectContaining({ amount: 0n }));
+      expect(allowance.buildAllowanceApprove).toHaveBeenCalledWith([
+        new FtAllowanceEntry(
+          OWNER_ACCOUNT_ID,
+          SPENDER_ACCOUNT_ID,
+          TOKEN_ID,
+          0n,
+        ),
+      ]);
     });
 
     test('should resolve spender from alias', async () => {
@@ -199,10 +211,8 @@ describe('tokenAllowanceFt', () => {
       };
 
       const { api, alias } = makeApiMocks({
-        tokens: {
-          createFungibleTokenAllowanceTransaction: jest
-            .fn()
-            .mockReturnValue(mockAllowanceTx),
+        allowance: {
+          buildAllowanceApprove: jest.fn().mockReturnValue(mockAllowanceTx),
         },
         txExecute: {
           execute: jest.fn().mockResolvedValue(mockResult),
@@ -210,7 +220,7 @@ describe('tokenAllowanceFt', () => {
         alias: {
           resolve: jest.fn().mockImplementation((name, type) => {
             if (type === AliasType.Account && name === 'spender-alias') {
-              return { entityId: '0.0.111111' };
+              return { entityId: SPENDER_ACCOUNT_ID };
             }
             return null;
           }),
@@ -229,7 +239,7 @@ describe('tokenAllowanceFt', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.999999',
+          token: TOKEN_ID,
           owner: OWNER_ACCOUNT,
           spender: 'spender-alias',
           amount: '100',
@@ -243,7 +253,7 @@ describe('tokenAllowanceFt', () => {
       const result = await tokenAllowanceFt(args);
 
       const output = assertOutput(result.result, TokenAllowanceFtOutputSchema);
-      expect(output.spenderAccountId).toBe('0.0.111111');
+      expect(output.spenderAccountId).toBe(SPENDER_ACCOUNT_ID);
       expect(alias.resolve).toHaveBeenCalledWith(
         'spender-alias',
         AliasType.Account,
@@ -257,10 +267,8 @@ describe('tokenAllowanceFt', () => {
       const mockAllowanceTx = { test: 'allowance-transaction' };
 
       const { api } = makeApiMocks({
-        tokens: {
-          createFungibleTokenAllowanceTransaction: jest
-            .fn()
-            .mockReturnValue(mockAllowanceTx),
+        allowance: {
+          buildAllowanceApprove: jest.fn().mockReturnValue(mockAllowanceTx),
         },
         txExecute: {
           execute: jest.fn().mockResolvedValue(mockTransactionResults.failure),
@@ -280,9 +288,9 @@ describe('tokenAllowanceFt', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.999999',
+          token: TOKEN_ID,
           owner: OWNER_ACCOUNT,
-          spender: '0.0.111111',
+          spender: SPENDER_ACCOUNT_ID,
           amount: '100',
         },
         api,
@@ -294,14 +302,12 @@ describe('tokenAllowanceFt', () => {
       await expect(tokenAllowanceFt(args)).rejects.toThrow();
     });
 
-    test('should throw when token service throws', async () => {
+    test('should throw when allowance service throws', async () => {
       const { api } = makeApiMocks({
-        tokens: {
-          createFungibleTokenAllowanceTransaction: jest
-            .fn()
-            .mockImplementation(() => {
-              throw new NetworkError('Network error');
-            }),
+        allowance: {
+          buildAllowanceApprove: jest.fn().mockImplementation(() => {
+            throw new NetworkError('Network error');
+          }),
         },
         alias: { resolve: jest.fn().mockReturnValue(null) },
         mirror: {
@@ -318,9 +324,9 @@ describe('tokenAllowanceFt', () => {
       const logger = makeLogger();
       const args: CommandHandlerArgs = {
         args: {
-          token: '0.0.999999',
+          token: TOKEN_ID,
           owner: OWNER_ACCOUNT,
-          spender: '0.0.111111',
+          spender: SPENDER_ACCOUNT_ID,
           amount: '100',
         },
         api,
