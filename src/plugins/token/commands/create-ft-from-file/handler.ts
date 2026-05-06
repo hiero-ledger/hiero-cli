@@ -270,8 +270,6 @@ export class TokenCreateFtFromFileCommand extends BaseTransactionCommand<
       logger,
       normalisedParams.keyManager,
     );
-    tokenData.associations = successfulAssociations;
-
     const key = composeKey(normalisedParams.network, tokenId);
     tokenState.saveToken(key, tokenData);
     logger.info('   Token data saved to state');

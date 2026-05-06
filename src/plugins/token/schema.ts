@@ -149,8 +149,6 @@ export const TokenDataSchema = z.object({
     }),
   }),
 
-  associations: z.array(TokenAssociationSchema).default([]),
-
   customFees: z.array(TokenFileCustomFeeSchema).default([]),
 
   memo: z.string().max(100).optional(),

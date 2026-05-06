@@ -2,44 +2,11 @@
  * Token Associations
  * Utility functions for processing token associations
  */
-import type { CoreApi, Logger, SupportedNetwork } from '@/core';
+import type { CoreApi, Logger } from '@/core';
 import type {
   Credential,
   KeyManager,
 } from '@/core/services/kms/kms-types.interface';
-import type { ZustandTokenStateHelper } from '@/plugins/token/zustand-state-helper';
-
-import { composeKey } from '@/core/utils/key-composer';
-
-export function saveAssociationToState(
-  tokenState: ZustandTokenStateHelper,
-  tokenId: string,
-  accountId: string,
-  network: SupportedNetwork,
-  logger: Logger,
-): void {
-  const tokenKey = composeKey(network, tokenId);
-  const tokenData = tokenState.getToken(tokenKey);
-  if (tokenData) {
-    tokenState.addTokenAssociation(tokenKey, accountId, accountId);
-    logger.info(`   Association saved to token state`);
-  }
-}
-
-export function removeAssociationFromState(
-  tokenState: ZustandTokenStateHelper,
-  tokenId: string,
-  accountId: string,
-  network: SupportedNetwork,
-  logger: Logger,
-): void {
-  const tokenKey = composeKey(network, tokenId);
-  const tokenData = tokenState.getToken(tokenKey);
-  if (tokenData) {
-    tokenState.removeTokenAssociation(tokenKey, accountId);
-    logger.info(`   Association removed from token state`);
-  }
-}
 
 export async function processTokenAssociations(
   tokenId: string,

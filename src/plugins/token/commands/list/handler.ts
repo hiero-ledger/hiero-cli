@@ -44,7 +44,7 @@ export class TokenListCommand implements Command {
         network: token.network,
         alias,
         maxSupply: Number(token.maxSupply),
-        associationCount: token.associations?.length || 0,
+        associationCount: 0,
         ...(validArgs.keys &&
           token.adminKeyRefIds.length > 0 && {
             keys: {
