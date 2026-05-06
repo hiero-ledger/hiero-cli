@@ -1,13 +1,13 @@
 import type { AccountService } from '@/core';
 import type { CoreApi } from '@/core/core-api/core-api.interface';
 import type { AliasService } from '@/core/services/alias/alias-service.interface';
+import type { AllowanceService } from '@/core/services/allowance/allowance-service.interface';
 import type { BatchTransactionService } from '@/core/services/batch/batch-transaction-service.interface';
 import type { ConfigService } from '@/core/services/config/config-service.interface';
 import type { ContractCompilerService } from '@/core/services/contract-compiler/contract-compiler-service.interface';
 import type { ContractQueryService } from '@/core/services/contract-query/contract-query-service.interface';
 import type { ContractTransactionService } from '@/core/services/contract-transaction/contract-transaction-service.interface';
 import type { ContractVerifierService } from '@/core/services/contract-verifier/contract-verifier-service.interface';
-import type { HbarService } from '@/core/services/hbar/hbar-service.interface';
 import type { IdentityResolutionService } from '@/core/services/identity-resolution/identity-resolution-service.interface';
 import type { Logger } from '@/core/services/logger/logger-service.interface';
 import type { HederaMirrornodeService } from '@/core/services/mirrornode/hedera-mirrornode-service.interface';
@@ -17,6 +17,7 @@ import type { PluginManagementService } from '@/core/services/plugin-management/
 import type { ReceiptService } from '@/core/services/receipt/receipt-service.interface';
 import type { TokenService } from '@/core/services/token/token-service.interface';
 import type { TopicService } from '@/core/services/topic/topic-transaction-service.interface';
+import type { TransferService } from '@/core/services/transfer/transfer-service.interface';
 import type { TxExecuteService } from '@/core/services/tx-execute/tx-execute-service.interface';
 import type { TxSignService } from '@/core/services/tx-sign/tx-sign-service.interface';
 
@@ -124,6 +125,10 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
 
   const defaultContract = {
     contractCreateFlowTransaction: jest.fn(),
+    contractExecuteTransaction: jest.fn(),
+    contractExecuteWithEncodedParams: jest.fn(),
+    deleteContract: jest.fn(),
+    updateContract: jest.fn(),
   };
   const contract = {
     ...defaultContract,
@@ -157,6 +162,13 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
       getReceipt: jest.fn(),
     } as unknown as ReceiptService,
     topic: {} as unknown as TopicService,
+    transfer: {
+      buildTransferTransaction: jest.fn(),
+    } as unknown as TransferService,
+    allowance: {
+      buildAllowanceApprove: jest.fn(),
+      buildNftAllowanceDelete: jest.fn(),
+    } as unknown as AllowanceService,
     txSign,
     txExecute,
     kms,
@@ -166,10 +178,6 @@ export const makeApiMocks = (config?: ApiMocksConfig) => {
     network,
     config: makeConfigMock() as unknown as ConfigService,
     logger: makeLogger(),
-    hbar: {
-      transferTinybar: jest.fn(),
-      createHbarAllowanceTransaction: jest.fn(),
-    } as jest.Mocked<HbarService>,
     output: {
       handleOutput: jest.fn<never, [OutputHandlerOptions]>(),
       getFormat: jest.fn().mockReturnValue('human'),
