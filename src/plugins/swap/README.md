@@ -16,7 +16,7 @@ Multi-party asset exchange plugin for the Hiero CLI. Allows building a swap step
 src/plugins/swap/
 ├── manifest.ts              # Plugin manifest with command definitions
 ├── schema.ts                # Swap state schemas and SwapTransferType enum
-├── state-helper.ts          # SwapStateHelper class and account/token formatters
+├── state-helper.ts          # SwapStateHelper class for swap state management
 ├── commands/
 │   ├── create/              # Create a new named swap
 │   ├── add-hbar/            # Add an HBAR transfer to a swap
@@ -109,9 +109,21 @@ hcli swap execute -n my-swap
 
 - `-n, --name <string>` - Name of the swap to execute (required)
 
+### View
+
+Display the full details and all transfers of a single swap.
+
+```bash
+hcli swap view -n my-swap
+```
+
+**Options:**
+
+- `-n, --name <string>` - Name of the swap to view (required)
+
 ### List
 
-Display all saved swaps and their transfers.
+Display a summary of all saved swaps.
 
 ```bash
 hcli swap list
@@ -140,7 +152,7 @@ hcli swap add-hbar -n exchange --from alice --to bob --amount 100
 hcli swap add-ft   -n exchange --from bob --to alice --token my-token --amount 50
 
 # 3. Review before executing
-hcli swap list
+hcli swap view -n exchange
 
 # 4. Execute (signs with all required keys in one transaction)
 hcli swap execute -n exchange
@@ -162,6 +174,6 @@ Swaps are stored per-network in `~/.hiero-cli/state/swap-storage.json`. Each swa
 - `api.txSign` — signs with all unique `from` account keys in one call
 - `api.txExecute` — submits the transaction
 - `api.keyResolver` — resolves account credentials at `add` time
-- `api.mirror` — fetches FT decimals at `execute` time
+- `api.mirror` — fetches FT decimals at `add-ft` time to convert display amount to base units
 - `api.state` — persists swap state between commands
 - `api.network` — network information
