@@ -77,29 +77,18 @@ When modifying a plugin:
 
 ## Commit Convention
 
-Format: `<type>(<issue>): <description>`
+Format: `feat({issue}): {short_description}`
 
-Types:
-
-- `feat` — new command or capability
-- `fix` — bug fix
-- `docs` — documentation only
-- `test` — adding or fixing tests
-- `chore` — tooling, deps, CI
-- `refactor` — code change with no behavior change
-
-Examples:
+Example:
 
 ```
 feat(1662): add kyc grant/revoke commands
-fix(1793): handle nullable balance in account list
-docs(1684): update contributing guide
 ```
 
 Breaking changes go in the footer:
 
 ```
-feat(core): replace state file format
+feat(1662): replace state file format
 
 BREAKING CHANGE: existing .hiero-cli/state/ files must be migrated
 ```
@@ -107,12 +96,10 @@ BREAKING CHANGE: existing .hiero-cli/state/ files must be migrated
 ## Branch Naming
 
 ```
-feat-{issue}/{short-description}
-fix-{issue}/{short-description}
-docs-{issue}/{short-description}
+feat/{issue}-{task_name}
 ```
 
-Examples: `feat-1662/kyc-grant-revoke`, `fix-1793/nullable-balance`
+Example: `feat/1662-kyc-grant-revoke`
 
 ## Pull Request Workflow
 
